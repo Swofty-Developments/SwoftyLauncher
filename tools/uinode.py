@@ -115,6 +115,47 @@ def clone_node(src, parent_path, new_name):
     return n
 
 
+def copy_signals(root, old, new):
+    count = 0
+
+    def visit(n, parent):
+        nonlocal count
+        path = name(n) if parent is None else f'{parent}.{name(n)}'
+        if any(path == p or path.startswith(p + '.') for p in (old, new)):
+            return
+        for slot in (COMMANDS, EVENTS):
+            for e in n.items[slot].items if isinstance(n.items[slot], Arr) else []:
+                sigs = e.get('signals') if isinstance(e, Obj) else None
+                if not isinstance(sigs, Arr):
+                    continue
+                out = []
+                for sg in sigs.items:
+                    out.append(sg)
+                    to = sg['to_object_name'].value
+                    if to == old or to.startswith(old + '.'):
+                        c = copy.deepcopy(sg)
+                        rename_refs(c, old, new)
+                        c['to_object'].value = djb2(c['to_object_name'].value)
+                        out.append(c)
+                        count += 1
+                sigs.items[:] = out
+        for c in children(n):
+            if is_node(c):
+                visit(c, path)
+
+    def top(x):
+        if is_node(x):
+            visit(x, None)
+        elif isinstance(x, Obj):
+            for _, v in x.items:
+                top(v)
+        elif isinstance(x, Arr):
+            for v in x.items:
+                top(v)
+    top(root)
+    return count
+
+
 def signal(to_object_name, to_pin_name, from_pin_name, attributes=None):
     items = [
         (Val('stri', 'to_object'), Val('ui32', djb2(to_object_name))),
