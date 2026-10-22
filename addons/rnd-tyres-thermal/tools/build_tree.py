@@ -10,6 +10,11 @@ branch roots hang off the hub (`upgrade_0.links`, the stock targets kept), and
 `_upgrade_instancecount_` becomes 1 + the number of rows. Costs, days, weighting and
 facility levels follow the stock 2026 curve per size (DESIGN.md, "Stock calibration").
 
+It also writes db/tyres_tree_1990.json: the same rows in the 12 `upgrades.1990.trees.<token>.fake`
+hubs of the F1 1990 addon's career, with the 1990 one-season economy (SIZES_1990) and the hub
+links of that addon's trees (its tools/rnd.py) plus our roots. Only an F1 1990 career reads
+`upgrades.1990`.
+
 It compares the build with the shipped files and exits 1 on a difference. --write replaces
 them. --no-pu-cooling leaves out branch D (rows 13-15). --game checks the hub table, the
 row keys and the grid cells against a stock database.
@@ -24,6 +29,8 @@ ADDON = os.path.dirname(HERE)
 REPO = os.path.dirname(os.path.dirname(ADDON))
 TREE = os.path.join(ADDON, 'db', 'tyres_tree.json')
 TEXT = os.path.join(ADDON, 'assets', 'text.json')
+TREE_1990 = os.path.join(ADDON, 'db', 'tyres_tree_1990.json')
+F1990_TOOLS = os.path.join(os.path.dirname(ADDON), 'f1-1990', 'tools')
 DB_REL = os.path.join('game_package', 'gamedatabases', 'gamedatabases.2025.bin')
 
 STR, ENUM, INT, FLOAT, LIST = 2, 3, 0, 1, 13
@@ -32,6 +39,12 @@ SIZES = {
     'Minor': {'cost': 500, 'cost_to_develop': 1000, 'research': 20, 'develop': 25, 'weighting': '1.0', 'facility': 0},
     'Major': {'cost': 1000, 'cost_to_develop': 1000, 'research': 30, 'develop': 25, 'weighting': '2', 'facility': 0},
     'Ultimate': {'cost': 1500, 'cost_to_develop': 1000, 'research': 40, 'develop': 25, 'weighting': '3', 'facility': 3},
+}
+
+SIZES_1990 = {
+    'Minor': {'cost': 400, 'cost_to_develop': 1000, 'research': 7, 'develop': 7, 'weighting': '1.0', 'facility': 0},
+    'Major': {'cost': 800, 'cost_to_develop': 1000, 'research': 14, 'develop': 10, 'weighting': '2', 'facility': 0},
+    'Ultimate': {'cost': 1400, 'cost_to_develop': 1000, 'research': 24, 'develop': 14, 'weighting': '3', 'facility': 0},
 }
 
 BRANCHES = {
@@ -153,8 +166,8 @@ def roots(rows):
     return [label(r['row']) for r in rows if r['parent'] is None]
 
 
-def row_values(r):
-    s = SIZES[r['size']]
+def row_values(r, sizes=SIZES):
+    s = sizes[r['size']]
     return {
         '_metadata_': label(r['row']), 'upgrade_name': r['name'], 'upgrade_type': r['type'],
         'upgrade_size': r['size'], 'upgrade_department': 'Fake', 'cost': str(s['cost']),
@@ -180,6 +193,33 @@ def build_tree(rows):
         ops.append(op(f'{hub}.upgrade_0', 'links', ','.join([HUB_LINKS[links]] + roots(rows)), LIST))
         ops.append(op(hub, '_upgrade_instancecount_', str(1 + len(rows)), INT))
     return json.dumps({'schema_version': 1, 'ops': ops}, indent=1) + '\n'
+
+
+def f1990():
+    if not os.path.isfile(os.path.join(F1990_TOOLS, 'rnd.py')):
+        sys.exit(f'{F1990_TOOLS}/rnd.py not found: the 1990 tree needs the F1 1990 addon\'s tools next to this addon')
+    sys.path.insert(0, F1990_TOOLS)
+    import rnd
+    return rnd
+
+
+def build_tree_1990(rows, rnd):
+    ops = []
+    for token in rnd.TOKENS:
+        hub = f'{rnd.PREFIX}.trees.{token}.fake'
+        for r in rows:
+            values = row_values(r, SIZES_1990)
+            ops += [op(f'{hub}.upgrade_{r["row"]}', f, values[f], tag) for f, tag in ROW_FIELDS]
+        ops.append(op(f'{hub}.upgrade_0', 'links', ','.join([rnd.hub_links()] + roots(rows)), LIST))
+        ops.append(op(hub, '_upgrade_instancecount_', str(1 + len(rows)), INT))
+    return json.dumps({'schema_version': 1, 'ops': ops}, indent=1) + '\n'
+
+
+def check_1990(rows, rnd):
+    taken = {tuple(float(v) for v in u.xy): u.label for u in rnd.UPGRADES}
+    taken[(0.0, 0.0)] = 'default'
+    return [f'1990 grid cell {r["x"]},{r["y"]} ({r["code"]}) is taken by {taken[(float(r["x"]), float(r["y"]))]}'
+            for r in rows if (float(r['x']), float(r['y'])) in taken]
 
 
 def is_upgrade_key(key, names):
@@ -259,8 +299,10 @@ def sketch(rows):
 
 
 def compare(path, text, write):
-    with open(path, encoding='utf-8') as f:
-        old = f.read()
+    old = None
+    if os.path.isfile(path):
+        with open(path, encoding='utf-8') as f:
+            old = f.read()
     if old == text:
         return True
     if write:
@@ -286,11 +328,19 @@ def main():
             return 1
         print(f'stock database: {len(HUBS)} hubs, {len(rows)} rows each, no key or grid collisions')
 
+    rnd = f1990()
+    problems = check_1990(rows, rnd)
+    for p in problems:
+        print(p)
+    if problems:
+        return 1
+
     with open(TEXT, encoding='utf-8') as f:
         text_now = json.load(f)
-    outputs = [(TREE, build_tree(rows)), (TEXT, build_text(rows, text_now))]
+    outputs = [(TREE, build_tree(rows)), (TEXT, build_text(rows, text_now)), (TREE_1990, build_tree_1990(rows, rnd))]
     differ = [p for p, t in outputs if not compare(p, t, args.write)]
     print(f'{len(rows)} upgrades in {len(HUBS)} hubs, roots {", ".join(roots(rows))}')
+    print(f'1990: {len(rows)} upgrades in {len(rnd.TOKENS)} {rnd.PREFIX} hubs, hub links {rnd.hub_links()} + our roots')
     print(sketch(rows))
     for p in differ:
         print(('wrote ' if args.write else 'differs: ') + os.path.relpath(p, REPO))

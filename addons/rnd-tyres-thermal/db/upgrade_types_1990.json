@@ -1,0 +1,3941 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "_metadata_",
+   "value": "tyre_thermal",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_type",
+   "value": "Tyre Thermal",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle",
+   "value": "-12",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "_metadata_",
+   "value": "brake_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_type",
+   "value": "Brake Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_fully_upgraded",
+   "value": "45",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle",
+   "value": "25",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "_metadata_",
+   "value": "tyre_life",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_type",
+   "value": "Tyre Life",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle",
+   "value": "-14",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "_metadata_",
+   "value": "pu_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_type",
+   "value": "Power Unit Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_fully_upgraded",
+   "value": "30",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle",
+   "value": "15",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mclaren.upgrade_type_metadata",
+   "field": "_upgrade_type_metadata_instancecount_",
+   "value": "23",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "_metadata_",
+   "value": "tyre_thermal",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_type",
+   "value": "Tyre Thermal",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle",
+   "value": "-12",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "_metadata_",
+   "value": "brake_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_type",
+   "value": "Brake Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_fully_upgraded",
+   "value": "45",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle",
+   "value": "25",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "_metadata_",
+   "value": "tyre_life",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_type",
+   "value": "Tyre Life",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle",
+   "value": "-14",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "_metadata_",
+   "value": "pu_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_type",
+   "value": "Power Unit Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_fully_upgraded",
+   "value": "30",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle",
+   "value": "15",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.ferrari.upgrade_type_metadata",
+   "field": "_upgrade_type_metadata_instancecount_",
+   "value": "23",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "_metadata_",
+   "value": "tyre_thermal",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_type",
+   "value": "Tyre Thermal",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle",
+   "value": "-12",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "_metadata_",
+   "value": "brake_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_type",
+   "value": "Brake Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_fully_upgraded",
+   "value": "45",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle",
+   "value": "25",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "_metadata_",
+   "value": "tyre_life",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_type",
+   "value": "Tyre Life",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle",
+   "value": "-14",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "_metadata_",
+   "value": "pu_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_type",
+   "value": "Power Unit Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_fully_upgraded",
+   "value": "30",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle",
+   "value": "15",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.williams.upgrade_type_metadata",
+   "field": "_upgrade_type_metadata_instancecount_",
+   "value": "23",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "_metadata_",
+   "value": "tyre_thermal",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_type",
+   "value": "Tyre Thermal",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle",
+   "value": "-12",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "_metadata_",
+   "value": "brake_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_type",
+   "value": "Brake Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_fully_upgraded",
+   "value": "45",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle",
+   "value": "25",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "_metadata_",
+   "value": "tyre_life",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_type",
+   "value": "Tyre Life",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle",
+   "value": "-14",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "_metadata_",
+   "value": "pu_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_type",
+   "value": "Power Unit Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_fully_upgraded",
+   "value": "30",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle",
+   "value": "15",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.renault.upgrade_type_metadata",
+   "field": "_upgrade_type_metadata_instancecount_",
+   "value": "23",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "_metadata_",
+   "value": "tyre_thermal",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_type",
+   "value": "Tyre Thermal",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle",
+   "value": "-20",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "_metadata_",
+   "value": "brake_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_type",
+   "value": "Brake Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_fully_upgraded",
+   "value": "45",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle",
+   "value": "25",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "_metadata_",
+   "value": "tyre_life",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_type",
+   "value": "Tyre Life",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle",
+   "value": "-7",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "_metadata_",
+   "value": "pu_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_type",
+   "value": "Power Unit Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_fully_upgraded",
+   "value": "30",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle",
+   "value": "15",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.mercedes.upgrade_type_metadata",
+   "field": "_upgrade_type_metadata_instancecount_",
+   "value": "23",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "_metadata_",
+   "value": "tyre_thermal",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_type",
+   "value": "Tyre Thermal",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle",
+   "value": "-12",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "_metadata_",
+   "value": "brake_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_type",
+   "value": "Brake Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_fully_upgraded",
+   "value": "45",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle",
+   "value": "25",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "_metadata_",
+   "value": "tyre_life",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_type",
+   "value": "Tyre Life",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle",
+   "value": "-14",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "_metadata_",
+   "value": "pu_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_type",
+   "value": "Power Unit Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_fully_upgraded",
+   "value": "30",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle",
+   "value": "15",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.redbull.upgrade_type_metadata",
+   "field": "_upgrade_type_metadata_instancecount_",
+   "value": "23",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "_metadata_",
+   "value": "tyre_thermal",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_type",
+   "value": "Tyre Thermal",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle",
+   "value": "-12",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "_metadata_",
+   "value": "brake_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_type",
+   "value": "Brake Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_fully_upgraded",
+   "value": "45",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle",
+   "value": "25",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "_metadata_",
+   "value": "tyre_life",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_type",
+   "value": "Tyre Life",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle",
+   "value": "-14",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "_metadata_",
+   "value": "pu_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_type",
+   "value": "Power Unit Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_fully_upgraded",
+   "value": "30",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle",
+   "value": "15",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.force_india.upgrade_type_metadata",
+   "field": "_upgrade_type_metadata_instancecount_",
+   "value": "23",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "_metadata_",
+   "value": "tyre_thermal",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_type",
+   "value": "Tyre Thermal",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle",
+   "value": "-12",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "_metadata_",
+   "value": "brake_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_type",
+   "value": "Brake Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_fully_upgraded",
+   "value": "45",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle",
+   "value": "25",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "_metadata_",
+   "value": "tyre_life",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_type",
+   "value": "Tyre Life",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle",
+   "value": "-14",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "_metadata_",
+   "value": "pu_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_type",
+   "value": "Power Unit Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_fully_upgraded",
+   "value": "30",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle",
+   "value": "15",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.sauber.upgrade_type_metadata",
+   "field": "_upgrade_type_metadata_instancecount_",
+   "value": "23",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "_metadata_",
+   "value": "tyre_thermal",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_type",
+   "value": "Tyre Thermal",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle",
+   "value": "-20",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "_metadata_",
+   "value": "brake_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_type",
+   "value": "Brake Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_fully_upgraded",
+   "value": "45",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle",
+   "value": "25",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "_metadata_",
+   "value": "tyre_life",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_type",
+   "value": "Tyre Life",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle",
+   "value": "-7",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "_metadata_",
+   "value": "pu_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_type",
+   "value": "Power Unit Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_fully_upgraded",
+   "value": "30",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle",
+   "value": "15",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.tororosso.upgrade_type_metadata",
+   "field": "_upgrade_type_metadata_instancecount_",
+   "value": "23",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "_metadata_",
+   "value": "tyre_thermal",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_type",
+   "value": "Tyre Thermal",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle",
+   "value": "-20",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "_metadata_",
+   "value": "brake_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_type",
+   "value": "Brake Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_fully_upgraded",
+   "value": "45",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle",
+   "value": "25",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "_metadata_",
+   "value": "tyre_life",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_type",
+   "value": "Tyre Life",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle",
+   "value": "-7",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "_metadata_",
+   "value": "pu_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_type",
+   "value": "Power Unit Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_fully_upgraded",
+   "value": "30",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle",
+   "value": "15",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.gm_cadillac.upgrade_type_metadata",
+   "field": "_upgrade_type_metadata_instancecount_",
+   "value": "23",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "_metadata_",
+   "value": "tyre_thermal",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_type",
+   "value": "Tyre Thermal",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle",
+   "value": "-12",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "_metadata_",
+   "value": "brake_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_type",
+   "value": "Brake Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_fully_upgraded",
+   "value": "45",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle",
+   "value": "25",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "_metadata_",
+   "value": "tyre_life",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_type",
+   "value": "Tyre Life",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle",
+   "value": "-14",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "_metadata_",
+   "value": "pu_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_type",
+   "value": "Power Unit Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_fully_upgraded",
+   "value": "30",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle",
+   "value": "15",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.haas.upgrade_type_metadata",
+   "field": "_upgrade_type_metadata_instancecount_",
+   "value": "23",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "_metadata_",
+   "value": "tyre_thermal",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_type",
+   "value": "Tyre Thermal",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle",
+   "value": "-20",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_19",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "_metadata_",
+   "value": "brake_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_type",
+   "value": "Brake Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "performance_rating_fully_upgraded",
+   "value": "45",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle",
+   "value": "25",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_20",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "_metadata_",
+   "value": "tyre_life",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_type",
+   "value": "Tyre Life",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_base",
+   "value": "17",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "performance_rating_fully_upgraded",
+   "value": "58.8",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle",
+   "value": "-7",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_21",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "_metadata_",
+   "value": "pu_cooling",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_type",
+   "value": "Power Unit Cooling",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "upgrade_department",
+   "value": "Fake",
+   "create": true,
+   "type": 3
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "mass_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "bhp_adjustment_fully_upgraded",
+   "value": "0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_base",
+   "value": "10",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "performance_rating_fully_upgraded",
+   "value": "30",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle",
+   "value": "15",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "affect_on_vehicle_unit_type",
+   "value": "percentage",
+   "create": true,
+   "type": 4
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata.upgrade_type_metadata_22",
+   "field": "percentage_worth",
+   "value": "1",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "upgrades.1990.trees.user_defined.upgrade_type_metadata",
+   "field": "_upgrade_type_metadata_instancecount_",
+   "value": "23",
+   "create": true,
+   "type": 0
+  }
+ ]
+}

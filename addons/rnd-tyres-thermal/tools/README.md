@@ -33,7 +33,7 @@ It prints `0 problem(s)` and exits 0 when everything passes. The two rebuilt arc
 | script | does |
 |---|---|
 | `build_assets.py` | runs the steps below in order and compares the result with the shipped files |
-| `make_laptop_r_and_d5.py` | adds the `focusable.tyres` tile to `screens/laptop_r_and_d.ui`, a clone of `focusable.aero` bound to `@fake` and attached to `tile_5` |
+| `make_laptop_r_and_d5.py` | adds the `focusable.tyres` tile to `screens/laptop_r_and_d.ui`, a clone of `focusable.aero` bound to `@fake` and attached to `tile_5`, and `entry_12` (bound to `pill_12`, with the per-row signals) to the three `performance_chart` lists, whose `viewHeight` becomes 13 |
 | `make_rnd_overview5.py` | adds `tile_5` to `art/screens/career/rnd_overview.idf` and lays the tiles out 3+2; the shipped scene is `make_rnd_overview5.py stock out`, then `make_rnd_overview5.py out out2 --bottom fill` |
 | `make_bg5.py`, `bc7enc.py`, `bc7dec.mjs` | build the 5-spoke `graph_b5` backdrop from the stock `graph_bg`, encode it as BC7 and decode BC7 with Swofty UI's `bc7.js` |
 | `build_icons.py` | rasterises `../icons/tyres.svg` with `resvg`, appends the Tyres slices to `rnd_dept_icons_small`, `rnd_wheel_icon` and `rnd_department_strips` (plain and `rnd_om_xm`) in every UI archive that carries them, and writes `../icons/frames/` and `../erp/rnd_tyres_icon.json`; compares like `build_assets.py` |
@@ -78,7 +78,7 @@ The Performance page gets its own chain: `rnd_dev_potential_full.idf` (used only
 | resource | kind | change |
 |---|---|---|
 | `art/screens/career/rnd_overview.idf` | UILayout | `tile_5` under `transition_null_8`; top row `tile_1..3` at scale 0.65, bottom row `tile_4`/`tile_5` at 0.999096, both rows span x 0.0036..8.4961 with 0.2 gaps |
-| `screens/laptop_r_and_d.ui` | UIDF | the `focusable.tyres` tile and the pie wiring (below) |
+| `screens/laptop_r_and_d.ui` | UIDF | the `focusable.tyres` tile, the pie wiring (below) and a 13th performance chart row, which shows when f1-1990 at 26 cars adds `pill_12` to the chart scenes |
 | `art/components/career/rnd_tree/rnd_dev_potential_full.idf` | UILayout | `chart_1` `fileRef` and `xref` → `rnd_dev_potential5.idf`, `XrefMaterialBinding` → `rnd_dev_potential5.emb` |
 | `…/rnd_tree/rnd_dev_potential5.idf` | UILayout (new) | stock pie + `sector_5`, 72° rotations and offsets, sectors' `fileRef` and `xref` → `rnd_dev_potential_sect72.idf`, `bg` material → `rnd_dev_potential5.emb` |
 | `…/rnd_tree/rnd_dev_potential_sect72.idf` | UILayout (new) | stock sector scene, geoms → `…_sect72.idf/<elem>?context=render`, asset = md5-64(resourceid); anims use the stock clips |

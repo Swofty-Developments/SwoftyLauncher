@@ -29,6 +29,8 @@ Version 0.10.1 checks game memory through the SDK's region cache. It still runs 
 
 Version 0.11.0 blocks My Team. In My Team the addon's hooks made career creation and loading freeze at the season select until the game's hang watchdog closed the game. The addon now holds the core's career block on My Team (`swofty::career::block`, SDK API 7): the core cancels the Career menu route that starts or loads a My Team career and shows the game's own message popup. On a core older than API 7 the addon logs that My Team is not blocked and keeps working in Driver Career.
 
+Version 0.12.0 adds the Tyres department to F1 1990 careers: the 15 upgrades in the 12 `upgrades.1990` trees of the F1 1990 addon, with the 1990 one-season costs and days and no facility levels, and the four type rows with the tyre supplier's Tyre Thermal and Tyre Life values (`db/tyres_tree_1990.json`, `db/upgrade_types_1990.json`). It loads after F1 1990, whose tree hubs and metadata row counts it overrides. The three team performance charts on the R&D laptop get a 13th row for the 26-car 1990 grid. 2025 and 2026 careers are unchanged.
+
 `TESTING.md` lists what to check in game.
 
 ![Stock department icons and the Tyres icon](preview/tyres_icon_compare.png)
@@ -42,6 +44,7 @@ Version 0.11.0 blocks My Team. In My Team the addon's hooks made career creation
 | part | files | change |
 |---|---|---|
 | Database | `db/departments.json`, `db/tyres_tree.json`, `db/upgrade_types.json` | an `UpgradeDepartmentEntry_4` row (`department = Fake`, department code 4) cloned from Durability; the 15 upgrades in all 46 `trees.<team>.fake` containers, the branch roots linked from the tree hub; `upgrade_type_metadata_19..22` in all 46 metadata tables |
+| F1 1990 | `db/tyres_tree_1990.json`, `db/upgrade_types_1990.json` | the same 15 upgrades in the 12 `upgrades.1990.trees.<token>.fake` hubs, linked after F1 1990's five roots; `upgrade_type_metadata_19..22` in the 12 1990 metadata tables. Only an F1 1990 career reads `upgrades.1990` |
 | Text | `assets/text.json` | the department name and description, the four type labels, and the upgrade names and descriptions |
 | UI | `erp/rnd_fifth_pie.json`, `ui/` | the five-tile R&D > Performance overview and the five-sector pie, in `flow_career_hub.erp` and `flow_team_hq.erp` |
 | Icons | `erp/rnd_tyres_icon.json`, `icons/` | a `tyres` frame in `rnd_dept_icons_small` and `rnd_wheel_icon` and a `rnd_tyres_strip` frame in `rnd_department_strips`: one more slice in each texture array (`flow_career_hub.erp`, `flow_team_hq.erp`, `flow_r_and_d.erp`) and one more `overrides.uidb` entry (`databases.erp`) |

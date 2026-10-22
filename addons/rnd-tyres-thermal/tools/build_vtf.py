@@ -11,6 +11,9 @@ writes both halves from stock data:
   erp/rnd_upgrade_vtf.json      replace-resource ops for both fragments in every archive that
                                 carries that VTF
   db/upgrade_types.json         one row per new type in every upgrade_type_metadata table
+  db/upgrade_types_1990.json    the same rows in the 12 `upgrades.1990.trees.<token>` metadata
+                                tables of the F1 1990 addon's career, with the tyre supplier's
+                                Tyre Thermal and Tyre Life values (AFFECT_1990)
 
 Cars: every handling VTF under f1_2026_vehicle_package and f1_2025_vehicle_package (team cars,
 fom_car*, myteam_*). Each new op only targets a parameter the car's own base section has.
@@ -41,6 +44,10 @@ GAMEDB = 'game_package/gamedatabases/gamedatabases.2025.bin'
 VTF_DIR = 'vtf'
 OPS = 'erp/rnd_upgrade_vtf.json'
 DB_OPS = 'db/upgrade_types.json'
+DB_OPS_1990 = 'db/upgrade_types_1990.json'
+F1990_TOOLS = os.path.join(os.path.dirname(common.ADDON), 'f1-1990', 'tools')
+AFFECT_1990 = {'goodyear': {'Tyre Thermal': '-12', 'Tyre Life': '-14'},
+               'pirelli': {'Tyre Thermal': '-20', 'Tyre Life': '-7'}}
 
 MUL = b'*'
 
@@ -390,7 +397,54 @@ def build_db(game, out, types):
         json.dump({'schema_version': 1, 'ops': ops}, f, indent=1)
         f.write('\n')
     report += verify_db(data, recs, ops, containers, types)
+    report += build_db_1990(get, out, types)
     return report
+
+
+def f1990():
+    if not os.path.isfile(os.path.join(F1990_TOOLS, 'rnd.py')):
+        sys.exit(f'{F1990_TOOLS}/rnd.py not found: the 1990 rows need the F1 1990 addon\'s tools next to this addon')
+    sys.path.insert(0, F1990_TOOLS)
+    import rnd
+    return rnd
+
+
+def build_db_1990(get, out, types):
+    import gamedb
+    rnd = f1990()
+    template = gamedb.fnv1a64(f'{rnd.STOCK}.trees.{rnd.TEMPLATE_TOKEN}.upgrade_type_metadata')
+    count = int(get(template, '.' + COUNT_FIELD)[1])
+    if count != 19:
+        sys.exit(f'{rnd.STOCK}.trees.{rnd.TEMPLATE_TOKEN}: {count} metadata rows, not 19')
+    models = {}
+    for i in range(count):
+        row = {f: get(template, f'.{ROW}_{i}.{f}') for f in FIELDS}
+        models[row['upgrade_type'][1]] = row
+    ops = []
+    for token, (_teams, _supplier, _works, tyres) in rnd.TOKENS.items():
+        table = f'{rnd.PREFIX}.trees.{token}.upgrade_type_metadata'
+        for k, t in enumerate(types):
+            model = models[t['model']]
+            for field in FIELDS:
+                tag, value = model[field]
+                value = {
+                    '_metadata_': t['label'],
+                    'upgrade_type': t['type'],
+                    'upgrade_department': 'Fake',
+                    'mass_adjustment_fully_upgraded': '0',
+                    'bhp_adjustment_fully_upgraded': '0',
+                    'affect_on_vehicle': AFFECT_1990[tyres].get(t['type'], t['affect']),
+                    'percentage_worth': '1',
+                }.get(field, value)
+                ops.append({'op': 'set', 'select': f'{table}.{ROW}_{count + k}', 'field': field, 'value': value,
+                            'create': True, 'type': tag})
+        ops.append({'op': 'set', 'select': table, 'field': COUNT_FIELD, 'value': str(count + len(types)),
+                    'create': True, 'type': 0})
+    with open(os.path.join(out, DB_OPS_1990), 'w') as f:
+        json.dump({'schema_version': 1, 'ops': ops}, f, indent=1)
+        f.write('\n')
+    return [f'upgrade_type_metadata 1990: {len(rnd.TOKENS)} {rnd.PREFIX} tables, rows {count} -> {count + len(types)}, '
+            f'{len(ops)} ops']
 
 
 def op_key(op):
@@ -439,7 +493,7 @@ def verify_db(data, recs, ops, containers, types):
 
 def files(root):
     found = set()
-    for rel in (OPS, DB_OPS):
+    for rel in (OPS, DB_OPS, DB_OPS_1990):
         if os.path.isfile(os.path.join(root, rel)):
             found.add(rel)
     for d, _dirs, names in os.walk(os.path.join(root, VTF_DIR)):
@@ -452,8 +506,8 @@ def main():
     common.add_game_arg(ap)
     ap.add_argument('--no-pu', action='store_true', help='leave out Power Unit Cooling (type 22)')
     ap.add_argument('--work', default=os.path.join(common.BUILD, 'vtf'), help='work folder (default: build/vtf)')
-    ap.add_argument('--write', action='store_true', help='replace the shipped vtf/, erp/rnd_upgrade_vtf.json '
-                    'and db/upgrade_types.json')
+    ap.add_argument('--write', action='store_true', help='replace the shipped vtf/, erp/rnd_upgrade_vtf.json, '
+                    'db/upgrade_types.json and db/upgrade_types_1990.json')
     a = ap.parse_args()
     types = TYPES + ([] if a.no_pu else [PU])
     shutil.rmtree(a.work, ignore_errors=True)
@@ -476,9 +530,9 @@ def main():
     if a.write:
         shutil.rmtree(os.path.join(common.ADDON, VTF_DIR), ignore_errors=True)
         shutil.copytree(os.path.join(a.work, VTF_DIR), os.path.join(common.ADDON, VTF_DIR))
-        for rel in (OPS, DB_OPS):
+        for rel in (OPS, DB_OPS, DB_OPS_1990):
             shutil.copyfile(os.path.join(a.work, rel), os.path.join(common.ADDON, rel))
-        print(f'wrote {VTF_DIR}/, {OPS} and {DB_OPS}')
+        print(f'wrote {VTF_DIR}/, {OPS}, {DB_OPS} and {DB_OPS_1990}')
         return 0
     built, shipped = files(a.work), files(common.ADDON)
     differ = [r for r in sorted(built & shipped)

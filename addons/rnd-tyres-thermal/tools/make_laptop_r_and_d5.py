@@ -3,17 +3,26 @@
 Clones focusable.aero, binds it to the --dept view-model child, attaches it to the
 --slot scene element and gives focused_department a matching event. build_pie.py
 then rebinds it from `fake` to `tyres` and adds the pie wiring.
+
+The three team performance charts get a 13th row, entry_12 bound to pill_12, for the
+26-car grid of f1-1990, which adds pill_12 to their scenes.
 """
 import argparse
 
 import common  # noqa: F401
 import pkg as P
+import uinode
 from idf import djb2
 from pkg import Arr, Obj, Val
 from uitree import is_node
 
 TAB = 'tab_content_rnd_upgrades_alt'
 GROUP = f'{TAB}.focusable'
+CHARTS = (
+    'tab_content_rnd_upgrades_in_progress.refresh_performance_chart.performance_chart',
+    f'{TAB}.performance_chart',
+    'tab_content_research_overview.perf_info.performance_chart',
+)
 
 
 def find(x, path, want):
@@ -72,6 +81,22 @@ def set_binding(props, key, dbentry):
     b.set('dbentry', Val('stri', dbentry))
 
 
+def grow_chart(doc, path, src='entry_11', new='entry_12', element='pill_12', rows=13):
+    chart = find(doc.root, [], path)
+    if chart is None:
+        raise SystemExit(f'{path} not found')
+    kids = chart.items[1].items
+    at = next(i for i, c in enumerate(kids) if is_node(c) and uinode.name(c) == src)
+    if any(is_node(c) and uinode.name(c) == new for c in kids):
+        raise SystemExit(f'{path}.{new} already exists')
+    row = uinode.clone_node(kids[at], path, new)
+    row.items[4].items[0].items[0]['debugName'].value = element
+    uinode.fix_ids(row, path)
+    kids.insert(at + 1, row)
+    uinode.copy_signals(doc.root, f'{path}.{src}', f'{path}.{new}')
+    chart.items[0].get('viewHeight')['value'].value = rows
+
+
 def build(data, dept='fake', name='tyres', slot='tile_5'):
     doc = P.Pkg(data)
     assert doc.to_bytes() == data
@@ -109,6 +134,8 @@ def build(data, dept='fake', name='tyres', slot='tile_5'):
     sig.set('to_object_name', Val('stri', f'{GROUP}.{name}'))
     sig.set('to_object', Val('ui32', djb2(f'{GROUP}.{name}')))
     events.append(ev)
+    for path in CHARTS:
+        grow_chart(doc, path)
     out = doc.to_bytes()
     check = P.Pkg(out)
     assert check.to_bytes() == out
