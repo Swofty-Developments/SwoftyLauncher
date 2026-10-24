@@ -6,9 +6,11 @@
 
 #include <d3d12.h>
 
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cwchar>
+#include <cwctype>
 #include <mutex>
 #include <string>
 #include <unordered_map>
@@ -195,6 +197,21 @@ Target target;
 std::vector<Target> retired;
 ULONGLONG started, last_check, stats_at;
 unsigned frame_count, ran, ran_total, skipped_ui, skipped_state, stats_logged;
+
+constexpr unsigned NAMED_LINES = 80, DUMPS = 6, DUMP_LINES = 160, DIAG_MINUTES = 6;
+constexpr const wchar_t *INTERESTING[] = {L"tonemap", L"output", L"final", L"hudless", L"backbuffer", L"pathtrac",
+                                          L"_pt", L"pt_", L"denois", L"upscal", L"composite", L"present",
+                                          L"display", L"post", L"lut", L"bloom", L"exposure"};
+std::vector<std::wstring> named_seen;
+unsigned dumps_left = DUMPS, diag_minutes, exec_count, tonemap_lists, back_lists;
+ULONGLONG dump_at, diag_at;
+bool dump_armed, tonemap_named;
+struct Seen {
+    ID3D12Resource *res;
+    D3D12_RESOURCE_STATES before, after;
+    D3D12_RESOURCE_DESC desc;
+};
+std::vector<Seen> dump_seen;
 
 std::string capture_dir;
 ID3D12Resource *capture_rb[2];
@@ -745,6 +762,62 @@ void log_diag(ID3D12GraphicsCommandList *list, const Mark &m)
     }
 }
 
+bool interesting(LPCWSTR name)
+{
+    if (!wcsstr(name, L"eaid://") || wcsncmp(name, UI_PREFIX, wcslen(UI_PREFIX)) == 0)
+        return false;
+    std::wstring lower(name);
+    for (auto &c : lower)
+        c = wchar_t(towlower(c));
+    for (auto *k : INTERESTING)
+        if (lower.find(k) != std::wstring::npos)
+            return true;
+    return false;
+}
+
+void log_named(ID3D12Object *o, LPCWSTR name)
+{
+    if (named_seen.size() >= NAMED_LINES ||
+        std::find(named_seen.begin(), named_seen.end(), name) != named_seen.end())
+        return;
+    ID3D12Resource *res = nullptr;
+    if (FAILED(o->QueryInterface(__uuidof(ID3D12Resource), reinterpret_cast<void **>(&res))) || !res)
+        return;
+    D3D12_RESOURCE_DESC d = res->GetDesc();
+    res->Release();
+    if (d.Dimension != D3D12_RESOURCE_DIMENSION_TEXTURE2D)
+        return;
+    named_seen.emplace_back(name);
+    swofty::log("[postfx] diag: named texture %s %llux%u fmt %d flags 0x%x", runtime::narrow(name).c_str(),
+                (unsigned long long)d.Width, d.Height, int(d.Format), unsigned(d.Flags));
+}
+
+void log_dump(ID3D12GraphicsCommandList *list, const Mark &m)
+{
+    swofty::log("[postfx] diag %u of %u: list %p writes the back buffer %p (ends in 0x%x)%s%s; the last %zu transition(s) "
+                "before it:",
+                DUMPS - dumps_left + 1, DUMPS, static_cast<void *>(list), static_cast<void *>(m.target),
+                unsigned(m.state), m.tonemap ? ", marked tonemap" : "", m.ui ? ", draws UI" : "", dump_seen.size());
+    for (auto &b : dump_seen)
+        swofty::log("[postfx]   %s %llux%u fmt %d: 0x%x -> 0x%x", name_of(b.res).c_str(),
+                    (unsigned long long)b.desc.Width, b.desc.Height, int(b.desc.Format), unsigned(b.before),
+                    unsigned(b.after));
+}
+
+void log_minute(ULONGLONG now)
+{
+    if (diag_minutes >= DIAG_MINUTES || now < diag_at)
+        return;
+    if (diag_at)
+        swofty::log("[postfx] diag: last 60 s: %u submission(s), %u list(s) marked tonemap, %u wrote the back "
+                    "buffer, %u frame(s) through the passes; tonemap output %s; off switch %s",
+                    exec_count, tonemap_lists, back_lists, ran_total, tonemap_named ? "named" : "never named",
+                    killed ? "on" : "off");
+    diag_minutes += diag_at != 0;
+    diag_at = now + 60000;
+    exec_count = tonemap_lists = back_lists = 0;
+}
+
 void on_setname(ID3D12Object *o, LPCWSTR name)
 {
     static const uint32_t probe = perf::probe("core", "postfx SetName");
@@ -769,6 +842,12 @@ void on_setname(ID3D12Object *o, LPCWSTR name)
             saw_back = true;
             swofty::log("[postfx] the game names its back buffers \"BackBuffer\"");
         }
+        if (tonemap && !tonemap_named) {
+            tonemap_named = true;
+            swofty::log("[postfx] the game named its tonemap output %p", static_cast<void *>(res));
+        }
+        if (interesting(name))
+            log_named(o, name);
         if (bits)
             watch(res, bits);
     }
@@ -779,6 +858,17 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
     static const uint32_t probe = perf::probe("core", "postfx ResourceBarrier");
     if (barriers && n && !broken) {
         perf::Scope p(probe);
+        if (dump_armed) {
+            std::lock_guard<std::recursive_mutex> g(lock);
+            for (UINT i = 0; i < n; i++) {
+                if (barriers[i].Type != D3D12_RESOURCE_BARRIER_TYPE_TRANSITION)
+                    continue;
+                if (dump_seen.size() >= DUMP_LINES)
+                    dump_seen.erase(dump_seen.begin());
+                const auto &t = barriers[i].Transition;
+                dump_seen.push_back({t.pResource, t.StateBefore, t.StateAfter, t.pResource->GetDesc()});
+            }
+        }
         bool look = false;
         for (UINT i = 0; i < n && !look; i++)
             look = barriers[i].Type == D3D12_RESOURCE_BARRIER_TYPE_TRANSITION &&
@@ -836,12 +926,29 @@ bool on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists)
     D3D12_RESOURCE_STATES state{}, hudless_state{}, later_depth_state{};
     if (lists && n && !broken) {
         std::lock_guard<std::recursive_mutex> g(lock);
+        ULONGLONG at = GetTickCount64();
+        exec_count++;
+        if (!dump_armed && dumps_left && at >= dump_at) {
+            dump_armed = true;
+            dump_seen.clear();
+        }
         if (!marks.empty()) {
             for (UINT i = 0; i < n; i++) {
                 auto it = marks.find(reinterpret_cast<ID3D12GraphicsCommandList *>(lists[i]));
                 if (it == marks.end())
                     continue;
                 Mark &m = it->second;
+                tonemap_lists += m.tonemap;
+                if (m.target) {
+                    back_lists++;
+                    if (dump_armed && dump_seen.size() >= 8) {
+                        log_dump(reinterpret_cast<ID3D12GraphicsCommandList *>(lists[i]), m);
+                        dumps_left--;
+                        dump_armed = false;
+                        dump_seen.clear();
+                        dump_at = at + 60000;
+                    }
+                }
                 if (m.tonemap && split == n) {
                     if (!diag_done) {
                         log_diag(reinterpret_cast<ID3D12GraphicsCommandList *>(lists[i]), m);
@@ -873,6 +980,7 @@ bool on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists)
         }
         frame_count++;
         ULONGLONG now = GetTickCount64();
+        log_minute(now);
         if (stats_logged < 6 && now >= stats_at && (ran || skipped_ui || skipped_state)) {
             if (stats_at)
                 swofty::log("[postfx] last 10 s: passes ran on %u frame(s); %u tonemap list(s) also drew UI and %u left "
