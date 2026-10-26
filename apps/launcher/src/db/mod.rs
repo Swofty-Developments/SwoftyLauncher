@@ -1170,13 +1170,21 @@ impl Shell {
                     let choices = choices.unwrap_or_else(|| {
                         let tracks = swofty_core::tracks::installed(&store);
                         let drivers = driver_manager::drivers(&store, &catalog);
+                        let heads = swofty_core::heads::installed(&store);
                         let refs = module
                             .fields
                             .iter()
                             .enumerate()
                             .filter(|(_, f)| matches!(f.kind, Some(Kind::Ref | Kind::RefList)))
                             .map(|(i, _)| {
-                                let c = module.choices_with(&catalog, i, scope.as_deref(), &tracks, &drivers);
+                                let c = module.choices_with(
+                                    &catalog,
+                                    i,
+                                    scope.as_deref(),
+                                    &tracks,
+                                    &drivers,
+                                    &heads,
+                                );
                                 (i, c)
                             })
                             .collect();
