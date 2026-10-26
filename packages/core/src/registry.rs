@@ -332,6 +332,15 @@ impl GameFiles for GameDir {
             .map(Some)
             .map_err(other)
     }
+
+    fn profile_heads(
+        &self,
+        profile: &str,
+    ) -> swofty_addon::Result<Option<swofty_addon::launcher::ProfileHeads>> {
+        crate::heads::for_profile(&Store::new(self.data.clone()), &self.game, profile)
+            .map(Some)
+            .map_err(other)
+    }
 }
 
 pub struct Host {

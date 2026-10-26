@@ -11,8 +11,8 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 use swofty_addon::asset::{AssetBatch, Op, Origin};
 use swofty_addon::helper::{
-    ADDON_CALLS, API_VERSION, Built, Call, Hello, HostCall, Incoming, MOVE_ADDON, RESTART, Reply, Request,
-    TASKS, Welcome,
+    ADDON_CALLS, API_VERSION, Built, Call, Hello, HostCall, Incoming, MOVE_ADDON, PROFILE_HEADS, RESTART,
+    Reply, Request, TASKS, Welcome,
 };
 use swofty_addon::launcher::{
     Addon, BuildCx, Claim, CommandSpec, Cx, Importer, ProfileInfo, Progress, Summary,
@@ -476,6 +476,9 @@ fn host_calls(cx: &Cx) -> Vec<String> {
         None => Vec::new(),
     };
     calls.push(TASKS);
+    if cx.game.is_some() {
+        calls.push(PROFILE_HEADS);
+    }
     calls.into_iter().map(String::from).collect()
 }
 
@@ -520,6 +523,10 @@ fn host_call(cx: &Cx, call: HostCall) -> std::result::Result<Value, String> {
             Some(g) => g
                 .profile_tracks(&cx.profile.name)
                 .and_then(|t| serde_json::to_value(t).map_err(|e| swofty_addon::Error::Other(e.to_string()))),
+            None => Ok(Value::Null),
+        },
+        HostCall::ProfileHeads => match cx.game {
+            Some(g) => g.profile_heads(&cx.profile.name).and_then(to_value),
             None => Ok(Value::Null),
         },
         HostCall::Addons => addons().and_then(|a| a.list()).and_then(to_value),
@@ -991,7 +998,10 @@ read -r l
             .map(|l| serde_json::from_str(l).unwrap())
             .collect();
         assert_eq!(received[0]["params"]["launcher"], env!("CARGO_PKG_VERSION"));
-        assert_eq!(received[0]["params"]["host_calls"], serde_json::json!(["tasks"]));
+        assert_eq!(
+            received[0]["params"]["host_calls"],
+            serde_json::json!(["tasks", PROFILE_HEADS])
+        );
         let game_dir = root.join("F1 25");
         assert_eq!(received[2]["result"], game_dir.to_string_lossy().as_ref());
         assert_eq!(

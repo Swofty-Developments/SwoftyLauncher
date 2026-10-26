@@ -607,6 +607,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             }
         }
     }
+    let mut head_puts = crate::heads::Puts::default();
     for id in &resolved.order {
         let m = &addons[id];
         hasher.update(format!("{id}@{};", m.version));
@@ -653,10 +654,15 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                     .retain(|op| !matches!(op, AssetOp::Erp(_) | AssetOp::Warn { .. }));
             }
         }
+        let roots = |root: Root| source_dir(store, id, root);
         for (kind, file) in files {
+            for op in &file.ops {
+                head_puts.op(id, op, &roots);
+            }
             planner.push_file(&origin, kind, file);
         }
         for op in declared {
+            head_puts.op(id, &op, &roots);
             planner.push(Op {
                 op,
                 origin: origin.clone(),
@@ -694,6 +700,9 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             }
             planner.add_fields(id, batch.fields);
             for op in ops {
+                head_puts.op(&op.origin.addon, &op.op, &|root| {
+                    source_dir(store, &op.origin.addon, root)
+                });
                 planner.push(op);
             }
         }
@@ -730,6 +739,22 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             built.warnings.push(format!(
                 "{id}: {pending} UI operation file(s) skipped; that stage is not built yet"
             ));
+        }
+    }
+    if head_puts.pending() {
+        let path = original(&store.root, game, GVDB);
+        let stock = crate::heads::labels(&Gvdb::parse(&std::fs::read(&path).map_err(io_err(&path))?)?);
+        let added = crate::heads::ops(&head_puts.new_heads(&stock), &stock, head_puts.registered());
+        hasher.update(serde_json::to_vec(&added.ops).expect("serialisable"));
+        let name = |id: &str| addons.get(id).map_or(id, |m| m.name.as_str()).to_owned();
+        built
+            .lines
+            .extend(added.lines.iter().map(|(id, l)| format!("{}: {l}", name(id))));
+        built
+            .warnings
+            .extend(added.warnings.iter().map(|(id, w)| format!("{}: {w}", name(id))));
+        for op in added.ops {
+            planner.push(op);
         }
     }
     let (tracks, left_out) = track_packages(store, planner.take_tracks())?;
@@ -900,6 +925,12 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                     .map_or("database", |id| addons.get(id).map_or(id, |m| m.name.as_str()));
                 built.warnings.push(t.line(by));
             }
+        }
+        for u in crate::heads::keep_wearable(&mut db, &shipped_db) {
+            let by = planner
+                .record_writer(u.key)
+                .map_or("database", |id| addons.get(id).map_or(id, |m| m.name.as_str()));
+            built.warnings.push(u.line(by));
         }
         stock_removals = planner.take_stock_removals();
         for (id, n) in &stock_removals {
@@ -2657,6 +2688,313 @@ mod tests {
         let out = Gvdb::parse(&std::fs::read(&built.plan.data[GVDB]).unwrap()).unwrap();
         assert_eq!(out.get_text(&count).as_deref(), Some("2"));
         assert_eq!(out.get_text(&second).as_deref(), Some("rw_bahrain"));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn adds_a_driver_head_row_and_its_groups_for_a_head_archive_no_row_names() {
+        use swofty_formats::gvdb::Record;
+        if loader_dir().is_some() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("swofty-build-heads-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        let rows = "entrants.animation.driver_heads.driver_head";
+        let stock_heads = [
+            ("lando_norris", "79", "male_driver", "False"),
+            ("kimi_raikkonen", "45", "male_driver", "False"),
+            ("male_ls222", "198", "male_ea", "True"),
+            ("female_ls112", "214", "female_ea", "True"),
+        ];
+        let mut records = vec![Record::new(
+            "entrants.animation.driver_heads._driver_head_instancecount_",
+            0,
+            stock_heads.len().to_string(),
+        )];
+        for (i, (label, id, folder, custom)) in stock_heads.iter().enumerate() {
+            let female = folder.starts_with("female");
+            let model =
+                format!("eaid://[CHARACTER_PACKAGE]/heads/{folder}/{label}/idf/{label}_rig_head_morph_v1");
+            let (model, female_rig) = match female {
+                true => (String::new(), model),
+                false => (model, String::new()),
+            };
+            let body = if female { "generic_female" } else { "generic_male" };
+            for (field, tag, value) in [
+                ("_metadata_", 2, *label),
+                ("asset_group_path_format", 4, "driver_head_format"),
+                (
+                    "asset_group_path_format_female_on_male_rig",
+                    4,
+                    "driver_head_format_female_male_rig",
+                ),
+                ("available_for_customisation", 5, *custom),
+                ("body_type", 4, body),
+                ("esports_name", 2, ""),
+                ("face_morph_asset_group_path_format", 4, "face_morph_format"),
+                (
+                    "face_morph_asset_group_path_format_female_on_male_rig",
+                    4,
+                    "face_morph_format_female_male_rig",
+                ),
+                ("has_morph_data", 5, "True"),
+                ("model_path", 2, model.as_str()),
+                ("model_path_female_rig", 2, female_rig.as_str()),
+                ("stat_id", 0, *id),
+            ] {
+                records.push(Record::new(&format!("{rows}_{i}.{field}"), tag, value));
+            }
+        }
+        records.extend([
+            Record::new("entrants.drivers._driver_instancecount_", 0, "1"),
+            Record::new("entrants.drivers.driver_0._metadata_", 2, "lando_norris"),
+            Record::new("entrants.drivers.driver_0.head", 4, "lando_norris"),
+        ]);
+        let stock = Gvdb { records };
+        std::fs::write(dir.join(GVDB), stock.to_bytes()).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir: dir.clone(),
+            user_reg: None,
+        };
+        let store = Store::new(root.join("data"));
+        let heads = "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads";
+        let morphs = "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses";
+        let model_in = |folder: &str, label: &str, rig: &str| {
+            archive_of(
+                "GfxModelRes",
+                &[&format!(
+                    "eaid://character_package/heads/{folder}/{label}/idf/{label}_rig_head_morph_v1{rig}.idf?model"
+                )],
+                1,
+            )
+        };
+        let model = |label: &str| model_in("male_driver", label, "");
+        let install = |id: &str, name: &str, files: &[(&str, Vec<u8>)], extra: &str| {
+            let src = root.join("src").join(id);
+            std::fs::create_dir_all(src.join("files")).unwrap();
+            let mut ops: Vec<String> = Vec::new();
+            for (i, (target, bytes)) in files.iter().enumerate() {
+                std::fs::write(src.join(format!("files/{i}.erp")), bytes).unwrap();
+                ops.push(format!(
+                    r#"{{"op":"file.put","source":"files/{i}.erp","target":"{target}"}}"#
+                ));
+            }
+            if !extra.is_empty() {
+                ops.push(extra.to_owned());
+            }
+            std::fs::write(
+                src.join("swofty.json"),
+                format!(
+                    r#"{{ "schema_version": 1, "id": "{id}", "name": "{name}", "version": "1.0.0", "author": "t",
+                         "compat": {{ "game": "f1_25" }}, "operations": {{ "assets": ["ops.json"] }} }}"#
+                ),
+            )
+            .unwrap();
+            std::fs::write(
+                src.join("ops.json"),
+                format!(r#"{{ "schema_version": 1, "ops": [{}] }}"#, ops.join(",")),
+            )
+            .unwrap();
+            store.install_addon(&src).unwrap();
+            store
+                .update_profile("default", |p| p.set_enabled(id, true))
+                .unwrap();
+        };
+        install(
+            "mod.rio",
+            "Rio facemod",
+            &[
+                (&format!("{heads}/rio_haryanto.erp"), model("rio_haryanto")),
+                (
+                    &format!("{morphs}/rio_haryanto.erp"),
+                    archive_of("AnimSet", &["x"], 2),
+                ),
+                (&format!("{heads}/nomodel.erp"), archive(&["x"], 3)),
+                (&format!("{heads}/lando_norris.erp"), model("lando_norris")),
+            ],
+            "",
+        );
+        install(
+            "mod.amy",
+            "Amy facemod",
+            &[
+                (&format!("{heads}/amy.erp"), model_in("female_driver", "amy", "")),
+                (
+                    &format!("{heads}/amy_malerig.erp"),
+                    model_in("female_driver", "amy", "_malerig"),
+                ),
+                (&format!("{morphs}/amy.erp"), archive_of("AnimSet", &["x"], 4)),
+                (
+                    &format!("{morphs}/amy_malerig.erp"),
+                    archive_of("AnimSet", &["x"], 5),
+                ),
+            ],
+            "",
+        );
+        install(
+            "t.own",
+            "Own rows",
+            &[(&format!("{heads}/own_head.erp"), model("own_head"))],
+            &format!(
+                r#"{{"op":"db.add-row","table":"entrants.animation.driver_heads","from":"{rows}[_metadata_=kimi_raikkonen]","set":{{"_metadata_":"own_head"}}}}"#
+            ),
+        );
+        install(
+            "t.pick",
+            "Pick",
+            &[],
+            r#"{"op":"db.set","select":"entrants.drivers.driver[_metadata_=lando_norris]","field":"head","value":"rio_haryanto"}"#,
+        );
+
+        let built = build(&store, "default", &game).unwrap();
+        let archive_path = format!("{heads}/rio_haryanto.erp");
+        for line in [
+            format!(
+                "Rio facemod: adds driver head rio_haryanto (male, copied from male_ls222) for {archive_path} and registers 2 asset group(s)"
+            ),
+            format!(
+                "Amy facemod: adds driver head amy (female, copied from female_ls112) for {heads}/amy.erp and registers 4 asset group(s)"
+            ),
+        ] {
+            assert!(built.lines.contains(&line), "{line}: {:?}", built.lines);
+        }
+        assert!(
+            built.warnings.contains(&format!(
+                "Rio facemod: {heads}/nomodel.erp gets no driver head row: it holds no head model"
+            )),
+            "{:?}",
+            built.warnings
+        );
+        assert!(
+            !built.warnings.iter().any(|w| w.contains("side-data")),
+            "{:?}",
+            built.warnings
+        );
+        assert_eq!(
+            built
+                .lines
+                .iter()
+                .filter(|l| l.contains("adds driver head"))
+                .count(),
+            2
+        );
+
+        let out = Gvdb::parse(&std::fs::read(&built.plan.data[GVDB]).unwrap()).unwrap();
+        let n: usize = out
+            .get_text("entrants.animation.driver_heads._driver_head_instancecount_")
+            .unwrap()
+            .parse()
+            .unwrap();
+        assert_eq!(n, 7);
+        let field_of = |label: &str, f: &str| {
+            let row = (0..n)
+                .find(|i| out.get_text(&format!("{rows}_{i}._metadata_")).as_deref() == Some(label))
+                .unwrap_or_else(|| panic!("a {label} row"));
+            out.get_text(&format!("{rows}_{row}.{f}")).unwrap_or_default()
+        };
+        let field = |f: &str| field_of("rio_haryanto", f);
+        assert_eq!(
+            field("model_path"),
+            "eaid://[CHARACTER_PACKAGE]/heads/male_driver/rio_haryanto/idf/rio_haryanto_rig_head_morph_v1"
+        );
+        assert_eq!(field("model_path_female_rig"), "");
+        assert_eq!(field("has_morph_data"), "True");
+        assert_eq!(field("body_type"), "generic_male");
+        assert_eq!(field("available_for_customisation"), "False");
+        assert_eq!(
+            field_of("amy", "model_path"),
+            "eaid://[CHARACTER_PACKAGE]/heads/female_driver/amy/idf/amy_rig_head_morph_v1_malerig"
+        );
+        assert_eq!(
+            field_of("amy", "model_path_female_rig"),
+            "eaid://[CHARACTER_PACKAGE]/heads/female_driver/amy/idf/amy_rig_head_morph_v1"
+        );
+        assert_eq!(field_of("amy", "body_type"), "generic_female");
+        let ids: BTreeSet<String> = (0..n)
+            .filter_map(|i| out.get_text(&format!("{rows}_{i}.stat_id")))
+            .collect();
+        assert_eq!(ids.len(), n, "every head keeps its own id: {ids:?}");
+
+        let groups = |addon: &str| -> Vec<(String, Option<String>, Option<String>)> {
+            built
+                .waiting
+                .iter()
+                .filter_map(|op| match &op.op {
+                    AssetOp::Group(GroupOp::Register {
+                        group, erp, template, ..
+                    }) if op.origin.addon == addon => Some((group.clone(), erp.clone(), template.clone())),
+                    _ => None,
+                })
+                .collect()
+        };
+        let g = "asset_groups/animation_package/scenes/cinematics/drivers";
+        assert_eq!(
+            groups("mod.rio"),
+            [
+                (
+                    format!("{g}/heads/rio_haryanto.assetgroup"),
+                    Some(archive_path.clone()),
+                    Some(format!("{g}/heads/lando_norris.assetgroup"))
+                ),
+                (
+                    format!("{g}/morph_poses/rio_haryanto.assetgroup"),
+                    Some(format!("{morphs}/rio_haryanto.erp")),
+                    Some(format!("{g}/morph_poses/lando_norris.assetgroup"))
+                ),
+            ]
+        );
+        let amy: Vec<String> = groups("mod.amy")
+            .into_iter()
+            .map(|(group, _, template)| format!("{group} < {}", template.unwrap_or_default()))
+            .collect();
+        assert_eq!(
+            amy,
+            [
+                format!("{g}/heads/amy.assetgroup < {g}/heads/female_ls493.assetgroup"),
+                format!("{g}/heads/amy_malerig.assetgroup < {g}/heads/female_ls493_malerig.assetgroup"),
+                format!("{g}/morph_poses/amy.assetgroup < {g}/morph_poses/female_ls493.assetgroup"),
+                format!(
+                    "{g}/morph_poses/amy_malerig.assetgroup < {g}/morph_poses/female_ls493_malerig.assetgroup"
+                ),
+            ]
+        );
+
+        let listed = crate::heads::for_profile(&store, &game, "default").unwrap().heads;
+        let labels: Vec<&str> = listed.iter().map(|h| h.label.as_str()).collect();
+        assert_eq!(labels, ["amy", "lando_norris", "own_head", "rio_haryanto"]);
+        let rio = listed.iter().find(|h| h.label == "rio_haryanto").unwrap();
+        assert_eq!(rio.addon.as_deref(), Some("mod.rio"));
+        assert_eq!(rio.addon_name.as_deref(), Some("Rio facemod"));
+        assert!(!rio.female);
+        assert!(listed.iter().find(|h| h.label == "amy").unwrap().female);
+        assert_eq!(crate::heads::installed(&store).len(), 4);
+        store
+            .update_profile("default", |p| p.set_enabled("mod.rio", false))
+            .unwrap();
+        let listed = crate::heads::for_profile(&store, &game, "default").unwrap().heads;
+        assert_eq!(
+            listed.iter().map(|h| h.label.as_str()).collect::<Vec<_>>(),
+            ["amy", "own_head"]
+        );
+
+        let lando = "entrants.drivers.driver_0.head";
+        assert_eq!(out.get_text(lando).as_deref(), Some("rio_haryanto"));
+        assert!(!built.warnings.iter().any(|w| w.contains("wears head")));
+        let built = build(&store, "default", &game).unwrap();
+        assert!(
+            built.warnings.contains(
+                &"Pick: lando_norris wears head rio_haryanto, which no addon on in this profile adds, so it keeps the game's head lando_norris"
+                    .to_owned()
+            ),
+            "{:?}",
+            built.warnings
+        );
+        let out = Gvdb::parse(&std::fs::read(&built.plan.data[GVDB]).unwrap()).unwrap();
+        assert_eq!(out.get_text(lando).as_deref(), Some("lando_norris"));
         std::fs::remove_dir_all(&root).ok();
     }
 

@@ -16,6 +16,7 @@ pub mod disk;
 pub mod ea_app;
 pub mod erpbuild;
 pub mod exe_version;
+pub mod heads;
 pub mod helper;
 pub mod import;
 pub mod install;

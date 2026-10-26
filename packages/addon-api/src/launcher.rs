@@ -144,6 +144,30 @@ pub trait GameFiles: Send + Sync {
         let _ = profile;
         Ok(None)
     }
+
+    fn profile_heads(&self, profile: &str) -> Result<Option<ProfileHeads>> {
+        let _ = profile;
+        Ok(None)
+    }
+}
+
+/// The driver heads the profile's addons put that drivers can wear: ones an
+/// addon adds a row for, and ones the build adds a row for.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ProfileHeads {
+    #[serde(default)]
+    pub heads: Vec<ProfileHead>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ProfileHead {
+    pub label: String,
+    #[serde(default)]
+    pub addon: Option<String>,
+    #[serde(default)]
+    pub addon_name: Option<String>,
+    #[serde(default)]
+    pub female: bool,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
