@@ -228,6 +228,7 @@ While handling a request, you can call back to the launcher. Include an `id` whe
 | `game_status` *(1.0.10)* | — | `{ running, pid, since, session }` |
 | `steam_save_dir` *(1.0.10)* | — | `<steam>/userdata/<steamid3>/3059520/remote/`, or `null` |
 | `profile_tracks` *(1.0.12)* | — | the tracks in the active profile's last build, or `null` ([Profile tracks](#profile-tracks)) |
+| `profile_heads` *(1.5.12)* | — | the driver heads the active profile's addons put, or `null` ([Profile heads](#profile-heads)) |
 | `addons` | — | the installed addons ([Managing addons](#managing-addons)) |
 | `install_addon` | `{ path }` | the addon it installed |
 | `set_addon_enabled` | `{ id, on }` | `null`, or an error on the vanilla profile |
@@ -285,6 +286,22 @@ While handling a request, you can call back to the launcher. Include an `id` whe
 | `playable` | `true` when the `2025` or `2026` content set lists the track for Grand Prix. |
 | `modded` | `true` when a track package in this build added or filled the row. |
 | `name`, `addon` | The package's `track_name` and the addon that added it, for a modded track. |
+
+#### Profile heads {#profile-heads}
+
+`profile_heads` lists the driver heads that the addons on in the active profile put with `file.put`, at `2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/<label>.erp`, that drivers can wear: a head with a row in the game or an addon's `add-row`, or one whose archive holds a head model, which the build adds a row for ([Driver heads](./runtime-assets#driver-heads)). It reads the addons' op files, so it needs no build. It is `null` when no game is found. A launcher lists `profile_heads` in hello's `host_calls` when it answers it.
+
+```json
+{ "heads": [
+  { "label": "rio_haryanto", "addon": "mod.rio-haryanto-facemod", "addon_name": "Rio_Haryanto_facemod", "female": false }
+] }
+```
+
+| Field | Value |
+|---|---|
+| `label` | The head's label, the value a driver's `head` takes. |
+| `addon`, `addon_name` | The addon that puts the head archive, and its name. |
+| `female` | `true` for a female head. |
 
 #### Managing addons {#managing-addons}
 

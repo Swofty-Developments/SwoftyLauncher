@@ -22,7 +22,7 @@ Open **Driver Manager** and press **Add driver**. Set:
 | First and last name | Up to 24 characters each. **Surname first** shows the name as "LAST First". |
 | Code | 3 letters, A to Z, unique among your drivers |
 | Number | 1 to 99 |
-| Nationality, head, helmet, suit, gloves, pose, podium emote | The game's own choices, with previews made from your copy of the game. Heads are generic, or look like a real driver. Heads and kit that aren't installed aren't offered. A head or kit that an addon in the profile installs, such as one from More Driver Models, is offered with the addon's name after it. |
+| Nationality, head, helmet, suit, gloves, pose, podium emote | The game's own choices, with previews made from your copy of the game. Heads are generic, or look like a real driver. Heads and kit that aren't installed aren't offered. A head or kit that an addon in the profile installs, such as one from More Driver Models, is offered with the addon's name after it, and so is a head an addon adds to the game, such as an imported [face mod](/using/mods#face-mods). |
 | Commentary name | The surname the commentators say, or none |
 | Ratings | Experience, racecraft, awareness, pace and focus, each with a start and a peak value from 0 to 100. The game sets the starting focus itself and moves it with form; the focus values are only a guide. |
 | F1 seasons completed, garage slot preference | As on the game's own drivers |
