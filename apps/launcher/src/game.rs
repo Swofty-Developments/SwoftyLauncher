@@ -9,6 +9,7 @@ use swofty_core::copies::{self, Found, GameCopy};
 use swofty_core::crash::{LogScan, StartFailure, Symbols, fatal_name};
 use swofty_core::install::{Game, Source};
 use swofty_core::launch;
+use swofty_core::multiplayer::bridge::{ARMED, armed_env};
 use swofty_core::process::{GameProcess, game_processes};
 use swofty_core::quarantine;
 use swofty_core::recovery::{self, Blocked, Notice, Scope, SessionLock};
@@ -220,7 +221,13 @@ pub struct Launch {
 }
 
 impl Launch {
-    pub fn start(store: &Store, profile: &str, install: &Install, mode: LaunchMode) -> Result<Self, String> {
+    pub fn start(
+        store: &Store,
+        profile: &str,
+        install: &Install,
+        mode: LaunchMode,
+        netplay: bool,
+    ) -> Result<Self, String> {
         let cli = cli_path(store).ok_or("the swofty command was not found next to the launcher")?;
         let at = now_secs();
         let log = store.root.join("state/launcher-run.log");
@@ -240,6 +247,9 @@ impl Launch {
             c.arg("--vr");
         }
         c.arg("--game").arg(&install.dir);
+        if netplay {
+            c.envs(armed_env(ARMED));
+        }
         #[cfg(windows)]
         std::os::windows::process::CommandExt::creation_flags(&mut c, 0x0800_0000);
         let child = c

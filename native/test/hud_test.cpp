@@ -7,7 +7,9 @@
 #include "hud_guard.hpp"
 #include "hud_png.hpp"
 
+#include <cstddef>
 #include <cstdio>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -207,6 +209,102 @@ static void test_guard()
     CHECK(removal_after_draw(20000, 10000) && !removal_after_draw(20001, 10000), "the window is 10 s");
 }
 
+// Models d3d12hooks::exec_original: the hook sits on the native queue's ExecuteCommandLists (vtable
+// slot 10) and its trampoline runs that body, which reads this as a native queue. Streamline's queue
+// proxy (vtable, refcount, native queue at +0x10) is what a swapchain created through Streamline's
+// factory records as its queue.
+namespace dispatch {
+
+constexpr size_t EXEC = 10;
+constexpr uint32_t NATIVE = 0x51554555;
+
+struct NativeQueue {
+    const void *const *vt;
+    uint32_t magic;
+    unsigned executed;
+};
+
+struct ProxyQueue {
+    const void *const *vt;
+    uint32_t refs;
+    NativeQueue *base;
+};
+
+using ExecFn = void (*)(void *self, unsigned n);
+
+unsigned misread;
+
+void native_exec(void *self, unsigned n)
+{
+    uint32_t magic;
+    memcpy(&magic, static_cast<const char *>(self) + offsetof(NativeQueue, magic), sizeof magic);
+    if (magic != NATIVE) {
+        misread++;
+        return;
+    }
+    static_cast<NativeQueue *>(self)->executed += n;
+}
+
+void through_vtable(void *self, unsigned n)
+{
+    reinterpret_cast<ExecFn>((*static_cast<const void *const *const *>(self))[EXEC])(self, n);
+}
+
+void proxy_exec(void *self, unsigned n)
+{
+    through_vtable(static_cast<ProxyQueue *>(self)->base, n);
+}
+
+void other_hook(void *self, unsigned n)
+{
+    native_exec(self, n);
+}
+
+const void *hooked()
+{
+    return reinterpret_cast<const void *>(&native_exec);
+}
+
+void exec_original(void *q, unsigned n)
+{
+    if (hud::guard::vtable_slot_is(q, EXEC, hooked()))
+        native_exec(q, n);
+    else
+        through_vtable(q, n);
+}
+
+}
+
+static void test_original_dispatch()
+{
+    using namespace dispatch;
+    const void *native_vt[EXEC + 1] = {}, *proxy_vt[EXEC + 1] = {}, *rehooked_vt[EXEC + 1] = {};
+    native_vt[EXEC] = hooked();
+    proxy_vt[EXEC] = reinterpret_cast<const void *>(&proxy_exec);
+    rehooked_vt[EXEC] = reinterpret_cast<const void *>(&other_hook);
+    NativeQueue game{native_vt, NATIVE, 0}, rehooked{rehooked_vt, NATIVE, 0};
+    ProxyQueue proxy{proxy_vt, 8, &game};
+
+    CHECK(hud::guard::vtable_slot_is(&game, EXEC, hooked()), "a native queue runs the hooked body");
+    CHECK(!hud::guard::vtable_slot_is(&proxy, EXEC, hooked()), "streamline's queue proxy does not");
+    CHECK(!hud::guard::vtable_slot_is(&rehooked, EXEC, hooked()), "a queue whose slot another hook moved does not");
+    CHECK(!hud::guard::vtable_slot_is(nullptr, EXEC, hooked()) && !hud::guard::vtable_slot_is(&game, EXEC, nullptr),
+          "no object or no hook is never the hooked body");
+
+    misread = 0;
+    native_exec(&proxy, 1);
+    CHECK(misread == 1 && game.executed == 0,
+          "the hooked body given the proxy reads the proxy as a queue (the crash at Present)");
+
+    misread = 0;
+    exec_original(&game, 1);
+    exec_original(&proxy, 2);
+    exec_original(&rehooked, 4);
+    CHECK(misread == 0, "exec_original never hands the hooked body anything but a native queue");
+    CHECK(game.executed == 3, "the proxy's lists reach the native queue behind it");
+    CHECK(rehooked.executed == 4, "a queue hooked by someone else still runs, through its vtable");
+}
+
 static void test_png(const char *out)
 {
     using namespace hud::png;
@@ -264,6 +362,7 @@ int main(int argc, char **argv)
     test_build_dispatch();
     test_image_registry();
     test_guard();
+    test_original_dispatch();
     test_png(argc > 1 ? argv[1] : nullptr);
     if (failures)
         printf("\n%d check(s) FAILED\n", failures);

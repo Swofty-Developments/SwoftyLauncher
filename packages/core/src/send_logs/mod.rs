@@ -29,6 +29,8 @@ pub const LOADER_DIR: &str = "swofty";
 pub const KEPT_DIR: &str = "logs";
 pub const KEPT: usize = 10;
 pub const LAUNCH_LOGS: [&str; 2] = ["state/launcher-run.log", "state/wrapper-run.log"];
+pub const NET_TRACE: &str = "swofty/net-trace.log";
+pub const NET_TRACE_CAP: u64 = 16 << 20;
 
 const REDACTED: &str = "[redacted]";
 const SESSION_DEPTH: usize = 3;
@@ -152,6 +154,8 @@ pub struct Report {
     pub name: String,
     pub message: String,
     pub game: GameInfo,
+    /// The running room's state, already redacted, sent as `multiplayer/session.json`.
+    pub room: Option<Value>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -235,7 +239,11 @@ impl Collector {
     }
 
     fn file(&mut self, path: String, from: &Path, redact: Option<fn(&str) -> String>) {
-        let cap = self.limits.file.min(self.budget());
+        self.file_capped(path, from, redact, self.limits.file);
+    }
+
+    fn file_capped(&mut self, path: String, from: &Path, redact: Option<fn(&str) -> String>, file_cap: u64) {
+        let cap = file_cap.min(self.budget());
         let len = match std::fs::metadata(from) {
             Ok(m) => m.len(),
             Err(e) => return self.skipped.push(format!("{path}: {e}")),
@@ -339,6 +347,23 @@ impl Bundle {
                 }
             }
         }
+        if let Some(game) = &report.game.dir {
+            let status = game.join(crate::multiplayer::bridge::STATUS_FILE);
+            if status.is_file() {
+                c.file("game/netplay.json".into(), &status, None);
+            }
+            let trace = game.join(NET_TRACE);
+            if trace.is_file() {
+                c.file_capped("game/net-trace.log".into(), &trace, None, NET_TRACE_CAP);
+            }
+        }
+        if let Some(room) = &report.room {
+            let mut room = room.clone();
+            redact_json(&mut room);
+            let text =
+                crate::multiplayer::diag::scrub(&serde_json::to_string_pretty(&room).unwrap_or_default());
+            c.push("multiplayer/session.json".into(), text.into_bytes(), None);
+        }
         let fallback = store.root.join(LOADER_FALLBACK);
         if !sessions
             .first()
@@ -359,7 +384,10 @@ impl Bundle {
         }
         for log in state_logs(store) {
             let name = file_name(&log);
-            c.file(format!("state/{name}"), &log, None);
+            let redact = name
+                .starts_with("multiplayer")
+                .then_some(crate::multiplayer::diag::scrub as fn(&str) -> String);
+            c.file(format!("state/{name}"), &log, redact);
         }
         let not_stock = store.root.join("state/not-stock.json");
         if not_stock.is_file() {

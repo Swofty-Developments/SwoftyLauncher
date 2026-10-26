@@ -171,6 +171,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
           {
             text: "Releases",
             items: [
+              { text: "1.5.13", link: "/releases/1.5.13" },
               { text: "1.5.12", link: "/releases/1.5.12" },
               { text: "1.5.11", link: "/releases/1.5.11" },
               { text: "1.5.10", link: "/releases/1.5.10" },
@@ -362,6 +363,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
               },
               { text: "ERP archives", link: "/reference/erp", icon: "file" },
               { text: "!pkg resources", link: "/reference/pkg", icon: "file" },
+              { text: "Assets from older F1 games", link: "/reference/old-games", icon: "file" },
               { text: "How tracks are installed", link: "/reference/installing-tracks", icon: "file" },
             ],
           },

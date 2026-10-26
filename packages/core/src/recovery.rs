@@ -110,6 +110,12 @@ impl Recovered {
                 j.id, j.changes, j.profile
             ));
             out.extend(j.drift.iter().map(ToString::to_string));
+            if !j.kept.is_empty() {
+                out.push(format!(
+                    "kept {} file(s) addons wrote, for the next session with them",
+                    j.kept.len()
+                ));
+            }
         }
         out.extend(self.swept.iter().cloned());
         out.extend(self.cleared.iter().cloned());

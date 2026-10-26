@@ -245,6 +245,7 @@ void on_flow(SwoftyContext *c)
         perf::mark("flow", name + " " + STATUS[to]);
     if (perf_on())
         perf_flow(hash, uint32_t(from), to, name);
+    runtime::netplay_flow(hash, to);
     fire(SWOFTY_EVENT_FLOW_STATE, to, from, &f);
     settle_and_publish();
 }

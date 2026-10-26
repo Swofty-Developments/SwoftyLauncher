@@ -23,6 +23,7 @@ The **baseline** records original game files. The **journal** records changes so
 | `$DATA/state/recovered.json` | The last recovery, for the launcher to announce |
 | `$DATA/state/setup.json` | The one-time setup: its version, the player's answer about other mods, when the game folder was put back, when the setup finished, and whether the first-launch notice was shown |
 | `$DATA/baseline-retired/` | The baselines the setup moved aside, until the setup finishes |
+| `$DATA/addon-storage/<id>/` | The files an addon wrote through the [storage API](/reference/std/storage) under `swofty/addons/<id>/`, between sessions |
 
 ## Checking against Steam
 
@@ -57,6 +58,8 @@ Record every change of an install in the journal, in one write, before applying 
 Restore replaced files from backups. Remove files and empty folders created by the launcher. Remove the Wine override added for the session.
 
 If a file has unexpected contents, leave it alone and report it. Never restore files from an old game build over a newer one.
+
+Before a rollback undoes a journal, the files in each `swofty/addons/<id>/` folder the journal placed files in, other than files `placed.json` or the journal records, move to `$DATA/addon-storage/<id>/`. The next install with that addon moves them back, except at a path it places and where the game folder already holds a file. A restore moves those files out of every addon folder before it removes `swofty/`.
 
 ## Free space
 

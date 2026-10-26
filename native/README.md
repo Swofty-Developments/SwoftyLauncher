@@ -85,6 +85,18 @@ native/test/run_log_fallback_test.sh
 Runs a stand-in `F1_25.exe` under Wine with `native/dist/version.dll`, first with a writable `swofty/` and then with one the game can't create files in. It checks that the loader logs in the game folder when it can, and otherwise writes `%LOCALAPPDATA%\Swofty\state\loader-fallback.log` with its attach line, the refused path and error, and the game's user, integrity level, elevation, UAC virtualization and `__COMPAT_LAYER`. CI runs it on every push.
 
 ```sh
+native/test/run_net_trace_test.sh
+```
+
+Runs a stand-in `F1_25.exe` under Wine that does what the game's UDP receive pump does: an overlapped `WSARecvFrom` waited on with `WSAWaitForMultipleEvents` and completed with `WSAGetOverlappedResult` against another socket's `sendto`, plus the other traced calls. Like the game, the stand-in imports ws2_32 through two descriptors, one of them by ordinal. Without `SWOFTY_NET_TRACE` it checks that no trace log is written and that no ws2_32 import slot or export changed. With `SWOFTY_NET_TRACE=1` (import table hooks in both descriptors, inline hooks for what is not imported) and with `SWOFTY_NET_TRACE=inline` it checks exactly which slots and exports the trace patched, that an export ws2_32 forwards to another DLL is never patched, that every call still returns what plain ws2_32 returns, with the same buffers and last error, and that `swofty/net-trace.log` has exactly one line per call (none from ws2_32 calling itself) with the socket, addresses, length, first bytes, overlapped and event, return value, error and caller. It also checks that a socket's 450 `sendto` calls log the first 200, then the 300th and 400th, and that the log stops at its size cap with a last line.
+
+```sh
+native/test/run_netplay_test.sh
+```
+
+Runs a stand-in `F1_25.exe` under Wine against the netplay bridge. The stand-in imports ws2_32 through two descriptors like the game and puts spies into its `sendto`, `recvfrom` and `GetAdaptersAddresses` import slots before the core loads, so the bridge hooks on top of them. With `SWOFTY_NETPLAY=self=1;base=<random>` it binds the game socket to 21414 through the ordinal table and checks `swofty/netplay.json`, sends to `10.77.0.2:21414` and has a helper socket at `127.0.0.1:BASE+2` answer, and checks that the reply reads as from `10.77.0.2:21414`. Through the spies it checks which destinations and sources are rewritten and which are not (this member's own number, member 0 and 255, other ports and hosts, short address lengths, failed calls), that results and last errors are kept, and that `GetAdaptersAddresses(AF_INET)` reports `10.77.0.<self>` only for the adapter the game takes, on a made-up adapter list and on the real one. Without the variable it checks that no import slot changes and no status file is written. With `SWOFTY_NETPLAY=armed`, and with a value that is not a room, it checks that the hooks are in but rewrite nothing and that `netplay.json` carries self and base 0. A last run puts the socket trace under the bridge and checks the trace logs the loopback addresses. CI runs it on every push.
+
+```sh
 native/test/run_runtime_assets_test.sh
 ```
 

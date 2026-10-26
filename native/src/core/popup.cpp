@@ -32,6 +32,9 @@
 // Every construct passes through the wrap below, which records the system pointer (the game
 // constructs messages from boot on, the online-services wait box first). Requests queue from any
 // thread and are shown from the flow tick.
+// While a launcher netplay command drives the LAN menus, the wrap hands it the LAN Game dialog and
+// the Join via IP prompt instead of queueing them (runtime::netplay_popup): the caller gets an empty
+// handle, which the handle setter and release accept, and netplay answers the response callback.
 //
 // Toasts go through the same system as hud_main messages, the queue the race HUD's central
 // notification (hud_notifications_dynamic, F1HM bound to #ui_messages.hud_main_queue.hud_main) draws.
@@ -135,6 +138,13 @@ Handle *construct_hook(void *s, Handle *out, FixedId *id, Callback *cb, const ch
                     id && swofty::mem::readable(id, sizeof(FixedId)) && id->data && swofty::mem::readable(id->data, 1)
                         ? id->data
                         : "?");
+    const char *name = id && swofty::mem::readable(id, sizeof(FixedId)) && id->data && swofty::mem::readable(id->data, 1)
+                           ? id->data
+                           : nullptr;
+    if (name && out && cb && swofty::mem::readable(cb, sizeof *cb) && runtime::netplay_popup(name, cb->fn, cb->ctx)) {
+        *out = Handle{s, nullptr};
+        return out;
+    }
     return h_construct.call<Handle *>(s, out, id, cb, a5, a6);
 }
 

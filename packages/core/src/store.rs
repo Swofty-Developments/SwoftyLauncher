@@ -79,6 +79,14 @@ impl Store {
         self.root.join("cache/addons").join(id)
     }
 
+    /// Where an Addon Browser install records the download it installed `id` from; any other
+    /// install or removal of `id` deletes it.
+    pub fn registry_install_path(&self, id: &str) -> PathBuf {
+        self.root
+            .join("state/registry-installs")
+            .join(format!("{id}.json"))
+    }
+
     pub fn profiles_dir(&self) -> PathBuf {
         self.root.join("profiles")
     }
@@ -288,7 +296,10 @@ impl Store {
         }
         let src = &crate::import::addon_root(src).unwrap_or_else(|| src.to_path_buf());
         if src.join(crate::dbedit::package::MARKER).is_file() {
-            return crate::dbedit::package::install(self, src).map(|(p, _)| p.manifest);
+            return crate::dbedit::package::install(self, src).map(|(p, _)| {
+                std::fs::remove_file(self.registry_install_path(&p.manifest.id)).ok();
+                p.manifest
+            });
         }
         let m = AddonManifest::load(src).map_err(|e| {
             let u = Unreadable::of(src, &e, launcher);
@@ -322,6 +333,7 @@ impl Store {
         if dest.exists() {
             std::fs::remove_dir_all(&dest).map_err(io_err(&dest))?;
         }
+        std::fs::remove_file(self.registry_install_path(&m.id)).ok();
         copy_dir(src, &dest)?;
         Ok(m)
     }
@@ -367,6 +379,7 @@ impl Store {
         }
         let _write = profile_write();
         std::fs::remove_dir_all(&dir).map_err(io_err(&dir))?;
+        std::fs::remove_file(self.registry_install_path(id)).ok();
         self.helpers.forget(id);
         for name in self.profile_names()? {
             let path = self.profiles_dir().join(format!("{name}.json"));

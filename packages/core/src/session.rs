@@ -466,6 +466,9 @@ pub struct LaunchRequest {
     pub profile: Option<String>,
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub apply: bool,
+    /// `SWOFTY_NETPLAY` for the game, for a wrapper Steam starts without the caller's environment.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub netplay: Option<String>,
 }
 
 pub const END_FILE: &str = "end.json";

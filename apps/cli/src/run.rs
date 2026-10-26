@@ -11,6 +11,7 @@ use swofty_core::crash::{Event, LogScan, Symbols, fatal_name};
 use swofty_core::install::{Game, Installer, PROXY, Source};
 use swofty_core::launch;
 use swofty_core::loader_check;
+use swofty_core::multiplayer::bridge::{ENV as NETPLAY_ENV, armed_env};
 use swofty_core::process::{
     descends_from, game_processes, game_running_in, games_in, steamvr_running, stop_game_in, stop_process,
 };
@@ -138,6 +139,7 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
         winedebug: Some(args.winedebug.clone()),
         profile: Some(profile.into()),
         apply: args.apply,
+        netplay: std::env::var(NETPLAY_ENV).ok().filter(|v| !v.is_empty()),
     };
     write_json(&store.root.join("state/launch.json"), &request)?;
     let mode = if args.vr {
@@ -498,6 +500,13 @@ impl Drop for Session<'_> {
                 for d in done.iter().flat_map(|r| &r.drift) {
                     info(&format!("rollback: {d}"));
                 }
+                let kept = done.iter().map(|r| r.kept.len()).sum::<usize>();
+                if kept > 0 {
+                    info(&format!(
+                        "kept {kept} file(s) addons wrote in {}",
+                        swofty_core::addon_storage::dir(&self.store.root).display()
+                    ));
+                }
             }
             Err(e) => info(&format!(
                 "rollback failed{}; the next swofty run or launcher start retries it, or run swofty restore: {e:#}",
@@ -718,6 +727,11 @@ fn play(
         .chain(library_path.map(|p| ("LD_LIBRARY_PATH", p)))
         .map(|(k, v)| (k.to_owned(), v)),
     );
+    if let Some(armed) = &request.netplay {
+        for (name, value) in armed_env(armed) {
+            game_env.entry(name.to_owned()).or_insert(value);
+        }
+    }
     // The prefix's registry override is not always what Wine reads at start,
     // so the session also names version.dll in WINEDLLOVERRIDES, which wins
     // over the registry.

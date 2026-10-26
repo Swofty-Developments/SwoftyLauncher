@@ -7,7 +7,7 @@ use crate::baseline::{
 use crate::journal::{Journal, Op, State};
 use crate::placed::{self, Placed};
 use crate::profile::VANILLA;
-use crate::{Error, Result, io_err, with_retry};
+use crate::{Error, Result, addon_storage, io_err, with_retry};
 
 pub const PROXY: &str = "version.dll";
 pub const LOADER_DIR: &str = "swofty";
@@ -168,6 +168,9 @@ pub struct RolledBack {
     pub session: bool,
     pub changes: usize,
     pub drift: Vec<Drift>,
+    /// The files addons wrote that went to `addon-storage/` in the data
+    /// folder, as game paths.
+    pub kept: Vec<String>,
 }
 
 pub struct Installer<'a> {
@@ -341,19 +344,22 @@ impl<'a> Installer<'a> {
             }
             let (id, profile, session) = (j.id.clone(), j.profile.clone(), j.session);
             let changes = j.entries.len();
-            let drift = self.rollback(j, hashes)?;
+            let (drift, kept) = self.rollback(j, hashes)?;
             out.push(RolledBack {
                 id,
                 profile,
                 session,
                 changes,
                 drift,
+                kept,
             });
         }
         Ok(out)
     }
 
-    fn rollback(&self, j: Journal, hashes: &mut Hashes) -> Result<Vec<Drift>> {
+    fn rollback(&self, j: Journal, hashes: &mut Hashes) -> Result<(Vec<Drift>, Vec<String>)> {
+        let ids = addon_storage::ids(j.entries.iter().map(|e| e.path.as_str()));
+        let kept = self.keep_storage(&ids, std::slice::from_ref(&j))?;
         let mut report = Vec::new();
         let same_build = j.build_id == self.game.identity.build_id;
         for e in j.entries.iter().rev() {
@@ -408,7 +414,27 @@ impl<'a> Installer<'a> {
         }
         placed.save(self.data)?;
         j.close()?;
-        Ok(report)
+        Ok((report, kept))
+    }
+
+    /// Move what the addons `ids` wrote through the storage API out of their
+    /// game folders to `addon-storage/` in the data folder: every file there
+    /// that neither `placed.json` nor one of `open` records the launcher
+    /// placing.
+    fn keep_storage(&self, ids: &BTreeSet<String>, open: &[Journal]) -> Result<Vec<String>> {
+        if ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        let mut managed: BTreeSet<String> = Placed::load(self.data)?.files.into_keys().collect();
+        managed.extend(
+            open.iter()
+                .flat_map(|j| j.entries.iter().map(|e| placed::key(&e.path))),
+        );
+        let mut kept = Vec::new();
+        for id in ids {
+            kept.extend(addon_storage::keep(self.data, &self.game.dir, id, &managed)?);
+        }
+        Ok(kept)
     }
 
     fn restore_original(&self, sha: &str, path: &Path) -> Result<()> {
@@ -848,6 +874,17 @@ impl<'a> Installer<'a> {
                 told = std::time::Instant::now();
             }
         }
+        let planned: BTreeSet<String> = sources.keys().map(|rel| placed::key(rel)).collect();
+        for id in addon_storage::ids(sources.keys().copied()) {
+            let moved = addon_storage::put_back(self.data, &self.game.dir, &id, &planned)?;
+            if !moved.is_empty() {
+                (self.out)(&format!(
+                    "storage: put back {} file(s) {id} wrote, from {}",
+                    moved.len(),
+                    addon_storage::addon_dir(self.data, &id).display()
+                ));
+            }
+        }
         j.commit()
     }
 
@@ -861,6 +898,8 @@ impl<'a> Installer<'a> {
         }
         let loader = self.path(LOADER_DIR);
         if loader.is_dir() {
+            let ids = addon_storage::present(&self.game.dir)?;
+            self.keep_storage(&ids, &Journal::open(self.data)?)?;
             let logs = self.data.join("sessions/orphaned-logs");
             for e in std::fs::read_dir(&loader).map_err(io_err(&loader))?.flatten() {
                 if e.path().extension().is_some_and(|x| x == "log") {

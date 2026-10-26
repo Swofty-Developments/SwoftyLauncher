@@ -24,3 +24,6 @@ mkdir -p "$OUT"
 "${PIN[@]}" zig c++ -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../../packages/sdk/include \
     -o "$OUT/era_logic_test" era_logic_test.cpp
 "$OUT/era_logic_test"
+"${PIN[@]}" zig c++ -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../../packages/sdk/include \
+    -o "$OUT/netplay_drive_test" netplay_drive_test.cpp
+"$OUT/netplay_drive_test"

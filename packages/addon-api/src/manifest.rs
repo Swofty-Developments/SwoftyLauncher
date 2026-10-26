@@ -63,6 +63,20 @@ pub struct AddonManifest {
     /// Post-process passes run on the game's picture after its tonemap and before the HUD.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub postfx: Vec<PostFx>,
+    /// Whether players in a multiplayer session must match on the addon; see
+    /// [`AddonManifest::multiplayer`] for the default.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub multiplayer: Option<Multiplayer>,
+}
+
+/// What an addon, or one of its options, is to a multiplayer session.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[serde(rename_all = "lowercase")]
+pub enum Multiplayer {
+    /// Every player needs it at the host's version, with the host's settings.
+    Gameplay,
+    /// Players may differ on it.
+    Cosmetic,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -444,6 +458,9 @@ pub struct AddonOption {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub step: Option<f64>,
     pub binds: Binds,
+    /// `cosmetic` leaves the option out of the multiplayer match of a gameplay addon.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub multiplayer: Option<Multiplayer>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
@@ -536,6 +553,27 @@ impl AddonManifest {
 
     pub fn is_builtin(&self) -> bool {
         self.id == crate::CORE_ID
+    }
+
+    /// `multiplayer` when set; otherwise cosmetic for a `helmets`, `shaders` or `performance`
+    /// addon and for one that ships only a `shader` look or `postfx` passes, and gameplay for the
+    /// rest.
+    pub fn multiplayer(&self) -> Multiplayer {
+        if let Some(m) = self.multiplayer {
+            return m;
+        }
+        let look_only = (self.shader.is_some() || !self.postfx.is_empty())
+            && self.operations == Operations::default()
+            && !self.launcher.as_ref().is_some_and(|l| l.build);
+        let cosmetic = matches!(
+            self.category,
+            Some(Category::Helmets | Category::Shaders | Category::Performance)
+        );
+        if look_only || cosmetic {
+            Multiplayer::Cosmetic
+        } else {
+            Multiplayer::Gameplay
+        }
     }
 
     pub fn validate(&self) -> Result<()> {

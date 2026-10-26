@@ -352,6 +352,14 @@ static void run_build(int movie, uint32_t start)
            ncalls, build_leak);
 }
 
+static int movie_built(void)
+{
+    for (int i = 0; i < ncalls; i++)
+        if (!strcmp(calls[i].name, "zenith_button"))
+            return 1;
+    return 0;
+}
+
 static int closes;
 
 static LRESULT CALLBACK wndproc(HWND h, UINT m, WPARAM w, LPARAM l)
@@ -798,8 +806,8 @@ static int packed_main(const char *mode)
                "no handler of the early plugins ran and no scan found anything");
     } else {
         run_build(1, 1);
-        expect_in(mode, ncalls == 4 && !strcmp(calls[1].name, "career") && calls[1].index == 3,
-               "the core's site on the home builder fires after the window stage (mod tile added)");
+        expect_in(mode, ncalls == 3 && !strcmp(calls[1].name, "career") && calls[1].index == 3 && !movie_built(),
+               "the core's site on the home builder fires after the window stage (mod tile added, movie tile skipped)");
         expect_in(mode, fake_stage_wrap() == 89, "t_packed's wrap on Fake_Stage_Wrap runs");
         expect_in(mode, fake_stage_site() == 7 && probe[41] == 1, "t_packed's site on the entry of Fake_Stage_Site runs");
         expect_in(mode, probe[44] == 1, "t_packed's on_load handler ran once");
@@ -872,7 +880,7 @@ int main(int argc, char **argv)
                HIWORD(fi->dwFileVersionLS), LOWORD(fi->dwFileVersionLS));
 
     run_build(1, 1);
-    expect(ncalls == 3 && calls[1].index == 3, "before mods load: vanilla order career=2 movie=3 world=4");
+    expect(ncalls == 3 && calls[1].index == 3 && movie_built(), "before mods load: vanilla order career=2 movie=3 world=4");
     expect(fake_handle_command(0, 0) == 1 && slot8() == 0 && fake_caller() == 1 && fake_patchable() == 1,
            "before mods load: wrap, vtable, redirect and patch targets are vanilla");
 
@@ -895,7 +903,7 @@ int main(int argc, char **argv)
         vm_thunk_register(&vc);
         expect((void *)__imp_RegisterClassExW != real_rc, "vm mode: call from a writable+exec section does not fire the trigger");
         run_build(1, 1);
-        expect(ncalls == 3, "vm mode: build after the skipped call is still vanilla");
+        expect(ncalls == 3 && movie_built(), "vm mode: build after the skipped call is still vanilla");
     }
     rc(&wc);
     HWND w = cw(0, L"EGO_WindowClass", L"F1 25", WS_OVERLAPPEDWINDOW, 0, 0, 320, 200, NULL, NULL, wc.hInstance, NULL);
@@ -911,15 +919,16 @@ int main(int argc, char **argv)
 
     run_build(1, 1);
     if (fallback)
-        expect(ncalls == 3, "fallback mode: first build before the window is visible is vanilla");
+        expect(ncalls == 3 && movie_built(), "fallback mode: first build before the window is visible is vanilla");
     if (fallback) {
         show_launch_error();
         run_build(1, 1);
-        expect(ncalls == 3, "fallback mode: a dialog before the window does not load addons");
+        expect(ncalls == 3 && movie_built(), "fallback mode: a dialog before the window does not load addons");
     }
     else
-        expect(ncalls == 4 && calls[1].index == 3,
-               "first home build right after window creation already has the mod tile (career=2, mod=3)");
+        expect(ncalls == 3 && calls[1].index == 3 && !movie_built(),
+               "first home build right after window creation already has the mod tile and no movie tile (career=2, "
+               "mod=3, world=4)");
 
     ShowWindow(w, SW_SHOW);
     for (DWORD t0 = GetTickCount(); GetTickCount() - t0 < 1500;) {
@@ -930,11 +939,11 @@ int main(int argc, char **argv)
     }
 
     run_build(1, 1);
-    expect(ncalls == 4, "hooked build with movie: 4 adder calls");
-    expect(ncalls == 4 && !strcmp(calls[1].name, "career") && calls[0].index == 2 && calls[1].index == 3 &&
-               calls[2].index == 4 && calls[3].index == 5,
-           "hooked: career=2, mod tile=3, movie=4, world=5");
-    expect(out_r12 == 4 && out_r15 == 5, "hooked: r12/r15 renumbered (4/5)");
+    expect(ncalls == 3 && !movie_built(), "hooked build with the movie flag set: movie tile skipped, 3 adder calls");
+    expect(ncalls == 3 && !strcmp(calls[1].name, "career") && !strcmp(calls[2].name, "f1_world") && calls[0].index == 2 &&
+               calls[1].index == 3 && calls[2].index == 4,
+           "hooked: career=2, mod tile=3, world=4");
+    expect(out_r12 == 3 && out_r15 == 4, "hooked: r12/r15 renumbered (3/4)");
     expect(build_leak == 0, "hooked build, populate and getAction leave no game string reference behind "
                             "(replaced Career id released, title/description/action strings released)");
     expect(probe[1] == 3 && probe[6] >= 1, "site chain: t_chain_a (priority -10) runs after core and sees the r12 it advanced");

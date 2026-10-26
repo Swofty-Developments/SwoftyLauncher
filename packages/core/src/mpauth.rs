@@ -251,7 +251,7 @@ fn base64url(bytes: &[u8]) -> String {
     out
 }
 
-fn getrandom(buf: &mut [u8]) {
+pub(crate) fn getrandom(buf: &mut [u8]) {
     // Enough entropy for a one-shot loopback login nonce without adding a dependency:
     // RandomState is randomly seeded, mixed with the clock and a counter.
     use std::hash::{BuildHasher, Hasher, RandomState};

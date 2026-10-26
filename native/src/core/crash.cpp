@@ -20,6 +20,7 @@ namespace runtime {
 std::string load_stage();
 void on_stage(void (*fn)(int));
 void hud_fatal();
+void netplay_exit();
 }
 
 // Crash log and crash reports. The crash log writes each fatal-class exception, the top-level filter
@@ -731,6 +732,7 @@ void window_stage(int)
 void on_exit(const char *fn, UINT code)
 {
     perf::flush(fn);
+    runtime::netplay_exit();
     if (InterlockedExchange(&exited, 1) || !enter())
         return;
     bool early = !window_reached, stack = code || early;

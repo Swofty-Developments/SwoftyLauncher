@@ -101,7 +101,11 @@ pub struct Hashes {
 
 impl Hashes {
     pub fn load(data: &Path) -> Self {
-        let path = data.join(HASHES_FILE);
+        Self::open(data.join(HASHES_FILE))
+    }
+
+    /// The digests kept in `path` rather than [`HASHES_FILE`].
+    pub fn open(path: PathBuf) -> Self {
         let files = crate::read_json(&path).unwrap_or_default();
         Self {
             path,

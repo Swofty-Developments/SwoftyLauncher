@@ -50,6 +50,7 @@ std::vector<std::pair<void *, UINT>> pending_color_space;
 safetyhook::InlineHook h_present, h_resize, h_resize1, h_color_space, h_create, h_create_hwnd, h_create_core,
     h_create_comp, h_exec, h_barrier, h_setname;
 HMODULE impl_create, impl_hwnd, impl_core, impl_comp;
+constexpr size_t SETNAME_SLOT = 6, EXEC_SLOT = 10, BARRIER_SLOT = 26;
 thread_local int creating;
 std::atomic<bool> in_present;
 
@@ -401,7 +402,7 @@ void on_setname(SetNameFn fn)
 
 void exec_original(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists)
 {
-    if (h_exec)
+    if (h_exec && hud::guard::vtable_slot_is(q, EXEC_SLOT, h_exec.target()))
         h_exec.call<void>(q, n, lists);
     else
         q->ExecuteCommandLists(n, lists);
@@ -409,7 +410,7 @@ void exec_original(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *list
 
 void barrier_original(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *b)
 {
-    if (h_barrier)
+    if (h_barrier && hud::guard::vtable_slot_is(list, BARRIER_SLOT, h_barrier.target()))
         h_barrier.call<void>(list, n, b);
     else
         list->ResourceBarrier(n, b);
@@ -537,11 +538,11 @@ bool arm_device()
             SUCCEEDED(dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&alloc))) &&
             SUCCEEDED(dev->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, alloc, nullptr, IID_PPV_ARGS(&list))) &&
             SUCCEEDED(dev->CreateCommandQueue(&qd, IID_PPV_ARGS(&q))))
-            ok = install(h_setname, (*reinterpret_cast<void ***>(buffer))[6], reinterpret_cast<void *>(&setname_hook),
-                         "ID3D12Object::SetName") &&
-                 install(h_barrier, (*reinterpret_cast<void ***>(list))[26], reinterpret_cast<void *>(&barrier_hook),
-                         "ID3D12GraphicsCommandList::ResourceBarrier") &&
-                 install(h_exec, (*reinterpret_cast<void ***>(q))[10], reinterpret_cast<void *>(&exec_hook),
+            ok = install(h_setname, (*reinterpret_cast<void ***>(buffer))[SETNAME_SLOT],
+                         reinterpret_cast<void *>(&setname_hook), "ID3D12Object::SetName") &&
+                 install(h_barrier, (*reinterpret_cast<void ***>(list))[BARRIER_SLOT],
+                         reinterpret_cast<void *>(&barrier_hook), "ID3D12GraphicsCommandList::ResourceBarrier") &&
+                 install(h_exec, (*reinterpret_cast<void ***>(q))[EXEC_SLOT], reinterpret_cast<void *>(&exec_hook),
                          "ID3D12CommandQueue::ExecuteCommandLists");
         if (list)
             list->Close();

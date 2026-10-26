@@ -266,6 +266,29 @@ pub fn store_updates(store: &Store, catalog: &[Addon], launcher: &semver::Versio
     Ok(updates(installed, catalog, launcher))
 }
 
+/// The Addon Browser download an installed addon came from.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Installed {
+    pub version: semver::Version,
+    pub sha256: String,
+}
+
+/// Records that `id` was just installed from `v`'s download.
+pub fn record_install(store: &Store, id: &str, v: &Version) -> Result<()> {
+    let installed = Installed {
+        version: v.version.clone(),
+        sha256: v.sha256.trim().to_ascii_lowercase(),
+    };
+    crate::write_json_shared(&store.registry_install_path(id), &installed)
+}
+
+/// The SHA-256 of the Addon Browser download `m` was installed from, while the installed
+/// version is still the one that download had.
+pub fn installed_from(store: &Store, m: &AddonManifest) -> Option<String> {
+    let installed: Installed = crate::read_json(&store.registry_install_path(&m.id)).ok()?;
+    (installed.version == m.version).then_some(installed.sha256)
+}
+
 pub fn base_url() -> String {
     std::env::var(URL_ENV)
         .ok()

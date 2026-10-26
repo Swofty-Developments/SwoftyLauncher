@@ -12,6 +12,7 @@ mod game;
 mod game_edited;
 mod importer;
 mod library;
+mod multiplayer;
 mod news;
 mod pages;
 mod play_bar;
