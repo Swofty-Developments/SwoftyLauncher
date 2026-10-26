@@ -1,15 +1,12 @@
 """The season cars' power unit.
 
-The season cars' handling files come from the 2025 cars, which share one power unit: a 126 kW MGU-K over a 4 MJ
-store, harvesting at up to 200 Nm, so the store drains and refills far slower than in the 2026 cars (350 kW, 500 Nm,
-higher per-lap limits), and an EnergyRecoverySystem without OverrideModeAvailable or per-track TrackSettings, so no
-overtake mode. The 2026 cars move power from the engine (peak 550 to 415 kW) to the ERS, so the ERS can't change
-without the engine. `apply` replaces PARTS and the R&D upgrades of those parts (UPGRADES) in every handling file of a
-season archive with the stock 2026 ones, which give the store the 2026 cars' swings and overtake mode on every
-track. The 2026 teams share all of them apart from FuelECU and the upgrades, where a supplier's fuel modes give it up
-to 2.3 % more or 1.2 % less power; the season cars take SOURCE's, which change nothing, so every season car keeps the
-same power unit and pace.py's order stands. `stock` reads them from the game folder, which has to hold the stock 2026
-car archives. build_cars.py applies it on every build; run on its own, the tool applies it to built cars.
+The season cars race under the 2025 rules: DRS in the DRS zones and the 2025 ERS, whose deploy modes include
+overtake, over a 4 MJ store with a 126 kW MGU-K. The stock 2025 teams share one power unit: Engine, Turbo, FuelTank,
+FuelECU, EnergyRecoverySystem (no OverrideModeAvailable and no per-track TrackSettings, so no 2026 overtake mode and
+none of its HUD) and the R&D upgrades of those parts. `apply` replaces PARTS and UPGRADES in every handling file of a
+season archive with SOURCE's, so a car built with any 2026 parts or TrackSettings goes back to the 2025 ones.
+`stock` reads them from the game folder, which has to hold the stock 2025 car archives. build_cars.py applies it on
+every build; run on its own, the tool applies it to built cars.
 
     python3 tools/powerunit.py [--years 2016-2024] [--game <F1 25 folder>]
 """
@@ -25,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import erpw
 import vtf
 
-SOURCE = Path("2025_asset_groups/f1_2026_vehicle_package/teams/ferrari/wep/ferrari.erp")
+SOURCE = Path("2025_asset_groups/f1_2025_vehicle_package/teams/ferrari/wep/ferrari.erp")
 PARTS = (b"Engine", b"Turbo", b"FuelTank", b"FuelECU", b"EnergyRecoverySystem")
 UPGRADES = (b"radUpgradeEngine", b"radUpgradeFuelConsumption", b"radUpgradeERS", b"radUpgradeWearMGUH")
 
@@ -51,7 +48,7 @@ def stock(game):
     parts = {_key(c): c for c in top.children if _key(c)}
     missing = [k.decode() for k in PARTS + UPGRADES if k not in parts]
     if missing:
-        raise SystemExit(f"{Path(game) / SOURCE}: the 2026 handling file has no {', '.join(missing)}")
+        raise SystemExit(f"{Path(game) / SOURCE}: the 2025 handling file has no {', '.join(missing)}")
     return parts
 
 
@@ -95,7 +92,7 @@ def main():
             done = apply(e, parts)
             if done:
                 e.to_file(str(path))
-            print(f"{year} {path.parent.parent.name}: {done} handling file(s) given the 2026 power unit", flush=True)
+            print(f"{year} {path.parent.parent.name}: {done} handling file(s) given the 2025 power unit", flush=True)
 
 
 if __name__ == "__main__":

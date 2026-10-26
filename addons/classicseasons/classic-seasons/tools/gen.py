@@ -83,7 +83,7 @@ HOST_MODE = "swofty_f1"
 SETUP_ROW = "entrants.entrant_setup_modes.entrant_setup_mode"
 SETUP_PRESETS = "car_setup.presets.vehicle_package_setups"
 SEASON_LAUNCHER = ">=1.5.1"
-SEASON_VERSION = "0.5.2"
+SEASON_VERSION = "0.5.3"
 DIRECT_SUITS = [e for e in suit_sources.REAL["suits"] if "transfer" not in suit_sources.REAL["mods"][e["mod"]]]
 TRANSFERRED_SUITS = [e for e in suit_sources.REAL["suits"] if "transfer" in suit_sources.REAL["mods"][e["mod"]]]
 REAL_SUIT_IDS = range(974, 974 + len(DIRECT_SUITS))

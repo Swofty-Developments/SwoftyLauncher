@@ -24,7 +24,7 @@ The car, suit and head archives are not in the repository. The built packages, e
 | `tools/carperf.py` | Shadow caster rebuild and texture cap, run by `build_cars.py` |
 | `tools/handling.py` | Handling files: wheel positions from the handling file, run by `build_cars.py` |
 | `tools/pace.py` | Handling files: each team's pace as chassis mass, run by `build_cars.py` |
-| `tools/powerunit.py` | Handling files: the stock 2026 power unit, run by `build_cars.py` |
+| `tools/powerunit.py` | Handling files: the stock 2025 power unit, run by `build_cars.py` |
 | `tools/aislots.py` | Measures the stock teams' per-track AI data into `data/ai_slots.json` and gives each season team a slot |
 | `tools/tyres.py` | `Tyres` overrides naming a season's tyre set, run by `build_cars.py` |
 | `tools/build_incardriver.py` | Per-season in-car driver archives (2016-2021), in the season addon's `cars/incardriver/` |
@@ -145,7 +145,7 @@ python3 tools/build_helmets.py --downloads ~/Downloads --game <F1 25>
 - Moves the cockpit camera of a season with `cockpit_camera` (`up` and `forward`, in metres) in `data/seasons.json`, and sets the TV pod cameras' near clip of a season with `pod_camera` (`near_clip`, in metres; stock 0.23 m on CamPod) (tools/cameras.py).
 - Turns off `UseModelPositions` in every handling file, so the wheels sit at the handling file's positions instead of the model's (tools/handling.py).
 - Sets every handling file to its team's pace (tools/pace.py): the stock 2025 teams' mean `F1Aero` wing coefficients and body drag, front and rear lift multipliers of 0.95, and `Chassis` `Mass` 798 kg plus the team's median qualifying gap to the season's fastest team (`data/performance.json`), less its AI slot's head start, at 0.0308 % per kg. `python3 tools/pace.py --years <range>` sets them on built cars.
-- Gives every handling file the stock 2026 power unit (tools/powerunit.py): `Engine`, `Turbo`, `FuelTank`, `FuelECU` and `EnergyRecoverySystem`, with overtake mode and its per-track `TrackSettings`, and the R&D upgrades of those parts, all from the 2026 Ferrari, whose fuel modes add no power. Every season car has the same power unit. `python3 tools/powerunit.py --years <range>` gives it to built cars.
+- Gives every handling file the stock 2025 power unit (tools/powerunit.py): `Engine`, `Turbo`, `FuelTank`, `FuelECU` and `EnergyRecoverySystem`, and the R&D upgrades of those parts, which every stock 2025 team shares. The season cars race under the 2025 rules: DRS, and the 2025 ERS with its deploy modes and no 2026 overtake mode. `python3 tools/powerunit.py --years <range>` gives it to built cars.
 - Renames the tyre set (`shared/tyres/`) of a season with its own `common.erp` with the rest, and adds a `Tyres` override naming it (`tyre model`, `tyre wet model`, `material`, `wet material`) to every car and showroom model layer (tools/tyres.py). The car templates in `eaid://wote/types` name the stock tyre set.
 
 ```sh
