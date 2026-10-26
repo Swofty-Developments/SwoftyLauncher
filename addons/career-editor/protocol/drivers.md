@@ -600,8 +600,12 @@ Steps:
    the count from the slot allocator, the old buffer freed, as 0x140d9dca0 does.
 4. The row: the template row with a new id block (as 0x1441207d0 lays it out), `ordinal_flags` = the
    template's high byte and the highest running index of the line-up plus one (refused when another row
-   has it), the driver key at +0x50 and no driver look (+0x54 0x3fff0000), appended the same way to the
-   entity's vector object.
+   has it), the driver key at +0x50 and the driver's look at +0x54, appended the same way to the entity's
+   vector object. The look is the stat_id of the `entrants.driver_customisations` row that his
+   `entrants.entrant_lists.entrants` row's `driver_customisation` names, in the high word (look 229 is
+   0x00e50000, as every pool row of a new career has it; a Driver Manager driver's row `dm_<id>` names
+   `dm_<id>_look`). Without one the op refuses. A seated driver whose row has no look (0x3fff0000) stops
+   the next session at its loading screen (T008 run 1).
 5. `Career_Set_EntrantData_Thunk` with the new row's identity, its own data, position and number. It
    rewrites the row unchanged and brackets the write with the entrant begin and end messages, the end
    message carrying the vector object, as the setup brackets its rebuild.
@@ -622,19 +626,17 @@ Result `before` / `after`:
 record's team is 0.
 
 Errors: `bad_args`, `wrong_mode`, `no_component`, `busy`, `unknown_driver` (not in the statistics
-table), `already_listed` (the driver has an entrant row), `refused` (no untouched free agent to copy,
+table), `already_listed` (the driver has an entrant row), `refused` (no look for the driver, no untouched free agent to copy,
 a contract layout other than the rebuild's, an active contract without a row, the line-up full or no
 free running index), `write_failed`.
 
 Undo: backup only (the History tab's save backups). No game path removes a row mid-career.
 
-Not set: the driver's look (+0x54, the packed `driver_customisation` of his Driver Manager entrant
-row; how `Ent_Pack_DriverCustomisation` packs it was not read), the current weekend's copy of the
-line-up (weekend +0x18), which the end message's listeners or the next weekend rebuild. Test T008
-(`re/tests/T008.md`) covers both.
+Not set: the current weekend's copy of the line-up (weekend +0x18), which the end message's listeners
+or the next weekend rebuild. Test T008 (`re/tests/T008.md`) covers it.
 
-Log lines: first `[career-editor] drivers.freeAgent.add driver <id>: template free agent <id> ordinal_flags 0x<8 hex> driver_customisation 0x<8 hex> contract <0x58 bytes as hex>` (the template's +0x48, +0x54 and contract object as read), then with `dryRun` `... dry run, entrant index <n>, contract kept|to create; nothing written`, otherwise
-`[career-editor] drivers.freeAgent.add driver <id>: entrant row added [team 16383 car 0x3fff0000 pos -1, entrant index <n>, copied from free agent <id>], contract created|kept (inactive, zero record); <n> -> <n+1> rows, <c> -> <c+1> contracts, <n> other rows unchanged (Career_Set_EntrantData_Thunk announced the line-up)`.
+Log lines: first `[career-editor] drivers.freeAgent.add driver <id>: template free agent <id> ordinal_flags 0x<8 hex> driver_customisation 0x<8 hex> contract <0x58 bytes as hex>` (the template's +0x48, +0x54 and contract object as read), then with `dryRun` `... dry run, entrant index <n>, look 0x<8 hex>, contract kept|to create; nothing written`, otherwise
+`[career-editor] drivers.freeAgent.add driver <id>: entrant row added [team 16383 car 0x3fff0000 pos -1, entrant index <n>, look 0x<8 hex>, copied from free agent <id>], contract created|kept (inactive, zero record); <n> -> <n+1> rows, <c> -> <c+1> contracts, <n> other rows unchanged (Career_Set_EntrantData_Thunk announced the line-up)`.
 
 Modes: Driver Career. Runs only while `ce::safe()`.
 

@@ -47,7 +47,7 @@ A free agent without a number who takes a seat in **Swap Seats** gets a free one
 
 ## Driver Manager drivers in Driver Career
 
-A [Driver Manager](/using/driver-manager) driver made after a Driver Career started has no place in that career's line-up, so **Swap Seats** doesn't list him. In Driver Career, **Swap Seats** lists these drivers under **Add to line-up as free agent**. Adding one gives him a line-up place as a free agent, with no team, no car and no race number, and an empty contract, the way the game sets up the free agents of a new career. The career keeps him when it saves. He then shows in the driver lists, and **Swap Seats** can put him in a race seat. His Driver Manager look isn't set on the new line-up place. The edit has no undo; **History** restores a save backup. It's experimental: in testing, a career whose added driver had taken a race seat stopped at the loading screen of the next session and resumed into it. Back up your save first.
+A [Driver Manager](/using/driver-manager) driver made after a Driver Career started has no place in that career's line-up, so **Swap Seats** doesn't list him. In Driver Career, **Swap Seats** lists these drivers under **Add to line-up as free agent**. Adding one gives him a line-up place as a free agent, with his Driver Manager look, no team, no car and no race number, and an empty contract, the way the game sets up the free agents of a new career. The career keeps him when it saves. He then shows in the driver lists, and **Swap Seats** can put him in a race seat. The edit has no undo; **History** restores a save backup. It's experimental. Back up your save first.
 
 ## Edits
 

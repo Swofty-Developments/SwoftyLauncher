@@ -1193,7 +1193,7 @@ fn late_free_agent_blocks(live: &Live) -> Vec<Value> {
             { "select": { "id": "driver", "label": "Driver Manager driver without a line-up place", "value": "", "options": opts } }
         ] } }),
         text(
-            "Experimental: back up your save first. In testing, a career whose added driver had taken a race seat stopped at the loading screen of the next session, and resumed into it. The driver joins the line-up as a free agent with no team, no car and no race number, and gets an empty contract, as the game makes them for the free agents of a new career. He then shows in the Driver list above and can take a race seat. His Driver Manager look isn't set on the new line-up place. There is no undo apart from the save backups.",
+            "Experimental: back up your save first. The driver joins the line-up as a free agent with his Driver Manager look, no team, no car and no race number, and gets an empty contract, as the game makes them for the free agents of a new career. He then shows in the Driver list above and can take a race seat. There is no undo apart from the save backups.",
             "muted",
         ),
     ];

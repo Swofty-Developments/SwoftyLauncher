@@ -2565,6 +2565,46 @@ std::string free_agent_json(const std::vector<Row> &rows, const std::vector<uint
     return w.text();
 }
 
+// The driver_customisation key the career setup packs into a pool free agent's row: the stat_id of the look
+// that his entrant row's driver_customisation names, in the high word (look 229 is 0x00e50000). A Driver
+// Manager driver's entrant row is dm_<id>, naming the look dm_<id>_look. A seated driver without it stops
+// the next session at its loading screen.
+bool entrant_look(uint32_t key, uint32_t &out, std::string &why)
+{
+    const Names &n = names();
+    auto it = n.driver.find(save_id(key));
+    if (it == n.driver.end()) {
+        why = "the driver has no row in entrants.drivers";
+        return false;
+    }
+    std::string look;
+    each_row("entrants.entrant_lists.entrants", "entrant", [&](const std::string &row) {
+        std::string v;
+        if (look.empty() && db_text(row + ".driver", v) && v == it->second &&
+            db_text(row + ".driver_customisation", v))
+            look = v;
+    });
+    if (look.empty()) {
+        why = "no entrant row names a driver_customisation for " + it->second;
+        return false;
+    }
+    int64_t id = -1;
+    each_row("entrants.driver_customisations", "folder", [&](const std::string &folder) {
+        each_row(folder, "preloaded_driver_customisation_properties", [&](const std::string &row) {
+            std::string v;
+            int64_t s;
+            if (id < 0 && db_text(row + "._metadata_", v) && v == look && db_int(row + ".stat_id", s))
+                id = s;
+        });
+    });
+    if (id <= 0 || id >= 0x3fff) {
+        why = "no look row " + look + " with a stat_id";
+        return false;
+    }
+    out = static_cast<uint32_t>(id) << 16;
+    return true;
+}
+
 ce::OpResult op_free_agent_add(const ce::Json &args)
 {
     const char *op = "drivers.freeAgent.add";
@@ -2644,7 +2684,9 @@ ce::OpResult op_free_agent_add(const ce::Json &args)
     fresh_id_block(rec);
     rec.ordinal_flags = (tmpl->rec.ordinal_flags & ~kOrdinalMask) | (top + 1);
     std::memcpy(&rec.id_lo, &key, sizeof key);
-    rec.driver_customisation = kNoKey;
+    std::string no_look;
+    if (!entrant_look(key, rec.driver_customisation, no_look))
+        return op_fail(op, "refused", "the driver's look is not found (" + no_look + "); nothing written");
     for (auto &r : rows)
         if (r.rec.ordinal_flags == rec.ordinal_flags)
             return op_fail(op, "refused", "the new entrant index is taken; nothing written");
@@ -2664,8 +2706,8 @@ ce::OpResult op_free_agent_add(const ce::Json &args)
             save_id(key), save_id(entrant_driver(tmpl->rec)), tmpl->rec.ordinal_flags, tmpl->rec.driver_customisation,
             hex.c_str());
     if (args["dryRun"].type == ce::Json::Bool && args["dryRun"].b) {
-        ce::log("drivers.freeAgent.add driver %u: dry run, entrant index %u, contract %s; nothing written",
-                save_id(key), rec.ordinal_flags & kOrdinalMask, own ? "kept" : "to create");
+        ce::log("drivers.freeAgent.add driver %u: dry run, entrant index %u, look 0x%08x, contract %s; nothing written",
+                save_id(key), rec.ordinal_flags & kOrdinalMask, rec.driver_customisation, own ? "kept" : "to create");
         res.after = res.before;
         res.ok = true;
         return res;
@@ -2743,10 +2785,10 @@ ce::OpResult op_free_agent_add(const ce::Json &args)
     res.ok = true;
     char tt[96];
     seat_text(tt, sizeof tt, now.back());
-    ce::log("drivers.freeAgent.add driver %u: entrant row added [%s, entrant index %u, copied from free agent %u], "
+    ce::log("drivers.freeAgent.add driver %u: entrant row added [%s, entrant index %u, look 0x%08x, copied from free agent %u], "
             "contract %s (inactive, zero record); %zu -> %zu rows, %zu -> %zu contracts, %zu other rows unchanged "
             "(Career_Set_EntrantData_Thunk announced the line-up)",
-            save_id(key), tt, rec.ordinal_flags & kOrdinalMask, save_id(entrant_driver(tmpl->rec)),
+            save_id(key), tt, rec.ordinal_flags & kOrdinalMask, rec.driver_customisation, save_id(entrant_driver(tmpl->rec)),
             own ? "kept" : "created", rows.size(), now.size(), objects.size(), objects_now.size(), rows.size());
     return res;
 }
