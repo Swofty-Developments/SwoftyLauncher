@@ -74781,6 +74781,32 @@
    "used_by": [
     "native/src/core/car_category.cpp"
    ]
+  },
+  {
+   "id": "session.issue_disqualify",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 55 53 48 81 EC 88 00 00 00 44 89 C3 48 89 D7 48 89 CE 48 8B 81 78 1C 00 00",
+   "match": "0x143573760",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143573760",
+   "kind": "func_start",
+   "names": [
+    "Sess_Issue_Disqualify"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-28",
+     "by": "steward-native",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "addons/league-stewarding/native/src/steward.cpp"
+   ]
   }
  ]
 }

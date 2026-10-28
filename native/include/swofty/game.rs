@@ -2082,6 +2082,7 @@ pub type Ne_Post_BusMessage_t = unsafe extern "C" fn(bus: *mut c_void, msg: *mut
 pub type Ne_StringTable_Lookup_t = unsafe extern "C" fn(table: *mut c_void, hash: u64) -> *const c_char;
 pub type Sess_Build_GroupResult_t =
     unsafe extern "C" fn(weekend: *mut c_void, group: u8, result: *mut c_void);
+pub type Sess_CornerCutting_Update_t = unsafe extern "C" fn(rules: *mut c_void);
 pub type Sess_Find_GroupRowPosition_t =
     unsafe extern "C" fn(weekend: *mut c_void, result: *mut c_void, driver_key: u32) -> *mut i32;
 pub type Sess_FormationLap_Update_t =
@@ -2099,7 +2100,11 @@ pub type Sess_InGame_UpdateBase_t =
     unsafe extern "C" fn(state: *mut c_void, route: *mut u32, dt: f64) -> *mut u32;
 pub type Sess_Invalidate_Lap_Thunk_t =
     unsafe extern "C" fn(rules: *mut c_void, vehicle: u32, reason: u32, mode: c_char);
+pub type Sess_Issue_Disqualify_t = unsafe extern "C" fn(rules: *mut c_void, incident: *mut u8, reason: u32);
 pub type Sess_Issue_DriveThrough_t = unsafe extern "C" fn(rules: *mut c_void, incident: *mut u8, reason: u32);
+pub type Sess_Issue_GridPlacePenalty_t =
+    unsafe extern "C" fn(rules: *mut c_void, incident: *mut u8, reason: u32, places: u32);
+pub type Sess_Issue_StopGo_t = unsafe extern "C" fn(rules: *mut c_void, incident: *mut u8, reason: u32);
 pub type Sess_Issue_TimePenalty_t =
     unsafe extern "C" fn(rules: *mut c_void, incident: *mut u8, reason: u32, seconds: u32);
 pub type Sess_Issue_Warning_t = unsafe extern "C" fn(rules: *mut c_void, incident: *mut u8, reason: u32);
@@ -2113,6 +2118,8 @@ pub type Sess_RedFlagRaceStrategy_Update_t =
     unsafe extern "C" fn(state: *mut c_void, route: *mut u32) -> *mut u32;
 pub type Sess_SafetyCarTether_UpdateProgress_t = unsafe extern "C" fn(tether_entry: *mut c_void);
 pub type Sess_SafetyCarTether_UpdateTarget_t = unsafe extern "C" fn(tether_entry: *mut c_void, gap: f32);
+pub type Sess_SafetyCar_VehicleTransition_t =
+    unsafe extern "C" fn(safety_car_logic: *mut c_void, time_info: *mut c_void);
 pub type Sess_ScDebrisAccumulator_Update_t = unsafe extern "C" fn(acc: *mut c_void);
 pub type Sess_Set_SafetyCarDeploymentType_t =
     unsafe extern "C" fn(sc_state: *mut c_void, sc_deployment_msg: *const c_void);
@@ -2759,6 +2766,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_CornerCutting_Update: Binding = Binding {
+        id: "Sess_CornerCutting_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_Find_GroupRowPosition: Binding = Binding {
         id: "Sess_Find_GroupRowPosition",
         kind: "func",
@@ -2809,8 +2821,23 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_Issue_Disqualify: Binding = Binding {
+        id: "Sess_Issue_Disqualify",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_Issue_DriveThrough: Binding = Binding {
         id: "Sess_Issue_DriveThrough",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_Issue_GridPlacePenalty: Binding = Binding {
+        id: "Sess_Issue_GridPlacePenalty",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_Issue_StopGo: Binding = Binding {
+        id: "Sess_Issue_StopGo",
         kind: "func",
         status: Status::Experimental,
     };
@@ -2861,6 +2888,11 @@ pub mod bindings {
     };
     pub const Sess_SafetyCarTether_UpdateTarget: Binding = Binding {
         id: "Sess_SafetyCarTether_UpdateTarget",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_SafetyCar_VehicleTransition: Binding = Binding {
+        id: "Sess_SafetyCar_VehicleTransition",
         kind: "func",
         status: Status::Experimental,
     };

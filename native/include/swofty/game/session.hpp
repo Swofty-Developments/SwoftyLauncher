@@ -149,6 +149,8 @@ static_assert(offsetof(WeatherSessionSettings, exact_timing) == 0xb18);
 
 using Sess_Build_GroupResult_t = void(void *weekend, uint8_t group, void *result);
 inline constexpr fn<"Sess_Build_GroupResult", Sess_Build_GroupResult_t> Sess_Build_GroupResult{}; // L2 experimental
+using Sess_CornerCutting_Update_t = void(void *rules);
+inline constexpr fn<"Sess_CornerCutting_Update", Sess_CornerCutting_Update_t> Sess_CornerCutting_Update{}; // L2 experimental
 using Sess_Find_GroupRowPosition_t = int32_t *(void *weekend, void *result, uint32_t driver_key);
 inline constexpr fn<"Sess_Find_GroupRowPosition", Sess_Find_GroupRowPosition_t> Sess_Find_GroupRowPosition{}; // L2 experimental
 inline constexpr address<"Sess_Flow_ParseXml"> Sess_Flow_ParseXml{}; // L2 experimental
@@ -168,8 +170,14 @@ using Sess_InGame_UpdateBase_t = uint32_t *(void *state, uint32_t *route, double
 inline constexpr fn<"Sess_InGame_UpdateBase", Sess_InGame_UpdateBase_t> Sess_InGame_UpdateBase{}; // L2 experimental
 using Sess_Invalidate_Lap_Thunk_t = void(void *rules, uint32_t vehicle, uint32_t reason, char mode);
 inline constexpr fn<"Sess_Invalidate_Lap_Thunk", Sess_Invalidate_Lap_Thunk_t> Sess_Invalidate_Lap_Thunk{}; // L2 experimental
+using Sess_Issue_Disqualify_t = void(void *rules, uint8_t *incident, uint32_t reason);
+inline constexpr fn<"Sess_Issue_Disqualify", Sess_Issue_Disqualify_t> Sess_Issue_Disqualify{}; // L2 experimental
 using Sess_Issue_DriveThrough_t = void(void *rules, uint8_t *incident, uint32_t reason);
 inline constexpr fn<"Sess_Issue_DriveThrough", Sess_Issue_DriveThrough_t> Sess_Issue_DriveThrough{}; // L2 experimental
+using Sess_Issue_GridPlacePenalty_t = void(void *rules, uint8_t *incident, uint32_t reason, uint32_t places);
+inline constexpr fn<"Sess_Issue_GridPlacePenalty", Sess_Issue_GridPlacePenalty_t> Sess_Issue_GridPlacePenalty{}; // L2 experimental
+using Sess_Issue_StopGo_t = void(void *rules, uint8_t *incident, uint32_t reason);
+inline constexpr fn<"Sess_Issue_StopGo", Sess_Issue_StopGo_t> Sess_Issue_StopGo{}; // L2 experimental
 using Sess_Issue_TimePenalty_t = void(void *rules, uint8_t *incident, uint32_t reason, uint32_t seconds);
 inline constexpr fn<"Sess_Issue_TimePenalty", Sess_Issue_TimePenalty_t> Sess_Issue_TimePenalty{}; // L2 experimental
 using Sess_Issue_Warning_t = void(void *rules, uint8_t *incident, uint32_t reason);
@@ -189,6 +197,8 @@ using Sess_SafetyCarTether_UpdateProgress_t = void(void *tether_entry);
 inline constexpr fn<"Sess_SafetyCarTether_UpdateProgress", Sess_SafetyCarTether_UpdateProgress_t> Sess_SafetyCarTether_UpdateProgress{}; // L2 experimental
 using Sess_SafetyCarTether_UpdateTarget_t = void(void *tether_entry, float gap);
 inline constexpr fn<"Sess_SafetyCarTether_UpdateTarget", Sess_SafetyCarTether_UpdateTarget_t> Sess_SafetyCarTether_UpdateTarget{}; // L2 experimental
+using Sess_SafetyCar_VehicleTransition_t = void(void *safety_car_logic, void *time_info);
+inline constexpr fn<"Sess_SafetyCar_VehicleTransition", Sess_SafetyCar_VehicleTransition_t> Sess_SafetyCar_VehicleTransition{}; // L2 experimental
 using Sess_ScDebrisAccumulator_Update_t = void(void *acc);
 inline constexpr fn<"Sess_ScDebrisAccumulator_Update", Sess_ScDebrisAccumulator_Update_t> Sess_ScDebrisAccumulator_Update{}; // L2 experimental
 using Sess_Set_SafetyCarDeploymentType_t = void(void *sc_state, const void *sc_deployment_msg);
