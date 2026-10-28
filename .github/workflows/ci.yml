@@ -370,6 +370,14 @@ jobs:
         run: |
           addons/any-team-transfers/native/test/run.sh
           addons/any-team-transfers/native/build.sh
+      - name: League Stewarding unit tests and build
+        env:
+          ZIG_GLOBAL_CACHE_DIR: ${{ github.workspace }}/native/build/zig-cache
+          ZIG_LOCAL_CACHE_DIR: ${{ github.workspace }}/native/build/zig-cache
+          STEWARD_TEST_DIR: ${{ runner.temp }}/steward-test
+        run: |
+          addons/league-stewarding/native/test/run.sh
+          addons/league-stewarding/native/build.sh
 
       - name: Wine and Xvfb
         timeout-minutes: 10
