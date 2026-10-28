@@ -225,7 +225,7 @@ private:
         if (n < kHeaderSize + 4) return;
         const double t = [&] {
             float f;
-            std::memcpy(&f, d + 14, 4);
+            std::memcpy(&f, d + 15, 4);
             return static_cast<double>(f);
         }();
         char code[5] = {static_cast<char>(d[kHeaderSize]), static_cast<char>(d[kHeaderSize + 1]),

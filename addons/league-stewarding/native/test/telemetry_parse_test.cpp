@@ -69,6 +69,8 @@ int main()
     std::memcpy(pena.data() + kHeaderSize, "PENA", 4);
     uint8_t *e = pena.data() + kHeaderSize + 4;
     e[0] = 4; e[1] = 7; e[2] = 0; e[3] = 1; e[4] = 5; e[5] = 7; e[6] = 0;
+    const float session_time = 612.5f;
+    std::memcpy(pena.data() + 15, &session_time, 4);
     m.feed(pena.data(), pena.size(), 1.3);
 
     auto sc = header(kPacketEvent, 45);
@@ -90,6 +92,7 @@ int main()
     EXPECT(s.drivers[1].team == "McLaren");
     EXPECT(s.events.size() == 2);
     EXPECT(s.events[0].code == "PENA" && s.events[0].car == 0 && s.events[0].other == 1);
+    EXPECT(s.events[0].t == 612.5);
     EXPECT(s.events[0].text.find("Time penalty +5s") != std::string::npos);
     EXPECT(s.events[1].text == "Safety car deployed");
     EXPECT(!m.snapshot(10.0).receiving);
