@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>League Stewarding</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="title">League Stewarding <span class="by">by Swofty</span></div>
+  <div class="status" id="status">
+    <span class="pill" id="pill-phase">unknown</span>
+    <span class="pill" id="pill-track"></span>
+    <span class="pill" id="pill-lap"></span>
+    <span class="pill" id="pill-rc">no race control</span>
+    <span class="pill" id="pill-conn">connecting</span>
+  </div>
+</header>
+
+<div class="banner" id="banner" hidden>
+  <strong>Telemetry is not reaching the panel.</strong>
+  Switch it on in the game: Game Options &rarr; Settings &rarr; Telemetry Settings. Set UDP Telemetry to On, UDP Broadcast Mode to Off, IP Address to 127.0.0.1, Port to <span id="banner-port">20777</span> and UDP Format to 2025.
+</div>
+<div class="banner err" id="offline" hidden>Lost contact with the game. Retrying.</div>
+
+<main>
+  <section class="card grid">
+    <h2>Grid</h2>
+    <div class="scroll">
+      <table id="grid">
+        <thead><tr><th>Pos</th><th>Driver</th><th>Team</th><th>Lap</th><th>Pen</th><th>Warn</th><th>Penalties</th></tr></thead>
+        <tbody id="grid-body"></tbody>
+      </table>
+    </div>
+    <p class="empty" id="grid-empty">No drivers yet.</p>
+  </section>
+
+  <aside>
+    <section class="card">
+      <h2>Race control</h2>
+      <div class="rc-state" id="rc-state">Green</div>
+      <div class="btns">
+        <button data-rc="sc">Safety car</button>
+        <button data-rc="vsc">Virtual SC</button>
+        <button data-rc="end">End</button>
+        <button data-rc="red_flag" class="danger">Red flag</button>
+      </div>
+      <label class="toggle"><input type="checkbox" id="auto"> Automatic penalties</label>
+      <p class="hint" id="auto-hint">When off, the game issues no penalties by itself; only the ones you give here.</p>
+    </section>
+
+    <section class="card feed">
+      <h2>Events</h2>
+      <ul id="events"></ul>
+      <p class="empty" id="events-empty">Nothing yet.</p>
+    </section>
+  </aside>
+</main>
+
+<div class="modal" id="modal" hidden>
+  <div class="box">
+    <p id="modal-text"></p>
+    <div class="row"><button id="modal-no">Cancel</button><button id="modal-yes" class="danger">Confirm</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>
