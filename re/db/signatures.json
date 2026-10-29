@@ -74781,6 +74781,59 @@
    "used_by": [
     "native/src/core/car_category.cpp"
    ]
+  },
+  {
+   "id": "game.presence_name_remote_added",
+   "section": ".xtls",
+   "pattern": "48 8B 47 38 48 8B 88 50 05 00 00 4C 8D 46 50 48 8D 56 10 E8 ?? ?? ?? ?? 48 8B 47 38 C5 F8 10 46 10",
+   "match": "0x1431691ac",
+   "anchor": "0x18",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1431691c4",
+   "kind": "mid",
+   "names": [
+    "site_Game_PresenceNameRemoteAdded"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-29",
+     "by": "driver-name",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/netplay.cpp"
+   ],
+   "expect": "48 8B 47 38 C5 F8 10 46 10"
+  },
+  {
+   "id": "core.presence_name_resolver_fixed_add_name",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 81 EC 20 01 00 00 4C 89 C6",
+   "match": "0x14412a320",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14412a320",
+   "kind": "func_start",
+   "names": [
+    "Ne_PresenceNameResolverFixed_AddName"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-29",
+     "by": "driver-name",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/netplay.cpp"
+   ]
   }
  ]
 }
