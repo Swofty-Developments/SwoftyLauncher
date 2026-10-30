@@ -32,7 +32,7 @@
 #include "pit_phases.hpp"
 #include "weekend.hpp"
 
-SWOFTY_SETTING(bool, pit_phases_1990, true);
+SWOFTY_SETTING(bool, pit_phases_1990, false);
 
 namespace {
 
