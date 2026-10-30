@@ -1,0 +1,318 @@
+{
+ "suit": {
+  "kit_mclaren": {
+   "label": "f90-mclaren__",
+   "archive": "kit/f90-mclaren__.erp",
+   "team": "game/mclaren_26",
+   "colours": [
+    "#D2141E",
+    "#F4F4F2",
+    "#F4F4F2",
+    "#D2141E"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_ferrari": {
+   "label": "f90-ferrari__",
+   "archive": "kit/f90-ferrari__.erp",
+   "team": "game/ferrari_26",
+   "colours": [
+    "#C4161C",
+    "#F4F4F2",
+    "#F4F4F2",
+    "#F4F4F2"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_williams": {
+   "label": "f90-williams_",
+   "archive": "kit/f90-williams_.erp",
+   "team": "game/williams_26",
+   "colours": [
+    "#F4F4F2",
+    "#1B3F8B",
+    "#F2C200",
+    "#1B3F8B"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_benetton": {
+   "label": "f90-benetton_",
+   "archive": "kit/f90-benetton_.erp",
+   "team": "game/renault_26",
+   "colours": [
+    "#1F9A48",
+    "#1E4FA0",
+    "#F2C200",
+    "#D0202A"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_tyrrell": {
+   "label": "f90-tyrrell__",
+   "archive": "kit/f90-tyrrell__.erp",
+   "team": "game/mercedes_26",
+   "colours": [
+    "#1F2F6B",
+    "#F4F4F2",
+    "#F4F4F2",
+    "#8AB4E8"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_lotus": {
+   "label": "f90-lotus____",
+   "archive": "kit/f90-lotus____.erp",
+   "team": "game/redbull_26",
+   "colours": [
+    "#F2C500",
+    "#1F4E9C",
+    "#1F4E9C",
+    "#1F4E9C"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_march": {
+   "label": "f90-march____",
+   "archive": "kit/f90-march____.erp",
+   "team": "game/forceindia_26",
+   "colours": [
+    "#4FD3D9",
+    "#1B2A5C",
+    "#1B2A5C",
+    "#1B2A5C"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_larrousse": {
+   "label": "f90-larrousse",
+   "archive": "kit/f90-larrousse.erp",
+   "team": "game/williams_26",
+   "colours": [
+    "#F4F4F2",
+    "#3E9A4E",
+    "#1F3C88",
+    "#3E9A4E"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_ligier_prost": {
+   "label": "f90-ligier___",
+   "archive": "kit/f90-ligier___.erp",
+   "team": "game/sauber_26",
+   "colours": [
+    "#0F5FDD",
+    "#6EB4FF",
+    "#F4F4F2",
+    "#F4F4F2"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_minardi": {
+   "label": "f90-minardi__",
+   "archive": "kit/f90-minardi__.erp",
+   "team": "game/tororosso_26",
+   "colours": [
+    "#F4F4F2",
+    "#F7AC15",
+    "#1A1A1A",
+    "#1A1A1A"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_brabham": {
+   "label": "f90-brabham__",
+   "archive": "kit/f90-brabham__.erp",
+   "team": "game/gm_cadillac_26",
+   "colours": [
+    "#2A3052",
+    "#F4F4F2",
+    "#C8102E",
+    "#F4F4F2"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_dallara": {
+   "label": "f90-dallara__",
+   "archive": "kit/f90-dallara__.erp",
+   "team": "game/haas_26",
+   "colours": [
+    "#960D04",
+    "#1A1A1A",
+    "#F4F4F2",
+    "#F4F4F2"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_arrows": {
+   "label": "f90-arrows___",
+   "archive": "kit/f90-arrows___.erp",
+   "team": "game/haas_26",
+   "colours": [
+    "#F4F4F2",
+    "#C8102E",
+    "#1A3C8C",
+    "#C8102E"
+   ],
+   "from": "game/2026-williams"
+  }
+ },
+ "gloves": {
+  "kit_mclaren": {
+   "label": "f90-mclaren__",
+   "archive": "kit/f90-mclaren__.erp",
+   "team": "game/mclaren_26",
+   "colours": [
+    "#D2141E",
+    "#F4F4F2",
+    "#F4F4F2",
+    "#D2141E"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_ferrari": {
+   "label": "f90-ferrari__",
+   "archive": "kit/f90-ferrari__.erp",
+   "team": "game/ferrari_26",
+   "colours": [
+    "#C4161C",
+    "#F4F4F2",
+    "#F4F4F2",
+    "#F4F4F2"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_williams": {
+   "label": "f90-williams_",
+   "archive": "kit/f90-williams_.erp",
+   "team": "game/williams_26",
+   "colours": [
+    "#F4F4F2",
+    "#1B3F8B",
+    "#F2C200",
+    "#1B3F8B"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_benetton": {
+   "label": "f90-benetton_",
+   "archive": "kit/f90-benetton_.erp",
+   "team": "game/renault_26",
+   "colours": [
+    "#1F9A48",
+    "#1E4FA0",
+    "#F2C200",
+    "#D0202A"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_tyrrell": {
+   "label": "f90-tyrrell__",
+   "archive": "kit/f90-tyrrell__.erp",
+   "team": "game/mercedes_26",
+   "colours": [
+    "#1F2F6B",
+    "#F4F4F2",
+    "#F4F4F2",
+    "#8AB4E8"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_lotus": {
+   "label": "f90-lotus____",
+   "archive": "kit/f90-lotus____.erp",
+   "team": "game/redbull_26",
+   "colours": [
+    "#F2C500",
+    "#1F4E9C",
+    "#1F4E9C",
+    "#1F4E9C"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_march": {
+   "label": "f90-march____",
+   "archive": "kit/f90-march____.erp",
+   "team": "game/forceindia_26",
+   "colours": [
+    "#4FD3D9",
+    "#1B2A5C",
+    "#1B2A5C",
+    "#1B2A5C"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_larrousse": {
+   "label": "f90-larrousse",
+   "archive": "kit/f90-larrousse.erp",
+   "team": "game/williams_26",
+   "colours": [
+    "#F4F4F2",
+    "#3E9A4E",
+    "#1F3C88",
+    "#3E9A4E"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_ligier_prost": {
+   "label": "f90-ligier___",
+   "archive": "kit/f90-ligier___.erp",
+   "team": "game/sauber_26",
+   "colours": [
+    "#0F5FDD",
+    "#6EB4FF",
+    "#F4F4F2",
+    "#F4F4F2"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_minardi": {
+   "label": "f90-minardi__",
+   "archive": "kit/f90-minardi__.erp",
+   "team": "game/tororosso_26",
+   "colours": [
+    "#F4F4F2",
+    "#F7AC15",
+    "#1A1A1A",
+    "#1A1A1A"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_brabham": {
+   "label": "f90-brabham__",
+   "archive": "kit/f90-brabham__.erp",
+   "team": "game/gm_cadillac_26",
+   "colours": [
+    "#2A3052",
+    "#F4F4F2",
+    "#C8102E",
+    "#F4F4F2"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_dallara": {
+   "label": "f90-dallara__",
+   "archive": "kit/f90-dallara__.erp",
+   "team": "game/haas_26",
+   "colours": [
+    "#960D04",
+    "#1A1A1A",
+    "#F4F4F2",
+    "#F4F4F2"
+   ],
+   "from": "game/2026-williams"
+  },
+  "kit_arrows": {
+   "label": "f90-arrows___",
+   "archive": "kit/f90-arrows___.erp",
+   "team": "game/haas_26",
+   "colours": [
+    "#F4F4F2",
+    "#C8102E",
+    "#1A3C8C",
+    "#C8102E"
+   ],
+   "from": "game/2026-williams"
+  }
+ }
+}

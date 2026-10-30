@@ -184,7 +184,7 @@
     }
   ],
   "operations": {
-    "database": ["db/career.json", "db/grid.json", "db/grid_standings.json", "db/rules.json", "db/grid_links.json", "db/cars.json", "db/audio.json", "db/rnd.json", "db/ai_difficulty.json",
+    "database": ["db/career.json", "db/grid.json", "db/kit.json", "db/grid_standings.json", "db/rules.json", "db/grid_links.json", "db/cars.json", "db/audio.json", "db/rnd.json", "db/ai_difficulty.json",
       "carpack/db/test.json", "carpack/db/ai.json"],
     "assets": ["db/rules_text.json", "lang/grid.json", "db/career-lang.json", "cars/handling.json", "db/rnd-lang.json",
       "carpack/assets/cars.json", "carpack/assets/ai.json"],

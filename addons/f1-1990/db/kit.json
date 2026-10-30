@@ -1,0 +1,545 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-mclaren_ayrton_senna]",
+   "field": "suit",
+   "value": "f90-mclaren__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-mclaren_ayrton_senna]",
+   "field": "gloves",
+   "value": "f90-mclaren__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-mclaren_gerhard_berger]",
+   "field": "suit",
+   "value": "f90-mclaren__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-mclaren_gerhard_berger]",
+   "field": "gloves",
+   "value": "f90-mclaren__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-ferrari_alain_prost]",
+   "field": "suit",
+   "value": "f90-ferrari__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-ferrari_alain_prost]",
+   "field": "gloves",
+   "value": "f90-ferrari__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-ferrari_nigel_mansell]",
+   "field": "suit",
+   "value": "f90-ferrari__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-ferrari_nigel_mansell]",
+   "field": "gloves",
+   "value": "f90-ferrari__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-williams_thierry_boutsen]",
+   "field": "suit",
+   "value": "f90-williams_"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-williams_thierry_boutsen]",
+   "field": "gloves",
+   "value": "f90-williams_"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-williams_riccardo_patrese]",
+   "field": "suit",
+   "value": "f90-williams_"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-williams_riccardo_patrese]",
+   "field": "gloves",
+   "value": "f90-williams_"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-benetton_alessandro_nannini]",
+   "field": "suit",
+   "value": "f90-benetton_"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-benetton_alessandro_nannini]",
+   "field": "gloves",
+   "value": "f90-benetton_"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-benetton_nelson_piquet]",
+   "field": "suit",
+   "value": "f90-benetton_"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-benetton_nelson_piquet]",
+   "field": "gloves",
+   "value": "f90-benetton_"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-tyrrell_satoru_nakajima]",
+   "field": "suit",
+   "value": "f90-tyrrell__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-tyrrell_satoru_nakajima]",
+   "field": "gloves",
+   "value": "f90-tyrrell__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-tyrrell_jean_alesi]",
+   "field": "suit",
+   "value": "f90-tyrrell__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-tyrrell_jean_alesi]",
+   "field": "gloves",
+   "value": "f90-tyrrell__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-lotus_derek_warwick]",
+   "field": "suit",
+   "value": "f90-lotus____"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-lotus_derek_warwick]",
+   "field": "gloves",
+   "value": "f90-lotus____"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-lotus_martin_donnelly]",
+   "field": "suit",
+   "value": "f90-lotus____"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-lotus_martin_donnelly]",
+   "field": "gloves",
+   "value": "f90-lotus____"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-leytonhouse_mauricio_gugelmin]",
+   "field": "suit",
+   "value": "f90-march____"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-leytonhouse_mauricio_gugelmin]",
+   "field": "gloves",
+   "value": "f90-march____"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-leytonhouse_ivan_capelli]",
+   "field": "suit",
+   "value": "f90-march____"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-leytonhouse_ivan_capelli]",
+   "field": "gloves",
+   "value": "f90-march____"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-ligier_nicola_larini]",
+   "field": "suit",
+   "value": "f90-ligier___"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-ligier_nicola_larini]",
+   "field": "gloves",
+   "value": "f90-ligier___"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-ligier_philippe_alliot]",
+   "field": "suit",
+   "value": "f90-ligier___"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-ligier_philippe_alliot]",
+   "field": "gloves",
+   "value": "f90-ligier___"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-minardi_pierluigi_martini]",
+   "field": "suit",
+   "value": "f90-minardi__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-minardi_pierluigi_martini]",
+   "field": "gloves",
+   "value": "f90-minardi__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-minardi_paolo_barilla]",
+   "field": "suit",
+   "value": "f90-minardi__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-minardi_paolo_barilla]",
+   "field": "gloves",
+   "value": "f90-minardi__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-brabham_david_brabham]",
+   "field": "suit",
+   "value": "f90-brabham__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-brabham_david_brabham]",
+   "field": "gloves",
+   "value": "f90-brabham__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-brabham_stefano_modena]",
+   "field": "suit",
+   "value": "f90-brabham__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-brabham_stefano_modena]",
+   "field": "gloves",
+   "value": "f90-brabham__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-arrows_michele_alboreto]",
+   "field": "suit",
+   "value": "f90-arrows___"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-arrows_michele_alboreto]",
+   "field": "gloves",
+   "value": "f90-arrows___"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-arrows_alex_caffi]",
+   "field": "suit",
+   "value": "f90-arrows___"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-arrows_alex_caffi]",
+   "field": "gloves",
+   "value": "f90-arrows___"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-larrousse_eric_bernard]",
+   "field": "suit",
+   "value": "f90-larrousse"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-larrousse_eric_bernard]",
+   "field": "gloves",
+   "value": "f90-larrousse"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-larrousse_aguri_suzuki]",
+   "field": "suit",
+   "value": "f90-larrousse"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-larrousse_aguri_suzuki]",
+   "field": "gloves",
+   "value": "f90-larrousse"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-dallara_emanuele_pirro]",
+   "field": "suit",
+   "value": "f90-dallara__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-dallara_emanuele_pirro]",
+   "field": "gloves",
+   "value": "f90-dallara__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-dallara_andrea_de_cesaris]",
+   "field": "suit",
+   "value": "f90-dallara__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-dallara_andrea_de_cesaris]",
+   "field": "gloves",
+   "value": "f90-dallara__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-brabham_gregor_foitek]",
+   "field": "suit",
+   "value": "f90-brabham__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-brabham_gregor_foitek]",
+   "field": "gloves",
+   "value": "f90-brabham__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-dallara_gianni_morbidelli]",
+   "field": "suit",
+   "value": "f90-dallara__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-dallara_gianni_morbidelli]",
+   "field": "gloves",
+   "value": "f90-dallara__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-arrows_bernd_schneider]",
+   "field": "suit",
+   "value": "f90-arrows___"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-arrows_bernd_schneider]",
+   "field": "gloves",
+   "value": "f90-arrows___"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-benetton_roberto_moreno]",
+   "field": "suit",
+   "value": "f90-benetton_"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-benetton_roberto_moreno]",
+   "field": "gloves",
+   "value": "f90-benetton_"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-lotus_johnny_herbert]",
+   "field": "suit",
+   "value": "f90-lotus____"
+  },
+  {
+   "op": "set",
+   "select": "entrants.driver_customisations.folder[_metadata_=official_driver_customisations].preloaded_driver_customisation_properties[_metadata_=f1990-lotus_johnny_herbert]",
+   "field": "gloves",
+   "value": "f90-lotus____"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_mclaren]",
+   "field": "suit",
+   "value": "f90-mclaren__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_mclaren]",
+   "field": "gloves",
+   "value": "f90-mclaren__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_ferrari]",
+   "field": "suit",
+   "value": "f90-ferrari__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_ferrari]",
+   "field": "gloves",
+   "value": "f90-ferrari__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_williams]",
+   "field": "suit",
+   "value": "f90-williams_"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_williams]",
+   "field": "gloves",
+   "value": "f90-williams_"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_benetton]",
+   "field": "suit",
+   "value": "f90-benetton_"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_benetton]",
+   "field": "gloves",
+   "value": "f90-benetton_"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_tyrrell]",
+   "field": "suit",
+   "value": "f90-tyrrell__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_tyrrell]",
+   "field": "gloves",
+   "value": "f90-tyrrell__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_lotus]",
+   "field": "suit",
+   "value": "f90-lotus____"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_lotus]",
+   "field": "gloves",
+   "value": "f90-lotus____"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_leytonhouse]",
+   "field": "suit",
+   "value": "f90-march____"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_leytonhouse]",
+   "field": "gloves",
+   "value": "f90-march____"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_larrousse]",
+   "field": "suit",
+   "value": "f90-larrousse",
+   "when": {
+    "cars": 26
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_larrousse]",
+   "field": "gloves",
+   "value": "f90-larrousse",
+   "when": {
+    "cars": 26
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_ligier]",
+   "field": "suit",
+   "value": "f90-ligier___"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_ligier]",
+   "field": "gloves",
+   "value": "f90-ligier___"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_minardi]",
+   "field": "suit",
+   "value": "f90-minardi__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_minardi]",
+   "field": "gloves",
+   "value": "f90-minardi__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_brabham]",
+   "field": "suit",
+   "value": "f90-brabham__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_brabham]",
+   "field": "gloves",
+   "value": "f90-brabham__"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_dallara]",
+   "field": "suit",
+   "value": "f90-dallara__",
+   "when": {
+    "cars": 26
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_dallara]",
+   "field": "gloves",
+   "value": "f90-dallara__",
+   "when": {
+    "cars": 26
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_arrows]",
+   "field": "suit",
+   "value": "f90-arrows___"
+  },
+  {
+   "op": "set",
+   "select": "entrants.team_customisation.team_customisation_for_year[_metadata_=2026].team_customisation[_metadata_=2026-f1990_arrows]",
+   "field": "gloves",
+   "value": "f90-arrows___"
+  }
+ ]
+}

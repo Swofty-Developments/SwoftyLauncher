@@ -83,7 +83,7 @@ python3 addons/f1-1990/tools/grid.py <stock gamedatabases.2025.bin> -v
 | Part | Rows |
 |---|---|
 | 13 teams | `<team>_1990` (`mclaren`, `ferrari`, `williams`, `benetton`, `tyrrell`, `lotus`, `leytonhouse`, `larrousse`, `ligier`, `minardi`, `brabham`, `dallara`, `arrows`), stat_id 502–514: every field of the 2026 donor (Larrousse from Williams, Dallara from Haas) plus names, code, colours, base, nationality, story text, `livery_name` and `timing_tower_texture_path` = the row label, and a boss row `f1990_boss_<team>` |
-| 31 drivers | `f1990_<driver>`, stat ids from the free low block and 235–253 (Driver Manager keeps 208–234): every field of a donor row (Senna, Prost and Mansell from their stock rows, the rest from 2026 and old F2 drivers) plus names, code, number, nationality, head, birth date (36 years later with `career_year` 2026), seasons, voice and AI traits; a statistics holder (one `default` data set), a look `f1990-<team>_<driver>` in the official folder (era-neutral suit), and an entrant `f1990-<driver>` |
+| 31 drivers | `f1990_<driver>`, stat ids from the free low block and 235–253 (Driver Manager keeps 208–234): every field of a donor row (Senna, Prost and Mansell from their stock rows, the rest from 2026 and old F2 drivers) plus names, code, number, nationality, head, birth date (36 years later with `career_year` 2026), seasons, voice and AI traits; a statistics holder (one `default` data set), a look `f1990-<team>_<driver>` in the official folder (the team's suit and gloves from `db/kit.json`), and an entrant `f1990-<driver>` |
 | Lists | `f1_1990` (the grid: 22 seats, 26 with `cars` = 26, `team`/`vehicle` = `<team>_1990`), `f1_1990_driver_pool` (the five stand-ins), `f1_career_1990` (references both); entrant setup mode `f1_1990` (`max_entrants` = `cars`); standings `f1_teams_1989` and `f1_drivers_1989` |
 | Kits | `2026-f1990_<team>` in the 2026 team-customisation year, `linked_team` the 1990 row, the team's looks |
 | Career data group | In the `f1_career_1990` rows the career lane clones: the team rows of accolades, primary sponsors, recognition and resource points move from `<team>_26` to `<team>_1990`, plus Larrousse and Dallara |
@@ -111,6 +111,22 @@ The pack's 14 ratings are scaled to 0..1 across its 44 drivers (`Season.normalis
 | trait speed_out | 0.55 + 0.45 × mean(qualifying_skill, race_skill) |
 
 Each rating curve is flat at its value. `consistency` is not used.
+
+## kit.py
+
+Writes the 1990 team suits and gloves: `kit/<label>.erp` (build output, not committed), `registry/kit.json` and
+`db/kit.json`, and a preview sheet (front, back, `livery_v2_d` and `glove_d` of every team, `kit/preview.png` or
+`--sheet`). Needs Pillow, numpy, scipy, lz4 and zstd.
+
+```sh
+python3 addons/f1-1990/tools/kit.py --game <F1 25> [--sheet <png>] [--teams mclaren,...]
+```
+
+| Part | What |
+|---|---|
+| Archive | `kit/f90-<team>.erp` (label padded with `_` to 13 characters: `f90-mclaren__`, `f90-ligier___`, `f90-march____`): every resource of the stock `2026-williams` suit that holds its label, renamed byte for byte. `livery_v2_d` holds the team's colour blocks (`DESIGNS`), painted per texel from the body's position; `glove_d` is the stock glove with its light cloth in the team's glove and cuff colours; `boots_d`, `cap_d` and `suit_attachments_d` are flat; `logo_01_d` has the team lockup on the two largest chest decals and the mark on the next, `glove_logo_d` the mark; the logo normals are flat. Replaced textures hold every level in the archive; normals, specular maps and the harness keep the `2026-williams` sidecars |
+| `registry/kit.json` | a `suit` and a `gloves` record per team (`kit_<team>`): `label` the archive label, `archive`, `from` `game/2026-williams`, `team` the 2026 donor team, four colours. The core copies the `2026-williams` rows with ids above the stock ones and gives both one asset group, `team_livery/<label>/<label>`, listing the `2026-williams` archive first |
+| `db/kit.json` | `suit` and `gloves` of every 1990 look `f1990-<team>_<driver>` (31) and team kit `2026-f1990_<team>` (13; Larrousse and Dallara with `cars` = 26) set to the team's label |
 
 ## frontend.py
 
