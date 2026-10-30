@@ -11,6 +11,10 @@ point at the 1990 rows. Under `upgrades.1990` the engine supplier trees, deliver
 change schedules, R&D challenges and `general` (the R&D UI package and the dual-development scalars) are copies
 of the 2026 ones; `trees.<token>` holds the 1990 trees.
 
+The 1990 cars drive the 1990 engine rows `f1990_engine_<supplier>` (build_cars.py), so each copied engine supplier
+tree links 1990 engines instead of its 2026 engine (ENGINE_TREES): `engines_linked_to` lists them and
+`parent_engine` is the first.
+
 A team finds its tree through `trees.<token>.teams_linked_to_0.links`, a list of vehicle labels
 (Career_Read_TeamLinks 0x1435396e0 walks 12 tokens compiled into the exe and keeps the first whose list
 names the team's vehicle). Each 1990 team has its own token except Lotus and Larrousse, the two
@@ -58,6 +62,10 @@ UNCATALOGUED = {
 }
 
 STR, INT, LIST = 2, 0, 13
+
+ENGINE_TREES = {"ferrari": ("ferrari",), "honda": ("honda",), "mercedes": ("renault",),
+                "redbull_ford": ("ford_hb", "ford_dfr"), "audi": ("lamborghini", "judd")}
+ENGINE_LINK_FIELDS = ("engines_linked_to", "parent_engine")
 
 # token -> (teams, engine supplier, works engine, tyre supplier)
 TOKENS = {
@@ -387,6 +395,32 @@ def stock_rows(db, path, word, fields):
     return rows, types
 
 
+def engine_label(supplier):
+    return f"f1990_engine_{supplier}"
+
+
+def engine_links(db):
+    tree = f"{STOCK}.engine_suppliers.trees"
+    out = {}
+    for i in range(int(db.get(f"{tree}._engine_supplier_upgrades_instancecount_"))):
+        name = db.get(f"{tree}.engine_supplier_upgrades_{i}._metadata_")
+        labels = [engine_label(s) for s in ENGINE_TREES[name]]
+        out[f"{PREFIX}.engine_suppliers.trees.engine_supplier_upgrades_{i}"] = {
+            "engines_linked_to": ",".join(labels), "parent_engine": labels[0]}
+    linked = sorted(s for v in ENGINE_TREES.values() for s in v)
+    if len(out) != len(ENGINE_TREES) or linked != sorted(SUPPLIER_BHP):
+        raise ValueError(f"engine supplier trees {sorted(out)} do not cover the suppliers {sorted(SUPPLIER_BHP)}")
+    return out
+
+
+def relink_engines(db, ops):
+    links = engine_links(db)
+    for op in ops:
+        if op.get("field") in ENGINE_LINK_FIELDS and op.get("select") in links:
+            op["value"] = links[op["select"]][op["field"]]
+    return ops
+
+
 def copy_subtree(db, sub):
     src = f"{STOCK}.{sub}"
     h = "{%016x}" % gamedb.fnv1a64(src.encode())
@@ -425,6 +459,7 @@ def build(db):
 
     for sub in COPIED:
         ops += copy_subtree(db, sub)
+    relink_engines(db, ops)
 
     for token in TOKENS:
         base = f"{PREFIX}.trees.{token}"

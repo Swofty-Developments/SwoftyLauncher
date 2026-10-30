@@ -324,6 +324,21 @@
    "ai_vehicle_config.yielding.pit_yield_speed",
    "ai_vehicle_config.ers_use.xmode_enabled.push_on_in_or_out_lap_battery_level",
    "ai_vehicle_config.ers_use.xmode_passive.push_on_in_or_out_lap_battery_level"
+  ],
+  "entrants.engines.Engine": [
+   "_metadata_",
+   "nationality",
+   "revDialAnimEnd",
+   "revDialEnd",
+   "revDialStart",
+   "revFlashSpeed",
+   "revLightWarning",
+   "revLightsEnd",
+   "revLightsPurpleStart",
+   "revLightsRedStart",
+   "revLightsStart",
+   "stat_id",
+   "supplier"
   ]
  },
  "ops": [
@@ -372,11 +387,117 @@
   },
   {
    "op": "add-row",
+   "table": "entrants.engines",
+   "from": "entrants.engines.Engine[_metadata_=Cosworth_F1_V8_2009-2013]",
+   "set": {
+    "_metadata_": "f1990_engine_honda",
+    "nationality": "japan",
+    "supplier": "lng_engine_supplier_honda",
+    "revLightsStart": "10110",
+    "revLightsRedStart": "12440",
+    "revLightsPurpleStart": "13220",
+    "revLightWarning": "13840",
+    "revLightsEnd": "14000"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.engines",
+   "from": "entrants.engines.Engine[_metadata_=Cosworth_F1_V8_2009-2013]",
+   "set": {
+    "_metadata_": "f1990_engine_ferrari",
+    "nationality": "italy",
+    "supplier": "lng_engine_supplier_ferrari",
+    "revLightsStart": "9570",
+    "revLightsRedStart": "11780",
+    "revLightsPurpleStart": "12510",
+    "revLightWarning": "13100",
+    "revLightsEnd": "13250"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.engines",
+   "from": "entrants.engines.Engine[_metadata_=Cosworth_F1_V8_2009-2013]",
+   "set": {
+    "_metadata_": "f1990_engine_renault",
+    "nationality": "france",
+    "supplier": "lng_engine_supplier_renault",
+    "revLightsStart": "9610",
+    "revLightsRedStart": "11820",
+    "revLightsPurpleStart": "12560",
+    "revLightWarning": "13150",
+    "revLightsEnd": "13300"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.engines",
+   "from": "entrants.engines.Engine[_metadata_=Cosworth_F1_V8_2009-2013]",
+   "set": {
+    "_metadata_": "f1990_engine_ford_hb",
+    "nationality": "england",
+    "supplier": "lng_f1990_engine_supplier_ford",
+    "revLightsStart": "9610",
+    "revLightsRedStart": "11820",
+    "revLightsPurpleStart": "12560",
+    "revLightWarning": "13150",
+    "revLightsEnd": "13300"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.engines",
+   "from": "entrants.engines.Engine[_metadata_=Cosworth_F1_V8_2009-2013]",
+   "set": {
+    "_metadata_": "f1990_engine_judd",
+    "nationality": "england",
+    "supplier": "lng_f1990_engine_supplier_judd",
+    "revLightsStart": "9390",
+    "revLightsRedStart": "11560",
+    "revLightsPurpleStart": "12280",
+    "revLightWarning": "12860",
+    "revLightsEnd": "13000"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.engines",
+   "from": "entrants.engines.Engine[_metadata_=Cosworth_F1_V8_2009-2013]",
+   "set": {
+    "_metadata_": "f1990_engine_lamborghini",
+    "nationality": "italy",
+    "supplier": "lng_f1990_engine_supplier_lamborghini",
+    "revLightsStart": "9750",
+    "revLightsRedStart": "12000",
+    "revLightsPurpleStart": "12750",
+    "revLightWarning": "13350",
+    "revLightsEnd": "13500"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.engines",
+   "from": "entrants.engines.Engine[_metadata_=Cosworth_F1_V8_2009-2013]",
+   "set": {
+    "_metadata_": "f1990_engine_ford_dfr",
+    "nationality": "england",
+    "supplier": "lng_f1990_engine_supplier_ford",
+    "revLightsStart": "8490",
+    "revLightsRedStart": "10440",
+    "revLightsPurpleStart": "11100",
+    "revLightWarning": "11620",
+    "revLightsEnd": "11750"
+   }
+  },
+  {
+   "op": "add-row",
    "table": "entrants.vehicles",
    "from": "entrants.vehicles.vehicle[_metadata_=mclaren_2026]",
    "set": {
     "_metadata_": "mclaren_1990",
     "asset_filename": "mclaren",
+    "engine": "f1990_engine_honda",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
     "drs_capable": "False",
@@ -394,6 +515,7 @@
    "set": {
     "_metadata_": "ferrari_1990",
     "asset_filename": "ferrari",
+    "engine": "f1990_engine_ferrari",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
     "drs_capable": "False",
@@ -411,6 +533,7 @@
    "set": {
     "_metadata_": "williams_1990",
     "asset_filename": "williams",
+    "engine": "f1990_engine_renault",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
     "drs_capable": "False",
@@ -428,6 +551,7 @@
    "set": {
     "_metadata_": "benetton_1990",
     "asset_filename": "lotus",
+    "engine": "f1990_engine_ford_hb",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
     "drs_capable": "False",
@@ -445,6 +569,7 @@
    "set": {
     "_metadata_": "tyrrell_1990",
     "asset_filename": "mercedes",
+    "engine": "f1990_engine_ford_dfr",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
     "drs_capable": "False",
@@ -462,6 +587,7 @@
    "set": {
     "_metadata_": "lotus_1990",
     "asset_filename": "redbull",
+    "engine": "f1990_engine_lamborghini",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
     "drs_capable": "False",
@@ -479,6 +605,7 @@
    "set": {
     "_metadata_": "leytonhouse_1990",
     "asset_filename": "force_india",
+    "engine": "f1990_engine_judd",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
     "drs_capable": "False",
@@ -496,6 +623,7 @@
    "set": {
     "_metadata_": "larrousse_1990",
     "asset_filename": "myteam_ferrari",
+    "engine": "f1990_engine_lamborghini",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
     "drs_capable": "False",
@@ -513,6 +641,7 @@
    "set": {
     "_metadata_": "ligier_1990",
     "asset_filename": "sauber",
+    "engine": "f1990_engine_ford_dfr",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
     "drs_capable": "False",
@@ -530,6 +659,7 @@
    "set": {
     "_metadata_": "minardi_1990",
     "asset_filename": "toro_rosso",
+    "engine": "f1990_engine_ford_dfr",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
     "drs_capable": "False",
@@ -547,6 +677,7 @@
    "set": {
     "_metadata_": "brabham_1990",
     "asset_filename": "gm_cadillac",
+    "engine": "f1990_engine_judd",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
     "drs_capable": "False",
@@ -564,6 +695,7 @@
    "set": {
     "_metadata_": "dallara_1990",
     "asset_filename": "myteam_honda",
+    "engine": "f1990_engine_ford_dfr",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
     "drs_capable": "False",
@@ -581,6 +713,7 @@
    "set": {
     "_metadata_": "arrows_1990",
     "asset_filename": "haas",
+    "engine": "f1990_engine_ford_dfr",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
     "drs_capable": "False",
@@ -598,6 +731,7 @@
    "set": {
     "_metadata_": "mclaren_1990b",
     "vehicle_package": "f1_1990b",
+    "engine": "f1990_engine_honda",
     "available": "True"
    }
   },
@@ -608,6 +742,7 @@
    "set": {
     "_metadata_": "ferrari_1990b",
     "vehicle_package": "f1_1990b",
+    "engine": "f1990_engine_ferrari",
     "available": "True"
    }
   },
@@ -618,6 +753,7 @@
    "set": {
     "_metadata_": "williams_1990b",
     "vehicle_package": "f1_1990b",
+    "engine": "f1990_engine_renault",
     "available": "True"
    }
   },
@@ -628,6 +764,7 @@
    "set": {
     "_metadata_": "benetton_1990b",
     "vehicle_package": "f1_1990b",
+    "engine": "f1990_engine_ford_hb",
     "available": "True"
    }
   },
@@ -638,6 +775,7 @@
    "set": {
     "_metadata_": "tyrrell_1990b",
     "vehicle_package": "f1_1990b",
+    "engine": "f1990_engine_ford_dfr",
     "available": "True"
    }
   },
@@ -648,6 +786,7 @@
    "set": {
     "_metadata_": "lotus_1990b",
     "vehicle_package": "f1_1990b",
+    "engine": "f1990_engine_lamborghini",
     "available": "True"
    }
   },
@@ -658,6 +797,7 @@
    "set": {
     "_metadata_": "leytonhouse_1990b",
     "vehicle_package": "f1_1990b",
+    "engine": "f1990_engine_judd",
     "available": "True"
    }
   },
@@ -668,6 +808,7 @@
    "set": {
     "_metadata_": "larrousse_1990b",
     "vehicle_package": "f1_1990b",
+    "engine": "f1990_engine_lamborghini",
     "available": "True"
    }
   },
@@ -678,6 +819,7 @@
    "set": {
     "_metadata_": "ligier_1990b",
     "vehicle_package": "f1_1990b",
+    "engine": "f1990_engine_ford_dfr",
     "available": "True"
    }
   },
@@ -688,6 +830,7 @@
    "set": {
     "_metadata_": "minardi_1990b",
     "vehicle_package": "f1_1990b",
+    "engine": "f1990_engine_ford_dfr",
     "available": "True"
    }
   },
@@ -698,6 +841,7 @@
    "set": {
     "_metadata_": "brabham_1990b",
     "vehicle_package": "f1_1990b",
+    "engine": "f1990_engine_judd",
     "available": "True"
    }
   },
@@ -708,6 +852,7 @@
    "set": {
     "_metadata_": "dallara_1990b",
     "vehicle_package": "f1_1990b",
+    "engine": "f1990_engine_ford_dfr",
     "available": "True"
    }
   },
@@ -718,6 +863,7 @@
    "set": {
     "_metadata_": "arrows_1990b",
     "vehicle_package": "f1_1990b",
+    "engine": "f1990_engine_ford_dfr",
     "available": "True"
    }
   }

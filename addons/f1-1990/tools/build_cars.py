@@ -89,7 +89,9 @@ common base.
 Outputs (relative to the addon folder): cars/handling/<ers>_<tyre_size>/<folder>_handling.erp, cars/handling.json
 (file.put ops keyed by the options) and db/cars.json (the f1_1990 and f1_1990b package rows, the 13 vehicle rows
 labelled with the grid lane's tokens and their 13 B-spec copies `<token>_1990b`; the name strings come from the grid
-lane's lang ops). The game loads a vehicle at startup (0x142505f30, the stat-id indexed vehicle table) only when its
+lane's lang ops, `engine` the 1990 engine row), the seven 1990 engine rows `f1990_engine_<supplier>` (copies of
+Cosworth_F1_V8_2009-2013 with its rev-light thresholds x the engine's limiter / 18,000) and lang/engines.json (their supplier
+names). The game loads a vehicle at startup (0x142505f30, the stat-id indexed vehicle table) only when its
 `available` is True, and the content pass 0x1413e4cf0 sets that only for vehicles an entrant list names and for
 their packages; no entrant list names a B-spec car, so the B rows and the f1_1990b package carry `available True`. The build compares with the shipped files and exits 1 on any difference; --write replaces them.
 """
@@ -131,15 +133,33 @@ TORQUE_FLOOR = 0.6
 
 TORQUE_PEAK = {'V12': 0.82, 'V10': 0.78, 'V8': 0.75}
 ENGINES = {
-    'Honda RA100E': {'hp': 690, 'peak_rpm': 13500},
-    'Ferrari 036': {'hp': 680, 'peak_rpm': 12750},
-    'Renault RS2': {'hp': 660, 'peak_rpm': 12800},
-    'Ford HBA4': {'hp': 660, 'peak_rpm': 12800},
-    'Judd EV': {'hp': 640, 'peak_rpm': 12500},
-    'Lamborghini 3512': {'hp': 640, 'peak_rpm': 13000},
-    'Ford DFR': {'hp': 620, 'peak_rpm': 11250},
+    'Honda RA100E': {'hp': 690, 'peak_rpm': 13500, 'supplier': 'honda'},
+    'Ferrari 036': {'hp': 680, 'peak_rpm': 12750, 'supplier': 'ferrari'},
+    'Renault RS2': {'hp': 660, 'peak_rpm': 12800, 'supplier': 'renault'},
+    'Ford HBA4': {'hp': 660, 'peak_rpm': 12800, 'supplier': 'ford_hb'},
+    'Judd EV': {'hp': 640, 'peak_rpm': 12500, 'supplier': 'judd'},
+    'Lamborghini 3512': {'hp': 640, 'peak_rpm': 13000, 'supplier': 'lamborghini'},
+    'Ford DFR': {'hp': 620, 'peak_rpm': 11250, 'supplier': 'ford_dfr'},
 }
 LIMITER_MARGIN_RPM = 500
+
+ENGINE_TABLE = 'entrants.engines'
+ENGINE_TEMPLATE = 'Cosworth_F1_V8_2009-2013'
+ENGINE_TEMPLATE_LIMITER = 18000
+REV_LIGHTS = {'revLightsStart': 13000, 'revLightsRedStart': 16000, 'revLightsPurpleStart': 17000,
+              'revLightWarning': 17800, 'revLightsEnd': 18000}
+ENGINE_FIELDS = ['_metadata_', 'nationality', 'revDialAnimEnd', 'revDialEnd', 'revDialStart', 'revFlashSpeed',
+                 'revLightWarning', 'revLightsEnd', 'revLightsPurpleStart', 'revLightsRedStart', 'revLightsStart',
+                 'stat_id', 'supplier']
+ENGINE_ROWS = {
+    'honda': ('japan', 'lng_engine_supplier_honda', None),
+    'ferrari': ('italy', 'lng_engine_supplier_ferrari', None),
+    'renault': ('france', 'lng_engine_supplier_renault', None),
+    'ford_hb': ('england', 'lng_f1990_engine_supplier_ford', 'Ford'),
+    'ford_dfr': ('england', 'lng_f1990_engine_supplier_ford', 'Ford'),
+    'lamborghini': ('italy', 'lng_f1990_engine_supplier_lamborghini', 'Lamborghini'),
+    'judd': ('england', 'lng_f1990_engine_supplier_judd', 'Judd'),
+}
 PEAK_VERTEX = 9
 
 MODEL_AXLES = {
@@ -247,8 +267,31 @@ def rnd_targets(c):
 
 def engine(c):
     e = ENGINES[c.engine]
+    token = next(k for k, v in rnd.TOKENS.items() if c.token in v[0])
+    if rnd.TOKENS[token][1] != e['supplier']:
+        raise ValueError(f'{c.team}: engine {c.engine} is {e["supplier"]}, rnd.py says {rnd.TOKENS[token][1]}')
     return {'name': c.engine, 'family': c.family, 'hp': e['hp'], 'peak_rpm': e['peak_rpm'],
             'limiter_rpm': e['peak_rpm'] + LIMITER_MARGIN_RPM, 'torque_peak': TORQUE_PEAK[c.family]}
+
+
+def engine_rows():
+    rows = {}
+    for name, e in ENGINES.items():
+        limiter = e['peak_rpm'] + LIMITER_MARGIN_RPM
+        nationality, supplier, _ = ENGINE_ROWS[e['supplier']]
+        lights = {k: str(round(v * limiter / ENGINE_TEMPLATE_LIMITER / 10) * 10) for k, v in REV_LIGHTS.items()}
+        rows[e['supplier']] = {'_metadata_': rnd.engine_label(e['supplier']), 'nationality': nationality,
+                               'supplier': supplier, **lights}
+    return rows
+
+
+def engine_lang():
+    keys = {}
+    for nationality, key, text in ENGINE_ROWS.values():
+        if text:
+            keys[key] = text
+    return {'schema_version': 1,
+            'ops': [{'op': 'lang.set', 'language': '*', 'key': k, 'value': v} for k, v in sorted(keys.items())]}
 
 
 def cars():
@@ -666,6 +709,7 @@ def build(game, out):
         report.append(info)
     files['cars/handling.json'] = (json.dumps({'schema_version': 1, 'ops': ops}, indent=1) + '\n').encode()
     files['db/cars.json'] = (json.dumps(db_ops(), indent=1) + '\n').encode()
+    files['lang/engines.json'] = (json.dumps(engine_lang(), indent=1) + '\n').encode()
     for rel, blob in files.items():
         dst = os.path.join(out, rel)
         os.makedirs(os.path.dirname(dst), exist_ok=True)
@@ -676,6 +720,10 @@ def build(game, out):
 
 def chassis_key(c):
     return f'lng_f1990_chassis_{c.team}'
+
+
+def engine_label(c):
+    return rnd.engine_label(ENGINES[c.engine]['supplier'])
 
 
 def engine_key(c):
@@ -698,10 +746,13 @@ def db_ops():
     vehicle_fields = vehicle_fields + [k for k in VEHICLE_EXTRA_FIELDS if k not in vehicle_fields]
     ops = package_ops(C.PACKAGE, C.PACKAGE_FOLDER)
     ops += package_ops(C.PACKAGE_B, C.PACKAGE_B_FOLDER, available='True')
+    for row in engine_rows().values():
+        ops.append({'op': 'add-row', 'table': ENGINE_TABLE,
+                    'from': f'{ENGINE_TABLE}.Engine[_metadata_={ENGINE_TEMPLATE}]', 'set': row})
     for c in C.CARS:
         ops.append({'op': 'add-row', 'table': 'entrants.vehicles',
                     'from': f'entrants.vehicles.vehicle[_metadata_={c.donor_vehicle}]',
-                    'set': {'_metadata_': c.vehicle, 'asset_filename': c.folder,
+                    'set': {'_metadata_': c.vehicle, 'asset_filename': c.folder, 'engine': engine_label(c),
                             'vehicle_package': C.PACKAGE, 'hud_dial': '{{hud_dial}}', 'drs_capable': 'False',
                             'display_name': f'lng_f1990_team_{c.team}', 'chassis_name': chassis_key(c),
                             'engine_name_override': engine_key(c), 'equal_performance_vehicle': '',
@@ -709,11 +760,11 @@ def db_ops():
     for c in C.CARS:
         ops.append({'op': 'add-row', 'table': 'entrants.vehicles',
                     'from': f'entrants.vehicles.vehicle[_metadata_={c.vehicle}]',
-                    'set': {'_metadata_': c.vehicle_b, 'vehicle_package': C.PACKAGE_B,
+                    'set': {'_metadata_': c.vehicle_b, 'vehicle_package': C.PACKAGE_B, 'engine': engine_label(c),
                             'available': 'True'}})
     return {'schema_version': 1,
             'fields': {'entrants.vehicles.vehicle_packages.vehicle_package': PACKAGE_FIELDS,
-                       'entrants.vehicles.vehicle': vehicle_fields},
+                       'entrants.vehicles.vehicle': vehicle_fields, f'{ENGINE_TABLE}.Engine': ENGINE_FIELDS},
             'ops': ops}
 
 

@@ -133,12 +133,19 @@ def main():
         if not any(n and n.startswith("f1990_bspec") for n in names):
             bad.append(f"{tree}: no f1990_bspec upgrade")
     print(f"1990 trees: {len(rnd.TOKENS)} tokens checked")
+    links = rnd.engine_links(stock)
+    relinked = {f"{row}.{field}": value for row, fields in links.items() for field, value in fields.items()}
     for sub in rnd.COPIED:
         src = f"{rnd.STOCK}.{sub}"
         keys = sorted(copied(stock, src, sub))
-        miss = [k for k in keys if built.get(h(rnd.PREFIX + k[len(rnd.STOCK):])) != stock_raw.get(h(k))]
+        miss = [k for k in keys if rnd.PREFIX + k[len(rnd.STOCK):] not in relinked
+                and built.get(h(rnd.PREFIX + k[len(rnd.STOCK):])) != stock_raw.get(h(k))]
         bad += [f"{rnd.PREFIX + k[len(rnd.STOCK):]} is not a copy of {k}" for k in miss[:20]]
         print(f"{rnd.PREFIX}.{sub}: {len(keys) - len(miss)}/{len(keys)} keys copied from {src}")
+    for key, value in relinked.items():
+        if get(key) != value:
+            bad.append(f"{key} is {get(key)!r}, want {value!r}")
+    print(f"{rnd.PREFIX} engine links: {len(relinked)} keys checked")
     package = get(f"{rnd.PREFIX}.general.ui_data_0.texture_array_dictionary_path")
     if not package:
         bad.append(f"{rnd.PREFIX}.general.ui_data_0.texture_array_dictionary_path is missing: no R&D art in 1990")
