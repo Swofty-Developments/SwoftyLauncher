@@ -2,7 +2,7 @@
 """Real faces for the 1990 drivers: a face zip (<driver>/faces_entry.json plus <driver>_head_d.tga.mipmaps) becomes a
 driver head that only the driver's 1990 row wears.
 
-usage: faces.py [<driver>.zip ...] [--base <head>] [--game <F1 25>] [--baseline <launcher baseline>/<build>]
+usage: faces.py [<driver>.zip ...] [--base [<driver>=]<head> ...] [--game <F1 25>] [--baseline <launcher baseline>/<build>]
        faces.py --bases [--game <F1 25>]
 
 Each zip is recorded in faces/faces.json and its face map copied to faces/src/. Then every face of faces/faces.json is
@@ -14,8 +14,9 @@ faces/heads/<label>.erp and faces/morph_poses/<label>.erp (label f90_<driver>), 
 registers their asset groups (lando_norris's as templates), and db/faces.json adds the head row (a copy of male_ls222
 with the archive's model_path) and sets the driver's 1990 row (f1990_<driver>) to wear it.
 
-A zip's `base` and `code` may still be the template's <...> placeholders: the base is then --base, the base faces.json
-already records for the driver, or felipe_massa; the code is f90_<driver> cut or padded with _ to the base's length.
+A zip's `base` and `code` may still be the template's <...> placeholders: the base is then --base (<driver>=<head> for
+one driver, <head> for every zip), the base faces.json already records for the driver, or felipe_massa; the code is
+f90_<driver> cut or padded with _ to the base's length.
 --bases lists the scanned heads whose hair is painted from the face map (no <head>_hair.idf hair mesh).
 
 faces/src/<driver>_sheet.png shows the base's face map, the new one and the zip's preview.
@@ -102,7 +103,7 @@ def import_zip(path, faces, base, stock):
             if driver not in grid.DRIVER_INFO:
                 sys.exit(f"{path}: {driver} is not a 1990 driver (tools/grid.py DRIVER_INFO)")
             old = faces.get(driver, {})
-            b = base or (None if placeholder(e.get("base")) else e["base"]) or old.get("base") or DEFAULT_BASE
+            b = base.get(driver) or base.get(None) or (None if placeholder(e.get("base")) else e["base"]) or old.get("base") or DEFAULT_BASE
             if not scanned(stock, b):
                 sys.exit(f"{driver}: {b} is not a scanned head under heads/male_driver/")
             code = e.get("code")
@@ -267,7 +268,8 @@ def bases(stock):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("zips", nargs="*", help="face zips to add or replace (<driver>.zip)")
-    ap.add_argument("--base", help="the stock scanned head the zip's faces go on")
+    ap.add_argument("--base", action="append", default=[],
+                    help="the stock scanned head the zips' faces go on, or <driver>=<head>; repeat for more")
     ap.add_argument("--game", default=GAME)
     ap.add_argument("--baseline", default=BASELINE, help="launcher baseline folder holding baseline.json")
     ap.add_argument("--bases", action="store_true", help="list the scanned heads with no hair mesh")
@@ -281,8 +283,9 @@ def main():
         bases(stock)
         return
     faces = load()
+    base = {k if v else None: v or k for k, _, v in (b.partition("=") for b in args.base)}
     for z in args.zips:
-        for driver in import_zip(Path(z).expanduser(), faces, args.base, stock):
+        for driver in import_zip(Path(z).expanduser(), faces, base, stock):
             print(f"{driver}: from {Path(z).name}, base {faces[driver]['base']}, code {faces[driver]['code']}")
     save(faces)
     for kind in KINDS:

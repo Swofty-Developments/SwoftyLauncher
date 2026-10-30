@@ -134,13 +134,14 @@ Turns face zips into driver heads and rebuilds every face of `faces/faces.json`.
 
 ```sh
 python3 addons/f1-1990/tools/faces.py ~/Downloads/<driver>.zip [--base <head>] [--game <F1 25>]
+python3 addons/f1-1990/tools/faces.py a.zip b.zip --base a=<head> --base b=<head>   # one base per driver
 python3 addons/f1-1990/tools/faces.py              # rebuild every face from faces/src/
 python3 addons/f1-1990/tools/faces.py --bases      # scanned heads whose hair is painted from the face map
 ```
 
 | Part | What |
 |---|---|
-| `faces/faces.json` | per driver: `source` (the zip), `mipmaps` (`src/<driver>_head_d.tga.mipmaps`), `base`, `code`, `label` (`f90_<driver>`). `base` is `--base`, else the zip's, else the recorded one, else `felipe_massa`; it must be a scanned head under `heads/male_driver/`. `code` is `f90_<driver>` cut or padded with `_` to the base's length |
+| `faces/faces.json` | per driver: `source` (the zip), `mipmaps` (`src/<driver>_head_d.tga.mipmaps`), `base`, `code`, `label` (`f90_<driver>`). `base` is `--base` (`<driver>=<head>`, or `<head>` for every zip), else the zip's, else the recorded one, else `felipe_massa`; it must be a scanned head under `heads/male_driver/`. `code` is `f90_<driver>` cut or padded with `_` to the base's length |
 | `faces/src/` | the zip's face map and preview, and `<driver>_sheet.png` (base face map, new face map, zip preview); not committed |
 | `faces/heads/<label>.erp`, `faces/morph_poses/<label>.erp` | both archives of the base, `base` renamed byte for byte to `code`, the head_d surface replaced by the face map with all 10 levels and no sidecar; not committed |
 | `faces/assets.json` | `file.put` of both archives and `group.register` of their groups, with `lando_norris`'s as templates |

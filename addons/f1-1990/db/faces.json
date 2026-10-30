@@ -23,6 +23,125 @@
    "table": "entrants.animation.driver_heads",
    "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
    "set": {
+    "_metadata_": "f90_alex_caffi",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_alex_caf/idf/f90_alex_caf_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_alex_caffi]",
+   "field": "head",
+   "value": "f90_alex_caffi"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
+    "_metadata_": "f90_andrea_de_cesaris",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_andrea_de_ces/idf/f90_andrea_de_ces_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_andrea_de_cesaris]",
+   "field": "head",
+   "value": "f90_andrea_de_cesaris"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
+    "_metadata_": "f90_bernd_schneider",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_bernd_sch/idf/f90_bernd_sch_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_bernd_schneider]",
+   "field": "head",
+   "value": "f90_bernd_schneider"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
+    "_metadata_": "f90_david_brabham",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_david_/idf/f90_david__rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_david_brabham]",
+   "field": "head",
+   "value": "f90_david_brabham"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
+    "_metadata_": "f90_derek_warwick",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_derek_warwi/idf/f90_derek_warwi_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_derek_warwick]",
+   "field": "head",
+   "value": "f90_derek_warwick"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
+    "_metadata_": "f90_emanuele_pirro",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_emanuele_pirr/idf/f90_emanuele_pirr_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_emanuele_pirro]",
+   "field": "head",
+   "value": "f90_emanuele_pirro"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
+    "_metadata_": "f90_eric_bernard",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_eric_bern/idf/f90_eric_bern_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_eric_bernard]",
+   "field": "head",
+   "value": "f90_eric_bernard"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
     "_metadata_": "f90_gerhard_berger",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_gerhard_berger/idf/f90_gerhard_berger_rig_head_morph_v1",
     "has_morph_data": "True",
@@ -34,6 +153,57 @@
    "select": "entrants.drivers.driver[_metadata_=f1990_gerhard_berger]",
    "field": "head",
    "value": "f90_gerhard_berger"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
+    "_metadata_": "f90_gianni_morbidelli",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_gianni_mo/idf/f90_gianni_mo_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_gianni_morbidelli]",
+   "field": "head",
+   "value": "f90_gianni_morbidelli"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
+    "_metadata_": "f90_gregor_foitek",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_gregor_f/idf/f90_gregor_f_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_gregor_foitek]",
+   "field": "head",
+   "value": "f90_gregor_foitek"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
+    "_metadata_": "f90_ivan_capelli",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_ivan_cap/idf/f90_ivan_cap_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_ivan_capelli]",
+   "field": "head",
+   "value": "f90_ivan_capelli"
   },
   {
    "op": "add-row",
@@ -57,6 +227,74 @@
    "table": "entrants.animation.driver_heads",
    "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
    "set": {
+    "_metadata_": "f90_johnny_herbert",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_johnny_he/idf/f90_johnny_he_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_johnny_herbert]",
+   "field": "head",
+   "value": "f90_johnny_herbert"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
+    "_metadata_": "f90_martin_donnelly",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_martin_do/idf/f90_martin_do_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_martin_donnelly]",
+   "field": "head",
+   "value": "f90_martin_donnelly"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
+    "_metadata_": "f90_mauricio_gugelmin",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_mauricio/idf/f90_mauricio_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_mauricio_gugelmin]",
+   "field": "head",
+   "value": "f90_mauricio_gugelmin"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
+    "_metadata_": "f90_michele_alboreto",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_michele_alb/idf/f90_michele_alb_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_michele_alboreto]",
+   "field": "head",
+   "value": "f90_michele_alboreto"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
     "_metadata_": "f90_nelson_piquet",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_nelson_pique/idf/f90_nelson_pique_rig_head_morph_v1",
     "has_morph_data": "True",
@@ -74,6 +312,23 @@
    "table": "entrants.animation.driver_heads",
    "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
    "set": {
+    "_metadata_": "f90_nicola_larini",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_nicola_lar/idf/f90_nicola_lar_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_nicola_larini]",
+   "field": "head",
+   "value": "f90_nicola_larini"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
     "_metadata_": "f90_nigel_mansell",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_nigel_ma/idf/f90_nigel_ma_rig_head_morph_v1",
     "has_morph_data": "True",
@@ -85,6 +340,57 @@
    "select": "entrants.drivers.driver[_metadata_=f1990_nigel_mansell]",
    "field": "head",
    "value": "f90_nigel_mansell"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
+    "_metadata_": "f90_paolo_barilla",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_paolo_ba/idf/f90_paolo_ba_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_paolo_barilla]",
+   "field": "head",
+   "value": "f90_paolo_barilla"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
+    "_metadata_": "f90_philippe_alliot",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_philippe_a/idf/f90_philippe_a_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_philippe_alliot]",
+   "field": "head",
+   "value": "f90_philippe_alliot"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
+    "_metadata_": "f90_pierluigi_martini",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_pierluig/idf/f90_pierluig_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_pierluigi_martini]",
+   "field": "head",
+   "value": "f90_pierluigi_martini"
   },
   {
    "op": "add-row",
@@ -136,6 +442,23 @@
    "select": "entrants.drivers.driver[_metadata_=f1990_satoru_nakajima]",
    "field": "head",
    "value": "f90_satoru_nakajima"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
+    "_metadata_": "f90_stefano_modena",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_stefano_moden/idf/f90_stefano_moden_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_stefano_modena]",
+   "field": "head",
+   "value": "f90_stefano_modena"
   },
   {
    "op": "add-row",
