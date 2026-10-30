@@ -9,7 +9,9 @@ has none, so its model drag is scaled by the 2026 car's model drag over its open
 closed-wing drag over its model drag, at the variation's wing angles (closed_wing_drag). vp_times, tyre_wear and fuel_burn_granular
 are simulated with those tables on the track's stock line and brake line settings. The car has no ERS, so every ERS
 mode row is the no-ERS row, ers_use_granular is zero everywhere and ers_boost_data carries no ERS use. vp_chars and
-brakelinesettings stay the template's.
+brakelinesettings stay the template's. The tables are the race trim: the race tyre (the compound file's first dry code,
+SOF) and the race engine, RACE_POWER of the handling file's power and a limiter RACE_LIMITER_RPM lower, as the 1990
+native code (quali_engine.cpp) runs it outside qualifying.
 
 Outputs (relative to the car pack folder `carpack/`): erp/ai/<track>/<folder>.erp, erp/ai/index.json, erp/ai/laps.json,
 erp/ai/checks.json, assets/ai.json, and a copy of laps.json at addons/f1-1990/data/ai-laps-1990.json.
@@ -39,6 +41,8 @@ PLAIN_VP_PACKAGE = 'f2_2026_vehicle_package'
 SANITY_RADII = (50.0, 150.0, 300.0)
 SANITY_TRACK = 'melbourne'
 SANITY_FOLDERS = ('mclaren', 'haas')
+RACE_POWER = 0.9725
+RACE_LIMITER_RPM = 300.0
 
 
 def calendar_tracks():
@@ -134,6 +138,13 @@ def closed_wing_drag(game, cfg, cfg26, folder, variation):
     model26, game26 = straight_drag(cfg26, cal, variation, wing_drag_open(game, SOURCE, folder))
     model90, game90 = straight_drag(cfg, cal, variation, (1.0, 1.0))
     return round(model26 / game26 * game90 / model90, 4)
+
+
+def race_engine(cfg):
+    import math
+    out = cfg.with_overrides(power=RACE_POWER)
+    out.limiter = cfg.limiter - RACE_LIMITER_RPM * 2 * math.pi / 60
+    return out
 
 
 def car_config(game, handling_dir, folder, car_pack_compounds=None):
@@ -239,7 +250,7 @@ def job(args):
     cfg = car_config(game, handling_dir, folder, car_pack_compounds)
     cfg26 = carmodel.CarConfig.from_game(game, SOURCE, folder)
     drag_k = closed_wing_drag(game, cfg, cfg26, folder, variation)
-    cfg = cfg.with_overrides(drag=drag_k)
+    cfg = race_engine(cfg.with_overrides(drag=drag_k))
     tpl_sets = {x: _sets_of(templates[x]) for x in TABLE_EXTS}
     axes = template_axes(cfg, tpl_sets)
     rows = carmodel.build_tables(cfg, variation, axes, full=True)
