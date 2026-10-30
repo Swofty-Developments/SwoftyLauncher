@@ -43,3 +43,5 @@ ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/pit_phases_test pi
 ../build/pit_phases_test
 ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/audio_queue_test audio_queue_test.cpp
 ../build/audio_queue_test
+${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/heap_check_test heap_check_test.cpp
+../build/heap_check_test

@@ -54,6 +54,11 @@
       "binds": "native"
     },
     {
+      "id": "heap_check", "type": "toggle", "label": "Heap link guard", "default": true,
+      "description": "Checks the game heap links of each large block it frees and repairs a link that a write past the block before it destroyed (the session-load crash at 22:13), logging both blocks. Works in every mode.",
+      "binds": "native"
+    },
+    {
       "id": "crew_kit", "type": "toggle", "label": "1990 pit crew kit", "default": true,
       "description": "The pit and garage crews of the 1990 teams wear their team colours. Off: they wear the default crew uniform and crew_livery.erp is left stock.",
       "binds": "db"
@@ -243,7 +248,7 @@
       { "dll": "native/f1_1990_sessions.dll", "files": ["data/session-strings.json"] },
       { "dll": "native/f1_1990_qualilaps.dll" },
       { "dll": "native/f1_1990_pitphases.dll", "files": ["data/pit-phases.json"] },
-      { "dll": "native/f1_1990_audiofix.dll" }
+      { "dll": "native/f1_1990_audiofix.dll" }, { "dll": "native/f1_1990_heapcheck.dll" }
     ],
     "files": [
       { "source": "files/audio/v12_1990.bdl", "target": "audio/2025/bundles/v12_1990.bdl" },

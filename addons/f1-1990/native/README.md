@@ -16,7 +16,7 @@ Log lines (swofty log): `[f1-1990] GRID best-of (<why>)` once per pass, then one
 
 ## Build
 
-`./build.sh` builds the 21 DLLs with zig against the game headers in `native/include` and the SDK in `packages/sdk/include`. `f1_1990_parts.dll` binds `site_Sess_PuPanel_SlotHolder`, which has no `agree` verify row yet, so the core's `bindings.json` doesn't list it and the core drops that DLL; it loads with a loader whose `swofty/addons/core/bindings.json` adds the entry. `f1_1990_pitphases.dll` binds `Sess_PitStopUpdateJob_Update` and `g_Ne_NameTable`. `f1_1990_audiofix.dll` binds `Snd_Request_JobWorker`, `g_Snd_JobWorkerOverflow` and `g_Snd_JobWorkerLock`.
+`./build.sh` builds the 22 DLLs with zig against the game headers in `native/include` and the SDK in `packages/sdk/include`. `f1_1990_parts.dll` binds `site_Sess_PuPanel_SlotHolder`, which has no `agree` verify row yet, so the core's `bindings.json` doesn't list it and the core drops that DLL; it loads with a loader whose `swofty/addons/core/bindings.json` adds the entry. `f1_1990_pitphases.dll` binds `Sess_PitStopUpdateJob_Update` and `g_Ne_NameTable`. `f1_1990_audiofix.dll` binds `Snd_Request_JobWorker`, `g_Snd_JobWorkerOverflow` and `g_Snd_JobWorkerLock`. `f1_1990_heapcheck.dll` binds `Ne_Heap_DeallocateNonSmall`.
 
 `test/run.sh` runs the ranking unit tests on the host.
 
@@ -384,3 +384,27 @@ against a model of the queue and the workers' drain). The pending count stays as
 later only while slots 0-11 are all queued; the worker that finishes one of those moves it. The wrap also moves
 after every request call. Log lines: `[f1-1990] audio queue fix: on`, `first worker request (worker ..., job type ...)
 runs through thunk 0`, and `moved N queued worker request(s) from slots 12-23 to slots 0-11` (the first 16).
+
+## Heap link guard (`f1_1990_heapcheck.dll`)
+
+A separate DLL; option `heap_check` (default on), active in every mode. A game heap block has a 0x10-byte header at
+ptr - guard - 0x10 (guard = heap+0x108): +0x00 the link to the next older allocated block, +0x04 the link to the next
+newer one (16-byte units, 0 = none), +0x08 the block size (align16(requested) + 2 x guard + 0x10), +0x0c the requested
+size; the heap's range is heap+0x98 and heap+0xa0. `Ne_Heap_DeallocateNonSmall` (0x143963f80) unlinks a freed block
+through its links unchecked. At 22:13 (session 20261030-111101) something wrote past the end of a 0x460-byte block into
+the older link of the block after it; that block's free wrote 4 bytes elsewhere and left the 0x460-byte block linked to
+a free block, and its own free then looped the free tree (0x143962f10) until the stack ran out.
+
+| binding | address | use |
+|---|---|---|
+| `Ne_Heap_DeallocateNonSmall` | 0x143963f80 | wrap; checks the freed block's links before the game's unlink |
+
+Before each free the wrap checks that the older block links forward to this one and the newer one back. A broken
+older link is set back to the block just before it in memory when that block is allocated (its size field matches)
+and links forward to this one, which is the state the overrun leaves; the unlink then stays inside the list. Nothing
+else is changed. Each broken link is logged (the first 8): `[f1-1990] heap check: heap ... block ... links older ...
+(broken) newer ... (ok); older link set back to the block before it`, the header and the 0x40 bytes before it (the
+end of the block that ran over), that block's address, sizes and first 0x40 bytes (its vtable or first fields), and the
+call stack as exe offsets. `src/heap_check.hpp` is tested by `test/heap_check_test.cpp` on a model heap (clean lists
+with and without guards, an overrun into the next header repaired and unlinked, no repair when the block before links
+elsewhere, out-of-range links, free blocks never taken as the block before).
