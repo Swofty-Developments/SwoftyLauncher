@@ -77027,6 +77027,32 @@
    "used_by": [
     "addons/f1-1990/native/src/heap_check.cpp"
    ]
+  },
+  {
+   "id": "ai.eval_curvature_modifier",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 78 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 44 89 CB",
+   "match": "0x14060dd70",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14060dd70",
+   "kind": "func_start",
+   "names": [
+    "Ai_Eval_CurvatureModifier"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "racepace",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "addons/f1-1990/native/src/ai_quali.cpp"
+   ]
   }
  ]
 }
