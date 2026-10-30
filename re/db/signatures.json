@@ -81264,6 +81264,1398 @@
     }
    ],
    "used_by": []
+  },
+  {
+   "id": "core.rtt_register_cameras",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 F8 29 B4 24 50 01 00 00 48 89 CE 48 8D 3D",
+   "match": "0x140140fb0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140140fb0",
+   "kind": "func_start",
+   "names": [
+    "Ne_Rtt_RegisterCameras"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.rtt_unregister_generators",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 05 00 00 C5 78 29 BC 24 10 05 00 00 C5 78 29 B4 24 00 05 00 00 C5 78 29",
+   "match": "0x14015f750",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14015f750",
+   "kind": "func_start",
+   "names": [
+    "Ne_Rtt_UnregisterGenerators"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.rtt_default_callback",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 30 80 3D ?? ?? ?? ?? 01 75 7E 4C 89",
+   "match": "0x140174f50",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140174f50",
+   "kind": "func_start",
+   "names": [
+    "Ne_Rtt_DefaultCallback"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.gfx2_texture_manager_set_in_race_off",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B 3D ?? ?? ?? ?? 80 BF C8",
+   "match": "0x1401775b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1401775b0",
+   "kind": "func_start",
+   "names": [
+    "Ne_Gfx2TextureManager_SetInRaceOff"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.gfx2_texture_manager_set_in_race_on",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 3D",
+   "match": "0x1401777e0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1401777e0",
+   "kind": "func_start",
+   "names": [
+    "Ne_Gfx2TextureManager_SetInRaceOn"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.cut_scene_script_activate_extra_world",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 83 EC 40 80 B9 50 05 00",
+   "match": "0x140238170",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140238170",
+   "kind": "func_start",
+   "names": [
+    "Game_CutSceneScript_ActivateExtraWorld"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.cut_scene_script_set_state_finished",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01 75 76 B8",
+   "match": "0x140238af0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140238af0",
+   "kind": "func_start",
+   "names": [
+    "Game_CutSceneScript_SetStateFinished"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.cut_scene_script_deactivate_primary_world",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 80 3D ?? ?? ?? ?? 01 75 60 B8 56",
+   "match": "0x14024dfd0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14024dfd0",
+   "kind": "func_start",
+   "names": [
+    "Game_CutSceneScript_DeactivatePrimaryWorld"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.cut_scene_script_activate_primary_world",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 38 80 3D ?? ?? ?? ?? 01",
+   "match": "0x14024e180",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14024e180",
+   "kind": "func_start",
+   "names": [
+    "Game_CutSceneScript_ActivatePrimaryWorld"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.pod2019_first_script_shutdown",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 81 EC 80 00 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6C B8 4C",
+   "match": "0x140363420",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140363420",
+   "kind": "func_start",
+   "names": [
+    "Game_Pod2019FirstScript_Shutdown"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.pod2019_first_script_on_shut_down_complete",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 4C 01 00 00 48 8D 3D ?? ?? ?? ?? 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 8B 0C 87 85 C9 74 52 81",
+   "match": "0x140363700",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140363700",
+   "kind": "func_start",
+   "names": [
+    "Game_Pod2019FirstScript_OnShutDownComplete"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.pod2019_first_script_initialise",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 07 00 00 C5",
+   "match": "0x140363850",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140363850",
+   "kind": "func_start",
+   "names": [
+    "Game_Pod2019FirstScript_Initialise"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.career_events_sequencer_set_loading_enabled",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 20 48 8B B1 F0 02 00 00 48 85",
+   "match": "0x140c77ed0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c77ed0",
+   "kind": "func_start",
+   "names": [
+    "Game_CareerEventsSequencer_SetLoadingEnabled"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.career_events_sequencer_set_all_enabled",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 74 01 00 00",
+   "match": "0x140c7a210",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c7a210",
+   "kind": "func_start",
+   "names": [
+    "Game_CareerEventsSequencer_SetAllEnabled"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.career_events_sequencer_unload_all",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5F B8 74 01 00 00",
+   "match": "0x140c7a510",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c7a510",
+   "kind": "func_start",
+   "names": [
+    "Game_CareerEventsSequencer_UnloadAll"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.career_event_resource_manager_deactivate_extra_world",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 80 39 00 0F 84",
+   "match": "0x140c7ac60",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c7ac60",
+   "kind": "func_start",
+   "names": [
+    "Game_CareerEventResourceManager_DeactivateExtraWorld"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.career_event_resource_manager_shutdown_extra_worlds",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE 80 3D ?? ?? ?? ?? 01 75 66 B8 AD 00 00",
+   "match": "0x140c7ce90",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c7ce90",
+   "kind": "func_start",
+   "names": [
+    "Game_CareerEventResourceManager_ShutdownExtraWorlds"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.streaming_asset_load_task_update",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 60 48 89 CE 8B 41 10 83 F8 02",
+   "match": "0x142d4b6a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d4b6a0",
+   "kind": "func_start",
+   "names": [
+    "Game_StreamingAssetLoadTask_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.session_state_enable_on_demand_texture_streaming",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 20 48 8B 35 ?? ?? ?? ?? 48 85 F6 74 7F 80 3D",
+   "match": "0x142d873c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d873c0",
+   "kind": "func_start",
+   "names": [
+    "Game_SessionState_EnableOnDemandTextureStreaming"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.session_state_end_race_update",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 38 48 89 CE 48 8B B9 60 0D 00 00 48",
+   "match": "0x142dab950",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142dab950",
+   "kind": "func_start",
+   "names": [
+    "Game_SessionState_PurgeTexturesAndWait"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.rtt_task_manager_on_task_complete",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 C5 89",
+   "match": "0x1434f0660",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1434f0660",
+   "kind": "func_start",
+   "names": [
+    "Game_RttTaskManager_OnTaskComplete"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.rtt_task_manager_process_completed_tasks",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 79 7F 44 24 70 C5 F9 7F 7C 24 60 C5 F9 7F 74 24 50 48 89 CE",
+   "match": "0x1434f0950",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1434f0950",
+   "kind": "func_start",
+   "names": [
+    "Game_RttTaskManager_ProcessCompletedTasks"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.rtt_task_manager_start_task",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 C5 78 29 BC 24 80 01 00 00 C5 78 29 B4 24 70 01 00 00 C5 78 29 AC 24 60 01 00 00 C5 78 29 A4 24 50 01 00 00 C5 78 29 9C 24 40 01 00 00 C5 78 29 94 24 30 01 00 00 C5 78 29 8C 24 20 01 00 00 C5 78 29 84 24 10 01 00 00 C5 F9 7F BC 24",
+   "match": "0x1434f0fe0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1434f0fe0",
+   "kind": "func_start",
+   "names": [
+    "Game_RttTaskManager_StartTask"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.rtt_task_manager_queue_task",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 BC 24 90 00 00 00 C5 F8 29 B4 24 80 00 00 00 4D 89 CF",
+   "match": "0x1434f2eb0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1434f2eb0",
+   "kind": "func_start",
+   "names": [
+    "Game_RttTaskManager_QueueTask"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.rtt_task_manager_cleanup_task",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 83 EC 30 C5 F8 29 74 24 20 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 65",
+   "match": "0x1434f3be0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1434f3be0",
+   "kind": "func_start",
+   "names": [
+    "Game_RttTaskManager_CleanupTask"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.save_error_set_fmt",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 81 EC 40 08 00 00 89 CE 48 8D 44 24 40 48 C7 44 24 30 00 08 00 00 48 89 44 24 38 C6 44 24 40 00 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 4C 24",
+   "match": "0x1436593b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1436593b0",
+   "kind": "func_start",
+   "names": [
+    "Ne_SaveError_SetFmt"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.gfx2_renderer_initialise",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 38 12 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 78 29 BC 24 20 12",
+   "match": "0x143b5eb60",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143b5eb60",
+   "kind": "func_start",
+   "names": [
+    "Ne_Gfx2Renderer_Initialise"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.gfx2_renderer_render_frame",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 A8 1A 00",
+   "match": "0x143b77ea0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143b77ea0",
+   "kind": "func_start",
+   "names": [
+    "Ne_Gfx2Renderer_RenderFrame"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.rtt_renderer_submit_job",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC C0 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 89 D7 48 89",
+   "match": "0x143d8e380",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143d8e380",
+   "kind": "func_start",
+   "names": [
+    "Ne_RttRenderer_SubmitJob"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.rtt_renderer_flush_jobs",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 48 8B 89 D8 00 00 00 FF",
+   "match": "0x143d8efd0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143d8efd0",
+   "kind": "func_start",
+   "names": [
+    "Ne_RttRenderer_FlushJobs"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.crowd_plugin_proxy_destructor",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 20 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 80 3D ?? ?? ?? ?? 01 0F 85",
+   "match": "0x143e9e350",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143e9e350",
+   "kind": "func_start",
+   "names": [
+    "Ne_CrowdPluginProxy_Destructor"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.video_instance_close",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC F0 00 00 00 C5 F8 29 B4 24 E0 00 00 00 48 89 CE 80 B9",
+   "match": "0x143f87360",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143f87360",
+   "kind": "func_start",
+   "names": [
+    "Ne_VideoInstance_Close"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.video_init_bink_threads",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 38 80 3D ?? ?? ?? ?? 00 0F 85 ?? ?? ?? ?? 48 89 D6 80 3D",
+   "match": "0x143f8caa0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143f8caa0",
+   "kind": "func_start",
+   "names": [
+    "Ne_Video_InitBinkThreads"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.video_manager_open_video",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 4C 89 CB 4D 89",
+   "match": "0x143f8ddc0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143f8ddc0",
+   "kind": "func_start",
+   "names": [
+    "Ne_VideoManager_OpenVideo"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.video_manager_play_video",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 D6 48 89 CF 48 8B 89 A0 00",
+   "match": "0x143f90900",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143f90900",
+   "kind": "func_start",
+   "names": [
+    "Ne_VideoManager_PlayVideo"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.video_manager_play_interval_frames",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE 48 8B 89 A0 00 00",
+   "match": "0x143f90e70",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143f90e70",
+   "kind": "func_start",
+   "names": [
+    "Ne_VideoManager_PlayIntervalFrames"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.video_manager_play_interval_seconds",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 68 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 48 89 D7 48 89",
+   "match": "0x143f913a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143f913a0",
+   "kind": "func_start",
+   "names": [
+    "Ne_VideoManager_PlayIntervalSeconds"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.video_manager_play_one_frame",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 58 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 48 89 D7",
+   "match": "0x143f91990",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143f91990",
+   "kind": "func_start",
+   "names": [
+    "Ne_VideoManager_PlayOneFrame"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.video_manager_pause_video",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CB 48 8B 81 A0",
+   "match": "0x143f91e90",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143f91e90",
+   "kind": "func_start",
+   "names": [
+    "Ne_VideoManager_PauseVideo"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.video_manager_resume_video",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 48 89 CF 48 8B 89 A0 00",
+   "match": "0x143f92260",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143f92260",
+   "kind": "func_start",
+   "names": [
+    "Ne_VideoManager_ResumeVideo"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.video_manager_stop_video",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 D7 48 89 CE 48 8B 89 A0 00",
+   "match": "0x143f92510",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143f92510",
+   "kind": "func_start",
+   "names": [
+    "Ne_VideoManager_StopVideo"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.save_system_thread_process_request",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 08 00 00 48",
+   "match": "0x1441396a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1441396a0",
+   "kind": "func_start",
+   "names": [
+    "Ne_SaveSystem_ThreadProcessRequest"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.save_error_win32_fmt_u",
+   "section": ".xtls",
+   "pattern": "56 57 48 81 EC 48 08 00 00 48 89 C8 48 8D 4C 24 48 48 C7 44 24 38 00 08 00 00 48 89 4C 24 40 C6 44 24 48 00 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 30 44 8B 02 48",
+   "match": "0x144144700",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144144700",
+   "kind": "func_start",
+   "names": [
+    "Ne_SaveError_Win32FmtU"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.save_error_win32_fmt_s_s_u",
+   "section": ".xtls",
+   "pattern": "56 57 48 81 EC 48 08 00 00 48 89 C8 48 8D 4C 24 48 48 C7 44 24 38 00 08 00 00 48 89 4C 24 40 C6 44 24 48 00 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 30 41 8B 09 4D",
+   "match": "0x144148040",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144148040",
+   "kind": "func_start",
+   "names": [
+    "Ne_SaveError_Win32FmtSSU"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.save_error_not_directory_fmt_s_s",
+   "section": ".xtls",
+   "pattern": "56 57 48 81 EC 48 08 00 00 48 89 C8 48 8D 4C 24 48 48 C7 44 24 38 00 08 00 00 48 89 4C 24 40 C6 44 24 48 00 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 30 4D 8B 08 4C",
+   "match": "0x144148260",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144148260",
+   "kind": "func_start",
+   "names": [
+    "Ne_SaveError_NotDirectoryFmtSS"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.save_system2_win_empty_directory",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 0E 00 00 48",
+   "match": "0x144148480",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144148480",
+   "kind": "func_start",
+   "names": [
+    "Ne_SaveSystem2Win_EmptyDirectory"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.save_error_win32_fmt_s_u",
+   "section": ".xtls",
+   "pattern": "56 57 48 81 EC 48 08 00 00 48 89 C8 48 8D 4C 24 48 48 C7 44 24 38 00 08 00 00 48 89 4C 24 40 C6 44 24 48 00 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 30 45 8B 08 4C",
+   "match": "0x14414ad20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14414ad20",
+   "kind": "func_start",
+   "names": [
+    "Ne_SaveError_Win32FmtSU"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.save_system2_win_rename_directory",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 18 11 00 00 E8 ?? ?? ?? ?? 48 29 C4 44 89 CD",
+   "match": "0x14414b150",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14414b150",
+   "kind": "func_start",
+   "names": [
+    "Ne_SaveSystem2Win_RenameDirectory"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.save_error_encryption_source_failed",
+   "section": ".xtls",
+   "pattern": "56 57 48 81 EC 48 08 00 00 48 8D 44 24 48 48 C7 44 24 38 00 08 00 00 48 89 44 24 40 C6 44 24 48 00 48 8D 05 ?? ?? ?? ?? 48 89 44 24 30 44 8B 01",
+   "match": "0x14414c780",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14414c780",
+   "kind": "func_start",
+   "names": [
+    "Ne_SaveError_EncryptionSourceFailed"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.save_error_set_fmt_w_s",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 81 EC 40 08 00 00 89 CE 48 8D 44 24 40 48 C7 44 24 30 00 08 00 00 48 89 44 24 38 C6 44 24 40 00 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 4D 8B 09 48",
+   "match": "0x14414c9a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14414c9a0",
+   "kind": "func_start",
+   "names": [
+    "Ne_SaveError_SetFmtWS"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.save_error_selected_index_out_of_range",
+   "section": ".xtls",
+   "pattern": "56 57 48 81 EC 48 08 00 00 48 8D 44 24 48 48 C7 44 24 38 00 08 00 00 48 89 44 24 40 C6 44 24 48 00 48 8D 05 ?? ?? ?? ?? 48 89 44 24 30 4C 8B 0A",
+   "match": "0x14414cbb0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14414cbb0",
+   "kind": "func_start",
+   "names": [
+    "Ne_SaveError_SelectedIndexOutOfRange"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.save_system2_win_save_selected",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 44 89 CD 4C 89 C3 48 89 D7 48 89 CE",
+   "match": "0x144152070",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144152070",
+   "kind": "func_start",
+   "names": [
+    "Ne_SaveSystem2Win_SaveSelected"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.save_error_transform_failed",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 81 EC 50 08 00 00 89 CE 48 8D 44 24",
+   "match": "0x144152410",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144152410",
+   "kind": "func_start",
+   "names": [
+    "Ne_SaveError_TransformFailed"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.save_error_set_fmt_s_s_s",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 81 EC 50 08 00 00 89 CE 48 8B 84 24",
+   "match": "0x144152630",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144152630",
+   "kind": "func_start",
+   "names": [
+    "Ne_SaveError_SetFmtSSS"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.save_error_win32_fmt_s_s_s_u",
+   "section": ".xtls",
+   "pattern": "56 57 48 81 EC 58 08 00 00 48 89 C8 48 8B 8C 24",
+   "match": "0x144152850",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144152850",
+   "kind": "func_start",
+   "names": [
+    "Ne_SaveError_Win32FmtSSSU"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.save_error_corrupt_fmt_s_u_u",
+   "section": ".xtls",
+   "pattern": "56 57 48 81 EC 48 08 00 00 48 89 C8 48 8D 4C 24 48 48 C7 44 24 38 00 08 00 00 48 89 4C 24 40 C6 44 24 48 00 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 30 41 8B 09 45",
+   "match": "0x144152a80",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144152a80",
+   "kind": "func_start",
+   "names": [
+    "Ne_SaveError_CorruptFmtSUU"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.save_error_thumbnail_too_large",
+   "section": ".xtls",
+   "pattern": "56 57 48 81 EC 48 08 00 00 48 8D 44 24 48 48 C7 44 24 38 00 08 00 00 48 89 44 24 40 C6 44 24 48 00 48 8D 05 ?? ?? ?? ?? 48 89 44 24 30 44 0F B7",
+   "match": "0x1441532d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1441532d0",
+   "kind": "func_start",
+   "names": [
+    "Ne_SaveError_ThumbnailTooLarge"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.world_load_task_update",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 81 EC F8 00 00 00 48 89 CE 8B",
+   "match": "0x14442a090",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14442a090",
+   "kind": "func_start",
+   "names": [
+    "Ne_WorldLoadTask_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
   }
  ]
 }
