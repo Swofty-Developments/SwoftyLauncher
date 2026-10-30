@@ -29,10 +29,15 @@ common.erp. No 2026 archive, row or file is touched.
   Chassis                mass from the season pack, MOIX/Y/Z scaled by the same ratio to the donor's mass, MOIX and
                          MOIY also by the square of the 1990 wheelbase over the donor's
   Axles                  the car pack's model sets the wheel positions (UseModelPositions): LocalRestPositionX/Z
-                         carry the 1990 model's wheel_fl and wheel_bl nodes (MODEL_AXLES), Chassis COMZ (and
-                         F1Tuning ChassisCOMZMin/Max) and FuelTank COMZ keep their fraction of the donor model's
-                         wheelbase (DONOR_AXLES), and F1Plank keeps the donor's distance from each axle to the end
-                         of the plank (OffsetZ/ExtentZ)
+                         carry the 1990 model's wheel_fl and wheel_bl nodes (MODEL_AXLES). The centre of mass sits at
+                         -COMZ (the static axle loads at 0x1446b5f60 put (-COMZ - rear z) / wheelbase of the weight on
+                         the front axle; the stock 2026 car's +0.171 on +-1.7 m axles is 45.0 % front, inside the 2026
+                         rules' 44.5-46 %). Chassis COMZ (and F1Tuning ChassisCOMZMin/Max) puts FRONT_WEIGHT_1990
+                         (41 %) on the front axle under handling 1990 and 1990_low and keeps the donor's share
+                         (DONOR_AXLES) under modern; FuelTank COMZ keeps its fraction of the donor's wheelbase. F1Plank
+                         is placed relative to the centre of mass (the stock radUpgradeWeightRedistribution adds the
+                         same 0.025 to COMY and the plank's OffsetY) and keeps the donor's distance from each axle to
+                         the end of the plank (OffsetZ/ExtentZ)
   F1Aero                 drag scaled by the season pack, no moving front wing; downforce stays stock; no DRS
                          hardware: the DRS failure/joint keys removed, flap angle, open/close speed and
                          DRS-open wing factors as on the safety car (0, 1, 1.0), radUpgradeDRS emptied
@@ -67,8 +72,8 @@ Kerbs, every variant but stock: BumpStopHeight, MaxHeight and RestLength (and th
 KERB_BUMP (15 mm), so the static car keeps its height and has 15 mm more bump travel before the bump stop with the bump
 stop's own range kept; MinHeight goes down by KERB_DROOP (10 mm) of extra droop; BumpStopRisingSpring x0.25,
 BumpStopRisingDamping x0.5 and FastBumpDamping x0.6 (the fast zone above DampingZoneDivision, 0.06 m/s, so the slow
-damping that sets the handling stays). The ConvexHull vertices move like COMZ (each z at the same fraction of the
-wheelbase between the donor model's axles and the 1990 model's), so the 2026 hull's floor, nose and wings sit under and
+damping that sets the handling stays). The ConvexHull vertices (model frame) keep each z at the same fraction of the
+wheelbase between the donor model's axles and the 1990 model's, so the 2026 hull's floor, nose and wings sit under and
 around the shorter 1990 car instead of up to 0.3 m past it.
 
 Option ers: removed and zeroed take the 2026 hybrid out (the section, or every harvest, deploy and override limit at 0);
@@ -89,8 +94,11 @@ no compound at all. The car pack's compound file names its compounds F1_1990_*, 
 Option handling, one PERIOD entry per value: modern scales MOIX/Y/Z with the mass and keeps the donor's aero, grip
 and brakes. 1990 (the default) scales them with the mass like modern; 1990_low keeps the donor's (moi: the share of
 the mass scaling kept). Both add the period cuts: every lift curve (F1Aero
-Front/RearCoeffLiftVsRideHeight and VsChassisRake) and wing lift coefficient (Front/RearWingCoL0-2) x aero, so the
-balance stays the donor's; Tyre GripMultiplier per axle (the tyre force multiplies it in and clamps to
+Front/RearCoeffLiftVsRideHeight and VsChassisRake) and wing lift coefficient (Front/RearWingCoL0-2) x aero; a 1990
+balance: 41 % of the weight on the front axle (1990 cars ran about 40/60), the front curves and wing lift x1.08 and the
+rear x0.952 (AERO_BALANCE_1990: the front's share of the downforce at a medium wing goes from 37.6 % to 40.6 % with the
+total unchanged), and each AntiRollConstant and its setup range x0.85 front and x1.45 rear (ROLL_1990: the front's share
+of the roll stiffness from 79.5 % to 72.6 % at the base setup); Tyre GripMultiplier per axle (the tyre force multiplies it in and clamps to
 Min/MaxGripMultiplier at 0x1446b7950); BrakeECU torques x the mass ratio x brake; Chassis FFBScale x FFB_1990 (1.3), a
 heavier wheel for an unassisted rack; the slipstream of SLIPSTREAM_1990. The game scales each force in a tow by
 scale + (1 - scale) x the clean-air share (0x1446dceb0: the m_aeroSlipStreamAirDensityScale* values are the air density
@@ -267,6 +275,11 @@ PERIOD = {
     '1990_low': {'aero': 0.33, 'grip': {'Front': 0.83, 'Rear': 0.85}, 'brake': 0.9, 'moi': 0.0},
     'modern': None,
 }
+FRONT_WEIGHT_1990 = 0.41
+ROLL_1990 = {'Front': 0.85, 'Rear': 1.45}
+AERO_BALANCE_1990 = {'Front': 1.08, 'Rear': 0.952}
+FRONT_LIFT = (b'FrontCoeffLiftVsRideHeight', b'FrontCoeffLiftVsChassisRake', b'FrontWingCoL0', b'FrontWingCoL1',
+              b'FrontWingCoL2')
 HANDLING_VALUES = tuple(PERIOD)
 SLIPSTREAM_1990 = {
     b'm_aeroSlipStreamAirDensityScaleDrag': (0.8, 0.65),
@@ -599,36 +612,65 @@ def axle_frame(c):
     return zf, zr, xf, xr, df, dr
 
 
-def geometry(root, c):
+def geometry(root, c, front_weight=None):
     zf, zr, xf, xr, df, dr = axle_frame(c)
 
     def place(z):
-        return round(zr + (z - dr) / (df - dr) * (zf - zr), 4)
+        return zr + (z - dr) / (df - dr) * (zf - zr)
 
     for part in section(root, b'ConvexHull').children:
         if part.kind == 0 and part.name == b'ConvexHullData':
             for v in part.children:
                 if v.kind == 0:
-                    v.set_attr(b'z', fmt(place(float(v.attr(b'z')))))
+                    v.set_attr(b'z', fmt(round(place(float(v.attr(b'z'))), 4)))
 
     chassis = section(root, b'Chassis')
-    comz = place(value(chassis, b'COMZ'))
+    donor_comz = value(chassis, b'COMZ')
+    if front_weight is None:
+        comz = round(-place(-donor_comz), 4)
+    else:
+        comz = round(-(zr + front_weight * (zf - zr)), 4)
     set_value(chassis, b'COMZ', comz)
     tuning = section(root, b'F1Tuning')
     for k in (b'ChassisCOMZMin', b'ChassisCOMZMax'):
         set_value(tuning, k, comz)
     tank = section(root, b'FuelTank')
-    set_value(tank, b'COMZ', place(value(tank, b'COMZ')))
+    set_value(tank, b'COMZ', round(-place(-value(tank, b'COMZ')), 4))
     for end, node in named(section(root, b'SuspensionSystem'), b'Suspension').items():
         set_value(node, b'LocalRestPositionZ', zf if end == 'Front' else zr)
         set_value(node, b'LocalRestPositionX', xf if end == 'Front' else xr)
     plank = section(root, b'F1Plank')
-    off, ext = value(plank, b'OffsetZ'), value(plank, b'ExtentZ')
+    off, ext = value(plank, b'OffsetZ') - donor_comz, value(plank, b'ExtentZ')
     front = zf - (df - (off + ext))
     rear = zr + ((off - ext) - dr)
-    set_value(plank, b'OffsetZ', round((front + rear) / 2, 3))
+    set_value(plank, b'OffsetZ', round((front + rear) / 2 + comz, 3))
     set_value(plank, b'ExtentZ', round((front - rear) / 2, 3))
     return ((zf - zr) / (df - dr)) ** 2
+
+
+def front_share(root):
+    susp = named(section(root, b'SuspensionSystem'), b'Suspension')
+    zf, zr = value(susp['Front'], b'LocalRestPositionZ'), value(susp['Rear'], b'LocalRestPositionZ')
+    return (-value(section(root, b'Chassis'), b'COMZ') - zr) / (zf - zr)
+
+
+def balance(root):
+    tuning = section(root, b'F1Tuning')
+    for end, node in named(section(root, b'SuspensionSystem'), b'Suspension').items():
+        k = ROLL_1990[end]
+        set_value(node, b'AntiRollConstant', round(value(node, b'AntiRollConstant') * k))
+        for name in (f'{end}SuspensionAntiRollBarMin', f'{end}SuspensionAntiRollBarMax'):
+            set_value(tuning, name.encode(), round(value(tuning, name.encode()) * k))
+    aero = section(root, b'F1Aero')
+    for name in LIFT_CURVES + LIFT_WINGS:
+        k = AERO_BALANCE_1990['Front' if name in FRONT_LIFT else 'Rear']
+        node = child(aero, name)
+        if node.attr(b'value') is not None:
+            set_value(aero, name, value(aero, name) * k)
+            continue
+        for e in node.children:
+            if e.kind == 0:
+                e.set_attr(b'y', fmt(round(float(e.attr(b'y')) * k, 6)))
 
 
 def engine_curve(root, eng_row, peak_w):
@@ -750,7 +792,7 @@ def convert(root, row, ers, size, handling):
     for k in (b'FuelPowerScaleLean', b'FuelPowerScaleStandard', b'FuelPowerScaleRich', b'FuelPowerScaleMax'):
         set_value(ecu, k, round(value(ecu, k) / std, 4))
 
-    length = geometry(root, c)
+    length = geometry(root, c, None if cut is None else FRONT_WEIGHT_1990)
     chassis = section(root, b'Chassis')
     base_mass = BASE_MASS if cut is None else PERIOD_MASS
     mass = base_mass * spread(row['weight'])
@@ -762,6 +804,7 @@ def convert(root, row, ers, size, handling):
         set_value(chassis, k, round(value(chassis, k) * (1 + (ratio - 1) * moi) * size_k, 1))
     if cut is not None:
         period(root, ratio, cut)
+        balance(root)
 
     aero = section(root, b'F1Aero')
     drag = spread(row['drag']) * (1.0 if cut is None else PERIOD_DRAG)
@@ -776,6 +819,7 @@ def convert(root, row, ers, size, handling):
     return {'team': row['name'], 'engine': eng_row['name'], 'hp': round(real_peak / HP_W),
             'peak_rpm': eng_row['peak_rpm'], 'limiter_rpm': eng_row['limiter_rpm'], 'mass': round(mass, 1),
             'drag': round(drag, 3), 'final_drive': round(final, 3), 'gears': gears, 'comz': value(chassis, b'COMZ'),
+            'front': front_share(root),
             'moi': tuple(value(chassis, k) for k in MOMENTS),
             'plank': (value(plank, b'OffsetZ'), value(plank, b'ExtentZ'))}
 
@@ -919,7 +963,7 @@ def main():
     files, report = build(args.game, out)
     for r in report:
         print(f'{r["car"]:28} {r["team"]:22} {r["engine"]:16} {r["hp"]:4} hp @ {r["peak_rpm"]}, limiter '
-              f'{r["limiter_rpm"]} rpm  {r["mass"]:6} kg  MOI {r["moi"]}  COMZ {r["comz"]:+.4f}  '
+              f'{r["limiter_rpm"]} rpm  {r["mass"]:6} kg  MOI {r["moi"]}  COMZ {r["comz"]:+.4f} ({r["front"]:.1%} front)  '
               f'plank {r["plank"][0]:+.3f}/{r["plank"][1]:.3f}  drag x{r["drag"]}  final {r["final_drive"]}  {r["gears"]} gears')
     if args.write:
         return 0
