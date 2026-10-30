@@ -16,7 +16,7 @@ Log lines (swofty log): `[f1-1990] GRID best-of (<why>)` once per pass, then one
 
 ## Build
 
-`./build.sh` builds the 17 DLLs with zig against the game headers in `native/include` and the SDK in `packages/sdk/include`. `f1_1990_parts.dll` binds `site_Sess_PuPanel_SlotHolder`, which has no `agree` verify row yet, so the core's `bindings.json` doesn't list it and the core drops that DLL; it loads with a loader whose `swofty/addons/core/bindings.json` adds the entry.
+`./build.sh` builds the 19 DLLs with zig against the game headers in `native/include` and the SDK in `packages/sdk/include`. `f1_1990_parts.dll` binds `site_Sess_PuPanel_SlotHolder`, which has no `agree` verify row yet, so the core's `bindings.json` doesn't list it and the core drops that DLL; it loads with a loader whose `swofty/addons/core/bindings.json` adds the entry. `f1_1990_pitphases.dll` binds `Sess_PitStopUpdateJob_Update` and `g_Ne_SequenceNameTable`, both L2 without an `agree` verify row, the same way.
 
 `test/run.sh` runs the ranking unit tests on the host.
 
@@ -338,3 +338,18 @@ A car that has started 12 laps and crosses the line again, or leaves its garage 
 The player gets a race HUD toast (`swofty::hud::toast`, English) at each lap start: `LAP n OF 12` with the laps left after it, `Last qualifying lap: box at the end of it` on lap 12, and `NO LAPS LEFT` with the chequered flag icon when the car is sent in. AI cars get no toast.
 
 Lines: `[f1-1990] quali laps: session <id>: 12 laps per car, player V<nn>`; `... V<nn>[ (player)] left its garage|crossed the line: lap <n> of 12 started` (every player lap, every AI lap 12, the first 8 other AI laps); `... V<nn>[ (player)] <crossed the line|left its garage|left its pit box> with all 12 laps used; sent to its garage on the next frame`; `... V<nn> put in its pit box (pit status <a> -> <b>, forced box <0|1>: ...)`; `... V<nn> is already on its way in (pit status <n>); not sent`. Without the core's `session.lap` (an older core) it logs `no session.lap` and only garage exits count. The environment variable `F1990_QUALI_LAPS` (1 to 12) lowers the limit for a test run and logs `F1990_QUALI_LAPS=<n> (test limit)`.
+
+## Pit stop crew pace (`f1_1990_pitphases.dll`)
+
+A separate DLL; option `pit_phases_1990` (default on); ships `data/pit-phases.json` (`tools/pit_phases.py` from the stock `animation_package/scenes/pitstops/f1/pitstop_26.erp`) through its entry's `files`. The game plays a stop's crew sequence between its `Start` and `Stop` events at one rate, the sequence's base time (2.1 or 2.58 s) over the stop's target time; 1990 targets are 7 to 12 s (`tools/rules.py`), so the stock stop played in slow motion. The DLL keeps that target and plays the crew at rate 1, with the extra time spent in the slow phases.
+
+| binding | address | use |
+|---|---|---|
+| `Sess_PitStopUpdateJob_Update` | 0x1403c06a0 | wrapped: the pit stop update job (vtable slot 3 at 0x1456236b8); job+0x08 the PitStopInstance, job+0x10 dt. The update scales dt by PitStopInstance+0x3bc, which the `Start` event sets to the crew speed and `Stop` puts back to 1, and advances the crew sequence (+0x3b0) frame (+0x5c) by that dt times the sequence's frame rate |
+| `g_Ne_SequenceNameTable` | 0x14618ce08 | data: the sequence's name, `*(*table+0x08) + index * 0x10` with the index at resource+0x38 (resource = sequence+0x08) |
+| `Sess_TyreAllocation_OnSessionStart` | 0x140bcc190 | wrapped: a session start on a 1990 weekend (`src/weekend.hpp`) turns the DLL on, any other turns it off |
+
+On the first update after the game sets a crew speed r below 1 for a sequence listed in `data/pit-phases.json`, at most 12 frames after its `Start`, the DLL plans the stop (`src/pit_phases.hpp`, tested by `test/pit_phases_test.cpp`): the extra time is (Stop - Start) / 30 x (1 / r - 1). 70 % of it is held, shared equally, at each frame of a `play_anim_tyre_gun_on` audio key (the wheel guns tightening each wheel: frames 77, 82, 83 of the standard 2.58 s stop); the rest slows the frames from 3 before the first `play_anim_jack_move`/`play_anim_jack_down` key to the later of `Stop` and `JC`. Every other frame plays at rate 1. Each update writes the rate (0 in a hold) to PitStopInstance+0x3bc before the game's update; at the end frame it writes 1. A hold freezes the whole crew sequence, wheel gunners on the nuts, jacks up. The stop ends at the same time as the game's own: (Stop - Start) / (30 r) plus (JC - Stop) / 30. A sequence without a row (none of the 207 stock F1 crew sequences lacks one), or a crew speed of 1 or more, keeps the game's rate.
+
+Lines: `[f1-1990] pit phases: 207 crew sequence(s) from data/pit-phases.json at 30 fps`; `... 1990 weekend: stops at crew speed 1 with held phases` / `not a 1990 weekend ...`; per stop (first 32 lines) `"<sequence>" crew speed <r> -> 1.0; +<s> s as <n> hold(s) of <s> s at the gun-on frames and a jack stretch from frame <f> at <rate>; stop <s> s as before`, then `"<sequence>" ended after <s> s (game's stop <s> s)`, or why the game's speed stays.
+

@@ -44,6 +44,11 @@
       "binds": "native"
     },
     {
+      "id": "pit_phases_1990", "type": "toggle", "label": "1990 pit stop crew pace", "default": true,
+      "description": "In 1990 races the crew works at normal speed and the longer 1990 stop is spent holding the wheel guns on and lowering the jacks slowly; off plays the whole stop in slow motion.",
+      "binds": "native"
+    },
+    {
       "id": "rnd_look_1990", "type": "toggle", "label": "1990 R&D colours and icons", "default": true,
       "description": "Gives each R&D department a 1990 colour and a period icon in 1990 careers only; 2025 and 2026 careers keep the stock look.",
       "binds": "native"
@@ -220,7 +225,8 @@
       { "dll": "native/f1_1990_rndlook.dll", "files": ["data/rnd-look.json"] },
       { "dll": "native/f1_1990_wizard.dll", "files": ["data/calendar-1990.json"] }, { "dll": "native/f1_1990_intro.dll" },
       { "dll": "native/f1_1990_sessions.dll", "files": ["data/session-strings.json"] },
-      { "dll": "native/f1_1990_qualilaps.dll" }
+      { "dll": "native/f1_1990_qualilaps.dll" },
+      { "dll": "native/f1_1990_pitphases.dll", "files": ["data/pit-phases.json"] }
     ],
     "files": [
       { "source": "files/audio/v12_1990.bdl", "target": "audio/2025/bundles/v12_1990.bdl" },

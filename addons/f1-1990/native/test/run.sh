@@ -37,3 +37,5 @@ ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/calendar_test cale
 ../build/calendar_test ../../data/calendar-1990.json
 ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/quali_laps_test quali_laps_test.cpp
 ../build/quali_laps_test
+${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/pit_phases_test pit_phases_test.cpp
+../build/pit_phases_test

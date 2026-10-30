@@ -1,0 +1,2436 @@
+{
+ "fps": 30,
+ "sequences": {
+  "jobcompletepfwrtofrontwingstop": {
+   "start": 172,
+   "stop": 397,
+   "jc": 399,
+   "guns": [
+    223,
+    225,
+    250,
+    254
+   ],
+   "jack": 377
+  },
+  "jobcompletepfwrtofrontwingstop10sp": {
+   "start": 496,
+   "stop": 734,
+   "jc": 744,
+   "guns": [
+    549,
+    551,
+    579
+   ],
+   "jack": 622
+  },
+  "jobcompletepfwrtofrontwingstop5sp": {
+   "start": 346,
+   "stop": 571,
+   "jc": 610,
+   "guns": [
+    399,
+    401,
+    429
+   ],
+   "jack": 554
+  },
+  "jobcompletepfwrtofrontwingstopmoff": {
+   "start": 164,
+   "stop": 449,
+   "jc": 465,
+   "guns": [
+    223,
+    225,
+    250,
+    254
+   ],
+   "jack": 445
+  },
+  "jobcompletepfwrtofrontwingstopmoff10sp": {
+   "start": 496,
+   "stop": 781,
+   "jc": 791,
+   "guns": [
+    549,
+    551,
+    579,
+    729
+   ],
+   "jack": 772
+  },
+  "jobcompletepfwrtofrontwingstopmoff5sp": {
+   "start": 346,
+   "stop": 631,
+   "jc": 641,
+   "guns": [
+    399,
+    401,
+    429
+   ],
+   "jack": 622
+  },
+  "jobcompletepfwrtofrontwingstopmon": {
+   "start": 164,
+   "stop": 449,
+   "jc": 465,
+   "guns": [
+    223,
+    225,
+    250,
+    254
+   ],
+   "jack": 445
+  },
+  "jobcompletepfwrtofrontwingstopmon10sp": {
+   "start": 496,
+   "stop": 781,
+   "jc": 791,
+   "guns": [
+    549,
+    551,
+    579
+   ],
+   "jack": 772
+  },
+  "jobcompletepfwrtofrontwingstopmon5sp": {
+   "start": 346,
+   "stop": 631,
+   "jc": 641,
+   "guns": [
+    399,
+    401,
+    429
+   ],
+   "jack": 622
+  },
+  "jobcompletepfwrtostandardstop21": {
+   "start": 233,
+   "stop": 286,
+   "jc": 300,
+   "guns": [
+    278,
+    284,
+    289,
+    290
+   ],
+   "jack": 282
+  },
+  "jobcompletepfwrtostandardstop2110sp": {
+   "start": 555,
+   "stop": 618,
+   "jc": 623,
+   "guns": [
+    608,
+    610,
+    617,
+    620
+   ],
+   "jack": 610
+  },
+  "jobcompletepfwrtostandardstop215sp": {
+   "start": 405,
+   "stop": 468,
+   "jc": 473,
+   "guns": [
+    458,
+    460,
+    467,
+    470
+   ],
+   "jack": 460
+  },
+  "jobcompletepfwrtostandardstop258": {
+   "start": 233,
+   "stop": 310,
+   "jc": 320,
+   "guns": [
+    297,
+    298,
+    300
+   ],
+   "jack": 312
+  },
+  "jobcompletepfwrtostandardstop25810sp": {
+   "start": 558,
+   "stop": 635,
+   "jc": 644,
+   "guns": [
+    623,
+    626,
+    628
+   ],
+   "jack": 631
+  },
+  "jobcompletepfwrtostandardstop2585sp": {
+   "start": 408,
+   "stop": 485,
+   "jc": 494,
+   "guns": [
+    473,
+    476,
+    478
+   ],
+   "jack": 481
+  },
+  "jobcompletepfwrtostandardstopfloff": {
+   "start": 233,
+   "stop": 371,
+   "jc": 380,
+   "guns": [
+    295,
+    300,
+    350
+   ],
+   "jack": 364
+  },
+  "jobcompletepfwrtostandardstopfloff10sp": {
+   "start": 557,
+   "stop": 695,
+   "jc": 706,
+   "guns": [
+    624,
+    626,
+    628,
+    679
+   ],
+   "jack": 602
+  },
+  "jobcompletepfwrtostandardstopfloff5sp": {
+   "start": 407,
+   "stop": 545,
+   "jc": 556,
+   "guns": [
+    474,
+    476,
+    478,
+    529
+   ],
+   "jack": 452
+  },
+  "jobcompletepfwrtostandardstopflon": {
+   "start": 233,
+   "stop": 371,
+   "jc": 380,
+   "guns": [
+    298,
+    302,
+    304,
+    337
+   ],
+   "jack": 367
+  },
+  "jobcompletepfwrtostandardstopflon10sp": {
+   "start": 557,
+   "stop": 695,
+   "jc": 706,
+   "guns": [
+    571,
+    630,
+    633,
+    666
+   ],
+   "jack": 694
+  },
+  "jobcompletepfwrtostandardstopflon5sp": {
+   "start": 407,
+   "stop": 545,
+   "jc": 556,
+   "guns": [
+    421,
+    480,
+    483,
+    516
+   ],
+   "jack": 544
+  },
+  "jobcompletepfwrtostandardstopfroff": {
+   "start": 233,
+   "stop": 371,
+   "jc": 380,
+   "guns": [
+    295,
+    300,
+    350
+   ],
+   "jack": 364
+  },
+  "jobcompletepfwrtostandardstopfroff10sp": {
+   "start": 556,
+   "stop": 694,
+   "jc": 705,
+   "guns": [
+    625,
+    626,
+    633,
+    676
+   ],
+   "jack": 693
+  },
+  "jobcompletepfwrtostandardstopfroff5sp": {
+   "start": 407,
+   "stop": 545,
+   "jc": 556,
+   "guns": [
+    475,
+    476,
+    483,
+    526
+   ],
+   "jack": 543
+  },
+  "jobcompletepfwrtostandardstopfron": {
+   "start": 233,
+   "stop": 371,
+   "jc": 380,
+   "guns": [
+    297,
+    298,
+    305,
+    346
+   ],
+   "jack": 368
+  },
+  "jobcompletepfwrtostandardstopfron10sp": {
+   "start": 557,
+   "stop": 695,
+   "jc": 706,
+   "guns": [
+    624,
+    626,
+    632,
+    679
+   ],
+   "jack": 694
+  },
+  "jobcompletepfwrtostandardstopfron5sp": {
+   "start": 407,
+   "stop": 545,
+   "jc": 556,
+   "guns": [
+    474,
+    476,
+    482,
+    529
+   ],
+   "jack": 544
+  },
+  "jobcompletepfwrtostandardstopfwa21": {
+   "start": 231,
+   "stop": 294,
+   "jc": 301,
+   "guns": [
+    281,
+    283,
+    290,
+    295
+   ],
+   "jack": 280
+  },
+  "jobcompletepfwrtostandardstopfwa2110sp": {
+   "start": 553,
+   "stop": 616,
+   "jc": 622,
+   "guns": [
+    609,
+    610,
+    618
+   ],
+   "jack": 614
+  },
+  "jobcompletepfwrtostandardstopfwa215sp": {
+   "start": 403,
+   "stop": 466,
+   "jc": 472,
+   "guns": [
+    459,
+    460,
+    468
+   ],
+   "jack": 464
+  },
+  "jobcompletepfwrtostandardstopfwa258": {
+   "start": 238,
+   "stop": 315,
+   "jc": 320,
+   "guns": [
+    297,
+    302,
+    304
+   ],
+   "jack": 312
+  },
+  "jobcompletepfwrtostandardstopfwa25810sp": {
+   "start": 558,
+   "stop": 635,
+   "jc": 627,
+   "guns": [
+    625,
+    627,
+    629,
+    631
+   ],
+   "jack": 638
+  },
+  "jobcompletepfwrtostandardstopfwa2585sp": {
+   "start": 408,
+   "stop": 485,
+   "jc": 477,
+   "guns": [
+    475,
+    477,
+    479,
+    481
+   ],
+   "jack": 488
+  },
+  "jobcompletepfwrtostandardstopfwafloff": {
+   "start": 233,
+   "stop": 371,
+   "jc": 380,
+   "guns": [
+    290,
+    301,
+    305,
+    350
+   ],
+   "jack": 364
+  },
+  "jobcompletepfwrtostandardstopfwafloff10sp": {
+   "start": 557,
+   "stop": 695,
+   "jc": 706,
+   "guns": [
+    626,
+    629,
+    632,
+    679
+   ],
+   "jack": 695
+  },
+  "jobcompletepfwrtostandardstopfwafloff5sp": {
+   "start": 407,
+   "stop": 545,
+   "jc": 556,
+   "guns": [
+    476,
+    479,
+    482,
+    529
+   ],
+   "jack": 543
+  },
+  "jobcompletepfwrtostandardstopfwaflon": {
+   "start": 233,
+   "stop": 371,
+   "jc": 380,
+   "guns": [
+    296,
+    300,
+    304,
+    337
+   ],
+   "jack": 364
+  },
+  "jobcompletepfwrtostandardstopfwaflon10sp": {
+   "start": 557,
+   "stop": 695,
+   "jc": 706,
+   "guns": [
+    627,
+    630,
+    631,
+    666
+   ],
+   "jack": 692
+  },
+  "jobcompletepfwrtostandardstopfwaflon5sp": {
+   "start": 407,
+   "stop": 545,
+   "jc": 556,
+   "guns": [
+    477,
+    480,
+    481,
+    516
+   ],
+   "jack": 542
+  },
+  "jobcompletepfwrtostandardstopfwafroff": {
+   "start": 233,
+   "stop": 371,
+   "jc": 380,
+   "guns": [
+    295,
+    296,
+    304,
+    350
+   ],
+   "jack": 364
+  },
+  "jobcompletepfwrtostandardstopfwafroff10sp": {
+   "start": 557,
+   "stop": 695,
+   "jc": 706,
+   "guns": [
+    623,
+    631,
+    678
+   ],
+   "jack": 693
+  },
+  "jobcompletepfwrtostandardstopfwafroff5sp": {
+   "start": 407,
+   "stop": 545,
+   "jc": 556,
+   "guns": [
+    473,
+    481,
+    528
+   ],
+   "jack": 543
+  },
+  "jobcompletepfwrtostandardstopfwafron": {
+   "start": 233,
+   "stop": 371,
+   "jc": 380,
+   "guns": [
+    293,
+    296,
+    303,
+    349
+   ],
+   "jack": 364
+  },
+  "jobcompletepfwrtostandardstopfwafron10sp": {
+   "start": 557,
+   "stop": 695,
+   "jc": 706,
+   "guns": [
+    623,
+    625,
+    631,
+    676
+   ],
+   "jack": 693
+  },
+  "jobcompletepfwrtostandardstopfwafron5sp": {
+   "start": 407,
+   "stop": 545,
+   "jc": 556,
+   "guns": [
+    473,
+    475,
+    481,
+    526
+   ],
+   "jack": 543
+  },
+  "jobcompletepfwrtostandardstopfwarloff": {
+   "start": 233,
+   "stop": 371,
+   "jc": 380,
+   "guns": [
+    290,
+    297,
+    301,
+    350
+   ],
+   "jack": 364
+  },
+  "jobcompletepfwrtostandardstopfwarloff10sp": {
+   "start": 557,
+   "stop": 695,
+   "jc": 706,
+   "guns": [
+    623,
+    626,
+    629,
+    679
+   ],
+   "jack": 693
+  },
+  "jobcompletepfwrtostandardstopfwarloff5sp": {
+   "start": 407,
+   "stop": 545,
+   "jc": 556,
+   "guns": [
+    473,
+    476,
+    479,
+    529
+   ],
+   "jack": 543
+  },
+  "jobcompletepfwrtostandardstopfwarlon": {
+   "start": 233,
+   "stop": 371,
+   "jc": 380,
+   "guns": [
+    295,
+    297,
+    301,
+    346
+   ],
+   "jack": 364
+  },
+  "jobcompletepfwrtostandardstopfwarlon10sp": {
+   "start": 557,
+   "stop": 695,
+   "jc": 706,
+   "guns": [
+    625,
+    629,
+    676
+   ],
+   "jack": 693
+  },
+  "jobcompletepfwrtostandardstopfwarlon5sp": {
+   "start": 407,
+   "stop": 545,
+   "jc": 556,
+   "guns": [
+    475,
+    479,
+    526
+   ],
+   "jack": 543
+  },
+  "jobcompletepfwrtostandardstopfwarroff": {
+   "start": 233,
+   "stop": 371,
+   "jc": 380,
+   "guns": [
+    296,
+    300,
+    303,
+    350
+   ],
+   "jack": 361
+  },
+  "jobcompletepfwrtostandardstopfwarroff10sp": {
+   "start": 557,
+   "stop": 695,
+   "jc": 706,
+   "guns": [
+    624,
+    628,
+    631,
+    679
+   ],
+   "jack": 693
+  },
+  "jobcompletepfwrtostandardstopfwarroff5sp": {
+   "start": 407,
+   "stop": 545,
+   "jc": 556,
+   "guns": [
+    474,
+    478,
+    481,
+    529
+   ],
+   "jack": 543
+  },
+  "jobcompletepfwrtostandardstopfwarron": {
+   "start": 233,
+   "stop": 371,
+   "jc": 380,
+   "guns": [
+    295,
+    301,
+    304,
+    355
+   ],
+   "jack": 364
+  },
+  "jobcompletepfwrtostandardstopfwarron10sp": {
+   "start": 557,
+   "stop": 695,
+   "jc": 706,
+   "guns": [
+    622,
+    624,
+    631,
+    681
+   ],
+   "jack": 693
+  },
+  "jobcompletepfwrtostandardstopfwarron5sp": {
+   "start": 407,
+   "stop": 545,
+   "jc": 556,
+   "guns": [
+    472,
+    474,
+    481,
+    530
+   ],
+   "jack": 543
+  },
+  "jobcompletepfwrtostandardstoprloff": {
+   "start": 233,
+   "stop": 371,
+   "jc": 380,
+   "guns": [
+    296,
+    298,
+    300,
+    345
+   ],
+   "jack": 366
+  },
+  "jobcompletepfwrtostandardstoprloff10sp": {
+   "start": 557,
+   "stop": 695,
+   "jc": 706,
+   "guns": [
+    624,
+    629,
+    669
+   ],
+   "jack": 692
+  },
+  "jobcompletepfwrtostandardstoprloff5sp": {
+   "start": 407,
+   "stop": 545,
+   "jc": 556,
+   "guns": [
+    474,
+    475,
+    479,
+    519
+   ],
+   "jack": 543
+  },
+  "jobcompletepfwrtostandardstoprlon": {
+   "start": 233,
+   "stop": 371,
+   "jc": 380,
+   "guns": [
+    296,
+    297,
+    300,
+    348
+   ],
+   "jack": 366
+  },
+  "jobcompletepfwrtostandardstoprlon10sp": {
+   "start": 557,
+   "stop": 695,
+   "jc": 706,
+   "guns": [
+    624,
+    625,
+    628,
+    669
+   ],
+   "jack": 693
+  },
+  "jobcompletepfwrtostandardstoprlon5sp": {
+   "start": 407,
+   "stop": 545,
+   "jc": 556,
+   "guns": [
+    474,
+    475,
+    478,
+    519
+   ],
+   "jack": 543
+  },
+  "jobcompletepfwrtostandardstoprroff": {
+   "start": 233,
+   "stop": 371,
+   "jc": 380,
+   "guns": [
+    296,
+    301,
+    304,
+    345
+   ],
+   "jack": 366
+  },
+  "jobcompletepfwrtostandardstoprroff10sp": {
+   "start": 557,
+   "stop": 695,
+   "jc": 706,
+   "guns": [
+    624,
+    628,
+    678,
+    680
+   ],
+   "jack": 693
+  },
+  "jobcompletepfwrtostandardstoprroff5sp": {
+   "start": 407,
+   "stop": 545,
+   "jc": 556,
+   "guns": [
+    474,
+    478,
+    528,
+    530
+   ],
+   "jack": 543
+  },
+  "jobcompletepfwrtostandardstoprron": {
+   "start": 233,
+   "stop": 371,
+   "jc": 380,
+   "guns": [
+    298,
+    301,
+    304,
+    349
+   ],
+   "jack": 366
+  },
+  "jobcompletepfwrtostandardstoprron10sp": {
+   "start": 557,
+   "stop": 695,
+   "jc": 706,
+   "guns": [
+    624,
+    628,
+    632,
+    681
+   ],
+   "jack": 693
+  },
+  "jobcompletepfwrtostandardstoprron5sp": {
+   "start": 407,
+   "stop": 545,
+   "jc": 556,
+   "guns": [
+    474,
+    478,
+    482,
+    531
+   ],
+   "jack": 543
+  },
+  "jobcompletetofrontwingstop": {
+   "start": 153,
+   "stop": 378,
+   "jc": 390,
+   "guns": [
+    213,
+    219,
+    240,
+    246
+   ],
+   "jack": 371
+  },
+  "jobcompletetofrontwingstop10sp": {
+   "start": 481,
+   "stop": 706,
+   "jc": 719,
+   "guns": [
+    541,
+    543,
+    568,
+    573
+   ],
+   "jack": 547
+  },
+  "jobcompletetofrontwingstop5sp": {
+   "start": 331,
+   "stop": 556,
+   "jc": 569,
+   "guns": [
+    391,
+    393,
+    418,
+    423
+   ],
+   "jack": 547
+  },
+  "jobcompletetofrontwingstopmoff": {
+   "start": 161,
+   "stop": 446,
+   "jc": 454,
+   "guns": [
+    213,
+    222,
+    240,
+    245
+   ],
+   "jack": 437
+  },
+  "jobcompletetofrontwingstopmoff10sp": {
+   "start": 483,
+   "stop": 768,
+   "jc": 777,
+   "guns": [
+    541,
+    543,
+    568,
+    573
+   ],
+   "jack": 620
+  },
+  "jobcompletetofrontwingstopmoff5sp": {
+   "start": 333,
+   "stop": 618,
+   "jc": 627,
+   "guns": [
+    391,
+    393,
+    418,
+    423
+   ],
+   "jack": 550
+  },
+  "jobcompletetofrontwingstopmon": {
+   "start": 160,
+   "stop": 445,
+   "jc": 454,
+   "guns": [
+    212,
+    221,
+    246,
+    247
+   ],
+   "jack": 437
+  },
+  "jobcompletetofrontwingstopmon10sp": {
+   "start": 481,
+   "stop": 766,
+   "jc": 777,
+   "guns": [
+    540,
+    544,
+    570,
+    573
+   ],
+   "jack": 701
+  },
+  "jobcompletetofrontwingstopmon5sp": {
+   "start": 331,
+   "stop": 616,
+   "jc": 627,
+   "guns": [
+    390,
+    393,
+    419,
+    423
+   ],
+   "jack": 551
+  },
+  "jobcompletetostandardstop21": {
+   "start": 98,
+   "stop": 161,
+   "jc": 158,
+   "guns": [
+    139,
+    141,
+    150,
+    155
+   ],
+   "jack": 139
+  },
+  "jobcompletetostandardstop2110sp": {
+   "start": 417,
+   "stop": 480,
+   "jc": 479,
+   "guns": [
+    468,
+    476
+   ],
+   "jack": 470
+  },
+  "jobcompletetostandardstop215sp": {
+   "start": 267,
+   "stop": 330,
+   "jc": 329,
+   "guns": [
+    318,
+    326
+   ],
+   "jack": 320
+  },
+  "jobcompletetostandardstop258": {
+   "start": 99,
+   "stop": 176,
+   "jc": 179,
+   "guns": [
+    156,
+    157,
+    161,
+    163
+   ],
+   "jack": 171
+  },
+  "jobcompletetostandardstop25810sp": {
+   "start": 422,
+   "stop": 499,
+   "jc": 500,
+   "guns": [
+    481,
+    485,
+    487,
+    489
+   ],
+   "jack": 490
+  },
+  "jobcompletetostandardstop2585sp": {
+   "start": 272,
+   "stop": 349,
+   "jc": 350,
+   "guns": [
+    331,
+    335,
+    337,
+    339
+   ],
+   "jack": 340
+  },
+  "jobcompletetostandardstopfloff": {
+   "start": 96,
+   "stop": 234,
+   "jc": 239,
+   "guns": [
+    157,
+    160,
+    163,
+    212
+   ],
+   "jack": 226
+  },
+  "jobcompletetostandardstopfloff10sp": {
+   "start": 418,
+   "stop": 556,
+   "jc": 566,
+   "guns": [
+    485,
+    489,
+    491,
+    542
+   ],
+   "jack": 553
+  },
+  "jobcompletetostandardstopfloff5sp": {
+   "start": 268,
+   "stop": 406,
+   "jc": 416,
+   "guns": [
+    335,
+    339,
+    341,
+    392
+   ],
+   "jack": 403
+  },
+  "jobcompletetostandardstopflon": {
+   "start": 96,
+   "stop": 234,
+   "jc": 239,
+   "guns": [
+    157,
+    160,
+    164,
+    197
+   ],
+   "jack": 226
+  },
+  "jobcompletetostandardstopflon10sp": {
+   "start": 418,
+   "stop": 556,
+   "jc": 566,
+   "guns": [
+    485,
+    489,
+    491,
+    526
+   ],
+   "jack": 553
+  },
+  "jobcompletetostandardstopflon5sp": {
+   "start": 268,
+   "stop": 406,
+   "jc": 416,
+   "guns": [
+    335,
+    339,
+    341,
+    376
+   ],
+   "jack": 403
+  },
+  "jobcompletetostandardstopfroff": {
+   "start": 96,
+   "stop": 234,
+   "jc": 239,
+   "guns": [
+    156,
+    164,
+    207
+   ],
+   "jack": 225
+  },
+  "jobcompletetostandardstopfroff10sp": {
+   "start": 418,
+   "stop": 556,
+   "jc": 566,
+   "guns": [
+    483,
+    486,
+    491,
+    537
+   ],
+   "jack": 553
+  },
+  "jobcompletetostandardstopfroff5sp": {
+   "start": 268,
+   "stop": 406,
+   "jc": 416,
+   "guns": [
+    333,
+    336,
+    341,
+    387
+   ],
+   "jack": 403
+  },
+  "jobcompletetostandardstopfron": {
+   "start": 96,
+   "stop": 234,
+   "jc": 239,
+   "guns": [
+    155,
+    157,
+    163
+   ],
+   "jack": 226
+  },
+  "jobcompletetostandardstopfron10sp": {
+   "start": 418,
+   "stop": 556,
+   "jc": 566,
+   "guns": [
+    484,
+    486,
+    490,
+    537
+   ],
+   "jack": 552
+  },
+  "jobcompletetostandardstopfron5sp": {
+   "start": 268,
+   "stop": 406,
+   "jc": 416,
+   "guns": [
+    334,
+    336,
+    340,
+    387
+   ],
+   "jack": 403
+  },
+  "jobcompletetostandardstopfwa21": {
+   "start": 97,
+   "stop": 160,
+   "jc": 160,
+   "guns": [
+    140,
+    141,
+    149,
+    154
+   ],
+   "jack": 138
+  },
+  "jobcompletetostandardstopfwa2110sp": {
+   "start": 419,
+   "stop": 482,
+   "jc": 482,
+   "guns": [
+    469,
+    478
+   ],
+   "jack": 471
+  },
+  "jobcompletetostandardstopfwa215sp": {
+   "start": 269,
+   "stop": 332,
+   "jc": 332,
+   "guns": [
+    319,
+    328
+   ],
+   "jack": 321
+  },
+  "jobcompletetostandardstopfwa258": {
+   "start": 98,
+   "stop": 175,
+   "jc": 174,
+   "guns": [
+    146,
+    158,
+    161,
+    163
+   ],
+   "jack": 171
+  },
+  "jobcompletetostandardstopfwa25810sp": {
+   "start": 416,
+   "stop": 493,
+   "jc": 502,
+   "guns": [
+    484,
+    486,
+    489,
+    491
+   ],
+   "jack": 496
+  },
+  "jobcompletetostandardstopfwa2585sp": {
+   "start": 266,
+   "stop": 343,
+   "jc": 352,
+   "guns": [
+    334,
+    336,
+    339,
+    341
+   ],
+   "jack": 346
+  },
+  "jobcompletetostandardstopfwafloff": {
+   "start": 96,
+   "stop": 234,
+   "jc": 239,
+   "guns": [
+    156,
+    161,
+    164,
+    210
+   ],
+   "jack": 225
+  },
+  "jobcompletetostandardstopfwafloff10sp": {
+   "start": 418,
+   "stop": 556,
+   "jc": 566,
+   "guns": [
+    438,
+    486,
+    494,
+    543
+   ],
+   "jack": 553
+  },
+  "jobcompletetostandardstopfwafloff5sp": {
+   "start": 268,
+   "stop": 406,
+   "jc": 416,
+   "guns": [
+    336,
+    338,
+    343,
+    393
+   ],
+   "jack": 403
+  },
+  "jobcompletetostandardstopfwaflon": {
+   "start": 96,
+   "stop": 234,
+   "jc": 239,
+   "guns": [
+    157,
+    161,
+    164,
+    201
+   ],
+   "jack": 225
+  },
+  "jobcompletetostandardstopfwaflon10sp": {
+   "start": 418,
+   "stop": 556,
+   "jc": 566,
+   "guns": [
+    484,
+    489,
+    490,
+    528
+   ],
+   "jack": 553
+  },
+  "jobcompletetostandardstopfwaflon5sp": {
+   "start": 268,
+   "stop": 406,
+   "jc": 416,
+   "guns": [
+    334,
+    339,
+    340,
+    378
+   ],
+   "jack": 403
+  },
+  "jobcompletetostandardstopfwafroff": {
+   "start": 96,
+   "stop": 234,
+   "jc": 239,
+   "guns": [
+    157,
+    163,
+    205
+   ],
+   "jack": 225
+  },
+  "jobcompletetostandardstopfwafroff10sp": {
+   "start": 418,
+   "stop": 556,
+   "jc": 566,
+   "guns": [
+    485,
+    486,
+    490,
+    537
+   ],
+   "jack": 552
+  },
+  "jobcompletetostandardstopfwafroff5sp": {
+   "start": 268,
+   "stop": 406,
+   "jc": 416,
+   "guns": [
+    335,
+    336,
+    340,
+    387
+   ],
+   "jack": 403
+  },
+  "jobcompletetostandardstopfwafron": {
+   "start": 96,
+   "stop": 234,
+   "jc": 239,
+   "guns": [
+    157,
+    158,
+    164,
+    208
+   ],
+   "jack": 226
+  },
+  "jobcompletetostandardstopfwafron10sp": {
+   "start": 418,
+   "stop": 556,
+   "jc": 566,
+   "guns": [
+    484,
+    485,
+    491,
+    535
+   ],
+   "jack": 553
+  },
+  "jobcompletetostandardstopfwafron5sp": {
+   "start": 268,
+   "stop": 406,
+   "jc": 416,
+   "guns": [
+    334,
+    335,
+    341,
+    385
+   ],
+   "jack": 403
+  },
+  "jobcompletetostandardstopfwarloff": {
+   "start": 96,
+   "stop": 234,
+   "jc": 239,
+   "guns": [
+    157,
+    158,
+    161,
+    212
+   ],
+   "jack": 226
+  },
+  "jobcompletetostandardstopfwarloff10sp": {
+   "start": 418,
+   "stop": 556,
+   "jc": 566,
+   "guns": [
+    438,
+    484,
+    485,
+    532
+   ],
+   "jack": 553
+  },
+  "jobcompletetostandardstopfwarloff5sp": {
+   "start": 268,
+   "stop": 406,
+   "jc": 416,
+   "guns": [
+    334,
+    335,
+    338,
+    382
+   ],
+   "jack": 403
+  },
+  "jobcompletetostandardstopfwarlon": {
+   "start": 96,
+   "stop": 234,
+   "jc": 239,
+   "guns": [
+    157,
+    160,
+    204
+   ],
+   "jack": 226
+  },
+  "jobcompletetostandardstopfwarlon10sp": {
+   "start": 418,
+   "stop": 556,
+   "jc": 566,
+   "guns": [
+    484,
+    486,
+    489,
+    533
+   ],
+   "jack": 553
+  },
+  "jobcompletetostandardstopfwarlon5sp": {
+   "start": 268,
+   "stop": 406,
+   "jc": 416,
+   "guns": [
+    334,
+    336,
+    339,
+    383
+   ],
+   "jack": 403
+  },
+  "jobcompletetostandardstopfwarroff": {
+   "start": 96,
+   "stop": 234,
+   "jc": 239,
+   "guns": [
+    157,
+    161,
+    164,
+    210
+   ],
+   "jack": 225
+  },
+  "jobcompletetostandardstopfwarroff10sp": {
+   "start": 418,
+   "stop": 556,
+   "jc": 566,
+   "guns": [
+    446,
+    484,
+    492,
+    548
+   ],
+   "jack": 486
+  },
+  "jobcompletetostandardstopfwarroff5sp": {
+   "start": 268,
+   "stop": 406,
+   "jc": 416,
+   "guns": [
+    296,
+    334,
+    342,
+    398
+   ],
+   "jack": 403
+  },
+  "jobcompletetostandardstopfwarron": {
+   "start": 96,
+   "stop": 234,
+   "jc": 239,
+   "guns": [
+    156,
+    162,
+    210
+   ],
+   "jack": 225
+  },
+  "jobcompletetostandardstopfwarron10sp": {
+   "start": 418,
+   "stop": 556,
+   "jc": 566,
+   "guns": [
+    438,
+    484,
+    491,
+    539
+   ],
+   "jack": 553
+  },
+  "jobcompletetostandardstopfwarron5sp": {
+   "start": 268,
+   "stop": 406,
+   "jc": 416,
+   "guns": [
+    334,
+    338,
+    341,
+    389
+   ],
+   "jack": 403
+  },
+  "jobcompletetostandardstoprloff": {
+   "start": 96,
+   "stop": 234,
+   "jc": 239,
+   "guns": [
+    157,
+    162,
+    206
+   ],
+   "jack": 226
+  },
+  "jobcompletetostandardstoprloff10sp": {
+   "start": 418,
+   "stop": 556,
+   "jc": 566,
+   "guns": [
+    485,
+    487,
+    489,
+    531
+   ],
+   "jack": 483
+  },
+  "jobcompletetostandardstoprloff5sp": {
+   "start": 268,
+   "stop": 406,
+   "jc": 416,
+   "guns": [
+    335,
+    337,
+    339,
+    381
+   ],
+   "jack": 403
+  },
+  "jobcompletetostandardstoprlon": {
+   "start": 96,
+   "stop": 234,
+   "jc": 239,
+   "guns": [
+    156,
+    158,
+    161,
+    202
+   ],
+   "jack": 226
+  },
+  "jobcompletetostandardstoprlon10sp": {
+   "start": 418,
+   "stop": 556,
+   "jc": 566,
+   "guns": [
+    485,
+    486,
+    489,
+    526
+   ],
+   "jack": 553
+  },
+  "jobcompletetostandardstoprlon5sp": {
+   "start": 268,
+   "stop": 406,
+   "jc": 416,
+   "guns": [
+    335,
+    339,
+    376
+   ],
+   "jack": 403
+  },
+  "jobcompletetostandardstoprroff": {
+   "start": 96,
+   "stop": 234,
+   "jc": 239,
+   "guns": [
+    157,
+    161,
+    163,
+    211
+   ],
+   "jack": 226
+  },
+  "jobcompletetostandardstoprroff10sp": {
+   "start": 418,
+   "stop": 556,
+   "jc": 566,
+   "guns": [
+    484,
+    489,
+    490,
+    538
+   ],
+   "jack": 483
+  },
+  "jobcompletetostandardstoprroff5sp": {
+   "start": 268,
+   "stop": 406,
+   "jc": 416,
+   "guns": [
+    334,
+    339,
+    340,
+    388
+   ],
+   "jack": 403
+  },
+  "jobcompletetostandardstoprron": {
+   "start": 96,
+   "stop": 234,
+   "jc": 239,
+   "guns": [
+    157,
+    161,
+    163,
+    211
+   ],
+   "jack": 226
+  },
+  "jobcompletetostandardstoprron10sp": {
+   "start": 418,
+   "stop": 556,
+   "jc": 566,
+   "guns": [
+    484,
+    489,
+    490,
+    538
+   ],
+   "jack": 554
+  },
+  "jobcompletetostandardstoprron5sp": {
+   "start": 268,
+   "stop": 406,
+   "jc": 416,
+   "guns": [
+    334,
+    339,
+    340,
+    388
+   ],
+   "jack": 404
+  },
+  "startjobdostandardstop21": {
+   "start": 15,
+   "stop": 78,
+   "jc": 77,
+   "guns": [
+    61,
+    69,
+    74
+   ],
+   "jack": 59
+  },
+  "startjobdostandardstop2110sp": {
+   "start": 340,
+   "stop": 403,
+   "jc": 403,
+   "guns": [
+    388,
+    389,
+    397,
+    401
+   ],
+   "jack": 391
+  },
+  "startjobdostandardstop215sp": {
+   "start": 190,
+   "stop": 253,
+   "jc": 253,
+   "guns": [
+    238,
+    239,
+    247,
+    251
+   ],
+   "jack": 241
+  },
+  "startjobdostandardstop258": {
+   "start": 13,
+   "stop": 90,
+   "jc": 98,
+   "guns": [
+    77,
+    82,
+    83
+   ],
+   "jack": 91
+  },
+  "startjobdostandardstop25810sp": {
+   "start": 341,
+   "stop": 418,
+   "jc": 428,
+   "guns": [
+    404,
+    406,
+    409,
+    411
+   ],
+   "jack": 418
+  },
+  "startjobdostandardstop2585sp": {
+   "start": 191,
+   "stop": 268,
+   "jc": 278,
+   "guns": [
+    254,
+    256,
+    259,
+    261
+   ],
+   "jack": 268
+  },
+  "startjobdostandardstopfloff": {
+   "start": 17,
+   "stop": 155,
+   "jc": 158,
+   "guns": [
+    78,
+    81,
+    82,
+    130
+   ],
+   "jack": 147
+  },
+  "startjobdostandardstopfloff10sp": {
+   "start": 340,
+   "stop": 478,
+   "jc": 483,
+   "guns": [
+    405,
+    409,
+    411,
+    458
+   ],
+   "jack": 474
+  },
+  "startjobdostandardstopfloff5sp": {
+   "start": 190,
+   "stop": 328,
+   "jc": 333,
+   "guns": [
+    255,
+    259,
+    261,
+    308
+   ],
+   "jack": 324
+  },
+  "startjobdostandardstopflon": {
+   "start": 17,
+   "stop": 155,
+   "jc": 158,
+   "guns": [
+    77,
+    81,
+    83,
+    120
+   ],
+   "jack": 146
+  },
+  "startjobdostandardstopflon10sp": {
+   "start": 340,
+   "stop": 478,
+   "jc": 483,
+   "guns": [
+    405,
+    410,
+    411,
+    446
+   ],
+   "jack": 473
+  },
+  "startjobdostandardstopflon5sp": {
+   "start": 190,
+   "stop": 328,
+   "jc": 333,
+   "guns": [
+    255,
+    260,
+    261,
+    296
+   ],
+   "jack": 323
+  },
+  "startjobdostandardstopfroff": {
+   "start": 17,
+   "stop": 155,
+   "jc": 158,
+   "guns": [
+    77,
+    78,
+    82,
+    129
+   ],
+   "jack": 147
+  },
+  "startjobdostandardstopfroff10sp": {
+   "start": 340,
+   "stop": 478,
+   "jc": 483,
+   "guns": [
+    404,
+    405,
+    411,
+    456
+   ],
+   "jack": 474
+  },
+  "startjobdostandardstopfroff5sp": {
+   "start": 190,
+   "stop": 328,
+   "jc": 333,
+   "guns": [
+    254,
+    255,
+    261,
+    306
+   ],
+   "jack": 324
+  },
+  "startjobdostandardstopfron": {
+   "start": 17,
+   "stop": 155,
+   "jc": 158,
+   "guns": [
+    66,
+    78,
+    83,
+    129
+   ],
+   "jack": 146
+  },
+  "startjobdostandardstopfron10sp": {
+   "start": 340,
+   "stop": 478,
+   "jc": 483,
+   "guns": [
+    404,
+    405,
+    410,
+    457
+   ],
+   "jack": 473
+  },
+  "startjobdostandardstopfron5sp": {
+   "start": 190,
+   "stop": 328,
+   "jc": 333,
+   "guns": [
+    254,
+    255,
+    260,
+    307
+   ],
+   "jack": 323
+  },
+  "startjobdostandardstopfwa21": {
+   "start": 13,
+   "stop": 76,
+   "jc": 83,
+   "guns": [
+    61,
+    70,
+    74
+   ],
+   "jack": 58
+  },
+  "startjobdostandardstopfwa2110sp": {
+   "start": 338,
+   "stop": 402,
+   "jc": 401,
+   "guns": [
+    389,
+    397
+   ],
+   "jack": 391
+  },
+  "startjobdostandardstopfwa215sp": {
+   "start": 188,
+   "stop": 252,
+   "jc": 251,
+   "guns": [
+    239,
+    247
+   ],
+   "jack": 241
+  },
+  "startjobdostandardstopfwa258": {
+   "start": 14,
+   "stop": 91,
+   "jc": 100,
+   "guns": [
+    77,
+    78,
+    81,
+    83
+   ],
+   "jack": 91
+  },
+  "startjobdostandardstopfwa25810sp": {
+   "start": 334,
+   "stop": 411,
+   "jc": 424,
+   "guns": [
+    405,
+    406,
+    410,
+    411
+   ],
+   "jack": 414
+  },
+  "startjobdostandardstopfwa2585sp": {
+   "start": 184,
+   "stop": 261,
+   "jc": 274,
+   "guns": [
+    255,
+    256,
+    260,
+    261
+   ],
+   "jack": 264
+  },
+  "startjobdostandardstopfwafloff": {
+   "start": 17,
+   "stop": 155,
+   "jc": 158,
+   "guns": [
+    78,
+    82,
+    130
+   ],
+   "jack": 147
+  },
+  "startjobdostandardstopfwafloff10sp": {
+   "start": 340,
+   "stop": 478,
+   "jc": 483,
+   "guns": [
+    406,
+    409,
+    412,
+    462
+   ],
+   "jack": 474
+  },
+  "startjobdostandardstopfwafloff5sp": {
+   "start": 190,
+   "stop": 328,
+   "jc": 333,
+   "guns": [
+    256,
+    259,
+    261,
+    312
+   ],
+   "jack": 324
+  },
+  "startjobdostandardstopfwaflon": {
+   "start": 17,
+   "stop": 155,
+   "jc": 158,
+   "guns": [
+    76,
+    79,
+    82,
+    130
+   ],
+   "jack": 145
+  },
+  "startjobdostandardstopfwaflon10sp": {
+   "start": 340,
+   "stop": 478,
+   "jc": 483,
+   "guns": [
+    405,
+    409,
+    411,
+    455
+   ],
+   "jack": 474
+  },
+  "startjobdostandardstopfwaflon5sp": {
+   "start": 190,
+   "stop": 328,
+   "jc": 333,
+   "guns": [
+    255,
+    259,
+    261,
+    305
+   ],
+   "jack": 324
+  },
+  "startjobdostandardstopfwafroff": {
+   "start": 17,
+   "stop": 155,
+   "jc": 158,
+   "guns": [
+    77,
+    82,
+    129
+   ],
+   "jack": 145
+  },
+  "startjobdostandardstopfwafroff10sp": {
+   "start": 340,
+   "stop": 478,
+   "jc": 483,
+   "guns": [
+    403,
+    411,
+    417,
+    456
+   ],
+   "jack": 474
+  },
+  "startjobdostandardstopfwafroff5sp": {
+   "start": 190,
+   "stop": 328,
+   "jc": 333,
+   "guns": [
+    253,
+    255,
+    261,
+    306
+   ],
+   "jack": 324
+  },
+  "startjobdostandardstopfwafron": {
+   "start": 17,
+   "stop": 155,
+   "jc": 158,
+   "guns": [
+    77,
+    78,
+    83,
+    129
+   ],
+   "jack": 146
+  },
+  "startjobdostandardstopfwafron10sp": {
+   "start": 340,
+   "stop": 478,
+   "jc": 483,
+   "guns": [
+    405,
+    406,
+    411,
+    456
+   ],
+   "jack": 474
+  },
+  "startjobdostandardstopfwafron5sp": {
+   "start": 190,
+   "stop": 328,
+   "jc": 333,
+   "guns": [
+    255,
+    256,
+    261,
+    306
+   ],
+   "jack": 324
+  },
+  "startjobdostandardstopfwarloff": {
+   "start": 17,
+   "stop": 155,
+   "jc": 158,
+   "guns": [
+    77,
+    81,
+    129
+   ],
+   "jack": 146
+  },
+  "startjobdostandardstopfwarloff10sp": {
+   "start": 340,
+   "stop": 478,
+   "jc": 483,
+   "guns": [
+    405,
+    410,
+    457
+   ],
+   "jack": 475
+  },
+  "startjobdostandardstopfwarloff5sp": {
+   "start": 190,
+   "stop": 328,
+   "jc": 333,
+   "guns": [
+    255,
+    260,
+    307
+   ],
+   "jack": 325
+  },
+  "startjobdostandardstopfwarlon": {
+   "start": 17,
+   "stop": 155,
+   "jc": 158,
+   "guns": [
+    74,
+    77,
+    81,
+    127
+   ],
+   "jack": 147
+  },
+  "startjobdostandardstopfwarlon10sp": {
+   "start": 340,
+   "stop": 478,
+   "jc": 483,
+   "guns": [
+    405,
+    409,
+    457,
+    458
+   ],
+   "jack": 474
+  },
+  "startjobdostandardstopfwarlon5sp": {
+   "start": 190,
+   "stop": 328,
+   "jc": 333,
+   "guns": [
+    255,
+    259,
+    307,
+    308
+   ],
+   "jack": 324
+  },
+  "startjobdostandardstopfwarroff": {
+   "start": 17,
+   "stop": 155,
+   "jc": 158,
+   "guns": [
+    76,
+    81,
+    83,
+    133
+   ],
+   "jack": 146
+  },
+  "startjobdostandardstopfwarroff10sp": {
+   "start": 340,
+   "stop": 478,
+   "jc": 483,
+   "guns": [
+    405,
+    408,
+    410,
+    460
+   ],
+   "jack": 474
+  },
+  "startjobdostandardstopfwarroff5sp": {
+   "start": 190,
+   "stop": 328,
+   "jc": 333,
+   "guns": [
+    255,
+    258,
+    260,
+    310
+   ],
+   "jack": 324
+  },
+  "startjobdostandardstopfwarron": {
+   "start": 17,
+   "stop": 155,
+   "jc": 158,
+   "guns": [
+    77,
+    81,
+    82,
+    130
+   ],
+   "jack": 148
+  },
+  "startjobdostandardstopfwarron10sp": {
+   "start": 340,
+   "stop": 628,
+   "jc": 483,
+   "guns": [
+    407,
+    410,
+    411,
+    460
+   ],
+   "jack": 475
+  },
+  "startjobdostandardstopfwarron5sp": {
+   "start": 190,
+   "stop": 328,
+   "jc": 333,
+   "guns": [
+    256,
+    259,
+    260,
+    310
+   ],
+   "jack": 325
+  },
+  "startjobdostandardstoprloff": {
+   "start": 17,
+   "stop": 155,
+   "jc": 158,
+   "guns": [
+    77,
+    81,
+    132
+   ],
+   "jack": 147
+  },
+  "startjobdostandardstoprloff10sp": {
+   "start": 340,
+   "stop": 477,
+   "jc": 483,
+   "guns": [
+    405,
+    408,
+    451
+   ],
+   "jack": 473
+  },
+  "startjobdostandardstoprloff5sp": {
+   "start": 190,
+   "stop": 328,
+   "jc": 333,
+   "guns": [
+    255,
+    259,
+    301
+   ],
+   "jack": 323
+  },
+  "startjobdostandardstoprlon": {
+   "start": 17,
+   "stop": 155,
+   "jc": 158,
+   "guns": [
+    77,
+    81,
+    124
+   ],
+   "jack": 146
+  },
+  "startjobdostandardstoprlon10sp": {
+   "start": 340,
+   "stop": 477,
+   "jc": 483,
+   "guns": [
+    404,
+    405,
+    409,
+    457
+   ],
+   "jack": 474
+  },
+  "startjobdostandardstoprlon5sp": {
+   "start": 190,
+   "stop": 328,
+   "jc": 333,
+   "guns": [
+    254,
+    255,
+    259,
+    307
+   ],
+   "jack": 324
+  },
+  "startjobdostandardstoprroff": {
+   "start": 17,
+   "stop": 155,
+   "jc": 158,
+   "guns": [
+    77,
+    81,
+    83,
+    132
+   ],
+   "jack": 148
+  },
+  "startjobdostandardstoprroff10sp": {
+   "start": 340,
+   "stop": 476,
+   "jc": 483,
+   "guns": [
+    403,
+    407,
+    457
+   ],
+   "jack": 472
+  },
+  "startjobdostandardstoprroff5sp": {
+   "start": 190,
+   "stop": 328,
+   "jc": 333,
+   "guns": [
+    253,
+    257,
+    307
+   ],
+   "jack": 323
+  },
+  "startjobdostandardstoprron": {
+   "start": 17,
+   "stop": 155,
+   "jc": 158,
+   "guns": [
+    75,
+    76,
+    129
+   ],
+   "jack": 146
+  },
+  "startjobdostandardstoprron10sp": {
+   "start": 340,
+   "stop": 477,
+   "jc": 483,
+   "guns": [
+    400,
+    401,
+    406,
+    456
+   ],
+   "jack": 473
+  },
+  "startjobdostandardstoprron5sp": {
+   "start": 190,
+   "stop": 328,
+   "jc": 333,
+   "guns": [
+    250,
+    251,
+    256,
+    306
+   ],
+   "jack": 323
+  },
+  "startjobfrontwingreplace": {
+   "start": 15,
+   "stop": 240,
+   "jc": 259,
+   "guns": [
+    68,
+    75,
+    97,
+    103
+   ],
+   "jack": 231
+  },
+  "startjobfrontwingreplace10sp": {
+   "start": 345,
+   "stop": 570,
+   "jc": 588,
+   "guns": [
+    402,
+    404,
+    426,
+    434
+   ],
+   "jack": 405
+  },
+  "startjobfrontwingreplace5sp": {
+   "start": 195,
+   "stop": 420,
+   "jc": 438,
+   "guns": [
+    252,
+    255,
+    277,
+    285
+   ],
+   "jack": 405
+  },
+  "startjobfrontwingreplacemoff": {
+   "start": 15,
+   "stop": 300,
+   "jc": 315,
+   "guns": [
+    69,
+    74,
+    103,
+    104
+   ],
+   "jack": 293
+  },
+  "startjobfrontwingreplacemoff10sp": {
+   "start": 345,
+   "stop": 480,
+   "jc": 634,
+   "guns": [
+    398,
+    404,
+    427,
+    428
+   ],
+   "jack": 473
+  },
+  "startjobfrontwingreplacemoff5sp": {
+   "start": 195,
+   "stop": 480,
+   "jc": 484,
+   "guns": [
+    248,
+    254,
+    277,
+    278
+   ],
+   "jack": 473
+  },
+  "startjobfrontwingreplacemon": {
+   "start": 15,
+   "stop": 300,
+   "jc": 315,
+   "guns": [
+    72,
+    75,
+    100
+   ],
+   "jack": 294
+  },
+  "startjobfrontwingreplacemon10sp": {
+   "start": 343,
+   "stop": 628,
+   "jc": 634,
+   "guns": [
+    401,
+    402,
+    425,
+    430
+   ],
+   "jack": 410
+  },
+  "startjobfrontwingreplacemon5sp": {
+   "start": 193,
+   "stop": 478,
+   "jc": 484,
+   "guns": [
+    251,
+    252,
+    275,
+    280
+   ],
+   "jack": 410
+  }
+ }
+}
