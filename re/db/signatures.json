@@ -76778,6 +76778,33 @@
    ],
    "expect": "C3",
    "func_start": "0x1429a0620"
+  },
+  {
+   "id": "session.pu_panel_slot_holder",
+   "section": ".xtls",
+   "pattern": "48 85 C0 74 DB 48 8B 48 10 48 2B 48 08",
+   "match": "0x141f50ec7",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141f50ecc",
+   "kind": "mid",
+   "expect": "48 8B 48 10 48 2B 48 08",
+   "names": [
+    "site_Sess_PuPanel_SlotHolder"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "pu-1990",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "addons/f1-1990/native/src/pu_parts.cpp"
+   ]
   }
  ]
 }
