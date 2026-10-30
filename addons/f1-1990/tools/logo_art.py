@@ -152,8 +152,27 @@ def mclaren():
 
 
 def ferrari():
-    shield = render(svg_text("ferrari.svg"), LOCKUP_W // 2)
-    return shield, shield, shield
+    src = svg_text("ferrari.svg")
+    head = src[:src.index("</defs>") + len("</defs>")]
+    parts = re.findall(r"<(?:path|polygon)\b[^>]*/>", src, re.S)
+    horse = trim(render(head + "".join(e for i, e in enumerate(parts) if i not in (0, 1, 2, 3, 56, 57, 58)) + "</svg>",
+                        LOCKUP_W), 0)
+    w = MARK_W
+    h = round(w * 1.38)
+    band = round(h * 0.07)
+    badge = Image.new("RGBA", (w, h), hexrgb("#FAEB53") + (255,))
+    draw = ImageDraw.Draw(badge)
+    for k, colour in enumerate(("#008B47", "#FFFFFF", "#D02F28")):
+        draw.rectangle((round(k * w / 3), 0, round((k + 1) * w / 3) - 1, band - 1), fill=hexrgb(colour) + (255,))
+    word = trim(render(svg_text("ferrari_wordmark.svg"), LOCKUP_W), 0)
+    word = word.resize((round(w * 0.84), round(word.height * w * 0.84 / word.width)), Image.LANCZOS)
+    bottom = h - round(h * 0.06)
+    badge.alpha_composite(word, ((w - word.width) // 2, bottom - word.height))
+    room = (round(w * 0.8), bottom - word.height - band - round(h * 0.1))
+    s = min(room[0] / horse.width, room[1] / horse.height)
+    horse = horse.resize((round(horse.width * s), round(horse.height * s)), Image.LANCZOS)
+    badge.alpha_composite(horse, ((w - horse.width) // 2, band + round(h * 0.05)))
+    return badge, badge, badge
 
 
 def williams():
