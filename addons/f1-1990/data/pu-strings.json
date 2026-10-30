@@ -1,0 +1,55 @@
+{
+ "scope": "f1_career_1990",
+ "strings": {
+  "*": {
+   "lng_internal_combustion_engine_title": "Engine",
+   "lng_internal_combustion_engine_description": "The race engine. It runs in practice and in the race; Qualifying 1 and Qualifying 2 run the qualifying engine.",
+   "lng_motor_generator_unit_kinetic_title": "Qualifying Engine",
+   "lng_motor_generator_unit_kinetic_description": "A separate high-revving engine, fitted only for Qualifying 1 and Qualifying 2. The qualifying engine R&D lines add their power with it."
+  },
+  "bra": {
+   "lng_internal_combustion_engine_title": "Motor",
+   "lng_motor_generator_unit_kinetic_title": "Motor de Classificação"
+  },
+  "dut": {
+   "lng_internal_combustion_engine_title": "Motor",
+   "lng_motor_generator_unit_kinetic_title": "Kwalificatiemotor"
+  },
+  "eng": {
+   "lng_internal_combustion_engine_title": "Engine",
+   "lng_motor_generator_unit_kinetic_title": "Qualifying Engine"
+  },
+  "fre": {
+   "lng_internal_combustion_engine_title": "Moteur",
+   "lng_motor_generator_unit_kinetic_title": "Moteur de qualification"
+  },
+  "ger": {
+   "lng_internal_combustion_engine_title": "Motor",
+   "lng_motor_generator_unit_kinetic_title": "Qualifikationsmotor"
+  },
+  "ita": {
+   "lng_internal_combustion_engine_title": "Motore",
+   "lng_motor_generator_unit_kinetic_title": "Motore da qualifica"
+  },
+  "jap": {
+   "lng_internal_combustion_engine_title": "エンジン",
+   "lng_motor_generator_unit_kinetic_title": "予選用エンジン"
+  },
+  "mex": {
+   "lng_internal_combustion_engine_title": "Motor",
+   "lng_motor_generator_unit_kinetic_title": "Motor de clasificación"
+  },
+  "pol": {
+   "lng_internal_combustion_engine_title": "Silnik",
+   "lng_motor_generator_unit_kinetic_title": "Silnik kwalifikacyjny"
+  },
+  "spa": {
+   "lng_internal_combustion_engine_title": "Motor",
+   "lng_motor_generator_unit_kinetic_title": "Motor de clasificación"
+  },
+  "zhs": {
+   "lng_internal_combustion_engine_title": "引擎",
+   "lng_motor_generator_unit_kinetic_title": "排位赛引擎"
+  }
+ }
+}

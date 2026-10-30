@@ -97,6 +97,28 @@ int main(int argc, char **argv)
         check("gives the results headers English text", results && *results == "Qualifying 2 Results");
     }
 
+    if (argc > 6) {
+        std::ifstream f(argv[6], std::ios::binary);
+        std::stringstream ss;
+        ss << f.rdbuf();
+        bool ok = f1990::parse_string_leaves(ss.str(), leaves, &at);
+        size_t n = 0;
+        const std::string *engine = nullptr, *quali = nullptr;
+        for (auto &l : leaves) {
+            if (l.path.size() != 3 || l.path[0] != "strings")
+                continue;
+            n++;
+            if (l.path[1] == "*" && l.path[2] == "lng_internal_combustion_engine_title")
+                engine = &l.text;
+            if (l.path[1] == "*" && l.path[2] == "lng_motor_generator_unit_kinetic_title")
+                quali = &l.text;
+        }
+        check("parses data/pu-strings.json", ok && leaves[0].path[0] == "scope" && leaves[0].text == "f1_career_1990");
+        check("has 4 part strings for every language and 2 in each of the eleven", n == 4 + 22);
+        check("names the ICE slot Engine", engine && *engine == "Engine");
+        check("names the MGU-K slot Qualifying Engine", quali && *quali == "Qualifying Engine");
+    }
+
     if (argc > 1) {
         std::ifstream f(argv[1], std::ios::binary);
         std::stringstream ss;

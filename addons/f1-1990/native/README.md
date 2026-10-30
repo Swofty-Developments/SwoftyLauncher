@@ -16,7 +16,7 @@ Log lines (swofty log): `[f1-1990] GRID best-of (<why>)` once per pass, then one
 
 ## Build
 
-`./build.sh` generates dev bindings (`re/tools/bindgen.py --dev`) into `build/dev` and builds the 16 DLLs with zig. `Sess_TyreClass_FromName`, bound by `f1_1990_tyreclass.dll` only, has no `agree` verify row yet. 39 of the bindings they use are L2 without an `agree` verify row, so bindgen leaves them out of the core's `bindings.json` and launcher 1.3.0's core does not list them; the core then drops `f1_1990.dll`, `f1_1990_tyres.dll`, `f1_1990_replay.dll`, `f1_1990_pu.dll`, `f1_1990_quali.dll`, `f1_1990_wizard.dll` and `f1_1990_intro.dll`. They load with a loader whose `swofty/addons/core/bindings.json` adds the entries of `build/dev/bindings.json` it lacks.
+`./build.sh` generates dev bindings (`re/tools/bindgen.py --dev`) into `build/dev` and builds the 17 DLLs with zig. `Sess_TyreClass_FromName`, bound by `f1_1990_tyreclass.dll` only, has no `agree` verify row yet. 39 of the bindings they use are L2 without an `agree` verify row, so bindgen leaves them out of the core's `bindings.json` and launcher 1.3.0's core does not list them; the core then drops `f1_1990.dll`, `f1_1990_tyres.dll`, `f1_1990_replay.dll`, `f1_1990_pu.dll`, `f1_1990_parts.dll` (`site_Sess_PuPanel_SlotHolder`), `f1_1990_quali.dll`, `f1_1990_wizard.dll` and `f1_1990_intro.dll`. They load with a loader whose `swofty/addons/core/bindings.json` adds the entries of `build/dev/bindings.json` it lacks.
 
 `test/run.sh` runs the ranking unit tests on the host.
 
@@ -125,6 +125,29 @@ A separate DLL; option `pu_rules_1990` (default on). The career's `EngineManagem
 A car is a 1990 car when the driver's career entrant row (driver key low byte = `id_lo` +0x50, high word = `id_hi` +0x52) has a vehicle (+0x5c, stat id in the high word) whose `entrants.vehicles` row has `vehicle_package` `f1_1990` or `f1_1990b`; that list is read on `career.loaded`. Other packages, and every mode without a career, keep the stock rules.
 
 It logs `[f1-1990] power unit: N vehicle(s) of the f1_1990 and f1_1990b packages run without power-unit wear or grid penalties`, then per driver `session wear X skipped` and `N-place grid penalty (reason R) dropped` (first 8 and 16).
+
+## Power-unit parts (`f1_1990_parts.dll`)
+
+A separate DLL; option `pu_parts_1990` (default on); ships `data/pu-strings.json` through its entry's `files`. While a 1990 career is loaded (`career.loaded` with data group `f1_career_1990`; `career.unloaded` or another career turns it off) the power-unit list of the garage monitor and the laptop shows three parts:
+
+| slot | stock part | 1990 part |
+|---|---|---|
+| 0 | ICE | Engine (the race engine) |
+| 1 | MGU-K | Qualifying Engine |
+| 6 | event gearbox | event gearbox |
+
+MGU-H, ES, TC and CE (slots 2 to 5) have no row. Each slot keeps its own allocation from the season's component set (the 2026 set: 4 engines, 3 qualifying engines).
+
+| binding | address | use |
+|---|---|---|
+| `site_Sess_PuPanel_SlotHolder` | 0x141f50ecc | in the slot loop of `Sess_PuPanel_BuildComponents` (0x141f50910), `rax` = the slot's holder and `rbp` = the slot: for slots 2 to 5 `rax` becomes an empty holder (no parts) and the game adds no row for them. Rows keep their slot index (+0), which the refresh 0x141f58a20 and the entry filler `Sess_PuPanel_FillComponent` (0x141f532b0) use |
+| `Game_EngineMgmt_ApplySessionWear` | 0x1411d1560 | wrapped: for the call the holder wear range (+0x3c/+0x40) is 0 on every slot that does not run in the session and is put back after: the Qualifying Engine runs in session groups 1 (Qualifying) and 2 (SprintShootout), the Engine in every other session (and when the session is not known), the gearbox in all of them, slots 2 to 5 in none. The group is the weekend's current session (provider +0x270 vt +0x98, sessions +0x220, index +0x238) |
+
+`data/pu-strings.json` `strings.<language>.<key>` are set through the core's runtime string overrides (API v8): `lng_internal_combustion_engine_title` Engine, `lng_motor_generator_unit_kinetic_title` Qualifying Engine and both descriptions (`*`, English), the two titles per language. The power-unit diagram beside the list still draws the hybrid parts, and a row highlights its stock slot there (the Qualifying Engine row the MGU-K).
+
+With `pu_rules_1990` on no part wears at all; the wear split applies with it off. The qualifying engine's power comes from the R&D qualifying lines (`f1_1990_quali.dll`); the handling files have one rev limit per engine for every session.
+
+It logs `[f1-1990] parts: 1990 career: engine, qualifying engine and gearbox only` / `no 1990 career: stock power-unit parts`, `set|cleared N part name string(s)`, `power-unit panel row N (<part>) hidden` (first 12) and `driver 0x… session group G: wear W on the race engine|qualifying engine and the gearbox; N slot(s) without wear` (first 16).
 
 ## Qualifying engine lines (`f1_1990_quali.dll`)
 

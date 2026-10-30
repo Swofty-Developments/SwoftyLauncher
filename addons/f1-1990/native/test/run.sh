@@ -16,13 +16,15 @@ ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/speech_line_test s
 ../build/speech_line_test
 ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/json_strings_test json_strings_test.cpp
 ../build/json_strings_test ../../data/flavio-strings.json ../../data/rnd-art.json ../../data/rnd-strings.json ../../data/rnd-look.json \
-    ../../data/session-strings.json
+    ../../data/session-strings.json ../../data/pu-strings.json
 ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/character_ref_test character_ref_test.cpp
 ../build/character_ref_test
 ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/content_tabs_test content_tabs_test.cpp
 ../build/content_tabs_test
 ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/pu_scope_test pu_scope_test.cpp
 ../build/pu_scope_test
+${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/pu_parts_test pu_parts_test.cpp
+../build/pu_parts_test
 ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/rnd_progress_test rnd_progress_test.cpp
 ../build/rnd_progress_test
 ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/rnd_art_test rnd_art_test.cpp

@@ -43,6 +43,11 @@ Not covered: the garage boards and pit perches of the 1990 track worlds still sh
   `lng_qualifying_2`, `lng_qualifying_short_short` its `lng_qualifying_2_short`; `lng_sprintshootout_results` and
   `lng_qualifying_results` read Qualifying 1 Results and Qualifying 2 Results in every language.
   `lng_qualifying_one_shot_short` stays stock: it is also the concise label of the One-Shot qualifying length.
+- Power-unit parts (`data/pu-strings.json`, `native/f1_1990_parts.dll`, option `pu_parts_1990`): in a 1990 career the
+  power-unit list of the garage monitor and the laptop has three rows: Engine (the ICE slot, the race engine),
+  Qualifying Engine (the MGU-K slot) and the event gearbox. MGU-H, ES, TC and CE have no row. The qualifying engine
+  wears only in Qualifying 1 and 2, the race engine in every other session; with `pu_rules_1990` on nothing wears.
+  The allocations are the 2026 component set's (4 engines, 3 qualifying engines).
 
 Not scoped to 1990 (global rows, left stock): the safety-car and parc-fermé option defaults, the short-race restriction (very short races grey out red flags, formation lap and safety car) and the power-unit component sets (`engine_management.components`), which the game picks by season only: `f1_1990` runs on `season_2026`, so 1990 has the 2026 allocation, wear and grid drops.
 

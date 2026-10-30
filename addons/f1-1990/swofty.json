@@ -29,6 +29,11 @@
       "binds": "native"
     },
     {
+      "id": "pu_parts_1990", "type": "toggle", "label": "1990 power-unit parts", "default": true,
+      "description": "In 1990 careers the power-unit screens list the Engine, the Qualifying Engine and the gearbox only. The qualifying engine wears in Qualifying 1 and 2, the race engine in every other session.",
+      "binds": "native"
+    },
+    {
       "id": "quali_engine_1990", "type": "toggle", "label": "1990 qualifying engines", "default": true,
       "description": "The qualifying engine R&D lines add their Engine Power only in Friday and Saturday qualifying of a 1990 career.",
       "binds": "native"
@@ -190,7 +195,8 @@
       { "dll": "native/f1_1990_voice.dll", "files": ["data/flavio-strings.json"] },
       { "dll": "native/f1_1990_bspec.dll" },
       { "dll": "native/f1_1990_agent.dll", "early": true }, { "dll": "native/f1_1990_tabs.dll" },
-      { "dll": "native/f1_1990_pu.dll" }, { "dll": "native/f1_1990_quali.dll" },
+      { "dll": "native/f1_1990_pu.dll" },
+      { "dll": "native/f1_1990_parts.dll", "files": ["data/pu-strings.json"] }, { "dll": "native/f1_1990_quali.dll" },
       { "dll": "native/f1_1990_rnd.dll", "files": ["data/rnd-art.json", "data/rnd-strings.json"] },
       { "dll": "native/f1_1990_rndlook.dll", "files": ["data/rnd-look.json"] },
       { "dll": "native/f1_1990_wizard.dll", "files": ["data/calendar-1990.json"] }, { "dll": "native/f1_1990_intro.dll" },
