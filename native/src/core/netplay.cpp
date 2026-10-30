@@ -7,11 +7,9 @@
 #include <atomic>
 #include <cstring>
 #include <string>
-#include <vector>
 
 namespace runtime {
 std::string hook_error(const safetyhook::InlineHook::Error &e);
-std::string hook_error(const safetyhook::MidHook::Error &e);
 }
 
 namespace {
@@ -63,111 +61,13 @@ const runtime::Sig S_REMOTE_NAME{"site_Game_PresenceNameRemoteAdded",
                                  "10 46 10",
                                  0x31691c4, runtime::Sig::addr, 0, 0x18, 0};
 
-// Platform icons next to drivers. Every driver row (session cars, the driver list, leaderboards, results, the
-// featured driver, the dropzone) picks its icon from the platform tag in byte 0 of the entry's NePresenceUserID
-// (1 Steam, 3 PlayStation, 4 Xbox, 6 Origin, 7 EA account). In a LAN session each member's id is its own store
-// account, so the tag already names the right store on every peer. The rows hide the icon behind an inlined
-// check that the MP mode (NetSub+0xd8 +0x750: 0 online, 1 LAN, 2 crossplay) is crossplay, followed by the
-// crossplay preference reads. Each site below is the jne after that mode compare; while a room is configured
-// and the mode is LAN, the hook sets ZF so the row takes the crossplay path and keeps the preference check.
-const runtime::Sig S_ICON_GATES[] = {
-    {"site_Game_PlatformIconGate_SessionCars", "80 B8 50 07 00 00 02 75 40 80 B9 D8 10 00 00 00", 0x1775557,
-     runtime::Sig::addr, 0, 7, 0},
-    {"site_Game_PlatformIconGate_GridList", "80 B8 50 07 00 00 02 0F 85 ?? ?? ?? ?? 80 B9 D8 10 00 00 00", 0x221b444,
-     runtime::Sig::addr, 0, 7, 0},
-    {"site_Game_PlatformIconGate_Leaderboard", "80 B8 50 07 00 00 02 75 30 80 B9 D8 10 00 00 00", 0x18261cc,
-     runtime::Sig::addr, 0, 7, 0},
-    {"site_Game_PlatformIconGate_FeaturedDriver",
-     "80 B8 50 07 00 00 02 75 26 80 B9 D8 10 00 00 00 74 0B B0 01 80 B9 D7 10 00 00 00 75 14 48 8B 81 C8 03 00 00 0F "
-     "B6 80 7C 02 00 00 34 01 EB 02 31 C0 88 84 24 70 01 00 00",
-     0x183aacd, runtime::Sig::addr, 0, 7, 0},
-    {"site_Game_PlatformIconGate_Dropzone",
-     "80 B8 50 07 00 00 02 75 26 80 B9 D8 10 00 00 00 74 0B B0 01 80 B9 D7 10 00 00 00 75 14 48 8B 81 C8 03 00 00 0F "
-     "B6 80 7C 02 00 00 34 01 EB 02 31 C0 20 84 24 D0 00 00 00",
-     0x18fa228, runtime::Sig::addr, 0, 7, 0},
-    {"site_Game_PlatformIconGate_DriverRowA",
-     "80 B8 50 07 00 00 02 75 26 80 B9 D8 10 00 00 00 74 0B B0 01 80 B9 D7 10 00 00 00 75 14 48 8B 81 C8 03 00 00 0F "
-     "B6 80 7C 02 00 00 34 01 EB 02 31 C0 20 84 24 DC 00 00 00",
-     0x190288e, runtime::Sig::addr, 0, 7, 0},
-    {"site_Game_PlatformIconGate_DriverRowB",
-     "80 B8 50 07 00 00 02 75 26 80 B9 D8 10 00 00 00 74 0B B0 01 80 B9 D7 10 00 00 00 75 14 48 8B 81 C8 03 00 00 0F "
-     "B6 80 7C 02 00 00 34 01 EB 02 31 C0 20 84 24 D4 00 00 00",
-     0x190c967, runtime::Sig::addr, 0, 7, 0},
-    {"site_Game_PlatformIconGate_DriverRowAi", "80 B8 50 07 00 00 02 75 2B 41 80 BE D8 10 00 00 00", 0x190ee43,
-     runtime::Sig::addr, 0, 7, 0},
-};
-
-constexpr uint8_t mode_lan = 1;
-constexpr uintptr_t zero_flag = 0x40;
-
-std::vector<safetyhook::MidHook> h_icon_gates;
-
-void icon_gate(safetyhook::Context &ctx)
-{
-    if ((ctx.rflags & zero_flag) || !runtime::netplay_session::configured())
-        return;
-    if (*reinterpret_cast<const uint8_t *>(ctx.rax + 0x750) == mode_lan)
-        ctx.rflags |= zero_flag;
-}
-
-void icon_setup()
-{
-    std::string missing;
-    for (const auto &s : S_ICON_GATES) {
-        uintptr_t at = runtime::find(s, "netplay", "netplay");
-        if (!at) {
-            missing += std::string(missing.empty() ? "" : ", ") + s.what;
-            continue;
-        }
-        auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), icon_gate);
-        if (!h) {
-            swofty::log("[netplay] platform icon gate %s: the hook failed: %s", s.what, runtime::hook_error(h.error()).c_str());
-            missing += std::string(missing.empty() ? "" : ", ") + s.what;
-            continue;
-        }
-        h_icon_gates.push_back(std::move(*h));
-    }
-    swofty::log("[netplay] platform icons in LAN rooms: %zu of %zu driver row gates hooked%s%s", h_icon_gates.size(),
-                sizeof S_ICON_GATES / sizeof *S_ICON_GATES, missing.empty() ? "" : "; not hooked: ", missing.c_str());
-}
-
-const char *platform_name(uint8_t tag)
-{
-    switch (tag) {
-    case 1:
-        return "Steam";
-    case 2:
-        return "NetEase";
-    case 3:
-        return "PlayStation";
-    case 4:
-        return "Xbox";
-    case 5:
-        return "GGP";
-    case 6:
-        return "Origin";
-    case 7:
-        return "EA";
-    default:
-        return nullptr;
-    }
-}
-
 safetyhook::InlineHook h_add_name;
 uintptr_t remote_added;
 std::atomic<uint32_t> said_generation{0};
-std::atomic<bool> said_platform{false};
 
 void add_name_hook(void *resolver, const void *user, const char *name)
 {
     auto from = reinterpret_cast<uintptr_t>(__builtin_return_address(0));
-    if (from != remote_added && user && runtime::netplay_session::configured() && !said_platform.exchange(true)) {
-        uint8_t tag = *static_cast<const uint8_t *>(user);
-        if (const char *store = platform_name(tag))
-            swofty::log("[netplay] driver platform: %s", store);
-        else
-            swofty::log("[netplay] driver platform: unknown (presence tag %u)", unsigned(tag));
-    }
     uint32_t generation = 0;
     std::string mine = from == remote_added ? std::string() : runtime::netplay_session::driver_name(&generation);
     if (!mine.empty()) {
@@ -244,7 +144,6 @@ void session_patches()
                       : "left unchanged (signature did not resolve)");
 
     name_setup();
-    icon_setup();
 }
 
 void setup()
