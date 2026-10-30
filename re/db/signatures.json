@@ -76874,7 +76874,7 @@
    "target": "0x14618ce08",
    "kind": "data",
    "names": [
-    "g_Ne_SequenceNameTable"
+    "g_Ne_NameTable"
    ],
    "verified": [
     {
