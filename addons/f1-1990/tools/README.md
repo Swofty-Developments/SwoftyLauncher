@@ -151,15 +151,18 @@ A base without a `<head>_hair.idf` hair mesh paints its hair from the face map (
 
 ## crew.py
 
-Writes `erp/crew.json` and `erp/crew/` (build output, not committed): 1990 team kit for the pit and garage crews. The
-crews ask `crew_livery.erp` (`animation_package/scenes/garagecrew/2026`) for the context `2026-<team>_1990` of
-`racecrew_kitpart.emb` (male and female crew) and `headphones_02.emb`, and fall back to `default`. Per team this
-adds those three binds, six materials (shirt, trousers, shorts, trainers, rain jacket, headphones) under
-`team_livery/<kit label>` and their diffuse textures, all new resources in that archive; the binds and materials are
-the `2026-williams` ones with the diffuse paths swapped, and the normals, specular maps and logo materials stay the
-Williams ones. Diffuse: the `noyear-custom-classic01` crew textures recoloured in the team's colours (`CREW`), the
-team lockup on the shirt's chest and back, every level in the archive (shirt 1024, the rest 512). Needs Pillow,
-numpy, lz4 and zstd.
+Writes `erp/crew.json` and `erp/crew/` (build output, not committed): 1990 team kit for the garage and pit stop crews.
+A 1990 car's crews ask for the context `2026-<team>_1990` (the f1_2026 driver animation set's `[YEAR]-[LIVERY]` with
+the team row's `livery_name`) and fall back to `default`: the garage crew in `crew_livery.erp`
+(`animation_package/scenes/garagecrew/2026`, `racecrew_kitpart.emb` of the male and female crew and
+`headphones_02.emb`), the pit stop crew in `pitstop_26.erp` (`animation_package/scenes/pitstops/f1`, `pitcrew.emb`),
+the vehicle package's `crew_livery_asset_group` and `pit_stop_asset_group`. Per team this adds those binds, the
+materials with a diffuse texture under `team_livery/<kit label>` (garage: shirt, trousers, shorts, trainers, rain
+jacket, headphones; pit: overall, helmet, visor) and their diffuse textures, all new resources in those archives; the
+binds and materials are the `2026-williams` ones with the diffuse paths swapped, and the normals, specular maps and
+logo materials stay the Williams ones. Diffuse: the `noyear-custom-classic01` crew textures recoloured in the team's
+colours (`CREW`), the team lockup on the garage shirt's chest and back and the pit overall's chest, every level in the
+archive (shirt and overall 1024, the rest 512). Option `crew_kit` gates every op. Needs Pillow, numpy, lz4 and zstd.
 
 ```sh
 python3 addons/f1-1990/tools/crew.py --game <F1 25> [--baseline <launcher baseline>/<build>] [--sheet <png>]

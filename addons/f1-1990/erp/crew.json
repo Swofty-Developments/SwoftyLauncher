@@ -264,6 +264,104 @@
    "when": {
     "crew_kit": true
    },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-mclaren__/textures/f90-mclaren___pitcrew_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-mclaren__/pit_f90-mclaren___pitcrew_d.tif.image.0",
+    "erp/crew/f90-mclaren__/pit_f90-mclaren___pitcrew_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-mclaren__/textures/f90-mclaren___pitcrew_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-mclaren__/pit_f90-mclaren___pitcrew_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-mclaren__/textures/f90-mclaren___pitcrew_helmet_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-mclaren__/pit_f90-mclaren___pitcrew_helmet_d.tif.image.0",
+    "erp/crew/f90-mclaren__/pit_f90-mclaren___pitcrew_helmet_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-mclaren__/textures/f90-mclaren___pitcrew_helmet_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-mclaren__/pit_f90-mclaren___pitcrew_helmet_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-mclaren__/materials/pitcrew.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-mclaren__/pit_pitcrew.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-mclaren__/materials/pitcrew_helmet.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-mclaren__/pit_pitcrew_helmet.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-mclaren__/materials/pitcrew_visor.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-mclaren__/pit_pitcrew_visor.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/pitcrew/idf/pitcrew.emb?context=2026-mclaren_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/crew/f90-mclaren__/pit_pitcrew.emb_context_2026-mclaren_1990.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ferrari__/textures/f90-ferrari___racecrew_shirt_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -515,6 +613,104 @@
    "type": "GfxMatBindRes",
    "sources": [
     "erp/crew/f90-ferrari__/headphones_02.emb_context_2026-ferrari_1990.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-ferrari__/textures/f90-ferrari___pitcrew_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-ferrari__/pit_f90-ferrari___pitcrew_d.tif.image.0",
+    "erp/crew/f90-ferrari__/pit_f90-ferrari___pitcrew_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-ferrari__/textures/f90-ferrari___pitcrew_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-ferrari__/pit_f90-ferrari___pitcrew_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-ferrari__/textures/f90-ferrari___pitcrew_helmet_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-ferrari__/pit_f90-ferrari___pitcrew_helmet_d.tif.image.0",
+    "erp/crew/f90-ferrari__/pit_f90-ferrari___pitcrew_helmet_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-ferrari__/textures/f90-ferrari___pitcrew_helmet_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-ferrari__/pit_f90-ferrari___pitcrew_helmet_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-ferrari__/materials/pitcrew.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-ferrari__/pit_pitcrew.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-ferrari__/materials/pitcrew_helmet.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-ferrari__/pit_pitcrew_helmet.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-ferrari__/materials/pitcrew_visor.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-ferrari__/pit_pitcrew_visor.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/pitcrew/idf/pitcrew.emb?context=2026-ferrari_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/crew/f90-ferrari__/pit_pitcrew.emb_context_2026-ferrari_1990.0"
    ]
   },
   {
@@ -780,6 +976,104 @@
    "when": {
     "crew_kit": true
    },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-williams_/textures/f90-williams__pitcrew_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-williams_/pit_f90-williams__pitcrew_d.tif.image.0",
+    "erp/crew/f90-williams_/pit_f90-williams__pitcrew_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-williams_/textures/f90-williams__pitcrew_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-williams_/pit_f90-williams__pitcrew_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-williams_/textures/f90-williams__pitcrew_helmet_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-williams_/pit_f90-williams__pitcrew_helmet_d.tif.image.0",
+    "erp/crew/f90-williams_/pit_f90-williams__pitcrew_helmet_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-williams_/textures/f90-williams__pitcrew_helmet_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-williams_/pit_f90-williams__pitcrew_helmet_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-williams_/materials/pitcrew.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-williams_/pit_pitcrew.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-williams_/materials/pitcrew_helmet.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-williams_/pit_pitcrew_helmet.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-williams_/materials/pitcrew_visor.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-williams_/pit_pitcrew_visor.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/pitcrew/idf/pitcrew.emb?context=2026-williams_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/crew/f90-williams_/pit_pitcrew.emb_context_2026-williams_1990.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-benetton_/textures/f90-benetton__racecrew_shirt_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1031,6 +1325,104 @@
    "type": "GfxMatBindRes",
    "sources": [
     "erp/crew/f90-benetton_/headphones_02.emb_context_2026-benetton_1990.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-benetton_/textures/f90-benetton__pitcrew_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-benetton_/pit_f90-benetton__pitcrew_d.tif.image.0",
+    "erp/crew/f90-benetton_/pit_f90-benetton__pitcrew_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-benetton_/textures/f90-benetton__pitcrew_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-benetton_/pit_f90-benetton__pitcrew_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-benetton_/textures/f90-benetton__pitcrew_helmet_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-benetton_/pit_f90-benetton__pitcrew_helmet_d.tif.image.0",
+    "erp/crew/f90-benetton_/pit_f90-benetton__pitcrew_helmet_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-benetton_/textures/f90-benetton__pitcrew_helmet_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-benetton_/pit_f90-benetton__pitcrew_helmet_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-benetton_/materials/pitcrew.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-benetton_/pit_pitcrew.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-benetton_/materials/pitcrew_helmet.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-benetton_/pit_pitcrew_helmet.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-benetton_/materials/pitcrew_visor.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-benetton_/pit_pitcrew_visor.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/pitcrew/idf/pitcrew.emb?context=2026-benetton_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/crew/f90-benetton_/pit_pitcrew.emb_context_2026-benetton_1990.0"
    ]
   },
   {
@@ -1296,6 +1688,104 @@
    "when": {
     "crew_kit": true
    },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-tyrrell__/textures/f90-tyrrell___pitcrew_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-tyrrell__/pit_f90-tyrrell___pitcrew_d.tif.image.0",
+    "erp/crew/f90-tyrrell__/pit_f90-tyrrell___pitcrew_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-tyrrell__/textures/f90-tyrrell___pitcrew_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-tyrrell__/pit_f90-tyrrell___pitcrew_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-tyrrell__/textures/f90-tyrrell___pitcrew_helmet_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-tyrrell__/pit_f90-tyrrell___pitcrew_helmet_d.tif.image.0",
+    "erp/crew/f90-tyrrell__/pit_f90-tyrrell___pitcrew_helmet_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-tyrrell__/textures/f90-tyrrell___pitcrew_helmet_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-tyrrell__/pit_f90-tyrrell___pitcrew_helmet_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-tyrrell__/materials/pitcrew.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-tyrrell__/pit_pitcrew.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-tyrrell__/materials/pitcrew_helmet.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-tyrrell__/pit_pitcrew_helmet.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-tyrrell__/materials/pitcrew_visor.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-tyrrell__/pit_pitcrew_visor.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/pitcrew/idf/pitcrew.emb?context=2026-tyrrell_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/crew/f90-tyrrell__/pit_pitcrew.emb_context_2026-tyrrell_1990.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-lotus____/textures/f90-lotus_____racecrew_shirt_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1547,6 +2037,104 @@
    "type": "GfxMatBindRes",
    "sources": [
     "erp/crew/f90-lotus____/headphones_02.emb_context_2026-lotus_1990.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-lotus____/textures/f90-lotus_____pitcrew_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-lotus____/pit_f90-lotus_____pitcrew_d.tif.image.0",
+    "erp/crew/f90-lotus____/pit_f90-lotus_____pitcrew_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-lotus____/textures/f90-lotus_____pitcrew_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-lotus____/pit_f90-lotus_____pitcrew_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-lotus____/textures/f90-lotus_____pitcrew_helmet_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-lotus____/pit_f90-lotus_____pitcrew_helmet_d.tif.image.0",
+    "erp/crew/f90-lotus____/pit_f90-lotus_____pitcrew_helmet_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-lotus____/textures/f90-lotus_____pitcrew_helmet_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-lotus____/pit_f90-lotus_____pitcrew_helmet_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-lotus____/materials/pitcrew.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-lotus____/pit_pitcrew.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-lotus____/materials/pitcrew_helmet.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-lotus____/pit_pitcrew_helmet.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-lotus____/materials/pitcrew_visor.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-lotus____/pit_pitcrew_visor.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/pitcrew/idf/pitcrew.emb?context=2026-lotus_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/crew/f90-lotus____/pit_pitcrew.emb_context_2026-lotus_1990.0"
    ]
   },
   {
@@ -1812,6 +2400,104 @@
    "when": {
     "crew_kit": true
    },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-march____/textures/f90-march_____pitcrew_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-march____/pit_f90-march_____pitcrew_d.tif.image.0",
+    "erp/crew/f90-march____/pit_f90-march_____pitcrew_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-march____/textures/f90-march_____pitcrew_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-march____/pit_f90-march_____pitcrew_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-march____/textures/f90-march_____pitcrew_helmet_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-march____/pit_f90-march_____pitcrew_helmet_d.tif.image.0",
+    "erp/crew/f90-march____/pit_f90-march_____pitcrew_helmet_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-march____/textures/f90-march_____pitcrew_helmet_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-march____/pit_f90-march_____pitcrew_helmet_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-march____/materials/pitcrew.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-march____/pit_pitcrew.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-march____/materials/pitcrew_helmet.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-march____/pit_pitcrew_helmet.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-march____/materials/pitcrew_visor.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-march____/pit_pitcrew_visor.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/pitcrew/idf/pitcrew.emb?context=2026-leytonhouse_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/crew/f90-march____/pit_pitcrew.emb_context_2026-leytonhouse_1990.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-larrousse/textures/f90-larrousse_racecrew_shirt_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -2063,6 +2749,104 @@
    "type": "GfxMatBindRes",
    "sources": [
     "erp/crew/f90-larrousse/headphones_02.emb_context_2026-larrousse_1990.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-larrousse/textures/f90-larrousse_pitcrew_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-larrousse/pit_f90-larrousse_pitcrew_d.tif.image.0",
+    "erp/crew/f90-larrousse/pit_f90-larrousse_pitcrew_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-larrousse/textures/f90-larrousse_pitcrew_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-larrousse/pit_f90-larrousse_pitcrew_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-larrousse/textures/f90-larrousse_pitcrew_helmet_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-larrousse/pit_f90-larrousse_pitcrew_helmet_d.tif.image.0",
+    "erp/crew/f90-larrousse/pit_f90-larrousse_pitcrew_helmet_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-larrousse/textures/f90-larrousse_pitcrew_helmet_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-larrousse/pit_f90-larrousse_pitcrew_helmet_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-larrousse/materials/pitcrew.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-larrousse/pit_pitcrew.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-larrousse/materials/pitcrew_helmet.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-larrousse/pit_pitcrew_helmet.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-larrousse/materials/pitcrew_visor.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-larrousse/pit_pitcrew_visor.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/pitcrew/idf/pitcrew.emb?context=2026-larrousse_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/crew/f90-larrousse/pit_pitcrew.emb_context_2026-larrousse_1990.0"
    ]
   },
   {
@@ -2328,6 +3112,104 @@
    "when": {
     "crew_kit": true
    },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-ligier___/textures/f90-ligier____pitcrew_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-ligier___/pit_f90-ligier____pitcrew_d.tif.image.0",
+    "erp/crew/f90-ligier___/pit_f90-ligier____pitcrew_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-ligier___/textures/f90-ligier____pitcrew_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-ligier___/pit_f90-ligier____pitcrew_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-ligier___/textures/f90-ligier____pitcrew_helmet_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-ligier___/pit_f90-ligier____pitcrew_helmet_d.tif.image.0",
+    "erp/crew/f90-ligier___/pit_f90-ligier____pitcrew_helmet_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-ligier___/textures/f90-ligier____pitcrew_helmet_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-ligier___/pit_f90-ligier____pitcrew_helmet_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-ligier___/materials/pitcrew.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-ligier___/pit_pitcrew.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-ligier___/materials/pitcrew_helmet.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-ligier___/pit_pitcrew_helmet.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-ligier___/materials/pitcrew_visor.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-ligier___/pit_pitcrew_visor.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/pitcrew/idf/pitcrew.emb?context=2026-ligier_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/crew/f90-ligier___/pit_pitcrew.emb_context_2026-ligier_1990.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-minardi__/textures/f90-minardi___racecrew_shirt_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -2579,6 +3461,104 @@
    "type": "GfxMatBindRes",
    "sources": [
     "erp/crew/f90-minardi__/headphones_02.emb_context_2026-minardi_1990.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-minardi__/textures/f90-minardi___pitcrew_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-minardi__/pit_f90-minardi___pitcrew_d.tif.image.0",
+    "erp/crew/f90-minardi__/pit_f90-minardi___pitcrew_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-minardi__/textures/f90-minardi___pitcrew_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-minardi__/pit_f90-minardi___pitcrew_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-minardi__/textures/f90-minardi___pitcrew_helmet_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-minardi__/pit_f90-minardi___pitcrew_helmet_d.tif.image.0",
+    "erp/crew/f90-minardi__/pit_f90-minardi___pitcrew_helmet_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-minardi__/textures/f90-minardi___pitcrew_helmet_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-minardi__/pit_f90-minardi___pitcrew_helmet_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-minardi__/materials/pitcrew.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-minardi__/pit_pitcrew.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-minardi__/materials/pitcrew_helmet.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-minardi__/pit_pitcrew_helmet.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-minardi__/materials/pitcrew_visor.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-minardi__/pit_pitcrew_visor.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/pitcrew/idf/pitcrew.emb?context=2026-minardi_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/crew/f90-minardi__/pit_pitcrew.emb_context_2026-minardi_1990.0"
    ]
   },
   {
@@ -2844,6 +3824,104 @@
    "when": {
     "crew_kit": true
    },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-brabham__/textures/f90-brabham___pitcrew_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-brabham__/pit_f90-brabham___pitcrew_d.tif.image.0",
+    "erp/crew/f90-brabham__/pit_f90-brabham___pitcrew_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-brabham__/textures/f90-brabham___pitcrew_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-brabham__/pit_f90-brabham___pitcrew_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-brabham__/textures/f90-brabham___pitcrew_helmet_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-brabham__/pit_f90-brabham___pitcrew_helmet_d.tif.image.0",
+    "erp/crew/f90-brabham__/pit_f90-brabham___pitcrew_helmet_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-brabham__/textures/f90-brabham___pitcrew_helmet_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-brabham__/pit_f90-brabham___pitcrew_helmet_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-brabham__/materials/pitcrew.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-brabham__/pit_pitcrew.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-brabham__/materials/pitcrew_helmet.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-brabham__/pit_pitcrew_helmet.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-brabham__/materials/pitcrew_visor.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-brabham__/pit_pitcrew_visor.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/pitcrew/idf/pitcrew.emb?context=2026-brabham_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/crew/f90-brabham__/pit_pitcrew.emb_context_2026-brabham_1990.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-dallara__/textures/f90-dallara___racecrew_shirt_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -3102,6 +4180,104 @@
    "when": {
     "crew_kit": true
    },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-dallara__/textures/f90-dallara___pitcrew_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-dallara__/pit_f90-dallara___pitcrew_d.tif.image.0",
+    "erp/crew/f90-dallara__/pit_f90-dallara___pitcrew_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-dallara__/textures/f90-dallara___pitcrew_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-dallara__/pit_f90-dallara___pitcrew_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-dallara__/textures/f90-dallara___pitcrew_helmet_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-dallara__/pit_f90-dallara___pitcrew_helmet_d.tif.image.0",
+    "erp/crew/f90-dallara__/pit_f90-dallara___pitcrew_helmet_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-dallara__/textures/f90-dallara___pitcrew_helmet_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-dallara__/pit_f90-dallara___pitcrew_helmet_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-dallara__/materials/pitcrew.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-dallara__/pit_pitcrew.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-dallara__/materials/pitcrew_helmet.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-dallara__/pit_pitcrew_helmet.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-dallara__/materials/pitcrew_visor.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-dallara__/pit_pitcrew_visor.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/pitcrew/idf/pitcrew.emb?context=2026-dallara_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/crew/f90-dallara__/pit_pitcrew.emb_context_2026-dallara_1990.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-arrows___/textures/f90-arrows____racecrew_shirt_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -3353,6 +4529,104 @@
    "type": "GfxMatBindRes",
    "sources": [
     "erp/crew/f90-arrows___/headphones_02.emb_context_2026-arrows_1990.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-arrows___/textures/f90-arrows____pitcrew_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-arrows___/pit_f90-arrows____pitcrew_d.tif.image.0",
+    "erp/crew/f90-arrows___/pit_f90-arrows____pitcrew_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-arrows___/textures/f90-arrows____pitcrew_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-arrows___/pit_f90-arrows____pitcrew_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-arrows___/textures/f90-arrows____pitcrew_helmet_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/crew/f90-arrows___/pit_f90-arrows____pitcrew_helmet_d.tif.image.0",
+    "erp/crew/f90-arrows___/pit_f90-arrows____pitcrew_helmet_d.tif.image.1"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-arrows___/textures/f90-arrows____pitcrew_helmet_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/crew/f90-arrows___/pit_f90-arrows____pitcrew_helmet_d.tif.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-arrows___/materials/pitcrew.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-arrows___/pit_pitcrew.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-arrows___/materials/pitcrew_helmet.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-arrows___/pit_pitcrew_helmet.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/team_livery/f90-arrows___/materials/pitcrew_visor.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/crew/f90-arrows___/pit_pitcrew_visor.material.0"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
+   "erp": "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_26.erp",
+   "resource": "eaid://character_package/pitcrew/idf/pitcrew.emb?context=2026-arrows_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/crew/f90-arrows___/pit_pitcrew.emb_context_2026-arrows_1990.0"
    ]
   }
  ]
