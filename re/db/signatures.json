@@ -81264,6 +81264,1518 @@
     }
    ],
    "used_by": []
+  },
+  {
+   "id": "car.tyres_complete_pitstop_for_car_list",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 8B 81 68",
+   "match": "0x1403b7060",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1403b7060",
+   "kind": "func_start",
+   "names": [
+    "Car_Tyres_CompletePitstopForCarList"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "car.tyres_apply_state_to_car_pair",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 30 80 79 64 00 0F 85",
+   "match": "0x1403b7510",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1403b7510",
+   "kind": "func_start",
+   "names": [
+    "Car_Tyres_ApplyStateToCarPair"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "car.tyres_pitstop_complete_for_car_pair",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 20 48 89 D7 C7 41 08 00 00 00",
+   "match": "0x1403b9e70",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1403b9e70",
+   "kind": "func_start",
+   "names": [
+    "Car_TyresPitstopComplete_ForCarPair"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.pit_box_car_actor_update",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 81 EC 58 02 00 00 C5 78 29 B4",
+   "match": "0x1403c8cf0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1403c8cf0",
+   "kind": "func_start",
+   "names": [
+    "Game_PitBoxCarActor_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "ai.select_ers_deploy_mode",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 D6 48 89 CF C5 FA 10 41",
+   "match": "0x1405fa4b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1405fa4b0",
+   "kind": "func_start",
+   "names": [
+    "Ai_Select_ErsDeployMode"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "ai.update_compound_pace_curves",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 80 00 00 00 C5 78 29 5C 24 70",
+   "match": "0x1405fb3c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1405fb3c0",
+   "kind": "func_start",
+   "names": [
+    "Ai_Update_CompoundPaceCurves"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "ai.calc_grip_limit_scale_a",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 81 EC 88 00 00 00 C5 78 29 4C 24 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 89 CE 48",
+   "match": "0x1406069d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1406069d0",
+   "kind": "func_start",
+   "names": [
+    "Ai_Calc_GripLimitScaleA"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "ai.calc_grip_limit_scale_b",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 55 53 48 81 EC 80 00 00 00 C5 78 29",
+   "match": "0x140606c10",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140606c10",
+   "kind": "func_start",
+   "names": [
+    "Ai_Calc_GripLimitScaleB"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "ai.job_update_cars_parallel",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 58 10 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 78 29 BC 24 40 10",
+   "match": "0x14063e370",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14063e370",
+   "kind": "func_start",
+   "names": [
+    "Ai_Job_UpdateCarsParallel"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "ai.behaviour_test_retire_update",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 05 00 00 C5 78 29 AC 24",
+   "match": "0x140653ec0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140653ec0",
+   "kind": "func_start",
+   "names": [
+    "Ai_BehaviourTestRetire_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.model_proxy_list_resolve",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 4C 89 C7 89",
+   "match": "0x14069c570",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14069c570",
+   "kind": "func_start",
+   "names": [
+    "Game_ModelProxyList_Resolve"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.progress_float_interpolator_evaluate",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8B 3D ?? ?? ?? ?? 48 85 FF",
+   "match": "0x1406b6300",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1406b6300",
+   "kind": "func_start",
+   "names": [
+    "Game_ProgressFloatInterpolator_Evaluate"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.steam_on_encrypted_app_ticket",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 30 48 89 CE 48 C7 41 60 00 00 00 00",
+   "match": "0x14077d590",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14077d590",
+   "kind": "func_start",
+   "names": [
+    "Ne_Steam_OnEncryptedAppTicket"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.calendar_move_track_data",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 55 53 48 83 EC 48 4C 89 C6 49",
+   "match": "0x141c0a470",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141c0a470",
+   "kind": "func_start",
+   "names": [
+    "Career_Calendar_MoveTrackData"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.social_notifications_update",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 03 00 00 C5 F8 29 B4 24 B0 03 00 00 48 89 D7 48",
+   "match": "0x141c34800",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141c34800",
+   "kind": "func_start",
+   "names": [
+    "Game_SocialNotifications_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.friends_list_on_get_friends_done",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 04 00 00 C5 F8 29 B4 24 10 04 00 00 48 89 D7 49",
+   "match": "0x141df5f70",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141df5f70",
+   "kind": "func_start",
+   "names": [
+    "Game_FriendsList_OnGetFriendsDone"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.social_on_friend_search_done",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 55 53 48 81 EC E8 00 00 00 48 89 D6 48 89",
+   "match": "0x141dfb490",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141dfb490",
+   "kind": "func_start",
+   "names": [
+    "Game_Social_OnFriendSearchDone"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.data_gatherer_players_update",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 38 2C 00",
+   "match": "0x1421f1400",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1421f1400",
+   "kind": "func_start",
+   "names": [
+    "Game_DataGathererPlayers_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.excitement_event_pair_trace_log",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 81 EC C0 00 00 00 C5 F8 29 BC 24 B0 00 00 00 C5 F8 29 B4 24 A0 00 00 00 48 85 D2 0F",
+   "match": "0x142520a50",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142520a50",
+   "kind": "func_start",
+   "names": [
+    "Game_ExcitementEventPair_TraceLog"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.vo_play_sound_effect_node_execute",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 40 48 89 D6 48 89 CF 48 8B 59",
+   "match": "0x142526a80",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142526a80",
+   "kind": "func_start",
+   "names": [
+    "Game_VoPlaySoundEffectNode_Execute"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.time_attack_gates_create_gate_model",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 55 53 48 81 EC A0 00 00 00 4C 89 C7",
+   "match": "0x1429ab800",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1429ab800",
+   "kind": "func_start",
+   "names": [
+    "Game_TimeAttackGates_CreateGateModel"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.save_slot_manager_activate_slot",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8B 81 68 02 00 00 48 8B 89 70 02",
+   "match": "0x1429d0b90",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1429d0b90",
+   "kind": "func_start",
+   "names": [
+    "Game_SaveSlotManager_ActivateSlot"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.photo_mode_helper_capture_frame",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 01 00 00 C5 F8 29 B4 24 E0 01 00 00 48 89 CE 8B",
+   "match": "0x142bcfc30",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142bcfc30",
+   "kind": "func_start",
+   "names": [
+    "Game_PhotoModeHelper_CaptureFrame"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "car.tyre_system_pitstop_complete",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 20 44 0F B6 C2 48 8B 81 10 01 00 00",
+   "match": "0x142e946d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142e946d0",
+   "kind": "func_start",
+   "names": [
+    "Car_TyreSystem_PitstopComplete"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.lap_sectors_init_from_track",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC A0 00 00 00 C5 78 29 84 24 90",
+   "match": "0x142f73e60",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f73e60",
+   "kind": "func_start",
+   "names": [
+    "Game_LapSectors_InitFromTrack"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.replay_buffer_write_stats",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 4C 89 C3 48 89",
+   "match": "0x142fdf180",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142fdf180",
+   "kind": "func_start",
+   "names": [
+    "Game_ReplayBuffer_WriteStats"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.beta_code_on_entered",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 81 EC A8 00 00 00 48 8B 02 48 8D 48 09 48",
+   "match": "0x1436d5610",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1436d5610",
+   "kind": "func_start",
+   "names": [
+    "Game_BetaCode_OnEntered"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.time_of_day_debug_update",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 C5 F8 29 BC 24 30 01 00 00 C5 F8 29 B4 24 20 01 00 00 48 89 CE",
+   "match": "0x1438c35d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1438c35d0",
+   "kind": "func_start",
+   "names": [
+    "Game_TimeOfDayDebug_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.bit_stream_write_float_by_precision",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 78 29 4C 24 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 C5",
+   "match": "0x143924c30",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143924c30",
+   "kind": "func_start",
+   "names": [
+    "Ne_BitStream_WriteFloatByPrecision"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.bit_stream_read_quantized_float",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 C5 F8",
+   "match": "0x143926600",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143926600",
+   "kind": "func_start",
+   "names": [
+    "Ne_BitStream_ReadQuantizedFloat"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.bit_stream_write_quantized_float",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 78 29 4C 24 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 C5 F8 28 FB",
+   "match": "0x1439268a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1439268a0",
+   "kind": "func_start",
+   "names": [
+    "Ne_BitStream_WriteQuantizedFloat"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "render.gfx2_device_initialise",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 78 2A 00",
+   "match": "0x1439bc2e0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1439bc2e0",
+   "kind": "func_start",
+   "names": [
+    "Render_Gfx2Device_Initialise"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "render.on_raytracing_validation_msg",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 30 80 3D ?? ?? ?? ?? 01 0F 85",
+   "match": "0x1439c7ec0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1439c7ec0",
+   "kind": "func_start",
+   "names": [
+    "Render_OnRaytracingValidationMsg"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "render.gfx2_buffer_construct",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 F8 29 B4 24 10 01 00 00 48 89 D7 48 89 CE 48 8D 05",
+   "match": "0x1439d5710",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1439d5710",
+   "kind": "func_start",
+   "names": [
+    "Render_Gfx2Buffer_Construct"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "render.gfx2_buffer_destroy",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 CB 48 8D 05",
+   "match": "0x143a0ed70",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143a0ed70",
+   "kind": "func_start",
+   "names": [
+    "Render_Gfx2Buffer_Destroy"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.particles_store_particle_slot",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 55 53 48 83 EC 30 44 89 CD 4C 89 C6",
+   "match": "0x143af41a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143af41a0",
+   "kind": "func_start",
+   "names": [
+    "Game_Particles_StoreParticleSlot"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.particles_restore_particle_slot",
+   "section": ".xtls",
+   "pattern": "56 57 55 53 48 83 EC 28 44 89 CD 4C 89 C7 89 D3",
+   "match": "0x143af4710",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143af4710",
+   "kind": "func_start",
+   "names": [
+    "Game_Particles_RestoreParticleSlot"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.particles_remove_effect",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 48 89 D6 48 89 CB 48 8B 7A 58 48 8B",
+   "match": "0x143af89a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143af89a0",
+   "kind": "func_start",
+   "names": [
+    "Game_Particles_RemoveEffect"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "render.particle_manager_draw_mesh_particles",
+   "section": ".xtls",
+   "pattern": "55 41 57 41 56 41 55 41 54 56 57 53 48 81 EC B8 09 00 00 48 8D AC 24 80 00 00 00 48",
+   "match": "0x143b01990",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143b01990",
+   "kind": "func_start",
+   "names": [
+    "Render_ParticleManager_DrawMeshParticles"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "render.light_list_resource_create",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 C5 F8 29 B4 24 00 01 00 00 4C 89 CB 48 89 D7 48 8B",
+   "match": "0x143c04150",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143c04150",
+   "kind": "func_start",
+   "names": [
+    "Render_LightListResource_Create"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "render.cloud_generator_update",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 20 48 89 CE 80 B9 28 05 00 00 00 0F",
+   "match": "0x143c3a920",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143c3a920",
+   "kind": "func_start",
+   "names": [
+    "Render_CloudGenerator_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "render.d_d_g_i_system_render",
+   "section": ".xtls",
+   "pattern": "55 41 57 41 56 41 55 41 54 56 57 53 48 81 EC F8 09 00 00 48",
+   "match": "0x143c79190",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143c79190",
+   "kind": "func_start",
+   "names": [
+    "Render_DDGISystem_Render"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "render.ground_cover_plugin_render",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 01 00 00 C5 F8 29 BC 24 A0 01 00 00 C5 F8 29 B4 24 90 01 00 00 4C 89 4C 24 48 48 89",
+   "match": "0x143cdbe30",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143cdbe30",
+   "kind": "func_start",
+   "names": [
+    "Render_GroundCoverPlugin_Render"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "render.batch_submit",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 0C 00 00 C5 78 29 BC 24",
+   "match": "0x143d4b8c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143d4b8c0",
+   "kind": "func_start",
+   "names": [
+    "Render_Batch_Submit"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "render.rain_file_parse_materials",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 48 89 CE 48 C7",
+   "match": "0x143d6cf20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143d6cf20",
+   "kind": "func_start",
+   "names": [
+    "Render_RainFile_ParseMaterials"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "render.rain_file_load",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 01 00 00 C5 F8 29 BC 24 E0 01 00 00 C5 F8 29 B4 24 D0 01 00 00 4D 89 CE",
+   "match": "0x143d6d510",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143d6d510",
+   "kind": "func_start",
+   "names": [
+    "Render_RainFile_Load"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "render.scene_view_submit_camera",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 0A 00 00 C5 78 29 BC 24",
+   "match": "0x143d8afa0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143d8afa0",
+   "kind": "func_start",
+   "names": [
+    "Render_SceneView_SubmitCamera"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "render.terrain_plugin_render",
+   "section": ".xtls",
+   "pattern": "55 41 57 41 56 41 55 41 54 56 57 53 B8 88 83 00",
+   "match": "0x143df0230",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143df0230",
+   "kind": "func_start",
+   "names": [
+    "Render_TerrainPlugin_Render"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "render.xe_s_s_evaluate",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 4C 89 CB 4D 89 C6 48 89 D7",
+   "match": "0x143dfb470",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143dfb470",
+   "kind": "func_start",
+   "names": [
+    "Render_XeSS_Evaluate"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "render.xe_s_s_prepare_inputs",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 01 00 00 C5 78 29 A4 24",
+   "match": "0x143dfbe90",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143dfbe90",
+   "kind": "func_start",
+   "names": [
+    "Render_XeSS_PrepareInputs"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.string_pool_log_memory_stats",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 48 C5 F8 29 74 24 30 80 3D",
+   "match": "0x143fa73a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143fa73a0",
+   "kind": "func_start",
+   "names": [
+    "Ne_StringPool_LogMemoryStats"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.typed_array2_log_stats_8db0",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 30 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 80 00 00 00 48 8D 15 ?? ?? ?? ?? 44 8B 04 82 45 85 C0 74 77 41 81 F8",
+   "match": "0x143fa8db0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143fa8db0",
+   "kind": "func_start",
+   "names": [
+    "Ne_TypedArray2_LogStats_8db0"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.profanity_filter_check_word",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 C7 48 89 D6 48 89 CB 48 85 D2",
+   "match": "0x1441e0fe0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1441e0fe0",
+   "kind": "func_start",
+   "names": [
+    "Game_ProfanityFilter_CheckWord"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.profanity_filter_match_list",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 4C 24 28 4C 89 44",
+   "match": "0x1441e14b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1441e14b0",
+   "kind": "func_start",
+   "names": [
+    "Game_ProfanityFilter_MatchList"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.profanity_filter_filter_text",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 48 89 D7 48 89 CE 48 8B 84",
+   "match": "0x14426cf30",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14426cf30",
+   "kind": "func_start",
+   "names": [
+    "Game_ProfanityFilter_FilterText"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.text_ring_buffer_flush_pending",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8B 49 68",
+   "match": "0x144412800",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144412800",
+   "kind": "func_start",
+   "names": [
+    "Ne_TextRingBuffer_FlushPending"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.mover_collision_create_resource",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 C5 78 29 8C 24 30 01 00 00 C5 78 29 84 24 20 01 00 00 C5 F8 29 BC 24 10 01 00 00 C5 F8 29 B4 24 00 01 00 00 48 89 CF 4D 8B",
+   "match": "0x1444537a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1444537a0",
+   "kind": "func_start",
+   "names": [
+    "Ne_MoverCollision_CreateResource"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "render.screenshot_capture_and_save",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 08 00 00 C5 79 7F 9C 24",
+   "match": "0x144492f20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144492f20",
+   "kind": "func_start",
+   "names": [
+    "Render_Screenshot_CaptureAndSave"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "render.damage_mask_generator_render",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 F8 29 B4 24 D0 00 00 00 48 8B 41 40",
+   "match": "0x1445b4730",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1445b4730",
+   "kind": "func_start",
+   "names": [
+    "Render_DamageMaskGenerator_Render"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.paged_buffer_use_page_at",
+   "section": ".xtls",
+   "pattern": "56 57 55 53 48 83 EC 28 48 39 91 B8 02 00 00 0F",
+   "match": "0x1445c3f30",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1445c3f30",
+   "kind": "func_start",
+   "names": [
+    "Game_PagedBuffer_UsePageAt"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.replay_file_read_footer",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 40 48 89 CE 48 8D 99 28 FD FF",
+   "match": "0x1445c5b70",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1445c5b70",
+   "kind": "func_start",
+   "names": [
+    "Game_ReplayFile_ReadFooter"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.paged_buffer_transfer",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 C5 F8 29 74 24 20 48 89 D3 48 89 CE 8B 41 18 44",
+   "match": "0x1445d7ba0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1445d7ba0",
+   "kind": "func_start",
+   "names": [
+    "Game_PagedBuffer_Transfer"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.track_space_data_resource_load",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 70 01 00 00 C5 F8 29 B4 24 60 01 00 00 4D 89",
+   "match": "0x1445eacc0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1445eacc0",
+   "kind": "func_start",
+   "names": [
+    "Game_TrackSpaceDataResource_Load"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
   }
  ]
 }
