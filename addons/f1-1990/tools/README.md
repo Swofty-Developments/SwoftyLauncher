@@ -149,6 +149,22 @@ python3 addons/f1-1990/tools/faces.py --bases      # scanned heads whose hair is
 
 A base without a `<head>_hair.idf` hair mesh paints its hair from the face map (its hair cap uses head_d). One with a hair mesh keeps its own hairstyle and hair colour.
 
+## crew.py
+
+Writes `erp/crew.json` and `erp/crew/` (build output, not committed): 1990 team kit for the pit and garage crews. The
+crews ask `crew_livery.erp` (`animation_package/scenes/garagecrew/2026`) for the context `2026-<team>_1990` of
+`racecrew_kitpart.emb` (male and female crew) and `headphones_02.emb`, and fall back to `default`. Per team this
+adds those three binds, six materials (shirt, trousers, shorts, trainers, rain jacket, headphones) under
+`team_livery/<kit label>` and their diffuse textures, all new resources in that archive; the binds and materials are
+the `2026-williams` ones with the diffuse paths swapped, and the normals, specular maps and logo materials stay the
+Williams ones. Diffuse: the `noyear-custom-classic01` crew textures recoloured in the team's colours (`CREW`), the
+team lockup on the shirt's chest and back, every level in the archive (shirt 1024, the rest 512). Needs Pillow,
+numpy, lz4 and zstd.
+
+```sh
+python3 addons/f1-1990/tools/crew.py --game <F1 25> [--baseline <launcher baseline>/<build>] [--sheet <png>]
+```
+
 ## frontend.py
 
 Writes `erp/frontend.json` and `erp/frontend/`: the Driver Select and Team Select backdrop names for the 1990 rows, added to `main_front_end.erp` as new resources. The backdrop is a texture picked by material context, the driver or team row label (`mfe_2025_main_menu_driver_select_name.emb?context=<label>`, `…vehicle_select_name.emb?context=<label>`). Per row: a texture `f1_drivername_f1990_d_NNN` / `f1_teamname_f1990_NN` (BC7, the template's size and mip layout, loose top mips under `names/f1990_drv_names~…` / `names/f1990_tmnames~…`), its SRV, a material and the context, each a copy of a stock one (`sonny_hayes`, `mercedes`) with the name swapped for one of the same length. Needs Pillow and lz4 (`nix-shell -p "python3.withPackages (ps: [ ps.pillow ps.lz4 ps.numpy ])"`) and rnd-tyres-thermal's `bc7enc.py`.
