@@ -80814,6 +80814,222 @@
     }
    ],
    "used_by": []
+  },
+  {
+   "id": "game.platform_icon_gate_session_cars",
+   "section": ".xtls",
+   "pattern": "80 B8 50 07 00 00 02 75 40 80 B9 D8 10 00 00 00",
+   "match": "0x141775550",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141775557",
+   "kind": "mid",
+   "names": [
+    "site_Game_PlatformIconGate_SessionCars"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "driver-platform",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/netplay.cpp"
+   ],
+   "expect": "75 40 80 B9 D8 10 00 00 00"
+  },
+  {
+   "id": "game.platform_icon_gate_grid_list",
+   "section": ".xtls",
+   "pattern": "80 B8 50 07 00 00 02 0F 85 ?? ?? ?? ?? 80 B9 D8 10 00 00 00",
+   "match": "0x14221b43d",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14221b444",
+   "kind": "mid",
+   "names": [
+    "site_Game_PlatformIconGate_GridList"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "driver-platform",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/netplay.cpp"
+   ],
+   "expect": "0F 85 76 03 00 00"
+  },
+  {
+   "id": "game.platform_icon_gate_leaderboard",
+   "section": ".xtls",
+   "pattern": "80 B8 50 07 00 00 02 75 30 80 B9 D8 10 00 00 00",
+   "match": "0x1418261c5",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1418261cc",
+   "kind": "mid",
+   "names": [
+    "site_Game_PlatformIconGate_Leaderboard"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "driver-platform",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/netplay.cpp"
+   ],
+   "expect": "75 30 80 B9 D8 10 00 00 00"
+  },
+  {
+   "id": "game.platform_icon_gate_featured_driver",
+   "section": ".xtls",
+   "pattern": "80 B8 50 07 00 00 02 75 26 80 B9 D8 10 00 00 00 74 0B B0 01 80 B9 D7 10 00 00 00 75 14 48 8B 81 C8 03 00 00 0F B6 80 7C 02 00 00 34 01 EB 02 31 C0 88 84 24 70 01 00 00",
+   "match": "0x14183aac6",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14183aacd",
+   "kind": "mid",
+   "names": [
+    "site_Game_PlatformIconGate_FeaturedDriver"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "driver-platform",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/netplay.cpp"
+   ],
+   "expect": "75 26 80 B9 D8 10 00 00 00"
+  },
+  {
+   "id": "game.platform_icon_gate_dropzone",
+   "section": ".xtls",
+   "pattern": "80 B8 50 07 00 00 02 75 26 80 B9 D8 10 00 00 00 74 0B B0 01 80 B9 D7 10 00 00 00 75 14 48 8B 81 C8 03 00 00 0F B6 80 7C 02 00 00 34 01 EB 02 31 C0 20 84 24 D0 00 00 00",
+   "match": "0x1418fa221",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1418fa228",
+   "kind": "mid",
+   "names": [
+    "site_Game_PlatformIconGate_Dropzone"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "driver-platform",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/netplay.cpp"
+   ],
+   "expect": "75 26 80 B9 D8 10 00 00 00"
+  },
+  {
+   "id": "game.platform_icon_gate_driver_row_a",
+   "section": ".xtls",
+   "pattern": "80 B8 50 07 00 00 02 75 26 80 B9 D8 10 00 00 00 74 0B B0 01 80 B9 D7 10 00 00 00 75 14 48 8B 81 C8 03 00 00 0F B6 80 7C 02 00 00 34 01 EB 02 31 C0 20 84 24 DC 00 00 00",
+   "match": "0x141902887",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14190288e",
+   "kind": "mid",
+   "names": [
+    "site_Game_PlatformIconGate_DriverRowA"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "driver-platform",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/netplay.cpp"
+   ],
+   "expect": "75 26 80 B9 D8 10 00 00 00"
+  },
+  {
+   "id": "game.platform_icon_gate_driver_row_b",
+   "section": ".xtls",
+   "pattern": "80 B8 50 07 00 00 02 75 26 80 B9 D8 10 00 00 00 74 0B B0 01 80 B9 D7 10 00 00 00 75 14 48 8B 81 C8 03 00 00 0F B6 80 7C 02 00 00 34 01 EB 02 31 C0 20 84 24 D4 00 00 00",
+   "match": "0x14190c960",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14190c967",
+   "kind": "mid",
+   "names": [
+    "site_Game_PlatformIconGate_DriverRowB"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "driver-platform",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/netplay.cpp"
+   ],
+   "expect": "75 26 80 B9 D8 10 00 00 00"
+  },
+  {
+   "id": "game.platform_icon_gate_driver_row_ai",
+   "section": ".xtls",
+   "pattern": "80 B8 50 07 00 00 02 75 2B 41 80 BE D8 10 00 00 00",
+   "match": "0x14190ee3c",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14190ee43",
+   "kind": "mid",
+   "names": [
+    "site_Game_PlatformIconGate_DriverRowAi"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "driver-platform",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/netplay.cpp"
+   ],
+   "expect": "75 2B 41 80 BE D8 10 00 00 00"
   }
  ]
 }
