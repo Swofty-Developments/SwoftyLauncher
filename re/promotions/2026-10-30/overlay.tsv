@@ -1,0 +1,5 @@
+addr	name	sig	verify
+0x14446a6d0	Render_ModelComponent_Load	-	wx-verify V1100
+0x14446b9c0	Render_Apply_InstanceRenderProperties	-
+0x14446ea70	Render_ModelComponent_ApplyRenderProps	-	wx-verify V1097
+0x144470870	Render_ModelComponent_OnTransform	-

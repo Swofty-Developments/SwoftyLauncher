@@ -1,0 +1,42 @@
+addr	name	sig	verify
+0x140393eb0	Car_Model_BindCockpitNodes	car.model_bind_cockpit_nodes	d9-verify V2209
+0x1403b7060	Car_Tyres_CompletePitstopForCarList	car.tyres_complete_pitstop_for_car_list	d10-verify V2246
+0x1403b7510	Car_Tyres_ApplyStateToCarPair	car.tyres_apply_state_to_car_pair	d10-verify V2247
+0x1403b9e70	Car_TyresPitstopComplete_ForCarPair	car.tyres_pitstop_complete_for_car_pair	d10-verify V2248
+0x140b782f0	Car_Setup_SetSliderValue	-	sp-verify V1173
+0x140c112b0	Car_Setup_SetCustomSliderStep	-
+0x142e946d0	Car_TyreSystem_PitstopComplete	car.tyre_system_pitstop_complete	d10-verify V2269
+0x142f04040	Car_Contact_ModifyVehicle	-	bt-verify V1229
+0x142f04ec0	Car_Contact_ReadTunables	-
+0x142f057a0	Car_Contact_BodyLiftNormal	-
+0x142f05890	Car_Contact_PlankFlag	-	pl-verify V1215
+0x142f06740	Car_Contact_InstallBodyFilters	-	bt-verify V1230
+0x142f3fc20	Car_SteeringWheelLeds_Update	car.steering_wheel_leds_update	d9-verify V2227
+0x142f478d0	Car_Surface_SampleAt	-
+0x1440cc1f0	Car_Deformation_CreateBody	car.deformation_create_body	d1-verify-b V1736
+0x1440cc840	Car_Deformation_DestroyBody	car.deformation_destroy_body	d1-verify-b V1737
+0x1440cc950	Car_Deformation_ReservePool	car.deformation_reserve_pool	d1-verify-b V1738
+0x1440cd3f0	Car_Deformation_ReleaseParticles	car.deformation_release_particles	d1-verify-b V1739
+0x1440cd610	Car_Deformation_ClearPool	car.deformation_clear_pool	d1-verify-b V1740
+0x144108740	Car_Deformation_AcquireParticles	car.deformation_acquire_particles	d1-verify-b V1741
+0x144606f20	Car_Vehicle_AutoResetCheck	car.vehicle_auto_reset_check	d1-verify-b V1746
+0x14463d0d0	Car_Parse_SurfaceMaterial	-	wx-verify V1111
+0x144647250	Car_PhysicsData_DumpBase	car.physics_data_dump_base	d1-verify-b V1747
+0x14464aaa0	Car_Read_VtfConvexHulls	car.read_vtf_convex_hulls	d1-verify-b V1748
+0x14464c560	Car_Collision_BuildHullShapes	car.collision_build_hull_shapes	d1-verify-b V1749
+0x1446512c0	Car_BodyDamage_OnCollision	-
+0x1446521d0	Car_BodyDamage_ApplyToAeroAndCooling	-	cg-verify V1131
+0x14465b8c0	Car_TyreDeformation_Init	car.tyre_deformation_init	d1-verify-b V1750
+0x144676a80	Car_Chassis_PlacePlankShape	-
+0x1446b4f80	Car_Surface_ApplySlowdown	-	dcso-verify V1165
+0x1446cd9a0	Car_PadAssist_DriftAssist	car.pad_assist_drift_assist	dcso-verify V1172
+0x1446d7580	Car_Setup_SetFrontSpring	-
+0x1446d7780	Car_Setup_SetRearSpring	-
+0x1446d7c80	Car_Setup_SetFrontRideHeight	-
+0x1446d8080	Car_Setup_SetRearRideHeight	-
+0x1446d8cf0	Car_Contact_QueryWheels	-	gb-verify V1185
+0x1446db280	Car_Solver_PrepareDrivetrain	-	ap-verify V1125
+0x1446e1920	Car_Suspension_Integrate	-
+0x1446e4330	Car_Suspension_PublishWheelState	car.suspension_publish_wheel_state
+0x144705380	Car_CollisionVfx_OnContact	-
+0x144760ec0	Car_TyreDeformation_Dtor	car.tyre_deformation_dtor	d1-verify-b V1752
