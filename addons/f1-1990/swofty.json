@@ -189,9 +189,9 @@
     }
   ],
   "operations": {
-    "database": ["db/career.json", "db/grid.json", "db/kit.json", "db/grid_standings.json", "db/rules.json", "db/grid_links.json", "db/cars.json", "db/audio.json", "db/rnd.json", "db/ai_difficulty.json",
+    "database": ["db/career.json", "db/grid.json", "db/kit.json", "db/faces.json", "db/grid_standings.json", "db/rules.json", "db/grid_links.json", "db/cars.json", "db/audio.json", "db/rnd.json", "db/ai_difficulty.json",
       "carpack/db/test.json", "carpack/db/ai.json"],
-    "assets": ["db/rules_text.json", "lang/grid.json", "lang/engines.json", "db/career-lang.json", "cars/handling.json", "db/rnd-lang.json",
+    "assets": ["db/rules_text.json", "faces/assets.json", "lang/grid.json", "lang/engines.json", "db/career-lang.json", "cars/handling.json", "db/rnd-lang.json",
       "carpack/assets/cars.json", "carpack/assets/ai.json"],
     "erp": ["erp/portrait.json", "erp/tracks.json", "erp/frontend.json", "erp/badges.json", "erp/tyre_icons.json", "erp/hq_logos.json", "erp/ui26.json", "erp/wizard.json", "erp/rnd_look.json"],
     "native": [

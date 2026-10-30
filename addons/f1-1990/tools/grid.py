@@ -127,6 +127,8 @@ DRIVER_INFO = {
     "johnny_herbert": ("HER", 1989, (1964, 6, 25), "male_ls355", "tier04_livery99"),
 }
 VOICES = {"johnny_herbert": "Name175"}
+FACES_FILE = ROOT / "faces/faces.json"
+FACES = json.loads(FACES_FILE.read_text()) if FACES_FILE.is_file() else {}
 
 TEAM_INFO = {
     "mclaren": ("McLaren Honda", "McLaren", "MCL", ("#E2001A", "#FFFFFF", "#1A1A1A"), "Woking, UK", "britain",
@@ -435,6 +437,7 @@ def build(stock, season):
     for i, did in enumerate(seated + free):
         d = season.drivers[did]
         code, debut, (by, bm, bd), head, helmet = DRIVER_INFO[did]
+        head = FACES.get(did, {}).get("label", head)
         label = driver_row(did)
         s = team_of[did]
         stats, traits = ratings(season, did)

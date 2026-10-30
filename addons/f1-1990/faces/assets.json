@@ -1,0 +1,27 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "file.put",
+   "source": "faces/heads/f90_nigel_mansell.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_nigel_mansell.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_nigel_mansell.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_nigel_mansell.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/heads/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
+   "source": "faces/morph_poses/f90_nigel_mansell.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_nigel_mansell.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_nigel_mansell.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_nigel_mansell.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/lando_norris.assetgroup"
+  }
+ ]
+}

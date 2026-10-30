@@ -1,0 +1,22 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
+    "_metadata_": "f90_nigel_mansell",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_nigel_ma/idf/f90_nigel_ma_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_nigel_mansell]",
+   "field": "head",
+   "value": "f90_nigel_mansell"
+  }
+ ]
+}

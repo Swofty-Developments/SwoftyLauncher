@@ -1,0 +1,9 @@
+{
+ "nigel_mansell": {
+  "source": "nigel_mansell.zip",
+  "mipmaps": "src/nigel_mansell_head_d.tga.mipmaps",
+  "base": "felipe_massa",
+  "code": "f90_nigel_ma",
+  "label": "f90_nigel_mansell"
+ }
+}
