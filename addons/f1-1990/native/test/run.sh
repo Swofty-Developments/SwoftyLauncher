@@ -45,3 +45,5 @@ ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/audio_queue_test a
 ../build/audio_queue_test
 ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/heap_check_test heap_check_test.cpp
 ../build/heap_check_test
+${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/race_engine_test race_engine_test.cpp
+../build/race_engine_test

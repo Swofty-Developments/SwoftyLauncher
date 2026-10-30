@@ -34,8 +34,8 @@
       "binds": "native"
     },
     {
-      "id": "quali_engine_1990", "type": "toggle", "label": "1990 qualifying engines", "default": true,
-      "description": "The qualifying engine R&D lines add their Engine Power only in Friday and Saturday qualifying of a 1990 career.",
+      "id": "quali_engine_1990", "type": "toggle", "label": "1990 qualifying and race engines", "default": true,
+      "description": "1990 careers: qualifying runs the full qualifying engine and its R&D lines; practice and the race run the race engine, 2.75 % less power and a limit 300 rpm lower.",
       "binds": "native"
     },
     {

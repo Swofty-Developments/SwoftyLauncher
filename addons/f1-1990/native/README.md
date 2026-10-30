@@ -162,11 +162,11 @@ Allocations: the EngineManagementComponent's component sets (*(mgmt +0x340) +0x5
 
 `data/pu-strings.json` `strings.<language>.<key>` are set through the core's runtime string overrides (API v8): the `_title` and `_description` keys of `lng_internal_combustion_engine`, `lng_motor_generator_unit_kinetic`, `lng_energy_store`, `lng_turbo_charger` and `lng_control_electronics` (`*`, English), the five titles per language. Only `Sess_PuPanel_FillComponent` reads those keys. The power-unit diagram beside the list still draws the hybrid parts and binds `components[0..6]` by row position.
 
-With `pu_rules_1990` on no part wears at all; the wear split applies with it off. The qualifying engine's power comes from the R&D qualifying lines (`f1_1990_quali.dll`); the handling files have one rev limit per engine for every session.
+With `pu_rules_1990` on no part wears at all; the wear split applies with it off. The qualifying engine's power is the handling file's plus the R&D qualifying lines, and the race engine's is about 2.75 % lower with a limit 300 rpm lower (`f1_1990_quali.dll`).
 
 It logs `[f1-1990] parts: 1990 career: engine, qualifying engine, clutch, fuel system, electronics and gearbox` / `no 1990 career: stock power-unit parts`, `set|cleared N part name string(s)`, `N allocation(s) set in N component set(s): clutch 6, fuel system 5, electronics 5` (first 8), `power-unit panel row 2 (MGU-H) hidden` (first 12) and `driver 0x… session group G: wear W on the race engine|qualifying engine, the clutch, fuel system, electronics (engine range A..B x 1.2 / 0.9 / 0.8) and the gearbox; N range(s) set` (first 16).
 
-## Qualifying engine lines (`f1_1990_quali.dll`)
+## Qualifying and race engines (`f1_1990_quali.dll`)
 
 A separate DLL; option `quali_engine_1990` (default on). The rnd lane's `f1990_quali_rev_limit` and `f1990_quali_engine` are Engine Power (type 0) upgrades that stay in the Engine Power denominator.
 
@@ -176,6 +176,14 @@ A separate DLL; option `quali_engine_1990` (default on). The rnd lane's `f1990_q
 | `Game_Rnd_CalcUpgradeTypeProgress` | 0x143526260 | wrapped: inside a marked fill, type 0 is recomputed (`src/rnd_progress.hpp`) with the two upgrades (node hash 0x1305fa1e / 0x4e03ba09 or name `f1990_quali*`) left out of the completed weighting only |
 
 Every other caller of the progress function (UI, the power-unit wear range) and every other career get the game's value. It logs `[f1-1990] quali engine: car N set up for a session of group G; qualifying engine lines counted|left out` (first 8) and `Engine Power progress X -> Y outside qualifying` (first 8 changes).
+
+The same DLL runs the race engine. The handling files carry the qualifying rating; outside qualifying in a 1990 career every car, player and AI, has about 2.75 % less power and a limit 300 rpm lower (`src/race_engine.hpp`, host test `test/race_engine_test.cpp`). The safety car is included.
+
+| binding | address | use |
+|---|---|---|
+| `site_Car_EngineDriveTorque` | 0x1446e27a1 | while the flag is on: xmm0, the drive torque per full throttle in `Car_Powertrain_Step` (rbx = the Engine system, xmm7 = rad/s), times 0.9725, ramped to 0 over the 60 rpm before the Engine's limiter (+0x2528) less 300 rpm |
+
+The flag is set at each car's upgrade fill: on in a 1990 session outside groups 1 and 2, off in 1990 qualifying, off in any other career, and off on `career.loaded` and `career.unloaded`. A change logs `[f1-1990] quali engine: race engine on (1990 practice or race): power x0.9725, limit 300 rpm lower` or `race engine off (1990 qualifying|not a 1990 career|career loaded or unloaded): ...`. A qualifying engine that is worn out or not allocated still gives full power.
 
 ## R&D card art and department names (`f1_1990_rnd.dll`)
 
