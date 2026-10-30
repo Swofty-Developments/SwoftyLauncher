@@ -76891,6 +76891,116 @@
    "used_by": [
     "addons/f1-1990/native/src/pit_phases.cpp"
    ]
+  },
+  {
+   "id": "audio.request_job_worker",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 44 89 C6 89 D7 48 89 CB 8B 15",
+   "match": "0x143fbdd00",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143fbdd00",
+   "kind": "func_start",
+   "names": [
+    "Snd_Request_JobWorker"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "crash2",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "addons/f1-1990/native/src/audio_queue_fix.cpp"
+   ]
+  },
+  {
+   "id": "audio.job_worker_lock",
+   "section": ".xtls",
+   "pattern": "FF 15 ?? ?? ?? ?? 89 C5 48 8B 0D ?? ?? ?? ?? FF 15 ?? ?? ?? ?? 83 3D ?? ?? ?? ?? 00 74",
+   "match": "0x143fbdd36",
+   "anchor": "0xb",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x8",
+    "len": 7
+   },
+   "target": "0x146c63ba0",
+   "kind": "data",
+   "names": [
+    "g_Snd_JobWorkerLock"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "crash2",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "addons/f1-1990/native/src/audio_queue_fix.cpp"
+   ]
+  },
+  {
+   "id": "audio.job_worker_overflow",
+   "section": ".xtls",
+   "pattern": "B8 28 00 00 00 8B 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? EB 16",
+   "match": "0x143fbddc2",
+   "anchor": "0xe",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0xb",
+    "len": 7
+   },
+   "target": "0x146c63e10",
+   "kind": "data",
+   "names": [
+    "g_Snd_JobWorkerOverflow"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "crash2",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "addons/f1-1990/native/src/audio_queue_fix.cpp"
+   ]
+  },
+  {
+   "id": "audio.job_worker_pending",
+   "section": ".xtls",
+   "pattern": "B8 28 00 00 00 8B 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? EB 16",
+   "match": "0x143fbddc2",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x5",
+    "len": 6
+   },
+   "target": "0x146c64294",
+   "kind": "data",
+   "names": [
+    "g_Snd_JobWorkerPending"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "crash2",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "addons/f1-1990/native/src/audio_queue_fix.cpp"
+   ]
   }
  ]
 }
