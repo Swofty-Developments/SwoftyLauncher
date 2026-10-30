@@ -2210,6 +2210,8 @@ pub type Car_Register_DetachablePart_Thunk_t = unsafe extern "C" fn(
     k: f32,
 );
 pub type Car_Reset_LastFittedUpgrade_t = unsafe extern "C" fn(inst: *mut c_void);
+pub type Car_Tyre_SetWearFactor_t =
+    unsafe extern "C" fn(tyre_component: *mut c_void, apply_set: bool, force: u16);
 pub type Career_Add_SeasonWeekend_t = unsafe extern "C" fn(season: *mut c_void, weekend: *mut c_void) -> u64;
 pub type Career_Add_TeamModifier_t = unsafe extern "C" fn(list: *mut c_void, key: u32, value: f32);
 pub type Career_Adjust_RpDriverWallet_t =
@@ -2499,6 +2501,8 @@ pub type Game_Teleport_Vehicle_t = unsafe extern "C" fn(
     dt: f32,
     flags: u32,
 );
+pub type Game_TyreAllocationComponent_SetPresetChoiceForHumanDriver_t =
+    unsafe extern "C" fn(component: *mut c_void, preset: u32, local_player: c_int);
 pub type Gdb_HashMap_Rehash_t = unsafe extern "C" fn(map: *mut GdbValueMap, num_buckets: u64);
 pub type Gdb_Load_GameDatabase_t =
     unsafe extern "C" fn(db: *mut GdbDatabase, cfg: *mut c_void) -> *mut GdbDatabase;
@@ -2512,6 +2516,7 @@ pub type Ne_Get_SettingBool_t =
     unsafe extern "C" fn(node: *mut c_void, name: *const c_char, out: *mut u8, def: u8) -> u64;
 pub type Ne_Get_SettingU32_t =
     unsafe extern "C" fn(node: *mut c_void, name: *const c_char, out: *mut u32, def: u32) -> u64;
+pub type Ne_Heap_DeallocateNonSmall_t = unsafe extern "C" fn(heap: *mut c_void, ptr: *mut u8) -> u64;
 pub type Ne_Log_Thunk_t = unsafe extern "C" fn(channel: *const c_char, fmt: *const c_char, ...);
 pub type Ne_Make_StrFromCStr_t =
     unsafe extern "C" fn(out: *mut *mut NeStr, s: *const c_char, flags: u32, len: usize) -> u32;
@@ -2598,6 +2603,7 @@ pub type Sess_Tyres_ClosestAvailableCompound_t = unsafe extern "C" fn(
 pub type Sess_WeatherComponent_SetSystemRandomSeed_t = unsafe extern "C" fn(component: *mut c_void);
 pub type Sess_Weekend_Start_t =
     unsafe extern "C" fn(weekend: *mut c_void, entrants: *const c_void, begin: bool);
+pub type Snd_Request_JobWorker_t = unsafe extern "C" fn(worker: *mut c_void, job_type: u32, count: u32);
 pub type Vm_GetOrCreate_ListChild_t =
     unsafe extern "C" fn(registry: *mut c_void, parent: *mut c_void, hash: *const u32) -> *mut *mut c_void;
 pub type Vm_List_AppendChild_t = unsafe extern "C" fn(list: *mut c_void) -> *mut *mut c_void;
@@ -2725,6 +2731,11 @@ pub mod bindings {
     };
     pub const Car_Tyre_MagicFormula: Binding = Binding {
         id: "Car_Tyre_MagicFormula",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Tyre_SetWearFactor: Binding = Binding {
+        id: "Car_Tyre_SetWearFactor",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3298,6 +3309,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_TyreAllocationComponent_SetPresetChoiceForHumanDriver: Binding = Binding {
+        id: "Game_TyreAllocationComponent_SetPresetChoiceForHumanDriver",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Gdb_HashMap_Rehash: Binding = Binding {
         id: "Gdb_HashMap_Rehash",
         kind: "func",
@@ -3345,6 +3361,11 @@ pub mod bindings {
     };
     pub const Ne_Get_SettingU32: Binding = Binding {
         id: "Ne_Get_SettingU32",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Heap_DeallocateNonSmall: Binding = Binding {
+        id: "Ne_Heap_DeallocateNonSmall",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3598,6 +3619,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Snd_Request_JobWorker: Binding = Binding {
+        id: "Snd_Request_JobWorker",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Vm_GetOrCreate_ListChild: Binding = Binding {
         id: "Vm_GetOrCreate_ListChild",
         kind: "func",
@@ -3755,6 +3781,21 @@ pub mod bindings {
     };
     pub const g_Sess_TyreRulesSessionType: Binding = Binding {
         id: "g_Sess_TyreRulesSessionType",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const g_Snd_JobWorkerLock: Binding = Binding {
+        id: "g_Snd_JobWorkerLock",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const g_Snd_JobWorkerOverflow: Binding = Binding {
+        id: "g_Snd_JobWorkerOverflow",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const g_Snd_JobWorkerPending: Binding = Binding {
+        id: "g_Snd_JobWorkerPending",
         kind: "data",
         status: Status::Experimental,
     };

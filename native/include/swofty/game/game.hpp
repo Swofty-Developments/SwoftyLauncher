@@ -248,8 +248,6 @@ using Game_RaceMarshalSystem_Update_t = void(void *system, double *dt);
 inline constexpr fn<"Game_RaceMarshalSystem_Update", Game_RaceMarshalSystem_Update_t> Game_RaceMarshalSystem_Update{}; // L2 experimental
 using Game_RaceStrategyVm_Populate_t = void(void *vm);
 inline constexpr fn<"Game_RaceStrategyVm_Populate", Game_RaceStrategyVm_Populate_t> Game_RaceStrategyVm_Populate{}; // L2 experimental
-using Game_TyreAllocationComponent_SetPresetChoiceForHumanDriver_t = void(void *component, uint32_t preset, int local_player);
-inline constexpr fn<"Game_TyreAllocationComponent_SetPresetChoiceForHumanDriver", Game_TyreAllocationComponent_SetPresetChoiceForHumanDriver_t> Game_TyreAllocationComponent_SetPresetChoiceForHumanDriver{}; // L2 dev
 using Game_Refresh_PerformanceComparison_t = void(void *comparison);
 inline constexpr fn<"Game_Refresh_PerformanceComparison", Game_Refresh_PerformanceComparison_t> Game_Refresh_PerformanceComparison{}; // L2 experimental
 using Game_Rnd_CalcUpgradeTypeProgress_t = float(void *const *instances, uint8_t type, uint8_t state, const void *meta);
@@ -280,6 +278,8 @@ using Game_TeamHQAdvanceViewModel_Update_t = uint64_t(void *vm);
 inline constexpr fn<"Game_TeamHQAdvanceViewModel_Update", Game_TeamHQAdvanceViewModel_Update_t> Game_TeamHQAdvanceViewModel_Update{}; // L2 experimental
 using Game_Teleport_Vehicle_t = void(void *car, const char *name, float *prev_mtx, float *new_mtx, float dt, uint32_t flags);
 inline constexpr fn<"Game_Teleport_Vehicle", Game_Teleport_Vehicle_t> Game_Teleport_Vehicle{}; // L2 experimental
+using Game_TyreAllocationComponent_SetPresetChoiceForHumanDriver_t = void(void *component, uint32_t preset, int local_player);
+inline constexpr fn<"Game_TyreAllocationComponent_SetPresetChoiceForHumanDriver", Game_TyreAllocationComponent_SetPresetChoiceForHumanDriver_t> Game_TyreAllocationComponent_SetPresetChoiceForHumanDriver{}; // L2 experimental, TyreAllocationComponent::setPresetChoiceForHumanDriver
 inline constexpr data<"g_Game_FlowLinkStay", uint32_t> g_Game_FlowLinkStay{}; // L2 experimental
 inline constexpr data<"g_Game_Manager", void *> g_Game_Manager{}; // L2 experimental
 inline constexpr data<"g_Game_MessageBus", void *> g_Game_MessageBus{}; // L2 experimental
