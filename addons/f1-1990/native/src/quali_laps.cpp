@@ -11,12 +11,14 @@
 // again, goes back to its pit box through Game_PitLane_PutVehicleInPitBox, the call the red flag makes,
 // and on into the garage when the pit lane's forced-box byte (+0x300) is set; the call runs on the next
 // session frame (Sess_InGame_UpdateBase), outside the progress update that posts the crossing. The player sees a race HUD toast with the laps left at each start. The rule
-// exists only where the f1_1990 setup mode's weekend runs; setting quali_laps_1990 turns it off.
+// exists only where the f1_1990 setup mode's weekend runs; setting quali_laps_1990 turns it off. The
+// environment variable F1990_QUALI_LAPS (1..12) lowers the limit for testing.
 
 #include <windows.h>
 
 #include <atomic>
 #include <cstdio>
+#include <cstdlib>
 #include <mutex>
 #include <vector>
 
@@ -101,9 +103,9 @@ void toast(uint8_t v, q::Act act)
     char text[64], detail[96];
     if (act == q::Act::send_in) {
         std::snprintf(text, sizeof text, "NO LAPS LEFT");
-        std::snprintf(detail, sizeof detail, "All %d qualifying laps used: back to the garage", q::kLimit);
+        std::snprintf(detail, sizeof detail, "All %d qualifying laps used: back to the garage", g_counter.limit());
     } else {
-        std::snprintf(text, sizeof text, "LAP %d OF %d", used, q::kLimit);
+        std::snprintf(text, sizeof text, "LAP %d OF %d", used, g_counter.limit());
         if (act == q::Act::last)
             std::snprintf(detail, sizeof detail, "Last qualifying lap: box at the end of it");
         else
@@ -129,10 +131,10 @@ void act_on(uint8_t v, q::Act act, const char *what)
         if (g_send_lines++ < kLogSendIn)
             swofty::log("[f1-1990] quali laps: session %u: V%02u%s %s with all %d laps used; sent to its garage on the "
                         "next frame",
-                        g_session, v, player ? " (player)" : "", what, q::kLimit);
+                        g_session, v, player ? " (player)" : "", what, g_counter.limit());
     } else if (player || act == q::Act::last || g_ai_lines++ < kLogAi) {
         swofty::log("[f1-1990] quali laps: session %u: V%02u%s %s: lap %d of %d started", g_session, v,
-                    player ? " (player)" : "", what, c.used, q::kLimit);
+                    player ? " (player)" : "", what, c.used, g_counter.limit());
     }
     toast(v, act);
 }
@@ -209,7 +211,7 @@ SWOFTY_WRAP(Sess_TyreAllocation_OnSessionStart, void, void *component)
     g_player = on ? player_vehicle(component) : 0xff;
     g_active = on;
     if (on)
-        swofty::log("[f1-1990] quali laps: session %u: %d laps per car, player V%02u", id, q::kLimit, g_player);
+        swofty::log("[f1-1990] quali laps: session %u: %d laps per car, player V%02u", id, g_counter.limit(), g_player);
 }
 
 SWOFTY_WRAP(Game_Pitlane_SetVehicleStatus, void, void *self, uint8_t vehicle, uint32_t status)
@@ -233,7 +235,14 @@ SWOFTY_WRAP(Sess_InGame_UpdateBase, uint32_t *, void *state, uint32_t *route, do
 
 SWOFTY_ON_LOAD
 {
-    swofty::log("[f1-1990] quali laps loaded: %d laps per car in 1990 qualifying %s", q::kLimit,
+    char env[8] = {};
+    DWORD n = GetEnvironmentVariableA("F1990_QUALI_LAPS", env, sizeof env);
+    int limit = n && n < sizeof env ? std::atoi(env) : 0;
+    if (limit >= 1 && limit <= q::kLimit) {
+        g_counter.set_limit(limit);
+        swofty::log("[f1-1990] quali laps: F1990_QUALI_LAPS=%d (test limit)", limit);
+    }
+    swofty::log("[f1-1990] quali laps loaded: %d laps per car in 1990 qualifying %s", g_counter.limit(),
                 quali_laps_1990 ? "on" : "off (quali_laps_1990)");
     auto r = swofty::events::on<swofty::sessions::events::Lap>().after(on_lap);
     if (r != swofty::events::Result::ok)

@@ -47,11 +47,17 @@ struct Car {
 
 class Counter {
 public:
+    explicit Counter(int limit = kLimit) : limit_(limit) {}
+
     void reset() { cars_.fill(Car{}); }
+
+    int limit() const { return limit_; }
+
+    void set_limit(int limit) { limit_ = limit; }
 
     const Car &car(uint8_t v) const { return cars_[v % kCars]; }
 
-    int left(uint8_t v) const { return kLimit - car(v).used; }
+    int left(uint8_t v) const { return limit_ - car(v).used; }
 
     Act status(uint8_t v, uint32_t status, double now)
     {
@@ -62,7 +68,7 @@ public:
         c.status = status;
         if (status == was)
             return Act::none;
-        if (status == kLeavingPitBox && c.used >= kLimit) {
+        if (status == kLeavingPitBox && c.used >= limit_) {
             c.last = now;
             return Act::send_in;
         }
@@ -97,11 +103,12 @@ private:
     Act start(Car &c, double now)
     {
         c.last = now;
-        if (c.used >= kLimit)
+        if (c.used >= limit_)
             return Act::send_in;
-        return ++c.used == kLimit ? Act::last : Act::counted;
+        return ++c.used == limit_ ? Act::last : Act::counted;
     }
 
+    int limit_;
     std::array<Car, kCars> cars_{};
 };
 

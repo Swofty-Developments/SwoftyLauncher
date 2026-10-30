@@ -81,6 +81,12 @@ int main()
                                                                     !q::out_of_garage(9) && q::out_of_garage(1) &&
                                                                     q::out_of_garage(7) && q::out_of_garage(13));
 
+    q::Counter t3(3);
+    out(t3, 1, 0);
+    t3.crossing(1, 90);
+    check("a test limit of 3 makes lap 3 the last", t3.crossing(1, 180) == q::Act::last && t3.left(1) == 0);
+    check("and sends the car in at the next crossing", t3.crossing(1, 270) == q::Act::send_in);
+
     std::printf("%s\n", failures ? "FAILED" : "quali laps: all checks passed");
     return failures ? 1 : 0;
 }
