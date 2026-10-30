@@ -14,7 +14,10 @@ The package's common.erp renames its 13-inch tyre set with everything else, to
 frontend's f1_2026 fom_car group and every stock 2026 car list the stock common.erp), and two sets under one name pair
 one's meshes with the other's buffers, so the tyres render hollow. The car templates (F1CarModern2026,
 F1ShowRoomCarModern2026 in `eaid://wote/types`) name the stock set in their Tyres component, so every instance of each
-carmodel and carshowroommodel layer, A and B-spec, gets a Tyres override naming the renamed set (TYRE_PATHS).
+carmodel and carshowroommodel layer, A and B-spec, gets a Tyres override naming the renamed set's meshes and the car's
+own material bindings (tyre_sets.py). common.erp also gets the 1990 Goodyear and Pirelli sidewalls (tyre_sets.py,
+drawn by tyre_art.py into erp/tyres/tyre_art.erpk, which the common.erp build needs), and each car one bindings archive
+per supplier, erp/tyres/<supplier>/<folder>_tyres.erp, which option `tyre_supplier` picks.
 
 Outputs (relative to the car pack folder `carpack/`, not committed): erp/teams/<folder>/wep/<folder>.erp, erp/teams/common.erp,
 assets/cars.json (the file.put and group.register ops), assets/ai.json (the AI archive ops of tools/ai/build_ai.py) and
@@ -43,6 +46,7 @@ import cars as C
 
 sys.path.insert(0, os.path.join(HERE, 'ai'))
 import build_ai
+import tyre_sets
 from pkg import Obj, Pkg, Val, to_py
 
 TRIES = '/mnt/work/.mp45b/porter_a/tries'
@@ -72,11 +76,7 @@ POD_ATTACHMENTS = ('pod', 'podoffset', 'pod_left', 'pod_right')
 POD_FOV = 100.0
 MESH_HEADER, MESH_RECORD = 76, 88
 SHADOW_MAX_TRIANGLES = 40000
-TYRE_SET = f'eaid://{C.PACKAGE_FOLDER}/shared/tyres/'
-TYRE_PATHS = {'tyre model': TYRE_SET + 'idf/tyres.idf?context=render',
-              'tyre wet model': TYRE_SET + 'idf/tyres_wet.idf?context=render',
-              'material': TYRE_SET + 'idf/tyres.emb',
-              'wet material': TYRE_SET + 'idf/tyres_wet.emb?context=wet'}
+TYRE_SET = tyre_sets.SET
 TYRE_LAYERS = {'-carmodel.layer': 'F1CarModern2026', '-carshowroommodel.layer': 'F1ShowRoomCarModern2026'}
 STOCK_TYRES = f'{C.SOURCE_PACKAGE}/shared/tyres/'.encode()
 TYRE_GROUP = (b'F1_2026', b'F1_1990')
@@ -215,6 +215,7 @@ def set_audio(e, c):
 
 def set_tyres(e, c):
     done = 0
+    paths = tyre_sets.paths(c)
     for r in e.res:
         suffix = next((k for k in TYRE_LAYERS if r.name.endswith(k)), None)
         if kind(r) != 'WOInstances' or not suffix:
@@ -228,7 +229,7 @@ def set_tyres(e, c):
             if not isinstance(tyres, Obj):
                 tyres = Obj()
                 over.set('Tyres', tyres)
-            for k, v in TYRE_PATHS.items():
+            for k, v in paths.items():
                 tyres.set(k, Val('stri', v))
             done += 1
         e.set_frag(r, 0, pkg.to_bytes())
@@ -236,18 +237,6 @@ def set_tyres(e, c):
     if layers < 2 or done < layers:
         raise ValueError(f'{c.team}: Tyres override on {done} instance(s) of {layers} model layer(s)')
     return done
-
-
-def tyre_set_resolves(e):
-    names = {r.name for r in e.res}
-    for v in TYRE_PATHS.values():
-        base, _, query = v.partition('?')
-        if query and query != 'context=render':
-            if v not in names:
-                return v
-        elif not any(n.startswith(base + '?') for n in names):
-            return v
-    return None
 
 
 def shadow_triangles(e):
@@ -304,7 +293,7 @@ def build_car(c, src, out, bspec=False):
     e.to_file(out)
     return {'team': c.team, 'folder': c.folder, 'stem': c.stem, 'bspec': bspec, 'source': os.path.relpath(src, TRIES),
             'audio': sound, 'shadow_triangles': shadow, 'pod_cameras': len(cams), 'tyre_overrides': tyres,
-            'tyre_groups': groups,
+            'tyre_supplier': tyre_sets.supplier(c), 'tyre_groups': groups,
             'resources': len(e.res), 'renamed': renamed, 'rewritten': rewritten, 'handling_dropped': dropped,
             'folder_copies': extra, 'bytes': os.path.getsize(out)}
 
@@ -333,7 +322,9 @@ def build_plain(src, out):
     if left:
         raise ValueError(f'{src}: {left} eaid reference(s) still name {OLD.decode()}')
     tyres = [r for r in e.res if r.name.startswith(TYRE_SET)]
-    missing = tyre_set_resolves(e) if tyres else None
+    looks = tyre_sets.add_sets(e) if tyres else None
+    bindings = tyre_sets.write_archives(e) if tyres else None
+    missing = tyre_sets.check(e) if tyres else None
     if missing:
         raise ValueError(f'{src}: the renamed tyre set has no {missing}')
     if any(STOCK_TYRES in r.name.encode() for r in e.res):
@@ -342,7 +333,8 @@ def build_plain(src, out):
     os.makedirs(os.path.dirname(out), exist_ok=True)
     e.to_file(out)
     return {'source': src, 'resources': len(e.res), 'renamed': renamed, 'rewritten': rewritten,
-            'tyre_set': len(tyres), 'tyre_groups': groups, 'bytes': os.path.getsize(out)}
+            'tyre_set': len(tyres), 'tyre_looks': looks, 'tyre_bindings': bindings, 'tyre_groups': groups,
+            'bytes': os.path.getsize(out)}
 
 
 def ops():
@@ -353,13 +345,14 @@ def ops():
         out.append({'op': 'file.put', 'source': f'{SRC}/erp/teams/{c.folder}/wep/{c.folder}.erp', 'target': C.archive(c)})
     for c in C.CARS:
         out.append({'op': 'file.put', 'source': f'{SRC}/erp/teams_b/{c.folder}/wep/{c.folder}.erp', 'target': C.archive_b(c)})
+    out += tyre_sets.ops(SRC)
     for c in C.CARS:
         out.append({'op': 'group.register', 'group': C.group(c),
-                    'erps': [C.COMMON_ARCHIVE, C.archive(c), C.handling_archive(c)],
+                    'erps': [C.COMMON_ARCHIVE, C.archive(c), C.handling_archive(c), tyre_sets.archive(c)],
                     'template': f'asset_groups/{C.SOURCE_PACKAGE}/teams/{c.folder}/wep/{c.folder}.assetgroup'})
     for c in C.CARS:
         out.append({'op': 'group.register', 'group': C.group_b(c),
-                    'erps': [C.COMMON_ARCHIVE, C.archive_b(c), C.handling_archive(c)],
+                    'erps': [C.COMMON_ARCHIVE, C.archive_b(c), C.handling_archive(c), tyre_sets.archive(c)],
                     'template': f'asset_groups/{C.SOURCE_PACKAGE}/teams/{c.folder}/wep/{c.folder}.assetgroup'})
     return {'schema_version': 1, 'ops': out}
 

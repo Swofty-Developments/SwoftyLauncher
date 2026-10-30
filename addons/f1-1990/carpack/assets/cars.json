@@ -143,12 +143,325 @@
    "target": "2025_asset_groups/f1_1990_vehicle_b_specs/teams/haas/wep/haas.erp"
   },
   {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "historical"
+   },
+   "source": "carpack/erp/tyres/goodyear/mclaren_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/mclaren/wep/mclaren_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "goodyear"
+   },
+   "source": "carpack/erp/tyres/goodyear/mclaren_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/mclaren/wep/mclaren_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "pirelli"
+   },
+   "source": "carpack/erp/tyres/pirelli/mclaren_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/mclaren/wep/mclaren_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "historical"
+   },
+   "source": "carpack/erp/tyres/goodyear/ferrari_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/ferrari/wep/ferrari_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "goodyear"
+   },
+   "source": "carpack/erp/tyres/goodyear/ferrari_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/ferrari/wep/ferrari_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "pirelli"
+   },
+   "source": "carpack/erp/tyres/pirelli/ferrari_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/ferrari/wep/ferrari_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "historical"
+   },
+   "source": "carpack/erp/tyres/goodyear/williams_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/williams/wep/williams_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "goodyear"
+   },
+   "source": "carpack/erp/tyres/goodyear/williams_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/williams/wep/williams_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "pirelli"
+   },
+   "source": "carpack/erp/tyres/pirelli/williams_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/williams/wep/williams_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "historical"
+   },
+   "source": "carpack/erp/tyres/goodyear/lotus_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/lotus/wep/lotus_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "goodyear"
+   },
+   "source": "carpack/erp/tyres/goodyear/lotus_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/lotus/wep/lotus_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "pirelli"
+   },
+   "source": "carpack/erp/tyres/pirelli/lotus_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/lotus/wep/lotus_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "historical"
+   },
+   "source": "carpack/erp/tyres/pirelli/mercedes_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/mercedes/wep/mercedes_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "goodyear"
+   },
+   "source": "carpack/erp/tyres/goodyear/mercedes_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/mercedes/wep/mercedes_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "pirelli"
+   },
+   "source": "carpack/erp/tyres/pirelli/mercedes_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/mercedes/wep/mercedes_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "historical"
+   },
+   "source": "carpack/erp/tyres/goodyear/redbull_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/redbull/wep/redbull_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "goodyear"
+   },
+   "source": "carpack/erp/tyres/goodyear/redbull_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/redbull/wep/redbull_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "pirelli"
+   },
+   "source": "carpack/erp/tyres/pirelli/redbull_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/redbull/wep/redbull_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "historical"
+   },
+   "source": "carpack/erp/tyres/goodyear/force_india_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/force_india/wep/force_india_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "goodyear"
+   },
+   "source": "carpack/erp/tyres/goodyear/force_india_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/force_india/wep/force_india_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "pirelli"
+   },
+   "source": "carpack/erp/tyres/pirelli/force_india_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/force_india/wep/force_india_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "historical"
+   },
+   "source": "carpack/erp/tyres/goodyear/myteam_ferrari_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_ferrari/wep/myteam_ferrari_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "goodyear"
+   },
+   "source": "carpack/erp/tyres/goodyear/myteam_ferrari_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_ferrari/wep/myteam_ferrari_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "pirelli"
+   },
+   "source": "carpack/erp/tyres/pirelli/myteam_ferrari_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_ferrari/wep/myteam_ferrari_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "historical"
+   },
+   "source": "carpack/erp/tyres/goodyear/sauber_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/sauber/wep/sauber_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "goodyear"
+   },
+   "source": "carpack/erp/tyres/goodyear/sauber_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/sauber/wep/sauber_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "pirelli"
+   },
+   "source": "carpack/erp/tyres/pirelli/sauber_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/sauber/wep/sauber_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "historical"
+   },
+   "source": "carpack/erp/tyres/pirelli/toro_rosso_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/toro_rosso/wep/toro_rosso_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "goodyear"
+   },
+   "source": "carpack/erp/tyres/goodyear/toro_rosso_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/toro_rosso/wep/toro_rosso_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "pirelli"
+   },
+   "source": "carpack/erp/tyres/pirelli/toro_rosso_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/toro_rosso/wep/toro_rosso_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "historical"
+   },
+   "source": "carpack/erp/tyres/pirelli/gm_cadillac_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/gm_cadillac/wep/gm_cadillac_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "goodyear"
+   },
+   "source": "carpack/erp/tyres/goodyear/gm_cadillac_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/gm_cadillac/wep/gm_cadillac_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "pirelli"
+   },
+   "source": "carpack/erp/tyres/pirelli/gm_cadillac_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/gm_cadillac/wep/gm_cadillac_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "historical"
+   },
+   "source": "carpack/erp/tyres/pirelli/myteam_honda_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_honda/wep/myteam_honda_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "goodyear"
+   },
+   "source": "carpack/erp/tyres/goodyear/myteam_honda_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_honda/wep/myteam_honda_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "pirelli"
+   },
+   "source": "carpack/erp/tyres/pirelli/myteam_honda_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_honda/wep/myteam_honda_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "historical"
+   },
+   "source": "carpack/erp/tyres/goodyear/haas_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/haas/wep/haas_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "goodyear"
+   },
+   "source": "carpack/erp/tyres/goodyear/haas_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/haas/wep/haas_tyres.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "pirelli"
+   },
+   "source": "carpack/erp/tyres/pirelli/haas_tyres.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/haas/wep/haas_tyres.erp"
+  },
+  {
    "op": "group.register",
    "group": "asset_groups/f1_1990_vehicle_package/teams/mclaren/wep/mclaren.assetgroup",
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_package/teams/mclaren/wep/mclaren.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/mclaren/wep/mclaren_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/mclaren/wep/mclaren_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/mclaren/wep/mclaren_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/mclaren/wep/mclaren.assetgroup"
   },
@@ -158,7 +471,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_package/teams/ferrari/wep/ferrari.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/ferrari/wep/ferrari_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/ferrari/wep/ferrari_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/ferrari/wep/ferrari_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/ferrari/wep/ferrari.assetgroup"
   },
@@ -168,7 +482,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_package/teams/williams/wep/williams.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/williams/wep/williams_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/williams/wep/williams_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/williams/wep/williams_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/williams/wep/williams.assetgroup"
   },
@@ -178,7 +493,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_package/teams/lotus/wep/lotus.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/lotus/wep/lotus_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/lotus/wep/lotus_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/lotus/wep/lotus_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/lotus/wep/lotus.assetgroup"
   },
@@ -188,7 +504,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_package/teams/mercedes/wep/mercedes.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/mercedes/wep/mercedes_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/mercedes/wep/mercedes_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/mercedes/wep/mercedes_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/mercedes/wep/mercedes.assetgroup"
   },
@@ -198,7 +515,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_package/teams/redbull/wep/redbull.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/redbull/wep/redbull_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/redbull/wep/redbull_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/redbull/wep/redbull_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/redbull/wep/redbull.assetgroup"
   },
@@ -208,7 +526,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_package/teams/force_india/wep/force_india.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/force_india/wep/force_india_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/force_india/wep/force_india_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/force_india/wep/force_india_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/force_india/wep/force_india.assetgroup"
   },
@@ -218,7 +537,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_ferrari/wep/myteam_ferrari.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_ferrari/wep/myteam_ferrari_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_ferrari/wep/myteam_ferrari_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_ferrari/wep/myteam_ferrari_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/myteam_ferrari/wep/myteam_ferrari.assetgroup"
   },
@@ -228,7 +548,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_package/teams/sauber/wep/sauber.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/sauber/wep/sauber_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/sauber/wep/sauber_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/sauber/wep/sauber_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/sauber/wep/sauber.assetgroup"
   },
@@ -238,7 +559,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_package/teams/toro_rosso/wep/toro_rosso.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/toro_rosso/wep/toro_rosso_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/toro_rosso/wep/toro_rosso_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/toro_rosso/wep/toro_rosso_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/toro_rosso/wep/toro_rosso.assetgroup"
   },
@@ -248,7 +570,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_package/teams/gm_cadillac/wep/gm_cadillac.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/gm_cadillac/wep/gm_cadillac_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/gm_cadillac/wep/gm_cadillac_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/gm_cadillac/wep/gm_cadillac_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/gm_cadillac/wep/gm_cadillac.assetgroup"
   },
@@ -258,7 +581,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_honda/wep/myteam_honda.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_honda/wep/myteam_honda_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_honda/wep/myteam_honda_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_honda/wep/myteam_honda_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/myteam_honda/wep/myteam_honda.assetgroup"
   },
@@ -268,7 +592,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_package/teams/haas/wep/haas.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/haas/wep/haas_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/haas/wep/haas_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/haas/wep/haas_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/haas/wep/haas.assetgroup"
   },
@@ -278,7 +603,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_b_specs/teams/mclaren/wep/mclaren.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/mclaren/wep/mclaren_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/mclaren/wep/mclaren_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/mclaren/wep/mclaren_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/mclaren/wep/mclaren.assetgroup"
   },
@@ -288,7 +614,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_b_specs/teams/ferrari/wep/ferrari.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/ferrari/wep/ferrari_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/ferrari/wep/ferrari_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/ferrari/wep/ferrari_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/ferrari/wep/ferrari.assetgroup"
   },
@@ -298,7 +625,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_b_specs/teams/williams/wep/williams.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/williams/wep/williams_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/williams/wep/williams_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/williams/wep/williams_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/williams/wep/williams.assetgroup"
   },
@@ -308,7 +636,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_b_specs/teams/lotus/wep/lotus.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/lotus/wep/lotus_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/lotus/wep/lotus_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/lotus/wep/lotus_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/lotus/wep/lotus.assetgroup"
   },
@@ -318,7 +647,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_b_specs/teams/mercedes/wep/mercedes.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/mercedes/wep/mercedes_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/mercedes/wep/mercedes_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/mercedes/wep/mercedes_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/mercedes/wep/mercedes.assetgroup"
   },
@@ -328,7 +658,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_b_specs/teams/redbull/wep/redbull.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/redbull/wep/redbull_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/redbull/wep/redbull_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/redbull/wep/redbull_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/redbull/wep/redbull.assetgroup"
   },
@@ -338,7 +669,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_b_specs/teams/force_india/wep/force_india.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/force_india/wep/force_india_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/force_india/wep/force_india_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/force_india/wep/force_india_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/force_india/wep/force_india.assetgroup"
   },
@@ -348,7 +680,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_b_specs/teams/myteam_ferrari/wep/myteam_ferrari.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_ferrari/wep/myteam_ferrari_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_ferrari/wep/myteam_ferrari_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_ferrari/wep/myteam_ferrari_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/myteam_ferrari/wep/myteam_ferrari.assetgroup"
   },
@@ -358,7 +691,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_b_specs/teams/sauber/wep/sauber.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/sauber/wep/sauber_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/sauber/wep/sauber_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/sauber/wep/sauber_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/sauber/wep/sauber.assetgroup"
   },
@@ -368,7 +702,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_b_specs/teams/toro_rosso/wep/toro_rosso.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/toro_rosso/wep/toro_rosso_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/toro_rosso/wep/toro_rosso_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/toro_rosso/wep/toro_rosso_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/toro_rosso/wep/toro_rosso.assetgroup"
   },
@@ -378,7 +713,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_b_specs/teams/gm_cadillac/wep/gm_cadillac.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/gm_cadillac/wep/gm_cadillac_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/gm_cadillac/wep/gm_cadillac_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/gm_cadillac/wep/gm_cadillac_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/gm_cadillac/wep/gm_cadillac.assetgroup"
   },
@@ -388,7 +724,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_b_specs/teams/myteam_honda/wep/myteam_honda.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_honda/wep/myteam_honda_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_honda/wep/myteam_honda_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_honda/wep/myteam_honda_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/myteam_honda/wep/myteam_honda.assetgroup"
   },
@@ -398,7 +735,8 @@
    "erps": [
     "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
     "2025_asset_groups/f1_1990_vehicle_b_specs/teams/haas/wep/haas.erp",
-    "2025_asset_groups/f1_1990_vehicle_package/teams/haas/wep/haas_handling.erp"
+    "2025_asset_groups/f1_1990_vehicle_package/teams/haas/wep/haas_handling.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/haas/wep/haas_tyres.erp"
    ],
    "template": "asset_groups/f1_2026_vehicle_package/teams/haas/wep/haas.assetgroup"
   }
