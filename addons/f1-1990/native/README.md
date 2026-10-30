@@ -185,6 +185,19 @@ The same DLL runs the race engine. The handling files carry the qualifying ratin
 
 The flag is set at each car's upgrade fill: on in a 1990 session outside groups 1 and 2, off in 1990 qualifying, off in any other career, and off on `career.loaded` and `career.unloaded`. A change logs `[f1-1990] quali engine: race engine on (1990 practice or race): power x0.9725, limit 300 rpm lower` or `race engine off (1990 qualifying|not a 1990 career|career loaded or unloaded): ...`. A qualifying engine that is worn out or not allocated still gives full power.
 
+## AI qualifying pace (`f1_1990_aiquali.dll`)
+
+A separate DLL, under option `quali_engine_1990`. The 1990 AI tables are built in race trim (race tyre, race engine), and the AI's grip input (vehicle state +0x24, from `Car_Tyre_ComputeGripMultiplier` at 0x140607110) carries wear, temperature and the handling file's GripMultiplier but not the compound's Peak, so on qualifiers the AI would corner at race tyre speeds. In 1990 qualifying every AI corner target is 4 % faster.
+
+| binding | address | use |
+|---|---|---|
+| `Game_Rnd_FillVehicleUpgrades` | 0x141238cb0 | wrapped (chains with `f1_1990_quali.dll`): the flag is on when the session group is 1 or 2 in a 1990 career, off in other 1990 sessions and other careers, and off on `career.loaded` / `career.unloaded` |
+| `Ai_Eval_CurvatureModifier` | 0x14060dd70 | wrapped: the corner speed modifier every AI corner target multiplies in (9 callers, 5 in `Ai_Update_VehicleDriver`); while the flag is on it returns its value x 1.04 |
+
+`Ai_Eval_CurvatureModifier` is an L1 row with signature `ai.eval_curvature_modifier`, proposed for L2 in the ai lane's inbox. Until the owner raises it and an `agree` verify row exists it is a dev binding only, and the core drops this DLL (nothing else). The binding is declared in `src/ai_quali.cpp` as `Ai_Eval_CurvatureModifier_1990`. In the AI build's car model, 1.04 puts the AI's qualifying lap within about 1 % of the qualifier lap at Las Vegas, Monza and Suzuka and 1.5-2 % under it at Hungary and Monaco.
+
+Lines: `[f1-1990] ai quali: on (1990 qualifying): AI corner speeds x1.040`, `ai quali: off (1990 practice or race|not a 1990 career|career loaded or unloaded): AI corner speeds x1.000`, and once `ai quali: first scaled corner: modifier A -> B`.
+
 ## R&D card art and department names (`f1_1990_rnd.dll`)
 
 A separate DLL; ships `data/rnd-art.json` and `data/rnd-strings.json` through its entry's `files`.
