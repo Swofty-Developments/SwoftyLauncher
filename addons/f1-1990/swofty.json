@@ -180,7 +180,7 @@
     },
     {
       "id": "tyre_size", "type": "choice", "label": "Tyre size", "default": "2026",
-      "description": "Tyre radius of the 1990 handling files. 2026 keeps the 2026 radius, 18 mm higher. 13-inch uses the 13-inch radius; Raised lifts it 2.4 to 2.8 cm. Stock 2026 handling is a test value: donor handling, tyre group renamed.",
+      "description": "Tyre radius of the 1990 handling files, each 30 mm above the 2026 ride height. 2026 keeps the 2026 radius, 13-inch uses the 13-inch radius; Raised lifts it 2.4 to 2.8 cm more. Stock 2026 handling is a test value.",
       "values": [
         { "value": "2026", "label": "2026 radius" }, { "value": "13in", "label": "13-inch" },
         { "value": "13in_raised", "label": "13-inch, raised" }, { "value": "stock", "label": "Stock 2026 handling (test)" }

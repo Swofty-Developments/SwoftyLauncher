@@ -33,7 +33,7 @@ common.erp. No 2026 archive, row or file is touched.
                          radUpgradeWeightReduction Mass = the team's weight target
 
 Option tyre_size: 2026 (the default) keeps the donor's tyres (TyreRadius 0.351 front / 0.354 rear; the car pack draws
-the 13-inch rim with a tyre of that outer radius) and raises the car by RAISE_2026 (18 mm). The wheel's rest position is
+the 13-inch rim with a tyre of that outer radius) and raises the car by RAISE (30 mm). The wheel's rest position is
 the model's (a vector the suspension data never writes) and the body sits at ground + TyreRadius - tyre deflection -
 rest Y - height, height being the suspension compression that 0x1446b5f60 solves as MaxHeight - RestLength + load over
 the spring rates (the spawn placement 0x144632740 uses the same sum). So each axle's RestLength and the setup's
@@ -48,12 +48,20 @@ tread onto the new ones and widened to the new mesh, and the final drive scaled 
 engine rev stays the same. TyreWidth, tyre mass, inertia and compression stay stock. The wheel nodes stay at the 2026
 axle height, so the smaller radius alone drops the chassis, floor and plank by the radius drop (2.8 cm front, 2.4 cm
 rear). The physics sets the static suspension height from MaxHeight - RestLength and the spring rates (0x1446b5f60) and
-ignores RideHeight, so each axle's suspension height frame moves down by the drop instead: MinHeight, MaxHeight,
-BumpStopHeight and the x of every HeightTo* spline, with RestLength and the spring rates stock. The car then sits at the
-2026 ride height with the 2026 travel, bump-stop margin and kinematics. The aero ride height is
-AeroReferencePlaneHeight - (height + RideHeightOffset) (0x1446cb000), so RideHeightOffset carries the drop and the aero
-maps read the 2026 values. 13in_raised moves the frame by twice the drop, lifting the car by the drop over the 2026 ride
-height, and adds that lift to RideHeight and the setup ride-height range.
+ignores RideHeight, so each axle's suspension height frame moves down by the drop plus RAISE instead: MinHeight,
+MaxHeight, BumpStopHeight and the x of every HeightTo* spline, with RestLength and the spring rates stock. The car then
+sits RAISE above the 2026 ride height with the 2026 travel, bump-stop margin and kinematics. The aero ride height is
+AeroReferencePlaneHeight - (height + RideHeightOffset) (0x1446cb000), so RideHeightOffset carries the whole frame move
+and the aero maps read the 2026 values. 13in_raised moves the frame by the drop more, lifting the car by RAISE plus the
+drop; RideHeight and the setup ride-height range carry the lift.
+
+Kerbs, every variant but stock: BumpStopHeight, MaxHeight and RestLength (and the setup's RestLength range) go up by
+KERB_BUMP (15 mm), so the static car keeps its height and has 15 mm more bump travel before the bump stop with the bump
+stop's own range kept; MinHeight goes down by KERB_DROOP (10 mm) of extra droop; BumpStopRisingSpring x0.25,
+BumpStopRisingDamping x0.5 and FastBumpDamping x0.6 (the fast zone above DampingZoneDivision, 0.06 m/s, so the slow
+damping that sets the handling stays). The ConvexHull vertices move like COMZ (each z at the same fraction of the
+wheelbase between the donor model's axles and the 1990 model's), so the 2026 hull's floor, nose and wings sit under and
+around the shorter 1990 car instead of up to 0.3 m past it.
 
 Option ers: removed and zeroed take the 2026 hybrid out (the section, or every harvest, deploy and override limit at 0);
 neither changes mass, ICE power or the battery's weight. stock keeps the donor's EnergyRecoverySystem as it is, with
@@ -233,7 +241,10 @@ BRAKES = (b'BrakeFront', b'BrakeRear', b'BrakeFrontBackwards', b'BrakeRearBackwa
 TYRE_GRAPHS = {b'x0_tyre_fl': 'Front', b'x0_tyre_fr': 'Front', b'x0_tyre_bl': 'Rear', b'x0_tyre_br': 'Rear'}
 SUSPENSION_HEIGHTS = (b'MinHeight', b'MaxHeight', b'BumpStopHeight')
 RAISE_HEIGHTS = (b'MinHeight', b'BumpStopHeight')
-RAISE_2026 = 0.018
+RAISE = 0.030
+KERB_BUMP = 0.015
+KERB_DROOP = 0.010
+KERB_SCALE = {b'BumpStopRisingSpring': 0.25, b'BumpStopRisingDamping': 0.5, b'FastBumpDamping': 0.6}
 
 
 RND_ENGINE_PEAK = 53988
@@ -466,13 +477,13 @@ def tyres(root, size):
     if size == '2026':
         tuning = section(root, b'F1Tuning')
         for end, node in named(susp, b'Suspension').items():
-            set_value(node, b'RestLength', round(value(node, b'RestLength') + RAISE_2026, 4))
-            shift_heights(node, RAISE_2026, RAISE_HEIGHTS)
+            set_value(node, b'RestLength', round(value(node, b'RestLength') + RAISE, 4))
+            shift_heights(node, RAISE, RAISE_HEIGHTS)
             for k in (b'RideHeightOffset', b'RideHeight'):
-                set_value(node, k, round(value(node, k) + RAISE_2026, 4))
+                set_value(node, k, round(value(node, k) + RAISE, 4))
             for k in (f'{end}SuspensionRestLengthMin', f'{end}SuspensionRestLengthMax', f'{end}RideHeightMin',
                       f'{end}RideHeightMax'):
-                set_value(tuning, k.encode(), round(value(tuning, k.encode()) + RAISE_2026, 4))
+                set_value(tuning, k.encode(), round(value(tuning, k.encode()) + RAISE, 4))
         return 1.0
     tyre = named(susp, b'Tyre')
     stock = {end: value(tyre[end], b'TyreRadius') for end in TYRES_13}
@@ -486,14 +497,25 @@ def tyres(root, size):
     tuning = section(root, b'F1Tuning')
     for end, node in named(susp, b'Suspension').items():
         drop = stock[end] - TYRES_13[end]['radius']
-        lift = drop if size == '13in_raised' else 0.0
+        lift = RAISE + (drop if size == '13in_raised' else 0.0)
         shift_heights(node, drop + lift)
-        set_value(node, b'RideHeightOffset', round(value(node, b'RideHeightOffset') + drop, 4))
-        if lift:
-            set_value(node, b'RideHeight', round(value(node, b'RideHeight') + lift, 4))
-            for k in (f'{end}RideHeightMin', f'{end}RideHeightMax'):
-                set_value(tuning, k.encode(), round(value(tuning, k.encode()) + lift, 4))
+        set_value(node, b'RideHeightOffset', round(value(node, b'RideHeightOffset') + drop + lift, 4))
+        set_value(node, b'RideHeight', round(value(node, b'RideHeight') + lift, 4))
+        for k in (f'{end}RideHeightMin', f'{end}RideHeightMax'):
+            set_value(tuning, k.encode(), round(value(tuning, k.encode()) + lift, 4))
     return TYRES_13['Rear']['radius'] / stock['Rear']
+
+
+def kerbs(root):
+    tuning = section(root, b'F1Tuning')
+    for end, node in named(section(root, b'SuspensionSystem'), b'Suspension').items():
+        for k in (b'BumpStopHeight', b'MaxHeight', b'RestLength'):
+            set_value(node, k, round(value(node, k) + KERB_BUMP, 4))
+        for k in (f'{end}SuspensionRestLengthMin', f'{end}SuspensionRestLengthMax'):
+            set_value(tuning, k.encode(), round(value(tuning, k.encode()) + KERB_BUMP, 4))
+        set_value(node, b'MinHeight', round(value(node, b'MinHeight') - KERB_DROOP, 4))
+        for k, f in KERB_SCALE.items():
+            set_value(node, k, round(value(node, k) * f))
 
 
 def tyre_group(root, c):
@@ -535,6 +557,12 @@ def geometry(root, c):
 
     def place(z):
         return round(zr + (z - dr) / (df - dr) * (zf - zr), 4)
+
+    for part in section(root, b'ConvexHull').children:
+        if part.kind == 0 and part.name == b'ConvexHullData':
+            for v in part.children:
+                if v.kind == 0:
+                    v.set_attr(b'z', fmt(place(float(v.attr(b'z')))))
 
     chassis = section(root, b'Chassis')
     comz = place(value(chassis, b'COMZ'))
@@ -592,6 +620,7 @@ def convert(root, row, ers, size, handling):
     tyre_group(root, c)
     ERS_MODES[ers](root)
     rolling = tyres(root, size)
+    kerbs(root)
 
     peak_w = (BASE_HP * spread(row['power']) if cut is None else eng_row['hp']) * HP_W
     e = engine_curve(root, eng_row, peak_w)
