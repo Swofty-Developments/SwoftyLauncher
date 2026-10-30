@@ -77001,6 +77001,32 @@
    "used_by": [
     "addons/f1-1990/native/src/audio_queue_fix.cpp"
    ]
+  },
+  {
+   "id": "core.heap_deallocate_non_small",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 49 89 D6",
+   "match": "0x143963f80",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143963f80",
+   "kind": "func_start",
+   "names": [
+    "Ne_Heap_DeallocateNonSmall"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "crash2",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "addons/f1-1990/native/src/heap_check.cpp"
+   ]
   }
  ]
 }
