@@ -110,39 +110,6 @@ ULTRASOFT = {
 }
 VISUALS = {"Supersoft_f1_1990": SUPERSOFT, "Ultrasoft_f1_1990": ULTRASOFT, "Soft_f1_1990": SOFT}
 
-PIT_CREW = "pit_crew_training.probabilities"
-PIT_CREW_SET = "probability_set"
-PIT_CREW_NAME = "f1_1990"
-PIT_CREW_FIELDS = ["max_training_level_percent", "min_routine_pit_stop_time", "max_routine_pit_stop_time",
-                   "min_chance_mistake_percent", "max_chance_mistake_percent", "estimated_front_wing_change_time"]
-PIT_CREW_BANDS = [
-    (20, 10.5, 12.5, 21, 30),
-    (40, 9.5, 11.5, 11, 20),
-    (60, 8.5, 10.5, 6, 10),
-    (80, 7.5, 9.5, 1, 5),
-    (100, 7.0, 8.5, 0, 0),
-]
-NOSE_CHANGE_TIME = 18.0
-PIT_TIMES = "pit_lane.pit_times"
-PIT_TIMES_ROW = "team_pit_times"
-TEAM_PIT_TIMES = {
-    "mclaren_1990": (7.0, 8.6),
-    "ferrari_1990": (7.1, 8.8),
-    "williams_1990": (7.2, 9.0),
-    "benetton_1990": (7.5, 9.4),
-    "tyrrell_1990": (8.2, 10.2),
-    "lotus_1990": (8.4, 10.5),
-    "leytonhouse_1990": (8.5, 10.6),
-    "larrousse_1990": (8.6, 10.8),
-    "ligier_1990": (8.8, 11.0),
-    "minardi_1990": (9.2, 11.6),
-    "brabham_1990": (9.3, 11.8),
-    "dallara_1990": (9.4, 12.0),
-    "arrows_1990": (9.5, 12.2),
-}
-UPGRADED_GAIN = (0.5, 0.6)
-PIT_LOSS_EXTRA = 7.0
-
 
 class Stock:
     def __init__(self, path):
@@ -268,43 +235,11 @@ def dataset(fields, stock):
             ops += subtable(stock, row, sources, "TrackGeneralData", FIELDS["general_data"],
                             {"weekend_day": day, "weekend_month": month, "weekend_year": YEAR})
             ops += sunday_dates(stock, row, sources, day, month)
-        ops += pit_data(stock, row, sources)
         if track in TRACK_NAMES:
             long_name, short_name = TRACK_NAMES[track]
             ops += subtable(stock, row, sources, "TrackNameData", FIELDS["name_data"],
                             {"gp_long_name": long_name, "gp_long_name_multiline": long_name,
                              "gp_short_name": short_name})
-    return ops
-
-
-def pit_data(stock, row, sources):
-    source = next(s for s in sources if stock.get(f"{s}._TrackPitData_instancecount_") is not None)
-    values = {}
-    for field in ("pitStopTime_Dry", "pitStopTime_Wet"):
-        values[field] = f"{float(stock.text(f'{source}.TrackPitData_0.{field}')) + PIT_LOSS_EXTRA:g}"
-    return subtable(stock, row, sources, "TrackPitData", FIELDS["pit_data"], values)
-
-
-def pit_crew(fields):
-    rows = [f"probability_{i}" for i in range(len(PIT_CREW_BANDS))]
-    fields[f"{PIT_CREW}.{PIT_CREW_SET}"] = ["_metadata_", "_probability_instancecount_"] + [
-        f"{r}.{f}" for r in rows for f in ["_metadata_"] + PIT_CREW_FIELDS]
-    values = {"_metadata_": PIT_CREW_NAME, "_probability_instancecount_": len(rows)}
-    for r, (level, low, high, least, most) in zip(rows, PIT_CREW_BANDS):
-        band = [level, low, high, least, most, NOSE_CHANGE_TIME]
-        values.update({f"{r}.{f}": f"{v:g}" for f, v in zip(PIT_CREW_FIELDS, band)})
-    ops = [add_row(PIT_CREW, f"{PIT_CREW}.{PIT_CREW_SET}[_metadata_=f1]", values)]
-    fields[f"{PIT_TIMES}.{PIT_TIMES_ROW}"] = ["_metadata_", "team", "min_pit_time", "max_pit_time",
-                                             "min_pit_time_fully_upgraded", "max_pit_time_fully_upgraded"]
-    for team, (low, high) in TEAM_PIT_TIMES.items():
-        ops.append(add_row(PIT_TIMES, f"{PIT_TIMES}.{PIT_TIMES_ROW}[_metadata_=mercedes]", {
-            "_metadata_": team,
-            "team": team,
-            "min_pit_time": f"{low:g}",
-            "max_pit_time": f"{high:g}",
-            "min_pit_time_fully_upgraded": f"{low - UPGRADED_GAIN[0]:g}",
-            "max_pit_time_fully_upgraded": f"{high - UPGRADED_GAIN[1]:g}",
-        }))
     return ops
 
 
@@ -378,8 +313,6 @@ def mode(fields):
         "has_tyre_warmers": "False",
         "drs_allowed_lap_group": NAME,
         "tyre_regulations.allow_strategy_mandatory_stop_check": "False",
-        "pit_crew_training_probability_set": PIT_CREW_NAME,
-        "pit_crew_training_probability_set_equal_performance": PIT_CREW_NAME,
     })]
     ops += [
         set_(MODE, "show_grid_cutscene", "False", when={"grid_cutscene": False}),
@@ -431,7 +364,7 @@ def appends(stock):
 def main():
     stock = Stock(sys.argv[1] if len(sys.argv) > 1 else STOCK_DB)
     fields = {}
-    ops = (drs(fields) + standings(fields) + presets(fields) + compounds(fields) + pit_crew(fields) + dataset(fields, stock)
+    ops = (drs(fields) + standings(fields) + presets(fields) + compounds(fields) + dataset(fields, stock)
            + option_tag(fields, stock) + mode(fields) + appends(stock))
     rules = {"schema_version": 1, "fields": fields, "ops": ops}
     (ADDON / "db" / "rules.json").write_text(json.dumps(rules, indent=1, ensure_ascii=False) + "\n")
