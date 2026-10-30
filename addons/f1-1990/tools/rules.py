@@ -24,6 +24,7 @@ INT, STRING, ENUM, ID, BOOL, LIST, SUBSET = 0, 2, 3, 4, 5, 13, 18
 NAME = "f1_1990"
 DATASET_STAT_ID = "20"
 CLASS_STAT_ID = "12"
+FRONTEND_WET = "Wet_f1_26"
 VISUAL_STAT_IDS = {"Supersoft_f1_1990": "28", "Ultrasoft_f1_1990": "29", "Soft_f1_1990": "30"}
 ALLOCATION_STAT_ID = "14"
 SLOT_COMPOUNDS = {"softer": "C4", "medium": "C5", "harder": "C3"}
@@ -222,6 +223,8 @@ def compounds(fields):
         "CompoundOptions_0.visual_compounds": softer,
         "CompoundOptions_1.visual_compounds": medium,
         "CompoundOptions_2.visual_compounds": harder,
+        "frontend_compound": harder,
+        "frontend_compound_wet": FRONTEND_WET,
     }))
     ops.append(set_(f"tyres.compound_classes.CompoundClass[_metadata_={NAME}]", "show_allocation_screen", "False",
                     when={"no_tyre_allocation": True}))

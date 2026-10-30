@@ -1099,7 +1099,9 @@
     "stat_id": "12",
     "CompoundOptions_0.visual_compounds": "Supersoft_f1_1990",
     "CompoundOptions_1.visual_compounds": "Ultrasoft_f1_1990",
-    "CompoundOptions_2.visual_compounds": "Soft_f1_1990"
+    "CompoundOptions_2.visual_compounds": "Soft_f1_1990",
+    "frontend_compound": "Soft_f1_1990",
+    "frontend_compound_wet": "Wet_f1_26"
    }
   },
   {

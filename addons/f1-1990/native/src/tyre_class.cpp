@@ -10,8 +10,15 @@
 // tyre sidewalls showed the 2026 compounds (red S for the Supersoft sets, yellow M for the Soft sets).
 // While a 1990 career is loaded, a lookup that returns a class giving every compound option the same
 // physical compounds as f1_1990 returns f1_1990 instead, before the models exist; the physical compounds,
-// and with them the tyre physics of the car's TyrePhysicsGroup, stay the same. Setting tyre_class_fix
-// turns it off.
+// and with them the tyre physics of the car's TyrePhysicsGroup, stay the same.
+//
+// The component builds three models per entry of the class's visual compound list (+0x170, at most 11
+// fit) and maps a visual compound to its model slot through the class's map (+0x1d8, 0xff for a visual
+// the class doesn't hold). Showroom and team-select cars show the class's frontend compound (+0x10 dry,
+// +0x18 wet; 0x14d42ede0 -> 0x14f4935c0): a class whose frontend compound is not in its own list gives
+// slot 0xff, and setWingVisibilityOnCar (0x14f3c6a80) then enters a critical section past the models.
+// The swap only happens when both frontend compounds of f1_1990 are in its list and the list fits.
+// Setting tyre_class_fix turns it off.
 
 #include <atomic>
 #include <bitset>
@@ -39,6 +46,7 @@ using f1990::at;
 namespace t = f1990::tyres;
 
 constexpr const char *kClass1990 = "f1_1990";
+constexpr size_t kVisualEntry = 0x10, kMaxVisuals = 11, kFrontendDry = 0x10, kFrontendWet = 0x18;
 
 std::mutex g_lock;
 const void *g_career;
@@ -46,6 +54,7 @@ bool g_1990;
 int64_t g_stat = -1;
 std::bitset<64> g_logged;
 std::atomic<uint32_t> g_skips;
+std::atomic<bool> g_unsafe_logged{false};
 
 void skip(const char *why, const void *classes, const void *own)
 {
@@ -75,6 +84,47 @@ int64_t class_stat()
         break;
     }
     return g_stat;
+}
+
+// The visual compounds of a class (+0x170, {visual compound, physical mask}); 0 when unreadable or more than
+// the tyre component holds.
+size_t visuals(const uint8_t *cls, const uint8_t *const **begin)
+{
+    if (!swofty::mem::readable(cls + t::kClassVisuals, 0x10))
+        return 0;
+    auto *b = at<const uint8_t *>(cls, t::kClassVisuals), *e = at<const uint8_t *>(cls, t::kClassVisuals + 8);
+    if (!b || e <= b || size_t(e - b) % kVisualEntry || size_t(e - b) / kVisualEntry > kMaxVisuals ||
+        !swofty::mem::readable(b, size_t(e - b)))
+        return 0;
+    *begin = reinterpret_cast<const uint8_t *const *>(b);
+    return size_t(e - b) / kVisualEntry;
+}
+
+// The map is indexed by a visual compound's first byte, so a list entry with the same first byte gets the slot.
+bool holds(const uint8_t *const *list, size_t n, const uint8_t *visual)
+{
+    if (!visual || !swofty::mem::readable(visual, 1))
+        return false;
+    for (size_t i = 0; i < n; i++)
+        if (list[i * 2] == visual || (list[i * 2] && swofty::mem::readable(list[i * 2], 1) && *list[i * 2] == *visual))
+            return true;
+    return false;
+}
+
+// Why the class can't take the cars' tyre models, or nullptr when it can.
+const char *unsafe(const uint8_t *cls)
+{
+    const uint8_t *const *list = nullptr;
+    size_t n = visuals(cls, &list);
+    if (!n)
+        return "its visual compound list is unreadable or longer than the tyre component holds";
+    if (!swofty::mem::readable(cls + kFrontendDry, 0x10))
+        return "its frontend compounds are unreadable";
+    auto *dry = at<const uint8_t *>(cls, kFrontendDry), *wet = at<const uint8_t *>(cls, kFrontendWet);
+    if (!holds(list, n, dry) || !holds(list, n, wet))
+        return "its frontend compound (dry or wet) is not one of its visual compounds, so a showroom car would take "
+               "a model slot it doesn't have";
+    return nullptr;
 }
 
 bool career_1990()
@@ -117,6 +167,12 @@ SWOFTY_WRAP(Sess_TyreClass_FromName, void *, void *classes, const void *name, ui
         return own;
     }
     size_t index = size_t(from - b) / t::kClassSize;
+    if (const char *why = unsafe(target)) {
+        if (!g_unsafe_logged.exchange(true))
+            swofty::log("[f1-1990] tyre class: f1_1990 (class %lld) kept off every car: %s", static_cast<long long>(stat),
+                        why);
+        return own;
+    }
     bool same = t::same_physical(from, target);
     if (index < g_logged.size() && !g_logged.test(index)) {
         g_logged.set(index);
