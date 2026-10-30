@@ -13,10 +13,10 @@
 // car's handling values while it is on track. A car is a slot of g_Sess_VehicleTable (its CarLive, whose
 // vehicle_id is the slot); each value is a field of one of the systems the car caches by section name at
 // CarLive+0x530..+0x5e0. Every offset below is a KB field (re/db/structs/{CarLive,CarSteering,CarGearBox,
-// CarDifferential,CarTurbo,CarEngine,CarFuelTank,CarDamageFrontWing,CarDamageSuspension,CarObfFloat}.h, L2 or L3),
-// and "obf" fields are CarObfFloat pairs: the float's bits XOR the key 8 bytes on. The offsets are the KB
-// build's, so car_live.cpp hands over no table on any other exe. Ops<Tag> keeps the state per tag so the
-// host test runs the same code on fake cars.
+// CarDifferential,CarTurbo,CarEngine,CarFuelTank,CarDamageFrontWing,CarDamageSuspension,CarObfFloat}.h, each
+// exported by bindgen: L2 with an agree verify row, or L3), and "obf" fields are CarObfFloat pairs: the float's
+// bits XOR the key 8 bytes on. The offsets are the KB build's, so car_live.cpp hands over no table on any
+// other exe. Ops<Tag> keeps the state per tag so the host test runs the same code on fake cars.
 
 namespace swofty_core::hooks::car_live {
 
@@ -75,7 +75,8 @@ inline constexpr Field FIELDS[] = {
      Kind::plain, 0, BIG},
     {SWOFTY_CAR_SUSP_ANGULAR_FRACTURE_LIMIT, "f1_suspension_damage.angular_fracture_limit", SUSPENSION_DAMAGE, 0x7c,
      Kind::plain, 0, BIG},
-    {SWOFTY_CAR_ENGINE_LIMITER, "engine.limiter_rotation_rate", ENGINE, 0x8b0, Kind::obf, 100, 2500, Rederive::engine},
+    {SWOFTY_CAR_ENGINE_LIMITER, "engine.vtf_limiter_rotation_rate", ENGINE, 0x8b0, Kind::obf, 100, 2500,
+     Rederive::engine},
     {SWOFTY_CAR_FINAL_DRIVE, "gearbox.final_drive_ratio", GEARBOX, 0x28, Kind::obf, 1, 20, Rederive::gearbox},
     // Ratios R, N, 1st..9th are CarObfFloat pairs at +0x38 stride 0x10: 1st is +0x58.
     {SWOFTY_CAR_GEAR_RATIO_1, "gearbox.gear_ratio_1", GEARBOX, 0x58, Kind::obf, 0.1f, 20, Rederive::gearbox},
