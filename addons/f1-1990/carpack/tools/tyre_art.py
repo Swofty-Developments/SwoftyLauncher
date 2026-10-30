@@ -37,6 +37,7 @@ sys.path[:0] = [os.path.join(REPO, 'tools'), os.path.join(REPO, 'addons', 'rnd-t
                 os.path.join(ADDON, 'tools')]
 
 import erpw
+import gfx_material as G
 from common import bc7_decode
 import tyre_sets as T
 
@@ -207,7 +208,7 @@ def array_res(e, stock, new, slice0, stock_data, per, mips):
     return [q_image, q_view]
 
 
-def wheel_view(mask, diffuse, px=420):
+def wheel_view(mask, diffuse, colour, px=300):
     yy, xx = np.mgrid[0:px, 0:px] + 0.5
     dx, dy = (xx - px / 2) / (px / 2) * OUTER, (yy - px / 2) / (px / 2) * OUTER
     rho, th = np.hypot(dx, dy), np.arctan2(dx, -dy)
@@ -215,7 +216,7 @@ def wheel_view(mask, diffuse, px=420):
     x, y = SIZE / 2 + tex_r * np.sin(th), SIZE / 2 - tex_r * np.cos(th)
     m = sample(mask, x, y)[..., None]
     rubber = (0.05 + 0.12 * sample(diffuse[..., :3].mean(-1), x, y))[..., None] * np.ones(3)
-    img = rubber * (1 - m) + np.array([0.97, 0.97, 0.96]) * m
+    img = rubber * (1 - m) + np.array(colour) * m
     img[rho < SIDEWALL[0]] = (0.32, 0.32, 0.34)
     img[rho < SIDEWALL[0] * 0.55] = (0.18, 0.18, 0.2)
     img[(rho > SIDEWALL[1]) & (rho <= OUTER)] = (0.035, 0.035, 0.035)
@@ -223,19 +224,46 @@ def wheel_view(mask, diffuse, px=420):
     return Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8), 'RGB')
 
 
-def contact_sheet(path, looks, stock_view):
-    font = ImageFont.load_default(size=20)
-    small = ImageFont.load_default(size=15)
-    tile, pad = 420, 16
-    tiles = [stock_view] + looks
-    sheet = Image.new('RGB', (pad + len(tiles) * (tile + pad), tile + 100), (22, 22, 24))
+def contact_sheet(path, rows, columns):
+    font = ImageFont.load_default(size=18)
+    small = ImageFont.load_default(size=14)
+    tile, pad, head = 300, 14, 34
+    sheet = Image.new('RGB', (190 + len(columns) * (tile + pad), head + len(rows) * (tile + pad) + 10), (22, 22, 24))
     draw = ImageDraw.Draw(sheet)
-    for i, (label, note, view) in enumerate(tiles):
-        x = pad + i * (tile + pad)
-        sheet.paste(view, (x, 40))
-        draw.text((x, 10), label, fill=(240, 240, 240), font=font)
-        draw.text((x, tile + 52), note, fill=(170, 170, 170), font=small)
+    for j, name in enumerate(columns):
+        draw.text((190 + j * (tile + pad), 8), name, fill=(240, 240, 240), font=font)
+    for i, (label, note, views) in enumerate(rows):
+        y = head + i * (tile + pad)
+        draw.text((8, y + 8), label, fill=(240, 240, 240), font=font)
+        draw.multiline_text((8, y + 36), note, fill=(170, 170, 170), font=small, spacing=4)
+        for j, view in enumerate(views):
+            sheet.paste(view, (190 + j * (tile + pad), y))
     sheet.save(path)
+
+
+def stock_colour(e, material):
+    m = G.parse25(e.frag_data(e.find(f'eaid://{T.C.SOURCE_PACKAGE}/shared/tyres/materials/{material}'), 0))
+    return struct.unpack('<3f', m.get('me_logoColour').value)
+
+
+def sheet(path, e, art):
+    columns = [('SS (soft race)', 'sidewall_super_soft.material'), ('S (race)', 'sidewall_soft.material'),
+               ('US (qualifier)', 'sidewall_ultra_soft.material'), ('Intermediate', 'sidewall_intermediate.material'),
+               ('Wet', 'sidewall_wet.material')]
+    colours = [T.LETTERING.get(m) or stock_colour(e, m) for _, m in columns]
+    diffuse = decode_slices(art, T.new_name(T.DIFFUSE_1990))[0]
+    notes = {'goodyear': 'McLaren, Ferrari,\nWilliams, Benetton,\nLotus, Leyton House,\nLarrousse, Ligier,\nArrows',
+             'pirelli': 'Tyrrell, Minardi,\nBrabham, Dallara'}
+    rows = []
+    for supplier in T.SUPPLIERS:
+        logo = decode_slices(art, T.new_name(T.logo_array(supplier)))[0]
+        views = [wheel_view(logo[..., 0 if j < 3 else 1], diffuse, colour) for j, colour in enumerate(colours)]
+        rows.append((f'1990 {supplier.capitalize()}', notes[supplier], views))
+    stock_logo, stock_diffuse = decode_slices(e, T.stock_name(T.LOGO))[0], decode_slices(e, T.stock_name(T.DIFFUSE))[0]
+    rows.append(('Before: stock 2026', 'on the 13-inch tyre',
+                 [wheel_view(stock_logo[..., 0 if j < 3 else 1], stock_diffuse, colour) for j, colour in enumerate(colours)]))
+    contact_sheet(path, rows, [c for c, _ in columns])
+    return 0
 
 
 def main():
@@ -243,8 +271,11 @@ def main():
     ap.add_argument('--common', default=COMMON, help='the 13-inch common.erp (f1_2026 names)')
     ap.add_argument('--goodyear', default=GOODYEAR, help='the ASR MP4/5B sidewall PNG')
     ap.add_argument('--sheet', help='write a preview PNG of both sidewalls')
+    ap.add_argument('--sheet-only', action='store_true', help='draw the sheet from the built tyre_art.erpk')
     args = ap.parse_args()
     e = erpw.Erp(args.common)
+    if args.sheet_only:
+        return sheet(args.sheet, e, erpw.Erp(OUT))
     stock_logo, logo_data, logo_per, logo_mips = decode_slices(e, T.stock_name(T.LOGO))
     stock_diffuse, diffuse_data, diffuse_per, diffuse_mips = decode_slices(e, T.stock_name(T.DIFFUSE))
     masks = {'goodyear': goodyear_mask(args.goodyear)}
@@ -270,18 +301,7 @@ def main():
           f'{np.degrees(span[0]):.1f} to {np.degrees(span[1]):.1f} deg; barcode {stripped} texels; '
           f'mask coverage goodyear {masks["goodyear"].mean():.4f} pirelli {masks["pirelli"].mean():.4f}')
     if args.sheet:
-        got_diffuse = decode_slices(check, T.new_name(T.DIFFUSE_1990))[0]
-        notes = {'goodyear': 'McLaren, Ferrari, Williams, Benetton, Lotus,\nLeyton House, Larrousse, Ligier, Arrows',
-                 'pirelli': 'Tyrrell, Minardi, Brabham, Dallara'}
-        looks = []
-        for supplier in masks:
-            got = decode_slices(check, T.new_name(T.logo_array(supplier)))[0]
-            looks.append((f'1990 {supplier.capitalize()} (slick and wet)', notes[supplier],
-                          wheel_view(got[..., 0], got_diffuse)))
-        stock_map = stock_logo[..., 0]
-        stock_view = ('Before: stock 2026 on the 13-inch tyre', 'lettering in the compound colour',
-                      wheel_view(stock_map, stock_diffuse))
-        contact_sheet(args.sheet, looks, stock_view)
+        sheet(args.sheet, e, check)
     return 0
 
 
