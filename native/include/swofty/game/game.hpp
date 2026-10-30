@@ -234,7 +234,10 @@ using Game_PitLane_MoveDownSpline_t = void(void *pitlane, uint8_t car, void *tel
 inline constexpr fn<"Game_PitLane_MoveDownSpline", Game_PitLane_MoveDownSpline_t> Game_PitLane_MoveDownSpline{}; // L2 experimental
 inline constexpr address<"Game_PitLane_VehicleEnteringInternal"> Game_PitLane_VehicleEnteringInternal{}; // L2 experimental
 inline constexpr address<"Game_Pitlane_Multiplayer_teleportToGarage"> Game_Pitlane_Multiplayer_teleportToGarage{}; // L2 experimental
-inline constexpr address<"Game_Pitlane_SetVehicleStatus"> Game_Pitlane_SetVehicleStatus{}; // L2 experimental
+using Game_Pitlane_SetVehicleStatus_t = void(void *self, uint8_t vehicle, uint32_t status);
+inline constexpr fn<"Game_Pitlane_SetVehicleStatus", Game_Pitlane_SetVehicleStatus_t> Game_Pitlane_SetVehicleStatus{}; // L2 experimental
+using Game_PitLane_PutVehicleInPitBox_t = void(void *pitlane, uint8_t vehicle);
+inline constexpr fn<"Game_PitLane_PutVehicleInPitBox", Game_PitLane_PutVehicleInPitBox_t> Game_PitLane_PutVehicleInPitBox{}; // L2 experimental
 using Game_Place_Vehicle_t = void(void *car, const char *tag, int priority, const float *mtx44_a, const float *mtx44_b, float dt, uint32_t flags);
 inline constexpr fn<"Game_Place_Vehicle", Game_Place_Vehicle_t> Game_Place_Vehicle{}; // L2 experimental
 using Game_PracticeTrackAcclimatisation_RefreshState_t = void(void *self);
