@@ -52,6 +52,12 @@ struct Stop {
     float rate = 1.f;
     float factor = 1.f;
     float elapsed = 0;
+    float unit = 1.f;
+    float last_t = -1;
+    bool held = false;
+    bool flagged = false;
+    int updates = 0;
+    int number = 0;
     float stock = 0;
     std::string name;
 };
@@ -63,6 +69,8 @@ float g_fps = 30.f;
 bool g_loaded;
 Stop g_stops[kInstances];
 int g_logged;
+int g_begun;
+constexpr int kTraceStops = 3;
 
 void load()
 {
@@ -149,21 +157,24 @@ void begin(Stop &s, uint8_t *seq, float rate)
     s.done = seq;
     s.name = sequence_name(seq);
     const pit::Phases *row = pit::find(g_table, s.name);
-    float frame = at<float>(seq, 0x5c);
-    if (!row) {
+    float now = at<float>(seq, 0x5c);
+    auto *res = at<const uint8_t *>(seq, 0x08);
+    float scale = res && swofty::mem::readable(res + 0x54, 4) ? at<float>(res, 0x54) : 0.f;
+    if (!row || !(scale > 0.01f && scale < 1000.f)) {
         if (g_logged++ < kLogStops)
-            swofty::log("[f1-1990] pit phases: sequence \"%s\" (crew speed %.3f) has no phase row or family; the game's "
-                        "speed stays",
-                        s.name.c_str(), double(rate));
+            swofty::log("[f1-1990] pit phases: sequence \"%s\" (crew speed %.3f, scale %.3f) has no phase row or family; "
+                        "the game's speed stays",
+                        s.name.c_str(), double(rate), double(scale));
         return;
     }
-    const pit::Phases &p = *row;
-    s.plan = pit::plan(p, rate, g_fps, frame);
+    float unit = scale / g_fps;
+    pit::Phases p = pit::in_units(*row, unit);
+    s.plan = pit::plan(p, rate, scale, now, unit);
     if (!s.plan.valid) {
         if (g_logged++ < kLogStops)
-            swofty::log("[f1-1990] pit phases: sequence \"%s\" crew speed %.3f at frame %.1f (start %.0f, stop %.0f) has "
-                        "no work left to hold; the game's speed stays",
-                        s.name.c_str(), double(rate), double(frame), double(p.start), double(p.stop));
+            swofty::log("[f1-1990] pit phases: sequence \"%s\" crew speed %.3f at time %.3f (start %.3f, stop %.3f, scale "
+                        "%.3f) has no work left to hold; the game's speed stays",
+                        s.name.c_str(), double(rate), double(now), double(p.start), double(p.stop), double(scale));
         return;
     }
     s.active = true;
@@ -171,15 +182,36 @@ void begin(Stop &s, uint8_t *seq, float rate)
     s.rate = rate;
     s.factor = 1.f;
     s.elapsed = 0;
-    float from = std::max(frame, 0.f);
-    s.stock = (p.stop - from) / (g_fps * rate) + (p.jc > p.stop ? (p.jc - p.stop) / g_fps : 0.f);
+    s.unit = unit;
+    s.last_t = now;
+    s.held = false;
+    s.flagged = false;
+    s.updates = 0;
+    s.number = ++g_begun;
+    float from = std::max(now, 0.f);
+    s.stock = (p.stop - from) / (scale * rate) + (p.jc > p.stop ? (p.jc - p.stop) / scale : 0.f);
     if (g_logged++ < kLogStops)
-        swofty::log("[f1-1990] pit phases: \"%s\" crew speed %.3f -> 1.0 from frame %.1f (start %.0f); +%.2f s as %zu "
-                    "hold(s) of %.2f s at the gun-on frames and a jack stretch from frame %.0f at %.2f; stop %.2f s as before",
-                    s.name.c_str(), double(rate), double(frame), double(p.start), double(s.plan.extra), s.plan.holds,
-                    double(s.plan.holds ? s.plan.hold_left[0] : 0.f), double(s.plan.window_start),
+        swofty::log("[f1-1990] pit phases: \"%s\" crew speed %.3f -> 1.0 from time %.3f (start %.3f, scale %.3f, %.4f per "
+                    "frame); +%.2f s as %zu hold(s) of %.2f s at the gun-on times (first %.3f) and a jack stretch from %.3f "
+                    "at %.2f; stop %.2f s as before",
+                    s.name.c_str(), double(rate), double(now), double(p.start), double(scale), double(unit),
+                    double(s.plan.extra), s.plan.holds, double(s.plan.holds ? s.plan.hold_left[0] : 0.f),
+                    double(s.plan.holds ? s.plan.hold_frame[0] : -1.f), double(s.plan.window_start),
                     double(s.plan.window_rate), double(s.stock));
 }
+
+void fall_back(Stop &s, float *base, float *rate, float from, float to)
+{
+    *base = s.rate;
+    *rate = s.rate * s.factor;
+    s.active = false;
+    s.seq = nullptr;
+    swofty::log("[f1-1990] pit phases: \"%s\" kept moving during a hold (time %.3f -> %.3f at rate 0); the game's crew "
+                "speed %.3f for the rest of this stop and of the session",
+                s.name.c_str(), double(from), double(to), double(s.rate));
+}
+
+std::atomic<bool> g_uniform{false};
 
 void finish(Stop &s, const char *why)
 {
@@ -200,6 +232,7 @@ SWOFTY_WRAP(Sess_TyreAllocation_OnSessionStart, void, void *component)
     void *provider = at<void *>(component, 0x270);
     void *weekend = provider ? call_getter(provider, 0x98 / 8) : nullptr;
     bool on = weekend && f1990::is_1990_weekend(weekend);
+    g_uniform = false;
     if (on != g_1990.exchange(on))
         swofty::log("[f1-1990] pit phases: %s", on ? "1990 weekend: stops at crew speed 1 with held phases"
                                                     : "not a 1990 weekend: the game's crew speed");
@@ -212,7 +245,7 @@ SWOFTY_WRAP(Sess_PitStopUpdateJob_Update, void, void *job)
         return;
     }
     auto *inst = at<uint8_t *>(job, 0x08);
-    if (!inst || !swofty::mem::readable(inst + 0x60, 0x3c0 - 0x60) || at<uint8_t>(inst, 0x64)) {
+    if (!inst || !swofty::mem::readable(inst + 0x60, 0x3c0 - 0x60)) {
         orig(job);
         return;
     }
@@ -223,17 +256,38 @@ SWOFTY_WRAP(Sess_PitStopUpdateJob_Update, void, void *job)
         auto *base = reinterpret_cast<float *>(inst + 0x33c);
         auto *rate = reinterpret_cast<float *>(inst + 0x3bc);
         float dt = at<float>(job, 0x10);
+        float step_dt = dt > 0 && dt < 1 ? dt : 0;
         Stop &s = slot(inst);
+        if (s.active && at<uint8_t>(inst, 0x64) && !s.flagged) {
+            s.flagged = true;
+            swofty::log("[f1-1990] pit phases: \"%s\" instance +0x64 set during the stop (time %.3f)", s.name.c_str(),
+                        double(at<float>(seq, 0x5c)));
+        }
         if (s.active && (seq != s.seq || !seq))
             finish(s, "sequence changed");
-        if (!s.active && seq && seq != s.done && *base > 0.01f && *base < 0.999f &&
-            swofty::mem::readable(seq + 0x08, 0x58) && !g_table.empty())
+        if (!s.active && !g_uniform.load() && !at<uint8_t>(inst, 0x64) && seq && seq != s.done && *base > 0.01f &&
+            *base < 0.999f && swofty::mem::readable(seq + 0x08, 0x58) && !g_table.empty())
             begin(s, seq, *base);
         if (s.active) {
-            float frame = at<float>(seq, 0x5c);
-            s.elapsed += dt > 0 && dt < 1 ? dt : 0;
-            if (!pit::drive(s.plan, s.factor, frame, dt > 0 && dt < 1 ? dt : 0, *base, *rate))
-                finish(s, "ended");
+            float now = at<float>(seq, 0x5c);
+            float base_in = *base, rate_in = *rate;
+            if (s.held && now - s.last_t > 0.25f * s.unit) {
+                fall_back(s, base, rate, s.last_t, now);
+                g_uniform = true;
+            } else {
+                s.elapsed += step_dt;
+                bool going = pit::drive(s.plan, s.factor, now, step_dt, *base, *rate);
+                s.held = going && *rate == 0.f;
+                s.last_t = now;
+                int n = s.updates++;
+                if (s.number <= kTraceStops && (n < 8 || (n % 15 == 0 && n <= 600)))
+                    swofty::log("[f1-1990] pit phases: stop %d update %d: time %.3f dt %.4f base %.3f rate %.3f -> %.3f "
+                                "%.3f, +0x64 %u +0x65 %u",
+                                s.number, n, double(now), double(dt), double(base_in), double(rate_in), double(*base),
+                                double(*rate), unsigned(at<uint8_t>(inst, 0x64)), unsigned(at<uint8_t>(inst, 0x65)));
+                if (!going)
+                    finish(s, "ended");
+            }
         }
     }
     orig(job);

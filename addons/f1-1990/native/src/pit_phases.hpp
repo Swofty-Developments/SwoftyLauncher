@@ -37,6 +37,22 @@ inline std::string key(std::string_view name)
     return k;
 }
 
+// The table holds frames authored at 30 fps; the game keeps a sequence's time in its own units (seconds in game:
+// the crew speed is already set at 0.5 when the Start event sits at frame 13), advancing it by dt x rate x the
+// resource's scale (+0x54). One authored frame is scale / fps units.
+inline Phases in_units(const Phases &p, float per_frame)
+{
+    Phases out = p;
+    out.start *= per_frame;
+    out.stop *= per_frame;
+    out.jc *= per_frame;
+    for (size_t i = 0; i < out.gun_count; i++)
+        out.guns[i] *= per_frame;
+    if (out.jack >= 0)
+        out.jack *= per_frame;
+    return out;
+}
+
 struct Plan {
     bool valid = false;
     float end = 0;
@@ -45,6 +61,8 @@ struct Plan {
     size_t holds = 0;
     float window_start = -1;
     float window_rate = 1.0f;
+    float window_left = 0;
+    float ups = 1.f;
     float extra = 0;
 };
 
@@ -53,25 +71,26 @@ struct Plan {
 // plays every frame from `from` at rate 1 and spends the difference, (stop - from) / fps * (1 / r - 1), as holds at
 // the wheel-gun-on frames after `from` (kGunShare of it, shared equally) and as a slower stretch from just before
 // the jack drop to the end of the work (the rest).
-inline Plan plan(const Phases &p, float rate, float fps, float from)
+inline Plan plan(const Phases &p, float rate, float fps, float from, float frame = 1.f)
 {
     Plan out;
     from = std::max(from, 0.f);
-    if (!(rate > 0.01f && rate < 0.999f) || !(fps > 1.f) || !(p.stop > from + 1.f))
+    if (!(rate > 0.01f && rate < 0.999f) || !(fps > 0.f) || !(frame > 0.f) || !(p.stop > from + frame))
         return out;
     out.end = std::max(p.stop, p.jc);
+    out.ups = fps;
     out.extra = (p.stop - from) / fps * (1.f / rate - 1.f);
     size_t guns = 0;
     for (size_t i = 0; i < p.gun_count; i++)
         guns += p.guns[i] > from;
     float gun_time = guns ? out.extra * kGunShare : 0.f;
-    float window = p.jack >= 0 ? out.end - std::max(p.jack - kJackLead, from) : 0.f;
+    float window = p.jack >= 0 ? out.end - std::max(p.jack - kJackLead * frame, from) : 0.f;
     float jack_time = out.extra - gun_time;
-    if (window < 1.f) {
+    if (window < frame) {
         gun_time = out.extra;
         jack_time = 0;
     }
-    if (!guns && window < 1.f)
+    if (!guns && window < frame)
         return out;
     if (!guns) {
         gun_time = 0;
@@ -84,10 +103,11 @@ inline Plan plan(const Phases &p, float rate, float fps, float from)
         out.hold_left[out.holds] = gun_time / float(guns);
         out.holds++;
     }
-    if (jack_time > 0 && window >= 1.f) {
+    if (jack_time > 0 && window >= frame) {
         out.window_start = out.end - window;
         float natural = window / fps;
         out.window_rate = natural / (natural + jack_time);
+        out.window_left = natural + jack_time;
     }
     out.valid = true;
     return out;
@@ -132,8 +152,11 @@ inline float step(Plan &p, float frame, float dt)
             p.hold_left[i] -= dt;
             return 0.f;
         }
-    if (p.window_start >= 0 && frame >= p.window_start && frame < p.end)
-        return p.window_rate;
+    if (p.window_start >= 0 && frame >= p.window_start && frame < p.end) {
+        float rate = p.window_left > dt && dt > 0 ? (p.end - frame) / (p.window_left * p.ups) : 1.f;
+        p.window_left -= dt;
+        return std::clamp(rate, 0.f, 1.f);
+    }
     return 1.f;
 }
 

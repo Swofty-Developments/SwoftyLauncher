@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include <cmath>
+#include <algorithm>
 #include <cstdio>
 #include <string>
 #include <unordered_map>
@@ -70,51 +71,57 @@ int main()
     Phases nothing{13, 90, 98, {}, 0, -1};
     check("no gun and no jack frames: stock", !plan(nothing, 0.3f, 30.f, 13).valid);
 
-    // The game's update, as the 1990 log shows it: the crew speed is in base and rate when the wrap first looks, at
-    // frame 0.5 of F1StartJobDoStandardStop258 (Start 13), and Start writes it again. Each update scales dt by rate on
-    // entry, advances the frame, rewrites rate as factor x base; Stop puts both back to 1. The wrap drives the plan
-    // from its first look.
+    // The game's update, as the 1990 log shows it: the sequence time is in seconds (scale 1), the crew speed 0.252 is
+    // already in base and rate when the wrap first looks at 0.5 s of F1StartJobDoStandardStop258 (Start 13/30 s).
+    // Each update scales dt by rate on entry, advances the time, rewrites rate as factor x base; Stop puts both back
+    // to 1. The wrap drives the plan from its first look, in the sequence's units.
     for (float factor : {1.0f, 1.5f}) {
-        float r = 0.252f, base = r, rate = r, frame = 0.5f, t = 0, dt = 1.f / 60.f, fac = 1, end_at = -1;
+        const float scale = 1.f, unit = scale / 30.f;
+        Phases p_units = in_units(std258, unit);
+        float r = 0.252f, base = r, rate = r, now = 0.5f, t = 0, dt = 1.f / 60.f, fac = 1, end_at = -1;
         bool active = false, stopped = false, begun = false;
         Plan p;
-        float held = 0, first_rate = -1;
+        float held = 0, first_rate = -1, max_hold_drift = 0, held_at = -1;
         while (t < 30) {
             if (!begun && base > 0.01f && base < 0.999f) {
                 begun = true;
-                p = plan(std258, base, 30.f, frame);
+                p = plan(p_units, base, scale, now, unit);
                 active = p.valid;
                 fac = 1;
             }
             if (active) {
-                active = drive(p, fac, frame, dt, base, rate);
-                held += rate == 0.f ? dt : 0;
+                active = drive(p, fac, now, dt, base, rate);
+                if (rate == 0.f) {
+                    held += dt;
+                    if (held_at < 0)
+                        held_at = now;
+                    max_hold_drift = std::max(max_hold_drift, now - held_at);
+                } else
+                    held_at = -1;
                 if (first_rate < 0)
                     first_rate = rate;
             }
-            float before = frame;
-            frame += dt * rate * 30.f;
-            if (before < std258.start && frame >= std258.start)
-                base = rate = r;
-            if (!stopped && before < std258.stop && frame >= std258.stop) {
+            float before = now;
+            now += dt * rate * scale;
+            if (!stopped && before < p_units.stop && now >= p_units.stop) {
                 stopped = true;
                 base = rate = 1;
             }
             rate = factor * base;
             t += dt;
-            if (frame >= std258.jc && end_at < 0)
+            if (now >= p_units.jc && end_at < 0)
                 end_at = t;
             if (end_at >= 0 && !active)
                 break;
         }
-        float want = (std258.stop - 0.5f) / (30.f * r) + (std258.jc - std258.stop) / 30.f;
-        char name[160];
+        float want = (p_units.stop - 0.5f) / (scale * r) + (p_units.jc - p_units.stop) / scale;
+        char name[200];
         std::snprintf(name, sizeof name,
-                      "258 from frame 0.5 at 0.252, factor %.1f: crew speed 1 from the first frame (%.2f), JC at %.2f s "
-                      "(game %.2f s), held %.2f s, base back to %.1f",
-                      factor, first_rate, end_at, want, held, base);
-        check(name, p.valid && first_rate == 1.f && held > 5.f && base == 1.f &&
-                        (factor != 1.f || std::fabs(end_at - want) < 0.2f));
+                      "258 in seconds from 0.5 s at 0.252, factor %.1f: speed 1 from the first update (%.2f), JC after "
+                      "%.2f s (game %.2f s), held %.2f s, first hold at %.3f s, base back to %.1f",
+                      factor, first_rate, end_at, want, held, p.holds ? p.hold_frame[0] : -1.f, base);
+        check(name, p.valid && first_rate == 1.f && held > 4.f && base == 1.f && max_hold_drift < 1e-6f &&
+                        std::fabs(p.hold_frame[0] - 77.f / 30.f) < 1e-4f && (factor != 1.f || std::fabs(end_at - want) < 0.1f));
     }
 
     std::unordered_map<std::string, Phases> table{{"startjobdostandardstop258", std258}, {"startjobdostandardstop21", flon}};
