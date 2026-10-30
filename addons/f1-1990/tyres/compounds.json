@@ -1,0 +1,29 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "historical"
+   },
+   "source": "tyres/historical/tyrecompounds.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/tyrecompounds/tyrecompounds.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "goodyear"
+   },
+   "source": "tyres/goodyear/tyrecompounds.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/tyrecompounds/tyrecompounds.erp"
+  },
+  {
+   "op": "file.put",
+   "when": {
+    "tyre_supplier": "pirelli"
+   },
+   "source": "tyres/pirelli/tyrecompounds.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/tyrecompounds/tyrecompounds.erp"
+  }
+ ]
+}

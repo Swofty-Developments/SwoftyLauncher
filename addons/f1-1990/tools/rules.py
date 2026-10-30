@@ -27,6 +27,9 @@ CLASS_STAT_ID = "12"
 FRONTEND_WET = "Wet_f1_26"
 VISUAL_STAT_IDS = {"Supersoft_f1_1990": "28", "Ultrasoft_f1_1990": "29", "Soft_f1_1990": "30"}
 ALLOCATION_STAT_ID = "14"
+PRESETS = {"softer": ("f1_1990_softer", "15"), "balanced": ("f1_1990", ALLOCATION_STAT_ID),
+           "harder": ("f1_1990_harder", "16")}
+SOFT_SETS = (1, 2, 3)
 SLOT_COMPOUNDS = {"softer": "C4", "medium": "C5", "harder": "C3"}
 MANDATORY_STAT_ID = "8"
 STANDINGS_STAT_ID = "15"
@@ -82,9 +85,9 @@ SUPERSOFT = {
     "icon_code": "\ue190",
     "colour": "-1762525",
     "texture_name": "SuperSoft_f1_1990",
-    "display_name": "lng_tyre_compound_supersoft",
-    "title": "lng_tyre_compound_supersoft_title",
-    "desc": "lng_tyre_compound_supersoft_desc",
+    "display_name": "lng_f1990_tyre_soft",
+    "title": "lng_f1990_tyre_soft_title",
+    "desc": "lng_f1990_tyre_soft_desc",
 }
 SOFT = {
     "material_context": "Soft",
@@ -93,9 +96,9 @@ SOFT = {
     "icon_code": "\ue192",
     "colour": "-77565",
     "texture_name": "Soft_f1_1990",
-    "display_name": "lng_tyre_compound_soft",
-    "title": "lng_tyre_compound_soft_title",
-    "desc": "lng_tyre_compound_soft_desc",
+    "display_name": "lng_f1990_tyre_race",
+    "title": "lng_f1990_tyre_race_title",
+    "desc": "lng_f1990_tyre_race_desc",
 }
 ULTRASOFT = {
     "material_context": "UltraSoft",
@@ -104,9 +107,26 @@ ULTRASOFT = {
     "icon_code": "\ue191",
     "colour": "-6860657",
     "texture_name": "UltraSoft_f1_1990",
-    "display_name": "lng_tyre_compound_ultrasoft",
-    "title": "lng_tyre_compound_ultrasoft_title",
-    "desc": "lng_tyre_compound_ultrasoft_desc",
+    "display_name": "lng_f1990_tyre_qualifier",
+    "title": "lng_f1990_tyre_qualifier_title",
+    "desc": "lng_f1990_tyre_qualifier_desc",
+}
+TYRE_TEXT = {
+    "historical": {
+        "soft": ("SOFT RACE", "Soft race tyre", "Goodyear D or Pirelli soft, each team on its 1990 supplier. Quicker than the race tyre, wears sooner."),
+        "race": ("RACE", "Race tyre", "Goodyear C or Pirelli medium, each team on its 1990 supplier. The tyre for a race distance."),
+        "qualifier": ("QUALIFIER", "Qualifying tyre", "Goodyear or Pirelli qualifier. The most grip for a lap or two, then it is spent. Qualifying only."),
+    },
+    "goodyear": {
+        "soft": ("GOODYEAR D", "Goodyear D", "Goodyear's soft race compound. Quicker than the C, wears sooner."),
+        "race": ("GOODYEAR C", "Goodyear C", "Goodyear's regular race compound, durable over a race distance."),
+        "qualifier": ("GOODYEAR Q", "Goodyear qualifier", "Goodyear qualifying tyre. The most grip for a lap or two, then it is spent. Qualifying only."),
+    },
+    "pirelli": {
+        "soft": ("PIRELLI SOFT", "Pirelli soft", "Pirelli's soft race compound. A quicker peak than Goodyear's, but it wears and fades sooner."),
+        "race": ("PIRELLI MEDIUM", "Pirelli medium", "Pirelli's race compound. Quick at first, it degrades faster than the Goodyear C."),
+        "qualifier": ("PIRELLI Q", "Pirelli qualifier", "Pirelli qualifying tyre, stronger than Goodyear's over one lap and spent sooner. Qualifying only."),
+    },
 }
 VISUALS = {"Supersoft_f1_1990": SUPERSOFT, "Ultrasoft_f1_1990": ULTRASOFT, "Soft_f1_1990": SOFT}
 
@@ -188,25 +208,52 @@ def points(values):
     return ",".join(str(v) for v in values + [0] * (POINT_SLOTS - len(values)))
 
 
+def race_sets(choice, n):
+    if choice == "balanced":
+        return n, n
+    more = min(3, n + 1)
+    return (more, 2 * n - more) if choice == "softer" else (2 * n - more, more)
+
+
 def presets(fields):
-    allocation = {"_metadata_": ALLOCATION_NAME, "stat_id": ALLOCATION_STAT_ID}
     mandatory = {"_metadata_": MANDATORY_NAME, "stat_id": MANDATORY_STAT_ID}
     for session in ALLOCATION_SESSIONS:
-        if session in SOFT_SESSIONS:
-            allocation[session] = "{{soft_sets}},0,{{soft_sets}},0,0"
-        elif session in QUALI_SESSIONS:
-            allocation[session] = "0,{{quali_sets}},0,0,0"
-        else:
-            allocation[session] = NONE
         mandatory[session] = QUALI_TYRE if session in SHOOTOUT_SESSIONS else NONE
     fields["tyres.allocation_tyre_presets.TyresPerSessionPreset"] = FIELDS["allocation"]
     fields["tyres.mandatory_tyre_presets.TyresPerSessionPreset"] = FIELDS["mandatory"]
-    return [
-        add_row("tyres.allocation_tyre_presets",
-                "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=softer]", allocation),
-        add_row("tyres.mandatory_tyre_presets",
-                "tyres.mandatory_tyre_presets.TyresPerSessionPreset[_metadata_=TyresPerSessionPreset]", mandatory),
-    ]
+    ops = []
+    for choice, (name, stat_id) in PRESETS.items():
+        allocation = {"_metadata_": name, "stat_id": stat_id}
+        for session in ALLOCATION_SESSIONS:
+            if session in SOFT_SESSIONS:
+                allocation[session] = "{{soft_sets}},0,{{soft_sets}},0,0"
+            elif session in QUALI_SESSIONS:
+                allocation[session] = "0,{{quali_sets}},0,0,0"
+            else:
+                allocation[session] = NONE
+        ops.append(add_row("tyres.allocation_tyre_presets",
+                           "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=softer]", allocation))
+        if choice == "balanced":
+            continue
+        for n in SOFT_SETS:
+            soft, race = race_sets(choice, n)
+            for session in sorted(SOFT_SESSIONS):
+                ops.append(set_(f"tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_={name}]", session,
+                                f"{soft},0,{race},0,0", when={"soft_sets": n}))
+    ops.append(add_row("tyres.mandatory_tyre_presets",
+                       "tyres.mandatory_tyre_presets.TyresPerSessionPreset[_metadata_=TyresPerSessionPreset]", mandatory))
+    return ops
+
+
+def tyre_text():
+    ops = []
+    for supplier, compounds in TYRE_TEXT.items():
+        for compound, (name, title, desc) in compounds.items():
+            key = f"lng_f1990_tyre_{compound}"
+            for k, v in ((key, name), (f"{key}_title", title), (f"{key}_desc", desc)):
+                ops.append({"op": "lang.set", "language": "*", "key": k, "value": v,
+                            "when": {"tyre_supplier": supplier}})
+    return ops
 
 
 def compounds(fields):
@@ -245,8 +292,8 @@ def dataset(fields, stock):
         row_fields += [f"{row}.TyreData_0.{f}" for f in FIELDS["tyre_data"]]
         for compound in ("softer", "medium", "harder"):
             values[f"{row}.TyreData_0.compound_{compound}"] = SLOT_COMPOUNDS[compound]
-        for preset in ("softer_preset", "balanced_preset", "harder_preset"):
-            values[f"{row}.TyreData_0.{preset}"] = ALLOCATION_NAME
+        for choice, (name, _) in PRESETS.items():
+            values[f"{row}.TyreData_0.{choice}_preset"] = name
         values[f"{row}.TyreData_0.mandatory_tyres"] = MANDATORY_NAME
     fields[f"{DATASETS}.TrackDataSet"] = FIELDS["dataset_top"] + row_fields
     ops = [add_row(DATASETS, f"{DATASETS}.TrackDataSet[_metadata_=f1_2026]", values)]
@@ -438,7 +485,8 @@ def main():
            + option_tag(fields, stock) + mode(fields) + appends(stock))
     rules = {"schema_version": 1, "fields": fields, "ops": ops}
     (ADDON / "db" / "rules.json").write_text(json.dumps(rules, indent=1, ensure_ascii=False) + "\n")
-    text = {"schema_version": 1, "ops": [{"op": "lang.set", "language": "*", "key": "lng_f1_1990", "value": "F1 1990"}]}
+    text = {"schema_version": 1,
+            "ops": [{"op": "lang.set", "language": "*", "key": "lng_f1_1990", "value": "F1 1990"}] + tyre_text()}
     (ADDON / "db" / "rules_text.json").write_text(json.dumps(text, indent=1) + "\n")
 
 

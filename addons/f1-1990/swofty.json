@@ -114,8 +114,8 @@
     {
       "id": "soft_sets",
       "type": "slider",
-      "label": "Supersoft and soft sets per session",
-      "description": "New supersoft sets, and as many soft sets, handed out in practice 1, practice 2 and the race of a 1990 weekend. At most 3: a car holds at most 9 usable sets of one compound.",
+      "label": "Race tyre sets per session",
+      "description": "Soft race sets, and as many race sets, for practice 1, practice 2 and the race of a 1990 weekend (Balanced allocation; Softer and Harder move one set). At most 3: 9 usable sets of a compound.",
       "min": 1,
       "max": 3,
       "step": 1,
@@ -123,8 +123,17 @@
       "binds": "db"
     },
     {
-      "id": "quali_sets", "type": "slider", "label": "Qualifying sets per session", "min": 1, "max": 4, "step": 1, "default": 4,
-      "description": "New ultrasoft qualifying tyre sets handed out in Friday and Saturday qualifying of a 1990 weekend. Unused sets carry over between the two sessions. At most 4: a car holds at most 9 usable sets of one compound.",
+      "id": "quali_sets", "type": "slider", "label": "Qualifying tyre sets per session", "min": 1, "max": 4, "step": 1, "default": 2,
+      "description": "Qualifying tyre sets for Friday and for Saturday qualifying of a 1990 weekend; 1990 allowed 2. Unused sets carry over to Saturday. At most 4: 9 usable sets of a compound.",
+      "binds": "db"
+    },
+    {
+      "id": "tyre_supplier", "type": "choice", "label": "Tyre supplier", "default": "historical",
+      "description": "1990: each team on its 1990 supplier (Pirelli: Tyrrell, Minardi, Brabham, Dallara). Goodyear lasts longer; Pirelli has a quicker peak and wears sooner. All Goodyear or All Pirelli: every team.",
+      "values": [
+        { "value": "historical", "label": "1990 suppliers" }, { "value": "goodyear", "label": "All Goodyear" },
+        { "value": "pirelli", "label": "All Pirelli" }
+      ],
       "binds": "db"
     },
     {
@@ -197,7 +206,7 @@
     "database": ["db/career.json", "db/grid.json", "db/kit.json", "db/faces.json", "db/grid_standings.json", "db/rules.json", "db/grid_links.json", "db/cars.json", "db/audio.json", "db/rnd.json", "db/ai_difficulty.json",
       "carpack/db/test.json", "carpack/db/ai.json"],
     "assets": ["db/rules_text.json", "faces/assets.json", "lang/grid.json", "lang/engines.json", "db/career-lang.json", "cars/handling.json", "db/rnd-lang.json",
-      "carpack/assets/cars.json", "carpack/assets/ai.json"],
+      "tyres/compounds.json", "carpack/assets/cars.json", "carpack/assets/ai.json"],
     "erp": ["erp/portrait.json", "erp/tracks.json", "erp/frontend.json", "erp/badges.json", "erp/tyre_icons.json", "erp/hq_logos.json", "erp/ui26.json", "erp/wizard.json", "erp/rnd_look.json", "erp/numbers.json"],
     "native": [
       { "dll": "native/f1_1990.dll" }, { "dll": "native/f1_1990_tyres.dll" }, { "dll": "native/f1_1990_tyreclass.dll" },

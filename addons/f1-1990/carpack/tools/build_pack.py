@@ -1,4 +1,4 @@
-"""Build the private 1990 car pack: the 13 car archives, the package's common.erp and its tyre compounds.
+"""Build the private 1990 car pack: the 13 car archives and the package's common.erp.
 
 Each source archive is a porter output patched onto a stock 2026 team archive, so its resources are named
 `eaid://f1_2026_vehicle_package/teams/<donor>/...`. The build renames them byte for byte to
@@ -17,9 +17,9 @@ F1ShowRoomCarModern2026 in `eaid://wote/types`) name the stock set in their Tyre
 carmodel and carshowroommodel layer, A and B-spec, gets a Tyres override naming the renamed set (TYRE_PATHS).
 
 Outputs (relative to the car pack folder `carpack/`, not committed): erp/teams/<folder>/wep/<folder>.erp, erp/teams/common.erp,
-erp/tyrecompounds/tyrecompounds.erp, assets/cars.json (the file.put and group.register ops), assets/ai.json (the AI
-archive ops of tools/ai/build_ai.py) and db/test.json (the test_grand_prix option's seat swaps); the last three are
-committed. A full build fails at the end when an AI archive that assets/ai.json names is not in erp/ai.
+assets/cars.json (the file.put and group.register ops), assets/ai.json (the AI archive ops of tools/ai/build_ai.py) and
+db/test.json (the test_grand_prix option's seat swaps); the last three are committed. The tyre compound archive the
+group.register op names comes from addons/f1-1990/tools/tyres.py (tyres/<supplier>/tyrecompounds.erp). A full build fails at the end when an AI archive that assets/ai.json names is not in erp/ai.
 """
 import argparse
 import json
@@ -62,7 +62,6 @@ SOURCES_B = {
     'arrows': 'gridc13b_arrows',
 }
 COMMON = '/mnt/work/.mp45b/porter_a/tries/tyres13cm3/common.erp'
-TYRES = '2025_asset_groups/f1_2026_vehicle_package/tyrecompounds/tyrecompounds.erp'
 POD_CAMERA = {
     'mclaren': (0.658, 0.119), 'ferrari': (0.652, 0.123), 'williams': (0.626, -0.109), 'benetton': (0.630, 0.166),
     'tyrrell': (0.634, 0.256), 'lotus': (0.602, -0.095), 'march': (0.634, 0.256), 'larrousse': (0.652, 0.123),
@@ -80,8 +79,6 @@ TYRE_PATHS = {'tyre model': TYRE_SET + 'idf/tyres.idf?context=render',
               'wet material': TYRE_SET + 'idf/tyres_wet.emb?context=wet'}
 TYRE_LAYERS = {'-carmodel.layer': 'F1CarModern2026', '-carshowroommodel.layer': 'F1ShowRoomCarModern2026'}
 STOCK_TYRES = f'{C.SOURCE_PACKAGE}/shared/tyres/'.encode()
-COMPOUNDS = (b'F1_2026_', b'F1_1990_')
-COMPOUND_FILE = (b'/tyrecompounds/f1_2026_compounds.vcmpd', b'/tyrecompounds/f1_1990_compounds.vcmpd')
 TYRE_GROUP = (b'F1_2026', b'F1_1990')
 
 OLD = f'eaid://{C.SOURCE_PACKAGE}/'.encode()
@@ -329,22 +326,6 @@ def set_tyre_group(e):
     return done
 
 
-def rename_compounds(e):
-    vcmpd = [r for r in e.res if kind(r) == 'VCMPD']
-    if len(vcmpd) != 1:
-        raise ValueError(f'{len(vcmpd)} VCMPD resources')
-    r = vcmpd[0]
-    data = e.frag_data(r, 0)
-    if data.count(COMPOUNDS[0]) != 16 or COMPOUNDS[1] in data:
-        raise ValueError(f'{r.name}: {data.count(COMPOUNDS[0])} {COMPOUNDS[0].decode()} compounds')
-    e.set_frag(r, 0, data.replace(COMPOUNDS[0], COMPOUNDS[1]))
-    name = r.name.encode()
-    if not name.endswith(COMPOUND_FILE[0]):
-        raise ValueError(f'{r.name}: not the 2026 compound file')
-    r.name = (name[:-len(COMPOUND_FILE[0])] + COMPOUND_FILE[1]).decode()
-    return r.name
-
-
 def build_plain(src, out):
     e = erpw.Erp(src)
     renamed, rewritten = rename_archive(e)
@@ -358,16 +339,14 @@ def build_plain(src, out):
     if any(STOCK_TYRES in r.name.encode() for r in e.res):
         raise ValueError(f'{src}: a resource keeps a {STOCK_TYRES.decode()} name')
     groups = set_tyre_group(e)
-    compounds = rename_compounds(e) if any(kind(r) == 'VCMPD' for r in e.res) else None
     os.makedirs(os.path.dirname(out), exist_ok=True)
     e.to_file(out)
     return {'source': src, 'resources': len(e.res), 'renamed': renamed, 'rewritten': rewritten,
-            'tyre_set': len(tyres), 'tyre_groups': groups, 'compounds': compounds, 'bytes': os.path.getsize(out)}
+            'tyre_set': len(tyres), 'tyre_groups': groups, 'bytes': os.path.getsize(out)}
 
 
 def ops():
     out = [{'op': 'file.put', 'source': f'{SRC}/erp/teams/common.erp', 'target': C.COMMON_ARCHIVE},
-           {'op': 'file.put', 'source': f'{SRC}/erp/tyrecompounds/tyrecompounds.erp', 'target': C.TYRE_ARCHIVE},
            {'op': 'group.register', 'group': C.TYRE_GROUP, 'erp': C.TYRE_ARCHIVE,
             'template': f'asset_groups/{C.SOURCE_PACKAGE}/tyrecompounds/tyrecompounds.assetgroup'}]
     for c in C.CARS:
@@ -413,14 +392,12 @@ def test_ops():
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n', 1)[0])
-    ap.add_argument('--game', default='/mnt/gaming/SteamLibrary/steamapps/common/F1 25',
-                    help='F1 25 folder (read only), for the stock tyre compounds')
     ap.add_argument('--tries', default=TRIES, help='folder with the porter tries named in SOURCES')
     ap.add_argument('--common', default=COMMON, help='the 13-inch common.erp (f1_2026 names)')
     ap.add_argument('--only', help='comma-separated teams to build')
     ap.add_argument('--ops-only', action='store_true', help='write assets/cars.json and db/test.json and stop')
     ap.add_argument('--bspec-only', action='store_true', help='build only the B-spec archives')
-    ap.add_argument('--common-only', action='store_true', help='build only common.erp and the tyre compounds')
+    ap.add_argument('--common-only', action='store_true', help='build only common.erp')
     args = ap.parse_args()
     with open(os.path.join(PACK, 'assets', 'cars.json'), 'w') as f:
         f.write(json.dumps(ops(), indent=1) + '\n')
@@ -447,10 +424,7 @@ def main():
                   f'+{x["folder_copies"]} folder copies, audio {x["audio"]}, {x["bytes"] / 1e6:.1f} MB')
     if not only and not args.bspec_only:
         report['common'] = build_plain(args.common, os.path.join(PACK, 'erp', 'teams', 'common.erp'))
-        report['tyres'] = build_plain(os.path.join(args.game, TYRES),
-                                      os.path.join(PACK, 'erp', 'tyrecompounds', 'tyrecompounds.erp'))
         print('common', report['common'])
-        print('tyres', report['tyres'])
     if args.common_only:
         return 0
     with open(os.path.join(PACK, 'erp', 'build_report_b.json' if args.bspec_only else 'build_report.json'), 'w') as f:

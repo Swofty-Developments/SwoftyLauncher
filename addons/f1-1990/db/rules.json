@@ -1042,6 +1042,108 @@
    "table": "tyres.allocation_tyre_presets",
    "from": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=softer]",
    "set": {
+    "_metadata_": "f1_1990_softer",
+    "stat_id": "15",
+    "Practice1": "{{soft_sets}},0,{{soft_sets}},0,0",
+    "Practice2": "{{soft_sets}},0,{{soft_sets}},0,0",
+    "Practice3": "0,0,0,0,0",
+    "Qualifying1": "0,{{quali_sets}},0,0,0",
+    "Qualifying2": "0,0,0,0,0",
+    "Qualifying3": "0,0,0,0,0",
+    "Race": "{{soft_sets}},0,{{soft_sets}},0,0",
+    "Race2": "0,0,0,0,0",
+    "Race3": "0,0,0,0,0",
+    "SprintShootout1": "0,{{quali_sets}},0,0,0",
+    "SprintShootout2": "0,0,0,0,0",
+    "SprintShootout3": "0,0,0,0,0"
+   }
+  },
+  {
+   "op": "set",
+   "select": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=f1_1990_softer]",
+   "field": "Practice1",
+   "value": "2,0,0,0,0",
+   "when": {
+    "soft_sets": 1
+   }
+  },
+  {
+   "op": "set",
+   "select": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=f1_1990_softer]",
+   "field": "Practice2",
+   "value": "2,0,0,0,0",
+   "when": {
+    "soft_sets": 1
+   }
+  },
+  {
+   "op": "set",
+   "select": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=f1_1990_softer]",
+   "field": "Race",
+   "value": "2,0,0,0,0",
+   "when": {
+    "soft_sets": 1
+   }
+  },
+  {
+   "op": "set",
+   "select": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=f1_1990_softer]",
+   "field": "Practice1",
+   "value": "3,0,1,0,0",
+   "when": {
+    "soft_sets": 2
+   }
+  },
+  {
+   "op": "set",
+   "select": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=f1_1990_softer]",
+   "field": "Practice2",
+   "value": "3,0,1,0,0",
+   "when": {
+    "soft_sets": 2
+   }
+  },
+  {
+   "op": "set",
+   "select": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=f1_1990_softer]",
+   "field": "Race",
+   "value": "3,0,1,0,0",
+   "when": {
+    "soft_sets": 2
+   }
+  },
+  {
+   "op": "set",
+   "select": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=f1_1990_softer]",
+   "field": "Practice1",
+   "value": "3,0,3,0,0",
+   "when": {
+    "soft_sets": 3
+   }
+  },
+  {
+   "op": "set",
+   "select": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=f1_1990_softer]",
+   "field": "Practice2",
+   "value": "3,0,3,0,0",
+   "when": {
+    "soft_sets": 3
+   }
+  },
+  {
+   "op": "set",
+   "select": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=f1_1990_softer]",
+   "field": "Race",
+   "value": "3,0,3,0,0",
+   "when": {
+    "soft_sets": 3
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "tyres.allocation_tyre_presets",
+   "from": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=softer]",
+   "set": {
     "_metadata_": "f1_1990",
     "stat_id": "14",
     "Practice1": "{{soft_sets}},0,{{soft_sets}},0,0",
@@ -1056,6 +1158,108 @@
     "SprintShootout1": "0,{{quali_sets}},0,0,0",
     "SprintShootout2": "0,0,0,0,0",
     "SprintShootout3": "0,0,0,0,0"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "tyres.allocation_tyre_presets",
+   "from": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=softer]",
+   "set": {
+    "_metadata_": "f1_1990_harder",
+    "stat_id": "16",
+    "Practice1": "{{soft_sets}},0,{{soft_sets}},0,0",
+    "Practice2": "{{soft_sets}},0,{{soft_sets}},0,0",
+    "Practice3": "0,0,0,0,0",
+    "Qualifying1": "0,{{quali_sets}},0,0,0",
+    "Qualifying2": "0,0,0,0,0",
+    "Qualifying3": "0,0,0,0,0",
+    "Race": "{{soft_sets}},0,{{soft_sets}},0,0",
+    "Race2": "0,0,0,0,0",
+    "Race3": "0,0,0,0,0",
+    "SprintShootout1": "0,{{quali_sets}},0,0,0",
+    "SprintShootout2": "0,0,0,0,0",
+    "SprintShootout3": "0,0,0,0,0"
+   }
+  },
+  {
+   "op": "set",
+   "select": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=f1_1990_harder]",
+   "field": "Practice1",
+   "value": "0,0,2,0,0",
+   "when": {
+    "soft_sets": 1
+   }
+  },
+  {
+   "op": "set",
+   "select": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=f1_1990_harder]",
+   "field": "Practice2",
+   "value": "0,0,2,0,0",
+   "when": {
+    "soft_sets": 1
+   }
+  },
+  {
+   "op": "set",
+   "select": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=f1_1990_harder]",
+   "field": "Race",
+   "value": "0,0,2,0,0",
+   "when": {
+    "soft_sets": 1
+   }
+  },
+  {
+   "op": "set",
+   "select": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=f1_1990_harder]",
+   "field": "Practice1",
+   "value": "1,0,3,0,0",
+   "when": {
+    "soft_sets": 2
+   }
+  },
+  {
+   "op": "set",
+   "select": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=f1_1990_harder]",
+   "field": "Practice2",
+   "value": "1,0,3,0,0",
+   "when": {
+    "soft_sets": 2
+   }
+  },
+  {
+   "op": "set",
+   "select": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=f1_1990_harder]",
+   "field": "Race",
+   "value": "1,0,3,0,0",
+   "when": {
+    "soft_sets": 2
+   }
+  },
+  {
+   "op": "set",
+   "select": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=f1_1990_harder]",
+   "field": "Practice1",
+   "value": "3,0,3,0,0",
+   "when": {
+    "soft_sets": 3
+   }
+  },
+  {
+   "op": "set",
+   "select": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=f1_1990_harder]",
+   "field": "Practice2",
+   "value": "3,0,3,0,0",
+   "when": {
+    "soft_sets": 3
+   }
+  },
+  {
+   "op": "set",
+   "select": "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=f1_1990_harder]",
+   "field": "Race",
+   "value": "3,0,3,0,0",
+   "when": {
+    "soft_sets": 3
    }
   },
   {
@@ -1092,9 +1296,9 @@
     "icon_code": "",
     "colour": "-1762525",
     "texture_name": "SuperSoft_f1_1990",
-    "display_name": "lng_tyre_compound_supersoft",
-    "title": "lng_tyre_compound_supersoft_title",
-    "desc": "lng_tyre_compound_supersoft_desc"
+    "display_name": "lng_f1990_tyre_soft",
+    "title": "lng_f1990_tyre_soft_title",
+    "desc": "lng_f1990_tyre_soft_desc"
    }
   },
   {
@@ -1110,9 +1314,9 @@
     "icon_code": "",
     "colour": "-6860657",
     "texture_name": "UltraSoft_f1_1990",
-    "display_name": "lng_tyre_compound_ultrasoft",
-    "title": "lng_tyre_compound_ultrasoft_title",
-    "desc": "lng_tyre_compound_ultrasoft_desc"
+    "display_name": "lng_f1990_tyre_qualifier",
+    "title": "lng_f1990_tyre_qualifier_title",
+    "desc": "lng_f1990_tyre_qualifier_desc"
    }
   },
   {
@@ -1128,9 +1332,9 @@
     "icon_code": "",
     "colour": "-77565",
     "texture_name": "Soft_f1_1990",
-    "display_name": "lng_tyre_compound_soft",
-    "title": "lng_tyre_compound_soft_title",
-    "desc": "lng_tyre_compound_soft_desc"
+    "display_name": "lng_f1990_tyre_race",
+    "title": "lng_f1990_tyre_race_title",
+    "desc": "lng_f1990_tyre_race_desc"
    }
   },
   {
@@ -1379,205 +1583,205 @@
     "TrackData_0.TyreData_0.compound_softer": "C4",
     "TrackData_0.TyreData_0.compound_medium": "C5",
     "TrackData_0.TyreData_0.compound_harder": "C3",
-    "TrackData_0.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_0.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_0.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_0.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_0.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_0.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_1.TyreData_0.compound_softer": "C4",
     "TrackData_1.TyreData_0.compound_medium": "C5",
     "TrackData_1.TyreData_0.compound_harder": "C3",
-    "TrackData_1.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_1.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_1.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_1.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_1.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_1.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_2.TyreData_0.compound_softer": "C4",
     "TrackData_2.TyreData_0.compound_medium": "C5",
     "TrackData_2.TyreData_0.compound_harder": "C3",
-    "TrackData_2.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_2.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_2.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_2.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_2.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_2.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_3.TyreData_0.compound_softer": "C4",
     "TrackData_3.TyreData_0.compound_medium": "C5",
     "TrackData_3.TyreData_0.compound_harder": "C3",
-    "TrackData_3.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_3.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_3.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_3.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_3.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_3.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_4.TyreData_0.compound_softer": "C4",
     "TrackData_4.TyreData_0.compound_medium": "C5",
     "TrackData_4.TyreData_0.compound_harder": "C3",
-    "TrackData_4.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_4.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_4.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_4.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_4.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_4.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_5.TyreData_0.compound_softer": "C4",
     "TrackData_5.TyreData_0.compound_medium": "C5",
     "TrackData_5.TyreData_0.compound_harder": "C3",
-    "TrackData_5.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_5.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_5.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_5.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_5.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_5.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_6.TyreData_0.compound_softer": "C4",
     "TrackData_6.TyreData_0.compound_medium": "C5",
     "TrackData_6.TyreData_0.compound_harder": "C3",
-    "TrackData_6.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_6.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_6.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_6.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_6.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_6.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_7.TyreData_0.compound_softer": "C4",
     "TrackData_7.TyreData_0.compound_medium": "C5",
     "TrackData_7.TyreData_0.compound_harder": "C3",
-    "TrackData_7.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_7.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_7.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_7.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_7.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_7.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_8.TyreData_0.compound_softer": "C4",
     "TrackData_8.TyreData_0.compound_medium": "C5",
     "TrackData_8.TyreData_0.compound_harder": "C3",
-    "TrackData_8.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_8.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_8.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_8.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_8.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_8.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_9.TyreData_0.compound_softer": "C4",
     "TrackData_9.TyreData_0.compound_medium": "C5",
     "TrackData_9.TyreData_0.compound_harder": "C3",
-    "TrackData_9.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_9.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_9.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_9.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_9.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_9.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_10.TyreData_0.compound_softer": "C4",
     "TrackData_10.TyreData_0.compound_medium": "C5",
     "TrackData_10.TyreData_0.compound_harder": "C3",
-    "TrackData_10.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_10.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_10.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_10.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_10.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_10.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_11.TyreData_0.compound_softer": "C4",
     "TrackData_11.TyreData_0.compound_medium": "C5",
     "TrackData_11.TyreData_0.compound_harder": "C3",
-    "TrackData_11.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_11.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_11.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_11.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_11.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_11.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_12.TyreData_0.compound_softer": "C4",
     "TrackData_12.TyreData_0.compound_medium": "C5",
     "TrackData_12.TyreData_0.compound_harder": "C3",
-    "TrackData_12.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_12.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_12.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_12.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_12.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_12.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_13.TyreData_0.compound_softer": "C4",
     "TrackData_13.TyreData_0.compound_medium": "C5",
     "TrackData_13.TyreData_0.compound_harder": "C3",
-    "TrackData_13.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_13.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_13.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_13.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_13.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_13.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_14.TyreData_0.compound_softer": "C4",
     "TrackData_14.TyreData_0.compound_medium": "C5",
     "TrackData_14.TyreData_0.compound_harder": "C3",
-    "TrackData_14.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_14.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_14.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_14.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_14.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_14.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_15.TyreData_0.compound_softer": "C4",
     "TrackData_15.TyreData_0.compound_medium": "C5",
     "TrackData_15.TyreData_0.compound_harder": "C3",
-    "TrackData_15.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_15.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_15.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_15.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_15.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_15.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_16.TyreData_0.compound_softer": "C4",
     "TrackData_16.TyreData_0.compound_medium": "C5",
     "TrackData_16.TyreData_0.compound_harder": "C3",
-    "TrackData_16.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_16.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_16.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_16.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_16.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_16.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_17.TyreData_0.compound_softer": "C4",
     "TrackData_17.TyreData_0.compound_medium": "C5",
     "TrackData_17.TyreData_0.compound_harder": "C3",
-    "TrackData_17.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_17.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_17.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_17.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_17.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_17.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_18.TyreData_0.compound_softer": "C4",
     "TrackData_18.TyreData_0.compound_medium": "C5",
     "TrackData_18.TyreData_0.compound_harder": "C3",
-    "TrackData_18.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_18.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_18.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_18.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_18.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_18.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_19.TyreData_0.compound_softer": "C4",
     "TrackData_19.TyreData_0.compound_medium": "C5",
     "TrackData_19.TyreData_0.compound_harder": "C3",
-    "TrackData_19.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_19.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_19.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_19.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_19.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_19.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_20.TyreData_0.compound_softer": "C4",
     "TrackData_20.TyreData_0.compound_medium": "C5",
     "TrackData_20.TyreData_0.compound_harder": "C3",
-    "TrackData_20.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_20.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_20.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_20.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_20.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_20.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_21.TyreData_0.compound_softer": "C4",
     "TrackData_21.TyreData_0.compound_medium": "C5",
     "TrackData_21.TyreData_0.compound_harder": "C3",
-    "TrackData_21.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_21.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_21.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_21.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_21.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_21.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_22.TyreData_0.compound_softer": "C4",
     "TrackData_22.TyreData_0.compound_medium": "C5",
     "TrackData_22.TyreData_0.compound_harder": "C3",
-    "TrackData_22.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_22.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_22.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_22.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_22.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_22.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_23.TyreData_0.compound_softer": "C4",
     "TrackData_23.TyreData_0.compound_medium": "C5",
     "TrackData_23.TyreData_0.compound_harder": "C3",
-    "TrackData_23.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_23.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_23.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_23.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_23.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_23.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_24.TyreData_0.compound_softer": "C4",
     "TrackData_24.TyreData_0.compound_medium": "C5",
     "TrackData_24.TyreData_0.compound_harder": "C3",
-    "TrackData_24.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_24.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_24.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_24.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_24.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_24.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_25.TyreData_0.compound_softer": "C4",
     "TrackData_25.TyreData_0.compound_medium": "C5",
     "TrackData_25.TyreData_0.compound_harder": "C3",
-    "TrackData_25.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_25.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_25.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_25.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_25.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_25.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_26.TyreData_0.compound_softer": "C4",
     "TrackData_26.TyreData_0.compound_medium": "C5",
     "TrackData_26.TyreData_0.compound_harder": "C3",
-    "TrackData_26.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_26.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_26.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_26.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_26.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_26.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_27.TyreData_0.compound_softer": "C4",
     "TrackData_27.TyreData_0.compound_medium": "C5",
     "TrackData_27.TyreData_0.compound_harder": "C3",
-    "TrackData_27.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_27.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_27.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_27.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_27.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_27.TyreData_0.mandatory_tyres": "f1_1990_mandatory",
     "TrackData_28.TyreData_0.compound_softer": "C4",
     "TrackData_28.TyreData_0.compound_medium": "C5",
     "TrackData_28.TyreData_0.compound_harder": "C3",
-    "TrackData_28.TyreData_0.softer_preset": "f1_1990",
+    "TrackData_28.TyreData_0.softer_preset": "f1_1990_softer",
     "TrackData_28.TyreData_0.balanced_preset": "f1_1990",
-    "TrackData_28.TyreData_0.harder_preset": "f1_1990",
+    "TrackData_28.TyreData_0.harder_preset": "f1_1990_harder",
     "TrackData_28.TyreData_0.mandatory_tyres": "f1_1990_mandatory"
    }
   },

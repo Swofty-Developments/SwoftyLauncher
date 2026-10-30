@@ -6,6 +6,249 @@
    "language": "*",
    "key": "lng_f1_1990",
    "value": "F1 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_soft",
+   "value": "SOFT RACE",
+   "when": {
+    "tyre_supplier": "historical"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_soft_title",
+   "value": "Soft race tyre",
+   "when": {
+    "tyre_supplier": "historical"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_soft_desc",
+   "value": "Goodyear D or Pirelli soft, each team on its 1990 supplier. Quicker than the race tyre, wears sooner.",
+   "when": {
+    "tyre_supplier": "historical"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_race",
+   "value": "RACE",
+   "when": {
+    "tyre_supplier": "historical"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_race_title",
+   "value": "Race tyre",
+   "when": {
+    "tyre_supplier": "historical"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_race_desc",
+   "value": "Goodyear C or Pirelli medium, each team on its 1990 supplier. The tyre for a race distance.",
+   "when": {
+    "tyre_supplier": "historical"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_qualifier",
+   "value": "QUALIFIER",
+   "when": {
+    "tyre_supplier": "historical"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_qualifier_title",
+   "value": "Qualifying tyre",
+   "when": {
+    "tyre_supplier": "historical"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_qualifier_desc",
+   "value": "Goodyear or Pirelli qualifier. The most grip for a lap or two, then it is spent. Qualifying only.",
+   "when": {
+    "tyre_supplier": "historical"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_soft",
+   "value": "GOODYEAR D",
+   "when": {
+    "tyre_supplier": "goodyear"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_soft_title",
+   "value": "Goodyear D",
+   "when": {
+    "tyre_supplier": "goodyear"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_soft_desc",
+   "value": "Goodyear's soft race compound. Quicker than the C, wears sooner.",
+   "when": {
+    "tyre_supplier": "goodyear"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_race",
+   "value": "GOODYEAR C",
+   "when": {
+    "tyre_supplier": "goodyear"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_race_title",
+   "value": "Goodyear C",
+   "when": {
+    "tyre_supplier": "goodyear"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_race_desc",
+   "value": "Goodyear's regular race compound, durable over a race distance.",
+   "when": {
+    "tyre_supplier": "goodyear"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_qualifier",
+   "value": "GOODYEAR Q",
+   "when": {
+    "tyre_supplier": "goodyear"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_qualifier_title",
+   "value": "Goodyear qualifier",
+   "when": {
+    "tyre_supplier": "goodyear"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_qualifier_desc",
+   "value": "Goodyear qualifying tyre. The most grip for a lap or two, then it is spent. Qualifying only.",
+   "when": {
+    "tyre_supplier": "goodyear"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_soft",
+   "value": "PIRELLI SOFT",
+   "when": {
+    "tyre_supplier": "pirelli"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_soft_title",
+   "value": "Pirelli soft",
+   "when": {
+    "tyre_supplier": "pirelli"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_soft_desc",
+   "value": "Pirelli's soft race compound. A quicker peak than Goodyear's, but it wears and fades sooner.",
+   "when": {
+    "tyre_supplier": "pirelli"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_race",
+   "value": "PIRELLI MEDIUM",
+   "when": {
+    "tyre_supplier": "pirelli"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_race_title",
+   "value": "Pirelli medium",
+   "when": {
+    "tyre_supplier": "pirelli"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_race_desc",
+   "value": "Pirelli's race compound. Quick at first, it degrades faster than the Goodyear C.",
+   "when": {
+    "tyre_supplier": "pirelli"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_qualifier",
+   "value": "PIRELLI Q",
+   "when": {
+    "tyre_supplier": "pirelli"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_qualifier_title",
+   "value": "Pirelli qualifier",
+   "when": {
+    "tyre_supplier": "pirelli"
+   }
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_tyre_qualifier_desc",
+   "value": "Pirelli qualifying tyre, stronger than Goodyear's over one lap and spent sooner. Qualifying only.",
+   "when": {
+    "tyre_supplier": "pirelli"
+   }
   }
  ]
 }

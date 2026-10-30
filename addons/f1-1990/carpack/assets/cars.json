@@ -7,11 +7,6 @@
    "target": "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp"
   },
   {
-   "op": "file.put",
-   "source": "carpack/erp/tyrecompounds/tyrecompounds.erp",
-   "target": "2025_asset_groups/f1_1990_vehicle_package/tyrecompounds/tyrecompounds.erp"
-  },
-  {
    "op": "group.register",
    "group": "asset_groups/f1_1990_vehicle_package/tyrecompounds/tyrecompounds.assetgroup",
    "erp": "2025_asset_groups/f1_1990_vehicle_package/tyrecompounds/tyrecompounds.erp",

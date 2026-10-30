@@ -215,6 +215,10 @@ Fails when a grid op changes a stock record other than a row count, or when a se
 
 Writes `cars/handling/<ers>_<tyre_size>/<folder>_handling.erp` (one archive per 1990 car and option pair, holding its handling file under `eaid://f1_1990_vehicle_package/teams/<stem>/handling/<stem>.vtf`, and also under the folder name when the stem differs), `cars/handling.json` (the `file.put` ops keyed by `ers` and `tyre_size`) and `db/cars.json` (the `f1_1990` package row and the 13 vehicle rows). Reads the car table from `cars.py`, the team scalars through `season.py`, the vehicle field list from Custom Grid Size's `db/grid.json`, and the stock 2026 handling files from `--game`. Without `--write` it builds into `build/` and exits 1 when that differs from the shipped files. Tuning constants: `BASE_HP`, `BASE_MASS`, `SPREAD`, `FAMILIES`, `TYRES_13`, `BEAD_13`, `ALLOY_13`.
 
+## tyres.py
+
+`tyres.py --game <F1 25> [--check]` writes `tyres/<supplier>/tyrecompounds.erp` for `historical`, `goodyear` and `pirelli` and `tyres/compounds.json` (the `file.put` ops keyed by `tyre_supplier`). Each archive is the stock 2026 compound archive with one compound file, its 16 compounds written twice, as `F1_1990_*` (Goodyear teams) and `F1_1990P_*` (Pirelli teams), and the uso, sup and sof codes scaled per supplier (`GOODYEAR`, `PIRELLI`). With `--check` it exits 1 when that differs from the shipped files. The handling side, `TyrePhysicsGroup` per team, is `PIRELLI_TEAMS` in `build_cars.py`.
+
 ## cars.py
 
 The 1990 car table: team, vehicle row (`<token>_1990`, the grid lane's tokens), performance tier, car folder (asset_filename and AI data), donor 2026 folder, resource stem, chassis, engine. Shared by `build_cars.py` and `carpack/tools/build_pack.py`.

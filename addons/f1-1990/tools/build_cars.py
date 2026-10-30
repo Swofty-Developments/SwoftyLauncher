@@ -63,7 +63,8 @@ Option tyre_size stock (an A/B test value, `ers` ignored): the donor's stock 202
 package, with only the tyre physics group changed: 2026 tyres, suspension, engine, ERS, mass, aero and DRS, shipped as
 cars/handling/stock/<folder>_handling.erp.
 
-Every variant sets Chassis/TyrePhysicsGroup to F1_1990. The game builds a wheel's compound name from it
+Every variant sets Chassis/TyrePhysicsGroup to F1_1990, or F1_1990P for the 1990 Pirelli teams (Tyrrell, Minardi,
+Brabham, Dallara); tools/tyres.py writes both groups' compounds. The game builds a wheel's compound name from it
 ("%s_%s%c": group, physics_code, f or r, lowercased; 0x142ea2300) and looks that up in one global map that every loaded
 VCMPD asset fills by compound name. Activation (0x144747c60) skips a name already there and deactivation (0x1447482b0)
 erases by name, so two assets sharing names lose them both when either unloads, and a wheel whose name is missing gets
@@ -212,6 +213,8 @@ STOCK_MESH_WIDTH = {'Front': 0.339, 'Rear': 0.418}
 BEAD_13 = 0.175
 ALLOY_13 = 0.182
 TYRE_GROUP = 'F1_1990'
+PIRELLI_GROUP = 'F1_1990P'
+PIRELLI_TEAMS = ('tyrrell', 'minardi', 'brabham', 'dallara')
 MOMENTS = (b'MOIX', b'MOIY', b'MOIZ')
 PERIOD_DRAG = 1.25
 PERIOD_MASS = 500.0 + 72.0 + 48.0
@@ -493,8 +496,9 @@ def tyres(root, size):
     return TYRES_13['Rear']['radius'] / stock['Rear']
 
 
-def tyre_group(root):
-    set_value(section(root, b'Chassis'), b'TyrePhysicsGroup', TYRE_GROUP)
+def tyre_group(root, c):
+    group = PIRELLI_GROUP if c.team in PIRELLI_TEAMS else TYRE_GROUP
+    set_value(section(root, b'Chassis'), b'TyrePhysicsGroup', group)
 
 
 def period(root, ratio, cut):
@@ -585,7 +589,7 @@ def convert(root, row, ers, size, handling):
     c = row['car']
     eng_row = row['engine']
     cut = PERIOD[handling]
-    tyre_group(root)
+    tyre_group(root, c)
     ERS_MODES[ers](root)
     rolling = tyres(root, size)
 
@@ -700,7 +704,7 @@ def build(game, out):
             ops.append({'op': 'file.put', 'when': {'ers': ers, 'tyre_size': tyre_size, 'handling': handling},
                         'source': rel, 'target': C.handling_archive(c)})
         root = vtf.parse(f0)
-        tyre_group(root)
+        tyre_group(root, c)
         rel = f'cars/handling/stock/{c.folder}_handling.erp'
         files[rel] = handling_archive(e, r, C.handling_names(c), vtf.write(root), vtf.tsmd(root, version))
         ops.append({'op': 'file.put', 'when': {'tyre_size': 'stock'}, 'source': rel, 'target': C.handling_archive(c)})
