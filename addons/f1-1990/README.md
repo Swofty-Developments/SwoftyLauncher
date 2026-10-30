@@ -4,7 +4,7 @@ Adds a 1990 Driver Career next to the 2025 and 2026 ones. 1990 careers live in t
 
 ## Grid (db/grid.json, db/grid_standings.json, lang/grid.json, tools/grid.py)
 
-The 1990 teams (`<team>_1990`), drivers (`f1990_<driver>`), their looks, holders and entrants, and the entrant lists `f1_1990`, `f1_1990_driver_pool` and `f1_career_1990` are new rows; no 2025 or 2026 row changes. The **Cars** setting (`cars`) is 22 (default: the 11 strongest teams) or 26 (adds Larrousse and Dallara; needs 26-car track layers). Every 1990 driver wears his team's 1990 suit and gloves (`registry/kit.json`, `db/kit.json`, `tools/kit.py`): 13 new suit and gloves rows with their own archives, worn only by the 1990 looks and team kits. Their pit and garage crews wear the same colours (`erp/crew.json`, `tools/crew.py`). See `tools/README.md`.
+The 1990 teams (`<team>_1990`), drivers (`f1990_<driver>`), their looks, holders and entrants, and the entrant lists `f1_1990`, `f1_1990_driver_pool` and `f1_career_1990` are new rows; no 2025 or 2026 row changes. The **Cars** setting (`cars`) is 22 (default: the 11 strongest teams) or 26 (adds Larrousse and Dallara; needs 26-car track layers). Every 1990 driver wears his team's 1990 suit and gloves (`registry/kit.json`, `db/kit.json`, `tools/kit.py`): 13 new suit and gloves rows with their own archives, worn only by the 1990 looks and team kits. Their pit and garage crews wear the same colours (`erp/crew.json`, `tools/crew.py`, option `crew_kit`). See `tools/README.md`.
 
 ### Faces (faces/, db/faces.json, tools/faces.py)
 

@@ -49,6 +49,11 @@
       "binds": "native"
     },
     {
+      "id": "crew_kit", "type": "toggle", "label": "1990 pit crew kit", "default": true,
+      "description": "The pit and garage crews of the 1990 teams wear their team colours. Off: they wear the default crew uniform and crew_livery.erp is left stock.",
+      "binds": "db"
+    },
+    {
       "id": "rnd_look_1990", "type": "toggle", "label": "1990 R&D colours and icons", "default": true,
       "description": "Gives each R&D department a 1990 colour and a period icon in 1990 careers only; 2025 and 2026 careers keep the stock look.",
       "binds": "native"

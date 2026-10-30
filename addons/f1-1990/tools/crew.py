@@ -193,7 +193,8 @@ def build(stock, sheet=None):
                 path = folder / f"{stem}.{i}"
                 path.write_bytes(data)
                 paths.append(str(path.relative_to(ROOT)))
-            ops.append({"op": "add-resource", "erp": ERP, "resource": name, "type": kind, "sources": paths})
+            ops.append({"op": "add-resource", "when": {"crew_kit": True}, "erp": ERP, "resource": name, "type": kind,
+                        "sources": paths})
 
         for part, img in tex.items():
             head, data, srv = texture_frags(e, part, label, img)

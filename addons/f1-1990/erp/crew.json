@@ -3,6 +3,9 @@
  "ops": [
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-mclaren__/textures/f90-mclaren___racecrew_shirt_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -13,6 +16,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-mclaren__/textures/f90-mclaren___racecrew_shirt_d.tif",
    "type": "GfxSRVResource",
@@ -22,6 +28,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-mclaren__/textures/f90-mclaren___racecrew_trousers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -32,6 +41,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-mclaren__/textures/f90-mclaren___racecrew_trousers_d.tif",
    "type": "GfxSRVResource",
@@ -41,6 +53,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-mclaren__/textures/f90-mclaren___racecrew_shorts_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -51,6 +66,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-mclaren__/textures/f90-mclaren___racecrew_shorts_d.tif",
    "type": "GfxSRVResource",
@@ -60,6 +78,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-mclaren__/textures/f90-mclaren___racecrew_trainers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -70,6 +91,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-mclaren__/textures/f90-mclaren___racecrew_trainers_d.tif",
    "type": "GfxSRVResource",
@@ -79,6 +103,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-mclaren__/textures/f90-mclaren___rainjacket_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -89,6 +116,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-mclaren__/textures/f90-mclaren___rainjacket_d.tif",
    "type": "GfxSRVResource",
@@ -98,6 +128,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-mclaren__/textures/f90-mclaren___racecrew_headphones_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -108,6 +141,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-mclaren__/textures/f90-mclaren___racecrew_headphones_d.tif",
    "type": "GfxSRVResource",
@@ -117,6 +153,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-mclaren__/materials/racecrew_shirt.material",
    "type": "GfxMaterialRes",
@@ -126,6 +165,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-mclaren__/materials/racecrew_trousers.material",
    "type": "GfxMaterialRes",
@@ -135,6 +177,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-mclaren__/materials/racecrew_shorts.material",
    "type": "GfxMaterialRes",
@@ -144,6 +189,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-mclaren__/materials/racecrew_trainers.material",
    "type": "GfxMaterialRes",
@@ -153,6 +201,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-mclaren__/materials/racecrew_rainjacket.material",
    "type": "GfxMaterialRes",
@@ -162,6 +213,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-mclaren__/materials/racecrew_headphones.material",
    "type": "GfxMaterialRes",
@@ -171,6 +225,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/male/idf/racecrew_kitpart.emb?context=2026-mclaren_1990",
    "type": "GfxMatBindRes",
@@ -180,6 +237,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/female/idf/racecrew_kitpart.emb?context=2026-mclaren_1990",
    "type": "GfxMatBindRes",
@@ -189,6 +249,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/kitpart_assets/generic/headwear/headphones_02/idf/headphones_02.emb?context=2026-mclaren_1990",
    "type": "GfxMatBindRes",
@@ -198,6 +261,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ferrari__/textures/f90-ferrari___racecrew_shirt_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -208,6 +274,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ferrari__/textures/f90-ferrari___racecrew_shirt_d.tif",
    "type": "GfxSRVResource",
@@ -217,6 +286,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ferrari__/textures/f90-ferrari___racecrew_trousers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -227,6 +299,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ferrari__/textures/f90-ferrari___racecrew_trousers_d.tif",
    "type": "GfxSRVResource",
@@ -236,6 +311,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ferrari__/textures/f90-ferrari___racecrew_shorts_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -246,6 +324,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ferrari__/textures/f90-ferrari___racecrew_shorts_d.tif",
    "type": "GfxSRVResource",
@@ -255,6 +336,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ferrari__/textures/f90-ferrari___racecrew_trainers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -265,6 +349,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ferrari__/textures/f90-ferrari___racecrew_trainers_d.tif",
    "type": "GfxSRVResource",
@@ -274,6 +361,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ferrari__/textures/f90-ferrari___rainjacket_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -284,6 +374,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ferrari__/textures/f90-ferrari___rainjacket_d.tif",
    "type": "GfxSRVResource",
@@ -293,6 +386,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ferrari__/textures/f90-ferrari___racecrew_headphones_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -303,6 +399,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ferrari__/textures/f90-ferrari___racecrew_headphones_d.tif",
    "type": "GfxSRVResource",
@@ -312,6 +411,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ferrari__/materials/racecrew_shirt.material",
    "type": "GfxMaterialRes",
@@ -321,6 +423,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ferrari__/materials/racecrew_trousers.material",
    "type": "GfxMaterialRes",
@@ -330,6 +435,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ferrari__/materials/racecrew_shorts.material",
    "type": "GfxMaterialRes",
@@ -339,6 +447,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ferrari__/materials/racecrew_trainers.material",
    "type": "GfxMaterialRes",
@@ -348,6 +459,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ferrari__/materials/racecrew_rainjacket.material",
    "type": "GfxMaterialRes",
@@ -357,6 +471,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ferrari__/materials/racecrew_headphones.material",
    "type": "GfxMaterialRes",
@@ -366,6 +483,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/male/idf/racecrew_kitpart.emb?context=2026-ferrari_1990",
    "type": "GfxMatBindRes",
@@ -375,6 +495,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/female/idf/racecrew_kitpart.emb?context=2026-ferrari_1990",
    "type": "GfxMatBindRes",
@@ -384,6 +507,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/kitpart_assets/generic/headwear/headphones_02/idf/headphones_02.emb?context=2026-ferrari_1990",
    "type": "GfxMatBindRes",
@@ -393,6 +519,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-williams_/textures/f90-williams__racecrew_shirt_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -403,6 +532,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-williams_/textures/f90-williams__racecrew_shirt_d.tif",
    "type": "GfxSRVResource",
@@ -412,6 +544,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-williams_/textures/f90-williams__racecrew_trousers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -422,6 +557,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-williams_/textures/f90-williams__racecrew_trousers_d.tif",
    "type": "GfxSRVResource",
@@ -431,6 +569,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-williams_/textures/f90-williams__racecrew_shorts_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -441,6 +582,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-williams_/textures/f90-williams__racecrew_shorts_d.tif",
    "type": "GfxSRVResource",
@@ -450,6 +594,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-williams_/textures/f90-williams__racecrew_trainers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -460,6 +607,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-williams_/textures/f90-williams__racecrew_trainers_d.tif",
    "type": "GfxSRVResource",
@@ -469,6 +619,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-williams_/textures/f90-williams__rainjacket_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -479,6 +632,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-williams_/textures/f90-williams__rainjacket_d.tif",
    "type": "GfxSRVResource",
@@ -488,6 +644,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-williams_/textures/f90-williams__racecrew_headphones_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -498,6 +657,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-williams_/textures/f90-williams__racecrew_headphones_d.tif",
    "type": "GfxSRVResource",
@@ -507,6 +669,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-williams_/materials/racecrew_shirt.material",
    "type": "GfxMaterialRes",
@@ -516,6 +681,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-williams_/materials/racecrew_trousers.material",
    "type": "GfxMaterialRes",
@@ -525,6 +693,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-williams_/materials/racecrew_shorts.material",
    "type": "GfxMaterialRes",
@@ -534,6 +705,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-williams_/materials/racecrew_trainers.material",
    "type": "GfxMaterialRes",
@@ -543,6 +717,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-williams_/materials/racecrew_rainjacket.material",
    "type": "GfxMaterialRes",
@@ -552,6 +729,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-williams_/materials/racecrew_headphones.material",
    "type": "GfxMaterialRes",
@@ -561,6 +741,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/male/idf/racecrew_kitpart.emb?context=2026-williams_1990",
    "type": "GfxMatBindRes",
@@ -570,6 +753,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/female/idf/racecrew_kitpart.emb?context=2026-williams_1990",
    "type": "GfxMatBindRes",
@@ -579,6 +765,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/kitpart_assets/generic/headwear/headphones_02/idf/headphones_02.emb?context=2026-williams_1990",
    "type": "GfxMatBindRes",
@@ -588,6 +777,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-benetton_/textures/f90-benetton__racecrew_shirt_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -598,6 +790,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-benetton_/textures/f90-benetton__racecrew_shirt_d.tif",
    "type": "GfxSRVResource",
@@ -607,6 +802,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-benetton_/textures/f90-benetton__racecrew_trousers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -617,6 +815,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-benetton_/textures/f90-benetton__racecrew_trousers_d.tif",
    "type": "GfxSRVResource",
@@ -626,6 +827,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-benetton_/textures/f90-benetton__racecrew_shorts_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -636,6 +840,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-benetton_/textures/f90-benetton__racecrew_shorts_d.tif",
    "type": "GfxSRVResource",
@@ -645,6 +852,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-benetton_/textures/f90-benetton__racecrew_trainers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -655,6 +865,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-benetton_/textures/f90-benetton__racecrew_trainers_d.tif",
    "type": "GfxSRVResource",
@@ -664,6 +877,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-benetton_/textures/f90-benetton__rainjacket_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -674,6 +890,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-benetton_/textures/f90-benetton__rainjacket_d.tif",
    "type": "GfxSRVResource",
@@ -683,6 +902,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-benetton_/textures/f90-benetton__racecrew_headphones_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -693,6 +915,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-benetton_/textures/f90-benetton__racecrew_headphones_d.tif",
    "type": "GfxSRVResource",
@@ -702,6 +927,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-benetton_/materials/racecrew_shirt.material",
    "type": "GfxMaterialRes",
@@ -711,6 +939,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-benetton_/materials/racecrew_trousers.material",
    "type": "GfxMaterialRes",
@@ -720,6 +951,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-benetton_/materials/racecrew_shorts.material",
    "type": "GfxMaterialRes",
@@ -729,6 +963,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-benetton_/materials/racecrew_trainers.material",
    "type": "GfxMaterialRes",
@@ -738,6 +975,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-benetton_/materials/racecrew_rainjacket.material",
    "type": "GfxMaterialRes",
@@ -747,6 +987,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-benetton_/materials/racecrew_headphones.material",
    "type": "GfxMaterialRes",
@@ -756,6 +999,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/male/idf/racecrew_kitpart.emb?context=2026-benetton_1990",
    "type": "GfxMatBindRes",
@@ -765,6 +1011,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/female/idf/racecrew_kitpart.emb?context=2026-benetton_1990",
    "type": "GfxMatBindRes",
@@ -774,6 +1023,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/kitpart_assets/generic/headwear/headphones_02/idf/headphones_02.emb?context=2026-benetton_1990",
    "type": "GfxMatBindRes",
@@ -783,6 +1035,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-tyrrell__/textures/f90-tyrrell___racecrew_shirt_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -793,6 +1048,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-tyrrell__/textures/f90-tyrrell___racecrew_shirt_d.tif",
    "type": "GfxSRVResource",
@@ -802,6 +1060,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-tyrrell__/textures/f90-tyrrell___racecrew_trousers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -812,6 +1073,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-tyrrell__/textures/f90-tyrrell___racecrew_trousers_d.tif",
    "type": "GfxSRVResource",
@@ -821,6 +1085,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-tyrrell__/textures/f90-tyrrell___racecrew_shorts_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -831,6 +1098,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-tyrrell__/textures/f90-tyrrell___racecrew_shorts_d.tif",
    "type": "GfxSRVResource",
@@ -840,6 +1110,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-tyrrell__/textures/f90-tyrrell___racecrew_trainers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -850,6 +1123,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-tyrrell__/textures/f90-tyrrell___racecrew_trainers_d.tif",
    "type": "GfxSRVResource",
@@ -859,6 +1135,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-tyrrell__/textures/f90-tyrrell___rainjacket_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -869,6 +1148,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-tyrrell__/textures/f90-tyrrell___rainjacket_d.tif",
    "type": "GfxSRVResource",
@@ -878,6 +1160,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-tyrrell__/textures/f90-tyrrell___racecrew_headphones_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -888,6 +1173,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-tyrrell__/textures/f90-tyrrell___racecrew_headphones_d.tif",
    "type": "GfxSRVResource",
@@ -897,6 +1185,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-tyrrell__/materials/racecrew_shirt.material",
    "type": "GfxMaterialRes",
@@ -906,6 +1197,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-tyrrell__/materials/racecrew_trousers.material",
    "type": "GfxMaterialRes",
@@ -915,6 +1209,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-tyrrell__/materials/racecrew_shorts.material",
    "type": "GfxMaterialRes",
@@ -924,6 +1221,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-tyrrell__/materials/racecrew_trainers.material",
    "type": "GfxMaterialRes",
@@ -933,6 +1233,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-tyrrell__/materials/racecrew_rainjacket.material",
    "type": "GfxMaterialRes",
@@ -942,6 +1245,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-tyrrell__/materials/racecrew_headphones.material",
    "type": "GfxMaterialRes",
@@ -951,6 +1257,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/male/idf/racecrew_kitpart.emb?context=2026-tyrrell_1990",
    "type": "GfxMatBindRes",
@@ -960,6 +1269,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/female/idf/racecrew_kitpart.emb?context=2026-tyrrell_1990",
    "type": "GfxMatBindRes",
@@ -969,6 +1281,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/kitpart_assets/generic/headwear/headphones_02/idf/headphones_02.emb?context=2026-tyrrell_1990",
    "type": "GfxMatBindRes",
@@ -978,6 +1293,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-lotus____/textures/f90-lotus_____racecrew_shirt_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -988,6 +1306,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-lotus____/textures/f90-lotus_____racecrew_shirt_d.tif",
    "type": "GfxSRVResource",
@@ -997,6 +1318,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-lotus____/textures/f90-lotus_____racecrew_trousers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1007,6 +1331,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-lotus____/textures/f90-lotus_____racecrew_trousers_d.tif",
    "type": "GfxSRVResource",
@@ -1016,6 +1343,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-lotus____/textures/f90-lotus_____racecrew_shorts_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1026,6 +1356,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-lotus____/textures/f90-lotus_____racecrew_shorts_d.tif",
    "type": "GfxSRVResource",
@@ -1035,6 +1368,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-lotus____/textures/f90-lotus_____racecrew_trainers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1045,6 +1381,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-lotus____/textures/f90-lotus_____racecrew_trainers_d.tif",
    "type": "GfxSRVResource",
@@ -1054,6 +1393,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-lotus____/textures/f90-lotus_____rainjacket_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1064,6 +1406,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-lotus____/textures/f90-lotus_____rainjacket_d.tif",
    "type": "GfxSRVResource",
@@ -1073,6 +1418,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-lotus____/textures/f90-lotus_____racecrew_headphones_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1083,6 +1431,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-lotus____/textures/f90-lotus_____racecrew_headphones_d.tif",
    "type": "GfxSRVResource",
@@ -1092,6 +1443,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-lotus____/materials/racecrew_shirt.material",
    "type": "GfxMaterialRes",
@@ -1101,6 +1455,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-lotus____/materials/racecrew_trousers.material",
    "type": "GfxMaterialRes",
@@ -1110,6 +1467,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-lotus____/materials/racecrew_shorts.material",
    "type": "GfxMaterialRes",
@@ -1119,6 +1479,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-lotus____/materials/racecrew_trainers.material",
    "type": "GfxMaterialRes",
@@ -1128,6 +1491,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-lotus____/materials/racecrew_rainjacket.material",
    "type": "GfxMaterialRes",
@@ -1137,6 +1503,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-lotus____/materials/racecrew_headphones.material",
    "type": "GfxMaterialRes",
@@ -1146,6 +1515,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/male/idf/racecrew_kitpart.emb?context=2026-lotus_1990",
    "type": "GfxMatBindRes",
@@ -1155,6 +1527,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/female/idf/racecrew_kitpart.emb?context=2026-lotus_1990",
    "type": "GfxMatBindRes",
@@ -1164,6 +1539,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/kitpart_assets/generic/headwear/headphones_02/idf/headphones_02.emb?context=2026-lotus_1990",
    "type": "GfxMatBindRes",
@@ -1173,6 +1551,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-march____/textures/f90-march_____racecrew_shirt_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1183,6 +1564,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-march____/textures/f90-march_____racecrew_shirt_d.tif",
    "type": "GfxSRVResource",
@@ -1192,6 +1576,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-march____/textures/f90-march_____racecrew_trousers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1202,6 +1589,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-march____/textures/f90-march_____racecrew_trousers_d.tif",
    "type": "GfxSRVResource",
@@ -1211,6 +1601,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-march____/textures/f90-march_____racecrew_shorts_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1221,6 +1614,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-march____/textures/f90-march_____racecrew_shorts_d.tif",
    "type": "GfxSRVResource",
@@ -1230,6 +1626,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-march____/textures/f90-march_____racecrew_trainers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1240,6 +1639,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-march____/textures/f90-march_____racecrew_trainers_d.tif",
    "type": "GfxSRVResource",
@@ -1249,6 +1651,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-march____/textures/f90-march_____rainjacket_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1259,6 +1664,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-march____/textures/f90-march_____rainjacket_d.tif",
    "type": "GfxSRVResource",
@@ -1268,6 +1676,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-march____/textures/f90-march_____racecrew_headphones_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1278,6 +1689,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-march____/textures/f90-march_____racecrew_headphones_d.tif",
    "type": "GfxSRVResource",
@@ -1287,6 +1701,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-march____/materials/racecrew_shirt.material",
    "type": "GfxMaterialRes",
@@ -1296,6 +1713,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-march____/materials/racecrew_trousers.material",
    "type": "GfxMaterialRes",
@@ -1305,6 +1725,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-march____/materials/racecrew_shorts.material",
    "type": "GfxMaterialRes",
@@ -1314,6 +1737,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-march____/materials/racecrew_trainers.material",
    "type": "GfxMaterialRes",
@@ -1323,6 +1749,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-march____/materials/racecrew_rainjacket.material",
    "type": "GfxMaterialRes",
@@ -1332,6 +1761,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-march____/materials/racecrew_headphones.material",
    "type": "GfxMaterialRes",
@@ -1341,6 +1773,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/male/idf/racecrew_kitpart.emb?context=2026-leytonhouse_1990",
    "type": "GfxMatBindRes",
@@ -1350,6 +1785,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/female/idf/racecrew_kitpart.emb?context=2026-leytonhouse_1990",
    "type": "GfxMatBindRes",
@@ -1359,6 +1797,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/kitpart_assets/generic/headwear/headphones_02/idf/headphones_02.emb?context=2026-leytonhouse_1990",
    "type": "GfxMatBindRes",
@@ -1368,6 +1809,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-larrousse/textures/f90-larrousse_racecrew_shirt_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1378,6 +1822,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-larrousse/textures/f90-larrousse_racecrew_shirt_d.tif",
    "type": "GfxSRVResource",
@@ -1387,6 +1834,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-larrousse/textures/f90-larrousse_racecrew_trousers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1397,6 +1847,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-larrousse/textures/f90-larrousse_racecrew_trousers_d.tif",
    "type": "GfxSRVResource",
@@ -1406,6 +1859,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-larrousse/textures/f90-larrousse_racecrew_shorts_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1416,6 +1872,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-larrousse/textures/f90-larrousse_racecrew_shorts_d.tif",
    "type": "GfxSRVResource",
@@ -1425,6 +1884,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-larrousse/textures/f90-larrousse_racecrew_trainers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1435,6 +1897,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-larrousse/textures/f90-larrousse_racecrew_trainers_d.tif",
    "type": "GfxSRVResource",
@@ -1444,6 +1909,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-larrousse/textures/f90-larrousse_rainjacket_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1454,6 +1922,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-larrousse/textures/f90-larrousse_rainjacket_d.tif",
    "type": "GfxSRVResource",
@@ -1463,6 +1934,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-larrousse/textures/f90-larrousse_racecrew_headphones_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1473,6 +1947,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-larrousse/textures/f90-larrousse_racecrew_headphones_d.tif",
    "type": "GfxSRVResource",
@@ -1482,6 +1959,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-larrousse/materials/racecrew_shirt.material",
    "type": "GfxMaterialRes",
@@ -1491,6 +1971,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-larrousse/materials/racecrew_trousers.material",
    "type": "GfxMaterialRes",
@@ -1500,6 +1983,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-larrousse/materials/racecrew_shorts.material",
    "type": "GfxMaterialRes",
@@ -1509,6 +1995,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-larrousse/materials/racecrew_trainers.material",
    "type": "GfxMaterialRes",
@@ -1518,6 +2007,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-larrousse/materials/racecrew_rainjacket.material",
    "type": "GfxMaterialRes",
@@ -1527,6 +2019,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-larrousse/materials/racecrew_headphones.material",
    "type": "GfxMaterialRes",
@@ -1536,6 +2031,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/male/idf/racecrew_kitpart.emb?context=2026-larrousse_1990",
    "type": "GfxMatBindRes",
@@ -1545,6 +2043,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/female/idf/racecrew_kitpart.emb?context=2026-larrousse_1990",
    "type": "GfxMatBindRes",
@@ -1554,6 +2055,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/kitpart_assets/generic/headwear/headphones_02/idf/headphones_02.emb?context=2026-larrousse_1990",
    "type": "GfxMatBindRes",
@@ -1563,6 +2067,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ligier___/textures/f90-ligier____racecrew_shirt_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1573,6 +2080,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ligier___/textures/f90-ligier____racecrew_shirt_d.tif",
    "type": "GfxSRVResource",
@@ -1582,6 +2092,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ligier___/textures/f90-ligier____racecrew_trousers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1592,6 +2105,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ligier___/textures/f90-ligier____racecrew_trousers_d.tif",
    "type": "GfxSRVResource",
@@ -1601,6 +2117,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ligier___/textures/f90-ligier____racecrew_shorts_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1611,6 +2130,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ligier___/textures/f90-ligier____racecrew_shorts_d.tif",
    "type": "GfxSRVResource",
@@ -1620,6 +2142,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ligier___/textures/f90-ligier____racecrew_trainers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1630,6 +2155,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ligier___/textures/f90-ligier____racecrew_trainers_d.tif",
    "type": "GfxSRVResource",
@@ -1639,6 +2167,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ligier___/textures/f90-ligier____rainjacket_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1649,6 +2180,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ligier___/textures/f90-ligier____rainjacket_d.tif",
    "type": "GfxSRVResource",
@@ -1658,6 +2192,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ligier___/textures/f90-ligier____racecrew_headphones_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1668,6 +2205,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ligier___/textures/f90-ligier____racecrew_headphones_d.tif",
    "type": "GfxSRVResource",
@@ -1677,6 +2217,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ligier___/materials/racecrew_shirt.material",
    "type": "GfxMaterialRes",
@@ -1686,6 +2229,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ligier___/materials/racecrew_trousers.material",
    "type": "GfxMaterialRes",
@@ -1695,6 +2241,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ligier___/materials/racecrew_shorts.material",
    "type": "GfxMaterialRes",
@@ -1704,6 +2253,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ligier___/materials/racecrew_trainers.material",
    "type": "GfxMaterialRes",
@@ -1713,6 +2265,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ligier___/materials/racecrew_rainjacket.material",
    "type": "GfxMaterialRes",
@@ -1722,6 +2277,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-ligier___/materials/racecrew_headphones.material",
    "type": "GfxMaterialRes",
@@ -1731,6 +2289,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/male/idf/racecrew_kitpart.emb?context=2026-ligier_1990",
    "type": "GfxMatBindRes",
@@ -1740,6 +2301,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/female/idf/racecrew_kitpart.emb?context=2026-ligier_1990",
    "type": "GfxMatBindRes",
@@ -1749,6 +2313,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/kitpart_assets/generic/headwear/headphones_02/idf/headphones_02.emb?context=2026-ligier_1990",
    "type": "GfxMatBindRes",
@@ -1758,6 +2325,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-minardi__/textures/f90-minardi___racecrew_shirt_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1768,6 +2338,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-minardi__/textures/f90-minardi___racecrew_shirt_d.tif",
    "type": "GfxSRVResource",
@@ -1777,6 +2350,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-minardi__/textures/f90-minardi___racecrew_trousers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1787,6 +2363,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-minardi__/textures/f90-minardi___racecrew_trousers_d.tif",
    "type": "GfxSRVResource",
@@ -1796,6 +2375,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-minardi__/textures/f90-minardi___racecrew_shorts_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1806,6 +2388,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-minardi__/textures/f90-minardi___racecrew_shorts_d.tif",
    "type": "GfxSRVResource",
@@ -1815,6 +2400,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-minardi__/textures/f90-minardi___racecrew_trainers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1825,6 +2413,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-minardi__/textures/f90-minardi___racecrew_trainers_d.tif",
    "type": "GfxSRVResource",
@@ -1834,6 +2425,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-minardi__/textures/f90-minardi___rainjacket_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1844,6 +2438,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-minardi__/textures/f90-minardi___rainjacket_d.tif",
    "type": "GfxSRVResource",
@@ -1853,6 +2450,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-minardi__/textures/f90-minardi___racecrew_headphones_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1863,6 +2463,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-minardi__/textures/f90-minardi___racecrew_headphones_d.tif",
    "type": "GfxSRVResource",
@@ -1872,6 +2475,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-minardi__/materials/racecrew_shirt.material",
    "type": "GfxMaterialRes",
@@ -1881,6 +2487,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-minardi__/materials/racecrew_trousers.material",
    "type": "GfxMaterialRes",
@@ -1890,6 +2499,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-minardi__/materials/racecrew_shorts.material",
    "type": "GfxMaterialRes",
@@ -1899,6 +2511,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-minardi__/materials/racecrew_trainers.material",
    "type": "GfxMaterialRes",
@@ -1908,6 +2523,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-minardi__/materials/racecrew_rainjacket.material",
    "type": "GfxMaterialRes",
@@ -1917,6 +2535,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-minardi__/materials/racecrew_headphones.material",
    "type": "GfxMaterialRes",
@@ -1926,6 +2547,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/male/idf/racecrew_kitpart.emb?context=2026-minardi_1990",
    "type": "GfxMatBindRes",
@@ -1935,6 +2559,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/female/idf/racecrew_kitpart.emb?context=2026-minardi_1990",
    "type": "GfxMatBindRes",
@@ -1944,6 +2571,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/kitpart_assets/generic/headwear/headphones_02/idf/headphones_02.emb?context=2026-minardi_1990",
    "type": "GfxMatBindRes",
@@ -1953,6 +2583,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-brabham__/textures/f90-brabham___racecrew_shirt_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1963,6 +2596,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-brabham__/textures/f90-brabham___racecrew_shirt_d.tif",
    "type": "GfxSRVResource",
@@ -1972,6 +2608,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-brabham__/textures/f90-brabham___racecrew_trousers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -1982,6 +2621,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-brabham__/textures/f90-brabham___racecrew_trousers_d.tif",
    "type": "GfxSRVResource",
@@ -1991,6 +2633,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-brabham__/textures/f90-brabham___racecrew_shorts_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -2001,6 +2646,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-brabham__/textures/f90-brabham___racecrew_shorts_d.tif",
    "type": "GfxSRVResource",
@@ -2010,6 +2658,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-brabham__/textures/f90-brabham___racecrew_trainers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -2020,6 +2671,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-brabham__/textures/f90-brabham___racecrew_trainers_d.tif",
    "type": "GfxSRVResource",
@@ -2029,6 +2683,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-brabham__/textures/f90-brabham___rainjacket_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -2039,6 +2696,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-brabham__/textures/f90-brabham___rainjacket_d.tif",
    "type": "GfxSRVResource",
@@ -2048,6 +2708,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-brabham__/textures/f90-brabham___racecrew_headphones_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -2058,6 +2721,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-brabham__/textures/f90-brabham___racecrew_headphones_d.tif",
    "type": "GfxSRVResource",
@@ -2067,6 +2733,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-brabham__/materials/racecrew_shirt.material",
    "type": "GfxMaterialRes",
@@ -2076,6 +2745,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-brabham__/materials/racecrew_trousers.material",
    "type": "GfxMaterialRes",
@@ -2085,6 +2757,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-brabham__/materials/racecrew_shorts.material",
    "type": "GfxMaterialRes",
@@ -2094,6 +2769,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-brabham__/materials/racecrew_trainers.material",
    "type": "GfxMaterialRes",
@@ -2103,6 +2781,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-brabham__/materials/racecrew_rainjacket.material",
    "type": "GfxMaterialRes",
@@ -2112,6 +2793,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-brabham__/materials/racecrew_headphones.material",
    "type": "GfxMaterialRes",
@@ -2121,6 +2805,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/male/idf/racecrew_kitpart.emb?context=2026-brabham_1990",
    "type": "GfxMatBindRes",
@@ -2130,6 +2817,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/female/idf/racecrew_kitpart.emb?context=2026-brabham_1990",
    "type": "GfxMatBindRes",
@@ -2139,6 +2829,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/kitpart_assets/generic/headwear/headphones_02/idf/headphones_02.emb?context=2026-brabham_1990",
    "type": "GfxMatBindRes",
@@ -2148,6 +2841,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-dallara__/textures/f90-dallara___racecrew_shirt_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -2158,6 +2854,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-dallara__/textures/f90-dallara___racecrew_shirt_d.tif",
    "type": "GfxSRVResource",
@@ -2167,6 +2866,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-dallara__/textures/f90-dallara___racecrew_trousers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -2177,6 +2879,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-dallara__/textures/f90-dallara___racecrew_trousers_d.tif",
    "type": "GfxSRVResource",
@@ -2186,6 +2891,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-dallara__/textures/f90-dallara___racecrew_shorts_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -2196,6 +2904,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-dallara__/textures/f90-dallara___racecrew_shorts_d.tif",
    "type": "GfxSRVResource",
@@ -2205,6 +2916,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-dallara__/textures/f90-dallara___racecrew_trainers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -2215,6 +2929,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-dallara__/textures/f90-dallara___racecrew_trainers_d.tif",
    "type": "GfxSRVResource",
@@ -2224,6 +2941,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-dallara__/textures/f90-dallara___rainjacket_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -2234,6 +2954,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-dallara__/textures/f90-dallara___rainjacket_d.tif",
    "type": "GfxSRVResource",
@@ -2243,6 +2966,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-dallara__/textures/f90-dallara___racecrew_headphones_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -2253,6 +2979,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-dallara__/textures/f90-dallara___racecrew_headphones_d.tif",
    "type": "GfxSRVResource",
@@ -2262,6 +2991,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-dallara__/materials/racecrew_shirt.material",
    "type": "GfxMaterialRes",
@@ -2271,6 +3003,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-dallara__/materials/racecrew_trousers.material",
    "type": "GfxMaterialRes",
@@ -2280,6 +3015,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-dallara__/materials/racecrew_shorts.material",
    "type": "GfxMaterialRes",
@@ -2289,6 +3027,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-dallara__/materials/racecrew_trainers.material",
    "type": "GfxMaterialRes",
@@ -2298,6 +3039,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-dallara__/materials/racecrew_rainjacket.material",
    "type": "GfxMaterialRes",
@@ -2307,6 +3051,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-dallara__/materials/racecrew_headphones.material",
    "type": "GfxMaterialRes",
@@ -2316,6 +3063,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/male/idf/racecrew_kitpart.emb?context=2026-dallara_1990",
    "type": "GfxMatBindRes",
@@ -2325,6 +3075,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/female/idf/racecrew_kitpart.emb?context=2026-dallara_1990",
    "type": "GfxMatBindRes",
@@ -2334,6 +3087,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/kitpart_assets/generic/headwear/headphones_02/idf/headphones_02.emb?context=2026-dallara_1990",
    "type": "GfxMatBindRes",
@@ -2343,6 +3099,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-arrows___/textures/f90-arrows____racecrew_shirt_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -2353,6 +3112,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-arrows___/textures/f90-arrows____racecrew_shirt_d.tif",
    "type": "GfxSRVResource",
@@ -2362,6 +3124,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-arrows___/textures/f90-arrows____racecrew_trousers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -2372,6 +3137,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-arrows___/textures/f90-arrows____racecrew_trousers_d.tif",
    "type": "GfxSRVResource",
@@ -2381,6 +3149,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-arrows___/textures/f90-arrows____racecrew_shorts_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -2391,6 +3162,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-arrows___/textures/f90-arrows____racecrew_shorts_d.tif",
    "type": "GfxSRVResource",
@@ -2400,6 +3174,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-arrows___/textures/f90-arrows____racecrew_trainers_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -2410,6 +3187,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-arrows___/textures/f90-arrows____racecrew_trainers_d.tif",
    "type": "GfxSRVResource",
@@ -2419,6 +3199,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-arrows___/textures/f90-arrows____rainjacket_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -2429,6 +3212,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-arrows___/textures/f90-arrows____rainjacket_d.tif",
    "type": "GfxSRVResource",
@@ -2438,6 +3224,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-arrows___/textures/f90-arrows____racecrew_headphones_d.tif.image",
    "type": "GfxSurfaceRes",
@@ -2448,6 +3237,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-arrows___/textures/f90-arrows____racecrew_headphones_d.tif",
    "type": "GfxSRVResource",
@@ -2457,6 +3249,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-arrows___/materials/racecrew_shirt.material",
    "type": "GfxMaterialRes",
@@ -2466,6 +3261,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-arrows___/materials/racecrew_trousers.material",
    "type": "GfxMaterialRes",
@@ -2475,6 +3273,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-arrows___/materials/racecrew_shorts.material",
    "type": "GfxMaterialRes",
@@ -2484,6 +3285,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-arrows___/materials/racecrew_trainers.material",
    "type": "GfxMaterialRes",
@@ -2493,6 +3297,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-arrows___/materials/racecrew_rainjacket.material",
    "type": "GfxMaterialRes",
@@ -2502,6 +3309,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/team_livery/f90-arrows___/materials/racecrew_headphones.material",
    "type": "GfxMaterialRes",
@@ -2511,6 +3321,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/male/idf/racecrew_kitpart.emb?context=2026-arrows_1990",
    "type": "GfxMatBindRes",
@@ -2520,6 +3333,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/racecrew/female/idf/racecrew_kitpart.emb?context=2026-arrows_1990",
    "type": "GfxMatBindRes",
@@ -2529,6 +3345,9 @@
   },
   {
    "op": "add-resource",
+   "when": {
+    "crew_kit": true
+   },
    "erp": "2025_asset_groups/animation_package/scenes/garagecrew/2026/crew_livery.erp",
    "resource": "eaid://character_package/kitpart_assets/generic/headwear/headphones_02/idf/headphones_02.emb?context=2026-arrows_1990",
    "type": "GfxMatBindRes",
