@@ -148,21 +148,22 @@ void begin(Stop &s, uint8_t *seq, float rate)
 {
     s.done = seq;
     s.name = sequence_name(seq);
-    auto row = g_table.find(pit::key(s.name));
+    const pit::Phases *row = pit::find(g_table, s.name);
     float frame = at<float>(seq, 0x5c);
-    if (row == g_table.end()) {
+    if (!row) {
         if (g_logged++ < kLogStops)
-            swofty::log("[f1-1990] pit phases: sequence \"%s\" (crew speed %.3f) has no phase row; the game's speed stays",
+            swofty::log("[f1-1990] pit phases: sequence \"%s\" (crew speed %.3f) has no phase row or family; the game's "
+                        "speed stays",
                         s.name.c_str(), double(rate));
         return;
     }
-    const pit::Phases &p = row->second;
-    s.plan = pit::plan(p, rate, g_fps);
-    if (!s.plan.valid || frame < p.start - 2 || frame > p.start + 12) {
+    const pit::Phases &p = *row;
+    s.plan = pit::plan(p, rate, g_fps, frame);
+    if (!s.plan.valid) {
         if (g_logged++ < kLogStops)
-            swofty::log("[f1-1990] pit phases: sequence \"%s\" crew speed %.3f at frame %.1f (start %.0f); the game's speed "
-                        "stays",
-                        s.name.c_str(), double(rate), double(frame), double(p.start));
+            swofty::log("[f1-1990] pit phases: sequence \"%s\" crew speed %.3f at frame %.1f (start %.0f, stop %.0f) has "
+                        "no work left to hold; the game's speed stays",
+                        s.name.c_str(), double(rate), double(frame), double(p.start), double(p.stop));
         return;
     }
     s.active = true;
@@ -170,11 +171,12 @@ void begin(Stop &s, uint8_t *seq, float rate)
     s.rate = rate;
     s.factor = 1.f;
     s.elapsed = 0;
-    s.stock = (p.stop - p.start) / (g_fps * rate) + (p.jc > p.stop ? (p.jc - p.stop) / g_fps : 0.f);
+    float from = std::max(frame, 0.f);
+    s.stock = (p.stop - from) / (g_fps * rate) + (p.jc > p.stop ? (p.jc - p.stop) / g_fps : 0.f);
     if (g_logged++ < kLogStops)
-        swofty::log("[f1-1990] pit phases: \"%s\" crew speed %.3f -> 1.0; +%.2f s as %zu hold(s) of %.2f s at the gun-on "
-                    "frames and a jack stretch from frame %.0f at %.2f; stop %.2f s as before",
-                    s.name.c_str(), double(rate), double(s.plan.extra), s.plan.holds,
+        swofty::log("[f1-1990] pit phases: \"%s\" crew speed %.3f -> 1.0 from frame %.1f (start %.0f); +%.2f s as %zu "
+                    "hold(s) of %.2f s at the gun-on frames and a jack stretch from frame %.0f at %.2f; stop %.2f s as before",
+                    s.name.c_str(), double(rate), double(frame), double(p.start), double(s.plan.extra), s.plan.holds,
                     double(s.plan.holds ? s.plan.hold_left[0] : 0.f), double(s.plan.window_start),
                     double(s.plan.window_rate), double(s.stock));
 }

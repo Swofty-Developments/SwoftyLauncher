@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include <cmath>
 #include <cstdio>
+#include <string>
+#include <unordered_map>
 
 #include "pit_phases.hpp"
 
@@ -41,7 +43,7 @@ int main()
     Phases std258{13, 90, 98, {77, 82, 83}, 3, 91};
     for (float target : {7.f, 9.5f, 12.2f}) {
         float rate = 2.58f / target;
-        Plan plan = f1990::pit::plan(std258, rate, 30.f);
+        Plan plan = f1990::pit::plan(std258, rate, 30.f, std258.start);
         float held, slow;
         float t = run(plan, std258, 30.f, 1.f / 60.f, held, slow);
         float want = stock_time(std258, rate, 30.f);
@@ -52,64 +54,74 @@ int main()
     }
 
     Phases flon{17, 155, 158, {77, 81, 83, 120}, 4, 146};
-    Plan p2 = plan(flon, 0.5f, 30.f);
+    Plan p2 = plan(flon, 0.5f, 30.f, flon.start);
     float held, slow;
     float t2 = run(p2, flon, 30.f, 1.f / 30.f, held, slow);
     check("mistake variant keeps the stock total", p2.valid && std::fabs(t2 - stock_time(flon, 0.5f, 30.f)) < 0.15f);
 
-    check("rate 1 is left alone", !plan(std258, 1.0f, 30.f).valid);
-    check("faster than nominal is left alone", !plan(std258, 1.3f, 30.f).valid);
+    check("rate 1 is left alone", !plan(std258, 1.0f, 30.f, 13).valid);
+    check("faster than nominal is left alone", !plan(std258, 1.3f, 30.f, 13).valid);
 
     Phases noguns{13, 90, 98, {}, 0, 91};
-    Plan p3 = plan(noguns, 0.3f, 30.f);
+    Plan p3 = plan(noguns, 0.3f, 30.f, noguns.start);
     float t3 = run(p3, noguns, 30.f, 1.f / 60.f, held, slow);
     check("no gun frames: all in the jack stretch", p3.valid && p3.holds == 0 && std::fabs(t3 - stock_time(noguns, 0.3f, 30.f)) < 0.15f);
 
     Phases nothing{13, 90, 98, {}, 0, -1};
-    check("no gun and no jack frames: stock", !plan(nothing, 0.3f, 30.f).valid);
+    check("no gun and no jack frames: stock", !plan(nothing, 0.3f, 30.f, 13).valid);
 
-    // The game's update: Start writes the crew speed into base and rate; each update scales dt by rate on entry,
-    // advances the frame, rewrites rate as factor x base, and Stop puts both back to 1. The wrap drives the plan
-    // before each update.
+    // The game's update, as the 1990 log shows it: the crew speed is in base and rate when the wrap first looks, at
+    // frame 0.5 of F1StartJobDoStandardStop258 (Start 13), and Start writes it again. Each update scales dt by rate on
+    // entry, advances the frame, rewrites rate as factor x base; Stop puts both back to 1. The wrap drives the plan
+    // from its first look.
     for (float factor : {1.0f, 1.5f}) {
-        float r = 2.58f / 9.5f, base = 1, rate = 1, frame = 0, t = 0, dt = 1.f / 60.f, fac = 1, stopped_at = -1;
-        bool started = false, active = false, stopped = false;
-        Plan p = plan(std258, r, 30.f);
-        float held = 0;
+        float r = 0.252f, base = r, rate = r, frame = 0.5f, t = 0, dt = 1.f / 60.f, fac = 1, end_at = -1;
+        bool active = false, stopped = false, begun = false;
+        Plan p;
+        float held = 0, first_rate = -1;
         while (t < 30) {
-            if (!active && started && base < 0.999f && frame < std258.start + 12) {
-                active = true;
+            if (!begun && base > 0.01f && base < 0.999f) {
+                begun = true;
+                p = plan(std258, base, 30.f, frame);
+                active = p.valid;
                 fac = 1;
             }
             if (active) {
                 active = drive(p, fac, frame, dt, base, rate);
                 held += rate == 0.f ? dt : 0;
+                if (first_rate < 0)
+                    first_rate = rate;
             }
-            float scaled = dt * rate;
             float before = frame;
-            frame += scaled * 30.f;
-            if (!started && before < std258.start && frame >= std258.start) {
-                started = true;
+            frame += dt * rate * 30.f;
+            if (before < std258.start && frame >= std258.start)
                 base = rate = r;
-            }
             if (!stopped && before < std258.stop && frame >= std258.stop) {
                 stopped = true;
                 base = rate = 1;
             }
             rate = factor * base;
             t += dt;
-            if (frame >= std258.jc && stopped_at < 0)
-                stopped_at = t;
-            if (stopped_at >= 0 && !active)
+            if (frame >= std258.jc && end_at < 0)
+                end_at = t;
+            if (end_at >= 0 && !active)
                 break;
         }
-        float t0 = std258.start / 30.f;
-        float want = t0 + (std258.stop - std258.start) / (30.f * r * factor) + (std258.jc - std258.stop) / (30.f * factor);
-        char name[128];
-        std::snprintf(name, sizeof name, "game loop, factor %.1f: JC at %.2f s (game %.2f s), held %.2f s, base back to %.1f",
-                      factor, stopped_at, factor == 1.f ? want : stopped_at, held, base);
-        check(name, held > 3.f && base == 1.f && (factor != 1.f || std::fabs(stopped_at - want) < 0.2f));
+        float want = (std258.stop - 0.5f) / (30.f * r) + (std258.jc - std258.stop) / 30.f;
+        char name[160];
+        std::snprintf(name, sizeof name,
+                      "258 from frame 0.5 at 0.252, factor %.1f: crew speed 1 from the first frame (%.2f), JC at %.2f s "
+                      "(game %.2f s), held %.2f s, base back to %.1f",
+                      factor, first_rate, end_at, want, held, base);
+        check(name, p.valid && first_rate == 1.f && held > 5.f && base == 1.f &&
+                        (factor != 1.f || std::fabs(end_at - want) < 0.2f));
     }
+
+    std::unordered_map<std::string, Phases> table{{"startjobdostandardstop258", std258}, {"startjobdostandardstop21", flon}};
+    check("exact name", find(table, "F1StartJobDoStandardStop258") == &table["startjobdostandardstop258"]);
+    check("name with a suffix", find(table, "F1StartJobDoStandardStop258Ferrari") == &table["startjobdostandardstop258"]);
+    check("same family", find(table, "F1StartJobDoStandardStop2585SP") == &table["startjobdostandardstop258"]);
+    check("other family", find(table, "F1ReadyIdle") == nullptr);
 
     std::printf("%s\n", failures ? "FAILED" : "all passed");
     return failures != 0;

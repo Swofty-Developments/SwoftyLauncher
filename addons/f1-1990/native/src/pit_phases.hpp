@@ -48,33 +48,40 @@ struct Plan {
     float extra = 0;
 };
 
-// The game plays Start..Stop at rate r and Stop..JC at 1, so the stop lasts (stop - start) / (fps r) +
-// (jc - stop) / fps when JC follows Stop. The plan plays every frame at rate 1 and spends the difference,
-// (stop - start) / fps * (1 / r - 1), as holds at the wheel-gun-on frames (kGunShare of it, shared equally)
-// and as a slower stretch from just before the jack drop to the end of the work (the rest).
-inline Plan plan(const Phases &p, float rate, float fps)
+// The game plays the sequence at its crew speed r from the frame it is set (`from`, at or before Start) to Stop and
+// at 1 from Stop to JC, so the stop lasts (stop - from) / (fps r) + (jc - stop) / fps when JC follows Stop. The plan
+// plays every frame from `from` at rate 1 and spends the difference, (stop - from) / fps * (1 / r - 1), as holds at
+// the wheel-gun-on frames after `from` (kGunShare of it, shared equally) and as a slower stretch from just before
+// the jack drop to the end of the work (the rest).
+inline Plan plan(const Phases &p, float rate, float fps, float from)
 {
     Plan out;
-    if (!(rate > 0.01f && rate < 0.999f) || !(fps > 1.f) || !(p.stop > p.start))
+    from = std::max(from, 0.f);
+    if (!(rate > 0.01f && rate < 0.999f) || !(fps > 1.f) || !(p.stop > from + 1.f))
         return out;
     out.end = std::max(p.stop, p.jc);
-    out.extra = (p.stop - p.start) / fps * (1.f / rate - 1.f);
-    float gun_time = p.gun_count ? out.extra * kGunShare : 0.f;
-    float window = p.jack >= 0 ? out.end - std::max(p.jack - kJackLead, p.start) : 0.f;
+    out.extra = (p.stop - from) / fps * (1.f / rate - 1.f);
+    size_t guns = 0;
+    for (size_t i = 0; i < p.gun_count; i++)
+        guns += p.guns[i] > from;
+    float gun_time = guns ? out.extra * kGunShare : 0.f;
+    float window = p.jack >= 0 ? out.end - std::max(p.jack - kJackLead, from) : 0.f;
     float jack_time = out.extra - gun_time;
     if (window < 1.f) {
         gun_time = out.extra;
         jack_time = 0;
     }
-    if (!p.gun_count && window < 1.f)
+    if (!guns && window < 1.f)
         return out;
-    if (!p.gun_count) {
+    if (!guns) {
         gun_time = 0;
         jack_time = out.extra;
     }
-    for (size_t i = 0; i < p.gun_count && i < out.hold_frame.size(); i++) {
+    for (size_t i = 0; i < p.gun_count && out.holds < out.hold_frame.size(); i++) {
+        if (p.guns[i] <= from)
+            continue;
         out.hold_frame[out.holds] = p.guns[i];
-        out.hold_left[out.holds] = gun_time / float(p.gun_count);
+        out.hold_left[out.holds] = gun_time / float(guns);
         out.holds++;
     }
     if (jack_time > 0 && window >= 1.f) {
@@ -84,6 +91,37 @@ inline Plan plan(const Phases &p, float rate, float fps)
     }
     out.valid = true;
     return out;
+}
+
+// A table row for a sequence name: the exact key, else the longest key that starts the name (a suffix the game
+// appended), else the key sharing the longest prefix with it, at least kFamily characters (the same family, such
+// as startjobdostandardstop*).
+constexpr size_t kFamily = 16;
+
+template <class Table> const typename Table::mapped_type *find(const Table &table, std::string_view name)
+{
+    std::string k = key(name);
+    if (auto it = table.find(k); it != table.end())
+        return &it->second;
+    const typename Table::mapped_type *best = nullptr;
+    size_t best_len = 0;
+    for (const auto &[row, phases] : table)
+        if (row.size() > best_len && k.rfind(row, 0) == 0) {
+            best = &phases;
+            best_len = row.size();
+        }
+    if (best)
+        return best;
+    for (const auto &[row, phases] : table) {
+        size_t n = 0;
+        while (n < row.size() && n < k.size() && row[n] == k[n])
+            n++;
+        if (n >= kFamily && n > best_len) {
+            best = &phases;
+            best_len = n;
+        }
+    }
+    return best;
 }
 
 // The rate for this update at sequence frame `frame`; a hold whose frame has been reached spends dt.
