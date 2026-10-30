@@ -16,11 +16,11 @@ PeakMin, PeakMax of every load row), wear (WearRate and the pressure WearRateMin
 falls: 1 - (1 - y) x fade) and heat (WorkEnergyRate and the pressure WorkEnergyRateMin/Max, the warm-up). The other
 codes, the intermediate and the wet keep the stock values.
 
-The stock 2026 compounds share one Peak, so grip sets the gap between them. The qualifiers keep the car's pace (Goodyear
-1.0, Pirelli 1.02: Las Vegas 1:40.4-1:42.5 in the AI build's laps); the race tyres sit at 0.92 (Goodyear) and 0.935
-(Pirelli), which with the race engine (native quali_engine.cpp) puts the best race lap 3.7-5.7 % over the qualifying lap
-in the AI build's laps, the 1990 gap (pole to race fastest lap: Monza +4.5 %, Monaco +3.9 %, Hungary +5.3 %, Suzuka
-+7.5 %).
+The stock 2026 compounds share one Peak, so grip sets the gap between them. The qualifiers set the car's qualifying pace
+(Goodyear 0.97, Pirelli 0.99: Las Vegas 1:40.0-1:42.4 in the AI build's car model); the race tyres sit at 0.895 (Goodyear)
+and 0.91 (Pirelli), which with the race engine (native quali_engine.cpp) puts the best race lap 4-6.2 % over the
+qualifying lap in the AI build's car model, the 1990 gap (pole to race fastest lap: Monza +4.5 %, Monaco +3.9 %, Hungary
++5.3 %, Suzuka +7.5 %).
 
 usage: tyres.py --game <pristine F1 25> [--check]
 """
@@ -44,14 +44,14 @@ STOCK_GROUP = "F1_2026"
 GROUPS = {"goodyear": "F1_1990", "pirelli": "F1_1990P"}
 
 GOODYEAR = {
-    "uso": {"name": "Goodyear qualifier", "grip": 1.0, "wear": 6.0, "fade": 2.0, "heat": 1.2},
-    "sup": {"name": "Goodyear D", "grip": 0.92, "wear": 0.9, "fade": 1.0, "heat": 1.0},
-    "sof": {"name": "Goodyear C", "grip": 0.92, "wear": 0.85, "fade": 1.0, "heat": 1.0},
+    "uso": {"name": "Goodyear qualifier", "grip": 0.97, "wear": 6.0, "fade": 2.0, "heat": 1.2},
+    "sup": {"name": "Goodyear D", "grip": 0.895, "wear": 0.9, "fade": 1.0, "heat": 1.0},
+    "sof": {"name": "Goodyear C", "grip": 0.895, "wear": 0.85, "fade": 1.0, "heat": 1.0},
 }
 PIRELLI = {
-    "uso": {"name": "Pirelli qualifier", "grip": 1.02, "wear": 7.0, "fade": 2.4, "heat": 1.3},
-    "sup": {"name": "Pirelli soft", "grip": 0.935, "wear": 1.3, "fade": 1.35, "heat": 1.1},
-    "sof": {"name": "Pirelli medium", "grip": 0.935, "wear": 1.25, "fade": 1.3, "heat": 1.1},
+    "uso": {"name": "Pirelli qualifier", "grip": 0.99, "wear": 7.0, "fade": 2.4, "heat": 1.3},
+    "sup": {"name": "Pirelli soft", "grip": 0.91, "wear": 1.3, "fade": 1.35, "heat": 1.1},
+    "sof": {"name": "Pirelli medium", "grip": 0.91, "wear": 1.25, "fade": 1.3, "heat": 1.1},
 }
 PHYSICS = {"goodyear": GOODYEAR, "pirelli": PIRELLI}
 VARIANTS = {

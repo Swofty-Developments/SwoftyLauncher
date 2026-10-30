@@ -180,7 +180,7 @@ python3 addons/f1-1990/carpack/tools/ai/build_ai.py --report-only   # index.json
 | Flag | Default |
 |---|---|
 | `--game` | `/mnt/gaming/SteamLibrary/steamapps/common/F1 25`, read only, with the stock `f1_2026_vehicle_package` track AI archives |
-| `--swofty-ai` | `tools/swofty-ai` of this checkout (Swofty AI, branch `feat/swofty-ai`; Python 3.14, numpy, scipy) |
+| `--swofty-ai` | `tools/swofty-ai` of this checkout (Swofty AI, branch `feat/swofty-ai`; Python 3.14, numpy, scipy). The game puts the centre of mass at -COMZ (axle loads 0x1446b5f60), so `CarConfig.from_vtf` must read the front weight as `(-comz - zr) / (zf - zr)`; feat/swofty-ai ecdf1be4 reads `(comz - zr) / (zf - zr)` and needs that one-line change |
 | `--handling` | `addons/f1-1990/cars/handling/removed_2026_1990` |
 | `--tracks`, `--folders` | The 16 tracks, the 13 folders (comma-separated) |
 | `--compounds` | `tyres/historical/tyrecompounds.erp` (`tools/tyres.py`: Goodyear `F1_1990_*` and Pirelli `F1_1990P_*`, each car on its handling file's `TyrePhysicsGroup`); when it is missing, the stock 2026 compounds renamed `F1_2026_*` to `F1_1990_*` |
@@ -351,11 +351,11 @@ The class's three dry codes are scaled from the stock compound of the same code:
 
 | Code (badge) | Goodyear | Pirelli |
 |---|---|---|
-| `uso` (US, qualifier) | Q: grip × 1, wear × 6, fade × 2, heat × 1.2 | qualifier: grip × 1.02, wear × 7, fade × 2.4, heat × 1.3 |
-| `sup` (SS, soft race) | D: grip × 0.92, wear × 0.9 | soft: grip × 0.935, wear × 1.3, fade × 1.35, heat × 1.1 |
-| `sof` (S, race) | C: grip × 0.92, wear × 0.85 | medium: grip × 0.935, wear × 1.25, fade × 1.3, heat × 1.1 |
+| `uso` (US, qualifier) | Q: grip × 0.97, wear × 6, fade × 2, heat × 1.2 | qualifier: grip × 0.99, wear × 7, fade × 2.4, heat × 1.3 |
+| `sup` (SS, soft race) | D: grip × 0.895, wear × 0.9 | soft: grip × 0.91, wear × 1.3, fade × 1.35, heat × 1.1 |
+| `sof` (S, race) | C: grip × 0.895, wear × 0.85 | medium: grip × 0.91, wear × 1.25, fade × 1.3, heat × 1.1 |
 
-The stock 2026 compounds share one Peak, so the grip factors alone set the gap between qualifiers and race tyres. In 1990 the race's fastest lap, set late on low fuel, was 4–8 % over pole: Monza 1:26.254 (Senna, lap 46) against 1:22.533 (+4.5 %), Monaco 1:24.468 (Senna, lap 59) against 1:21.314 (+3.9 %), Hungary 1:22.058 (Patrese, lap 63) against Boutsen's 1:17.919 (+5.3 %), Suzuka 1:44.233 (Patrese, lap 40) against Senna's 1:36.996 (+7.5 %). In the AI build's laps (`carpack/tools/ai/build_ai.py`, `data/ai-laps-1990.json`: the tables' middle mass, the race engine as below) the race tyres put the best race lap 3.7–5.7 % over the qualifier lap on the 16 tracks: 3.9–4.5 % at Las Vegas and Monza, 4.5–5.3 % at Hungary and Monaco, 4.9–5.7 % at Suzuka. Las Vegas: qualifiers 1:40.4 (Ferrari) to 1:42.5 (Benetton), race tyres 1:44.7 to 1:47.0, and a full 110 kg tank about 2.5 % slower again.
+The stock 2026 compounds share one Peak, so the grip factors alone set the gap between qualifiers and race tyres. In 1990 the race's fastest lap, set late on low fuel, was 4–8 % over pole: Monza 1:26.254 (Senna, lap 46) against 1:22.533 (+4.5 %), Monaco 1:24.468 (Senna, lap 59) against 1:21.314 (+3.9 %), Hungary 1:22.058 (Patrese, lap 63) against Boutsen's 1:17.919 (+5.3 %), Suzuka 1:44.233 (Patrese, lap 40) against Senna's 1:36.996 (+7.5 %). In the AI build's car model (`carpack/tools/ai/build_ai.py` laps at the tables' middle mass, front weight read at -COMZ; the race laps are `data/ai-laps-1990.json`) the race tyres put the best race lap 4.0–6.2 % over the qualifier lap on the 16 tracks: 4.4–4.8 % at Las Vegas and Monza, 4.2–5.1 % at Hungary and Monaco, 5.2–6.2 % at Suzuka. Las Vegas: qualifiers 1:40.0 (Ferrari) to 1:42.4 (Benetton), race tyres 1:44.4 to 1:47.1, and a full 110 kg tank about 2.5 % slower again.
 
 Race engine: the handling files carry each engine's qualifying rating, the period power figures. In a 1990 career every car runs a race engine in practice and the race, about 2.75 % less power and a limit 300 rpm lower (`f1_1990_quali.dll`, option `quali_engine_1990`; Ferrari's 1990 race 036 gave 656 bhp at 13,200 rpm against 671 bhp at 13,600 for the qualifying 037, and from Hungary 681 against 700 bhp). Qualifying runs the handling file's engine, and the AI corners 4 % faster there to match the qualifiers (`f1_1990_aiquali.dll`).
 
