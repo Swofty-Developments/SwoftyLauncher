@@ -32,7 +32,7 @@ using Ops = cl::Ops<Tag>;
 static constexpr int CARS = 3;
 alignas(16) static uint8_t car_mem[CARS][0x600];
 alignas(16) static uint8_t steering[CARS][0x100], gearbox[CARS][0x700], diff[CARS][0x100], turbo[CARS][0x310],
-    tank[CARS][0x110], wing[CARS][0xc8], susp[CARS][0x140];
+    tank[CARS][0x110], wing[CARS][0xc8], susp[CARS][0x140], engine[CARS][0x8c0];
 static uintptr_t table[32];
 static uint32_t count;
 static bool flow = true;
@@ -75,6 +75,7 @@ static void build_world()
         attach(c, cl::FUEL_TANK, tank[i]);
         attach(c, cl::WING_DAMAGE, wing[i]);
         attach(c, cl::SUSPENSION_DAMAGE, susp[i]);
+        attach(c, cl::ENGINE, engine[i]);
         if (i != 2)
             attach(c, cl::TURBO, turbo[i]);
         put_obf(steering[i], 0x28, 0.34034f, 0xa5a50000u + i);
@@ -94,6 +95,7 @@ static void build_world()
         put_obf(susp[i], 0x68, 1.5f, 0xfeedfaceu);
         at<float>(susp[i], 0x78) = 50.0f;
         at<float>(susp[i], 0x7c) = 30.0f;
+        put_obf(engine[i], 0x8b0, 1371.8f, 0x600dcafeu);
     }
     count = CARS;
 }
@@ -238,11 +240,35 @@ static void pending_queue()
     expect(Ops::take().size() == 4 * cl::MAX_CARS, "the queue is capped when no frame takes it");
 }
 
+static void engine_limiter()
+{
+    build_world();
+    Ops::bind(make_env());
+    float v = 0;
+    expect(Ops::op_get(0, nullptr, SWOFTY_CAR_ENGINE_LIMITER, &v) == SWOFTY_ASSET_OK && v == 1371.8f,
+           "engine limiter decodes LimiterRotationRate");
+    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_ENGINE_LIMITER, 1300.0f) == SWOFTY_ASSET_UNAVAILABLE &&
+               (at<uint32_t>(engine[0], 0x8b0) ^ 0x600dcafeu) == bits(1371.8f),
+           "without the derived-values function the limiter is unavailable and nothing is written");
+    static uintptr_t derived_on = 0;
+    cl::Env e = make_env();
+    e.engine_derived = [](uintptr_t eng) { derived_on = eng; };
+    Ops::bind(std::move(e));
+    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_ENGINE_LIMITER, 1300.0f) == SWOFTY_ASSET_OK &&
+               (at<uint32_t>(engine[0], 0x8b0) ^ 0x600dcafeu) == bits(1300.0f) &&
+               derived_on == reinterpret_cast<uintptr_t>(engine[0]),
+           "set writes the limiter under its key and re-runs the engine's derived values on that engine");
+    derived_on = 0;
+    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_ENGINE_LIMITER, 3000.0f) == SWOFTY_ASSET_INVALID && !derived_on,
+           "a limiter outside 100..2500 rad/s is invalid and derives nothing");
+}
+
 int main()
 {
     core_ops();
     sdk_side();
     pending_queue();
+    engine_limiter();
     if (fails) {
         printf("car_live_test: %d failure(s)\n", fails);
         return 1;

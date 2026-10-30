@@ -84,6 +84,12 @@ void setup()
             swofty::log("[cars] live car operations off: g_Sess_VehicleTable or g_Sess_VehicleCount does not resolve");
         else
             swofty::log("[cars] live car operations on: %zu fields", sizeof car_live::FIELDS / sizeof car_live::FIELDS[0]);
+        if (uintptr_t fn = swofty::api->resolve("Car_Engine_ComputeDerived_Thunk"))
+            e.engine_derived = [fn](uintptr_t engine) {
+                reinterpret_cast<void (*)(void *)>(fn)(reinterpret_cast<void *>(engine));
+            };
+        else
+            swofty::log("[cars] engine_limiter off: Car_Engine_ComputeDerived_Thunk does not resolve");
     }
     Ops::bind(std::move(e));
     const SwoftyEvents *ev = runtime::events_table();

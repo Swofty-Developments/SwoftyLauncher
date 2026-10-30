@@ -265,6 +265,7 @@ enum class Field : uint32_t {
     susp_parts_detach_scale = SWOFTY_CAR_SUSP_PARTS_DETACH_SCALE,
     susp_linear_fracture_limit = SWOFTY_CAR_SUSP_LINEAR_FRACTURE_LIMIT,
     susp_angular_fracture_limit = SWOFTY_CAR_SUSP_ANGULAR_FRACTURE_LIMIT,
+    engine_limiter = SWOFTY_CAR_ENGINE_LIMITER,                // Engine/LimiterRotationRate (rad/s); the core re-runs the derived limiter
 };
 
 struct AeroScales {

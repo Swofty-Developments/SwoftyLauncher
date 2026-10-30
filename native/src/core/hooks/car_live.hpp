@@ -13,7 +13,7 @@
 // car's handling values while it is on track. A car is a slot of g_Sess_VehicleTable (its CarLive, whose
 // vehicle_id is the slot); each value is a field of one of the systems the car caches by section name at
 // CarLive+0x530..+0x5e0. Every offset below is a KB field (re/db/structs/{CarLive,CarSteering,CarGearBox,
-// CarDifferential,CarTurbo,CarFuelTank,CarDamageFrontWing,CarDamageSuspension,CarObfFloat}.h, L2 or L3),
+// CarDifferential,CarTurbo,CarEngine,CarFuelTank,CarDamageFrontWing,CarDamageSuspension,CarObfFloat}.h, L2 or L3),
 // and "obf" fields are CarObfFloat pairs: the float's bits XOR the key 8 bytes on. The offsets are the KB
 // build's, so car_live.cpp hands over no table on any other exe. Ops<Tag> keeps the state per tag so the
 // host test runs the same code on fake cars.
@@ -24,7 +24,8 @@ constexpr uintptr_t CAR_VEHICLE_ID = 0xe8, CAR_IS_AI = 0x124, CAR_LOADER = 0x4a0
 constexpr uintptr_t FUEL_CAPACITY = 0x98;
 constexpr uint32_t MAX_CARS = 32;
 
-constexpr uintptr_t STEERING = 0x560, GEARBOX = 0x538, DIFFERENTIAL = 0x578, TURBO = 0x5a0, FUEL_TANK = 0x540,
+constexpr uintptr_t ENGINE = 0x530, STEERING = 0x560, GEARBOX = 0x538,
+                    DIFFERENTIAL = 0x578, TURBO = 0x5a0, FUEL_TANK = 0x540,
                     WING_DAMAGE = 0x5c8, SUSPENSION_DAMAGE = 0x5d0;
 
 enum class Kind { plain, obf };
@@ -35,6 +36,7 @@ struct Field {
     uintptr_t system, offset;
     Kind kind;
     float lo, hi;
+    bool derived = false; // set re-runs the engine's derived values (Env::engine_derived)
 };
 
 inline constexpr float BIG = 1e9f;
@@ -66,6 +68,7 @@ inline constexpr Field FIELDS[] = {
      Kind::plain, 0, BIG},
     {SWOFTY_CAR_SUSP_ANGULAR_FRACTURE_LIMIT, "f1_suspension_damage.angular_fracture_limit", SUSPENSION_DAMAGE, 0x7c,
      Kind::plain, 0, BIG},
+    {SWOFTY_CAR_ENGINE_LIMITER, "engine.limiter_rotation_rate", ENGINE, 0x8b0, Kind::obf, 100, 2500, true},
 };
 
 inline const Field *field(uint32_t id)
@@ -81,6 +84,7 @@ struct Env {
     std::function<bool(uintptr_t addr, const void *in, size_t n)> write;
     std::function<bool()> flow_thread;
     std::function<bool()> enabled;
+    std::function<void(uintptr_t engine)> engine_derived;
     uintptr_t table = 0, count = 0;
 };
 
@@ -194,6 +198,8 @@ template <class Tag> struct Ops {
             return r;
         if (int r = system_at(car, *f, sys); r != SWOFTY_ASSET_OK)
             return r;
+        if (f->derived && !env.engine_derived)
+            return SWOFTY_ASSET_UNAVAILABLE;
         if (id == SWOFTY_CAR_FUEL_MASS) {
             float capacity = 0;
             if (load(sys + FUEL_CAPACITY, Kind::obf, capacity) && capacity > 0 && value > capacity)
@@ -204,7 +210,11 @@ template <class Tag> struct Ops {
         if (f->kind == Kind::obf && !rd(sys + f->offset + 8, key))
             return SWOFTY_ASSET_LATE;
         bits ^= key;
-        return env.write && env.write(sys + f->offset, &bits, 4) ? SWOFTY_ASSET_OK : SWOFTY_ASSET_LATE;
+        if (!env.write || !env.write(sys + f->offset, &bits, 4))
+            return SWOFTY_ASSET_LATE;
+        if (f->derived)
+            env.engine_derived(sys);
+        return SWOFTY_ASSET_OK;
     }
 
     // car.built and car.reset: the game builds each car on a loader thread (T119) and re-reads its parts through

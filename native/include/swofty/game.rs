@@ -2682,6 +2682,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Car_Engine_ComputeDerived_Thunk: Binding = Binding {
+        id: "Car_Engine_ComputeDerived_Thunk",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Car_FrontWing_Init: Binding = Binding {
         id: "Car_FrontWing_Init",
         kind: "func",

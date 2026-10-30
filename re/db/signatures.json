@@ -74534,6 +74534,33 @@
    "func_start": "0x1555bdf80"
   },
   {
+   "id": "car.engine_compute_derived",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 48 89 F9 E8 ?? ?? ?? ?? C7 83 28 01 00 00 01 00 00 00 48 8B 96 08 02 00 00 0F B6 46 3B 48 8B 4A 30 48 8B 52 38 48 29 CA 48 C1 FA 03 48 39 C2 76 1D 48 8B 0C C1",
+   "match": "0x142971ac0",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": "0x0"
+   },
+   "target": "0x144689a70",
+   "kind": "call",
+   "names": [
+    "Car_Engine_ComputeDerived_Thunk"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "std-cars-live",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/hooks/car_live.cpp"
+   ]
+  },
+  {
    "id": "car.register_vehicle_id",
    "section": ".xtls",
    "pattern": "0F B6 05 ?? ?? ?? ?? 88 87 E8 00 00 00",

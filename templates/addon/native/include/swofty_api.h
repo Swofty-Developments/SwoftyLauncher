@@ -903,7 +903,9 @@ typedef struct SwoftySessionOps {
    SWOFTY_ASSET_UNAVAILABLE when the car has no such system or the running exe is not the build the field
    offsets were read from. set writes one dword (an obfuscated value is re-encoded under its current key),
    only on the game's flow thread (else SWOFTY_ASSET_LATE), and the game reads it on its next use; the game
-   overwrites it when it rebuilds the car or applies a setup (differential). */
+   overwrites it when it rebuilds the car or applies a setup (differential). SWOFTY_CAR_ENGINE_LIMITER is the
+   handling value (rad/s); set also re-runs the engine's derived values (Car_Engine_ComputeDerived_Thunk), and
+   answers SWOFTY_ASSET_UNAVAILABLE without writing when that function does not resolve. */
 #define SWOFTY_CAR_OPS_VERSION 1
 
 #define SWOFTY_CAR_STEERING_LOCK 1u
@@ -924,6 +926,7 @@ typedef struct SwoftySessionOps {
 #define SWOFTY_CAR_SUSP_PARTS_DETACH_SCALE 16u
 #define SWOFTY_CAR_SUSP_LINEAR_FRACTURE_LIMIT 17u
 #define SWOFTY_CAR_SUSP_ANGULAR_FRACTURE_LIMIT 18u
+#define SWOFTY_CAR_ENGINE_LIMITER 19u
 
 typedef struct SwoftyCarOps {
     uint32_t version;

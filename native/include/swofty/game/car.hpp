@@ -129,6 +129,7 @@ inline constexpr address<"Car_Build_VtfComponents"> Car_Build_VtfComponents{}; /
 inline constexpr address<"Car_Chassis_Build"> Car_Chassis_Build{}; // L3 stable
 using Car_Create_DetachablePart_t = void *(void *part_manager, void **cb, uint32_t *name_id, int32_t *params, float k);
 inline constexpr fn<"Car_Create_DetachablePart", Car_Create_DetachablePart_t> Car_Create_DetachablePart{}; // L2 experimental
+inline constexpr address<"Car_Engine_ComputeDerived_Thunk"> Car_Engine_ComputeDerived_Thunk{}; // L2 experimental
 using Car_FrontWing_Init_t = void(void *front_wing, char reset);
 inline constexpr fn<"Car_FrontWing_Init", Car_FrontWing_Init_t> Car_FrontWing_Init{}; // L2 experimental, game::FrontWing
 inline constexpr address<"Car_FrontWing_OnCollision"> Car_FrontWing_OnCollision{}; // L2 experimental
