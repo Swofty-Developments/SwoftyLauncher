@@ -2,7 +2,7 @@
 """Checks the 1990 AI wiring: difficulty keys, package folders, stock rows, and the car pack's AI asset ops.
 
 usage: check_ai.py <stock gamedatabases.2025.bin> <built gamedatabases.2025.bin> [--car-pack] [--laps <laps.json>]
-                   [--assets <f1-1990-cars/assets/ai.json> [--game <F1 25 folder>]]
+                   [--assets <carpack/assets/ai.json> [--game <F1 25 folder>]]
 
 Database (the built file against stock):
 - every stock key of `tracks.Track_N.ai_track_difficulties.*`, `tracks.Track_N.Tyres_N.track_grip_modifiers_N.*`
@@ -11,7 +11,7 @@ Database (the built file against stock):
   the f1_2026_vehicle_package key and the value tools/ai_data.py derives (time scaled by the lap ratio, the rest as in
   2026), and no other track has any;
 - the stock `ai.asset_data.<package>` rows are unchanged;
-- with --car-pack (a build with swofty.f1-1990-cars), f1_1990 and f1_1990b read `f1_1990_vehicle_package`, f1_1990
+- with --car-pack (a build with carpack/db/ai.json), f1_1990 and f1_1990b read `f1_1990_vehicle_package`, f1_1990
   is available and `ai.asset_data.f1_1990_vehicle_package` has a row per car folder (the 2026 row, base_car
   `<team_name>`); without it both read `f1_2026_vehicle_package` and that table is absent.
 
@@ -169,9 +169,9 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     ap.add_argument("stock")
     ap.add_argument("built")
-    ap.add_argument("--car-pack", action="store_true", help="the build includes swofty.f1-1990-cars")
+    ap.add_argument("--car-pack", action="store_true", help="the build includes carpack/db/ai.json")
     ap.add_argument("--laps", type=Path, help="lap ratio file the shipped ops were made with")
-    ap.add_argument("--assets", type=Path, help="the car pack's assets/ai.json")
+    ap.add_argument("--assets", type=Path, help="carpack/assets/ai.json")
     ap.add_argument("--game", type=Path, help="stock F1 25 folder for the template archives")
     args = ap.parse_args()
     stock, built = career.Db(args.stock), career.Db(args.built)

@@ -9,16 +9,16 @@
 # cache. Needs ffmpeg, ffprobe, wine, xvfb-run, 7z and curl, for example:
 #
 #   nix shell nixpkgs#ffmpeg nixpkgs#wine64 nixpkgs#xvfb-run nixpkgs#p7zip -c \
-#       addons/f1-1990-cars/tools/intro_video.sh input.mkv
+#       addons/f1-1990/carpack/tools/intro_video.sh input.mkv
 #
 # WIDTH and HEIGHT (default 1280x720) set the picture, letterboxed to keep the input's aspect;
 # RATE (default 1500000) the data rate in bytes per second.
 set -euo pipefail
 
 SELF=$(readlink -f "$0")
-ADDON=$(dirname "$(dirname "$SELF")")
+PACK=$(dirname "$(dirname "$SELF")")
 IN=$(readlink -f "${1:?usage: intro_video.sh <input video> [output .bik]}")
-OUT=${2:-$ADDON/video/f1_1990_intro.bik}
+OUT=${2:-$PACK/video/f1_1990_intro.bik}
 WIDTH=${WIDTH:-1280}
 HEIGHT=${HEIGHT:-720}
 RATE=${RATE:-1500000}

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Writes db/ai_difficulty.json and the car pack's db/ai.json: the AI difficulty and AI data folder of the 1990 cars.
+"""Writes db/ai_difficulty.json and carpack/db/ai.json: the AI difficulty and AI data folder of the 1990 cars.
 
 usage: ai_data.py [stock gamedatabases.2025.bin] [--laps <laps.json>] [--check]
 
@@ -15,13 +15,13 @@ db/ai_difficulty.json (this addon) gives each of the 16 calendar tracks those fi
 are new keys that only a package whose folder is f1_1990_vehicle_package reads.
 
 The game finds a car's AI asset row in the table `ai.asset_data.<ai_package_folder>` by the vehicle's folder; the row
-names the path templates and a `base_car` (`fom_car` in every 2026 row). The car pack's db/ai.json adds that table for
+names the path templates and a `base_car` (`fom_car` in every 2026 row). carpack/db/ai.json adds that table for
 `f1_1990_vehicle_package` (the 13 folders, copies of the 2026 rows with `base_car` `<team_name>`, a value other stock
 packages use, so no path leads to a fom_car folder the 1990 AI build lacks), points the f1_1990 and f1_1990b packages
-at `f1_1990_vehicle_package` and makes the f1_1990 package available, so the switch only happens where the car pack
-also installs the 1990 AI archives.
+at `f1_1990_vehicle_package` and makes the f1_1990 package available, next to the 1990 AI archives that
+carpack/assets/ai.json installs.
 
-The lap ratio of a track is `tracks.<track>.summary.median_ratio` of the car pack's AI build (`erp/ai/laps.json`,
+The lap ratio of a track is `tracks.<track>.summary.median_ratio` of the car pack's AI build (`carpack/erp/ai/laps.json`,
 committed here as data/ai-laps-1990.json): the median over the 13 folders of the simulated 1990 lap over the stock
 2026 lap. A track without one gets PLACEHOLDER_RATIO and the op file carries a warn op. --check compares with the shipped files and
 exits 1 on any difference.
@@ -35,7 +35,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ADDON = HERE.parent
 REPO = ADDON.parent.parent
-CAR_PACK = ADDON.parent / "f1-1990-cars"
+CAR_PACK = ADDON / "carpack"
 sys.path.insert(0, str(REPO / "tools"))
 sys.path.insert(0, str(HERE))
 

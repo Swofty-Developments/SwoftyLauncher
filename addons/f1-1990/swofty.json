@@ -4,8 +4,8 @@
   "name": "F1 1990",
   "version": "0.1.0",
   "author": "Swofty",
-  "description": "Adds a 1990 Driver Career next to the 2025 and 2026 ones: 1990 teams, drivers, calendar, rules and cars. Every other mode stays stock.",
-  "license": "AGPL-3.0-or-later",
+  "description": "Adds a 1990 Driver Career next to the 2025 and 2026 ones: 1990 teams, drivers, calendar, rules and cars. Every other mode stays stock. Private test content: the car models are Codemasters classics from Jefry. Not for release.",
+  "license": "LicenseRef-private",
   "kind": ["database", "erp", "text", "native", "files"],
   "category": "seasons",
   "compat": { "game": "f1_25", "game_builds": [">=25251167"], "seasons": ["f1_2026"], "launcher": ">=1.3.0" },
@@ -50,7 +50,7 @@
     },
     {
       "id": "intro_video_1990", "type": "toggle", "label": "1990 intro video", "default": true,
-      "description": "A new 1990 Driver Career opens with the intro video in place of the agent's intro cutscene, skippable like the stock videos. The video comes from the private F1 1990 Cars pack; without it the career starts as before.",
+      "description": "A new 1990 Driver Career opens with the intro video in place of the agent's intro cutscene, skippable like the stock videos. Without the video file the career starts as before.",
       "binds": "native"
     },
     {
@@ -77,6 +77,15 @@
       "id": "replay_holder_fix", "type": "toggle", "label": "Replay room for 26 cars", "default": true,
       "description": "Moves a replay recorder state that outgrows its buffer (per-car systems at the 26-car race start) to a larger buffer. Does nothing while every state fits, as on a 22-car grid.",
       "binds": "native"
+    },
+    {
+      "id": "test_grand_prix", "type": "choice", "label": "Test cars in Grand Prix", "default": "off",
+      "description": "Test only, off by default (Grand Prix stays stock): puts 1990 cars on the F1 2026 Grand Prix grid: Ferrari seats, all 22, Larrousse/Dallara on the Williams/Haas seats, or all 22 B-spec cars.",
+      "values": [
+        { "value": "off", "label": "Off" }, { "value": "ferrari", "label": "Ferrari only" }, { "value": "all", "label": "All 22" },
+        { "value": "myteam", "label": "My Team folders" }, { "value": "bspec", "label": "All 22, B-spec" }
+      ],
+      "binds": "db"
     },
     { "id": "cars", "type": "slider", "label": "Cars", "min": 22, "max": 26, "step": 4, "default": 22,
       "description": "Cars on the 1990 grid. 22 runs the 11 strongest teams; 26 adds Larrousse and Dallara and needs 26-car track layers.",
@@ -170,8 +179,10 @@
     }
   ],
   "operations": {
-    "database": ["db/career.json", "db/grid.json", "db/grid_standings.json", "db/rules.json", "db/grid_links.json", "db/cars.json", "db/audio.json", "db/rnd.json", "db/ai_difficulty.json"],
-    "assets": ["db/rules_text.json", "lang/grid.json", "db/career-lang.json", "cars/handling.json", "db/rnd-lang.json"],
+    "database": ["db/career.json", "db/grid.json", "db/grid_standings.json", "db/rules.json", "db/grid_links.json", "db/cars.json", "db/audio.json", "db/rnd.json", "db/ai_difficulty.json",
+      "carpack/db/test.json", "carpack/db/ai.json"],
+    "assets": ["db/rules_text.json", "lang/grid.json", "db/career-lang.json", "cars/handling.json", "db/rnd-lang.json",
+      "carpack/assets/cars.json", "carpack/assets/ai.json"],
     "erp": ["erp/portrait.json", "erp/tracks.json", "erp/frontend.json", "erp/badges.json", "erp/tyre_icons.json", "erp/hq_logos.json", "erp/ui26.json", "erp/wizard.json", "erp/rnd_look.json"],
     "native": [
       { "dll": "native/f1_1990.dll" }, { "dll": "native/f1_1990_tyres.dll" }, { "dll": "native/f1_1990_tyreclass.dll" },
@@ -189,7 +200,8 @@
       { "source": "files/audio/v12_1990.bdl", "target": "audio/2025/bundles/v12_1990.bdl" },
       { "source": "files/audio/v10_1990.bdl", "target": "audio/2025/bundles/v10_1990.bdl" },
       { "source": "files/audio/v8_1990.bdl", "target": "audio/2025/bundles/v8_1990.bdl" },
-      { "source": "files/audio/v8j_1990.bdl", "target": "audio/2025/bundles/v8j_1990.bdl" }
+      { "source": "files/audio/v8j_1990.bdl", "target": "audio/2025/bundles/v8j_1990.bdl" },
+      { "source": "carpack/video/f1_1990_intro.bik", "target": "videos/f1_1990_intro.bik" }
     ]
   }
 }

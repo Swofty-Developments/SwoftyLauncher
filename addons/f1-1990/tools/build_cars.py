@@ -3,7 +3,7 @@
 Each 1990 team drives its own vehicle row in the `f1_1990` vehicle package (tools/cars.py). Its handling file is built
 from the stock 2026 handling file of the car's donor folder and shipped as a small archive,
 `f1_1990_vehicle_package/teams/<folder>/wep/<folder>_handling.erp`, one per `ers` and `tyre_size` value. The car pack
-(swofty.f1-1990-cars) lists that archive in the car's asset group next to the car archive and the package's
+(carpack/) lists that archive in the car's asset group next to the car archive and the package's
 common.erp. No 2026 archive, row or file is touched.
 
   EnergyRecoverySystem   removed, and the EnergyRecoverySystem parts of the radUpgrade* blocks

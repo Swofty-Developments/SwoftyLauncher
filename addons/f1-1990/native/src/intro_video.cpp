@@ -11,9 +11,8 @@
 // posts AllowVideoSkip, so the stock skip prompt and input stop it after two seconds. The state
 // returns the stay link until the player's end callback runs (the video ended or was skipped), or
 // the video's length plus a margin has passed, then posts AllowVideoSkip off and lets
-// contract_skip continue to the Driver HQ intro cutscene. The video is not in the addon: the
-// private F1 1990 Cars pack installs it (its tools/intro_video.sh encodes one with RAD Video
-// Tools). The game plays .bik files as Bink 1. Without the file, the option or the contract skip,
+// contract_skip continue to the Driver HQ intro cutscene. The addon installs the video from
+// carpack/video (carpack/tools/intro_video.sh encodes one with RAD Video Tools). The game plays .bik files as Bink 1. Without the file, the option or the contract skip,
 // the state behaves as before.
 
 #include <windows.h>
@@ -187,7 +186,7 @@ const Candidate *find_video(iv::BinkInfo &info)
         }
     }
     if (g_missing_logged.fetch_add(1) == 0)
-        swofty::log("[f1-1990] intro: no videos/%s (the private F1 1990 Cars pack installs it); the career starts without "
+        swofty::log("[f1-1990] intro: no videos/%s (the addon installs it from carpack/video); the career starts without "
                     "the intro video",
                     kVideoFile);
     return nullptr;

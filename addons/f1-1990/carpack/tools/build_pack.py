@@ -16,7 +16,7 @@ one's meshes with the other's buffers, so the tyres render hollow. The car templ
 F1ShowRoomCarModern2026 in `eaid://wote/types`) name the stock set in their Tyres component, so every instance of each
 carmodel and carshowroommodel layer, A and B-spec, gets a Tyres override naming the renamed set (TYRE_PATHS).
 
-Outputs (relative to the addon folder, not committed): erp/teams/<folder>/wep/<folder>.erp, erp/teams/common.erp,
+Outputs (relative to the car pack folder `carpack/`, not committed): erp/teams/<folder>/wep/<folder>.erp, erp/teams/common.erp,
 erp/tyrecompounds/tyrecompounds.erp, assets/cars.json (the file.put and group.register ops), assets/ai.json (the AI
 archive ops of tools/ai/build_ai.py) and db/test.json (the test_grand_prix option's seat swaps); the last three are
 committed. A full build fails at the end when an AI archive that assets/ai.json names is not in erp/ai.
@@ -29,10 +29,12 @@ import struct
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ADDON = os.path.dirname(HERE)
+PACK = os.path.dirname(HERE)
+ADDON = os.path.dirname(PACK)
 REPO = os.path.dirname(os.path.dirname(ADDON))
+SRC = os.path.relpath(PACK, ADDON).replace(os.sep, '/')
 sys.path.insert(0, os.path.join(REPO, 'tools'))
-sys.path.insert(0, os.path.join(REPO, 'addons', 'f1-1990', 'tools'))
+sys.path.insert(0, os.path.join(ADDON, 'tools'))
 
 import erpw
 import vtf
@@ -364,14 +366,14 @@ def build_plain(src, out):
 
 
 def ops():
-    out = [{'op': 'file.put', 'source': 'erp/teams/common.erp', 'target': C.COMMON_ARCHIVE},
-           {'op': 'file.put', 'source': 'erp/tyrecompounds/tyrecompounds.erp', 'target': C.TYRE_ARCHIVE},
+    out = [{'op': 'file.put', 'source': f'{SRC}/erp/teams/common.erp', 'target': C.COMMON_ARCHIVE},
+           {'op': 'file.put', 'source': f'{SRC}/erp/tyrecompounds/tyrecompounds.erp', 'target': C.TYRE_ARCHIVE},
            {'op': 'group.register', 'group': C.TYRE_GROUP, 'erp': C.TYRE_ARCHIVE,
             'template': f'asset_groups/{C.SOURCE_PACKAGE}/tyrecompounds/tyrecompounds.assetgroup'}]
     for c in C.CARS:
-        out.append({'op': 'file.put', 'source': f'erp/teams/{c.folder}/wep/{c.folder}.erp', 'target': C.archive(c)})
+        out.append({'op': 'file.put', 'source': f'{SRC}/erp/teams/{c.folder}/wep/{c.folder}.erp', 'target': C.archive(c)})
     for c in C.CARS:
-        out.append({'op': 'file.put', 'source': f'erp/teams_b/{c.folder}/wep/{c.folder}.erp', 'target': C.archive_b(c)})
+        out.append({'op': 'file.put', 'source': f'{SRC}/erp/teams_b/{c.folder}/wep/{c.folder}.erp', 'target': C.archive_b(c)})
     for c in C.CARS:
         out.append({'op': 'group.register', 'group': C.group(c),
                     'erps': [C.COMMON_ARCHIVE, C.archive(c), C.handling_archive(c)],
@@ -420,11 +422,11 @@ def main():
     ap.add_argument('--bspec-only', action='store_true', help='build only the B-spec archives')
     ap.add_argument('--common-only', action='store_true', help='build only common.erp and the tyre compounds')
     args = ap.parse_args()
-    with open(os.path.join(ADDON, 'assets', 'cars.json'), 'w') as f:
+    with open(os.path.join(PACK, 'assets', 'cars.json'), 'w') as f:
         f.write(json.dumps(ops(), indent=1) + '\n')
-    with open(os.path.join(ADDON, 'db', 'test.json'), 'w') as f:
+    with open(os.path.join(PACK, 'db', 'test.json'), 'w') as f:
         f.write(json.dumps(test_ops(), indent=1) + '\n')
-    build_ai.write_json(os.path.join(ADDON, 'assets', 'ai.json'), build_ai.ops(build_ai.calendar_tracks(), build_ai.FOLDERS))
+    build_ai.write_json(os.path.join(PACK, 'assets', 'ai.json'), build_ai.ops(build_ai.calendar_tracks(), build_ai.FOLDERS))
     if args.ops_only:
         return 0
     report = {'cars': []}
@@ -435,25 +437,25 @@ def main():
         src = os.path.join(args.tries, SOURCES[c.team], TEAM_ERP.format(d=c.donor))
         rs = []
         if not args.bspec_only:
-            rs.append(build_car(c, src, os.path.join(ADDON, 'erp', 'teams', c.folder, 'wep', f'{c.folder}.erp')))
+            rs.append(build_car(c, src, os.path.join(PACK, 'erp', 'teams', c.folder, 'wep', f'{c.folder}.erp')))
         rs.append(build_car(c, os.path.join(args.tries, SOURCES_B[c.team], TEAM_ERP.format(d=c.donor)),
-                            os.path.join(ADDON, 'erp', 'teams_b', c.folder, 'wep', f'{c.folder}.erp'), bspec=True))
+                            os.path.join(PACK, 'erp', 'teams_b', c.folder, 'wep', f'{c.folder}.erp'), bspec=True))
         report['cars'] += rs
         for x in rs:
             print(f'{c.team:13} {"B" if x["bspec"] else "A"} {c.folder:15} stem {c.stem:12} {x["resources"]:5} res, '
                   f'{x["renamed"]} renamed, {x["rewritten"]} fragments, handling -{x["handling_dropped"]}, '
                   f'+{x["folder_copies"]} folder copies, audio {x["audio"]}, {x["bytes"] / 1e6:.1f} MB')
     if not only and not args.bspec_only:
-        report['common'] = build_plain(args.common, os.path.join(ADDON, 'erp', 'teams', 'common.erp'))
+        report['common'] = build_plain(args.common, os.path.join(PACK, 'erp', 'teams', 'common.erp'))
         report['tyres'] = build_plain(os.path.join(args.game, TYRES),
-                                      os.path.join(ADDON, 'erp', 'tyrecompounds', 'tyrecompounds.erp'))
+                                      os.path.join(PACK, 'erp', 'tyrecompounds', 'tyrecompounds.erp'))
         print('common', report['common'])
         print('tyres', report['tyres'])
     if args.common_only:
         return 0
-    with open(os.path.join(ADDON, 'erp', 'build_report_b.json' if args.bspec_only else 'build_report.json'), 'w') as f:
+    with open(os.path.join(PACK, 'erp', 'build_report_b.json' if args.bspec_only else 'build_report.json'), 'w') as f:
         json.dump(report, f, indent=1)
-    missing = build_ai.missing_archives(ADDON)
+    missing = build_ai.missing_archives()
     if missing:
         print(f'error: assets/ai.json names {len(missing)} AI archives that are not built, such as {missing[0]}; '
               f'run tools/ai/build_ai.py', file=sys.stderr)

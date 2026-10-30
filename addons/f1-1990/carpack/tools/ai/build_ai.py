@@ -8,7 +8,7 @@ are simulated with those tables on the track's stock line and brake line setting
 mode row is the no-ERS row, ers_use_granular is zero everywhere and ers_boost_data carries no ERS use. vp_chars and
 brakelinesettings stay the template's.
 
-Outputs (relative to the addon folder): erp/ai/<track>/<folder>.erp, erp/ai/index.json, erp/ai/laps.json,
+Outputs (relative to the car pack folder `carpack/`): erp/ai/<track>/<folder>.erp, erp/ai/index.json, erp/ai/laps.json,
 erp/ai/checks.json, assets/ai.json, and a copy of laps.json at addons/f1-1990/data/ai-laps-1990.json.
 """
 import argparse
@@ -22,9 +22,10 @@ import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ADDON = os.path.dirname(os.path.dirname(HERE))
-REPO = os.path.dirname(os.path.dirname(ADDON))
-F1990 = os.path.join(REPO, 'addons', 'f1-1990')
+PACK = os.path.dirname(os.path.dirname(HERE))
+F1990 = os.path.dirname(PACK)
+REPO = os.path.dirname(os.path.dirname(F1990))
+SRC = os.path.relpath(PACK, F1990).replace(os.sep, '/')
 
 SOURCE = 'f1_2026_vehicle_package'
 TARGET = 'f1_1990_vehicle_package'
@@ -68,15 +69,15 @@ def ops(tracks, folders):
     for t in tracks:
         for f in folders:
             e = index_entry(t, f)
-            out.append({'op': 'file.put', 'source': e['erp'], 'target': e['target']})
+            out.append({'op': 'file.put', 'source': f"{SRC}/{e['erp']}", 'target': e['target']})
             out.append({'op': 'group.register', 'group': e['group'], 'erp': e['target'], 'template': e['template']})
     return {'schema_version': 1, 'ops': out}
 
 
-def missing_archives(addon=ADDON):
-    with open(os.path.join(addon, 'assets', 'ai.json'), encoding='utf-8') as f:
+def missing_archives():
+    with open(os.path.join(PACK, 'assets', 'ai.json'), encoding='utf-8') as f:
         doc = json.load(f)
-    return [o['source'] for o in doc['ops'] if o['op'] == 'file.put' and not os.path.isfile(os.path.join(addon, o['source']))]
+    return [o['source'] for o in doc['ops'] if o['op'] == 'file.put' and not os.path.isfile(os.path.join(F1990, o['source']))]
 
 
 def stock_archive(game, track, folder, package=SOURCE):
@@ -506,8 +507,8 @@ def main():
                     help='folder with the 1990 <folder>_handling.erp files')
     ap.add_argument('--tracks', help='comma-separated tracks (default: the 16 calendar tracks)')
     ap.add_argument('--folders', help='comma-separated car folders (default: the 13)')
-    ap.add_argument('--out', default=os.path.join(ADDON, 'erp', 'ai'))
-    ap.add_argument('--compounds', default=os.path.join(ADDON, 'erp', 'tyrecompounds', 'tyrecompounds.erp'),
+    ap.add_argument('--out', default=os.path.join(PACK, 'erp', 'ai'))
+    ap.add_argument('--compounds', default=os.path.join(PACK, 'erp', 'tyrecompounds', 'tyrecompounds.erp'),
                     help="the car pack's F1_1990 tyre compounds; the stock 2026 ones are used when it isn't built")
     ap.add_argument('--workers', type=int, default=12)
     ap.add_argument('--ops-only', action='store_true', help='write assets/ai.json and stop')
@@ -518,7 +519,7 @@ def main():
     all_tracks = calendar_tracks()
     tracks = args.tracks.split(',') if args.tracks else all_tracks
     folders = args.folders.split(',') if args.folders else list(FOLDERS)
-    write_json(os.path.join(ADDON, 'assets', 'ai.json'), ops(all_tracks, FOLDERS))
+    write_json(os.path.join(PACK, 'assets', 'ai.json'), ops(all_tracks, FOLDERS))
     if args.ops_only:
         return 0
 

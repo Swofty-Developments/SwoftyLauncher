@@ -237,9 +237,8 @@ It logs:
 
 A separate DLL; option `intro_video_1990` (default on). A new 1990 Driver Career opens with `videos/f1_1990_intro.bik`
 in the slot of the agent's intro cutscene (the DriverCareerContractNegotiations Intro state, which the contract skip
-passes in a 1990 career). Then the Driver HQ intro cutscene and the hub follow as before. The video is not in this
-addon: the private car pack `swofty.f1-1990-cars` installs it (`video/f1_1990_intro.bik`, git-ignored, encoded by its
-`tools/intro_video.sh`). The game plays a `.bik` as Bink 1 and a `.bk2` as Bink 2; the free RAD Video Tools encode
+passes in a 1990 career). Then the Driver HQ intro cutscene and the hub follow as before. The addon installs it from
+`carpack/video/f1_1990_intro.bik` (git-ignored, encoded by `carpack/tools/intro_video.sh`). The game plays a `.bik` as Bink 1 and a `.bk2` as Bink 2; the free RAD Video Tools encode
 Bink 1.
 
 | binding | address | use |
@@ -264,8 +263,8 @@ Without the file, the option, the player or the contract skip, the Intro state b
 It logs `[f1-1990] intro: new 1990 career; playing videos/f1_1990_intro.bik (Bink 1 rev i, 1280x720, 1099 frames at
 29.97 fps, 36.7 s) on layer 4 (feature system ..., player ...)`, `intro: AllowVideoSkip on|off posted on bus ...` (or
 `not posted: the game's message bus is not active`), then `intro: video ended|skipped|no end callback;
-timed out after N s; the career continues`, or once why it plays nothing (`no videos/f1_1990_intro.bik (the private
-F1 1990 Cars pack installs it)`, `is a Bink 2 file`, `no fullscreen video player`).
+timed out after N s; the career continues`, or once why it plays nothing (`no videos/f1_1990_intro.bik (the addon
+installs it from carpack/video)`, `is a Bink 2 file`, `no fullscreen video player`).
 
 ## Core libraries (`SWOFTY_API_CHARACTERS`, `SWOFTY_API_CAREER_WIZARD`)
 
