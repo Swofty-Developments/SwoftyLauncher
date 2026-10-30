@@ -1,0 +1,213 @@
+#pragma once
+#include <atomic>
+#include <cmath>
+#include <cstdint>
+#include <cstring>
+#include <functional>
+
+#include <swofty_api.h>
+
+// The core's live car operations (SwoftyCoreCarOps, standard library 1.6): cars::live reads and writes a
+// car's handling values while it is on track. A car is a slot of g_Sess_VehicleTable (its CarLive, whose
+// vehicle_id is the slot); each value is a field of one of the systems the car caches by section name at
+// CarLive+0x530..+0x5e0. Every offset below is a KB field (re/db/structs/{CarLive,CarSteering,CarGearBox,
+// CarDifferential,CarTurbo,CarFuelTank,CarDamageFrontWing,CarDamageSuspension,CarObfFloat}.h, L2 or L3),
+// and "obf" fields are CarObfFloat pairs: the float's bits XOR the key 8 bytes on. The offsets are the KB
+// build's, so car_live.cpp hands over no table on any other exe. Ops<Tag> keeps the state per tag so the
+// host test runs the same code on fake cars.
+
+namespace swofty_core::hooks::car_live {
+
+constexpr uintptr_t CAR_VEHICLE_ID = 0xe8, CAR_IS_AI = 0x124, SYSTEM_CAR = 0x08;
+constexpr uintptr_t FUEL_CAPACITY = 0x98;
+constexpr uint32_t MAX_CARS = 32;
+
+constexpr uintptr_t STEERING = 0x560, GEARBOX = 0x538, DIFFERENTIAL = 0x578, TURBO = 0x5a0, FUEL_TANK = 0x540,
+                    WING_DAMAGE = 0x5c8, SUSPENSION_DAMAGE = 0x5d0;
+
+enum class Kind { plain, obf };
+
+struct Field {
+    uint32_t id;
+    const char *name;
+    uintptr_t system, offset;
+    Kind kind;
+    float lo, hi;
+};
+
+inline constexpr float BIG = 1e9f;
+
+inline constexpr Field FIELDS[] = {
+    {SWOFTY_CAR_STEERING_LOCK, "steering.max_steering_lock", STEERING, 0x28, Kind::obf, 0.01f, 1.5708f},
+    {SWOFTY_CAR_CLUTCH_TORQUE, "gearbox.max_clutch_torque", GEARBOX, 0xe8, Kind::plain, 0, 100},
+    {SWOFTY_CAR_DIFF_ON_THROTTLE, "differential.diff_on_throttle", DIFFERENTIAL, 0xf0, Kind::plain, 0, 1},
+    {SWOFTY_CAR_DIFF_OFF_THROTTLE, "differential.diff_off_throttle", DIFFERENTIAL, 0xec, Kind::plain, 0, 1},
+    {SWOFTY_CAR_TURBO_MAX_BOOST, "turbo.max_boost", TURBO, 0x2d8, Kind::plain, 0, 100},
+    {SWOFTY_CAR_FUEL_MASS, "fuel_tank.fuel_mass", FUEL_TANK, 0x100, Kind::plain, 0, BIG},
+    {SWOFTY_CAR_WING_SPEED_THRESHOLD, "f1_wing_damage.speed_threshold", WING_DAMAGE, 0x28, Kind::plain, 0, BIG},
+    {SWOFTY_CAR_WING_DAMAGE_SCALE, "f1_wing_damage.damage_scale", WING_DAMAGE, 0x2c, Kind::plain, 0, BIG},
+    {SWOFTY_CAR_WING_CHASSIS_DAMAGE_MULTIPLE, "f1_wing_damage.chassis_damage_multiple", WING_DAMAGE, 0x30, Kind::plain,
+     0, BIG},
+    {SWOFTY_CAR_WING_SIDE_DETACH_SCALE, "f1_wing_damage.side_detach_scale", WING_DAMAGE, 0x34, Kind::plain, 0, BIG},
+    {SWOFTY_CAR_WING_FULL_DETACH_SCALE, "f1_wing_damage.full_detach_scale", WING_DAMAGE, 0x38, Kind::plain, 0, BIG},
+    {SWOFTY_CAR_SUSP_SPEED_THRESHOLD, "f1_suspension_damage.speed_threshold", SUSPENSION_DAMAGE, 0x28, Kind::obf, 0,
+     BIG},
+    {SWOFTY_CAR_SUSP_FRONT_DAMAGE_SCALE, "f1_suspension_damage.front_damage_scale", SUSPENSION_DAMAGE, 0x38, Kind::obf,
+     0, BIG},
+    {SWOFTY_CAR_SUSP_REAR_DAMAGE_SCALE, "f1_suspension_damage.rear_damage_scale", SUSPENSION_DAMAGE, 0x48, Kind::obf, 0,
+     BIG},
+    {SWOFTY_CAR_SUSP_WHEEL_DETACH_SCALE, "f1_suspension_damage.wheel_detach_scale", SUSPENSION_DAMAGE, 0x58, Kind::obf,
+     0, BIG},
+    {SWOFTY_CAR_SUSP_PARTS_DETACH_SCALE, "f1_suspension_damage.parts_detach_scale", SUSPENSION_DAMAGE, 0x68, Kind::obf,
+     0, BIG},
+    {SWOFTY_CAR_SUSP_LINEAR_FRACTURE_LIMIT, "f1_suspension_damage.linear_fracture_limit", SUSPENSION_DAMAGE, 0x78,
+     Kind::plain, 0, BIG},
+    {SWOFTY_CAR_SUSP_ANGULAR_FRACTURE_LIMIT, "f1_suspension_damage.angular_fracture_limit", SUSPENSION_DAMAGE, 0x7c,
+     Kind::plain, 0, BIG},
+};
+
+inline const Field *field(uint32_t id)
+{
+    for (auto &f : FIELDS)
+        if (f.id == id)
+            return &f;
+    return nullptr;
+}
+
+struct Env {
+    std::function<bool(uintptr_t addr, void *out, size_t n)> read;
+    std::function<bool(uintptr_t addr, const void *in, size_t n)> write;
+    std::function<bool()> flow_thread;
+    std::function<bool()> enabled;
+    uintptr_t table = 0, count = 0;
+};
+
+template <class Tag> struct Ops {
+    static inline Env env;
+    static inline std::atomic<bool> bound{false};
+
+    static void bind(Env e)
+    {
+        bound = false;
+        env = std::move(e);
+        bound = true;
+    }
+
+    template <class T> static bool rd(uintptr_t a, T &v) { return a && env.read && env.read(a, &v, sizeof v); }
+
+    static int available() { return bound.load() && env.table && env.count && (!env.enabled || env.enabled()) ? 1 : 0; }
+
+    static int cars(uint32_t &n)
+    {
+        uint8_t c = 0;
+        if (!available() || !rd(env.count, c))
+            return SWOFTY_ASSET_UNAVAILABLE;
+        n = c < MAX_CARS ? c : MAX_CARS;
+        return SWOFTY_ASSET_OK;
+    }
+
+    static int car_at(uint32_t index, const void *handle, uintptr_t &car)
+    {
+        uint32_t n = 0;
+        if (int r = cars(n); r != SWOFTY_ASSET_OK)
+            return r;
+        if (index >= MAX_CARS)
+            return SWOFTY_ASSET_INVALID;
+        uint8_t id = 0;
+        if (index >= n || !rd(env.table + index * 8, car) || !car || !rd(car + CAR_VEHICLE_ID, id) || id != index)
+            return SWOFTY_ASSET_LATE;
+        if (handle && car != reinterpret_cast<uintptr_t>(handle))
+            return SWOFTY_ASSET_LATE;
+        return SWOFTY_ASSET_OK;
+    }
+
+    static int system_at(uintptr_t car, const Field &f, uintptr_t &sys)
+    {
+        uintptr_t owner = 0;
+        if (!rd(car + f.system, sys))
+            return SWOFTY_ASSET_LATE;
+        if (!sys)
+            return SWOFTY_ASSET_UNAVAILABLE;
+        return rd(sys + SYSTEM_CAR, owner) && owner == car ? SWOFTY_ASSET_OK : SWOFTY_ASSET_LATE;
+    }
+
+    static bool load(uintptr_t at, Kind kind, float &v)
+    {
+        uint32_t a = 0, key = 0;
+        if (!rd(at, a) || (kind == Kind::obf && !rd(at + 8, key)))
+            return false;
+        a ^= key;
+        std::memcpy(&v, &a, 4);
+        return true;
+    }
+
+    static int op_available() { return available(); }
+
+    static int op_count(uint32_t *n)
+    {
+        uint32_t c = 0;
+        int r = cars(c);
+        if (r == SWOFTY_ASSET_OK && n)
+            *n = c;
+        return r;
+    }
+
+    static int op_car(uint32_t index, void **handle, uint32_t *is_ai)
+    {
+        uintptr_t car = 0;
+        if (int r = car_at(index, nullptr, car); r != SWOFTY_ASSET_OK)
+            return r;
+        uint32_t ai = 0;
+        if (is_ai && !rd(car + CAR_IS_AI, ai))
+            return SWOFTY_ASSET_LATE;
+        if (handle)
+            *handle = reinterpret_cast<void *>(car);
+        if (is_ai)
+            *is_ai = ai;
+        return SWOFTY_ASSET_OK;
+    }
+
+    static int op_get(uint32_t index, const void *handle, uint32_t id, float *value)
+    {
+        const Field *f = field(id);
+        if (!f || !value)
+            return SWOFTY_ASSET_INVALID;
+        uintptr_t car = 0, sys = 0;
+        if (int r = car_at(index, handle, car); r != SWOFTY_ASSET_OK)
+            return r;
+        if (int r = system_at(car, *f, sys); r != SWOFTY_ASSET_OK)
+            return r;
+        return load(sys + f->offset, f->kind, *value) ? SWOFTY_ASSET_OK : SWOFTY_ASSET_LATE;
+    }
+
+    static int op_set(uint32_t index, const void *handle, uint32_t id, float value)
+    {
+        const Field *f = field(id);
+        if (!f || !std::isfinite(value) || value < f->lo || value > f->hi)
+            return SWOFTY_ASSET_INVALID;
+        if (env.flow_thread && !env.flow_thread())
+            return SWOFTY_ASSET_LATE;
+        uintptr_t car = 0, sys = 0;
+        if (int r = car_at(index, handle, car); r != SWOFTY_ASSET_OK)
+            return r;
+        if (int r = system_at(car, *f, sys); r != SWOFTY_ASSET_OK)
+            return r;
+        if (id == SWOFTY_CAR_FUEL_MASS) {
+            float capacity = 0;
+            if (load(sys + FUEL_CAPACITY, Kind::obf, capacity) && capacity > 0 && value > capacity)
+                return SWOFTY_ASSET_INVALID;
+        }
+        uint32_t bits = 0, key = 0;
+        std::memcpy(&bits, &value, 4);
+        if (f->kind == Kind::obf && !rd(sys + f->offset + 8, key))
+            return SWOFTY_ASSET_LATE;
+        bits ^= key;
+        return env.write && env.write(sys + f->offset, &bits, 4) ? SWOFTY_ASSET_OK : SWOFTY_ASSET_LATE;
+    }
+
+    static inline const SwoftyCarOps table = {
+        SWOFTY_CAR_OPS_VERSION, op_available, op_count, op_car, op_get, op_set,
+    };
+};
+
+}

@@ -892,6 +892,48 @@ typedef struct SwoftySessionOps {
     int (*spectator_current)(int32_t *car, int32_t *camera);
 } SwoftySessionOps;
 
+/* Live car operations (standard library 1.6), from the core export SwoftyCoreCarOps; not a SwoftyApi field.
+   Table version 1. A car is the game's vehicle id (CarLive.vehicle_id, the slot of g_Sess_VehicleTable),
+   dense from 0 in create order; the handle is that slot's CarLive and identifies the car while it exists
+   (the game moves its last car into a destroyed car's slot). count: the cars in g_Sess_VehicleCount. car:
+   the handle of the car with that index and its is_ai word (1 while the AI drives it, the player's car
+   included). get and set take the index and optionally the handle (NULL skips the check) and one of the
+   SWOFTY_CAR_* field ids; SWOFTY_ASSET_LATE when the slot is empty, holds another car or a system's owner
+   does not match, SWOFTY_ASSET_INVALID for an unknown field or a value outside its range,
+   SWOFTY_ASSET_UNAVAILABLE when the car has no such system or the running exe is not the build the field
+   offsets were read from. set writes one dword (an obfuscated value is re-encoded under its current key),
+   only on the game's flow thread (else SWOFTY_ASSET_LATE), and the game reads it on its next use; the game
+   overwrites it when it rebuilds the car or applies a setup (differential). */
+#define SWOFTY_CAR_OPS_VERSION 1
+
+#define SWOFTY_CAR_STEERING_LOCK 1u
+#define SWOFTY_CAR_CLUTCH_TORQUE 2u
+#define SWOFTY_CAR_DIFF_ON_THROTTLE 3u
+#define SWOFTY_CAR_DIFF_OFF_THROTTLE 4u
+#define SWOFTY_CAR_TURBO_MAX_BOOST 5u
+#define SWOFTY_CAR_FUEL_MASS 6u
+#define SWOFTY_CAR_WING_SPEED_THRESHOLD 7u
+#define SWOFTY_CAR_WING_DAMAGE_SCALE 8u
+#define SWOFTY_CAR_WING_CHASSIS_DAMAGE_MULTIPLE 9u
+#define SWOFTY_CAR_WING_SIDE_DETACH_SCALE 10u
+#define SWOFTY_CAR_WING_FULL_DETACH_SCALE 11u
+#define SWOFTY_CAR_SUSP_SPEED_THRESHOLD 12u
+#define SWOFTY_CAR_SUSP_FRONT_DAMAGE_SCALE 13u
+#define SWOFTY_CAR_SUSP_REAR_DAMAGE_SCALE 14u
+#define SWOFTY_CAR_SUSP_WHEEL_DETACH_SCALE 15u
+#define SWOFTY_CAR_SUSP_PARTS_DETACH_SCALE 16u
+#define SWOFTY_CAR_SUSP_LINEAR_FRACTURE_LIMIT 17u
+#define SWOFTY_CAR_SUSP_ANGULAR_FRACTURE_LIMIT 18u
+
+typedef struct SwoftyCarOps {
+    uint32_t version;
+    int (*available)(void);
+    int (*count)(uint32_t *cars);
+    int (*car)(uint32_t index, void **handle, uint32_t *is_ai);
+    int (*get)(uint32_t index, const void *handle, uint32_t field, float *value);
+    int (*set)(uint32_t index, const void *handle, uint32_t field, float value);
+} SwoftyCarOps;
+
 typedef struct SwoftyApi {
     uint32_t version;
     void (*log)(const char *fmt, ...);
@@ -933,6 +975,7 @@ typedef const SwoftyHooks *(*SwoftyCoreHooksFn)(void);
 typedef const SwoftyServices *(*SwoftyCoreServicesFn)(void);
 typedef const SwoftyCareerOps *(*SwoftyCoreCareerOpsFn)(void);
 typedef const SwoftySessionOps *(*SwoftyCoreSessionOpsFn)(void);
+typedef const SwoftyCarOps *(*SwoftyCoreCarOpsFn)(void);
 
 #define SWOFTY_STAGE_WINDOW 1
 
@@ -950,6 +993,7 @@ SWOFTY_EXPORT const SwoftyHooks *SwoftyCoreHooks(void);
 SWOFTY_EXPORT const SwoftyServices *SwoftyCoreServices(void);
 SWOFTY_EXPORT const SwoftyCareerOps *SwoftyCoreCareerOps(void);
 SWOFTY_EXPORT const SwoftySessionOps *SwoftyCoreSessionOps(void);
+SWOFTY_EXPORT const SwoftyCarOps *SwoftyCoreCarOps(void);
 
 #ifdef __cplusplus
 }

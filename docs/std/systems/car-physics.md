@@ -118,44 +118,40 @@ The core logs each build:
 
 ## Changing a car live
 
-`cars::live` gives you each car on track during a session: its index, its vehicle record, its team and driver, and its parts. `car.control()` reads who drives it, human or AI, and its controller flags, fresh on every call (see [Who drives a car](./sessions#who-drives-a-car)). Writes take effect on the car's next physics step. The core decodes and encodes the game's scrambled values, recomputes anything the game derives from the value you changed, and puts your value back if the game rebuilds the car.
+`cars::live` gives you each car on track during a session: its index and the game's car. `car.control()` reads who drives it, human or AI, and its controller flags, fresh on every call (see [Who drives a car](./sessions#who-drives-a-car)), and `car.is_ai()` reads whether the AI drives it right now (the player's car too, while the AI has it).
 
-A per-team pace slider:
+Read and write a value with `get`, `set` and `scale`. The core finds the car's part, decodes and re-encodes the game's scrambled values, and refuses a value outside the field's range with `Result::invalid`:
 
 ```cpp
 #include <swofty/systems/cars.hpp>
-#include <swofty/events.hpp>
 
 using namespace swofty;
+using cars::live::Field;
 
-SWOFTY_ON_LOAD
-{
-    // every time a car is built, and whenever the player moves a slider
-    events::on<cars::events::Built>().after([](const cars::events::Built &e, const events::Context &) {
-        float pace = option<float>(std::format("pace_{}", e.car.team().id()));   // 0.95 .. 1.05
-        e.car.f1_aero().lift_scale = pace;                                       // downforce, every step
-        e.car.f1_aero().drag_scale = 2.0f - pace;
-    });
-}
-```
-
-Engine power and fuel, live:
-
-```cpp
 for (cars::live::Car &car : cars::live::cars()) {
     if (car.is_ai())
         continue;
-    car.engine().revs_power_spline.scale_y(1.05f);   // the core recomputes max torque and the limiter
-    car.fuel_tank().fuel_mass = 50.0f;               // kg, next step
-    car.ers().max_deploy_power = 160'000.0f;         // W, next step
+    car.scale(Field::steering_lock, 1.2f);            // 20 % more steering lock, next frame
+    car.set(Field::fuel_mass, 50.0f);                 // kg, up to the tank's capacity
+    car.set(Field::wing_full_detach_scale, 0.6f);     // the wing comes off sooner, next hit
 }
 ```
 
-Some parts change on the next step with nothing else to do: downforce and drag scales, fuel mass, ERS values, tyre wear factors, suspension and tyre records. Others are derived by the game, and the core re-runs the game's own code for them after your write: engine torque and the limiter, gear tables, body drag and wing coefficients, mass and inertia, and brake torque per wheel.
+| Field | Part and key | Range | Reaches the car |
+| --- | --- | --- | --- |
+| `steering_lock` | Steering / MaxSteeringLock (rad) | 0.01 .. 1.5708 | next frame |
+| `clutch_torque` | GearBox / MaxClutchTorque (multiple of engine torque) | 0 .. 100 | next frame |
+| `diff_on_throttle`, `diff_off_throttle` | the setup's differential, 0 open .. 1 locked | 0 .. 1 | next physics step, until the setup is applied again |
+| `turbo_max_boost` | Turbo / MaxBoost (bar) | 0 .. 100 | next physics step; the stock boost-efficiency curve is flat, so it changes no power on a stock car |
+| `fuel_mass` | the fuel in the tank (kg) | 0 .. capacity | next physics step |
+| `wing_speed_threshold`, `wing_damage_scale`, `wing_chassis_damage_multiple`, `wing_side_detach_scale`, `wing_full_detach_scale` | F1WingDamage | 0 or more | next hit |
+| `susp_speed_threshold`, `susp_front_damage_scale`, `susp_rear_damage_scale`, `susp_wheel_detach_scale`, `susp_parts_detach_scale`, `susp_linear_fracture_limit`, `susp_angular_fracture_limit` | F1SuspensionDamage | 0 or more | next hit |
 
-The game resets a car's parts to the handling file when it rebuilds them, and it re-applies every R&D upgrade after an upgrade is fitted. That also sets the fuel mode back to Standard. The core repeats your live writes after both. `cars::events::Reset` tells you when it happened.
+A car's index is the game's vehicle id: dense from 0 in the order the cars were built, the safety car included. A `Car` from `cars()` also carries the game's car, and a call on it answers `Result::late` once that car is gone from its slot (the game moves its last car into a destroyed car's slot). `set` runs on the game's flow thread, so call it from a frame, setting or event handler; from another thread it answers `Result::late`. The values are read from the build the core's field table was mapped on: on any other build of the game `cars::live::available()` is false and `cars()` is empty.
 
-Damage settings are read on every impact, so a live change to `wing_damage` or `suspension_damage` reaches the next hit. Lowering `full_detach_scale` during a race can take off a wing that's already damaged on its next hit.
+The game resets a car's parts to the handling file when it rebuilds them, and applying a setup writes the differential again, so a live write lasts until then. Damage settings are read on every impact, so a live change reaches the next hit. Lowering `wing_full_detach_scale` during a race can take off a wing that's already damaged on its next hit.
+
+Still to come: the part accessors (`car.engine()`, `car.ers()`, `car.f1_aero()` and the rest), the car's vehicle, team and driver, values the game derives (engine torque and the limiter, gear tables, mass and inertia), and repeating your writes after the game rebuilds a car (`cars::events::Reset`). Until then the part accessors hold your values in the addon and the core applies nothing from them.
 
 ## R&D upgrades
 
@@ -220,6 +216,6 @@ For how the AI drives, see [AI](/std/systems/ai).
 
 ## Readiness
 
-The parts, their fields and how they're stored are mapped from the game's code and checked independently. An in-game trace confirmed that cars are built once at session load and torn down when it ends, that the game rebuilds every car twice while a session loads and rebuilds one car when control of it changes, and the live values of engine speed, fuel, ERS, tyre wear, mass and the aero coefficients. Still to confirm in game: DRS, the fuel-mix and setup controls, career R&D upgrades, and how a car's index matches its participant.
+The parts, their fields and how they're stored are mapped from the game's code and checked independently. An in-game trace confirmed that cars are built once at session load and torn down when it ends, that the game rebuilds every car twice while a session loads and rebuilds one car when control of it changes, and the live values of engine speed, fuel, ERS, tyre wear, mass and the aero coefficients. Still to confirm in game: DRS, the fuel-mix and setup controls, career R&D upgrades, and how a car's index matches its participant. The `cars::live` fields are mapped from the game's code and checked on fake cars in the core's host test; none of them is tested in game yet.
 
 Credit: the front wing damage, suspension damage, fuel ECU and ERS layouts were cross-checked against findings shared by Will (william09leo), the author of Heavier Damage.

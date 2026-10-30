@@ -76060,6 +76060,7 @@
     }
    ],
    "used_by": [
+    "native/src/core/hooks/car_live.cpp",
     "native/src/core/testagent/agent.cpp"
    ]
   },
@@ -76088,6 +76089,7 @@
     }
    ],
    "used_by": [
+    "native/src/core/hooks/car_live.cpp",
     "native/src/core/testagent/agent.cpp"
    ]
   },

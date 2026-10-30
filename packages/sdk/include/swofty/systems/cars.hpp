@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include <array>
+#include <atomic>
 #include <map>
+#include <optional>
 #include <swofty/events.hpp>
 #include <swofty/registry.hpp>
 #include <swofty/systems/control.hpp>
@@ -11,10 +13,14 @@
 // every session load; the 1.6.0 core stores handling records and applies nothing from them). Handling parts are named after the handling
 // file's sections and their fields after its keys, in snake_case (FrontCoeffLiftMultiplier ->
 // front_coeff_lift_multiplier); a key this header doesn't name is kept in the part's `extra`. cars::live
-// is the cars on track; the core that drives it ships later, and until then live::available() is false
-// and live::cars() is empty. A live::Car is a trivially copyable handle (the car's index and the game's
-// car), so event payloads carry it as is. control() reads the car's controller mode and flags fresh from the core
-// (nothing while the game rebuilds its controller sets, or on a core without session operations).
+// is the cars on track, read and written through the core's car operations (SwoftyCoreCarOps): cars()
+// lists them, get/set/scale read and write one live::Field, decoded and re-encoded by the core. Without
+// those operations (an older core, or an exe that isn't the build the field offsets were read from)
+// live::available() is false and live::cars() is empty. A live::Car is a trivially copyable handle (the
+// car's index and the game's car), so event payloads carry it as is. control() reads the car's controller
+// mode and flags fresh from the core (nothing while the game rebuilds its controller sets, or on a core
+// without session operations). The part accessors (engine() .. suspension_damage()) are addon-side values
+// the core doesn't apply yet.
 
 namespace swofty::cars {
 
@@ -238,6 +244,29 @@ inline Result reset_upgrades(int) { return Result::unavailable; }
 
 namespace live {
 
+// The fields set() can write, by part. Units and ranges are the handling file's; set() refuses a value
+// outside the range with Result::invalid.
+enum class Field : uint32_t {
+    steering_lock = SWOFTY_CAR_STEERING_LOCK,                  // Steering/MaxSteeringLock, rad, 0.01 .. 1.5708
+    clutch_torque = SWOFTY_CAR_CLUTCH_TORQUE,                  // GearBox/MaxClutchTorque, multiple of engine torque
+    diff_on_throttle = SWOFTY_CAR_DIFF_ON_THROTTLE,            // setup differential on throttle, 0 .. 1
+    diff_off_throttle = SWOFTY_CAR_DIFF_OFF_THROTTLE,          // setup differential off throttle, 0 .. 1
+    turbo_max_boost = SWOFTY_CAR_TURBO_MAX_BOOST,              // Turbo/MaxBoost, bar
+    fuel_mass = SWOFTY_CAR_FUEL_MASS,                          // kg in the tank, up to its capacity
+    wing_speed_threshold = SWOFTY_CAR_WING_SPEED_THRESHOLD,    // F1WingDamage, read on every hit
+    wing_damage_scale = SWOFTY_CAR_WING_DAMAGE_SCALE,
+    wing_chassis_damage_multiple = SWOFTY_CAR_WING_CHASSIS_DAMAGE_MULTIPLE,
+    wing_side_detach_scale = SWOFTY_CAR_WING_SIDE_DETACH_SCALE,
+    wing_full_detach_scale = SWOFTY_CAR_WING_FULL_DETACH_SCALE,
+    susp_speed_threshold = SWOFTY_CAR_SUSP_SPEED_THRESHOLD,    // F1SuspensionDamage, read on every hit
+    susp_front_damage_scale = SWOFTY_CAR_SUSP_FRONT_DAMAGE_SCALE,
+    susp_rear_damage_scale = SWOFTY_CAR_SUSP_REAR_DAMAGE_SCALE,
+    susp_wheel_detach_scale = SWOFTY_CAR_SUSP_WHEEL_DETACH_SCALE,
+    susp_parts_detach_scale = SWOFTY_CAR_SUSP_PARTS_DETACH_SCALE,
+    susp_linear_fracture_limit = SWOFTY_CAR_SUSP_LINEAR_FRACTURE_LIMIT,
+    susp_angular_fracture_limit = SWOFTY_CAR_SUSP_ANGULAR_FRACTURE_LIMIT,
+};
+
 struct AeroScales {
     float lift_scale = 1, drag_scale = 1;
 };
@@ -251,6 +280,50 @@ struct Shadow {
     SuspensionDamage suspension_damage;
 };
 
+}
+
+}
+
+namespace swofty::detail {
+
+inline std::atomic<const SwoftyCarOps *> &car_ops_override()
+{
+    static std::atomic<const SwoftyCarOps *> t{nullptr};
+    return t;
+}
+
+inline void set_car_ops_table(const SwoftyCarOps *t) { car_ops_override() = t; }
+
+inline const SwoftyCarOps *car_ops_table()
+{
+    if (auto t = car_ops_override().load())
+        return t->version >= 1 ? t : nullptr;
+#if defined(_WIN32)
+    static std::atomic<const SwoftyCarOps *> found{nullptr};
+    if (auto t = found.load())
+        return t;
+    HMODULE core = GetModuleHandleW(L"swofty_core.dll");
+    auto get = core ? reinterpret_cast<SwoftyCoreCarOpsFn>(GetProcAddress(core, "SwoftyCoreCarOps")) : nullptr;
+    const SwoftyCarOps *t = get ? get() : nullptr;
+    if (t && t->version < 1)
+        t = nullptr;
+    found = t;
+    return t;
+#else
+    return nullptr;
+#endif
+}
+
+inline const SwoftyCarOps *live_car_ops()
+{
+    auto t = car_ops_table();
+    return t && t->available && t->available() ? t : nullptr;
+}
+
+}
+
+namespace swofty::cars::live {
+
 class Car {
 public:
     Car() = default;
@@ -260,8 +333,38 @@ public:
     Ref<Vehicle> vehicle() const { return {}; }
     Ref<teams::Identity> team() const { return {}; }
     Ref<drivers::Identity> driver() const { return {}; }
-    bool is_ai() const { return true; }
+    // Whether the AI drives the car right now (the player's car too, while the AI has it); true when the
+    // core can't tell.
+    bool is_ai() const
+    {
+        auto t = swofty::detail::live_car_ops();
+        void *h = nullptr;
+        uint32_t ai = 1;
+        if (!t || !t->car || t->car(index_, &h, &ai) != SWOFTY_ASSET_OK || (handle_ && h != handle_))
+            return true;
+        return ai == 1;
+    }
     std::optional<sessions::ControlState> control() const { return swofty::detail::read_control(index_); }
+
+    std::optional<float> get(Field f) const
+    {
+        float v = 0;
+        return read(f, v) == Result::ok ? std::optional<float>(v) : std::nullopt;
+    }
+    Result set(Field f, float value) const
+    {
+        auto t = swofty::detail::live_car_ops();
+        if (!t || !t->set)
+            return Result::unavailable;
+        return swofty::detail::result(t->set(index_, handle_, static_cast<uint32_t>(f), value));
+    }
+    Result scale(Field f, float factor) const
+    {
+        float v = 0;
+        Result r = read(f, v);
+        return r == Result::ok ? set(f, v * factor) : r;
+    }
+
     Engine &engine() const { return shadow().engine; }
     FuelTank &fuel_tank() const { return shadow().fuel_tank; }
     Ers &ers() const { return shadow().ers; }
@@ -270,6 +373,13 @@ public:
     SuspensionDamage &suspension_damage() const { return shadow().suspension_damage; }
 
 private:
+    Result read(Field f, float &v) const
+    {
+        auto t = swofty::detail::live_car_ops();
+        if (!t || !t->get)
+            return Result::unavailable;
+        return swofty::detail::result(t->get(index_, handle_, static_cast<uint32_t>(f), &v));
+    }
     Shadow &shadow() const
     {
         static std::map<uint32_t, Shadow> all;
@@ -279,9 +389,21 @@ private:
     void *handle_ = nullptr;
 };
 
-inline bool available() { return false; }
-inline std::vector<Car> cars() { return {}; }
+inline bool available() { return swofty::detail::live_car_ops() != nullptr; }
 
+inline std::vector<Car> cars()
+{
+    std::vector<Car> out;
+    auto t = swofty::detail::live_car_ops();
+    uint32_t n = 0;
+    if (!t || !t->count || !t->car || t->count(&n) != SWOFTY_ASSET_OK)
+        return out;
+    for (uint32_t i = 0; i < n; i++) {
+        void *h = nullptr;
+        if (t->car(i, &h, nullptr) == SWOFTY_ASSET_OK)
+            out.emplace_back(i, h);
+    }
+    return out;
 }
 
 }
