@@ -16,7 +16,7 @@ Log lines (swofty log): `[f1-1990] GRID best-of (<why>)` once per pass, then one
 
 ## Build
 
-`./build.sh` builds the 19 DLLs with zig against the game headers in `native/include` and the SDK in `packages/sdk/include`. `f1_1990_parts.dll` binds `site_Sess_PuPanel_SlotHolder`, which has no `agree` verify row yet, so the core's `bindings.json` doesn't list it and the core drops that DLL; it loads with a loader whose `swofty/addons/core/bindings.json` adds the entry. `f1_1990_pitphases.dll` binds `Sess_PitStopUpdateJob_Update` and `g_Ne_NameTable`.
+`./build.sh` builds the 21 DLLs with zig against the game headers in `native/include` and the SDK in `packages/sdk/include`. `f1_1990_parts.dll` binds `site_Sess_PuPanel_SlotHolder`, which has no `agree` verify row yet, so the core's `bindings.json` doesn't list it and the core drops that DLL; it loads with a loader whose `swofty/addons/core/bindings.json` adds the entry. `f1_1990_pitphases.dll` binds `Sess_PitStopUpdateJob_Update` and `g_Ne_NameTable`. `f1_1990_audiofix.dll` binds `Snd_Request_JobWorker`, `g_Snd_JobWorkerOverflow` and `g_Snd_JobWorkerLock`.
 
 `test/run.sh` runs the ranking unit tests on the host.
 
@@ -361,3 +361,26 @@ On the first update after the game has set a base rate (+0x33c) r below 1, which
 
 Lines: `[f1-1990] pit phases: 207 crew sequence(s) from data/pit-phases.json at 30 fps`; `... 1990 weekend: stops at crew speed 1 with held phases` / `not a 1990 weekend ...`; per stop (first 32 lines) `"<sequence>" crew speed <r> -> 1.0 from frame <f> (start <n>); +<s> s as <n> hold(s) of <s> s at the gun-on frames and a jack stretch from frame <f> at <rate>; stop <s> s as before`, then `"<sequence>" ended after <s> s (game's stop <s> s)`, or why the game's speed stays.
 
+## Audio freeze fix (`f1_1990_audiofix.dll`)
+
+A separate DLL; option `audio_queue_fix` (default on), active in every mode. Wwise asks the game for job workers through
+`Snd_Request_JobWorker` (0x143fbdd00). The game gives each request to an idle one of its 12 audio worker threads, or
+queues it in `g_Snd_JobWorkerOverflow` (0x146c63e10: 24 slots of 0x30 bytes, +0x08 worker function, +0x24 job type,
++0x28 queued flag) and counts it in `g_Snd_JobWorkerPending`, under `g_Snd_JobWorkerLock`. The workers
+(`Snd_Run_JobWorkerThread`, 0x143fc6500) take queued requests from slots 0-11 only. A request queued in slots 12-23
+never runs: the workers spin on the pending count, the Wwise audio thread waits for that job holding the Wwise main
+lock, a game job blocks in `AK::SoundEngine::SetRTPCValue`, and the watchdog ends the game 30 s later (writing
+0xdf3b9606 to address 1 from 0x14391f740). This happened in a 1990 race on leaving a replay.
+
+| binding | address | use |
+|---|---|---|
+| `Snd_Request_JobWorker` | 0x143fbdd00 | wrap; passes a thunk in place of each worker function (8 thunks, one per distinct function), then moves stranded requests |
+| `g_Snd_JobWorkerOverflow` | 0x146c63e10 | data; the 24-slot queue |
+| `g_Snd_JobWorkerLock` | 0x146c63ba0 | data; pointer to the queue's CRITICAL_SECTION |
+
+Each thunk runs the worker function, then, when a slot from 12 to 23 is flagged, takes the lock and moves those
+requests (function, type, flag) into free slots 0-11 (`src/audio_queue.hpp`, tested by `test/audio_queue_test.cpp`
+against a model of the queue and the workers' drain). The pending count stays as it is. A request lands in slot 12 or
+later only while slots 0-11 are all queued; the worker that finishes one of those moves it. The wrap also moves
+after every request call. Log lines: `[f1-1990] audio queue fix: on`, `first worker request (worker ..., job type ...)
+runs through thunk 0`, and `moved N queued worker request(s) from slots 12-23 to slots 0-11` (the first 16).

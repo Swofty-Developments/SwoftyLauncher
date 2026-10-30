@@ -49,6 +49,11 @@
       "binds": "native"
     },
     {
+      "id": "audio_queue_fix", "type": "toggle", "label": "Audio freeze fix", "default": true,
+      "description": "Stops the game freezing with the sound cut (seen on leaving a replay in a race): audio worker requests the game queues where its workers never look are moved where they do. Works in every mode.",
+      "binds": "native"
+    },
+    {
       "id": "crew_kit", "type": "toggle", "label": "1990 pit crew kit", "default": true,
       "description": "The pit and garage crews of the 1990 teams wear their team colours. Off: they wear the default crew uniform and crew_livery.erp is left stock.",
       "binds": "db"
@@ -237,7 +242,8 @@
       { "dll": "native/f1_1990_wizard.dll", "files": ["data/calendar-1990.json"] }, { "dll": "native/f1_1990_intro.dll" },
       { "dll": "native/f1_1990_sessions.dll", "files": ["data/session-strings.json"] },
       { "dll": "native/f1_1990_qualilaps.dll" },
-      { "dll": "native/f1_1990_pitphases.dll", "files": ["data/pit-phases.json"] }
+      { "dll": "native/f1_1990_pitphases.dll", "files": ["data/pit-phases.json"] },
+      { "dll": "native/f1_1990_audiofix.dll" }
     ],
     "files": [
       { "source": "files/audio/v12_1990.bdl", "target": "audio/2025/bundles/v12_1990.bdl" },
