@@ -558,5 +558,11 @@
   "gp_short_name",
   "reverse_track_trophy_name",
   "title"
+ ],
+ "pit_data": [
+  "_metadata_",
+  "pitSpeedLimit",
+  "pitStopTime_Dry",
+  "pitStopTime_Wet"
  ]
 }
