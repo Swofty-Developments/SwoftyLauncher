@@ -1,0 +1,8 @@
+{"palette": {"turq": [96, 204, 206], "navy": [27, 42, 92], "green": [0, 140, 70], "white": [236, 236, 232]},
+ "rules": [
+  {"colour": "turq"},
+  {"colour": "green", "parts": ["nosecone"], "box": {"t": [1.06, 9]}, "ny": [0.35, 1]},
+  {"colour": "green", "parts": ["topcanopy_bm"], "box": {"y": [0.52, 9]}},
+  {"colour": "navy", "parts": ["rearwing_top"]},
+  {"colour": "navy", "box": {"x": [0.40, 9], "y": [0.0, 0.11], "t": [0.08, 0.42]}}
+ ]}

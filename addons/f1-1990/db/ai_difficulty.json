@@ -1,0 +1,645 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=las_vegas]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
+   "value": "110.004,106.972,103.92,100.858,97.8854,96.4307,94.9884,94.4183,93.8389,93.3037",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=las_vegas]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.difficulty_ratio",
+   "value": "0.135,0.31,0.45,0.635,0.795,0.885,1,1,1,1",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=las_vegas]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.mass_ratio",
+   "value": "1,1,1,1,1,1,1,0.971503,0.943005,0.914508",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=las_vegas]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_dificulty_no_balast_slider_position",
+   "value": "100",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=las_vegas]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_slider_position",
+   "value": "110",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=brazil]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
+   "value": "83.8518,81.4898,79.2738,77.0108,74.5526,73.4883,72.3992,71.9586,71.5154,71.1223",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=brazil]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.difficulty_ratio",
+   "value": "0.29,0.4,0.495,0.65,0.785,0.88,1,1,1,1",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=brazil]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.mass_ratio",
+   "value": "1,1,1,1,1,1,1,0.976684,0.950777,0.927461",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=brazil]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_dificulty_no_balast_slider_position",
+   "value": "100",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=brazil]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_slider_position",
+   "value": "110",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=imola]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
+   "value": "92.2897,89.71,87.1918,84.6154,82.2304,80.8625,79.6723,79.2276,78.7857,78.2558",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=imola]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.difficulty_ratio",
+   "value": "0.27,0.39,0.505,0.62,0.755,0.84,1,1,1,1",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=imola]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.mass_ratio",
+   "value": "1,1,1,1,1,1,1,0.979275,0.963731,0.937824",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=imola]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_dificulty_no_balast_slider_position",
+   "value": "100",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=imola]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_slider_position",
+   "value": "110",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=monaco]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
+   "value": "86.5137,84.1367,81.6955,79.3103,77.022,75.8182,74.692,74.1841,73.6421,73.1474",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=monaco]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.difficulty_ratio",
+   "value": "0.41,0.535,0.655,0.755,0.86,0.92,1,1,1,1",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=monaco]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.mass_ratio",
+   "value": "1,1,1,1,1,1,1,0.966321,0.932642,0.917098",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=monaco]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_dificulty_no_balast_slider_position",
+   "value": "100",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=monaco]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_slider_position",
+   "value": "110",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=montreal]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
+   "value": "84.0906,81.7309,79.3044,77.0901,74.7796,73.6689,72.5541,72.1163,71.6831,71.2495",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=montreal]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.difficulty_ratio",
+   "value": "0.285,0.39,0.48,0.615,0.795,0.88,1,1,1,1",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=montreal]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.mass_ratio",
+   "value": "1,1,1,1,1,1,1,0.974093,0.945596,0.92487",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=montreal]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_dificulty_no_balast_slider_position",
+   "value": "100",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=montreal]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_slider_position",
+   "value": "110",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=mexico]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
+   "value": "90.8678,88.4414,85.8302,83.2844,80.8819,79.6517,78.4632,77.9782,77.5067,76.9961",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=mexico]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.difficulty_ratio",
+   "value": "0.37,0.475,0.59,0.685,0.8,0.895,1,1,1,1",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=mexico]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.mass_ratio",
+   "value": "1,1,1,1,1,1,1,0.974093,0.945596,0.914508",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=mexico]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_dificulty_no_balast_slider_position",
+   "value": "100",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=mexico]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_slider_position",
+   "value": "110",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=austria]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
+   "value": "79.37,77.2414,74.9374,72.799,70.6851,69.6318,68.5448,68.1065,67.6882,67.286",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=austria]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.difficulty_ratio",
+   "value": "0.28,0.405,0.51,0.66,0.8,0.885,1,1,1,1",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=austria]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.mass_ratio",
+   "value": "1,1,1,1,1,1,1,0.974093,0.950777,0.932642",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=austria]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_dificulty_no_balast_slider_position",
+   "value": "100",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=austria]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_slider_position",
+   "value": "110",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=silverstone]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
+   "value": "107.693,104.719,101.754,98.7678,95.9052,94.3942,92.996,92.4421,91.8897,91.2844",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=silverstone]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.difficulty_ratio",
+   "value": "0.195,0.315,0.415,0.565,0.755,0.855,1,1,1,1",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=silverstone]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.mass_ratio",
+   "value": "1,1,1,1,1,1,1,0.976684,0.950777,0.927461",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=silverstone]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_dificulty_no_balast_slider_position",
+   "value": "100",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=silverstone]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_slider_position",
+   "value": "110",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=shanghai]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
+   "value": "110.298,107.339,104.256,101.203,98.2231,96.7682,95.2804,94.6919,94.1417,93.5876",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=shanghai]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.difficulty_ratio",
+   "value": "0.315,0.405,0.505,0.635,0.775,0.865,1,1,1,1",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=shanghai]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.mass_ratio",
+   "value": "1,1,1,1,1,1,1,0.974093,0.950777,0.92487",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=shanghai]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_dificulty_no_balast_slider_position",
+   "value": "100",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=shanghai]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_slider_position",
+   "value": "110",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=hungaroring]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
+   "value": "92.7887,90.163,87.5887,85.095,82.5898,81.2823,80.0839,79.616,79.1428,78.6518",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=hungaroring]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.difficulty_ratio",
+   "value": "0.42,0.48,0.585,0.695,0.805,0.88,1,1,1,1",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=hungaroring]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.mass_ratio",
+   "value": "1,1,1,1,1,1,1,0.981865,0.96114,0.940414",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=hungaroring]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_dificulty_no_balast_slider_position",
+   "value": "100",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=hungaroring]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_slider_position",
+   "value": "110",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=spa_francorchamps]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
+   "value": "127.776,124.263,120.934,117.193,113.679,112.038,110.37,109.648,108.799,108.013",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=spa_francorchamps]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.difficulty_ratio",
+   "value": "0.185,0.31,0.435,0.565,0.73,0.84,1,1,1,1",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=spa_francorchamps]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.mass_ratio",
+   "value": "1,1,1,1,1,1,1,0.971503,0.940414,0.898964",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=spa_francorchamps]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_dificulty_no_balast_slider_position",
+   "value": "100",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=spa_francorchamps]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_slider_position",
+   "value": "110",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=monza]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
+   "value": "96.6571,93.8445,91.3789,88.5964,86.0067,84.7004,83.4845,82.9634,82.4598,81.9918",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=monza]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.difficulty_ratio",
+   "value": "0.09,0.275,0.365,0.56,0.72,0.835,1,1,1,1",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=monza]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.mass_ratio",
+   "value": "1,1,1,1,1,1,1,0.974093,0.948187,0.92228",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=monza]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_dificulty_no_balast_slider_position",
+   "value": "100",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=monza]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_slider_position",
+   "value": "110",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=madrid]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
+   "value": "112.116,109.034,105.922,102.806,99.8306,98.2664,96.8317,96.2257,95.6401,95.0926",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=madrid]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.difficulty_ratio",
+   "value": "0.365,0.46,0.575,0.67,0.8,0.895,1,1,1,1",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=madrid]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.mass_ratio",
+   "value": "1,1,1,1,1,1,1,0.981865,0.950777,0.937824",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=madrid]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_dificulty_no_balast_slider_position",
+   "value": "100",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=madrid]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_slider_position",
+   "value": "110",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=catalunya]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
+   "value": "89.8493,87.3542,84.9532,82.5733,80.0262,78.7574,77.6059,77.1254,76.6313,76.2342",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=catalunya]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.difficulty_ratio",
+   "value": "0.355,0.46,0.53,0.645,0.78,0.865,1,1,1,1",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=catalunya]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.mass_ratio",
+   "value": "1,1,1,1,1,1,1,0.979275,0.955959,0.937824",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=catalunya]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_dificulty_no_balast_slider_position",
+   "value": "100",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=catalunya]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_slider_position",
+   "value": "110",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=suzuka]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
+   "value": "108.265,105.08,102.174,99.2131,96.3107,94.9107,93.4696,92.9454,92.384,91.7878",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=suzuka]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.difficulty_ratio",
+   "value": "0.24,0.38,0.5,0.64,0.76,0.86,1,1,1,1",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=suzuka]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.mass_ratio",
+   "value": "1,1,1,1,1,1,1,0.971503,0.945596,0.927461",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=suzuka]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_dificulty_no_balast_slider_position",
+   "value": "100",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=suzuka]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_slider_position",
+   "value": "110",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=melbourne]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
+   "value": "94.905,92.5613,89.6187,87.021,84.428,83.1883,81.9343,81.4444,80.982,80.4167",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=melbourne]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.difficulty_ratio",
+   "value": "0.26,0.375,0.525,0.625,0.755,0.855,1,1,1,1",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=melbourne]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.mass_ratio",
+   "value": "1,1,1,1,1,1,1,0.971503,0.955959,0.932642",
+   "create": true,
+   "type": 8
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=melbourne]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_dificulty_no_balast_slider_position",
+   "value": "100",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "tracks.Track[_metadata_=melbourne]",
+   "field": "ai_track_difficulties.f1_1990_vehicle_package.max_slider_position",
+   "value": "110",
+   "create": true,
+   "type": 0
+  }
+ ]
+}

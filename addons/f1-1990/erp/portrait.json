@@ -1,0 +1,70 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.characters.message_avatars.texarray.image",
+   "source": "erp/portrait/portrait.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.characters.message_avatars.texarray",
+   "source": "erp/portrait/portrait.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_customisation.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.characters.message_avatars.texarray.image",
+   "source": "erp/portrait/portrait.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_customisation.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.characters.message_avatars.texarray",
+   "source": "erp/portrait/portrait.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_st_hub.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.characters.message_avatars.texarray.image",
+   "source": "erp/portrait/portrait.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_st_hub.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.characters.message_avatars.texarray",
+   "source": "erp/portrait/portrait.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.characters.message_avatars.texarray.image",
+   "source": "erp/portrait/portrait.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.characters.message_avatars.texarray",
+   "source": "erp/portrait/portrait.erpk"
+  },
+  {
+   "op": "patch-pkg",
+   "erp": "2025_asset_groups/ui_package/databases.erp",
+   "resource": "eaid://ui_package/databases/overrides.uidb",
+   "fragment": 0,
+   "edits": [
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.characters.Contents.message_avatars.Contents",
+     "src": "[Name=message_graeme_lowdon]",
+     "as": "message_flavio",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/characters/message_flavio.tif"
+     }
+    }
+   ]
+  }
+ ]
+}

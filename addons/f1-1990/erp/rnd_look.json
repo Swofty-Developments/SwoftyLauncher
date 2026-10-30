@@ -1,0 +1,289 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.career.f1990_rnd.rnd_dept_icons_small.texarray.image",
+   "source": "erp/rnd_look/rnd_look.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.career.f1990_rnd.rnd_dept_icons_small.texarray",
+   "source": "erp/rnd_look/rnd_look.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_r_and_d.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.career.f1990_rnd.rnd_dept_icons_small.texarray.image",
+   "source": "erp/rnd_look/rnd_look.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_r_and_d.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.career.f1990_rnd.rnd_dept_icons_small.texarray",
+   "source": "erp/rnd_look/rnd_look.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.career.f1990_rnd.rnd_wheel_icon.texarray.image",
+   "source": "erp/rnd_look/rnd_look.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.career.f1990_rnd.rnd_wheel_icon.texarray",
+   "source": "erp/rnd_look/rnd_look.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.career.f1990_rnd.rnd_wheel_icon.texarray.image",
+   "source": "erp/rnd_look/rnd_look.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.career.f1990_rnd.rnd_wheel_icon.texarray",
+   "source": "erp/rnd_look/rnd_look.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.career.f1990_rnd.rnd_department_strips.texarray.image",
+   "source": "erp/rnd_look/rnd_look.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.career.f1990_rnd.rnd_department_strips.texarray",
+   "source": "erp/rnd_look/rnd_look.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.career.f1990_rnd.rnd_department_strips.texarray.image",
+   "source": "erp/rnd_look/rnd_look.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.career.f1990_rnd.rnd_department_strips.texarray",
+   "source": "erp/rnd_look/rnd_look.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_r_and_d.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.career.f1990_rnd.dept_card_icons.texarray.image",
+   "source": "erp/rnd_look/rnd_look.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_r_and_d.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.career.f1990_rnd.dept_card_icons.texarray",
+   "source": "erp/rnd_look/rnd_look.erpk"
+  },
+  {
+   "op": "patch-pkg",
+   "erp": "2025_asset_groups/ui_package/databases.erp",
+   "resource": "eaid://ui_package/databases/overrides.uidb",
+   "fragment": 0,
+   "edits": [
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.career.Contents",
+     "src": "rnd_om_xm",
+     "as": "f1990_rnd",
+     "set": {
+      "Name": "f1990_rnd"
+     }
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_dept_icons_small.TextureArrayName",
+     "value": "ui_package/art/texture_arrays/overrides.uidb/overrides.career.f1990_rnd.rnd_dept_icons_small.texarray"
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_dept_icons_small.Contents[Name=aero].Value",
+     "value": "ui_package/art/textures/f1990/rnd/rnd_dept_icons_small/aero.tif"
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_dept_icons_small.Contents[Name=chassis].Value",
+     "value": "ui_package/art/textures/f1990/rnd/rnd_dept_icons_small/chassis.tif"
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_dept_icons_small.Contents[Name=maintenance].Value",
+     "value": "ui_package/art/textures/f1990/rnd/rnd_dept_icons_small/maintenance.tif"
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_dept_icons_small.Contents[Name=engine].Value",
+     "value": "ui_package/art/textures/f1990/rnd/rnd_dept_icons_small/engine.tif"
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_dept_icons_small.Contents",
+     "src": "[Name=engine]",
+     "as": "tyres",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/rnd/rnd_dept_icons_small/tyres.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_dept_icons_small.Contents",
+     "src": "[Name=tyres]",
+     "as": "error_department",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/rnd/rnd_dept_icons_small/error_department.tif"
+     }
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_wheel_icon.TextureArrayName",
+     "value": "ui_package/art/texture_arrays/overrides.uidb/overrides.career.f1990_rnd.rnd_wheel_icon.texarray"
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_wheel_icon.Contents[Name=aero].Value",
+     "value": "ui_package/art/textures/f1990/rnd/rnd_wheel_icon/aero.tif"
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_wheel_icon.Contents[Name=chassis].Value",
+     "value": "ui_package/art/textures/f1990/rnd/rnd_wheel_icon/chassis.tif"
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_wheel_icon.Contents[Name=maintenance].Value",
+     "value": "ui_package/art/textures/f1990/rnd/rnd_wheel_icon/maintenance.tif"
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_wheel_icon.Contents[Name=engine].Value",
+     "value": "ui_package/art/textures/f1990/rnd/rnd_wheel_icon/engine.tif"
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_wheel_icon.Contents[Name=regulation].Value",
+     "value": "ui_package/art/textures/f1990/rnd/rnd_wheel_icon/regulation.tif"
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_wheel_icon.Contents[Name=shutdown].Value",
+     "value": "ui_package/art/textures/f1990/rnd/rnd_wheel_icon/shutdown.tif"
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_wheel_icon.Contents",
+     "src": "[Name=shutdown]",
+     "as": "tyres",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/rnd/rnd_wheel_icon/tyres.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_wheel_icon.Contents",
+     "src": "[Name=tyres]",
+     "as": "error_department",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/rnd/rnd_wheel_icon/error_department.tif"
+     }
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_department_strips.TextureArrayName",
+     "value": "ui_package/art/texture_arrays/overrides.uidb/overrides.career.f1990_rnd.rnd_department_strips.texarray"
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_department_strips.Contents[Name=rnd_aero_strip].Value",
+     "value": "ui_package/art/textures/f1990/rnd/rnd_department_strips/rnd_aero_strip.tif"
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_department_strips.Contents[Name=rnd_chassis_strip].Value",
+     "value": "ui_package/art/textures/f1990/rnd/rnd_department_strips/rnd_chassis_strip.tif"
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_department_strips.Contents[Name=rnd_engine_strip].Value",
+     "value": "ui_package/art/textures/f1990/rnd/rnd_department_strips/rnd_engine_strip.tif"
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_department_strips.Contents[Name=rnd_maintenance_strip].Value",
+     "value": "ui_package/art/textures/f1990/rnd/rnd_department_strips/rnd_maintenance_strip.tif"
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_department_strips.Contents",
+     "src": "[Name=rnd_maintenance_strip]",
+     "as": "rnd_tyres_strip",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/rnd/rnd_department_strips/rnd_tyres_strip.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.career.Contents.f1990_rnd.Contents.rnd_department_strips.Contents",
+     "src": "[Name=rnd_tyres_strip]",
+     "as": "rnd_error_department_strip",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/rnd/rnd_department_strips/rnd_error_department_strip.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.career.Contents.f1990_rnd.Contents",
+     "src": "rnd_dept_icons_small",
+     "as": "dept_card_icons",
+     "set": {
+      "Name": "dept_card_icons"
+     }
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.dept_card_icons.TextureArrayName",
+     "value": "ui_package/art/texture_arrays/overrides.uidb/overrides.career.f1990_rnd.dept_card_icons.texarray"
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.dept_card_icons.Contents[Name=aero].Value",
+     "value": "ui_package/art/textures/f1990/rnd/dept_card_icons/aero.tif"
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.dept_card_icons.Contents[Name=chassis].Value",
+     "value": "ui_package/art/textures/f1990/rnd/dept_card_icons/chassis.tif"
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.dept_card_icons.Contents[Name=maintenance].Value",
+     "value": "ui_package/art/textures/f1990/rnd/dept_card_icons/maintenance.tif"
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.dept_card_icons.Contents[Name=engine].Value",
+     "value": "ui_package/art/textures/f1990/rnd/dept_card_icons/engine.tif"
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.dept_card_icons.Contents[Name=tyres].Value",
+     "value": "ui_package/art/textures/f1990/rnd/dept_card_icons/tyres.tif"
+    },
+    {
+     "op": "set-value",
+     "path": "overrides.Contents.career.Contents.f1990_rnd.Contents.dept_card_icons.Contents[Name=error_department].Value",
+     "value": "ui_package/art/textures/f1990/rnd/dept_card_icons/error_department.tif"
+    }
+   ]
+  }
+ ]
+}

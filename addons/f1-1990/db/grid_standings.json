@@ -1,0 +1,349 @@
+{
+ "schema_version": 1,
+ "fields": {
+  "entrants.standings.standings": [
+   "_driver_reference_instancecount_",
+   "_metadata_",
+   "driver_reference_0._metadata_",
+   "driver_reference_0.driver",
+   "driver_reference_0.driver_customisation",
+   "driver_reference_1._metadata_",
+   "driver_reference_1.driver",
+   "driver_reference_1.driver_customisation",
+   "driver_reference_10._metadata_",
+   "driver_reference_10.driver",
+   "driver_reference_10.driver_customisation",
+   "driver_reference_11._metadata_",
+   "driver_reference_11.driver",
+   "driver_reference_11.driver_customisation",
+   "driver_reference_12._metadata_",
+   "driver_reference_12.driver",
+   "driver_reference_12.driver_customisation",
+   "driver_reference_13._metadata_",
+   "driver_reference_13.driver",
+   "driver_reference_13.driver_customisation",
+   "driver_reference_14._metadata_",
+   "driver_reference_14.driver",
+   "driver_reference_14.driver_customisation",
+   "driver_reference_15._metadata_",
+   "driver_reference_15.driver",
+   "driver_reference_15.driver_customisation",
+   "driver_reference_16._metadata_",
+   "driver_reference_16.driver",
+   "driver_reference_16.driver_customisation",
+   "driver_reference_17._metadata_",
+   "driver_reference_17.driver",
+   "driver_reference_17.driver_customisation",
+   "driver_reference_18._metadata_",
+   "driver_reference_18.driver",
+   "driver_reference_18.driver_customisation",
+   "driver_reference_19._metadata_",
+   "driver_reference_19.driver",
+   "driver_reference_19.driver_customisation",
+   "driver_reference_2._metadata_",
+   "driver_reference_2.driver",
+   "driver_reference_2.driver_customisation",
+   "driver_reference_20._metadata_",
+   "driver_reference_20.driver",
+   "driver_reference_20.driver_customisation",
+   "driver_reference_21._metadata_",
+   "driver_reference_21.driver",
+   "driver_reference_21.driver_customisation",
+   "driver_reference_3._metadata_",
+   "driver_reference_3.driver",
+   "driver_reference_3.driver_customisation",
+   "driver_reference_4._metadata_",
+   "driver_reference_4.driver",
+   "driver_reference_4.driver_customisation",
+   "driver_reference_5._metadata_",
+   "driver_reference_5.driver",
+   "driver_reference_5.driver_customisation",
+   "driver_reference_6._metadata_",
+   "driver_reference_6.driver",
+   "driver_reference_6.driver_customisation",
+   "driver_reference_7._metadata_",
+   "driver_reference_7.driver",
+   "driver_reference_7.driver_customisation",
+   "driver_reference_8._metadata_",
+   "driver_reference_8.driver",
+   "driver_reference_8.driver_customisation",
+   "driver_reference_9._metadata_",
+   "driver_reference_9.driver",
+   "driver_reference_9.driver_customisation"
+  ]
+ },
+ "ops": [
+  {
+   "op": "add-row",
+   "table": "entrants.standings",
+   "from": "entrants.standings.standings[_metadata_=f1_drivers_2025]",
+   "set": {
+    "_metadata_": "f1_drivers_1989"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_0",
+   "field": "_metadata_",
+   "value": "alain_prost"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_0",
+   "field": "driver",
+   "value": "f1990_alain_prost"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_1",
+   "field": "_metadata_",
+   "value": "ayrton_senna"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_1",
+   "field": "driver",
+   "value": "f1990_ayrton_senna"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_2",
+   "field": "_metadata_",
+   "value": "riccardo_patrese"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_2",
+   "field": "driver",
+   "value": "f1990_riccardo_patrese"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_3",
+   "field": "_metadata_",
+   "value": "nigel_mansell"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_3",
+   "field": "driver",
+   "value": "f1990_nigel_mansell"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_4",
+   "field": "_metadata_",
+   "value": "thierry_boutsen"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_4",
+   "field": "driver",
+   "value": "f1990_thierry_boutsen"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_5",
+   "field": "_metadata_",
+   "value": "alessandro_nannini"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_5",
+   "field": "driver",
+   "value": "f1990_alessandro_nannini"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_6",
+   "field": "_metadata_",
+   "value": "gerhard_berger"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_6",
+   "field": "driver",
+   "value": "f1990_gerhard_berger"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_7",
+   "field": "_metadata_",
+   "value": "nelson_piquet"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_7",
+   "field": "driver",
+   "value": "f1990_nelson_piquet"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_8",
+   "field": "_metadata_",
+   "value": "jean_alesi"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_8",
+   "field": "driver",
+   "value": "f1990_jean_alesi"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_9",
+   "field": "_metadata_",
+   "value": "derek_warwick"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_9",
+   "field": "driver",
+   "value": "f1990_derek_warwick"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_10",
+   "field": "_metadata_",
+   "value": "michele_alboreto"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_10",
+   "field": "driver",
+   "value": "f1990_michele_alboreto"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_11",
+   "field": "_metadata_",
+   "value": "stefano_modena"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_11",
+   "field": "driver",
+   "value": "f1990_stefano_modena"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_12",
+   "field": "_metadata_",
+   "value": "pierluigi_martini"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_12",
+   "field": "driver",
+   "value": "f1990_pierluigi_martini"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_13",
+   "field": "_metadata_",
+   "value": "andrea_de_cesaris"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_13",
+   "field": "driver",
+   "value": "f1990_andrea_de_cesaris"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_14",
+   "field": "_metadata_",
+   "value": "mauricio_gugelmin"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_14",
+   "field": "driver",
+   "value": "f1990_mauricio_gugelmin"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_15",
+   "field": "_metadata_",
+   "value": "satoru_nakajima"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_15",
+   "field": "driver",
+   "value": "f1990_satoru_nakajima"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_16",
+   "field": "_metadata_",
+   "value": "philippe_alliot"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_16",
+   "field": "driver",
+   "value": "f1990_philippe_alliot"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_17",
+   "field": "_metadata_",
+   "value": "ivan_capelli"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_17",
+   "field": "driver",
+   "value": "f1990_ivan_capelli"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_18",
+   "field": "_metadata_",
+   "value": "nicola_larini"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_18",
+   "field": "driver",
+   "value": "f1990_nicola_larini"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_19",
+   "field": "_metadata_",
+   "value": "eric_bernard"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_19",
+   "field": "driver",
+   "value": "f1990_eric_bernard"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_20",
+   "field": "_metadata_",
+   "value": "aguri_suzuki"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_20",
+   "field": "driver",
+   "value": "f1990_aguri_suzuki"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_21",
+   "field": "_metadata_",
+   "value": "martin_donnelly"
+  },
+  {
+   "op": "set",
+   "select": "entrants.standings.standings[_metadata_=f1_drivers_1989].driver_reference_21",
+   "field": "driver",
+   "value": "f1990_martin_donnelly"
+  }
+ ]
+}

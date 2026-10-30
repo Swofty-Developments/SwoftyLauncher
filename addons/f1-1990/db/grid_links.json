@@ -1,0 +1,18 @@
+{
+ "schema_version": 1,
+ "fields": {},
+ "ops": [
+  {
+   "op": "set",
+   "select": "game_setup.game_setup_modes.game_setup_mode[_metadata_=f1_1990]",
+   "field": "entrant_setup_modes",
+   "value": "f1_1990"
+  },
+  {
+   "op": "set",
+   "select": "content_sets.content_set[_metadata_=2026]",
+   "field": "available_entrant_lists_0.entrant_lists",
+   "value": "f1_generic,f1_custom_team,f1_2024_story_prologue,f1_2024_story,f1_2025_story,f1_career_2025,f1_2025,f1_career_2025_driver_pool,f1_career_2025_reserve_drivers,f1_2025_with_konnersport,f1_world,f2_2025,f2_2024,career_f2_2024_for_f1_2025,f1_2024_story_zenith_prologue,f1_2024_story_zenith_a,f1_2024_story_zenith_b,f1_2025_equal_performance,f1_custom_team_2025_equal_performance,f1_2025_with_zenith,f1_2026,f1_2026_equal_performance,f1_2025_driver_pool,f1_career_2026,f1_career_2026_driver_pool,f1_career_2026_reserve_drivers,f1_generic_2026,f1_custom_team_2026,f2_2026,f1_1990,f1_career_1990"
+  }
+ ]
+}

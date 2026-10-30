@@ -1,0 +1,7 @@
+{"palette": {"red": [196, 22, 26], "white": [236, 236, 232], "black": [22, 22, 24]},
+ "rules": [
+  {"colour": "red"},
+  {"colour": "white", "parts": ["topcanopy_bm", "safetycell"], "box": {"y": [0.30, 0.50], "t": [0.10, 0.52]}},
+  {"colour": "white", "parts": ["rearwing_bl", "rearwing_br", "frontwing"]},
+  {"colour": "white", "box": {"x": [0.40, 9], "y": [-0.12, -0.06], "t": [0.12, 0.70]}}
+ ]}

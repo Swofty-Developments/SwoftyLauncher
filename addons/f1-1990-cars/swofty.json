@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "id": "swofty.f1-1990-cars",
+  "name": "F1 1990 Cars (private)",
+  "version": "0.1.0",
+  "author": "Swofty",
+  "description": "The 13 1990 car models for the f1_1990 vehicle package of F1 1990, with 13-inch tyres. Private test content: Codemasters classics from Jefry. Not for release.",
+  "license": "LicenseRef-private",
+  "kind": [
+    "database",
+    "files"
+  ],
+  "category": "cars",
+  "compat": {
+    "game": "f1_25",
+    "game_builds": [
+      ">=25251167"
+    ],
+    "seasons": [
+      "f1_2026"
+    ],
+    "launcher": ">=1.3.0"
+  },
+  "requires": [
+    {
+      "id": "swofty.core",
+      "version": ">=0.2.12"
+    },
+    {
+      "id": "swofty.f1-1990",
+      "version": ">=0.1.0"
+    }
+  ],
+  "operations": {
+    "database": [
+      "db/test.json",
+      "db/ai.json"
+    ],
+    "assets": [
+      "assets/cars.json",
+      "assets/ai.json"
+    ],
+    "files": [
+      {
+        "source": "video/f1_1990_intro.bik",
+        "target": "videos/f1_1990_intro.bik"
+      }
+    ]
+  },
+  "load_after": [
+    "swofty.f1-1990"
+  ],
+  "options": [
+    {
+      "id": "test_grand_prix",
+      "type": "choice",
+      "label": "Test cars in Grand Prix",
+      "default": "off",
+      "description": "Test only, off by default (Grand Prix stays stock): puts 1990 cars on the F1 2026 Grand Prix grid: Ferrari seats, all 22, Larrousse/Dallara on the Williams/Haas seats, or all 22 B-spec cars.",
+      "values": [
+        {
+          "value": "off",
+          "label": "Off"
+        },
+        {
+          "value": "ferrari",
+          "label": "Ferrari only"
+        },
+        {
+          "value": "all",
+          "label": "All 22"
+        },
+        {
+          "value": "myteam",
+          "label": "My Team folders"
+        },
+        {
+          "value": "bspec",
+          "label": "All 22, B-spec"
+        }
+      ],
+      "binds": "db"
+    }
+  ]
+}

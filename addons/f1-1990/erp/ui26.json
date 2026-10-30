@@ -1,0 +1,341 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
+   "resource": "eaid://ui_package/art/components/career/laptop/sl_constructor_stack.idf",
+   "source": "ui/sl_constructor_stack.idf"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
+   "resource": "eaid://ui_package/art/components/career/laptop/sl_constructor_stack.idf",
+   "source": "ui/sl_constructor_stack.idf"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
+   "resource": "eaid://ui_package/art/components/career/laptop/r_and_d_performance_compare_stack_attach.idf",
+   "source": "ui/r_and_d_performance_compare_stack_attach.idf"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
+   "resource": "eaid://ui_package/art/components/career/laptop/r_and_d_performance_compare_stack_attach.idf",
+   "source": "ui/r_and_d_performance_compare_stack_attach.idf"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
+   "resource": "eaid://ui_package/art/components/career/rnd_tree/rnd_perf_stack.idf",
+   "source": "ui/rnd_perf_stack.idf"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
+   "resource": "eaid://ui_package/art/components/career/rnd_tree/rnd_perf_stack.idf",
+   "source": "ui/rnd_perf_stack.idf"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_r_and_d.erp",
+   "resource": "eaid://ui_package/art/components/career/rnd_tree/rnd_perf_stack.idf",
+   "source": "ui/rnd_perf_stack.idf"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/screens/laptop_r_and_d_departments_container.erp",
+   "resource": "eaid://ui_package/art/components/career/rnd_tree/rnd_perf_stack.idf",
+   "source": "ui/rnd_perf_stack.idf"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
+   "resource": "eaid://ui_package/art/components/team_hq/research/perf_stack.idf",
+   "source": "ui/perf_stack.idf"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
+   "resource": "eaid://ui_package/art/components/team_hq/research/perf_stack.idf",
+   "source": "ui/perf_stack.idf"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_r_and_d.erp",
+   "resource": "eaid://ui_package/art/components/team_hq/research/perf_stack.idf",
+   "source": "ui/perf_stack.idf"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/screens/laptop_driver_upgrades.erp",
+   "resource": "eaid://ui_package/art/components/team_hq/research/perf_stack.idf",
+   "source": "ui/perf_stack.idf"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/screens/laptop_fit_upgrades.erp",
+   "resource": "eaid://ui_package/art/components/team_hq/research/perf_stack.idf",
+   "source": "ui/perf_stack.idf"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_career_season_setup.erp",
+   "resource": "eaid://ui_package/art/components/team_select/dc_ts_perf_panel.idf",
+   "source": "ui/dc_ts_perf_panel.idf"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
+   "resource": "eaid://ui_package/art/components/team_select/dc_ts_perf_panel.idf",
+   "source": "ui/dc_ts_perf_panel.idf"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/screens/driver_career_team_select.erp",
+   "resource": "eaid://ui_package/art/components/team_select/dc_ts_perf_panel.idf",
+   "source": "ui/dc_ts_perf_panel.idf"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/screens/team_hq_driver_career_team_select.erp",
+   "resource": "eaid://ui_package/art/components/team_select/dc_ts_perf_panel.idf",
+   "source": "ui/dc_ts_perf_panel.idf"
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_career_season_setup.erp",
+   "resource": "eaid://ui_package/art/components/tiles/tiles_general/1x1_sqr_carousel_team13.idf",
+   "type": "UILayout",
+   "sources": [
+    "ui/1x1_sqr_carousel_team13.idf"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
+   "resource": "eaid://ui_package/art/components/tiles/tiles_general/1x1_sqr_carousel_team13.idf",
+   "type": "UILayout",
+   "sources": [
+    "ui/1x1_sqr_carousel_team13.idf"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/screens/driver_career_team_select.erp",
+   "resource": "eaid://ui_package/art/components/tiles/tiles_general/1x1_sqr_carousel_team13.idf",
+   "type": "UILayout",
+   "sources": [
+    "ui/1x1_sqr_carousel_team13.idf"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/screens/team_hq_driver_career_team_select.erp",
+   "resource": "eaid://ui_package/art/components/tiles/tiles_general/1x1_sqr_carousel_team13.idf",
+   "type": "UILayout",
+   "sources": [
+    "ui/1x1_sqr_carousel_team13.idf"
+   ]
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_career_season_setup.erp",
+   "resource": "eaid://ui_package/art/screens/team_select/dc_team_select.idf",
+   "source": "ui/dc_team_select.idf"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
+   "resource": "eaid://ui_package/art/screens/team_select/dc_team_select.idf",
+   "source": "ui/dc_team_select.idf"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/screens/driver_career_team_select.erp",
+   "resource": "eaid://ui_package/art/screens/team_select/dc_team_select.idf",
+   "source": "ui/dc_team_select.idf"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/screens/team_hq_driver_career_team_select.erp",
+   "resource": "eaid://ui_package/art/screens/team_select/dc_team_select.idf",
+   "source": "ui/dc_team_select.idf"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
+   "resource": "eaid://ui_package/screens/laptop_standings.ui",
+   "source": "ui/laptop_standings.ui"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
+   "resource": "eaid://ui_package/screens/laptop_standings.ui",
+   "source": "ui/laptop_standings.ui"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
+   "resource": "eaid://ui_package/screens/laptop_overview.ui",
+   "source": "ui/laptop_overview.ui"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
+   "resource": "eaid://ui_package/screens/laptop_overview.ui",
+   "source": "ui/laptop_overview.ui"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_r_and_d.erp",
+   "resource": "eaid://ui_package/screens/laptop_fit_upgrades.ui",
+   "source": "ui/laptop_fit_upgrades.ui"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/screens/laptop_driver_upgrades.erp",
+   "resource": "eaid://ui_package/screens/laptop_fit_upgrades.ui",
+   "source": "ui/laptop_fit_upgrades.ui"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/screens/laptop_fit_upgrades.erp",
+   "resource": "eaid://ui_package/screens/laptop_fit_upgrades.ui",
+   "source": "ui/laptop_fit_upgrades.ui"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_career_season_setup.erp",
+   "resource": "eaid://ui_package/screens/driver_career_team_select.ui",
+   "source": "ui/driver_career_team_select.ui"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/screens/driver_career_team_select.erp",
+   "resource": "eaid://ui_package/screens/driver_career_team_select.ui",
+   "source": "ui/driver_career_team_select.ui"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
+   "resource": "eaid://ui_package/screens/team_hq_driver_career_team_select.ui",
+   "source": "ui/team_hq_driver_career_team_select.ui"
+  },
+  {
+   "op": "replace-resource",
+   "when": {
+    "cars": 26
+   },
+   "erp": "2025_asset_groups/ui_package/screens/team_hq_driver_career_team_select.erp",
+   "resource": "eaid://ui_package/screens/team_hq_driver_career_team_select.ui",
+   "source": "ui/team_hq_driver_career_team_select.ui"
+  }
+ ]
+}

@@ -1,0 +1,575 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package._asset_data_instancecount_",
+   "type": 0,
+   "value": "3133"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_0._metadata_",
+   "type": 2,
+   "value": "66657272617269"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_0.base_car",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_0.brake_line_settings_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_0.track_data_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_0.track_data_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_0.vehicle_performance_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_0.vehicle_performance_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_1._metadata_",
+   "type": 2,
+   "value": "666f7263655f696e646961"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_1.base_car",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_1.brake_line_settings_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_1.track_data_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_1.track_data_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_1.vehicle_performance_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_1.vehicle_performance_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_2._metadata_",
+   "type": 2,
+   "value": "676d5f636164696c6c6163"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_2.base_car",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_2.brake_line_settings_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_2.track_data_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_2.track_data_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_2.vehicle_performance_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_2.vehicle_performance_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_3._metadata_",
+   "type": 2,
+   "value": "68616173"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_3.base_car",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_3.brake_line_settings_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_3.track_data_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_3.track_data_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_3.vehicle_performance_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_3.vehicle_performance_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_4._metadata_",
+   "type": 2,
+   "value": "6c6f747573"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_4.base_car",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_4.brake_line_settings_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_4.track_data_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_4.track_data_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_4.vehicle_performance_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_4.vehicle_performance_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_5._metadata_",
+   "type": 2,
+   "value": "6d636c6172656e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_5.base_car",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_5.brake_line_settings_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_5.track_data_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_5.track_data_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_5.vehicle_performance_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_5.vehicle_performance_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_6._metadata_",
+   "type": 2,
+   "value": "6d65726365646573"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_6.base_car",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_6.brake_line_settings_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_6.track_data_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_6.track_data_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_6.vehicle_performance_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_6.vehicle_performance_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_7._metadata_",
+   "type": 2,
+   "value": "6d797465616d5f66657272617269"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_7.base_car",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_7.brake_line_settings_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_7.track_data_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_7.track_data_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_7.vehicle_performance_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_7.vehicle_performance_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_8._metadata_",
+   "type": 2,
+   "value": "6d797465616d5f686f6e6461"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_8.base_car",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_8.brake_line_settings_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_8.track_data_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_8.track_data_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_8.vehicle_performance_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_8.vehicle_performance_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_9._metadata_",
+   "type": 2,
+   "value": "72656462756c6c"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_9.base_car",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_9.brake_line_settings_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_9.track_data_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_9.track_data_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_9.vehicle_performance_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_9.vehicle_performance_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_10._metadata_",
+   "type": 2,
+   "value": "736175626572"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_10.base_car",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_10.brake_line_settings_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_10.track_data_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_10.track_data_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_10.vehicle_performance_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_10.vehicle_performance_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_11._metadata_",
+   "type": 2,
+   "value": "746f726f5f726f73736f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_11.base_car",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_11.brake_line_settings_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_11.track_data_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_11.track_data_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_11.vehicle_performance_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_11.vehicle_performance_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_12._metadata_",
+   "type": 2,
+   "value": "77696c6c69616d73"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_12.base_car",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_12.brake_line_settings_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_12.track_data_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_12.track_data_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_12.vehicle_performance_file_name",
+   "type": 2,
+   "value": "3c7465616d5f6e616d653e"
+  },
+  {
+   "op": "put-record",
+   "key": "ai.asset_data.f1_1990_vehicle_package.asset_data_12.vehicle_performance_file_path",
+   "type": 2,
+   "value": "656e7669726f6e6d656e745f7061636b6167652f747261636b732f3c747261636b5f6e616d653e2f61692f3c76656869636c655f7061636b6167653e2f3c7465616d5f6e616d653e2f"
+  },
+  {
+   "op": "set",
+   "select": "entrants.vehicles.vehicle_packages.vehicle_package[_metadata_=f1_1990]",
+   "field": "ai_package_folder",
+   "value": "f1_1990_vehicle_package"
+  },
+  {
+   "op": "set",
+   "select": "entrants.vehicles.vehicle_packages.vehicle_package[_metadata_=f1_1990b]",
+   "field": "ai_package_folder",
+   "value": "f1_1990_vehicle_package"
+  },
+  {
+   "op": "set",
+   "select": "entrants.vehicles.vehicle_packages.vehicle_package[_metadata_=f1_1990]",
+   "field": "available",
+   "value": "True"
+  }
+ ]
+}

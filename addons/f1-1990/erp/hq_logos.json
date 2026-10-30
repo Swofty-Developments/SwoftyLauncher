@@ -1,0 +1,998 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_g0_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a.head",
+    "erp/hq_logos/raceday_r_n_d_folder_a_g0.f1",
+    "erp/hq_logos/raceday_r_n_d_folder_a_g0.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_g0_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g0.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_folder_a_g0.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g0.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_folder_a.emb?context=2026-mclaren_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g0.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_g1_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a.head",
+    "erp/hq_logos/raceday_r_n_d_folder_a_g1.f1",
+    "erp/hq_logos/raceday_r_n_d_folder_a_g1.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_g1_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g1.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_folder_a_g1.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g1.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_folder_a.emb?context=2026-ferrari_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g1.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_g2_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a.head",
+    "erp/hq_logos/raceday_r_n_d_folder_a_g2.f1",
+    "erp/hq_logos/raceday_r_n_d_folder_a_g2.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_g2_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g2.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_folder_a_g2.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g2.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_folder_a.emb?context=2026-williams_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g2.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_g3_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a.head",
+    "erp/hq_logos/raceday_r_n_d_folder_a_g3.f1",
+    "erp/hq_logos/raceday_r_n_d_folder_a_g3.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_g3_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g3.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_folder_a_g3.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g3.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_folder_a.emb?context=2026-benetton_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g3.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_g4_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a.head",
+    "erp/hq_logos/raceday_r_n_d_folder_a_g4.f1",
+    "erp/hq_logos/raceday_r_n_d_folder_a_g4.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_g4_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g4.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_folder_a_g4.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g4.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_folder_a.emb?context=2026-tyrrell_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g4.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_g5_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a.head",
+    "erp/hq_logos/raceday_r_n_d_folder_a_g5.f1",
+    "erp/hq_logos/raceday_r_n_d_folder_a_g5.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_g5_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g5.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_folder_a_g5.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g5.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_folder_a.emb?context=2026-lotus_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g5.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_g6_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a.head",
+    "erp/hq_logos/raceday_r_n_d_folder_a_g6.f1",
+    "erp/hq_logos/raceday_r_n_d_folder_a_g6.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_g6_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g6.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_folder_a_g6.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g6.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_folder_a.emb?context=2026-leytonhouse_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g6.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_g7_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a.head",
+    "erp/hq_logos/raceday_r_n_d_folder_a_g7.f1",
+    "erp/hq_logos/raceday_r_n_d_folder_a_g7.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_g7_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g7.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_folder_a_g7.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g7.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_folder_a.emb?context=2026-larrousse_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g7.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_g8_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a.head",
+    "erp/hq_logos/raceday_r_n_d_folder_a_g8.f1",
+    "erp/hq_logos/raceday_r_n_d_folder_a_g8.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_g8_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g8.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_folder_a_g8.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g8.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_folder_a.emb?context=2026-ligier_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g8.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_g9_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a.head",
+    "erp/hq_logos/raceday_r_n_d_folder_a_g9.f1",
+    "erp/hq_logos/raceday_r_n_d_folder_a_g9.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_g9_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g9.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_folder_a_g9.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g9.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_folder_a.emb?context=2026-minardi_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_g9.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_ga_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a.head",
+    "erp/hq_logos/raceday_r_n_d_folder_a_ga.f1",
+    "erp/hq_logos/raceday_r_n_d_folder_a_ga.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_ga_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_ga.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_folder_a_ga.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_ga.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_folder_a.emb?context=2026-brabham_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_ga.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_gb_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a.head",
+    "erp/hq_logos/raceday_r_n_d_folder_a_gb.f1",
+    "erp/hq_logos/raceday_r_n_d_folder_a_gb.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_gb_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_gb.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_folder_a_gb.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_gb.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_folder_a.emb?context=2026-dallara_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_gb.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_gc_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a.head",
+    "erp/hq_logos/raceday_r_n_d_folder_a_gc.f1",
+    "erp/hq_logos/raceday_r_n_d_folder_a_gc.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_folder_a_gc_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_gc.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_folder_a_gc.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_gc.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_folder_a.emb?context=2026-arrows_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_folder_a_gc.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_g0_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a.head",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g0.f1",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g0.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_g0_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g0.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_notebook_a_g0.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g0.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_notebook_a.emb?context=2026-mclaren_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g0.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_g1_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a.head",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g1.f1",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g1.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_g1_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g1.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_notebook_a_g1.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g1.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_notebook_a.emb?context=2026-ferrari_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g1.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_g2_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a.head",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g2.f1",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g2.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_g2_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g2.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_notebook_a_g2.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g2.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_notebook_a.emb?context=2026-williams_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g2.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_g3_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a.head",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g3.f1",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g3.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_g3_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g3.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_notebook_a_g3.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g3.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_notebook_a.emb?context=2026-benetton_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g3.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_g4_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a.head",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g4.f1",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g4.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_g4_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g4.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_notebook_a_g4.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g4.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_notebook_a.emb?context=2026-tyrrell_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g4.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_g5_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a.head",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g5.f1",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g5.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_g5_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g5.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_notebook_a_g5.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g5.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_notebook_a.emb?context=2026-lotus_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g5.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_g6_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a.head",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g6.f1",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g6.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_g6_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g6.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_notebook_a_g6.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g6.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_notebook_a.emb?context=2026-leytonhouse_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g6.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_g7_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a.head",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g7.f1",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g7.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_g7_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g7.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_notebook_a_g7.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g7.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_notebook_a.emb?context=2026-larrousse_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g7.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_g8_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a.head",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g8.f1",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g8.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_g8_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g8.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_notebook_a_g8.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g8.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_notebook_a.emb?context=2026-ligier_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g8.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_g9_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a.head",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g9.f1",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g9.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_g9_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g9.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_notebook_a_g9.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g9.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_notebook_a.emb?context=2026-minardi_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_g9.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_ga_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a.head",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_ga.f1",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_ga.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_ga_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_ga.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_notebook_a_ga.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_ga.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_notebook_a.emb?context=2026-brabham_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_ga.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_gb_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a.head",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_gb.f1",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_gb.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_gb_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_gb.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_notebook_a_gb.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_gb.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_notebook_a.emb?context=2026-dallara_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_gb.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_gc_d.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a.head",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_gc.f1",
+    "erp/hq_logos/raceday_r_n_d_notebook_a_gc.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/race_day_r_n_d/raceday_r_n_d_notebook_a_gc_d.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_gc.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/race_day_r_n_d_area/raceday_r_n_d_notebook_a_gc.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_gc.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/f1_driver_hq/wep/f1_driver_hq.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/race_day_r_n_d_area/raceday_r_n_d_notebook_a.emb?context=2026-arrows_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/hq_logos/raceday_r_n_d_notebook_a_gc.bind"
+   ]
+  },
+  {
+   "op": "add-mipmaps",
+   "source": "erp/hq_logos/mipmaps/",
+   "target": "environment_package/core_assets/objects/textures/race_day_r_n_d/"
+  }
+ ]
+}

@@ -1,0 +1,8 @@
+{"palette": {"yellow": [250, 192, 18], "white": [236, 236, 232], "black": [22, 22, 24]},
+ "rules": [
+  {"colour": "yellow"},
+  {"colour": "white", "box": {"y": [-9, 0.62]}, "planes": [[0, 0.5, -1, -0.34], [0, -0.5, 1, 0.74]], "not_parts": ["rearwing", "frontflap", "frontwing", "frontspoiler"]},
+  {"colour": "black", "box": {"y": [0.14, 9]}, "planes": [[0, 0.5, -1, -0.10], [0, -0.5, 1, 0.34]], "not_parts": ["rearwing", "frontflap", "frontwing", "frontspoiler"]},
+  {"colour": "black", "parts": ["rearwing_bl", "rearwing_br"]},
+  {"colour": "black", "parts": ["frontwing"]}
+ ]}

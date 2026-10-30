@@ -1,0 +1,7 @@
+{"palette": {"white": [236, 236, 232], "navy": [30, 38, 86], "red": [200, 16, 46]},
+ "rules": [
+  {"colour": "white"},
+  {"colour": "navy", "box": {"y": [-9, 0.07]}},
+  {"colour": "red", "box": {"y": [0.07, 0.095]}},
+  {"colour": "navy", "parts": ["rearwing_top", "rearwing_bl", "rearwing_br", "suspension", "frontwing", "frontspoiler"]}
+ ]}

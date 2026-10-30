@@ -1,0 +1,1682 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_001.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_001.f1",
+    "erp/frontend/f1990_d_001.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_001.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_001.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_001_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_001.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_ayrton_senna",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_001.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_002.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_002.f1",
+    "erp/frontend/f1990_d_002.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_002.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_002.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_002_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_002.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_gerhard_berger",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_002.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_003.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_003.f1",
+    "erp/frontend/f1990_d_003.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_003.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_003.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_003_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_003.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_alain_prost",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_003.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_004.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_004.f1",
+    "erp/frontend/f1990_d_004.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_004.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_004.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_004_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_004.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_nigel_mansell",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_004.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_005.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_005.f1",
+    "erp/frontend/f1990_d_005.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_005.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_005.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_005_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_005.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_thierry_boutsen",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_005.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_006.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_006.f1",
+    "erp/frontend/f1990_d_006.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_006.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_006.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_006_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_006.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_riccardo_patrese",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_006.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_007.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_007.f1",
+    "erp/frontend/f1990_d_007.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_007.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_007.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_007_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_007.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_alessandro_nannini",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_007.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_008.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_008.f1",
+    "erp/frontend/f1990_d_008.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_008.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_008.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_008_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_008.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_nelson_piquet",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_008.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_009.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_009.f1",
+    "erp/frontend/f1990_d_009.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_009.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_009.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_009_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_009.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_satoru_nakajima",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_009.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_010.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_010.f1",
+    "erp/frontend/f1990_d_010.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_010.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_010.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_010_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_010.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_jean_alesi",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_010.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_011.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_011.f1",
+    "erp/frontend/f1990_d_011.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_011.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_011.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_011_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_011.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_derek_warwick",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_011.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_012.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_012.f1",
+    "erp/frontend/f1990_d_012.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_012.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_012.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_012_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_012.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_martin_donnelly",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_012.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_013.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_013.f1",
+    "erp/frontend/f1990_d_013.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_013.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_013.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_013_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_013.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_mauricio_gugelmin",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_013.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_014.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_014.f1",
+    "erp/frontend/f1990_d_014.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_014.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_014.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_014_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_014.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_ivan_capelli",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_014.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_015.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_015.f1",
+    "erp/frontend/f1990_d_015.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_015.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_015.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_015_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_015.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_nicola_larini",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_015.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_016.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_016.f1",
+    "erp/frontend/f1990_d_016.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_016.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_016.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_016_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_016.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_philippe_alliot",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_016.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_017.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_017.f1",
+    "erp/frontend/f1990_d_017.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_017.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_017.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_017_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_017.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_pierluigi_martini",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_017.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_018.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_018.f1",
+    "erp/frontend/f1990_d_018.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_018.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_018.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_018_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_018.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_paolo_barilla",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_018.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_019.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_019.f1",
+    "erp/frontend/f1990_d_019.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_019.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_019.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_019_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_019.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_david_brabham",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_019.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_020.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_020.f1",
+    "erp/frontend/f1990_d_020.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_020.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_020.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_020_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_020.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_stefano_modena",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_020.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_021.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_021.f1",
+    "erp/frontend/f1990_d_021.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_021.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_021.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_021_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_021.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_michele_alboreto",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_021.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_022.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_022.f1",
+    "erp/frontend/f1990_d_022.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_022.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_022.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_022_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_022.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_alex_caffi",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_022.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_023.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_023.f1",
+    "erp/frontend/f1990_d_023.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_023.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_023.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_023_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_023.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_eric_bernard",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_023.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_024.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_024.f1",
+    "erp/frontend/f1990_d_024.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_024.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_024.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_024_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_024.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_aguri_suzuki",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_024.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_025.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_025.f1",
+    "erp/frontend/f1990_d_025.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_025.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_025.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_025_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_025.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_emanuele_pirro",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_025.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_026.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_026.f1",
+    "erp/frontend/f1990_d_026.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_026.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_026.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_026_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_026.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_andrea_de_cesaris",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_026.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_027.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_027.f1",
+    "erp/frontend/f1990_d_027.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_027.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_027.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_027_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_027.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_gregor_foitek",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_027.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_028.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_028.f1",
+    "erp/frontend/f1990_d_028.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_028.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_028.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_028_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_028.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_gianni_morbidelli",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_028.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_029.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_029.f1",
+    "erp/frontend/f1990_d_029.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_029.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_029.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_029_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_029.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_bernd_schneider",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_029.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_030.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_030.f1",
+    "erp/frontend/f1990_d_030.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_030.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_030.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_030_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_030.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_roberto_moreno",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_030.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_031.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/driver.head",
+    "erp/frontend/f1990_d_031.f1",
+    "erp/frontend/f1990_d_031.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_driver_names/f1_drivername_f1990_d_031.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_d_031.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_driver_select_f1990_d_031_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_d_031.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_driver_select_name.emb?context=f1990_johnny_herbert",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_d_031.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_01.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/team.head",
+    "erp/frontend/f1990_01.f1",
+    "erp/frontend/f1990_01.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_01.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_01.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_team_select_f1990_01_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_01.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_vehicle_select_name.emb?context=mclaren_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_01.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_02.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/team.head",
+    "erp/frontend/f1990_02.f1",
+    "erp/frontend/f1990_02.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_02.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_02.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_team_select_f1990_02_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_02.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_vehicle_select_name.emb?context=ferrari_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_02.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_03.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/team.head",
+    "erp/frontend/f1990_03.f1",
+    "erp/frontend/f1990_03.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_03.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_03.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_team_select_f1990_03_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_03.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_vehicle_select_name.emb?context=williams_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_03.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_04.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/team.head",
+    "erp/frontend/f1990_04.f1",
+    "erp/frontend/f1990_04.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_04.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_04.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_team_select_f1990_04_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_04.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_vehicle_select_name.emb?context=benetton_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_04.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_05.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/team.head",
+    "erp/frontend/f1990_05.f1",
+    "erp/frontend/f1990_05.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_05.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_05.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_team_select_f1990_05_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_05.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_vehicle_select_name.emb?context=tyrrell_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_05.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_06.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/team.head",
+    "erp/frontend/f1990_06.f1",
+    "erp/frontend/f1990_06.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_06.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_06.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_team_select_f1990_06_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_06.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_vehicle_select_name.emb?context=lotus_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_06.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_07.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/team.head",
+    "erp/frontend/f1990_07.f1",
+    "erp/frontend/f1990_07.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_07.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_07.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_team_select_f1990_07_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_07.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_vehicle_select_name.emb?context=leytonhouse_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_07.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_08.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/team.head",
+    "erp/frontend/f1990_08.f1",
+    "erp/frontend/f1990_08.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_08.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_08.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_team_select_f1990_08_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_08.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_vehicle_select_name.emb?context=larrousse_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_08.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_09.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/team.head",
+    "erp/frontend/f1990_09.f1",
+    "erp/frontend/f1990_09.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_09.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_09.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_team_select_f1990_09_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_09.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_vehicle_select_name.emb?context=ligier_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_09.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_10.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/team.head",
+    "erp/frontend/f1990_10.f1",
+    "erp/frontend/f1990_10.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_10.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_10.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_team_select_f1990_10_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_10.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_vehicle_select_name.emb?context=minardi_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_10.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_11.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/team.head",
+    "erp/frontend/f1990_11.f1",
+    "erp/frontend/f1990_11.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_11.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_11.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_team_select_f1990_11_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_11.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_vehicle_select_name.emb?context=brabham_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_11.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_12.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/team.head",
+    "erp/frontend/f1990_12.f1",
+    "erp/frontend/f1990_12.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_12.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_12.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_team_select_f1990_12_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_12.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_vehicle_select_name.emb?context=dallara_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_12.bind"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_13.tif.image",
+   "type": "GfxSurfaceRes",
+   "sources": [
+    "erp/frontend/team.head",
+    "erp/frontend/f1990_13.f1",
+    "erp/frontend/f1990_13.f2"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/textures/main_front_end/names/f1_team_names/f1_teamname_f1990_13.tif",
+   "type": "GfxSRVResource",
+   "sources": [
+    "erp/frontend/f1990_13.srv"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/materials/main_front_end/names/mfe_2025_team_select_f1990_13_a.material",
+   "type": "GfxMaterialRes",
+   "sources": [
+    "erp/frontend/f1990_13.material"
+   ]
+  },
+  {
+   "op": "add-resource",
+   "erp": "2025_asset_groups/environment_package/second_world/main_front_end/wep/main_front_end.erp",
+   "resource": "eaid://environment_package/core_assets/objects/idf/main_front_end/mfe_2025_main_menu_vehicle_select_name.emb?context=arrows_1990",
+   "type": "GfxMatBindRes",
+   "sources": [
+    "erp/frontend/f1990_13.bind"
+   ]
+  },
+  {
+   "op": "add-mipmaps",
+   "source": "erp/frontend/mipmaps/",
+   "target": "environment_package/core_assets/objects/textures/main_front_end/names/"
+  }
+ ]
+}

@@ -1,0 +1,87 @@
+{
+ "scope": "f1_career_1990",
+ "year": "2026",
+ "season_start": "2026-02-11",
+ "events": {
+  "134": {
+   "event": "rw_las_vegas_26",
+   "stock": "2026-11-18",
+   "date": "2026-03-05"
+  },
+  "133": {
+   "event": "rw_brazil_26",
+   "stock": "2026-11-05",
+   "date": "2026-03-19"
+  },
+  "27": {
+   "event": "rw_imola",
+   "stock": "2025-05-15",
+   "date": "2026-05-07"
+  },
+  "117": {
+   "event": "rw_monaco_26",
+   "stock": "2026-06-04",
+   "date": "2026-05-21"
+  },
+  "116": {
+   "event": "rw_montreal_26",
+   "stock": "2026-05-21",
+   "date": "2026-06-04"
+  },
+  "132": {
+   "event": "rw_mexico_26",
+   "stock": "2026-10-29",
+   "date": "2026-06-18"
+  },
+  "119": {
+   "event": "rw_austria_26",
+   "stock": "2026-06-25",
+   "date": "2026-07-02"
+  },
+  "121": {
+   "event": "rw_silverstone_26",
+   "stock": "2026-07-02",
+   "date": "2026-07-09"
+  },
+  "111": {
+   "event": "rw_shanghai_26",
+   "stock": "2026-03-12",
+   "date": "2026-07-23"
+  },
+  "124": {
+   "event": "rw_hungaroring_26",
+   "stock": "2026-07-23",
+   "date": "2026-08-06"
+  },
+  "123": {
+   "event": "rw_spa_francorchamps_26",
+   "stock": "2026-07-16",
+   "date": "2026-08-20"
+  },
+  "127": {
+   "event": "rw_monza_26",
+   "stock": "2026-09-03",
+   "date": "2026-09-03"
+  },
+  "128": {
+   "event": "rw_madrid_26",
+   "stock": "2026-09-10",
+   "date": "2026-09-17"
+  },
+  "118": {
+   "event": "rw_catalunya_26",
+   "stock": "2026-06-11",
+   "date": "2026-09-24"
+  },
+  "112": {
+   "event": "rw_suzuka_26",
+   "stock": "2026-03-26",
+   "date": "2026-10-15"
+  },
+  "110": {
+   "event": "rw_melbourne_26",
+   "stock": "2026-03-05",
+   "date": "2026-10-29"
+  }
+ }
+}

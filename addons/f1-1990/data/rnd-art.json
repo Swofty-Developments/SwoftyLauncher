@@ -1,0 +1,38 @@
+{
+ "frames": {
+  "f1990_raised_nose": "om_xm_front_nose_downforce",
+  "f1990_diffuser_profile": "om_xm_diffuser_refined_strake_layout",
+  "f1990_anhedral_front_wing": "om_xm_front_wing_main_plane",
+  "f1990_multi_element_rear_wing": "om_xm_rear_wing_secondary_elements",
+  "f1990_sidepod_cooling": "om_xm_side_pod_profile_drag",
+  "f1990_flat_bottom_package": "om_xm_diffuser_redesigned_geometry",
+  "f1990_carbon_tub": "om_xm_monocoque_structure",
+  "f1990_weight_programme": "om_xm_cockpit_padding",
+  "f1990_pushrod_suspension": "om_xm_suspension_geometry",
+  "f1990_bspec_package": "om_xm_engine_cover_reduction",
+  "f1990_carbon_brakes": "om_xm_pad_material",
+  "f1990_active_suspension": "om_xm_heave_dampers",
+  "f1990_camshaft_profiles": "om_xm_valve_timing",
+  "f1990_valve_train": "om_xm_crankshaft",
+  "f1990_fuel_mapping": "om_xm_fuel_flow_regulator",
+  "f1990_fuel_package": "om_xm_fuel_injection_system_efficiency",
+  "f1990_evolution_spec": "om_xm_air_intake_manifold",
+  "f1990_quali_rev_limit": "om_xm_ignition_system",
+  "f1990_quali_engine": "om_xm_lightweight_pistons",
+  "f1990_gearbox_internals": "om_xm_gearbox_wear_1",
+  "f1990_engine_rebuild": "om_xm_ice_wear_1",
+  "f1990_electrics": "om_xm_control_electronics_wear_1",
+  "f1990_cooling_system": "om_xm_ice_wear_2",
+  "f1990_gearbox_casing": "om_xm_gearbox_wear_2",
+  "f1990_semi_auto_gearbox": "om_xm_gearbox_wear_3",
+  "f1990_semi_auto_gearbox_ferrari": "om_xm_gearbox_wear_3"
+ },
+ "milestones": {
+  "bspec": "f1990_bspec_package",
+  "bspec_hash": "0x1afed310"
+ },
+ "qualifying": {
+  "f1990_quali_rev_limit": "0x1305fa1e",
+  "f1990_quali_engine": "0x4e03ba09"
+ }
+}

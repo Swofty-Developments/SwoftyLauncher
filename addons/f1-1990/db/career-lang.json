@@ -1,0 +1,1637 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_season_length",
+   "value": "1990 Season"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_agent_full_name",
+   "value": "Flavio Briatore"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_agent_last_name",
+   "value": "Briatore"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_gp_las",
+   "value": "UNITED STATES GRAND PRIX 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_gp_bra",
+   "value": "GRANDE PRÊMIO DO BRASIL 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_gp_imo",
+   "value": "GRAN PREMIO DI SAN MARINO 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_gp_mco",
+   "value": "GRAND PRIX DE MONACO 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_gp_can",
+   "value": "GRAND PRIX DU CANADA 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_gp_mex",
+   "value": "GRAN PREMIO DE MÉXICO 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_gp_aut",
+   "value": "GRAND PRIX DE FRANCE 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_gp_gbr",
+   "value": "BRITISH GRAND PRIX 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_gp_chn",
+   "value": "GROSSER PREIS VON DEUTSCHLAND 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_gp_hun",
+   "value": "MAGYAR NAGYDÍJ 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_gp_bel",
+   "value": "GRAND PRIX DE BELGIQUE 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_gp_ita",
+   "value": "GRAN PREMIO D’ITALIA 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_gp_mad",
+   "value": "GRANDE PRÉMIO DE PORTUGAL 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_gp_cat",
+   "value": "GRAN PREMIO DE ESPAÑA 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_gp_jpn",
+   "value": "JAPANESE GRAND PRIX 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_gp_aus",
+   "value": "AUSTRALIAN GRAND PRIX 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_agent_first_name",
+   "value": "Flavio"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_career_content",
+   "value": "Carreira 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_career_content_description",
+   "value": "Jogue a carreira usando conteúdo, regras, equipes e pistas de 1990."
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_season",
+   "value": "F1® 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_championship_season",
+   "value": "1990 FIA Formula One World Championship™"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_championship_season_loading_screen",
+   "value": "1990 FIA Formula One World Championship{s:60_bold_drp_shw_TM}™{/s}"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_trophy_drivers_champion",
+   "value": "Campeonato de Pilotos da F1 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_gp_las_short",
+   "value": "GRAND PRIX DE LAS VEGAS"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_gp_bra_short",
+   "value": "GRAND PRIX DO BRASIL"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_gp_imo_short",
+   "value": "GRAND PRIX DE ÍMOLA"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_gp_mco_short",
+   "value": "GRAND PRIX DE MÔNACO"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_gp_can_short",
+   "value": "GRAND PRIX DO CANADÁ"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_gp_mex_short",
+   "value": "GRAND PRIX DA CIDADE DO MÉXICO"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_gp_aut_short",
+   "value": "GRAND PRIX DA ÁUSTRIA"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_gp_gbr_short",
+   "value": "GRAND PRIX DA GRÃ-BRETANHA"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_gp_chn_short",
+   "value": "GRAND PRIX DA CHINA"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_gp_hun_short",
+   "value": "GRAND PRIX DA HUNGRIA"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_gp_bel_short",
+   "value": "GRAND PRIX DA BÉLGICA"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_gp_ita_short",
+   "value": "GRAND PRIX DE MONZA"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_gp_mad_short",
+   "value": "GRAND PRIX DA ESPANHA"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_gp_cat_short",
+   "value": "GRAND PRIX DA BARCELONA-CATALUNYA"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_gp_jpn_short",
+   "value": "GRAND PRIX DO JAPÃO"
+  },
+  {
+   "op": "lang.set",
+   "language": "bra",
+   "key": "lng_f1990_gp_aus_short",
+   "value": "GRAND PRIX DA AUSTRÁLIA"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_agent_first_name",
+   "value": "Flavio"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_career_content",
+   "value": "1990 Carrière"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_career_content_description",
+   "value": "Speel carrière met de content, reglementen, teams en circuits van 1990."
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_season",
+   "value": "F1® 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_championship_season",
+   "value": "1990 FIA Formula One World Championship™"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_championship_season_loading_screen",
+   "value": "1990 FIA Formula One World Championship{s:60_bold_drp_shw_TM}™{/s}"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_trophy_drivers_champion",
+   "value": "F1 Coureurskampioenschap 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_gp_las_short",
+   "value": "GRAND PRIX VAN LAS VEGAS"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_gp_bra_short",
+   "value": "GRAND PRIX VAN SÃO PAULO"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_gp_imo_short",
+   "value": "GRAND PRIX VAN IMOLA"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_gp_mco_short",
+   "value": "GRAND PRIX VAN MONACO"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_gp_can_short",
+   "value": "GRAND PRIX VAN CANADA"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_gp_mex_short",
+   "value": "GRAND PRIX VAN MEXICO-STAD"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_gp_aut_short",
+   "value": "GRAND PRIX VAN OOSTENRIJK"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_gp_gbr_short",
+   "value": "GRAND PRIX VAN GROOT-BRITTANNIË"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_gp_chn_short",
+   "value": "GRAND PRIX VAN CHINA"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_gp_hun_short",
+   "value": "GRAND PRIX VAN HONGARIJE"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_gp_bel_short",
+   "value": "GRAND PRIX VAN BELGIË"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_gp_ita_short",
+   "value": "GRAND PRIX VAN MONZA"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_gp_mad_short",
+   "value": "GRAND PRIX VAN SPANJE"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_gp_cat_short",
+   "value": "GRAND PRIX VAN BARCELONA-CATALUNYA"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_gp_jpn_short",
+   "value": "GRAND PRIX VAN JAPAN"
+  },
+  {
+   "op": "lang.set",
+   "language": "dut",
+   "key": "lng_f1990_gp_aus_short",
+   "value": "GRAND PRIX VAN AUSTRALIË"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_agent_first_name",
+   "value": "Flavio"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_career_content",
+   "value": "1990 Career"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_career_content_description",
+   "value": "Play the 1990 season: 1990 teams, drivers, calendar and rules."
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_season",
+   "value": "F1® 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_championship_season",
+   "value": "1990 FIA Formula One World Championship™"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_championship_season_loading_screen",
+   "value": "1990 FIA Formula One World Championship{s:60_bold_drp_shw_TM}™{/s}"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_trophy_drivers_champion",
+   "value": "F1 Drivers' Championship 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_gp_las_short",
+   "value": "UNITED STATES GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_gp_bra_short",
+   "value": "BRAZILIAN GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_gp_imo_short",
+   "value": "SAN MARINO GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_gp_mco_short",
+   "value": "MONACO GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_gp_can_short",
+   "value": "CANADIAN GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_gp_mex_short",
+   "value": "MEXICAN GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_gp_aut_short",
+   "value": "FRENCH GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_gp_gbr_short",
+   "value": "BRITISH GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_gp_chn_short",
+   "value": "GERMAN GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_gp_hun_short",
+   "value": "HUNGARIAN GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_gp_bel_short",
+   "value": "BELGIAN GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_gp_ita_short",
+   "value": "ITALIAN GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_gp_mad_short",
+   "value": "PORTUGUESE GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_gp_cat_short",
+   "value": "SPANISH GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_gp_jpn_short",
+   "value": "JAPANESE GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "eng",
+   "key": "lng_f1990_gp_aus_short",
+   "value": "AUSTRALIAN GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_agent_first_name",
+   "value": "Flavio"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_career_content",
+   "value": "Carrière 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_career_content_description",
+   "value": "Participez à une carrière avec le contenu, le règlement, les écuries et les circuits de 1990."
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_season",
+   "value": "F1® 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_championship_season",
+   "value": "1990 FIA Formula One World Championship™"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_championship_season_loading_screen",
+   "value": "1990 FIA Formula One World Championship{s:60_bold_drp_shw_TM}™{/s}"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_trophy_drivers_champion",
+   "value": "Championnat des pilotes de F1 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_gp_las_short",
+   "value": "GRAND PRIX DE LAS VEGAS"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_gp_bra_short",
+   "value": "GRAND PRIX DU BRÉSIL"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_gp_imo_short",
+   "value": "GRAND PRIX D’IMOLA"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_gp_mco_short",
+   "value": "GRAND PRIX DE MONACO"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_gp_can_short",
+   "value": "GRAND PRIX DU CANADA"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_gp_mex_short",
+   "value": "GRAND PRIX DE MEXICO"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_gp_aut_short",
+   "value": "GRAND PRIX D'AUTRICHE"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_gp_gbr_short",
+   "value": "GRAND PRIX DE GRANDE-BRETAGNE"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_gp_chn_short",
+   "value": "GRAND PRIX DE CHINE"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_gp_hun_short",
+   "value": "GRAND PRIX DE HONGRIE"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_gp_bel_short",
+   "value": "GRAND PRIX DE BELGIQUE"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_gp_ita_short",
+   "value": "GRAND PRIX DE MONZA"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_gp_mad_short",
+   "value": "GRAND PRIX D'ESPAGNE"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_gp_cat_short",
+   "value": "BARCELONA-CATALUNYA GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_gp_jpn_short",
+   "value": "GRAND PRIX DU JAPON"
+  },
+  {
+   "op": "lang.set",
+   "language": "fre",
+   "key": "lng_f1990_gp_aus_short",
+   "value": "GRAND PRIX D'AUSTRALIE"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_agent_first_name",
+   "value": "Flavio"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_career_content",
+   "value": "1990 – Karriere"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_career_content_description",
+   "value": "Spiele den Karrieremodus mit Inhalten, Regeln, Teams und Strecken des Jahres 1990."
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_season",
+   "value": "F1® 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_championship_season",
+   "value": "1990 FIA Formula One World Championship™"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_championship_season_loading_screen",
+   "value": "1990 FIA Formula One World Championship{s:60_bold_drp_shw_TM}™{/s}"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_trophy_drivers_champion",
+   "value": "F1-Fahrermeisterschaft 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_gp_las_short",
+   "value": "GRAND PRIX VON LAS VEGAS"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_gp_bra_short",
+   "value": "GRAND PRIX VON BRASILIEN"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_gp_imo_short",
+   "value": "GRAND PRIX VON IMOLA"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_gp_mco_short",
+   "value": "GRAND PRIX VON MONACO"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_gp_can_short",
+   "value": "GRAND PRIX VON KANADA"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_gp_mex_short",
+   "value": "GRAND PRIX VON MEXIKO"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_gp_aut_short",
+   "value": "GRAND PRIX VON ÖSTERREICH"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_gp_gbr_short",
+   "value": "GRAND PRIX VON GROßBRITANNIEN"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_gp_chn_short",
+   "value": "GRAND PRIX VON CHINA"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_gp_hun_short",
+   "value": "GRAND PRIX VON UNGARN"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_gp_bel_short",
+   "value": "GRAND PRIX VON BELGIEN"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_gp_ita_short",
+   "value": "GRAND PRIX VON MONZA"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_gp_mad_short",
+   "value": "GRAND PRIX VON SPANIEN"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_gp_cat_short",
+   "value": "GRAND PRIX VON BARCELONA-CATALUNYA"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_gp_jpn_short",
+   "value": "GRAND PRIX VON JAPAN"
+  },
+  {
+   "op": "lang.set",
+   "language": "ger",
+   "key": "lng_f1990_gp_aus_short",
+   "value": "GRAND PRIX VON AUSTRALIEN"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_agent_first_name",
+   "value": "Flavio"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_career_content",
+   "value": "Carriera 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_career_content_description",
+   "value": "Gioca la carriera usando i contenuti, il regolamento, le scuderie e i tracciati del 1990."
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_season",
+   "value": "F1® 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_championship_season",
+   "value": "1990 FIA Formula One World Championship™"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_championship_season_loading_screen",
+   "value": "1990 FIA Formula One World Championship{s:60_bold_drp_shw_TM}™{/s}"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_trophy_drivers_champion",
+   "value": "Campionato piloti F1 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_gp_las_short",
+   "value": "GRAND PRIX DI LAS VEGAS"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_gp_bra_short",
+   "value": "GRAND PRIX DEL BRASILE"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_gp_imo_short",
+   "value": "GRAND PRIX DI IMOLA"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_gp_mco_short",
+   "value": "GRAND PRIX DI MONACO"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_gp_can_short",
+   "value": "GRAND PRIX DEL CANADA"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_gp_mex_short",
+   "value": "GRAND PRIX DI CITTÀ DEL MESSICO"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_gp_aut_short",
+   "value": "GRAND PRIX D'AUSTRIA"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_gp_gbr_short",
+   "value": "GRAND PRIX DI GRAN BRETAGNA"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_gp_chn_short",
+   "value": "GRAND PRIX DI CINA"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_gp_hun_short",
+   "value": "GRAND PRIX DI UNGHERIA"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_gp_bel_short",
+   "value": "GRAND PRIX DEL BELGIO"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_gp_ita_short",
+   "value": "GRAND PRIX DI MONZA"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_gp_mad_short",
+   "value": "GRAND PRIX DI SPAGNA"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_gp_cat_short",
+   "value": "BARCELONA-CATALUNYA GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_gp_jpn_short",
+   "value": "GRAND PRIX DEL GIAPPONE"
+  },
+  {
+   "op": "lang.set",
+   "language": "ita",
+   "key": "lng_f1990_gp_aus_short",
+   "value": "GRAND PRIX D'AUSTRALIA"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_agent_first_name",
+   "value": "フラビオ"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_career_content",
+   "value": "1990 キャリア"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_career_content_description",
+   "value": "1990年のコンテンツ、レギュレーション、チーム、コースを使用してキャリアをプレイします。"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_season",
+   "value": "F1® 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_championship_season",
+   "value": "1990 FIA Formula One World Championship™"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_championship_season_loading_screen",
+   "value": "1990 FIA Formula One World Championship{s:60_bold_drp_shw_TM}™{/s}"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_trophy_drivers_champion",
+   "value": "F1ドライバーズ・チャンピオンシップ 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_gp_las_short",
+   "value": "ラスベガスGRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_gp_bra_short",
+   "value": "サンパウロGRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_gp_imo_short",
+   "value": "イモラGRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_gp_mco_short",
+   "value": "モナコGRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_gp_can_short",
+   "value": "カナダGRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_gp_mex_short",
+   "value": "メキシコシティGRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_gp_aut_short",
+   "value": "オーストリアGRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_gp_gbr_short",
+   "value": "イギリスGRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_gp_chn_short",
+   "value": "中国GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_gp_hun_short",
+   "value": "ハンガリーGRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_gp_bel_short",
+   "value": "ベルギーGRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_gp_ita_short",
+   "value": "モンツァGRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_gp_mad_short",
+   "value": "スペインGRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_gp_cat_short",
+   "value": "バルセロナ・カタルーニャGRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_gp_jpn_short",
+   "value": "日本GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "jap",
+   "key": "lng_f1990_gp_aus_short",
+   "value": "オーストラリアGRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_agent_first_name",
+   "value": "Flavio"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_career_content",
+   "value": "Carrera profesional 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_career_content_description",
+   "value": "Juega en Carrera profesional usando el contenido, las regulaciones, los equipos y las pistas de 1990."
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_season",
+   "value": "F1® 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_championship_season",
+   "value": "1990 FIA Formula One World Championship™"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_championship_season_loading_screen",
+   "value": "1990 FIA Formula One World Championship{s:60_bold_drp_shw_TM}™{/s}"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_trophy_drivers_champion",
+   "value": "Campeonato de Pilotos de la F1 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_gp_las_short",
+   "value": "GRAND PRIX DE LAS VEGAS"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_gp_bra_short",
+   "value": "GRAND PRIX DE SÃO PAULO"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_gp_imo_short",
+   "value": "GRAND PRIX DE IMOLA"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_gp_mco_short",
+   "value": "GRAND PRIX DE MÓNACO"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_gp_can_short",
+   "value": "GRAND PRIX DE CANADÁ"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_gp_mex_short",
+   "value": "GRAND PRIX DE LA CIUDAD DE MÉXICO"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_gp_aut_short",
+   "value": "GRAND PRIX DE AUSTRIA"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_gp_gbr_short",
+   "value": "GRAND PRIX DE GRAN BRETAÑA"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_gp_chn_short",
+   "value": "GRAND PRIX DE CHINA"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_gp_hun_short",
+   "value": "GRAND PRIX DE HUNGRÍA"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_gp_bel_short",
+   "value": "GRAND PRIX DE BÉLGICA"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_gp_ita_short",
+   "value": "GRAND PRIX DE MONZA"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_gp_mad_short",
+   "value": "GRAND PRIX DE ESPAÑA"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_gp_cat_short",
+   "value": "BARCELONA-CATALUNYA GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_gp_jpn_short",
+   "value": "GRAND PRIX DE JAPÓN"
+  },
+  {
+   "op": "lang.set",
+   "language": "mex",
+   "key": "lng_f1990_gp_aus_short",
+   "value": "GRAND PRIX DE AUSTRALIA"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_agent_first_name",
+   "value": "Flavio"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_career_content",
+   "value": "Kariera 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_career_content_description",
+   "value": "Rozegraj karierę, korzystając z zawartości, przepisów, zespołów i torów z 1990 roku."
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_season",
+   "value": "F1® 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_championship_season",
+   "value": "1990 FIA Formula One World Championship™"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_championship_season_loading_screen",
+   "value": "1990 FIA Formula One World Championship{s:60_bold_drp_shw_TM}™{/s}"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_trophy_drivers_champion",
+   "value": "Mistrzostwa kierowców F1 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_gp_las_short",
+   "value": "GRAND PRIX LAS VEGAS"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_gp_bra_short",
+   "value": "SÃO PAULO GRAND PRIX"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_gp_imo_short",
+   "value": "GRAND PRIX EMILII-ROMANII"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_gp_mco_short",
+   "value": "GRAND PRIX MONAKO"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_gp_can_short",
+   "value": "GRAND PRIX KANADY"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_gp_mex_short",
+   "value": "GRAND PRIX MEKSYKU"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_gp_aut_short",
+   "value": "GRAND PRIX AUSTRII"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_gp_gbr_short",
+   "value": "GRAND PRIX WIELKIEJ BRYTANII"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_gp_chn_short",
+   "value": "GRAND PRIX CHIN"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_gp_hun_short",
+   "value": "GRAND PRIX WĘGIER"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_gp_bel_short",
+   "value": "GRAND PRIX BELGII"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_gp_ita_short",
+   "value": "GRAND PRIX MONZY"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_gp_mad_short",
+   "value": "GRAND PRIX HISZPANII"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_gp_cat_short",
+   "value": "GRAND PRIX BARCELONA-CATALUNYA"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_gp_jpn_short",
+   "value": "GRAND PRIX JAPONII"
+  },
+  {
+   "op": "lang.set",
+   "language": "pol",
+   "key": "lng_f1990_gp_aus_short",
+   "value": "GRAND PRIX AUSTRALII"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_agent_first_name",
+   "value": "Flavio"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_career_content",
+   "value": "Carrera profesional (1990)"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_career_content_description",
+   "value": "Juega la carrera profesional usando el contenido, la normativa, los equipos y los circuitos de 1990."
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_season",
+   "value": "F1® 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_championship_season",
+   "value": "1990 FIA Formula One World Championship™"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_championship_season_loading_screen",
+   "value": "1990 FIA Formula One World Championship{s:60_bold_drp_shw_TM}™{/s}"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_trophy_drivers_champion",
+   "value": "Mundial de pilotos de la F1 (1990)"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_gp_las_short",
+   "value": "GRAND PRIX DE LAS VEGAS"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_gp_bra_short",
+   "value": "GRAND PRIX DE SÃO PAULO"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_gp_imo_short",
+   "value": "GRAND PRIX DE IMOLA"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_gp_mco_short",
+   "value": "GRAND PRIX DE MÓNACO"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_gp_can_short",
+   "value": "GRAND PRIX DE CANADÁ"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_gp_mex_short",
+   "value": "GRAND PRIX DE CIUDAD DE MÉXICO"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_gp_aut_short",
+   "value": "GRAND PRIX DE AUSTRIA"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_gp_gbr_short",
+   "value": "GRAND PRIX DE GRAN BRETAÑA"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_gp_chn_short",
+   "value": "GRAND PRIX DE CHINA"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_gp_hun_short",
+   "value": "GRAND PRIX DE HUNGRÍA"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_gp_bel_short",
+   "value": "GRAND PRIX DE BÉLGICA"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_gp_ita_short",
+   "value": "GRAND PRIX DE MONZA"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_gp_mad_short",
+   "value": "GRAND PRIX DE ESPAÑA"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_gp_cat_short",
+   "value": "GRAND PRIX DE BARCELONA-CATALUNYA"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_gp_jpn_short",
+   "value": "GRAND PRIX DE JAPÓN"
+  },
+  {
+   "op": "lang.set",
+   "language": "spa",
+   "key": "lng_f1990_gp_aus_short",
+   "value": "GRAND PRIX DE AUSTRALIA"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_agent_first_name",
+   "value": "弗拉维奥"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_career_content",
+   "value": "1990 生涯"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_career_content_description",
+   "value": "使用1990年内容、规则、车队和赛道进行生涯模式。"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_season",
+   "value": "F1® 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_championship_season",
+   "value": "1990赛季国际汽联世界一级方程式锦标赛™"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_championship_season_loading_screen",
+   "value": "1990赛季国际汽联世界一级方程式锦标赛{s:60_bold_drp_shw_TM}™{/s}"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_trophy_drivers_champion",
+   "value": "F1 车手锦标赛冠军 1990"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_gp_las_short",
+   "value": "拉斯维加斯大奖赛"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_gp_bra_short",
+   "value": "圣保罗大奖赛"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_gp_imo_short",
+   "value": "伊莫拉大奖赛"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_gp_mco_short",
+   "value": "摩纳哥大奖赛"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_gp_can_short",
+   "value": "加拿大大奖赛"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_gp_mex_short",
+   "value": "墨西哥城大奖赛"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_gp_aut_short",
+   "value": "奥地利大奖赛"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_gp_gbr_short",
+   "value": "英国大奖赛"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_gp_chn_short",
+   "value": "中国大奖赛"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_gp_hun_short",
+   "value": "匈牙利大奖赛"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_gp_bel_short",
+   "value": "比利时大奖赛"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_gp_ita_short",
+   "value": "蒙扎大奖赛"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_gp_mad_short",
+   "value": "西班牙大奖赛"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_gp_cat_short",
+   "value": "巴塞罗那-加泰罗尼亚大奖赛"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_gp_jpn_short",
+   "value": "日本大奖赛"
+  },
+  {
+   "op": "lang.set",
+   "language": "zhs",
+   "key": "lng_f1990_gp_aus_short",
+   "value": "澳大利亚大奖赛"
+  }
+ ]
+}

@@ -1,0 +1,35 @@
+{
+ "package": "#overrides.career.f1990_rnd",
+ "departments": {
+  "0": {
+   "name": "aero",
+   "colour": "#2F74E8",
+   "light": "#ACC7F6",
+   "tone": "Rothmans / Tyrrell blue"
+  },
+  "1": {
+   "name": "chassis",
+   "colour": "#22A45D",
+   "light": "#A7DBBE",
+   "tone": "Benetton green"
+  },
+  "2": {
+   "name": "maintenance",
+   "colour": "#F6C21C",
+   "light": "#FBE7A4",
+   "tone": "Camel / Lotus yellow"
+  },
+  "3": {
+   "name": "engine",
+   "colour": "#E2231A",
+   "light": "#F3A7A3",
+   "tone": "Ferrari / Marlboro red"
+  },
+  "4": {
+   "name": "tyres",
+   "colour": "#FF7800",
+   "light": "#FFC999",
+   "tone": "dayglo orange, the rnd-tyres-thermal Tyres orange"
+  }
+ }
+}

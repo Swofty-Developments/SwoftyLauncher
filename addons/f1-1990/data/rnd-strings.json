@@ -1,0 +1,16 @@
+{
+ "scope": "f1_career_1990",
+ "strings": {
+  "*": {
+   "lng_rnd_dept_aero": "Aerodynamics",
+   "lng_rnd_dept_chassis": "Chassis & Suspension",
+   "lng_rnd_dept_engine": "Engine",
+   "lng_rnd_dept_maintenance": "Reliability & Gearbox",
+   "lng_rnd_chassis": "Chassis & Suspension",
+   "lng_rnd_dept_aero_overview_description": "The Aerodynamics department develops the flat-bottom car: nose, wings, diffuser and sidepods. Downforce costs straight-line speed; tighter sidepods cost cooling.",
+   "lng_rnd_dept_chassis_overview_description": "The Chassis & Suspension department builds the carbon tub, the suspension and the brakes, takes the car towards the 500 kg limit and runs the B-spec car and active suspension projects.",
+   "lng_rnd_dept_engine_overview_description": "The Engine department works with the engine supplier on power, revs and fuel consumption, with no refuelling allowed. A works engine goes further than a customer one. The qualifying line only works in qualifying.",
+   "lng_rnd_dept_maintenance_overview_description": "The Reliability & Gearbox department fights the retirements of 1990: gearbox, engine, cooling and electrics, and the semi-automatic gearbox project."
+  }
+ }
+}

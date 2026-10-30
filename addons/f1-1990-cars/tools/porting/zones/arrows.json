@@ -1,0 +1,9 @@
+{"palette": {"white": [236, 236, 232], "red": [200, 16, 46], "blue": [26, 60, 140]},
+ "rules": [
+  {"colour": "white"},
+  {"colour": "red", "parts": ["nosecone"], "box": {"t": [1.16, 9]}},
+  {"colour": "red", "box": {"x": [0.28, 9]}, "planes": [[0, -0.6, 1, 0.66], [0, 0.6, -1, -0.58]]},
+  {"colour": "red", "box": {"x": [0.28, 9]}, "planes": [[0, -0.6, 1, 0.52], [0, 0.6, -1, -0.47]]},
+  {"colour": "red", "parts": ["rearwing_bl", "rearwing_br", "frontflap"]},
+  {"colour": "blue", "box": {"x": [0.45, 9], "y": [-0.12, -0.08], "t": [0.05, 0.62]}}
+ ]}

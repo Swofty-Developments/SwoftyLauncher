@@ -1,0 +1,391 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/fonts_standard_icons.erp",
+   "resource": "eaid://ui_package/art/fonts/icons.font",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/fonts_standard_icons.erp",
+   "resource": "eaid://ui_package/art/fonts/icons.font.pages",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_garage.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyres.tyres_small.texarray.image",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_garage.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyres.tyres_small.texarray",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_pause.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyres.tyres_small.texarray.image",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_pause.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyres.tyres_small.texarray",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_post_race.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyres.tyres_small.texarray.image",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_post_race.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyres.tyres_small.texarray",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_car_monitor.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.compound_icons.texarray.image",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_car_monitor.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.compound_icons.texarray",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_loading.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.compound_icons.texarray.image",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_loading.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.compound_icons.texarray",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_options.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.compound_icons.texarray.image",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_options.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.compound_icons.texarray",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.compound_icons.texarray.image",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.compound_icons.texarray",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_car_monitor.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.key_icons.texarray.image",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_car_monitor.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.key_icons.texarray",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_loading.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.key_icons.texarray.image",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_loading.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.key_icons.texarray",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_options.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.key_icons.texarray.image",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_options.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.key_icons.texarray",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_post_race.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.key_icons.texarray.image",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_post_race.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.key_icons.texarray",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_st_hub.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.key_icons.texarray.image",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_st_hub.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.key_icons.texarray",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_loading.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.tyre_icons.texarray.image",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_loading.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.tyre_icons.texarray",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_options.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.tyre_icons.texarray.image",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_options.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.tyre_icons.texarray",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.tyre_icons.texarray.image",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tyre_allocation.tyre_icons.texarray",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_post_race.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.osd.car_settings_icons.texarray.image",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_post_race.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.osd.car_settings_icons.texarray",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_race.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.osd.car_settings_icons.texarray.image",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_race.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.osd.car_settings_icons.texarray",
+   "source": "erp/tyre_icons/tyre_icons.erpk"
+  },
+  {
+   "op": "patch-pkg",
+   "erp": "2025_asset_groups/ui_package/databases.erp",
+   "resource": "eaid://ui_package/databases/overrides.uidb",
+   "fragment": 0,
+   "edits": [
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.tyres.Contents.tyres_small.Contents",
+     "src": "[Name=Wet_f1_26]",
+     "as": "SuperSoft_f1_1990",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/tyres/SuperSoft_f1_1990.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.tyres.Contents.tyres_small.Contents",
+     "src": "[Name=Wet_f1_26]",
+     "as": "UltraSoft_f1_1990",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/tyres/UltraSoft_f1_1990.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.tyres.Contents.tyres_small.Contents",
+     "src": "[Name=Wet_f1_26]",
+     "as": "Soft_f1_1990",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/tyres/Soft_f1_1990.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.tyre_allocation.Contents.compound_icons.Contents",
+     "src": "[Name=Wet_f1_26]",
+     "as": "SuperSoft_f1_1990",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/tyres/SuperSoft_f1_1990.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.tyre_allocation.Contents.compound_icons.Contents",
+     "src": "[Name=Wet_f1_26]",
+     "as": "UltraSoft_f1_1990",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/tyres/UltraSoft_f1_1990.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.tyre_allocation.Contents.compound_icons.Contents",
+     "src": "[Name=Wet_f1_26]",
+     "as": "Soft_f1_1990",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/tyres/Soft_f1_1990.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.tyre_allocation.Contents.key_icons.Contents",
+     "src": "[Name=Wet_f1_26]",
+     "as": "SuperSoft_f1_1990",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/tyres/SuperSoft_f1_1990.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.tyre_allocation.Contents.key_icons.Contents",
+     "src": "[Name=Wet_f1_26]",
+     "as": "UltraSoft_f1_1990",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/tyres/UltraSoft_f1_1990.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.tyre_allocation.Contents.key_icons.Contents",
+     "src": "[Name=Wet_f1_26]",
+     "as": "Soft_f1_1990",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/tyres/Soft_f1_1990.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.tyre_allocation.Contents.tyre_icons.Contents",
+     "src": "[Name=Wet_f1_26]",
+     "as": "SuperSoft_f1_1990",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/tyres/SuperSoft_f1_1990.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.tyre_allocation.Contents.tyre_icons.Contents",
+     "src": "[Name=Wet_f1_26]",
+     "as": "UltraSoft_f1_1990",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/tyres/UltraSoft_f1_1990.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.tyre_allocation.Contents.tyre_icons.Contents",
+     "src": "[Name=Wet_f1_26]",
+     "as": "Soft_f1_1990",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/tyres/Soft_f1_1990.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.osd.Contents.car_settings_icons.Contents",
+     "src": "[Name=Wet_worn_f1_26]",
+     "as": "SuperSoft_f1_1990",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/tyres/SuperSoft_f1_1990.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.osd.Contents.car_settings_icons.Contents",
+     "src": "[Name=Wet_worn_f1_26]",
+     "as": "SuperSoft_f1_1990_worn",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/tyres/SuperSoft_f1_1990_worn.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.osd.Contents.car_settings_icons.Contents",
+     "src": "[Name=Wet_worn_f1_26]",
+     "as": "UltraSoft_f1_1990",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/tyres/UltraSoft_f1_1990.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.osd.Contents.car_settings_icons.Contents",
+     "src": "[Name=Wet_worn_f1_26]",
+     "as": "UltraSoft_f1_1990_worn",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/tyres/UltraSoft_f1_1990_worn.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.osd.Contents.car_settings_icons.Contents",
+     "src": "[Name=Wet_worn_f1_26]",
+     "as": "Soft_f1_1990",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/tyres/Soft_f1_1990.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.osd.Contents.car_settings_icons.Contents",
+     "src": "[Name=Wet_worn_f1_26]",
+     "as": "Soft_f1_1990_worn",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/tyres/Soft_f1_1990_worn.tif"
+     }
+    }
+   ]
+  }
+ ]
+}

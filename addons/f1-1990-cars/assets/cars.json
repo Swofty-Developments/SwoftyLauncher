@@ -1,0 +1,411 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "file.put",
+   "source": "erp/teams/common.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/tyrecompounds/tyrecompounds.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/tyrecompounds/tyrecompounds.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_package/tyrecompounds/tyrecompounds.assetgroup",
+   "erp": "2025_asset_groups/f1_1990_vehicle_package/tyrecompounds/tyrecompounds.erp",
+   "template": "asset_groups/f1_2026_vehicle_package/tyrecompounds/tyrecompounds.assetgroup"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams/mclaren/wep/mclaren.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/mclaren/wep/mclaren.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams/ferrari/wep/ferrari.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/ferrari/wep/ferrari.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams/williams/wep/williams.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/williams/wep/williams.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams/lotus/wep/lotus.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/lotus/wep/lotus.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams/mercedes/wep/mercedes.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/mercedes/wep/mercedes.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams/redbull/wep/redbull.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/redbull/wep/redbull.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams/force_india/wep/force_india.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/force_india/wep/force_india.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams/myteam_ferrari/wep/myteam_ferrari.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_ferrari/wep/myteam_ferrari.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams/sauber/wep/sauber.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/sauber/wep/sauber.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams/toro_rosso/wep/toro_rosso.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/toro_rosso/wep/toro_rosso.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams/gm_cadillac/wep/gm_cadillac.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/gm_cadillac/wep/gm_cadillac.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams/myteam_honda/wep/myteam_honda.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_honda/wep/myteam_honda.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams/haas/wep/haas.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_package/teams/haas/wep/haas.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams_b/mclaren/wep/mclaren.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_b_specs/teams/mclaren/wep/mclaren.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams_b/ferrari/wep/ferrari.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_b_specs/teams/ferrari/wep/ferrari.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams_b/williams/wep/williams.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_b_specs/teams/williams/wep/williams.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams_b/lotus/wep/lotus.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_b_specs/teams/lotus/wep/lotus.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams_b/mercedes/wep/mercedes.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_b_specs/teams/mercedes/wep/mercedes.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams_b/redbull/wep/redbull.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_b_specs/teams/redbull/wep/redbull.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams_b/force_india/wep/force_india.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_b_specs/teams/force_india/wep/force_india.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams_b/myteam_ferrari/wep/myteam_ferrari.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_b_specs/teams/myteam_ferrari/wep/myteam_ferrari.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams_b/sauber/wep/sauber.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_b_specs/teams/sauber/wep/sauber.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams_b/toro_rosso/wep/toro_rosso.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_b_specs/teams/toro_rosso/wep/toro_rosso.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams_b/gm_cadillac/wep/gm_cadillac.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_b_specs/teams/gm_cadillac/wep/gm_cadillac.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams_b/myteam_honda/wep/myteam_honda.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_b_specs/teams/myteam_honda/wep/myteam_honda.erp"
+  },
+  {
+   "op": "file.put",
+   "source": "erp/teams_b/haas/wep/haas.erp",
+   "target": "2025_asset_groups/f1_1990_vehicle_b_specs/teams/haas/wep/haas.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_package/teams/mclaren/wep/mclaren.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/mclaren/wep/mclaren.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/mclaren/wep/mclaren_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/mclaren/wep/mclaren.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_package/teams/ferrari/wep/ferrari.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/ferrari/wep/ferrari.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/ferrari/wep/ferrari_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/ferrari/wep/ferrari.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_package/teams/williams/wep/williams.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/williams/wep/williams.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/williams/wep/williams_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/williams/wep/williams.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_package/teams/lotus/wep/lotus.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/lotus/wep/lotus.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/lotus/wep/lotus_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/lotus/wep/lotus.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_package/teams/mercedes/wep/mercedes.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/mercedes/wep/mercedes.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/mercedes/wep/mercedes_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/mercedes/wep/mercedes.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_package/teams/redbull/wep/redbull.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/redbull/wep/redbull.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/redbull/wep/redbull_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/redbull/wep/redbull.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_package/teams/force_india/wep/force_india.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/force_india/wep/force_india.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/force_india/wep/force_india_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/force_india/wep/force_india.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_package/teams/myteam_ferrari/wep/myteam_ferrari.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_ferrari/wep/myteam_ferrari.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_ferrari/wep/myteam_ferrari_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/myteam_ferrari/wep/myteam_ferrari.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_package/teams/sauber/wep/sauber.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/sauber/wep/sauber.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/sauber/wep/sauber_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/sauber/wep/sauber.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_package/teams/toro_rosso/wep/toro_rosso.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/toro_rosso/wep/toro_rosso.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/toro_rosso/wep/toro_rosso_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/toro_rosso/wep/toro_rosso.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_package/teams/gm_cadillac/wep/gm_cadillac.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/gm_cadillac/wep/gm_cadillac.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/gm_cadillac/wep/gm_cadillac_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/gm_cadillac/wep/gm_cadillac.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_package/teams/myteam_honda/wep/myteam_honda.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_honda/wep/myteam_honda.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_honda/wep/myteam_honda_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/myteam_honda/wep/myteam_honda.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_package/teams/haas/wep/haas.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/haas/wep/haas.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/haas/wep/haas_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/haas/wep/haas.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_b_specs/teams/mclaren/wep/mclaren.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_b_specs/teams/mclaren/wep/mclaren.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/mclaren/wep/mclaren_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/mclaren/wep/mclaren.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_b_specs/teams/ferrari/wep/ferrari.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_b_specs/teams/ferrari/wep/ferrari.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/ferrari/wep/ferrari_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/ferrari/wep/ferrari.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_b_specs/teams/williams/wep/williams.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_b_specs/teams/williams/wep/williams.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/williams/wep/williams_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/williams/wep/williams.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_b_specs/teams/lotus/wep/lotus.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_b_specs/teams/lotus/wep/lotus.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/lotus/wep/lotus_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/lotus/wep/lotus.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_b_specs/teams/mercedes/wep/mercedes.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_b_specs/teams/mercedes/wep/mercedes.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/mercedes/wep/mercedes_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/mercedes/wep/mercedes.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_b_specs/teams/redbull/wep/redbull.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_b_specs/teams/redbull/wep/redbull.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/redbull/wep/redbull_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/redbull/wep/redbull.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_b_specs/teams/force_india/wep/force_india.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_b_specs/teams/force_india/wep/force_india.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/force_india/wep/force_india_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/force_india/wep/force_india.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_b_specs/teams/myteam_ferrari/wep/myteam_ferrari.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_b_specs/teams/myteam_ferrari/wep/myteam_ferrari.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_ferrari/wep/myteam_ferrari_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/myteam_ferrari/wep/myteam_ferrari.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_b_specs/teams/sauber/wep/sauber.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_b_specs/teams/sauber/wep/sauber.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/sauber/wep/sauber_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/sauber/wep/sauber.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_b_specs/teams/toro_rosso/wep/toro_rosso.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_b_specs/teams/toro_rosso/wep/toro_rosso.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/toro_rosso/wep/toro_rosso_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/toro_rosso/wep/toro_rosso.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_b_specs/teams/gm_cadillac/wep/gm_cadillac.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_b_specs/teams/gm_cadillac/wep/gm_cadillac.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/gm_cadillac/wep/gm_cadillac_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/gm_cadillac/wep/gm_cadillac.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_b_specs/teams/myteam_honda/wep/myteam_honda.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_b_specs/teams/myteam_honda/wep/myteam_honda.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/myteam_honda/wep/myteam_honda_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/myteam_honda/wep/myteam_honda.assetgroup"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/f1_1990_vehicle_b_specs/teams/haas/wep/haas.assetgroup",
+   "erps": [
+    "2025_asset_groups/f1_1990_vehicle_package/teams/common.erp",
+    "2025_asset_groups/f1_1990_vehicle_b_specs/teams/haas/wep/haas.erp",
+    "2025_asset_groups/f1_1990_vehicle_package/teams/haas/wep/haas_handling.erp"
+   ],
+   "template": "asset_groups/f1_2026_vehicle_package/teams/haas/wep/haas.assetgroup"
+  }
+ ]
+}

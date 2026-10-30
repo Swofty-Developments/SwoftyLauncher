@@ -1,0 +1,10 @@
+{"palette": {"navy": [26, 40, 96], "yellow": [246, 198, 22], "green": [0, 150, 72], "red": [208, 24, 36], "white": [236, 236, 232]},
+ "rules": [
+  {"colour": "navy"},
+  {"colour": "yellow", "box": {"t": [0.62, 9]}, "ny": [0.45, 1]},
+  {"colour": "green", "box": {"t": [0.92, 9], "x": [0, 0.06]}, "ny": [0.45, 1]},
+  {"colour": "red", "box": {"t": [0.58, 0.66], "y": [0.14, 9]}},
+  {"colour": "white", "box": {"x": [0.45, 9], "y": [-0.06, 0.07], "t": [0.18, 0.44]}},
+  {"colour": "yellow", "parts": ["frontflap"]},
+  {"colour": "white", "parts": ["rearwing_top_2"]}
+ ]}

@@ -1,0 +1,8 @@
+{"palette": {"blue": [22, 104, 222], "white": [236, 236, 232], "dark": [18, 30, 70]},
+ "rules": [
+  {"colour": "blue"},
+  {"colour": "white", "parts": ["rearwing_top"]},
+  {"colour": "white", "box": {"x": [0.45, 9], "y": [-0.05, 0.10], "t": [0.12, 0.48]}},
+  {"colour": "white", "parts": ["nosecone", "topcanopy_bm"], "box": {"t": [0.96, 1.12], "x": [0, 0.11]}, "ny": [0.45, 1]},
+  {"colour": "white", "parts": ["frontflap"], "box": {"x": [0.35, 0.65]}, "ny": [0.3, 1]}
+ ]}
