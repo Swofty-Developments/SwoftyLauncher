@@ -160,6 +160,7 @@ using Ne_StringTable_Lookup_t = const char *(void *table, uint64_t hash);
 inline constexpr fn<"Ne_StringTable_Lookup", Ne_StringTable_Lookup_t> Ne_StringTable_Lookup{}; // L3 stable
 inline constexpr data<"g_Ne_DefaultAllocator", void *> g_Ne_DefaultAllocator{}; // L2 experimental
 inline constexpr data<"g_Ne_LogGate", NeLogGate> g_Ne_LogGate{}; // L2 experimental
+inline constexpr data<"g_Ne_SequenceNameTable", void *> g_Ne_SequenceNameTable{}; // L2 dev
 inline constexpr data<"g_Ne_StringTable", void *> g_Ne_StringTable{}; // L3 stable
 inline constexpr vtable<"k_Ne_BagCodecVtbl", 4> k_Ne_BagCodecVtbl{}; // L3 stable
 inline constexpr vtable<"k_Ne_CountingStreamVtbl", 24> k_Ne_CountingStreamVtbl{}; // L3 stable

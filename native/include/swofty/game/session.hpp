@@ -241,6 +241,8 @@ using Sess_Issue_TimePenalty_t = void(void *rules, uint8_t *incident, uint32_t r
 inline constexpr fn<"Sess_Issue_TimePenalty", Sess_Issue_TimePenalty_t> Sess_Issue_TimePenalty{}; // L2 experimental
 using Sess_Issue_Warning_t = void(void *rules, uint8_t *incident, uint32_t reason);
 inline constexpr fn<"Sess_Issue_Warning", Sess_Issue_Warning_t> Sess_Issue_Warning{}; // L2 experimental
+using Sess_PitStopUpdateJob_Update_t = void(void *job);
+inline constexpr fn<"Sess_PitStopUpdateJob_Update", Sess_PitStopUpdateJob_Update_t> Sess_PitStopUpdateJob_Update{}; // L2 dev
 using Sess_PreRaceToRace_Update_t = uint32_t *(void *state, uint32_t *route);
 inline constexpr fn<"Sess_PreRaceToRace_Update", Sess_PreRaceToRace_Update_t> Sess_PreRaceToRace_Update{}; // L2 experimental
 using Sess_PreRace_Update_t = uint32_t *(void *state, uint32_t *route, double dt);

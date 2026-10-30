@@ -76833,6 +76833,60 @@
    "used_by": [
     "addons/f1-1990/native/src/quali_laps.cpp"
    ]
+  },
+  {
+   "id": "session.pit_stop_update_job_update",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 70 02 00 00 C5 78 29 BC 24 60 02 00 00",
+   "match": "0x1403c06a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1403c06a0",
+   "kind": "func_start",
+   "names": [
+    "Sess_PitStopUpdateJob_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "rules",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "addons/f1-1990/native/src/pit_phases.cpp"
+   ]
+  },
+  {
+   "id": "core.sequence_name_table",
+   "section": ".xtls",
+   "pattern": "49 8B 78 08 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B 07 85 C0 0F 88 ?? ?? ?? ?? 48 8B 0D",
+   "match": "0x1403bbdaf",
+   "anchor": "0x1d",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x1a",
+    "len": 7
+   },
+   "target": "0x14618ce08",
+   "kind": "data",
+   "names": [
+    "g_Ne_SequenceNameTable"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "rules",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "addons/f1-1990/native/src/pit_phases.cpp"
+   ]
   }
  ]
 }
