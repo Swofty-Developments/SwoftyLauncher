@@ -81033,6 +81033,534 @@
     "native/src/core/netplay.cpp"
    ],
    "expect": "75 2B 41 80 BE D8 10 00 00 00"
+  },
+  {
+   "id": "game.session_hud_shutdown",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 81 EC A0 00 00 00 48 89 CE E8",
+   "match": "0x1414a3960",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1414a3960",
+   "kind": "func_start",
+   "names": [
+    "Game_SessionHud_Shutdown"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.session_hud_on_session_enter",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 02 00 00 C5 F8 29 B4 24 E0 02 00 00 48 8B B1 88",
+   "match": "0x1414a7c50",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1414a7c50",
+   "kind": "func_start",
+   "names": [
+    "Game_SessionHud_OnSessionEnter"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.session_hud_on_session_exit",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 78 C5 F8 29 74 24 60 48 89 CE 48 8B B9 88 01 00",
+   "match": "0x1414b3e90",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1414b3e90",
+   "kind": "func_start",
+   "names": [
+    "Game_SessionHud_OnSessionExit"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ghost_rival_finder_set_state",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 60 C5 F8 29 74 24 50 39 91 A0",
+   "match": "0x142f836d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f836d0",
+   "kind": "func_start",
+   "names": [
+    "Game_GhostRivalFinder_SetState"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ghost_rival_finder_finish",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 81 EC 98 01 00 00 C5 F8 29 B4 24 80 01 00 00 83 B9 A0",
+   "match": "0x142f84d10",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f84d10",
+   "kind": "func_start",
+   "names": [
+    "Game_GhostRivalFinder_Finish"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ghost_rival_finder_on_enumerate_rivals_completed",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 4C 89 CF 48",
+   "match": "0x142f87630",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f87630",
+   "kind": "func_start",
+   "names": [
+    "Game_GhostRivalFinder_OnEnumerateRivalsCompleted"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ghost_laps_storage_system_dtor",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8D 05 ?? ?? ?? ?? 48 89 41 20 80 3D",
+   "match": "0x142f90d20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f90d20",
+   "kind": "func_start",
+   "names": [
+    "Game_GhostLapsStorageSystem_Dtor"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ghost_lap_handler_cancel_tasks",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 81 EC C0 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 89 CE 80 3D",
+   "match": "0x142f90ee0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f90ee0",
+   "kind": "func_start",
+   "names": [
+    "Game_GhostLapHandler_CancelTasks"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ghost_lap_handler_reset",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 44 89 C3",
+   "match": "0x142f91dd0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f91dd0",
+   "kind": "func_start",
+   "names": [
+    "Game_GhostLapHandler_Reset"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ghost_laps_storage_system_connect",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 30 4C 89 C7 48 89 D3 48 89 CE 80 3D",
+   "match": "0x142f93400",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f93400",
+   "kind": "func_start",
+   "names": [
+    "Game_GhostLapsStorageSystem_Connect"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ghost_lap_handler_ctor",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 4C 89 CF 4D 89 C6 48 89 D3 48 89 CE",
+   "match": "0x142f94910",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f94910",
+   "kind": "func_start",
+   "names": [
+    "Game_GhostLapHandler_Ctor"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ghost_laps_storage_system_on_session_enter",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 80 00 00 00 48 89 CE 80 3D",
+   "match": "0x142f95ee0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f95ee0",
+   "kind": "func_start",
+   "names": [
+    "Game_GhostLapsStorageSystem_OnSessionEnter"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ghost_laps_storage_system_on_session_exit",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 81 EC C0 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01 75 68 B8",
+   "match": "0x142f96e10",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f96e10",
+   "kind": "func_start",
+   "names": [
+    "Game_GhostLapsStorageSystem_OnSessionExit"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ghost_laps_storage_system_on_session_restart",
+   "section": ".xtls",
+   "pattern": "48 83 EC 28 80 3D ?? ?? ?? ?? 01 75 6A B8 62 00",
+   "match": "0x142f97ad0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f97ad0",
+   "kind": "func_start",
+   "names": [
+    "Game_GhostLapsStorageSystem_OnSessionRestart"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ghost_lap_handler_update",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 06 00 00 C5 F8 29 B4 24 60 06 00 00 48 89 CE 80",
+   "match": "0x142f98320",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f98320",
+   "kind": "func_start",
+   "names": [
+    "Game_GhostLapHandler_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ghost_lap_handler_dtor",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 78 B8",
+   "match": "0x142f9cea0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f9cea0",
+   "kind": "func_start",
+   "names": [
+    "Game_GhostLapHandler_Dtor"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ghost_lap_handler_free_session_rival_storage",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6D B8 62",
+   "match": "0x142f9d7b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f9d7b0",
+   "kind": "func_start",
+   "names": [
+    "Game_GhostLapHandler_FreeSessionRivalStorage"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ghost_lap_handler_on_session_rival_search_completed",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 02 00 00 C5 F8 29 B4 24 A0 02 00 00 4C 89 CF 4C",
+   "match": "0x142f9d860",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f9d860",
+   "kind": "func_start",
+   "names": [
+    "Game_GhostLapHandler_OnSessionRivalSearchCompleted"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ghost_lap_handler_evaluate_performance_state",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 30 48 8B 82 30 01 00 00 8B B0 2C 01",
+   "match": "0x142f9f870",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f9f870",
+   "kind": "func_start",
+   "names": [
+    "Game_GhostLapHandler_EvaluatePerformanceState"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ghost_lap_handler_start_remote_storage_download",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 01 00 00 48 89 CE 80 3D",
+   "match": "0x142fa0320",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142fa0320",
+   "kind": "func_start",
+   "names": [
+    "Game_GhostLapHandler_StartRemoteStorageDownload"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ghost_lap_handler_start_leaderboard_entry_write",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 08 00 00 C5 F8 29 B4 24",
+   "match": "0x142fa0a60",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142fa0a60",
+   "kind": "func_start",
+   "names": [
+    "Game_GhostLapHandler_StartLeaderboardEntryWrite"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ghost_lap_handler_start_remote_storage_upload",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 04 00 00 48 89 D7 48 89",
+   "match": "0x142fa3de0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142fa3de0",
+   "kind": "func_start",
+   "names": [
+    "Game_GhostLapHandler_StartRemoteStorageUpload"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
   }
  ]
 }
