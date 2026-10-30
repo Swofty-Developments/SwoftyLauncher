@@ -73,7 +73,8 @@ const runtime::Sig S_REMOTE_NAME{"site_Game_PresenceNameRemoteAdded",
 // (standings 0x1418f8aa0, incidents 0x141901070, pit stops 0x14190b690, the persistent results row
 // 0x14190eb70). They store the texture whatever the MP mode; only their show/visible bool sits behind the
 // crossplay check, and the icon still shows in LAN rooms. While a room is configured, the resolver wrap
-// below turns every platform key into the game's own blank image.
+// below turns every platform key into the game's own blank image. The wrap is a core mixin set of its own,
+// offered only when SWOFTY_NETPLAY arms the game, so a build without Vm_Resolve_RegistryNode loses only it.
 //
 // Each gate below is the jne after the inlined check that the MP mode (NetSub+0xd8 +0x750: 0 online,
 // 1 LAN, 2 crossplay) is crossplay; the jump is the row's hide path. While a room is configured the hook
@@ -106,11 +107,25 @@ const runtime::Sig S_ICON_GATES[] = {
 };
 
 constexpr uintptr_t zero_flag = 0x40;
+constexpr const char *ICON_MIXIN = "swofty_core.dll (netplay platform icons)";
+constexpr const char *ICON_RESOLVER = "Vm_Resolve_RegistryNode";
 
 std::vector<safetyhook::MidHook> h_icon_gates;
 std::atomic<bool> icons_armed{false};
 std::atomic<bool> said_icons{false};
 std::atomic<int> icon_sites{0};
+swofty::game::Vm_Resolve_RegistryNode_t *resolve_orig;
+bool resolve_offered = false, resolve_bound = false, resolve_settled = false;
+
+void *resolve_entry(void *registry, const char *path, const void *base, void *create)
+{
+    if (!icons_armed.load(std::memory_order_relaxed) || !runtime::netplay_session::configured() ||
+        !runtime::netplay_icons::driver_platform_key(path))
+        return resolve_orig(registry, path, base, create);
+    if (!said_icons.exchange(true))
+        swofty::log("[netplay] driver platform icons hidden (%d sites)", icon_sites.load());
+    return resolve_orig(registry, runtime::netplay_icons::blank, base, create);
+}
 
 void icon_gate(safetyhook::Context &ctx)
 {
@@ -250,17 +265,36 @@ void setup()
 
 }
 
-SWOFTY_WRAP(Vm_Resolve_RegistryNode, void *, void *registry, const char *path, const void *base, void *create)
+namespace runtime {
+
+std::vector<CoreMixins> netplay_icons_mixins()
 {
-    if (!icons_armed.load(std::memory_order_relaxed) || !runtime::netplay_session::configured() ||
-        !runtime::netplay_icons::driver_platform_key(path))
-        return orig(registry, path, base, create);
-    if (!said_icons.exchange(true))
-        swofty::log("[netplay] driver platform icons hidden (%d sites)", icon_sites.load());
-    return orig(registry, runtime::netplay_icons::blank, base, create);
+    std::vector<CoreMixins> out;
+    if (resolve_offered || !code_ready())
+        return out;
+    resolve_offered = true;
+    if (!armed())
+        return out;
+    if (!swofty::api->resolve(ICON_RESOLVER)) {
+        swofty::log("[netplay] driver platform icon keys left as they are: needs %s, which this build does not resolve",
+                    ICON_RESOLVER);
+        return out;
+    }
+    resolve_bound = true;
+    out.push_back({ICON_MIXIN, {{ICON_RESOLVER, SWOFTY_MIXIN_WRAP, 0, (void *)&resolve_entry, (void **)&resolve_orig}}});
+    return out;
 }
 
-namespace runtime {
+void netplay_icons_commit()
+{
+    if (!resolve_bound || resolve_settled)
+        return;
+    resolve_settled = true;
+    if (!core_mixins_active(ICON_MIXIN))
+        swofty::log("[netplay] driver platform icon keys left as they are: the %s wrap did not install (see the [core] "
+                    "lines)",
+                    ICON_RESOLVER);
+}
 
 void netplay_setup()
 {

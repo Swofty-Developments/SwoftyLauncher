@@ -189,6 +189,8 @@ std::vector<CoreMixins> track_select_mixins();
 void track_select_commit();
 std::vector<CoreMixins> team_slots_mixins();
 void team_slots_commit();
+std::vector<CoreMixins> netplay_icons_mixins();
+void netplay_icons_commit();
 uint8_t *team_record_of(uint16_t stat);
 void team_record_inserted(std::function<void(uint16_t, uint8_t *)> fn);
 void hud_setup();
