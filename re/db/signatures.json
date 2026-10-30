@@ -74914,7 +74914,7 @@
   {
    "id": "gamedb.load_game_database",
    "section": ".xtls",
-   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 02 00 00 48 89 D7 49 89 CC",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 02 00 00 48 89 D7 49 89",
    "match": "0x1445a0350",
    "anchor": "0x0",
    "resolve": {
@@ -74928,8 +74928,8 @@
    "verified": [
     {
      "build": "d873a1c8d2044cef",
-     "date": "2026-10-28",
-     "by": "w7-sizing",
+     "date": "2026-10-30",
+     "by": "engine-re",
      "how": "static"
     }
    ],
@@ -74962,7 +74962,7 @@
   {
    "id": "gamedb.hash_map_insert",
    "section": ".xtls",
-   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 4C 89 CE 44 88 44 24 37",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 4C 89 CE 44",
    "match": "0x1445a12d0",
    "anchor": "0x0",
    "resolve": {
@@ -74976,8 +74976,8 @@
    "verified": [
     {
      "build": "d873a1c8d2044cef",
-     "date": "2026-10-28",
-     "by": "w7-sizing",
+     "date": "2026-10-30",
+     "by": "engine-re",
      "how": "static"
     }
    ],
@@ -81033,6 +81033,394 @@
     "native/src/core/netplay.cpp"
    ],
    "expect": "75 2B 41 80 BE D8 10 00 00 00"
+  },
+  {
+   "id": "assets.map_eaid_to_group_a",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 8B B9 60 05 00 00 48 85 FF",
+   "match": "0x14024fe80",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14024fe80",
+   "kind": "func_start",
+   "names": [
+    "Asset_Map_EaidToGroupA"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "assets.map_eaid_to_group_b",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 81 EC 40 02 00 00 48 89 CE 48 8B 81",
+   "match": "0x140250ee0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140250ee0",
+   "kind": "func_start",
+   "names": [
+    "Asset_Init_AssetGroupInstance"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "assets.load_dev_session_worlds",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 0D 00 00 80",
+   "match": "0x141124b30",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141124b30",
+   "kind": "func_start",
+   "names": [
+    "Asset_Load_DevSessionWorlds"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "assets.get_asset_groups_root",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 B8 40 57 00 00",
+   "match": "0x1413b7640",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1413b7640",
+   "kind": "func_start",
+   "names": [
+    "Hud_StoryRaceEvent_UpdateState"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "fe_tiles.item_base_slot68",
+   "section": ".xtls",
+   "pattern": "31 C0 C3 CC CC CC CC CC CC CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 76 8B AD",
+   "match": "0x141698550",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141698550",
+   "kind": "mid",
+   "names": [
+    "FeTile_ItemBase_Slot68"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [],
+   "func_start": "0x141698550",
+   "expect": "31 C0 C3 CC CC CC CC CC CC CC CC CC CC CC CC CC E9"
+  },
+  {
+   "id": "fe_tiles.item_base_slot78",
+   "section": ".xtls",
+   "pattern": "E9 ?? ?? ?? ?? 9C 92 E9 ?? ?? ?? ?? 81 DF CC DA",
+   "match": "0x141698640",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141698640",
+   "kind": "func_start",
+   "names": [
+    "FeTile_ItemBase_Slot78_Thunk"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "fe_home.story_item_populate",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 F8 29 B4 24 D0 00 00 00 48 89 CE E8",
+   "match": "0x14172e6e0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14172e6e0",
+   "kind": "func_start",
+   "names": [
+    "FeHome_StoryItem_Populate"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "fe_home.story_item_get_action",
+   "section": ".xtls",
+   "pattern": "E9 ?? ?? ?? ?? 0F 84 ?? ?? ?? ?? B7 DF 55 0F 89",
+   "match": "0x14172f1d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14172f1d0",
+   "kind": "func_start",
+   "names": [
+    "FeHome_StoryItem_GetAction_Thunk"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "fe_tiles.item_generic_populate",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 20 48 89 CE E8 ?? ?? ?? ?? 48 83 C6 58 48 8D 15 ?? ?? ?? ?? 48 89 F1 48 83 C4 20 5E E9 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC CC 56 57 53 48 83 EC 20 48",
+   "match": "0x14173da20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14173da20",
+   "kind": "func_start",
+   "names": [
+    "FeTile_ItemGeneric_Populate"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "fe_tiles.item_base_slot08",
+   "section": ".xtls",
+   "pattern": "C3 CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC 4C 8D 05 ?? ?? ?? ?? 31",
+   "match": "0x14179c440",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14179c440",
+   "kind": "mid",
+   "names": [
+    "FeTile_ItemBase_Slot08"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [],
+   "func_start": "0x14179c440",
+   "expect": "C3 CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC 4C 8D 05"
+  },
+  {
+   "id": "assets.unk_142a982b0",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 04 00 00 44 89 CD 4C 89",
+   "match": "0x142a982b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142a982b0",
+   "kind": "func_start",
+   "names": [
+    "Asset_Unk_142a982b0"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "assets.unk_14379dd00",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 28 6A 00",
+   "match": "0x14379dd00",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14379dd00",
+   "kind": "func_start",
+   "names": [
+    "Asset_Unk_14379dd00"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "assets.parse_eaid_a",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 48 89 CE 48 8B 81 88 00 00",
+   "match": "0x143b130a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143b130a0",
+   "kind": "func_start",
+   "names": [
+    "Asset_Load_MaterialList"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "assets.parse_eaid_b",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 04 00 00 C5 78 29 BC 24 A0 04 00 00 C5 79 7F B4",
+   "match": "0x143b13710",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143b13710",
+   "kind": "func_start",
+   "names": [
+    "Asset_Load_ParticleResourcePack"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "gamedb.get_row_by_index",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 81 EC 40 01 00 00 44 89 C3 48 89 D6",
+   "match": "0x1445a28f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1445a28f0",
+   "kind": "func_start",
+   "names": [
+    "Gdb_MakeIndexedKey"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "gamedb.get_row_name",
+   "section": ".xtls",
+   "pattern": "56 57 55 53 48 81 EC 08 01 00 00 48 89 E2 44 0F",
+   "match": "0x1445a3900",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1445a3900",
+   "kind": "func_start",
+   "names": [
+    "Gdb_FindMetadata"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
   }
  ]
 }
