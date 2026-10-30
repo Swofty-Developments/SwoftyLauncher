@@ -508,8 +508,9 @@ def main():
     ap.add_argument('--tracks', help='comma-separated tracks (default: the 16 calendar tracks)')
     ap.add_argument('--folders', help='comma-separated car folders (default: the 13)')
     ap.add_argument('--out', default=os.path.join(PACK, 'erp', 'ai'))
-    ap.add_argument('--compounds', default=os.path.join(PACK, 'erp', 'tyrecompounds', 'tyrecompounds.erp'),
-                    help="the car pack's F1_1990 tyre compounds; the stock 2026 ones are used when it isn't built")
+    ap.add_argument('--compounds', default=os.path.join(F1990, 'tyres', 'historical', 'tyrecompounds.erp'),
+                    help="the 1990 tyre compounds (F1_1990 Goodyear and F1_1990P Pirelli, tools/tyres.py); the stock "
+                         "2026 ones renamed F1_1990 are used when the file is missing")
     ap.add_argument('--workers', type=int, default=12)
     ap.add_argument('--ops-only', action='store_true', help='write assets/ai.json and stop')
     ap.add_argument('--report-only', action='store_true',

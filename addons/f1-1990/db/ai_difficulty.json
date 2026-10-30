@@ -5,7 +5,7 @@
    "op": "set",
    "select": "tracks.Track[_metadata_=las_vegas]",
    "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
-   "value": "109.549,106.53,103.49,100.441,97.481,96.0322,94.5959,94.0282,93.4512,92.9182",
+   "value": "109.448,106.432,103.394,100.348,97.3908,95.9434,94.5084,93.9412,93.3647,92.8322",
    "create": true,
    "type": 8
   },
@@ -125,7 +125,7 @@
    "op": "set",
    "select": "tracks.Track[_metadata_=monaco]",
    "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
-   "value": "86.3385,83.9663,81.5301,79.1497,76.866,75.6647,74.5408,74.0339,73.493,72.9992",
+   "value": "86.1812,83.8134,81.3816,79.0055,76.726,75.5268,74.405,73.899,73.3591,72.8663",
    "create": true,
    "type": 8
   },
@@ -165,7 +165,7 @@
    "op": "set",
    "select": "tracks.Track[_metadata_=montreal]",
    "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
-   "value": "83.7121,81.363,78.9474,76.7431,74.4431,73.3373,72.2276,71.7917,71.3605,70.9288",
+   "value": "83.6452,81.2979,78.8842,76.6817,74.3835,73.2786,72.1698,71.7342,71.3034,70.8721",
    "create": true,
    "type": 8
   },
@@ -245,7 +245,7 @@
    "op": "set",
    "select": "tracks.Track[_metadata_=austria]",
    "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
-   "value": "79.0541,76.934,74.6392,72.5093,70.4038,69.3546,68.272,67.8354,67.4188,67.0183",
+   "value": "78.8526,76.7379,74.4489,72.3245,70.2244,69.1779,68.098,67.6625,67.247,66.8475",
    "create": true,
    "type": 8
   },
@@ -285,7 +285,7 @@
    "op": "set",
    "select": "tracks.Track[_metadata_=silverstone]",
    "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
-   "value": "107.381,104.416,101.46,98.4818,95.6274,94.1208,92.7267,92.1744,91.6236,91.02",
+   "value": "107.055,104.099,101.152,98.1826,95.337,93.8349,92.445,91.8944,91.3453,90.7436",
    "create": true,
    "type": 8
   },
@@ -325,7 +325,7 @@
    "op": "set",
    "select": "tracks.Track[_metadata_=shanghai]",
    "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
-   "value": "109.967,107.016,103.943,100.899,97.9277,96.4771,94.9938,94.4071,93.8585,93.3061",
+   "value": "109.836,106.889,103.819,100.779,97.8114,96.3626,94.881,94.295,93.7471,93.1953",
    "create": true,
    "type": 8
   },
@@ -405,7 +405,7 @@
    "op": "set",
    "select": "tracks.Track[_metadata_=spa_francorchamps]",
    "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
-   "value": "127.195,123.699,120.384,116.66,113.163,111.529,109.869,109.15,108.305,107.522",
+   "value": "127.05,123.557,120.246,116.527,113.033,111.401,109.743,109.025,108.181,107.399",
    "create": true,
    "type": 8
   },
@@ -485,7 +485,7 @@
    "op": "set",
    "select": "tracks.Track[_metadata_=madrid]",
    "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
-   "value": "112.042,108.962,105.852,102.738,99.7648,98.2016,96.7679,96.1622,95.577,95.0299",
+   "value": "111.75,108.678,105.577,102.471,99.5053,97.9462,96.5162,95.9121,95.3284,94.7828",
    "create": true,
    "type": 8
   },
@@ -605,7 +605,7 @@
    "op": "set",
    "select": "tracks.Track[_metadata_=melbourne]",
    "field": "ai_track_difficulties.f1_1990_vehicle_package.time",
-   "value": "94.4043,92.0729,89.1458,86.5619,83.9825,82.7494,81.502,81.0147,80.5548,79.9925",
+   "value": "94.2206,91.8938,88.9724,86.3935,83.8191,82.5884,81.3434,80.8571,80.398,79.8368",
    "create": true,
    "type": 8
   },

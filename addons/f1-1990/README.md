@@ -182,7 +182,7 @@ python3 addons/f1-1990/carpack/tools/ai/build_ai.py --report-only   # index.json
 | `--swofty-ai` | `tools/swofty-ai` of this checkout (Swofty AI, branch `feat/swofty-ai`; Python 3.14, numpy, scipy) |
 | `--handling` | `addons/f1-1990/cars/handling/removed_2026_1990` |
 | `--tracks`, `--folders` | The 16 tracks, the 13 folders (comma-separated) |
-| `--compounds` | `carpack/erp/tyrecompounds/tyrecompounds.erp`; when it is not built, the stock 2026 compounds renamed `F1_2026_*` to `F1_1990_*` |
+| `--compounds` | `tyres/historical/tyrecompounds.erp` (`tools/tyres.py`: Goodyear `F1_1990_*` and Pirelli `F1_1990P_*`, each car on its handling file's `TyrePhysicsGroup`); when it is missing, the stock 2026 compounds renamed `F1_2026_*` to `F1_1990_*` |
 | `--workers` | 12 |
 
 Each archive is the stock 2026 archive of the same track and folder with every resource under `eaid://environment_package/tracks/<track>/ai/f1_1990_vehicle_package/<folder>/<folder>.<ext>`, in the stock order with the stock resource types:
