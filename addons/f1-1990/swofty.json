@@ -44,7 +44,7 @@
       "binds": "native"
     },
     {
-      "id": "pit_phases_1990", "type": "toggle", "label": "1990 pit stop crew pace", "default": true,
+      "id": "pit_phases_1990", "type": "toggle", "label": "1990 pit stop crew pace", "default": false,
       "description": "In 1990 races the crew works at normal speed and the longer 1990 stop is spent holding the wheel guns on and lowering the jacks slowly; off plays the whole stop in slow motion.",
       "binds": "native"
     },
