@@ -14310,7 +14310,9 @@
      "how": "static"
     }
    ],
-   "used_by": []
+   "used_by": [
+    "addons/f1-1990/native/src/tyre_brand.cpp"
+   ]
   },
   {
    "id": "session.marshal_zone_check_flags",
@@ -19206,7 +19208,9 @@
      "how": "static"
     }
    ],
-   "used_by": []
+   "used_by": [
+    "addons/f1-1990/native/src/tyre_brand.cpp"
+   ]
   },
   {
    "id": "game.tyre_allocation_component_serialize",
