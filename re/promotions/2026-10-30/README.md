@@ -1,16 +1,18 @@
 # Promotion requests from engine-re (2026-10-30)
 
-Rows in owned lanes that engine-re decompiled, gave a unique signature and had checked by an
+Functions and globals in owned lanes that engine-re decompiled, gave a unique signature and had checked by an
 independent blind verifier (`agree` row in `verify.tsv`). Under the lane rule only the owner may
 raise them to L2, so they enter upstream at L1 (through the open `re(discover)` / `re(core)` PRs)
 and are listed here for the owner.
 
 | owner | lane | rows | file |
 |---|---|---|---|
-| re-career-teams | game | 796 | `re-career-teams.tsv` |
-| car-re | car | 41 | `car-re.tsv` |
+| re-career-teams | game | 821 | `re-career-teams.tsv` |
+| career-re | career | 57 | `career-re.tsv` |
+| car-re | car | 42 | `car-re.tsv` |
+| overlay | render | 28 | `overlay.tsv` |
+| ui-re | hud / fe_* | 10 | `ui-re.tsv` |
 | ai-re | ai | 9 | `ai-re.tsv` |
-| overlay | render | 4 | `overlay.tsv` |
 
 Each file: `addr`, `name`, `sig` (signature id in `signatures.json`), `verify` (verifier and V-number of the agree row).
 
