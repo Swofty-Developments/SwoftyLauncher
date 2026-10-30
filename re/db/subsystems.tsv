@@ -1,6 +1,7 @@
 id	prefix	owner	status	description
 ai	Ai	ai-re	open	driver/team race AI: difficulty scaling, pace/consistency, overtaking/defending, racing line/corners, strategy (pit/tyre/fuel), mistakes/DNFs, AI vehicle config vocabulary
 assets	Asset	-	open	eaid:// resolution, asset groups, world/WEP paths, textures
+audio	Snd	-	open	game-side Wwise integration: sound engine init settings, the job worker request callback, the audio job worker threads and their request queue
 car	Car	car-re	open	per-car performance: vehicle object + attribute array, R&D apply, setup, ERS/fuel, engine/PU, tyre model, damage/reliability
 career	Career	career-re	open	career / My Team: R&D upgrade trees + departments, resource points, facilities, contracts, driver development/market, season/weekend flow
 core	Ne	-	open	neon engine basics: NeStr, allocators, formatting, feature flags

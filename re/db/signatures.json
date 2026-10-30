@@ -81035,6 +81035,237 @@
     "native/src/core/netplay.cpp"
    ],
    "expect": "75 2B 41 80 BE D8 10 00 00 00"
+  },
+  {
+   "id": "session.pu_panel_slot_holder",
+   "section": ".xtls",
+   "pattern": "48 85 C0 74 DB 48 8B 48 10 48 2B 48 08",
+   "match": "0x141f50ec7",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141f50ecc",
+   "kind": "mid",
+   "expect": "48 8B 48 10 48 2B 48 08",
+   "names": [
+    "site_Sess_PuPanel_SlotHolder"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "pu-1990",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.pit_lane_put_vehicle_in_pit_box",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 89 D3 48 89 CE 41 BE 0D 00 00 00",
+   "match": "0x1434d1260",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1434d1260",
+   "kind": "func_start",
+   "names": [
+    "Game_PitLane_PutVehicleInPitBox"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "qualilaps",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.pit_stop_update_job_update",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 70 02 00 00 C5 78 29 BC 24 60 02 00 00",
+   "match": "0x1403c06a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1403c06a0",
+   "kind": "func_start",
+   "names": [
+    "Sess_PitStopUpdateJob_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "rules",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.sequence_name_table",
+   "section": ".xtls",
+   "pattern": "49 8B 78 08 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B 07 85 C0 0F 88 ?? ?? ?? ?? 48 8B 0D",
+   "match": "0x1403bbdaf",
+   "anchor": "0x1d",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x1a",
+    "len": 7
+   },
+   "target": "0x14618ce08",
+   "kind": "data",
+   "names": [
+    "g_Ne_NameTable"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "rules",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "audio.request_job_worker",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 44 89 C6 89 D7 48 89 CB 8B 15",
+   "match": "0x143fbdd00",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143fbdd00",
+   "kind": "func_start",
+   "names": [
+    "Snd_Request_JobWorker"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "crash2",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/audio_queue.cpp"
+   ]
+  },
+  {
+   "id": "audio.job_worker_lock",
+   "section": ".xtls",
+   "pattern": "FF 15 ?? ?? ?? ?? 89 C5 48 8B 0D ?? ?? ?? ?? FF 15 ?? ?? ?? ?? 83 3D ?? ?? ?? ?? 00 74",
+   "match": "0x143fbdd36",
+   "anchor": "0xb",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x8",
+    "len": 7
+   },
+   "target": "0x146c63ba0",
+   "kind": "data",
+   "names": [
+    "g_Snd_JobWorkerLock"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "crash2",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/audio_queue.cpp"
+   ]
+  },
+  {
+   "id": "audio.job_worker_overflow",
+   "section": ".xtls",
+   "pattern": "B8 28 00 00 00 8B 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? EB 16",
+   "match": "0x143fbddc2",
+   "anchor": "0xe",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0xb",
+    "len": 7
+   },
+   "target": "0x146c63e10",
+   "kind": "data",
+   "names": [
+    "g_Snd_JobWorkerOverflow"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "crash2",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/audio_queue.cpp"
+   ]
+  },
+  {
+   "id": "audio.job_worker_pending",
+   "section": ".xtls",
+   "pattern": "B8 28 00 00 00 8B 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? EB 16",
+   "match": "0x143fbddc2",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x5",
+    "len": 6
+   },
+   "target": "0x146c64294",
+   "kind": "data",
+   "names": [
+    "g_Snd_JobWorkerPending"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "crash2",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.heap_deallocate_non_small",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 49 89 D6",
+   "match": "0x143963f80",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143963f80",
+   "kind": "func_start",
+   "names": [
+    "Ne_Heap_DeallocateNonSmall"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "crash2",
+     "how": "static"
+    }
+   ],
+   "used_by": []
   }
  ]
 }

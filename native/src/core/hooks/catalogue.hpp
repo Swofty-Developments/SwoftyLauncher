@@ -80,7 +80,7 @@ inline constexpr Event EVENTS[] = {
     {"session.formation_lap", N, SHELL, 1, false, Fired::no, nullptr},
     {"race.start", N, SHELL, 1, false, Fired::yes, SWOFTY_EVENT_RACE_START},
     {"session.sector", N, SHELL, 1, true, Fired::no, nullptr},
-    {"session.lap", N, SHELL, 1, false, Fired::no, SWOFTY_EVENT_LAP},
+    {"session.lap", N, "swofty::sessions::events::Lap", 1, true, Fired::yes, SWOFTY_EVENT_LAP},
     {"session.pit", N, SHELL, 1, false, Fired::no, nullptr},
     {"session.pit_stop", N, SHELL, 1, false, Fired::no, nullptr},
     {"session.flag", N, SHELL, 1, false, Fired::no, SWOFTY_EVENT_FLAG},

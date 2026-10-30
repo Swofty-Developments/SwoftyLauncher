@@ -425,6 +425,10 @@ jobs:
         run: native/test/run_hud_test.sh
       - name: Shader look unit test
         run: native/test/run_grade_test.sh
+      - name: ERS new-lap site unit test
+        run: native/test/run_ers_newlap_test.sh
+      - name: Audio job queue fix unit test
+        run: native/test/run_audio_queue_test.sh
       - name: Pattern scan and scan cache unit test
         run: native/test/run_scan_test.sh
       - name: Telemetry feed unit test

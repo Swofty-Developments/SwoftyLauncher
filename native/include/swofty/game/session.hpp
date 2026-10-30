@@ -298,6 +298,8 @@ inline constexpr address<"Sess_PenaltyLog_RemoveVehicle"> Sess_PenaltyLog_Remove
 inline constexpr address<"Sess_PenaltyLog_SendAllRecords"> Sess_PenaltyLog_SendAllRecords{}; // L2 experimental
 inline constexpr address<"Sess_PenaltyLog_SendRecord"> Sess_PenaltyLog_SendRecord{}; // L2 experimental
 inline constexpr address<"Sess_PenaltyLog_SendRecord_2"> Sess_PenaltyLog_SendRecord_2{}; // L2 experimental
+using Sess_PitStopUpdateJob_Update_t = void(void *job);
+inline constexpr fn<"Sess_PitStopUpdateJob_Update", Sess_PitStopUpdateJob_Update_t> Sess_PitStopUpdateJob_Update{}; // L2 experimental
 inline constexpr address<"Sess_PlayerTerminalDamage_Enter"> Sess_PlayerTerminalDamage_Enter{}; // L2 experimental
 inline constexpr address<"Sess_PreLights_Update"> Sess_PreLights_Update{}; // L2 experimental
 using Sess_PreRaceToRace_Update_t = uint32_t *(void *state, uint32_t *route);
@@ -438,6 +440,7 @@ inline constexpr call<"site_Sess_AiVehicleRegisterCall"> site_Sess_AiVehicleRegi
 inline constexpr call<"site_Sess_ControllerSystem_ApplyRecordCall"> site_Sess_ControllerSystem_ApplyRecordCall{}; // L2 experimental
 inline constexpr call<"site_Sess_InGamePlayerFinishedAiCall"> site_Sess_InGamePlayerFinishedAiCall{}; // L2 experimental
 inline constexpr call<"site_Sess_InGameSessionCompleteAiCall"> site_Sess_InGameSessionCompleteAiCall{}; // L2 experimental
+inline constexpr site<"site_Sess_PuPanel_SlotHolder"> site_Sess_PuPanel_SlotHolder{}; // L2 experimental
 inline constexpr vtable<"vt_Sess_AiController", 4> vt_Sess_AiController{}; // L2 experimental
 inline constexpr vtable<"vt_Sess_RaceRuleset", 60> vt_Sess_RaceRuleset{}; // L2 experimental
 inline constexpr vtable<"vt_Sess_ScAheadOfLead", 11> vt_Sess_ScAheadOfLead{}; // L2 experimental
