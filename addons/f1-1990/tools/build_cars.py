@@ -8,13 +8,23 @@ common.erp. No 2026 archive, row or file is touched.
 
   EnergyRecoverySystem   removed, and the EnergyRecoverySystem parts of the radUpgrade* blocks
                          (the blocks stay, empty, like the stock radUpgradeWearMGUH)
-  Engine                 naturally aspirated (TurboMode Off), a V8/V10/V12 RevsPowerSpline on the stock
-                         15-vertex rev grid (so radUpgradeEngine still lines up), the family's rev limit
+  Engine                 naturally aspirated (TurboMode Off), the car's engine (ENGINES): the stock 15-vertex
+                         RevsPowerSpline grid scaled so vertex 9 (the stock peak, and the peak of the radUpgradeEngine
+                         deltas, which add per vertex) sits at the engine's peak power rpm, the power curve of its
+                         V8/V10/V12 torque shape through that peak, the limiter LIMITER_MARGIN_RPM (500) above it,
+                         RevsEngineBrakingSpline on the same grid, WearICERevsSpline scaled by the limiter ratio
   GearBox                stock 8 ratios; the final drive keeps the stock top-gear speed at the limiter; the automatic
                          shift speeds (multiples of the speed at peak power) keep their stock fraction of the limiter
-  FuelTank               BSFC scaled so fuel per second at full power stays stock (baked AI fuel data)
+  FuelTank               BSFC scaled so fuel per second at full power stays stock (baked AI fuel data);
+                         FuelOptimalRevs moves with the rev grid
   FuelECU                power scales divided by the stock standard scale, so the team delta is the season pack's
-  Chassis                mass from the season pack, MOIX/Y/Z scaled by the same ratio to the donor's mass
+  Chassis                mass from the season pack, MOIX/Y/Z scaled by the same ratio to the donor's mass, MOIX and
+                         MOIY also by the square of the 1990 wheelbase over the donor's
+  Axles                  the car pack's model sets the wheel positions (UseModelPositions): LocalRestPositionX/Z
+                         carry the 1990 model's wheel_fl and wheel_bl nodes (MODEL_AXLES), Chassis COMZ (and
+                         F1Tuning ChassisCOMZMin/Max) and FuelTank COMZ keep their fraction of the donor model's
+                         wheelbase (DONOR_AXLES), and F1Plank keeps the donor's distance from each axle to the end
+                         of the plank (OffsetZ/ExtentZ)
   F1Aero                 drag scaled by the season pack, no moving front wing; downforce stays stock; no DRS
                          hardware: the DRS failure/joint keys removed, flap angle, open/close speed and
                          DRS-open wing factors as on the safety car (0, 1, 1.0), radUpgradeDRS emptied
@@ -60,21 +70,21 @@ erases by name, so two assets sharing names lose them both when either unloads, 
 no compound at all. The car pack's compound file names its compounds F1_1990_*, which no stock package uses.
 
 Option handling, one PERIOD entry per value: modern scales MOIX/Y/Z with the mass and keeps the donor's aero, grip
-and brakes. 1990 (the default) and 1990_low blend MOIX/Y/Z between the mass-scaled and the donor's values (moi: the share
-of the mass scaling kept, so the light car turns in less sharply) and add the period cuts: every lift curve (F1Aero
+and brakes. 1990 (the default) scales them with the mass like modern; 1990_low keeps the donor's (moi: the share of
+the mass scaling kept). Both add the period cuts: every lift curve (F1Aero
 Front/RearCoeffLiftVsRideHeight and VsChassisRake) and wing lift coefficient (Front/RearWingCoL0-2) x aero, so the
 balance stays the donor's; Tyre GripMultiplier per axle (the tyre force multiplies it in and clamps to
 Min/MaxGripMultiplier at 0x1446b7950); BrakeECU torques x the mass ratio x brake; Chassis FFBScale x FFB_1990 (1.3), a
-heavier wheel for an unassisted rack. They also take period power and mass around the team scalars: PERIOD_HP 635 hp
-(Honda V10 ~654, Ferrari V12 ~686, Ford DFR and Judd V8 ~600-620, Lamborghini V12 ~640) instead of BASE_HP 650, and
-PERIOD_MASS 620 kg (500 kg dry, a 72 kg driver and 48 kg standing in for the 1990 race fuel the game does not carry)
+heavier wheel for an unassisted rack. They also take period power and mass: the engine's own power (ENGINES) instead
+of BASE_HP 650 x the team scalar, and PERIOD_MASS 620 kg (500 kg dry, a 72 kg driver and 48 kg standing in for the 1990 race fuel the game does not carry)
 instead of BASE_MASS 575, and drag x PERIOD_DRAG (1.25, exposed wheels and big wings) on top of the team scalar. The
 game carries fuel as FuelTank mass on top of Chassis Mass and burns it at the BSFC; the start load follows the race
 distance and the per-lap burn the AI has baked per track and car (.fuel_burn_granular), so the BSFC keeps the donor's
 fuel per second and the extra period fuel goes into the chassis instead. Archives:
 cars/handling/<ers>_<tyre_size>_<handling>/ (modern keeps <ers>_<tyre_size>/).
 
-Team power, mass and drag come from the season pack's per-team scalars (season.py), applied around a common base.
+Team mass and drag (and power under modern) come from the season pack's per-team scalars (season.py), applied around a
+common base.
 
 Outputs (relative to the addon folder): cars/handling/<ers>_<tyre_size>/<folder>_handling.erp, cars/handling.json
 (file.put ops keyed by the options) and db/cars.json (the f1_1990 and f1_1990b package rows, the 13 vehicle rows
@@ -119,11 +129,35 @@ SPREAD = 1.0
 HP_W = 745.7
 TORQUE_FLOOR = 0.6
 
-FAMILIES = {
-    'V12': {'limiter_rpm': 13500, 'peak_rpm': 13000, 'torque_peak': 0.82, 'bundle': 'ferrari_2026.bdl'},
-    'V10': {'limiter_rpm': 13300, 'peak_rpm': 12500, 'torque_peak': 0.78, 'bundle': 'renault_2026.bdl'},
-    'V8': {'limiter_rpm': 12500, 'peak_rpm': 11500, 'torque_peak': 0.75, 'bundle': 'ford_2026.bdl'},
+TORQUE_PEAK = {'V12': 0.82, 'V10': 0.78, 'V8': 0.75}
+ENGINES = {
+    'Honda RA100E': {'hp': 690, 'peak_rpm': 13500},
+    'Ferrari 036': {'hp': 680, 'peak_rpm': 12750},
+    'Renault RS2': {'hp': 660, 'peak_rpm': 12800},
+    'Ford HBA4': {'hp': 660, 'peak_rpm': 12800},
+    'Judd EV': {'hp': 640, 'peak_rpm': 12500},
+    'Lamborghini 3512': {'hp': 640, 'peak_rpm': 13000},
+    'Ford DFR': {'hp': 620, 'peak_rpm': 11250},
 }
+LIMITER_MARGIN_RPM = 500
+PEAK_VERTEX = 9
+
+MODEL_AXLES = {
+    'mclaren': (1.4672, -1.4664, 0.8924, 0.8325), 'sauber': (1.4672, -1.4664, 0.8924, 0.8325),
+    'ferrari': (1.4323, -1.4325, 0.8924, 0.8327), 'myteam_ferrari': (1.4323, -1.4325, 0.8924, 0.8327),
+    'haas': (1.4323, -1.4325, 0.8924, 0.8327), 'lotus': (1.4403, -1.4421, 0.8279, 0.8014),
+    'mercedes': (1.4549, -1.4549, 0.9102, 0.8309), 'force_india': (1.4549, -1.4549, 0.9102, 0.8309),
+    'toro_rosso': (1.4549, -1.4549, 0.9102, 0.8309), 'redbull': (1.1827, -1.5750, 0.8279, 0.7951),
+    'gm_cadillac': (1.1827, -1.5750, 0.8279, 0.7951), 'williams': (1.1582, -1.6310, 0.8257, 0.7973),
+    'myteam_honda': (1.1582, -1.6310, 0.8257, 0.7973),
+}
+DONOR_AXLES = {
+    'mclaren': (1.6656, -1.5925), 'ferrari': (1.6991, -1.6991), 'williams': (1.6876, -1.6876),
+    'lotus': (1.6999, -1.6999), 'mercedes': (1.6951, -1.7052), 'redbull': (1.7014, -1.7014),
+    'force_india': (1.6995, -1.6993), 'sauber': (1.6733, -1.6943), 'toro_rosso': (1.6945, -1.6999),
+    'gm_cadillac': (1.7001, -1.7000), 'haas': (1.6930, -1.6930),
+}
+PITCH_YAW = (b'MOIX', b'MOIY')
 
 PACKAGE_FIELDS = ['_metadata_', 'ai_package_folder', 'available', 'blob_shadow_decal', 'crew_livery_asset_group',
                   'driver_animation_set', 'garage_asset_group', 'has_cockpit_halo', 'is_26_aero_regulations',
@@ -159,11 +193,10 @@ BEAD_13 = 0.175
 ALLOY_13 = 0.182
 TYRE_GROUP = 'F1_1990'
 MOMENTS = (b'MOIX', b'MOIY', b'MOIZ')
-PERIOD_HP = 635.0
 PERIOD_DRAG = 1.25
 PERIOD_MASS = 500.0 + 72.0 + 48.0
 PERIOD = {
-    '1990': {'aero': 0.75, 'grip': {'Front': 0.915, 'Rear': 0.925}, 'brake': 1.0, 'moi': 0.5},
+    '1990': {'aero': 0.75, 'grip': {'Front': 0.915, 'Rear': 0.925}, 'brake': 1.0, 'moi': 1.0},
     '1990_low': {'aero': 0.5, 'grip': {'Front': 0.83, 'Rear': 0.85}, 'brake': 0.9, 'moi': 0.0},
     'modern': None,
 }
@@ -212,12 +245,18 @@ def rnd_targets(c):
             'weight': -rnd.weight_target(teams[0])}
 
 
+def engine(c):
+    e = ENGINES[c.engine]
+    return {'name': c.engine, 'family': c.family, 'hp': e['hp'], 'peak_rpm': e['peak_rpm'],
+            'limiter_rpm': e['peak_rpm'] + LIMITER_MARGIN_RPM, 'torque_peak': TORQUE_PEAK[c.family]}
+
+
 def cars():
     pack = season.Season.load()
     rows = []
     for c in C.CARS:
         t = pack.teams[c.team]
-        rows.append({'car': c, 'name': t.name, 'engine': c.family, 'power': t.power, 'weight': t.weight,
+        rows.append({'car': c, 'name': t.name, 'engine': engine(c), 'power': t.power, 'weight': t.weight,
                      'drag': t.drag, 'rnd': rnd_targets(c)})
     return rows
 
@@ -269,9 +308,9 @@ def rads(r):
     return r * 2.0 * math.pi / 60.0
 
 
-def power_fraction(fam, omega):
-    peak = rads(fam['peak_rpm'])
-    rt = fam['torque_peak']
+def power_fraction(eng, omega):
+    peak = rads(eng['peak_rpm'])
+    rt = eng['torque_peak']
     k = 1.0 / ((1.0 - rt) ** 2 + 2.0 * (1.0 - rt))
 
     def torque(r):
@@ -432,53 +471,113 @@ def period(root, ratio, cut):
     set_value(chassis, b'FFBScale', value(chassis, b'FFBScale') * FFB_1990)
 
 
+def scale_x(node, k):
+    for e in node.children:
+        if e.kind == 0:
+            e.set_attr(b'x', fmt(round(float(e.attr(b'x')) * k, 1)))
+
+
+def axle_frame(c):
+    zf, zr, xf, xr = MODEL_AXLES[c.folder]
+    df, dr = DONOR_AXLES[c.donor]
+    return zf, zr, xf, xr, df, dr
+
+
+def geometry(root, c):
+    zf, zr, xf, xr, df, dr = axle_frame(c)
+
+    def place(z):
+        return round(zr + (z - dr) / (df - dr) * (zf - zr), 4)
+
+    chassis = section(root, b'Chassis')
+    comz = place(value(chassis, b'COMZ'))
+    set_value(chassis, b'COMZ', comz)
+    tuning = section(root, b'F1Tuning')
+    for k in (b'ChassisCOMZMin', b'ChassisCOMZMax'):
+        set_value(tuning, k, comz)
+    tank = section(root, b'FuelTank')
+    set_value(tank, b'COMZ', place(value(tank, b'COMZ')))
+    for end, node in named(section(root, b'SuspensionSystem'), b'Suspension').items():
+        set_value(node, b'LocalRestPositionZ', zf if end == 'Front' else zr)
+        set_value(node, b'LocalRestPositionX', xf if end == 'Front' else xr)
+    plank = section(root, b'F1Plank')
+    off, ext = value(plank, b'OffsetZ'), value(plank, b'ExtentZ')
+    front = zf - (df - (off + ext))
+    rear = zr + ((off - ext) - dr)
+    set_value(plank, b'OffsetZ', round((front + rear) / 2, 3))
+    set_value(plank, b'ExtentZ', round((front - rear) / 2, 3))
+    return ((zf - zr) / (df - dr)) ** 2
+
+
+def engine_curve(root, eng_row, peak_w):
+    eng = section(root, b'Engine')
+    curve = child(eng, b'RevsPowerSpline')
+    stock_curve = spline(curve)
+    braking = child(eng, b'RevsEngineBrakingSpline')
+    if [x for x, _ in spline(braking)] != [x for x, _ in stock_curve]:
+        raise ValueError('RevsEngineBrakingSpline and RevsPowerSpline grids differ')
+    stock_max = max(y for _, y in stock_curve)
+    if stock_curve[PEAK_VERTEX][1] < stock_max * 0.999:
+        raise ValueError('the stock power peak is not at vertex 9')
+    k = rads(eng_row['peak_rpm']) / stock_curve[PEAK_VERTEX][0]
+    for e in [e for e in curve.children if e.kind == 0]:
+        x = float(e.attr(b'x')) * k
+        e.set_attr(b'x', fmt(round(x, 1)))
+        e.set_attr(b'y', fmt(round(peak_w * power_fraction(eng_row, x))))
+    scale_x(braking, k)
+    stock_limiter = value(eng, b'LimiterRotationRate')
+    limiter = rads(eng_row['limiter_rpm'])
+    set_value(eng, b'LimiterRotationRate', round(limiter, 1))
+    scale_x(child(eng, b'WearICERevsSpline'), limiter / stock_limiter)
+    set_value(eng, b'TurboMode', 'Off')
+    tank = section(root, b'FuelTank')
+    set_value(tank, b'FuelOptimalRevs', round(value(tank, b'FuelOptimalRevs') * k, 1))
+    new_curve = spline(curve)
+    return {'stock_curve': stock_curve, 'stock_peak': stock_max, 'stock_limiter': stock_limiter,
+            'limiter': limiter, 'peak_x': new_curve[PEAK_VERTEX][0],
+            'real_peak': max(y for x, y in new_curve if x <= limiter)}
+
+
 def convert(root, row, ers, size, handling):
-    fam = FAMILIES[row['engine']]
+    c = row['car']
+    eng_row = row['engine']
     cut = PERIOD[handling]
-    base_hp, base_mass = (BASE_HP, BASE_MASS) if cut is None else (PERIOD_HP, PERIOD_MASS)
     tyre_group(root)
     ERS_MODES[ers](root)
     rolling = tyres(root, size)
 
-    eng = section(root, b'Engine')
-    curve = child(eng, b'RevsPowerSpline')
-    stock_curve = spline(curve)
-    stock_peak = max(y for _, y in stock_curve)
-    peak_w = base_hp * spread(row['power']) * HP_W
-    for e in [e for e in curve.children if e.kind == 0]:
-        x = float(e.attr(b'x'))
-        e.set_attr(b'y', fmt(round(peak_w * power_fraction(fam, x))))
-    stock_limiter = value(eng, b'LimiterRotationRate')
-    limiter = rads(fam['limiter_rpm'])
-    set_value(eng, b'LimiterRotationRate', round(limiter, 1))
-    set_value(eng, b'TurboMode', 'Off')
+    peak_w = (BASE_HP * spread(row['power']) if cut is None else eng_row['hp']) * HP_W
+    e = engine_curve(root, eng_row, peak_w)
+    limiter, stock_limiter = e['limiter'], e['stock_limiter']
 
     box = section(root, b'GearBox')
     final = value(box, b'FinalDriveRatio') * limiter / stock_limiter * rolling
     set_value(box, b'FinalDriveRatio', round(final, 3))
-    stock_peak_x = max(stock_curve, key=lambda p: p[1])[0]
-    peak_x = max((x for x, _ in stock_curve), key=lambda x: power_fraction(fam, x))
-    shift = stock_peak_x / stock_limiter * limiter / peak_x
-    for e in [e for e in box.children if e.kind == 0 and e.name.startswith((b'GearUpSpeedMultiple', b'GearDnSpeedMultiple'))]:
-        set_value(box, e.name, round(value(box, e.name) * shift, 3))
+    stock_peak_x = max(e['stock_curve'], key=lambda p: p[1])[0]
+    shift = stock_peak_x / stock_limiter * limiter / e['peak_x']
+    for g in [g for g in box.children if g.kind == 0 and g.name.startswith((b'GearUpSpeedMultiple', b'GearDnSpeedMultiple'))]:
+        set_value(box, g.name, round(value(box, g.name) * shift, 3))
 
-    real_peak = max(peak_w * power_fraction(fam, x) for x, _ in stock_curve)
+    real_peak = e['real_peak']
     tank = section(root, b'FuelTank')
     for k in (b'FuelBsfcMin', b'FuelBsfcMax'):
-        set_value(tank, k, value(tank, k) * stock_peak / real_peak)
+        set_value(tank, k, value(tank, k) * e['stock_peak'] / real_peak)
 
     ecu = section(root, b'FuelECU')
     std = value(ecu, b'FuelPowerScaleStandard')
     for k in (b'FuelPowerScaleLean', b'FuelPowerScaleStandard', b'FuelPowerScaleRich', b'FuelPowerScaleMax'):
         set_value(ecu, k, round(value(ecu, k) / std, 4))
 
+    length = geometry(root, c)
     chassis = section(root, b'Chassis')
+    base_mass = BASE_MASS if cut is None else PERIOD_MASS
     mass = base_mass * spread(row['weight'])
     ratio = mass / value(chassis, b'Mass')
     set_value(chassis, b'Mass', round(mass, 1))
     moi = 1.0 if cut is None else cut['moi']
     for k in MOMENTS:
-        set_value(chassis, k, round(value(chassis, k) * (1 + (ratio - 1) * moi), 1))
+        size_k = length if k in PITCH_YAW else 1.0
+        set_value(chassis, k, round(value(chassis, k) * (1 + (ratio - 1) * moi) * size_k, 1))
     if cut is not None:
         period(root, ratio, cut)
 
@@ -491,9 +590,12 @@ def convert(root, row, ers, size, handling):
     remove_drs(root, aero)
     rnd_upgrades(root, row['rnd'])
 
-    return {'team': row['name'], 'engine': row['engine'], 'hp': round(real_peak / HP_W),
-            'limiter_rpm': fam['limiter_rpm'], 'mass': round(mass, 1), 'drag': round(drag, 3),
-            'final_drive': round(final, 3)}
+    plank = section(root, b'F1Plank')
+    return {'team': row['name'], 'engine': eng_row['name'], 'hp': round(real_peak / HP_W),
+            'peak_rpm': eng_row['peak_rpm'], 'limiter_rpm': eng_row['limiter_rpm'], 'mass': round(mass, 1),
+            'drag': round(drag, 3), 'final_drive': round(final, 3), 'comz': value(chassis, b'COMZ'),
+            'moi': tuple(value(chassis, k) for k in MOMENTS),
+            'plank': (value(plank, b'OffsetZ'), value(plank, b'ExtentZ'))}
 
 
 def stock_archive(root_dir, c):
@@ -623,8 +725,9 @@ def main():
     out = ADDON if args.write else os.path.join(ADDON, 'build')
     files, report = build(args.game, out)
     for r in report:
-        print(f'{r["car"]:28} {r["team"]:22} {r["engine"]:4} {r["hp"]:4} hp  {r["limiter_rpm"]} rpm  '
-              f'{r["mass"]:6} kg  drag x{r["drag"]}  final {r["final_drive"]}  {r["bytes"][0]} -> {r["bytes"][1]} bytes')
+        print(f'{r["car"]:28} {r["team"]:22} {r["engine"]:16} {r["hp"]:4} hp @ {r["peak_rpm"]}, limiter '
+              f'{r["limiter_rpm"]} rpm  {r["mass"]:6} kg  MOI {r["moi"]}  COMZ {r["comz"]:+.4f}  '
+              f'plank {r["plank"][0]:+.3f}/{r["plank"][1]:.3f}  drag x{r["drag"]}  final {r["final_drive"]}')
     if args.write:
         return 0
     diff = [rel for rel, blob in files.items()
