@@ -5,13 +5,18 @@
 
 #include <atomic>
 #include <cstring>
+#include <memory>
 
 #include "car_live.hpp"
+#include "core_events.hpp"
+#include "hooks.hpp"
+#include "session_points.hpp"
 
 // The live car operations on the running game (car_live.hpp): g_Sess_VehicleTable and g_Sess_VehicleCount
 // resolve once the code is ready, memory reads and writes are checked (swofty::mem), writes run only on the
 // flow thread (the one that ticks on_frame), and nothing is handed over on an exe that isn't the KB build,
-// whose field offsets these are.
+// whose field offsets these are. car.built is a game point: its mid-hook on site_Car_LiveCarBuilt sits there
+// while an addon subscribes, and the event fires from the next frame (car_live.hpp, Ops::take_built).
 
 namespace swofty_core::hooks {
 namespace {
@@ -29,7 +34,16 @@ bool on_flow_thread()
     return !t || t == GetCurrentThreadId();
 }
 
-void frame(double, void *) { g_flow_tid = GetCurrentThreadId(); }
+std::unique_ptr<session_points::MidPoint> g_built;
+
+void m_built(safetyhook::Context &ctx) { Ops::built(ctx.rdi); }
+
+void frame(double, void *)
+{
+    g_flow_tid = GetCurrentThreadId();
+    for (const auto &b : Ops::take_built())
+        events::car_built(swofty::cars::live::Car(b.index, reinterpret_cast<void *>(b.car)));
+}
 
 void setup()
 {
@@ -66,6 +80,13 @@ void setup()
 }
 
 }
+
+void declare_car_points(Table &t)
+{
+    g_built = std::make_unique<session_points::MidPoint>("car.built", "site_Car_LiveCarBuilt", &m_built, game_ops());
+    t.declare_game("car.built", SWOFTY_POINT_NOTIFY, swofty::cars::events::Built::version, g_built.get());
+}
+
 }
 
 extern "C" __declspec(dllexport) const SwoftyCarOps *SwoftyCoreCarOps(void)

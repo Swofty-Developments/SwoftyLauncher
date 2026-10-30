@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <cstring>
 #include <functional>
+#include <mutex>
+#include <vector>
 
 #include <swofty_api.h>
 
@@ -203,6 +205,40 @@ template <class Tag> struct Ops {
             return SWOFTY_ASSET_LATE;
         bits ^= key;
         return env.write && env.write(sys + f->offset, &bits, 4) ? SWOFTY_ASSET_OK : SWOFTY_ASSET_LATE;
+    }
+
+    // car.built: the game builds each car on a loader thread (T119), so the mid-hook on site_Car_LiveCarBuilt
+    // (rdi = the new CarLive) only queues it; the next frame takes the queue on the flow thread, where set() may
+    // write, and keeps the cars still in their slot.
+    struct Built {
+        uint32_t index;
+        uintptr_t car;
+    };
+    static inline std::mutex built_lock;
+    static inline std::vector<Built> built_queue;
+
+    static void built(uintptr_t car)
+    {
+        uint8_t id = 0;
+        if (!bound.load() || !rd(car + CAR_VEHICLE_ID, id) || id >= MAX_CARS)
+            return;
+        std::lock_guard<std::mutex> g(built_lock);
+        if (built_queue.size() < MAX_CARS * 2)
+            built_queue.push_back({id, car});
+    }
+
+    static std::vector<Built> take_built()
+    {
+        std::vector<Built> out;
+        {
+            std::lock_guard<std::mutex> g(built_lock);
+            out.swap(built_queue);
+        }
+        std::erase_if(out, [](const Built &b) {
+            uintptr_t car = 0;
+            return car_at(b.index, reinterpret_cast<const void *>(b.car), car) != SWOFTY_ASSET_OK;
+        });
+        return out;
     }
 
     static inline const SwoftyCarOps table = {

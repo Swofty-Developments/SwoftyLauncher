@@ -214,10 +214,31 @@ static void sdk_side()
     swofty::detail::set_car_ops_table(nullptr);
 }
 
+static void built_queue()
+{
+    build_world();
+    Ops::bind(make_env());
+    auto addr = [](int i) { return reinterpret_cast<uintptr_t>(car_mem[i]); };
+    Ops::built(addr(1));
+    Ops::built(addr(2));
+    car_mem[0][cl::CAR_VEHICLE_ID] = 40;
+    Ops::built(addr(0));
+    car_mem[0][cl::CAR_VEHICLE_ID] = 0;
+    table[2] = addr(1);
+    auto got = Ops::take_built();
+    expect(got.size() == 1 && got[0].index == 1 && got[0].car == addr(1),
+           "car.built keeps a built car still in its slot, drops a bad id and a car gone from its slot");
+    expect(Ops::take_built().empty(), "the queue is taken once");
+    for (int i = 0; i < 100; i++)
+        Ops::built(addr(1));
+    expect(Ops::take_built().size() == 2 * cl::MAX_CARS, "the queue is capped when no frame takes it");
+}
+
 int main()
 {
     core_ops();
     sdk_side();
+    built_queue();
     if (fails) {
         printf("car_live_test: %d failure(s)\n", fails);
         return 1;

@@ -74502,7 +74502,9 @@
      "how": "static"
     }
    ],
-   "used_by": []
+   "used_by": [
+    "native/src/core/hooks/car_live.cpp"
+   ]
   },
   {
    "id": "car.register_vehicle_id",
