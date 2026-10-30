@@ -10,7 +10,7 @@ With the session system you set what a race weekend looks like: its sessions, ho
 A **setup mode** is the game's row that a weekend runs under: its format, length, rules and grid all hang off it. Every Grand Prix and Time Trial box shares one setup mode, `swofty_f1`, and each box's own points, DRS, tyre class and rules apply when a session loads in that box. A box gets a setup mode of its own only when it needs a different shape at boot, such as F1 1990's two qualifying sessions.
 
 ::: info In 1.6.0
-The header `swofty/systems/sessions.hpp` has `sessions::Rules` (the `rules` of a `content::Package`), `sessions::set_control` and the `session.player.control` payload `sessions::events::PlayerControl`; `swofty/systems/control.hpp` has `Control` and `ControlState`. The registries on this page (`modes`, `formats`, `lengths`, `points`, `rules_profiles`, `safety_car`, `grids`) and the penalty, results and weekend events ship later; those sections describe that design.
+The header `swofty/systems/sessions.hpp` has `sessions::Rules` (the `rules` of a `content::Package`), `sessions::set_control`, the `session.player.control` payload `sessions::events::PlayerControl` and the `session.lap` payload `sessions::events::Lap`; `swofty/systems/control.hpp` has `Control` and `ControlState`. The registries on this page (`modes`, `formats`, `lengths`, `points`, `rules_profiles`, `safety_car`, `grids`) and the penalty, results and weekend events ship later; those sections describe that design.
 :::
 
 ## The header
@@ -434,6 +434,32 @@ events::on<cars::events::ControllersRebuilt>().after([](const cars::events::Cont
 - **`sessions::set_control`** works on any car and goes through the game's own switch, so `session.player.control` fires for it. It sets a controller flag of its own (DEV, 6; the config key `session_control_flag` picks another) to hold a car on the AI and clears it to give the car back. Handing a car back to its human fails with `Result::blocked` while any other flag is set (the pit-lane flag is the usual one) and the game is not called. A call made while the game rebuilds its controller sets, or from inside a `session.player.control` handler, is queued and applies on the next frame. `Result::late` means the controllers have not been built yet, or the call came from another thread. Handing a car to the AI resets the car's vehicle systems, which the player sees as a hitch.
 - **`reason`** is the flag index the game passes as the fourth argument of `Game_Set_VehicleController`: the switch sets bit `reason` when `to` is `ai` and clears it when `to` is `human`. A `before` handler may change `to` and `reason`.
 - **`car.controllers.rebuilt`** fires after a flashback or a Return to Garage has rebuilt a car's controllers (see [Cars](./cars)).
+
+## A car's lap
+
+`session.lap` fires when a car crosses the line and its lap counter changes, once per crossing for each car of the session. The 1.x name `lap` fires at the same moment, with the car's index in `a`.
+
+```cpp
+namespace swofty::sessions::events {
+struct Lap {                                   // notify
+    static constexpr const char *point = "session.lap";
+    static constexpr uint32_t version = 1;
+    uint32_t size, payload_version;
+    cars::live::Car car;                       // car.index(): the vehicle index in the session
+};
+}
+```
+
+```cpp
+// count the laps each car starts in qualifying
+events::on<sessions::events::Lap>().when(events::session_type({ events::SessionType::qualifying }))
+    .after([](const sessions::events::Lap &l, const events::Context &) { my_addon::lap_started(l.car.index()); });
+```
+
+- **Where it fires.** The game posts `vehicle_newlap` from its per-car progress update, and the ERS system's handler (`Game_ErsSystem_HandleVehicleNewLap`) looks the car up among its participants. The core's ERS new-lap guard sits on that lookup (`site_Game_ErsNewLap_VehicleLookup`) and fires the event at the participant whose vehicle id is the message's. A participant without a vehicle never fires it, and `SWOFTY_ERS_GUARD=0` turns the event off with the guard.
+- **Thread.** The game thread, inside the progress update and the message publish. A handler that changes the session (sends a car to its garage, issues a penalty) queues the work and does it on a later frame.
+- **What counts as a crossing.** The counter also changes when a car crosses the line backwards, and when the line runs through the pit lane a car crossing it there fires too. Read the car's pit status when the difference matters.
+- **Cost.** The core logs the first fire of a session only.
 
 ## Events and operations
 
