@@ -9049,7 +9049,6 @@
    "from": "entrants.entrant_setup_modes.entrant_setup_mode[_metadata_=f1_26]",
    "set": {
     "_metadata_": "f1_1990",
-    "stat_id": "13",
     "entrant_lists": "f1_1990",
     "selectable_entrant_lists": "f1_1990",
     "max_entrants": "{{cars}}"

@@ -168,7 +168,7 @@ Writes `cars/handling/<ers>_<tyre_size>/<folder>_handling.erp` (one archive per 
 
 ## cars.py
 
-The 1990 car table: team, vehicle row (`<token>_1990`, the grid lane's tokens), performance tier, car folder (asset_filename and AI data), donor 2026 folder, resource stem, stat_id, chassis, engine. Shared by `build_cars.py` and the car pack's `build_pack.py`.
+The 1990 car table: team, vehicle row (`<token>_1990`, the grid lane's tokens), performance tier, car folder (asset_filename and AI data), donor 2026 folder, resource stem, chassis, engine. Shared by `build_cars.py` and `carpack/tools/build_pack.py`.
 
 ## build_audio.py, audio.py
 

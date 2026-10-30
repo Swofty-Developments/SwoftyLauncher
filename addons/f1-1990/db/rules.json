@@ -8290,7 +8290,6 @@
    "from": "game_setup.game_setup_modes.game_setup_mode[_metadata_=f1_26]",
    "set": {
     "_metadata_": "f1_1990",
-    "stat_id": "16",
     "display_name": "lng_f1_1990",
     "options_tag": "gamesetup_f1_1990",
     "has_tyre_warmers": "False",

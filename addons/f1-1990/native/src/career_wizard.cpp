@@ -42,6 +42,7 @@
 #include <vector>
 
 #include <swofty/career.hpp>
+#include <swofty/db.hpp>
 #include <swofty/events.hpp>
 #include <swofty/game.hpp>
 #include <swofty/mixin.hpp>
@@ -87,7 +88,7 @@ constexpr uint8_t kOptionCustomSeason = 10;
 constexpr uint8_t kOptionRecommended = 0xb;
 constexpr uint8_t kOptionCustomSettings = 0xc;
 constexpr uint8_t kPresetFullSeason = 0;
-constexpr uint8_t kSetupMode1990 = 16;
+constexpr char kSetupMode1990[] = "f1_1990";
 constexpr char kDatesFile[] = "data/calendar-1990.json";
 
 std::atomic<uint32_t> g_step_logged, g_season_logged, g_back_logged, g_calendar_logged, g_other_logged, g_loaded_logged,
@@ -167,11 +168,35 @@ void refill(void *component, const Events &list)
     std::memcpy(c + 0x2c8, &n, sizeof n);
 }
 
+int setup_mode_1990()
+{
+    static std::atomic<int> stat{-1};
+    if (stat.load() >= 0 || !swofty::db::available())
+        return stat.load();
+    int64_t count = 0;
+    if (swofty::db::int_at("game_setup.game_setup_modes._game_setup_mode_instancecount_", &count) != swofty::db::Result::ok)
+        return -1;
+    for (int64_t i = 0; i < count && i < 256; i++) {
+        std::string row = "game_setup.game_setup_modes.game_setup_mode_" + std::to_string(i);
+        const char *label = nullptr;
+        int64_t id = -1;
+        if (swofty::db::string_at(row + "._metadata_", &label) == swofty::db::Result::ok && label &&
+            !std::strcmp(label, kSetupMode1990) && swofty::db::int_at(row + ".stat_id", &id) == swofty::db::Result::ok &&
+            id >= 0 && id < 0xff) {
+            stat = int(id);
+            swofty::log("[f1-1990] career wizard: setup mode %s is stat_id %lld", kSetupMode1990, (long long)id);
+            break;
+        }
+    }
+    return stat.load();
+}
+
 bool is_1990_season(const void *career, uint8_t &setup_mode)
 {
     auto *mode = at<const uint8_t *>(career, 0x2b0);
     setup_mode = mode ? mode[0x80] : 0xff;
-    return f1990::is_1990_career(career) || setup_mode == kSetupMode1990;
+    int own = setup_mode_1990();
+    return f1990::is_1990_career(career) || (own >= 0 && setup_mode == own);
 }
 
 struct RoundDates {

@@ -2,9 +2,10 @@
 //
 // F1 1990 - the mid-season B-spec car. Its own DLL, so a binding it can't resolve drops only this.
 //
-// Each 1990 team has two vehicle rows: `<token>_1990` (package f1_1990, stat ids 513-525) and its
-// B-spec copy `<token>_1990b` (package f1_1990b, the same stat id + 13, the same car folder and so
-// the same AI data, its own model archive). The B-spec car is an R&D milestone: an upgrade whose
+// Each 1990 team has two vehicle rows: `<token>_1990` (package f1_1990) and its B-spec copy
+// `<token>_1990b` (package f1_1990b, the same car folder and so the same AI data, its own model
+// archive). The build gives both rows free stat ids, so the A -> B pairs are read from
+// entrants.vehicles by label on career.loaded. The B-spec car is an R&D milestone: an upgrade whose
 // `upgrade_name` starts with `f1990_bspec` (the R&D lane's 1990 trees, /mnt/work/.f1-1990/v2/
 // rnd-design.md). Once that upgrade's current state is Completed for a team, this plugin points the
 // team's career entrant rows at the B-spec vehicle, so from the next session on its cars, AI or
@@ -20,9 +21,12 @@
 
 #include <atomic>
 #include <cstring>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <swofty/career.hpp>
+#include <swofty/db.hpp>
 #include <swofty/events.hpp>
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>
@@ -38,7 +42,7 @@ using namespace swofty::game;
 using f1990::at;
 
 constexpr char kBspecPrefix[] = "f1990_bspec";
-constexpr uint32_t kFirstA = 513, kLastA = 525, kOffsetB = 13;
+constexpr char kPackageA[] = "f1_1990", kPackageB[] = "f1_1990b";
 constexpr uint32_t kNoKey = 0x3fff0000u;
 constexpr uint32_t kHumanBit = 0x10000000u;
 constexpr uint8_t kCompleted = 3;
@@ -49,6 +53,49 @@ static_assert(sizeof(UpgradeInstance) == 0xe0);
 static_assert(sizeof(UpgradeStateEntry) == 0x10);
 
 std::atomic<uint32_t> g_logged{0};
+std::unordered_map<uint32_t, uint32_t> g_a_to_b;
+bool g_pairs_read = false;
+
+void read_pairs()
+{
+    if (g_pairs_read || !swofty::db::available())
+        return;
+    int64_t count = 0;
+    if (swofty::db::int_at("entrants.vehicles._vehicle_instancecount_", &count) != swofty::db::Result::ok || count <= 0 ||
+        count > 4096) {
+        swofty::log("[f1-1990] bspec: entrants.vehicles is not readable; no B-spec swaps");
+        return;
+    }
+    std::unordered_map<std::string, uint32_t> a, b;
+    for (int64_t i = 0; i < count; i++) {
+        std::string row = "entrants.vehicles.vehicle_" + std::to_string(i);
+        const char *package = nullptr, *label = nullptr;
+        int64_t stat = -1;
+        if (swofty::db::string_at(row + ".vehicle_package", &package) != swofty::db::Result::ok || !package ||
+            swofty::db::string_at(row + "._metadata_", &label) != swofty::db::Result::ok || !label ||
+            swofty::db::int_at(row + ".stat_id", &stat) != swofty::db::Result::ok || stat < 0 || stat > 0xffff)
+            continue;
+        if (!std::strcmp(package, kPackageA))
+            a[label] = uint32_t(stat);
+        else if (!std::strcmp(package, kPackageB))
+            b[label] = uint32_t(stat);
+    }
+    for (auto &[label, stat] : a) {
+        auto it = b.find(label + "b");
+        if (it != b.end())
+            g_a_to_b[stat] = it->second;
+        else
+            swofty::log("[f1-1990] bspec: %s has no %sb row; that team keeps its A-spec car", label.c_str(), label.c_str());
+    }
+    g_pairs_read = true;
+    swofty::log("[f1-1990] bspec: %zu A-spec vehicle(s) paired with their B-spec row by label", g_a_to_b.size());
+}
+
+uint32_t bspec_of(uint32_t vehicle)
+{
+    auto it = g_a_to_b.find(vehicle);
+    return it == g_a_to_b.end() ? 0 : it->second;
+}
 
 bool readable(const void *p, size_t n)
 {
@@ -144,8 +191,7 @@ int swap_rows(void *entity, const std::vector<uint32_t> &teams)
             return swapped;
         size_t n = size_t(e - b), pick = n;
         for (size_t i = 0; i < n; ++i) {
-            uint32_t veh = stat_of(b[i].vehicle_ref);
-            if ((b[i].vehicle_ref & 0xffff0000u) == kNoKey || veh < kFirstA || veh > kLastA)
+            if ((b[i].vehicle_ref & 0xffff0000u) == kNoKey || !bspec_of(stat_of(b[i].vehicle_ref)))
                 continue;
             bool team_done = false;
             for (uint32_t t : teams)
@@ -163,12 +209,12 @@ int swap_rows(void *entity, const std::vector<uint32_t> &teams)
                         stat_of(row.team_stat_id));
             return swapped;
         }
-        uint32_t from = stat_of(row.vehicle_ref);
+        uint32_t from = stat_of(row.vehicle_ref), to = bspec_of(from);
         EntrantWriteData d{};
         std::memcpy(&d.driver, &row.id_lo, sizeof d.driver);
         d.driver_customisation = row.driver_customisation;
         d.team_stat_id = row.team_stat_id;
-        d.vehicle_ref = (row.vehicle_ref & 0xffffu) | ((from + kOffsetB) << 16);
+        d.vehicle_ref = (row.vehicle_ref & 0xffffu) | (to << 16);
         d.driver_reg_value = row.driver_reg_value;
         d.vehicle_customisation = row.vehicle_customisation;
         d.badge_stat_id = row.badge_stat_id;
@@ -179,8 +225,8 @@ int swap_rows(void *entity, const std::vector<uint32_t> &teams)
         EntrantRecord *nb = ce->entrants_begin;
         uint32_t now = (nb && readable(nb + pick, sizeof(EntrantRecord))) ? stat_of(nb[pick].vehicle_ref) : 0;
         swofty::log("[f1-1990] bspec: team %u car #%u: vehicle %u -> %u (%s)", stat_of(row.team_stat_id), row.car_number,
-                    from, from + kOffsetB, now == from + kOffsetB ? "written" : "NOT written");
-        if (now != from + kOffsetB)
+                    from, to, now == to ? "written" : "NOT written");
+        if (now != to)
             return swapped;
         ++swapped;
     }
@@ -193,6 +239,9 @@ void on_career(const SwoftyEvent *ev, void *)
         return;
     void *career = swofty::career::entity();
     if (!career || !f1990::is_1990_career(career))
+        return;
+    read_pairs();
+    if (g_a_to_b.empty())
         return;
     uint32_t teams_seen = 0, bspec_seen = 0;
     std::vector<uint32_t> done = completed_teams(teams_seen, bspec_seen);

@@ -18,7 +18,6 @@ from dataclasses import dataclass
 
 PACKAGE = 'f1_1990'
 PACKAGE_FOLDER = 'f1_1990_vehicle_package'
-PACKAGE_STAT_ID = '59'
 AI_FOLDER = 'f1_2026_vehicle_package'
 AI_PACKAGE_FOLDER = PACKAGE_FOLDER
 SOURCE_PACKAGE = 'f1_2026_vehicle_package'
@@ -26,8 +25,6 @@ SOURCE_PACKAGE_ROW = 'f1_2026'
 TOKEN = {'ligier_prost': 'ligier', 'march': 'leytonhouse'}
 PACKAGE_B = 'f1_1990b'
 PACKAGE_B_FOLDER = 'f1_1990_vehicle_b_specs'
-PACKAGE_B_STAT_ID = '60'
-B_STAT_OFFSET = 13
 
 
 @dataclass(frozen=True)
@@ -36,7 +33,6 @@ class Car:
     folder: str
     donor: str
     stem: str
-    stat_id: int
     chassis: str
     engine: str
     family: str
@@ -55,28 +51,24 @@ class Car:
         return f'{self.token}_1990b'
 
     @property
-    def stat_id_b(self):
-        return self.stat_id + B_STAT_OFFSET
-
-    @property
     def donor_vehicle(self):
         return f'{self.donor}_2026'
 
 
 CARS = (
-    Car('mclaren', 'mclaren', 'mclaren', 'mclaren', 513, 'McLaren MP4/5B', 'Honda RA100E', 'V10', 0),
-    Car('ferrari', 'ferrari', 'ferrari', 'ferrari', 514, 'Ferrari 641', 'Ferrari 036', 'V12', 0),
-    Car('williams', 'williams', 'williams', 'williams', 515, 'Williams FW13B', 'Renault RS2', 'V10', 0),
-    Car('benetton', 'lotus', 'lotus', 'lotus', 516, 'Benetton B190', 'Ford HBA4', 'V8', 0),
-    Car('tyrrell', 'mercedes', 'mercedes', 'mercedes', 517, 'Tyrrell 019', 'Ford DFR', 'V8', 1),
-    Car('lotus', 'redbull', 'redbull', 'redbull', 518, 'Lotus 102', 'Lamborghini 3512', 'V12', 1),
-    Car('march', 'force_india', 'force_india', 'force_india', 519, 'Leyton House CG901', 'Judd EV', 'V8', 1),
-    Car('larrousse', 'myteam_ferrari', 'williams', 'larrouss', 520, 'Lola LC90', 'Lamborghini 3512', 'V12', 2),
-    Car('ligier_prost', 'sauber', 'sauber', 'sauber', 521, 'Ligier JS33B', 'Ford DFR', 'V8', 2),
-    Car('minardi', 'toro_rosso', 'toro_rosso', 'toro_rosso', 522, 'Minardi M190', 'Ford DFR', 'V8', 1),
-    Car('brabham', 'gm_cadillac', 'gm_cadillac', 'gm_cadillac', 523, 'Brabham BT59', 'Judd EV', 'V8', 1),
-    Car('dallara', 'myteam_honda', 'haas', 'dall', 524, 'Dallara F190', 'Ford DFR', 'V8', 1),
-    Car('arrows', 'haas', 'haas', 'haas', 525, 'Arrows A11B', 'Ford DFR', 'V8', 1),
+    Car('mclaren', 'mclaren', 'mclaren', 'mclaren', 'McLaren MP4/5B', 'Honda RA100E', 'V10', 0),
+    Car('ferrari', 'ferrari', 'ferrari', 'ferrari', 'Ferrari 641', 'Ferrari 036', 'V12', 0),
+    Car('williams', 'williams', 'williams', 'williams', 'Williams FW13B', 'Renault RS2', 'V10', 0),
+    Car('benetton', 'lotus', 'lotus', 'lotus', 'Benetton B190', 'Ford HBA4', 'V8', 0),
+    Car('tyrrell', 'mercedes', 'mercedes', 'mercedes', 'Tyrrell 019', 'Ford DFR', 'V8', 1),
+    Car('lotus', 'redbull', 'redbull', 'redbull', 'Lotus 102', 'Lamborghini 3512', 'V12', 1),
+    Car('march', 'force_india', 'force_india', 'force_india', 'Leyton House CG901', 'Judd EV', 'V8', 1),
+    Car('larrousse', 'myteam_ferrari', 'williams', 'larrouss', 'Lola LC90', 'Lamborghini 3512', 'V12', 2),
+    Car('ligier_prost', 'sauber', 'sauber', 'sauber', 'Ligier JS33B', 'Ford DFR', 'V8', 2),
+    Car('minardi', 'toro_rosso', 'toro_rosso', 'toro_rosso', 'Minardi M190', 'Ford DFR', 'V8', 1),
+    Car('brabham', 'gm_cadillac', 'gm_cadillac', 'gm_cadillac', 'Brabham BT59', 'Judd EV', 'V8', 1),
+    Car('dallara', 'myteam_honda', 'haas', 'dall', 'Dallara F190', 'Ford DFR', 'V8', 1),
+    Car('arrows', 'haas', 'haas', 'haas', 'Arrows A11B', 'Ford DFR', 'V8', 1),
 )
 
 for _c in CARS:

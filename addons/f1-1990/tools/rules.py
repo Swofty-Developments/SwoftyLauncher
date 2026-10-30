@@ -22,7 +22,6 @@ FIELDS = json.loads((HERE / "rules_fields.json").read_text())
 INT, STRING, ENUM, ID, BOOL, LIST, SUBSET = 0, 2, 3, 4, 5, 13, 18
 
 NAME = "f1_1990"
-MODE_STAT_ID = "16"
 DATASET_STAT_ID = "20"
 CLASS_STAT_ID = "12"
 VISUAL_STAT_IDS = {"Supersoft_f1_1990": "28", "Ultrasoft_f1_1990": "29", "Soft_f1_1990": "30"}
@@ -371,7 +370,6 @@ def mode(fields):
     fields[f"{MODES}.game_setup_mode"] = FIELDS["mode"]
     ops = [add_row(MODES, f"{MODES}.game_setup_mode[_metadata_=f1_26]", {
         "_metadata_": NAME,
-        "stat_id": MODE_STAT_ID,
         "display_name": "lng_f1_1990",
         "options_tag": TAG_NAME,
         "has_tyre_warmers": "False",

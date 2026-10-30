@@ -580,8 +580,8 @@ def engine_key(c):
     return f'lng_f1990_engine_{c.team}'
 
 
-def package_ops(name, stat_id, folder, **extra):
-    values = dict(PACKAGE_SET, _metadata_=name, stat_id=stat_id,
+def package_ops(name, folder, **extra):
+    values = dict(PACKAGE_SET, _metadata_=name,
                   resource_path=f'{folder}/teams/[FILENAME]/wep/[FILENAME]', **extra)
     return [{'op': 'add-row', 'table': 'entrants.vehicles.vehicle_packages',
              'from': f'entrants.vehicles.vehicle_packages.vehicle_package[_metadata_={C.SOURCE_PACKAGE_ROW}]',
@@ -594,12 +594,12 @@ def db_ops():
     with open(VEHICLE_FIELDS) as f:
         vehicle_fields = json.load(f)['fields']['entrants.vehicles.vehicle']
     vehicle_fields = vehicle_fields + [k for k in VEHICLE_EXTRA_FIELDS if k not in vehicle_fields]
-    ops = package_ops(C.PACKAGE, C.PACKAGE_STAT_ID, C.PACKAGE_FOLDER)
-    ops += package_ops(C.PACKAGE_B, C.PACKAGE_B_STAT_ID, C.PACKAGE_B_FOLDER, available='True')
+    ops = package_ops(C.PACKAGE, C.PACKAGE_FOLDER)
+    ops += package_ops(C.PACKAGE_B, C.PACKAGE_B_FOLDER, available='True')
     for c in C.CARS:
         ops.append({'op': 'add-row', 'table': 'entrants.vehicles',
                     'from': f'entrants.vehicles.vehicle[_metadata_={c.donor_vehicle}]',
-                    'set': {'_metadata_': c.vehicle, 'stat_id': str(c.stat_id), 'asset_filename': c.folder,
+                    'set': {'_metadata_': c.vehicle, 'asset_filename': c.folder,
                             'vehicle_package': C.PACKAGE, 'hud_dial': '{{hud_dial}}', 'drs_capable': 'False',
                             'display_name': f'lng_f1990_team_{c.team}', 'chassis_name': chassis_key(c),
                             'engine_name_override': engine_key(c), 'equal_performance_vehicle': '',
@@ -607,7 +607,7 @@ def db_ops():
     for c in C.CARS:
         ops.append({'op': 'add-row', 'table': 'entrants.vehicles',
                     'from': f'entrants.vehicles.vehicle[_metadata_={c.vehicle}]',
-                    'set': {'_metadata_': c.vehicle_b, 'stat_id': str(c.stat_id_b), 'vehicle_package': C.PACKAGE_B,
+                    'set': {'_metadata_': c.vehicle_b, 'vehicle_package': C.PACKAGE_B,
                             'available': 'True'}})
     return {'schema_version': 1,
             'fields': {'entrants.vehicles.vehicle_packages.vehicle_package': PACKAGE_FIELDS,

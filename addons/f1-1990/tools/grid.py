@@ -378,14 +378,6 @@ def free_list_ids(stock, n):
     return ids
 
 
-def free_setup_mode_id(stock):
-    """A stat id above the stock entrant setup modes: the game keeps them indexed by stat id
-    (Sess_Register_EntrantSetupMode), and the f1_26 template's id would collide."""
-    top = max(int(stock.get(f"{SETUP_MODES}.entrant_setup_mode_{i}.stat_id"))
-              for i in range(stock.count(SETUP_MODES, "entrant_setup_mode")))
-    return stock.free_ids(SETUP_MODES, "entrant_setup_mode", top + 1, 256)[0]
-
-
 def build(stock, season):
     o = Ops(stock, PARTS)
     lang = []
@@ -537,7 +529,7 @@ def build(stock, season):
 
     mode_row = stock.row(SETUP_MODES, "entrant_setup_mode", MODE_TEMPLATE)
     o.add(SETUP_MODES, "entrant_setup_mode", mode_row, f"{SETUP_MODES}.entrant_setup_mode[_metadata_={MODE_TEMPLATE}]", {
-        "_metadata_": SETUP_MODE, "stat_id": free_setup_mode_id(stock), "entrant_lists": GRID_LIST,
+        "_metadata_": SETUP_MODE, "entrant_lists": GRID_LIST,
         "selectable_entrant_lists": GRID_LIST, "max_entrants": "{{cars}}",
     })
 

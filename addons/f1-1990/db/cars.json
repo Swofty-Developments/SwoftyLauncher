@@ -336,7 +336,6 @@
     "tyre_compounds_asset_group": "f1_1990_vehicle_package/tyrecompounds/tyrecompounds",
     "blob_shadow_decal": "eaid://f1_1990_vehicle_package/shared/ao/materials/blobshadowdecal.material",
     "_metadata_": "f1_1990",
-    "stat_id": "59",
     "resource_path": "f1_1990_vehicle_package/teams/[FILENAME]/wep/[FILENAME]"
    }
   },
@@ -358,7 +357,6 @@
     "tyre_compounds_asset_group": "f1_1990_vehicle_package/tyrecompounds/tyrecompounds",
     "blob_shadow_decal": "eaid://f1_1990_vehicle_package/shared/ao/materials/blobshadowdecal.material",
     "_metadata_": "f1_1990b",
-    "stat_id": "60",
     "resource_path": "f1_1990_vehicle_b_specs/teams/[FILENAME]/wep/[FILENAME]",
     "available": "True"
    }
@@ -378,7 +376,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=mclaren_2026]",
    "set": {
     "_metadata_": "mclaren_1990",
-    "stat_id": "513",
     "asset_filename": "mclaren",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
@@ -396,7 +393,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=ferrari_2026]",
    "set": {
     "_metadata_": "ferrari_1990",
-    "stat_id": "514",
     "asset_filename": "ferrari",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
@@ -414,7 +410,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=williams_2026]",
    "set": {
     "_metadata_": "williams_1990",
-    "stat_id": "515",
     "asset_filename": "williams",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
@@ -432,7 +427,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=lotus_2026]",
    "set": {
     "_metadata_": "benetton_1990",
-    "stat_id": "516",
     "asset_filename": "lotus",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
@@ -450,7 +444,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=mercedes_2026]",
    "set": {
     "_metadata_": "tyrrell_1990",
-    "stat_id": "517",
     "asset_filename": "mercedes",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
@@ -468,7 +461,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=redbull_2026]",
    "set": {
     "_metadata_": "lotus_1990",
-    "stat_id": "518",
     "asset_filename": "redbull",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
@@ -486,7 +478,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=force_india_2026]",
    "set": {
     "_metadata_": "leytonhouse_1990",
-    "stat_id": "519",
     "asset_filename": "force_india",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
@@ -504,7 +495,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=williams_2026]",
    "set": {
     "_metadata_": "larrousse_1990",
-    "stat_id": "520",
     "asset_filename": "myteam_ferrari",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
@@ -522,7 +512,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=sauber_2026]",
    "set": {
     "_metadata_": "ligier_1990",
-    "stat_id": "521",
     "asset_filename": "sauber",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
@@ -540,7 +529,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=toro_rosso_2026]",
    "set": {
     "_metadata_": "minardi_1990",
-    "stat_id": "522",
     "asset_filename": "toro_rosso",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
@@ -558,7 +546,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=gm_cadillac_2026]",
    "set": {
     "_metadata_": "brabham_1990",
-    "stat_id": "523",
     "asset_filename": "gm_cadillac",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
@@ -576,7 +563,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=haas_2026]",
    "set": {
     "_metadata_": "dallara_1990",
-    "stat_id": "524",
     "asset_filename": "myteam_honda",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
@@ -594,7 +580,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=haas_2026]",
    "set": {
     "_metadata_": "arrows_1990",
-    "stat_id": "525",
     "asset_filename": "haas",
     "vehicle_package": "f1_1990",
     "hud_dial": "{{hud_dial}}",
@@ -612,7 +597,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=mclaren_1990]",
    "set": {
     "_metadata_": "mclaren_1990b",
-    "stat_id": "526",
     "vehicle_package": "f1_1990b",
     "available": "True"
    }
@@ -623,7 +607,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=ferrari_1990]",
    "set": {
     "_metadata_": "ferrari_1990b",
-    "stat_id": "527",
     "vehicle_package": "f1_1990b",
     "available": "True"
    }
@@ -634,7 +617,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=williams_1990]",
    "set": {
     "_metadata_": "williams_1990b",
-    "stat_id": "528",
     "vehicle_package": "f1_1990b",
     "available": "True"
    }
@@ -645,7 +627,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=benetton_1990]",
    "set": {
     "_metadata_": "benetton_1990b",
-    "stat_id": "529",
     "vehicle_package": "f1_1990b",
     "available": "True"
    }
@@ -656,7 +637,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=tyrrell_1990]",
    "set": {
     "_metadata_": "tyrrell_1990b",
-    "stat_id": "530",
     "vehicle_package": "f1_1990b",
     "available": "True"
    }
@@ -667,7 +647,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=lotus_1990]",
    "set": {
     "_metadata_": "lotus_1990b",
-    "stat_id": "531",
     "vehicle_package": "f1_1990b",
     "available": "True"
    }
@@ -678,7 +657,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=leytonhouse_1990]",
    "set": {
     "_metadata_": "leytonhouse_1990b",
-    "stat_id": "532",
     "vehicle_package": "f1_1990b",
     "available": "True"
    }
@@ -689,7 +667,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=larrousse_1990]",
    "set": {
     "_metadata_": "larrousse_1990b",
-    "stat_id": "533",
     "vehicle_package": "f1_1990b",
     "available": "True"
    }
@@ -700,7 +677,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=ligier_1990]",
    "set": {
     "_metadata_": "ligier_1990b",
-    "stat_id": "534",
     "vehicle_package": "f1_1990b",
     "available": "True"
    }
@@ -711,7 +687,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=minardi_1990]",
    "set": {
     "_metadata_": "minardi_1990b",
-    "stat_id": "535",
     "vehicle_package": "f1_1990b",
     "available": "True"
    }
@@ -722,7 +697,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=brabham_1990]",
    "set": {
     "_metadata_": "brabham_1990b",
-    "stat_id": "536",
     "vehicle_package": "f1_1990b",
     "available": "True"
    }
@@ -733,7 +707,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=dallara_1990]",
    "set": {
     "_metadata_": "dallara_1990b",
-    "stat_id": "537",
     "vehicle_package": "f1_1990b",
     "available": "True"
    }
@@ -744,7 +717,6 @@
    "from": "entrants.vehicles.vehicle[_metadata_=arrows_1990]",
    "set": {
     "_metadata_": "arrows_1990b",
-    "stat_id": "538",
     "vehicle_package": "f1_1990b",
     "available": "True"
    }
