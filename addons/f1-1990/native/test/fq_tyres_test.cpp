@@ -102,6 +102,16 @@ int main()
     check("used and handed-back sets don't count", !(capped.flags(0, 1) & kHandedBack));
     check("nine usable sets stay as they are", cap_usable_sets(capped.mem.data()) == 0);
 
+    Alloc race({{{}}, {{}, {0, kUsed}, {0, kHandedBack}, {}}, {{}}});
+    check("race sessions are 15 to 17", is_race_session(15) && is_race_session(17) && !is_race_session(14) &&
+                                            !is_race_session(18) && !is_race_session(13));
+    check("race: the two usable qualifiers are handed back",
+          hand_back_usable_sets(race.mem.data(), kQualifierSlot) == 2 && (race.flags(1, 0) & kHandedBack) &&
+              (race.flags(1, 3) & kHandedBack) && race.flags(1, 1) == kUsed);
+    check("race: other compounds keep their sets", !(race.flags(0, 0) & kHandedBack) && !(race.flags(2, 0) & kHandedBack));
+    check("race: handing back marks the allocation dirty", race.mem[0xe8] == 1);
+    check("race: a missing slot changes nothing", hand_back_usable_sets(race.mem.data(), 7) == 0);
+
     Alloc empty({{}, {}, {}, {}, {}});
     check("empty allocation has no sets", census(empty.mem.data()).total == 0);
     static std::vector<void *> blocks;

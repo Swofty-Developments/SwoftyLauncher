@@ -42,6 +42,7 @@
 
 SWOFTY_SETTING(bool, fq_tyre_fix, true);
 SWOFTY_SETTING(bool, tyre_fallback, true);
+SWOFTY_SETTING(bool, qualifiers_quali_only, true);
 
 namespace {
 
@@ -385,8 +386,9 @@ SWOFTY_WRAP(Sess_TyreAllocation_OnSessionStart, void, void *component)
         return;
     uint32_t id = at<uint32_t>(session, 0x08);
     bool free_dry = fq_tyre_fix && f1990::tyres::is_shootout_session(id);
+    bool race = qualifiers_quali_only && f1990::tyres::is_race_session(id);
     auto *b = at<uint8_t *>(component, 0x2b0), *e = at<uint8_t *>(component, 0x2b8);
-    int cars = 0, sets = 0, capped = 0, capped_cars = 0;
+    int cars = 0, sets = 0, capped = 0, capped_cars = 0, qualifiers = 0;
     for (; b && b < e; b += 0x10) {
         auto *alloc = at<uint8_t *>(b, 0x08);
         if (!alloc)
@@ -394,6 +396,8 @@ SWOFTY_WRAP(Sess_TyreAllocation_OnSessionStart, void, void *component)
         cars++;
         if (free_dry)
             sets += f1990::tyres::free_unused_dry_sets(alloc);
+        if (race)
+            qualifiers += f1990::tyres::hand_back_usable_sets(alloc, f1990::tyres::kQualifierSlot);
         int n = f1990::tyres::cap_usable_sets(alloc);
         capped += n;
         capped_cars += n > 0;
@@ -401,6 +405,9 @@ SWOFTY_WRAP(Sess_TyreAllocation_OnSessionStart, void, void *component)
     if (free_dry)
         swofty::log("[f1-1990] FQ tyres: session %u: %d unused dry set(s) made usable on %d car allocation(s)", id, sets,
                     cars);
+    if (race)
+        swofty::log("[f1-1990] tyres: session %u: %d unused qualifying set(s) handed back on %d car allocation(s)", id,
+                    qualifiers, cars);
     if (capped)
         swofty::log("[f1-1990] tyres: session %u: %d set(s) on %d car(s) handed back: the game picks from at most %zu "
                     "usable sets of one compound",
@@ -496,8 +503,9 @@ void on_unloaded(const SwoftyEvent *, void *)
 
 SWOFTY_ON_LOAD
 {
-    swofty::log("[f1-1990] FQ tyres loaded: Friday qualifying dry sets %s, tyre fallback %s",
-                fq_tyre_fix ? "on" : "off (fq_tyre_fix)", tyre_fallback ? "on" : "off (tyre_fallback)");
+    swofty::log("[f1-1990] FQ tyres loaded: Friday qualifying dry sets %s, tyre fallback %s, qualifiers in the race %s",
+                fq_tyre_fix ? "on" : "off (fq_tyre_fix)", tyre_fallback ? "on" : "off (tyre_fallback)",
+                qualifiers_quali_only ? "handed back" : "kept (qualifiers_quali_only)");
     uint32_t token = 0;
     if (swofty::events::subscribe(SWOFTY_EVENT_CAREER_UNLOADED, on_unloaded, nullptr, &token) != swofty::events::Result::ok)
         swofty::log("[f1-1990] tyres: no career.unloaded event; the fallback keeps the last weekend's allocations");

@@ -74,6 +74,11 @@
       "binds": "native"
     },
     {
+      "id": "qualifiers_quali_only", "type": "toggle", "label": "Qualifying tyres in qualifying only", "default": true,
+      "description": "At the start of a 1990 race, every car hands back its unused qualifying tyre sets, so the race runs on race tyres as in 1990.",
+      "binds": "native"
+    },
+    {
       "id": "tyre_fallback", "type": "toggle", "label": "Tyre fallback", "default": true,
       "description": "In 1990 sessions, a car whose weekend allocation has no sets gets a copy of another car's sets, and a car that finds no tyre to fit may use its unused sets of other sessions. Logs each change.",
       "binds": "native"

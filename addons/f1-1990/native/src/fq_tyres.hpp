@@ -285,6 +285,32 @@ inline int cap_usable_sets(uint8_t *alloc, size_t max = kCollectorSets)
     return changed;
 }
 
+constexpr uint64_t kQualifierSlot = 1;
+
+inline bool is_race_session(uint32_t id)
+{
+    return id - 15 < 3;
+}
+
+inline int hand_back_usable_sets(uint8_t *alloc, uint64_t slot)
+{
+    if (slot >= compound_count(alloc))
+        return 0;
+    uint8_t *blk = block(alloc, slot), *b, *e;
+    std::memcpy(&b, blk + 0x10, sizeof b);
+    std::memcpy(&e, blk + 0x18, sizeof e);
+    int changed = 0;
+    for (; b && b + kSetSize <= e; b += kSetSize) {
+        if (b[9] & (kUsed | kHandedBack))
+            continue;
+        b[9] |= kHandedBack;
+        changed++;
+    }
+    if (changed)
+        alloc[0xe8] = 1;
+    return changed;
+}
+
 // Every unused dry set (softer, medium, harder) of one car's allocation becomes usable in any
 // session: the handed-back flag is cleared and the session tag set to 0 ("any"). Returns how many
 // sets changed; a change marks the allocation dirty (+0xe8).
