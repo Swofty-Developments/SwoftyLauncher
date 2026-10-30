@@ -3,6 +3,94 @@
  "ops": [
   {
    "op": "file.put",
+   "source": "faces/heads/f90_alessandro_nannini.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_alessandro_nannini.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_alessandro_nannini.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_alessandro_nannini.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/heads/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
+   "source": "faces/morph_poses/f90_alessandro_nannini.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_alessandro_nannini.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_alessandro_nannini.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_alessandro_nannini.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
+   "source": "faces/heads/f90_gerhard_berger.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_gerhard_berger.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_gerhard_berger.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_gerhard_berger.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/heads/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
+   "source": "faces/morph_poses/f90_gerhard_berger.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_gerhard_berger.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_gerhard_berger.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_gerhard_berger.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
+   "source": "faces/heads/f90_jean_alesi.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_jean_alesi.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_jean_alesi.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_jean_alesi.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/heads/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
+   "source": "faces/morph_poses/f90_jean_alesi.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_jean_alesi.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_jean_alesi.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_jean_alesi.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
+   "source": "faces/heads/f90_nelson_piquet.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_nelson_piquet.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_nelson_piquet.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_nelson_piquet.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/heads/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
+   "source": "faces/morph_poses/f90_nelson_piquet.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_nelson_piquet.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_nelson_piquet.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_nelson_piquet.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
    "source": "faces/heads/f90_nigel_mansell.erp",
    "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_nigel_mansell.erp"
   },
@@ -21,6 +109,94 @@
    "op": "group.register",
    "group": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_nigel_mansell.assetgroup",
    "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_nigel_mansell.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
+   "source": "faces/heads/f90_riccardo_patrese.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_riccardo_patrese.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_riccardo_patrese.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_riccardo_patrese.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/heads/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
+   "source": "faces/morph_poses/f90_riccardo_patrese.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_riccardo_patrese.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_riccardo_patrese.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_riccardo_patrese.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
+   "source": "faces/heads/f90_roberto_moreno.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_roberto_moreno.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_roberto_moreno.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_roberto_moreno.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/heads/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
+   "source": "faces/morph_poses/f90_roberto_moreno.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_roberto_moreno.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_roberto_moreno.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_roberto_moreno.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
+   "source": "faces/heads/f90_satoru_nakajima.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_satoru_nakajima.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_satoru_nakajima.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_satoru_nakajima.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/heads/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
+   "source": "faces/morph_poses/f90_satoru_nakajima.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_satoru_nakajima.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_satoru_nakajima.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_satoru_nakajima.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
+   "source": "faces/heads/f90_thierry_boutsen.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_thierry_boutsen.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_thierry_boutsen.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_thierry_boutsen.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/heads/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
+   "source": "faces/morph_poses/f90_thierry_boutsen.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_thierry_boutsen.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_thierry_boutsen.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_thierry_boutsen.erp",
    "template": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/lando_norris.assetgroup"
   }
  ]

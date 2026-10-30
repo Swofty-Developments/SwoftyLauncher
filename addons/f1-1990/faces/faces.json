@@ -1,9 +1,65 @@
 {
+ "alessandro_nannini": {
+  "source": "alessandro_nannini.zip",
+  "mipmaps": "src/alessandro_nannini_head_d.tga.mipmaps",
+  "base": "leonardo_fornaroli",
+  "code": "f90_alessandro_nan",
+  "label": "f90_alessandro_nannini"
+ },
+ "gerhard_berger": {
+  "source": "gerhard_berger.zip",
+  "mipmaps": "src/gerhard_berger_head_d.tga.mipmaps",
+  "base": "michael_schumacher",
+  "code": "f90_gerhard_berger",
+  "label": "f90_gerhard_berger"
+ },
+ "jean_alesi": {
+  "source": "jean_alesi.zip",
+  "mipmaps": "src/jean_alesi_head_d.tga.mipmaps",
+  "base": "roman_stanek",
+  "code": "f90_jean_ale",
+  "label": "f90_jean_alesi"
+ },
+ "nelson_piquet": {
+  "source": "nelson_piquet.zip",
+  "mipmaps": "src/nelson_piquet_head_d.tga.mipmaps",
+  "base": "sami_meguetounif",
+  "code": "f90_nelson_pique",
+  "label": "f90_nelson_piquet"
+ },
  "nigel_mansell": {
   "source": "nigel_mansell.zip",
   "mipmaps": "src/nigel_mansell_head_d.tga.mipmaps",
   "base": "felipe_massa",
   "code": "f90_nigel_ma",
   "label": "f90_nigel_mansell"
+ },
+ "riccardo_patrese": {
+  "source": "riccardo_patrese.zip",
+  "mipmaps": "src/riccardo_patrese_head_d.tga.mipmaps",
+  "base": "pepe_marti",
+  "code": "f90_riccar",
+  "label": "f90_riccardo_patrese"
+ },
+ "roberto_moreno": {
+  "source": "roberto_moreno.zip",
+  "mipmaps": "src/roberto_moreno_head_d.tga.mipmaps",
+  "base": "matias_zagazeta",
+  "code": "f90_roberto_mor",
+  "label": "f90_roberto_moreno"
+ },
+ "satoru_nakajima": {
+  "source": "satoru_nakajima.zip",
+  "mipmaps": "src/satoru_nakajima_head_d.tga.mipmaps",
+  "base": "ritomo_miyata",
+  "code": "f90_satoru_na",
+  "label": "f90_satoru_nakajima"
+ },
+ "thierry_boutsen": {
+  "source": "thierry_boutsen.zip",
+  "mipmaps": "src/thierry_boutsen_head_d.tga.mipmaps",
+  "base": "mika_hakkinen",
+  "code": "f90_thierry_b",
+  "label": "f90_thierry_boutsen"
  }
 }
