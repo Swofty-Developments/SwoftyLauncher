@@ -222,6 +222,10 @@ The 1990 career is a third career content next to the stock 2025 and 2026 ones. 
 | season lengths | `F1_1990_Long`, `_Medium`, `_Short`, all 16 rounds, no transfer window, setup mode `f1_1990` | `F1_2026_*` |
 | track selection | `F1_1990` | `F1_2026` |
 
+The `f1_career_1990` career setup row (`career.career_setup.CareerSetupDataGroup`) sets `SpawnedF1` `car_1` to
+`car_3` to `mclaren_1990`, `ferrari_1990` and `williams_1990`: the three cars behind the 1990 career setup steps are
+the 1990 McLaren, Ferrari and Williams. The 2026 row keeps `gm_cadillac_2026`, `ferrari_2026` and `sauber_2026`.
+
 Content set `2026` lists `driver_career_1990` and `f1_1990`. The game registers a game setup mode only when the
 content set lists it and an available mode row names it in `game_setup_modes`; no stock mode row names `f1_1990`, so the
 1990 mode row does. Without it the 1990 championship has no setup mode, every 1990 team fails the championship's team

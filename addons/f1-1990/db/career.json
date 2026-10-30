@@ -8005,7 +8005,10 @@
    "table": "career.career_setup",
    "from": "career.career_setup.CareerSetupDataGroup[_metadata_=f1_career_2026]",
    "set": {
-    "_metadata_": "f1_career_1990"
+    "_metadata_": "f1_career_1990",
+    "SpawnedF1_0.car_1": "mclaren_1990",
+    "SpawnedF1_0.car_2": "ferrari_1990",
+    "SpawnedF1_0.car_3": "williams_1990"
    }
   },
   {

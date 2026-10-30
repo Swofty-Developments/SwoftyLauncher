@@ -9,9 +9,10 @@ Every new row is a full-key clone of its 2026 source row. The field list comes f
 (tools/gamedb/catalog/keys.tsv.gz) plus every known field name (catalogue fields, tools/gamedb/names.txt, the exe's
 reader names, Driver Manager's field list) found on the source row and its nested rows in the stock database. No 2025
 or 2026 row changes; content set 11 gains the 1990 names in two lists and the official entrant lists F1CAREER_90,
-F2CAREER_90 and ICONS_90, which the driver select looks up with the 1990 tile's suffix. data/flavio-strings.json
-holds, per language, the stock strings that name the agent rewritten for Flavio Briatore; the native side applies them
-only while a 1990 career is loaded.
+F2CAREER_90 and ICONS_90, which the driver select looks up with the 1990 tile's suffix. The f1_career_1990 career
+setup row spawns the 1990 McLaren, Ferrari and Williams behind the wizard's steps (DATA_GROUP_SET).
+data/flavio-strings.json holds, per language, the stock strings that name the agent rewritten for Flavio Briatore; the
+native side applies them only while a 1990 career is loaded.
 """
 import datetime
 import gzip
@@ -69,6 +70,13 @@ DATA_GROUP_TABLES = [
     ("resource_points", "data_group"),
     ("specialist_manager", "dataGroup"),
 ]
+DATA_GROUP_SET = {
+    "career.career_setup": {
+        "SpawnedF1_0.car_1": "mclaren_1990",
+        "SpawnedF1_0.car_2": "ferrari_1990",
+        "SpawnedF1_0.car_3": "williams_1990",
+    },
+}
 
 SETUP_MODE = "f1_1990"
 MODE = "driver_career_1990"
@@ -269,7 +277,7 @@ def build(db):
                     "set": row})
 
     for container, word in DATA_GROUP_TABLES:
-        clone(container, word, DATA_GROUP_SOURCE, {"_metadata_": DATA_GROUP})
+        clone(container, word, DATA_GROUP_SOURCE, {"_metadata_": DATA_GROUP} | DATA_GROUP_SET.get(container, {}))
 
     events = {"_metadata_": TRACK_LIST, "sort_by_date": "False",
               "_fixed_event_reference_instancecount_": str(len(ROUNDS))}
