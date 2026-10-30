@@ -2742,6 +2742,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Stable,
     };
+    pub const Car_Systems_Reset_Thunk: Binding = Binding {
+        id: "Car_Systems_Reset_Thunk",
+        kind: "func",
+        status: Status::Stable,
+    };
     pub const Car_Tuning_SetChassisZCom: Binding = Binding {
         id: "Car_Tuning_SetChassisZCom",
         kind: "func",

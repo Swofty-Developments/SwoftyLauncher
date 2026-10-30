@@ -151,18 +151,22 @@ A car's index is the game's vehicle id: dense from 0 in the order the cars were 
 
 The game resets a car's parts to the handling file when it rebuilds them, and applying a setup writes the differential again, so a live write lasts until then. Damage settings are read on every impact, so a live change reaches the next hit. Lowering `wing_full_detach_scale` during a race can take off a wing that's already damaged on its next hit.
 
-`cars::events::Built` fires once for every car the game builds: at session load and when a restart builds the cars again. The game builds them on a loading thread, so the core holds the event and fires it on the next frame, on the flow thread, where `set` works; a car already gone from its slot by then gets none. Write your values there and they reach every new car:
+`cars::events::Built` fires once for every car the game builds: at session load and when a restart builds the cars again. The game builds them on a loading thread, so the core holds the event and fires it on the next frame, on the flow thread, where `set` works; a car already gone from its slot by then gets none.
+
+The game also re-reads a car's parts without building it again: during loading (twice for every car) and when it hands a car to the AI or back (T120). Each time is a `cars::events::Reset`, fired the same way on the next frame, and it wipes live writes, so write your values in both:
 
 ```cpp
-events::on<cars::events::Built>().after([](cars::events::Built &b, const events::Context &) {
-    if (!b.car.is_ai())
-        b.car.scale(Field::steering_lock, 1.2f);
-});
+auto apply = [](cars::live::Car car) {
+    if (!car.is_ai())
+        car.scale(Field::steering_lock, 1.2f);
+};
+events::on<cars::events::Built>().after([apply](cars::events::Built &b, const events::Context &) { apply(b.car); });
+events::on<cars::events::Reset>().after([apply](cars::events::Reset &r, const events::Context &) { apply(r.car); });
 ```
 
-A flashback, a reset to track and handing a car to the AI re-read its parts without building it again; that is `cars::events::Reset`, which the core doesn't fire yet, so writes made in `Built` are gone after those until you write them again.
+`Reset::upgrade` is always false from the core: the R&D upgrade replay doesn't go through this reset.
 
-Still to come: the part accessors (`car.engine()`, `car.ers()`, `car.f1_aero()` and the rest), the car's vehicle, team and driver, values the game derives (engine torque and the limiter, gear tables, mass and inertia), and `cars::events::Reset`. Until then the part accessors hold your values in the addon and the core applies nothing from them.
+Still to come: the part accessors (`car.engine()`, `car.ers()`, `car.f1_aero()` and the rest), the car's vehicle, team and driver, and values the game derives (engine torque and the limiter, gear tables, mass and inertia). Until then the part accessors hold your values in the addon and the core applies nothing from them.
 
 ## R&D upgrades
 

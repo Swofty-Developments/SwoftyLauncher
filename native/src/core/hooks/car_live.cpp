@@ -15,8 +15,9 @@
 // The live car operations on the running game (car_live.hpp): g_Sess_VehicleTable and g_Sess_VehicleCount
 // resolve once the code is ready, memory reads and writes are checked (swofty::mem), writes run only on the
 // flow thread (the one that ticks on_frame), and nothing is handed over on an exe that isn't the KB build,
-// whose field offsets these are. car.built is a game point: its mid-hook on site_Car_LiveCarBuilt sits there
-// while an addon subscribes, and the event fires from the next frame (car_live.hpp, Ops::take_built).
+// whose field offsets these are. car.built and car.reset are game points: the mid-hook on site_Car_LiveCarBuilt
+// and the detour on Car_Systems_Reset_Thunk sit there while an addon subscribes, and the events fire from the next
+// frame (car_live.hpp, Ops::take).
 
 namespace swofty_core::hooks {
 namespace {
@@ -35,14 +36,26 @@ bool on_flow_thread()
 }
 
 std::unique_ptr<session_points::MidPoint> g_built;
+std::unique_ptr<GamePoint> g_reset;
 
 void m_built(safetyhook::Context &ctx) { Ops::built(ctx.rdi); }
+
+void d_reset(void *loader, uint32_t arg)
+{
+    g_reset->original<void>(loader, arg);
+    Ops::reset(reinterpret_cast<uintptr_t>(loader));
+}
 
 void frame(double, void *)
 {
     g_flow_tid = GetCurrentThreadId();
-    for (const auto &b : Ops::take_built())
-        events::car_built(swofty::cars::live::Car(b.index, reinterpret_cast<void *>(b.car)));
+    for (const auto &p : Ops::take()) {
+        swofty::cars::live::Car car(p.index, reinterpret_cast<void *>(p.car));
+        if (p.reset)
+            events::car_reset(car, false);
+        else
+            events::car_built(car);
+    }
 }
 
 void setup()
@@ -85,6 +98,9 @@ void declare_car_points(Table &t)
 {
     g_built = std::make_unique<session_points::MidPoint>("car.built", "site_Car_LiveCarBuilt", &m_built, game_ops());
     t.declare_game("car.built", SWOFTY_POINT_NOTIFY, swofty::cars::events::Built::version, g_built.get());
+    g_reset = std::make_unique<GamePoint>("car.reset", "Car_Systems_Reset_Thunk", reinterpret_cast<void *>(&d_reset),
+                                          game_ops());
+    t.declare_game("car.reset", SWOFTY_POINT_NOTIFY, swofty::cars::events::Reset::version, g_reset.get());
 }
 
 }

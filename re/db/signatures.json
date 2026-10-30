@@ -74507,6 +74507,33 @@
    ]
   },
   {
+   "id": "car.systems_reset_thunk",
+   "section": ".xtls",
+   "pattern": "E9 ?? ?? ?? ?? A5 0F 8B ?? ?? ?? ?? E9",
+   "match": "0x1447426c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1447426c0",
+   "kind": "func_start",
+   "names": [
+    "Car_Systems_Reset_Thunk"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "std-cars-live",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/hooks/car_live.cpp"
+   ],
+   "func_start": "0x1555bdf80"
+  },
+  {
    "id": "car.register_vehicle_id",
    "section": ".xtls",
    "pattern": "0F B6 05 ?? ?? ?? ?? 88 87 E8 00 00 00",

@@ -144,6 +144,7 @@ inline constexpr fn<"Car_Register_DetachablePart_Thunk", Car_Register_Detachable
 using Car_Reset_LastFittedUpgrade_t = void(void *inst);
 inline constexpr fn<"Car_Reset_LastFittedUpgrade", Car_Reset_LastFittedUpgrade_t> Car_Reset_LastFittedUpgrade{}; // L2 experimental
 inline constexpr address<"Car_Setup_ApplyTuning"> Car_Setup_ApplyTuning{}; // L3 stable
+inline constexpr address<"Car_Systems_Reset_Thunk"> Car_Systems_Reset_Thunk{}; // L3 stable
 inline constexpr address<"Car_Tuning_SetChassisZCom"> Car_Tuning_SetChassisZCom{}; // L2 experimental
 inline constexpr address<"Car_Tyre_GripScale"> Car_Tyre_GripScale{}; // L2 experimental
 inline constexpr address<"Car_Tyre_MagicFormula"> Car_Tyre_MagicFormula{}; // L2 experimental

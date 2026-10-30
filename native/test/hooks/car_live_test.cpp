@@ -214,31 +214,35 @@ static void sdk_side()
     swofty::detail::set_car_ops_table(nullptr);
 }
 
-static void built_queue()
+static void pending_queue()
 {
     build_world();
     Ops::bind(make_env());
     auto addr = [](int i) { return reinterpret_cast<uintptr_t>(car_mem[i]); };
     Ops::built(addr(1));
+    Ops::reset(addr(0) + cl::CAR_LOADER);
     Ops::built(addr(2));
     car_mem[0][cl::CAR_VEHICLE_ID] = 40;
     Ops::built(addr(0));
     car_mem[0][cl::CAR_VEHICLE_ID] = 0;
+    Ops::reset(0);
     table[2] = addr(1);
-    auto got = Ops::take_built();
-    expect(got.size() == 1 && got[0].index == 1 && got[0].car == addr(1),
+    auto got = Ops::take();
+    expect(got.size() == 2 && got[0].index == 1 && got[0].car == addr(1) && !got[0].reset,
            "car.built keeps a built car still in its slot, drops a bad id and a car gone from its slot");
-    expect(Ops::take_built().empty(), "the queue is taken once");
-    for (int i = 0; i < 100; i++)
+    expect(got.size() == 2 && got[1].index == 0 && got[1].car == addr(0) && got[1].reset,
+           "car.reset finds the car from the reset thunk's loader (CarLive+0x4a0); a null loader is dropped");
+    expect(Ops::take().empty(), "the queue is taken once");
+    for (int i = 0; i < 300; i++)
         Ops::built(addr(1));
-    expect(Ops::take_built().size() == 2 * cl::MAX_CARS, "the queue is capped when no frame takes it");
+    expect(Ops::take().size() == 4 * cl::MAX_CARS, "the queue is capped when no frame takes it");
 }
 
 int main()
 {
     core_ops();
     sdk_side();
-    built_queue();
+    pending_queue();
     if (fails) {
         printf("car_live_test: %d failure(s)\n", fails);
         return 1;

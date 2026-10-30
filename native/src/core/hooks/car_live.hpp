@@ -20,7 +20,7 @@
 
 namespace swofty_core::hooks::car_live {
 
-constexpr uintptr_t CAR_VEHICLE_ID = 0xe8, CAR_IS_AI = 0x124, SYSTEM_CAR = 0x08;
+constexpr uintptr_t CAR_VEHICLE_ID = 0xe8, CAR_IS_AI = 0x124, CAR_LOADER = 0x4a0, SYSTEM_CAR = 0x08;
 constexpr uintptr_t FUEL_CAPACITY = 0x98;
 constexpr uint32_t MAX_CARS = 32;
 
@@ -207,36 +207,41 @@ template <class Tag> struct Ops {
         return env.write && env.write(sys + f->offset, &bits, 4) ? SWOFTY_ASSET_OK : SWOFTY_ASSET_LATE;
     }
 
-    // car.built: the game builds each car on a loader thread (T119), so the mid-hook on site_Car_LiveCarBuilt
-    // (rdi = the new CarLive) only queues it; the next frame takes the queue on the flow thread, where set() may
-    // write, and keeps the cars still in their slot.
-    struct Built {
+    // car.built and car.reset: the game builds each car on a loader thread (T119) and re-reads its parts through
+    // Car_Systems_Reset_Thunk (T120), so the hooks only queue the car (site_Car_LiveCarBuilt: rdi = the new CarLive;
+    // the thunk: its loader argument, CarLive+0x4a0) and the next frame takes the queue on the flow thread, where
+    // set() may write, keeping the cars still in their slot.
+    struct Pending {
         uint32_t index;
         uintptr_t car;
+        bool reset;
     };
-    static inline std::mutex built_lock;
-    static inline std::vector<Built> built_queue;
+    static inline std::mutex pending_lock;
+    static inline std::vector<Pending> pending;
 
-    static void built(uintptr_t car)
+    static void queue(uintptr_t car, bool reset)
     {
         uint8_t id = 0;
-        if (!bound.load() || !rd(car + CAR_VEHICLE_ID, id) || id >= MAX_CARS)
+        if (!bound.load() || !car || !rd(car + CAR_VEHICLE_ID, id) || id >= MAX_CARS)
             return;
-        std::lock_guard<std::mutex> g(built_lock);
-        if (built_queue.size() < MAX_CARS * 2)
-            built_queue.push_back({id, car});
+        std::lock_guard<std::mutex> g(pending_lock);
+        if (pending.size() < MAX_CARS * 4)
+            pending.push_back({id, car, reset});
     }
 
-    static std::vector<Built> take_built()
+    static void built(uintptr_t car) { queue(car, false); }
+    static void reset(uintptr_t loader) { queue(loader >= CAR_LOADER ? loader - CAR_LOADER : 0, true); }
+
+    static std::vector<Pending> take()
     {
-        std::vector<Built> out;
+        std::vector<Pending> out;
         {
-            std::lock_guard<std::mutex> g(built_lock);
-            out.swap(built_queue);
+            std::lock_guard<std::mutex> g(pending_lock);
+            out.swap(pending);
         }
-        std::erase_if(out, [](const Built &b) {
+        std::erase_if(out, [](const Pending &p) {
             uintptr_t car = 0;
-            return car_at(b.index, reinterpret_cast<const void *>(b.car), car) != SWOFTY_ASSET_OK;
+            return car_at(p.index, reinterpret_cast<const void *>(p.car), car) != SWOFTY_ASSET_OK;
         });
         return out;
     }
