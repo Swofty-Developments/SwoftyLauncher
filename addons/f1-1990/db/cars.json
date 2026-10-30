@@ -365,6 +365,14 @@
   },
   {
    "op": "add-row",
+   "table": "car_setup.presets",
+   "from": "car_setup.presets.vehicle_package_setups[_metadata_=f1_2026_vehicle_package]",
+   "set": {
+    "_metadata_": "f1_1990_vehicle_package"
+   }
+  },
+  {
+   "op": "add-row",
    "table": "entrants.vehicles.vehicle_packages",
    "from": "entrants.vehicles.vehicle_packages.vehicle_package[_metadata_=f1_2026]",
    "set": {
@@ -383,6 +391,14 @@
    "value": "False",
    "when": {
     "classic_aero": true
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "car_setup.presets",
+   "from": "car_setup.presets.vehicle_package_setups[_metadata_=f1_2026_vehicle_package]",
+   "set": {
+    "_metadata_": "f1_1990_vehicle_b_specs"
    }
   },
   {

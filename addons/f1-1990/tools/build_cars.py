@@ -96,7 +96,8 @@ Team mass and drag (and power under modern) come from the season pack's per-team
 common base.
 
 Outputs (relative to the addon folder): cars/handling/<ers>_<tyre_size>/<folder>_handling.erp, cars/handling.json
-(file.put ops keyed by the options) and db/cars.json (the f1_1990 and f1_1990b package rows, the 13 vehicle rows
+(file.put ops keyed by the options) and db/cars.json (the f1_1990 and f1_1990b package rows and their car setup
+preset rows, the 13 vehicle rows
 labelled with the grid lane's tokens and their 13 B-spec copies `<token>_1990b`; the name strings come from the grid
 lane's lang ops, `engine` the 1990 engine row), the seven 1990 engine rows `f1990_engine_<supplier>` (copies of
 Cosworth_F1_V8_2009-2013 with its rev-light thresholds x the engine's limiter / 18,000) and lang/engines.json (their supplier
@@ -770,7 +771,10 @@ def package_ops(name, folder, **extra):
              'from': f'entrants.vehicles.vehicle_packages.vehicle_package[_metadata_={C.SOURCE_PACKAGE_ROW}]',
              'set': values},
             {'op': 'set', 'select': f'entrants.vehicles.vehicle_packages.vehicle_package[_metadata_={name}]',
-             'field': 'is_26_aero_regulations', 'value': 'False', 'when': {'classic_aero': True}}]
+             'field': 'is_26_aero_regulations', 'value': 'False', 'when': {'classic_aero': True}},
+            {'op': 'add-row', 'table': 'car_setup.presets',
+             'from': f'car_setup.presets.vehicle_package_setups[_metadata_={C.SOURCE_PACKAGE}]',
+             'set': {'_metadata_': folder}}]
 
 
 def db_ops():
