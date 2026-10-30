@@ -3,7 +3,10 @@
 For every (track, car folder) the stock `f1_2026_vehicle_package` AI archive of that track and folder is the
 template. Every resource moves to `f1_1990_vehicle_package`. The five car tables come from Swofty AI's car model on the
 1990 handling VTF at the template's downforce variation, on the template's axes and row order; corner speeds are the
-template's copd times the model's 1990/2026 corner speed ratio. vp_times, tyre_wear and fuel_burn_granular
+template's copd times the model's 1990/2026 corner speed ratio. The model's drag is fitted to the 2026 cars, which open
+their wings on the straights (m_aero_wing_front_drag 0.5, m_aero_wing_rear_drag 0.3 with DRS hardware); the 1990 car
+has none, so its model drag is scaled by the 2026 car's model drag over its open-wing drag and by the 1990 car's
+closed-wing drag over its model drag, at the variation's wing angles (closed_wing_drag). vp_times, tyre_wear and fuel_burn_granular
 are simulated with those tables on the track's stock line and brake line settings. The car has no ERS, so every ERS
 mode row is the no-ERS row, ers_use_granular is zero everywhere and ers_boost_data carries no ERS use. vp_chars and
 brakelinesettings stay the template's.
@@ -104,6 +107,33 @@ def compounds_1990(game, car_pack_compounds=None):
     comp = carmodel.load_package_compounds(carmodel._stock_resolver(game), SOURCE)
     renamed = {k.replace('F1_2026_', 'F1_1990_', 1): v for k, v in comp.items()}
     return renamed, f'{SOURCE} stock compounds renamed F1_2026_ -> F1_1990_'
+
+
+def wing_drag_open(game, package, folder):
+    from swofty_ai import carmodel
+    v = carmodel.Vtf(carmodel.load_vtf(carmodel._stock_resolver(game), package, folder)[0])
+    if not v.f('F1Aero/DRSRotationAngleRadians', 0.0):
+        return 1.0, 1.0
+    return v.f('F1Aero/m_aero_wing_front_drag', 1.0), v.f('F1Aero/m_aero_wing_rear_drag', 1.0)
+
+
+def straight_drag(cfg, cal, variation, open_wings):
+    from swofty_ai import carmodel
+    wf, wr = carmodel.setup_wings(cal, variation)
+    body = cfg.body_drag_min + cal['body_drag'] * (cfg.body_drag_max - cfg.body_drag_min)
+    front = carmodel._poly(cfg.wing_front['drag'], wf)
+    rear = carmodel._poly(cfg.wing_rear['drag'], wr)
+    model = body + cal.get('wing_drag', 1.0) * (front + rear)
+    game = body + open_wings[0] * front + open_wings[1] * rear
+    return model, game
+
+
+def closed_wing_drag(game, cfg, cfg26, folder, variation):
+    from swofty_ai import carmodel
+    cal = carmodel.CALIBRATION[cfg26.family]
+    model26, game26 = straight_drag(cfg26, cal, variation, wing_drag_open(game, SOURCE, folder))
+    model90, game90 = straight_drag(cfg, cal, variation, (1.0, 1.0))
+    return round(model26 / game26 * game90 / model90, 4)
 
 
 def car_config(game, handling_dir, folder, car_pack_compounds=None):
@@ -208,6 +238,8 @@ def job(args):
     variation = cartables.Table(templates['copd']).variation
     cfg = car_config(game, handling_dir, folder, car_pack_compounds)
     cfg26 = carmodel.CarConfig.from_game(game, SOURCE, folder)
+    drag_k = closed_wing_drag(game, cfg, cfg26, folder, variation)
+    cfg = cfg.with_overrides(drag=drag_k)
     tpl_sets = {x: _sets_of(templates[x]) for x in TABLE_EXTS}
     axes = template_axes(cfg, tpl_sets)
     rows = carmodel.build_tables(cfg, variation, axes, full=True)
@@ -294,7 +326,7 @@ def job(args):
             'vmax1990': lap90['vmax'] * 3.6, 'vmax2026': lap26['vmax'] * 3.6, 'length': lap90['length'],
             'masses1990': t90.masses(), 'vp_masses': vp_masses, 'kept_from_template': kept,
             'k_time_heavy': k_time, 'k_fuel_heavy': k_fuel, 'bytes': os.path.getsize(dst), 'seconds': time.time() - t0,
-            'sanity': sanity, 'mass_vtf': cfg.mass}
+            'sanity': sanity, 'mass_vtf': cfg.mass, 'drag_k': drag_k}
 
 
 def _masses(rows):
