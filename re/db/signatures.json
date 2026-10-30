@@ -81264,6 +81264,2526 @@
     }
    ],
    "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_ui_set_mapped_driver_visible",
+   "section": ".xtls",
+   "pattern": "48 83 EC 28 44 89 C0 41 89 D0 41 C1 E8 10 C1 E2",
+   "match": "0x140c83e80",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c83e80",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneUi_SetMappedDriverVisible"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.my_team_customisation_spawn_scene",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 58 CB 02",
+   "match": "0x1416c8b70",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1416c8b70",
+   "kind": "func_start",
+   "names": [
+    "Game_MyTeamCustomisation_SpawnScene"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_screen_destructor",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 20 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 89 58 01 00",
+   "match": "0x14179ff30",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14179ff30",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneScreen_Destructor"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_screen_f_destructor",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 20 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 81 D0 01 00",
+   "match": "0x1417a1360",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1417a1360",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneScreenF_Destructor"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_preview_select_entry",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 44 89 C3 49 89 D6 48",
+   "match": "0x1417e2cd0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1417e2cd0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendScenePreview_SelectEntry"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_preview_refresh",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 98 CD 00",
+   "match": "0x1417e2f90",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1417e2f90",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendScenePreview_Refresh"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_preview_update_tick",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 38 C5 F8 29 74 24 20 80 79 7C 00",
+   "match": "0x1417e6d40",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1417e6d40",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendScenePreview_UpdateTick"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_driver_fill_helmet_preview_data",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 55 53 48 81 EC B0 00 00 00 4C 89 C7 48 89 D6 48 89 CB 80 BA",
+   "match": "0x14181abc0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14181abc0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneDriver_FillHelmetPreviewData"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.driver_career_spawn_driver_pair",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 0E 00 00 89",
+   "match": "0x1418671d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1418671d0",
+   "kind": "func_start",
+   "names": [
+    "Game_DriverCareer_SpawnDriverPair"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.my_team_hq_spawn_foyer_drivers",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 03 00 00 89",
+   "match": "0x141995c70",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141995c70",
+   "kind": "func_start",
+   "names": [
+    "Game_MyTeamHq_SpawnFoyerDrivers"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.my_team_hq_spawn_foyer_car",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 E8 3B 01",
+   "match": "0x1419977e0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1419977e0",
+   "kind": "func_start",
+   "names": [
+    "Game_MyTeamHq_SpawnFoyerCar"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.my_team_hq_setup_scene_for_state",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 80 FA 0A 0F 87 ?? ?? ?? ?? 48",
+   "match": "0x141998d80",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141998d80",
+   "kind": "func_start",
+   "names": [
+    "Game_MyTeamHq_SetupSceneForState"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ui_message_screen_destructor",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B 0D ?? ?? ?? ?? 48 8B 81",
+   "match": "0x141a49260",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141a49260",
+   "kind": "func_start",
+   "names": [
+    "Game_UiMessageScreen_Destructor"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.driver_career_team_mate_select_spawn",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 07 00 00 C5 F8 29 BC 24",
+   "match": "0x141a664f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141a664f0",
+   "kind": "func_start",
+   "names": [
+    "Game_DriverCareer_TeamMateSelectSpawn"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1_world_goals_handle_command",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 90 01 00 00 48 89 D7",
+   "match": "0x141ad6da0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141ad6da0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1WorldGoals_HandleCommand"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.showroom_show_info_panel",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 38 48 89 CE 0F B6 81 60",
+   "match": "0x141cc1430",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141cc1430",
+   "kind": "func_start",
+   "names": [
+    "Game_Showroom_ShowInfoPanel"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.showroom_hide_info_panel",
+   "section": ".xtls",
+   "pattern": "56 57 55 53 48 83 EC 38 48 89 CE 80 B1 92 04 00",
+   "match": "0x141df2b90",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141df2b90",
+   "kind": "func_start",
+   "names": [
+    "Game_Showroom_HideInfoPanel"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.story_hub_build_conversation_list",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 06 00 00 C5",
+   "match": "0x141ea9750",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141ea9750",
+   "kind": "func_start",
+   "names": [
+    "Game_StoryHub_BuildConversationList"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.story_hub_build_cinematics_list",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 07 00 00 C5 F8 29 B4 24 C0 07 00 00 48 89 CE 48",
+   "match": "0x141eaef30",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141eaef30",
+   "kind": "func_start",
+   "names": [
+    "Game_StoryHub_BuildCinematicsList"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.sponsor_loadout_build_list",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 F8 29 B4 24 A0 00 00 00 48 89 CE 48 8B 3D",
+   "match": "0x141ff1fa0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141ff1fa0",
+   "kind": "func_start",
+   "names": [
+    "Game_SponsorLoadout_BuildList"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.car_decals_build_list",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 02 00 00 C5 F8 29 BC 24 E0 02 00 00 C5 F8 29 B4 24 D0 02 00 00 48 89 CE",
+   "match": "0x141fff870",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141fff870",
+   "kind": "func_start",
+   "names": [
+    "Game_CarDecals_BuildList"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.car_customisation_setup_writable_camera",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 20 48 89 CE E8 ?? ?? ?? ?? 48 8B 9E 88 02",
+   "match": "0x1420027c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1420027c0",
+   "kind": "func_start",
+   "names": [
+    "Game_CarCustomisation_SetupWritableCamera"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.car_customisation_mark_car_dirty_on",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 81 EC C8 00 00 00 48 89 CE 45",
+   "match": "0x142002c70",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142002c70",
+   "kind": "func_start",
+   "names": [
+    "Game_CarCustomisation_OnSelectionChanged_MarkCarDirty"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.car_customisation_mark_car_dirty_off",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 48 48 89 CF 48 89 D1 E8",
+   "match": "0x1420059c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1420059c0",
+   "kind": "func_start",
+   "names": [
+    "Game_CarCustomisation_MarkCarDirtyOff"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.car_customisation_apply_livery_preview",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 55 53 48 81 EC F8 00 00 00 48 89 CE 45 31",
+   "match": "0x14200ebb0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14200ebb0",
+   "kind": "func_start",
+   "names": [
+    "Game_CarCustomisation_ApplyLiveryPreview"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.car_customisation_apply_all_customisation",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 F8 4B 00",
+   "match": "0x1420123b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1420123b0",
+   "kind": "func_start",
+   "names": [
+    "Game_CarCustomisation_ApplyAllCustomisation"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.car_customisation_apply_driver_numbers",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 55 53 B8 F8 4B 00 00 E8",
+   "match": "0x14207e990",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14207e990",
+   "kind": "func_start",
+   "names": [
+    "Game_CarCustomisation_ApplyDriverNumbers"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.career_spawn_main_driver_pose",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 81 EC B0 00 00 00 48 89 CE 48 8B 89 40 03 00 00",
+   "match": "0x1420d1610",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1420d1610",
+   "kind": "func_start",
+   "names": [
+    "Game_Career_SpawnMainDriverPose"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.career_hide_drivers_on_exit",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 20 48 89 C8 C6 81 68 02 00 00",
+   "match": "0x1420d19b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1420d19b0",
+   "kind": "func_start",
+   "names": [
+    "Game_Career_HideDriversOnExit"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.fan_zone_build_standings_driver_list",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 05 00 00 C5 F8 29 B4 24",
+   "match": "0x1421cb310",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1421cb310",
+   "kind": "func_start",
+   "names": [
+    "Game_FanZone_BuildStandingsDriverList"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.fan_zone_build_standings_team_list",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 D8 A3 01",
+   "match": "0x1421ccfc0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1421ccfc0",
+   "kind": "func_start",
+   "names": [
+    "Game_FanZone_BuildStandingsTeamList"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.my_team_driver_market_open",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 F8 29 B4 24 50 01 00 00 48 89 CE 48 8D 81 30 06",
+   "match": "0x1423002f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1423002f0",
+   "kind": "func_start",
+   "names": [
+    "Game_MyTeamDriverMarket_Open"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.my_team_driver_market_close",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 55 53 48 83 EC 40 48 89 CE 48 C7 81",
+   "match": "0x1423056e0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1423056e0",
+   "kind": "func_start",
+   "names": [
+    "Game_MyTeamDriverMarket_Close"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.my_team_contract_show_driver_comparison",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D 26 B7 F6",
+   "match": "0x142306550",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142306550",
+   "kind": "func_start",
+   "names": [
+    "Game_MyTeamContract_ShowDriverComparison"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.my_team_contract_set_drivers_visible",
+   "section": ".xtls",
+   "pattern": "56 57 55 53 48 83 EC 38 80 B9 42 2D 00 00 00 0F",
+   "match": "0x142309780",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142309780",
+   "kind": "func_start",
+   "names": [
+    "Game_MyTeamContract_SetDriversVisible"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.fan_zone_season_results_exit",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 81 EC A8 01 00 00 C5 F8 29 B4",
+   "match": "0x14238da40",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14238da40",
+   "kind": "func_start",
+   "names": [
+    "Game_FanZoneSeasonResults_Exit"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_object_respawn_all",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 C5 F9 76 C0 C5",
+   "match": "0x142547d80",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142547d80",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneObject_RespawnAll"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_car_spawn_from_livery_data",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 78 74 02 00 E8 ?? ?? ?? ?? 48 29 C4 4C 89 C6 48 89 D7 48 89 CB 4C 8B A1 D8 00 00",
+   "match": "0x142549960",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142549960",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCar_SpawnFromLiveryData"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_script_spawn_sequences",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 04 00 00 C5 F8 29 B4 24 E0 04 00 00 89 D5 49 89",
+   "match": "0x1427ad600",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1427ad600",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneScript_SpawnSequences"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_car_spawn_from_livery_data2",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 78 74 02 00 E8 ?? ?? ?? ?? 48 29 C4 4C 89 C6 48 89 D7 48 89 CB 4C 8B A1 F0 00 00",
+   "match": "0x1427b20b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1427b20b0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCar_SpawnFromLiveryData2"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_driver_update_transform",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 CE C5 FA 10 05",
+   "match": "0x142889c50",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142889c50",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneDriver_UpdateTransform"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_driver_spawn_actors",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 04 00 00 C5 78 29 84 24",
+   "match": "0x14288ab50",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14288ab50",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneDriver_SpawnActors"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_custom_object_update",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 F8 29 B4 24 50 01 00 00 48 89 CF 48",
+   "match": "0x14288d8f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14288d8f0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCustomObject_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_custom_object_spawn_object",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC A8 03 00 00",
+   "match": "0x14288e340",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14288e340",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCustomObject_SpawnObject"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_driver_set_parts_visible",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 48 89 CE 48 8B 89 80 02 00",
+   "match": "0x14288fac0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14288fac0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneDriver_SetPartsVisible"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_driver_spawn_actors_alt",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 08 00 00 C5 78 29 84 24",
+   "match": "0x142891630",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142891630",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneDriver_SpawnActorsAlt"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_driver_update_pfx",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 81 EC C8 00 00 00 C5 78 29 8C",
+   "match": "0x142895670",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142895670",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneDriver_UpdatePfx"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_driver_despawn",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 48 89 CE 80 3D ?? ?? ?? ?? 01 0F",
+   "match": "0x142895b80",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142895b80",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneDriver_Despawn"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_driver_choose_sequence",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 68 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 48 8B 81 70 02",
+   "match": "0x142896750",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142896750",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneDriver_ChooseSequence"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_driver_bind_actors_to_sequence",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8B 91 70",
+   "match": "0x142896e30",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142896e30",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneDriver_BindActorsToSequence"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_script_add_fz_multi_actor_group",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 4C 89 CE 44 89 44",
+   "match": "0x1428975d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428975d0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneScript_AddFzMultiActorGroup"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_script_remove_fz_multi_actor_group",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 55 53 48 83 EC 20 4C 89 CE 4D 85 C9",
+   "match": "0x142897fe0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142897fe0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneScript_RemoveFzMultiActorGroup"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_driver_update",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 03 00 00 C5 78 29 9C 24",
+   "match": "0x142898cd0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142898cd0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneDriver_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_camera_manager_update",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 C5 F8 29 BC 24 80 01 00 00 C5 F8 29 B4 24 70 01 00 00 C5 F8 28",
+   "match": "0x1428a5d30",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428a5d30",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCameraManager_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_camera_manager_set_active_camera",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 48 89 D7 48 89 CE 48 8B 81",
+   "match": "0x1428a7a00",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428a7a00",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCameraManager_SetActiveCamera"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_camera_manager_get_sequence_position",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 68 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 4C 89 C7 48 89",
+   "match": "0x1428a8010",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428a8010",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCameraManager_GetSequencePosition"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_script_spawn_sequence_for_actor",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 4D 89 CE 4D 89 C7 48 89 D7 48 89 CE",
+   "match": "0x1428a82b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428a82b0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneScript_SpawnSequenceForActor"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_car_set_custom_livery",
+   "section": ".xtls",
+   "pattern": "56 57 55 53 48 83 EC 38 80 B9 94 00 00 00 02 0F",
+   "match": "0x1428aa040",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428aa040",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCar_SetCustomLivery"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_car_set_custom_decal_nodes",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 30 80 B9 94 00 00 00 02 0F 85",
+   "match": "0x1428aa420",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428aa420",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCar_SetCustomDecalNodes"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_car_setup_components",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 48 89 CE 80 3D",
+   "match": "0x1428aa870",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428aa870",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCar_SetupComponents"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_car_set_visibility_internal",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 C5 F8 29 B4 24 40 01 00 00 89 D7 48 89",
+   "match": "0x1428ab1f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428ab1f0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCar_SetVisibilityInternal"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_car_manager_spawn_car_at_placement",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 C5 F8 29 B4 24 F0 00 00 00 4C 89 8C 24 C8 00 00 00",
+   "match": "0x1428b1910",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428b1910",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCarManager_SpawnCarAtPlacement"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_car_manager_spawn_car_at_transform",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 F8 29 B4 24 E0 00 00 00 4C 89 CB 4C",
+   "match": "0x1428b1d20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428b1d20",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCarManager_SpawnCarAtTransform"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_cutscene_manager_update",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 C5 F8 28 F1 48 89 CE 48 8B 41 08 80 B8",
+   "match": "0x1428b3ba0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428b3ba0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCutsceneManager_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_cutscene_manager_play_cutscene",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CB 48 8B 41 48 48",
+   "match": "0x1428b3fc0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428b3fc0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCutsceneManager_PlayCutscene"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_cutscene_manager_preload_cutscene",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 03 00 00 48 89 D7 48 89 CE 80 3D",
+   "match": "0x1428b45d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428b45d0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCutsceneManager_PreloadCutscene"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_cutscene_manager_stop_active_cutscene",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 72 B8",
+   "match": "0x1428b52d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428b52d0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCutsceneManager_StopActiveCutscene"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_cutscene_manager_stop_all_cutscenes",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 80 3D",
+   "match": "0x1428b5440",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428b5440",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCutsceneManager_StopAllCutscenes"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_cutscene_manager_preload_subscene_cutscenes",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 48 85 D2 74 5C 44 89",
+   "match": "0x1428b56a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428b56a0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCutsceneManager_PreloadSubsceneCutscenes"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_cutscene_manager_on_subscene_changed",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 51 78 48 85 D2",
+   "match": "0x1428b57d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428b57d0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCutsceneManager_OnSubsceneChanged"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_cutscene_manager_pre_init_cutscenes",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 83 EC 20 44 89 C3 48 89",
+   "match": "0x1428b5e40",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428b5e40",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCutsceneManager_PreInitCutscenes"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_cutscene_manager_pre_init_cutscene",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 48 8B 41 08 80 B8 48",
+   "match": "0x1428b5fc0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428b5fc0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCutsceneManager_PreInitCutscene"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_cutscene_manager_stop_cutscene_entry",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 89 D7 48 89 CE 48 8B 4A 08 48",
+   "match": "0x1428b6190",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428b6190",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneCutsceneManager_StopCutsceneEntry"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_script_add_to_multi_actor_anim",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 7C 24 60 C5 F8 29 74 24 50 41 80 78 50",
+   "match": "0x1428b6f50",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428b6f50",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneScript_AddToMultiActorAnim"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_system_process_command",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 78 29 84 24 10 01 00 00 C5 F8 29 BC 24 00 01 00 00 C5 F8 29 B4 24 F0 00 00 00 48 89 D6 48 89 CD",
+   "match": "0x1428ba530",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428ba530",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneSystem_ProcessCommand"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_system_preload_scene",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 44 89 C3 48 89 CE 48 89",
+   "match": "0x1428bd420",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428bd420",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneSystem_PreloadScene"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_system_set_subscene",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CE 48 8B B9 50",
+   "match": "0x1428be0f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428be0f0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneSystem_SetSubscene"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_system_change_main_camera",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 30 48 89 D7 48 89 CE 48 8B 99",
+   "match": "0x1428be550",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428be550",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneSystem_ChangeMainCamera"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_manager_process_pending_driver_changes",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 55 53 48 81 EC E8 02 00 00 4C 89 C6 48 89 D7 48 89 CB",
+   "match": "0x1428cdf30",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428cdf30",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneManager_ProcessPendingDriverChanges"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_manager_process_pending_car_changes",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 70 02 00 00 4C 89 C6",
+   "match": "0x1428cebb0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428cebb0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneManager_ProcessPendingCarChanges"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_manager_switch_scene_from_preset",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 60 84 D2 0F 84 ?? ?? ?? ?? 4C",
+   "match": "0x1428cfaa0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428cfaa0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneManager_SwitchSceneFromPreset"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_manager_switch_scene",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 55 53 48 81 EC 40 02 00 00 4C 89 C3",
+   "match": "0x1428d7610",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428d7610",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneManager_SwitchScene"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_manager_reset_components",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5F B8 BD 00 00 00",
+   "match": "0x1428d8260",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428d8260",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneManager_ResetComponents"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_manager_stop_cutscene",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 68 B8 BD 00",
+   "match": "0x1428db2c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428db2c0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneManager_StopCutscene"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_manager_set_pending_switch",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 0D ?? ?? ?? ?? 48 85 C9 74 73 48 8B 01",
+   "match": "0x1428db390",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428db390",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneManager_SetPendingSwitch"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_manager_setup_driver_internal",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 55 53 48 81 EC E8 02 00 00 4C 89 C6 48 89 D3 48 89 CF 80 3D ?? ?? ?? ?? 01 75 4E B8 4B 00",
+   "match": "0x1428dc7b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428dc7b0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneManager_SetupDriverInternal"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_component_driver_needs_respawn",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 B8 20 1B 00 00 E8",
+   "match": "0x1428de530",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428de530",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneComponentDriver_NeedsRespawn"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_component_driver_change_driver",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 06 00 00 4C 89 CE 4C 89",
+   "match": "0x1428df240",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428df240",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneComponentDriver_ChangeDriver"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_component_driver_set_anim_overlay",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 60 02 00 00 48 89 D7",
+   "match": "0x1428dff20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428dff20",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneComponentDriver_SetAnimOverlay"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_component_stop_driver_anim_overlay",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 55 53 48 81 EC 68 02 00 00 48",
+   "match": "0x1428e0aa0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428e0aa0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneComponent_StopDriverAnimOverlay"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_manager_set_driver_visible",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 09 00 00 44",
+   "match": "0x1428e0f40",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428e0f40",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneManager_SetDriverVisible"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_manager_set_driver_animation_overlay",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 80 07 00 00 4C 89 C3",
+   "match": "0x1428e2a90",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428e2a90",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneManager_SetDriverAnimationOverlay"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_component_driver_update_decals",
+   "section": ".xtls",
+   "pattern": "56 48 81 EC 50 02 00 00 48 89 D6 48 8B 02 48 89",
+   "match": "0x1428e5050",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428e5050",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneComponentDriver_UpdateDecals"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_manager_set_driver_visible_by_id",
+   "section": ".xtls",
+   "pattern": "48 83 EC 28 48 8B 81 B8 6F 00 00 4C 8B 89 C0 6F",
+   "match": "0x1428e51a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428e51a0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneManager_SetDriverVisibleById"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_manager_get_driver_helmet_data",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 D6 48 8B B9 B8 6F 00 00",
+   "match": "0x1428e52b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428e52b0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneManager_GetDriverHelmetData"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_manager_setup_car_internal",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 B8 40 69 00 00",
+   "match": "0x1428e53a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428e53a0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneManager_SetupCarInternal"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_manager_set_car_visible",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 B8 48 A3 01 00 E8 ?? ?? ?? ?? 48",
+   "match": "0x1428e86d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428e86d0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneManager_SetCarVisible"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_manager_setup_object_internal",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 55 53 48 81 EC E8 02 00 00 4C 89 C6 48 89 D3 48 89 CF 80 3D ?? ?? ?? ?? 01 75 4C B8 16 01",
+   "match": "0x1428ec620",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428ec620",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneManager_SetupObjectInternal"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_manager_set_object_visible",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 58 01 00 00 44 89 C3 48",
+   "match": "0x1428ed080",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428ed080",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneManager_SetObjectVisible"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_component_object_needs_respawn",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 10 09 00",
+   "match": "0x1428ed3b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428ed3b0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneComponentObject_NeedsRespawn"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_component_object_set_visible",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 55 53 48 81 EC 40 02 00 00 89 D3 48 89 CE 48 8B 01 FF 50 28",
+   "match": "0x1428edc60",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428edc60",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneComponentObject_SetVisible"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_component_driver_spawn",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 00 0F 00",
+   "match": "0x1428ee8f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428ee8f0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneComponentDriver_Spawn"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_component_object_log_state",
+   "section": ".xtls",
+   "pattern": "48 83 EC 28 80 3D ?? ?? ?? ?? 01 75 78 4D 89 C1",
+   "match": "0x1428f2cb0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428f2cb0",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneComponentObject_LogState"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_component_object_spawn",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 07 00 00 48 89 CE 48 8B",
+   "match": "0x1428f2e20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428f2e20",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneComponentObject_Spawn"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.frontend_scene_component_object_despawn_complete",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 81 EC 40 02 00 00 48 89 CF B9 50 0B",
+   "match": "0x1428f3480",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1428f3480",
+   "kind": "func_start",
+   "names": [
+    "Game_FrontendSceneComponentObject_DespawnComplete"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
   }
  ]
 }
