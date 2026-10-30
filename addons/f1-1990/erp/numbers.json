@@ -1,0 +1,139 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_career_season_setup.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.drivers.driver_numbers.texarray.image",
+   "source": "erp/numbers/numbers.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_career_season_setup.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.drivers.driver_numbers.texarray",
+   "source": "erp/numbers/numbers.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_press_interview.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.drivers.driver_numbers.texarray.image",
+   "source": "erp/numbers/numbers.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/flow_press_interview.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.drivers.driver_numbers.texarray",
+   "source": "erp/numbers/numbers.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/screens/press_interview.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.drivers.driver_numbers.texarray.image",
+   "source": "erp/numbers/numbers.erpk"
+  },
+  {
+   "op": "put-resource",
+   "erp": "2025_asset_groups/ui_package/screens/press_interview.erp",
+   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.drivers.driver_numbers.texarray",
+   "source": "erp/numbers/numbers.erpk"
+  },
+  {
+   "op": "patch-pkg",
+   "erp": "2025_asset_groups/ui_package/databases.erp",
+   "resource": "eaid://ui_package/databases/overrides.uidb",
+   "fragment": 0,
+   "edits": [
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.drivers.Contents.driver_numbers.Contents",
+     "src": "[Name=nr_43]",
+     "as": "nr_8",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/driver_numbers/8.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.drivers.Contents.driver_numbers.Contents",
+     "src": "[Name=nr_43]",
+     "as": "nr_9",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/driver_numbers/9.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.drivers.Contents.driver_numbers.Contents",
+     "src": "[Name=nr_43]",
+     "as": "nr_11",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/driver_numbers/11.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.drivers.Contents.driver_numbers.Contents",
+     "src": "[Name=nr_43]",
+     "as": "nr_15",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/driver_numbers/15.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.drivers.Contents.driver_numbers.Contents",
+     "src": "[Name=nr_43]",
+     "as": "nr_19",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/driver_numbers/19.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.drivers.Contents.driver_numbers.Contents",
+     "src": "[Name=nr_43]",
+     "as": "nr_21",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/driver_numbers/21.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.drivers.Contents.driver_numbers.Contents",
+     "src": "[Name=nr_43]",
+     "as": "nr_25",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/driver_numbers/25.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.drivers.Contents.driver_numbers.Contents",
+     "src": "[Name=nr_43]",
+     "as": "nr_26",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/driver_numbers/26.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.drivers.Contents.driver_numbers.Contents",
+     "src": "[Name=nr_43]",
+     "as": "nr_28",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/driver_numbers/28.tif"
+     }
+    },
+    {
+     "op": "clone-entry",
+     "at": "overrides.Contents.drivers.Contents.driver_numbers.Contents",
+     "src": "[Name=nr_43]",
+     "as": "nr_29",
+     "set": {
+      "Value": "ui_package/art/textures/f1990/driver_numbers/29.tif"
+     }
+    }
+   ]
+  }
+ ]
+}

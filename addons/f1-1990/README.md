@@ -336,6 +336,28 @@ nix-shell -p nodejs zstd nvidia-texture-tools "python3.withPackages (ps: [ ps.nu
 
 The garage tyre picker and the HUD, MFD, pause and timing tower tyre widgets reach a set's visual compound through the car's compound class, which the 1990 cars take from the 2026 cars; in a 1990 career `f1_1990_tyreclass.dll` gives each car the `f1_1990` class when it is created (option `tyre_class_fix`, native/README.md#tyre-class-f1_1990_tyreclassdll).
 
+## Car numbers (erp/numbers.json, erp/numbers/numbers.erpk, tools/car_numbers.py)
+
+The car number on a Choose Driver or team-mate select card is the slice `nr_<car number>` of
+`overrides.drivers.driver_numbers` (`driver_numbers_26` for a driver in a 2026 car; the 1990 cars use
+`driver_numbers`). The game formats the key from the entrant's car number (0x1416a3630) and hides the number when no
+slice has that name. F2 cards show no number. The stock array holds the numbers of the 2025 and earlier drivers, each
+in its driver's lettering, so 1990 numbers 1-7, 10, 12, 16, 20, 22-24, 27 and 30 show that stock art.
+
+`erp/numbers.json` appends a slice for each 1990 car number the stock array lacks: 8 (Modena), 9 (Alboreto),
+11 (Warwick), 15 (Gugelmin), 19 (Nannini, Moreno), 21 (Pirro, Morbidelli), 25 (Larini), 26 (Alliot), 28 (Berger) and
+29 (Bernard). No stock F1 card carries these numbers. Each slice is 80x80 BC7 like the stock ones: the number in
+Formula 1 TV Bold (`formula1-tv-600_bold_web.font`), 46 px tall and at most 70 px wide, centred, with a gradient from
+32% towards white at the top to 90% of the team colour at the bottom. The colour is the team's first colour, or its second
+when the first is white or too dark for the card (Brabham and Dallara are white). The array grows in all three
+archives that carry it (`flow_career_season_setup`, `flow_press_interview`, `screens/press_interview`); the stock
+slices keep their bytes. `tools/car_numbers.py` rebuilds the archive and the ops:
+
+```sh
+nix-shell -p "python3.withPackages (ps: [ ps.numpy ps.pillow ps.fonttools ps.lz4 ])" \
+  --run "python3 addons/f1-1990/tools/car_numbers.py --game <F1 25> --baseline <launcher baseline>/<build> --sheet <png>"
+```
+
 ## 13-team lists (erp/ui26.json, ui/, tools/ui26.py)
 
 At 26 cars (`when: cars 26`) the team lists get rows for 13 teams, in place in every archive that carries each resource.

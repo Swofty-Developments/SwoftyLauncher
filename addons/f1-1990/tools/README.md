@@ -166,6 +166,19 @@ python3 addons/f1-1990/tools/badges.py --game <game folder> [--baseline <launche
 
 `--sheet` writes a contact sheet: per array a stock slice, then the 13 encoded 1990 slices decoded back.
 
+## car_numbers.py
+
+Writes `erp/numbers.json` and `erp/numbers/numbers.erpk`: one slice in `overrides.drivers.driver_numbers` per 1990
+car number (regular seats and stand-ins, from `grid.lineup_of`) that has no stock `nr_<number>` slice, with one
+`overrides.uidb` entry per new slice. It exits when a car number is on two teams or a 1990 driver's number still
+resolves to no slice. See README.md "Car numbers".
+
+```sh
+python3 addons/f1-1990/tools/car_numbers.py --game <game folder> [--baseline <launcher baseline>/<build>] [--sheet numbers.png]
+```
+
+`--sheet` writes every 1990 driver's card number as the built array resolves it, marked stock slice or 1990 slice.
+
 ## logo_art.py
 
 Writes `art/logos/<team>/lockup_light.png`, `lockup_dark.png` and `mark.png` from `art/logos/src/`: the full logo for light and team-colour cards, the same with black or navy lettering turned white for the dark UI, and the compact symbol for square and small badges (the timing towers, broadcast lists and grid rundown). A team whose 1990 logo has no separate symbol uses its full logo as the mark: Williams the Canon Williams plate, Tyrrell its wordmark. Lotus's full logo is the Team Lotus roundel with CAMEL / TEAM LOTUS set in DejaVu Sans Bold on Camel yellow. Arrows keeps its navy and red: its dark full logo and its mark sit on a white plate. Ferrari's full logo and mark are the classic rectangular badge built from the shield's horse and the Ferrari script. Raster sources are traced per colour with potrace. Needs Pillow, numpy, resvg and potrace. `--check` exits 1 when a shipped file differs from a fresh build.

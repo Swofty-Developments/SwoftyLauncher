@@ -193,7 +193,7 @@
       "carpack/db/test.json", "carpack/db/ai.json"],
     "assets": ["db/rules_text.json", "faces/assets.json", "lang/grid.json", "lang/engines.json", "db/career-lang.json", "cars/handling.json", "db/rnd-lang.json",
       "carpack/assets/cars.json", "carpack/assets/ai.json"],
-    "erp": ["erp/portrait.json", "erp/tracks.json", "erp/frontend.json", "erp/badges.json", "erp/tyre_icons.json", "erp/hq_logos.json", "erp/ui26.json", "erp/wizard.json", "erp/rnd_look.json"],
+    "erp": ["erp/portrait.json", "erp/tracks.json", "erp/frontend.json", "erp/badges.json", "erp/tyre_icons.json", "erp/hq_logos.json", "erp/ui26.json", "erp/wizard.json", "erp/rnd_look.json", "erp/numbers.json"],
     "native": [
       { "dll": "native/f1_1990.dll" }, { "dll": "native/f1_1990_tyres.dll" }, { "dll": "native/f1_1990_tyreclass.dll" },
       { "dll": "native/f1_1990_replay.dll" }, { "dll": "native/f1_1990_ui.dll" },
