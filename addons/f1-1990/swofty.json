@@ -110,16 +110,16 @@
       "id": "soft_sets",
       "type": "slider",
       "label": "Supersoft and soft sets per session",
-      "description": "New supersoft sets, and as many soft sets, handed out in practice 1, practice 2 and the race of a 1990 weekend.",
+      "description": "New supersoft sets, and as many soft sets, handed out in practice 1, practice 2 and the race of a 1990 weekend. At most 3: a car holds at most 9 usable sets of one compound.",
       "min": 1,
-      "max": 8,
+      "max": 3,
       "step": 1,
       "default": 2,
       "binds": "db"
     },
     {
-      "id": "quali_sets", "type": "slider", "label": "Qualifying sets per session", "min": 1, "max": 8, "step": 1, "default": 5,
-      "description": "New ultrasoft qualifying tyre sets handed out in Friday and Saturday qualifying of a 1990 weekend. Unused sets carry over between the two sessions.",
+      "id": "quali_sets", "type": "slider", "label": "Qualifying sets per session", "min": 1, "max": 4, "step": 1, "default": 4,
+      "description": "New ultrasoft qualifying tyre sets handed out in Friday and Saturday qualifying of a 1990 weekend. Unused sets carry over between the two sessions. At most 4: a car holds at most 9 usable sets of one compound.",
       "binds": "db"
     },
     {

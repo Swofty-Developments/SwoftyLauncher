@@ -90,6 +90,18 @@ int main()
                                              dc.sets[3] == 1 && dc.sets[4] == 1);
     check("census counts fresh and tagged sets", dc.fresh == 3 && dc.tagged == 2 && dc.fresh_sets[0] == 1);
 
+    std::vector<std::vector<Set>> ten(5);
+    for (uint32_t k = 0; k < 10; k++)
+        ten[1].push_back({k < 5 ? 13u : 14u, 0});
+    ten[0] = {{0, kUsed}, {0, 0}, {0, kHandedBack}};
+    Alloc capped(ten);
+    check("ten usable ultrasoft sets: the tenth is handed back", cap_usable_sets(capped.mem.data()) == 1 &&
+                                                                     (capped.flags(1, 9) & kHandedBack) &&
+                                                                     !(capped.flags(1, 8) & kHandedBack));
+    check("capping marks the allocation dirty", capped.mem[0xe8] == 1);
+    check("used and handed-back sets don't count", !(capped.flags(0, 1) & kHandedBack));
+    check("nine usable sets stay as they are", cap_usable_sets(capped.mem.data()) == 0);
+
     Alloc empty({{}, {}, {}, {}, {}});
     check("empty allocation has no sets", census(empty.mem.data()).total == 0);
     static std::vector<void *> blocks;

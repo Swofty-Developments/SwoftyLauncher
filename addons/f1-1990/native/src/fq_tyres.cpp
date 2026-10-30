@@ -381,19 +381,30 @@ SWOFTY_WRAP(Sess_TyreAllocation_OnSessionStart, void, void *component)
         if (is_1990)
             report_classes(component, g_session);
     }
-    if (!is_1990 || !fq_tyre_fix || !f1990::tyres::is_shootout_session(at<uint32_t>(session, 0x08)))
+    if (!is_1990)
         return;
+    uint32_t id = at<uint32_t>(session, 0x08);
+    bool free_dry = fq_tyre_fix && f1990::tyres::is_shootout_session(id);
     auto *b = at<uint8_t *>(component, 0x2b0), *e = at<uint8_t *>(component, 0x2b8);
-    int cars = 0, sets = 0;
+    int cars = 0, sets = 0, capped = 0, capped_cars = 0;
     for (; b && b < e; b += 0x10) {
         auto *alloc = at<uint8_t *>(b, 0x08);
         if (!alloc)
             continue;
         cars++;
-        sets += f1990::tyres::free_unused_dry_sets(alloc);
+        if (free_dry)
+            sets += f1990::tyres::free_unused_dry_sets(alloc);
+        int n = f1990::tyres::cap_usable_sets(alloc);
+        capped += n;
+        capped_cars += n > 0;
     }
-    swofty::log("[f1-1990] FQ tyres: session %u: %d unused dry set(s) made usable on %d car allocation(s)",
-                at<uint32_t>(session, 0x08), sets, cars);
+    if (free_dry)
+        swofty::log("[f1-1990] FQ tyres: session %u: %d unused dry set(s) made usable on %d car allocation(s)", id, sets,
+                    cars);
+    if (capped)
+        swofty::log("[f1-1990] tyres: session %u: %d set(s) on %d car(s) handed back: the game picks from at most %zu "
+                    "usable sets of one compound",
+                    id, capped, capped_cars, f1990::tyres::kCollectorSets);
 }
 
 SWOFTY_WRAP(Sess_Tyres_ClosestAvailableCompound, uint32_t, void *tyre_rules, uint8_t vehicle, const uint32_t *preference,

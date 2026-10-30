@@ -255,6 +255,36 @@ inline bool same_physical(const uint8_t *a, const uint8_t *b)
     return !std::memcmp(a + kClassPhysicalMasks, b + kClassPhysicalMasks, kClassOptions * sizeof(uint32_t));
 }
 
+// The game collects a car's usable sets of one compound at session enter (0x14368fde0 through 0x14f3d1720)
+// into a vector backed by a 256-byte stack arena. The vector grows 1, 2, 3, 4, 6, 9, 13 and the arena never
+// reclaims, so the 10th set gets a null block and the copy writes to 0. Usable means neither used nor
+// handed back (0x142e88730 and the collector both skip flags 0x01 and 0x08), so no compound may hold more.
+constexpr size_t kCollectorSets = 9;
+
+// Hands back every set past the first `max` sets of a compound that are neither used nor handed back.
+// Returns how many sets changed; a change marks the allocation dirty (+0xe8).
+inline int cap_usable_sets(uint8_t *alloc, size_t max = kCollectorSets)
+{
+    int changed = 0;
+    for (uint64_t i = 0; i < compound_count(alloc); i++) {
+        uint8_t *blk = block(alloc, i), *b, *e;
+        std::memcpy(&b, blk + 0x10, sizeof b);
+        std::memcpy(&e, blk + 0x18, sizeof e);
+        size_t usable = 0;
+        for (; b && b + kSetSize <= e; b += kSetSize) {
+            if (b[9] & (kUsed | kHandedBack))
+                continue;
+            if (++usable <= max)
+                continue;
+            b[9] |= kHandedBack;
+            changed++;
+        }
+    }
+    if (changed)
+        alloc[0xe8] = 1;
+    return changed;
+}
+
 // Every unused dry set (softer, medium, harder) of one car's allocation becomes usable in any
 // session: the handed-back flag is cleared and the session tag set to 0 ("any"). Returns how many
 // sets changed; a change marks the allocation dirty (+0xe8).
