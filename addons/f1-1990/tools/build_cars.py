@@ -84,7 +84,12 @@ the mass scaling kept). Both add the period cuts: every lift curve (F1Aero
 Front/RearCoeffLiftVsRideHeight and VsChassisRake) and wing lift coefficient (Front/RearWingCoL0-2) x aero, so the
 balance stays the donor's; Tyre GripMultiplier per axle (the tyre force multiplies it in and clamps to
 Min/MaxGripMultiplier at 0x1446b7950); BrakeECU torques x the mass ratio x brake; Chassis FFBScale x FFB_1990 (1.3), a
-heavier wheel for an unassisted rack. They also take period power and mass: the engine's own power (ENGINES) instead
+heavier wheel for an unassisted rack; the slipstream of SLIPSTREAM_1990. The game scales each force in a tow by
+scale + (1 - scale) x the clean-air share (0x1446dceb0: the m_aeroSlipStreamAirDensityScale* values are the air density
+the body drag, each wing and the body lift see in a full tow), so Drag 0.8 -> 0.65 makes the tow 1.75 times the 2026
+one at every gap, FrontWing 0.76 -> 0.6 and RearWing 0.82 -> 0.75 take more front than rear downforce (and more wing
+drag) in dirty air, Lift 0.91 -> 0.85, and m_aeroSlipStreamCarWidth 1.5 -> 1.25 narrows the wake. They also take period
+power and mass: the engine's own power (ENGINES) instead
 of BASE_HP 650 x the team scalar, and PERIOD_MASS 620 kg (500 kg dry, a 72 kg driver and 48 kg standing in for the 1990 race fuel the game does not carry)
 instead of BASE_MASS 575, and drag x PERIOD_DRAG (1.25, exposed wheels and big wings) on top of the team scalar. The
 game carries fuel as FuelTank mass on top of Chassis Mass and burns it at the BSFC; the start load follows the race
@@ -233,6 +238,13 @@ PERIOD = {
     'modern': None,
 }
 HANDLING_VALUES = tuple(PERIOD)
+SLIPSTREAM_1990 = {
+    b'm_aeroSlipStreamAirDensityScaleDrag': (0.8, 0.65),
+    b'm_aeroSlipStreamAirDensityScaleFrontWing': (0.76, 0.6),
+    b'm_aeroSlipStreamAirDensityScaleRearWing': (0.82, 0.75),
+    b'm_aeroSlipStreamAirDensityScaleLift': (0.91, 0.85),
+    b'm_aeroSlipStreamCarWidth': (1.5, 1.25),
+}
 FFB_1990 = 1.3
 LIFT_CURVES = (b'FrontCoeffLiftVsRideHeight', b'RearCoeffLiftVsRideHeight', b'FrontCoeffLiftVsChassisRake',
                b'RearCoeffLiftVsChassisRake')
@@ -539,6 +551,10 @@ def period(root, ratio, cut):
         set_value(brakes, k, round(value(brakes, k) * ratio * cut['brake']))
     chassis = section(root, b'Chassis')
     set_value(chassis, b'FFBScale', value(chassis, b'FFBScale') * FFB_1990)
+    for k, (stock, v) in SLIPSTREAM_1990.items():
+        if value(aero, k) != stock:
+            raise ValueError(f'{k.decode()} is {value(aero, k)}, expected the stock {stock}')
+        set_value(aero, k, v)
 
 
 def scale_x(node, k):
