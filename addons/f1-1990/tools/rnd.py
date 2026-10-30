@@ -20,6 +20,9 @@ A team finds its tree through `trees.<token>.teams_linked_to_0.links`, a list of
 names the team's vehicle). Each 1990 team has its own token except Lotus and Larrousse, the two
 Lamborghini teams, which share one. The lists name both the A car and the B-spec car.
 
+Each tree's performance ratings are the template's scaled by the 1990 pace of its teams (rating_scale); the
+Vehicle Performance Comparison chart starts in that order.
+
 No stock key changes: every op writes a new key, a key of a 1990 row another lane adds, or the row count
 of `championships.shared_components`. --check exits 1 when the shipped files differ from a fresh build.
 """
@@ -337,11 +340,27 @@ def weight_target(team):
     return max(-40.0, min(-10.0, -0.5 * (team_mass(team) - 505)))
 
 
+TIER = {"TOP_TEAM": 0.10, "MIDFIELD_HIGH": 0.05, "MIDFIELD": 0.0, "MINNOW": -0.03, "SUPER_MINNOW": -0.06}
+RATING_RANGE = (0.78, 1.05)
+
+
+def pace(team):
+    t = Season.load().teams[PACK_TEAM.get(team, team)]
+    return TIER[t.reputation] + t.power / t.weight / t.drag ** 0.5
+
+
+def rating_scale(token):
+    paces = {k: sum(pace(t) for t in v[0]) / len(v[0]) for k, v in TOKENS.items()}
+    lo, hi = min(paces.values()), max(paces.values())
+    return RATING_RANGE[0] + (RATING_RANGE[1] - RATING_RANGE[0]) * (paces[token] - lo) / (hi - lo)
+
+
 def metadata(token, stock):
     teams, supplier, works, _ = TOKENS[token]
     out = {}
     bhp = SUPPLIER_BHP[supplier]
     mass = weight_target(teams[0])
+    k = rating_scale(token)
     for name, row in stock.items():
         r = dict(row)
         if name == "engine_power":
@@ -358,6 +377,8 @@ def metadata(token, stock):
             r["bhp_adjustment_fully_upgraded"] = "-3"
         elif name == "rear_downforce":
             r["bhp_adjustment_fully_upgraded"] = "-6"
+        for f in ("performance_rating_base", "performance_rating_fully_upgraded"):
+            r[f] = fmt(round(float(r[f]) * k, 1))
         out[name] = r
     return out
 

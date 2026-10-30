@@ -225,6 +225,12 @@ Writes `db/rnd.json`, `db/rnd-lang.json`, `data/rnd-strings.json` and `data/rnd-
 season pack and the tables at the top of the file (`TOKENS`, `UPGRADES`, `SIZES`, `SUPPLIER_BHP`, `BUDGET`). `--check`
 exits 1 when a shipped file differs from a fresh build.
 
+Each tree's `performance_rating_base` and `performance_rating_fully_upgraded` are the 2026 McLaren tree's, scaled per
+tree from 0.78 (slowest) to 1.05 (fastest) by the season pack's pace: the reputation tier (`TIER`) plus
+power / weight / sqrt(drag), averaged over the tree's teams. The Vehicle Performance Comparison chart sums them per team:
+Ferrari, McLaren, Benetton, Williams, Lotus and Larrousse (one tree), Tyrrell, Minardi, Leyton House, Arrows, Brabham,
+Ligier, Dallara.
+
 ```sh
 python3 addons/f1-1990/tools/rnd.py <stock gamedatabases.2025.bin> [--check]
 ```
