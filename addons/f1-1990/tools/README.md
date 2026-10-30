@@ -132,7 +132,7 @@ python3 addons/f1-1990/tools/badges.py --game <game folder> [--baseline <launche
 
 ## logo_art.py
 
-Writes `art/logos/<team>/lockup_light.png`, `lockup_dark.png` and `mark.png` from `art/logos/src/`: the full logo for light and team-colour cards, the same with black or navy lettering turned white for the dark UI, and the compact symbol for square and small badges (the timing towers, broadcast lists and grid rundown). A team whose 1990 logo has no separate symbol uses its full logo as the mark: Williams the Canon Williams plate, Tyrrell its wordmark. Lotus's full logo is the Team Lotus roundel with CAMEL / TEAM LOTUS set in DejaVu Sans Bold on Camel yellow. Raster sources are traced per colour with potrace. Needs Pillow, numpy, resvg and potrace. `--check` exits 1 when a shipped file differs from a fresh build.
+Writes `art/logos/<team>/lockup_light.png`, `lockup_dark.png` and `mark.png` from `art/logos/src/`: the full logo for light and team-colour cards, the same with black or navy lettering turned white for the dark UI, and the compact symbol for square and small badges (the timing towers, broadcast lists and grid rundown). A team whose 1990 logo has no separate symbol uses its full logo as the mark: Williams the Canon Williams plate, Tyrrell its wordmark. Lotus's full logo is the Team Lotus roundel with CAMEL / TEAM LOTUS set in DejaVu Sans Bold on Camel yellow. Arrows keeps its navy and red: its dark full logo and its mark sit on a white plate. Raster sources are traced per colour with potrace. Needs Pillow, numpy, resvg and potrace. `--check` exits 1 when a shipped file differs from a fresh build.
 
 ```sh
 python3 addons/f1-1990/tools/logo_art.py [--check]

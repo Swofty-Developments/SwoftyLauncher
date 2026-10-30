@@ -243,14 +243,20 @@ def dallara():
     return light, recolour(light, [("#182888", "#FFFFFF")], 80), recolour(mark, [("#606060", "#FFFFFF")], 80)
 
 
+def plated(im, pad):
+    im = trim(im, 0)
+    p = round(max(im.width, im.height) * pad)
+    out = Image.new("RGBA", (im.width + 2 * p, im.height + 2 * p), WHITE + (255,))
+    out.alpha_composite(im, (p, p))
+    return out
+
+
 def arrows():
-    logo = trim(render(trace(trim(Image.open(SRC / "arrows.png").convert("RGBA")), ["#383888", "#C82828"], scale=3),
-                       LOCKUP_W))
+    logo = trim(Image.open(SRC / "arrows.png").convert("RGBA"), 0)
     bands = runs(opaque(logo, 1))
     a = max(bands, key=lambda band: band[1] - band[0])
-    symbol = trim(logo.crop((0, a[0], logo.width, a[1])))
-    white = [("#383888", "#FFFFFF")]
-    return logo, recolour(logo, white, 80), recolour(symbol, white, 80)
+    symbol = logo.crop((0, a[0], logo.width, a[1]))
+    return logo, plated(logo, 0.06), plated(symbol, 0.08)
 
 
 TEAMS = {f.__name__: f for f in (mclaren, ferrari, williams, benetton, tyrrell, lotus, leytonhouse, larrousse,
