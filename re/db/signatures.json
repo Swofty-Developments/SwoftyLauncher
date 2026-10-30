@@ -76809,7 +76809,7 @@
    ]
   },
   {
-   "id": "game.pit_lane_put_vehicle_in_garage",
+   "id": "game.pit_lane_put_vehicle_in_pit_box",
    "section": ".xtls",
    "pattern": "41 56 56 57 53 48 83 EC 28 89 D3 48 89 CE 41 BE 0D 00 00 00",
    "match": "0x1434d1260",
@@ -76820,7 +76820,7 @@
    "target": "0x1434d1260",
    "kind": "func_start",
    "names": [
-    "Game_PitLane_PutVehicleInGarage"
+    "Game_PitLane_PutVehicleInPitBox"
    ],
    "verified": [
     {
