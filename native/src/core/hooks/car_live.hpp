@@ -30,13 +30,20 @@ constexpr uintptr_t ENGINE = 0x530, STEERING = 0x560, GEARBOX = 0x538,
 
 enum class Kind { plain, obf };
 
+// What set re-runs after the write so the game's derived copy follows: the engine's derived values
+// (Car_Engine_ComputeDerived_Thunk) or the gearbox's ratio table (Car_Tuning_SetFinalDrive with 0x20|0x2000, which
+// leaves the current gear alone; 0x200 would shift to neutral).
+enum class Rederive { none, engine, gearbox };
+constexpr uintptr_t GEARBOX_USE_SETUP_RATIOS = 0x540;
+constexpr uint32_t GEARBOX_REBUILD = 0x2020;
+
 struct Field {
     uint32_t id;
     const char *name;
     uintptr_t system, offset;
     Kind kind;
     float lo, hi;
-    bool derived = false; // set re-runs the engine's derived values (Env::engine_derived)
+    Rederive rederive = Rederive::none;
 };
 
 inline constexpr float BIG = 1e9f;
@@ -68,7 +75,18 @@ inline constexpr Field FIELDS[] = {
      Kind::plain, 0, BIG},
     {SWOFTY_CAR_SUSP_ANGULAR_FRACTURE_LIMIT, "f1_suspension_damage.angular_fracture_limit", SUSPENSION_DAMAGE, 0x7c,
      Kind::plain, 0, BIG},
-    {SWOFTY_CAR_ENGINE_LIMITER, "engine.limiter_rotation_rate", ENGINE, 0x8b0, Kind::obf, 100, 2500, true},
+    {SWOFTY_CAR_ENGINE_LIMITER, "engine.limiter_rotation_rate", ENGINE, 0x8b0, Kind::obf, 100, 2500, Rederive::engine},
+    {SWOFTY_CAR_FINAL_DRIVE, "gearbox.final_drive_ratio", GEARBOX, 0x28, Kind::obf, 1, 20, Rederive::gearbox},
+    // Ratios R, N, 1st..9th are CarObfFloat pairs at +0x38 stride 0x10: 1st is +0x58.
+    {SWOFTY_CAR_GEAR_RATIO_1, "gearbox.gear_ratio_1", GEARBOX, 0x58, Kind::obf, 0.1f, 20, Rederive::gearbox},
+    {SWOFTY_CAR_GEAR_RATIO_1 + 1, "gearbox.gear_ratio_2", GEARBOX, 0x68, Kind::obf, 0.1f, 20, Rederive::gearbox},
+    {SWOFTY_CAR_GEAR_RATIO_1 + 2, "gearbox.gear_ratio_3", GEARBOX, 0x78, Kind::obf, 0.1f, 20, Rederive::gearbox},
+    {SWOFTY_CAR_GEAR_RATIO_1 + 3, "gearbox.gear_ratio_4", GEARBOX, 0x88, Kind::obf, 0.1f, 20, Rederive::gearbox},
+    {SWOFTY_CAR_GEAR_RATIO_1 + 4, "gearbox.gear_ratio_5", GEARBOX, 0x98, Kind::obf, 0.1f, 20, Rederive::gearbox},
+    {SWOFTY_CAR_GEAR_RATIO_1 + 5, "gearbox.gear_ratio_6", GEARBOX, 0xa8, Kind::obf, 0.1f, 20, Rederive::gearbox},
+    {SWOFTY_CAR_GEAR_RATIO_1 + 6, "gearbox.gear_ratio_7", GEARBOX, 0xb8, Kind::obf, 0.1f, 20, Rederive::gearbox},
+    {SWOFTY_CAR_GEAR_RATIO_1 + 7, "gearbox.gear_ratio_8", GEARBOX, 0xc8, Kind::obf, 0.1f, 20, Rederive::gearbox},
+    {SWOFTY_CAR_GEAR_RATIO_1 + 8, "gearbox.gear_ratio_9", GEARBOX, 0xd8, Kind::obf, 0.1f, 20, Rederive::gearbox},
 };
 
 inline const Field *field(uint32_t id)
@@ -85,6 +103,7 @@ struct Env {
     std::function<bool()> flow_thread;
     std::function<bool()> enabled;
     std::function<void(uintptr_t engine)> engine_derived;
+    std::function<void(uintptr_t gearbox, uint32_t flags)> gearbox_reset;
     uintptr_t table = 0, count = 0;
 };
 
@@ -198,7 +217,13 @@ template <class Tag> struct Ops {
             return r;
         if (int r = system_at(car, *f, sys); r != SWOFTY_ASSET_OK)
             return r;
-        if (f->derived && !env.engine_derived)
+        if ((f->rederive == Rederive::engine && !env.engine_derived) ||
+            (f->rederive == Rederive::gearbox && !env.gearbox_reset))
+            return SWOFTY_ASSET_UNAVAILABLE;
+        // With setup ratios on, the gearbox builds its table from the setup and ignores the handling ratios.
+        uint8_t setup_ratios = 0;
+        if (f->rederive == Rederive::gearbox &&
+            (!rd(sys + GEARBOX_USE_SETUP_RATIOS, setup_ratios) || setup_ratios))
             return SWOFTY_ASSET_UNAVAILABLE;
         if (id == SWOFTY_CAR_FUEL_MASS) {
             float capacity = 0;
@@ -212,8 +237,10 @@ template <class Tag> struct Ops {
         bits ^= key;
         if (!env.write || !env.write(sys + f->offset, &bits, 4))
             return SWOFTY_ASSET_LATE;
-        if (f->derived)
+        if (f->rederive == Rederive::engine)
             env.engine_derived(sys);
+        else if (f->rederive == Rederive::gearbox)
+            env.gearbox_reset(sys, GEARBOX_REBUILD);
         return SWOFTY_ASSET_OK;
     }
 

@@ -263,12 +263,47 @@ static void engine_limiter()
            "a limiter outside 100..2500 rad/s is invalid and derives nothing");
 }
 
+static void gear_ratios()
+{
+    build_world();
+    put_obf(gearbox[0], 0x28, 4.9f, 0x0f0f0f0fu);
+    put_obf(gearbox[0], 0x78, 2.1f, 0x12121212u);
+    Ops::bind(make_env());
+    float v = 0;
+    expect(Ops::op_get(0, nullptr, SWOFTY_CAR_GEAR_RATIO_1 + 2, &v) == SWOFTY_ASSET_OK && v == 2.1f &&
+               Ops::op_get(0, nullptr, SWOFTY_CAR_FINAL_DRIVE, &v) == SWOFTY_ASSET_OK && v == 4.9f,
+           "3rd gear (+0x78) and the final drive (+0x28) decode");
+    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_GEAR_RATIO_1 + 2, 2.3f) == SWOFTY_ASSET_UNAVAILABLE,
+           "without the gearbox reset the ratios are unavailable");
+    static uintptr_t reset_on = 0;
+    static uint32_t reset_flags = 0;
+    cl::Env e = make_env();
+    e.gearbox_reset = [](uintptr_t gb, uint32_t flags) {
+        reset_on = gb;
+        reset_flags = flags;
+    };
+    Ops::bind(std::move(e));
+    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_GEAR_RATIO_1 + 2, 2.3f) == SWOFTY_ASSET_OK &&
+               (at<uint32_t>(gearbox[0], 0x78) ^ 0x12121212u) == bits(2.3f) &&
+               reset_on == reinterpret_cast<uintptr_t>(gearbox[0]) && reset_flags == 0x2020,
+           "set writes the ratio under its key and rebuilds the table with 0x20|0x2000 (no neutral)");
+    reset_on = 0;
+    gearbox[0][cl::GEARBOX_USE_SETUP_RATIOS] = 1;
+    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_FINAL_DRIVE, 5.0f) == SWOFTY_ASSET_UNAVAILABLE && !reset_on &&
+               (at<uint32_t>(gearbox[0], 0x28) ^ 0x0f0f0f0fu) == bits(4.9f),
+           "with setup ratios on the handling ratios would be ignored: unavailable, nothing written");
+    gearbox[0][cl::GEARBOX_USE_SETUP_RATIOS] = 0;
+    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_GEAR_RATIO_1, 0.0f) == SWOFTY_ASSET_INVALID,
+           "a zero ratio is invalid");
+}
+
 int main()
 {
     core_ops();
     sdk_side();
     pending_queue();
     engine_limiter();
+    gear_ratios();
     if (fails) {
         printf("car_live_test: %d failure(s)\n", fails);
         return 1;

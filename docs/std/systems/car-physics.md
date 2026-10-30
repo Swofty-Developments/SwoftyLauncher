@@ -147,6 +147,7 @@ for (cars::live::Car &car : cars::live::cars()) {
 | `wing_speed_threshold`, `wing_damage_scale`, `wing_chassis_damage_multiple`, `wing_side_detach_scale`, `wing_full_detach_scale` | F1WingDamage | 0 or more | next hit |
 | `susp_speed_threshold`, `susp_front_damage_scale`, `susp_rear_damage_scale`, `susp_wheel_detach_scale`, `susp_parts_detach_scale`, `susp_linear_fracture_limit`, `susp_angular_fracture_limit` | F1SuspensionDamage | 0 or more | next hit |
 | `engine_limiter` | Engine / LimiterRotationRate (rad/s; Ferrari 2025 1371.8 = 13100 rpm) | 100 .. 2500 | next physics step: `set` also re-runs the engine's derived values, so the rev limiter follows (times the fuel mode's revs scale) |
+| `final_drive`, `gear_ratio_1` .. `gear_ratio_9` | GearBox / FinalDriveRatio and the ratios of 1st..9th | 1 .. 20 (final drive), 0.1 .. 20 (ratios) | next physics step: `set` also rebuilds the gearbox's ratio table without changing gear; `Result::unavailable` while the car runs setup ratios, and until the core can resolve `Car_Tuning_SetFinalDrive` |
 
 A car's index is the game's vehicle id: dense from 0 in the order the cars were built, the safety car included. A `Car` from `cars()` also carries the game's car, and a call on it answers `Result::late` once that car is gone from its slot (the game moves its last car into a destroyed car's slot). `set` runs on the game's flow thread, so call it from a frame, setting or event handler; from another thread it answers `Result::late`. The values are read from the build the core's field table was mapped on: on any other build of the game `cars::live::available()` is false and `cars()` is empty.
 
@@ -167,7 +168,7 @@ events::on<cars::events::Reset>().after([apply](cars::events::Reset &r, const ev
 
 `Reset::upgrade` is always false from the core: the R&D upgrade replay doesn't go through this reset.
 
-Still to come: the part accessors (`car.engine()`, `car.ers()`, `car.f1_aero()` and the rest), the car's vehicle, team and driver, and the other values the game derives (engine power and torque, gear tables, mass and inertia). Until then the part accessors hold your values in the addon and the core applies nothing from them.
+Still to come: the part accessors (`car.engine()`, `car.ers()`, `car.f1_aero()` and the rest), the car's vehicle, team and driver, and the other values the game derives (engine power and torque, mass and inertia). Until then the part accessors hold your values in the addon and the core applies nothing from them.
 
 ## R&D upgrades
 

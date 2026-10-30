@@ -90,6 +90,12 @@ void setup()
             };
         else
             swofty::log("[cars] engine_limiter off: Car_Engine_ComputeDerived_Thunk does not resolve");
+        if (uintptr_t fn = swofty::api->resolve("Car_Tuning_SetFinalDrive"))
+            e.gearbox_reset = [fn](uintptr_t gearbox, uint32_t flags) {
+                reinterpret_cast<void (*)(void *, uint32_t)>(fn)(reinterpret_cast<void *>(gearbox), flags);
+            };
+        else
+            swofty::log("[cars] final_drive and gear ratios off: Car_Tuning_SetFinalDrive does not resolve");
     }
     Ops::bind(std::move(e));
     const SwoftyEvents *ev = runtime::events_table();

@@ -266,6 +266,16 @@ enum class Field : uint32_t {
     susp_linear_fracture_limit = SWOFTY_CAR_SUSP_LINEAR_FRACTURE_LIMIT,
     susp_angular_fracture_limit = SWOFTY_CAR_SUSP_ANGULAR_FRACTURE_LIMIT,
     engine_limiter = SWOFTY_CAR_ENGINE_LIMITER,                // Engine/LimiterRotationRate (rad/s); the core re-runs the derived limiter
+    final_drive = SWOFTY_CAR_FINAL_DRIVE,                      // GearBox/FinalDriveRatio; the core rebuilds the ratio table
+    gear_ratio_1 = SWOFTY_CAR_GEAR_RATIO_1,                    // GearBox ratio of 1st .. 9th; the same rebuild
+    gear_ratio_2 = SWOFTY_CAR_GEAR_RATIO_1 + 1,
+    gear_ratio_3 = SWOFTY_CAR_GEAR_RATIO_1 + 2,
+    gear_ratio_4 = SWOFTY_CAR_GEAR_RATIO_1 + 3,
+    gear_ratio_5 = SWOFTY_CAR_GEAR_RATIO_1 + 4,
+    gear_ratio_6 = SWOFTY_CAR_GEAR_RATIO_1 + 5,
+    gear_ratio_7 = SWOFTY_CAR_GEAR_RATIO_1 + 6,
+    gear_ratio_8 = SWOFTY_CAR_GEAR_RATIO_1 + 7,
+    gear_ratio_9 = SWOFTY_CAR_GEAR_RATIO_1 + 8,
 };
 
 struct AeroScales {

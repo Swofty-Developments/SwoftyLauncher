@@ -905,7 +905,10 @@ typedef struct SwoftySessionOps {
    only on the game's flow thread (else SWOFTY_ASSET_LATE), and the game reads it on its next use; the game
    overwrites it when it rebuilds the car or applies a setup (differential). SWOFTY_CAR_ENGINE_LIMITER is the
    handling value (rad/s); set also re-runs the engine's derived values (Car_Engine_ComputeDerived_Thunk), and
-   answers SWOFTY_ASSET_UNAVAILABLE without writing when that function does not resolve. */
+   answers SWOFTY_ASSET_UNAVAILABLE without writing when that function does not resolve. SWOFTY_CAR_FINAL_DRIVE and
+   SWOFTY_CAR_GEAR_RATIO_1 + n (handling values) rebuild the gearbox ratio table after the write
+   (Car_Tuning_SetFinalDrive 0x20|0x2000, no gear change); SWOFTY_ASSET_UNAVAILABLE when that function does not
+   resolve or the gearbox builds its table from setup ratios. */
 #define SWOFTY_CAR_OPS_VERSION 1
 
 #define SWOFTY_CAR_STEERING_LOCK 1u
@@ -927,6 +930,8 @@ typedef struct SwoftySessionOps {
 #define SWOFTY_CAR_SUSP_LINEAR_FRACTURE_LIMIT 17u
 #define SWOFTY_CAR_SUSP_ANGULAR_FRACTURE_LIMIT 18u
 #define SWOFTY_CAR_ENGINE_LIMITER 19u
+#define SWOFTY_CAR_FINAL_DRIVE 20u
+#define SWOFTY_CAR_GEAR_RATIO_1 21u /* 1st; 2nd..9th are 22u..29u */
 
 typedef struct SwoftyCarOps {
     uint32_t version;
