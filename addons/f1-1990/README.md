@@ -6,6 +6,14 @@ Adds a 1990 Driver Career next to the 2025 and 2026 ones. 1990 careers live in t
 
 The 1990 teams (`<team>_1990`), drivers (`f1990_<driver>`), their looks, holders and entrants, and the entrant lists `f1_1990`, `f1_1990_driver_pool` and `f1_career_1990` are new rows; no 2025 or 2026 row changes. The **Cars** setting (`cars`) is 22 (default: the 11 strongest teams) or 26 (adds Larrousse and Dallara; needs 26-car track layers). Every 1990 driver wears his team's 1990 suit and gloves (`registry/kit.json`, `db/kit.json`, `tools/kit.py`): 13 new suit and gloves rows with their own archives, worn only by the 1990 looks and team kits. See `tools/README.md`.
 
+### Faces (faces/, db/faces.json, tools/faces.py)
+
+A driver with a face in `faces/faces.json` wears his own head, `f90_<driver>`: a stock scanned head (`base`) with the face map from the developer's face zip. Nigel Mansell's is on `felipe_massa`. The head row is a new row copied from `male_ls222`, and only the driver's 1990 row (`f1990_<driver>`) wears it. The archives `faces/heads/f90_<driver>.erp` and `faces/morph_poses/f90_<driver>.erp` are build output (not committed). A new face zip in the same format becomes a head with:
+
+```sh
+python3 addons/f1-1990/tools/faces.py ~/Downloads/<driver>.zip [--base <scanned head>]
+```
+
 ## Front end and tracks (erp/frontend.json, erp/badges.json, erp/hq_logos.json, erp/tracks.json, art/logos/, tools/frontend.py, tools/badges.py, tools/logo_art.py, tools/hq_logos.py, tools/tracks.py)
 
 The 1990 rows get their own Driver Select and Team Select backdrop names and their period team logos, added next to the stock art, and the `f1_1990` setup mode loads its own track worlds (26-car garages and grid slots when `cars` is 26). See `tools/README.md`.

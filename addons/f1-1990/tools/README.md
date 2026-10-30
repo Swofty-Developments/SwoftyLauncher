@@ -128,6 +128,26 @@ python3 addons/f1-1990/tools/kit.py --game <F1 25> [--sheet <png>] [--teams mcla
 | `registry/kit.json` | a `suit` and a `gloves` record per team (`kit_<team>`): `label` the archive label, `archive`, `from` `game/2026-williams`, `team` the 2026 donor team, four colours. The core copies the `2026-williams` rows with ids above the stock ones and gives both one asset group, `team_livery/<label>/<label>`, listing the `2026-williams` archive first |
 | `db/kit.json` | `suit` and `gloves` of every 1990 look `f1990-<team>_<driver>` (31) and team kit `2026-f1990_<team>` (13; Larrousse and Dallara with `cars` = 26) set to the team's label |
 
+## faces.py
+
+Turns face zips into driver heads and rebuilds every face of `faces/faces.json`. A zip holds `<driver>/faces_entry.json` (`source`, `mipmaps`, `base`, `code`; `<...>` placeholders are allowed) and `<driver>_head_d.tga.mipmaps` (BC1 levels 2048 to 256). Needs Pillow, numpy and zstd; uses Classic Seasons' `heads.py`, `bcn.py` and `head_sheet.py`.
+
+```sh
+python3 addons/f1-1990/tools/faces.py ~/Downloads/<driver>.zip [--base <head>] [--game <F1 25>]
+python3 addons/f1-1990/tools/faces.py              # rebuild every face from faces/src/
+python3 addons/f1-1990/tools/faces.py --bases      # scanned heads whose hair is painted from the face map
+```
+
+| Part | What |
+|---|---|
+| `faces/faces.json` | per driver: `source` (the zip), `mipmaps` (`src/<driver>_head_d.tga.mipmaps`), `base`, `code`, `label` (`f90_<driver>`). `base` is `--base`, else the zip's, else the recorded one, else `felipe_massa`; it must be a scanned head under `heads/male_driver/`. `code` is `f90_<driver>` cut or padded with `_` to the base's length |
+| `faces/src/` | the zip's face map and preview, and `<driver>_sheet.png` (base face map, new face map, zip preview); not committed |
+| `faces/heads/<label>.erp`, `faces/morph_poses/<label>.erp` | both archives of the base, `base` renamed byte for byte to `code`, the head_d surface replaced by the face map with all 10 levels and no sidecar; not committed |
+| `faces/assets.json` | `file.put` of both archives and `group.register` of their groups, with `lando_norris`'s as templates |
+| `db/faces.json` | an add-row of `<label>` from `male_ls222` (the archive's `model_path`, `has_morph_data` True, `available_for_customisation` False) and `head` of `f1990_<driver>` set to `<label>`, with the driver row's `when` gate. grid.py takes the same label from `faces/faces.json` |
+
+A base without a `<head>_hair.idf` hair mesh paints its hair from the face map (its hair cap uses head_d). One with a hair mesh keeps its own hairstyle and hair colour.
+
 ## frontend.py
 
 Writes `erp/frontend.json` and `erp/frontend/`: the Driver Select and Team Select backdrop names for the 1990 rows, added to `main_front_end.erp` as new resources. The backdrop is a texture picked by material context, the driver or team row label (`mfe_2025_main_menu_driver_select_name.emb?context=<label>`, `…vehicle_select_name.emb?context=<label>`). Per row: a texture `f1_drivername_f1990_d_NNN` / `f1_teamname_f1990_NN` (BC7, the template's size and mip layout, loose top mips under `names/f1990_drv_names~…` / `names/f1990_tmnames~…`), its SRV, a material and the context, each a copy of a stock one (`sonny_hayes`, `mercedes`) with the name swapped for one of the same length. Needs Pillow and lz4 (`nix-shell -p "python3.withPackages (ps: [ ps.pillow ps.lz4 ps.numpy ])"`) and rnd-tyres-thermal's `bc7enc.py`.
