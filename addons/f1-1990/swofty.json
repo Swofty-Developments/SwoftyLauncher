@@ -79,6 +79,11 @@
       "binds": "native"
     },
     {
+      "id": "player_tyre_supplier", "type": "toggle", "label": "Tyre supplier from the allocation choice", "default": true,
+      "description": "In a 1990 weekend the Tyre Allocation choice picks your team's supplier: Goodyear, Pirelli or 1990 Supplier (the team's own). Both team cars switch at the next session start. Other teams keep theirs.",
+      "binds": "native"
+    },
+    {
       "id": "qualifiers_quali_only", "type": "toggle", "label": "Qualifying tyres in qualifying only", "default": true,
       "description": "At the start of a 1990 race, every car hands back its unused qualifying tyre sets, so the race runs on race tyres as in 1990.",
       "binds": "native"
@@ -120,7 +125,7 @@
       "id": "soft_sets",
       "type": "slider",
       "label": "Race tyre sets per session",
-      "description": "Soft race sets, and as many race sets, for practice 1, practice 2 and the race of a 1990 weekend (Balanced allocation; Softer and Harder move one set). At most 3: 9 usable sets of a compound.",
+      "description": "Soft race sets, and as many race sets, for practice 1, practice 2 and the race of a 1990 weekend. At most 3: a car holds at most 9 usable sets of one compound.",
       "min": 1,
       "max": 3,
       "step": 1,
@@ -134,7 +139,7 @@
     },
     {
       "id": "tyre_supplier", "type": "choice", "label": "Tyre supplier", "default": "historical",
-      "description": "1990: each team on its 1990 supplier (Pirelli: Tyrrell, Minardi, Brabham, Dallara). Goodyear lasts longer; Pirelli has a quicker peak and wears sooner. All Goodyear or All Pirelli: every team.",
+      "description": "1990: each team on its 1990 supplier (Pirelli: Tyrrell, Minardi, Brabham, Dallara); the player's team follows its Tyre Allocation choice. Goodyear lasts longer, Pirelli peaks quicker. All Goodyear/Pirelli: every car.",
       "values": [
         { "value": "historical", "label": "1990 suppliers" }, { "value": "goodyear", "label": "All Goodyear" },
         { "value": "pirelli", "label": "All Pirelli" }
@@ -214,7 +219,8 @@
       "tyres/compounds.json", "carpack/assets/cars.json", "carpack/assets/ai.json"],
     "erp": ["erp/portrait.json", "erp/tracks.json", "erp/frontend.json", "erp/badges.json", "erp/tyre_icons.json", "erp/hq_logos.json", "erp/ui26.json", "erp/wizard.json", "erp/rnd_look.json", "erp/numbers.json", "erp/crew.json"],
     "native": [
-      { "dll": "native/f1_1990.dll" }, { "dll": "native/f1_1990_tyres.dll" }, { "dll": "native/f1_1990_tyreclass.dll" },
+      { "dll": "native/f1_1990.dll" }, { "dll": "native/f1_1990_tyres.dll" },
+      { "dll": "native/f1_1990_brand.dll", "files": ["data/tyre-brand-strings.json"] }, { "dll": "native/f1_1990_tyreclass.dll" },
       { "dll": "native/f1_1990_replay.dll" }, { "dll": "native/f1_1990_ui.dll" },
       { "dll": "native/f1_1990_voice.dll", "files": ["data/flavio-strings.json"] },
       { "dll": "native/f1_1990_bspec.dll" },

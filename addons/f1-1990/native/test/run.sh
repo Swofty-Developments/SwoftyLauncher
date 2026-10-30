@@ -8,6 +8,8 @@ ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/contract_target_te
 ../build/contract_target_test
 ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/fq_tyres_test fq_tyres_test.cpp
 ../build/fq_tyres_test
+${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/tyre_brand_test tyre_brand_test.cpp
+../build/tyre_brand_test
 ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -I../../../../packages/sdk/include -o ../build/profile_test profile_test.cpp
 ../build/profile_test
 ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/tile_logic_test tile_logic_test.cpp
@@ -16,7 +18,7 @@ ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/speech_line_test s
 ../build/speech_line_test
 ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/json_strings_test json_strings_test.cpp
 ../build/json_strings_test ../../data/flavio-strings.json ../../data/rnd-art.json ../../data/rnd-strings.json ../../data/rnd-look.json \
-    ../../data/session-strings.json ../../data/pu-strings.json
+    ../../data/session-strings.json ../../data/pu-strings.json ../../data/tyre-brand-strings.json
 ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/character_ref_test character_ref_test.cpp
 ../build/character_ref_test
 ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/content_tabs_test content_tabs_test.cpp

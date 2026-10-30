@@ -29,7 +29,6 @@ VISUAL_STAT_IDS = {"Supersoft_f1_1990": "28", "Ultrasoft_f1_1990": "29", "Soft_f
 ALLOCATION_STAT_ID = "14"
 PRESETS = {"softer": ("f1_1990_softer", "15"), "balanced": ("f1_1990", ALLOCATION_STAT_ID),
            "harder": ("f1_1990_harder", "16")}
-SOFT_SETS = (1, 2, 3)
 SLOT_COMPOUNDS = {"softer": "C4", "medium": "C5", "harder": "C3"}
 MANDATORY_STAT_ID = "8"
 STANDINGS_STAT_ID = "15"
@@ -113,8 +112,8 @@ ULTRASOFT = {
 }
 TYRE_TEXT = {
     "historical": {
-        "soft": ("SOFT RACE", "Soft race tyre", "Goodyear D or Pirelli soft, each team on its 1990 supplier. Quicker than the race tyre, wears sooner."),
-        "race": ("RACE", "Race tyre", "Goodyear C or Pirelli medium, each team on its 1990 supplier. The tyre for a race distance."),
+        "soft": ("SOFT RACE", "Soft race tyre", "Goodyear D or Pirelli soft, by the team's supplier. Quicker than the race tyre, wears sooner."),
+        "race": ("RACE", "Race tyre", "Goodyear C or Pirelli medium, by the team's supplier. The tyre for a race distance."),
         "qualifier": ("QUALIFIER", "Qualifying tyre", "Goodyear or Pirelli qualifier. The most grip for a lap or two, then it is spent. Qualifying only."),
     },
     "goodyear": {
@@ -208,13 +207,6 @@ def points(values):
     return ",".join(str(v) for v in values + [0] * (POINT_SLOTS - len(values)))
 
 
-def race_sets(choice, n):
-    if choice == "balanced":
-        return n, n
-    more = min(3, n + 1)
-    return (more, 2 * n - more) if choice == "softer" else (2 * n - more, more)
-
-
 def presets(fields):
     mandatory = {"_metadata_": MANDATORY_NAME, "stat_id": MANDATORY_STAT_ID}
     for session in ALLOCATION_SESSIONS:
@@ -233,13 +225,6 @@ def presets(fields):
                 allocation[session] = NONE
         ops.append(add_row("tyres.allocation_tyre_presets",
                            "tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_=softer]", allocation))
-        if choice == "balanced":
-            continue
-        for n in SOFT_SETS:
-            soft, race = race_sets(choice, n)
-            for session in sorted(SOFT_SESSIONS):
-                ops.append(set_(f"tyres.allocation_tyre_presets.TyresPerSessionPreset[_metadata_={name}]", session,
-                                f"{soft},0,{race},0,0", when={"soft_sets": n}))
     ops.append(add_row("tyres.mandatory_tyre_presets",
                        "tyres.mandatory_tyre_presets.TyresPerSessionPreset[_metadata_=TyresPerSessionPreset]", mandatory))
     return ops

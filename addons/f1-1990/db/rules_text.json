@@ -29,7 +29,7 @@
    "op": "lang.set",
    "language": "*",
    "key": "lng_f1990_tyre_soft_desc",
-   "value": "Goodyear D or Pirelli soft, each team on its 1990 supplier. Quicker than the race tyre, wears sooner.",
+   "value": "Goodyear D or Pirelli soft, by the team's supplier. Quicker than the race tyre, wears sooner.",
    "when": {
     "tyre_supplier": "historical"
    }
@@ -56,7 +56,7 @@
    "op": "lang.set",
    "language": "*",
    "key": "lng_f1990_tyre_race_desc",
-   "value": "Goodyear C or Pirelli medium, each team on its 1990 supplier. The tyre for a race distance.",
+   "value": "Goodyear C or Pirelli medium, by the team's supplier. The tyre for a race distance.",
    "when": {
     "tyre_supplier": "historical"
    }

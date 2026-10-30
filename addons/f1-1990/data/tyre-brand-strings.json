@@ -1,0 +1,93 @@
+{
+ "scope": "f1_career_1990",
+ "strings": {
+  "bra": {
+   "lng_softer": "Pirelli",
+   "lng_balanced": "1990 Supplier",
+   "lng_harder": "Goodyear",
+   "lng_tyre_allocation_suggestion_softer": "Pirelli: a quicker peak over a lap, more wear over a race.",
+   "lng_tyre_allocation_suggestion_balanced": "Your team's 1990 tyre supplier.",
+   "lng_tyre_allocation_suggestion_harder": "Goodyear: more durable over a race distance."
+  },
+  "dut": {
+   "lng_softer": "Pirelli",
+   "lng_balanced": "1990 Supplier",
+   "lng_harder": "Goodyear",
+   "lng_tyre_allocation_suggestion_softer": "Pirelli: a quicker peak over a lap, more wear over a race.",
+   "lng_tyre_allocation_suggestion_balanced": "Your team's 1990 tyre supplier.",
+   "lng_tyre_allocation_suggestion_harder": "Goodyear: more durable over a race distance."
+  },
+  "eng": {
+   "lng_softer": "Pirelli",
+   "lng_balanced": "1990 Supplier",
+   "lng_harder": "Goodyear",
+   "lng_tyre_allocation_suggestion_softer": "Pirelli: a quicker peak over a lap, more wear over a race.",
+   "lng_tyre_allocation_suggestion_balanced": "Your team's 1990 tyre supplier.",
+   "lng_tyre_allocation_suggestion_harder": "Goodyear: more durable over a race distance."
+  },
+  "fre": {
+   "lng_softer": "Pirelli",
+   "lng_balanced": "1990 Supplier",
+   "lng_harder": "Goodyear",
+   "lng_tyre_allocation_suggestion_softer": "Pirelli: a quicker peak over a lap, more wear over a race.",
+   "lng_tyre_allocation_suggestion_balanced": "Your team's 1990 tyre supplier.",
+   "lng_tyre_allocation_suggestion_harder": "Goodyear: more durable over a race distance."
+  },
+  "ger": {
+   "lng_softer": "Pirelli",
+   "lng_balanced": "1990 Supplier",
+   "lng_harder": "Goodyear",
+   "lng_tyre_allocation_suggestion_softer": "Pirelli: a quicker peak over a lap, more wear over a race.",
+   "lng_tyre_allocation_suggestion_balanced": "Your team's 1990 tyre supplier.",
+   "lng_tyre_allocation_suggestion_harder": "Goodyear: more durable over a race distance."
+  },
+  "ita": {
+   "lng_softer": "Pirelli",
+   "lng_balanced": "1990 Supplier",
+   "lng_harder": "Goodyear",
+   "lng_tyre_allocation_suggestion_softer": "Pirelli: a quicker peak over a lap, more wear over a race.",
+   "lng_tyre_allocation_suggestion_balanced": "Your team's 1990 tyre supplier.",
+   "lng_tyre_allocation_suggestion_harder": "Goodyear: more durable over a race distance."
+  },
+  "jap": {
+   "lng_softer": "Pirelli",
+   "lng_balanced": "1990 Supplier",
+   "lng_harder": "Goodyear",
+   "lng_tyre_allocation_suggestion_softer": "Pirelli: a quicker peak over a lap, more wear over a race.",
+   "lng_tyre_allocation_suggestion_balanced": "Your team's 1990 tyre supplier.",
+   "lng_tyre_allocation_suggestion_harder": "Goodyear: more durable over a race distance."
+  },
+  "mex": {
+   "lng_softer": "Pirelli",
+   "lng_balanced": "1990 Supplier",
+   "lng_harder": "Goodyear",
+   "lng_tyre_allocation_suggestion_softer": "Pirelli: a quicker peak over a lap, more wear over a race.",
+   "lng_tyre_allocation_suggestion_balanced": "Your team's 1990 tyre supplier.",
+   "lng_tyre_allocation_suggestion_harder": "Goodyear: more durable over a race distance."
+  },
+  "pol": {
+   "lng_softer": "Pirelli",
+   "lng_balanced": "1990 Supplier",
+   "lng_harder": "Goodyear",
+   "lng_tyre_allocation_suggestion_softer": "Pirelli: a quicker peak over a lap, more wear over a race.",
+   "lng_tyre_allocation_suggestion_balanced": "Your team's 1990 tyre supplier.",
+   "lng_tyre_allocation_suggestion_harder": "Goodyear: more durable over a race distance."
+  },
+  "spa": {
+   "lng_softer": "Pirelli",
+   "lng_balanced": "1990 Supplier",
+   "lng_harder": "Goodyear",
+   "lng_tyre_allocation_suggestion_softer": "Pirelli: a quicker peak over a lap, more wear over a race.",
+   "lng_tyre_allocation_suggestion_balanced": "Your team's 1990 tyre supplier.",
+   "lng_tyre_allocation_suggestion_harder": "Goodyear: more durable over a race distance."
+  },
+  "zhs": {
+   "lng_softer": "Pirelli",
+   "lng_balanced": "1990 Supplier",
+   "lng_harder": "Goodyear",
+   "lng_tyre_allocation_suggestion_softer": "Pirelli: a quicker peak over a lap, more wear over a race.",
+   "lng_tyre_allocation_suggestion_balanced": "Your team's 1990 tyre supplier.",
+   "lng_tyre_allocation_suggestion_harder": "Goodyear: more durable over a race distance."
+  }
+ }
+}
