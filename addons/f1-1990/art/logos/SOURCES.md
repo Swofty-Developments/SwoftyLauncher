@@ -23,4 +23,4 @@ owners; F1 1990 uses them only to name the 1990 teams.
 
 The raster sources (Leyton House, Larrousse, Brabham, Scuderia Italia, BMS, Arrows) are traced to vectors per colour.
 Black or navy lettering turns white in the dark versions, the Ligier "AUTOMOBILES" line is left out, and "BRABHAM" under
-the Brabham "B" is set in DejaVu Sans Bold. The Leyton House mark is its wordmark set on two lines (LEYTON, HOUSE) in the team teal, without the plate.
+the Brabham "B" is set in DejaVu Sans Bold. The 1990 Lotus entry was Camel Team Lotus: its full logo is the roundel on a Camel yellow plate with CAMEL / TEAM LOTUS set in DejaVu Sans Bold (no Camel trademark artwork), and its mark the roundel alone. The Williams mark is the Canon Williams plate and the Tyrrell mark the full wordmark; neither team ran a separate symbol in 1990. The 1990 Arrows entry was Footwork Arrows Racing; the art is still the Arrows Grand Prix International mark (no Footwork source file here yet). The Leyton House mark is its wordmark set on two lines (LEYTON, HOUSE) in the team teal, without the plate.

@@ -198,6 +198,10 @@ class Surface:
         return place(Image.new("RGBA", (w, h), (0, 0, 0, 0)), fit(logo, min(w * 0.96, side), min(h * 0.96, side)),
                      w / 2, h / 2)
 
+    def render_menu(self, token, primary, w, h):
+        return place(Image.new("RGBA", (w, h), (0, 0, 0, 0)), fit(art(token, "lockup_dark"), w * 0.97, h * 0.8),
+                     w / 2, h / 2)
+
     def render_lockup(self, token, primary, w, h):
         bw, bh = self.template
         return place(Image.new("RGBA", (w, h), (0, 0, 0, 0)), fit(art(token, "lockup_dark"), bw * 1.1, bh * 1.1),

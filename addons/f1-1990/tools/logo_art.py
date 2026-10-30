@@ -159,9 +159,8 @@ def ferrari():
 def williams():
     plate = ["path1029", "path1031"]
     words = render(svg_text("williams.svg", drop=plate), LOCKUP_W)
-    ids = re.findall(r'<(?:path|rect)\b[^>]*\bid="([^"]+)"', svg_text("williams.svg"))
-    w = trim(render(svg_text("williams.svg", drop=[i for i in ids if i != "rect1128"]), LOCKUP_W * 4))
-    return render(svg_text("williams.svg"), LOCKUP_W), to_white(words, "#192c4e"), to_white(w, "#192c4e")
+    plated = render(svg_text("williams.svg"), LOCKUP_W)
+    return plated, to_white(words, "#192c4e"), plated
 
 
 def benetton():
@@ -173,14 +172,20 @@ def benetton():
 
 def tyrrell():
     light = render(svg_text("tyrrell.svg"), LOCKUP_W)
-    t = render(svg_text("tyrrell.svg", drop=["path18", "path20", "path22", "path24", "path26", "path28", "path32"]),
-               LOCKUP_W)
-    return light, to_white(light, "#2e3192"), to_white(t, "#2e3192")
+    return light, to_white(light, "#2e3192"), to_white(light, "#2e3192")
 
 
 def lotus():
-    roundel = render(svg_text("lotus.svg"), MARK_W)
-    return roundel, roundel, roundel
+    roundel = trim(render(svg_text("lotus.svg"), MARK_W))
+    navy, yellow = "#1F4E9C", "#F2C500"
+    h = roundel.height
+    words = stack(wordmark("CAMEL", navy, round(h * 0.3), 1.15), wordmark("TEAM LOTUS", navy, round(h * 0.2), 1.15),
+                  round(h * 0.09))
+    pad = round(h * 0.1)
+    plate = Image.new("RGBA", (pad * 3 + roundel.width + words.width, h + pad * 2), hexrgb(yellow) + (255,))
+    plate.alpha_composite(roundel, (pad, pad))
+    plate.alpha_composite(words, (pad * 2 + roundel.width, pad + (h - words.height) // 2))
+    return plate, plate, roundel
 
 
 def leytonhouse():
