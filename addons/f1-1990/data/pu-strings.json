@@ -5,51 +5,90 @@
    "lng_internal_combustion_engine_title": "Engine",
    "lng_internal_combustion_engine_description": "The race engine. It runs in practice and in the race; Qualifying 1 and Qualifying 2 run the qualifying engine.",
    "lng_motor_generator_unit_kinetic_title": "Qualifying Engine",
-   "lng_motor_generator_unit_kinetic_description": "A separate high-revving engine, fitted only for Qualifying 1 and Qualifying 2. The qualifying engine R&D lines add their power with it."
+   "lng_motor_generator_unit_kinetic_description": "A separate high-revving engine, fitted only for Qualifying 1 and Qualifying 2. The qualifying engine R&D lines add their power with it.",
+   "lng_energy_store_title": "Clutch",
+   "lng_energy_store_description": "The carbon clutch. It wears in every session of the weekend.",
+   "lng_turbo_charger_title": "Fuel System",
+   "lng_turbo_charger_description": "The fuel pump and injection. They wear in every session of the weekend.",
+   "lng_control_electronics_title": "Electronics",
+   "lng_control_electronics_description": "The engine management and ignition electronics. They wear in every session of the weekend."
   },
   "bra": {
    "lng_internal_combustion_engine_title": "Motor",
-   "lng_motor_generator_unit_kinetic_title": "Motor de Classificação"
+   "lng_motor_generator_unit_kinetic_title": "Motor de Classificação",
+   "lng_energy_store_title": "Embreagem",
+   "lng_turbo_charger_title": "Sistema de Combustível",
+   "lng_control_electronics_title": "Eletrônica"
   },
   "dut": {
    "lng_internal_combustion_engine_title": "Motor",
-   "lng_motor_generator_unit_kinetic_title": "Kwalificatiemotor"
+   "lng_motor_generator_unit_kinetic_title": "Kwalificatiemotor",
+   "lng_energy_store_title": "Koppeling",
+   "lng_turbo_charger_title": "Brandstofsysteem",
+   "lng_control_electronics_title": "Elektronica"
   },
   "eng": {
    "lng_internal_combustion_engine_title": "Engine",
-   "lng_motor_generator_unit_kinetic_title": "Qualifying Engine"
+   "lng_motor_generator_unit_kinetic_title": "Qualifying Engine",
+   "lng_energy_store_title": "Clutch",
+   "lng_turbo_charger_title": "Fuel System",
+   "lng_control_electronics_title": "Electronics"
   },
   "fre": {
    "lng_internal_combustion_engine_title": "Moteur",
-   "lng_motor_generator_unit_kinetic_title": "Moteur de qualification"
+   "lng_motor_generator_unit_kinetic_title": "Moteur de qualification",
+   "lng_energy_store_title": "Embrayage",
+   "lng_turbo_charger_title": "Système d'alimentation",
+   "lng_control_electronics_title": "Électronique"
   },
   "ger": {
    "lng_internal_combustion_engine_title": "Motor",
-   "lng_motor_generator_unit_kinetic_title": "Qualifikationsmotor"
+   "lng_motor_generator_unit_kinetic_title": "Qualifikationsmotor",
+   "lng_energy_store_title": "Kupplung",
+   "lng_turbo_charger_title": "Kraftstoffsystem",
+   "lng_control_electronics_title": "Elektronik"
   },
   "ita": {
    "lng_internal_combustion_engine_title": "Motore",
-   "lng_motor_generator_unit_kinetic_title": "Motore da qualifica"
+   "lng_motor_generator_unit_kinetic_title": "Motore da qualifica",
+   "lng_energy_store_title": "Frizione",
+   "lng_turbo_charger_title": "Impianto di alimentazione",
+   "lng_control_electronics_title": "Elettronica"
   },
   "jap": {
    "lng_internal_combustion_engine_title": "エンジン",
-   "lng_motor_generator_unit_kinetic_title": "予選用エンジン"
+   "lng_motor_generator_unit_kinetic_title": "予選用エンジン",
+   "lng_energy_store_title": "クラッチ",
+   "lng_turbo_charger_title": "燃料系統",
+   "lng_control_electronics_title": "エレクトロニクス"
   },
   "mex": {
    "lng_internal_combustion_engine_title": "Motor",
-   "lng_motor_generator_unit_kinetic_title": "Motor de clasificación"
+   "lng_motor_generator_unit_kinetic_title": "Motor de clasificación",
+   "lng_energy_store_title": "Embrague",
+   "lng_turbo_charger_title": "Sistema de combustible",
+   "lng_control_electronics_title": "Electrónica"
   },
   "pol": {
    "lng_internal_combustion_engine_title": "Silnik",
-   "lng_motor_generator_unit_kinetic_title": "Silnik kwalifikacyjny"
+   "lng_motor_generator_unit_kinetic_title": "Silnik kwalifikacyjny",
+   "lng_energy_store_title": "Sprzęgło",
+   "lng_turbo_charger_title": "Układ paliwowy",
+   "lng_control_electronics_title": "Elektronika"
   },
   "spa": {
    "lng_internal_combustion_engine_title": "Motor",
-   "lng_motor_generator_unit_kinetic_title": "Motor de clasificación"
+   "lng_motor_generator_unit_kinetic_title": "Motor de clasificación",
+   "lng_energy_store_title": "Embrague",
+   "lng_turbo_charger_title": "Sistema de combustible",
+   "lng_control_electronics_title": "Electrónica"
   },
   "zhs": {
    "lng_internal_combustion_engine_title": "引擎",
-   "lng_motor_generator_unit_kinetic_title": "排位赛引擎"
+   "lng_motor_generator_unit_kinetic_title": "排位赛引擎",
+   "lng_energy_store_title": "离合器",
+   "lng_turbo_charger_title": "燃油系统",
+   "lng_control_electronics_title": "电子系统"
   }
  }
 }

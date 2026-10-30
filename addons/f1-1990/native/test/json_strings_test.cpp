@@ -103,7 +103,7 @@ int main(int argc, char **argv)
         ss << f.rdbuf();
         bool ok = f1990::parse_string_leaves(ss.str(), leaves, &at);
         size_t n = 0;
-        const std::string *engine = nullptr, *quali = nullptr;
+        const std::string *engine = nullptr, *quali = nullptr, *clutch = nullptr;
         for (auto &l : leaves) {
             if (l.path.size() != 3 || l.path[0] != "strings")
                 continue;
@@ -112,11 +112,14 @@ int main(int argc, char **argv)
                 engine = &l.text;
             if (l.path[1] == "*" && l.path[2] == "lng_motor_generator_unit_kinetic_title")
                 quali = &l.text;
+            if (l.path[1] == "ger" && l.path[2] == "lng_energy_store_title")
+                clutch = &l.text;
         }
         check("parses data/pu-strings.json", ok && leaves[0].path[0] == "scope" && leaves[0].text == "f1_career_1990");
-        check("has 4 part strings for every language and 2 in each of the eleven", n == 4 + 22);
+        check("has 10 part strings for every language and 5 in each of the eleven", n == 10 + 55);
         check("names the ICE slot Engine", engine && *engine == "Engine");
         check("names the MGU-K slot Qualifying Engine", quali && *quali == "Qualifying Engine");
+        check("names the ES slot Kupplung in ger", clutch && *clutch == "Kupplung");
     }
 
     if (argc > 1) {

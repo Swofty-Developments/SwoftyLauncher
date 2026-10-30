@@ -30,7 +30,7 @@
     },
     {
       "id": "pu_parts_1990", "type": "toggle", "label": "1990 power-unit parts", "default": true,
-      "description": "In 1990 careers the power-unit screens list the Engine, the Qualifying Engine and the gearbox only. The qualifying engine wears in Qualifying 1 and 2, the race engine in every other session.",
+      "description": "In 1990 careers the power-unit screens list 1990 parts: Engine, Qualifying Engine, Clutch, Fuel System, Electronics and the gearbox. The qualifying engine wears in Qualifying 1 and 2 only.",
       "binds": "native"
     },
     {

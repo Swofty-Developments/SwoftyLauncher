@@ -128,26 +128,31 @@ It logs `[f1-1990] power unit: N vehicle(s) of the f1_1990 and f1_1990b packages
 
 ## Power-unit parts (`f1_1990_parts.dll`)
 
-A separate DLL; option `pu_parts_1990` (default on); ships `data/pu-strings.json` through its entry's `files`. While a 1990 career is loaded (`career.loaded` with data group `f1_career_1990`; `career.unloaded` or another career turns it off) the power-unit list of the garage monitor and the laptop shows three parts:
+A separate DLL; option `pu_parts_1990` (default on); ships `data/pu-strings.json` through its entry's `files`. While a 1990 career is loaded (`career.loaded` with data group `f1_career_1990`; `career.unloaded` or another career turns it off) the power-unit list of the garage monitor and the laptop shows six parts on the stock slots:
 
-| slot | stock part | 1990 part |
-|---|---|---|
-| 0 | ICE | Engine (the race engine) |
-| 1 | MGU-K | Qualifying Engine |
-| 6 | event gearbox | event gearbox |
+| slot | stock part | 1990 part | allocation | wear |
+|---|---|---|---|---|
+| 0 | ICE | Engine (the race engine) | 4 (the 2026 set's) | its own range, every session group but 1 and 2 |
+| 1 | MGU-K | Qualifying Engine | 3 (the 2026 set's) | its own range, session groups 1 and 2 only |
+| 3 | ES | Clutch | 6 | 1.2 x the Engine's range, every session |
+| 4 | TC | Fuel System | 5 | 0.9 x the Engine's range, every session |
+| 5 | CE | Electronics | 5 | 0.8 x the Engine's range, every session |
+| 6 | event gearbox | event gearbox | the 2026 set's | its own range, every session |
 
-MGU-H, ES, TC and CE (slots 2 to 5) have no row. Each slot keeps its own allocation from the season's component set (the 2026 set: 4 engines, 3 qualifying engines).
+MGU-H (slot 2) has no row and no wear; the 2026 component set the 1990 career runs on has no MGU-H config.
 
 | binding | address | use |
 |---|---|---|
-| `site_Sess_PuPanel_SlotHolder` | 0x141f50ecc | in the slot loop of `Sess_PuPanel_BuildComponents` (0x141f50910), `rax` = the slot's holder and `rbp` = the slot: for slots 2 to 5 `rax` becomes an empty holder (no parts) and the game adds no row for them. Rows keep their slot index (+0), which the fit-component handler 0x141f58a20 (fits the part, then refills the row) passes to the entry filler `Sess_PuPanel_FillComponent` (0x141f532b0) |
-| `Game_EngineMgmt_ApplySessionWear` | 0x1411d1560 | wrapped: for the call the holder wear range (+0x3c/+0x40) is 0 on every slot that does not run in the session and is put back after: the Qualifying Engine runs in session groups 1 (Qualifying) and 2 (SprintShootout), the Engine in every other session (and when the session is not known), the gearbox in all of them, slots 2 to 5 in none. The group is the weekend's current session (provider +0x270 vt +0x98, sessions +0x220, index +0x238) |
+| `site_Sess_PuPanel_SlotHolder` | 0x141f50ecc | in the slot loop of `Sess_PuPanel_BuildComponents` (0x141f50910), `rax` = the slot's holder, `rbp` = the slot and `rsi` = the view model: for slot 2 `rax` becomes an empty holder (no parts) and the game adds no row for it. Rows keep their slot index (+0), which the fit-component handler 0x141f58a20 (fits the part, then refills the row) passes to the entry filler `Sess_PuPanel_FillComponent` (0x141f532b0). The site also writes the allocations (below) through the view model's EngineManagementComponent (`rsi` +0x690) |
+| `Game_EngineMgmt_ApplySessionWear` | 0x1411d1560 | wrapped: writes the allocations, then for the call sets each holder's wear range (+0x3c/+0x40) as in the table (0 on a slot that does not run in the session; the Engine's range times the scale for the clutch, fuel system and electronics, read before any change) and puts the ranges back after. The group is the weekend's current session (provider +0x270 vt +0x98, sessions +0x220, index +0x238); an unknown session counts as a non-qualifying one |
 
-`data/pu-strings.json` `strings.<language>.<key>` are set through the core's runtime string overrides (API v8): `lng_internal_combustion_engine_title` Engine, `lng_motor_generator_unit_kinetic_title` Qualifying Engine and both descriptions (`*`, English), the two titles per language. The power-unit diagram beside the list still draws the hybrid parts, and a row highlights its stock slot there (the Qualifying Engine row the MGU-K).
+Allocations: the EngineManagementComponent's component sets (*(mgmt +0x340) +0x50..+0x58, 0x250 bytes each: season byte, then one 0x54-byte config per slot from +4, allocation u32 at +0x24) are its own copy of `engine_management.components`, built by 0x1411cb150 and freed with the component; the DLL writes the clutch, fuel system and electronics allocations into every set of the 1990 career's component. `Sess_PuPanel_FillComponent` and the new-part fit 0x1411d00e0 read the allocation from there.
+
+`data/pu-strings.json` `strings.<language>.<key>` are set through the core's runtime string overrides (API v8): the `_title` and `_description` keys of `lng_internal_combustion_engine`, `lng_motor_generator_unit_kinetic`, `lng_energy_store`, `lng_turbo_charger` and `lng_control_electronics` (`*`, English), the five titles per language. Only `Sess_PuPanel_FillComponent` reads those keys. The power-unit diagram beside the list still draws the hybrid parts and binds `components[0..6]` by row position.
 
 With `pu_rules_1990` on no part wears at all; the wear split applies with it off. The qualifying engine's power comes from the R&D qualifying lines (`f1_1990_quali.dll`); the handling files have one rev limit per engine for every session.
 
-It logs `[f1-1990] parts: 1990 career: engine, qualifying engine and gearbox only` / `no 1990 career: stock power-unit parts`, `set|cleared N part name string(s)`, `power-unit panel row N (<part>) hidden` (first 12) and `driver 0x… session group G: wear W on the race engine|qualifying engine and the gearbox; N slot(s) without wear` (first 16).
+It logs `[f1-1990] parts: 1990 career: engine, qualifying engine, clutch, fuel system, electronics and gearbox` / `no 1990 career: stock power-unit parts`, `set|cleared N part name string(s)`, `N allocation(s) set in N component set(s): clutch 6, fuel system 5, electronics 5` (first 8), `power-unit panel row 2 (MGU-H) hidden` (first 12) and `driver 0x… session group G: wear W on the race engine|qualifying engine, the clutch, fuel system, electronics (engine range A..B x 1.2 / 0.9 / 0.8) and the gearbox; N range(s) set` (first 16).
 
 ## Qualifying engine lines (`f1_1990_quali.dll`)
 
