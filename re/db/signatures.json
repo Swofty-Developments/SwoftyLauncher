@@ -60592,7 +60592,9 @@
      "how": "static"
     }
    ],
-   "used_by": []
+   "used_by": [
+    "addons/f1-1990/native/src/quali_laps.cpp"
+   ]
   },
   {
    "id": "game.pitlane_multiplayer_reset_to_track",
@@ -76804,6 +76806,32 @@
    ],
    "used_by": [
     "addons/f1-1990/native/src/pu_parts.cpp"
+   ]
+  },
+  {
+   "id": "game.pit_lane_put_vehicle_in_garage",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 89 D3 48 89 CE 41 BE 0D 00 00 00",
+   "match": "0x1434d1260",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1434d1260",
+   "kind": "func_start",
+   "names": [
+    "Game_PitLane_PutVehicleInGarage"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "qualilaps",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "addons/f1-1990/native/src/quali_laps.cpp"
    ]
   }
  ]
