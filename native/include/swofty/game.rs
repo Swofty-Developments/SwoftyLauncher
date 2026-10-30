@@ -2560,6 +2560,7 @@ pub type Sess_Issue_DriveThrough_t = unsafe extern "C" fn(rules: *mut c_void, in
 pub type Sess_Issue_TimePenalty_t =
     unsafe extern "C" fn(rules: *mut c_void, incident: *mut u8, reason: u32, seconds: u32);
 pub type Sess_Issue_Warning_t = unsafe extern "C" fn(rules: *mut c_void, incident: *mut u8, reason: u32);
+pub type Sess_PitStopUpdateJob_Update_t = unsafe extern "C" fn(job: *mut c_void);
 pub type Sess_PreRaceToRace_Update_t = unsafe extern "C" fn(state: *mut c_void, route: *mut u32) -> *mut u32;
 pub type Sess_PreRace_Update_t =
     unsafe extern "C" fn(state: *mut c_void, route: *mut u32, dt: f64) -> *mut u32;
@@ -3492,6 +3493,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_PitStopUpdateJob_Update: Binding = Binding {
+        id: "Sess_PitStopUpdateJob_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_PreRaceToRace_Update: Binding = Binding {
         id: "Sess_PreRaceToRace_Update",
         kind: "func",
@@ -3724,6 +3730,11 @@ pub mod bindings {
     };
     pub const g_Ne_LogGate: Binding = Binding {
         id: "g_Ne_LogGate",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const g_Ne_NameTable: Binding = Binding {
+        id: "g_Ne_NameTable",
         kind: "data",
         status: Status::Experimental,
     };
