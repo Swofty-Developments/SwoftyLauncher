@@ -81264,6 +81264,3045 @@
     }
    ],
    "used_by": []
+  },
+  {
+   "id": "game.steam_parse_price_overview",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 01 00 00 C5 79 29 84 24",
+   "match": "0x140796010",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140796010",
+   "kind": "func_start",
+   "names": [
+    "Game_Steam_ParsePriceOverview"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_on_result_get_calendar",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 F8 29 B4 24 10 01 00 00 48 89 D7 48 89 CE E8",
+   "match": "0x140b19c00",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140b19c00",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_OnResult_GetCalendar"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_on_result_get_career_backup_data",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 48 89 D7 48 89 CE E8",
+   "match": "0x1410a9310",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1410a9310",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_OnResult_GetCareerBackupData"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.livery_parse_decals_json",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 02 00 00 C5 F8 29 BC 24 F0 01 00 00 C5 F8 29 B4 24 E0 01 00 00 49 89 D4",
+   "match": "0x1414384e0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1414384e0",
+   "kind": "func_start",
+   "names": [
+    "Game_Livery_ParseDecalsJson"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_on_result_upgrade_card",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 48 89 D7 48 89 CE E8",
+   "match": "0x142694560",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142694560",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_OnResult_UpgradeCard"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_on_result_get_compendium_rewards",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 C5 F8 29 B4 24 60 01 00 00 48 89 D7 48",
+   "match": "0x1426cdec0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1426cdec0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_OnResult_GetCompendiumRewards"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.parse_event_restriction_json",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 89 94 24",
+   "match": "0x1427b80d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1427b80d0",
+   "kind": "func_start",
+   "names": [
+    "Game_Parse_EventRestrictionJson"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.parse_player_car_state_json",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 78 29 9C 24 50 01 00 00 C5 78 29 94 24 40 01 00 00 C5 78 29 8C 24 30 01 00 00 C5 78 29 84 24 20 01 00 00 C5 F8 29 BC 24 10 01 00 00 C5 F8 29 B4 24 00 01 00 00 49 89 D4",
+   "match": "0x1427bc450",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1427bc450",
+   "kind": "func_start",
+   "names": [
+    "Sess_Parse_PlayerCarStateJson"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.strategy_read_bool4_array_mask",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 38 4C 89 C3 48 89 D6 48 89 CF 49 BE",
+   "match": "0x14283c3a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14283c3a0",
+   "kind": "func_start",
+   "names": [
+    "Game_Strategy_ReadBool4ArrayMask"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_on_result_session_browser_get_session_by_i_d",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 C5 F8 29 B4 24 20 01 00 00 48 89 D7 48 89 CE E8",
+   "match": "0x1431e7a70",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1431e7a70",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_OnResult_SessionBrowserGetSessionByID"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.trophies_parse_awards_json",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 48 89 D6 48 8B",
+   "match": "0x143286ae0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143286ae0",
+   "kind": "func_start",
+   "names": [
+    "Game_Trophies_ParseAwardsJson"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.trophies_parse_award_entry",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 4C 89 4C 24 50 4C 89 44",
+   "match": "0x1434e15c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1434e15c0",
+   "kind": "func_start",
+   "names": [
+    "Game_Trophies_ParseAwardEntry"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.trophies_parse_season_loc_tag",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 D6 49 89 C8 49 BC",
+   "match": "0x1434ef600",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1434ef600",
+   "kind": "func_start",
+   "names": [
+    "Game_Trophies_ParseSeasonLocTag"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.account_fill_user_info_from_token",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 03 00 00 C5 F8 29 B4 24 70 03 00 00 4C 89 C6 89",
+   "match": "0x143fdf7b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143fdf7b0",
+   "kind": "func_start",
+   "names": [
+    "Game_Account_FillUserInfoFromToken"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.json_get_double",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 30 4C 89 C3 48 89 D6 48 89 CF 48 8D 54 24",
+   "match": "0x144434840",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144434840",
+   "kind": "func_start",
+   "names": [
+    "Ne_Json_GetDouble"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.json_get_float_array",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 4C 89 C3 48 89 D6 48 89 CF 49 BE FF FF FF FF FF FF 00 00 48 8D 54 24 20 4C 89 C1 49 89 F8 E8 ?? ?? ?? ?? 48 8B 43 08 4C 21 F0 8B 0B 48 C1 E1 05 48 01 C1 48 8B 44 24 20 48 39 C8 74 7F 66 83",
+   "match": "0x144434980",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144434980",
+   "kind": "func_start",
+   "names": [
+    "Ne_Json_GetFloatArray"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.json_get_float_array_nested",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 4C 89 C3 48 89 D6 48 89 CF 49 BE FF FF FF FF FF FF 00 00 48 8D 54 24 20 4C 89 C1 49 89 F8 E8 ?? ?? ?? ?? 48 8B 43 08 4C 21 F0 8B 0B 48 C1 E1 05 48 01 C1 48 8B 44 24 20 48 39 C8 0F 84",
+   "match": "0x144434ca0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144434ca0",
+   "kind": "func_start",
+   "names": [
+    "Ne_Json_GetFloatArrayNested"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.json_get_string",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 83 EC 30 4C 89 C6 49 89 D6 48 89 CB",
+   "match": "0x144435020",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144435020",
+   "kind": "func_start",
+   "names": [
+    "Ne_Json_GetString"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.json_get_object",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 30 4C 89 C3 48 89 D7 48 89 CE 48 8D 54 24",
+   "match": "0x144435180",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144435180",
+   "kind": "func_start",
+   "names": [
+    "Ne_Json_GetObject"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.json_parse_buffer",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 48 48 89 CE 48 C7 01 00 00 00 00",
+   "match": "0x144435250",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144435250",
+   "kind": "func_start",
+   "names": [
+    "Ne_Json_ParseBuffer"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.neos_signal_r_handle_start_response",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 01 00 00 48 85 D2 0F 84",
+   "match": "0x144444340",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144444340",
+   "kind": "func_start",
+   "names": [
+    "Game_Neos_SignalRHandleStartResponse"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.neos_signal_r_handle_completion",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 48 89 D7 48 89 CE 0F B6 81",
+   "match": "0x1444450e0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1444450e0",
+   "kind": "func_start",
+   "names": [
+    "Game_Neos_SignalRHandleCompletion"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.neos_signal_r_read_status_int",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 4C 89 C7 48 89 D3 31 D2",
+   "match": "0x144445db0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144445db0",
+   "kind": "func_start",
+   "names": [
+    "Game_Neos_SignalRReadStatusInt"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.neos_signal_r_parse_invocation",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4D 89 C7 48",
+   "match": "0x144446120",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144446120",
+   "kind": "func_start",
+   "names": [
+    "Game_Neos_SignalRParseInvocation"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.retrieve_consumable_entitlements_task_request_steam_prices",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 89 CE 48 8B 41 08 48",
+   "match": "0x1407938d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1407938d0",
+   "kind": "func_start",
+   "names": [
+    "Game_RetrieveConsumableEntitlementsTask_RequestSteamPrices"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_create_online_service_task",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 48 89 CE 48 8B 79 08 48 8B 07 BA A8",
+   "match": "0x14095d500",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14095d500",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_CreateOnlineServiceTask"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_create_get_c_c_leaderboard",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 40 48 89 D6 48 89 CF 4C 8D 49 50 48 8D 4C 24 30 4C 89 C2 E8 ?? ?? ?? ?? 48 8B 5C 24 38 44 8B 8B E8 01 00 00 8B 87 80 00 00 00",
+   "match": "0x140b250c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140b250c0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_Create_GetCCLeaderboard"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.career_online_doc_reset_after_sync",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 40 48 B8 12 00 00 00 86 00 00",
+   "match": "0x140fd04e0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140fd04e0",
+   "kind": "func_start",
+   "names": [
+    "Career_CareerOnlineDoc_ResetAfterSync"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_create_remove_member",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 40 48 89 D6 48 89 CF 4C 8D 49 50 48 8D 4C 24 30 4C 89 C2 E8 ?? ?? ?? ?? 48 8B 5C 24 38 44 8B 8B E8 01 00 00 8B 87 A0 00 00 00",
+   "match": "0x1410968e0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1410968e0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_Create_RemoveMember"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_tasksystem_create_task_ctor14336fad0",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 40 4C 89 C3 48 89 D6 49 89 CE 4C 8B 61 10 49 8B 04 24 BA D0 01 00",
+   "match": "0x14142f800",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14142f800",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTasksystem_CreateTask_Ctor14336fad0"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.online_career_on_first_request_result",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 48 89 CE 48 8D 42 08 80 BA 88 00 00 00 00 48 8D 0D ?? ?? ?? ?? 48 0F 45 C8 80 39 00 74",
+   "match": "0x1416d9760",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1416d9760",
+   "kind": "func_start",
+   "names": [
+    "Game_OnlineCareer_OnFirstRequestResult"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.online_career_on_second_request_result",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 30 48 89 CE 48 8D 42 08 80 BA 88 00 00 00 00 48 8D 0D ?? ?? ?? ?? 48 0F 45 C8 80 39",
+   "match": "0x1416d9fa0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1416d9fa0",
+   "kind": "func_start",
+   "names": [
+    "Game_OnlineCareer_OnSecondRequestResult"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.career_wizard_resolve_or_exit",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 70 48 89 CE 48 8B 89 78 02 00",
+   "match": "0x141a22ea0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141a22ea0",
+   "kind": "func_start",
+   "names": [
+    "Game_CareerWizard_ResolveOrExit"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_request_eula_task_or_notify",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 50 48 89 CE 48 8B 91 88 17 00",
+   "match": "0x141a6ff10",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141a6ff10",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_RequestEulaTaskOrNotify"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1_world_screen_v_m_update",
+   "section": ".xtls",
+   "pattern": "56 57 55 53 48 83 EC 78 48 89 CE 80 B9 D1 16 00",
+   "match": "0x141b1a2f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141b1a2f0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1WorldScreenVM_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.online_server_trigger_logout",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 38 48 8B 35 ?? ?? ?? ?? 48 85 F6",
+   "match": "0x141bb4490",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141bb4490",
+   "kind": "func_start",
+   "names": [
+    "Game_OnlineServer_TriggerLogout"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.pro_leagues_v_m_on_exit",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 48 89 CE 48 8B 81 00",
+   "match": "0x141d44ab0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141d44ab0",
+   "kind": "func_start",
+   "names": [
+    "Game_ProLeaguesVM_OnExit"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.pro_leagues_v_m_on_leagues_result",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC E8 00 00 00 48 89 CE C6",
+   "match": "0x141d476f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141d476f0",
+   "kind": "func_start",
+   "names": [
+    "Game_ProLeaguesVM_OnLeaguesResult"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.social_hub_friends_v_m_on_friend_selected",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 4C 89 84 24 88",
+   "match": "0x141dfc830",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141dfc830",
+   "kind": "func_start",
+   "names": [
+    "Game_SocialHubFriendsVM_OnFriendSelected"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.social_hub_friends_v_m_on_invite_result",
+   "section": ".xtls",
+   "pattern": "56 57 48 81 EC E8 00 00 00 48 89 D7 48 89 CE 48 8B 89 10 08",
+   "match": "0x141dfd200",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141dfd200",
+   "kind": "func_start",
+   "names": [
+    "Game_SocialHubFriendsVM_OnInviteResult"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_create_craft_blueprint",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 02 00 00 C5 F8 29 B4 24 E0 02 00 00 4D 89 C5 48",
+   "match": "0x1426153e0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1426153e0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_Create_CraftBlueprint"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_create_start_event",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 40 48 89 D6 48 89 CF 4C 8D 49 50 48 8D 4C 24 30 4C 89 C2 E8 ?? ?? ?? ?? 48 8B 5C 24 38 44 8B 8B E8 01 00 00 8B 87 C8 00 00 00",
+   "match": "0x14263e370",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14263e370",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_Create_StartEvent"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_create_complete_event",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 40 48 89 D6 48 89 CF 4C 8D 49 50 48 8D 4C 24 30 4C 89 C2 E8 ?? ?? ?? ?? 48 8B 5C 24 38 44 8B 8B E8 01 00 00 8B 87 28 01 00 00",
+   "match": "0x142648b90",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142648b90",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_Create_CompleteEvent"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_f1_world_task_update",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 03 00 00 C5 F8 29 B4 24 F0 02 00 00 48 89 CE 48 81 C1 98 00",
+   "match": "0x14273a580",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14273a580",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_F1WorldTask_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_f1_world_task_reset",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 CE C6 81 E8 02 00 00 00",
+   "match": "0x14273d530",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14273d530",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_F1WorldTask_Reset"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_f1_world_task_check_logout",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 40 48 89 CE 80 B9 E8 02 00 00 00 0F 84 ?? ?? ?? ?? 48 89 F1 E8",
+   "match": "0x14273d850",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14273d850",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_F1WorldTask_CheckLogout"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_f1_world_task_on_request_result",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 C5 F8 29 B4 24 90 01 00 00 4D 89 CE 44",
+   "match": "0x14273faa0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14273faa0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_F1WorldTask_OnRequestResult"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_f1_c_g_task_update",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 03 00 00 C5 F8 29 B4 24 30 03 00 00 48 89 CE 48",
+   "match": "0x14279fb20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14279fb20",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_F1CGTask_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_f1_c_g_task_reset",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 CE C6 81 78 02 00 00 00",
+   "match": "0x1427a13a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1427a13a0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_F1CGTask_Reset"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_f1_c_g_task_check_logout",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 40 48 89 CE 80 B9 78 02 00 00",
+   "match": "0x1427a16c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1427a16c0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_F1CGTask_CheckLogout"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_f1_c_g_task_on_request_result",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 4D 89 CE 44 89 44 24",
+   "match": "0x1427a1da0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1427a1da0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_F1CGTask_OnRequestResult"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1w_action_destroy_empty_action",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 59 58 48 85 DB 74 1F 4C 8B 76 50 4D 85 F6 74 16 48 8B 03 48 89 D9 31 D2 FF 10 49 8B 06 4C 89 F1 48 89 DA FF 50 38 48 8D 05",
+   "match": "0x1427c3800",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1427c3800",
+   "kind": "func_start",
+   "names": [
+    "Game_F1wAction_Destroy_EmptyAction"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_tasksystem_create_task_get_p_packages_data",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC A0 00 00 00 48 89 D6 48 89 CF 4C 8D 3D",
+   "match": "0x142b95820",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142b95820",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTasksystem_CreateTask_GetPPackagesData"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_tasksystem_create_task_purchase_v_i_p",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 50 4C 89 C7 48 89 D6 48 89 CB 48 8B 51 10",
+   "match": "0x142e67e80",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142e67e80",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTasksystem_CreateTask_PurchaseVIP"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_create_session_browser_search_sessions",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 03 00 00 C5 F8 29 B4 24 F0 02 00 00 4D 89 C4 48 89 D3 49 89",
+   "match": "0x1431daa00",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1431daa00",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_Create_SessionBrowserSearchSessions"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_create_http_request",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 4D 89 CE 45",
+   "match": "0x1432934a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432934a0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_CreateHttpRequest"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_task_spawn_child_vt1458323b0",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 C5 F8 29 74 24 50 4C 89 C3 48 89",
+   "match": "0x1432b19f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432b19f0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTask_SpawnChild_Vt1458323b0"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_task_on_result_set_finished_vt145832400",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 85 D2 0F 85 ?? ?? ?? ?? 48 89 CE 80 3D",
+   "match": "0x1432b1f70",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432b1f70",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTask_OnResultSetFinished_Vt145832400"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_task_register_entrant_vt1458323b0",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 01 00 00 48 89 CE 48 8B 41 38 48 8B",
+   "match": "0x1432b2150",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432b2150",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTask_RegisterEntrant_Vt1458323b0"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_task_on_join_failed_vt145832400",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 81 30 01 00 00",
+   "match": "0x1432b2870",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432b2870",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTask_OnJoinFailed_Vt145832400"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_destroy_online_service_task_base",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 80 3D ?? ?? ?? ?? 01 75 67 B8 3A 00",
+   "match": "0x1432b3a20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432b3a20",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_DestroyOnlineServiceTaskBase"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_tasksystem_create_task_vt14583c2a0",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 40 4C 89 C3 48 89 D6 49 89 CE 4C 8B 61 10 49 8B 04 24 BA 50 05 00",
+   "match": "0x1432bb100",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432bb100",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTasksystem_CreateTask_Vt14583c2a0"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_task_set_finished_release_ref",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 20 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 0F 85",
+   "match": "0x1432c1dd0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432c1dd0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTask_SetFinishedReleaseRef"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.online_subsystem_task_on_service_base_ctor",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 38 C5 F8 29 74 24 20 4C 89 C7 48",
+   "match": "0x1432c1ee0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432c1ee0",
+   "kind": "func_start",
+   "names": [
+    "Game_OnlineSubsystemTaskOnServiceBase_Ctor"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_tasksystem_create_task_vt145834f90",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 50 C5 F8 29 74 24 40 4C 89 C7 48 89 D6 48 89 CB 4C 8B 61 10 49 8B 04 24 BA 38",
+   "match": "0x1432c4640",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432c4640",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTasksystem_CreateTask_Vt145834f90"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_tasksystem_create_task_vt145835090",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 40 4C 89 C3 48 89 D6 49 89 CE 4C 8B 61 10 49 8B 04 24 BA E8 02 00",
+   "match": "0x1432c54d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432c54d0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTasksystem_CreateTask_Vt145835090"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_tasksystem_create_task_vt145835490",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 4C 89 C7 48 89 D6",
+   "match": "0x1432c56e0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432c56e0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTasksystem_CreateTask_Vt145835490"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_tasksystem_create_task_vt1458352e0",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 4C 89 C7 48 89 D6 48",
+   "match": "0x1432c5d20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432c5d20",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTasksystem_CreateTask_Vt1458352e0"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_tasksystem_create_task_vt145835780",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 50 C5 F8 29 74 24 40 4C 89 C7 48 89 D6 48 89 CB 4C 8B 61 10 49 8B 04 24 BA E8",
+   "match": "0x1432c6200",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432c6200",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTasksystem_CreateTask_Vt145835780"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_task_finish_if_no_pending_get_friends_list",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 8B 81 20 01 00 00 48 3B 81",
+   "match": "0x1432c74a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432c74a0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTask_FinishIfNoPending_GetFriendsList"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_task_resolve_names_get_friends_list",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 80 B9 A2 00 00",
+   "match": "0x1432c7590",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432c7590",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTask_ResolveNames_GetFriendsList"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_task_ctor_vt145835090",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 89 51 08 48",
+   "match": "0x1432c7b10",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432c7b10",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTask_Ctor_Vt145835090"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_task_process_friends_reply_vt145834f90",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 02 00 00 C5 F8 29 BC 24 40 02 00 00 C5 F8 29 B4 24 30 02 00 00 4C 89 84",
+   "match": "0x1432c94c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432c94c0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTask_ProcessFriendsReply_Vt145834f90"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_task_finish_locked_player_search",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 89 50 01 00 00",
+   "match": "0x1432ce5a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432ce5a0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTask_FinishLocked_PlayerSearch"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.online_system_get_friend_request_list_task_update",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 48 89 CE 48 8B 89 48 01 00",
+   "match": "0x1432cf480",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432cf480",
+   "kind": "func_start",
+   "names": [
+    "Game_OnlineSystemGetFriendRequestListTask_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.online_system_get_friend_request_list_task_on_player_cards",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 A8 11 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 78 29",
+   "match": "0x1432cfac0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432cfac0",
+   "kind": "func_start",
+   "names": [
+    "Game_OnlineSystemGetFriendRequestListTask_OnPlayerCards"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.online_system_e_a_d_p_async_task_update",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 89 38 01 00 00 FF 15 ?? ?? ?? ?? 83 BE",
+   "match": "0x1432d23e0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432d23e0",
+   "kind": "func_start",
+   "names": [
+    "Game_OnlineSystemEADPAsyncTask_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_task_spawn_child_vt145835c00",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 50 C5 F8 29 74 24 40 48 89 CE 83",
+   "match": "0x1432d5a60",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432d5a60",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTask_SpawnChild_Vt145835c00"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_task_on_child_finished_vt145835c00",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 F8 29 B4 24 10 01 00 00 48 89 D6 48 89 CB 48 8B",
+   "match": "0x1432d5e30",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432d5e30",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTask_OnChildFinished_Vt145835c00"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_task_collect_results_vt145835c00",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 89 CD 4C",
+   "match": "0x1432d7670",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432d7670",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTask_CollectResults_Vt145835c00"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_tasksystem_update",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 68 C5 F8 29 74 24 50 48 89 CE 48 8B 41 38 48",
+   "match": "0x1432d9420",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432d9420",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTasksystem_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_tasksystem_create_task_vt145835ba0",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 50 C5 F8 29 74 24 40 4C 89 C7 48 89 D6 48 89 CB 4C 8B 61 10 49 8B 04 24 BA 68",
+   "match": "0x143312810",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143312810",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTasksystem_CreateTask_Vt145835ba0"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_create_task_get_leaderboard",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 48 89 CE 48 8B 79 08 48 8B 07 BA 80",
+   "match": "0x143345890",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143345890",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_CreateTask_GetLeaderboard"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_create_task_get_friends_leaderboard",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 48 89 CE 48 8B 79 08 48 8B 07 BA C8",
+   "match": "0x143347da0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143347da0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_CreateTask_GetFriendsLeaderboard"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_destroy_task_body_get_friends_leaderboard",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B B9 B8 00 00 00 48 85 FF 74 22",
+   "match": "0x143348bd0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143348bd0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_DestroyTaskBody_GetFriendsLeaderboard"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.platform_authorisation_task_on_start",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CE 48 8B 59 08 48 8B 03 BA",
+   "match": "0x14334e4f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14334e4f0",
+   "kind": "func_start",
+   "names": [
+    "Game_PlatformAuthorisationTask_OnStart"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.platform_authorisation_task_update",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 89 20 01 00 00",
+   "match": "0x14334e760",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14334e760",
+   "kind": "func_start",
+   "names": [
+    "Game_PlatformAuthorisationTask_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.home_screen_request_home_screen_info",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 01 00 00 48 83 79 30 00",
+   "match": "0x143350f80",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143350f80",
+   "kind": "func_start",
+   "names": [
+    "Game_HomeScreen_RequestHomeScreenInfo"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.home_screen_on_home_screen_info_result",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 60 02 00 00 48 89 D3 48 89 CE 48",
+   "match": "0x1433516d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1433516d0",
+   "kind": "func_start",
+   "names": [
+    "Game_HomeScreen_OnHomeScreenInfoResult"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.online_server_log_in_task_on_start",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 90 00 00 00 C5 F8 29 B4 24 80 00 00 00 48 89 CE C6 44",
+   "match": "0x143369ea0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143369ea0",
+   "kind": "func_start",
+   "names": [
+    "Game_OnlineServerLogInTask_OnStart"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.online_server_log_in_task_set_finished",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE C6 81 B8",
+   "match": "0x14336b030",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14336b030",
+   "kind": "func_start",
+   "names": [
+    "Game_OnlineServerLogInTask_SetFinished"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.online_server_log_in_task_finish_with_state",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 CE 88 91 B8 01 00 00 E8",
+   "match": "0x14336b270",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14336b270",
+   "kind": "func_start",
+   "names": [
+    "Game_OnlineServerLogInTask_FinishWithState"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.online_server_log_in_task_set_finished_release_ref",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 30 48 89 D6 48 89 CF C6 81 B8",
+   "match": "0x14336bb60",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14336bb60",
+   "kind": "func_start",
+   "names": [
+    "Game_OnlineServerLogInTask_SetFinishedReleaseRef"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.online_server_log_in_task_on_error",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 70 4D 89 C1 89 D3 48 89 CE 48",
+   "match": "0x14336bcb0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14336bcb0",
+   "kind": "func_start",
+   "names": [
+    "Game_OnlineServerLogInTask_OnError"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_http_task_ctor_vt14583cd40",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 B8 58 00 01 00 E8",
+   "match": "0x14336e2f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14336e2f0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osHttpTask_Ctor_Vt14583cd40"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.e_a_login_task_on_start",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 81 EC F0 00 00 00 48 89 CE 66 C7 81",
+   "match": "0x143372760",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143372760",
+   "kind": "func_start",
+   "names": [
+    "Game_EALoginTask_OnStart"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.e_a_login_task_update",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 CE 80 B9 38 01 00 00 00",
+   "match": "0x143372c10",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143372c10",
+   "kind": "func_start",
+   "names": [
+    "Game_EALoginTask_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.check_privilege_task_on_finished",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 68 44 89 C3 89 D7 48 89",
+   "match": "0x143372d60",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143372d60",
+   "kind": "func_start",
+   "names": [
+    "Game_CheckPrivilegeTask_OnFinished"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.handle_user_entitlements_update_task_on_child_done",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 D6 48 89 CF 48 8B 02 48 3B 81 38",
+   "match": "0x143377650",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143377650",
+   "kind": "func_start",
+   "names": [
+    "Game_HandleUserEntitlementsUpdateTask_OnChildDone"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_create_set_player_info",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 03 00 00 C5 F8 29 B4 24 F0 02 00 00 4C 89 C3 48",
+   "match": "0x1433d6b00",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1433d6b00",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_Create_SetPlayerInfo"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_tasksystem_create_task_holding_page_hint",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 40 4C 89 CF 48 89",
+   "match": "0x143431960",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143431960",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTasksystem_CreateTask_HoldingPageHint"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_tasksystem_create_task_request_package_p_task",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 4C 89 CB 4C 89",
+   "match": "0x143432f90",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143432f90",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTasksystem_CreateTask_RequestPackagePTask"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_create_task_request_package_p",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 48 89 CE 48 8B 79 08 48 8B 07 BA B8",
+   "match": "0x1434334a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1434334a0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_CreateTask_RequestPackageP"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_tasksystem_create_task_vt14583d000",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 50 C5 F8 29 74 24 40 4C 89 C7 48 89 D6 48 89 CB 4C 8B 61 10 49 8B 04 24 BA 50",
+   "match": "0x143435e20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143435e20",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTasksystem_CreateTask_Vt14583d000"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_create_task_login",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 48 89 CE 48 8B 79 08 48 8B 07 BA C0 01 00 00 41",
+   "match": "0x14344d470",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14344d470",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_CreateTask_Login"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_create_task_refresh_session_token",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 48 89 CE 48 8B 79 08 48 8B 07 BA C0 00 00 00 41",
+   "match": "0x14344ecf0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14344ecf0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_CreateTask_RefreshSessionToken"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_create_task_reconcile_user_entitlements",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 48 89 CE 48 8B 79 08 48 8B 07 BA D0",
+   "match": "0x143451670",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143451670",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_CreateTask_ReconcileUserEntitlements"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.flow_state_enter_boot_logout",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 88 00 00 00 48 89 CE 80 B9 F0 0E 00",
+   "match": "0x1436d9a60",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1436d9a60",
+   "kind": "func_start",
+   "names": [
+    "Game_FlowState_EnterBootLogout"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.u_i_connection_manager_show_connection_lost_popup",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 40 48 8B 41 78 83 B8 E8 01 00",
+   "match": "0x1438831d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1438831d0",
+   "kind": "func_start",
+   "names": [
+    "Game_UIConnectionManager_ShowConnectionLostPopup"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.o_s_http_operation_on_start",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 55 53 B8 40 00 01 00 E8",
+   "match": "0x14443a930",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14443a930",
+   "kind": "func_start",
+   "names": [
+    "Ne_OSHttpOperation_OnStart"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.o_s_http_request_send",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 88 00 00 00 44 89 CF 4C",
+   "match": "0x14443af90",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14443af90",
+   "kind": "func_start",
+   "names": [
+    "Ne_OSHttpRequest_Send"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.retrieve_consumable_entitlements_task_ctor",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8D 2D ?? ?? ?? ?? BA 28 00 00 00 41 B8 10 00 00 00 48 89 E9 FF 50 18 49 89 C7 48",
+   "match": "0x142b9565d",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x140792740",
+   "kind": "func_start",
+   "names": [
+    "Game_RetrieveConsumableEntitlementsTask_Ctor"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_log_large_payload_get_calendar",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 41 81 FE C8 00 00 00 B8 0D 00 00 00 B9 02 00 00 00 0F 44 C8 88 4C 24 30 48 8D 54 24 30 48 89 F1 E8 ?? ?? ?? ?? 48 8D 8C 24 B0 00",
+   "match": "0x140b1a13d",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x140b1afe0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_LogLargePayload_GetCalendar"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_log_large_payload_get_active_challenge_career",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 41 81 FE C8 00 00 00 B8 0D 00 00 00 B9 02 00 00 00 0F 44 C8 88 4C 24 40 48 8D 54 24 40 48 89 F1 E8 ?? ?? ?? ?? 48 8D 8C 24 D0 00",
+   "match": "0x140cf226d",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x140cf3350",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_LogLargePayload_GetActiveChallengeCareer"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_log_large_payload_get_career_backup_data",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 41 81 FE C8 00 00 00 B8 0D 00 00 00 B9 02 00 00 00 0F 44 C8 88 4C 24 30 48 8D 54 24 30 48 89 F1 E8 ?? ?? ?? ?? 48 8D 8C 24 A8 00",
+   "match": "0x1410a983d",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x1410a9f00",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_LogLargePayload_GetCareerBackupData"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_log_large_payload_upgrade_card",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 41 81 FE C8 00 00 00 B8 0D 00 00 00 B9 02 00 00 00 0F 44 C8 88 4C 24 48 48 8D 54 24 48 48 89 F1 E8 ?? ?? ?? ?? 48 8D 8C 24 D8 00",
+   "match": "0x142694a9d",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x142695610",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_LogLargePayload_UpgradeCard"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_log_large_payload_get_compendium_rewards",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 41 81 FE C8 00 00 00 B8 0D 00 00 00 B9 02 00 00 00 0F 44 C8 88 4C 24 58 48 8D 54 24 58 48 89 F1 E8 ?? ?? ?? ?? 48 8D 8C 24 00 01",
+   "match": "0x1426ce40d",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x1426d0660",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_LogLargePayload_GetCompendiumRewards"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_log_large_payload_claim_rewards",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 41 81 FE C8 00 00 00 B8 0D 00 00 00 B9 02 00 00 00 0F 44 C8 88 4C 24 58 48 8D 54 24 58 48 89 F1 E8 ?? ?? ?? ?? 48 8D 8C 24 D0 00",
+   "match": "0x14280835d",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x1428090e0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_LogLargePayload_ClaimRewards"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_log_large_payload_get_storefront",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 41 81 FE C8 00 00 00 B8 0D 00 00 00 B9 02 00 00 00 0F 44 C8 88 4C 24 48 48 8D 54 24 48 48 89 F1 E8 ?? ?? ?? ?? 48 8D 8C 24 E0 00",
+   "match": "0x142b4424d",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x142b456e0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_LogLargePayload_GetStorefront"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_tasksystem_create_task_vt1457f1bc0",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 48 8B 74 24 58 48 85 F6 74 1D F0 FF 4E 08 75 17 48 8B 06 48 89 F1 FF 10 F0 FF 4E 0C 75 09 48 8B 06 48 89 F1 FF 50 08 90 48 83 C4 60 5B 5F 5E C3 CC CC CC",
+   "match": "0x142e677f4",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x142e67830",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTasksystem_CreateTask_Vt1457f1bc0"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_log_large_payload_session_browser_search_sessions",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 41 81 FE C8 00 00 00 B8 0D 00 00 00 B9 02 00 00 00 0F 44 C8 88 4C 24 30 48 8D 54 24 30 48 89 F1 E8 ?? ?? ?? ?? 48 8D 8C 24 D0 00",
+   "match": "0x1431e07bd",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x1431e1630",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_LogLargePayload_SessionBrowserSearchSessions"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_log_large_payload_session_browser_get_session_by_i_d",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 41 81 FE C8 00 00 00 B8 0D 00 00 00 B9 02 00 00 00 0F 44 C8 88 4C 24 30 48 8D 54 24 30 48 89 F1 E8 ?? ?? ?? ?? 48 8D 8C 24 C0 00",
+   "match": "0x1431e7fbd",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x1431e89e0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_LogLargePayload_SessionBrowserGetSessionByID"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_log_f",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 4C 8B B0 B0",
+   "match": "0x14329769d",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x143294a10",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_LogF"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_task_set_finished_b",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 48 8D 4C 24 40 E8 ?? ?? ?? ?? 48 8D 4C 24 60",
+   "match": "0x1432c8c45",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x1432b2060",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTask_SetFinished_B"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_log_large_payload_get_inbox",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 41 81 FE C8 00 00 00 B8 0D 00 00 00 B9 02 00 00 00 0F 44 C8 88 4C 24 40 48 8D 54 24 40 48 89 F1 E8 ?? ?? ?? ?? 48 8D 8C 24 E0 00",
+   "match": "0x143419e5d",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x14341b680",
+   "kind": "func_start",
+   "names": [
+    "Game_F1os_LogLargePayload_GetInbox"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1os_tasksystem_create_task_finalise_package_p_task",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 48 83 7C 24 20 00 74 47 48 8B 56 38 48 3B 56 40 74 2C C5 F8 57 C0 C5 F8 11 02 48 83 7C 24 28 00 74 15 48 8B 44 24 20 48 89 02 48 8B 44 24 28 48 89 42 08 F0 FF 40 0C 48 83 46 38 10 EB 11 48 83 C6 28 4C 8D 44 24 20 48 89 F1 E8 ?? ?? ?? ?? 48 8B 74 24 28 48 85 F6 74 1D F0 FF",
+   "match": "0x142b96b22",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x143434750",
+   "kind": "func_start",
+   "names": [
+    "Game_F1osTasksystem_CreateTask_FinalisePackagePTask"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
   }
  ]
 }
