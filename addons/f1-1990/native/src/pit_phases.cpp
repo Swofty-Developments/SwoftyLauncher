@@ -3,16 +3,19 @@
 // F1 1990 - pit stops at normal crew speed with the extra 1990 time in the slow phases (its own DLL).
 //
 // The game plays a stop's crew sequence between its Start and Stop events at one rate, the sequence's base time
-// over the stop's target time (PitStopInstance+0x3bc, set on Start, back to 1 on Stop), so a 9 s 1990 stop is the
-// 2.58 s stock stop in slow motion. On a 1990 weekend, Sess_PitStopUpdateJob_Update is wrapped: once the game has
-// set the rate for a sequence listed in data/pit-phases.json (tools/pit_phases.py), every update plays the
-// sequence at rate 1 except for holds at the wheel-gun-on frames (70 % of the extra time, shared equally) and a
-// slower stretch from just before the jack drop to the end of the work (the rest). The stop ends at the same time
-// as the game's own. Setting pit_phases_1990 off, a sequence without a row, or another weekend keeps the game's
-// rate.
+// over the stop's target time, so a 9 s 1990 stop is the 2.58 s stock stop in slow motion. Start writes that crew
+// speed into PitStopInstance+0x33c (the base rate) and +0x3bc (this frame's rate); the update scales its dt by
+// +0x3bc on entry and rewrites +0x3bc as a transition factor x +0x33c at its end; Stop puts both back to 1. On a
+// 1990 weekend, Sess_PitStopUpdateJob_Update is wrapped: once the game has set the base rate for a sequence listed in
+// data/pit-phases.json (tools/pit_phases.py), every update sets the base rate and this frame's rate (base x the
+// factor the game last applied) so the sequence plays at rate 1 except for holds at the wheel-gun-on frames (70 %
+// of the extra time, shared equally) and a slower stretch from just before the jack drop to the end of the work
+// (the rest). The stop ends at the same time as the game's own. Setting pit_phases_1990 off, a sequence without a
+// row, or another weekend keeps the game's rate.
 
 #include <windows.h>
 
+#include <algorithm>
 #include <atomic>
 #include <cstdio>
 #include <cstring>
@@ -47,6 +50,7 @@ struct Stop {
     pit::Plan plan;
     bool active = false;
     float rate = 1.f;
+    float factor = 1.f;
     float elapsed = 0;
     float stock = 0;
     std::string name;
@@ -109,7 +113,7 @@ std::string sequence_name(const uint8_t *seq)
     if (!res || !swofty::mem::readable(res + 0x38, 4))
         return {};
     int32_t index = at<int32_t>(res, 0x38);
-    void **holder = swofty::game::g_Ne_SequenceNameTable.get();
+    void **holder = swofty::game::g_Ne_NameTable.get();
     if (index < 0 || !holder || !swofty::mem::readable(holder, 8) || !*holder ||
         !swofty::mem::readable(static_cast<uint8_t *>(*holder) + 0x08, 8))
         return {};
@@ -164,6 +168,7 @@ void begin(Stop &s, uint8_t *seq, float rate)
     s.active = true;
     s.seq = seq;
     s.rate = rate;
+    s.factor = 1.f;
     s.elapsed = 0;
     s.stock = (p.stop - p.start) / (g_fps * rate) + (p.jc > p.stop ? (p.jc - p.stop) / g_fps : 0.f);
     if (g_logged++ < kLogStops)
@@ -174,10 +179,8 @@ void begin(Stop &s, uint8_t *seq, float rate)
                     double(s.plan.window_rate), double(s.stock));
 }
 
-void finish(Stop &s, float *rate, const char *why)
+void finish(Stop &s, const char *why)
 {
-    if (rate)
-        *rate = 1.f;
     s.active = false;
     s.seq = nullptr;
     if (g_logged++ < kLogStops)
@@ -215,21 +218,20 @@ SWOFTY_WRAP(Sess_PitStopUpdateJob_Update, void, void *job)
         std::lock_guard lock(g_lock);
         load();
         auto *seq = at<uint8_t *>(inst, 0x3b0);
+        auto *base = reinterpret_cast<float *>(inst + 0x33c);
         auto *rate = reinterpret_cast<float *>(inst + 0x3bc);
         float dt = at<float>(job, 0x10);
         Stop &s = slot(inst);
         if (s.active && (seq != s.seq || !seq))
-            finish(s, nullptr, "sequence changed");
-        if (!s.active && seq && seq != s.done && *rate > 0.01f && *rate < 0.999f &&
+            finish(s, "sequence changed");
+        if (!s.active && seq && seq != s.done && *base > 0.01f && *base < 0.999f &&
             swofty::mem::readable(seq + 0x08, 0x58) && !g_table.empty())
-            begin(s, seq, *rate);
+            begin(s, seq, *base);
         if (s.active) {
             float frame = at<float>(seq, 0x5c);
             s.elapsed += dt > 0 && dt < 1 ? dt : 0;
-            if (frame >= s.plan.end)
-                finish(s, rate, "ended");
-            else
-                *rate = pit::step(s.plan, frame, dt > 0 && dt < 1 ? dt : 0);
+            if (!pit::drive(s.plan, s.factor, frame, dt > 0 && dt < 1 ? dt : 0, *base, *rate))
+                finish(s, "ended");
         }
     }
     orig(job);

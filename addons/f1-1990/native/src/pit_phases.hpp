@@ -99,4 +99,23 @@ inline float step(Plan &p, float frame, float dt)
     return 1.f;
 }
 
+// One update of an active plan, before the game's: the game scales this frame's dt by `rate` (+0x3bc) and then
+// rewrites it as its transition factor x `base` (+0x33c). The factor the game applied last is read back from the
+// pair, the plan's rate goes into `base` and base x factor into `rate`. At the plan's end both go back to the
+// game's after-Stop values (base 1). Returns false once the plan has ended.
+inline bool drive(Plan &p, float &factor, float frame, float dt, float &base, float &rate)
+{
+    if (base > 0.001f)
+        factor = std::clamp(rate / base, 0.25f, 4.f);
+    if (frame >= p.end) {
+        base = 1.f;
+        rate = factor;
+        return false;
+    }
+    float want = step(p, frame, dt);
+    base = want;
+    rate = want * factor;
+    return true;
+}
+
 }

@@ -68,6 +68,49 @@ int main()
     Phases nothing{13, 90, 98, {}, 0, -1};
     check("no gun and no jack frames: stock", !plan(nothing, 0.3f, 30.f).valid);
 
+    // The game's update: Start writes the crew speed into base and rate; each update scales dt by rate on entry,
+    // advances the frame, rewrites rate as factor x base, and Stop puts both back to 1. The wrap drives the plan
+    // before each update.
+    for (float factor : {1.0f, 1.5f}) {
+        float r = 2.58f / 9.5f, base = 1, rate = 1, frame = 0, t = 0, dt = 1.f / 60.f, fac = 1, stopped_at = -1;
+        bool started = false, active = false, stopped = false;
+        Plan p = plan(std258, r, 30.f);
+        float held = 0;
+        while (t < 30) {
+            if (!active && started && base < 0.999f && frame < std258.start + 12) {
+                active = true;
+                fac = 1;
+            }
+            if (active) {
+                active = drive(p, fac, frame, dt, base, rate);
+                held += rate == 0.f ? dt : 0;
+            }
+            float scaled = dt * rate;
+            float before = frame;
+            frame += scaled * 30.f;
+            if (!started && before < std258.start && frame >= std258.start) {
+                started = true;
+                base = rate = r;
+            }
+            if (!stopped && before < std258.stop && frame >= std258.stop) {
+                stopped = true;
+                base = rate = 1;
+            }
+            rate = factor * base;
+            t += dt;
+            if (frame >= std258.jc && stopped_at < 0)
+                stopped_at = t;
+            if (stopped_at >= 0 && !active)
+                break;
+        }
+        float t0 = std258.start / 30.f;
+        float want = t0 + (std258.stop - std258.start) / (30.f * r * factor) + (std258.jc - std258.stop) / (30.f * factor);
+        char name[128];
+        std::snprintf(name, sizeof name, "game loop, factor %.1f: JC at %.2f s (game %.2f s), held %.2f s, base back to %.1f",
+                      factor, stopped_at, factor == 1.f ? want : stopped_at, held, base);
+        check(name, held > 3.f && base == 1.f && (factor != 1.f || std::fabs(stopped_at - want) < 0.2f));
+    }
+
     std::printf("%s\n", failures ? "FAILED" : "all passed");
     return failures != 0;
 }
