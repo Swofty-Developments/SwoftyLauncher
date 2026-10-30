@@ -114,6 +114,53 @@
    "track_wear_scales",
    "weekend_formats"
   ],
+  "pit_crew_training.probabilities.probability_set": [
+   "_metadata_",
+   "_probability_instancecount_",
+   "probability_0._metadata_",
+   "probability_0.max_training_level_percent",
+   "probability_0.min_routine_pit_stop_time",
+   "probability_0.max_routine_pit_stop_time",
+   "probability_0.min_chance_mistake_percent",
+   "probability_0.max_chance_mistake_percent",
+   "probability_0.estimated_front_wing_change_time",
+   "probability_1._metadata_",
+   "probability_1.max_training_level_percent",
+   "probability_1.min_routine_pit_stop_time",
+   "probability_1.max_routine_pit_stop_time",
+   "probability_1.min_chance_mistake_percent",
+   "probability_1.max_chance_mistake_percent",
+   "probability_1.estimated_front_wing_change_time",
+   "probability_2._metadata_",
+   "probability_2.max_training_level_percent",
+   "probability_2.min_routine_pit_stop_time",
+   "probability_2.max_routine_pit_stop_time",
+   "probability_2.min_chance_mistake_percent",
+   "probability_2.max_chance_mistake_percent",
+   "probability_2.estimated_front_wing_change_time",
+   "probability_3._metadata_",
+   "probability_3.max_training_level_percent",
+   "probability_3.min_routine_pit_stop_time",
+   "probability_3.max_routine_pit_stop_time",
+   "probability_3.min_chance_mistake_percent",
+   "probability_3.max_chance_mistake_percent",
+   "probability_3.estimated_front_wing_change_time",
+   "probability_4._metadata_",
+   "probability_4.max_training_level_percent",
+   "probability_4.min_routine_pit_stop_time",
+   "probability_4.max_routine_pit_stop_time",
+   "probability_4.min_chance_mistake_percent",
+   "probability_4.max_chance_mistake_percent",
+   "probability_4.estimated_front_wing_change_time"
+  ],
+  "pit_lane.pit_times.team_pit_times": [
+   "_metadata_",
+   "team",
+   "min_pit_time",
+   "max_pit_time",
+   "min_pit_time_fully_upgraded",
+   "max_pit_time_fully_upgraded"
+  ],
   "track_data.game_setup.TrackDataSet": [
    "_TrackData_instancecount_",
    "_metadata_",
@@ -1066,6 +1113,214 @@
   },
   {
    "op": "add-row",
+   "table": "pit_crew_training.probabilities",
+   "from": "pit_crew_training.probabilities.probability_set[_metadata_=f1]",
+   "set": {
+    "_metadata_": "f1_1990",
+    "_probability_instancecount_": "5",
+    "probability_0.max_training_level_percent": "20",
+    "probability_0.min_routine_pit_stop_time": "10.5",
+    "probability_0.max_routine_pit_stop_time": "12.5",
+    "probability_0.min_chance_mistake_percent": "21",
+    "probability_0.max_chance_mistake_percent": "30",
+    "probability_0.estimated_front_wing_change_time": "18",
+    "probability_1.max_training_level_percent": "40",
+    "probability_1.min_routine_pit_stop_time": "9.5",
+    "probability_1.max_routine_pit_stop_time": "11.5",
+    "probability_1.min_chance_mistake_percent": "11",
+    "probability_1.max_chance_mistake_percent": "20",
+    "probability_1.estimated_front_wing_change_time": "18",
+    "probability_2.max_training_level_percent": "60",
+    "probability_2.min_routine_pit_stop_time": "8.5",
+    "probability_2.max_routine_pit_stop_time": "10.5",
+    "probability_2.min_chance_mistake_percent": "6",
+    "probability_2.max_chance_mistake_percent": "10",
+    "probability_2.estimated_front_wing_change_time": "18",
+    "probability_3.max_training_level_percent": "80",
+    "probability_3.min_routine_pit_stop_time": "7.5",
+    "probability_3.max_routine_pit_stop_time": "9.5",
+    "probability_3.min_chance_mistake_percent": "1",
+    "probability_3.max_chance_mistake_percent": "5",
+    "probability_3.estimated_front_wing_change_time": "18",
+    "probability_4.max_training_level_percent": "100",
+    "probability_4.min_routine_pit_stop_time": "7",
+    "probability_4.max_routine_pit_stop_time": "8.5",
+    "probability_4.min_chance_mistake_percent": "0",
+    "probability_4.max_chance_mistake_percent": "0",
+    "probability_4.estimated_front_wing_change_time": "18"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "pit_lane.pit_times",
+   "from": "pit_lane.pit_times.team_pit_times[_metadata_=mercedes]",
+   "set": {
+    "_metadata_": "mclaren_1990",
+    "team": "mclaren_1990",
+    "min_pit_time": "7",
+    "max_pit_time": "8.6",
+    "min_pit_time_fully_upgraded": "6.5",
+    "max_pit_time_fully_upgraded": "8"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "pit_lane.pit_times",
+   "from": "pit_lane.pit_times.team_pit_times[_metadata_=mercedes]",
+   "set": {
+    "_metadata_": "ferrari_1990",
+    "team": "ferrari_1990",
+    "min_pit_time": "7.1",
+    "max_pit_time": "8.8",
+    "min_pit_time_fully_upgraded": "6.6",
+    "max_pit_time_fully_upgraded": "8.2"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "pit_lane.pit_times",
+   "from": "pit_lane.pit_times.team_pit_times[_metadata_=mercedes]",
+   "set": {
+    "_metadata_": "williams_1990",
+    "team": "williams_1990",
+    "min_pit_time": "7.2",
+    "max_pit_time": "9",
+    "min_pit_time_fully_upgraded": "6.7",
+    "max_pit_time_fully_upgraded": "8.4"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "pit_lane.pit_times",
+   "from": "pit_lane.pit_times.team_pit_times[_metadata_=mercedes]",
+   "set": {
+    "_metadata_": "benetton_1990",
+    "team": "benetton_1990",
+    "min_pit_time": "7.5",
+    "max_pit_time": "9.4",
+    "min_pit_time_fully_upgraded": "7",
+    "max_pit_time_fully_upgraded": "8.8"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "pit_lane.pit_times",
+   "from": "pit_lane.pit_times.team_pit_times[_metadata_=mercedes]",
+   "set": {
+    "_metadata_": "tyrrell_1990",
+    "team": "tyrrell_1990",
+    "min_pit_time": "8.2",
+    "max_pit_time": "10.2",
+    "min_pit_time_fully_upgraded": "7.7",
+    "max_pit_time_fully_upgraded": "9.6"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "pit_lane.pit_times",
+   "from": "pit_lane.pit_times.team_pit_times[_metadata_=mercedes]",
+   "set": {
+    "_metadata_": "lotus_1990",
+    "team": "lotus_1990",
+    "min_pit_time": "8.4",
+    "max_pit_time": "10.5",
+    "min_pit_time_fully_upgraded": "7.9",
+    "max_pit_time_fully_upgraded": "9.9"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "pit_lane.pit_times",
+   "from": "pit_lane.pit_times.team_pit_times[_metadata_=mercedes]",
+   "set": {
+    "_metadata_": "leytonhouse_1990",
+    "team": "leytonhouse_1990",
+    "min_pit_time": "8.5",
+    "max_pit_time": "10.6",
+    "min_pit_time_fully_upgraded": "8",
+    "max_pit_time_fully_upgraded": "10"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "pit_lane.pit_times",
+   "from": "pit_lane.pit_times.team_pit_times[_metadata_=mercedes]",
+   "set": {
+    "_metadata_": "larrousse_1990",
+    "team": "larrousse_1990",
+    "min_pit_time": "8.6",
+    "max_pit_time": "10.8",
+    "min_pit_time_fully_upgraded": "8.1",
+    "max_pit_time_fully_upgraded": "10.2"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "pit_lane.pit_times",
+   "from": "pit_lane.pit_times.team_pit_times[_metadata_=mercedes]",
+   "set": {
+    "_metadata_": "ligier_1990",
+    "team": "ligier_1990",
+    "min_pit_time": "8.8",
+    "max_pit_time": "11",
+    "min_pit_time_fully_upgraded": "8.3",
+    "max_pit_time_fully_upgraded": "10.4"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "pit_lane.pit_times",
+   "from": "pit_lane.pit_times.team_pit_times[_metadata_=mercedes]",
+   "set": {
+    "_metadata_": "minardi_1990",
+    "team": "minardi_1990",
+    "min_pit_time": "9.2",
+    "max_pit_time": "11.6",
+    "min_pit_time_fully_upgraded": "8.7",
+    "max_pit_time_fully_upgraded": "11"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "pit_lane.pit_times",
+   "from": "pit_lane.pit_times.team_pit_times[_metadata_=mercedes]",
+   "set": {
+    "_metadata_": "brabham_1990",
+    "team": "brabham_1990",
+    "min_pit_time": "9.3",
+    "max_pit_time": "11.8",
+    "min_pit_time_fully_upgraded": "8.8",
+    "max_pit_time_fully_upgraded": "11.2"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "pit_lane.pit_times",
+   "from": "pit_lane.pit_times.team_pit_times[_metadata_=mercedes]",
+   "set": {
+    "_metadata_": "dallara_1990",
+    "team": "dallara_1990",
+    "min_pit_time": "9.4",
+    "max_pit_time": "12",
+    "min_pit_time_fully_upgraded": "8.9",
+    "max_pit_time_fully_upgraded": "11.4"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "pit_lane.pit_times",
+   "from": "pit_lane.pit_times.team_pit_times[_metadata_=mercedes]",
+   "set": {
+    "_metadata_": "arrows_1990",
+    "team": "arrows_1990",
+    "min_pit_time": "9.5",
+    "max_pit_time": "12.2",
+    "min_pit_time_fully_upgraded": "9",
+    "max_pit_time_fully_upgraded": "11.6"
+   }
+  },
+  {
+   "op": "add-row",
    "table": "track_data.game_setup",
    "from": "track_data.game_setup.TrackDataSet[_metadata_=f1_2026]",
    "set": {
@@ -1456,6 +1711,46 @@
   {
    "op": "set",
    "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=melbourne]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=melbourne].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=melbourne].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=melbourne].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "35",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=melbourne].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "35",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=melbourne]",
    "field": "_TrackNameData_instancecount_",
    "value": "1",
    "create": true,
@@ -1738,6 +2033,46 @@
    "when": {
     "career_year": "2026"
    }
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=shanghai]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=shanghai].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=shanghai].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=shanghai].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "39",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=shanghai].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "39",
+   "create": true,
+   "type": 1
   },
   {
    "op": "set",
@@ -2028,6 +2363,46 @@
   {
    "op": "set",
    "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=suzuka]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=suzuka].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=suzuka].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=suzuka].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "30",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=suzuka].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "35",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=suzuka]",
    "field": "_TrackNameData_instancecount_",
    "value": "1",
    "create": true,
@@ -2195,6 +2570,46 @@
   },
   {
    "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=bahrain]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=bahrain].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=bahrain].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=bahrain].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "32",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=bahrain].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "37",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
    "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=jeddah].TyreData_0",
    "field": "_MandatoryPitstopsOverride_instancecount_",
    "value": "1",
@@ -2251,6 +2666,46 @@
   },
   {
    "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=jeddah]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=jeddah].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=jeddah].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=jeddah].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "32.5",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=jeddah].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "37.5",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
    "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=miami].TyreData_0",
    "field": "_MandatoryPitstopsOverride_instancecount_",
    "value": "1",
@@ -2304,6 +2759,46 @@
    "value": "default",
    "create": true,
    "type": 4
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=miami]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=miami].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=miami].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=miami].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "32.5",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=miami].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "37.5",
+   "create": true,
+   "type": 1
   },
   {
    "op": "set",
@@ -2478,6 +2973,46 @@
    "when": {
     "career_year": "2026"
    }
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=montreal]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=montreal].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=montreal].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=montreal].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "31",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=montreal].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "36",
+   "create": true,
+   "type": 1
   },
   {
    "op": "set",
@@ -2768,6 +3303,46 @@
   {
    "op": "set",
    "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=monaco]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=monaco].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=monaco].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "60",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=monaco].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "33",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=monaco].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "38",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=monaco]",
    "field": "_TrackNameData_instancecount_",
    "value": "1",
    "create": true,
@@ -3050,6 +3625,46 @@
    "when": {
     "career_year": "2026"
    }
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=catalunya]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=catalunya].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=catalunya].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=catalunya].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "36.5",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=catalunya].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "41.5",
+   "create": true,
+   "type": 1
   },
   {
    "op": "set",
@@ -3340,6 +3955,46 @@
   {
    "op": "set",
    "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=austria]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=austria].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=austria].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=austria].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "31",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=austria].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "36",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=austria]",
    "field": "_TrackNameData_instancecount_",
    "value": "1",
    "create": true,
@@ -3622,6 +4277,46 @@
    "when": {
     "career_year": "2026"
    }
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=silverstone]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=silverstone].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=silverstone].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "60",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=silverstone].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "31",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=silverstone].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "36",
+   "create": true,
+   "type": 1
   },
   {
    "op": "set",
@@ -3912,6 +4607,46 @@
   {
    "op": "set",
    "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=spa_francorchamps]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=spa_francorchamps].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=spa_francorchamps].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=spa_francorchamps].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "29",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=spa_francorchamps].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "34",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=spa_francorchamps]",
    "field": "_TrackNameData_instancecount_",
    "value": "1",
    "create": true,
@@ -4198,6 +4933,46 @@
   {
    "op": "set",
    "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=hungaroring]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=hungaroring].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=hungaroring].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=hungaroring].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "41",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=hungaroring].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "46",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=hungaroring]",
    "field": "_TrackNameData_instancecount_",
    "value": "1",
    "create": true,
@@ -4362,6 +5137,46 @@
    "value": "default",
    "create": true,
    "type": 4
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=zandvoort]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=zandvoort].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=zandvoort].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "60",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=zandvoort].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "36",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=zandvoort].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "41",
+   "create": true,
+   "type": 1
   },
   {
    "op": "set",
@@ -4536,6 +5351,46 @@
    "when": {
     "career_year": "2026"
    }
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=monza]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=monza].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=monza].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=monza].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "31",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=monza].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "36",
+   "create": true,
+   "type": 1
   },
   {
    "op": "set",
@@ -4826,6 +5681,46 @@
   {
    "op": "set",
    "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=madrid]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=madrid].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=madrid].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=madrid].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "26.3",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=madrid].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "27.2",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=madrid]",
    "field": "_TrackNameData_instancecount_",
    "value": "1",
    "create": true,
@@ -4993,6 +5888,46 @@
   },
   {
    "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=baku]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=baku].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=baku].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=baku].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "32",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=baku].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "37",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
    "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=singapore].TyreData_0",
    "field": "_MandatoryPitstopsOverride_instancecount_",
    "value": "1",
@@ -5049,6 +5984,46 @@
   },
   {
    "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=singapore]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=singapore].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=singapore].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "60",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=singapore].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "43",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=singapore].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "48",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
    "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=texas].TyreData_0",
    "field": "_MandatoryPitstopsOverride_instancecount_",
    "value": "1",
@@ -5102,6 +6077,46 @@
    "value": "default",
    "create": true,
    "type": 4
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=texas]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=texas].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=texas].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=texas].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "31",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=texas].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "36",
+   "create": true,
+   "type": 1
   },
   {
    "op": "set",
@@ -5276,6 +6291,46 @@
    "when": {
     "career_year": "2026"
    }
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=mexico]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=mexico].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=mexico].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=mexico].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "34",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=mexico].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "39",
+   "create": true,
+   "type": 1
   },
   {
    "op": "set",
@@ -5566,6 +6621,46 @@
   {
    "op": "set",
    "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=brazil]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=brazil].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=brazil].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=brazil].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "36.5",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=brazil].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "41.5",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=brazil]",
    "field": "_TrackNameData_instancecount_",
    "value": "1",
    "create": true,
@@ -5852,6 +6947,46 @@
   {
    "op": "set",
    "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=las_vegas]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=las_vegas].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=las_vegas].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=las_vegas].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "30",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=las_vegas].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "35",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=las_vegas]",
    "field": "_TrackNameData_instancecount_",
    "value": "1",
    "create": true,
@@ -6019,6 +7154,46 @@
   },
   {
    "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=losail]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=losail].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=losail].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=losail].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "34.5",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=losail].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "39.5",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
    "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=abu_dhabi].TyreData_0",
    "field": "_MandatoryPitstopsOverride_instancecount_",
    "value": "1",
@@ -6072,6 +7247,46 @@
    "value": "default",
    "create": true,
    "type": 4
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=abu_dhabi]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=abu_dhabi].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=abu_dhabi].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=abu_dhabi].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "35",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=abu_dhabi].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "40",
+   "create": true,
+   "type": 1
   },
   {
    "op": "set",
@@ -6131,6 +7346,46 @@
   },
   {
    "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=silverstone_reverse]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=silverstone_reverse].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=silverstone_reverse].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "60",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=silverstone_reverse].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "31",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=silverstone_reverse].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "36",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
    "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=austria_reverse].TyreData_0",
    "field": "_MandatoryPitstopsOverride_instancecount_",
    "value": "1",
@@ -6187,6 +7442,46 @@
   },
   {
    "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=austria_reverse]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=austria_reverse].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=austria_reverse].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=austria_reverse].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "31",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=austria_reverse].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "36",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
    "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=zandvoort_reverse].TyreData_0",
    "field": "_MandatoryPitstopsOverride_instancecount_",
    "value": "1",
@@ -6240,6 +7535,46 @@
    "value": "default",
    "create": true,
    "type": 4
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=zandvoort_reverse]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=zandvoort_reverse].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=zandvoort_reverse].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "60",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=zandvoort_reverse].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "36",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=zandvoort_reverse].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "41",
+   "create": true,
+   "type": 1
   },
   {
    "op": "set",
@@ -6418,6 +7753,46 @@
   {
    "op": "set",
    "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=imola]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=imola].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=imola].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=imola].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "36",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=imola].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "41",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=imola]",
    "field": "_TrackNameData_instancecount_",
    "value": "1",
    "create": true,
@@ -6582,6 +7957,46 @@
    "value": "default",
    "create": true,
    "type": 4
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=portimao]",
+   "field": "_TrackPitData_instancecount_",
+   "value": "1",
+   "create": true,
+   "type": 0
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=portimao].TrackPitData_0",
+   "field": "_metadata_",
+   "value": "TrackPitData",
+   "create": true,
+   "type": 2
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=portimao].TrackPitData_0",
+   "field": "pitSpeedLimit",
+   "value": "80.0",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=portimao].TrackPitData_0",
+   "field": "pitStopTime_Dry",
+   "value": "28",
+   "create": true,
+   "type": 1
+  },
+  {
+   "op": "set",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990].TrackData[_metadata_=portimao].TrackPitData_0",
+   "field": "pitStopTime_Wet",
+   "value": "28",
+   "create": true,
+   "type": 1
   },
   {
    "op": "add-row",
@@ -6880,7 +8295,9 @@
     "options_tag": "gamesetup_f1_1990",
     "has_tyre_warmers": "False",
     "drs_allowed_lap_group": "f1_1990",
-    "tyre_regulations.allow_strategy_mandatory_stop_check": "False"
+    "tyre_regulations.allow_strategy_mandatory_stop_check": "False",
+    "pit_crew_training_probability_set": "f1_1990",
+    "pit_crew_training_probability_set_equal_performance": "f1_1990"
    }
   },
   {
