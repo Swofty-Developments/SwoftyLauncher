@@ -312,3 +312,20 @@ are set through the core's runtime string overrides (API v8) on a 1990 `career.l
 or another career's load; below SDK v8 the DLL only logs that the names stay stock.
 
 It logs `[f1-1990] sessions: set|cleared N session name string(s) (M failed)`.
+
+## Qualifying lap limit (`f1_1990_qualilaps.dll`)
+
+A separate DLL; option `quali_laps_1990` (default on). In Friday and Saturday qualifying of a 1990 weekend (session ids 5..14 under the `f1_1990` setup mode's weekend), every car, player and AI, may start 12 laps.
+
+| binding | address | use |
+|---|---|---|
+| `Sess_TyreAllocation_OnSessionStart` | 0x140bcc190 | wrapped (chains with `f1_1990_tyres.dll`): a 1990 qualifying session turns the rule on and resets every car's count; the player's car is the career entrant with the human flag (+0x4b bit 0x10), car index +0x82 |
+| `Game_Pitlane_SetVehicleStatus` | 0x1434bc540 | wrapped: keeps each car's pit status (read back from `[self+0x68+car*16]+4`) and the pit lane system; entering status 13 (LeavingGarage) starts a lap |
+| `session.lap` | core event | a line crossing while the car's status is 1 (OnTrack) or 15 (driving through the pit lane) starts a lap, when it comes at least 45 s after the car's last counted start |
+| `Sess_InGame_UpdateBase` | 0x142d566a0 | wrapped: on the next session frame, sends each queued car in with `Game_PitLane_PutVehicleInPitBox` (0x1434d1260, the red flag's call) when its status is still 1, 7, 13, 14 or 15 |
+
+A car that has started 12 laps and crosses the line again, or leaves its garage or its pit box again (status 13 or 7), is queued and put in its pit box (status 4). With the pit lane's forced-box byte (+0x300) set, the crew pushes it on into the garage; without it the car waits in the box, and each release sends it back again. Its count stays at 12. Garage exits and crossings follow the counter in `src/quali_laps.hpp` (host test `test/quali_laps_test.cpp`). The 45 s gap keeps a flashback over the line, a car reversing over it or a pit exit just before it from counting twice.
+
+The player gets a race HUD toast (`swofty::hud::toast`, English) at each lap start: `LAP n OF 12` with the laps left after it, `Last qualifying lap: box at the end of it` on lap 12, and `NO LAPS LEFT` with the chequered flag icon when the car is sent in. AI cars get no toast.
+
+Lines: `[f1-1990] quali laps: session <id>: 12 laps per car, player V<nn>`; `... V<nn>[ (player)] left its garage|crossed the line: lap <n> of 12 started` (every player lap, every AI lap 12, the first 8 other AI laps); `... V<nn>[ (player)] <crossed the line|left its garage|left its pit box> with all 12 laps used; sent to its garage on the next frame`; `... V<nn> put in its pit box (pit status <a> -> <b>, forced box <0|1>: ...)`; `... V<nn> is already on its way in (pit status <n>); not sent`. Without the core's `session.lap` (an older core) it logs `no session.lap` and only garage exits count.

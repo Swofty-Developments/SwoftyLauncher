@@ -39,6 +39,11 @@
       "binds": "native"
     },
     {
+      "id": "quali_laps_1990", "type": "toggle", "label": "1990 qualifying lap limit", "default": true,
+      "description": "Each car may start 12 laps in each qualifying session of a 1990 career; a car that has used them is sent to its pit box. A race HUD message shows the laps left.",
+      "binds": "native"
+    },
+    {
       "id": "rnd_look_1990", "type": "toggle", "label": "1990 R&D colours and icons", "default": true,
       "description": "Gives each R&D department a 1990 colour and a period icon in 1990 careers only; 2025 and 2026 careers keep the stock look.",
       "binds": "native"
@@ -200,7 +205,8 @@
       { "dll": "native/f1_1990_rnd.dll", "files": ["data/rnd-art.json", "data/rnd-strings.json"] },
       { "dll": "native/f1_1990_rndlook.dll", "files": ["data/rnd-look.json"] },
       { "dll": "native/f1_1990_wizard.dll", "files": ["data/calendar-1990.json"] }, { "dll": "native/f1_1990_intro.dll" },
-      { "dll": "native/f1_1990_sessions.dll", "files": ["data/session-strings.json"] }
+      { "dll": "native/f1_1990_sessions.dll", "files": ["data/session-strings.json"] },
+      { "dll": "native/f1_1990_qualilaps.dll" }
     ],
     "files": [
       { "source": "files/audio/v12_1990.bdl", "target": "audio/2025/bundles/v12_1990.bdl" },
