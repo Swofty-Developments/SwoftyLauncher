@@ -81033,6 +81033,1248 @@
     "native/src/core/netplay.cpp"
    ],
    "expect": "75 2B 41 80 BE D8 10 00 00 00"
+  },
+  {
+   "id": "game.track_space_get_distance_at_pos",
+   "section": ".xtls",
+   "pattern": "56 57 55 53 48 83 EC 38 4C 89 C7 48 89 D6 48 89 CB 4D 85 C0",
+   "match": "0x1405fc6d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1405fc6d0",
+   "kind": "func_start",
+   "names": [
+    "Game_TrackSpace_GetDistanceAtPos"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.track_spline_resolve_route_ends",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 05 00 00 C5 78 29 A4 24",
+   "match": "0x1405fed10",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1405fed10",
+   "kind": "func_start",
+   "names": [
+    "Game_TrackSpline_ResolveRouteEnds"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.engine_mgmt_clear_race_grid_penalties",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE C6 81",
+   "match": "0x1411d56e0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1411d56e0",
+   "kind": "func_start",
+   "names": [
+    "Game_EngineMgmt_ClearRaceGridPenalties"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.engine_mgmt_on_race_session_ended",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 48 8B 89 70 02 00",
+   "match": "0x1411d5860",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1411d5860",
+   "kind": "func_start",
+   "names": [
+    "Game_EngineMgmt_OnRaceSessionEnded"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.engine_mgmt_sync_grid_penalty_log",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 20 48 83 B9 20 03 00 00 00 0F 84 ?? ?? ?? ?? 48 89 CE 48 8B 81 78 02 00 00 80 B8 20 0F 00 00 00 0F 84 ?? ?? ?? ?? 48 8B 8E 70 02 00 00 48 8B 01 FF 90 A8 00 00 00 48 85 C0 0F",
+   "match": "0x1411d61e0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1411d61e0",
+   "kind": "func_start",
+   "names": [
+    "Game_EngineMgmt_SyncGridPenaltyLog"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.result_request_status",
+   "section": ".xtls",
+   "pattern": "56 57 55 53 48 83 EC 28 44 89 C7 89 D3 48 89 CE 80 B9 1F 01",
+   "match": "0x142c22ba0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142c22ba0",
+   "kind": "func_start",
+   "names": [
+    "Sess_Result_RequestStatus"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.result_request_d_n_f",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 30 89 D3 48 89 CE 80 B9 1F 01",
+   "match": "0x142ccf600",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142ccf600",
+   "kind": "func_start",
+   "names": [
+    "Sess_Result_RequestDNF"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.ruleset_finalise_results_default",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F9 29 BC 24",
+   "match": "0x142d0ed90",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d0ed90",
+   "kind": "func_start",
+   "names": [
+    "Sess_Ruleset_FinaliseResultsDefault"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.ruleset_force_finish_all_default",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 78 29 4C 24 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 4C 8B 6A 08",
+   "match": "0x142d1c370",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d1c370",
+   "kind": "func_start",
+   "names": [
+    "Sess_Ruleset_ForceFinishAllDefault"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.elim_ruleset_finalise_results",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 D7 48 89 CE 48 8B 01 FF 90 18",
+   "match": "0x142d25ee0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d25ee0",
+   "kind": "func_start",
+   "names": [
+    "Sess_ElimRuleset_FinaliseResults"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.elim_ruleset_retire_vehicle",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 30 48 89 D6 48 89 CF 48 8B 81 18 03 00 00",
+   "match": "0x142d26400",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d26400",
+   "kind": "func_start",
+   "names": [
+    "Sess_ElimRuleset_RetireVehicle"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.elim_ruleset_force_finish_all",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 44 89 C2 48 89 CE",
+   "match": "0x142d26ef0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d26ef0",
+   "kind": "func_start",
+   "names": [
+    "Sess_ElimRuleset_ForceFinishAll"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1_a_m_p_ruleset_finalise_results",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 06 00 00 C5 78 29 94 24 E0 06 00 00 C5 79 29 8C 24 D0 06 00 00 C5 78 29 84 24 C0 06 00 00 C5 F9 29 BC 24 B0 06 00 00 C5 F9 29 B4 24 A0 06 00 00 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 4C 8D 2D ?? ?? ?? ?? 75 58 B8 DB",
+   "match": "0x142d27ee0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d27ee0",
+   "kind": "func_start",
+   "names": [
+    "Game_F1AMPRuleset_FinaliseResults"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1_c_g_ruleset_force_finish_all",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 44 89 C3 48 89 D7 48 89 CE 48 8B 81 20 03",
+   "match": "0x142d2cf50",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d2cf50",
+   "kind": "func_start",
+   "names": [
+    "Game_F1CGRuleset_ForceFinishAll"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.f1_c_g_ruleset_on_vehicle_status_request",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 30 44 89 C2 48 89 CF 48 8B 89 28 03 00 00",
+   "match": "0x142d2d340",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d2d340",
+   "kind": "func_start",
+   "names": [
+    "Game_F1CGRuleset_OnVehicleStatusRequest"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.ruleset_setup_extra_time",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 8B 81 E0 02 00",
+   "match": "0x142d2e530",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d2e530",
+   "kind": "func_start",
+   "names": [
+    "Sess_Ruleset_SetupExtraTime"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.ruleset_retire_vehicle",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 30 48 89 D6 48 89 CF 48 8B 81 20 03 00 00",
+   "match": "0x142d2f120",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d2f120",
+   "kind": "func_start",
+   "names": [
+    "Sess_Ruleset_RetireVehicle"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.p_q_ruleset_finalise_results",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 D7 48 89 CE 48 8B 81 20 03 00",
+   "match": "0x142d32570",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d32570",
+   "kind": "func_start",
+   "names": [
+    "Sess_PQRuleset_FinaliseResults"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.pursuit_ruleset_finalise_results",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 D7 48 89 CE 80 3D",
+   "match": "0x142d33990",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d33990",
+   "kind": "func_start",
+   "names": [
+    "Sess_PursuitRuleset_FinaliseResults"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.challenge_ruleset_finalise_results",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 F9 29 BC 24",
+   "match": "0x142d3df50",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d3df50",
+   "kind": "func_start",
+   "names": [
+    "Sess_ChallengeRuleset_FinaliseResults"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.challenge_ruleset_update",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 C5 F8 28 F1",
+   "match": "0x142d3e5d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d3e5d0",
+   "kind": "func_start",
+   "names": [
+    "Sess_ChallengeRuleset_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.virtual_laps_ruleset_finalise_results",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 02 00 00 C5 F8 29 B4 24 C0 02 00 00 48 89 D7 48",
+   "match": "0x142d446f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d446f0",
+   "kind": "func_start",
+   "names": [
+    "Sess_VirtualLapsRuleset_FinaliseResults"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.virtual_laps_ruleset_force_finish_all",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 78 29 4C 24 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 44 89 C3 48",
+   "match": "0x142d45070",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d45070",
+   "kind": "func_start",
+   "names": [
+    "Sess_VirtualLapsRuleset_ForceFinishAll"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.session_reset_for_restart",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE 80 B9 6A 0E 00",
+   "match": "0x142d5eb80",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d5eb80",
+   "kind": "func_start",
+   "names": [
+    "Sess_Session_ResetForRestart"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.progress_sync_result_record",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 60 C5 F9 29 74 24 50 80 B9 2C 0B",
+   "match": "0x142f67eb0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f67eb0",
+   "kind": "func_start",
+   "names": [
+    "Sess_Progress_SyncResultRecord"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.vehicle_system_dtor",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 C7 81 80",
+   "match": "0x142fe77f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142fe77f0",
+   "kind": "mid",
+   "names": [
+    "Game_VehicleSystem_Dtor"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [],
+   "func_start": "0x142fe77f0",
+   "expect": "41 56 56 57 53 48 83 EC 28 89 D7 48 89 CE 48 8D 05"
+  },
+  {
+   "id": "session.rules_apply_black_flag",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 58 C5 F8 29 74 24 40 80",
+   "match": "0x14356ac30",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14356ac30",
+   "kind": "func_start",
+   "names": [
+    "Sess_Rules_ApplyBlackFlag"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.particles_create_stored_effect",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CF 48 8B 81 60 F9 A5",
+   "match": "0x143af8670",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143af8670",
+   "kind": "func_start",
+   "names": [
+    "Game_Particles_CreateStoredEffect"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.particles_update_emitters",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 F8 A6 00",
+   "match": "0x143af9c70",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143af9c70",
+   "kind": "func_start",
+   "names": [
+    "Game_Particles_UpdateEmitters"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.particles_create_effect_node",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 44",
+   "match": "0x143b02910",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143b02910",
+   "kind": "func_start",
+   "names": [
+    "Game_Particles_CreateEffectNode"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.particles_reset_effects_since_mark",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 44 8B",
+   "match": "0x143b05370",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143b05370",
+   "kind": "func_start",
+   "names": [
+    "Game_Particles_DeleteEffectsSinceMark"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.particles_restore_long_lived_particles",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 7C 24 60 C5 F8 29 74 24 50 48 8B 81 98",
+   "match": "0x143b0e6c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143b0e6c0",
+   "kind": "func_start",
+   "names": [
+    "Game_Particles_RestoreLongLivedParticles"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.particles_bind_mesh_model",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 4D 89 CE 4C 89 C3",
+   "match": "0x143b133f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143b133f0",
+   "kind": "func_start",
+   "names": [
+    "Game_Particles_BindMeshModel"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "car.deformation_create_body",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 83 7A 40",
+   "match": "0x1440cc1f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1440cc1f0",
+   "kind": "func_start",
+   "names": [
+    "Car_Deformation_CreateBody"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "car.deformation_destroy_body",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 20 48 89 D3 48 89 CE BA 70 01",
+   "match": "0x1440cc840",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1440cc840",
+   "kind": "func_start",
+   "names": [
+    "Car_Deformation_DestroyBody"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "car.deformation_reserve_pool",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 C5 78 29 94 24 00 01 00 00 C5 78 29 8C 24 F0 00 00 00 C5 78 29 84 24 E0 00 00 00 C5 F8 29 BC 24 D0 00 00 00 C5 F8 29 B4 24 C0 00 00 00 48 89 D7 48 89 CE 48 8B",
+   "match": "0x1440cc950",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1440cc950",
+   "kind": "func_start",
+   "names": [
+    "Car_Deformation_ReservePool"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "car.deformation_release_particles",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 8B 42 10 48 3B 42 08 0F",
+   "match": "0x1440cd3f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1440cd3f0",
+   "kind": "func_start",
+   "names": [
+    "Car_Deformation_ReleaseParticles"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "car.deformation_clear_pool",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 83 EC 30 C5 F8 29 74 24 20 48 89 CE 48 8B 89 90 0A 00 00 FF",
+   "match": "0x1440cd610",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1440cd610",
+   "kind": "func_start",
+   "names": [
+    "Car_Deformation_ClearPool"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "car.deformation_acquire_particles",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 01 00 00 C5 78 29 9C 24",
+   "match": "0x144108740",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144108740",
+   "kind": "func_start",
+   "names": [
+    "Car_Deformation_AcquireParticles"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.breakable_deactivate_core",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 89 D7",
+   "match": "0x14458e7d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14458e7d0",
+   "kind": "mid",
+   "names": [
+    "Game_Breakable_ResetPieces"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [],
+   "func_start": "0x14458e7d0",
+   "expect": "41 57 41 56 41 55"
+  },
+  {
+   "id": "game.breakable_spawn_piece_render_model",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 04 00 00 C5 78 29 A4 24",
+   "match": "0x144590c40",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144590c40",
+   "kind": "func_start",
+   "names": [
+    "Game_Breakable_SpawnPieceRenderModel"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.track_space_load_xml",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 C8 80 00",
+   "match": "0x1445eb600",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1445eb600",
+   "kind": "func_start",
+   "names": [
+    "Game_TrackSpace_LoadXml"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.track_space_range_overlaps",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 C5 F8 28",
+   "match": "0x1445f8640",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1445f8640",
+   "kind": "func_start",
+   "names": [
+    "Game_TrackSpace_RangeOverlaps"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "car.vehicle_auto_reset_check",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 BC 24 80 00 00 00 C5 F8 29 74 24 70 80 79",
+   "match": "0x144606f20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144606f20",
+   "kind": "mid",
+   "names": [
+    "Car_Vehicle_AutoResetCheck"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [],
+   "func_start": "0x144606f20",
+   "expect": "41 57 41 56 41 55"
+  },
+  {
+   "id": "car.physics_data_dump_base",
+   "section": ".xtls",
+   "pattern": "56 57 48 81 EC 48 02 00 00 C5 78 29 BC 24 30 02",
+   "match": "0x144647250",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144647250",
+   "kind": "mid",
+   "names": [
+    "Car_PhysicsData_DumpBase"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [],
+   "func_start": "0x144647250",
+   "expect": "56 57 48 81 EC 48"
+  },
+  {
+   "id": "car.read_vtf_convex_hulls",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 C5 78 29 9C 24",
+   "match": "0x14464aaa0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14464aaa0",
+   "kind": "mid",
+   "names": [
+    "Car_Read_VtfConvexHulls"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [],
+   "func_start": "0x14464aaa0",
+   "expect": "41 57 41 56 41 55"
+  },
+  {
+   "id": "car.collision_build_hull_shapes",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 A8 1E 00",
+   "match": "0x14464c560",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14464c560",
+   "kind": "mid",
+   "names": [
+    "Car_Collision_BuildHullShapes"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [],
+   "func_start": "0x14464c560",
+   "expect": "41 57 41 56 41 55"
+  },
+  {
+   "id": "car.tyre_deformation_init",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 F8 29 BC 24 E0 00 00 00 C5 F8 29 B4 24 D0 00 00 00 48 89 CE 45 31 ED 4C",
+   "match": "0x14465b8c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14465b8c0",
+   "kind": "mid",
+   "names": [
+    "Car_TyreDeformation_Init"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [],
+   "func_start": "0x14465b8c0",
+   "expect": "41 57 41 56 41 55"
+  },
+  {
+   "id": "game.particles_find_vehicle_index",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 20 48 89 D3 48 89 CE 48 8B 89 68 47 02 00",
+   "match": "0x144704a40",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144704a40",
+   "kind": "func_start",
+   "names": [
+    "Game_Particles_FindVehicleIndex"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "car.tyre_deformation_dtor",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 78 C5 F8 29 74 24 60 89",
+   "match": "0x144760ec0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144760ec0",
+   "kind": "mid",
+   "names": [
+    "Car_TyreDeformation_Dtor"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [],
+   "func_start": "0x144760ec0",
+   "expect": "41 56 56 57 53 48"
+  },
+  {
+   "id": "game.particles_register_instance",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 50 48 89 CE 48 89 54 24 28 48 8B 49 08 FF 15 ?? ?? ?? ?? 48 8D 9E 90 00 00 00 48 8D 54 24 28 48 89 D9 E8 ?? ?? ?? ?? 48 89 C7 48 C1 E7 04 48 03 BE A8 00 00 00 4C 8B A6 B0 00 00 00 4C 39 E7 74 6B 80",
+   "match": "0x14477d2d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14477d2d0",
+   "kind": "mid",
+   "names": [
+    "Game_Particles_RegisterInstance"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [],
+   "func_start": "0x14477d2d0",
+   "expect": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 50 48 89 CE 48 89 54 24 28 48 8B 49 08 FF 15"
   }
  ]
 }
