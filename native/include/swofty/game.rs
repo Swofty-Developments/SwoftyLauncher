@@ -2435,6 +2435,8 @@ pub type Game_PitLane_MoveDownSpline_t = unsafe extern "C" fn(
     p8: bool,
     p9: bool,
 );
+pub type Game_PitLane_PutVehicleInPitBox_t = unsafe extern "C" fn(pitlane: *mut c_void, vehicle: u8);
+pub type Game_Pitlane_SetVehicleStatus_t = unsafe extern "C" fn(self_: *mut c_void, vehicle: u8, status: u32);
 pub type Game_Place_Vehicle_t = unsafe extern "C" fn(
     car: *mut c_void,
     tag: *const c_char,
@@ -3172,6 +3174,11 @@ pub mod bindings {
     };
     pub const Game_PitLane_MoveDownSpline: Binding = Binding {
         id: "Game_PitLane_MoveDownSpline",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitLane_PutVehicleInPitBox: Binding = Binding {
+        id: "Game_PitLane_PutVehicleInPitBox",
         kind: "func",
         status: Status::Experimental,
     };
@@ -5038,6 +5045,11 @@ pub mod bindings {
     pub const site_Sess_InGameSessionCompleteAiCall: Binding = Binding {
         id: "site_Sess_InGameSessionCompleteAiCall",
         kind: "call",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PuPanel_SlotHolder: Binding = Binding {
+        id: "site_Sess_PuPanel_SlotHolder",
+        kind: "site",
         status: Status::Experimental,
     };
     pub const site_Team_LoadInsertCall: Binding = Binding {
