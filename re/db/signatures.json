@@ -81264,6 +81264,1758 @@
     }
    ],
    "used_by": []
+  },
+  {
+   "id": "game.entrants_manager_resolve_and_close_document",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 40 48 8B 81 90 02 00 00 48 8B B0 28",
+   "match": "0x140bb36a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140bb36a0",
+   "kind": "func_start",
+   "names": [
+    "Game_EntrantsManager_ResolveAndCloseDocument"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.custom_driver_network_message_handler_replace_replicated_driver",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 D8 15 00",
+   "match": "0x14257ae80",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14257ae80",
+   "kind": "func_start",
+   "names": [
+    "Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.network_ready_set_relevant_set",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 4C 89 44 24 40 48",
+   "match": "0x142cf3cb0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142cf3cb0",
+   "kind": "func_start",
+   "names": [
+    "Game_NetworkReady_SetRelevantSet"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.matching_context_on_post_race_result_sync_enter",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 20 48 8B 81 B8 0C 00 00 48 8B B0 D8",
+   "match": "0x142d7e200",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d7e200",
+   "kind": "func_start",
+   "names": [
+    "Game_MatchingContext_OnPostRaceResultSyncEnter"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.start_lights_sync_must_advance",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 48 89 CF 4C 8B B1 B0 0D",
+   "match": "0x142dacbb0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142dacbb0",
+   "kind": "func_start",
+   "names": [
+    "Sess_StartLightsSync_MustAdvance"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.game_session_manager_connect",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 48 89 D7 49",
+   "match": "0x143054470",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143054470",
+   "kind": "func_start",
+   "names": [
+    "Game_GameSessionManager_Connect"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.game_session_matching_career_on_create_session_complete",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 40 44 89 C7 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85",
+   "match": "0x143071a30",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143071a30",
+   "kind": "func_start",
+   "names": [
+    "Game_GameSessionMatchingCareer_OnCreateSessionComplete"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.game_session_matching_career_create_session",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 58 02 00 00 C5 F8 29 B4",
+   "match": "0x143071dd0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143071dd0",
+   "kind": "func_start",
+   "names": [
+    "Game_GameSessionMatchingCareer_CreateSession"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.game_session_matching_career_join_session",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 81 EC 98 00 00 00 48 89 CE 80",
+   "match": "0x143072b10",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143072b10",
+   "kind": "func_start",
+   "names": [
+    "Game_GameSessionMatchingCareer_JoinSession"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.game_session_matching_custom_search_session",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 38 48 89 CE 80 3D ?? ?? ?? ?? 01 75 74 B8 F8 00",
+   "match": "0x14307b750",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14307b750",
+   "kind": "func_start",
+   "names": [
+    "Game_GameSessionMatchingCustom_SearchSession"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.game_session_matching_custom_search_session_with_presence",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 4C 89 CB 4D 89 C6 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 75 6B B8 F8",
+   "match": "0x14307b950",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14307b950",
+   "kind": "func_start",
+   "names": [
+    "Game_GameSessionMatchingCustom_SearchSessionWithPresence"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.game_session_matching_f1_w_social_g_p_join_session",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 81 EC 90 00 00 00 48 89 CE 80 3D",
+   "match": "0x14307e150",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14307e150",
+   "kind": "func_start",
+   "names": [
+    "Game_GameSessionMatchingF1WSocialGP_JoinSession"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.game_session_matching_f1_w_social_g_p_create_session_for_members",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 30 4C 89 C3 48 89 D7 48 89 CE 80 3D",
+   "match": "0x14307e470",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14307e470",
+   "kind": "func_start",
+   "names": [
+    "Game_GameSessionMatchingF1WSocialGP_CreateSessionForMembers"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.game_session_matching_f1_w_social_g_p_on_create_session_complete",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 40 44 89 C6 89 D3 48 89 CF 80",
+   "match": "0x14307e620",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14307e620",
+   "kind": "func_start",
+   "names": [
+    "Game_GameSessionMatchingF1WSocialGP_OnCreateSessionComplete"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.game_session_matching_f1_w_social_g_p_create_session",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 50 02 00 00 C5 F8",
+   "match": "0x14307e8c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14307e8c0",
+   "kind": "func_start",
+   "names": [
+    "Game_GameSessionMatchingF1WSocialGP_CreateSession"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.game_session_matching_f1_w_social_g_p_cancel",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 38 89 D6 48 89 CF 80 3D",
+   "match": "0x14307f340",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14307f340",
+   "kind": "func_start",
+   "names": [
+    "Game_GameSessionMatchingF1WSocialGP_Cancel"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.game_session_matching_hopper_common_on_session_create_complete",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 55 53 48 83 EC 60 44 89 C7 89 D3 48",
+   "match": "0x1430860a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1430860a0",
+   "kind": "func_start",
+   "names": [
+    "Game_GameSessionMatchingHopperCommon_OnSessionCreateComplete"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.game_session_migration_manager_send_self_state",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 05 00 00 4C 8B 61 68 4D",
+   "match": "0x143088690",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143088690",
+   "kind": "func_start",
+   "names": [
+    "Game_GameSessionMigrationManager_SendSelfState"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.game_session_migration_manager_set_peer_status",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 48 48 85 C9 0F 84",
+   "match": "0x143089120",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143089120",
+   "kind": "func_start",
+   "names": [
+    "Game_GameSessionMigrationManager_SetPeerStatus"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.game_session_migration_manager_on_mutable_role_changed",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 50 89 D7 48 89 CE 80 3D",
+   "match": "0x143089b00",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143089b00",
+   "kind": "func_start",
+   "names": [
+    "Game_GameSessionMigrationManager_OnMutableRoleChanged"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.network_u_i_start_ranked_division_search",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6D",
+   "match": "0x1430afe20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1430afe20",
+   "kind": "func_start",
+   "names": [
+    "Game_NetworkUI_StartRankedDivisionSearch"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.network_u_i_start_ranked_rematching",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 60 48 89 CE 80 3D ?? ?? ?? ?? 01 48 8D 1D",
+   "match": "0x1430b06e0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1430b06e0",
+   "kind": "func_start",
+   "names": [
+    "Game_NetworkUI_StartRankedRematching"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.invite_manager_join",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 83 EC 40 48 89 D7 48 89 CE 4C 8D 71",
+   "match": "0x1430b0a60",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1430b0a60",
+   "kind": "func_start",
+   "names": [
+    "Game_InviteManager_Join"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.game_session_u_i_shutdown",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 02 00 00 C5 F8 29 B4 24 10 02 00 00 48 89 CE 48 8B 89 D8 0F",
+   "match": "0x1430dda70",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1430dda70",
+   "kind": "func_start",
+   "names": [
+    "Game_GameSessionUI_Shutdown"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.matching_context_on_session_lobby",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 60 48 89 CE 48 8B 49 28 48 85 C9 0F",
+   "match": "0x1430f1750",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1430f1750",
+   "kind": "func_start",
+   "names": [
+    "Game_MatchingContext_OnSessionLobby"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.matching_context_on_session_enter",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 48 89 CE C6 81",
+   "match": "0x1430f1ef0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1430f1ef0",
+   "kind": "func_start",
+   "names": [
+    "Game_MatchingContext_OnSessionEnter"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.matching_context_on_session_restart",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 66 B8 00 01 00 00",
+   "match": "0x1430f2cb0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1430f2cb0",
+   "kind": "func_start",
+   "names": [
+    "Game_MatchingContext_OnSessionRestart"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.entrants_manager_resolve_entrants",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 29 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 79 7F",
+   "match": "0x143109bc0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143109bc0",
+   "kind": "func_start",
+   "names": [
+    "Game_EntrantsManager_ResolveEntrants"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.entrants_manager_register_entrant",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 70 08",
+   "match": "0x14310ac90",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14310ac90",
+   "kind": "func_start",
+   "names": [
+    "Game_EntrantsManager_RegisterEntrant"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.custom_driver_network_message_handler_add_replicated_driver",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 A8 11 00 00 E8 ?? ?? ?? ?? 48 29 C4 4D 89 CF",
+   "match": "0x14310ae20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14310ae20",
+   "kind": "func_start",
+   "names": [
+    "Game_CustomDriverNetworkMessageHandler_AddReplicatedDriver"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.entrants_manager_handle_custom_s_e_livery_replace",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 48 89 D3 48 89 CE 80 3D",
+   "match": "0x143113b60",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143113b60",
+   "kind": "func_start",
+   "names": [
+    "Game_EntrantsManager_HandleCustomSELiveryReplace"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.entrants_manager_claim_free_entrant",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 4C 89 C3 48 89",
+   "match": "0x143116a90",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143116a90",
+   "kind": "func_start",
+   "names": [
+    "Game_EntrantsManager_ClaimFreeEntrant"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.entrants_manager_on_mutable_role_changed",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 20 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5A B8 63 00",
+   "match": "0x1431187c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1431187c0",
+   "kind": "func_start",
+   "names": [
+    "Game_EntrantsManager_OnMutableRoleChanged"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.custom_driver_network_message_handler_create_new_driver_info",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4D 89 CE 4C 89 C3 48 89 D6 48 89 4C",
+   "match": "0x14312fd30",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14312fd30",
+   "kind": "func_start",
+   "names": [
+    "Game_CustomDriverNetMsg_CreateDriverInfoFromNameInfo"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.custom_driver_network_message_handler_update_replicated_driver",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 81 EC 58 0C 00 00 4C 89 C3 48",
+   "match": "0x143131a10",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143131a10",
+   "kind": "func_start",
+   "names": [
+    "Game_CustomDriverNetworkMessageHandler_UpdateReplicatedDriver"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.custom_driver_network_message_handler_remove_player_repl_data",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 55 53 48 81 EC 60 0C 00 00 4D 89 CE",
+   "match": "0x143131f70",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143131f70",
+   "kind": "func_start",
+   "names": [
+    "Game_CustomDriverNetworkMessageHandler_RemovePlayerReplData"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.custom_driver_network_message_handler_create_new_driver_info_2",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 83 EC 60 4C 89 C3 48 89 D6 48 89 CF 80 3D",
+   "match": "0x143132540",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143132540",
+   "kind": "func_start",
+   "names": [
+    "Game_CustomDriverNetMsg_CreateDriverInfoFromDriverInfo"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.custom_driver_network_message_handler_find_or_create_driver_stat_id",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 00 06 00",
+   "match": "0x143134e60",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143134e60",
+   "kind": "func_start",
+   "names": [
+    "Game_CustomDriverNetworkMessageHandler_FindOrCreateDriverStatId"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.custom_driver_network_message_handler_handle_response",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC F8 00 00 00 44 89 C7 48 89 D3 48 89",
+   "match": "0x1431352c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1431352c0",
+   "kind": "func_start",
+   "names": [
+    "Game_CustomDriverNetworkMessageHandler_HandleResponse"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.driver_customisation_replication_manager_replace_customisation",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 55 53 B8 28 C6 00 00 E8",
+   "match": "0x14313c660",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14313c660",
+   "kind": "func_start",
+   "names": [
+    "Game_DriverCustomisationReplicationManager_ReplaceCustomisation"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.driver_customisation_replication_manager_replace_customisatn_2",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 B8 28 C6 00 00 E8 ?? ?? ?? ?? 48",
+   "match": "0x14313ce20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14313ce20",
+   "kind": "func_start",
+   "names": [
+    "Game_DriverCustomisationReplicationManager_ReplaceCustomisatn_2"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.vehicle_customisation_replication_manager_add_replicated_player",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 40 44 89 C6 48 89 D7 48 89 CB",
+   "match": "0x143141420",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143141420",
+   "kind": "func_start",
+   "names": [
+    "Game_VehicleCustomisationReplicationManager_AddReplicatedPlayer"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ranked_matching_processor_create_session",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 89 D5 48 8B",
+   "match": "0x143150ba0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143150ba0",
+   "kind": "func_start",
+   "names": [
+    "Game_RankedMatchingProcessor_CreateSession"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.ranked_matching_processor_search",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 48 8B 41 40",
+   "match": "0x143159a60",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143159a60",
+   "kind": "func_start",
+   "names": [
+    "Game_RankedMatchingProcessor_Search"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.game_session_migration_manager_clear_have_results",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 41 10 48 8B 80",
+   "match": "0x14315a170",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14315a170",
+   "kind": "func_start",
+   "names": [
+    "Game_GameSessionMigrationManager_ClearHaveResults"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.matching_context_on_start_rematch",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 30 48 89 CE 0F B6 81 82 00 00 00 0F",
+   "match": "0x14315b270",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14315b270",
+   "kind": "func_start",
+   "names": [
+    "Game_MatchingContext_OnStartRematch"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.matching_context_setup_ranked_game_session",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8B 41 10 48 8B 88 E8 03 00 00 BA 01 00 00 00 E8 ?? ?? ?? ?? 48 8B 46 10 48 8B 98 18 04 00 00 48 8B 80 F8 04 00 00 BF 14 00 00 00 48 85 C0 74 12 48 8B 80 10 0E 00 00 48 85 C0 74 06 8B B8 68 02 00 00 83 7B 08 01 7F 5F 48 8B 8B A0 04 00 00 48 C7 44 24 28 00",
+   "match": "0x14315b6a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14315b6a0",
+   "kind": "func_start",
+   "names": [
+    "Game_MatchingContext_SetupRankedGameSession"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.matching_context_set_ranked_search_params",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC A0 00 00 00 48 89 CE 80 3D",
+   "match": "0x14315be10",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14315be10",
+   "kind": "func_start",
+   "names": [
+    "Game_MatchingContext_SetRankedSearchParams"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.invite_manager_change_state",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 40 0F B6 41 10 38 D0 0F 84",
+   "match": "0x143161bb0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143161bb0",
+   "kind": "func_start",
+   "names": [
+    "Game_InviteManager_ChangeState"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.invite_manager_on_career_loaded_so_c",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 30 80 79 10 07 0F 85",
+   "match": "0x143162630",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143162630",
+   "kind": "func_start",
+   "names": [
+    "Game_InviteManager_OnCareerLoadedSoC"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.invite_manager_start_invite_matching",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 55 53 48 81 EC 88 01 00 00 C5 F8 29 B4 24 70 01 00 00 BD 16 00 00",
+   "match": "0x143163e90",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143163e90",
+   "kind": "func_start",
+   "names": [
+    "Game_InviteManager_StartInviteMatching"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.invite_manager_on_join_completed",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 CE 80 7A 21 00 74 13 48",
+   "match": "0x143165bd0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143165bd0",
+   "kind": "func_start",
+   "names": [
+    "Game_InviteManager_OnJoinCompleted"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.invite_manager_on_join_completed_2",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 44 89 C6 48 89 CF 84 D2 74 13",
+   "match": "0x143165c90",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143165c90",
+   "kind": "func_start",
+   "names": [
+    "Game_InviteManager_OnJoinCompleted_2"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.custom_driver_network_message_handler_remove_custom_driver",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 D6 48 8B 79 08 80 3D",
+   "match": "0x1431bf4a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1431bf4a0",
+   "kind": "func_start",
+   "names": [
+    "Game_CustomDriverNetworkMessageHandler_RemoveCustomDriver"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.network_ready_on_unready_message",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F9 29 74 24 30 48 8B",
+   "match": "0x143226490",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143226490",
+   "kind": "func_start",
+   "names": [
+    "Game_NetworkReady_OnUnreadyMessage"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.network_ready_send_super_ready",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 58 48 89 CE 48 8B 41 38",
+   "match": "0x1432270b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432270b0",
+   "kind": "func_start",
+   "names": [
+    "Game_NetworkReady_SendSuperReady"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.network_ready_on_pause_send_super_ready",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 60 41 8B 40 10 83 E0 FE 83 F8 02 0F 85 ?? ?? ?? ?? 48 89 CE C5 FB 10 41 68 C5 F9 2E 05 ?? ?? 17 02 0F 82 ?? ?? ?? ?? C6",
+   "match": "0x143228890",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143228890",
+   "kind": "func_start",
+   "names": [
+    "Game_NetworkReady_OnPauseSendSuperReady"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.network_ready_on_unpause_send_super_ready",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 60 41 8B 40 10 83 E0 FE 83 F8 02 0F 85 ?? ?? ?? ?? 48 89 CE C5 FB 10 41 68 C5 F9 2E 05 ?? ?? 17 02 0F 82 ?? ?? ?? ?? C4",
+   "match": "0x1432289f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432289f0",
+   "kind": "func_start",
+   "names": [
+    "Game_NetworkReady_OnUnpauseSendSuperReady"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.start_lights_machine_set_proxy",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 7F",
+   "match": "0x143238470",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143238470",
+   "kind": "func_start",
+   "names": [
+    "Sess_StartLightsMachine_SetProxy"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.network_ready_update_o_s_q_skip",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 83 EC 70 48 89 D6 48 89 CF 48 8B 81",
+   "match": "0x1436f0380",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1436f0380",
+   "kind": "func_start",
+   "names": [
+    "Game_NetworkReadyState_UpdateOsqSkip"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.net_connection_store_remove_connection",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 31 F6 48 83",
+   "match": "0x14405bb30",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14405bb30",
+   "kind": "func_start",
+   "names": [
+    "Ne_NetConnectionStore_RemoveConnection"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.net_system_classic_matchmaking_join_session",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 50 48 89 CF 48 8B 89 48 01 00 00 48 85 C9 74 6E 8B 87",
+   "match": "0x144064830",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144064830",
+   "kind": "func_start",
+   "names": [
+    "Ne_NetSystemClassicMatchmaking_JoinSession"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.net_transport_common_set_my_connection_id",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 30 80 FA 3F 0F 87 ?? ?? ?? ?? 48 89",
+   "match": "0x144069620",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144069620",
+   "kind": "func_start",
+   "names": [
+    "Ne_NetTransportCommon_SetMyConnectionId"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.net_transport_common_set_local_connectivity",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 C8 44 0F B6 91 00 03 00",
+   "match": "0x1440697c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1440697c0",
+   "kind": "func_start",
+   "names": [
+    "Ne_NetTransportCommon_SetLocalConnectivity"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.net_transport_common_handle_server_disconnection",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01 75 7C B8 AC 00",
+   "match": "0x1440730e0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1440730e0",
+   "kind": "func_start",
+   "names": [
+    "Ne_NetTransportCommon_HandleServerDisconnection"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.net_transport_common_free_connection_i_d",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 0F B6 3A 85 FF 0F 84",
+   "match": "0x14407b150",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14407b150",
+   "kind": "func_start",
+   "names": [
+    "Ne_NetTransportCommon_FreeConnectionID"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.net_transport_common_broadcast_removed_connection_to_clients",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 05 00 00 89",
+   "match": "0x14407b240",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14407b240",
+   "kind": "func_start",
+   "names": [
+    "Ne_NetTransportCommon_BroadcastRemovedConnectionToClients"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.net_session_f1_o_s_set_state_creating",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 30 0F B6 81 A8 08 00 00 48 83 F8 03",
+   "match": "0x1440823f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1440823f0",
+   "kind": "func_start",
+   "names": [
+    "Ne_NetSessionF1OS_SetStateCreating"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.net_session_f1_o_s_set_session_info",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4C 89 C3 48 89 D7 48 89 CE 0F B6 81",
+   "match": "0x1440824c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1440824c0",
+   "kind": "func_start",
+   "names": [
+    "Ne_NetSessionF1OS_SetSessionInfo"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.net_session_f1_o_s_call_session_browser_create_session",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 81 EC E0 0D 00 00 C5 F8",
+   "match": "0x144084170",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144084170",
+   "kind": "func_start",
+   "names": [
+    "Ne_NetSessionF1OS_CallSessionBrowserCreateSession"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.net_session_f1_o_s_update_attributes",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 09 00 00 C5",
+   "match": "0x144089620",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144089620",
+   "kind": "func_start",
+   "names": [
+    "Ne_NetSessionF1OS_UpdateAttributes"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.net_transport_l_a_n_on_connection_lost",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 8B 42 08 89",
+   "match": "0x144092b90",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144092b90",
+   "kind": "func_start",
+   "names": [
+    "Ne_NetTransportLAN_OnConnectionLost"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.net_transport_migrate_connections",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 4C 8D 2D",
+   "match": "0x14409a3b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14409a3b0",
+   "kind": "func_start",
+   "names": [
+    "Ne_NetTransport_MigrateConnections"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
   }
  ]
 }
