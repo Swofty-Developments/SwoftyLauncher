@@ -81033,6 +81033,331 @@
     "native/src/core/netplay.cpp"
    ],
    "expect": "75 2B 41 80 BE D8 10 00 00 00"
+  },
+  {
+   "id": "session.entrant_vec_push_back",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 31 DB 48 8D AC 24 70 02 00 00 48",
+   "match": "0x140bac242",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x140bacc60",
+   "kind": "func_start",
+   "names": [
+    "Sess_EntrantVec_PushBack"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.robin_hood_map_u8_f_insert",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 8B 44 24 30 85 C0 74 0E 83 F8 03",
+   "match": "0x1411e5cc5",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x1412a0f10",
+   "kind": "func_start",
+   "names": [
+    "Ne_RobinHoodMap_U8F_Insert"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.find_vehicle",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 48 85 C0 0F 84 ?? ?? ?? ?? 80 3D ?? ?? ?? ?? 01 75 6E B9",
+   "match": "0x14022de49",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x14243fd10",
+   "kind": "func_start",
+   "names": [
+    "Sess_ResolveEntityHandle"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.sort_garages_thunk",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? C6 86 19 01 00 00 01 48 89 F1 E8",
+   "match": "0x142d4a7a6",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x142a3f4c0",
+   "kind": "func_start",
+   "names": [
+    "Sess_SortAssignGarages_Thunk"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.post_bus_message_queued",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 41 C6 46 40 00 48 8B 8F B8 0D 00",
+   "match": "0x142da2a53",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x142cb7130",
+   "kind": "func_start",
+   "names": [
+    "Ne_Post_BusMessageQueued_FlashbackUsed"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.formation_lap_logic_is_active_type0",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 89 C3 48 89 F9 E8 ?? ?? ?? ?? 84 DB 75 08 84 C0 75 04 31",
+   "match": "0x14020b366",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x1436183e0",
+   "kind": "func_start",
+   "names": [
+    "Sess_FormationLapLogic_IsActiveType0"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.formation_lap_logic_is_active_other_type",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 84 DB 75 08 84 C0 75 04 31 ED EB",
+   "match": "0x14020b370",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x1436184e0",
+   "kind": "func_start",
+   "names": [
+    "Sess_FormationLapLogic_IsActiveOtherType"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.net_connection_store_dtor",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 85 FF 74 4B 8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 48 8B 14 25 58 00 00 00 48 8B 0C CA 3B 81 04 00 00 00 0F 8F ?? ?? ?? ?? 48 8B 3D ?? ?? ?? ?? 48 8B 07 48 89 F9 48 89 F2 FF 90 E0 00 00 00 84 C0 74 0C 48 8B 07 48 89 F9 48 89 F2 FF 50 38 48 89 F0 48 83 C4 20 5B",
+   "match": "0x1440ae296",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x14405a2c0",
+   "kind": "func_start",
+   "names": [
+    "Ne_NetConnectionStore_Dtor"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.net_connection_store_deinitialise",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 31 C0 C5 F8 28 74 24 70 48 81 C4 88 00 00 00 5B 5D 5F 5E 41 5C 41 5D 41 5E 41 5F C3 CC CC 56",
+   "match": "0x14409367d",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x14405aa80",
+   "kind": "func_start",
+   "names": [
+    "Ne_NetConnectionStore_Deinitialise"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.world_instance_pre_warm_textures",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 40 20 48 8B 88 08 02 00 00 48 85 C9 74 12",
+   "match": "0x140c7ac22",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x144478ce0",
+   "kind": "func_start",
+   "names": [
+    "Ne_WorldInstance_PreWarmTextures"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.world_instance_release_warmed_textures",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 80 3D ?? ?? ?? ?? 01 75 69 B8 D2",
+   "match": "0x140c7addb",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x144478fc0",
+   "kind": "func_start",
+   "names": [
+    "Ne_WorldInstance_ReleaseWarmedTextures"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.world_instance_activate_all_world_objects",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 80 BE E1 05 00 00 00 0F 84",
+   "match": "0x14023838d",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x1444bcd80",
+   "kind": "func_start",
+   "names": [
+    "Ne_WorldInstance_ActivateAllWorldObjects"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.world_instance_deactivate_all_world_objects",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 80 BE E1 05 00 00 00 0F 85",
+   "match": "0x140239159",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 0
+   },
+   "target": "0x1444bcf00",
+   "kind": "func_start",
+   "names": [
+    "Ne_WorldInstance_DeactivateAllWorldObjects"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
   }
  ]
 }
