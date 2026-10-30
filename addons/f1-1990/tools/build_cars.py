@@ -13,8 +13,16 @@ common.erp. No 2026 archive, row or file is touched.
                          deltas, which add per vertex) sits at the engine's peak power rpm, the power curve of its
                          V8/V10/V12 torque shape through that peak, the limiter LIMITER_MARGIN_RPM (500) above it,
                          RevsEngineBrakingSpline on the same grid, WearICERevsSpline scaled by the limiter ratio
-  GearBox                stock 8 ratios; the final drive keeps the stock top-gear speed at the limiter; the automatic
-                         shift speeds (multiples of the speed at peak power) keep their stock fraction of the limiter
+  GearBox                GEARS forward gears (Ferrari 7, every other car 6, as the stock F2 car: GearRatio past the top
+                         gear 0, no GearUpSpeedMultiple from the top gear, no GearDnSpeedMultiple above it); 1st keeps
+                         the stock 1st gear's speed at the limiter, the top gear (ratio 1.0) reaches the limiter at
+                         TOP_SPEED_KMH x TOP_GEAR_MARGIN (1.12, room for a tow), the gears between follow the stock
+                         8-speed progression (log spacing) stretched over the N gears; modern keeps the stock top-gear
+                         speed; the automatic upshift (a multiple of the speed at peak power in the gear) sits at 72.5 %
+                         (1st) and 84 % (2nd) of the limiter, as on the stock car, and at 96 % from 3rd up; the
+                         downshift keeps the stock fraction of the limiter in the lower gear at the same place in the
+                         box, at least 5 % under that gear's upshift; shift times SHIFT_MANUAL for the H-pattern cars,
+                         SHIFT_SEMI_AUTO for the Ferrari 641 (stock 2026 upshift 0.03/0.015/0.045 s)
   FuelTank               BSFC scaled so fuel per second at full power stays stock (baked AI fuel data);
                          FuelOptimalRevs moves with the rev grid
   FuelECU                power scales divided by the stock standard scale, so the team delta is the season pack's
@@ -91,7 +99,11 @@ one at every gap, FrontWing 0.76 -> 0.6 and RearWing 0.82 -> 0.75 take more fron
 drag) in dirty air, Lift 0.91 -> 0.85, and m_aeroSlipStreamCarWidth 1.5 -> 1.25 narrows the wake. They also take period
 power and mass: the engine's own power (ENGINES) instead
 of BASE_HP 650 x the team scalar, and PERIOD_MASS 620 kg (500 kg dry, a 72 kg driver and 48 kg standing in for the 1990 race fuel the game does not carry)
-instead of BASE_MASS 575, and drag x PERIOD_DRAG (1.25, exposed wheels and big wings) on top of the team scalar. The
+instead of BASE_MASS 575, and drag x PERIOD_DRAG (0.96) on top of the team scalar. The 2026 donor opens its wings on
+the straights (0x1446dceb0 scales the front and rear wing drag by 1 + (m_aero_wing_front_drag - 1) x the open share,
+0.5 and 0.3 on the 2026 cars); the 1990 car has no moving wings and keeps the full wing drag, so PERIOD_DRAG 0.96
+puts a 690 hp car at about 320 km/h with a Monza wing and a 620 hp car at about 305 (TOP_SPEED_KMH, Swofty AI's car
+model with that drag). The
 game carries fuel as FuelTank mass on top of Chassis Mass and burns it at the BSFC; the start load follows the race
 distance and the per-lap burn the AI has baked per track and car (.fuel_burn_granular), so the BSFC keeps the donor's
 fuel per second and the extra period fuel goes into the chassis instead. Archives:
@@ -177,6 +189,24 @@ ENGINE_ROWS = {
 }
 PEAK_VERTEX = 9
 
+GEAR_NAMES = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th')
+STOCK_GEARS = 8
+GEARS = {'ferrari': 7}
+GEARS_DEFAULT = 6
+UPSHIFT_LOW = (0.725, 0.84)
+UPSHIFT_HIGH = 0.96
+DOWNSHIFT_MARGIN = 0.05
+TOP_GEAR_MARGIN = 1.12
+TOP_SPEED_KMH = {
+    'mclaren': 321, 'ferrari': 317, 'williams': 315, 'lotus': 315, 'mercedes': 308, 'redbull': 311,
+    'force_india': 311, 'myteam_ferrari': 311, 'sauber': 308, 'toro_rosso': 306, 'gm_cadillac': 309,
+    'myteam_honda': 309, 'haas': 307,
+}
+SHIFT_MANUAL = {b'UpshiftClutchTime': 0.1, b'UpshiftGearDelay': 0.05, b'TimeOffThrottleGearUp': 0.1,
+                b'DownshiftClutchTime': 0.12, b'DownshiftGearDelay': 0.06, b'TimeOnThrottleGearDown': 0.1}
+SHIFT_SEMI_AUTO = {b'UpshiftClutchTime': 0.06, b'UpshiftGearDelay': 0.03, b'TimeOffThrottleGearUp': 0.06,
+                   b'DownshiftClutchTime': 0.075, b'DownshiftGearDelay': 0.03, b'TimeOnThrottleGearDown': 0.07}
+
 MODEL_AXLES = {
     'mclaren': (1.4672, -1.4664, 0.8924, 0.8325), 'sauber': (1.4672, -1.4664, 0.8924, 0.8325),
     'ferrari': (1.4323, -1.4325, 0.8924, 0.8327), 'myteam_ferrari': (1.4323, -1.4325, 0.8924, 0.8327),
@@ -230,11 +260,11 @@ TYRE_GROUP = 'F1_1990'
 PIRELLI_GROUP = 'F1_1990P'
 PIRELLI_TEAMS = ('tyrrell', 'minardi', 'brabham', 'dallara')
 MOMENTS = (b'MOIX', b'MOIY', b'MOIZ')
-PERIOD_DRAG = 1.25
+PERIOD_DRAG = 0.96
 PERIOD_MASS = 500.0 + 72.0 + 48.0
 PERIOD = {
-    '1990': {'aero': 0.75, 'grip': {'Front': 0.915, 'Rear': 0.925}, 'brake': 1.0, 'moi': 1.0},
-    '1990_low': {'aero': 0.5, 'grip': {'Front': 0.83, 'Rear': 0.85}, 'brake': 0.9, 'moi': 0.0},
+    '1990': {'aero': 0.5, 'grip': {'Front': 0.915, 'Rear': 0.925}, 'brake': 1.0, 'moi': 1.0},
+    '1990_low': {'aero': 0.33, 'grip': {'Front': 0.83, 'Rear': 0.85}, 'brake': 0.9, 'moi': 0.0},
     'modern': None,
 }
 HANDLING_VALUES = tuple(PERIOD)
@@ -630,6 +660,70 @@ def engine_curve(root, eng_row, peak_w):
             'real_peak': max(y for x, y in new_curve if x <= limiter)}
 
 
+def interp(xs, ys, x):
+    for i in range(len(xs) - 1):
+        if x <= xs[i + 1]:
+            return ys[i] + (ys[i + 1] - ys[i]) * (x - xs[i]) / (xs[i + 1] - xs[i])
+    return ys[-1]
+
+
+def spacing(stock, n):
+    span = math.log(stock[0] / stock[-1])
+    steps = [i * (len(stock) - 1) / (n - 1) for i in range(n)]
+    share = [math.log(stock[0] / r) / span for r in stock]
+    return [interp(list(range(len(stock))), share, x) for x in steps]
+
+
+def gear_count(c):
+    return GEARS.get(c.team, GEARS_DEFAULT)
+
+
+def gearbox(root, c, e, rolling, top_kmh):
+    box = section(root, b'GearBox')
+    n = gear_count(c)
+    limiter, stock_limiter = e['limiter'], e['stock_limiter']
+    stock = [value(box, f'GearRatio{g}'.encode()) for g in GEAR_NAMES[:STOCK_GEARS]]
+    if len(stock) != STOCK_GEARS or stock[-1] != 1.0:
+        raise ValueError(f'{c.team}: expected 8 stock ratios ending at 1.0, got {stock}')
+    final = value(box, b'FinalDriveRatio') * limiter / stock_limiter * rolling
+    first = stock[0] * final
+    if top_kmh is not None:
+        radius = value(named(section(root, b'SuspensionSystem'), b'Tyre')['Rear'], b'TyreRadius')
+        final = limiter * radius / (top_kmh / 3.6)
+    final = round(final, 3)
+    span = math.log(first / final)
+    ratios = [round(math.exp(span * (1 - u)), 3) for u in spacing(stock, n)]
+    set_value(box, b'FinalDriveRatio', final)
+    for i, g in enumerate(GEAR_NAMES[:STOCK_GEARS]):
+        set_value(box, f'GearRatio{g}'.encode(), ratios[i] if i < n else 0)
+
+    stock_peak_x = max(e['stock_curve'], key=lambda p: p[1])[0]
+    up_stock = [value(box, f'GearUpSpeedMultiple{g}'.encode()) * stock_peak_x / stock_limiter
+                for g in GEAR_NAMES[:STOCK_GEARS - 1]]
+    dn_stock = [value(box, f'GearDnSpeedMultiple{g}'.encode()) * stock_peak_x / stock_limiter
+                for g in GEAR_NAMES[1:STOCK_GEARS]]
+    up = [UPSHIFT_LOW[k] if k < len(UPSHIFT_LOW) else UPSHIFT_HIGH for k in range(n - 1)]
+    places = [k * (len(dn_stock) - 1) / (n - 2) for k in range(n - 1)]
+    dn = [min(interp(list(range(len(dn_stock))), dn_stock, x), up[k] - DOWNSHIFT_MARGIN) for k, x in enumerate(places)]
+    if max(up) >= 1.0 or any(d >= u for d, u in zip(dn, up)) or not up_stock:
+        raise ValueError(f'{c.team}: shift points {up} / {dn} not below the limiter')
+    k = limiter / e['peak_x']
+    keep = set()
+    for i, f in enumerate(up):
+        name = f'GearUpSpeedMultiple{GEAR_NAMES[i]}'.encode()
+        set_value(box, name, round(f * k, 3))
+        keep.add(name)
+    for i, f in enumerate(dn):
+        name = f'GearDnSpeedMultiple{GEAR_NAMES[i + 1]}'.encode()
+        set_value(box, name, round(f * k, 3))
+        keep.add(name)
+    box.children = [g for g in box.children if not (
+        g.kind == 0 and g.name.startswith((b'GearUpSpeedMultiple', b'GearDnSpeedMultiple')) and g.name not in keep)]
+    for name, v in (SHIFT_SEMI_AUTO if n > GEARS_DEFAULT else SHIFT_MANUAL).items():
+        set_value(box, name, v)
+    return final, n
+
+
 def convert(root, row, ers, size, handling):
     c = row['car']
     eng_row = row['engine']
@@ -643,13 +737,8 @@ def convert(root, row, ers, size, handling):
     e = engine_curve(root, eng_row, peak_w)
     limiter, stock_limiter = e['limiter'], e['stock_limiter']
 
-    box = section(root, b'GearBox')
-    final = value(box, b'FinalDriveRatio') * limiter / stock_limiter * rolling
-    set_value(box, b'FinalDriveRatio', round(final, 3))
-    stock_peak_x = max(e['stock_curve'], key=lambda p: p[1])[0]
-    shift = stock_peak_x / stock_limiter * limiter / e['peak_x']
-    for g in [g for g in box.children if g.kind == 0 and g.name.startswith((b'GearUpSpeedMultiple', b'GearDnSpeedMultiple'))]:
-        set_value(box, g.name, round(value(box, g.name) * shift, 3))
+    top_kmh = None if cut is None else TOP_SPEED_KMH[c.folder] * TOP_GEAR_MARGIN
+    final, gears = gearbox(root, c, e, rolling, top_kmh)
 
     real_peak = e['real_peak']
     tank = section(root, b'FuelTank')
@@ -686,7 +775,7 @@ def convert(root, row, ers, size, handling):
     plank = section(root, b'F1Plank')
     return {'team': row['name'], 'engine': eng_row['name'], 'hp': round(real_peak / HP_W),
             'peak_rpm': eng_row['peak_rpm'], 'limiter_rpm': eng_row['limiter_rpm'], 'mass': round(mass, 1),
-            'drag': round(drag, 3), 'final_drive': round(final, 3), 'comz': value(chassis, b'COMZ'),
+            'drag': round(drag, 3), 'final_drive': round(final, 3), 'gears': gears, 'comz': value(chassis, b'COMZ'),
             'moi': tuple(value(chassis, k) for k in MOMENTS),
             'plank': (value(plank, b'OffsetZ'), value(plank, b'ExtentZ'))}
 
@@ -831,7 +920,7 @@ def main():
     for r in report:
         print(f'{r["car"]:28} {r["team"]:22} {r["engine"]:16} {r["hp"]:4} hp @ {r["peak_rpm"]}, limiter '
               f'{r["limiter_rpm"]} rpm  {r["mass"]:6} kg  MOI {r["moi"]}  COMZ {r["comz"]:+.4f}  '
-              f'plank {r["plank"][0]:+.3f}/{r["plank"][1]:.3f}  drag x{r["drag"]}  final {r["final_drive"]}')
+              f'plank {r["plank"][0]:+.3f}/{r["plank"][1]:.3f}  drag x{r["drag"]}  final {r["final_drive"]}  {r["gears"]} gears')
     if args.write:
         return 0
     diff = [rel for rel, blob in files.items()
