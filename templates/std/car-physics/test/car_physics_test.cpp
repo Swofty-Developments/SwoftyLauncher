@@ -71,9 +71,9 @@ static int ops_refit(uint32_t, const char *) { return SWOFTY_ASSET_UNAVAILABLE; 
 static const SwoftyCarOps fake_ops = {2,         ops_available, ops_count, ops_car,   ops_get,
                                       ops_set,   ops_field,     ops_layer, ops_unlayer, ops_refit};
 
-static json::Value read_data()
+static json::Value read_data(const char *file)
 {
-    std::ifstream in("registry/car-physics.json");
+    std::ifstream in(file);
     std::stringstream text;
     text << in.rdbuf();
     return json::parse(text.str());
@@ -81,7 +81,7 @@ static json::Value read_data()
 
 static void profile_record()
 {
-    json::Value d = read_data();
+    json::Value d = read_data("registry/car-profile.json");
     const json::Value &p = d["car.profile"]["race_engine"];
     check(p["power_scale"].as_double() == 0.9725, "the race engine is x0.9725");
     check(p["limiter_offset_rpm"].as_int() == -300, "with the limiter 300 rpm lower");
@@ -93,7 +93,7 @@ static void profile_record()
 
 static void handling_record()
 {
-    json::Value d = read_data();
+    json::Value d = read_data("registry/handling@1.1.json");
     const json::Value &h = d["vehicle.handling"]["ferrari_six_speed"];
     check(h["gearbox"]["ratios"].size() == 6, "six gears");
     check(h["gearbox"]["up_speed_multiple"].size() == 5 && h["gearbox"]["down_speed_multiple"].size() == 5,
