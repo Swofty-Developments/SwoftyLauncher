@@ -374,6 +374,17 @@ static void test_ai()
     call_ai_slot(ai_vtable, 0);
     expect(joined() == "game ai 0", "a car in human mode: the game's code only, no event: " + joined());
 
+    for (uintptr_t bad : {uintptr_t(0xffffffffffffffe7ull), uintptr_t(0x0000800000000000ull), uintptr_t(0x8),
+                          reinterpret_cast<uintptr_t>(set_mem[2]) + 1}) {
+        uintptr_t kept = set_list[2];
+        set_list[2] = bad;
+        trail.clear();
+        call_ai_slot(ai_vtable, 2);
+        set_list[2] = kept;
+        expect(joined() == "game ai 2",
+               "a car whose controller set is a stale or poison pointer runs the game's code only: " + joined());
+    }
+
     on<aie::ControllerUpdate>(t, "bad.mod", SWOFTY_PHASE_AFTER, 100, [&](aie::ControllerUpdate &u, auto &) {
         u.steering = NAN;
         u.throttle = INFINITY;
