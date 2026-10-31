@@ -47,10 +47,11 @@ pub enum Kind {
     Career,
     GrandPrix,
     TimeTrial,
+    Session,
 }
 
 impl Kind {
-    pub const ALL: [Kind; 7] = [
+    pub const ALL: [Kind; 8] = [
         Kind::None,
         Kind::Boot,
         Kind::Benchmark,
@@ -58,6 +59,7 @@ impl Kind {
         Kind::Career,
         Kind::GrandPrix,
         Kind::TimeTrial,
+        Kind::Session,
     ];
 
     pub fn name(self) -> &'static str {
@@ -69,6 +71,7 @@ impl Kind {
             Kind::Career => "career",
             Kind::GrandPrix => "grand_prix",
             Kind::TimeTrial => "time_trial",
+            Kind::Session => "session",
         }
     }
 
@@ -92,6 +95,18 @@ impl Kind {
             ],
             Kind::Route => &[("routes", StrList, true)],
             Kind::Career => &[("fixture", Str, true), ("at", Str, false), ("slot", UInt, false)],
+            Kind::Session => &[
+                ("mode", Str, true),
+                ("box", Str, false),
+                ("track", Str, false),
+                ("team", Str, false),
+                ("driver", Str, false),
+                ("session", Str, false),
+                ("weather", Str, false),
+                ("laps", UInt, false),
+                ("ai_difficulty", UInt, false),
+                ("fixture", Str, false),
+            ],
             Kind::GrandPrix | Kind::TimeTrial => &[
                 ("box", Str, false),
                 ("track", Str, false),
@@ -106,7 +121,7 @@ impl Kind {
     /// Why a test in this environment can't run yet.
     pub fn needs(self) -> Option<&'static str> {
         match self {
-            Kind::None | Kind::Boot | Kind::Benchmark | Kind::Route | Kind::Career => None,
+            Kind::None | Kind::Boot | Kind::Benchmark | Kind::Route | Kind::Career | Kind::Session => None,
             Kind::GrandPrix | Kind::TimeTrial => Some(NEEDS_SESSION_SETUP),
         }
     }
@@ -198,7 +213,7 @@ impl Test {
     /// can't do from the logs, a test function, a route environment or a
     /// career, which the agent continues.
     pub fn needs_agent(&self) -> bool {
-        matches!(self.env.kind, Kind::Route | Kind::Career)
+        matches!(self.env.kind, Kind::Route | Kind::Career | Kind::Session)
             || self.function.is_some()
             || self.steps.iter().any(|s| s.host.is_none())
             || self.checks.iter().any(|c| matches!(c, Check::Agent { .. }))
@@ -671,6 +686,13 @@ fn env(at: &At, v: &Value) -> Result<Env, Error> {
             "unknown place \"{a}\" (expected one of: {})",
             super::career::AT.join(", ")
         )));
+    }
+    if kind == Kind::Session {
+        for (key, v) in &params {
+            if let Some(why) = super::session::check(key, v) {
+                return Err(at.at(key).err(why));
+            }
+        }
     }
     if kind == Kind::Benchmark {
         if let Some(w) = params.get("weather").and_then(Value::as_str)

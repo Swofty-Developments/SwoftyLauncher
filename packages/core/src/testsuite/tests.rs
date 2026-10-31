@@ -121,6 +121,8 @@ fn every_documented_step_and_check_parses() {
         r#"{ "kind": "route", "routes": ["career", "team_hq", "contracts"] }"#,
         r#"{ "kind": "career", "fixture": "fixtures/progressive-2018-r10", "at": "weekend_hub" }"#,
         r#"{ "kind": "time_trial", "box": "mod.season-2008/f1_2008", "track": "venue/albert_park", "car": "mod.season-2008/ferrari" }"#,
+        r#"{ "kind": "session", "mode": "time_trial", "box": "swofty.classic-seasons-2017/f1_2017", "track": "melbourne", "weather": "wet" }"#,
+        r#"{ "kind": "session", "mode": "grand_prix", "session": "qualifying", "laps": 3, "ai_difficulty": 90, "fixture": "f" }"#,
         r#"{ "kind": "none" }"#,
     ] {
         one_test(&format!(
@@ -1364,4 +1366,87 @@ fn a_career_environment_takes_a_known_place_and_asks_the_agent_for_it() {
     );
     let bad = parse(r#"{"kind":"career","fixture":"f","at":"garage"}"#).unwrap_err();
     assert!(bad.0.contains("unknown place \"garage\""), "{bad}");
+}
+
+#[test]
+fn session_environment_checks_its_values_and_builds_the_agent_command() {
+    use super::session;
+    use serde_json::json;
+    let bad = |env: &str| {
+        one_test(&format!(
+            r#"{{"id":"e","env":{env},"assert":[{{"no_crash":true}}]}}"#
+        ))
+        .unwrap_err()
+    };
+    assert!(bad(r#"{"kind":"session"}"#).contains("a session environment needs \"mode\""));
+    assert!(bad(r#"{"kind":"session","mode":"race"}"#).contains("expected one of: time_trial, grand_prix"));
+    assert!(bad(r#"{"kind":"session","mode":"grand_prix","laps":0}"#).contains("expected 1 to 100, got 0"));
+    assert!(
+        bad(r#"{"kind":"session","mode":"grand_prix","ai_difficulty":111}"#).contains("expected 0 to 110")
+    );
+    assert!(
+        bad(r#"{"kind":"session","mode":"grand_prix","weather":"snow"}"#).contains("expected one of: clear")
+    );
+    assert!(bad(r#"{"kind":"session","mode":"grand_prix","session":"warmup"}"#).contains("practice1"));
+
+    let t = one_test(
+        r#"{"id":"e","env":{"kind":"session","mode":"grand_prix","box":"b","track":"melbourne","session":"race","laps":3},"assert":[{"no_crash":true}]}"#,
+    )
+    .unwrap();
+    assert!(t.needs_agent());
+    assert_eq!(t.skip_reason(), None);
+    let (cmd, args) = session::agent_command(&t.env);
+    assert_eq!(cmd, "session.start");
+    assert_eq!(
+        args,
+        json!({"mode":"grand_prix","box":"b","track":"melbourne","session":"race","laps":3})
+    );
+    assert_eq!(super::plan::label(&t.env), "session grand_prix b melbourne race");
+}
+
+#[test]
+fn session_shell_words_become_the_agent_command() {
+    use serde_json::json;
+    let p = |l: &str| super::agent::parse_shell(l);
+    assert_eq!(
+        p("session time_trial cs_f1_2017 melbourne").unwrap(),
+        (
+            "session.start".into(),
+            json!({"mode":"time_trial","box":"cs_f1_2017","track":"melbourne"}),
+            Some(600_000)
+        )
+    );
+    assert_eq!(
+        p("session grand_prix track=monaco session=qualifying laps=5 weather=wet")
+            .unwrap()
+            .1,
+        json!({"mode":"grand_prix","track":"monaco","session":"qualifying","laps":5,"weather":"wet"})
+    );
+    assert!(p("session").unwrap_err().starts_with("usage: session"));
+    assert!(
+        p("session race")
+            .unwrap_err()
+            .contains("expected time_trial or grand_prix")
+    );
+    assert!(
+        p("session grand_prix a b c")
+            .unwrap_err()
+            .contains("only a box and a track")
+    );
+    assert!(
+        p("session grand_prix laps=x")
+            .unwrap_err()
+            .contains("expected a number")
+    );
+    assert!(
+        p("session grand_prix laps=0")
+            .unwrap_err()
+            .contains("expected 1 to 100")
+    );
+    assert!(
+        p("session grand_prix colour=red")
+            .unwrap_err()
+            .contains("not a session key")
+    );
+    assert!(super::agent::COMMANDS_V1.contains(&"session.start"));
 }

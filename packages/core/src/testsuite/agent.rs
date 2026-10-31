@@ -41,6 +41,7 @@ pub const COMMANDS_V1: &[&str] = &[
     "career",
     "home",
     "tile",
+    "session.start",
 ];
 
 /// A run name the agent accepts as a folder name.
@@ -327,6 +328,11 @@ pub fn parse_shell(line: &str) -> Result<(String, Value, Option<u64>), String> {
             ("run_test".into(), json!({ "fn": rest[0] }), None)
         }
         "title" => (cmd, Value::Null, None),
+        "session" | "session.start" => (
+            "session.start".into(),
+            super::session::shell_args(&rest)?,
+            Some(10 * 60 * 1000),
+        ),
         "career" => {
             let usage = "career load <slot|newest> [at team_hq|weekend_hub|session] [mode driver_career|my_team_career]";
             need(2, usage)?;
