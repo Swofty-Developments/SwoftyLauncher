@@ -1066,6 +1066,49 @@ std::vector<uint16_t> teams_of(uintptr_t begin, uintptr_t end)
     return out;
 }
 
+logic::IdAliases id_aliases()
+{
+    static logic::IdAliases aliases;
+    static bool read;
+    if (read)
+        return aliases;
+    read = true;
+    std::string text = runtime::read_file(runtime::swofty_root() + L"id_aliases.json", size_t(4) << 20);
+    if (text.empty())
+        return aliases;
+    if (!logic::parse_aliases(text, aliases)) {
+        swofty::log("[era] swofty\\id_aliases.json is unusable; saves made under earlier row ids are not mapped");
+        return aliases;
+    }
+    swofty::log("[era] id aliases: %zu team id(s), %zu vehicle id(s), %zu driver id(s)", aliases.teams.size(),
+                aliases.vehicles.size(), aliases.drivers.size());
+    return aliases;
+}
+
+uint32_t remap_entrants(uintptr_t begin, uintptr_t end, const logic::IdAliases &aliases)
+{
+    uint32_t changed = 0;
+    int64_t n = logic::entrant_count(begin, end);
+    for (int64_t i = 0; i < n; ++i) {
+        uintptr_t at = begin + size_t(i) * logic::ENTRANT_RECORD;
+        const std::pair<size_t, const std::map<uint16_t, uint16_t> *> fields[] = {
+            {logic::ENTRANT_TEAM, &aliases.teams},
+            {logic::ENTRANT_VEHICLE_ID, &aliases.vehicles},
+            {logic::ENTRANT_DRIVER, &aliases.drivers}};
+        for (auto &[off, map] : fields) {
+            uint16_t id = 0;
+            if (!mem::read(at + off, id))
+                continue;
+            uint16_t now = logic::alias_of(*map, id);
+            if (now == id)
+                continue;
+            ref<uint16_t>(reinterpret_cast<void *>(at), off) = now;
+            changed++;
+        }
+    }
+    return changed;
+}
+
 [[noreturn]] void stop_session_load(const std::string &why)
 {
     swofty::log("[era] %s", why.c_str());
@@ -1109,7 +1152,12 @@ void grand_prix_load(uintptr_t ctx)
                 l.teams = teams_of(lb, le);
             lists.push_back(std::move(l));
         }
-        pick = logic::continue_list(lists, saved, last_press, setup_mode);
+        logic::AliasedPick aliased = logic::continue_list_aliased(lists, saved, last_press, setup_mode, id_aliases());
+        pick = aliased.pick;
+        if (aliased.remapped && track_why.empty()) {
+            uint32_t n = remap_entrants(begin, end, id_aliases());
+            swofty::log("[era] Grand Prix load: mapped %u saved entrant id(s) to the ids the rows have now", n);
+        }
         if (pick.index >= 0 && track_why.empty()) {
             ref<void *>(reinterpret_cast<void *>(setup), SELECTED_LIST) = ptrs[size_t(pick.index)];
             if (logged++ < LOG_FIRST)

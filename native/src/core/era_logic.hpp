@@ -12,6 +12,7 @@
 #include "apply/facts.hpp"
 #include "apply/tracks/base.hpp"
 #include "apply/tracks/seed.hpp"
+#include "json.hpp"
 
 // Pure logic of the era picker addon row (era_picker.cpp): the box check, the box order, the image
 // default, the Time Trial list and its car limit, the press guard, the links of the row's two node handles
@@ -414,7 +415,9 @@ inline uintptr_t vehicles_end_within_table(uintptr_t begin, uintptr_t end)
 // the session module's vehicle count, so one run shows which of them holds the 27 and when it fills.
 constexpr size_t MGR_SESSION_BEGIN = 0x2e0;
 constexpr size_t MGR_SESSION_END = 0x2e8;
+constexpr size_t ENTRANT_DRIVER = 0x52;
 constexpr size_t ENTRANT_TEAM = 0x5a;
+constexpr size_t ENTRANT_VEHICLE_ID = 0x5e;
 constexpr size_t PARTICIPANT = 0x6780;
 constexpr size_t DESC_PARTICIPANTS_BEGIN = 0xad8;
 constexpr size_t DESC_PARTICIPANTS_END = 0xae0;
@@ -511,7 +514,50 @@ struct ListTeams {
 struct ContinuePick {
     int64_t index = -1;
     std::string line;
+    bool holds = false;
 };
+
+struct IdAliases {
+    std::map<uint16_t, uint16_t> teams, vehicles, drivers;
+
+    bool any() const
+    {
+        return !teams.empty() || !vehicles.empty() || !drivers.empty();
+    }
+};
+
+inline bool parse_aliases(const std::string &text, IdAliases &out)
+{
+    json::Value v;
+    if (!json::parse(text, v) || v.type != json::Value::Obj || v["version"].num() != 1)
+        return false;
+    IdAliases a;
+    auto table = [&](const char *name, std::map<uint16_t, uint16_t> &into) {
+        for (auto &[k, to] : v["tables"][name].o) {
+            long long from = strtoll(k.c_str(), nullptr, 10), now = to.num(-1);
+            if (from > 0 && from < NO_TEAM && now > 0 && now < NO_TEAM && from != now)
+                into[uint16_t(from)] = uint16_t(now);
+        }
+    };
+    table("teams", a.teams);
+    table("vehicles", a.vehicles);
+    table("drivers", a.drivers);
+    out = std::move(a);
+    return true;
+}
+
+inline uint16_t alias_of(const std::map<uint16_t, uint16_t> &map, uint16_t id)
+{
+    auto it = map.find(id);
+    return it == map.end() ? id : it->second;
+}
+
+inline std::vector<uint16_t> remap_teams(const IdAliases &aliases, std::vector<uint16_t> teams)
+{
+    for (uint16_t &t : teams)
+        t = alias_of(aliases.teams, t);
+    return teams;
+}
 
 inline std::vector<uint16_t> distinct_teams(const std::vector<uint16_t> &teams)
 {
@@ -556,6 +602,7 @@ inline ContinuePick continue_list(const std::vector<ListTeams> &lists, const std
         first = press;
     if (first >= 0) {
         p.index = first;
+        p.holds = true;
         p.line = head + "loading " + lists[size_t(first)].name + ", which holds all " + std::to_string(want.size()) +
                  " teams of the saved entrants";
         return p;
@@ -568,6 +615,35 @@ inline ContinuePick continue_list(const std::vector<ListTeams> &lists, const std
     }
     p.line = head + "no list holds the saved entrants' teams (" + team_text(want) + ") and no box was pressed";
     return p;
+}
+
+struct AliasedPick {
+    ContinuePick pick;
+    std::vector<uint16_t> teams;
+    bool remapped = false;
+};
+
+inline AliasedPick continue_list_aliased(const std::vector<ListTeams> &lists, const std::vector<uint16_t> &entrants,
+                                         const std::string &pressed, const std::string &setup_mode,
+                                         const IdAliases &aliases)
+{
+    AliasedPick out;
+    out.pick = continue_list(lists, entrants, pressed, setup_mode);
+    out.teams = entrants;
+    if (out.pick.holds || !aliases.any())
+        return out;
+    std::vector<uint16_t> mapped = remap_teams(aliases, entrants);
+    if (mapped == entrants)
+        return out;
+    ContinuePick again = continue_list(lists, mapped, pressed, setup_mode);
+    if (!again.holds)
+        return out;
+    out.pick = again;
+    out.pick.line += " after mapping the saved team ids " + team_text(distinct_teams(entrants)) + " to " +
+                     team_text(distinct_teams(mapped)) + " (the ids the rows had before this build)";
+    out.teams = mapped;
+    out.remapped = true;
+    return out;
 }
 
 inline std::string track_code_of(const std::string &track)

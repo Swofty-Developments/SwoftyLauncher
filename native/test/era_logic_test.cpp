@@ -214,6 +214,26 @@ static void continue_tests()
     p = era::continue_list(lists, {era::NO_TEAM, 0}, "", "f1");
     expect(p.index < 0, "unresolved team ids match no list");
 
+    era::IdAliases aliases;
+    std::string doc = R"({"version":1,"tables":{"teams":{"646":510,"652":511,"559":512,"3":9,"0":4,"99999":5},"vehicles":{"700":701}}})";
+    expect(era::parse_aliases(doc, aliases), "the alias file parses");
+    expect(aliases.teams.size() == 4 && !aliases.teams.count(0) && !aliases.teams.count(uint16_t(99999)) && aliases.teams.at(646) == 510 && aliases.vehicles.at(700) == 701,
+           "ids outside the saved range or zero are left out");
+    expect(!era::parse_aliases("{\"version\":2}", aliases) && !era::parse_aliases("nope", aliases),
+           "an unknown version or text is refused");
+    std::vector<uint16_t> hashed{646, 652, 559, 646, 652};
+    era::AliasedPick ap = era::continue_list_aliased(lists, hashed, "", "swofty_f1", aliases);
+    expect(ap.remapped && ap.pick.index == 2 && ap.teams == std::vector<uint16_t>({510, 511, 512, 510, 511}) &&
+               ap.pick.line.find("after mapping the saved team ids 559,646,652 to 510,511,512") != std::string::npos,
+           "saved hashed teams map to the current ones and a list holds them: " + ap.pick.line);
+    ap = era::continue_list_aliased(lists, saved, "", "swofty_f1", aliases);
+    expect(!ap.remapped && ap.pick.index == 2 && ap.teams == saved, "teams a list already holds are not mapped");
+    ap = era::continue_list_aliased(lists, hashed, "", "swofty_f1", era::IdAliases{});
+    expect(!ap.remapped && ap.pick.index < 0, "without aliases the teams stay unmatched");
+    std::vector<uint16_t> stray{646, 4000};
+    ap = era::continue_list_aliased(lists, stray, "cs_f1_2017", "swofty_f1", aliases);
+    expect(!ap.remapped && ap.pick.index == 1, "a mapping no list holds falls back to the pressed box as before");
+
     namespace trk = swofty_core::apply::tracks;
     trk::Base base;
     expect(era::track_missing(base, "game/bahrain24").empty(), "a base not built yet stops nothing");
