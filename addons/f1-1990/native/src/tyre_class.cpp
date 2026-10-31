@@ -38,6 +38,7 @@
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
+#include "box_gate.hpp"
 #include "career_1990.hpp"
 #include "fq_tyres.hpp"
 #include "weekend.hpp"
@@ -50,8 +51,6 @@ using f1990::at;
 namespace t = f1990::tyres;
 
 constexpr const char *kClass1990 = "f1_1990";
-constexpr const char *kBoxList = "f1_1990_gp", *kBoxTimeTrial = "f1_1990_tt";
-constexpr size_t kContext = 0xc0, kModeSetup = 0x88, kSetupModes = 0x260, kSelectedList = 0xe18, kListName = 0x28;
 constexpr size_t kVisualEntry = 0x10, kMaxVisuals = 11, kFrontendDry = 0x10, kFrontendWet = 0x18;
 
 std::mutex g_lock;
@@ -134,25 +133,6 @@ const char *unsafe(const uint8_t *cls)
     return nullptr;
 }
 
-bool read_ptr(uintptr_t base, size_t off, uintptr_t *out)
-{
-    return base && swofty::mem::read(base + off, *out) && *out;
-}
-
-bool box_grand_prix()
-{
-    if (!swofty::api || !swofty::api->resolve)
-        return false;
-    uintptr_t slot = swofty::api->resolve("g_Game_Manager"), mgr = 0, ctx = 0, owner = 0, modes = 0, list = 0, name = 0;
-    if (!slot || !swofty::mem::read(slot, mgr) || !mgr || !read_ptr(mgr, kContext, &ctx) ||
-        !read_ptr(ctx, kModeSetup, &owner) || !read_ptr(owner, kSetupModes, &modes) ||
-        !read_ptr(modes, kSelectedList, &list) || !read_ptr(list, kListName, &owner) ||
-        !read_ptr(owner, 0x10, &name))
-        return false;
-    std::string text;
-    return swofty::mem::c_string(name, text, 64) && (text == kBoxList || text == kBoxTimeTrial);
-}
-
 bool career_1990()
 {
     void *career = swofty::career::entity();
@@ -174,7 +154,8 @@ SWOFTY_WRAP(Sess_TyreClass_FromName, void *, void *classes, const void *name, ui
     std::lock_guard lock(g_lock);
     bool box = false;
     if (!career_1990()) {
-        if (swofty::career::entity() || !(box = box_grand_prix())) {
+        box = f1990::box_list_selected();
+        if (!box) {
             skip(swofty::career::entity() ? "the loaded career is not a 1990 one" : "no career loaded", classes, own);
             return own;
         }

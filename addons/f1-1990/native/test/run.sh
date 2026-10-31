@@ -51,3 +51,5 @@ ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/heap_watch_test he
 ../build/heap_watch_test
 ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/car_physics_test car_physics_test.cpp
 ../build/car_physics_test
+${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/box_decision_test box_decision_test.cpp
+../build/box_decision_test
