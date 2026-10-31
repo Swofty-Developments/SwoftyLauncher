@@ -892,24 +892,42 @@ typedef struct SwoftySessionOps {
     int (*spectator_current)(int32_t *car, int32_t *camera);
 } SwoftySessionOps;
 
-/* Live car operations (standard library 1.6), from the core export SwoftyCoreCarOps; not a SwoftyApi field.
-   Table version 1. A car is the game's vehicle id (CarLive.vehicle_id, the slot of g_Sess_VehicleTable),
-   dense from 0 in create order; the handle is that slot's CarLive and identifies the car while it exists
-   (the game moves its last car into a destroyed car's slot). count: the cars in g_Sess_VehicleCount. car:
-   the handle of the car with that index and its is_ai word (1 while the AI drives it, the player's car
-   included). get and set take the index and optionally the handle (NULL skips the check) and one of the
-   SWOFTY_CAR_* field ids; SWOFTY_ASSET_LATE when the slot is empty, holds another car or a system's owner
-   does not match, SWOFTY_ASSET_INVALID for an unknown field or a value outside its range,
-   SWOFTY_ASSET_UNAVAILABLE when the car has no such system or the running exe is not the build the field
-   offsets were read from. set writes one dword (an obfuscated value is re-encoded under its current key),
+/* Live car operations (standard library 1.6, experimental), from the core export SwoftyCoreCarOps; not a SwoftyApi
+   field. Table version 2; version 1 is the first six members and keeps its layout. A car is the game's vehicle id
+   (CarLive.vehicle_id, the slot of g_Sess_VehicleTable), dense from 0 in create order; the handle is that slot's
+   CarLive and identifies the car while it exists (the game moves its last car into a destroyed car's slot). count:
+   the cars in g_Sess_VehicleCount. car: the handle of the car with that index and its is_ai word (1 while the AI
+   drives it, the player's car included). get and set take the index and optionally the handle (NULL skips the
+   check) and one of the SWOFTY_CAR_* field ids; SWOFTY_ASSET_LATE when the slot is empty, holds another car or a
+   system's owner does not match, SWOFTY_ASSET_INVALID for an unknown field or a value outside its range,
+   SWOFTY_ASSET_UNAVAILABLE when the car has no such system, the running exe is not the build the field offsets were
+   read from, or the field is off because a KB row it needs has no independent verify row yet (the core logs
+   "<field> off: needs <row>" once). set writes one dword (an obfuscated value is re-encoded under its current key),
    only on the game's flow thread (else SWOFTY_ASSET_LATE), and the game reads it on its next use; the game
-   overwrites it when it rebuilds the car or applies a setup (differential). SWOFTY_CAR_ENGINE_LIMITER is the
-   handling value (rad/s); set also re-runs the engine's derived values (Car_Engine_ComputeDerived_Thunk), and
+   overwrites it when it rebuilds the car, replays its R&D upgrades or applies a setup. SWOFTY_CAR_ENGINE_LIMITER is
+   the handling value (rad/s); set also re-runs the engine's derived values (Car_Engine_ComputeDerived_Thunk), and
    answers SWOFTY_ASSET_UNAVAILABLE without writing when that function does not resolve. SWOFTY_CAR_FINAL_DRIVE and
    SWOFTY_CAR_GEAR_RATIO_1 + n (handling values) rebuild the gearbox ratio table after the write
    (Car_Tuning_SetFinalDrive 0x20|0x2000, no gear change); SWOFTY_ASSET_UNAVAILABLE when that function does not
-   resolve or the gearbox builds its table from setup ratios. */
-#define SWOFTY_CAR_OPS_VERSION 1
+   resolve or the gearbox builds its table from setup ratios.
+
+   Version 2 members:
+   field: the id of a field by its Handling path ("steering.max_steering_lock", "aero.lift_scale"), the path
+   being the name car.profile records and the docs use; SWOFTY_ASSET_INVALID for an unknown path.
+   layer: the core keeps a layer (owner, car index or SWOFTY_CAR_ALL, field, op, value, priority) and applies it
+   to the matching cars now (on the flow thread) and again after every car.built, car.reset, R&D upgrade replay
+   and setup apply, so the value outlives the game's own resets. Layers of one field compose by priority (lower
+   first, so the higher one wins a set), then by the order they were added: set replaces the value, scale
+   multiplies it, add adds to it. The base is the game's value after its last reset (a virtual field's neutral
+   value: engine.power_scale 1, engine.limiter_offset_rpm 0, ai.grip_scale 1). A value outside the field's range
+   is clamped when applied. token: the handle unlayer takes. SWOFTY_ASSET_UNAVAILABLE for an off field.
+   unlayer: removes a layer by token and restores the cars it changed.
+   refit_tyres: writes the TyrePhysicsGroup string of the car's Chassis and refits its tyres
+   (Car_Tyre_SetWearFactor); SWOFTY_ASSET_UNAVAILABLE while its rows have no verify row.
+   Virtual fields (engine.power_scale, engine.limiter_offset_rpm, ai.grip_scale) write nothing to game data: the
+   core's handlers on site_Car_EngineDriveTorque and site_Ai_TableGripInput read them per car. */
+#define SWOFTY_CAR_OPS_VERSION 2
+#define SWOFTY_CAR_ALL 0xffffffffu
 
 #define SWOFTY_CAR_STEERING_LOCK 1u
 #define SWOFTY_CAR_CLUTCH_TORQUE 2u
@@ -932,6 +950,28 @@ typedef struct SwoftySessionOps {
 #define SWOFTY_CAR_ENGINE_LIMITER 19u
 #define SWOFTY_CAR_FINAL_DRIVE 20u
 #define SWOFTY_CAR_GEAR_RATIO_1 21u /* 1st; 2nd..9th are 22u..29u */
+#define SWOFTY_CAR_AERO_LIFT_SCALE 30u
+#define SWOFTY_CAR_AERO_DRAG_SCALE 31u
+#define SWOFTY_CAR_ENGINE_POWER_SCALE 32u
+#define SWOFTY_CAR_ENGINE_LIMITER_OFFSET_RPM 33u
+#define SWOFTY_CAR_AI_GRIP_SCALE 34u
+#define SWOFTY_CAR_TYRES_FRONT_GRIP_SCALE 35u
+#define SWOFTY_CAR_TYRES_REAR_GRIP_SCALE 36u
+#define SWOFTY_CAR_CHASSIS_BALLAST_KG 37u
+#define SWOFTY_CAR_BRAKES_BIAS 38u
+#define SWOFTY_CAR_BRAKES_PRESSURE 39u
+#define SWOFTY_CAR_SUSP_FRONT_CAMBER 40u
+#define SWOFTY_CAR_SUSP_FRONT_TOE 41u
+#define SWOFTY_CAR_SUSP_FRONT_ANTI_ROLL 42u
+#define SWOFTY_CAR_SUSP_FRONT_RIDE_HEIGHT_OFFSET 43u
+#define SWOFTY_CAR_SUSP_REAR_CAMBER 44u
+#define SWOFTY_CAR_SUSP_REAR_TOE 45u
+#define SWOFTY_CAR_SUSP_REAR_ANTI_ROLL 46u
+#define SWOFTY_CAR_SUSP_REAR_RIDE_HEIGHT_OFFSET 47u
+
+#define SWOFTY_CAR_OP_SET 0u
+#define SWOFTY_CAR_OP_SCALE 1u
+#define SWOFTY_CAR_OP_ADD 2u
 
 typedef struct SwoftyCarOps {
     uint32_t version;
@@ -940,6 +980,12 @@ typedef struct SwoftyCarOps {
     int (*car)(uint32_t index, void **handle, uint32_t *is_ai);
     int (*get)(uint32_t index, const void *handle, uint32_t field, float *value);
     int (*set)(uint32_t index, const void *handle, uint32_t field, float value);
+    /* version 2 */
+    int (*field)(const char *path, uint32_t *id);
+    int (*layer)(const char *owner, uint32_t index, uint32_t field, uint32_t op, float value, int32_t priority,
+                 uint32_t *token);
+    int (*unlayer)(uint32_t token);
+    int (*refit_tyres)(uint32_t index, const char *group);
 } SwoftyCarOps;
 
 typedef struct SwoftyApi {
