@@ -13,6 +13,7 @@
 #include <thread>
 #include <vector>
 
+#include "../apply/tracks/box.hpp"
 #include "agent_logic.hpp"
 
 // The test agent (docs/design/std-2/test-suite.md, "The test run" and "The agent's commands"). It arms
@@ -1123,6 +1124,7 @@ struct InGame : ta::Game {
     ta::Outcome career_tile(const std::string &mode) override;
     ta::Outcome resume_press(const std::string &slot) override;
     ta::Outcome session_start() override;
+    ta::Outcome session_begin(const ta::SessionPlan &plan) override;
 
     bool sandboxed() override { return runtime::save_sandbox_armed(); }
 
@@ -1623,6 +1625,51 @@ ta::Outcome InGame::session_start()
         "the garage's goto_track command (GarageCockpitViewModel 0x145739830, djb2 0xac456bd2, L1) is found but not "
         "what releases the car after it, nor its confirm popups (time warning, parc ferme, tyre choice); it needs one "
         "trace of goto_track in a practice session");
+}
+
+// session.start (docs/design/std-2/test-suite.md "The dev session"). The game's own settings-driven session setup
+// (DevSessionSetupChampionshipComponent, vt 0x1456bfed0) reads DevSessionDataContract.* keys with
+// Ne_Config_GetString and builds the championship's tracks and session from them, but retail clears its switch
+// (+0x350, Sess_DevSession_Enable). The command validates the plan against the track base and the box, builds the
+// keys (ta::session_fill) and starts only when every row below is verified, which the bindings export only after an
+// independent agree verify row; the first one missing is the answer. Nothing is written to the game before that.
+constexpr const char *SESSION_ROWS[] = {"Ne_Config_GetString",
+                                        "Sess_DevSession_Apply",
+                                        "Sess_DevSession_Enable",
+                                        "vt_Sess_DevSessionSetupComponent",
+                                        "Sess_DevSession_Init",
+                                        "Sess_TimeTrialMode_FillDescriptor"};
+constexpr const char *SESSION_OPEN =
+    "the call that starts the load from the front end (Sess_Request_SessionLoad, not found yet) and, for a Time Trial, "
+    "the Time Trial setup it fills (it has no championship, so no dev session)";
+
+ta::Outcome InGame::session_begin(const ta::SessionPlan &plan)
+{
+    namespace trk = swofty_core::apply::tracks;
+    const trk::Base &base = trk::base();
+    const trk::BaseTrack *track = nullptr;
+    std::string label = plan.track;
+    if (!plan.track.empty() && base.ready) {
+        track = base.by_code(plan.track);
+        if (!track)
+            track = base.resolve(plan.track);
+        if (!track)
+            return ta::Outcome::fail("session.start: '" + plan.track + "' is not a track in the track base");
+        label = track->name.empty() ? track->code : track->name;
+    }
+    if (!plan.box.empty() && track) {
+        trk::Decision d = trk::guard_package(plan.box, track,
+                                             plan.mode == "time_trial" ? trk::Mode::time_trial : trk::Mode::grand_prix, label);
+        if (!d.ok)
+            return ta::Outcome::fail("session.start: " + d.title + ": " + d.body);
+    }
+    for (const char *row : SESSION_ROWS)
+        if (!swofty::api->resolve(row))
+            return ta::Outcome::unavailable(std::string("session.start: needs ") + row);
+    std::string unfilled = ta::session_unfilled(plan);
+    if (!unfilled.empty())
+        return ta::Outcome::unavailable("session.start: the dev session has no setting for " + unfilled);
+    return ta::Outcome::unavailable(std::string("session.start: needs ") + SESSION_OPEN);
 }
 
 InGame *game;

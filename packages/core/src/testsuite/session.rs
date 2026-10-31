@@ -7,14 +7,29 @@ use serde_json::{Value, json};
 use super::suite::Env;
 
 pub const MODES: [&str; 2] = ["time_trial", "grand_prix"];
-pub const SESSIONS: [&str; 8] = [
+pub const SESSIONS: [&str; 23] = [
     "practice1",
     "practice2",
     "practice3",
     "qualifying",
     "sprint_shootout",
-    "sprint",
+    "practice_1",
+    "practice_2",
+    "practice_3",
+    "practice_s",
+    "qualifying_1",
+    "qualifying_2",
+    "qualifying_3",
+    "qualifying_s",
+    "qualifying_o",
+    "sprint_shootout_1",
+    "sprint_shootout_2",
+    "sprint_shootout_3",
+    "sprint_shootout_s",
+    "sprint_shootout_o",
     "race",
+    "race_2",
+    "race_3",
     "time_trial",
 ];
 pub const WEATHER: [&str; 3] = ["clear", "wet", "rain"];

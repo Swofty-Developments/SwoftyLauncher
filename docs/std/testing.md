@@ -81,16 +81,18 @@ Tests with the same environment share one game start, so a suite of twenty caree
 | `benchmark` | a race with AI cars, straight from launch | physics, AI, sounds, tyres, anything on track |
 | `route` | a menu, opened by its route | a screen your addon adds or changes |
 | `career` | a saved career, loaded into Team HQ, a weekend or a session | careers: contracts, R&D, seasons, calendars |
-| `grand_prix`, `time_trial` | a session from a box, at a track, in a car | year packs, tracks, rules per box |
+| `session` | a Time Trial or Grand Prix session, started from the main menu | year packs, tracks, rules per box |
+| `grand_prix`, `time_trial` | planned: the same, one kind per mode | |
 
 ```json
 { "kind": "benchmark", "track": "monaco", "laps": 2, "cars": 20, "weather": "rain", "box": "swofty.classic-seasons-2017/f1_2017" }
 { "kind": "route", "routes": ["career", "team_hq", "contracts"] }
 { "kind": "career", "fixture": "fixtures/progressive-2018-r10", "at": "weekend_hub" }
-{ "kind": "time_trial", "box": "mod.season-2008/f1_2008", "track": "venue/albert_park", "car": "mod.season-2008/ferrari" }
+{ "kind": "session", "mode": "time_trial", "box": "mod.season-2008/f1_2008", "track": "albert_park" }
+{ "kind": "session", "mode": "grand_prix", "box": "swofty.classic-seasons-2017/f1_2017", "track": "melbourne", "session": "qualifying", "laps": 5 }
 ```
 
-A `route` environment fires its routes in order, each from the screen the game is on or from the home screen: `["f1_world", "play"]` opens F1 World and then its Play screen. `grand_prix` and `time_trial` are planned; until then a `route` test reaches them with `pad` steps (below).
+A `route` environment fires its routes in order, each from the screen the game is on or from the home screen: `["f1_world", "play"]` opens F1 World and then its Play screen. A `session` environment asks the agent to start the session and waits for the load (below). Until the agent can, a `route` test reaches a Time Trial or Grand Prix with `pad` steps.
 
 In a `benchmark` race the AI drives every car, including the player's. For a test that needs the player's controls, such as the MFD or DRS, a step drives the car with the virtual pad.
 
@@ -191,10 +193,25 @@ The environments take these keys:
 { "kind": "benchmark", "track": "bahrain", "laps": 3, "cars": 10, "weather": "dry", "box": "...", "grid_pos": 1, "camera": "...", "driver": "..." }
 { "kind": "route", "routes": ["career", "team_hq"] }
 { "kind": "career", "fixture": "fixtures/my-team-r3", "at": "team_hq", "slot": 1 }
-{ "kind": "grand_prix", "box": "...", "track": "...", "car": "...", "team": "...", "session": "...", "weather": "..." }
+{ "kind": "session", "mode": "grand_prix", "box": "...", "track": "...", "team": "...", "driver": "...", "session": "race", "weather": "clear", "laps": 5, "ai_difficulty": 90, "fixture": "..." }
 ```
 
-`none` starts the game and is ready at the loader's attached line, before any menu. `boot` and `route` are ready at the main menu. `benchmark` needs `track`, `route` needs `routes`, `career` needs `fixture`.
+`none` starts the game and is ready at the loader's attached line, before any menu. `boot` and `route` are ready at the main menu. `benchmark` needs `track`, `route` needs `routes`, `career` needs `fixture`, `session` needs `mode`.
+
+## Sessions
+
+```json
+{ "kind": "session", "mode": "grand_prix", "box": "swofty.classic-seasons-2017/f1_2017", "track": "melbourne", "session": "qualifying_1" }
+```
+
+```text
+> session time_trial cs_f1_2017 melbourne
+> session grand_prix swofty.classic-seasons-2017/f1_2017 melbourne session=race laps=5 weather=wet ai_difficulty=90
+```
+
+`mode` is `time_trial` or `grand_prix`. `session` is `practice1` to `practice3`, `qualifying`, `sprint_shootout`, `race`, `race_2`, `time_trial`, or one of the game's own names (`practice_1`, `qualifying_o`, `sprint_shootout_s`, and so on); a Time Trial takes only `time_trial`, a Grand Prix anything else, `race` by default. `laps` is 1 to 100 and only for a Grand Prix, `ai_difficulty` 0 to 110, `weather` `clear`, `wet` or `rain`. With `fixture` the run is sandboxed like a `career` environment.
+
+The agent runs `session.start` from the main menu: it passes the title, checks the track against the track base and the box (a track the box can't run is refused with the guard's reason), fills the game's dev session settings and waits for the flow to enter `StateLoadSession`, then answers `{"event":"session.start","mode":...,"track":...,"session":...}` and logs `[test] session.start <mode> <track>`. A command it can't carry out answers `unavailable: session.start: needs <row>` naming the first KB row the build lacks.
 
 ## Tests in code
 
@@ -254,7 +271,7 @@ Tests always run on a copy of a fixture in a separate save folder. They never re
 - **Runs in game:** `none`, `boot`, `benchmark`, `route` and `career` at `team_hq`. The agent passes the title screen and the launcher's notice by pressing the virtual pad itself, so a `boot` run ends on the main menu with no clicking, parked on another workspace. `route` fires routes from the home screen and from F1 World and Career; `tile` runs tiles on those screens; `career load` reaches Team HQ from a fixture; `save now` saves into the sandbox; `ai_drives_player` drives the player's car on track; `pad` drives every other screen, including starting a Time Trial session and returning to the garage.
 - **Save sandbox:** runs. Loading a fixture profile and saving three times in the sandbox leaves the player's saves unchanged.
 - **Not working yet:** `advance` (the agent never sees Team HQ's advance panel update), `capture` (no frame within its time limit), the `career` environment's `weekend_hub` and `session`, and `title` alone without the pad.
-- **Planned, not runnable:** `grand_prix` and `time_trial` environments. `swofty test plan` lists them as "needs session setup inside the game's screens".
+- **Planned, not runnable:** `session` answers `unavailable` until its KB rows are verified and the call that starts the load is found; `grand_prix` and `time_trial` environments. `swofty test plan` lists those two as "needs session setup inside the game's screens".
 - **Steps and checks the launcher reads itself** (`wait`, and the `log`, `event`, `no_crash` and `perf` checks) work from the session's `loader.log`. Steps that read or write the running game (`read`, `sample`, `set`, `pad`, `capture`, and the `value` and `series` checks) go through the test agent in the game.
 
 ## Running tests

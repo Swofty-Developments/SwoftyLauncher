@@ -1388,6 +1388,7 @@ fn session_environment_checks_its_values_and_builds_the_agent_command() {
         bad(r#"{"kind":"session","mode":"grand_prix","weather":"snow"}"#).contains("expected one of: clear")
     );
     assert!(bad(r#"{"kind":"session","mode":"grand_prix","session":"warmup"}"#).contains("practice1"));
+    assert!(bad(r#"{"kind":"session","mode":"grand_prix","session":"sprint"}"#).contains("expected one of"));
 
     let t = one_test(
         r#"{"id":"e","env":{"kind":"session","mode":"grand_prix","box":"b","track":"melbourne","session":"race","laps":3},"assert":[{"no_crash":true}]}"#,
