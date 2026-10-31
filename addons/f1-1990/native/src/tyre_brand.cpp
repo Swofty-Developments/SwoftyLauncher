@@ -35,6 +35,7 @@
 #include "json_strings.hpp"
 #include "tyre_brand.hpp"
 #include "tyre_cars.hpp"
+#include "box_gate.hpp"
 #include "weekend.hpp"
 
 SWOFTY_SETTING(bool, player_tyre_supplier, true);
@@ -249,7 +250,14 @@ SWOFTY_WRAP(Sess_TyreAllocation_OnSessionStart, void, void *component)
     void *provider = at<void *>(component, 0x270);
     void *session = provider ? call_getter(provider, 0xa8 / 8) : nullptr;
     void *weekend = provider ? call_getter(provider, 0x98 / 8) : nullptr;
-    bool is_1990 = session && weekend && f1990::is_1990_weekend(weekend);
+    bool is_1990 = session && weekend && (f1990::is_1990_weekend(weekend) || f1990::box_list_selected());
+#if SWOFTY_API_VERSION >= 8
+    if (player_tyre_supplier) {
+        void *career = swofty::career::entity();
+        std::lock_guard lock(g_lock);
+        choice_names(is_1990 || (career && f1990::is_1990_career(career)));
+    }
+#endif
     std::lock_guard lock(g_lock);
     g_originals.clear();
     g_component = is_1990 ? component : nullptr;

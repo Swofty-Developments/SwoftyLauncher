@@ -39,6 +39,7 @@
 
 #include "fq_tyres.hpp"
 #include "tyre_cars.hpp"
+#include "box_gate.hpp"
 #include "weekend.hpp"
 
 SWOFTY_SETTING(bool, fq_tyre_fix, true);
@@ -315,7 +316,7 @@ SWOFTY_WRAP(Sess_TyreAllocation_OnSessionStart, void, void *component)
     void *provider = at<void *>(component, 0x270);
     void *session = provider ? call_getter(provider, 0xa8 / 8) : nullptr;
     void *weekend = provider ? call_getter(provider, 0x98 / 8) : nullptr;
-    bool is_1990 = session && weekend && f1990::is_1990_weekend(weekend);
+    bool is_1990 = session && weekend && (f1990::is_1990_weekend(weekend) || f1990::box_list_selected());
     {
         std::lock_guard lock(g_lock);
         g_component = component;

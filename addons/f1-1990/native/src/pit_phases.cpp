@@ -30,6 +30,7 @@
 #include <swofty/storage.hpp>
 
 #include "pit_phases.hpp"
+#include "box_gate.hpp"
 #include "weekend.hpp"
 
 SWOFTY_SETTING(bool, pit_phases_1990, false);
@@ -231,7 +232,7 @@ SWOFTY_WRAP(Sess_TyreAllocation_OnSessionStart, void, void *component)
         return;
     void *provider = at<void *>(component, 0x270);
     void *weekend = provider ? call_getter(provider, 0x98 / 8) : nullptr;
-    bool on = weekend && f1990::is_1990_weekend(weekend);
+    bool on = weekend && (f1990::is_1990_weekend(weekend) || f1990::box_list_selected());
     g_uniform = false;
     if (on != g_1990.exchange(on))
         swofty::log("[f1-1990] pit phases: %s", on ? "1990 weekend: stops at crew speed 1 with held phases"
