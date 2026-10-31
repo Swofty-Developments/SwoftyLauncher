@@ -39,6 +39,7 @@ sys.path[:0] = [str(HERE), str(REPO / "tools"), str(REPO / "addons/classicseason
 import bcn  # noqa: E402
 import erpw  # noqa: E402
 import grid  # noqa: E402
+import carperf  # noqa: E402
 import heads as cs  # noqa: E402
 from stock import Stock  # noqa: E402
 
@@ -56,6 +57,9 @@ GROUP_TEMPLATE = "lando_norris"
 DEFAULT_BASE = "felipe_massa"
 BASELINE = "~/.local/share/swofty/baseline/25251167-d873a1c8d204"
 GAME = "/mnt/gaming/SteamLibrary/steamapps/common/F1 25"
+LOD_SHIFT = 2
+LASH_LOD = 1
+LASH_KEEP = 3
 LEVELS = cs.FACE_LEVELS
 FORMAT = cs.FACE_FORMAT
 
@@ -135,6 +139,29 @@ def chain(raw, driver):
     return b"".join(out)
 
 
+def lighten(e):
+    groups = {}
+    for m in carperf.meshes(e):
+        if m.lod >= 0:
+            groups.setdefault((m.base, m.part), {})[m.lod] = m
+    for lods in groups.values():
+        top = max(lods)
+        if top < 1 or sorted(lods) != list(range(top + 1)):
+            continue
+        shift = min(LOD_SHIFT, top)
+        source = {k: (bytes(m.d), m.names) for k, m in lods.items()}
+        for k, m in lods.items():
+            data, names = source[min(k + shift, top)]
+            d = bytearray(data)
+            struct.pack_into("<i", d, 72, k)
+            if k >= LASH_LOD:
+                for i, name in enumerate(names):
+                    at = carperf.MESH_HEADER + i * carperf.MESH_RECORD + 16
+                    if name == "lashes" and struct.unpack_from("<I", d, at)[0] > LASH_KEEP:
+                        struct.pack_into("<I", d, at, LASH_KEEP)
+            e.set_frag(m.r, 0, bytes(d))
+
+
 def build(stock, driver, face):
     base, code = face["base"].encode(), face["code"].encode()
     if len(base) != len(code):
@@ -146,6 +173,7 @@ def build(stock, driver, face):
         if any(code in r.name.encode() for r in e.res):
             sys.exit(f"{driver}: {face['base']} already names {face['code']}")
         cs.rename(e, base, code)
+        lighten(e)
         for i, r in enumerate(e.res):
             if r.name.endswith(f"/{face['code']}_head_d.tif.image") and r.type.rstrip(b"\0") == cs.SURFACE:
                 copy = cs.embedded_surface(r, data)

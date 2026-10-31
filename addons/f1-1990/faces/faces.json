@@ -44,8 +44,8 @@
  "emanuele_pirro": {
   "source": "emanuele_pirro.zip",
   "mipmaps": "src/emanuele_pirro_head_d.tga.mipmaps",
-  "base": "gabriel_bortoleto",
-  "code": "f90_emanuele_pirr",
+  "base": "matias_zagazeta",
+  "code": "f90_emanuele_pi",
   "label": "f90_emanuele_pirro"
  },
  "eric_bernard": {
@@ -142,8 +142,8 @@
  "paolo_barilla": {
   "source": "paolo_barilla.zip",
   "mipmaps": "src/paolo_barilla_head_d.tga.mipmaps",
-  "base": "lance_stroll",
-  "code": "f90_paolo_ba",
+  "base": "pepe_marti",
+  "code": "f90_paolo_",
   "label": "f90_paolo_barilla"
  },
  "philippe_alliot": {
@@ -156,8 +156,8 @@
  "pierluigi_martini": {
   "source": "pierluigi_martini.zip",
   "mipmaps": "src/pierluigi_martini_head_d.tga.mipmaps",
-  "base": "lando_norris",
-  "code": "f90_pierluig",
+  "base": "david_coulthard",
+  "code": "f90_pierluigi_m",
   "label": "f90_pierluigi_martini"
  },
  "riccardo_patrese": {

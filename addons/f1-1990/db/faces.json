@@ -115,7 +115,7 @@
    "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
    "set": {
     "_metadata_": "f90_emanuele_pirro",
-    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_emanuele_pirr/idf/f90_emanuele_pirr_rig_head_morph_v1",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_emanuele_pi/idf/f90_emanuele_pi_rig_head_morph_v1",
     "has_morph_data": "True",
     "available_for_customisation": "False",
     "stat_id": "271"
@@ -367,7 +367,7 @@
    "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
    "set": {
     "_metadata_": "f90_paolo_barilla",
-    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_paolo_ba/idf/f90_paolo_ba_rig_head_morph_v1",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_paolo_/idf/f90_paolo__rig_head_morph_v1",
     "has_morph_data": "True",
     "available_for_customisation": "False",
     "stat_id": "285"
@@ -403,7 +403,7 @@
    "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
    "set": {
     "_metadata_": "f90_pierluigi_martini",
-    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_pierluig/idf/f90_pierluig_rig_head_morph_v1",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_pierluigi_m/idf/f90_pierluigi_m_rig_head_morph_v1",
     "has_morph_data": "True",
     "available_for_customisation": "False",
     "stat_id": "287"

@@ -149,6 +149,8 @@ python3 addons/f1-1990/tools/faces.py --bases      # scanned heads whose hair is
 
 A base without a `<head>_hair.idf` hair mesh paints its hair from the face map (its hair cap uses head_d). One with a hair mesh keeps its own hairstyle and hair colour.
 
+Every mesh of a head or hair model that has several LODs is rebuilt two LODs down (`lighten`, `LOD_SHIFT`): LOD 0 holds the stock LOD 2 mesh (about 10k triangles against 48k), LOD 1 the stock LOD 3, LOD 2 to 4 the stock LOD 4, and the eyelash card submesh keeps 3 indices from LOD 1 on. A hair mesh with one LOD stays as the base ships it, so a base with a heavy single-LOD hair mesh (over 20k triangles: `lando_norris`, `gabriel_bortoleto`, `lance_stroll`) is not used.
+
 ## crew.py
 
 Writes `erp/crew.json` and `erp/crew/` (build output, not committed): 1990 team kit for the garage and pit stop crews.
