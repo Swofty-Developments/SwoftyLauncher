@@ -306,6 +306,64 @@ void report_classes(void *component, uint32_t session)
                 "component(s) not found",
                 session, long((cls - base) / t::kClassSize), had, other, other_index, unreachable);
 }
+uint32_t row_id(const uint8_t *row)
+{
+    return row && swofty::mem::readable(row, 4) ? at<uint32_t>(row, 0) : 0xffffffffu;
+}
+
+void report_table(void *component, uint32_t session)
+{
+    Cars cars(component);
+    Entrants entrants(component);
+    void *car_list = swofty::mem::readable(static_cast<uint8_t *>(component) + 0x2d8, 8) ? at<void *>(component, 0x2d8)
+                                                                                          : nullptr;
+    const uint8_t *first = nullptr, *human = nullptr;
+    for (const uint8_t *r = entrants.b; r < entrants.e; r += kEntrantSize) {
+        if (at<uint8_t>(r, 0x82) == 0xff)
+            continue;
+        first = first ? first : r;
+        if (!human && (at<uint8_t>(r, 0x4b) & 0x10))
+            human = r;
+    }
+    for (const uint8_t *r : {human, human == first ? nullptr : first}) {
+        if (!r)
+            continue;
+        uint8_t v = at<uint8_t>(r, 0x82);
+        uint8_t *tyres = tyre_component(car_list, v);
+        if (!tyres || !swofty::mem::readable(tyres + 0x9bc0, 0x98)) {
+            swofty::log("[f1-1990] tyre table: session %u V%02u: no tyre component", session, v);
+            continue;
+        }
+        auto *cls = at<const uint8_t *>(tyres, 0x9bc0), *built = at<const uint8_t *>(tyres, 0x9c50);
+        uint64_t count = at<uint64_t>(tyres, 0x9c48);
+        char text[480];
+        int n = std::snprintf(text, sizeof text, "%llu entr(ies) built for %p, class %p:", (unsigned long long)count,
+                              static_cast<const void *>(built), static_cast<const void *>(cls));
+        for (uint64_t i = 0; i < count && i < 8 && n > 0 && n < int(sizeof text) - 64; i++) {
+            const uint8_t *e = tyres + 0x9bd0 + i * 0x18;
+            auto *phys = at<const uint8_t *>(e, 8), *visual = at<const uint8_t *>(e, 0x10);
+            n += std::snprintf(text + n, sizeof text - n, " [option %u physical %u visual %u]", at<uint32_t>(e, 0),
+                               row_id(phys), row_id(visual));
+        }
+        swofty::log("[f1-1990] tyre table: session %u V%02u: %s", session, v, text);
+        if (cls && swofty::mem::readable(cls + t::kClassPhysicalMasks, 0x28)) {
+            uint32_t phys[5], vis[5];
+            std::memcpy(phys, cls + t::kClassPhysicalMasks, sizeof phys);
+            std::memcpy(vis, cls + 0x1bc, sizeof vis);
+            swofty::log("[f1-1990] tyre table: session %u V%02u: class masks physical %x %x %x %x %x visual %x %x %x %x %x",
+                        session, v, phys[0], phys[1], phys[2], phys[3], phys[4], vis[0], vis[1], vis[2], vis[3], vis[4]);
+        }
+        uint8_t *alloc = cars.find(entrants.id(r));
+        if (alloc) {
+            t::Census c = t::census(alloc);
+            swofty::log("[f1-1990] tyre table: session %u V%02u: allocation blocks %llu, sets %zu %zu %zu %zu %zu, fresh %zu "
+                        "%zu %zu %zu %zu",
+                        session, v, (unsigned long long)t::compound_count(alloc), c.sets[0], c.sets[1], c.sets[2],
+                        c.sets[3], c.sets[4], c.fresh_sets[0], c.fresh_sets[1], c.fresh_sets[2], c.fresh_sets[3],
+                        c.fresh_sets[4]);
+        }
+    }
+}
 }
 
 SWOFTY_WRAP(Sess_TyreAllocation_OnSessionStart, void, void *component)
@@ -325,8 +383,10 @@ SWOFTY_WRAP(Sess_TyreAllocation_OnSessionStart, void, void *component)
         g_reported.reset();
         if (is_1990 && tyre_fallback)
             audit(component, g_session);
-        if (is_1990)
+        if (is_1990) {
             report_classes(component, g_session);
+            report_table(component, g_session);
+        }
     }
     if (!is_1990)
         return;
