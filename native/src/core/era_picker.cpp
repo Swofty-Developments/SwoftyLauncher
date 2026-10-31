@@ -1109,6 +1109,31 @@ uint32_t remap_entrants(uintptr_t begin, uintptr_t end, const logic::IdAliases &
     return changed;
 }
 
+constexpr const char *CAREER_ALIAS_FN = "Ent_Deserialise_EntrantVector";
+constexpr const char *CAREER_ALIAS_MIXIN = "swofty_core.dll (career id aliases)";
+constexpr size_t VECTOR_BEGIN = 0x8;
+constexpr size_t VECTOR_END = 0x10;
+int (*entrant_vector_orig)(void *, void *);
+std::atomic<bool> career_alias_offered, career_alias_settled, career_alias_bound;
+
+int entrant_vector_entry(void *vector, void *bag)
+{
+    static uint32_t logged;
+    int result = entrant_vector_orig(vector, bag);
+    const logic::IdAliases &aliases = id_aliases();
+    if (result != 0 || !vector || !aliases.any())
+        return result;
+    uintptr_t at = reinterpret_cast<uintptr_t>(vector), begin = 0, end = 0;
+    if (!mem::read(at + VECTOR_BEGIN, begin) || !mem::read(at + VECTOR_END, end) || logic::entrant_count(begin, end) <= 0)
+        return result;
+    if (!logic::saved_predates(aliases, teams_of(begin, end)))
+        return result;
+    uint32_t n = remap_entrants(begin, end, aliases);
+    if (n && logged++ < LOG_FIRST)
+        swofty::log("[era] career load: mapped %u saved entrant id(s) to the ids the rows have now", n);
+    return result;
+}
+
 [[noreturn]] void stop_session_load(const std::string &why)
 {
     swofty::log("[era] %s", why.c_str());
@@ -1310,6 +1335,37 @@ std::vector<CoreMixins> tt_guard_mixins()
                        {{AVAILABILITY_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&availability_entry, (void **)&availability_orig}}});
     }
     return out;
+}
+
+std::vector<CoreMixins> career_alias_mixins()
+{
+    std::vector<CoreMixins> out;
+    if (career_alias_offered || !code_ready())
+        return out;
+    career_alias_offered = true;
+    if (!swofty::api->resolve(CAREER_ALIAS_FN)) {
+        swofty::log("[era] career id aliases off: needs %s, which this build does not resolve (a verify agree row on its "
+                    "saved record layout is missing)",
+                    CAREER_ALIAS_FN);
+        return out;
+    }
+    career_alias_bound = true;
+    out.push_back({CAREER_ALIAS_MIXIN,
+                   {{CAREER_ALIAS_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&entrant_vector_entry,
+                     (void **)&entrant_vector_orig}}});
+    return out;
+}
+
+void career_alias_commit()
+{
+    if (!career_alias_offered || career_alias_settled)
+        return;
+    career_alias_settled = true;
+    if (career_alias_bound)
+        swofty::log("[era] career id aliases %s",
+                    core_mixins_active(CAREER_ALIAS_MIXIN)
+                        ? "armed: a career saved with earlier row ids has its entrants mapped to the current ids as it loads"
+                        : "did not install (see the [core] lines)");
 }
 
 void tt_guard_commit()
