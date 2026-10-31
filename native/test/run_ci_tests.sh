@@ -65,6 +65,7 @@ t "Tyre slot guard unit test" native/test/run_tyre_slots_test.sh
 t "Pit slot guard unit test" native/test/run_pit_slots_test.sh
 t "Pit box guard unit test" native/test/run_pit_box_test.sh
 t "Thrustmaster LCD guard unit test" native/test/run_thrustmaster_lcd_test.sh
+t "Garage setup guard unit test" native/test/run_garage_setup_test.sh
 t "Audio job queue fix unit test" native/test/run_audio_queue_test.sh
 t "Pattern scan and scan cache unit test" native/test/run_scan_test.sh
 t "Telemetry feed unit test" "$(zig_test "-I packages/sdk/include native/test/telemetry_feed_test.cpp" telemetry_feed_test)"
