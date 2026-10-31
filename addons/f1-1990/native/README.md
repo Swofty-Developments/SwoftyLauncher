@@ -415,21 +415,34 @@ runs through thunk 0`, and `moved N queued worker request(s) from slots 12-23 to
 A separate DLL; option `heap_check` (default on), active in every mode. A game heap block has a 0x10-byte header at
 ptr - guard - 0x10 (guard = heap+0x108): +0x00 the link to the next older allocated block, +0x04 the link to the next
 newer one (16-byte units, 0 = none), +0x08 the block size (align16(requested) + 2 x guard + 0x10), +0x0c the requested
-size; the heap's range is heap+0x98 and heap+0xa0. `Ne_Heap_DeallocateNonSmall` (0x143963f80) unlinks a freed block
-through its links unchecked. At 22:13 (session 20261030-111101) something wrote past the end of a 0x460-byte block into
-the older link of the block after it; that block's free wrote 4 bytes elsewhere and left the 0x460-byte block linked to
-a free block, and its own free then looped the free tree (0x143962f10) until the stack ran out.
+size; the heap's range is heap+0x98 and heap+0xa0, and heap+0x100 is the newest block. `Ne_Heap_DeallocateNonSmall`
+(0x143963f80) unlinks a freed block through its links unchecked. At 22:13 (session 20261030-111101) something wrote
+past the end of a 0x460-byte block into the older link of the block after it; that block's free wrote 4 bytes elsewhere
+and left the 0x460-byte block linked to a free block, and its own free then looped the free tree (0x143962f10) until
+the stack ran out. At 02:01 (session 20261030-145707) both links of an allocated 0x5b0-byte block were overwritten
+(its newer link read 0) while the blocks on either side still linked to it.
 
 | binding | address | use |
 |---|---|---|
 | `Ne_Heap_DeallocateNonSmall` | 0x143963f80 | wrap; checks the freed block's links before the game's unlink |
 
-Before each free the wrap checks that the older block links forward to this one and the newer one back. A broken
-older link is set back to the block just before it in memory when that block is allocated (its size field matches)
-and links forward to this one, which is the state the overrun leaves; the unlink then stays inside the list. Nothing
-else is changed. Each broken link is logged (the first 8): `[f1-1990] heap check: heap ... block ... links older ...
-(broken) newer ... (ok); older link set back to the block before it`, the header and the 0x40 bytes before it (the
-end of the block that ran over), that block's address, sizes and first 0x40 bytes (its vtable or first fields), and the
-call stack as exe offsets. `src/heap_check.hpp` is tested by `test/heap_check_test.cpp` on a model heap (clean lists
-with and without guards, an overrun into the next header repaired and unlinked, no repair when the block before links
-elsewhere, out-of-range links, free blocks never taken as the block before).
+Before each free the wrap checks that the older block links forward to this one and the newer one back. When one of
+them is broken:
+- a broken older link is set back to the block just before it in memory when that block is allocated (its size field
+  matches) and links forward to this one, the state an overrun into the header leaves;
+- a neighbour whose link back is broken and whose own other link does not hold either (the 02:01 state) is linked back
+  to the block; the game's unlink rewrites that field right after;
+- the allocated list is walked from the newest block through the older links (at most 4M blocks): an older block whose
+  newer link does not point at a block that links back is linked to the block the walk came from (at most 16 per
+  free). The walk stops at an older link that leaves the heap or reaches a free block, and at an older link whose
+  target links forward to another block. A later free of the damaged block then unlinks inside the list.
+
+Each broken free is logged (the first 8): `[f1-1990] heap check: heap ... block ... links older ... (broken) newer ...
+(ok); own links left as they are; newer neighbour linked back to it`, then for the block and for the damaged neighbour:
+its header as it was, the 0x40 bytes before the header (the end of the block that ran over), the block before it in
+memory (address, sizes, links, first 0x40 bytes and the exe addresses among them),
+then `list walk from the newest block: N block(s), M newer link(s) set back ...; reached the oldest block` and the call
+stack as exe offsets. `src/heap_check.hpp` is tested by `test/heap_check_test.cpp` on a model heap (clean lists with
+and without guards, an overrun into the next header repaired and unlinked, no repair when the block before links
+elsewhere, out-of-range links, free blocks never taken as the block before, the 02:01 zeroed links repaired from both
+sides, a consistent block left alone by the walk, the walk stopping at a wild link and at its fix cap).

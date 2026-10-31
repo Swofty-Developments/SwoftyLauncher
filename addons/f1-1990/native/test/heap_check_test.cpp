@@ -159,6 +159,86 @@ static void free_blocks_are_not_predecessors()
     CHECK(hc::predecessor(q, hp.range, 0, 0x10000, always) == nullptr);
 }
 
+static void zeroed_links_of_a_neighbour_are_repaired()
+{
+    Heap hp;
+    uint8_t *o = hp.alloc(0, 0x100), *a = hp.alloc(0x200, 0x460), *s = hp.alloc(0x800, 0x5b0),
+            *t = hp.alloc(0xe00, 0x1a40 - 0x1000), *x = hp.alloc(0x680, 0x100);
+    CHECK(hp.consistent());
+    std::memset(s, 0, 8);
+    hc::Check c = hc::check(a, hp.range);
+    CHECK(c.older_ok && !c.newer_ok);
+    CHECK(hc::sane(c.newer, hp.range, 0, always) && !hc::link_holds(c.newer, 0, hp.range, 0, always));
+    hc::Neighbours nb = hc::repair_neighbours(a, c, hp.range, 0, always);
+    CHECK(nb.newer == s && !nb.older);
+    CHECK(hc::target(s, hc::link(s, 0)) == a);
+    hc::Walk w = hc::repair_list(hp.newest, hp.range, 0, 64, 16, always);
+    CHECK(w.complete && w.fixed == 1 && w.first_fixed == s && w.blocks == 5);
+    CHECK(hc::target(s, hc::link(s, 1)) == t);
+    CHECK(hp.consistent());
+    hp.free(a);
+    CHECK(hp.consistent());
+    CHECK(hc::check(t, hp.range).ok() && hc::check(s, hp.range).ok());
+    hp.free(s);
+    CHECK(hp.consistent());
+    CHECK(hc::target(o, hc::link(o, 1)) == t && hc::target(t, hc::link(t, 0)) == o);
+    (void)x;
+}
+
+static void damaged_older_neighbour_is_linked_back()
+{
+    Heap hp;
+    hp.alloc(0, 0x100);
+    uint8_t *s = hp.alloc(0x800, 0x5b0), *t = hp.alloc(0xe00, 0x800);
+    uint8_t *x = hp.alloc(0x200, 0x100);
+    hp.put(s, 1, 0);
+    hc::Check c = hc::check(t, hp.range);
+    CHECK(!c.older_ok && c.newer_ok);
+    hc::Neighbours nb = hc::repair_neighbours(t, c, hp.range, 0, always);
+    CHECK(nb.older == s && !nb.newer);
+    CHECK(hc::check(t, hp.range).ok());
+    hp.free(t);
+    CHECK(hp.consistent());
+    CHECK(hc::target(s, hc::link(s, 1)) == x && hc::target(x, hc::link(x, 0)) == s);
+}
+
+static void walk_leaves_a_consistent_block_alone()
+{
+    Heap hp;
+    uint8_t *z = hp.alloc(0, 0x100), *w = hp.alloc(0x200, 0x100), *q = hp.alloc(0x400, 0x100);
+    uint8_t *n = hp.alloc(0x600, 0x100);
+    hp.put(q, 0, Heap::rel(q, z));
+    CHECK(hc::target(q, hc::link(q, 0)) == z);
+    hc::Walk walk = hc::repair_list(hp.newest, hp.range, 0, 64, 16, always);
+    CHECK(!walk.complete && walk.fixed == 0 && walk.stopped_at == q);
+    CHECK(hc::target(z, hc::link(z, 1)) == w);
+    hc::Check c = hc::check(q, hp.range);
+    CHECK(!c.older_ok);
+    hc::Neighbours nb = hc::repair_neighbours(q, c, hp.range, 0, always);
+    CHECK(!nb.older && !nb.newer);
+    CHECK(hc::target(z, hc::link(z, 1)) == w);
+    (void)n;
+}
+
+static void walk_stops_at_a_wild_link_and_caps_its_fixes()
+{
+    Heap hp;
+    uint8_t *a = hp.alloc(0, 0x100), *b = hp.alloc(0x200, 0x100), *q = hp.alloc(0x400, 0x100);
+    hp.alloc(0x600, 0x100);
+    hp.put(q, 0, 0x3f800000);
+    hc::Walk walk = hc::repair_list(hp.newest, hp.range, 0, 64, 16, always);
+    CHECK(!walk.complete && walk.stopped_at == q && walk.fixed == 0);
+    hp.put(q, 0, Heap::rel(q, b));
+    hp.put(a, 1, 0);
+    hp.put(b, 1, 0);
+    walk = hc::repair_list(hp.newest, hp.range, 0, 64, 1, always);
+    CHECK(walk.fixed == 1 && walk.first_fixed == b && !walk.complete);
+    CHECK(hc::link(a, 1) == 0);
+    walk = hc::repair_list(hp.newest, hp.range, 0, 64, 16, always);
+    CHECK(walk.complete && walk.fixed == 1 && walk.first_fixed == a);
+    CHECK(hp.consistent());
+}
+
 int main()
 {
     clean_list(0);
@@ -168,6 +248,10 @@ int main()
     no_repair_when_the_block_before_links_elsewhere();
     out_of_range_link_is_broken();
     free_blocks_are_not_predecessors();
+    zeroed_links_of_a_neighbour_are_repaired();
+    damaged_older_neighbour_is_linked_back();
+    walk_leaves_a_consistent_block_alone();
+    walk_stops_at_a_wild_link_and_caps_its_fixes();
     if (g_fail) {
         std::printf("heap_check_test: %d failure(s)\n", g_fail);
         return 1;

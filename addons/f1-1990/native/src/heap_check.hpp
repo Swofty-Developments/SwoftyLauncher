@@ -89,13 +89,93 @@ uint8_t *predecessor(uint8_t *h, const Range &r, uint64_t guard, size_t max_byte
     return nullptr;
 }
 
+inline void set_link(uint8_t *h, int i, const uint8_t *to)
+{
+    int32_t v = to ? int32_t((to - h) / 16) : 0;
+    std::memcpy(h + 4 * i, &v, sizeof v);
+}
+
 inline bool repair_older(uint8_t *h, uint8_t *pred)
 {
     if (!pred || target(pred, link(pred, 1)) != h)
         return false;
-    int32_t v = int32_t((pred - h) / 16);
-    std::memcpy(h, &v, sizeof v);
+    set_link(h, 0, pred);
     return true;
+}
+
+template <class Readable>
+bool sane(const uint8_t *p, const Range &r, uint64_t guard, Readable readable)
+{
+    return p && r.holds(p, kHeader) && readable(p, kHeader) && allocated(p, guard);
+}
+
+template <class Readable>
+bool link_holds(uint8_t *p, int i, const Range &r, uint64_t guard, Readable readable)
+{
+    uint8_t *t = target(p, link(p, i));
+    return t && sane(t, r, guard, readable) && target(t, link(t, 1 - i)) == p;
+}
+
+struct Neighbours {
+    uint8_t *older = nullptr, *newer = nullptr;
+};
+
+template <class Readable>
+Neighbours repair_neighbours(uint8_t *h, const Check &c, const Range &r, uint64_t guard, Readable readable)
+{
+    Neighbours n;
+    if (c.newer && !c.newer_ok && sane(c.newer, r, guard, readable) && !link_holds(c.newer, 0, r, guard, readable)) {
+        set_link(c.newer, 0, h);
+        n.newer = c.newer;
+    }
+    if (c.older && !c.older_ok && sane(c.older, r, guard, readable) && !link_holds(c.older, 1, r, guard, readable)) {
+        set_link(c.older, 1, h);
+        n.older = c.older;
+    }
+    return n;
+}
+
+struct Walk {
+    size_t blocks = 0;
+    int fixed = 0;
+    uint8_t *first_fixed = nullptr, *stopped_at = nullptr;
+    bool complete = false;
+};
+
+template <class Readable>
+Walk repair_list(uint8_t *newest, const Range &r, uint64_t guard, size_t max_blocks, int max_fixes, Readable readable)
+{
+    Walk w;
+    uint8_t *cur = newest;
+    if (!sane(cur, r, guard, readable)) {
+        w.stopped_at = cur;
+        return w;
+    }
+    while (w.blocks < max_blocks) {
+        w.blocks++;
+        uint8_t *o = target(cur, link(cur, 0));
+        if (!o) {
+            w.complete = true;
+            return w;
+        }
+        if (!sane(o, r, guard, readable)) {
+            w.stopped_at = cur;
+            return w;
+        }
+        if (target(o, link(o, 1)) != cur) {
+            if (link_holds(o, 1, r, guard, readable) || w.fixed >= max_fixes) {
+                w.stopped_at = cur;
+                return w;
+            }
+            set_link(o, 1, cur);
+            if (!w.first_fixed)
+                w.first_fixed = o;
+            w.fixed++;
+        }
+        cur = o;
+    }
+    w.stopped_at = cur;
+    return w;
 }
 
 }

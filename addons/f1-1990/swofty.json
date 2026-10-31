@@ -55,7 +55,7 @@
     },
     {
       "id": "heap_check", "type": "toggle", "label": "Heap link guard", "default": true,
-      "description": "Checks the game heap links of each large block it frees and repairs a link that a write past the block before it destroyed (the session-load crash at 22:13), logging both blocks. Works in every mode.",
+      "description": "Checks the game heap links of each large block it frees, repairs links a stray write destroyed (seen at session load and hub entry) and logs the blocks around them. Works in every mode.",
       "binds": "native"
     },
     {
