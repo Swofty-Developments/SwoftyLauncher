@@ -15203,6 +15203,16 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_GarageSetups_EntryStep: Binding = Binding {
+        id: "site_Game_GarageSetups_EntryStep",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_GarageSetups_NotFound: Binding = Binding {
+        id: "site_Game_GarageSetups_NotFound",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_PitLane_BoxPoseFalse: Binding = Binding {
         id: "site_Game_PitLane_BoxPoseFalse",
         kind: "site",

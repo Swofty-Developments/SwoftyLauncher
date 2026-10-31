@@ -1103,6 +1103,8 @@ inline constexpr call<"site_Game_DriverSelect_TeamLogoFormat"> site_Game_DriverS
 inline constexpr site<"site_Game_ErsNewLap_NextVehicle"> site_Game_ErsNewLap_NextVehicle{}; // L2 experimental
 inline constexpr site<"site_Game_ErsNewLap_VehicleLookup"> site_Game_ErsNewLap_VehicleLookup{}; // L2 experimental
 inline constexpr site<"site_Game_GarageCrew_SpawnVector"> site_Game_GarageCrew_SpawnVector{}; // L2 experimental
+inline constexpr site<"site_Game_GarageSetups_EntryStep"> site_Game_GarageSetups_EntryStep{}; // L2 experimental
+inline constexpr site<"site_Game_GarageSetups_NotFound"> site_Game_GarageSetups_NotFound{}; // L2 experimental
 inline constexpr site<"site_Game_PitLane_BoxPoseFalse"> site_Game_PitLane_BoxPoseFalse{}; // L2 experimental
 inline constexpr site<"site_Game_PitLane_BoxSlotRead"> site_Game_PitLane_BoxSlotRead{}; // L2 experimental
 inline constexpr site<"site_Game_SaveData_ContainersChildren"> site_Game_SaveData_ContainersChildren{}; // L3 stable

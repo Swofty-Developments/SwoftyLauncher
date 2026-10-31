@@ -160233,6 +160233,60 @@
    "used_by": [
     "native/src/core/watchdog_grace.cpp"
    ]
+  },
+  {
+   "id": "game.garage_setups_entry_step",
+   "section": ".xtls",
+   "pattern": "4E 8B 0C C1 4A 8D 0C C1 4D 8B 41 38",
+   "match": "0x140c22c3f",
+   "anchor": "0x4",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c22c43",
+   "kind": "mid",
+   "expect": "4A 8D 0C C1 4D 8B 41 38",
+   "names": [
+    "site_Game_GarageSetups_EntryStep"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "c22c47",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/garage_setup.cpp"
+   ]
+  },
+  {
+   "id": "game.garage_setups_not_found",
+   "section": ".xtls",
+   "pattern": "31 F6 48 89 F0 48 81 C4 C0 00 00 00",
+   "match": "0x140c22cbf",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c22cbf",
+   "kind": "mid",
+   "expect": "31 F6 48 89 F0",
+   "names": [
+    "site_Game_GarageSetups_NotFound"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "c22c47",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/garage_setup.cpp"
+   ]
   }
  ]
 }

@@ -233,6 +233,8 @@ std::vector<CoreMixins> leaderboard_guard_mixins();
 void leaderboard_guard_commit();
 std::vector<CoreMixins> thrustmaster_lcd_mixins();
 void thrustmaster_lcd_commit();
+std::vector<CoreMixins> garage_setup_mixins();
+void garage_setup_commit();
 void hud_setup();
 void focus_setup();
 void hud_fatal();
