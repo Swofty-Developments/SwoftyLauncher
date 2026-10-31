@@ -23,11 +23,12 @@
 // career id with the addons it needs. Fields the launcher or an older core wrote stay as they were. Each
 // career's addon data is $DATA/careers/data/<career>/<addon>.json, {"version": n, "data": ...}.
 //
-// Writes happen at career.loaded (the career's record is made or refreshed), before each profile save
-// (career.saving, where a handler may set its data) and after it (career.saved, at
-// site_Game_SaveData_ContainersDone of the root with a good result; see save_splice.cpp). career.missing
-// fires at the end of a good profile load for the careers of the index whose slot (slot_guid as 16 hex digits,
-// else slot_id) no mode's slot manager listed after Game_SaveSlotManager_Deserialise.
+// The list follows the game's save slots: at the end of a good profile load, from every mode's slot manager
+// (Game_SaveSlotManager_Deserialise), and after each good profile save, from the same managers (save_splice.cpp
+// keeps them). A slot the list did not hold is added; a career whose slot is gone is "deleted" when this session
+// listed it before and "missing" when it did not. career.loaded makes or refreshes the loaded career's record
+// (taking over the record the slot list made for it), before each profile save career.saving refreshes it, and
+// career.saved stamps last_saved. career.missing fires when a list newly marks careers missing.
 
 namespace {
 
@@ -42,6 +43,9 @@ bool index_read = false;
 std::string current_id;
 std::set<std::string> present;
 std::string last_error;
+std::string session_id = std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(
+                                            std::chrono::system_clock::now().time_since_epoch())
+                                            .count());
 std::once_flag started;
 
 struct Described {
@@ -193,6 +197,8 @@ int on_loaded(void *, SwoftyHookCall *)
     std::lock_guard<std::mutex> g(mu);
     read_index_locked();
     current_id = f->career->id;
+    if (index_.adopt(current_id))
+        swofty::log("[saves] career %s was listed from the save slots; its record now carries this id", current_id.c_str());
     described = {};
     refresh_locked(*f);
     if (flush_locked())
@@ -354,21 +360,32 @@ void career_saves_saving()
     flush_locked();
 }
 
-void career_saves_found(const std::set<std::string> &keys)
+void career_saves_listed(const std::vector<career_saves::SlotRead> &slots, bool complete, bool at_load)
 {
-    bool gone;
+    cs::ListResult r;
     {
         std::lock_guard<std::mutex> g(mu);
         read_index_locked();
-        std::vector<std::string> now = index_.reconcile(index_.found_in(keys));
-        gone = !now.empty();
-        if (gone) {
-            for (auto &id : now)
-                swofty::log("[saves] career %s is in the career index and the profile load did not find it", id.c_str());
+        cs::ListContext ctx;
+        ctx.session = session_id;
+        ctx.current = current_id;
+        ctx.now_ms = now_ms();
+        ctx.complete = complete;
+        ctx.at_load = at_load;
+        r = index_.apply_list(slots, ctx);
+        for (auto &id : r.added)
+            swofty::log("[saves] career %s is in the game's save slots and was not in the career list", id.c_str());
+        for (auto &id : r.back)
+            swofty::log("[saves] career %s is in the game's save slots again", id.c_str());
+        for (auto &id : r.deleted)
+            swofty::log("[saves] career %s was deleted in game (its save slot is gone)", id.c_str());
+        for (auto &id : r.missing)
+            swofty::log("[saves] career %s is in the career list and the %s did not find it", id.c_str(),
+                        at_load ? "profile load" : "profile save");
+        if (r.changed || at_load || !slots.empty())
             flush_locked();
-        }
     }
-    if (gone)
+    if (!r.missing.empty())
         hk::events::career_missing();
 }
 

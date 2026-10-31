@@ -137,10 +137,113 @@ static void sdk_over_fake()
     expect(!career::saves::available(), "the table goes with the fake");
 }
 
+static cs::SlotRead slot(uint64_t id, uint64_t guid, uint16_t driver = 0, uint8_t flags = 0, bool details = true)
+{
+    cs::SlotRead r;
+    r.id = id;
+    r.guid = guid;
+    r.details = details;
+    r.driver = driver;
+    r.team = 7;
+    r.flags = flags;
+    r.season = 2;
+    r.weekend = 4;
+    r.date = 1761600000;
+    r.name = "Slot";
+    return r;
+}
+
+static cs::ListContext ctx(const char *session, bool load, bool complete = true)
+{
+    cs::ListContext c;
+    c.session = session;
+    c.at_load = load;
+    c.complete = complete;
+    c.now_ms = 5;
+    return c;
+}
+
+static void slot_list()
+{
+    cs::Index ix;
+    auto r = ix.apply_list({slot(1, 0xa1), slot(2, 0xb2), slot(3, 0xc3, 9, cs::FLAG_MY_TEAM)}, ctx("s1", true));
+    expect(r.added.size() == 3 && ix.size() == 3, "a first list adds every save slot");
+    expect(ix.knows("driver_career:00000000000000a1") && ix.knows("my_team:00000000000000c3"),
+           "a new slot is named by its kind and its slot key");
+    const Value *a = ix.find("driver_career:00000000000000a1");
+    expect(a && (*a)["slot_season"].as_int() == 3 && (*a)["slot_weekend"].as_int() == 4 &&
+               (*a)["last_played"].as_int() == 1761600000 && (*a)["team_raw"].as_int() == 7 &&
+               (*a)["status"].as_string() == "present" && (*a)["mode"].as_string() == "driver_career",
+           "the details are recorded; the season shows as the game's number");
+    r = ix.apply_list({slot(1, 0xa1), slot(2, 0xb2), slot(3, 0xc3, 9, cs::FLAG_MY_TEAM)}, ctx("s1", false));
+    expect(!r.changed && r.added.empty() && r.deleted.empty() && r.missing.empty(), "an unchanged list changes nothing");
+    r = ix.apply_list({slot(1, 0xa1), slot(3, 0xc3, 9, cs::FLAG_MY_TEAM)}, ctx("s1", false));
+    expect(r.deleted.size() == 1 && r.deleted[0] == "driver_career:00000000000000b2" && r.missing.empty(),
+           "a slot gone since a list of this session is deleted-in-game");
+    expect((*ix.find("driver_career:00000000000000b2"))["status"].as_string() == "deleted", "and carries the deleted state");
+    r = ix.apply_list({slot(1, 0xa1), slot(3, 0xc3, 9, cs::FLAG_MY_TEAM)}, ctx("s1", true));
+    expect(!r.changed, "a deleted career is not reported again");
+    r = ix.apply_list({slot(1, 0xa1), slot(2, 0xb2), slot(3, 0xc3, 9, cs::FLAG_MY_TEAM)}, ctx("s1", true));
+    expect(r.back.size() == 1 && (*ix.find("driver_career:00000000000000b2"))["status"].as_string() == "present",
+           "a slot that comes back is present again");
+
+    cs::Index old;
+    old.load(ix.to_json());
+    r = old.apply_list({slot(1, 0xa1)}, ctx("s2", true));
+    expect(r.missing.size() == 2 && r.deleted.empty() && (*old.find("my_team:00000000000000c3"))["status"].as_string() == "missing",
+           "a slot gone since a list of an earlier session is missing, not deleted");
+    r = old.apply_list({slot(1, 0xa1)}, ctx("s2", false));
+    expect(r.deleted.empty() && r.missing.empty(), "a career already missing stays missing");
+
+    cs::Index part;
+    part.apply_list({slot(1, 0xa1), slot(2, 0xb2)}, ctx("s1", true));
+    r = part.apply_list({slot(1, 0xa1)}, ctx("s1", true, false));
+    expect(!r.changed && (*part.find("driver_career:00000000000000b2"))["status"].as_string() == "present",
+           "an incomplete walk marks nothing gone");
+
+    cs::Index sw;
+    sw.apply_list({slot(1, 0xa1), slot(2, 0xb2)}, ctx("s1", true));
+    r = sw.apply_list({slot(8, 0xd8)}, ctx("s1", true));
+    expect(r.missing.size() == 2 && r.deleted.empty(), "a load that shares no career with this session's list is another profile: missing");
+    cs::Index none;
+    none.apply_list({slot(1, 0xa1)}, ctx("s1", true));
+    r = none.apply_list({}, ctx("s1", false));
+    expect(r.deleted.size() == 1, "deleting the only career is deleted-in-game");
+
+    cs::Index prov;
+    prov.touch("driver_career:new1");
+    r = prov.apply_list({slot(1, 0xa1)}, ctx("s1", true));
+    expect(r.missing.empty() && (*prov.find("driver_career:new1"))["status"].as_string() == "present",
+           "a provisional career is kept");
+
+    cs::Index nm;
+    nm.apply_list({slot(1, 0xa1, 5)}, ctx("s1", true));
+    nm.set_text("driver_career:00000000000000a1", "driver", "Oscar");
+    nm.apply_list({slot(1, 0xa1, 5)}, ctx("s1", false));
+    expect((*nm.find("driver_career:00000000000000a1"))["driver"].as_string() == "Oscar", "a known driver name stays while the driver id is the same");
+    nm.apply_list({slot(1, 0xa1, 6)}, ctx("s1", false));
+    expect(!nm.find("driver_career:00000000000000a1")->contains("driver"), "a name is dropped when the driver id changed");
+
+    cs::Index ad;
+    ad.apply_list({slot(1, 0xa1)}, ctx("s1", true));
+    expect(ad.adopt("progressive.driver_career:00000000000000a1") && ad.size() == 1 &&
+               ad.knows("progressive.driver_career:00000000000000a1") && !ad.adopt("driver_career:new1"),
+           "the loaded career's id replaces the slot list's name for it");
+    r = ad.apply_list({slot(1, 0xa1)}, ctx("s1", false));
+    expect(!r.changed && !r.deleted.size(), "and the next list matches it by its slot key");
+
+    cs::Index nd;
+    nd.apply_list({slot(1, 0xa1, 0, 0x41), slot(2, 0xb2, 0, 0, false)}, ctx("s1", true));
+    expect((*nd.find("driver_career:00000000000000a1"))["hidden"].as_bool() &&
+               !nd.find("driver_career:00000000000000b2")->contains("driver_raw"),
+           "a hidden slot is flagged; a slot without readable details is listed by its key");
+}
+
 int main()
 {
     index_model();
     missing_and_back();
+    slot_list();
     data_files();
     sdk_over_fake();
     printf("career saves: %d failed\n", fails);

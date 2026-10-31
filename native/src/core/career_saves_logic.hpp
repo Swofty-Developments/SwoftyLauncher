@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdint>
+#include <cstdio>
 #include <set>
 #include <string>
 #include <string_view>
@@ -19,6 +20,52 @@ constexpr size_t MAX_CAREERS = 4096;
 
 inline const char *const STATUS_PRESENT = "present";
 inline const char *const STATUS_MISSING = "missing";
+inline const char *const STATUS_DELETED = "deleted";
+constexpr uint32_t NO_INDEX = 0xffffffffu;
+constexpr uint8_t FLAG_MY_TEAM = 0x20;
+constexpr uint8_t FLAG_HIDDEN = 0x41;
+
+struct SlotRead {
+    uint64_t id = 0, guid = 0;
+    bool details = false;
+    std::string name;
+    uint8_t setup_mode = 0, flags = 0;
+    uint32_t season = NO_INDEX, weekend = NO_INDEX;
+    uint16_t team = 0, driver = 0, vehicle = 0;
+    uint64_t date = 0;
+};
+
+struct ListContext {
+    std::string session, current;
+    int64_t now_ms = 0;
+    bool complete = true;
+    bool at_load = false;
+};
+
+struct ListResult {
+    std::vector<std::string> added, back, deleted, missing;
+    bool changed = false;
+};
+
+inline std::string slot_key(uint64_t id, uint64_t guid)
+{
+    char b[24];
+    if (guid)
+        snprintf(b, sizeof b, "%016llx", (unsigned long long)guid);
+    else
+        snprintf(b, sizeof b, "%llu", (unsigned long long)id);
+    return b;
+}
+
+inline std::string id_tail(std::string_view id)
+{
+    size_t cut = id.rfind(':');
+    return std::string(cut == std::string_view::npos ? id : id.substr(cut + 1));
+}
+
+inline std::string_view str(const Value &v, const char *key) { return v[key].as_string(); }
+
+inline bool provisional_tail(std::string_view tail) { return tail.compare(0, 3, "new") == 0; }
 
 inline bool plain_id(std::string_view s, size_t limit = 160)
 {
@@ -196,6 +243,112 @@ public:
             }
         }
         return gone;
+    }
+
+    Value *find_by_tail(std::string_view key)
+    {
+        for (Value &c : careers_)
+            if (id_tail(c["career"].as_string()) == key)
+                return &c;
+        return nullptr;
+    }
+
+    bool adopt(std::string_view id)
+    {
+        if (find(id))
+            return false;
+        std::string tail = id_tail(id);
+        if (provisional_tail(tail))
+            return false;
+        Value *c = find_by_tail(tail);
+        if (!c || str(*c, "source") != "slots")
+            return false;
+        (*c)["career"] = Value(std::string(id));
+        c->erase("source");
+        return true;
+    }
+
+    ListResult apply_list(const std::vector<SlotRead> &now, const ListContext &ctx)
+    {
+        ListResult out;
+        std::set<std::string> seen;
+        std::set<std::string> kept_this_session;
+        for (const Value &c : careers_)
+            if (c["listed_session"].as_string() == ctx.session)
+                kept_this_session.insert(std::string(c["career"].as_string()));
+        bool any_known = false;
+        for (const SlotRead &s : now) {
+            std::string key = slot_key(s.id, s.guid);
+            Value *rec = find_by_tail(key);
+            if (!rec) {
+                if (careers_.size() >= MAX_CAREERS)
+                    continue;
+                std::string kind = s.details && (s.flags & FLAG_MY_TEAM) ? "my_team" : "driver_career";
+                rec = &touch(kind + ":" + key);
+                (*rec)["source"] = Value("slots");
+                out.added.push_back(std::string(str(*rec, "career")));
+                out.changed = true;
+            } else {
+                any_known = any_known || kept_this_session.count(std::string(str(*rec, "career"))) != 0;
+                std::string st(str(*rec, "status"));
+                if (st == STATUS_MISSING || st == STATUS_DELETED) {
+                    out.back.push_back(std::string(str(*rec, "career")));
+                    out.changed = true;
+                }
+            }
+            std::string id(str(*rec, "career"));
+            seen.insert(id);
+            (*rec)["status"] = Value(STATUS_PRESENT);
+            (*rec)["listed_session"] = Value(ctx.session);
+            (*rec)["listed_at"] = Value(ctx.now_ms);
+            (*rec)["slot"] = Value(key);
+            if (!s.details)
+                continue;
+            if (str(*rec, "mode").empty())
+                (*rec)["mode"] = Value(std::string(s.flags & FLAG_MY_TEAM ? "my_team" : "driver_career"));
+            bool same = id == ctx.current;
+            if (!same && rec->contains("driver_raw") && (*rec)["driver_raw"].as_int() != s.driver)
+                rec->erase("driver");
+            if (!same && rec->contains("team_raw") && (*rec)["team_raw"].as_int() != s.team)
+                rec->erase("team");
+            (*rec)["driver_raw"] = Value(int64_t(s.driver));
+            (*rec)["team_raw"] = Value(int64_t(s.team));
+            (*rec)["vehicle_raw"] = Value(int64_t(s.vehicle));
+            if (!s.name.empty())
+                (*rec)["slot_name"] = Value(s.name);
+            if (s.season != NO_INDEX)
+                (*rec)["slot_season"] = Value(int64_t(s.season) + 1);
+            if (s.weekend != NO_INDEX)
+                (*rec)["slot_weekend"] = Value(int64_t(s.weekend));
+            if (s.date)
+                (*rec)["last_played"] = Value(int64_t(s.date));
+            if (s.flags & FLAG_HIDDEN)
+                (*rec)["hidden"] = Value(true);
+            else
+                rec->erase("hidden");
+        }
+        if (!ctx.complete)
+            return out;
+        bool switched = ctx.at_load && !seen.empty() && !kept_this_session.empty() && !any_known;
+        for (Value &c : careers_) {
+            std::string id(str(c, "career"));
+            if (seen.count(id) || provisional_tail(id_tail(id)))
+                continue;
+            std::string st(str(c, "status"));
+            if (st == STATUS_DELETED)
+                continue;
+            bool here = !switched && str(c, "listed_session") == ctx.session;
+            if (here) {
+                c["status"] = Value(STATUS_DELETED);
+                out.deleted.push_back(id);
+                out.changed = true;
+            } else if (st != STATUS_MISSING) {
+                c["status"] = Value(STATUS_MISSING);
+                out.missing.push_back(id);
+                out.changed = true;
+            }
+        }
+        return out;
     }
 
     std::vector<std::string> missing_ids() const
