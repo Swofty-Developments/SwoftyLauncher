@@ -225,7 +225,7 @@ overlay 9c41e0b2…: $DATA/cache/overlay/modded/9c41e0b2…         the build's 
   add 1 file(s) under livery_package_shared                      game files the build route adds
 ```
 
-[`swofty conflicts`](/reference/cli#swofty-conflicts) lists every overridden target. A build that can't apply an op fails and names the addon and the cause, such as `applying yourname.my-addon: track_data.game_setup.TrackDataSet[_metadata_=f9]: no row matches`.
+[`swofty conflicts`](/reference/cli#swofty-conflicts) lists every overridden target. A build that can't apply an op fails and names the addon and the cause, such as `applying yourname.my-addon: track_data.game_setup.TrackDataSet[_metadata_=f9]: no row matches, even after every addon's changes`.
 
 ## Reference
 

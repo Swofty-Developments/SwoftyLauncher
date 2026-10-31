@@ -315,6 +315,8 @@ auto caterham = teams::identities.add("caterham", {
 
 A `constructor/` id works as a team reference: `teams::identities["constructor/toro_rosso"]` resolves to the last enabled team in load order that is that constructor. Career addons and line-ups name constructors, not one pack's keys, and they work with whichever pack provides the team. Each pack's team is still its own row with its own stat id.
 
+The stock team rows, and the rows a season addon adds to `entrants.teams` through database ops, are `game/<row label>` records on every profile, whether or not any addon has team records. `stat_id` on one returns the row's own stat id.
+
 A team says which constructor ids it provides in `provides`. The stock rows of the game's real teams provide their own ids (`game/williams` provides `constructor/williams`), so a pack's team that provides the same id wins by coming later in load order. When two enabled addons provide the same id, the core logs it and the conflicts report lists the loser (see [Shared ids](/std/providers#shared-ids)).
 
 ```cpp

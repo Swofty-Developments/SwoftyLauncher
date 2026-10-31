@@ -1054,6 +1054,73 @@ int api_count()
 
 const SwoftyEra table = {api_available, api_add_box, api_count};
 
+std::vector<uint16_t> teams_of(uintptr_t begin, uintptr_t end)
+{
+    std::vector<uint16_t> out;
+    int64_t n = logic::entrant_count(begin, end);
+    for (int64_t i = 0; i < n; ++i) {
+        uint16_t team = logic::NO_TEAM;
+        if (mem::read(begin + size_t(i) * logic::ENTRANT_RECORD + logic::ENTRANT_TEAM, team))
+            out.push_back(team);
+    }
+    return out;
+}
+
+[[noreturn]] void stop_session_load(const std::string &why)
+{
+    swofty::log("[era] %s", why.c_str());
+    swofty::log("[crash] the core closes F1 25 at StateLoadSession (exit code %u): %s", logic::CONTINUE_STOP_EXIT,
+                why.c_str());
+    TerminateProcess(GetCurrentProcess(), logic::CONTINUE_STOP_EXIT);
+    ExitProcess(logic::CONTINUE_STOP_EXIT);
+}
+
+void grand_prix_load(uintptr_t ctx)
+{
+    static uint32_t logged;
+    auto [mode, track] = swofty_core::apply::moments::session_mode_track();
+    if (mode != "grand_prix")
+        return;
+    std::string track_why = logic::track_missing(swofty_core::apply::tracks::base(), track);
+    uintptr_t holder = 0, setup = 0, entrant_setup = 0, list = 0, begin = 0, end = 0, gsm = 0, gsm_holder = 0, gsm_name = 0;
+    if (!mem::read(ctx + MODE_SETUP, holder) || !holder || !mem::read(holder + SETUP_MODES, setup) || !setup ||
+        !mem::read(setup + SELECTED_LIST, list)) {
+        if (!track_why.empty())
+            stop_session_load(logic::continue_stop(track_why, {}, false));
+        return;
+    }
+    logic::ContinuePick pick;
+    bool empty = !list && mem::read(setup + SETUP_ENTRANT_SETUP, entrant_setup) && entrant_setup;
+    if (empty) {
+        std::string setup_mode;
+        if (mem::read(setup + SETUP_GAME_SETUP_MODE, gsm) && gsm && mem::read(gsm + SETUP_MODE_NAME, gsm_holder) &&
+            gsm_holder && mem::read(gsm_holder + 0x10, gsm_name))
+            mem::c_string(gsm_name, setup_mode, 64);
+        std::vector<uint16_t> saved;
+        if (mem::read(setup + logic::MGR_SESSION_BEGIN, begin) && mem::read(setup + logic::MGR_SESSION_END, end))
+            saved = teams_of(begin, end);
+        std::vector<void *> ptrs;
+        auto cars = lists_of(reinterpret_cast<const uint8_t *>(entrant_setup), ptrs);
+        std::vector<logic::ListTeams> lists;
+        for (size_t i = 0; i < ptrs.size(); ++i) {
+            logic::ListTeams l{cars[i].name, {}};
+            uintptr_t at = reinterpret_cast<uintptr_t>(ptrs[i]), lb = 0, le = 0;
+            if (at && mem::read(at + logic::LIST_ENTRANTS_BEGIN, lb) && mem::read(at + logic::LIST_ENTRANTS_END, le))
+                l.teams = teams_of(lb, le);
+            lists.push_back(std::move(l));
+        }
+        pick = logic::continue_list(lists, saved, last_press, setup_mode);
+        if (pick.index >= 0 && track_why.empty()) {
+            ref<void *>(reinterpret_cast<void *>(setup), SELECTED_LIST) = ptrs[size_t(pick.index)];
+            if (logged++ < LOG_FIRST)
+                swofty::log("[era] Grand Prix load: %s", pick.line.c_str());
+        }
+    }
+    std::string why = logic::continue_stop(track_why, pick, empty);
+    if (!why.empty())
+        stop_session_load(why);
+}
+
 }
 
 extern "C" __declspec(dllexport) const SwoftyEra *SwoftyCoreEra(void)
@@ -1082,8 +1149,12 @@ void era_session_load()
     put_back();
     uintptr_t slot = swofty::api ? swofty::api->resolve("g_Game_Manager") : 0, mgr = 0, ctx = 0, setup = 0;
     if (!slot || !mem::read(slot, mgr) || !mgr || !mem::read(mgr + offsetof(swofty::game::GameManager, mode_context), ctx) ||
-        !ctx || !time_trial(reinterpret_cast<void *>(ctx)))
+        !ctx)
         return;
+    if (!time_trial(reinterpret_cast<void *>(ctx))) {
+        grand_prix_load(ctx);
+        return;
+    }
     uintptr_t holder = 0, gsm = 0, gsm_holder = 0, gsm_name = 0, entrant_setup = 0, list = 0;
     if (!mem::read(ctx + MODE_SETUP, holder) || !holder || !mem::read(holder + SETUP_MODES, setup) || !setup)
         return;
