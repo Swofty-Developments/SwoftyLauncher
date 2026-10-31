@@ -119747,6 +119747,60 @@
     }
    ],
    "used_by": []
+  },
+  {
+   "id": "ai.table_grip_input",
+   "section": ".xtls",
+   "pattern": "C5 FA 10 48 24 C5 FA 10 50 74 8B 80 84 00 00 00",
+   "match": "0x14063ebee",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14063ebf3",
+   "kind": "mid",
+   "expect": "C5 FA 10 50 74",
+   "names": [
+    "site_Ai_TableGripInput"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "kbport-aigrip",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/hooks/car_live.cpp"
+   ]
+  },
+  {
+   "id": "car.fuel_ecu_set_mode",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 49 8B 8F A8 05 00 00",
+   "match": "0x14470e082",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "rel32",
+    "insn": "0x0"
+   },
+   "target": "0x14468e6a0",
+   "kind": "call",
+   "names": [
+    "Car_FuelEcu_SetMode_Thunk"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "kbverify-cars1",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/hooks/car_live.cpp"
+   ]
   }
  ]
 }

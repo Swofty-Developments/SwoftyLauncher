@@ -10,5 +10,6 @@ inline constexpr address<"Ai_DriverVariationInRaceSystem_Setup"> Ai_DriverVariat
 inline constexpr address<"Ai_Job_UpdateCarsParallel"> Ai_Job_UpdateCarsParallel{}; // L2 experimental
 inline constexpr address<"Ai_Select_ErsDeployMode"> Ai_Select_ErsDeployMode{}; // L2 experimental
 inline constexpr address<"Ai_Update_CompoundPaceCurves"> Ai_Update_CompoundPaceCurves{}; // L2 experimental
+inline constexpr site<"site_Ai_TableGripInput"> site_Ai_TableGripInput{}; // L2 experimental
 
 }
