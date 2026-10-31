@@ -1,0 +1,2320 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "add-row",
+   "table": "entrants.entrant_lists",
+   "from": "entrants.entrant_lists.entrant_list[_metadata_=f1_2026]",
+   "set": {
+    "_metadata_": "f1_1990_gp",
+    "previous_season_team_standings": "f1_teams_1989",
+    "previous_season_driver_standings": "f1_drivers_1989",
+    "display_name": "lng_f1990_box",
+    "leaderboard": "classic"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_0",
+   "field": "_metadata_",
+   "value": "f1990_mclaren_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_0",
+   "field": "team",
+   "value": "mclaren_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_0",
+   "field": "vehicle",
+   "value": "mclaren_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_0",
+   "field": "entrant_reference",
+   "value": "f1990-ayrton_senna"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_0",
+   "field": "car_number",
+   "value": "27"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_0",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_0",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_0",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_0",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_0",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_1",
+   "field": "_metadata_",
+   "value": "f1990_mclaren_2"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_1",
+   "field": "team",
+   "value": "mclaren_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_1",
+   "field": "vehicle",
+   "value": "mclaren_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_1",
+   "field": "entrant_reference",
+   "value": "f1990-gerhard_berger"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_1",
+   "field": "car_number",
+   "value": "28"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_1",
+   "field": "team_position",
+   "value": "1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_1",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_1",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_1",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_1",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_2",
+   "field": "_metadata_",
+   "value": "f1990_ferrari_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_2",
+   "field": "team",
+   "value": "ferrari_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_2",
+   "field": "vehicle",
+   "value": "ferrari_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_2",
+   "field": "entrant_reference",
+   "value": "f1990-alain_prost"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_2",
+   "field": "car_number",
+   "value": "1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_2",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_2",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_2",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_2",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_2",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_3",
+   "field": "_metadata_",
+   "value": "f1990_ferrari_2"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_3",
+   "field": "team",
+   "value": "ferrari_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_3",
+   "field": "vehicle",
+   "value": "ferrari_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_3",
+   "field": "entrant_reference",
+   "value": "f1990-nigel_mansell"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_3",
+   "field": "car_number",
+   "value": "2"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_3",
+   "field": "team_position",
+   "value": "1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_3",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_3",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_3",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_3",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_4",
+   "field": "_metadata_",
+   "value": "f1990_williams_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_4",
+   "field": "team",
+   "value": "williams_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_4",
+   "field": "vehicle",
+   "value": "williams_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_4",
+   "field": "entrant_reference",
+   "value": "f1990-thierry_boutsen"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_4",
+   "field": "car_number",
+   "value": "5"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_4",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_4",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_4",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_4",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_4",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_5",
+   "field": "_metadata_",
+   "value": "f1990_williams_2"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_5",
+   "field": "team",
+   "value": "williams_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_5",
+   "field": "vehicle",
+   "value": "williams_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_5",
+   "field": "entrant_reference",
+   "value": "f1990-riccardo_patrese"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_5",
+   "field": "car_number",
+   "value": "6"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_5",
+   "field": "team_position",
+   "value": "1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_5",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_5",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_5",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_5",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_6",
+   "field": "_metadata_",
+   "value": "f1990_benetton_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_6",
+   "field": "team",
+   "value": "benetton_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_6",
+   "field": "vehicle",
+   "value": "benetton_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_6",
+   "field": "entrant_reference",
+   "value": "f1990-alessandro_nannini"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_6",
+   "field": "car_number",
+   "value": "19"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_6",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_6",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_6",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_6",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_6",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_7",
+   "field": "_metadata_",
+   "value": "f1990_benetton_2"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_7",
+   "field": "team",
+   "value": "benetton_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_7",
+   "field": "vehicle",
+   "value": "benetton_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_7",
+   "field": "entrant_reference",
+   "value": "f1990-nelson_piquet"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_7",
+   "field": "car_number",
+   "value": "20"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_7",
+   "field": "team_position",
+   "value": "1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_7",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_7",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_7",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_7",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_8",
+   "field": "_metadata_",
+   "value": "f1990_tyrrell_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_8",
+   "field": "team",
+   "value": "tyrrell_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_8",
+   "field": "vehicle",
+   "value": "tyrrell_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_8",
+   "field": "entrant_reference",
+   "value": "f1990-satoru_nakajima"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_8",
+   "field": "car_number",
+   "value": "3"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_8",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_8",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_8",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_8",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_8",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_9",
+   "field": "_metadata_",
+   "value": "f1990_tyrrell_2"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_9",
+   "field": "team",
+   "value": "tyrrell_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_9",
+   "field": "vehicle",
+   "value": "tyrrell_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_9",
+   "field": "entrant_reference",
+   "value": "f1990-jean_alesi"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_9",
+   "field": "car_number",
+   "value": "4"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_9",
+   "field": "team_position",
+   "value": "1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_9",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_9",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_9",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_9",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_10",
+   "field": "_metadata_",
+   "value": "f1990_lotus_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_10",
+   "field": "team",
+   "value": "lotus_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_10",
+   "field": "vehicle",
+   "value": "lotus_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_10",
+   "field": "entrant_reference",
+   "value": "f1990-derek_warwick"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_10",
+   "field": "car_number",
+   "value": "11"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_10",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_10",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_10",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_10",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_10",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_11",
+   "field": "_metadata_",
+   "value": "f1990_lotus_2"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_11",
+   "field": "team",
+   "value": "lotus_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_11",
+   "field": "vehicle",
+   "value": "lotus_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_11",
+   "field": "entrant_reference",
+   "value": "f1990-martin_donnelly"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_11",
+   "field": "car_number",
+   "value": "12"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_11",
+   "field": "team_position",
+   "value": "1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_11",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_11",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_11",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_11",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_12",
+   "field": "_metadata_",
+   "value": "f1990_leytonhouse_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_12",
+   "field": "team",
+   "value": "leytonhouse_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_12",
+   "field": "vehicle",
+   "value": "leytonhouse_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_12",
+   "field": "entrant_reference",
+   "value": "f1990-mauricio_gugelmin"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_12",
+   "field": "car_number",
+   "value": "15"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_12",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_12",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_12",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_12",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_12",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_13",
+   "field": "_metadata_",
+   "value": "f1990_leytonhouse_2"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_13",
+   "field": "team",
+   "value": "leytonhouse_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_13",
+   "field": "vehicle",
+   "value": "leytonhouse_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_13",
+   "field": "entrant_reference",
+   "value": "f1990-ivan_capelli"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_13",
+   "field": "car_number",
+   "value": "16"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_13",
+   "field": "team_position",
+   "value": "1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_13",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_13",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_13",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_13",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_14",
+   "field": "_metadata_",
+   "value": "f1990_ligier_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_14",
+   "field": "team",
+   "value": "ligier_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_14",
+   "field": "vehicle",
+   "value": "ligier_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_14",
+   "field": "entrant_reference",
+   "value": "f1990-nicola_larini"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_14",
+   "field": "car_number",
+   "value": "25"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_14",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_14",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_14",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_14",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_14",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_15",
+   "field": "_metadata_",
+   "value": "f1990_ligier_2"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_15",
+   "field": "team",
+   "value": "ligier_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_15",
+   "field": "vehicle",
+   "value": "ligier_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_15",
+   "field": "entrant_reference",
+   "value": "f1990-philippe_alliot"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_15",
+   "field": "car_number",
+   "value": "26"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_15",
+   "field": "team_position",
+   "value": "1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_15",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_15",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_15",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_15",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_16",
+   "field": "_metadata_",
+   "value": "f1990_minardi_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_16",
+   "field": "team",
+   "value": "minardi_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_16",
+   "field": "vehicle",
+   "value": "minardi_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_16",
+   "field": "entrant_reference",
+   "value": "f1990-pierluigi_martini"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_16",
+   "field": "car_number",
+   "value": "23"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_16",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_16",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_16",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_16",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_16",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_17",
+   "field": "_metadata_",
+   "value": "f1990_minardi_2"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_17",
+   "field": "team",
+   "value": "minardi_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_17",
+   "field": "vehicle",
+   "value": "minardi_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_17",
+   "field": "entrant_reference",
+   "value": "f1990-paolo_barilla"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_17",
+   "field": "car_number",
+   "value": "24"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_17",
+   "field": "team_position",
+   "value": "1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_17",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_17",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_17",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_17",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_18",
+   "field": "_metadata_",
+   "value": "f1990_brabham_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_18",
+   "field": "team",
+   "value": "brabham_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_18",
+   "field": "vehicle",
+   "value": "brabham_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_18",
+   "field": "entrant_reference",
+   "value": "f1990-david_brabham"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_18",
+   "field": "car_number",
+   "value": "7"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_18",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_18",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_18",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_18",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_18",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_19",
+   "field": "_metadata_",
+   "value": "f1990_brabham_2"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_19",
+   "field": "team",
+   "value": "brabham_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_19",
+   "field": "vehicle",
+   "value": "brabham_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_19",
+   "field": "entrant_reference",
+   "value": "f1990-stefano_modena"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_19",
+   "field": "car_number",
+   "value": "8"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_19",
+   "field": "team_position",
+   "value": "1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_19",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_19",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_19",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_19",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_20",
+   "field": "_metadata_",
+   "value": "f1990_arrows_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_20",
+   "field": "team",
+   "value": "arrows_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_20",
+   "field": "vehicle",
+   "value": "arrows_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_20",
+   "field": "entrant_reference",
+   "value": "f1990-michele_alboreto"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_20",
+   "field": "car_number",
+   "value": "9"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_20",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_20",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_20",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_20",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_20",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_21",
+   "field": "_metadata_",
+   "value": "f1990_arrows_2"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_21",
+   "field": "team",
+   "value": "arrows_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_21",
+   "field": "vehicle",
+   "value": "arrows_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_21",
+   "field": "entrant_reference",
+   "value": "f1990-alex_caffi"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_21",
+   "field": "car_number",
+   "value": "10"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_21",
+   "field": "team_position",
+   "value": "1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_21",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_21",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_21",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_21",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp]",
+   "from": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_0",
+   "set": {
+    "_metadata_": "f1990_larrousse_1",
+    "team": "larrousse_1990",
+    "vehicle": "larrousse_1990",
+    "entrant_reference": "f1990-eric_bernard",
+    "car_number": "29",
+    "team_position": "0",
+    "driver": "",
+    "driver_customisation": "",
+    "badge_customisation": "",
+    "vehicle_customisation": ""
+   },
+   "when": {
+    "cars": 26
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp]",
+   "from": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_0",
+   "set": {
+    "_metadata_": "f1990_larrousse_2",
+    "team": "larrousse_1990",
+    "vehicle": "larrousse_1990",
+    "entrant_reference": "f1990-aguri_suzuki",
+    "car_number": "30",
+    "team_position": "1",
+    "driver": "",
+    "driver_customisation": "",
+    "badge_customisation": "",
+    "vehicle_customisation": ""
+   },
+   "when": {
+    "cars": 26
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp]",
+   "from": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_0",
+   "set": {
+    "_metadata_": "f1990_dallara_1",
+    "team": "dallara_1990",
+    "vehicle": "dallara_1990",
+    "entrant_reference": "f1990-emanuele_pirro",
+    "car_number": "21",
+    "team_position": "0",
+    "driver": "",
+    "driver_customisation": "",
+    "badge_customisation": "",
+    "vehicle_customisation": ""
+   },
+   "when": {
+    "cars": 26
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp]",
+   "from": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp].entrant_0",
+   "set": {
+    "_metadata_": "f1990_dallara_2",
+    "team": "dallara_1990",
+    "vehicle": "dallara_1990",
+    "entrant_reference": "f1990-andrea_de_cesaris",
+    "car_number": "22",
+    "team_position": "1",
+    "driver": "",
+    "driver_customisation": "",
+    "badge_customisation": "",
+    "vehicle_customisation": ""
+   },
+   "when": {
+    "cars": 26
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp]",
+   "field": "_entrant_instancecount_",
+   "value": "22"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_gp]",
+   "field": "_entrant_instancecount_",
+   "value": "26",
+   "when": {
+    "cars": 26
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.entrant_lists",
+   "from": "entrants.entrant_lists.entrant_list[_metadata_=f1_2026]",
+   "set": {
+    "_metadata_": "f1_1990_tt",
+    "previous_season_team_standings": "f1_teams_1989",
+    "previous_season_driver_standings": "f1_drivers_1989",
+    "display_name": "lng_f1990_box",
+    "leaderboard": "classic"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_0",
+   "field": "_metadata_",
+   "value": "f1990_mclaren_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_0",
+   "field": "team",
+   "value": "mclaren_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_0",
+   "field": "vehicle",
+   "value": "mclaren_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_0",
+   "field": "entrant_reference",
+   "value": "f1990-ayrton_senna"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_0",
+   "field": "car_number",
+   "value": "27"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_0",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_0",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_0",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_0",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_0",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_1",
+   "field": "_metadata_",
+   "value": "f1990_ferrari_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_1",
+   "field": "team",
+   "value": "ferrari_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_1",
+   "field": "vehicle",
+   "value": "ferrari_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_1",
+   "field": "entrant_reference",
+   "value": "f1990-alain_prost"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_1",
+   "field": "car_number",
+   "value": "1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_1",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_1",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_1",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_1",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_1",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_2",
+   "field": "_metadata_",
+   "value": "f1990_williams_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_2",
+   "field": "team",
+   "value": "williams_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_2",
+   "field": "vehicle",
+   "value": "williams_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_2",
+   "field": "entrant_reference",
+   "value": "f1990-thierry_boutsen"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_2",
+   "field": "car_number",
+   "value": "5"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_2",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_2",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_2",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_2",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_2",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_3",
+   "field": "_metadata_",
+   "value": "f1990_benetton_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_3",
+   "field": "team",
+   "value": "benetton_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_3",
+   "field": "vehicle",
+   "value": "benetton_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_3",
+   "field": "entrant_reference",
+   "value": "f1990-alessandro_nannini"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_3",
+   "field": "car_number",
+   "value": "19"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_3",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_3",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_3",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_3",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_3",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_4",
+   "field": "_metadata_",
+   "value": "f1990_tyrrell_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_4",
+   "field": "team",
+   "value": "tyrrell_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_4",
+   "field": "vehicle",
+   "value": "tyrrell_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_4",
+   "field": "entrant_reference",
+   "value": "f1990-satoru_nakajima"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_4",
+   "field": "car_number",
+   "value": "3"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_4",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_4",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_4",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_4",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_4",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_5",
+   "field": "_metadata_",
+   "value": "f1990_lotus_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_5",
+   "field": "team",
+   "value": "lotus_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_5",
+   "field": "vehicle",
+   "value": "lotus_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_5",
+   "field": "entrant_reference",
+   "value": "f1990-derek_warwick"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_5",
+   "field": "car_number",
+   "value": "11"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_5",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_5",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_5",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_5",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_5",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_6",
+   "field": "_metadata_",
+   "value": "f1990_leytonhouse_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_6",
+   "field": "team",
+   "value": "leytonhouse_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_6",
+   "field": "vehicle",
+   "value": "leytonhouse_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_6",
+   "field": "entrant_reference",
+   "value": "f1990-mauricio_gugelmin"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_6",
+   "field": "car_number",
+   "value": "15"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_6",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_6",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_6",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_6",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_6",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_7",
+   "field": "_metadata_",
+   "value": "f1990_ligier_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_7",
+   "field": "team",
+   "value": "ligier_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_7",
+   "field": "vehicle",
+   "value": "ligier_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_7",
+   "field": "entrant_reference",
+   "value": "f1990-nicola_larini"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_7",
+   "field": "car_number",
+   "value": "25"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_7",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_7",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_7",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_7",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_7",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_8",
+   "field": "_metadata_",
+   "value": "f1990_minardi_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_8",
+   "field": "team",
+   "value": "minardi_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_8",
+   "field": "vehicle",
+   "value": "minardi_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_8",
+   "field": "entrant_reference",
+   "value": "f1990-pierluigi_martini"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_8",
+   "field": "car_number",
+   "value": "23"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_8",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_8",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_8",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_8",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_8",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_9",
+   "field": "_metadata_",
+   "value": "f1990_brabham_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_9",
+   "field": "team",
+   "value": "brabham_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_9",
+   "field": "vehicle",
+   "value": "brabham_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_9",
+   "field": "entrant_reference",
+   "value": "f1990-david_brabham"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_9",
+   "field": "car_number",
+   "value": "7"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_9",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_9",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_9",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_9",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_9",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_10",
+   "field": "_metadata_",
+   "value": "f1990_arrows_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_10",
+   "field": "team",
+   "value": "arrows_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_10",
+   "field": "vehicle",
+   "value": "arrows_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_10",
+   "field": "entrant_reference",
+   "value": "f1990-michele_alboreto"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_10",
+   "field": "car_number",
+   "value": "9"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_10",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_10",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_10",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_10",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_10",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_11",
+   "field": "_metadata_",
+   "value": "f1990_larrousse_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_11",
+   "field": "team",
+   "value": "larrousse_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_11",
+   "field": "vehicle",
+   "value": "larrousse_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_11",
+   "field": "entrant_reference",
+   "value": "f1990-eric_bernard"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_11",
+   "field": "car_number",
+   "value": "29"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_11",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_11",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_11",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_11",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_11",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_12",
+   "field": "_metadata_",
+   "value": "f1990_dallara_1"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_12",
+   "field": "team",
+   "value": "dallara_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_12",
+   "field": "vehicle",
+   "value": "dallara_1990"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_12",
+   "field": "entrant_reference",
+   "value": "f1990-emanuele_pirro"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_12",
+   "field": "car_number",
+   "value": "21"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_12",
+   "field": "team_position",
+   "value": "0"
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_12",
+   "field": "driver",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_12",
+   "field": "driver_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_12",
+   "field": "badge_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt].entrant_12",
+   "field": "vehicle_customisation",
+   "value": ""
+  },
+  {
+   "op": "set",
+   "select": "entrants.entrant_lists.entrant_list[_metadata_=f1_1990_tt]",
+   "field": "_entrant_instancecount_",
+   "value": "13"
+  },
+  {
+   "op": "list-append",
+   "select": "entrants.entrant_setup_modes.entrant_setup_mode[_metadata_=swofty_f1]",
+   "field": "entrant_lists",
+   "value": "f1_1990_gp"
+  },
+  {
+   "op": "list-append",
+   "select": "entrants.entrant_setup_modes.entrant_setup_mode[_metadata_=swofty_f1]",
+   "field": "selectable_entrant_lists",
+   "value": "f1_1990_gp"
+  },
+  {
+   "op": "list-append",
+   "select": "content_sets.content_set[_metadata_=2025].available_entrant_lists_0",
+   "field": "entrant_lists",
+   "value": "f1_1990_gp"
+  },
+  {
+   "op": "list-append",
+   "select": "content_sets.content_set[_metadata_=2026].available_entrant_lists_0",
+   "field": "entrant_lists",
+   "value": "f1_1990_gp"
+  },
+  {
+   "op": "add-row",
+   "table": "game_setup.scenarios",
+   "from": "game_setup.scenarios.scenario[_metadata_=f1]",
+   "set": {
+    "_metadata_": "f1_1990_gp",
+    "display_name": "lng_f1990_box",
+    "entrant_list": "f1_1990_gp",
+    "game_setup_mode": "swofty_f1",
+    "statId": "90"
+   }
+  },
+  {
+   "op": "list-append",
+   "select": "entrants.entrant_setup_modes.entrant_setup_mode[_metadata_=swofty_f1]",
+   "field": "entrant_lists",
+   "value": "f1_1990_tt"
+  },
+  {
+   "op": "list-append",
+   "select": "entrants.entrant_setup_modes.entrant_setup_mode[_metadata_=swofty_f1]",
+   "field": "selectable_entrant_lists",
+   "value": "f1_1990_tt"
+  },
+  {
+   "op": "list-append",
+   "select": "content_sets.content_set[_metadata_=2025].available_entrant_lists_0",
+   "field": "entrant_lists",
+   "value": "f1_1990_tt"
+  },
+  {
+   "op": "list-append",
+   "select": "content_sets.content_set[_metadata_=2026].available_entrant_lists_0",
+   "field": "entrant_lists",
+   "value": "f1_1990_tt"
+  },
+  {
+   "op": "add-row",
+   "table": "game_setup.scenarios",
+   "from": "game_setup.scenarios.scenario[_metadata_=f1]",
+   "set": {
+    "_metadata_": "f1_1990_tt",
+    "display_name": "lng_f1990_box",
+    "entrant_list": "f1_1990_tt",
+    "game_setup_mode": "swofty_f1",
+    "statId": "91"
+   }
+  },
+  {
+   "op": "list-append",
+   "select": "track_data.track_layers.TrackLayer[_metadata_=f1_1990]",
+   "field": "game_setup_modes",
+   "value": "swofty_f1"
+  },
+  {
+   "op": "list-append",
+   "select": "track_data.game_setup.TrackDataSet[_metadata_=f1_1990]",
+   "field": "game_setup_modes",
+   "value": "swofty_f1"
+  },
+  {
+   "op": "list-append",
+   "select": "tyres.compound_classes.CompoundClass[_metadata_=f1_1990]",
+   "field": "game_setup_modes",
+   "value": "swofty_f1"
+  }
+ ]
+}

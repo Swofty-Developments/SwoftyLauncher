@@ -1,6 +1,6 @@
 # F1 1990
 
-Adds a 1990 Driver Career next to the 2025 and 2026 ones. 1990 careers live in the normal profile save, in their own slot list (data group `f1_career_1990`).
+Adds a 1990 Driver Career next to the 2025 and 2026 ones, and an F1 1990 box to Grand Prix and Time Trial (Grand Prix and Time Trial box below). 1990 careers live in the normal profile save, in their own slot list (data group `f1_career_1990`).
 
 ## Grid (db/grid.json, db/grid_standings.json, lang/grid.json, tools/grid.py)
 
@@ -137,7 +137,7 @@ nix-shell -p nodejs nvidia-texture-tools "python3.withPackages (ps: [ ps.numpy p
   --run "python3 addons/f1-1990/carpack/tools/tyre_art.py --sheet <png>"   # carpack/erp/tyres/tyre_art.erpk, before any common.erp build
   # tyre_art.py --sheet-only --sheet <png> draws the sheet from the built tyre_art.erpk
 python3 addons/f1-1990/carpack/tools/build_pack.py            # all cars, common.erp, the tyre bindings, carpack/assets/cars.json, carpack/assets/ai.json
-python3 addons/f1-1990/carpack/tools/build_pack.py --ops-only # only carpack/assets/cars.json, carpack/assets/ai.json and carpack/db/test.json
+python3 addons/f1-1990/carpack/tools/build_pack.py --ops-only # only carpack/assets/cars.json and carpack/assets/ai.json
 python3 addons/f1-1990/carpack/tools/build_pack.py --bspec-only # only the B-spec archives
 python3 addons/f1-1990/carpack/tools/build_pack.py --common-only # only common.erp and the tyre bindings
 ```
@@ -206,9 +206,25 @@ Outputs in `carpack/erp/ai/`, next to the archives:
 
 The tool exits non-zero when a job fails or a check reports an issue.
 
-### Test option
+## Grand Prix and Time Trial box (db/box.json, lang/box.json, tools/box.py, native/f1_1990_box.dll)
 
-`test_grand_prix` (default `off`, `carpack/db/test.json`) puts 1990 cars on the F1 2026 Grand Prix grid for testing: `ferrari` (the two Ferrari seats), `all` (all 22 seats, each on the 1990 car of the same AI folder), `myteam` (Larrousse on the Williams seats, Dallara on the Haas seats) or `bspec` (all 22 seats on the B-spec cars). Off leaves Grand Prix stock.
+An **F1 1990** box sits in the Addons row of the Grand Prix and Time Trial era picker (order 1990, the stock F1 2025 tile art, title `lng_f1990_box`). `native/f1_1990_box.dll` registers it with `swofty::era::add_box`: the Grand Prix picker selects `f1_1990_gp`, the Time Trial picker `f1_1990_tt`.
+
+| List | Cars | Contents |
+|---|---|---|
+| `f1_1990_gp` | 22 or 26 (`cars`) | the `f1_1990` grid: the same teams, cars, drivers, numbers and looks |
+| `f1_1990_tt` | 13 | each team's first car and driver, Larrousse and Dallara included |
+
+Both lists are new rows copied from `f1_2026` (season `season_2026`, leaderboard `classic`, the build picks their stat ids), list-appended onto the `swofty_f1` entrant setup mode and the `2025` and `2026` content sets, each with a `game_setup.scenarios` row under `swofty_f1` (statId 90 and 91). No driver, team or vehicle row is added. The `f1_1990` track layer, track data set and compound class also list `swofty_f1`; they cover season `season_2026` only, and no other `swofty_f1` list runs on season 2026, so a box session loads the 1990 track worlds (13 garages, 26 grid slots with `cars` 26), the 1990 tyres (C4 soft race, C3 race, C5 qualifier, the 1990 allocation presets), the 1990 pit loss and the SS / US / S badges. The data set and the class are default format only: a sprint weekend in the box has neither.
+
+Rules in the box: the race engine and the AI's qualifying grip follow the session (`f1_1990_quali.dll`, `f1_1990_aiquali.dll`, option `quali_engine_1990`, Qualifying and race engines below). Time Trial and qualifying run the qualifying engine; practice and the race run the race engine. Power-unit wear and grid penalties are career rows only. Career-only features stay career-only: power-unit parts, R&D and B-spec cars, the 12-lap qualifying limit, the pit crew pace, session names, the Friday qualifying tyre fix and the tyre supplier choice.
+
+Not covered: the box's `swofty_f1` entrant setup mode has `max_entrants` 20 (copied from `f1`), shared by every box; the 1990 AI data covers the 16 calendar tracks only (`carpack/erp/ai/`); the pit crew training set is the `f1` one (the team `pit_lane.pit_times` rows do apply).
+
+```sh
+python3 addons/f1-1990/tools/box.py          # writes db/box.json and lang/box.json from db/grid.json
+python3 addons/f1-1990/tools/box.py --check  # fails when either file is stale
+```
 
 ## AI (db/ai_difficulty.json, data/ai-laps-1990.json, tools/ai_data.py, tools/check_ai.py)
 

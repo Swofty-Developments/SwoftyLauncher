@@ -20,8 +20,8 @@ drawn by tyre_art.py into erp/tyres/tyre_art.erpk, which the common.erp build ne
 per supplier, erp/tyres/<supplier>/<folder>_tyres.erp, which option `tyre_supplier` picks.
 
 Outputs (relative to the car pack folder `carpack/`, not committed): erp/teams/<folder>/wep/<folder>.erp, erp/teams/common.erp,
-assets/cars.json (the file.put and group.register ops), assets/ai.json (the AI archive ops of tools/ai/build_ai.py) and
-db/test.json (the test_grand_prix option's seat swaps); the last three are committed. The tyre compound archive the
+assets/cars.json (the file.put and group.register ops) and assets/ai.json (the AI archive ops of tools/ai/build_ai.py);
+the last two are committed. The tyre compound archive the
 group.register op names comes from addons/f1-1990/tools/tyres.py (tyres/<supplier>/tyrecompounds.erp). A full build fails at the end when an AI archive that assets/ai.json names is not in erp/ai.
 """
 import argparse
@@ -357,45 +357,17 @@ def ops():
     return {'schema_version': 1, 'ops': out}
 
 
-GP_SEATS = {'mclaren_driver': 'mclaren', 'mercedes_driver': 'mercedes', 'redbull_driver': 'redbull',
-            'ferrari_driver': 'ferrari', 'williams_driver': 'williams', 'vcarb_driver': 'toro_rosso',
-            'astonmartin_driver': 'force_india', 'haas_driver': 'haas', 'kick_driver': 'sauber',
-            'alpine_driver': 'lotus', 'gm_cadillac': 'gm_cadillac'}
-MYTEAM_SEATS = {'williams': 'myteam_ferrari', 'haas': 'myteam_honda'}
-
-
-def test_ops():
-    by_folder = {c.folder: c for c in C.CARS}
-    out = []
-    for prefix, folder in GP_SEATS.items():
-        for n in ('01', '02'):
-            sel = f'entrants.entrant_lists.entrant_list[_metadata_=f1_2026].entrant[_metadata_={prefix}_{n}]'
-            if folder == 'ferrari':
-                out.append({'op': 'set', 'select': sel, 'field': 'vehicle', 'value': by_folder[folder].vehicle,
-                            'when': {'test_grand_prix': 'ferrari'}})
-            out.append({'op': 'set', 'select': sel, 'field': 'vehicle', 'value': by_folder[folder].vehicle,
-                        'when': {'test_grand_prix': 'all'}})
-            out.append({'op': 'set', 'select': sel, 'field': 'vehicle', 'value': by_folder[folder].vehicle_b,
-                        'when': {'test_grand_prix': 'bspec'}})
-            if folder in MYTEAM_SEATS:
-                out.append({'op': 'set', 'select': sel, 'field': 'vehicle',
-                            'value': by_folder[MYTEAM_SEATS[folder]].vehicle, 'when': {'test_grand_prix': 'myteam'}})
-    return {'schema_version': 1, 'ops': out}
-
-
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n', 1)[0])
     ap.add_argument('--tries', default=TRIES, help='folder with the porter tries named in SOURCES')
     ap.add_argument('--common', default=COMMON, help='the 13-inch common.erp (f1_2026 names)')
     ap.add_argument('--only', help='comma-separated teams to build')
-    ap.add_argument('--ops-only', action='store_true', help='write assets/cars.json and db/test.json and stop')
+    ap.add_argument('--ops-only', action='store_true', help='write assets/cars.json and assets/ai.json and stop')
     ap.add_argument('--bspec-only', action='store_true', help='build only the B-spec archives')
     ap.add_argument('--common-only', action='store_true', help='build only common.erp')
     args = ap.parse_args()
     with open(os.path.join(PACK, 'assets', 'cars.json'), 'w') as f:
         f.write(json.dumps(ops(), indent=1) + '\n')
-    with open(os.path.join(PACK, 'db', 'test.json'), 'w') as f:
-        f.write(json.dumps(test_ops(), indent=1) + '\n')
     build_ai.write_json(os.path.join(PACK, 'assets', 'ai.json'), build_ai.ops(build_ai.calendar_tracks(), build_ai.FOLDERS))
     if args.ops_only:
         return 0

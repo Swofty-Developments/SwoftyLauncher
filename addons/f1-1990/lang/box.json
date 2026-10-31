@@ -1,0 +1,11 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_f1990_box",
+   "value": "F1 1990"
+  }
+ ]
+}
