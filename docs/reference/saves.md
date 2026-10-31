@@ -146,10 +146,10 @@ start Steam to upload the restored save; if it asks which copy to keep, keep the
 
 `backup` pins its snapshot, so retention never removes it. A restore:
 
-1. refuses while F1 25 runs, and while Steam runs for a Steam save (`Exit Steam completely (Steam menu > Exit), then restore again`) or the EA app runs for an EA save;
+1. refuses while a Play session or another restore holds the session lock, while F1 25 runs, and while Steam runs for a Steam save (`Exit Steam completely (Steam menu > Exit), then restore again`) or the EA app runs for an EA save;
 2. checks every file of the snapshot against its SHA-256;
 3. snapshots the current save as `before-restore` and pins it;
-4. writes each file through a temporary name and checks its hash again;
+4. copies every file to a temporary name beside its target and checks its hash, then renames them all into place; when a copy fails nothing is renamed, the temporary files go and the save stays as it was; when a rename fails the error gives the `swofty saves restore <id>` command for the `before-restore` snapshot;
 5. leaves `remotecache.vdf` as it is, and leaves profile files the snapshot doesn't have, such as F1 1990's `savegame@profile#D1990.UEL`;
 6. logs `restored` in `events.jsonl` and takes a `restored` snapshot.
 
@@ -166,7 +166,7 @@ After each snapshot the vault keeps:
 - the newest of each week for eight more weeks;
 - every pinned snapshot, and the newest one.
 
-Over the size cap the oldest unpinned snapshots go first. Pins come from `swofty saves backup` (`backup`), a restore (`before-restore`), a change outside the launcher (`before-outside-change`), F1 25 started outside the launcher (`foreign-launch`) and a Vanilla-profile Play with addons that affect saves installed (`vanilla-session`).
+Over the size cap the oldest unpinned snapshots go first; when only pinned snapshots and the newest one are left, the vault stays over the cap and logs it in `events.jsonl`. A prune that cannot read a file in `snapshots/` (for example one written by a newer launcher) removes nothing and logs the file names. A vault lock that cannot be taken stops the snapshot or prune with an error. Pins come from `swofty saves backup` (`backup`), a restore (`before-restore`), a change outside the launcher (`before-outside-change`), F1 25 started outside the launcher (`foreign-launch`) and a Vanilla-profile Play with addons that affect saves installed (`vanilla-session`).
 
 ```text
 $ swofty saves cap
@@ -179,4 +179,4 @@ The cap is `vault_cap_mb` in `config.json`.
 
 ## The old save-backups folder
 
-Launchers before the vault kept up to 10 copies in `$DATA/save-backups/`. The first vault check moves each one in as a `migrated` snapshot and records it in `career-vault/migrated.json`. The old folder stays until a prune first removes a snapshot.
+Launchers before the vault kept up to 10 copies in `$DATA/save-backups/`. The first vault check moves each one in as a `migrated` snapshot pinned `migrated`, so no prune or cap removes it, and records it in `career-vault/migrated.json`. After a prune first removes a snapshot, each recorded folder is deleted if its snapshot and all its blobs are in the vault with the right hash. Folders not recorded in `migrated.json` stay, and `save-backups/` is removed only when it is empty.

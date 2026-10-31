@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{Location, Notice, NoticeKind, Vault};
 use crate::Result;
+use crate::baseline::sha256_file;
 use crate::save_backup;
 
 const MARKER: &str = "migrated.json";
@@ -42,6 +43,10 @@ pub fn marker(data: &Path) -> Option<Marker> {
 /// Import every backup not imported yet; returns what it did, one line each.
 pub fn migrate(data: &Path) -> Result<Vec<String>> {
     let old = save_backup::backups_dir(data);
+    if !old.is_dir() {
+        return Ok(Vec::new());
+    }
+    let _lock = Vault::migrate_lock(data, true)?;
     let mut m = marker(data).unwrap_or_default();
     if !old.is_dir() || m.retired {
         return Ok(Vec::new());
@@ -99,9 +104,14 @@ pub fn migrate(data: &Path) -> Result<Vec<String>> {
     Ok(notes)
 }
 
-/// After a prune that removed a snapshot: delete `save-backups/` once every
-/// backup in it is in the vault.
+/// After a prune that removed a snapshot: delete the `save-backups/` folders
+/// the marker names, each only once its snapshot and every blob it needs are
+/// in the vault with the right hash. Folders the marker doesn't name stay, and
+/// so does `save-backups/` while anything is left in it.
 pub fn retire(data: &Path) {
+    let Ok(Some(_lock)) = Vault::migrate_lock(data, false) else {
+        return;
+    };
     let Some(mut m) = marker(data) else {
         return;
     };
@@ -109,15 +119,38 @@ pub fn retire(data: &Path) {
         return;
     }
     let old = save_backup::backups_dir(data);
-    let all_in = save_backup::list(data)
-        .map(|l| l.iter().all(|b| m.backups.contains_key(&b.name)))
-        .unwrap_or(false);
-    if !all_in {
-        return;
+    for (name, target) in &m.backups {
+        let dir = old.join(name);
+        if dir.is_dir() && !in_vault(data, target) {
+            return;
+        }
     }
-    if std::fs::remove_dir_all(&old).is_ok() || !old.exists() {
+    for name in m.backups.keys() {
+        let dir = old.join(name);
+        if dir.exists() && std::fs::remove_dir_all(&dir).is_err() {
+            return;
+        }
+    }
+    std::fs::remove_dir(&old).ok();
+    if !old.exists() {
         m.retired = true;
         crate::write_json(&marker_path(data), &m).ok();
         std::fs::remove_file(data.join(save_backup::NOTICE)).ok();
     }
+}
+
+fn in_vault(data: &Path, target: &str) -> bool {
+    let Some((source, id)) = target.split_once('/') else {
+        return false;
+    };
+    let Ok(v) = Vault::open(data, source) else {
+        return false;
+    };
+    let Ok(s) = v.find(id) else {
+        return false;
+    };
+    s.files.iter().all(|f| {
+        let blob = v.blob(&f.sha256);
+        blob.is_file() && sha256_file(&blob).is_ok_and(|h| h == f.sha256)
+    })
 }

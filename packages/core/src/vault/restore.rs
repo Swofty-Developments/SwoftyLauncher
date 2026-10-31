@@ -7,6 +7,7 @@ use std::path::PathBuf;
 
 use super::{Event, EventKind, Layout, Location, Meta, Notice, Reason, Taken, Vault};
 use crate::baseline::sha256_file;
+use crate::recovery::SessionLock;
 use crate::{Error, Result, io_err};
 
 pub const CLOSE_STEAM: &str = "Exit Steam completely (Steam menu > Exit), then restore again. Starting Steam \
@@ -75,6 +76,11 @@ pub fn restore(vault: &Vault, id: &str, loc: &Location, running: Running, now: i
         );
         return Err(Error::Other(why));
     }
+    let _session = SessionLock::try_acquire(&vault.data)?.ok_or_else(|| {
+        Error::Other(
+            "a Play session or another restore is running; wait for it to end, then restore again".to_owned(),
+        )
+    })?;
     let _lock = vault.lock()?;
     let snap = vault.find(id)?;
     if snap.layout != loc.layout || snap.source != loc.source {
@@ -109,13 +115,49 @@ pub fn restore(vault: &Vault, id: &str, loc: &Location, running: Running, now: i
         Taken::NoSave => None,
     };
     std::fs::create_dir_all(&loc.dir).map_err(io_err(&loc.dir))?;
+    let mut staged: Vec<(PathBuf, &PathBuf, &str)> = Vec::new();
     for (blob, to, f) in &plan {
         let name = to.file_name().unwrap_or_default().to_string_lossy().into_owned();
         let tmp = loc.dir.join(format!(".{name}.swofty-restore"));
-        std::fs::copy(blob, &tmp).map_err(io_err(&tmp))?;
-        std::fs::rename(&tmp, to).map_err(io_err(to))?;
-        if sha256_file(to)? != f.sha256 {
-            return Err(Error::Other(format!("{} did not restore cleanly", to.display())));
+        staged.push((tmp.clone(), to, &f.sha256));
+        let ok = std::fs::copy(blob, &tmp)
+            .map_err(io_err(&tmp))
+            .and_then(|_| sha256_file(&tmp))
+            .and_then(|h| match h == f.sha256 {
+                true => Ok(()),
+                false => Err(Error::Other(format!("{} did not copy cleanly", tmp.display()))),
+            });
+        if let Err(e) = ok {
+            for (tmp, _, _) in &staged {
+                std::fs::remove_file(tmp).ok();
+            }
+            return Err(Error::Other(format!("{e}; the save was left as it was")));
+        }
+    }
+    let undo = match &before {
+        Some(b) => format!("`swofty saves restore {b}` puts back the save as it was (snapshot {b})"),
+        None => "there was no save before the restore".to_owned(),
+    };
+    for (n, (tmp, to, sha)) in staged.iter().enumerate() {
+        let done =
+            std::fs::rename(tmp, to)
+                .map_err(io_err(to))
+                .and_then(|()| match sha256_file(to)? == **sha {
+                    true => Ok(()),
+                    false => Err(Error::Other(format!("{} did not restore cleanly", to.display()))),
+                });
+        if let Err(e) = done {
+            for (tmp, _, _) in &staged[n..] {
+                std::fs::remove_file(tmp).ok();
+            }
+            let state = match n {
+                0 => "No file was replaced yet",
+                _ => "The save now mixes old and restored files",
+            };
+            return Err(Error::Other(format!(
+                "the restore stopped at {}: {e}. {state}; {undo}",
+                to.display()
+            )));
         }
     }
     let kept = loc

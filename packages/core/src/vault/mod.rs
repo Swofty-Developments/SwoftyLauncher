@@ -491,6 +491,22 @@ fn valid_source(source: &str) -> bool {
         && !source.starts_with('.')
 }
 
+fn open_lock_file(path: &Path) -> Result<File> {
+    OpenOptions::new()
+        .create(true)
+        .truncate(false)
+        .write(true)
+        .open(path)
+        .map_err(io_err(path))
+}
+
+fn lock_error(path: &Path, e: std::io::Error) -> Error {
+    Error::Other(format!(
+        "could not lock {} ({e}); the vault was left alone rather than written without its lock",
+        path.display()
+    ))
+}
+
 pub struct Vault {
     pub data: PathBuf,
     pub dir: PathBuf,
@@ -544,14 +560,26 @@ impl Vault {
     pub fn lock(&self) -> Result<Lock> {
         std::fs::create_dir_all(&self.dir).map_err(io_err(&self.dir))?;
         let path = self.dir.join(".lock");
-        let file = OpenOptions::new()
-            .create(true)
-            .truncate(false)
-            .write(true)
-            .open(&path)
-            .map_err(io_err(&path))?;
-        file.lock().ok();
+        let file = open_lock_file(&path)?;
+        file.lock().map_err(|e| lock_error(&path, e))?;
         Ok(Lock { _file: file })
+    }
+
+    pub fn migrate_lock(data: &Path, wait: bool) -> Result<Option<Lock>> {
+        let root = Self::root(data);
+        std::fs::create_dir_all(&root).map_err(io_err(&root))?;
+        let path = root.join(".migrate.lock");
+        let file = open_lock_file(&path)?;
+        if wait {
+            file.lock().map_err(|e| lock_error(&path, e))?;
+        } else {
+            match file.try_lock() {
+                Ok(()) => {}
+                Err(std::fs::TryLockError::WouldBlock) => return Ok(None),
+                Err(std::fs::TryLockError::Error(e)) => return Err(lock_error(&path, e)),
+            }
+        }
+        Ok(Some(Lock { _file: file }))
     }
 
     pub fn blob(&self, sha256: &str) -> PathBuf {
@@ -564,24 +592,39 @@ impl Vault {
 
     /// Every readable snapshot, newest first.
     pub fn list(&self) -> Result<Vec<Snapshot>> {
+        Ok(self.list_all().0)
+    }
+
+    fn list_all(&self) -> (Vec<Snapshot>, Vec<String>) {
         let Ok(rd) = std::fs::read_dir(self.snapshots_dir()) else {
-            return Ok(Vec::new());
+            return (Vec::new(), Vec::new());
         };
-        let mut out: Vec<Snapshot> = rd
-            .flatten()
-            .filter_map(|e| {
-                let name = e.file_name().to_str()?.to_owned();
-                let id = name.strip_suffix(".json")?.to_owned();
-                if id.starts_with('.') {
-                    return None;
+        let mut out: Vec<Snapshot> = Vec::new();
+        let mut unreadable = Vec::new();
+        for e in rd.flatten() {
+            let Some(name) = e.file_name().to_str().map(str::to_owned) else {
+                continue;
+            };
+            let Some(id) = name.strip_suffix(".json").map(str::to_owned) else {
+                continue;
+            };
+            if id.starts_with('.') {
+                continue;
+            }
+            match std::fs::read(e.path())
+                .ok()
+                .and_then(|d| serde_json::from_slice::<Snapshot>(&d).ok())
+            {
+                Some(mut s) => {
+                    s.id = id;
+                    out.push(s);
                 }
-                let mut s: Snapshot = serde_json::from_slice(&std::fs::read(e.path()).ok()?).ok()?;
-                s.id = id;
-                Some(s)
-            })
-            .collect();
+                None => unreadable.push(name),
+            }
+        }
         out.sort_by(|a, b| (b.at, &b.id).cmp(&(a.at, &a.id)));
-        Ok(out)
+        unreadable.sort();
+        (out, unreadable)
     }
 
     pub fn newest(&self) -> Result<Option<Snapshot>> {
@@ -788,7 +831,14 @@ impl Vault {
     }
 
     fn prune_locked(&self, now: i64) -> Result<Vec<String>> {
-        let snaps = self.list()?;
+        let (snaps, unreadable) = self.list_all();
+        if !unreadable.is_empty() {
+            self.log(&Event::new(now, EventKind::Other).detail(format!(
+                "prune skipped: could not read {}; their blobs stay",
+                unreadable.join(", ")
+            )));
+            return Ok(Vec::new());
+        }
         let items: Vec<retention::Item> = snaps
             .iter()
             .map(|s| retention::Item {
@@ -799,6 +849,17 @@ impl Vault {
             })
             .collect();
         let gone = retention::plan(&items, now, &self.policy);
+        let left = retention::bytes(items.iter().filter(|i| !gone.contains(&i.id)));
+        if left > self.policy.cap_bytes {
+            let detail = format!(
+                "over the {} byte cap by {} bytes: the rest are pinned or the newest, so they stay",
+                self.policy.cap_bytes,
+                left - self.policy.cap_bytes
+            );
+            if self.events().last().and_then(|e| e.detail.as_deref()) != Some(detail.as_str()) {
+                self.log(&Event::new(now, EventKind::Other).detail(detail));
+            }
+        }
         for id in &gone {
             let path = self.snapshots_dir().join(format!("{id}.json"));
             std::fs::remove_file(&path).map_err(io_err(&path))?;
@@ -1016,7 +1077,7 @@ impl Vault {
             files: entries,
             absent_addons: b.manifest.absent.clone(),
             careers_ref: None,
-            pinned: Vec::new(),
+            pinned: vec!["migrated".to_owned()],
             note: Some(format!("save-backups/{}: {}", b.name, b.manifest.reason)),
         };
         self.write_snapshot(&s)?;

@@ -449,13 +449,198 @@ fn migrates_save_backups_and_retires_them_at_the_first_prune() {
     let unchanged = v.check(&loc, Meta::new(Reason::LauncherStart), T0).unwrap();
     assert!(matches!(unchanged.taken, Taken::Unchanged(_)));
     assert!(data.join("save-backups").is_dir());
+    std::fs::write(loc.dir.join(DATA), [3u8; 900]).unwrap();
+    new(v.snapshot(&loc, Meta::new(Reason::AfterSession), T0).unwrap());
     std::fs::write(loc.dir.join(DATA), [2u8; 900]).unwrap();
     new(v
         .snapshot(&loc, Meta::new(Reason::AfterSession), T0 + 400 * retention::DAY)
         .unwrap());
-    assert!(v.list().unwrap().iter().all(|s| s.reason != Reason::Migrated));
+    assert!(
+        v.list()
+            .unwrap()
+            .iter()
+            .any(|s| s.reason == Reason::Migrated && s.pinned == ["migrated"]),
+        "a migrated snapshot is pinned and never ages out"
+    );
     assert!(!data.join("save-backups").exists());
     assert!(migrate::marker(&data).unwrap().retired);
+}
+
+fn migrated(name: &str) -> (PathBuf, PathBuf, Location, Vault, String) {
+    let root = tmp(name);
+    let data = root.join("data");
+    let loc = steam(&root, "843502855", &[1u8; 900]);
+    crate::save_backup::take(&data, &loc.dir, "default", &[], "20261027-010203", "session")
+        .unwrap()
+        .unwrap();
+    migrate::migrate(&data).unwrap();
+    let v = vault(&root, &loc);
+    let id = v.find("20261027-010203-migrated").unwrap().id;
+    (root, data, loc, v, id)
+}
+
+fn age_out(v: &Vault, loc: &Location) {
+    std::fs::write(loc.dir.join(DATA), [5u8; 900]).unwrap();
+    new(v.snapshot(loc, Meta::new(Reason::AfterSession), T0).unwrap());
+    std::fs::write(loc.dir.join(DATA), [6u8; 900]).unwrap();
+    new(v
+        .snapshot(loc, Meta::new(Reason::AfterSession), T0 + 400 * retention::DAY)
+        .unwrap());
+}
+
+#[test]
+fn a_migrated_snapshot_survives_every_prune_and_the_cap() {
+    let (_root, data, loc, mut v, id) = migrated("migrate-pin");
+    assert_eq!(v.find(&id).unwrap().pinned, ["migrated"]);
+    v.policy.cap_bytes = 10;
+    age_out(&v, &loc);
+    assert!(v.find(&id).is_ok(), "pinned snapshots outlive age and the cap");
+    let blob = v.find(&id).unwrap().files[0].sha256.clone();
+    assert!(v.blob(&blob).is_file());
+    assert!(
+        v.events()
+            .iter()
+            .any(|e| e.detail.as_deref().is_some_and(|d| d.contains("byte cap")))
+    );
+    assert!(migrate::marker(&data).is_some());
+}
+
+#[test]
+fn retire_keeps_the_backups_when_the_vault_lacks_a_blob() {
+    let (_root, data, loc, v, id) = migrated("retire-blob");
+    let sha = v.find(&id).unwrap().files[0].sha256.clone();
+    std::fs::remove_file(v.blob(&sha)).unwrap();
+    migrate::retire(&data);
+    assert!(data.join("save-backups/20261027-010203-default").is_dir());
+    assert!(!migrate::marker(&data).unwrap().retired);
+    std::fs::write(v.blob(&sha), b"wrong").unwrap();
+    migrate::retire(&data);
+    assert!(
+        data.join("save-backups/20261027-010203-default").is_dir(),
+        "wrong hash"
+    );
+    drop(loc);
+}
+
+#[test]
+fn retire_deletes_only_the_folders_it_imported() {
+    let (_root, data, loc, v, _id) = migrated("retire-only");
+    let old = data.join("save-backups");
+    std::fs::create_dir_all(old.join(".hidden")).unwrap();
+    std::fs::write(old.join(".hidden/keep"), b"x").unwrap();
+    std::fs::create_dir_all(old.join("no-manifest")).unwrap();
+    std::fs::write(old.join("no-manifest/f"), b"y").unwrap();
+    age_out(&v, &loc);
+    assert!(
+        !old.join("20261027-010203-default").exists(),
+        "the imported one goes"
+    );
+    assert!(old.join(".hidden/keep").is_file());
+    assert!(old.join("no-manifest/f").is_file());
+    assert!(!migrate::marker(&data).unwrap().retired);
+}
+
+#[test]
+fn retire_waits_while_a_migration_runs() {
+    let (_root, data, loc, v, _id) = migrated("retire-lock");
+    let held = Vault::migrate_lock(&data, true).unwrap().unwrap();
+    assert!(Vault::migrate_lock(&data, false).unwrap().is_none());
+    age_out(&v, &loc);
+    assert!(data.join("save-backups/20261027-010203-default").is_dir());
+    drop(held);
+    migrate::retire(&data);
+    assert!(!data.join("save-backups").exists());
+}
+
+#[test]
+fn an_unreadable_snapshot_stops_the_prune_and_keeps_every_blob() {
+    let root = tmp("unreadable");
+    let loc = steam(&root, "7", &[1u8; 900]);
+    let v = vault(&root, &loc);
+    let a = new(v.snapshot(&loc, Meta::new(Reason::AfterSession), T0).unwrap());
+    std::fs::write(loc.dir.join(DATA), [2u8; 900]).unwrap();
+    let b = new(v
+        .snapshot(&loc, Meta::new(Reason::AfterSession), T0 + 60)
+        .unwrap());
+    let odd = v.dir.join("snapshots/20261031-000500-future.json");
+    std::fs::write(&odd, br#"{"schema": 99, "files": "other shape"}"#).unwrap();
+    let blobs = |v: &Vault| std::fs::read_dir(v.dir.join("blobs")).unwrap().count();
+    let before = blobs(&v);
+    let far = T0 + 400 * retention::DAY;
+    assert!(v.prune(far).unwrap().is_empty());
+    assert_eq!(blobs(&v), before);
+    assert!(v.find(&a.id).is_ok() && v.find(&b.id).is_ok());
+    assert!(odd.is_file());
+    assert!(
+        v.events()
+            .iter()
+            .any(|e| e.detail.as_deref().is_some_and(|d| d.contains("future.json")))
+    );
+}
+
+#[test]
+fn restore_waits_while_a_session_holds_the_lock() {
+    let root = tmp("restore-session");
+    let loc = steam(&root, "12", &[1u8; 900]);
+    let v = vault(&root, &loc);
+    let good = new(v.snapshot(&loc, Meta::new(Reason::AfterSession), T0).unwrap());
+    std::fs::write(loc.dir.join(DATA), [2u8; 900]).unwrap();
+    let held = crate::recovery::SessionLock::try_acquire(&root.join("data"))
+        .unwrap()
+        .unwrap();
+    let err = restore(&v, &good.id, &loc, Running::default(), T0 + 60).unwrap_err();
+    assert!(err.to_string().contains("Play session"), "{err}");
+    assert_eq!(std::fs::read(loc.dir.join(DATA)).unwrap(), [2u8; 900]);
+    drop(held);
+    restore(&v, &good.id, &loc, Running::default(), T0 + 60).unwrap();
+}
+
+#[test]
+fn a_restore_that_cannot_stage_every_file_leaves_the_save_alone() {
+    let root = tmp("restore-stage");
+    let loc = steam(&root, "12", &[1u8; 900]);
+    let v = vault(&root, &loc);
+    let good = new(v.snapshot(&loc, Meta::new(Reason::AfterSession), T0).unwrap());
+    std::fs::write(loc.dir.join(DATA), [2u8; 900]).unwrap();
+    std::fs::write(loc.dir.join(INDEX), [3u8; 416]).unwrap();
+    std::fs::create_dir(loc.dir.join(format!(".{INDEX}.swofty-restore"))).unwrap();
+    let err = restore(&v, &good.id, &loc, Running::default(), T0 + 60).unwrap_err();
+    assert!(err.to_string().contains("left as it was"), "{err}");
+    assert_eq!(std::fs::read(loc.dir.join(DATA)).unwrap(), [2u8; 900]);
+    assert_eq!(std::fs::read(loc.dir.join(INDEX)).unwrap(), [3u8; 416]);
+    assert!(!loc.dir.join(format!(".{DATA}.swofty-restore")).exists());
+}
+
+#[test]
+fn a_restore_that_fails_mid_rename_names_the_snapshot_that_undoes_it() {
+    let root = tmp("restore-rename");
+    let loc = steam(&root, "12", &[1u8; 900]);
+    let v = vault(&root, &loc);
+    let good = new(v.snapshot(&loc, Meta::new(Reason::AfterSession), T0).unwrap());
+    std::fs::write(loc.dir.join(DATA), [2u8; 900]).unwrap();
+    std::fs::remove_file(loc.dir.join(INDEX)).unwrap();
+    std::fs::create_dir(loc.dir.join(INDEX)).unwrap();
+    let err = restore(&v, &good.id, &loc, Running::default(), T0 + 60)
+        .unwrap_err()
+        .to_string();
+    let before = v
+        .list()
+        .unwrap()
+        .into_iter()
+        .find(|s| s.reason == Reason::BeforeRestore)
+        .unwrap();
+    assert!(
+        err.contains(&format!("swofty saves restore {}", before.id)),
+        "{err}"
+    );
+    assert!(err.contains("mixes old and restored"), "{err}");
+    assert!(
+        !loc.dir
+            .read_dir()
+            .unwrap()
+            .flatten()
+            .any(|e| e.file_name().to_string_lossy().ends_with(".swofty-restore"))
+    );
 }
 
 #[test]
