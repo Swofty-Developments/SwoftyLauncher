@@ -24,6 +24,10 @@ const SCHEMAS: &[(&str, &str)] = &[
         include_str!("../../../sdk/std/registries/addon.option/1.0.json"),
     ),
     (
+        "car.profile",
+        include_str!("../../../sdk/std/registries/car.profile/1.0.json"),
+    ),
+    (
         "career.calendar",
         include_str!("../../../sdk/std/registries/career.calendar/1.0.json"),
     ),
@@ -61,7 +65,7 @@ const SCHEMAS: &[(&str, &str)] = &[
     ),
     (
         "content.package",
-        include_str!("../../../sdk/std/registries/content.package/1.0.json"),
+        include_str!("../../../sdk/std/registries/content.package/1.1.json"),
     ),
     (
         "driver.head",
