@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "../../src/core/career_ops/driver_rows.hpp"
 #include "../../src/core/career_ops/fuel_logic.hpp"
 #include "../../src/core/career_ops/number_plan.hpp"
 #include "../../src/core/career_ops/seat_plan.hpp"
@@ -122,8 +123,27 @@ static void test_fuel_sets()
     CHECK(fuel::plan_track(dst, src, "monaco", skipped).empty());
 }
 
+static void test_driver_rows()
+{
+    using rows::Row;
+    auto k = [](uint32_t d) { return key(d); };
+    std::vector<Row> one{{k(5), false}, {k(94), true}};
+    CHECK(rows::pick(one, 94) == 1 && rows::pick(one, 5) == 0 && rows::pick(one, 7) == rows::kNone);
+    std::vector<Row> seat_and_free{{k(9), false}, {k(94), false}, {k(94), true}};
+    CHECK(rows::pick(seat_and_free, 94) == 1);
+    std::vector<Row> free_first{{k(94), true}, {k(9), false}, {k(94), false}};
+    CHECK(rows::pick(free_first, 94) == 2);
+    std::vector<Row> two_free{{k(94), true}, {k(94), true}};
+    CHECK(rows::pick(two_free, 94) == 0);
+    std::vector<Row> two_seats{{k(94), false}, {k(94), true}, {k(94), false}};
+    CHECK(rows::pick(two_seats, 94) == rows::kAmbiguous);
+    std::vector<Row> variant{{k(94) | 1u, false}, {k(94), true}};
+    CHECK(rows::pick(variant, 94) == 1);
+}
+
 int main()
 {
+    test_driver_rows();
     test_seats();
     test_numbers();
     test_fuel_sets();
