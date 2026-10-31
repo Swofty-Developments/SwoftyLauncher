@@ -382,8 +382,8 @@ static void v2_fields()
     expect(Ops::op_set(0, nullptr, SWOFTY_CAR_CHASSIS_BALLAST_KG, 20.0f) == SWOFTY_ASSET_OK &&
                (at<uint32_t>(chassis[0], 0x28) ^ 0x31415926u) == bits(820.0f) &&
                std::fabs(std::sqrt(820.0f) - [] { uint32_t b = at<uint32_t>(chassis[0], 0x98) ^ 0x27182818u; float f; memcpy(&f, &b, 4); return f; }()) < 1e-4f &&
-               chassis_reset_on == reinterpret_cast<uintptr_t>(chassis[0]) && chassis_flags == 0x200,
-           "ballast adds to the VTF mass, writes its square root and runs the chassis reset with 0x200");
+               chassis_reset_on == reinterpret_cast<uintptr_t>(chassis[0]) && chassis_flags == 0x208,
+           "ballast adds to the VTF mass, writes its square root and runs the chassis reset with 0x208");
     expect(Ops::op_get(0, nullptr, SWOFTY_CAR_CHASSIS_BALLAST_KG, &v) == SWOFTY_ASSET_OK && std::fabs(v - 20.0f) < 1e-3f,
            "ballast reads back as the kilograms added");
     expect(Ops::op_set(0, nullptr, SWOFTY_CAR_CHASSIS_BALLAST_KG, 30.0f) == SWOFTY_ASSET_OK &&
