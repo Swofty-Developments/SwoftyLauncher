@@ -113,6 +113,25 @@ pub fn original(data: &Path, game: &Game, rel: &str) -> PathBuf {
     }
 }
 
+/// Stop a build whose record of original game files names backups that are
+/// gone, and send the player through the setup again, which starts the record
+/// over.
+fn check_originals(data: &Path, game: &Game) -> Result<()> {
+    let objects = Objects {
+        root: data.join("baseline/objects"),
+    };
+    let missing: Vec<String> = originals(data, game)
+        .iter()
+        .filter(|(_, sha256)| !objects.has(sha256))
+        .map(|(rel, _)| rel.clone())
+        .collect();
+    if missing.is_empty() {
+        return Ok(());
+    }
+    crate::setup::redo(data)?;
+    Err(Error::Other(crate::setup::backups_missing(&missing)))
+}
+
 pub type TrackPackages = (Vec<(PathBuf, TrackPackage, Origin)>, Vec<(Origin, Unusable)>);
 
 /// The packages `track.add` ops add, and the ones a build leaves out.
@@ -268,15 +287,29 @@ fn render_file(
     p: &Profile,
     hasher: &mut Sha256,
 ) -> Result<OpFile> {
-    let json = |source| Error::Json {
+    let doc = render_doc(path, m, p)?;
+    hasher.update(serde_json::to_vec(&doc).expect("serialisable"));
+    OpFile::from_value(doc, kind).map_err(json_at(path))
+}
+
+/// One of an addon's op files as a build reads it, with its option
+/// templating filled from the profile's settings.
+pub fn read_op_file(path: &Path, kind: FileKind, m: &AddonManifest, p: &Profile) -> Result<OpFile> {
+    OpFile::from_value(render_doc(path, m, p)?, kind).map_err(json_at(path))
+}
+
+fn render_doc(path: &Path, m: &AddonManifest, p: &Profile) -> Result<serde_json::Value> {
+    let raw = std::fs::read(path).map_err(io_err(path))?;
+    let mut doc = serde_json::from_slice(&raw).map_err(json_at(path))?;
+    render_ops(&mut doc, m, p)?;
+    Ok(doc)
+}
+
+fn json_at(path: &Path) -> impl FnOnce(serde_json::Error) -> Error + '_ {
+    move |source| Error::Json {
         path: path.to_owned(),
         source,
-    };
-    let raw = std::fs::read(path).map_err(io_err(path))?;
-    let mut doc: serde_json::Value = serde_json::from_slice(&raw).map_err(json)?;
-    render_ops(&mut doc, m, p)?;
-    hasher.update(serde_json::to_vec(&doc).expect("serialisable"));
-    OpFile::from_value(doc, kind).map_err(json)
+    }
 }
 
 /// A DB Editor package's ops, generated from its `dbedit.json` rather than
@@ -699,6 +732,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         built.plan = Plan::vanilla();
         return Ok(built);
     }
+    check_originals(&store.root, game)?;
     let _lock = lock(store, profile)?;
     crate::now_doing("reading the addons");
     let mut hasher = Sha256::new();
@@ -1236,6 +1270,26 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         if !left_codes.is_empty() {
             let weekends = crate::tracks::restore_weekends(&mut db, &shipped_db, &left_codes);
             built.warnings.extend(weekends);
+        }
+        let in_game: Vec<&str> = tracks
+            .iter()
+            .filter(|(_, _, o)| recorded.contains(&o.addon))
+            .map(|(_, p, _)| p.track_code.as_str())
+            .collect();
+        let missing = crate::tracks::keep_track_refs(&mut db, &shipped_db, &in_game, &left_codes);
+        if !missing.is_empty() {
+            let codes = missing.iter().map(|m| m.track.clone()).collect();
+            let adders = crate::tracks::adders(store, &codes);
+            let name = |id: &str| addons.get(id).map_or(id, |m| m.name.as_str()).to_owned();
+            for m in &missing {
+                let adds = adders
+                    .get(&m.track)
+                    .filter(|id| !left_codes.contains(&m.track.as_str()) && !resolved.order.contains(*id));
+                let by = planner.record_writer(m.key).map(name);
+                built
+                    .warnings
+                    .push(m.line(by.as_deref(), adds.map(|id| name(id)).as_deref()));
+            }
         }
         if let Ok(cat) = crate::dbedit::Catalog::open(store, game) {
             for t in crate::dbedit::rows::trim_row_counts(&cat, &mut db) {
@@ -2737,6 +2791,59 @@ mod tests {
             ),
         );
         assert!(matches!(denied, Error::Io { .. }), "{denied}");
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_missing_backup_stops_the_build_and_sends_the_player_through_the_setup_again() {
+        let root = std::env::temp_dir().join(format!("swofty-build-backup-gone-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        std::fs::write(dir.join("a.erp"), "stock").unwrap();
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        let records = vec![swofty_formats::gvdb::Record::new(
+            "entrants.teams._team_instancecount_",
+            0,
+            "0",
+        )];
+        std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir: dir.clone(),
+            user_reg: None,
+        };
+        let store = Store::new(root.join("data"));
+        crate::setup::reset(&store.root, &game, false).unwrap();
+        crate::setup::finish(&store.root).unwrap();
+        let objects = Objects {
+            root: store.root.join("baseline/objects"),
+        };
+        let mut baseline = Baseline::new(&game.identity);
+        let sha = baseline
+            .record(&objects, &dir, "a.erp", &())
+            .unwrap()
+            .sha256
+            .clone();
+        baseline.save(&store.root).unwrap();
+
+        build(&store, "default", &game).unwrap();
+        assert!(crate::setup::done(&store.root));
+
+        std::fs::remove_dir_all(objects.path(&sha).parent().unwrap()).unwrap();
+        let e = build(&store, "default", &game).unwrap_err();
+        assert_eq!(
+            e.to_string(),
+            "Swofty's backup of the original a.erp is missing from its data folder. Run the one-time setup \
+             again: open Swofty Launcher and press Play, or run `swofty setup reset`, repair the game in the EA \
+             app or verify the game files in Steam, then run `swofty setup done`"
+        );
+        assert!(!crate::setup::done(&store.root));
+        assert!(
+            build(&store, crate::profile::VANILLA, &game).is_ok(),
+            "a build without addons reads no backups"
+        );
         std::fs::remove_dir_all(&root).ok();
     }
 
@@ -6201,8 +6308,15 @@ mod tests {
             "{:?}",
             without.warnings
         );
+        let off = "Calendar sets race weekend rw_melbourne to portimao, which is off: turn Portimao on; until then \
+                   this build puts back melbourne";
+        assert!(
+            without.warnings.iter().any(|w| w == off),
+            "{:?}",
+            without.warnings
+        );
         let out = Gvdb::parse(&std::fs::read(&without.plan.data[GVDB]).unwrap()).unwrap();
-        assert_eq!(out.get_text(weekend).as_deref(), Some("portimao"));
+        assert_eq!(out.get_text(weekend).as_deref(), Some("melbourne"));
 
         store
             .update_profile("default", |p| p.set_enabled("mod.portimao", true))
@@ -6240,6 +6354,49 @@ mod tests {
             let plan: serde_json::Value = crate::read_json(&built.overlay.join(PLAN_FILE)).unwrap();
             assert_eq!(plan["tracks"], serde_json::json!([]), "{pass}");
         }
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn an_op_file_is_read_with_its_option_templating_filled_from_the_profile() {
+        let root = std::env::temp_dir().join(format!("swofty-read-op-file-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        std::fs::create_dir_all(&root).unwrap();
+        let m = AddonManifest::parse(
+            r#"{
+              "schema_version": 1, "id": "a.dnf", "name": "DNF", "version": "1.0.0", "author": "a",
+              "compat": { "game": "f1_25" },
+              "options": [
+                { "id": "failures", "type": "toggle", "default": false, "binds": "db" },
+                { "id": "chance", "type": "slider", "min": 0, "max": 10, "step": 1, "default": 2, "binds": "db" }
+              ],
+              "operations": { "database": ["db/dnf.json"] }
+            }"#,
+        )
+        .unwrap();
+        let path = root.join("dnf.json");
+        std::fs::write(
+            &path,
+            r#"{"schema_version": 1, "ops": [
+              {"op": "set", "select": "t.r", "field": "chance", "value": "{{chance}}"},
+              {"op": "set", "select": "t.r", "field": "failures", "value": "1", "when": {"failures": true}}
+            ]}"#,
+        )
+        .unwrap();
+        let raw = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+        assert!(OpFile::from_value(raw, FileKind::Database).is_err());
+        let mut p = Profile::new("x");
+        let file = read_op_file(&path, FileKind::Database, &m, &p).unwrap();
+        assert_eq!(file.ops.len(), 1);
+        p.set_option(&m, "failures", serde_json::json!(true)).unwrap();
+        p.set_option(&m, "chance", serde_json::json!(7)).unwrap();
+        let file = read_op_file(&path, FileKind::Database, &m, &p).unwrap();
+        assert_eq!(file.ops.len(), 2);
+        assert!(
+            matches!(&file.ops[0], AssetOp::Db(crate::ops::DbOp::Set { value, .. }) if value.as_deref() == Some("7"))
+        );
+        std::fs::write(&path, r#"{"ops": [{"op": "set", "value": "{{missing}}"}]}"#).unwrap();
+        assert!(read_op_file(&path, FileKind::Database, &m, &p).is_err());
         std::fs::remove_dir_all(&root).ok();
     }
 }

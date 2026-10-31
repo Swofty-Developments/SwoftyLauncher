@@ -216,6 +216,7 @@ using Game_EntrantsUi_OnCharacterListLoaded_t = int64_t(void *ctx, const void *m
 inline constexpr fn<"Game_EntrantsUi_OnCharacterListLoaded", Game_EntrantsUi_OnCharacterListLoaded_t> Game_EntrantsUi_OnCharacterListLoaded{}; // L2 experimental
 using Game_F1WorldActivityContainer_SelectEntrantList_t = void(void *container, const char *entrant_list);
 inline constexpr fn<"Game_F1WorldActivityContainer_SelectEntrantList", Game_F1WorldActivityContainer_SelectEntrantList_t> Game_F1WorldActivityContainer_SelectEntrantList{}; // L2 experimental
+inline constexpr address<"Game_GameModes_BuildMode"> Game_GameModes_BuildMode{}; // L2 experimental
 using Game_Get_ModelNodeId_t = uint32_t(const char *name);
 inline constexpr fn<"Game_Get_ModelNodeId", Game_Get_ModelNodeId_t> Game_Get_ModelNodeId{}; // L2 experimental
 using Game_Handle_GarageCrewEvent_Thunk_t = uint64_t(void **cars, void *event);
@@ -262,6 +263,8 @@ using Game_SaveData_WriteBag_t = int(NeBagCodec *codec, void *bag);
 inline constexpr fn<"Game_SaveData_WriteBag", Game_SaveData_WriteBag_t> Game_SaveData_WriteBag{}; // L3 stable
 using Game_SaveMgr_RequestProfileSave_Thunk_t = bool(void *save_mgr, void *callback, uint8_t a3, uint8_t a4);
 inline constexpr fn<"Game_SaveMgr_RequestProfileSave_Thunk", Game_SaveMgr_RequestProfileSave_Thunk_t> Game_SaveMgr_RequestProfileSave_Thunk{}; // L2 experimental
+using Game_SaveSlotManager_SelectSlot_t = int(void *manager, uint64_t slot_id, bool force, uint32_t a4);
+inline constexpr fn<"Game_SaveSlotManager_SelectSlot", Game_SaveSlotManager_SelectSlot_t> Game_SaveSlotManager_SelectSlot{}; // L2 experimental
 using Game_SceneManagerSpawn_SpawnScene_t = void *(void *mgr, const uint8_t *opts, void *scene, const float *mtx44, void *ov_a, void *ov_b, uint64_t p7);
 inline constexpr fn<"Game_SceneManagerSpawn_SpawnScene", Game_SceneManagerSpawn_SpawnScene_t> Game_SceneManagerSpawn_SpawnScene{}; // L2 experimental
 using Game_SeasonLength_ApplyPreset_t = void(void *component, uint8_t preset);
@@ -274,6 +277,12 @@ using Game_SpeechSystem_PostLine_t = void(void *speech, void *line, uint8_t retr
 inline constexpr fn<"Game_SpeechSystem_PostLine", Game_SpeechSystem_PostLine_t> Game_SpeechSystem_PostLine{}; // L2 experimental
 using Game_TeamHQAdvanceViewModel_OnCommandRaised_t = uint64_t(void *vm, NeStr **cmd, void *data);
 inline constexpr fn<"Game_TeamHQAdvanceViewModel_OnCommandRaised", Game_TeamHQAdvanceViewModel_OnCommandRaised_t> Game_TeamHQAdvanceViewModel_OnCommandRaised{}; // L2 experimental, game::TeamHQAdvanceViewModel::onCommandRaised,
+using Game_TeamHQAdvanceViewModel_PressAdvance_t = void(void *vm);
+inline constexpr fn<"Game_TeamHQAdvanceViewModel_PressAdvance", Game_TeamHQAdvanceViewModel_PressAdvance_t> Game_TeamHQAdvanceViewModel_PressAdvance{}; // L2 experimental
+using Game_TeamHQAdvanceViewModel_ShowTodayCards_t = bool(void *vm);
+inline constexpr fn<"Game_TeamHQAdvanceViewModel_ShowTodayCards", Game_TeamHQAdvanceViewModel_ShowTodayCards_t> Game_TeamHQAdvanceViewModel_ShowTodayCards{}; // L2 experimental
+using Game_TeamHQAdvanceViewModel_StopAdvance_t = void(void *vm);
+inline constexpr fn<"Game_TeamHQAdvanceViewModel_StopAdvance", Game_TeamHQAdvanceViewModel_StopAdvance_t> Game_TeamHQAdvanceViewModel_StopAdvance{}; // L2 experimental
 using Game_TeamHQAdvanceViewModel_Update_t = uint64_t(void *vm);
 inline constexpr fn<"Game_TeamHQAdvanceViewModel_Update", Game_TeamHQAdvanceViewModel_Update_t> Game_TeamHQAdvanceViewModel_Update{}; // L2 experimental
 using Game_Teleport_Vehicle_t = void(void *car, const char *name, float *prev_mtx, float *new_mtx, float dt, uint32_t flags);
