@@ -81,6 +81,21 @@ pub fn resolve(profile: &Profile, installed: &BTreeMap<String, AddonManifest>) -
             warnings.push(format!("{}: touch conflicts are checked at build time", m.id));
         }
     }
+    let name = |id: &str| {
+        installed
+            .get(id)
+            .map_or_else(|| id.to_owned(), |m| m.name.clone())
+    };
+    for p in crate::order::problems(profile, installed)
+        .iter()
+        .filter(|p| p.kind == crate::order::Kind::Below)
+    {
+        warnings.push(format!(
+            "{}: {}; the build loads it first anyway. Order for me on the Addons page puts it there in the list",
+            name(&p.addon),
+            p.line(&name)
+        ));
+    }
     let position: BTreeMap<&str, usize> = enabled.iter().enumerate().map(|(i, id)| (*id, i)).collect();
     let mut after: BTreeMap<&str, BTreeSet<&str>> = BTreeMap::new();
     for m in addons.values() {
@@ -212,6 +227,10 @@ mod tests {
         ]);
         let plan = resolve(&profile(&["a.grid", "a.track.okayama"]), &installed).unwrap();
         assert_eq!(plan.order, [CORE_ID, "a.track.okayama", "a.grid"]);
+        assert_eq!(plan.warnings.len(), 1);
+        assert!(
+            plan.warnings[0].starts_with("a.grid: Needs a.track.okayama above it; the build loads it first")
+        );
     }
 
     #[test]

@@ -34,6 +34,7 @@ pub mod map;
 pub mod mpauth;
 pub mod multiplayer;
 pub mod offline;
+pub mod order;
 pub mod overlay_guard;
 pub mod owned;
 pub mod package;
