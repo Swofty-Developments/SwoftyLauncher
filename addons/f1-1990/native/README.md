@@ -458,8 +458,9 @@ Option `heap_watch` (default off) in `f1_1990_heapcheck.dll`. Loading with it on
 worker thread (suspend, set, read back, resume). Every thread created later arms itself from `DllMain`
 (`DLL_THREAD_ATTACH`) by setting the debug registers on its own context; nothing polls and no thread is suspended
 after load. The default addresses are the damaged header of the 0x5b0-byte block seen in sessions 20261030-145707 and
-20261031-044641 (0x2FD8487A0, its links), the two words in front of it (0x2FD848798, 0x2FD848760) and the header of
-its older list neighbour (0x2FD806CF0). `F1_1990_HEAP_WATCH=addr,addr,...` (hex, up to four, rounded down to 8) in
+20261031-044641 (0x2FD8487A0, its links), the header at 0x2FD806CF0 (the end of the second 0x3BF60-byte physics
+registry block) and the body counts (+0x5d8) of the two registry blocks at 0x2FD80C840 and 0x2FD7CAD90
+(0x2FD80CE18, 0x2FD7CB368). `F1_1990_HEAP_WATCH=addr,addr,...` (hex, up to four, rounded down to 8) in
 the game's environment replaces them and opens the allocation gate.
 
 A vectored exception handler runs on each trap. It re-reads the four words and ignores the hit when none changed (a

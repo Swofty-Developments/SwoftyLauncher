@@ -14,7 +14,7 @@ constexpr size_t kStackWords = 64;
 constexpr uint32_t kRing = 512;
 constexpr uintptr_t kAllocLo = 0x3960000, kAllocHi = 0x396c000;
 
-constexpr uint64_t kDefault[kSlots] = {0x2FD8487A0, 0x2FD848798, 0x2FD848760, 0x2FD806CF0};
+constexpr uint64_t kDefault[kSlots] = {0x2FD8487A0, 0x2FD806CF0, 0x2FD80CE18, 0x2FD7CB368};
 
 constexpr uint64_t dr7(int n)
 {
