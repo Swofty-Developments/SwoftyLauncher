@@ -14338,6 +14338,11 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Car_ChassisRegistryCount: Binding = Binding {
+        id: "site_Car_ChassisRegistryCount",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Car_EngineDriveTorque: Binding = Binding {
         id: "site_Car_EngineDriveTorque",
         kind: "site",
@@ -15190,6 +15195,16 @@ pub mod bindings {
     };
     pub const site_Game_GarageCrew_SpawnVector: Binding = Binding {
         id: "site_Game_GarageCrew_SpawnVector",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_PitLane_BoxPoseFalse: Binding = Binding {
+        id: "site_Game_PitLane_BoxPoseFalse",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_PitLane_BoxSlotRead: Binding = Binding {
+        id: "site_Game_PitLane_BoxSlotRead",
         kind: "site",
         status: Status::Experimental,
     };

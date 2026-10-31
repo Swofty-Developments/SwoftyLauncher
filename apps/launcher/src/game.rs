@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
+use std::sync::atomic::{AtomicI64, Ordering};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use swofty_core::app_control::{self, Block};
@@ -120,6 +121,10 @@ pub fn vault_at_start(store: &Store) {
     for l in vault::watch::at_launcher_start(&store.root) {
         crate::app_log::note(&l);
     }
+    import_first_start(store);
+}
+
+fn import_first_start(store: &Store) {
     let profiles = store.profile_names().unwrap_or_default();
     let running = vault::restore::Running::now();
     for l in swofty_core::launcher_saves::first_start_import(&store.root, &profiles, running, vault::now()) {
@@ -127,9 +132,32 @@ pub fn vault_at_start(store: &Store) {
     }
 }
 
+static IMPORT_RETRY: AtomicI64 = AtomicI64::new(0);
+const IMPORT_RETRY_SECS: i64 = 30;
+
+/// While the first-start import has found no Steam save, try again once Steam is signed in.
+fn retry_import(store: &Store, processes: &[GameProcess]) {
+    if !processes.is_empty()
+        || !swofty_core::launcher_saves::import_pending(&store.root)
+        || !swofty_core::steam_client::status().state.usable()
+    {
+        return;
+    }
+    let now = vault::now();
+    if now - IMPORT_RETRY.load(Ordering::Relaxed) < IMPORT_RETRY_SECS {
+        return;
+    }
+    IMPORT_RETRY.store(now, Ordering::Relaxed);
+    let Ok(Some(_lock)) = SessionLock::try_acquire(&store.root) else {
+        return;
+    };
+    import_first_start(store);
+}
+
 pub fn probe(store: &Store, rediscover: bool, seen: Option<SystemTime>) -> Probe {
     let processes = game_processes();
     watch_vault(store, &processes);
+    retry_import(store, &processes);
     let (requests, merged) = merge_requests(store, processes.is_empty(), seen);
     Probe {
         install: rediscover.then(|| discover_all(store)),
