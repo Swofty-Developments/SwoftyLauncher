@@ -360,6 +360,7 @@ EOF
         once "gamelog: Solution-style error from Ne_Format_String" '\[game\] UI_ROUTE \(error\): Failed to find screen swofty_settings\. Solution: Make sure the the screen is loaded into the runtime[[:space:]]*$'
         once "gamelog: later route error" '\[game\] UI_ROUTE \(error\): No screen called late_screen exists[[:space:]]*$'
         count "gamelog: ordinary formats are not logged" 0 'button_7'
+        once "gamelog: a %s into reserved memory logs the raw format" '\[game\] TEST_WARN \(warn\): \(unformattable\) fake replay record %s[[:space:]]*$'
         count "gamelog: rate limit off (SWOFTY_GAME_LOG_RATE=0)" 0 'dropped by the rate limit'
         ;;
     fallback)

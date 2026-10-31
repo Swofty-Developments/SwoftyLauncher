@@ -242,6 +242,8 @@ const char fake_arg_a[] = "site_a", fake_arg_b[] = "site_b", fake_arg_c[] = "sit
 void fake_log_site_a(void);
 void fake_log_site_b(void);
 void fake_log_site_c(void);
+void fake_log_thunk(const char *channel, const char *fmt, ...);
+const char fake_fmt_bad[] = "fake replay record %s";
 int64_t fake_format_string(NeStr **out, const char *fmt, ...);
 
 void fake_log_body_impl(void) { gamelog_body_calls++; }
@@ -959,6 +961,12 @@ static void test_gamelog(int on)
     fake_format_string(&s, "No screen called %hs exists", "late_screen");
     expect(!strcmp(chars(s), "No screen called late_screen exists"), "gamelog: a later route error is formatted normally");
     nestr_release(&s);
+    if (on) {
+        char *reserved = VirtualAlloc(NULL, 0x10000, MEM_RESERVE, PAGE_NOACCESS);
+        fake_log_thunk(fake_chan_warn, fake_fmt_bad, reserved + 0x685);
+        VirtualFree(reserved, 0, MEM_RELEASE);
+        expect(1, "gamelog: a %s argument into reserved memory is survived");
+    }
     expect(gamelog_body_calls == 0, "gamelog: the overwritten logger never runs the game's own body");
 }
 
