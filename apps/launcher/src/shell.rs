@@ -396,6 +396,7 @@ impl Shell {
                     Ok(lines) => lines.iter().for_each(|l| eprintln!("swofty-launcher: {l}")),
                     Err(e) => eprintln!("swofty-launcher: could not check for an unfinished session: {e}"),
                 }
+                game::vault_at_start(&stale);
             })
             .detach();
         let poll = cx.spawn_in(window, async move |this, cx| {

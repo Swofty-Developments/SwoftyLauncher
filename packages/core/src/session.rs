@@ -99,6 +99,9 @@ pub struct Config {
     pub discord_username: Option<String>,
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     pub news_seen: BTreeSet<String>,
+    /// The career vault's size cap in MB; 500 when unset.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vault_cap_mb: Option<u64>,
 }
 
 /// The copies of F1 25 the player added by folder, and the one Play uses.

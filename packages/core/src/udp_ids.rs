@@ -273,6 +273,37 @@ mod tests {
     }
 
     #[test]
+    fn a_chain_through_rows_of_other_addons_ends_at_the_stock_row() {
+        let mut r = Vec::new();
+        count(&mut r, TEAMS, 4);
+        row(&mut r, TEAMS, 0, 6, &[]);
+        row(&mut r, TEAMS, 1, 700, &[]);
+        row(&mut r, TEAMS, 2, 701, &[]);
+        row(&mut r, TEAMS, 3, 702, &[]);
+        let mut a = copy("entrants.teams.team_0", "entrants.teams.team_1");
+        a.addon = "bdx-base".into();
+        let mut b = copy("entrants.teams.team_1", "entrants.teams.team_2");
+        b.addon = "bdx-teams".into();
+        let mut c = copy("entrants.teams.team_2", "entrants.teams.team_3");
+        c.addon = "season-2012".into();
+        let ids = build(&Gvdb { records: r }, &[c, a, b]);
+        assert_eq!(ids.teams, BTreeMap::from([(700, 6), (701, 6), (702, 6)]));
+    }
+
+    #[test]
+    fn a_copy_that_keeps_its_source_stat_id_is_not_rewritten() {
+        let mut r = Vec::new();
+        count(&mut r, TEAMS, 2);
+        row(&mut r, TEAMS, 0, 6, &[]);
+        row(&mut r, TEAMS, 1, 6, &[]);
+        let ids = build(
+            &Gvdb { records: r },
+            &[copy("entrants.teams.team_0", "entrants.teams.team_1")],
+        );
+        assert!(ids.is_empty());
+    }
+
+    #[test]
     fn nothing_added_gives_nothing() {
         let mut r = Vec::new();
         count(&mut r, TEAMS, 1);

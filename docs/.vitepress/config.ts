@@ -157,6 +157,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
               { text: "Launching the game", link: "/reference/launch" },
               { text: "Offline play", link: "/reference/safety" },
               { text: "Backups and recovery", link: "/reference/restore" },
+              { text: "Career vault", link: "/reference/saves" },
             ],
           },
           {
