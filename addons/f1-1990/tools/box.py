@@ -105,6 +105,12 @@ def build():
     ops = gp_list(src) + tt_list(src) + host_ops(GP_LIST) + host_ops(TT_LIST)
     for row in ("track_data.track_layers.TrackLayer", "track_data.game_setup.TrackDataSet", "tyres.compound_classes.CompoundClass"):
         ops.append({"op": "list-append", "select": f"{row}[_metadata_={SOURCE}]", "field": "game_setup_modes", "value": HOST})
+    ops += [
+        {"op": "list-append", "select": "content_sets.content_set[_metadata_=2026]",
+         "field": "available_game_setup_modes_0.setup_modes", "value": HOST},
+        {"op": "list-append", "select": "entrants.drivers.seasonal_infos.seasonal_info[_metadata_=lando_norris]",
+         "field": "game_setup_modes", "value": HOST},
+    ]
     db = {"schema_version": 1, "ops": ops}
     lang = {"schema_version": 1, "ops": [{"op": "lang.set", "language": "*", "key": TITLE, "value": "F1 1990"}]}
     return db, lang

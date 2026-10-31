@@ -2315,6 +2315,18 @@
    "select": "tyres.compound_classes.CompoundClass[_metadata_=f1_1990]",
    "field": "game_setup_modes",
    "value": "swofty_f1"
+  },
+  {
+   "op": "list-append",
+   "select": "content_sets.content_set[_metadata_=2026]",
+   "field": "available_game_setup_modes_0.setup_modes",
+   "value": "swofty_f1"
+  },
+  {
+   "op": "list-append",
+   "select": "entrants.drivers.seasonal_infos.seasonal_info[_metadata_=lando_norris]",
+   "field": "game_setup_modes",
+   "value": "swofty_f1"
   }
  ]
 }
