@@ -15,6 +15,8 @@ The launcher checks for a new launcher release and a new Simplified for Swofty r
 2. Select **Update**. It installs the launcher first, then Simplified for Swofty, and shows the progress on the button. Each download is checked against its release's `SHA256SUMS`. The launcher update replaces `bin/`, `loader/` and, on Linux, `share/`, and removes the `addons/` folder that launchers before 1.4.0 carried.
 3. The launcher restarts on its own when the update finishes, including when only Simplified for Swofty updated. It restarts once, into the new launcher, when both updated.
 
+A download that the connection breaks off resumes from where it stopped. When it keeps breaking, the error says to turn off antivirus HTTPS or web scanning and any VPN or proxy, or to try another network; see [If a download fails](/using/addon-browser#if-a-download-fails).
+
 If a check fails because you're offline, GitHub is down or GitHub's rate limit is reached, you can still play. The launcher checks again a minute later, or when GitHub's rate limit resets.
 
 If one part of an update fails, the other part still installs. If the launcher update fails, you'll see the error next to **Retry update** and the old launcher files stay in place. Select **Retry update**, or **Play without updating** to play the version you have. If only Simplified for Swofty fails, **Play** comes back with the error and **Try again** next to it. An update interrupted partway is rolled back the next time you start the launcher.

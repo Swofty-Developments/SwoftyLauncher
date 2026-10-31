@@ -272,7 +272,7 @@ fn a_restore_after_a_crashed_session_keeps_what_the_addon_wrote() {
 
 const LOGOS: &str = "swofty/addons/swofty.logos/logos_0123456789abcdef.manifest";
 const LOGO_ARCHIVE: &str = "swofty/addons/swofty.logos/logos_0123456789abcdef_databases.erp";
-const LOGO_STAMPS: &str = "swofty/addons/swofty.logos/archives.stamps";
+const LOGO_STAMPS: &str = "swofty/addons/swofty.logos/inputs.stamps";
 
 fn builds_logos(f: &Fixture) {
     f.put(LOGOS, "databases\tlogos_0123456789abcdef_databases.erp\n");
