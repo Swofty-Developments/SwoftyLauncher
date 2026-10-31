@@ -451,7 +451,6 @@ inline constexpr address<"Ne_ReplaySystem_ForceReset"> Ne_ReplaySystem_ForceRese
 inline constexpr address<"Ne_ReplaySystem_ResetSlot24"> Ne_ReplaySystem_ResetSlot24{}; // L2 experimental
 inline constexpr address<"Ne_Replay_SetState"> Ne_Replay_SetState{}; // L2 experimental
 inline constexpr address<"Ne_ResourceHandle_Init"> Ne_ResourceHandle_Init{}; // L2 experimental
-inline constexpr address<"Ne_Resource_Release"> Ne_Resource_Release{}; // L2 experimental
 inline constexpr address<"Ne_RobinHoodMap12_Rehash"> Ne_RobinHoodMap12_Rehash{}; // L2 experimental
 inline constexpr address<"Ne_RobinHoodMap_ClearDestroy"> Ne_RobinHoodMap_ClearDestroy{}; // L2 experimental
 inline constexpr address<"Ne_RobinHoodMap_Rehash_A"> Ne_RobinHoodMap_Rehash_A{}; // L2 experimental
@@ -476,7 +475,6 @@ inline constexpr address<"Ne_SaveError_Win32FmtSSSU"> Ne_SaveError_Win32FmtSSSU{
 inline constexpr address<"Ne_SaveError_Win32FmtSSU"> Ne_SaveError_Win32FmtSSU{}; // L2 experimental
 inline constexpr address<"Ne_SaveError_Win32FmtSU"> Ne_SaveError_Win32FmtSU{}; // L2 experimental
 inline constexpr address<"Ne_SaveError_Win32FmtU"> Ne_SaveError_Win32FmtU{}; // L2 experimental
-inline constexpr address<"Ne_SaveSystem2Win_BuildSavePackageAndInfoXml"> Ne_SaveSystem2Win_BuildSavePackageAndInfoXml{}; // L2 experimental
 inline constexpr address<"Ne_SaveSystem2Win_EmptyDirectory"> Ne_SaveSystem2Win_EmptyDirectory{}; // L2 experimental
 using Ne_SaveSystem2Win_Mount_t = uint32_t(void *device, void *op, void *save, uint8_t for_saving, uint8_t a5, uint8_t *created);
 inline constexpr fn<"Ne_SaveSystem2Win_Mount", Ne_SaveSystem2Win_Mount_t> Ne_SaveSystem2Win_Mount{}; // L2 experimental
@@ -485,6 +483,7 @@ inline constexpr address<"Ne_SaveSystem2Win_RenameDirectory"> Ne_SaveSystem2Win_
 inline constexpr address<"Ne_SaveSystem2Win_SaveSelected"> Ne_SaveSystem2Win_SaveSelected{}; // L2 experimental
 using Ne_SaveSystem2Win_Start_t = uint64_t(void *device);
 inline constexpr fn<"Ne_SaveSystem2Win_Start", Ne_SaveSystem2Win_Start_t> Ne_SaveSystem2Win_Start{}; // L2 experimental
+inline constexpr address<"Ne_SaveSystem2Win_WriteInfoXml"> Ne_SaveSystem2Win_WriteInfoXml{}; // L2 experimental
 inline constexpr address<"Ne_SaveSystem_AutoSave"> Ne_SaveSystem_AutoSave{}; // L2 experimental
 inline constexpr address<"Ne_SaveSystem_BuildSaveInfoList"> Ne_SaveSystem_BuildSaveInfoList{}; // L2 experimental
 inline constexpr address<"Ne_SaveSystem_CreateTempDirectory"> Ne_SaveSystem_CreateTempDirectory{}; // L2 experimental
