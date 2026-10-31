@@ -134,6 +134,8 @@ class Checker:
             self.add("meta", f, f"x-applies {schema['x-applies']!r} is not one of {', '.join(S.APPLIES)}")
         if "x-snapshot" in schema and not isinstance(schema["x-snapshot"], bool):
             self.add("meta", f, "x-snapshot is true or false")
+        if "x-data-group" in schema and not isinstance(schema["x-data-group"], bool):
+            self.add("meta", f, "x-data-group is true or false")
         budget = schema.get("x-snapshot-budget")
         if budget is not None and not (isinstance(budget, int) and not isinstance(budget, bool) and budget >= 0):
             self.add("meta", f, "x-snapshot-budget is a whole number of bytes")
@@ -514,6 +516,9 @@ class Comparer:
 
     def k_x_shared(self, o, n, path):
         self.k_generic("x-shared", o, n, path)
+
+    def k_x_data_group(self, o, n, path):
+        self.k_generic("x-data-group", o, n, path)
 
     def k_x_snapshot(self, o, n, path):
         self.k_generic("x-snapshot", o, n, path)

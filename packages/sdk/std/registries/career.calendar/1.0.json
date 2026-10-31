@@ -5,9 +5,14 @@
   "x-version": "1.0",
   "x-applies": "boot",
   "x-snapshot": false,
+  "x-data-group": true,
   "description": "career::Calendar: the rounds of a season, the seasons a career runs and its transfer windows. The 1.6.0 core stores calendar records and applies nothing from them.",
   "type": "object",
   "properties": {
+    "data_group": {
+      "description": "A career mode's data group. With one, the calendar exists only while a career of that group is loaded.",
+      "type": "string"
+    },
     "rounds": {
       "type": "array",
       "x-key": [
