@@ -200,9 +200,6 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace --all-targets -- -D warnings
 
-      - name: Build the workspace
-        run: cargo build --workspace
-
       # --workspace takes in the launcher's and the installer's tests too. The real-file round trips skip
       # without F1_25_DIR; CI has no game files.
       - name: Test
