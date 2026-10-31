@@ -183,6 +183,64 @@ static void folder(const fs::path &tmp)
     fs::remove_all(tmp);
 }
 
+static std::string settings_with(const std::string &block)
+{
+    return std::string("{\"schema\":1,\"profile\":\"default\",\"addons\":[]") + (block.empty() ? "" : "," + block) + "}";
+}
+
+static const char *GOOD = "{\"launcher_saves\":{\"profile\":\"default\",\"remote\":\"Z:\\\\home\\\\me\\\\.local\\\\share\\\\swofty\\\\saves\\\\default\\\\remote\"}}";
+
+static void launcher()
+{
+    std::string good = std::string(GOOD).substr(1, std::string(GOOD).size() - 2);
+    ss::Launcher l = ss::parse_launcher(settings_with(good));
+    expect(l.present && l.ok && l.profile == "default", "launcher saves: a settings block names the profile and its store");
+    expect(l.remote == "Z:\\home\\me\\.local\\share\\swofty\\saves\\default\\remote", "launcher saves: the store path is kept as written");
+    expect(!ss::parse_launcher(settings_with("")).present, "launcher saves: no block, no launcher mode");
+    expect(!ss::parse_launcher("").present && !ss::parse_launcher("not json").present, "launcher saves: no readable settings, no launcher mode");
+
+    auto bad = [&](const std::string &block, const char *what) {
+        ss::Launcher b = ss::parse_launcher(settings_with(block));
+        expect(b.present && !b.ok && !b.why.empty(), what);
+    };
+    bad("\"launcher_saves\":3", "launcher saves: a block that is not an object fails");
+    bad("\"launcher_saves\":{\"remote\":\"Z:\\\\x\\\\saves\\\\default\\\\remote\"}", "launcher saves: a block without a profile fails");
+    bad("\"launcher_saves\":{\"profile\":\"default\"}", "launcher saves: a block without a store fails");
+    bad("\"launcher_saves\":{\"profile\":\"..\",\"remote\":\"Z:\\\\x\\\\saves\\\\..\\\\remote\"}", "launcher saves: a profile that is not a plain name fails");
+    bad("\"launcher_saves\":{\"profile\":\"default\",\"remote\":\"Z:\\\\x\\\\saves\\\\other\\\\remote\"}", "launcher saves: a store of another profile fails");
+    bad("\"launcher_saves\":{\"profile\":\"default\",\"remote\":\"Z:\\\\x\\\\saves\\\\default\\\\remote\\\\..\\\\..\"}", "launcher saves: a store that climbs out fails");
+    bad("\"launcher_saves\":{\"profile\":\"default\",\"remote\":\"Z:\\\\x\\\\default\\\\remote\"}", "launcher saves: a store outside saves/ fails");
+    bad("\"launcher_saves\":{\"profile\":\"default\",\"remote\":\"\"}", "launcher saves: an empty store path fails");
+
+    ss::Launcher on = ss::parse_launcher(settings_with(good));
+    ss::Launcher none;
+    ss::Launcher broken = ss::parse_launcher(settings_with("\"launcher_saves\":3"));
+    using M = ss::Mode;
+    expect(ss::select_mode(false, on, false, "steam", false).mode == M::launcher, "mode: launcher saves on a Steam copy");
+    expect(ss::select_mode(false, on, false, "unknown", false).mode == M::launcher, "mode: launcher saves on a build the set does not name");
+    expect(ss::select_mode(false, none, false, "steam", false).mode == M::off, "mode: no block is off");
+    expect(ss::select_mode(false, on, true, "steam", false).mode == M::off, "mode: the once-on-Steam opt-out is off");
+    auto ea = ss::select_mode(false, on, false, "ea", false);
+    expect(ea.mode == M::off && ea.why.find("EA copy") != std::string::npos, "mode: the EA copy keeps its own saves until its backend lands");
+    expect(ss::select_mode(false, on, false, "ea", true).mode == M::launcher, "mode: the EA copy joins once its backend is there");
+    expect(ss::select_mode(false, broken, false, "steam", false).mode == M::fail, "mode: a broken block fails closed");
+    expect(ss::select_mode(false, broken, false, "ea", false).mode == M::off, "mode: a broken block on the EA copy stays off with it");
+    expect(ss::select_mode(true, on, false, "steam", false).mode == M::test, "mode: a test run keeps its own sandbox");
+    expect(ss::select_mode(true, none, true, "ea", false).mode == M::test, "mode: a test run ignores the launcher's inputs");
+    expect(ss::EXIT_LAUNCHER == 93 && ss::EXIT_LAUNCHER != ss::EXIT_TEST, "the launcher saves ending has its own exit code");
+}
+
+static void launcher_store(const fs::path &tmp)
+{
+    fs::path store = tmp / "saves" / "default" / "remote";
+    ss::RemoteDir dir(store);
+    auto data = noise(70000, 5);
+    expect(dir.write("savegame@profile#NXDSMWW.BWW", data.data(), int32_t(data.size())), "launcher store: a first write creates saves/<profile>/remote");
+    expect(fs::is_regular_file(store / "savegame@profile#NXDSMWW.BWW"), "launcher store: the file lands in the store folder");
+    expect(dir.count() == 1 && dir.exists("savegame@profile#NXDSMWW.BWW"), "launcher store: it lists what the launcher copied in");
+    fs::remove_all(tmp / "saves");
+}
+
 int main(int argc, char **argv)
 {
     fs::path tmp = argc > 1 ? fs::path(argv[1]) : fs::temp_directory_path() / "save_sandbox_test";
@@ -191,6 +249,8 @@ int main(int argc, char **argv)
     device();
     slots();
     folder(tmp);
+    launcher();
+    launcher_store(tmp);
     printf("%s (%d failure(s))\n", fails ? "SOME FAILED" : "ALL PASSED", fails);
     return fails ? 1 : 0;
 }

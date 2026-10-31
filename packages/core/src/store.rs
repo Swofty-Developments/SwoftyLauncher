@@ -797,7 +797,12 @@ impl Store {
 
     pub fn session_settings(&self, profile: &str) -> Result<SessionSettings> {
         let requests = crate::paths::game_folder_view(&self.requests_path(profile));
-        let mut s = SessionSettings::build(&self.profile(profile)?, &self.addons()?, Some(requests))?;
+        let p = self.profile(profile)?;
+        let mut s = SessionSettings::build(&p, &self.addons()?, Some(requests))?;
+        s.launcher_saves = p.launcher_saves.then(|| settings::SessionSaves {
+            profile: p.name.clone(),
+            remote: crate::paths::game_folder_view(&crate::launcher_saves::remote_dir(&self.root, &p.name)),
+        });
         s.addons
             .retain(|a| a.id == CORE_ID || !self.is_builtin(&a.id) || !a.options.is_empty());
         Ok(s)

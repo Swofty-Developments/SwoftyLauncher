@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The test save sandbox: the host unit test of save_sandbox_logic.hpp (run token, device checks, the
+# The save sandbox (test runs and launcher saves): the host unit test of save_sandbox_logic.hpp (run token, device checks, the
 # folder that stands in for Steam remote storage), then fake_save_sandbox.c under Wine with the built
 # core: with a run token the fake game's Steam storage calls land in the sandbox and nothing reaches its
 # "Steam"; every doubt (a wrong token, a missing binding, a local-save device, no Steam helper) ends the
@@ -65,6 +65,8 @@ play() {
     rm -rf "$OUT/steam/$name"
     mkdir -p "$OUT/steam/$name"
     cp "$OUT/bindings.full.json" "$OUT/game/swofty/addons/core/bindings.json"
+    if [[ -n ${SETTINGS:-} ]]; then printf '%s' "$SETTINGS" >"$OUT/game/swofty/settings.json"; else rm -f "$OUT/game/swofty/settings.json"; fi
+    rm -f "$OUT/game/swofty/launcher-saves.json"
     local code=0
     env "$@" T_STEAM_DIR='Z:'"${OUT//\//\\}"'\steam\'"$name" SWOFTY_EARLY_STAGE=1 \
         timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" >"$OUT/$name.out" 2>&1 || code=$?
@@ -150,6 +152,70 @@ check "a device without a Steam helper fails closed at its start" 'TEST SANDBOX 
 
 play normal 0 T_EXPECT_NORMAL=1
 none "no test run: nothing of the sandbox runs" '\[saves\] (test |TEST |sandbox)'
+
+launcher_settings() {
+    local profile=$1 folder=$2
+    local win=${folder//\//\\\\}
+    printf '{"schema":1,"profile":"default","addons":[],"launcher_saves":{"profile":"%s","remote":"Z:%s"}}' "$profile" "$win"
+}
+LS=$OUT/launcher
+rm -rf "$LS"
+mkdir -p "$LS/saves/default/remote"
+
+SETTINGS=$(launcher_settings default "$LS/saves/default/remote") play launcher 0 T_LINGER_MS=2500
+check "launcher saves: the store is announced" '\[saves\] launcher saves are on for profile default: the game.s profile save is served from [A-Z]:\\.*\\saves\\default\\remote'
+check "launcher saves: the three wraps install" '\[saves\] launcher saves hooked: Ne_SaveSystem2Win_Start, Ne_SaveSystem2Win_Mount and Ne_SaveSystem2Win_WriteInfoXml are wrapped'
+check "launcher saves: the sandbox arms at the device's start" '\[saves\] launcher saves armed \(profile default\): .* saves are read and written in [A-Z]:\\.*\\saves\\default\\remote; nothing reaches Steam'
+check "launcher saves: the writes are logged" '\[saves\] sandbox: FileWrite savegame@profile#QKRHMYXE \(416 bytes\) -> written'
+check "launcher saves: the corrupt-save upload is off" "\[saves\] sandbox: the game's corrupt-save upload \(#1\) is off in a launcher saves session"
+none "launcher saves: no failure" 'LAUNCHER SAVES FAILED'
+none "launcher saves: nothing is mistaken for a test run" '\[test\] test run'
+steam_untouched launcher
+python3 - "$LS/saves/default/remote" "$OUT/game/swofty/launcher-saves.json" <<'EOF' || status=1
+import os, sys, json
+names = sorted(os.listdir(sys.argv[1]))
+want = ['savegame@profile#NXDSMWW.BWW', 'savegame@profile#QKRHMYXE']
+s = json.load(open(sys.argv[2]))
+ok = names == want and s['state'] == 'armed'
+print(('ok  ' if ok else 'FAIL') + f': launcher saves: the launcher store holds exactly the saved files ({names}), status {s["state"]}')
+sys.exit(0 if ok else 1)
+EOF
+
+SETTINGS=$(launcher_settings default "$LS/saves/other/remote") play launcherwrongstore 93
+check "launcher saves: a store of another profile fails closed with exit 93" "LAUNCHER SAVES FAILED: settings.json's launcher_saves names a folder that is not saves/default/remote"
+check "launcher saves: the failure names its exit code and the Steam offer" 'exit code 93\), before the title screen can load a save \(profile default\); the launcher offers to play once with your Steam saves'
+grep -q "the game's own start ran" "$OUT/launcherwrongstore.out" && { echo "FAIL: launcher wrong store: the device started"; status=1; } || echo "ok  : launcher wrong store: the device never started"
+python3 -c "import json,sys; s=json.load(open(sys.argv[1])); sys.exit(s['state']!='failed')" "$OUT/game/swofty/launcher-saves.json" &&
+    echo "ok  : launcher wrong store: launcher-saves.json says failed" || { echo "FAIL: launcher wrong store: launcher-saves.json"; status=1; }
+steam_untouched launcherwrongstore
+
+SETTINGS=$(launcher_settings default "$LS/saves/default/remote") play launcherlocal 93 T_LOCAL=1
+check "launcher saves: a device with m_storeInCloud off fails closed" "LAUNCHER SAVES FAILED: the save device's m_storeInCloud \(\+0x3e8\) is off"
+steam_untouched launcherlocal
+
+SETTINGS=$(launcher_settings default "$LS/saves/default/remote") play launchernohelper 93 T_NO_HELPER=1
+check "launcher saves: a device without a Steam helper fails closed" 'LAUNCHER SAVES FAILED: the save device has no Steam helper'
+
+SETTINGS=$(launcher_settings default "$LS/saves/default/remote") play launcheroptout 0 T_EXPECT_NORMAL=1 SWOFTY_LAUNCHER_SAVES=off
+check "launcher saves: the once-on-Steam opt-out runs the session on Steam's saves" "\[saves\] launcher saves are off: this session runs on Steam's saves"
+none "launcher saves: the opt-out arms nothing" '\[saves\] (launcher saves armed|sandbox)'
+
+cp "$OUT/bindings.full.json" "$OUT/bindings.steam.json"
+python3 - "$OUT/bindings.steam.json" "$OUT/bindings.full.json" <<'EOB'
+import json, sys
+doc = json.load(open(sys.argv[1]))
+doc['build']['distribution'] = 'EA app'
+json.dump(doc, open(sys.argv[2], 'w'))
+EOB
+SETTINGS=$(launcher_settings default "$LS/saves/default/remote") play launcherea 0 T_EXPECT_NORMAL=1
+cp "$OUT/bindings.steam.json" "$OUT/bindings.full.json"
+check "launcher saves: the EA copy keeps its own saves and says why" '\[saves\] launcher saves are off: launcher saves are not available on the EA copy yet'
+none "launcher saves: the EA copy arms nothing" '\[saves\] (launcher saves armed|sandbox)'
+
+R=$(run_dir testwins)
+SETTINGS=$(launcher_settings default "$LS/saves/default/remote") play testwins 0 SWOFTY_TEST_RUN="$R" SWOFTY_TEST_TOKEN=$TOKEN T_LINGER_MS=1500
+check "a test run keeps its own sandbox when launcher settings are present" '\[saves\] test sandbox armed \(run testwins\)'
+none "a test run never arms launcher saves" '\[saves\] launcher saves'
 
 [[ $status == 0 ]] && echo "save sandbox test: ALL PASSED" || echo "save sandbox test: FAILED"
 exit $status

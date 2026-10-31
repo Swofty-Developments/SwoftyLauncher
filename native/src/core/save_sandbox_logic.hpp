@@ -20,6 +20,10 @@
 
 namespace runtime::save_sandbox {
 
+constexpr const char *OFF_ENV = "SWOFTY_LAUNCHER_SAVES";
+constexpr unsigned EXIT_TEST = 91;
+constexpr unsigned EXIT_LAUNCHER = 93;
+constexpr const char *STATUS_FILE = "launcher-saves.json";
 constexpr const char *RUN_ENV = "SWOFTY_TEST_RUN";
 constexpr const char *TOKEN_ENV = "SWOFTY_TEST_TOKEN";
 constexpr const char *RUN_FILE = "run.json";
@@ -201,6 +205,97 @@ inline bool still_armed(std::string_view text, std::string_view token)
     json::Value doc;
     return !text.empty() && json::parse(std::string(text), doc) && doc.type == json::Value::Obj &&
            doc["token"].type == json::Value::Str && !token.empty() && doc["token"].s == token;
+}
+
+// The launcher's saves (swofty/settings.json): {"launcher_saves":{"profile":"default","remote":"Z:\\...\\saves\\default\\remote"}}.
+// The block is there when the profile uses launcher saves; the core then serves the profile save from
+// `remote` with the same proxy the test sandbox uses.
+struct Launcher {
+    bool present = false, ok = false;
+    std::string why, profile, remote;
+};
+
+inline std::vector<std::string> split_path(std::string_view p)
+{
+    std::vector<std::string> out;
+    std::string cur;
+    for (char c : p) {
+        if (c == '/' || c == '\\') {
+            if (!cur.empty())
+                out.push_back(cur);
+            cur.clear();
+        } else
+            cur += c;
+    }
+    if (!cur.empty())
+        out.push_back(cur);
+    return out;
+}
+
+inline bool ansi_path(std::string_view p);
+
+// The store of a launcher profile ends in saves/<profile>/remote, so a setting that names any other folder
+// is refused.
+inline bool store_path_ok(std::string_view remote, std::string_view profile)
+{
+    if (remote.empty() || remote.size() > 400 || !ansi_path(remote))
+        return false;
+    auto parts = split_path(remote);
+    if (parts.size() < 3)
+        return false;
+    for (size_t i = 0; i < parts.size(); i++)
+        if (parts[i] == "." || parts[i] == ".." || (i > 0 && parts[i].find(':') != std::string::npos))
+            return false;
+    size_t n = parts.size();
+    return parts[n - 1] == REMOTE && parts[n - 2] == profile && parts[n - 3] == "saves";
+}
+
+inline Launcher parse_launcher(std::string_view text)
+{
+    Launcher l;
+    json::Value doc;
+    if (text.empty() || !json::parse(std::string(text), doc) || doc.type != json::Value::Obj)
+        return l;
+    const json::Value &b = doc["launcher_saves"];
+    if (b.type == json::Value::Null)
+        return l;
+    l.present = true;
+    if (b.type != json::Value::Obj)
+        return l.why = "settings.json's launcher_saves is not an object", l;
+    if (b["profile"].type != json::Value::Str || !simple_name(b["profile"].s))
+        return l.why = "settings.json's launcher_saves has no plain profile name", l;
+    l.profile = b["profile"].s;
+    if (b["remote"].type != json::Value::Str)
+        return l.why = "settings.json's launcher_saves names no remote folder", l;
+    l.remote = b["remote"].s;
+    if (!store_path_ok(l.remote, l.profile))
+        return l.why = "settings.json's launcher_saves names a folder that is not saves/" + l.profile + "/remote: " + l.remote, l;
+    l.ok = true;
+    return l;
+}
+
+enum class Mode { off, test, launcher, fail };
+
+struct Selection {
+    Mode mode = Mode::off;
+    std::string why;
+};
+
+// Which save mode a session runs in. A test run keeps its own sandbox and never mixes with the launcher's.
+// `ea_backend` says the EA copy's storage can be served; until it can, an EA copy keeps its own saves.
+inline Selection select_mode(bool test_env, const Launcher &l, bool opted_out, std::string_view distribution, bool ea_backend)
+{
+    if (test_env)
+        return {Mode::test, ""};
+    if (!l.present)
+        return {Mode::off, ""};
+    if (opted_out)
+        return {Mode::off, "this session runs on Steam's saves (the launcher asked for it once)"};
+    if (distribution == "ea" && !ea_backend)
+        return {Mode::off, "launcher saves are not available on the EA copy yet; this session uses the EA copy's own saves"};
+    if (!l.ok)
+        return {Mode::fail, l.why};
+    return {Mode::launcher, ""};
 }
 
 // A path the game can open: a Unix path (the CLI under Proton) maps to Wine's Z: drive.

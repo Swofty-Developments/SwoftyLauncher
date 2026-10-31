@@ -151,7 +151,7 @@ enum Command {
     Postfx(postfx::PostfxCommand),
     #[command(
         subcommand,
-        about = "List the profile save backups taken before sessions without an addon that affects saves, and restore one"
+        about = "The career vault: snapshots of the profile save around every session; list, show, back up and restore them"
     )]
     Saves(saves::SavesCommand),
     #[command(
