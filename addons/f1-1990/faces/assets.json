@@ -3,6 +3,50 @@
  "ops": [
   {
    "op": "file.put",
+   "source": "faces/heads/f90_aguri_suzuki.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_aguri_suzuki.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_aguri_suzuki.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_aguri_suzuki.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/heads/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
+   "source": "faces/morph_poses/f90_aguri_suzuki.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_aguri_suzuki.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_aguri_suzuki.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_aguri_suzuki.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
+   "source": "faces/heads/f90_alain_prost.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_alain_prost.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_alain_prost.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_alain_prost.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/heads/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
+   "source": "faces/morph_poses/f90_alain_prost.erp",
+   "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_alain_prost.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_alain_prost.assetgroup",
+   "erp": "2025_asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/f90_alain_prost.erp",
+   "template": "asset_groups/animation_package/scenes/cinematics/drivers/morph_poses/lando_norris.assetgroup"
+  },
+  {
+   "op": "file.put",
    "source": "faces/heads/f90_alessandro_nannini.erp",
    "target": "2025_asset_groups/animation_package/scenes/cinematics/drivers/heads/f90_alessandro_nannini.erp"
   },

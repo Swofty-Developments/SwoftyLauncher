@@ -1,4 +1,18 @@
 {
+ "aguri_suzuki": {
+  "source": "aguri_suzuki.zip",
+  "mipmaps": "src/aguri_suzuki_head_d.tga.mipmaps",
+  "base": "ritomo_miyata",
+  "code": "f90_aguri_suz",
+  "label": "f90_aguri_suzuki"
+ },
+ "alain_prost": {
+  "source": "alain_prost.zip",
+  "mipmaps": "src/alain_prost_head_d.tga.mipmaps",
+  "base": "matias_zagazeta",
+  "code": "f90_alain_prost",
+  "label": "f90_alain_prost"
+ },
  "alessandro_nannini": {
   "source": "alessandro_nannini.zip",
   "mipmaps": "src/alessandro_nannini_head_d.tga.mipmaps",

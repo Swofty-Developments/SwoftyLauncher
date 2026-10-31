@@ -6,6 +6,42 @@
    "table": "entrants.animation.driver_heads",
    "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
    "set": {
+    "_metadata_": "f90_aguri_suzuki",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_aguri_suz/idf/f90_aguri_suz_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False",
+    "stat_id": "294"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_aguri_suzuki]",
+   "field": "head",
+   "value": "f90_aguri_suzuki"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
+    "_metadata_": "f90_alain_prost",
+    "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_alain_prost/idf/f90_alain_prost_rig_head_morph_v1",
+    "has_morph_data": "True",
+    "available_for_customisation": "False",
+    "stat_id": "293"
+   }
+  },
+  {
+   "op": "set",
+   "select": "entrants.drivers.driver[_metadata_=f1990_alain_prost]",
+   "field": "head",
+   "value": "f90_alain_prost"
+  },
+  {
+   "op": "add-row",
+   "table": "entrants.animation.driver_heads",
+   "from": "entrants.animation.driver_heads.driver_head[_metadata_=male_ls222]",
+   "set": {
     "_metadata_": "f90_alessandro_nannini",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_alessandro_nan/idf/f90_alessandro_nan_rig_head_morph_v1",
     "has_morph_data": "True",
