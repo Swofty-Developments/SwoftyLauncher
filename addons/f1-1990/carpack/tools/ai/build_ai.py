@@ -45,6 +45,10 @@ SANITY_RADII = (50.0, 150.0, 300.0)
 SANITY_TRACK = 'melbourne'
 SANITY_FOLDERS = ('mclaren', 'haas')
 AI_RACE_GRIP = 0.87
+TIGHT_DERATE = 0.30
+TIGHT_RADIUS_MIN = 15.0
+TIGHT_RADIUS_MAX = 40.0
+TIGHT_EXPONENT = 2.0
 
 
 def career_tracks(name):
@@ -272,6 +276,7 @@ def job(args):
     raw90 = sim.CarTables.from_sets(variation, {x: copy.deepcopy(rows[x]) for x in ('acpd', 'brpd', 'copd')}, folder)
     ea26 = {x: tpl_sets[x] for x in ('acpd', 'brpd', 'copd')}
     rows['copd'], copd_shift = corrected_copd(rows['copd'], cfg, cfg26, ea26['copd'], variation)
+    rows['copd'] = tight_corner_derate(rows['copd'])
     rows = {x: mirror(x, rows[x], tpl_sets[x]) for x in TABLE_EXTS}
     table_bytes = {x: carmodel.serialise(templates[x], rows[x], folder, variation) for x in TABLE_EXTS}
     sets90 = {x: _sets_of(table_bytes[x]) for x in TABLE_EXTS}
@@ -447,6 +452,17 @@ def corrected_copd(rows90, cfg90, cfg26, ea_rows, variation, sat=129.5):
         shifts.append(float(np.median(v / np.maximum(np.asarray(row['speedList'], float), 1e-6))))
         out.append(dict(row, speedList=v.tolist()))
     return out, round(float(np.median(shifts)), 4)
+
+
+def tight_corner_derate(rows):
+    import numpy as np
+    out = []
+    for row in rows:
+        radii = np.asarray(row['distanceList'], float)
+        x = np.clip((TIGHT_RADIUS_MAX - radii) / (TIGHT_RADIUS_MAX - TIGHT_RADIUS_MIN), 0.0, 1.0)
+        v = np.maximum.accumulate(np.asarray(row['speedList'], float) * (1.0 - TIGHT_DERATE * x ** TIGHT_EXPONENT))
+        out.append(dict(row, speedList=v.tolist()))
+    return out
 
 
 def erpw_set(e, r, data):
