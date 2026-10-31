@@ -4009,6 +4009,11 @@ pub mod bindings {
         kind: "data",
         status: Status::Experimental,
     };
+    pub const site_Ai_TableGripInput: Binding = Binding {
+        id: "site_Ai_TableGripInput",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Car_AeroStoreRearDownforce: Binding = Binding {
         id: "site_Car_AeroStoreRearDownforce",
         kind: "site",
