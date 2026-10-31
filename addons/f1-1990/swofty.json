@@ -74,6 +74,11 @@
       "binds": "native"
     },
     {
+      "id": "registry_guard", "type": "toggle", "label": "Car body registry guard", "default": true,
+      "description": "Skips the 27th car body registration (26 cars plus the safety car), which the game would write past its registry and into the next heap block. Works in every mode.",
+      "binds": "native"
+    },
+    {
       "id": "heap_watch", "type": "toggle", "label": "Heap write watch", "default": false,
       "description": "Debugging only: arms hardware write breakpoints on the game heap blocks that were damaged in earlier sessions and logs every writer with its stack. Works in every mode.",
       "binds": "native"
@@ -262,7 +267,8 @@
       { "dll": "native/f1_1990_audiofix.dll" }, { "dll": "native/f1_1990_heapcheck.dll" },
       { "dll": "native/f1_1990_box.dll" },
       { "dll": "native/f1_1990_physics.dll"},
-      { "dll": "native/f1_1990_nostop.dll" }
+      { "dll": "native/f1_1990_nostop.dll" },
+      { "dll": "native/f1_1990_regguard.dll" }
     ],
     "files": [
       { "source": "files/audio/v12_1990.bdl", "target": "audio/2025/bundles/v12_1990.bdl" },

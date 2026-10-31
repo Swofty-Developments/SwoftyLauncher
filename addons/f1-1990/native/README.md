@@ -16,7 +16,7 @@ Log lines (swofty log): `[f1-1990] GRID best-of (<why>)` once per pass, then one
 
 ## Build
 
-`./build.sh` builds the 25 DLLs with zig against the game headers in `native/include` and the SDK in `packages/sdk/include`. `f1_1990_parts.dll` binds `site_Sess_PuPanel_SlotHolder`, which has no `agree` verify row yet, so the core's `bindings.json` doesn't list it and the core drops that DLL; it loads with a loader whose `swofty/addons/core/bindings.json` adds the entry. `f1_1990_pitphases.dll` binds `Sess_PitStopUpdateJob_Update` and `g_Ne_NameTable`. `f1_1990_audiofix.dll` binds `Snd_Request_JobWorker`, `g_Snd_JobWorkerOverflow` and `g_Snd_JobWorkerLock`. `f1_1990_heapcheck.dll` binds `Ne_Heap_DeallocateNonSmall`.
+`./build.sh` builds the 26 DLLs with zig against the game headers in `native/include` and the SDK in `packages/sdk/include`. `f1_1990_parts.dll` binds `site_Sess_PuPanel_SlotHolder`, which has no `agree` verify row yet, so the core's `bindings.json` doesn't list it and the core drops that DLL; it loads with a loader whose `swofty/addons/core/bindings.json` adds the entry. `f1_1990_pitphases.dll` binds `Sess_PitStopUpdateJob_Update` and `g_Ne_NameTable`. `f1_1990_audiofix.dll` binds `Snd_Request_JobWorker`, `g_Snd_JobWorkerOverflow` and `g_Snd_JobWorkerLock`. `f1_1990_heapcheck.dll` binds `Ne_Heap_DeallocateNonSmall`. `f1_1990_regguard.dll` binds `site_Car_ChassisRegistryCount`, which has no `agree` verify row yet, so the core drops that DLL until the row exists.
 
 `test/run.sh` runs the ranking unit tests on the host.
 
@@ -485,6 +485,10 @@ existing threads takes under 2 ms. The pure parts (DR7 bits, address list, hit r
 ## F1 1990 box (`f1_1990_box.dll`)
 
 Registers the F1 1990 box (`swofty::era::add_box`: entrant list `f1_1990_gp`, Time Trial list `f1_1990_tt`, title `lng_f1990_box`, image `#overrides.home_screen.tiles_solo_6x6[f1]`, order 1990) from its init check. Line: `[f1-1990] box: F1 1990 box registered (Grand Prix f1_1990_gp, Time Trial f1_1990_tt)`, or `refused`, or `this core has no era picker boxes`. The data side is `db/box.json` (README, Grand Prix and Time Trial box).
+
+## Body registry guard (`f1_1990_regguard.dll`)
+
+A separate DLL; option `registry_guard` (default on), active in every mode. `Car_Chassis_Build` (0x144628190) registers every car's physics body in the registry `Game_Init_PhysicsWorldRegistry` (0x14463adc0) allocates: 0x3BF60 bytes, 26 slots per array, the body count at `+0x5d8` incremented with no bound. 26 cars plus the safety car register 27 bodies (the safety car is built after the grid), and the 27th registration writes 0 over the first 8 bytes of the next heap block's header; with `+0x350` set it overwrites slot 0 of the next arrays instead. `site_Car_ChassisRegistryCount` (0x14462a65f, the `test rbx,rbx` after `mov rbx,[rcx+0xe0]`) sets `rbx` to 0 when `*(u32*)(rbx+0x5d8) >= 26`; the `je 0x14462aff8` that follows skips the whole registration and continues with the flag bits of `[rax+0x224]`, which nothing in the skipped code feeds. With `+0x350` zero the registry holds only the count and zeroed arrays, so the skipped body costs nothing; with `+0x350` set the skipped body is missing from the scheduler registry. Lines: `[f1-1990] registry guard: on ...` and `body registry ... holds 26 bodies, registration #N skipped (phys ..., body ..., count-only registry|scheduler registry)` (the first 8). `src/reg_guard.hpp` is tested by `test/reg_guard_test.cpp`.
 
 ## No mandatory stop in the box (`f1_1990_nostop.dll`)
 

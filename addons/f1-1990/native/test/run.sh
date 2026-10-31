@@ -55,3 +55,5 @@ ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/box_decision_test 
 ../build/box_decision_test
 ${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/no_stop_test no_stop_test.cpp
 ../build/no_stop_test
+${CXX:-g++} -std=c++20 -O1 -Wall -Wextra -I../src -o ../build/reg_guard_test reg_guard_test.cpp
+../build/reg_guard_test
