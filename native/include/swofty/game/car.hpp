@@ -159,6 +159,7 @@ inline constexpr address<"Car_Write_Turbo"> Car_Write_Turbo{}; // L2 experimenta
 inline constexpr site<"site_Car_AeroStoreRearDownforce"> site_Car_AeroStoreRearDownforce{}; // L2 experimental
 inline constexpr site<"site_Car_AeroStoreTotalDrag"> site_Car_AeroStoreTotalDrag{}; // L2 experimental
 inline constexpr site<"site_Car_AeroStoreTotalLift"> site_Car_AeroStoreTotalLift{}; // L2 experimental
+inline constexpr site<"site_Car_ChassisRegistryCount"> site_Car_ChassisRegistryCount{}; // L2 experimental
 inline constexpr site<"site_Car_EngineDriveTorque"> site_Car_EngineDriveTorque{}; // L2 experimental
 inline constexpr site<"site_Car_ErsGearModifierLoad"> site_Car_ErsGearModifierLoad{}; // L2 experimental
 inline constexpr site<"site_Car_FuelFlowStore"> site_Car_FuelFlowStore{}; // L2 experimental

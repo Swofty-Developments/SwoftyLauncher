@@ -74492,6 +74492,31 @@
    "used_by": []
   },
   {
+   "id": "car.chassis_registry_count",
+   "section": ".xtls",
+   "pattern": "49 8B 4C 24 28 48 8B 99 E0 00 00 00 48 85 DB 0F 84",
+   "match": "0x14462a653",
+   "anchor": "0xc",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14462a65f",
+   "kind": "mid",
+   "expect": "48 85 DB 0F",
+   "names": [
+    "site_Car_ChassisRegistryCount"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "regguard",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
    "id": "car.register_vehicle_id",
    "section": ".xtls",
    "pattern": "0F B6 05 ?? ?? ?? ?? 88 87 E8 00 00 00",
