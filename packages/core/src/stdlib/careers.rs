@@ -84,6 +84,39 @@ pub fn data_path(data: &Path) -> PathBuf {
     data.join(DATA_PATH)
 }
 
+fn retarget(v: &mut Value, from: &str, to: &str) -> bool {
+    match v {
+        Value::Object(map) => {
+            let mut changed = false;
+            if map.get("career").is_some() && map.get("profile").and_then(Value::as_str) == Some(from) {
+                map.insert("profile".into(), Value::String(to.into()));
+                changed = true;
+            }
+            for child in map.values_mut() {
+                changed |= retarget(child, from, to);
+            }
+            changed
+        }
+        Value::Array(list) => list.iter_mut().fold(false, |c, i| retarget(i, from, to) | c),
+        _ => false,
+    }
+}
+
+/// Point every career of profile `from` in the data folder's index at profile `to`.
+pub fn rename_profile(data: &Path, from: &str, to: &str) -> crate::Result<()> {
+    let path = data_path(data);
+    let Ok(text) = std::fs::read_to_string(&path) else {
+        return Ok(());
+    };
+    let Ok(mut index) = serde_json::from_str::<Value>(&text) else {
+        return Ok(());
+    };
+    if retarget(&mut index, from, to) {
+        crate::write_json_shared(&path, &index)?;
+    }
+    Ok(())
+}
+
 /// Merge the game folder's career index, written before the core used the data folder, into the
 /// launcher's copy, newest record per career id first, and return the merged list. A career the
 /// game no longer lists stays in the copy. A career the core wrote without a profile gets `stamp`,
