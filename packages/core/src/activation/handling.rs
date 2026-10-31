@@ -5,7 +5,7 @@ use serde_json::{Map, Value};
 use swofty_formats::bxml::{Document, Element, Kind};
 use swofty_formats::erp::{Entry, ErpFile, Resource};
 
-use crate::{Error, Result, io_err};
+use crate::{Result, io_err};
 
 pub const REGISTRY: &str = "vehicle.handling";
 const VEHICLES: &str = "vehicle";
@@ -1236,8 +1236,69 @@ pub fn maps_of(resolved: &Resolved) -> (Vec<HandlingMap>, Vec<String>) {
     (maps, notes)
 }
 
-pub fn error(msg: impl Into<String>) -> Error {
-    Error::Map(msg.into())
+pub fn read_maps(addons: &[(String, PathBuf)], options: Options) -> (Vec<HandlingMap>, Vec<String>) {
+    let mut notes = Vec::new();
+    let mut files = Vec::new();
+    for (id, dir) in addons {
+        let mut values = Vec::new();
+        for rel in crate::stdlib::data::files(dir) {
+            let path = dir.join(&rel);
+            let Ok(text) = std::fs::read_to_string(&path) else {
+                continue;
+            };
+            if !text.contains(REGISTRY) && !text.contains("\"vehicle\"") {
+                continue;
+            }
+            match serde_json::from_str::<Value>(&text) {
+                Ok(v) => values.push(v),
+                Err(e) => notes.push(format!("{id}: {rel} isn't JSON ({e}); skipped")),
+            }
+        }
+        if !values.is_empty() {
+            files.push((id.as_str(), values));
+        }
+    }
+    let files: Vec<Files> = files
+        .into_iter()
+        .map(|(addon, values)| Files { addon, values })
+        .collect();
+    let resolved = resolve(&files, options);
+    let (maps, more) = maps_of(&resolved);
+    notes.extend(more);
+    (maps, notes)
+}
+
+pub fn sources(
+    maps: &[HandlingMap],
+    original: &dyn Fn(&str) -> PathBuf,
+    addon_dir: &dyn Fn(&str) -> PathBuf,
+) -> Vec<PathBuf> {
+    let mut out: Vec<PathBuf> = maps
+        .iter()
+        .map(|m| match &m.target {
+            Target::Stock(rel) => original(rel),
+            Target::Addon { addon, path } => addon_dir(addon).join(path),
+        })
+        .collect();
+    out.sort();
+    out.dedup();
+    out
+}
+
+pub fn for_source<'a>(
+    maps: &'a [HandlingMap],
+    addon_dir: &dyn Fn(&str) -> PathBuf,
+    src: &Path,
+) -> Vec<&'a HandlingMap> {
+    let same = |a: &Path, b: &Path| {
+        a == b || matches!((std::fs::canonicalize(a), std::fs::canonicalize(b)), (Ok(x), Ok(y)) if x == y)
+    };
+    maps.iter()
+        .filter(|m| match &m.target {
+            Target::Addon { addon, path } => same(&addon_dir(addon).join(path), src),
+            Target::Stock(_) => false,
+        })
+        .collect()
 }
 
 #[cfg(test)]
