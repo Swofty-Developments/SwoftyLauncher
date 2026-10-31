@@ -1,0 +1,144 @@
+{
+ "2021": [
+  {
+   "id": "redbull_honda",
+   "team": "redbull",
+   "context": "livery_redbull_se_01",
+   "name": "Red Bull (White)",
+   "source_name_key": "lng_livery107"
+  }
+ ],
+ "2022": [
+  {
+   "id": "mclaren_future_mode",
+   "team": "mclaren",
+   "context": "livery_mclaren_se_01",
+   "name": "Future Mode",
+   "name_source": "Official limited-time livery name; no separate picker string in installed F1 22 database"
+  },
+  {
+   "id": "ferrari_monza",
+   "team": "ferrari",
+   "model_team": "ferrari",
+   "context": "default",
+   "name": "Giallo Modena",
+   "name_source": "Official limited-time livery name; no separate picker string in installed F1 22 database"
+  }
+ ],
+ "2023": [
+  {
+   "id": "alfa_romeo_boogie",
+   "team": "sauber",
+   "context": "livery_custom_alfaromeoboogie",
+   "name": "BOOGIE Art",
+   "source_name_key": "lng_livery121"
+  },
+  {
+   "id": "alfa_romeo_kick",
+   "team": "sauber",
+   "context": "livery_custom_alfaromeokick",
+   "name": "KICK Streaming",
+   "source_name_key": "lng_livery119"
+  },
+  {
+   "id": "alfa_romeo_monza",
+   "team": "sauber",
+   "context": "livery_custom_alfaromeomonza",
+   "name": "Alfa Romeo Tribute",
+   "source_name_key": "lng_livery122"
+  },
+  {
+   "id": "alpine_pink",
+   "team": "lotus",
+   "context": "livery_alpinepink_01",
+   "name": "BWT Alpine F1 Team Pink Flip",
+   "source_name_key": "lng_livery127"
+  },
+  {
+   "id": "redbull_austin",
+   "team": "redbull",
+   "context": "livery_custom_redbullaustin",
+   "name": "Lone Star Bull",
+   "source_name_key": "lng_livery134"
+  },
+  {
+   "id": "williams_gulf",
+   "team": "williams",
+   "context": "livery_custom_williamsgulf",
+   "name": "Gulf x Williams Racing \u2013 Bolder than Bold",
+   "source_name_key": "lng_livery128"
+  },
+  {
+   "id": "mclaren_triple_crown",
+   "team": "mclaren",
+   "context": "livery_mclaren_60ann_ed",
+   "name": "McLaren - Triple Crown",
+   "source_name_key": "lng_livery116"
+  },
+  {
+   "id": "mclaren_chrome",
+   "team": "mclaren",
+   "context": "livery_mclaren_chrome",
+   "name": "McLaren x Chrome - Silverstone GP 2023",
+   "source_name_key": "lng_livery141"
+  },
+  {
+   "id": "redbull_miami",
+   "team": "redbull",
+   "context": "livery_redbull_miami_01",
+   "name": "RB19 - Miami",
+   "source_name_key": "lng_livery115"
+  },
+  {
+   "id": "williams_british",
+   "team": "williams",
+   "context": "livery_williams_se_01",
+   "name": "800 Race Edition",
+   "source_name_key": "lng_livery118"
+  }
+ ],
+ "2024": [
+  {
+   "id": "racing_bulls_miami",
+   "team": "toro_rosso",
+   "context": "livery_racingbulls_miami_01",
+   "name": "Chameleon VCARB 01",
+   "source_name_key": "lng_racingbulls_miami_01"
+  },
+  {
+   "id": "alpine_esports",
+   "team": "lotus",
+   "context": "livery_alpineesports_01",
+   "name": "Alpine Esports",
+   "source_name_key": "lng_livery128"
+  },
+  {
+   "id": "mclaren_chrome",
+   "team": "mclaren",
+   "context": "livery_mclaren_chrome_01",
+   "name": "Chrome Livery",
+   "source_name_key": "lng_replica_mclaren24b_livery"
+  },
+  {
+   "id": "mclaren_monaco",
+   "team": "mclaren",
+   "context": "livery_mclaren_monaco_01",
+   "name": "McLaren Formula 1 Team Senna 30th Anniversary Livery",
+   "source_name_key": "lng_replica_mclaren24a_livery"
+  },
+  {
+   "id": "mclaren_shadow",
+   "team": "mclaren",
+   "context": "livery_mclarenshadow_01",
+   "name": "McLaren Shadow",
+   "source_name_key": "lng_livery127"
+  },
+  {
+   "id": "williams_heritage",
+   "team": "williams",
+   "context": "livery_replica_williams91a",
+   "name": "Grove Classic Livery 2024",
+   "source_name_key": "lng_replica_williams91a"
+  }
+ ]
+}

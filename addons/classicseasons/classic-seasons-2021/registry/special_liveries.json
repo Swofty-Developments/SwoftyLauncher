@@ -1,0 +1,12 @@
+{
+ "livery": {
+  "redbull_honda": {
+   "vehicle": "swofty.classic-seasons-2021/redbull",
+   "archive": "specials/redbull_honda.erp",
+   "special": true,
+   "suffix": "_cs21_redbull_honda",
+   "picker_name": "lng_cs_2021_redbull_honda",
+   "unlock": "game"
+  }
+ }
+}

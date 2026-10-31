@@ -240,7 +240,9 @@ def build(game, baseline, sheet):
         image, view = ARRAY.format(path) + ".image", ARRAY.format(path)
         added = []
         for key, _, _, donor, brand in teams:
-            if brand:
+            # The timing tower uses the Alfa Romeo crest, not the wordmark
+            # used by the team-selection artwork. The stock historic slot has it.
+            if brand and not (brand == "alfa_romeo" and path.startswith("osd.timing_tower.")):
                 px = encoded[(path, brand)]
             else:
                 i = listed.index(keymap.get(donor, donor))
@@ -276,6 +278,36 @@ def build(game, baseline, sheet):
 
 def zstd(data):
     return zstd_c(data, threads=8)
+
+
+def repair_timing(game, baseline, destination):
+    """Make a new archive with the original Alfa crest in historical tower slots."""
+    if destination.exists():
+        raise FileExistsError(destination)
+    stock = Stock(game, baseline)
+    root = Pkg(fragments(stock.path(DATABASES), OVERRIDES)[0]).root
+    archive = Erp(str(OUT / "logos.erpk"))
+    teams = season_teams()
+    for path in ARRAYS:
+        if not path.startswith("osd.timing_tower."):
+            continue
+        image = ARRAY.format(path) + ".image"
+        listed = overrides_list(root, path)
+        locations = carriers(game, stock, [image])[image]
+        head, pixels = fragments(stock.path(locations[0]), image)[:2]
+        _, w, h = struct.unpack_from("<III", head, 8)
+        index = listed.index("alfa_romeo")
+        crest = pixels[index * w * h:(index + 1) * w * h]
+        resource = archive.find(image)
+        current = bytearray(archive.frag_data(resource, 1))
+        if len(current) != (len(listed) + len(teams)) * w * h:
+            raise ValueError(f"{path}: unexpected generated array layout")
+        for index, (*_, brand) in enumerate(teams, len(listed)):
+            if brand == "alfa_romeo":
+                current[index * w * h:(index + 1) * w * h] = crest
+        archive.set_frag(resource, 1, bytes(current))
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    archive.to_file(str(destination), reframe=False)
 
 
 def set_frags(r, datas):
@@ -342,7 +374,11 @@ def main(argv):
     ap.add_argument("--game", required=True, type=Path)
     ap.add_argument("--baseline", type=Path, help="launcher baseline folder holding baseline.json (stock copies)")
     ap.add_argument("--sheet", type=Path, help="write a contact sheet PNG of every season's logos")
+    ap.add_argument("--repair-timing", type=Path, help="write a new archive correcting only the existing tower slices")
     a = ap.parse_args(argv[1:])
+    if a.repair_timing:
+        repair_timing(a.game, a.baseline, a.repair_timing)
+        return
     for line in build(a.game, a.baseline, a.sheet):
         print(line)
 

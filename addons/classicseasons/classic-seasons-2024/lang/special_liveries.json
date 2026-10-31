@@ -1,0 +1,41 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_cs_2024_racing_bulls_miami",
+   "value": "Chameleon VCARB 01"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_cs_2024_alpine_esports",
+   "value": "Alpine Esports"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_cs_2024_mclaren_chrome",
+   "value": "Chrome Livery"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_cs_2024_mclaren_monaco",
+   "value": "McLaren Formula 1 Team Senna 30th Anniversary Livery"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_cs_2024_mclaren_shadow",
+   "value": "McLaren Shadow"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_cs_2024_williams_heritage",
+   "value": "Grove Classic Livery 2024"
+  }
+ ]
+}

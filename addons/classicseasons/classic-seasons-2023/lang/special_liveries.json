@@ -1,0 +1,65 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_cs_2023_alfa_romeo_boogie",
+   "value": "BOOGIE Art"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_cs_2023_alfa_romeo_kick",
+   "value": "KICK Streaming"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_cs_2023_alfa_romeo_monza",
+   "value": "Alfa Romeo Tribute"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_cs_2023_alpine_pink",
+   "value": "BWT Alpine F1 Team Pink Flip"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_cs_2023_redbull_austin",
+   "value": "Lone Star Bull"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_cs_2023_williams_gulf",
+   "value": "Gulf x Williams Racing \u2013 Bolder than Bold"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_cs_2023_mclaren_triple_crown",
+   "value": "McLaren - Triple Crown"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_cs_2023_mclaren_chrome",
+   "value": "McLaren x Chrome - Silverstone GP 2023"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_cs_2023_redbull_miami",
+   "value": "RB19 - Miami"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_cs_2023_williams_british",
+   "value": "800 Race Edition"
+  }
+ ]
+}

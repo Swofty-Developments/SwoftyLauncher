@@ -109,8 +109,8 @@ HOST_MODE = "swofty_f1"
 SETUP_ROW = "entrants.entrant_setup_modes.entrant_setup_mode"
 SETUP_PRESETS = "car_setup.presets.vehicle_package_setups"
 SEASON_LAUNCHER = ">=1.5.1"
-SEASON_VERSION = "0.6.8"
-SEASON_CORE = "0.6.1"
+SEASON_VERSION = "0.6.9"
+SEASON_CORE = "0.6.5"
 DIRECT_SUITS = [e for e in suit_sources.REAL["suits"] if "transfer" not in suit_sources.REAL["mods"][e["mod"]]]
 TRANSFERRED_SUITS = [e for e in suit_sources.REAL["suits"] if "transfer" in suit_sources.REAL["mods"][e["mod"]]]
 REAL_SUIT_IDS = range(974, 974 + len(DIRECT_SUITS))
@@ -381,6 +381,9 @@ def package_record(own, season, year, list_label, standings, wide, index):
 
 
 def season_manifest(core, year, assets):
+    special = (year_dir(year) / "registry/special_liveries.json").exists()
+    if special:
+        assets = [*assets, "assets/special_liveries.json", "lang/special_liveries.json"]
     return {
         "schema_version": 1,
         "id": f"{core['id']}-{year}",
@@ -393,7 +396,7 @@ def season_manifest(core, year, assets):
         "icon": "icon.png",
         "category": "seasons",
         "kind": ["database", "files"],
-        "compat": {**core["compat"], "launcher": SEASON_LAUNCHER},
+        "compat": {**core["compat"], "launcher": ">=1.6.0" if special else SEASON_LAUNCHER},
         "requires": core["requires"] + [{"id": core["id"], "version": f">={SEASON_CORE}"}],
         "operations": {"database": ["db/season.json", "db/records.json"], "assets": ["lang/season.json", *assets]},
     }
@@ -644,7 +647,7 @@ def build():
         replaced = ["db/records.json"] + (["assets/liveries.json"] if split and split[1]["ops"] else [])
         write_json(folder / "registry.json", {"replaced_operations": replaced})
         write_json(folder / "lang" / "season.json", {"schema_version": 1, "ops": text})
-        (folder / ".gitignore").write_text("cars/\nsuits/\nhelmets/\nsounds/\n")
+        (folder / ".gitignore").write_text("cars/\nsuits/\nhelmets/\nsounds/\n" + ("specials/\n" if year >= 2021 else ""))
         if cars:
             write_json(folder / "assets" / "cars.json", split[0])
             write_json(folder / "assets" / "liveries.json", split[1])

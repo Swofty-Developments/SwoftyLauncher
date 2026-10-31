@@ -407,8 +407,13 @@ def kit_textures(e, prefixes, roots):
     return out
 
 
-def build_team(game, cars, year, team, logos):
+def build_team(game, cars, year, team, logos, original_games=None, cache=None):
     suit = team.get("suit", {})
+    if suit.get("source") == suit_sources.ORIGINAL:
+        if original_games is None:
+            raise ValueError(f"{year} {team['name']}: --original-games is required for the original suit artwork")
+        from original_suits import build
+        return build(game, original_games / f"F1 {year}", year, team, cache)
     stock = DATA["folders"][team["folder"]]["team"]
     base = suit.get("base", f"2025-{stock}")
     label = suit_sources.generated_label(year, team, base)
@@ -521,13 +526,17 @@ def main(argv):
     ap.add_argument("--cars", type=Path, default=ROOT.parent,
                     help="folder holding classic-seasons-<year>/cars (default: this checkout)")
     ap.add_argument("--teams", help="comma-separated team keys to build (default: all)")
+    ap.add_argument("--output", type=Path, help="write to a new parent folder instead of this checkout")
+    ap.add_argument("--original-games", type=Path, help="folder containing the original F1 2020 and F1 2021 games")
     a = ap.parse_args(argv[1:])
     logos = Logos(a.game)
     seasons = {s["year"]: s for s in DATA["seasons"]}
     for year in a.years:
         if year not in SUIT_YEARS:
             raise SystemExit(f"{year}: suits are built for {SUIT_YEARS.start} to {SUIT_YEARS.stop - 1}")
-        out = year_dir(year) / "suits"
+        out = (a.output / f"classic-seasons-{year}" if a.output else year_dir(year)) / "suits"
+        if a.output and out.exists():
+            raise SystemExit(f"{out}: already exists; choose a new --output directory")
         out.mkdir(parents=True, exist_ok=True)
         meta_path = out / "meta.json"
         meta = json.loads(meta_path.read_text()) if meta_path.exists() else {"suits": {}}
@@ -543,10 +552,11 @@ def main(argv):
                 rows.append(real_row(a.game, team, choice, drivers))
                 print(f"{year} {key}: {suit_sources.describe(choice)}")
                 continue
-            label, e, m, views, livery, logo = build_team(a.game, a.cars, year, team, logos)
+            label, e, m, views, livery, logo = build_team(a.game, a.cars, year, team, logos, a.original_games,
+                                                       (a.output or ROOT) / ".cache/suit-transfer")
             e.to_file(str(out / f"{label}.erp"))
             meta["suits"][key] = m
-            rows.append((team, {**m, "design": f"generated, design {m['design']}", "drivers": drivers}, views, livery,
+            rows.append((team, {**m, "drivers": drivers}, views, livery,
                          logo))
             print(f"{year} {key}: {label} from {m['base']}, {m['design']}, {' '.join(m['colours'])}, "
                   f"{sum(s['what'] != 'empty' for s in m['logo_slots'])}/{len(m['logo_slots'])} decals filled")
@@ -556,7 +566,7 @@ def main(argv):
         meta["suits"] = {t.get("key", t["folder"]): meta["suits"][t.get("key", t["folder"])]
                          for t in seasons[year]["teams"] if t.get("key", t["folder"]) in meta["suits"]}
         meta_path.write_text(json.dumps(meta, indent=1) + "\n")
-        sheet = ROOT / "art" / "suits" / f"{year}.png"
+        sheet = (a.output if a.output else ROOT) / "art" / "suits" / f"{year}.png"
         sheet.parent.mkdir(parents=True, exist_ok=True)
         contact_sheet(f"Classic Seasons F1 {year}: team suits", rows, out / "preview.png", sheet)
         print(f"{year}: {out / 'preview.png'}, {sheet}")

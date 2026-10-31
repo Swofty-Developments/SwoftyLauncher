@@ -1,0 +1,1390 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/shared/generics/textures/blank_s.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/shared/generics/textures/blank_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/shared/generics/textures/disc_d.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/shared/generics/textures/disc_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/shared/generics/textures/disc_n.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/shared/generics/textures/disc_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/shared/generics/textures/disc_s.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/shared/generics/textures/disc_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/shared/generics/textures/generic_dirt.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/shared/generics/textures/generic_dirt.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/shared/generics/textures/generic_main_d.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/shared/generics/textures/generic_main_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/shared/generics/textures/generic_main_n.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/shared/generics/textures/generic_main_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/shared/generics/textures/generic_main_s.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/shared/generics/textures/generic_main_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/shared/generics/textures/glass_da.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/shared/generics/textures/glass_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/shared/generics/textures/glass_s.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/shared/generics/textures/glass_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/shared/generics/textures/int_indicator_d.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/shared/generics/textures/int_indicator_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/shared/generics/textures/metallic_flake_n.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/shared/generics/textures/metallic_flake_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/shared/generics/textures/rear_light_d.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/shared/generics/textures/rear_light_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/shared/generics/textures/rear_light_n.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/shared/generics/textures/rear_light_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/shared/generics/textures/rear_light_s.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/shared/generics/textures/rear_light_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/teams/fom_car/textures/fom_car_damage.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/teams/fom_car/textures/fom_car_damage.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/teams/fom_car/textures/fom_car_decal_da.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/teams/fom_car/textures/fom_car_decal_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/teams/fom_car/textures/fom_car_details_d.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/teams/fom_car/textures/fom_car_details_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/teams/fom_car/textures/fom_car_details_n.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/teams/fom_car/textures/fom_car_details_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/teams/fom_car/textures/fom_car_details_s.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/teams/fom_car/textures/fom_car_details_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/teams/fom_car/textures/fom_car_driver_1.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/teams/fom_car/textures/fom_car_driver_1.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_d.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_decals_da.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_decals_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_n.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_s.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_n.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/teams/fom_car/textures/liveries/livery_racingbulls_miami_01_d.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/teams/fom_car/textures/liveries/livery_racingbulls_miami_01_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/teams/fom_car/textures/liveries/livery_racingbulls_miami_01_id8_d.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/teams/fom_car/textures/liveries/livery_racingbulls_miami_01_id8_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/teams/fom_car/textures/liveries/livery_racingbulls_miami_01_id8_s.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/teams/fom_car/textures/liveries/livery_racingbulls_miami_01_id8_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/teams/fom_car/textures/liveries/livery_racingbulls_miami_01_s.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/teams/fom_car/textures/liveries/livery_racingbulls_miami_01_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/teams/fom_car/textures/liveries/livery_racingbulls_miami_01_steering_da.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/teams/fom_car/textures/liveries/livery_racingbulls_miami_01_steering_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/teams/fom_car/textures/liveries/livery_racingbulls_miami_01_wheel_d.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/teams/fom_car/textures/liveries/livery_racingbulls_miami_01_wheel_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/teams/fom_car/textures/liveries/livery_racingbulls_miami_01_wheel_s.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/teams/fom_car/textures/liveries/livery_racingbulls_miami_01_wheel_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l0_2024_vehicle_package/teams/fom_car/textures/stickers/personal_sticker_00.tif.mipmaps",
+   "target": "l0_2024_vehicle_package/teams/fom_car/textures/stickers/personal_sticker_00.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/shared/generics/textures/blank_s.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/shared/generics/textures/blank_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/shared/generics/textures/disc_d.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/shared/generics/textures/disc_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/shared/generics/textures/disc_n.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/shared/generics/textures/disc_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/shared/generics/textures/disc_s.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/shared/generics/textures/disc_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/shared/generics/textures/generic_dirt.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/shared/generics/textures/generic_dirt.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/shared/generics/textures/generic_main_d.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/shared/generics/textures/generic_main_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/shared/generics/textures/generic_main_n.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/shared/generics/textures/generic_main_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/shared/generics/textures/generic_main_s.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/shared/generics/textures/generic_main_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/shared/generics/textures/glass_da.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/shared/generics/textures/glass_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/shared/generics/textures/glass_s.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/shared/generics/textures/glass_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/shared/generics/textures/int_indicator_d.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/shared/generics/textures/int_indicator_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/shared/generics/textures/metallic_flake_n.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/shared/generics/textures/metallic_flake_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/shared/generics/textures/rear_light_d.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/shared/generics/textures/rear_light_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/shared/generics/textures/rear_light_n.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/shared/generics/textures/rear_light_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/shared/generics/textures/rear_light_s.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/shared/generics/textures/rear_light_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/fom_car_damage.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/fom_car_damage.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/fom_car_decal_da.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/fom_car_decal_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/fom_car_details_d.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/fom_car_details_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/fom_car_details_n.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/fom_car_details_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/fom_car_details_s.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/fom_car_details_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/fom_car_driver_1.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/fom_car_driver_1.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_d.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_decals_da.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_decals_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_n.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_s.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_d.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_n.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_s.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/liveries/livery_alpineesports_01_c.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/liveries/livery_alpineesports_01_c.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/liveries/livery_alpineesports_01_d.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/liveries/livery_alpineesports_01_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/liveries/livery_alpineesports_01_e_da.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/liveries/livery_alpineesports_01_e_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/liveries/livery_alpineesports_01_id8_d.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/liveries/livery_alpineesports_01_id8_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/liveries/livery_alpineesports_01_id8_s.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/liveries/livery_alpineesports_01_id8_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/liveries/livery_alpineesports_01_s.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/liveries/livery_alpineesports_01_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/liveries/livery_alpineesports_01_steering_da.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/liveries/livery_alpineesports_01_steering_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l1_2024_vehicle_package/teams/fom_car/textures/stickers/personal_sticker_00.tif.mipmaps",
+   "target": "l1_2024_vehicle_package/teams/fom_car/textures/stickers/personal_sticker_00.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/shared/generics/textures/blank_s.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/shared/generics/textures/blank_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/shared/generics/textures/disc_d.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/shared/generics/textures/disc_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/shared/generics/textures/disc_n.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/shared/generics/textures/disc_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/shared/generics/textures/disc_s.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/shared/generics/textures/disc_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/shared/generics/textures/generic_dirt.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/shared/generics/textures/generic_dirt.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/shared/generics/textures/generic_main_d.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/shared/generics/textures/generic_main_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/shared/generics/textures/generic_main_n.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/shared/generics/textures/generic_main_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/shared/generics/textures/generic_main_s.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/shared/generics/textures/generic_main_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/shared/generics/textures/glass_da.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/shared/generics/textures/glass_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/shared/generics/textures/glass_s.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/shared/generics/textures/glass_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/shared/generics/textures/int_indicator_d.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/shared/generics/textures/int_indicator_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/shared/generics/textures/metallic_flake_n.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/shared/generics/textures/metallic_flake_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/shared/generics/textures/rear_light_d.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/shared/generics/textures/rear_light_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/shared/generics/textures/rear_light_n.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/shared/generics/textures/rear_light_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/shared/generics/textures/rear_light_s.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/shared/generics/textures/rear_light_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/teams/fom_car/textures/fom_car_damage.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/teams/fom_car/textures/fom_car_damage.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/teams/fom_car/textures/fom_car_decal_da.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/teams/fom_car/textures/fom_car_decal_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/teams/fom_car/textures/fom_car_details_d.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/teams/fom_car/textures/fom_car_details_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/teams/fom_car/textures/fom_car_details_n.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/teams/fom_car/textures/fom_car_details_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/teams/fom_car/textures/fom_car_details_s.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/teams/fom_car/textures/fom_car_details_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/teams/fom_car/textures/fom_car_driver_1.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/teams/fom_car/textures/fom_car_driver_1.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_d.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_decals_da.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_decals_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_n.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_s.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_d.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_n.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_s.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_60ann_ed_d.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_60ann_ed_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_60ann_ed_id8_d.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_60ann_ed_id8_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_60ann_ed_id8_s.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_60ann_ed_id8_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_60ann_ed_s.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_60ann_ed_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_60ann_ed_steering_da.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_60ann_ed_steering_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l2_2024_vehicle_package/teams/fom_car/textures/stickers/personal_sticker_00.tif.mipmaps",
+   "target": "l2_2024_vehicle_package/teams/fom_car/textures/stickers/personal_sticker_00.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/shared/generics/textures/blank_s.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/shared/generics/textures/blank_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/shared/generics/textures/disc_d.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/shared/generics/textures/disc_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/shared/generics/textures/disc_n.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/shared/generics/textures/disc_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/shared/generics/textures/disc_s.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/shared/generics/textures/disc_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/shared/generics/textures/generic_dirt.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/shared/generics/textures/generic_dirt.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/shared/generics/textures/generic_main_d.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/shared/generics/textures/generic_main_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/shared/generics/textures/generic_main_n.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/shared/generics/textures/generic_main_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/shared/generics/textures/generic_main_s.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/shared/generics/textures/generic_main_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/shared/generics/textures/glass_da.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/shared/generics/textures/glass_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/shared/generics/textures/glass_s.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/shared/generics/textures/glass_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/shared/generics/textures/int_indicator_d.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/shared/generics/textures/int_indicator_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/shared/generics/textures/metallic_flake_n.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/shared/generics/textures/metallic_flake_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/shared/generics/textures/rear_light_d.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/shared/generics/textures/rear_light_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/shared/generics/textures/rear_light_n.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/shared/generics/textures/rear_light_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/shared/generics/textures/rear_light_s.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/shared/generics/textures/rear_light_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/teams/fom_car/textures/fom_car_damage.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/teams/fom_car/textures/fom_car_damage.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/teams/fom_car/textures/fom_car_decal_da.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/teams/fom_car/textures/fom_car_decal_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/teams/fom_car/textures/fom_car_details_d.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/teams/fom_car/textures/fom_car_details_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/teams/fom_car/textures/fom_car_details_n.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/teams/fom_car/textures/fom_car_details_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/teams/fom_car/textures/fom_car_details_s.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/teams/fom_car/textures/fom_car_details_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/teams/fom_car/textures/fom_car_driver_1.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/teams/fom_car/textures/fom_car_driver_1.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_d.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_decals_da.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_decals_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_n.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_s.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_n.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_chrome_01_d.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_chrome_01_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_chrome_01_decal_da.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_chrome_01_decal_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_chrome_01_id8_d.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_chrome_01_id8_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_chrome_01_id8_s.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_chrome_01_id8_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_chrome_01_s.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_chrome_01_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_chrome_01_steering_da.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_chrome_01_steering_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_chrome_01_wheel_d.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_chrome_01_wheel_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_chrome_01_wheel_s.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_chrome_01_wheel_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l3_2024_vehicle_package/teams/fom_car/textures/stickers/personal_sticker_00.tif.mipmaps",
+   "target": "l3_2024_vehicle_package/teams/fom_car/textures/stickers/personal_sticker_00.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/shared/generics/textures/blank_s.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/shared/generics/textures/blank_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/shared/generics/textures/disc_d.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/shared/generics/textures/disc_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/shared/generics/textures/disc_n.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/shared/generics/textures/disc_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/shared/generics/textures/disc_s.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/shared/generics/textures/disc_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/shared/generics/textures/generic_dirt.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/shared/generics/textures/generic_dirt.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/shared/generics/textures/generic_main_d.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/shared/generics/textures/generic_main_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/shared/generics/textures/generic_main_n.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/shared/generics/textures/generic_main_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/shared/generics/textures/generic_main_s.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/shared/generics/textures/generic_main_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/shared/generics/textures/glass_da.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/shared/generics/textures/glass_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/shared/generics/textures/glass_s.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/shared/generics/textures/glass_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/shared/generics/textures/int_indicator_d.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/shared/generics/textures/int_indicator_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/shared/generics/textures/metallic_flake_n.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/shared/generics/textures/metallic_flake_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/shared/generics/textures/rear_light_d.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/shared/generics/textures/rear_light_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/shared/generics/textures/rear_light_n.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/shared/generics/textures/rear_light_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/shared/generics/textures/rear_light_s.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/shared/generics/textures/rear_light_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/teams/fom_car/textures/fom_car_damage.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/teams/fom_car/textures/fom_car_damage.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/teams/fom_car/textures/fom_car_decal_da.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/teams/fom_car/textures/fom_car_decal_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/teams/fom_car/textures/fom_car_details_d.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/teams/fom_car/textures/fom_car_details_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/teams/fom_car/textures/fom_car_details_n.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/teams/fom_car/textures/fom_car_details_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/teams/fom_car/textures/fom_car_details_s.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/teams/fom_car/textures/fom_car_details_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/teams/fom_car/textures/fom_car_driver_1.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/teams/fom_car/textures/fom_car_driver_1.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_d.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_decals_da.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_decals_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_n.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_s.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_n.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_monaco_01_d.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_monaco_01_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_monaco_01_decal_da.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_monaco_01_decal_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_monaco_01_id8_d.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_monaco_01_id8_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_monaco_01_id8_s.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_monaco_01_id8_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_monaco_01_s.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_monaco_01_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_monaco_01_wheel_d.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_monaco_01_wheel_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_monaco_01_wheel_s.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclaren_monaco_01_wheel_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l4_2024_vehicle_package/teams/fom_car/textures/stickers/personal_sticker_00.tif.mipmaps",
+   "target": "l4_2024_vehicle_package/teams/fom_car/textures/stickers/personal_sticker_00.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/shared/generics/textures/blank_s.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/shared/generics/textures/blank_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/shared/generics/textures/disc_d.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/shared/generics/textures/disc_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/shared/generics/textures/disc_n.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/shared/generics/textures/disc_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/shared/generics/textures/disc_s.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/shared/generics/textures/disc_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/shared/generics/textures/generic_dirt.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/shared/generics/textures/generic_dirt.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/shared/generics/textures/generic_main_d.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/shared/generics/textures/generic_main_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/shared/generics/textures/generic_main_n.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/shared/generics/textures/generic_main_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/shared/generics/textures/generic_main_s.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/shared/generics/textures/generic_main_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/shared/generics/textures/glass_da.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/shared/generics/textures/glass_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/shared/generics/textures/glass_s.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/shared/generics/textures/glass_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/shared/generics/textures/int_indicator_d.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/shared/generics/textures/int_indicator_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/shared/generics/textures/metallic_flake_n.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/shared/generics/textures/metallic_flake_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/shared/generics/textures/rear_light_d.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/shared/generics/textures/rear_light_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/shared/generics/textures/rear_light_n.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/shared/generics/textures/rear_light_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/shared/generics/textures/rear_light_s.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/shared/generics/textures/rear_light_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/fom_car_damage.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/fom_car_damage.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/fom_car_decal_da.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/fom_car_decal_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/fom_car_details_d.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/fom_car_details_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/fom_car_details_n.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/fom_car_details_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/fom_car_details_s.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/fom_car_details_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/fom_car_driver_1.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/fom_car_driver_1.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_d.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_decals_da.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_decals_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_n.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_s.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_d.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_n.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_s.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclarenshadow_01_c.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclarenshadow_01_c.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclarenshadow_01_d.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclarenshadow_01_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclarenshadow_01_e_da.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclarenshadow_01_e_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclarenshadow_01_id8_d.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclarenshadow_01_id8_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclarenshadow_01_id8_s.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclarenshadow_01_id8_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclarenshadow_01_s.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclarenshadow_01_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclarenshadow_01_steering_da.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/liveries/livery_mclarenshadow_01_steering_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l5_2024_vehicle_package/teams/fom_car/textures/stickers/personal_sticker_00.tif.mipmaps",
+   "target": "l5_2024_vehicle_package/teams/fom_car/textures/stickers/personal_sticker_00.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/shared/generics/textures/blank_s.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/shared/generics/textures/blank_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/shared/generics/textures/disc_d.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/shared/generics/textures/disc_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/shared/generics/textures/disc_n.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/shared/generics/textures/disc_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/shared/generics/textures/disc_s.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/shared/generics/textures/disc_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/shared/generics/textures/generic_dirt.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/shared/generics/textures/generic_dirt.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/shared/generics/textures/generic_main_d.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/shared/generics/textures/generic_main_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/shared/generics/textures/generic_main_n.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/shared/generics/textures/generic_main_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/shared/generics/textures/generic_main_s.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/shared/generics/textures/generic_main_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/shared/generics/textures/glass_da.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/shared/generics/textures/glass_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/shared/generics/textures/glass_s.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/shared/generics/textures/glass_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/shared/generics/textures/int_indicator_d.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/shared/generics/textures/int_indicator_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/shared/generics/textures/metallic_flake_n.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/shared/generics/textures/metallic_flake_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/shared/generics/textures/rear_light_d.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/shared/generics/textures/rear_light_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/shared/generics/textures/rear_light_n.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/shared/generics/textures/rear_light_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/shared/generics/textures/rear_light_s.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/shared/generics/textures/rear_light_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/teams/fom_car/textures/fom_car_damage.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/teams/fom_car/textures/fom_car_damage.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/teams/fom_car/textures/fom_car_decal_da.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/teams/fom_car/textures/fom_car_decal_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/teams/fom_car/textures/fom_car_details_d.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/teams/fom_car/textures/fom_car_details_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/teams/fom_car/textures/fom_car_details_n.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/teams/fom_car/textures/fom_car_details_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/teams/fom_car/textures/fom_car_details_s.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/teams/fom_car/textures/fom_car_details_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/teams/fom_car/textures/fom_car_driver_1.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/teams/fom_car/textures/fom_car_driver_1.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_d.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_decals_da.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_decals_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_n.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_s.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_n.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_s.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/teams/fom_car/textures/liveries/livery_redbull_miami_01_c.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/teams/fom_car/textures/liveries/livery_redbull_miami_01_c.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/teams/fom_car/textures/liveries/livery_redbull_miami_01_d.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/teams/fom_car/textures/liveries/livery_redbull_miami_01_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/teams/fom_car/textures/liveries/livery_redbull_miami_01_id8_d.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/teams/fom_car/textures/liveries/livery_redbull_miami_01_id8_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/teams/fom_car/textures/liveries/livery_redbull_miami_01_id8_s.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/teams/fom_car/textures/liveries/livery_redbull_miami_01_id8_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/teams/fom_car/textures/liveries/livery_redbull_miami_01_s.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/teams/fom_car/textures/liveries/livery_redbull_miami_01_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/teams/fom_car/textures/liveries/livery_redbull_miami_01_steering_da.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/teams/fom_car/textures/liveries/livery_redbull_miami_01_steering_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/teams/fom_car/textures/liveries/livery_redbull_miami_01_wheel_d.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/teams/fom_car/textures/liveries/livery_redbull_miami_01_wheel_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l6_2024_vehicle_package/teams/fom_car/textures/stickers/personal_sticker_00.tif.mipmaps",
+   "target": "l6_2024_vehicle_package/teams/fom_car/textures/stickers/personal_sticker_00.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/shared/generics/textures/blank_s.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/shared/generics/textures/blank_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/shared/generics/textures/disc_d.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/shared/generics/textures/disc_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/shared/generics/textures/disc_n.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/shared/generics/textures/disc_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/shared/generics/textures/disc_s.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/shared/generics/textures/disc_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/shared/generics/textures/generic_dirt.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/shared/generics/textures/generic_dirt.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/shared/generics/textures/generic_main_d.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/shared/generics/textures/generic_main_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/shared/generics/textures/generic_main_n.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/shared/generics/textures/generic_main_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/shared/generics/textures/generic_main_s.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/shared/generics/textures/generic_main_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/shared/generics/textures/glass_da.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/shared/generics/textures/glass_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/shared/generics/textures/glass_s.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/shared/generics/textures/glass_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/shared/generics/textures/int_indicator_d.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/shared/generics/textures/int_indicator_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/shared/generics/textures/rear_light_d.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/shared/generics/textures/rear_light_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/shared/generics/textures/rear_light_n.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/shared/generics/textures/rear_light_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/shared/generics/textures/rear_light_s.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/shared/generics/textures/rear_light_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/teams/fom_car/textures/fom_car_damage.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/teams/fom_car/textures/fom_car_damage.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/teams/fom_car/textures/fom_car_decal_da.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/teams/fom_car/textures/fom_car_decal_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/teams/fom_car/textures/fom_car_details_d.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/teams/fom_car/textures/fom_car_details_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/teams/fom_car/textures/fom_car_details_n.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/teams/fom_car/textures/fom_car_details_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/teams/fom_car/textures/fom_car_details_s.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/teams/fom_car/textures/fom_car_details_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/teams/fom_car/textures/fom_car_driver_1.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/teams/fom_car/textures/fom_car_driver_1.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_d.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_decals_da.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_decals_da.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_n.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_s.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/teams/fom_car/textures/fom_car_steering_wheel_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_d.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_n.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_n.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_s.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/teams/fom_car/textures/fom_car_wheel_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/teams/fom_car/textures/liveries/livery_replica_williams91a_d.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/teams/fom_car/textures/liveries/livery_replica_williams91a_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/teams/fom_car/textures/liveries/livery_replica_williams91a_id8_d.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/teams/fom_car/textures/liveries/livery_replica_williams91a_id8_d.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/teams/fom_car/textures/liveries/livery_replica_williams91a_id8_s.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/teams/fom_car/textures/liveries/livery_replica_williams91a_id8_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/teams/fom_car/textures/liveries/livery_replica_williams91a_m.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/teams/fom_car/textures/liveries/livery_replica_williams91a_m.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/teams/fom_car/textures/liveries/livery_replica_williams91a_s.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/teams/fom_car/textures/liveries/livery_replica_williams91a_s.tif.mipmaps"
+  },
+  {
+   "op": "file.put",
+   "source": "specials/sidecars/l7_2024_vehicle_package/teams/fom_car/textures/stickers/personal_sticker_00.tif.mipmaps",
+   "target": "l7_2024_vehicle_package/teams/fom_car/textures/stickers/personal_sticker_00.tif.mipmaps"
+  }
+ ]
+}

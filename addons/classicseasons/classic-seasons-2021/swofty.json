@@ -2,7 +2,7 @@
  "schema_version": 1,
  "id": "swofty.classic-seasons-2021",
  "name": "F1 2021 GP/TT Addon",
- "version": "0.6.8",
+ "version": "0.6.9",
  "author": "Swofty",
  "description": "The F1 2021 season for Classic Seasons: its cars, teams and drivers in Grand Prix and Time Trial. Cars by fanfreluche.",
  "license": "AGPL-3.0-or-later",
@@ -17,7 +17,7 @@
   "game_builds": [
    ">=25251167"
   ],
-  "launcher": ">=1.5.1"
+  "launcher": ">=1.6.0"
  },
  "requires": [
   {
@@ -26,7 +26,7 @@
   },
   {
    "id": "swofty.classic-seasons",
-   "version": ">=0.6.1"
+   "version": ">=0.6.5"
   }
  ],
  "operations": {
@@ -39,7 +39,9 @@
    "assets/cars.json",
    "assets/liveries.json",
    "assets/suits.json",
-   "assets/sounds.json"
+   "assets/sounds.json",
+   "assets/special_liveries.json",
+   "lang/special_liveries.json"
   ]
  }
 }

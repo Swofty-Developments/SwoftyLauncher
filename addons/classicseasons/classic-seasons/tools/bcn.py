@@ -20,7 +20,7 @@ LZ4 = 3
 
 
 def block_bytes(fmt):
-    return 8 if fmt in BC1 else 16
+    return 8 if fmt in BC1 or fmt == 63 else 16  # BC4, used by original tyre damage maps
 
 
 def level_sizes(fmt, w, h, levels):

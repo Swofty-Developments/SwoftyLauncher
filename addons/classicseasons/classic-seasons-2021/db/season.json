@@ -604,6 +604,39 @@
  "ops": [
   {
    "op": "add-row",
+   "table": "customisation.custom_avatar.suits",
+   "from": "customisation.custom_avatar.suits.Suit[_metadata_=2025-mercedes]",
+   "set": {
+    "_metadata_": "cg21-mercedes",
+    "asset_group": "asset_groups/[CHARACTER_PACKAGE]/team_livery/cg21-mercedes/cg21-mercedes.assetgroup",
+    "feet_model": "eaid://[CHARACTER_PACKAGE]/team_livery/cg21-mercedes/idf/cg21-mercedes_male",
+    "logos_model_override_pattern": "eaid://[CHARACTER_PACKAGE]/team_livery/cg21-mercedes/idf/cg21-mercedes_body_logos_[GENDER]",
+    "material_override": "cg21-mercedes",
+    "id": "1098",
+    "colour_1_default": "0",
+    "colour_2_default": "0",
+    "colour_3_default": "0",
+    "colour_4_default": "0"
+   }
+  },
+  {
+   "op": "add-row",
+   "table": "customisation.custom_avatar.gloves",
+   "from": "customisation.custom_avatar.gloves.Gloves[_metadata_=2025-mercedes]",
+   "set": {
+    "_metadata_": "cg21-mercedes",
+    "asset_group": "asset_groups/[CHARACTER_PACKAGE]/team_livery/cg21-mercedes/cg21-mercedes.assetgroup",
+    "logos_model": "eaid://[CHARACTER_PACKAGE]/team_livery/cg21-mercedes/idf/cg21-mercedes_glove_logos_[GENDER]",
+    "material_override": "cg21-mercedes",
+    "id": "1098",
+    "colour_1_default": "0",
+    "colour_2_default": "0",
+    "colour_3_default": "0",
+    "colour_4_default": "0"
+   }
+  },
+  {
+   "op": "add-row",
    "table": "entrants.animation.driver_animation_sets",
    "from": "entrants.animation.driver_animation_sets.driver_animation_set[_metadata_=f1_2025]",
    "set": {
@@ -647,8 +680,8 @@
    "set": {
     "_metadata_": "2021-cs_mercedes_lewis_hamilton",
     "helmet": "cs21-mercedes_lewis_hamilton",
-    "suit": "cs19-mercedes_andrea-kimi_antonelli",
-    "gloves": "cs19-mercedes_andrea-kimi_antonelli",
+    "suit": "cg21-mercedes",
+    "gloves": "cg21-mercedes",
     "linked_driver_stat_id": "lewis_hamilton",
     "available": "False",
     "stat_id": "522"
@@ -661,8 +694,8 @@
    "set": {
     "_metadata_": "2021-cs_mercedes_valtteri_bottas",
     "helmet": "cs21-sauber_valtteri_bottas",
-    "suit": "cs19-mercedes_george_russell",
-    "gloves": "cs19-mercedes_george_russell",
+    "suit": "cg21-mercedes",
+    "gloves": "cg21-mercedes",
     "linked_driver_stat_id": "valtteri_bottas",
     "available": "False",
     "stat_id": "523"

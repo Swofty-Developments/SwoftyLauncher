@@ -105,7 +105,7 @@
     {
       "year": 2020,
       "teams": [
-        { "folder": "mercedes",    "name": "Mercedes",        "code": "MER", "colour": "#00d2be", "engine": "mercedes", "drivers": [["lewis_hamilton", 44], ["valtteri_bottas", 77]], "team_wear": ["#111111", "#00d2be", "#c0c6c9"] },
+        { "folder": "mercedes",    "name": "Mercedes",        "code": "MER", "colour": "#00d2be", "engine": "mercedes", "drivers": [["lewis_hamilton", 44], ["valtteri_bottas", 77]], "team_wear": ["#111111", "#00d2be", "#c0c6c9"], "suit": {"source": "original"} },
         { "folder": "redbull",     "name": "Red Bull Racing", "code": "RBR", "colour": "#1e41ff", "engine": "honda", "drivers": [["max_verstappen", 33], ["alex_albon", 23]] },
         { "folder": "mclaren",     "name": "McLaren",         "code": "MCL", "colour": "#ff8700", "engine": "renault", "drivers": [["carlos_sainz-jr", 55], ["lando_norris", 4]], "team_wear": ["#ff8000", "#1858a0", "#111111"] },
         { "folder": "force_india", "name": "Racing Point",    "code": "RPT", "colour": "#f596c8", "engine": "mercedes", "drivers": [["sergio_perez", 11], ["lance_stroll", 18]] },
@@ -120,7 +120,7 @@
     {
       "year": 2021,
       "teams": [
-        { "folder": "mercedes",    "name": "Mercedes",        "code": "MER", "colour": "#00d2be", "engine": "mercedes", "drivers": [["lewis_hamilton", 44], ["valtteri_bottas", 77]], "team_wear": ["#111111", "#00d2be", "#c0c6c9"] },
+        { "folder": "mercedes",    "name": "Mercedes",        "code": "MER", "colour": "#00d2be", "engine": "mercedes", "drivers": [["lewis_hamilton", 44], ["valtteri_bottas", 77]], "team_wear": ["#111111", "#00d2be", "#c0c6c9"], "suit": {"source": "original"} },
         { "folder": "redbull",     "name": "Red Bull Racing", "code": "RBR", "colour": "#0600ef", "engine": "honda", "drivers": [["max_verstappen", 33], ["sergio_perez", 11]] },
         { "folder": "ferrari",     "name": "Ferrari",         "code": "FER", "colour": "#dc0004", "engine": "ferrari", "drivers": [["charles_leclerc", 16], ["carlos_sainz-jr", 55]] },
         { "folder": "mclaren",     "name": "McLaren",         "code": "MCL", "colour": "#ff9800", "engine": "mercedes", "drivers": [["lando_norris", 4], ["daniel_ricciardo", 3]], "team_wear": ["#ff8000", "#1858a0", "#111111"] },
