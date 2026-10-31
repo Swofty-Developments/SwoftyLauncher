@@ -179,9 +179,17 @@ impl Location {
     /// The Steam save folder for the Steam install that holds the game in
     /// `game`, else the first one found.
     pub fn steam_for(game: &Path) -> Option<Self> {
-        crate::steam::find_game()
-            .filter(|g| crate::copies::same_dir(&g.dir, game))
-            .and_then(|g| crate::steam::save_dir(&g.steam_root))
+        Self::steam_from(game, &crate::steam::steam_roots())
+    }
+
+    pub fn steam_from(game: &Path, roots: &[PathBuf]) -> Option<Self> {
+        crate::steam::root_of_game_in(game, roots)
+            .and_then(|root| crate::steam::save_dir(&root))
+            .or_else(|| {
+                crate::steam::find_game()
+                    .filter(|g| crate::copies::same_dir(&g.dir, game))
+                    .and_then(|g| crate::steam::save_dir(&g.steam_root))
+            })
             .or_else(crate::steam::find_save_dir)
             .and_then(|d| Self::steam(&d))
     }

@@ -201,12 +201,28 @@ fn the_first_start_import_leaves_a_store_with_files_untouched() {
 }
 
 #[test]
-fn no_steam_save_still_records_that_the_import_ran() {
+fn no_steam_save_records_nothing_and_the_next_start_imports() {
     let r = root("nosteam");
     let data = r.join("data");
     let lines = first_start_import_from(&data, &profiles(), || None, closed(), NOW);
     assert!(lines[0].contains("no Steam save found"), "{lines:?}");
-    assert!(marker(&data).is_some());
+    assert_eq!(marker(&data), None);
+    assert!(import_pending(&data));
+    let from = steam(&r);
+    first_start_import_from(&data, &profiles(), || Some(from.clone()), closed(), NOW + 60);
+    assert!(!import_pending(&data));
+    assert_eq!(names(&location(&data, "default").dir), [DATA, INDEX]);
+}
+
+#[test]
+fn an_empty_steam_folder_records_nothing() {
+    let r = root("emptysteam");
+    let data = r.join("data");
+    let remote = r.join("steam/userdata/843502855/3059520/remote");
+    std::fs::create_dir_all(&remote).unwrap();
+    let from = Location::steam(&remote).unwrap();
+    first_start_import_from(&data, &profiles(), || Some(from.clone()), closed(), NOW);
+    assert_eq!(marker(&data), None);
 }
 
 #[test]
@@ -402,6 +418,5 @@ fn no_notice_when_nothing_was_copied() {
     let r = root("notice-empty");
     let data = r.join("data");
     first_start_import_from(&data, &profiles(), || None, closed(), NOW);
-    assert!(marker(&data).is_some());
     assert!(!notice_due(&data));
 }
