@@ -972,6 +972,16 @@ impl Shell {
         };
         let all = deps::read_all(&self.store, &installed);
         let report = deps::for_order(&profile.name, &plan.order, &installed, &all);
+        let careers =
+            swofty_core::stdlib::careers::read(&swofty_core::stdlib::careers::data_path(&self.store.root));
+        if let Some(line) = swofty_core::stdlib::careers::play_line(&careers, &plan.order, &installed) {
+            window.push_notification(
+                Notification::warning(line)
+                    .title("Careers that need addons")
+                    .autohide(false),
+                cx,
+            );
+        }
         for f in &report.findings {
             let body = f.detail.join(" ");
             let n = match f.level {

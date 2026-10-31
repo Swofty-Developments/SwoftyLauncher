@@ -720,6 +720,12 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     built
         .lines
         .extend(deps.notes.iter().map(|n| format!("registry: {n}")));
+    if !p.is_vanilla() {
+        let careers = crate::stdlib::careers::read(&crate::stdlib::careers::data_path(&store.root));
+        if let Some(line) = crate::stdlib::careers::play_line(&careers, &resolved.order, &addons) {
+            built.warnings.push(line);
+        }
+    }
     built.report = Report {
         profile: profile.into(),
         built_at: crate::conflicts::now(),
