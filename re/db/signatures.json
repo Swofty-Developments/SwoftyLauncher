@@ -75453,7 +75453,7 @@
    "target": "0x144141c00",
    "kind": "func_start",
    "names": [
-    "Ne_SaveSystem2Win_BuildSavePackageAndInfoXml"
+    "Ne_SaveSystem2Win_WriteInfoXml"
    ],
    "verified": [
     {
@@ -145155,30 +145155,6 @@
    "used_by": [
     "addons/wet-track"
    ]
-  },
-  {
-   "id": "core.resource_release",
-   "section": ".xtls",
-   "pattern": "56 57 48 83 EC 28 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 D6 48 89 CF 48 83 7A",
-   "match": "0x1442b3d70",
-   "anchor": "0x0",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x1442b3d70",
-   "kind": "func_start",
-   "names": [
-    "Ne_Resource_Release"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-30",
-     "by": "engine-re",
-     "how": "static"
-    }
-   ],
-   "used_by": []
   },
   {
    "id": "ai.behaviour_recover_evaluate",

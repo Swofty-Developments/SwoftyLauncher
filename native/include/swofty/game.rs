@@ -2841,6 +2841,7 @@ pub type Trk_TimeTrialTrackSelectVm_OnCommandRaised_t =
 pub type Vm_GetOrCreate_ListChild_t =
     unsafe extern "C" fn(registry: *mut c_void, parent: *mut c_void, hash: *const u32) -> *mut *mut c_void;
 pub type Vm_List_AppendChild_t = unsafe extern "C" fn(list: *mut c_void) -> *mut *mut c_void;
+pub type Vm_Release_Node_t = unsafe extern "C" fn(registry: *mut c_void, node: *mut c_void);
 pub type Vm_Resolve_RegistryNode_t = unsafe extern "C" fn(
     registry: *mut c_void,
     path: *const c_char,
@@ -10602,11 +10603,6 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
-    pub const Ne_Resource_Release: Binding = Binding {
-        id: "Ne_Resource_Release",
-        kind: "func",
-        status: Status::Experimental,
-    };
     pub const Ne_RichText_ConstructMixedString: Binding = Binding {
         id: "Ne_RichText_ConstructMixedString",
         kind: "func",
@@ -10742,11 +10738,6 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
-    pub const Ne_SaveSystem2Win_BuildSavePackageAndInfoXml: Binding = Binding {
-        id: "Ne_SaveSystem2Win_BuildSavePackageAndInfoXml",
-        kind: "func",
-        status: Status::Experimental,
-    };
     pub const Ne_SaveSystem2Win_EmptyDirectory: Binding = Binding {
         id: "Ne_SaveSystem2Win_EmptyDirectory",
         kind: "func",
@@ -10774,6 +10765,11 @@ pub mod bindings {
     };
     pub const Ne_SaveSystem2Win_Start: Binding = Binding {
         id: "Ne_SaveSystem2Win_Start",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem2Win_WriteInfoXml: Binding = Binding {
+        id: "Ne_SaveSystem2Win_WriteInfoXml",
         kind: "func",
         status: Status::Experimental,
     };
@@ -13919,6 +13915,11 @@ pub mod bindings {
     };
     pub const Vm_List_AppendChild: Binding = Binding {
         id: "Vm_List_AppendChild",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Vm_Release_Node: Binding = Binding {
+        id: "Vm_Release_Node",
         kind: "func",
         status: Status::Experimental,
     };
