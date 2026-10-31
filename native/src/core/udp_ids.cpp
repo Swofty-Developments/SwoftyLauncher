@@ -32,10 +32,10 @@ void *detour_target;
 void *orig_sendto;
 ids::Map map;
 std::atomic<bool> armed;
-std::atomic<bool> said;
+std::atomic<unsigned> said;
 std::atomic<int> seen_formats;
 std::atomic<uint64_t> odd_sizes[4];
-std::atomic<bool> trial_said;
+std::atomic<unsigned> trial_said;
 
 bool lan_traffic(const sockaddr *to, int tolen)
 {
@@ -49,14 +49,16 @@ bool lan_traffic(const sockaddr *to, int tolen)
 
 void first(int format, int id, const std::vector<ids::Change> &changes)
 {
-    if (said.exchange(true))
+    unsigned bit = 1u << (format - 2024 & 3);
+    if (said.fetch_or(bit) & bit)
         return;
     DWORD err = GetLastError();
     std::string what;
     for (size_t i = 0; i < changes.size() && i < 4; i++)
         what += (i ? ", " : "") + std::string(changes[i].driver ? "driver " : "team ") + std::to_string(changes[i].from) +
                 " -> " + std::to_string(changes[i].to);
-    swofty::log("[udp] first telemetry packet rewritten: format %d, packet %d: %s", format, id, what.c_str());
+    swofty::log("[udp] first telemetry packet rewritten: format %d, packet %d, %s model: %s", format, id,
+                map.model == ids::MODEL_2025 ? "2025" : map.model == ids::MODEL_2026 ? "2026" : "unknown", what.c_str());
     SetLastError(err);
 }
 
@@ -76,7 +78,8 @@ void odd(const ids::Layout *l, int len)
 
 void trial(const ids::Layout *l, const uint8_t *p, bool changed)
 {
-    if (l->id != 14 || trial_said.exchange(true))
+    unsigned bit = 1u << (l->format - 2024 & 3);
+    if (l->id != 14 || (trial_said.fetch_or(bit) & bit))
         return;
     DWORD err = GetLastError();
     std::string teams;

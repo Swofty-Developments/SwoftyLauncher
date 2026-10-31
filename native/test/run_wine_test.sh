@@ -206,7 +206,7 @@ EOF
     if [[ $mode == udp ]]; then
         once "udp: the map is read and sendto is hooked" '\[udp\] stock ids on: 1 team id\(s\), 1 driver id\(s\), 1 sendto slot\(s\)'
         once "udp: the launcher's mapping lines are logged" '\[udp\] stock ids: team 507 -> 4 \(forceindia\); driver 197 -> 255 \(no stock driver\)'
-        once "udp: the first rewritten packet is logged once" '\[udp\] first telemetry packet rewritten: format 2025, packet 4: driver 197 -> 255, team 251 -> 4'
+        once "udp: the first rewritten packet is logged once" '\[udp\] first telemetry packet rewritten: format 2025, packet 4, [a-z0-9]+ model: driver 197 -> 255, team 251 -> 4'
     fi
     if [[ $mode == udp_off ]]; then
         once "udp: SWOFTY_UDP_STOCK_IDS=0 is logged" '\[udp\] stock ids off \(SWOFTY_UDP_STOCK_IDS=0\)'
