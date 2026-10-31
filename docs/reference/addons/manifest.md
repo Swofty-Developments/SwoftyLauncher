@@ -208,6 +208,8 @@ yourname.my-addon needs Swofty Launcher >=1.5.13; this is 1.5.12. Update the lau
 - **`conflicts`** (`[{ id, touches? }]`): the addons that must not be enabled together. Use `touches` to narrow the conflict to a shared target; `id` may be `*`.
 - **`load_after`** (string array): addon ids or `*` patterns to build before your addon.
 
+The Addons page marks an addon red when a `requires` entry is off, missing, outside its version range or listed below it, when a `load_after` match is listed below it, and when a `conflicts` entry without `touches` is on. It offers to move, turn on, install or turn off the other addon, or to order the whole profile.
+
 A profile with your addon enabled builds only when every addon in `requires` is enabled at a matching version, and the build loads your addon after them, as if they were in `load_after`, whatever their places in the player's list. List as many as your addon needs; `swofty.core` and the other built-in addons are always present.
 
 The [Addon Browser](/using/addon-browser#requirements) reads `requires` when a player installs your addon. It installs each required addon the player lacks, and each one's own `requires`, from the Addon Browser. It refuses the install when a required addon isn't published there, or when no published version matches the range and works with the player's launcher. Publish the addons yours requires before you publish yours.
