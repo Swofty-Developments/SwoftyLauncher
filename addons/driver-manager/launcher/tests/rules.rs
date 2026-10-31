@@ -127,6 +127,7 @@ fn ids_are_never_reused_and_skip_the_game() {
     roster.drivers.clear();
     let c = add(&mut roster, &g, "C", "CCC", 4);
     assert_eq!((c.stat_id, c.preset_id), (211, 368));
+    roster.next_driver = 16300;
     while roster.free_ids(&g) > 0 {
         add(&mut roster, &g, "X", "XXX", 5);
     }
@@ -199,4 +200,25 @@ fn set_for_every_driver_keeps_peaks_at_or_above_starts() {
     for d in &roster.drivers {
         assert!(check::is_valid(&check::check(d, &roster, Some(&g))), "{d:?}");
     }
+}
+
+#[test]
+fn ids_past_253_skip_254_and_every_low_byte_0xff() {
+    let g = game();
+    let mut roster = Roster {
+        schema: 1,
+        next_driver: 252,
+        next_preset: 366,
+        drivers: Vec::new(),
+    };
+    let ids: Vec<u32> = (0..4).map(|_| roster.allocate(&g).unwrap().0).collect();
+    assert_eq!(ids, [252, 253, 256, 257]);
+    roster.next_driver = 510;
+    assert_eq!(roster.allocate(&g).unwrap().0, 510);
+    assert_eq!(roster.allocate(&g).unwrap().0, 512);
+    assert!(driver_manager::model::driver_id_usable(16382));
+    assert!(!driver_manager::model::driver_id_usable(16383));
+    assert!(!driver_manager::model::driver_id_usable(254));
+    assert!(!driver_manager::model::driver_id_usable(255));
+    assert!(!driver_manager::model::driver_id_usable(767));
 }

@@ -85,6 +85,9 @@ pub struct Detail {
     /// The read paths, which stay on this side.
     #[serde(skip)]
     pub paths: Vec<String>,
+    /// The stat id the build gave each row it added, by `<table>.<row>/<label>`.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub row_ids: BTreeMap<String, i64>,
 }
 
 /// What the installed copy of an addon is, as a SHA-256 in hex.
@@ -284,6 +287,9 @@ pub struct Output {
     /// `made` split by part label, as [`Detail::parts`] carries them.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub parts: BTreeMap<String, String>,
+    /// The stat id the build gave each row the addon added, by `<table>.<row>/<label>`.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub row_ids: BTreeMap<String, i64>,
 }
 
 /// A file or folder an [`Output`] reads, as the operation names it.
@@ -301,9 +307,14 @@ impl Output {
         let mut detail = Detail {
             parts: self.parts.iter().map(|(k, v)| (k.clone(), short(v))).collect(),
             read_count: self.reads.len(),
+            row_ids: self.row_ids.clone(),
             ..Detail::default()
         };
         h.update(&self.made);
+        if !self.row_ids.is_empty() {
+            h.update(b"\nrow ids\0");
+            h.update(serde_json::to_vec(&self.row_ids).expect("serialisable"));
+        }
         for r in &self.reads {
             let (root, rel) = (r.source.root, &r.source.path);
             let name = format!("\n{}\0{root:?}\0{rel}", r.addon);
@@ -379,6 +390,7 @@ impl OutputBuilder {
                 .into_iter()
                 .map(|(label, h)| (label, hex(&h.finalize())))
                 .collect(),
+            row_ids: BTreeMap::new(),
         }
     }
 }
@@ -653,6 +665,15 @@ pub fn differences(local: &AddonPrint, host: &AddonPrint) -> Vec<String> {
                 _ => format!("{what} differ"),
             });
         }
+    }
+    let rows: std::collections::BTreeSet<&String> = l.row_ids.keys().chain(h.row_ids.keys()).collect();
+    if let Some(row) = rows.into_iter().find(|r| l.row_ids.get(*r) != h.row_ids.get(*r)) {
+        let id = |ids: &BTreeMap<String, i64>| ids.get(row).map_or("none".to_owned(), i64::to_string);
+        out.push(format!(
+            "row {row} has stat id {} here and {} in the other copy",
+            id(&l.row_ids),
+            id(&h.row_ids)
+        ));
     }
     if l.read_list != h.read_list || l.read_count != h.read_count {
         out.push(format!(
@@ -1342,8 +1363,36 @@ mod tests {
             read_count: reads.len(),
             reads: reads.iter().map(|(_, h)| (*h).into()).collect(),
             paths: reads.iter().map(|(p, _)| (*p).into()).collect(),
+            row_ids: BTreeMap::new(),
         });
         a
+    }
+
+    #[test]
+    fn a_row_with_another_stat_id_counts_and_is_named() {
+        let store = Store::new(std::env::temp_dir().join(format!("swofty-fp-rows-{}", std::process::id())));
+        let mut hashes = Hashes::open(store.root.join(HASHES_FILE));
+        let output = |id: i64| Output {
+            made: "m".into(),
+            row_ids: BTreeMap::from([
+                ("entrants.vehicles.vehicle/car_a".to_owned(), 512),
+                ("entrants.vehicles.vehicle/car_b".to_owned(), id),
+            ]),
+            ..Output::default()
+        };
+        let (mine, detail) = output(513).digest(&store, "t.cars", &mut hashes).unwrap();
+        let (theirs, other) = output(600).digest(&store, "t.cars", &mut hashes).unwrap();
+        assert_ne!(mine, theirs);
+        let mut local = detailed("t.cars", "aa", &[("Database", "d1")], &[]);
+        local.detail.as_mut().unwrap().row_ids = detail.row_ids;
+        let mut host = detailed("t.cars", "bb", &[("Database", "d1")], &[]);
+        host.detail.as_mut().unwrap().row_ids = other.row_ids;
+        let found = compare(&with(vec![local]), &with(vec![host]), &[]);
+        assert_eq!(found.len(), 1, "{found:?}");
+        assert_eq!(
+            found[0].differences,
+            ["row entrants.vehicles.vehicle/car_b has stat id 513 here and 600 in the other copy"]
+        );
     }
 
     fn with(addons: Vec<AddonPrint>) -> Fingerprint {

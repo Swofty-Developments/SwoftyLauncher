@@ -127,6 +127,11 @@ fn room(spots: &Spots) -> Room {
     }
 }
 
+/// The grid slots, garages and pit boxes the world layers `layers` hold.
+pub fn room_of(layers: &[Node]) -> Room {
+    room(&spots(layers))
+}
+
 fn uid(code: &str, name: &str) -> String {
     crate::baseline::hex(&Md5::digest(format!("grid:{code}:{name}").as_bytes()))
 }
@@ -212,7 +217,7 @@ pub fn extend(code: &str, layers: &mut [Node], cars: u32) -> Result<Option<Exten
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
     use swofty_formats::pkg::{Arr, Obj, Pkg, Val};
 
@@ -284,7 +289,7 @@ mod tests {
         )]))
     }
 
-    fn world() -> Vec<Node> {
+    pub(crate) fn world() -> Vec<Node> {
         let base = "VehiclePlacement";
         let mut common = Vec::new();
         for n in 1..=22 {

@@ -161,12 +161,19 @@ These commands come from the built-in Team Simplified addon. Use them to manage 
 
 | Command | Purpose |
 |---|---|
-| `swofty saves list` | List the profile save backups in `$DATA/save-backups/`, newest first, with the profile, why each was taken, the addons the session left out, and the file count and size |
-| `swofty saves restore <backup>` | Copy a backup back over the profile save. It refuses while F1 25 runs and backs up the current save first |
+| `swofty saves list [--source <s>]` | List the [career vault](/reference/saves)'s snapshots of the profile save, newest first, with the current save's Steam Cloud status |
+| `swofty saves show <snapshot> [--source <s>]` | Show a snapshot's files, their hashes, Steam's record of them and the snapshot's events |
+| `swofty saves backup` | Snapshot the profile save now and pin it |
+| `swofty saves restore <snapshot> [--source <s>]` | Copy a snapshot back over the profile save. It refuses while F1 25 runs, and while Steam (or the EA app, for an EA app save) runs, and snapshots the current save first |
+| `swofty saves versions [--source <s>]` | List the vault's versions of the profile save with the careers each holds, and what restoring each gets back and loses. See [Careers](/reference/saves#careers) |
+| `swofty saves careers [--source <s>]` | List the careers the vault has seen, with their status and the addons they need |
+| `swofty saves pin <snapshot> [--source <s>]` | Keep a snapshot: retention never removes it |
+| `swofty saves unpin <snapshot> [--source <s>]` | Remove your pin; pins from a backup, a restore or a missing career stay |
+| `swofty saves cap [<MB>]` | Show or set the vault's size cap (500 MB by default) |
+| `swofty saves import [--from steam \| --from-profile <p>] [--profile <p>]` | Copy the Steam save, or another profile's launcher saves, into a profile's [launcher saves](/reference/saves#launcher-saves). It refuses while F1 25 runs and keeps what the store held in the vault first |
+| `swofty saves export --to steam [--profile <p>]` | Copy a profile's launcher saves over the Steam save. It refuses while F1 25 or Steam runs and keeps the Steam save in the vault first |
 
-Before a session whose profile leaves out an installed addon with [`saves.affects`](/reference/addons/manifest#saves), `swofty run` copies the Steam profile save (`savegame@profile#*` in `userdata/<id>/3059520/remote`) into `$DATA/save-backups/<time>-<profile>/` with a `manifest.json` of the files' sizes and SHA-256 hashes, and prints `saves: backed up the profile save before a session without <addon ids> (their careers are removed if the game saves): <folder>`. It keeps the newest 10 backups. The EA app copy's saves are not backed up.
-
-When the session leaves the profile save changed and at least 24 KB smaller than its backup, `swofty run` prints `saves: the profile save shrank from <before> to <after> bytes in a session without <addon ids>; ...` with the backup's name and the restore command, and the Addons page shows the same notice with **Restore** and **Dismiss**.
+`swofty run --steam-saves-once` plays one session on the Steam save though the profile uses launcher saves. `swofty run` snapshots the profile save (the profile's launcher saves, or the Steam save) before the session and again after the game has closed and the session's game files are rolled back. [Career vault](/reference/saves) has the folder layout, the snapshot format and the notices.
 
 After a restore, Steam may ask which copy to keep the next time F1 25 starts; keep the local files.
 
@@ -256,6 +263,27 @@ See [Offline play](/reference/safety).
 ## Tracks
 
 Tracks are mods: import a community track package with `swofty mods import <zip>`. Its mod id is the track code, or `<code>-track` if a mod in your library already has that id.
+
+## `swofty registry tracks`
+
+```sh
+swofty registry tracks
+```
+
+From 1.6.5. Prints each Grand Prix and Time Trial box's track list from the profile's last session, as the core wrote it to `$DATA/registry/catalog.json` when you picked the box: the calendar, the more tracks and the tracks it leaves out, with the reason. The catalog holds the boxes of the last build that ran; a box press under another profile or build starts it again.
+
+```text
+as of the last session of profile Classic Seasons (build 9d7a5f9177e1436d):
+box swofty.classic-seasons-2016/f1_2016 (grand prix): calendar 20, more tracks 9, left out 1
+  calendar: game/melbourne, game/bahrain, game/shanghai, ...
+  more tracks: game/melbourne_reverse, mod.okayama/okayama, ...
+  left out mod.miami24/igora_drive: its swofty_f1 world has 10 garages; the box has 11 teams
+box game/f1_2026 (time trial): calendar 0, more tracks 26, left out 1
+  more tracks: game/melbourne, game/shanghai, ...
+  left out mod.okayama/okayama: no Time Trial support
+```
+
+Before you pick a box, it prints `no box track lists yet: the core writes them in <path> when you pick a box`. When the last session ran another profile, it prints `no box track lists for profile <profile> yet: catalog.json holds the boxes of profile <other>; the core rewrites it when you pick a box in a session of <profile>`. A catalog an older core wrote names no profile; it is printed under `as of your last session (an older core wrote these lists; they can include boxes from earlier sessions and other profiles):`. See [Tracks](/std/systems/tracks#the-tracks-a-box-offers).
 
 ## `swofty update`
 

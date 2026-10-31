@@ -382,6 +382,18 @@
   "site_Ne_HwInt_NightShadowMapSize": {
    "pattern": "49 8B 4C 24 50 31 D2 45 31 C0 E8 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 89 86 A8 05 00 00",
    "note": "The base pattern ends on Steam .data1 protector filler (66). EA's .xcode copy has 10 other filler bytes after the call. They are wildcarded up to the mov [rsi+0x5a8], eax that both builds share (found through its nightShadowMapSize string xref)."
+  },
+  "core.save_system2_win_start": {
+   "pattern": "56 57 53 48 81 EC 50 02 00 00 C5 F8 29 B4 24 40 02 00 00 48 89 CE 48 8B 49 08",
+   "note": "EA's save device is a different build of the same class (0x340 bytes, no Steam helper): Start is at 0x14413f690 and its frame is 0x250 bytes. From the decrypted dump; one match."
+  },
+  "core.save_system2_win_mount": {
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 18 13 00 00 E8 ?? ?? ?? ?? 48 29 C4 44 89 CD 4C 89 C3 48",
+   "note": "EA's Mount is at 0x144146f80 with a 0x1318-byte frame (Steam 0x1728). From the decrypted dump."
+  },
+  "core.save_system2_win": {
+   "pattern": "48 89 47 20 48 8D 05 ?? ?? ?? ?? 48 89 07 48 8D 47 48 48 C7 47 38 04 01 00 00",
+   "note": "The Steam pattern also matches a second site on EA. This one extends it into the next stores of the device constructor (vtable 0x145b6dbf0 on EA). From the decrypted dump."
   }
  },
  "hints": {
@@ -898,6 +910,9 @@
   "k_Sess_TyreComponentType": {
    "match": "0x3680072"
   },
+  "site_Car_ErsGearModifierLoad": {
+   "match": "0x46d8afc"
+  },
   "site_Career_ApplyUpgradeBlockNameDefault": {
    "match": "0xe0d5fd6"
   },
@@ -1213,6 +1228,12 @@
   "site_Career_RnDUpgradeListDeptIcon": {
    "match": "0x1747fc5"
   },
+  "site_Career_StandingsWeekendTrackDone": {
+   "match": "0x1818a2c"
+  },
+  "site_Career_StandingsWeekendTrackLoad": {
+   "match": "0x18186eb"
+  },
   "site_Career_TeamDeptEnumStore": {
    "match": "0x276d5d0"
   },
@@ -1339,6 +1360,12 @@
   },
   "site_FeTile_EraTilesBuilt": {
    "match": "0x1a69c18"
+  },
+  "site_Game_AcclimPenalty_Entry": {
+   "match": "0x29999a0"
+  },
+  "site_Game_AcclimPenalty_Return": {
+   "match": "0x29999a0"
   },
   "site_Game_CareerContinue_DriverSlotTitle": {
    "match": "0x1a09c74"

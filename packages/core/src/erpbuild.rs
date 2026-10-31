@@ -294,8 +294,10 @@ fn write_archive(out: &Path, rel: &str, archive: Archive, cache: Option<&Path>) 
             Slot::Owned(r) => Entry::Owned(r),
         })
         .collect();
-    file.write(entries, &path)
-        .map_err(|e| fail(format!("{rel}: {e}")))?;
+    file.write(entries, &path).map_err(|e| match e {
+        swofty_formats::Error::IoAt { .. } => Error::Formats(e),
+        e => fail(format!("{rel}: {e}")),
+    })?;
     if let Some(c) = cached {
         if let Some(dir) = c.parent() {
             std::fs::create_dir_all(dir).ok();

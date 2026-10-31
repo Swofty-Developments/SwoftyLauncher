@@ -53,7 +53,7 @@ Modded play waits for the setup in `swofty_core::setup`. The launcher opens it o
 3. The player verifies the game files in Steam or repairs them in the EA app. A player who says no other mods are in the folder skips this on a Steam copy whose depot manifests `setup::store_checks` can read, when the restore put every file back: the install checks each original against those manifests. On a Steam copy, **I've verified, continue** stays off until the player opens the verify, and while Steam is verifying or updating the game. A running Steam's state comes from its `logs/content_log.txt`, since Steam doesn't update the `StateFlags` of the app manifest during a verify; the manifest covers the rest.
 4. `setup::finish` records the setup as done and deletes `$DATA/baseline-retired`.
 
-The next install records each original again as it first sees it, checked against Steam's manifests when they can be read. Raising `setup::VERSION` sends every player through the setup again. `swofty run --apply` and every install refuse to start until the setup is done. `swofty run` also refuses to start while Steam is verifying or updating the game.
+The next install records each original again as it first sees it, checked against Steam's manifests when they can be read. Raising `setup::VERSION` sends every player through the setup again. A build whose record names an original missing from `$DATA/baseline/objects` stops with the names of the missing files, deletes `$DATA/state/setup.json`, and the next Play opens the setup again. `swofty run --apply` and every install refuse to start until the setup is done. `swofty run` also refuses to start while Steam is verifying or updating the game.
 
 ## Recovery rules
 

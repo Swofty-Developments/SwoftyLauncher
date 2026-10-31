@@ -221,7 +221,13 @@ pub fn last(store: &Store, profile: &str) -> Option<Report> {
 
 /// Plans the profile's build without installing it and returns its conflicts.
 pub fn check(store: &Store, profile: &str, game: &Game) -> Result<Report> {
-    Ok(crate::build::build_as(store, profile, game, true)?.report)
+    let built = crate::build::build_as(store, profile, game, true).map_err(|e| {
+        match crate::build::refused_fix(&store.root, &game.dir, &e) {
+            Some(fix) => crate::Error::Other(format!("{e}. {fix}")),
+            None => e,
+        }
+    })?;
+    Ok(built.report)
 }
 
 #[cfg(test)]

@@ -332,10 +332,148 @@ void logo_paths()
     EXPECT(!logo_path(map, 2017, nullptr, out));
 }
 
+constexpr uint32_t djb2(std::string_view s)
+{
+    uint32_t h = 5381;
+    for (char c : s)
+        h = h * 33 + static_cast<uint8_t>(c);
+    return h;
+}
+
+static_assert(kCommandFocus == djb2("driver_selected_changed"));
+static_assert(kCommandPick == djb2("driver_selected"));
+
+uint32_t key(int id)
+{
+    return static_cast<uint32_t>(id) | 0x00070000u;
+}
+
+int tiles(const std::vector<Rec> &rows)
+{
+    int n = 0;
+    for (int t = 0; t < 11; ++t)
+        n += count_if(rows, rows.size(), [&](const Rec &r) { return same_team(r.team_stat_id, team(t)); }) ? 1 : 0;
+    return n;
+}
+
+struct Writes {
+    int puts = 0;
+    bool fail = false;
+    bool operator()(Rec *row, uint32_t t)
+    {
+        ++puts;
+        if (fail)
+            return false;
+        row->team_stat_id = t;
+        return true;
+    }
+};
+
+bool read_rec(const Rec *row, Rec &out)
+{
+    out = *row;
+    return true;
+}
+
+bool same_rows(const std::vector<Rec> &a, const std::vector<Rec> &b)
+{
+    if (a.size() != b.size())
+        return false;
+    for (size_t i = 0; i < a.size(); ++i)
+        if (!same_driver(a[i], b[i]) || a[i].team_stat_id != b[i].team_stat_id)
+            return false;
+    return true;
+}
+
+// Choose: the player scrolls past both drivers of teams 0 and 4 (2018: Hamilton + Leclerc at Ferrari,
+// Alonso + Stroll at Force India) and picks driver 5. Only his row loses its team; every team keeps its
+// Team Select tile.
+void team_choice_on_pick_only()
+{
+    const std::vector<Rec> stock = career_list();
+    std::vector<Rec> rows = stock;
+    TeamGate<Rec> g;
+    Writes w;
+    size_t restored = 9;
+    for (int id : {1, 2, 9, 10, 5}) {
+        EXPECT(gate(g, kCommandFocus, key(id), rows.data(), rows.size(), kNoKey, read_rec, w, &restored) == Gate::not_pick);
+        EXPECT(restored == 0);
+        EXPECT(same_rows(rows, stock));
+    }
+    EXPECT(w.puts == 0);
+    EXPECT(tiles(rows) == 11);
+
+    EXPECT(gate(g, kCommandPick, key(5), rows.data(), rows.size(), kNoKey, read_rec, w, &restored) == Gate::changed);
+    EXPECT(w.puts == 1);
+    EXPECT(none(find(rows, rows.size(), 5)->team_stat_id));
+    for (int id : {1, 2, 6, 9, 10})
+        EXPECT(find(rows, rows.size(), id)->team_stat_id == stock[static_cast<size_t>(id - 1)].team_stat_id);
+    EXPECT(tiles(rows) == 11);
+    EXPECT(count_if(rows, rows.size(), [](const Rec &r) { return none(r.team_stat_id) && r.id_lo < 23; }) == 1);
+
+    // The same pick after the game's handler, and focus changes on Team Select's way in, change nothing more.
+    EXPECT(gate(g, kCommandPick, key(5), rows.data(), rows.size(), kNoKey, read_rec, w) == Gate::kept);
+    EXPECT(gate(g, kCommandFocus, key(7), rows.data(), rows.size(), kNoKey, read_rec, w) == Gate::not_pick);
+    EXPECT(w.puts == 1 && g.swaps.size() == 1);
+
+    // Back to Choose Driver and another pick: driver 5 is on his team again before driver 7 is open.
+    EXPECT(gate(g, kCommandPick, key(7), rows.data(), rows.size(), kNoKey, read_rec, w, &restored) == Gate::changed);
+    EXPECT(restored == 1);
+    EXPECT(find(rows, rows.size(), 5)->team_stat_id == team(2));
+    EXPECT(none(find(rows, rows.size(), 7)->team_stat_id));
+    EXPECT(g.driver == key(7) && g.swaps.size() == 1);
+
+    // Team Select left (the next Choose Driver populate, a tile press): the line-up is the stock one.
+    EXPECT(ungate(g, read_rec, w) == 1);
+    EXPECT(same_rows(rows, stock));
+    EXPECT(g.driver == kNoKey && g.swaps.empty());
+}
+
+void team_choice_follow_and_failures()
+{
+    const std::vector<Rec> stock = career_list();
+    std::vector<Rec> rows = stock;
+    Rec view = seat(3, 6, 0, 2018);
+    Rec benched = driver(3);
+    EXPECT(team_select_team(true, &view) == team(6));
+    EXPECT(none(team_select_team(true, &benched)));
+    EXPECT(none(team_select_team(true, static_cast<const Rec *>(nullptr))));
+    EXPECT(none(team_select_team(false, &view)));
+
+    TeamGate<Rec> g;
+    Writes w;
+    EXPECT(gate(g, kCommandPick, key(3), rows.data(), rows.size(), team(6), read_rec, w) == Gate::changed);
+    EXPECT(find(rows, rows.size(), 3)->team_stat_id == team(6));
+    EXPECT(gate(g, kCommandPick, key(4), rows.data(), rows.size(), team(1), read_rec, w) == Gate::already);
+    EXPECT(find(rows, rows.size(), 3)->team_stat_id == team(1));
+    EXPECT(g.driver == key(4) && g.swaps.empty());
+
+    rows = stock;
+    g = {};
+    EXPECT(gate(g, kCommandPick, kNoKey, rows.data(), rows.size(), kNoKey, read_rec, w) == Gate::no_driver);
+    EXPECT(gate(g, kCommandPick, key(99), rows.data(), rows.size(), kNoKey, read_rec, w) == Gate::no_row);
+    EXPECT(gate(g, djb2("back_pressed"), key(5), rows.data(), rows.size(), kNoKey, read_rec, w) == Gate::not_pick);
+    w.fail = true;
+    EXPECT(gate(g, kCommandPick, key(5), rows.data(), rows.size(), kNoKey, read_rec, w) == Gate::write_failed);
+    EXPECT(g.swaps.empty() && same_rows(rows, stock));
+
+    // A row the game rewrote after the pick (another driver on it, or another team) is not put back.
+    w.fail = false;
+    g = {};
+    EXPECT(gate(g, kCommandPick, key(5), rows.data(), rows.size(), kNoKey, read_rec, w) == Gate::changed);
+    for (Rec &r : rows)
+        if (r.id_lo == 5)
+            r.team_stat_id = team(9);
+    EXPECT(ungate(g, read_rec, w) == 0);
+    EXPECT(find(rows, rows.size(), 5)->team_stat_id == team(9));
+}
+
 } // namespace
 
 int main()
 {
+    team_choice_on_pick_only();
+    team_choice_follow_and_failures();
     ten_team_season();
     team_short_of_season_drivers();
     season_driver_not_in_career();

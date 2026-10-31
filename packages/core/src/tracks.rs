@@ -1,17 +1,18 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::time::SystemTime;
 
 use serde::{Deserialize, Serialize};
-use swofty_addon::asset::{AssetOp, FileKind, LangOp, OpFile, TrackOp};
+use swofty_addon::asset::{AssetOp, FileKind, LangOp, OpFile, Origin, TrackOp};
 use swofty_addon::manifest::AddonManifest;
 use swofty_addon::ops::DbOp;
 use swofty_formats::gvdb::{Gvdb, Record, ValueType};
 use swofty_formats::hash::fnv1a64;
 
 use crate::launcher::{ProfileTrack, ProfileTracks};
-use crate::map::Unusable;
+use crate::map::{TrackPackage, Unusable};
+use crate::stdlib::deps::Std;
 use crate::store::Store;
 use crate::{Result, io_err};
 
@@ -232,6 +233,22 @@ fn added_dirs(store: &Store, id: &str, m: &AddonManifest) -> Vec<PathBuf> {
     out
 }
 
+/// The tracks an addon's `track.add` operations add, as the core lists them
+/// (`<addon>/<code>`), with the venue each one's name matches.
+pub fn older_ids(store: &Store, id: &str, m: &AddonManifest) -> Vec<(String, Option<String>)> {
+    added_dirs(store, id, m)
+        .iter()
+        .filter_map(|d| crate::map::read_package(d).ok())
+        .map(|pkg| {
+            let venue = pkg
+                .track_name
+                .as_deref()
+                .and_then(|n| Venues::shipped().by_name(n));
+            (format!("{id}/{}", pkg.track_code), venue)
+        })
+        .collect()
+}
+
 /// The tracks installed addons add with `track.add`, named from their
 /// packages, by addon id; the first addon to add a track keeps it. Ops or
 /// packages that don't read are skipped.
@@ -261,6 +278,388 @@ pub fn unusable(store: &Store, id: &str, m: &AddonManifest) -> Vec<Unusable> {
         .iter()
         .filter_map(|d| crate::map::read_package(d).err())
         .collect()
+}
+
+/// The registry of track records (`registry/track.json`, `tracks::tracks`).
+pub const TRACK_REGISTRY: &str = "track";
+/// `$DATA/registry/older-tracks.json`: the tracks `track.add` adds for addons with no track record.
+pub const OLDER_FILE: &str = "older-tracks.json";
+pub const OLDER_VERSION: u32 = 1;
+const VENUES_JSON: &str = include_str!("../../sdk/std/data/venues.json");
+
+/// A `track` record an addon's data file adds under its own id.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RecordTrack {
+    pub id: String,
+    pub code: String,
+    pub name: Option<String>,
+    pub base: Option<String>,
+    pub slot: Option<String>,
+    pub files: Option<String>,
+}
+
+/// The `track` records the addon's data files (`data_files`, relative to `dir`) add, in file
+/// then key order. A record without a `code` is skipped.
+pub fn record_tracks(dir: &Path, addon: &str, data_files: &[String]) -> Vec<RecordTrack> {
+    let mut out = Vec::new();
+    for rel in data_files {
+        let Some(doc) = std::fs::read_to_string(dir.join(rel))
+            .ok()
+            .and_then(|t| serde_json::from_str::<serde_json::Value>(&t).ok())
+        else {
+            continue;
+        };
+        let mut records: Vec<(&String, &serde_json::Value)> = doc
+            .get(TRACK_REGISTRY)
+            .and_then(|t| t.as_object())
+            .into_iter()
+            .flatten()
+            .collect();
+        records.sort_by_key(|(k, _)| *k);
+        for (key, value) in records {
+            if key.contains('/') || key.starts_with('$') {
+                continue;
+            }
+            let s = |field: &str| value.get(field).and_then(|v| v.as_str()).map(str::to_owned);
+            let Some(code) = s("code") else {
+                continue;
+            };
+            out.push(RecordTrack {
+                id: format!("{addon}/{key}"),
+                code,
+                name: s("name"),
+                base: s("base"),
+                slot: s("slot"),
+                files: s("files"),
+            });
+        }
+    }
+    out
+}
+
+fn stock_code(id: &str) -> Option<&str> {
+    id.strip_prefix("game/").filter(|c| !c.is_empty())
+}
+
+/// The package a track record's `files` folder holds, for the build to place: its
+/// `manifest.json` when it has one, else the record's code, name, base and slot with
+/// `<code>.erp` and the folder's `mipmaps/`.
+pub fn record_package(
+    addon_dir: &Path,
+    t: &RecordTrack,
+) -> std::result::Result<(PathBuf, TrackPackage), Unusable> {
+    let unusable = |why: String| Unusable {
+        code: Some(t.code.clone()),
+        name: Some(t.name.clone().unwrap_or_else(|| t.code.clone())),
+        why,
+    };
+    let Some(rel) = t.files.as_deref() else {
+        return Err(unusable(format!(
+            "its track record {} names no files folder",
+            t.id
+        )));
+    };
+    let Some(inside) = crate::stdlib::paths::inside(rel) else {
+        return Err(unusable(format!(
+            "its track record {} names {rel}, which leaves the addon's folder",
+            t.id
+        )));
+    };
+    let dir = addon_dir.join(inside.trim_end_matches('/'));
+    if dir.join(crate::map::MANIFEST_FILE).is_file() {
+        let pkg = crate::map::read_package(&dir)?;
+        if pkg.track_code != t.code {
+            return Err(unusable(format!(
+                "its track record {} has code {}, and {rel}{} is for {}",
+                t.id,
+                t.code,
+                crate::map::MANIFEST_FILE,
+                pkg.track_code
+            )));
+        }
+        return Ok((dir, pkg));
+    }
+    let base = t.base.as_deref().and_then(stock_code).map(str::to_owned);
+    let slot = t.slot.as_deref().and_then(stock_code).map(str::to_owned);
+    if base.is_none() && slot.is_none() {
+        return Err(unusable(format!(
+            "its track record {} names no stock base track",
+            t.id
+        )));
+    }
+    let erp = format!("{}.erp", t.code);
+    if !dir.join(&erp).is_file() {
+        return Err(unusable(format!("its files folder {rel} has no {erp}")));
+    }
+    let mips = dir.join("mipmaps").is_dir();
+    let pkg = TrackPackage {
+        track_code: t.code.clone(),
+        track_name: t.name.clone(),
+        version: None,
+        author_name: None,
+        erp,
+        activation: crate::map::Activation {
+            copy_from_track: base,
+            copy_slot: slot,
+            ..Default::default()
+        },
+        ers: Default::default(),
+        copy_directories: match mips {
+            true => vec![crate::map::CopyDirectory {
+                source: "mipmaps/".into(),
+                destination: format!("asset_groups/environment_package/tracks/{}/mipmaps/", t.code),
+            }],
+            false => Vec::new(),
+        },
+        ui: None,
+        extra: Default::default(),
+    };
+    pkg.validate().map_err(|e| unusable(e.to_string()))?;
+    Ok((dir, pkg))
+}
+
+/// The addons in `order` with a `track` record, in a data file or their lock: `track.add` only
+/// places their files, and the core adds the rows.
+pub fn with_records(order: &[String], std16: &BTreeMap<String, Std>) -> BTreeSet<String> {
+    order
+        .iter()
+        .filter(|id| std16.get(*id).is_some_and(|s| s.has_records(TRACK_REGISTRY)))
+        .cloned()
+        .collect()
+}
+
+pub type BuildTrack = (PathBuf, TrackPackage, Origin);
+
+/// The packages of the track records with a `files` folder that the addons in `order` add and
+/// no `track.add` of theirs places, in load order, and the ones a build leaves out.
+pub fn record_packages(
+    store: &Store,
+    order: &[String],
+    std16: &BTreeMap<String, Std>,
+    added: &[BuildTrack],
+) -> (Vec<BuildTrack>, Vec<(Origin, Unusable)>) {
+    let (mut out, mut left_out): (Vec<BuildTrack>, Vec<(Origin, Unusable)>) = (Vec::new(), Vec::new());
+    for id in order {
+        let Some(s) = std16.get(id).filter(|s| !s.data_files.is_empty()) else {
+            continue;
+        };
+        let dir = store.addons_dir().join(id);
+        let origin = Origin {
+            addon: id.clone(),
+            item: None,
+        };
+        for t in record_tracks(&dir, id, &s.data_files) {
+            let placed = |list: &[BuildTrack]| {
+                list.iter()
+                    .find(|(_, p, _)| p.track_code == t.code)
+                    .map(|(_, _, o)| o.addon.clone())
+            };
+            match placed(added).or_else(|| placed(&out)) {
+                Some(by) if by == *id => continue,
+                Some(by) => {
+                    left_out.push((
+                        origin.clone(),
+                        Unusable {
+                            code: Some(t.code.clone()),
+                            name: Some(t.name.clone().unwrap_or_else(|| t.code.clone())),
+                            why: format!("{by} adds a track with the code {} too", t.code),
+                        },
+                    ));
+                    continue;
+                }
+                None => {}
+            }
+            if t.files.is_none() {
+                continue;
+            }
+            match record_package(&dir, &t) {
+                Ok((d, pkg)) => out.push((d, pkg, origin.clone())),
+                Err(why) => left_out.push((origin.clone(), why)),
+            }
+        }
+    }
+    (out, left_out)
+}
+
+/// Leaves the folders of the build's track packages out of their addons' files for the index:
+/// the build places a track's archive, mipmaps and menu art itself.
+pub fn keep_track_folders(store: &Store, tracks: &[BuildTrack], std16: &mut BTreeMap<String, Std>) {
+    for (dir, _, origin) in tracks {
+        let Some(s) = std16.get_mut(&origin.addon) else {
+            continue;
+        };
+        let Ok(rel) = dir.strip_prefix(store.addons_dir().join(&origin.addon)) else {
+            continue;
+        };
+        let prefix = format!(
+            "{}/",
+            rel.to_string_lossy().replace('\\', "/").trim_end_matches('/')
+        );
+        if prefix == "/" {
+            continue;
+        }
+        s.files.files.retain(|f| !f.starts_with(&prefix));
+    }
+}
+
+/// Writes `$DATA/registry/older-tracks.json` for the tracks `track.add` added for addons with no
+/// track record; `shipped` and `built` are the game's database and the build's.
+pub fn write_older(
+    data: &Path,
+    profile: &str,
+    added: &[(&str, &TrackPackage)],
+    shipped: &Path,
+    built: &Path,
+) -> Result<()> {
+    let path = crate::stdlib::reports::path(data, OLDER_FILE);
+    let file = match added.is_empty() {
+        true => OlderTracks {
+            version: OLDER_VERSION,
+            profile: profile.to_owned(),
+            tracks: Vec::new(),
+        },
+        false => {
+            let read = |p: &Path| -> Result<Gvdb> { Ok(Gvdb::parse(&std::fs::read(p).map_err(io_err(p))?)?) };
+            older_tracks(profile, added, &read(shipped)?, &read(built)?, Venues::shipped())
+        }
+    };
+    if crate::read_json::<OlderTracks>(&path).is_ok_and(|f| f == file) {
+        return Ok(());
+    }
+    crate::write_json(&path, &file)
+}
+
+/// One venue of `packages/sdk/std/data/venues.json`.
+#[derive(Debug, Clone, Default, PartialEq, Deserialize)]
+pub struct Venue {
+    #[serde(default)]
+    pub name: String,
+    #[serde(default)]
+    pub country: Option<String>,
+    #[serde(default)]
+    pub aliases: Vec<String>,
+    #[serde(default)]
+    pub stock: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Deserialize)]
+pub struct Venues {
+    #[serde(default)]
+    pub venues: BTreeMap<String, Venue>,
+}
+
+/// Lower case, every run of characters other than `a-z0-9` one space, trimmed.
+pub fn normalise(name: &str) -> String {
+    let mut out = String::with_capacity(name.len());
+    for c in name.to_lowercase().chars() {
+        match c.is_ascii_lowercase() || c.is_ascii_digit() {
+            true => out.push(c),
+            false if !out.ends_with(' ') => out.push(' '),
+            false => {}
+        }
+    }
+    out.trim().to_owned()
+}
+
+impl Venues {
+    pub fn parse(text: &str) -> Option<Self> {
+        serde_json::from_str(text).ok()
+    }
+
+    /// The venues the launcher ships (`packages/sdk/std/data/venues.json`).
+    pub fn shipped() -> &'static Self {
+        static PARSED: std::sync::OnceLock<Venues> = std::sync::OnceLock::new();
+        PARSED.get_or_init(|| Self::parse(VENUES_JSON).unwrap_or_default())
+    }
+
+    /// `venue/<key>` of the one venue whose name or an alias equals `name` once normalised;
+    /// `None` when none does or more than one does.
+    pub fn by_name(&self, name: &str) -> Option<String> {
+        let want = normalise(name);
+        if want.is_empty() {
+            return None;
+        }
+        let mut found = self.venues.iter().filter(|(_, v)| {
+            std::iter::once(&v.name)
+                .chain(&v.aliases)
+                .any(|n| normalise(n) == want)
+        });
+        let (key, _) = found.next()?;
+        found.next().is_none().then(|| format!("venue/{key}"))
+    }
+
+    /// Whether a stock track with assets provides `id` (`venue/<key>`).
+    pub fn stock_provides(&self, id: &str) -> bool {
+        id.strip_prefix("venue/")
+            .and_then(|k| self.venues.get(k))
+            .is_some_and(|v| v.stock.as_deref().is_some_and(|s| !s.is_empty()))
+    }
+}
+
+/// One entry of `older-tracks.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct OlderTrack {
+    pub addon: String,
+    pub code: String,
+    pub name: String,
+    pub base: String,
+    pub slot: Option<String>,
+    pub stat_id: Option<u32>,
+    pub venue: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct OlderTracks {
+    pub version: u32,
+    pub profile: String,
+    pub tracks: Vec<OlderTrack>,
+}
+
+fn label_rows(db: &Gvdb) -> Vec<(String, Option<u32>)> {
+    Rows::new(db)
+        .table(TRACKS, &["_metadata_", "statId"])
+        .into_iter()
+        .filter_map(|r| Some((r[0].clone()?, r[1].as_deref().and_then(|s| s.parse().ok()))))
+        .collect()
+}
+
+/// `older-tracks.json` for the tracks `track.add` added in a build, by addon id in the build's
+/// order: `shipped` is the game's own database, `built` the build's. `slot` is the stock row a
+/// track fills (`game/<code>`: a row the game ships with the track's code), else null; `base` is
+/// the track its rows were cloned from.
+pub fn older_tracks(
+    profile: &str,
+    added: &[(&str, &TrackPackage)],
+    shipped: &Gvdb,
+    built: &Gvdb,
+    venues: &Venues,
+) -> OlderTracks {
+    let stock: Vec<String> = label_rows(shipped).into_iter().map(|(c, _)| c).collect();
+    let ids = label_rows(built);
+    let tracks = added
+        .iter()
+        .map(|(addon, pkg)| {
+            let code = pkg.track_code.clone();
+            let name = pkg.display_name().trim().to_owned();
+            OlderTrack {
+                addon: (*addon).to_owned(),
+                venue: pkg.track_name.as_deref().and_then(|n| venues.by_name(n)),
+                base: format!("game/{}", pkg.activation.base_track().unwrap_or(&code)),
+                slot: stock.contains(&code).then(|| format!("game/{code}")),
+                stat_id: ids.iter().find(|(c, _)| *c == code).and_then(|(_, id)| *id),
+                name: match name.is_empty() {
+                    true => code.clone(),
+                    false => name,
+                },
+                code,
+            }
+        })
+        .collect();
+    OlderTracks {
+        version: OLDER_VERSION,
+        profile: profile.to_owned(),
+        tracks,
+    }
 }
 
 pub fn left_out_line(addon: &str, id: &str, why: &Unusable) -> String {
@@ -323,6 +722,191 @@ pub(crate) fn restore_weekends(db: &mut Gvdb, shipped: &Gvdb, left_out: &[&str])
             None => out.push(format!(
                 "race weekend {weekend}: races at {code}, which is left out of this build; set its track in Race weekends"
             )),
+        }
+    }
+    out
+}
+
+const TRACK_DATA: &str = "track_data.game_setup.TrackDataSet";
+const GAME_MODES: &str = "game_setup.game_setup_modes.game_setup_mode";
+
+/// A track a build's database names that its tracks table doesn't hold.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct MissingTrack {
+    /// The record that names it.
+    pub key: u64,
+    /// The row that names it, such as `race weekend bahrain`.
+    pub at: String,
+    pub track: String,
+    pub fix: MissingFix,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum MissingFix {
+    /// The record has its shipped track again.
+    Stock(String),
+    /// The track is out of the record's list.
+    Dropped,
+    /// The record is as it was: the game ships no track there the build holds.
+    Kept,
+}
+
+impl MissingTrack {
+    /// The build's warning, with the addon that set the record (`by`) and the addon
+    /// that adds the track and is off (`adds`) when they are known.
+    pub(crate) fn line(&self, by: Option<&str>, adds: Option<&str>) -> String {
+        let (at, track) = (&self.at, &self.track);
+        let head = match (by, &self.fix) {
+            (Some(by), MissingFix::Dropped) => format!("{by} adds {track} to {at}"),
+            (Some(by), _) => format!("{by} sets {at} to {track}"),
+            (None, MissingFix::Dropped) => format!("{at} lists {track}"),
+            (None, _) => format!("{at} is set to {track}"),
+        };
+        let fix = match adds {
+            Some(addon) => format!("which is off: turn {addon} on"),
+            None => "which isn't in this build".to_owned(),
+        };
+        match &self.fix {
+            MissingFix::Stock(stock) => format!("{head}, {fix}; until then this build puts back {stock}"),
+            MissingFix::Dropped => format!("{head}, {fix}; until then this build leaves it out"),
+            MissingFix::Kept if adds.is_some() => {
+                format!("{head}, {fix} or change it in DB Editor; the game won't start like this")
+            }
+            MissingFix::Kept => {
+                format!("{head}, {fix}: change it in DB Editor; the game won't start like this")
+            }
+        }
+    }
+}
+
+/// Points each record that names a track the build doesn't hold at its shipped track
+/// again, or takes the track out of a record's list; a record the game ships with no
+/// track the build holds is only named. The build holds its tracks table's tracks and
+/// `in_game`, the tracks whose rows the game adds. A track the game ships the record
+/// with is left as it is, and race weekends at a `left_out` track are
+/// [`restore_weekends`]'s.
+pub(crate) fn keep_track_refs(
+    db: &mut Gvdb,
+    shipped: &Gvdb,
+    in_game: &[&str],
+    left_out: &[&str],
+) -> Vec<MissingTrack> {
+    let at: HashMap<u64, usize> = db.records.iter().enumerate().map(|(i, r)| (r.key, i)).collect();
+    let stock: HashMap<u64, &Record> = shipped.records.iter().map(|r| (r.key, r)).collect();
+    let text = |db: &Gvdb, path: &str| {
+        at.get(&fnv1a64(path))
+            .map(|&i| db.records[i].text().trim().to_owned())
+    };
+    let count = |db: &Gvdb, table: &str| {
+        let (container, row) = table.rsplit_once('.').expect("a table path");
+        text(db, &swofty_formats::gvdb::instance_count_path(container, row))
+            .and_then(|n| n.parse::<usize>().ok())
+            .unwrap_or(0)
+    };
+    let label = |db: &Gvdb, table: &str, i: usize| {
+        text(db, &format!("{table}_{i}._metadata_")).unwrap_or_else(|| i.to_string())
+    };
+    let mut have: HashSet<String> = (0..count(db, TRACKS))
+        .filter_map(|i| text(db, &format!("{TRACKS}_{i}._metadata_")))
+        .collect();
+    if have.is_empty() {
+        return Vec::new();
+    }
+    have.extend(in_game.iter().map(|c| (*c).to_owned()));
+    let mut refs: Vec<(String, String, bool)> = Vec::new();
+    for i in 0..count(db, ACTIVITIES) {
+        let path = format!("{ACTIVITIES}_{i}.track");
+        if text(db, &path).is_some_and(|c| left_out.contains(&c.as_str())) {
+            continue;
+        }
+        refs.push((path, format!("race weekend {}", label(db, ACTIVITIES, i)), false));
+    }
+    for s in 0..count(db, TRACK_DATA) {
+        let rows = format!("{TRACK_DATA}_{s}.TrackData");
+        let set = label(db, TRACK_DATA, s);
+        for i in 0..count(db, &rows) {
+            let at = format!("track settings {set}/{}", label(db, &rows, i));
+            refs.push((format!("{rows}_{i}.track"), at, false));
+        }
+    }
+    for s in 0..count(db, CONTENT_SETS) {
+        let rows = format!("{CONTENT_SETS}_{s}.available_tracks");
+        let at = format!("content set {}", label(db, CONTENT_SETS, s));
+        for i in 0..count(db, &rows) {
+            refs.push((format!("{rows}_{i}.tracks"), at.clone(), true));
+        }
+    }
+    for i in 0..count(db, GAME_MODES) {
+        let at = format!("game mode {}", label(db, GAME_MODES, i));
+        refs.push((format!("{GAME_MODES}_{i}.restricted_tracks"), at, true));
+    }
+    let mut out = Vec::new();
+    for (path, row, list) in refs {
+        let key = fnv1a64(&path);
+        let Some(&i) = at.get(&key) else {
+            continue;
+        };
+        let now = db.records[i].text().trim().to_owned();
+        let shipped_text = stock
+            .get(&key)
+            .map(|r| r.text().trim().to_owned())
+            .unwrap_or_default();
+        if !list {
+            if now.is_empty() || have.contains(&now) || now == shipped_text {
+                continue;
+            }
+            let fix = match stock.get(&key).filter(|r| have.contains(r.text().trim())) {
+                Some(r) => {
+                    db.records[i].value = r.value.clone();
+                    db.records[i].tag = r.tag;
+                    MissingFix::Stock(r.text().trim().to_owned())
+                }
+                None => MissingFix::Kept,
+            };
+            out.push(MissingTrack {
+                key,
+                at: row,
+                track: now,
+                fix,
+            });
+            continue;
+        }
+        let codes: Vec<&str> = now.split(',').map(str::trim).filter(|c| !c.is_empty()).collect();
+        let (kept, gone): (Vec<&str>, Vec<&str>) = codes
+            .into_iter()
+            .partition(|c| have.contains(*c) || shipped_text.split(',').any(|s| s.trim() == *c));
+        if gone.is_empty() {
+            continue;
+        }
+        db.records[i].value = kept.join(",").into_bytes();
+        out.extend(gone.into_iter().map(|track| MissingTrack {
+            key,
+            at: row.clone(),
+            track: track.to_owned(),
+            fix: MissingFix::Dropped,
+        }));
+    }
+    out
+}
+
+/// The installed addons, by track code, whose `track.add` or `track` record adds each of
+/// `codes`, also where a build would leave the track out.
+pub(crate) fn adders(store: &Store, codes: &BTreeSet<String>) -> BTreeMap<String, String> {
+    let mut out = BTreeMap::new();
+    for (id, m) in store.addons().unwrap_or_default() {
+        let dir = store.addons_dir().join(&id);
+        let added = added_dirs(store, &id, &m)
+            .iter()
+            .filter_map(|d| match crate::map::read_package(d) {
+                Ok(pkg) => Some(pkg.track_code),
+                Err(why) => why.code,
+            })
+            .collect::<Vec<_>>();
+        let recorded = record_tracks(&dir, &id, &crate::stdlib::data::files(&dir));
+        for code in added.into_iter().chain(recorded.into_iter().map(|t| t.code)) {
+            if codes.contains(&code) {
+                out.entry(code).or_insert_with(|| id.clone());
+            }
         }
     }
     out
@@ -605,6 +1189,202 @@ mod tests {
     }
 
     #[test]
+    fn venues_match_a_track_name_never_its_code() {
+        let v = Venues::shipped();
+        assert!(v.venues.len() >= 33, "{}", v.venues.len());
+        assert_eq!(
+            normalise("  Autódromo José-Carlos  Pace "),
+            "aut dromo jos carlos pace"
+        );
+        assert_eq!(normalise("Spa-Francorchamps"), "spa francorchamps");
+        assert_eq!(v.by_name("Sepang").as_deref(), Some("venue/sepang"));
+        assert_eq!(
+            v.by_name("SEPANG international circuit").as_deref(),
+            Some("venue/sepang")
+        );
+        assert_eq!(v.by_name("Okayama").as_deref(), Some("venue/okayama"));
+        assert_eq!(v.by_name("Delhi").as_deref(), Some("venue/buddh"));
+        assert_eq!(v.by_name("Igora Drive").as_deref(), Some("venue/igora_drive"));
+        assert_eq!(v.by_name("bahrain24"), None);
+        assert_eq!(v.by_name(""), None);
+        assert_eq!(v.by_name("Test Ring"), None);
+        let twice = Venues::parse(
+            r#"{ "version": 1, "venues": {
+                "a": { "name": "Ring", "country": "x", "aliases": [], "stock": null },
+                "b": { "name": "Other", "country": "x", "aliases": ["ring"], "stock": "b" } } }"#,
+        )
+        .unwrap();
+        assert_eq!(twice.by_name("Ring"), None, "two venues match: none");
+        assert_eq!(twice.by_name("other").as_deref(), Some("venue/b"));
+        assert!(twice.stock_provides("venue/b") && !twice.stock_provides("venue/a"));
+        assert!(!twice.stock_provides("venue/zzz") && !twice.stock_provides("b"));
+        assert!(v.stock_provides("venue/albert_park") && !v.stock_provides("venue/sochi"));
+    }
+
+    #[test]
+    fn older_tracks_name_their_base_the_row_they_fill_their_stat_id_and_venue() {
+        let pkg = |code: &str, name: Option<&str>, from: &str, slot: Option<&str>| TrackPackage {
+            track_code: code.into(),
+            track_name: name.map(str::to_owned),
+            version: None,
+            author_name: None,
+            erp: format!("{code}.erp"),
+            activation: crate::map::Activation {
+                copy_from_track: Some(from.into()),
+                copy_slot: slot.map(str::to_owned),
+                ..Default::default()
+            },
+            ers: Default::default(),
+            copy_directories: Vec::new(),
+            ui: None,
+            extra: Default::default(),
+        };
+        let shipped = {
+            let mut d = db();
+            d.set("tracks._Track_instancecount_", "4", None).unwrap();
+            d.records.push(rec("tracks.Track_3._metadata_", "sochi"));
+            d.records.push(rec("tracks.Track_3.statId", "30"));
+            d
+        };
+        let mut built = shipped.clone();
+        built.set("tracks._Track_instancecount_", "5", None).unwrap();
+        built.records.push(rec("tracks.Track_4._metadata_", "okayama2"));
+        built.records.push(rec("tracks.Track_4.statId", "44"));
+        let okayama = pkg("okayama2", Some("Okayama"), "melbourne", Some("melbourne"));
+        let sochi = pkg("sochi", Some("Sochi Autodrom"), "baku", None);
+        let unnamed = pkg("ring", None, "zandvoort", Some("zandvoort"));
+        let out = older_tracks(
+            "Classic Seasons",
+            &[
+                ("mod.okayama", &okayama),
+                ("mod.sochi", &sochi),
+                ("mod.ring", &unnamed),
+            ],
+            &shipped,
+            &built,
+            Venues::shipped(),
+        );
+        assert_eq!((out.version, out.profile.as_str()), (1, "Classic Seasons"));
+        let entry = |addon: &str,
+                     code: &str,
+                     name: &str,
+                     base: &str,
+                     slot: Option<&str>,
+                     id: Option<u32>,
+                     venue: Option<&str>| OlderTrack {
+            addon: addon.into(),
+            code: code.into(),
+            name: name.into(),
+            base: base.into(),
+            slot: slot.map(str::to_owned),
+            stat_id: id,
+            venue: venue.map(str::to_owned),
+        };
+        assert_eq!(
+            out.tracks,
+            [
+                entry(
+                    "mod.okayama",
+                    "okayama2",
+                    "Okayama",
+                    "game/melbourne",
+                    None,
+                    Some(44),
+                    Some("venue/okayama")
+                ),
+                entry(
+                    "mod.sochi",
+                    "sochi",
+                    "Sochi Autodrom",
+                    "game/baku",
+                    Some("game/sochi"),
+                    Some(30),
+                    Some("venue/sochi")
+                ),
+                entry("mod.ring", "ring", "ring", "game/zandvoort", None, None, None),
+            ]
+        );
+        let json = serde_json::to_value(&out).unwrap();
+        assert_eq!(json["tracks"][2]["slot"], serde_json::Value::Null);
+        assert_eq!(json["tracks"][2]["venue"], serde_json::Value::Null);
+    }
+
+    #[test]
+    fn track_records_become_packages_from_their_files_folder() {
+        let root = std::env::temp_dir().join(format!("swofty-record-tracks-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        std::fs::create_dir_all(root.join("registry")).unwrap();
+        std::fs::create_dir_all(root.join("track/mipmaps")).unwrap();
+        std::fs::create_dir_all(root.join("copy")).unwrap();
+        std::fs::write(
+            root.join("registry/track.json"),
+            r#"{ "track": {
+                "ring": { "code": "ring", "name": "Ring", "base": "game/austria", "files": "track/" },
+                "copy": { "code": "testring", "base": "game/melbourne", "files": "copy/" },
+                "nofiles": { "code": "nofiles", "base": "game/melbourne" },
+                "outside": { "code": "outside", "base": "game/melbourne", "files": "../x/" },
+                "$select": [],
+                "game/melbourne": { "name": "a layer" },
+                "nocode": { "base": "game/melbourne" } },
+              "track.data": { "mod.x/ring/f1_2025": { "laps": 3 } } }"#,
+        )
+        .unwrap();
+        std::fs::write(root.join("track/ring.erp"), b"erp").unwrap();
+        std::fs::write(root.join("copy/manifest.json"), crate::map::tests::OKAYAMA_LIKE).unwrap();
+        let found = record_tracks(&root, "mod.x", &["registry/track.json".into()]);
+        let ids: Vec<&str> = found.iter().map(|t| t.id.as_str()).collect();
+        assert_eq!(
+            ids,
+            ["mod.x/copy", "mod.x/nofiles", "mod.x/outside", "mod.x/ring"]
+        );
+        let by = |id: &str| found.iter().find(|t| t.id == id).unwrap();
+        let (dir, ring) = record_package(&root, by("mod.x/ring")).unwrap();
+        assert_eq!(dir, root.join("track"));
+        assert_eq!(
+            (
+                ring.track_code.as_str(),
+                ring.track_name.as_deref(),
+                ring.erp.as_str()
+            ),
+            ("ring", Some("Ring"), "ring.erp")
+        );
+        assert_eq!(ring.activation.base_track(), Some("austria"));
+        assert_eq!(ring.copy_directories.len(), 1);
+        let (_, copy) = record_package(&root, by("mod.x/copy")).unwrap();
+        assert_eq!(copy.track_code, "testring");
+        assert!(
+            record_package(&root, by("mod.x/nofiles"))
+                .unwrap_err()
+                .why
+                .contains("names no files")
+        );
+        assert!(
+            record_package(&root, by("mod.x/outside"))
+                .unwrap_err()
+                .why
+                .contains("leaves")
+        );
+        std::fs::remove_file(root.join("track/ring.erp")).unwrap();
+        assert!(
+            record_package(&root, by("mod.x/ring"))
+                .unwrap_err()
+                .why
+                .contains("has no ring.erp")
+        );
+        let wrong = RecordTrack {
+            code: "other".into(),
+            ..by("mod.x/copy").clone()
+        };
+        assert!(
+            record_package(&root, &wrong)
+                .unwrap_err()
+                .why
+                .contains("is for testring")
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
     fn weekends_at_a_left_out_track_go_back_to_their_stock_track() {
         let weekend = |i: usize, label: &str, track: &str| {
             [
@@ -649,5 +1429,157 @@ mod tests {
         );
         let mut untouched = shipped.clone();
         assert!(restore_weekends(&mut untouched, &shipped, &["monza"]).is_empty());
+    }
+
+    #[test]
+    fn records_naming_a_track_not_in_the_build_get_their_shipped_track_back() {
+        let mut shipped = db();
+        shipped
+            .set(
+                "schedule.activities._activity_race_weekend_instancecount_",
+                "2",
+                None,
+            )
+            .unwrap();
+        shipped.records.extend([
+            rec(&format!("{ACTIVITIES}_1._metadata_"), "okayama"),
+            rec(&format!("{ACTIVITIES}_1.track"), "okayama"),
+            rec("track_data.game_setup._TrackDataSet_instancecount_", "1"),
+            rec(&format!("{TRACK_DATA}_0._metadata_"), "f1"),
+            rec(&format!("{TRACK_DATA}_0._TrackData_instancecount_"), "1"),
+            rec(&format!("{TRACK_DATA}_0.TrackData_0._metadata_"), "suzuka"),
+            rec(&format!("{TRACK_DATA}_0.TrackData_0.track"), "suzuka"),
+            rec("game_setup.game_setup_modes._game_setup_mode_instancecount_", "1"),
+            rec(&format!("{GAME_MODES}_0._metadata_"), "f1"),
+            rec(
+                &format!("{GAME_MODES}_0.restricted_tracks"),
+                "okayama,shipped_only",
+            ),
+        ]);
+        let mut untouched = shipped.clone();
+        assert!(keep_track_refs(&mut untouched, &shipped, &[], &[]).is_empty());
+        let mut built = shipped.clone();
+        let mut set = |path: &str, value: &str| built.set(path, value, None).unwrap();
+        set("schedule.activities._activity_race_weekend_instancecount_", "4");
+        set(&format!("{ACTIVITIES}_0.track"), "istanbul_park");
+        set(&format!("{TRACK_DATA}_0.TrackData_0.track"), "paul_ricard");
+        set(
+            "content_sets.content_set_1.available_tracks_0.tracks",
+            "suzuka,istanbul_park,okayama",
+        );
+        set(
+            &format!("{GAME_MODES}_0.restricted_tracks"),
+            "okayama,shipped_only,hockenheim,ring",
+        );
+        built.records.extend([
+            rec(&format!("{ACTIVITIES}_2._metadata_"), "rw_added"),
+            rec(&format!("{ACTIVITIES}_2.track"), "hockenheim"),
+            rec(&format!("{ACTIVITIES}_3._metadata_"), "rw_left"),
+            rec(&format!("{ACTIVITIES}_3.track"), "portimao"),
+        ]);
+        let missing = keep_track_refs(&mut built, &shipped, &["ring"], &["portimao"]);
+        let got: Vec<(&str, &str, &MissingFix)> = missing
+            .iter()
+            .map(|m| (m.at.as_str(), m.track.as_str(), &m.fix))
+            .collect();
+        assert_eq!(
+            got,
+            [
+                (
+                    "race weekend suzuka",
+                    "istanbul_park",
+                    &MissingFix::Stock("suzuka".into())
+                ),
+                ("race weekend rw_added", "hockenheim", &MissingFix::Kept),
+                (
+                    "track settings f1/suzuka",
+                    "paul_ricard",
+                    &MissingFix::Stock("suzuka".into())
+                ),
+                ("content set 2026", "istanbul_park", &MissingFix::Dropped),
+                ("game mode f1", "hockenheim", &MissingFix::Dropped),
+            ]
+        );
+        assert_eq!(missing[0].key, fnv1a64(format!("{ACTIVITIES}_0.track")));
+        let text = |path: &str| built.get_text(path).unwrap();
+        assert_eq!(text(&format!("{ACTIVITIES}_0.track")), "suzuka");
+        assert_eq!(text(&format!("{ACTIVITIES}_2.track")), "hockenheim");
+        assert_eq!(text(&format!("{ACTIVITIES}_3.track")), "portimao");
+        assert_eq!(text(&format!("{TRACK_DATA}_0.TrackData_0.track")), "suzuka");
+        assert_eq!(
+            text("content_sets.content_set_1.available_tracks_0.tracks"),
+            "suzuka,okayama"
+        );
+        assert_eq!(
+            text(&format!("{GAME_MODES}_0.restricted_tracks")),
+            "okayama,shipped_only,ring"
+        );
+        let again = keep_track_refs(&mut built, &shipped, &["ring"], &["portimao"]);
+        assert_eq!(again, [missing[1].clone()]);
+        assert!(keep_track_refs(&mut Gvdb::default(), &shipped, &[], &[]).is_empty());
+    }
+
+    #[test]
+    fn missing_track_lines_name_the_addon_that_set_it_and_the_one_to_turn_on() {
+        let missing = |at: &str, fix: MissingFix| MissingTrack {
+            key: 0,
+            at: at.into(),
+            track: "istanbul_park".into(),
+            fix,
+        };
+        let weekend = missing("race weekend bahrain", MissingFix::Stock("bahrain".into()));
+        assert_eq!(
+            weekend.line(Some("My Calendar"), Some("Istanbul Park")),
+            "My Calendar sets race weekend bahrain to istanbul_park, which is off: turn Istanbul Park on; \
+             until then this build puts back bahrain"
+        );
+        assert_eq!(
+            weekend.line(None, None),
+            "race weekend bahrain is set to istanbul_park, which isn't in this build; until then this build puts \
+             back bahrain"
+        );
+        assert_eq!(
+            missing("content set 2026", MissingFix::Dropped).line(Some("My Calendar"), Some("Istanbul Park")),
+            "My Calendar adds istanbul_park to content set 2026, which is off: turn Istanbul Park on; until then \
+             this build leaves it out"
+        );
+        let added = missing("race weekend rw_added", MissingFix::Kept);
+        assert_eq!(
+            added.line(Some("My Calendar"), Some("Istanbul Park")),
+            "My Calendar sets race weekend rw_added to istanbul_park, which is off: turn Istanbul Park on or \
+             change it in DB Editor; the game won't start like this"
+        );
+        assert_eq!(
+            added.line(Some("My Calendar"), None),
+            "My Calendar sets race weekend rw_added to istanbul_park, which isn't in this build: change it in DB \
+             Editor; the game won't start like this"
+        );
+    }
+
+    #[test]
+    fn adders_name_the_addon_whose_track_record_adds_a_track() {
+        let root = std::env::temp_dir().join(format!("swofty-track-adders-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let store = Store::new(&root);
+        let dir = store.addons_dir().join("track.testring");
+        std::fs::create_dir_all(dir.join("registry")).unwrap();
+        std::fs::write(
+            dir.join("swofty.json"),
+            r#"{"schema_version":1,"id":"track.testring","name":"Testring","version":"1.0.0","author":"t",
+            "compat":{"game":"f1_25"}}"#,
+        )
+        .unwrap();
+        std::fs::write(
+            dir.join("registry/track.json"),
+            r#"{"track":{"testring":{"code":"testring","name":"Testring","files":"track/"}}}"#,
+        )
+        .unwrap();
+        let codes: BTreeSet<String> = ["testring".to_owned(), "nowhere".to_owned()].into();
+        let got = adders(&store, &codes);
+        std::fs::remove_dir_all(&root).ok();
+        assert_eq!(
+            got,
+            BTreeMap::from([("testring".to_owned(), "track.testring".to_owned())])
+        );
     }
 }

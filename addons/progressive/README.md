@@ -1,6 +1,6 @@
 # Progressive Career
 
-A Driver Career that starts in any season from 2016 to 2026 as a real driver and moves through the real seasons. Each season brings that year's cars, liveries, helmets, team names and line-ups, and from 2026 on the career stays in 2026. Needs Swofty Launcher for F1 25 1.5.13 or later, and Classic Seasons with its 2016 to 2024 year addons.
+A Driver Career that starts in any season from 2016 to 2026 as a real driver and moves through the real seasons. Each season brings that year's cars, liveries, helmets, team names and line-ups, and from 2026 on the career stays in 2026. Needs Swofty Launcher for F1 25 1.5.27 or later, and Classic Seasons with its 2016 to 2024 year addons.
 
 ## Playing it
 
@@ -22,7 +22,7 @@ In Team HQ, the **Progressive Settings** tab changes R&D for the loaded career a
 - A new season's line-up arrives at the first Team HQ that has the season's race calendar, so after Start Next Season the seats change once the calendar is set.
 - 2017 to 2025 run with 10 teams and 20 cars; 2016 has Manor and 2026 has Cadillac.
 - Every AI driver takes his ratings of that season (experience, racecraft, awareness, pace, focus and the overall they make), mid-season stand-ins included: EA's launch ratings of each season's game for 2020 to 2026, and for 2016 to 2019 a model of the real results calibrated on them. Your driver starts a new career with his real ratings of the starting season; from there his ratings are his own. The first 2026 season brings back the game's 2026 ratings, and the game's own ratings carry on from there.
-- Standings start each season in the previous real season's final order.
+- Standings start each season in the previous real season's final order. A season that another addon's `career.season` layer gives a team in slot 12 starts with 12 teams: the twelfth after the eleven career slots.
 - The Resume Career card shows the career's year.
 - Race weekend and season titles (the starting grid, session intros, results, loading screens) show the career's year.
 - 2016 to 2025 race on the 2025 fuel: the race and qualifying fuel loads and the fuel burn per lap of every track are the game's 2025 numbers, which suit those seasons' 2025 power units. From 2026 on, the game's 2026 numbers apply.

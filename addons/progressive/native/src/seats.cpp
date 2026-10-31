@@ -560,6 +560,25 @@ bool mirror_rows(uintptr_t begin_field, const std::vector<Row> &career, Mirror &
     return true;
 }
 
+int patch_vehicles(uintptr_t begin_field, uintptr_t vtable, const std::function<uint32_t(const EntrantRecord &)> &want)
+{
+    uintptr_t b = rdv<uintptr_t>(begin_field), e = rdv<uintptr_t>(begin_field + 8);
+    if (!b || e <= b || (e - b) % sizeof(EntrantRecord) || (e - b) / sizeof(EntrantRecord) > kMaxEntrants ||
+        !swofty::mem::readable(b, e - b) || !writable(b, e - b))
+        return -1;
+    for (uintptr_t p = b; p < e; p += sizeof(EntrantRecord))
+        if (rdv<uintptr_t>(p) != vtable)
+            return -1;
+    int written = 0;
+    for (uintptr_t p = b; p < e; p += sizeof(EntrantRecord)) {
+        EntrantRecord r = rdv<EntrantRecord>(p);
+        uint32_t ref = want(r);
+        if (ref != r.vehicle_ref && patch(p, offsetof(EntrantRecord, vehicle_ref), ref))
+            ++written;
+    }
+    return written;
+}
+
 Baseline::Baseline(const std::vector<Row> &rows)
 {
     for (auto &r : rows)

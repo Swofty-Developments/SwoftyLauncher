@@ -433,7 +433,8 @@ def cmd_verify(a):
         raise SystemExit('refused:\n  ' + '\n  '.join(e))
     with locked():
         rows, _ = read_table('verify')
-        n = len(rows) + 1
+        taken = [int(m.group(1)) for x in rows if (m := re.match(r'V(\d+) ', x['notes']))]
+        n = max([len(rows), *taken]) + 1
         r['notes'] = f'V{n:04d} ' + r['notes']
         rows.append(r)
         cols = TABLES['verify'][0]

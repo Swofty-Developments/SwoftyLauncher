@@ -82,6 +82,18 @@ void shipped_data(const char *path)
         left += t.text.find("2026") != std::string::npos;
     EXPECT(left == 0);
     EXPECT(keys(doc).size() == doc["all"].o.size());
+
+    std::vector<Text> from = for_year(doc, 2018), to = for_year(doc, 2020);
+    std::vector<std::string> all = keys(doc);
+    EXPECT(from.size() == to.size());
+    for (auto &t : from) {
+        const Text *next = find(to, t.language.c_str(), t.key.c_str());
+        EXPECT(next && next->text.find("2018") == std::string::npos);
+        bool cleared = false;
+        for (auto &k : all)
+            cleared = cleared || k == t.key;
+        EXPECT(cleared);
+    }
 }
 
 } // namespace
