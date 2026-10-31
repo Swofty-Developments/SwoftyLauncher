@@ -133,16 +133,21 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     CreateDirectoryW(dirw.c_str(), nullptr);
     CreateDirectoryW(runtime::under_swofty(dir).c_str(), nullptr);
     std::wstring stamps_path = runtime::under_swofty(dir + logo_cache::STAMPS);
+    DeleteFileW(runtime::under_swofty(dir + logo_cache::OLD_STAMPS).c_str());
     std::string stamps_before = runtime::read_file(stamps_path, size_t(16) << 20);
-    DWORD hash_t0 = GetTickCount();
-    logo_cache::Keyed keyed = logo_cache::key_archives(key, files, {stat_file, hash_file}, logo_cache::parse(stamps_before));
-    if (keyed.hashed)
-        report.lines.push_back("team.logo: " + std::to_string(keyed.hashed) + " archive(s) (" +
-                               std::to_string(keyed.hashed_bytes >> 20) + " MB) hashed in " + std::to_string(GetTickCount() - hash_t0) +
-                               " ms");
-    std::string stamps_after = logo_cache::text(keyed.stamps);
-    if (stamps_after != stamps_before)
-        runtime::write_file(stamps_path, stamps_after);
+    logo_cache::Env stamp_env{stat_file, hash_file};
+    auto key_inputs = [&](const std::set<std::string> &inputs, const logo_cache::Stamps &before) {
+        DWORD t0 = GetTickCount();
+        logo_cache::Keyed k = logo_cache::key_archives(key, files, inputs, stamp_env, before);
+        if (k.hashed)
+            report.lines.push_back("team.logo: " + std::to_string(k.hashed) + " input archive(s) (" + std::to_string(k.hashed_bytes >> 20) +
+                                   " MB) hashed in " + std::to_string(GetTickCount() - t0) + " ms");
+        return k;
+    };
+    logo_cache::Stamps before = logo_cache::parse(stamps_before);
+    std::set<std::string> inputs = logo_cache::inputs_of(before);
+    inputs.insert(logo_build::DATABASES);
+    logo_cache::Keyed keyed = key_inputs(inputs, before);
     std::string id = runtime::hex16(keyed.key).substr(2);
     std::string manifest_name = "logos_" + id + ".manifest";
     std::string manifest = runtime::read_file(runtime::under_swofty(dir + manifest_name), size_t(1) << 20);
@@ -185,6 +190,13 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         for (auto &l : res.lines)
             report.lines.push_back(l);
         report.refused += res.refused;
+        std::set<std::string> read = res.read;
+        read.insert(logo_build::DATABASES);
+        if (read != inputs) {
+            keyed = key_inputs(read, keyed.stamps);
+            id = runtime::hex16(keyed.key).substr(2);
+            manifest_name = "logos_" + id + ".manifest";
+        }
         std::string out_manifest;
         for (auto &[rel, changes] : res.changes) {
             auto src = env.open(rel);
@@ -222,6 +234,9 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         report.lines.push_back("team.logo: " + std::to_string(res.built) + " slice(s) built into " + std::to_string(routes.size()) +
                                " archive(s) in " + std::to_string(GetTickCount() - t0) + " ms");
     }
+    std::string stamps_after = logo_cache::text(keyed.stamps);
+    if (stamps_after != stamps_before)
+        runtime::write_file(stamps_path, stamps_after);
     std::set<std::string> keep;
     for (auto &r : routes)
         keep.insert(r.second);

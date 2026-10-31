@@ -6,17 +6,22 @@
 #include <cstring>
 #include <functional>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
-// The key the team logo archives are cached under. An install copies its archives into the game folder again before
-// every session, and a rollback copies the stock ones back, so a write time changes while the bytes stay the same.
-// Each archive counts by a hash of its bytes. The stamps file next to the cached archives keeps each hash under the
-// size and write time it was taken at, and only an archive whose size or write time differs is read again.
+// The key the team logo archives are cached under. The logos are built from the bytes of a few archives: databases.erp
+// and the archives that carry a wanted texture array (the inputs). An install copies its archives into the game folder
+// again before every session, and a rollback copies the stock ones back, so a write time changes while the bytes stay
+// the same. Each input counts by a hash of its bytes. The stamps file next to the cached archives names the inputs of
+// the last build and keeps each hash under the size and write time it was taken at; only an input whose size or write
+// time differs is read again. Every other archive counts by its path and size and is never read: the build only looks
+// in it for a wanted array, and an archive that gains one grows.
 
 namespace swofty_core::apply::content::logo_cache {
 
-inline constexpr const char *STAMPS = "archives.stamps";
+inline constexpr const char *STAMPS = "inputs.stamps";
+inline constexpr const char *OLD_STAMPS = "archives.stamps";
 
 inline uint64_t stamp(uint64_t h, const std::string &s)
 {
@@ -148,13 +153,26 @@ struct Keyed {
     uint64_t hashed_bytes = 0;
 };
 
-inline Keyed key_archives(uint64_t key, const std::vector<std::string> &files, const Env &env, const Stamps &before)
+inline std::set<std::string> inputs_of(const Stamps &stamps)
+{
+    std::set<std::string> out;
+    for (auto &[rel, s] : stamps)
+        out.insert(rel);
+    return out;
+}
+
+inline Keyed key_archives(uint64_t key, const std::vector<std::string> &files, const std::set<std::string> &inputs, const Env &env,
+                          const Stamps &before)
 {
     Keyed out;
     for (auto &rel : files) {
         Seen now;
         if (!env.stat(rel, now.size, now.time))
             continue;
+        if (!inputs.count(rel)) {
+            key = stamp(key, rel + "|" + std::to_string(now.size) + "|s");
+            continue;
+        }
         auto was = before.find(rel);
         if (was != before.end() && was->second.hashed && was->second.size == now.size && was->second.time == now.time) {
             now = was->second;
