@@ -91,10 +91,10 @@ pub fn row_id_lines(data: &std::path::Path, addon: &str) -> Result<Vec<String>> 
     )];
     for (name, r) in names.iter().zip(&rows) {
         let from = match r.from {
-            IdFrom::Seeded => "seeded from a profile's last build",
-            IdFrom::Hashed => "hashed from the row's key",
-            IdFrom::Next => "the next free id when it was added",
-            IdFrom::Moved => "hashed after its kept id was taken",
+            IdFrom::Seeded => "seeded from a profile's last build or a game session from before 1.6.10",
+            IdFrom::Hashed => "hashed from the row's key by 1.6.10 or 1.6.11",
+            IdFrom::Next => "the next free id in load order when it was added",
+            IdFrom::Moved => "the next free id after its kept id was taken",
             IdFrom::Reused => "reused from an addon that was off or removed",
         };
         out.push(format!("  {name:width$}  {:>5}  kept, {from}", r.id));
@@ -286,8 +286,8 @@ mod tests {
             row_id_lines(&data, "mod.cars").unwrap(),
             [
                 "mod.cars: 2 added row(s) keep these stat ids",
-                "  entrants.vehicles.vehicle/car_a    512  kept, seeded from a profile's last build",
-                "  entrants.vehicles.vehicle/car_b     77  kept, hashed from the row's key",
+                "  entrants.vehicles.vehicle/car_a    512  kept, seeded from a profile's last build or a game session from before 1.6.10",
+                "  entrants.vehicles.vehicle/car_b     77  kept, hashed from the row's key by 1.6.10 or 1.6.11",
             ]
         );
         assert_eq!(

@@ -1,0 +1,128 @@
+#include "../runtime.hpp"
+
+#include <swofty/mem.hpp>
+#include <swofty/mixin.hpp>
+
+#include <atomic>
+#include <cstring>
+#include <memory>
+
+#include "car_live.hpp"
+#include "core_events.hpp"
+#include "hooks.hpp"
+#include "session_points.hpp"
+
+// The live car operations on the running game (car_live.hpp): g_Sess_VehicleTable and g_Sess_VehicleCount
+// resolve once the code is ready, memory reads and writes are checked (swofty::mem), writes run only on the
+// flow thread (the one that ticks on_frame), and nothing is handed over on an exe that isn't the KB build,
+// whose field offsets these are. car.built and car.reset are game points: the mid-hook on site_Car_LiveCarBuilt
+// and the detour on Car_Systems_Reset_Thunk sit there while an addon subscribes, and the events fire from the next
+// frame (car_live.hpp, Ops::take).
+
+namespace swofty_core::hooks {
+namespace {
+
+namespace mem = swofty::mem;
+
+struct CoreTag {};
+using Ops = car_live::Ops<CoreTag>;
+
+std::atomic<uint32_t> g_flow_tid{0};
+
+bool on_flow_thread()
+{
+    uint32_t t = g_flow_tid.load();
+    return !t || t == GetCurrentThreadId();
+}
+
+std::unique_ptr<session_points::MidPoint> g_built;
+std::unique_ptr<GamePoint> g_reset;
+
+void m_built(safetyhook::Context &ctx) { Ops::built(ctx.rdi); }
+
+void d_reset(void *loader, uint32_t arg)
+{
+    g_reset->original<void>(loader, arg);
+    Ops::reset(reinterpret_cast<uintptr_t>(loader));
+}
+
+void frame(double, void *)
+{
+    g_flow_tid = GetCurrentThreadId();
+    for (const auto &p : Ops::take()) {
+        swofty::cars::live::Car car(p.index, reinterpret_cast<void *>(p.car));
+        if (p.reset)
+            events::car_reset(car, false);
+        else
+            events::car_built(car);
+    }
+}
+
+void setup()
+{
+    car_live::Env e;
+    e.read = [](uintptr_t a, void *out, size_t n) {
+        if (!mem::readable(a, n))
+            return false;
+        std::memcpy(out, reinterpret_cast<const void *>(a), n);
+        return true;
+    };
+    e.write = [](uintptr_t a, const void *in, size_t n) {
+        if (!mem::readable(a, n))
+            return false;
+        std::memcpy(reinterpret_cast<void *>(a), in, n);
+        return true;
+    };
+    e.flow_thread = on_flow_thread;
+    e.enabled = [] { return runtime::enabled("events", nullptr); };
+    if (!runtime::same_build()) {
+        swofty::log("[cars] live car operations off: the field offsets are the KB build's and this is not that build");
+    } else {
+        e.table = swofty::api->resolve("g_Sess_VehicleTable");
+        e.count = swofty::api->resolve("g_Sess_VehicleCount");
+        if (!e.table || !e.count)
+            swofty::log("[cars] live car operations off: g_Sess_VehicleTable or g_Sess_VehicleCount does not resolve");
+        else
+            swofty::log("[cars] live car operations on: %zu fields", sizeof car_live::FIELDS / sizeof car_live::FIELDS[0]);
+        if (uintptr_t fn = swofty::api->resolve("Car_Engine_ComputeDerived_Thunk"))
+            e.engine_derived = [fn](uintptr_t engine) {
+                reinterpret_cast<void (*)(void *)>(fn)(reinterpret_cast<void *>(engine));
+            };
+        else
+            swofty::log("[cars] engine_limiter off: Car_Engine_ComputeDerived_Thunk does not resolve");
+        if (uintptr_t fn = swofty::api->resolve("Car_Tuning_SetFinalDrive"))
+            e.gearbox_reset = [fn](uintptr_t gearbox, uint32_t flags) {
+                reinterpret_cast<void (*)(void *, uint32_t)>(fn)(reinterpret_cast<void *>(gearbox), flags);
+            };
+        else
+            swofty::log("[cars] final_drive and gear ratios off: Car_Tuning_SetFinalDrive does not resolve");
+    }
+    Ops::bind(std::move(e));
+    const SwoftyEvents *ev = runtime::events_table();
+    uint32_t token = 0;
+    if (ev && ev->on_frame)
+        ev->on_frame(frame, nullptr, &token);
+}
+
+}
+
+void declare_car_points(Table &t)
+{
+    g_built = std::make_unique<session_points::MidPoint>("car.built", "site_Car_LiveCarBuilt", &m_built, game_ops());
+    t.declare_game("car.built", SWOFTY_POINT_NOTIFY, swofty::cars::events::Built::version, g_built.get());
+    g_reset = std::make_unique<GamePoint>("car.reset", "Car_Systems_Reset_Thunk", reinterpret_cast<void *>(&d_reset),
+                                          game_ops());
+    t.declare_game("car.reset", SWOFTY_POINT_NOTIFY, swofty::cars::events::Reset::version, g_reset.get());
+}
+
+}
+
+extern "C" __declspec(dllexport) const SwoftyCarOps *SwoftyCoreCarOps(void)
+{
+    return &swofty_core::hooks::Ops::table;
+}
+
+SWOFTY_ON_LOAD
+{
+    runtime::when_code_ready("live car operations", swofty_core::hooks::setup);
+}
