@@ -118,6 +118,10 @@ The core logs each build:
 
 ## Changing a car live
 
+::: warning Experimental
+`cars::live` is experimental: nothing in it has run in game yet, and the final drive and gear ratio fields depend on the gearbox's `use_setup_ratios` byte (+0x540), which hasn't been read at runtime. Its shape can change before it's stable.
+:::
+
 `cars::live` gives you each car on track during a session: its index and the game's car. `car.control()` reads who drives it, human or AI, and its controller flags, fresh on every call (see [Who drives a car](./sessions#who-drives-a-car)), and `car.is_ai()` reads whether the AI drives it right now (the player's car too, while the AI has it).
 
 Read and write a value with `get`, `set` and `scale`. The core finds the car's part, decodes and re-encodes the game's scrambled values, and refuses a value outside the field's range with `Result::invalid`:
@@ -233,6 +237,6 @@ For how the AI drives, see [AI](/std/systems/ai).
 
 ## Readiness
 
-The parts, their fields and how they're stored are mapped from the game's code and checked independently. An in-game trace confirmed that cars are built once at session load and torn down when it ends, that the game rebuilds every car twice while a session loads and rebuilds one car when control of it changes, and the live values of engine speed, fuel, ERS, tyre wear, mass and the aero coefficients. Still to confirm in game: DRS, the fuel-mix and setup controls, career R&D upgrades, and how a car's index matches its participant. The `cars::live` fields are mapped from the game's code and checked on fake cars in the core's host test; none of them is tested in game yet.
+The parts, their fields and how they're stored are mapped from the game's code and checked independently. An in-game trace confirmed that cars are built once at session load and torn down when it ends, that the game rebuilds every car twice while a session loads and rebuilds one car when control of it changes, and the live values of engine speed, fuel, ERS, tyre wear, mass and the aero coefficients. Still to confirm in game: DRS, the fuel-mix and setup controls, career R&D upgrades, and how a car's index matches its participant. The `cars::live` fields are mapped from the game's code and checked on fake cars in the core's host test; none of them is tested in game yet. Their offsets are those of the game build the bindings document was made for: on any other build, a game patch included, the core's `same_build()` check turns `cars::live` off until the KB is re-derived for that build.
 
 Credit: the front wing damage, suspension damage, fuel ECU and ERS layouts were cross-checked against findings shared by Will (william09leo), the author of Heavier Damage.
