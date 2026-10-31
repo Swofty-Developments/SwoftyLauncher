@@ -952,7 +952,10 @@ typedef struct SwoftySessionOps {
    is clamped when applied. token: the handle unlayer takes. SWOFTY_ASSET_UNAVAILABLE for an off field.
    unlayer: removes a layer by token and restores the cars it changed.
    refit_tyres: writes the TyrePhysicsGroup string of the car's Chassis and refits its tyres
-   (Car_Tyre_SetWearFactor); SWOFTY_ASSET_UNAVAILABLE while its rows have no verify row.
+   (Car_Tyre_SetWearFactor); SWOFTY_ASSET_UNAVAILABLE until a car-to-tyre-component lookup is bound.
+   SWOFTY_CAR_TYRES_*_GRIP_SCALE is off: the tyre solver (Car_Suspension_SolveWheels) never reads
+   CarSuspTyreType.grip_multiplier, only the AI snapshot and force feedback do.
+   SWOFTY_CAR_CHASSIS_BALLAST_KG rebuilds the mass without fuel until the next fuel update.
    Virtual fields (engine.power_scale, engine.limiter_offset_rpm, ai.grip_scale) write nothing to game data: the
    core's handlers on site_Car_EngineDriveTorque and site_Ai_TableGripInput read them per car. */
 #define SWOFTY_CAR_OPS_VERSION 2

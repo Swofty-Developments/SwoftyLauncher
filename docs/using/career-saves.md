@@ -22,7 +22,7 @@ NEEDS  [Progressive Career is off]
 The chip on a card is one of:
 
 - **In your save**
-- **Missing since <time>**: the career was in the save one launcher session and not in the next
+- **Missing since `<time>`**: the career was in the save one launcher session and not in the next
 - **Deleted in game**: the game removed it while the launcher watched
 - **Archived**
 
