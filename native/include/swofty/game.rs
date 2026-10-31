@@ -5972,6 +5972,16 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Career_StandingsWeekendTrackDone: Binding = Binding {
+        id: "site_Career_StandingsWeekendTrackDone",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Career_StandingsWeekendTrackLoad: Binding = Binding {
+        id: "site_Career_StandingsWeekendTrackLoad",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Career_TeamDeptEnumStore: Binding = Binding {
         id: "site_Career_TeamDeptEnumStore",
         kind: "site",

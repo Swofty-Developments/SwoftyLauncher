@@ -81264,6 +81264,60 @@
     }
    ],
    "used_by": []
+  },
+  {
+   "id": "career.standings_weekend_track_load",
+   "section": ".xtls",
+   "pattern": "0F 84 ?? ?? ?? ?? 48 8B 83 C0 02 00 00 48 8D 48 08",
+   "match": "0x14181e19b",
+   "anchor": "0x6",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14181e1a1",
+   "kind": "mid",
+   "expect": "48 8B 83 C0 02 00 00",
+   "names": [
+    "site_Career_StandingsWeekendTrackLoad"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "standings-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/standings_guard.cpp"
+   ]
+  },
+  {
+   "id": "career.standings_weekend_track_done",
+   "section": ".xtls",
+   "pattern": "48 85 DB 74 5D 41 80 7C 24 49 00 74 55",
+   "match": "0x14181e4dc",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14181e4dc",
+   "kind": "mid",
+   "expect": "48 85 DB 74 5D",
+   "names": [
+    "site_Career_StandingsWeekendTrackDone"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "career-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/standings_guard.cpp"
+   ]
   }
  ]
 }
