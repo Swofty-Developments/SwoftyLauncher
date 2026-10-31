@@ -26,6 +26,10 @@
 //   Lobby Info (9), 2026: 1062 bytes; 24 entries from 30, 43 bytes each, teamId u16 at entry+1 (the builder
 //     Game_TelemetryOutputDataSystem_UpdateUDPLobbyData 0x142d033d0 starts every entry's team at 0xffff and writes
 //     the team stat id as a u16 at entry+1; the name starts at entry+5, one byte later than in 2025).
+// The 2026 format sends each stock team's stat id: 0-9 in a 2025-model session (the 2025 ids) and 476-486 in
+// a 2026-model session (Mercedes 476, Ferrari 477, Red Bull 478, Williams 479, Aston Martin 480, Alpine 481, RB 482,
+// Haas 483, McLaren 484, Audi 485, Cadillac 486; Box-Box f1_26 TEAMS), so an added team's stock 2025 ancestor id n
+// is sent as 476 + n unless the last Participants or Lobby packet showed stock ids 0-9 only.
 //   Time Trial (14), 2024 and 2025: 101 bytes; three data sets of 24 bytes from 29, teamId u8 at set+1.
 //   Time Trial (14), 2026: 104 bytes; three data sets of 25 bytes from 29, teamId u16 at set+1 (the game keeps one
 //     2026-shaped record and Game_TelemetryUdp_Prepare2025 0x144733850 copies the low byte of that u16 into the
@@ -41,6 +45,12 @@ namespace runtime::udp_ids {
 constexpr size_t HEADER = 29;
 constexpr size_t MAX_PACKET = 1500;
 constexpr int NETWORK_DRIVER = 255;
+constexpr int STOCK_2025_LAST = 9;
+constexpr int STOCK_2026_FIRST = 476;
+constexpr int STOCK_2026_LAST = 486;
+constexpr int MODEL_UNKNOWN = 0;
+constexpr int MODEL_2025 = 25;
+constexpr int MODEL_2026 = 26;
 
 struct Map {
     int16_t team8[256];
@@ -48,6 +58,7 @@ struct Map {
     std::map<int, int> teams, drivers;
     std::vector<std::string> lines;
     bool any = false;
+    mutable int model = MODEL_UNKNOWN;
 
     Map()
     {
@@ -154,6 +165,30 @@ inline const Layout *misfit(const uint8_t *p, size_t len)
     return other;
 }
 
+inline int to_2026_team(int stock)
+{
+    return stock >= 0 && stock <= STOCK_2025_LAST ? STOCK_2026_FIRST + stock : stock;
+}
+
+inline void learn_model(const Map &m, const Layout &l, const uint8_t *p, size_t count, size_t first)
+{
+    if (!l.wide || (l.id != 4 && l.id != 9))
+        return;
+    bool s25 = false, s26 = false;
+    for (size_t i = 0; i < count; i++) {
+        const uint8_t *at = p + first + i * l.stride + l.team;
+        int id = at[0] | at[1] << 8;
+        if (m.teams.count(id))
+            continue;
+        s26 |= id >= STOCK_2026_FIRST && id <= STOCK_2026_LAST;
+        s25 |= id <= STOCK_2025_LAST;
+    }
+    if (s26)
+        m.model = MODEL_2026;
+    else if (s25)
+        m.model = MODEL_2025;
+}
+
 struct Change {
     bool driver;
     int from, to;
@@ -179,6 +214,7 @@ inline bool rewrite(const Map &m, uint8_t *p, size_t len, std::vector<Change> *c
         if (count > l->max_entries)
             return false;
     }
+    learn_model(m, *l, p, count, first);
     bool changed = false;
     auto edit = [&](uint8_t *at, bool driver) {
         int from = l->wide ? at[0] | at[1] << 8 : at[0], to = -1;
@@ -186,6 +222,8 @@ inline bool rewrite(const Map &m, uint8_t *p, size_t len, std::vector<Change> *c
             auto &t = driver ? m.drivers : m.teams;
             auto it = t.find(from);
             to = it == t.end() ? -1 : it->second;
+            if (!driver && to >= 0 && m.model != MODEL_2025)
+                to = to_2026_team(to);
         } else {
             to = driver ? m.driver8[from] : m.team8[from];
         }
