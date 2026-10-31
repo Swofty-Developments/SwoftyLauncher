@@ -18,7 +18,10 @@
 // +0x18 wet; 0x14d42ede0 -> 0x14f4935c0): a class whose frontend compound is not in its own list gives
 // slot 0xff, and setWingVisibilityOnCar (0x14f3c6a80) then enters a critical section past the models.
 // The swap only happens when both frontend compounds of f1_1990 are in its list and the list fits.
-// Setting tyre_class_fix turns it off.
+// A Grand Prix of the F1 1990 box has no career: its session takes the f1_1990 class from the setup mode's
+// rows while the cars still name f1_26, so every visual compound the session hands out was one their class
+// maps to slot 0xff and the tyres drew from garbage. The swap applies there too, when the setup's selected
+// entrant list is the box's f1_1990_gp. Setting tyre_class_fix turns it off.
 
 #include <atomic>
 #include <bitset>
@@ -26,6 +29,7 @@
 #include <cstring>
 #include <cstdio>
 #include <mutex>
+#include <string>
 
 #include <swofty/career.hpp>
 #include <swofty/db.hpp>
@@ -46,6 +50,8 @@ using f1990::at;
 namespace t = f1990::tyres;
 
 constexpr const char *kClass1990 = "f1_1990";
+constexpr const char *kBoxList = "f1_1990_gp";
+constexpr size_t kContext = 0xc0, kModeSetup = 0x88, kSetupModes = 0x260, kSelectedList = 0xe18, kListName = 0x28;
 constexpr size_t kVisualEntry = 0x10, kMaxVisuals = 11, kFrontendDry = 0x10, kFrontendWet = 0x18;
 
 std::mutex g_lock;
@@ -55,6 +61,7 @@ int64_t g_stat = -1;
 std::bitset<64> g_logged;
 std::atomic<uint32_t> g_skips;
 std::atomic<bool> g_unsafe_logged{false};
+std::atomic<bool> g_box_logged{false};
 
 void skip(const char *why, const void *classes, const void *own)
 {
@@ -127,6 +134,25 @@ const char *unsafe(const uint8_t *cls)
     return nullptr;
 }
 
+bool read_ptr(uintptr_t base, size_t off, uintptr_t *out)
+{
+    return base && swofty::mem::read(base + off, *out) && *out;
+}
+
+bool box_grand_prix()
+{
+    if (!swofty::api || !swofty::api->resolve)
+        return false;
+    uintptr_t slot = swofty::api->resolve("g_Game_Manager"), mgr = 0, ctx = 0, owner = 0, modes = 0, list = 0, name = 0;
+    if (!slot || !swofty::mem::read(slot, mgr) || !mgr || !read_ptr(mgr, kContext, &ctx) ||
+        !read_ptr(ctx, kModeSetup, &owner) || !read_ptr(owner, kSetupModes, &modes) ||
+        !read_ptr(modes, kSelectedList, &list) || !read_ptr(list, kListName, &owner) ||
+        !read_ptr(owner, 0x10, &name))
+        return false;
+    std::string text;
+    return swofty::mem::c_string(name, text, 64) && text == kBoxList;
+}
+
 bool career_1990()
 {
     void *career = swofty::career::entity();
@@ -146,9 +172,12 @@ SWOFTY_WRAP(Sess_TyreClass_FromName, void *, void *classes, const void *name, ui
     if (!tyre_class_fix || !own || !classes)
         return own;
     std::lock_guard lock(g_lock);
+    bool box = false;
     if (!career_1990()) {
-        skip(swofty::career::entity() ? "the loaded career is not a 1990 one" : "no career loaded", classes, own);
-        return own;
+        if (swofty::career::entity() || !(box = box_grand_prix())) {
+            skip(swofty::career::entity() ? "the loaded career is not a 1990 one" : "no career loaded", classes, own);
+            return own;
+        }
     }
     int64_t stat = class_stat();
     auto *c = static_cast<uint8_t *>(classes);
@@ -181,6 +210,10 @@ SWOFTY_WRAP(Sess_TyreClass_FromName, void *, void *classes, const void *name, ui
                            "compounds than f1_1990 (class %lld)",
                     index, static_cast<long long>(stat));
     }
+    if (box && same && !g_box_logged.exchange(true))
+        swofty::log("[f1-1990] tyre class: F1 1990 box Grand Prix (list %s): cars on compound class %zu take f1_1990 "
+                    "(class %lld)",
+                    kBoxList, index, static_cast<long long>(stat));
     return same ? target : own;
 }
 
