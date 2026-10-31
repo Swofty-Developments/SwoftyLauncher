@@ -131,6 +131,7 @@ See [Removing resources](#removing-resources).
 
 - `copy-resource`: [Copying resources](#copying-resources).
 - `merge-slices`: [Texture arrays](#texture-arrays).
+- `append-slices`: [Texture arrays](#texture-arrays).
 - `add-mipmaps`: [Mip files](#mip-files).
 - `patch-pkg`: [Editing `!pkg` resources](#editing-pkg-resources).
 - `set-material`: [Materials](#materials).
@@ -176,6 +177,17 @@ The build prints one line per op:
 
 ```text
 erp: example.logos: 2 of 12 slice(s) of eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.team_logos.f1_2026.texarray.image merged into 2025_asset_groups/vfx_package/common.erp
+```
+
+`append-slices` adds new slices instead. Ship an array that holds only your own slices: the build puts them after the slices of the array already in `erp` (the game's, or as earlier addons in the load order left it) and sets the slice count in the array and in its view, the resource without `.image`. Add one list entry per slice with a `patch-pkg` `clone-entry`, in the same order. Entries and slices both go on in load order, so two addons that each append their own logos both show and do not conflict. An array of another format or slice size fails the build, and a later `put-resource` or `replace-resource` of the whole array drops the slices appended before it. Older launchers reject the op, so set `compat.launcher` to a version that has it.
+
+```json
+{
+  "op": "append-slices",
+  "erp": "2025_asset_groups/ui_package/flow_frontend.erp",
+  "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.team_logos.f1_2023.texarray.image",
+  "source": "logos/mine.erp"
+}
 ```
 
 Conflicts count per slice. Two addons that change different slices of one array do not conflict. Two that change the same slice print `<later addon> overrides <earlier addon> on 1 archive resource`, and the later one in the load order wins. Each overridden slice counts as one archive resource, and [`swofty conflicts`](/reference/cli#swofty-conflicts) names it `<erp>:<resource> slice <n>`. A `merge-slices` that replaces the whole resource overrides every slice an earlier `merge-slices` wrote. A later `put-resource`, `replace-resource`, `remove-resource` or `overlay` of the resource overrides the addons that merged slices into it, and a later `merge-slices` into a resource an earlier addon wrote whole overrides that addon on each slice it changes.

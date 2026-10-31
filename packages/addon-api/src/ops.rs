@@ -322,6 +322,14 @@ pub enum ErpOp {
         resource: String,
         source: Source,
     },
+    // Every slice of the texture array `resource` in `source` goes after the slices of
+    // the array already in `erp` (the game's, or as earlier addons left it), in load
+    // order, and the array's view (`resource` without `.image`) counts them.
+    AppendSlices {
+        erp: String,
+        resource: String,
+        source: Source,
+    },
     /// Sets constants of a `.material` resource in place: a number for a scalar, a list for a
     /// vector, written as the material declares them.
     SetMaterial {

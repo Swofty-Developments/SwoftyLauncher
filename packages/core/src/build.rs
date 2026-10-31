@@ -2296,9 +2296,10 @@ fn slice_merges(ops: &[Op]) -> Vec<(usize, &str, &str)> {
     ops.iter()
         .enumerate()
         .filter_map(|(i, op)| match &op.op {
-            AssetOp::Erp(crate::ops::ErpOp::MergeSlices { erp, resource, .. }) => {
-                Some((i, erp.as_str(), resource.as_str()))
-            }
+            AssetOp::Erp(
+                crate::ops::ErpOp::MergeSlices { erp, resource, .. }
+                | crate::ops::ErpOp::AppendSlices { erp, resource, .. },
+            ) => Some((i, erp.as_str(), resource.as_str())),
             _ => None,
         })
         .collect()

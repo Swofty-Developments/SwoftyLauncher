@@ -310,6 +310,8 @@ fn erp_target(op: &ErpOp) -> Option<(Target, bool)> {
         ErpOp::Overlay { .. } => None,
         // The build writes one target per slice it changes, through `Planner::replaced`.
         ErpOp::MergeSlices { .. } => None,
+        // It adds slices after the array as earlier addons left it, so it replaces nothing.
+        ErpOp::AppendSlices { .. } => None,
     }
 }
 
