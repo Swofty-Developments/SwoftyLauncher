@@ -1415,6 +1415,12 @@
   "site_Game_TeamSelect_TeamLogoFormat": {
    "match": "0x1873df5"
   },
+  "site_Game_TimeTrialLeaderboard_BoardRead": {
+   "match": "0x2fc29bd"
+  },
+  "site_Game_TimeTrialLeaderboard_BoardsDone": {
+   "match": "0x2fc2d72"
+  },
   "site_Gdb_DeptCountStore": {
    "match": "0x4598b6f"
   },

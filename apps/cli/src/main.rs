@@ -622,6 +622,9 @@ fn game(store: &Store, cmd: GameCommand) -> Result<()> {
             game,
         } => {
             let g = crate::build::game(store, game)?;
+            if swofty_core::install::Source::detect(&g.dir) == swofty_core::install::Source::EaApp {
+                crate::ea::check_recorded(&g.dir)?;
+            }
             crate::ea::launch_installed(store, &g, vr, no_start_store)?;
         }
         GameCommand::Add { path } => {

@@ -184,7 +184,10 @@ pub fn step_commands(step: &Step) -> Result<Vec<(String, Value)>, Error> {
         }
         "wait" => match (arg.get("event"), arg.get("screen")) {
             (Some(e), _) => one("wait", json!({ "event": e })),
-            (None, Some(n)) => one("at", json!({ "phase": n })),
+            (None, Some(n)) => one(
+                "at",
+                json!({ "phase": n, "settle_ms": arg.get("settle_ms").cloned().unwrap_or(json!(1000)) }),
+            ),
             _ => Ok(Vec::new()),
         },
         "home" => one("home", Value::Null),

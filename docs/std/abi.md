@@ -83,7 +83,7 @@ Like every other table, the three tables are appended to `SwoftyApi` and also ex
 #define SWOFTY_HOOKS_VERSION 1
 #define SWOFTY_SERVICES_VERSION 1
 
-enum { SWOFTY_SCOPE_GLOBAL = 0, SWOFTY_SCOPE_PROFILE = 1, SWOFTY_SCOPE_CAREER = 2 };
+enum { SWOFTY_SCOPE_GLOBAL = 0, SWOFTY_SCOPE_PROFILE = 1, SWOFTY_SCOPE_CAREER = 2, SWOFTY_SCOPE_AUTOMATIC = 3 };
 enum { SWOFTY_PHASE_BEFORE = 0, SWOFTY_PHASE_REPLACE = 1, SWOFTY_PHASE_AFTER = 2 };
 enum { SWOFTY_TOO_SMALL = 4 };   /* joins ok/late/unavailable/invalid: *len holds the size needed */
 

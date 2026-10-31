@@ -116,13 +116,14 @@ struct Round {
 SWOFTY_RECORD(Round, round, race, venue, date)
 
 struct Calendar {
-    static constexpr Version version{1, 0};
+    static constexpr Version version{1, 1};
+    std::string data_group;
     Keyed<Round, &Round::round> rounds;
     int seasons = 10;
     std::vector<int> transfer_windows;
     json::Value extra;
 };
-SWOFTY_RECORD(Calendar, rounds, seasons, transfer_windows)
+SWOFTY_RECORD(Calendar, data_group, rounds, seasons, transfer_windows)
 inline Registry<Calendar> calendars{"career.calendar", {.applies = Applies::boot}};
 
 struct DriverRatings {

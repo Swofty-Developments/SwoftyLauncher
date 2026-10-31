@@ -20,6 +20,7 @@ namespace testagent {
 
 constexpr int PROTOCOL = 1;
 constexpr uint64_t DEFAULT_WAIT_MS = 30000;
+constexpr uint64_t DEFAULT_SETTLE_MS = 1200;
 constexpr uint64_t MAX_WAIT_MS = 30 * 60 * 1000;
 constexpr size_t MAX_LINE = 64 * 1024;
 
@@ -287,6 +288,9 @@ struct Game {
     virtual bool home_ready() = 0;
     // How many tile screens have been built since arming: a route's screen is up once it moves.
     virtual uint64_t tile_screens() = 0;
+    // How many times the current screen's name has changed since arming (render_* overlays don't
+    // count). A screen is input-ready once this has held still for a settle time.
+    virtual uint64_t screen_changes() { return 0; }
     // On the current tile screen: run the tile's action as the screen's select does (a route
     // action fires its route). unavailable while there is no tile screen yet.
     virtual Outcome tile_select(const std::string &id) = 0;
@@ -443,6 +447,7 @@ class Runner {
     // to append to results.jsonl go to out.
     void tick(uint64_t now, std::vector<std::string> &out)
     {
+        watch(now);
         if (active_) {
             Outcome o = poll(now);
             if (o.status == Status::pending)
@@ -491,6 +496,31 @@ class Runner {
     // next route fires from the screen it opened.
     uint64_t fired_at_ = 0, screens_at_ = 0;
     std::string fired_value_;
+    uint64_t seen_ = 0, screen_at_ = 0, settle_ms_ = 0, retry_after_ = 3000, pressed_seq_ = 0, pressed_at_ = 0;
+    int retries_ = 0, tries_ = 0;
+
+    void watch(uint64_t now)
+    {
+        uint64_t c = g_.screen_changes();
+        if (c != seen_) {
+            seen_ = c;
+            screen_at_ = now;
+        }
+    }
+
+    bool settled(uint64_t now) const { return seen_ == 0 || now - screen_at_ >= settle_ms_; }
+
+    Outcome pad_press(uint64_t now)
+    {
+        Outcome o = g_.pad(first_);
+        if (o.status != Status::ok)
+            return o;
+        pressed_seq_ = seen_;
+        pressed_at_ = now;
+        stage_ = 1;
+        stage_at_ = now;
+        return Outcome::pending();
+    }
 
     static constexpr const char *SANDBOX_ONLY =
         " runs only in the save sandbox (a career environment, or swofty test shell --fixture): the game would save "
@@ -885,6 +915,8 @@ class Runner {
             want_ = a["phase"].str();
             if (want_.empty())
                 return Outcome::fail("at needs {\"phase\": <screen or flow state>}");
+            long long settle = a["settle_ms"].num(0);
+            settle_ms_ = uint64_t(settle < 0 ? 0 : settle > 60000 ? 60000 : settle);
             deadline_ = now + limit(DEFAULT_WAIT_MS);
             return poll(now);
         }
@@ -919,12 +951,18 @@ class Runner {
             }
             long long ms = a["ms"].num(120);
             hold_ms_ = uint64_t(ms < 16 ? 16 : ms > 10000 ? 10000 : ms);
-            Outcome o = g_.pad(first_);
-            if (o.status != Status::ok)
-                return o;
-            stage_ = 1;
-            stage_at_ = now;
-            return Outcome::pending();
+            long long settle = a["settle_ms"].num(DEFAULT_SETTLE_MS), retry = a["retry"].num(0),
+                      after = a["retry_after_ms"].num(3000);
+            settle_ms_ = uint64_t(settle < 0 ? 0 : settle > 60000 ? 60000 : settle);
+            retries_ = int(retry < 0 ? 0 : retry > 20 ? 20 : retry);
+            retry_after_ = uint64_t(after < 200 ? 200 : after > 60000 ? 60000 : after);
+            tries_ = 0;
+            deadline_ = now + limit(settle_ms_ + 30000);
+            if (!settled(now)) {
+                stage_ = 5;
+                return Outcome::pending();
+            }
+            return pad_press(now);
         }
         if (c == "save") {
             std::string what = a["what"].str("now");
@@ -1009,8 +1047,9 @@ class Runner {
                 return Outcome::ok("{\"event\":" + esc(want_) + ",\"fires\":" + std::to_string(fires_.count[want_]) + "}");
         } else if (c == "at") {
             std::string p = g_.phase();
-            if (p == want_ || p == "fe_" + want_ || p.find("|" + want_ + "|") != std::string::npos ||
-                p.find("|fe_" + want_ + "|") != std::string::npos)
+            if ((p == want_ || p == "fe_" + want_ || p.find("|" + want_ + "|") != std::string::npos ||
+                 p.find("|fe_" + want_ + "|") != std::string::npos) &&
+                settled(now))
                 return Outcome::ok("{\"phase\":" + esc(want_) + "}");
         } else if (c == "log") {
             std::vector<std::string> lines;
@@ -1035,6 +1074,23 @@ class Runner {
             if (o.status != Status::pending)
                 return o;
         } else if (c == "pad") {
+            if (stage_ == 5) {
+                if (!settled(now) && now < deadline_)
+                    return Outcome::pending();
+                return pad_press(now);
+            }
+            if (stage_ == 6) {
+                if (seen_ != pressed_seq_)
+                    return Outcome::ok("{\"presses\":" + std::to_string(tries_ + 1) + ",\"screen_changed\":true}");
+                if (now - pressed_at_ < retry_after_)
+                    return Outcome::pending();
+                if (tries_ >= retries_)
+                    return Outcome::fail("pad: the screen did not change after " + std::to_string(tries_ + 1) +
+                                         " press(es); it is still " + g_.phase());
+                ++tries_;
+                stage_ = 5;
+                return Outcome::pending();
+            }
             if (now - stage_at_ < hold_ms_)
                 return Outcome::pending();
             if (stage_ == 1) {
@@ -1053,6 +1109,10 @@ class Runner {
                 g_.pad(PadState{});
                 stage_ = 4;
                 stage_at_ = now;
+                return Outcome::pending();
+            }
+            if (retries_ > 0) {
+                stage_ = 6;
                 return Outcome::pending();
             }
             return Outcome::ok();

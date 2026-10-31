@@ -40,6 +40,37 @@ pub fn resolve(profile: &Profile, installed: &BTreeMap<String, AddonManifest>) -
             there
         })
         .collect();
+    let launcher = crate::update::current_version();
+    let mut left_out: BTreeSet<&str> = BTreeSet::new();
+    for id in &enabled {
+        let m = &installed[*id];
+        if let Some(req) = launcher_cap_passed(m, &launcher) {
+            warnings.push(format!(
+                "{} is left out: it is made for Swofty Launcher {req} and this is {launcher}. Its author \
+                 needs to publish an update; turn it off on the Addons page to stop this message",
+                m.name
+            ));
+            left_out.insert(*id);
+        }
+    }
+    while let Some((id, dep)) = enabled
+        .iter()
+        .filter(|id| !left_out.contains(**id))
+        .find_map(|id| {
+            installed[*id]
+                .requires
+                .iter()
+                .find(|r| left_out.contains(r.id.as_str()))
+                .map(|r| (*id, r.id.as_str()))
+        })
+    {
+        warnings.push(format!(
+            "{} is left out: it needs {}, which is left out",
+            installed[id].name, installed[dep].name
+        ));
+        left_out.insert(id);
+    }
+    let enabled: Vec<&str> = enabled.into_iter().filter(|id| !left_out.contains(id)).collect();
     let mut addons = BTreeMap::new();
     for id in &enabled {
         addons.insert(*id, &installed[*id]);
@@ -47,7 +78,7 @@ pub fn resolve(profile: &Profile, installed: &BTreeMap<String, AddonManifest>) -
     if !addons.contains_key(CORE_ID) {
         return Err(Error::Resolve(format!("{CORE_ID} is missing")));
     }
-    check_launcher(addons.values().copied(), &crate::update::current_version())?;
+    check_launcher(addons.values().copied(), &launcher)?;
     for m in addons.values() {
         for r in &m.requires {
             match (addons.get(r.id.as_str()), installed.get(&r.id)) {
@@ -176,6 +207,19 @@ pub fn lonely_bases(
         }
     }
     out
+}
+
+fn launcher_cap_passed(m: &AddonManifest, launcher: &semver::Version) -> Option<semver::VersionReq> {
+    use semver::Op;
+    let req = m.compat.launcher.as_ref().filter(|r| !r.matches(launcher))?;
+    let failed: Vec<&semver::Comparator> = req.comparators.iter().filter(|c| !c.matches(launcher)).collect();
+    let too_new = !failed.is_empty()
+        && failed.iter().all(|c| match c.op {
+            Op::Greater | Op::GreaterEq => false,
+            Op::Less | Op::LessEq => true,
+            _ => *launcher > semver::Version::new(c.major, c.minor.unwrap_or(0), c.patch.unwrap_or(0)),
+        });
+    (m.id != CORE_ID && too_new).then(|| req.clone())
 }
 
 pub fn launcher_refusal(m: &AddonManifest, launcher: &semver::Version) -> Option<String> {
@@ -379,6 +423,87 @@ mod tests {
             .to_string();
         assert!(
             err.contains("a.newer needs Swofty Launcher >=1.0.9; this is 1.0.8"),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn an_addon_capped_below_this_launcher_is_left_out_with_its_dependents() {
+        let capped = r#","compat":{"game":"f1_25","launcher":">=1.6.11, <1.6.13"}"#;
+        let installed = BTreeMap::from([
+            m(CORE_ID, ""),
+            (
+                "j.orders".to_owned(),
+                AddonManifest::parse(&format!(
+                    r#"{{"schema_version":1,"id":"j.orders","name":"Team Orders","version":"0.2.0","author":"t"{capped}}}"#
+                ))
+                .unwrap(),
+            ),
+            m("a.uses", r#","requires":[{"id":"j.orders","version":">=0.1.0"}]"#),
+            m("a.other", ""),
+        ]);
+        let launcher = crate::update::current_version();
+        assert!(launcher >= semver::Version::new(1, 6, 13));
+        let plan = resolve(&profile(&["j.orders", "a.uses", "a.other"]), &installed).unwrap();
+        assert!(
+            !plan.order.iter().any(|id| id == "j.orders" || id == "a.uses"),
+            "{:?}",
+            plan.order
+        );
+        assert!(plan.order.iter().any(|id| id == "a.other"));
+        assert!(
+            plan.warnings.iter().any(|w| w
+                .starts_with("Team Orders is left out: it is made for Swofty Launcher >=1.6.11, <1.6.13")),
+            "{:?}",
+            plan.warnings
+        );
+        assert!(
+            plan.warnings
+                .iter()
+                .any(|w| w == "a.uses is left out: it needs Team Orders, which is left out"),
+            "{:?}",
+            plan.warnings
+        );
+    }
+
+    #[test]
+    fn only_a_launcher_above_the_range_counts_as_past_the_cap() {
+        let with = |req: &str| {
+            AddonManifest::parse(&format!(
+                r#"{{"schema_version":1,"id":"a.r","name":"a.r","version":"1.0.0","author":"t",
+                "compat":{{"game":"f1_25","launcher":"{req}"}}}}"#
+            ))
+            .unwrap()
+        };
+        let v = |s: &str| semver::Version::parse(s).unwrap();
+        assert!(launcher_cap_passed(&with(">=1.6.11, <1.6.13"), &v("1.7.0")).is_some());
+        assert!(launcher_cap_passed(&with("<=1.6.12"), &v("1.7.0")).is_some());
+        assert!(launcher_cap_passed(&with("^1.5"), &v("2.0.0")).is_some());
+        assert!(launcher_cap_passed(&with("~1.6.11"), &v("1.7.0")).is_some());
+        assert!(launcher_cap_passed(&with("^1.8"), &v("1.7.0")).is_none());
+        assert!(launcher_cap_passed(&with(">=1.8.0"), &v("1.7.0")).is_none());
+        assert!(launcher_cap_passed(&with(">=1.8.0, <2.0.0"), &v("1.7.0")).is_none());
+        assert!(launcher_cap_passed(&with(">=1.6.0"), &v("1.7.0")).is_none());
+    }
+
+    #[test]
+    fn an_addon_that_needs_a_newer_launcher_still_stops_the_build() {
+        let installed = BTreeMap::from([
+            m(CORE_ID, ""),
+            (
+                "a.future".to_owned(),
+                AddonManifest::parse(
+                    r#"{"schema_version":1,"id":"a.future","name":"a.future","version":"1.0.0","author":"t",
+                    "compat":{"game":"f1_25","launcher":">=99.0.0, <100.0.0"}}"#,
+                )
+                .unwrap(),
+            ),
+        ]);
+        let err = resolve(&profile(&["a.future"]), &installed)
+            .unwrap_err()
+            .to_string();
+        assert!(
+            err.contains("a.future needs Swofty Launcher >=99.0.0, <100.0.0"),
             "{err}"
         );
     }

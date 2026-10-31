@@ -93,6 +93,19 @@ fn is_none(raw: i64) -> bool {
     raw & ID_BITS == ID_BITS
 }
 
+type FileKey = Option<(std::path::PathBuf, Option<std::time::SystemTime>, u64)>;
+
+static LOADED: std::sync::Mutex<Option<(Vec<FileKey>, Names)>> = std::sync::Mutex::new(None);
+
+fn file_key(p: &Path) -> (std::path::PathBuf, Option<std::time::SystemTime>, u64) {
+    let meta = std::fs::metadata(p).ok();
+    (
+        p.to_path_buf(),
+        meta.as_ref().and_then(|m| m.modified().ok()),
+        meta.map_or(0, |m| m.len()),
+    )
+}
+
 impl Names {
     pub fn from_db(db: Gvdb, english: Option<&[u8]>) -> Self {
         let mut cat = Catalog::from_gvdb(db.clone(), String::new());
@@ -112,14 +125,26 @@ impl Names {
             Some(p) => p,
             None => crate::dbedit::stock_database(store, game).ok()?,
         };
+        let edits = built.and_then(|b| b.edits);
+        let english = crate::baseline::original_lang(&store.root, &game.dir, &game.identity, "eng").ok();
+        let key: Vec<FileKey> = [Some(&path), edits.as_ref(), english.as_ref()]
+            .into_iter()
+            .map(|p| p.map(|p| file_key(p)))
+            .collect();
+        let mut cache = LOADED.lock().unwrap_or_else(|e| e.into_inner());
+        if let Some((k, names)) = cache.as_ref()
+            && *k == key
+        {
+            return Some(names.clone());
+        }
         let mut db = Gvdb::parse(&std::fs::read(&path).ok()?).ok()?;
-        if let Some(edits) = built.and_then(|b| b.edits).and_then(|p| std::fs::read(p).ok()) {
+        if let Some(edits) = edits.and_then(|p| std::fs::read(p).ok()) {
             apply_edits(&mut db, &edits);
         }
-        let english = crate::baseline::original_lang(&store.root, &game.dir, &game.identity, "eng")
-            .ok()
-            .and_then(|p| std::fs::read(p).ok());
-        Some(Self::from_db(db, english.as_deref()))
+        let english = english.and_then(|p| std::fs::read(p).ok());
+        let names = Self::from_db(db, english.as_deref());
+        *cache = Some((key, names.clone()));
+        Some(names)
     }
 
     pub fn team(&self, raw: i64) -> String {
@@ -247,11 +272,11 @@ mod tests {
         super::super::careers::listing(
             &parse(
                 r#"{"careers":[
-                {"career":"a","driver_raw":5,"team_raw":7,"last_played":3},
-                {"career":"b","driver_raw":16,"team_raw":16387,"last_played":2},
-                {"career":"c","driver_raw":99,"team_raw":99,"last_played":1},
-                {"career":"d","driver":"Kept Name","team":"Kept Team","driver_raw":5,"team_raw":7},
-                {"career":"e","last_played":0}
+                {"career":"a","slot":"a","driver_raw":5,"team_raw":7,"last_played":3},
+                {"career":"b","slot":"b","driver_raw":16,"team_raw":16387,"last_played":2},
+                {"career":"c","slot":"c","driver_raw":99,"team_raw":99,"last_played":1},
+                {"career":"d","slot":"d","driver":"Kept Name","team":"Kept Team","driver_raw":5,"team_raw":7},
+                {"career":"e","slot":"e","last_played":0}
                 ]}"#,
             ),
             None,
@@ -328,7 +353,9 @@ mod tests {
     #[test]
     fn the_none_id_names_nothing() {
         let l = super::super::careers::listing(
-            &parse(r#"{"careers":[{"career":"f1_career_2026","driver_raw":16383,"team_raw":16383}]}"#),
+            &parse(
+                r#"{"careers":[{"career":"driver_career:n1","slot":"n1","driver_raw":16383,"team_raw":16383}]}"#,
+            ),
             None,
         );
         let mut l = l;

@@ -77,6 +77,10 @@ While the wrapper builds and installs the profile, it rewrites `build.json` ever
 
 A session journal still open while the lock is free belongs to a session that ended without rolling back. `swofty run`, `swofty apply` and the wrapper roll back every open journal before they start. The launcher rolls back session journals when it starts, and keeps a `swofty apply` install. A `build.json` left while the lock is free belongs to a build whose process ended; the same rollback deletes it and `cancel-build`, and logs `the last Play stopped while <step>; Play starts the build again`. The launcher runs that rollback as soon as it finds one.
 
+Each session journal records the game folder it was written for (`"game"`). When that folder no longer has `F1_25.exe` and the rollback runs for another folder, as after the game folder was moved by hand, the journal rolls back there only when each finished entry's file holds the bytes the install wrote or the original, or is absent for an added file. Otherwise the rollback stops with `an earlier session's undo record is for F1 25 in <folder>, which is gone, ...` and the journal stays open.
+
+Offline play's journal names its game folder on its `meta` line. When that folder no longer has `F1_25.exe`, recovery and `swofty restore` move the journal's paths to the game folder they run for, when that folder holds at least one file the journal staged with the recorded digest and none that differs. Otherwise they stop with `offline play's record is for F1 25 in <folder>, which is gone, ...` and the journal stays.
+
 ## Leftovers
 
 A file in the way of an install counts as the launcher's own when `placed.json` records those exact bytes at that path, or when it is byte-identical to the file about to be placed and not a backed-up original. The install clears those files, logs the recovery and the `swofty doctor` report, and tries once more. Any other file stops the install untouched and is recorded in `blocked.json`; `swofty restore` moves it to `$DATA/set-aside/<time>/`. The launcher opens the **Your game files have been edited** modal, whose **Restore game folder** button runs the same restore.

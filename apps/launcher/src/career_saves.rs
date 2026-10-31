@@ -306,18 +306,22 @@ impl Shell {
         });
         let (versions, dir, usage, cap) = match vault {
             Some(v) => {
+                let now = swofty_core::stdlib::careers::read(&swofty_core::stdlib::careers::data_path(&root));
                 let versions = snaps
                     .into_iter()
                     .map(|snap| {
-                        let held = v.index_of(&snap).map(|i| {
-                            vault::careers::in_save(&i)
+                        let index = v.index_of(&snap);
+                        let held = index.as_ref().map(|i| {
+                            vault::careers::in_save(i)
                                 .map(|c| match c.label.is_empty() {
                                     true => c.career.clone(),
                                     false => c.label.clone(),
                                 })
                                 .collect()
                         });
-                        let diff = v.preview(&snap);
+                        let diff = index
+                            .filter(|_| !now.is_empty())
+                            .map(|i| vault::careers::diff(&now, &i));
                         Version { snap, held, diff }
                     })
                     .collect();
@@ -1322,7 +1326,7 @@ mod tests {
         assert_eq!(careers_held(&vec![String::new(); 10]), "10 careers");
         let l = listing(
             &swofty_core::stdlib::careers::parse(
-                r#"{"careers":[{"career":"f1_career_2026","slot_season":1,"slot_weekend":2}]}"#,
+                r#"{"careers":[{"career":"f1_career_2026","slot":"0","slot_season":1,"slot_weekend":2}]}"#,
             ),
             None,
         );
