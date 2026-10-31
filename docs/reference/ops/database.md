@@ -68,7 +68,8 @@ applying yourname.my-addon: rules.stop_go_penalty.penalty_duraton: no such key
 - Write every value as a string, whatever the field's type. A bool is `True` or `False`. A list joins its entries with commas and no spaces: `"0,-0.6,0"`.
 - `value_from` instead of `value` copies the value of another database path.
 - `"create": true` with a `"type"` tag adds the field when the row lacks it.
-- A `select` that matches no row fails the build. So does a missing field, without `create`.
+- A `select` that matches no row waits for a later addon to add the row ([Applying changes](#applying-changes)), and fails the build if none does. A missing field, without `create`, fails the build.
+- A `select` that matches several rows takes the first one, which is the stock row, or else the row the earliest addon in the load order added. The build warns once per selector: `<select>: 2 rows match; using the first, <row>`. `key` paths of `put-record` and `remove-record` still fail with `<select>: 2 rows match`, and so does a `strict` file.
 - `datasets` is accepted but not built: a `set` with it fails.
 
 ```text
@@ -94,12 +95,12 @@ dataset-scoped set is not implemented yet
 `add-row` copies every key of the source row: its fields, its sub-object keys such as `ai_vehicle_config.*` on vehicles, and its nested tables with their `_instancecount_` keys and rows, at any depth. `set` then changes keys of the copy. Every `set` key must be a key the copy has. The copy goes at the table's next row number, and the table's count goes up by one ([The row-count rule](#the-row-count-rule)).
 
 - `copy`: `all` copies every key of the source row and every key in the file's `fields` list. `listed` copies only the keys in the `fields` list.
-- `stat_id`: `fresh` gives the copy the id the install keeps for it, else a new id from the hash of the copy's addon, table and label ([Kept ids](#kept-ids)). `keep` keeps the source row's id. The default is `fresh` in a top-level table whose rows all have different ids, and `keep` elsewhere ([Stat ids](#stat-ids)).
+- `stat_id`: `fresh` gives the copy the id the install keeps for it, else the next free id above the table's rows in load order ([Kept ids](#kept-ids)). `keep` keeps the source row's id. The default is `fresh` in a top-level table whose rows all have different ids, and `keep` elsewhere ([Stat ids](#stat-ids)).
 
 The build prints, prefixed with the addon's id:
 
 ```text
-my-addon: add-row entrants.teams.team_<n> (from entrants.teams.team[_metadata_=williams_26]): stat_id <id> (the source's is <id>; from the row's key)
+my-addon: add-row entrants.teams.team_<n> (from entrants.teams.team[_metadata_=williams_26]): stat_id <id> (the source's is <id>)
 my-addon: add-row entrants.teams.team_<n> (from entrants.teams.team[_metadata_=williams_26]): copied <n> key(s)
 ```
 
@@ -241,18 +242,18 @@ Tables indexed by `stat_id` find a row by its id, so a copy that keeps its sourc
 A copy into such a table gets an id of its own ([Kept ids](#kept-ids)), and the build prints it:
 
 ```text
-f1-1990: add-row entrants.entrant_lists.entrant_list_68 (from entrants.entrant_lists.entrant_list[_metadata_=f1_2026]): stat_id 105 (the source's is 67; from the row's key)
+f1-1990: add-row entrants.entrant_lists.entrant_list_68 (from entrants.entrant_lists.entrant_list[_metadata_=f1_2026]): stat_id 105 (the source's is 67)
 ```
 
 #### Kept ids
 
 A copy keeps its id from build to build, so a career keeps its cars, teams and drivers. The launcher keeps the id of every copy it gives one in `$DATA/registry/row-ids.json`, one file per install next to the core's `ids.json`, keyed `<addon>/<table>.<row>/<label>`. Every profile's build reads it, so a row has the same id whatever the profile, the load order or the other addons:
 
-- A copy the file has no id for takes, at a profile's first build with the file, the id the profile's last build gave the row with its label, or, for a new profile, the newest build of any profile.
-- Any other new copy takes the id the hash of its key picks, in the ids above the stock rows' highest: as many as the power of two at or above twice the build's `add-row` ops into the table, at least 32, and none above the table's ceiling. When a row holds that id, or the file keeps it for another row, or the core's `ids.json` holds it, the copy takes the next one, and copies with lower keys pick first. The load order doesn't change the id.
-- In a table whose ceiling leaves 32 ids or fewer above the stock rows, such as game setup modes, a new copy takes the next free id above the table's rows, in load order.
+- A copy the file has no id for takes, at a profile's first build with the file, the id the profile's last build gave the row with its label, or, for a new profile, the newest build of any profile. The last build's rows are read from its database file and from the database edits in its `swofty/assets.json`, where a build that loads the database in game puts them.
+- Any other new copy takes the next free id above the table's rows, in load order, as builds before 1.6.10 gave it, passing over the ids the file keeps for other rows and the ids the core's `ids.json` holds. A fresh install with the same addons in the same order gives a save made before 1.6.10 its ids back, and two installs that build the same addons in the same order from an empty file get the same ids.
 - An addon that is turned off or removed keeps its rows' ids. Turned back on, its rows get them back. An update that adds a row gives the new row a new id and leaves the others alone.
-- A kept id that a row of the database, the core's `ids.json` or the table's ceiling now rules out moves to a new id from the hash.
+- A kept id that a row of the database, the core's `ids.json` or the table's ceiling now rules out moves to the next free id.
+- 1.6.10 and 1.6.11 gave new copies an id from the hash of their key and kept none of the ids earlier builds gave. The first build after them puts those rows back once: each takes the id the newest game session log from before 1.6.10 (`$DATA/sessions/<stamp>/loader.log`) shows for its label, and a row no log shows takes the next free id in load order again. An addon whose hashed team ids a session loaded since 1.6.10, while none loaded its earlier ones, keeps the hashed ids.
 - A table with no free id left takes the lowest id kept for an addon the build leaves out.
 - Two copies with one label in one addon's table are `<label>` and `<label>#2`.
 
@@ -261,7 +262,7 @@ The build prints where each id came from:
 ```text
 swofty.classic-seasons-2016: add-row entrants.vehicles.vehicle_438 (from entrants.vehicles.vehicle[_metadata_=f1_2025_mercedes]): stat_id 512 (the source's is 3; kept from row-ids.json)
 swofty.classic-seasons-2016: add-row entrants.vehicles.vehicle_439 (from entrants.vehicles.vehicle[_metadata_=f1_2025_ferrari]): stat_id 513 (the source's is 4; as the last build gave it)
-my-addon: add-row entrants.vehicles.vehicle_449 (from entrants.vehicles.vehicle[_metadata_=f1_2025_ferrari]): stat_id 655 (the source's is 4; from the row's key)
+my-addon: add-row entrants.vehicles.vehicle_449 (from entrants.vehicles.vehicle[_metadata_=f1_2025_ferrari]): stat_id 655 (the source's is 4)
 my-addon: add-row entrants.vehicles.vehicle_450 (from entrants.vehicles.vehicle[_metadata_=f1_2025_ferrari]): stat_id 737 (the source's is 4; 600, kept for it, is kept for another row or held by a record of the core's registry; from the row's key)
 my-addon: add-row entrants.vehicles.vehicle_packages.vehicle_package_90 (from entrants.vehicles.vehicle_packages.vehicle_package_0): stat_id 83 (the source's is 2; no other id up to 254 is free; reused from old-addon/entrants.vehicles.vehicle_packages.vehicle_package/old_era, which this build leaves out)
 database: row-ids.json keeps 412 added-row id(s) (11 new)
@@ -272,8 +273,8 @@ database: row-ids.json keeps 412 added-row id(s) (11 new)
 ```text
 $ swofty registry row-ids my-addon
 my-addon: 2 added row(s) keep these stat ids
-  entrants.vehicles.vehicle/my_car       655  kept, hashed from the row's key
-  entrants.vehicles.vehicle/my_old_car   512  kept, seeded from a profile's last build
+  entrants.vehicles.vehicle/my_car       655  kept, the next free id in load order when it was added
+  entrants.vehicles.vehicle/my_old_car   512  kept, seeded from a profile's last build or a game session from before 1.6.10
 ```
 
 The game keeps the id of some tables in one byte, and of game setup modes and seasons as a bit of a 32-bit mask. A copy into one of them never gets an id above the table's highest:
@@ -281,7 +282,7 @@ The game keeps the id of some tables in one byte, and of game setup modes and se
 | Table | Highest `stat_id` |
 | --- | --- |
 | `entrants.vehicles.vehicle_packages.vehicle_package_N` | 254 |
-| `entrants.drivers.driver_N` | 254 |
+| `entrants.drivers.driver_N` | 16382 |
 | `entrants.engines.Engine_N` | 254 |
 | `entrants.characters.character_N` | 254 |
 | `entrants.animation.driver_animation_sets.driver_animation_set_N` | 254 |
@@ -292,15 +293,15 @@ The game keeps the id of some tables in one byte, and of game setup modes and se
 | `game_setup.seasons.season_N` (`statId`) | 31 |
 | `entrants.entrant_setup_modes.entrant_setup_mode_N` | 31 |
 
-A game setup mode or season id above 31 stops the game at boot.
+A game setup mode or season id above 31 stops the game at boot. A driver id is 16 bits in memory and 14 in saves and net messages, so 16382 is the highest; a copy takes 208 to 253 first, then 256 upward.
 
-The hash of a copy's key picks its id from the ids above the stock rows' highest up to the ceiling, and a driver's from 208, wrapping round to the lowest when the ids above it are taken. The build prints it:
+When the next id above the table's highest would pass it, the copy gets the lowest id above the stock rows' highest that no row holds, and a driver the lowest free id from 208. The build prints it:
 
 ```text
-swofty.classic-seasons-2021: add-row entrants.vehicles.vehicle_packages.vehicle_package_122 (from entrants.vehicles.vehicle_packages.vehicle_package[_metadata_=f1_2025]): stat_id 83 (the source's is 24; from the row's key)
+swofty.classic-seasons-2021: add-row entrants.vehicles.vehicle_packages.vehicle_package_122 (from entrants.vehicles.vehicle_packages.vehicle_package[_metadata_=f1_2025]): stat_id 83 (the source's is 24; 255 is above 254, the highest the game reads)
 ```
 
-When no id is free and no addon the build leaves out keeps one, the `add-row` fails like any op that can't apply. The core allocates registry vehicle packages and entrant lists above the highest id the database ops leave in the table, and registry drivers from the free ids in 208 to 253 ([Stat ids](/std/registry#stat-ids)). An explicit `stat_id` near the ceiling leaves the registry fewer ids.
+When no id is free and no addon the build leaves out keeps one, the `add-row` fails like any op that can't apply. The core allocates registry vehicle packages and entrant lists above the highest id the database ops leave in the table, and registry drivers from the free ids in 208 to 16382, never 254, 255 or an id whose low byte is 0xff ([Stat ids](/std/registry#stat-ids)). An explicit `stat_id` near the ceiling leaves the registry fewer ids.
 
 A `stat_id` in `set` wins, unless a row an addon added earlier in the build holds that id. The copy then gets an id of its own ([Kept ids](#kept-ids)) that no addon later in the load order sets on a row it adds, references to it by label follow, a `[stat_id=<id>]` selector later in the same file finds the copy, and the build warns with both addons and both ids:
 
@@ -530,9 +531,19 @@ Changing a `db` option marks the profile for a rebuild. The next launch, or `swo
 Track activation runs first, then operations run in addon load order. [DB Editor](/using/db-editor) packages are addons and run in the same order; a package change that no longer applies is skipped with a warning instead of failing the build:
 
 ```text
-warning: My DB Edits: change skipped: entrants.teams.team[_metadata_=williams_26]: no row matches
+warning: My DB Edits: change skipped: entrants.teams.team[_metadata_=williams_26]: no row matches, even after every addon's changes
 ```
 
-An addon whose track the build leaves out has its failing database ops skipped the same way. A later change to a field replaces the earlier value, and the build prints the conflict ([Order and conflicts](/reference/data/operations#order-and-conflicts)). With the in-game loader, the changed records reach the game through `swofty/assets.json` ([Build route and runtime route](/reference/data/operations#build-route-and-runtime-route)).
+An addon whose track the build leaves out has its failing database ops skipped the same way.
+
+An op whose selector matches no row waits, with the ops after it in its file that fail. It applies right after the first later addon whose ops add records, once its row exists, and the addons after that still override it. A Team Simplified Grid Editor edit of a grid Classic Seasons adds applies this way, though Team Simplified loads first, and [`swofty conflicts`](/reference/cli#swofty-conflicts) lists the edit as the winner over Classic Seasons on the fields it sets.
+
+An op still waiting after every addon fails the build. A DB Editor package's op, or one of an addon whose track the build leaves out, is skipped with the warning above instead:
+
+```text
+applying teamsimplified.mods (grid-editor): entrants.entrant_lists.entrant_list[_metadata_=cs_f1_2016]: no row matches, even after every addon's changes
+```
+
+A later change to a field replaces the earlier value, and the build prints the conflict ([Order and conflicts](/reference/data/operations#order-and-conflicts)). With the in-game loader, the changed records reach the game through `swofty/assets.json` ([Build route and runtime route](/reference/data/operations#build-route-and-runtime-route)).
 
 See [Game database (GVDB)](/reference/gamedb) for the file format, how the game reads it and the table catalogue. [Modding recipes](/reference/gamedb/recipes) covers adding rows, grid size and tracks.

@@ -505,6 +505,10 @@ impl Ending {
 
 /// An exit code a crash leaves: an error NTSTATUS (0xC0000000 and up) other
 /// than -1, or an unhandled breakpoint.
+/// The exit code the core closes F1 25 with when it stops a Grand Prix load that would crash
+/// (native/src/core/era_logic.hpp `CONTINUE_STOP_EXIT`).
+pub const CORE_STOPPED_LOAD: i32 = 92;
+
 pub fn crash_code(code: u32) -> bool {
     (0xc000_0000..0xffff_ffff).contains(&code) || code == 0x8000_0003
 }
@@ -573,6 +577,16 @@ impl SessionEnd {
         }
         if c == 0 {
             return end(Ending::Quit, None, "F1 25 exited with code 0".into());
+        }
+        if c == CORE_STOPPED_LOAD && loader.attached && loader.unhandled.is_none() {
+            return end(
+                Ending::Stopped,
+                None,
+                format!(
+                    "the core closed F1 25 at the session load (exit code {c}) instead of letting it crash: the Grand \
+                     Prix save names a grid or a track this build doesn't have, and loader.log's [era] line says which"
+                ),
+            );
         }
         if let Some(x) = loader.unhandled {
             return end(
@@ -1093,6 +1107,19 @@ mod tests {
             );
         }
         assert_eq!(SessionEnd::resolve(Some(0), "", None, None).end, Ending::Quit);
+    }
+
+    #[test]
+    fn a_grand_prix_load_the_core_stopped_is_named() {
+        let end = SessionEnd::resolve(Some(CORE_STOPPED_LOAD), "", None, Some(&seen(ATTACHED)));
+        assert_eq!(end.end, Ending::Stopped);
+        assert!(
+            end.reason.contains("the core closed F1 25 at the session load"),
+            "{}",
+            end.reason
+        );
+        let plain = SessionEnd::resolve(Some(CORE_STOPPED_LOAD), "", None, None);
+        assert_eq!(plain.end, Ending::Unknown);
     }
 
     #[test]

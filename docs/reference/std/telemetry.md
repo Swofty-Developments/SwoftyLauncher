@@ -190,6 +190,45 @@ for (;;) {
 }
 ```
 
+## UDP telemetry ids
+
+The game's own UDP telemetry (formats 2024, 2025 and 2026) reports the stat id of every team and driver. A build with added teams or drivers writes `swofty/udp_ids.json`, and the core rewrites those ids in the outgoing packets.
+
+```json [swofty/udp_ids.json]
+{
+  "version": 1,
+  "teams": {"507": 4, "518": 1},
+  "drivers": {"197": 255, "198": 8},
+  "teams_byte": {"251": 4, "6": 1},
+  "drivers_byte": {"197": 255, "198": 8},
+  "lines": ["team 507 -> 4 (forceindia)", "driver 197 -> 255 (no stock driver)"]
+}
+```
+
+```text
+[udp] stock ids on: 2 team id(s), 2 driver id(s), 1 sendto slot(s)
+[udp] stock ids: team 507 -> 4 (forceindia); driver 197 -> 255 (no stock driver)
+[udp] first telemetry packet rewritten: format 2025, packet 4: driver 197 -> 255, team 251 -> 4
+```
+
+The rule:
+
+- An added team reports its stock ancestor's stat id, found by following the `add-row` `from` chain to a row the game ships.
+- An added driver reports its stock ancestor's id when `first_name`, `last_name` and `full_name` equal the ancestor's. Otherwise it reports 255, the spec's network human, and overlays show the driver by `m_name`. A driver id above 254 with no stock ancestor reports 255.
+- Stock rows keep their ids.
+- The 2024 and 2025 formats carry one byte per id. An added id whose low byte a stock row or another mapped id shares is not rewritten in those formats.
+
+The core changes a buffer only when it parses as an F1 packet: `m_packetFormat` is 2024, 2025 or 2026, `m_packetId` is one below, and the length is that packet's size in that format.
+
+```text
+Participants (4)   2024 1350 B, 2025 1284 B: driverId, teamId (u8 per entry)
+                   2026 1470 B: driverId, teamId (u16 per entry)
+Lobby Info (9)     2024 1306 B, 2025 954 B: teamId in each entry
+Time Trial (14)    2024 and 2025 101 B: teamId in each of the three data sets
+```
+
+`SWOFTY_UDP_STOCK_IDS=0` turns the rewrite off, for a tool that reads the real ids through an addon's registry `stat_id`.
+
 ## Availability
 
 `telemetry` is experimental, and `experimental_features` in a manifest doesn't accept it yet; see [feature gates](/design/native-libraries#feature-gates). The core turns it on only when `features` in `swofty/assets.json` lists `telemetry`, and the build writes that list from the addons' `experimental_features`. So on current builds every call returns `unavailable`.

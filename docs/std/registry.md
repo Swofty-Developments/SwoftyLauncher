@@ -362,12 +362,14 @@ Database-backed records (cars, teams, drivers, tracks, setup modes, looks) need 
 - **An id is reused only when no career uses it.** When an addon is removed, its records' ids stay reserved while any career still refers to them.
 - **Each career carries its own id map.** The career's save entry holds the stat id of every record the career refers to. A save that Steam Cloud brings to another PC loads with the ids it was saved with, and a track or a driver can't change places.
 
+Driver ids run 208 to 16382, and the core allocates 208 to 253, then 256 upward. It never allocates 254 (`default_driver`), 255, or an id whose low byte is 0xff, which the 2024 and 2025 UDP formats read as a network player. 16382 is the highest id saves and net messages carry in 14 bits; 16383 means no driver.
+
 An explicit `stat_id` you ship stays your record's id from then on. Other addons and saved careers refer to it.
 
 Rows an older addon's database operations copy with `add-row` keep their ids the same way, in `$DATA/registry/row-ids.json`, keyed by addon, table and row label ([Kept ids](/reference/ops/database#kept-ids)). A copy never takes an id `ids.json` holds.
 
 ```text
-[registry] stat ids: driver.identity swofty.f1-1990/alain_prost -> 241 (pool 208-254, 57 free after this)
+[registry] stat ids: driver.identity swofty.f1-1990/alain_prost -> 241 (pool 208-16382, 16117 free after this)
 [registry] stat ids: track mod.sochi/sochi -> 18 (kept from ids.json)
 ```
 

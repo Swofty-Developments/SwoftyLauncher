@@ -125,7 +125,9 @@ game
 │  ├─ career.moves.finalised       notify    the line-up changes for the new season are final
 │  ├─ career.season.end            notify
 │  ├─ career.season.break          notify    the next season's calendar is built here
-│  ├─ career.saving                modify    the last moment to write a career layer into this save
+│  ├─ career.saving                modify    the last moment to write a career layer into this save (also: set the career's addon data, saves)
+│  ├─ career.saved                 notify    the profile's save containers were written (since 1.6.13)
+│  ├─ career.missing               notify    a career the index knew is not in the save (since 1.6.13; declared, not fired yet)
 │  └─ career.unloaded              notify
 │
 ├─ weekend
@@ -184,7 +186,7 @@ team.logo.resolve / team.name.resolve
 wearable.catalogue.build         swofty/systems/wearables.hpp wearables::events::CatalogueBuild
 ```
 
-`ai.controller.update` and `car.controllers.rebuilt` need the in-game checks T145 and T144. `session.lap` fires from the core's ERS new-lap site (see [Sessions](/std/systems/sessions#a-cars-lap)). The other points in the tree (`session.state.enter`, `session.weather.setup`, `session.safety_car.deploy`, `session.pit_stop`, `session.results.finalise`, `career.season.process` and the rest of the session group) are the design for later headers; addons made for 1.5 and earlier subscribe to some of these moments by shorter names, which still work: see [Compatibility](/std/compatibility#events).
+`ai.controller.update` and `car.controllers.rebuilt` need the in-game checks T145 and T144. `session.lap` fires from the core's ERS new-lap site (see [Sessions](/std/systems/sessions#a-cars-lap)). `car.built` and `car.reset` fire once per built or re-read car on the next frame (see [Car physics](/std/systems/car-physics#changing-a-car-live)); `car.vtf.read`, `car.upgrades.fit` and `car.parts.register` are not fired yet. The other points in the tree (`session.state.enter`, `session.weather.setup`, `session.safety_car.deploy`, `session.pit_stop`, `session.results.finalise`, `career.season.process` and the rest of the session group) are the design for later headers; addons made for 1.5 and earlier subscribe to some of these moments by shorter names, which still work: see [Compatibility](/std/compatibility#events).
 
 **Every start has one end.** The core keeps a lifecycle stack. If the player quits from the pause menu, the core fires the missing ends itself, with `reason = abandoned`:
 

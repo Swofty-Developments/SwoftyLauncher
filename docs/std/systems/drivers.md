@@ -84,7 +84,7 @@ struct Identity {                                  // one entrants.drivers row
     int seasons_completed = 0;                     // f1_seasons_completed
     int garage_slot = 0;                           // garage_slot_preference
     std::vector<std::string> pools;                // driver pools with a free-agent row: "f1_2026_driver_pool"
-    StatId stat_id = StatId::automatic;            // driver ids 0-254, 58 free
+    StatId stat_id = StatId::automatic;            // driver ids 0-16382, 254 and ids ending in 0xff skipped
     json::Value extra;
 };
 SWOFTY_RECORD(Identity, donor, person, names, nationality, number, head, look, audio_name, seasons_completed,
@@ -172,7 +172,7 @@ The career operations on drivers, `career::set_car_number` and `career::set_driv
 Driver Manager creates new drivers from a launcher page. The page writes them to the addon's storage, and the addon registers each one in the game.
 
 - **A variant of Jarno Opmeer.** The new driver starts from every key of `game/jarno_opmeer` and changes its own fields. Layers on Jarno's row reach it until it sets a field itself.
-- **The core allocates the ids** from the install's stat-id store: driver ids in 208 to 253, look ids from 366. An id is reused only when no career uses it.
+- **The core allocates the ids** from the install's stat-id store: driver ids in 208 to 16382 (skipping 254 and every id whose low byte is 0xff), look ids from 366. An id is reused only when no career uses it.
 - **The look is required.** A seated driver with no look hangs the next session load, and the core refuses an identity without one.
 - About 150 records per driver: the row, the look, the statistics holder, the entrant and the pool rows.
 - **No `load_after: ["*"]`.** The addon references records, not row positions another mod may have moved.
@@ -268,7 +268,7 @@ SWOFTY_ADDON()
 
 ```text
 [registry] register: swofty.driver-manager (driver_manager.dll) 3 driver.identity, 3 driver.look, 3 driver.stats (early stage, 0.6 ms)
-[registry] stat ids: driver.identity swofty.driver-manager/mika_salo -> 208 (pool 208-254, 45 free after this)
+[registry] stat ids: driver.identity swofty.driver-manager/mika_salo -> 208 (pool 208-16382, 16129 free after this)
 [registry] stat ids: driver.look swofty.driver-manager/mika_salo_look -> 366
 [registry] driver.identity swofty.driver-manager/mika_salo: extends game/jarno_opmeer (129 keys), is person/mika_salo
 [registry] applied at boot: driver.identity 3, driver.look 3, driver.stats 3 (452 database records; 11 strings)
@@ -404,7 +404,7 @@ A career's season ratings are `career.driver_ratings` records (see [Career](/std
 ## Readiness and limits
 
 - **Partial to ready.** The ratings getters (`Career_Get_DriverOverallRating`, `Career_Get_DriverStatValue`), the number check (`Career_DriverNumbers_CheckExisting`) and the entrant parse (`Sess_Parse_Entrant`) are L2. Heads and looks (`Ent_EntrantsSystem_FindDriverHead`, `Career_DriverNumbers_AssignFree`) are L1, but proven by data.
-- **46 free driver ids** in 208 to 253. The core allocates them from the install's store, and two addons that pick ids by hand collide.
+- **16,000 free driver ids** in 208 to 16382, minus 254 and the ids ending in 0xff. The core allocates them from the install's store, and two addons that pick ids by hand collide.
 - **About 150 records per new driver:** the row, the statistics holder, the accolade row, the entrant row, wear rates, seasonal infos, audio names and the head.
 - **A driver with no look hangs the session.** The core refuses a `driver.identity` that has a `donor` and no look.
 - **A `driver.identity` with no `donor` copies no row.** It names a driver row that a build operation or the game made, so other records can refer to it. Classic Seasons' shared drivers (`felipe_nasr`, `esteban_gutierrez` and others) are records of this kind.

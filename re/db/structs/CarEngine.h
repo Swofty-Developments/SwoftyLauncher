@@ -26,7 +26,7 @@ struct CarEngine {
     /* 0x0880 */ CarObfFloat min_idle_rate_factor;            // L2 decomp:re/decomp/144685680.c;xref:0x144685a84,0x144685abb VTF Engine/MinIdleRateFactor default 0.9 (obf)
     /* 0x0890 */ CarObfFloat max_limiter_rate_factor;         // L2 decomp:re/decomp/144685680.c;xref:0x144685ac1,0x144685af8 VTF Engine/MaxLimiterRateFactor default 1.2 (obf)
     /* 0x08a0 */ CarObfFloat idle_rotation_rate;              // L2 decomp:re/decomp/144685680.c;xref:0x144685afe,0x144685b35 VTF Engine/IdleRotationRate rad/s, default 115.19 (1100 rpm), Ferrari 418.9 (4000 rpm); Reset 0x10|0x200 sets rotation_rate to it (obf)
-    /* 0x08b0 */ CarObfFloat limiter_rotation_rate;           // L2 decomp:re/decomp/144685680.c;xref:0x144685b3b,0x144685b72 VTF Engine/LimiterRotationRate rad/s, default 890.12 (8500 rpm), Ferrari 1371.8 (13100 rpm); x FuelECU revs scale -> limiter_rotation_rate (obf)
+    /* 0x08b0 */ CarObfFloat vtf_limiter_rotation_rate;       // L2 decomp:re/decomp/144685680.c;xref:0x144685b3b,0x144685b72 VTF Engine/LimiterRotationRate rad/s, default 890.12 (8500 rpm), Ferrari 1371.8 (13100 rpm); x FuelECU revs scale -> limiter_rotation_rate (obf)
     /* 0x08c0 */ CarObfFloat max_engine_braking_torque_engaged_clutch; // L2 decomp:re/decomp/144685680.c;xref:0x144685b78,0x144685baf VTF Engine/MaxEngineBrakingTorqueEngagedClutch Nm, default 20, Ferrari 25 (obf)
     /* 0x08d0 */ int32_t engine_layout;                       // L2 decomp:re/decomp/144685680.c;xref:0x144685c5c VTF Engine/EngineLayout Inline=2 RearInline=4 Transverse=1 RearTransverse=3 else 0
     /* 0x08d8 */ CarSpline temp_efficiency_spline;            // L2 decomp:re/decomp/144685680.c;xref:0x144685c62 VTF Engine/TempEfficiencySpline power efficiency vs temperature
