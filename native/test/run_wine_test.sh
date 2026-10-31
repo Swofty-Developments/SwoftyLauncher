@@ -595,7 +595,7 @@ for mode in crash exit heap abort; do
     echo "==== $mode"
     code=0
     rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
-    timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" $mode >/dev/null 2>&1 || code=$?
+    timeout -k 5 $([[ $mode == heap || $mode == abort ]] && echo 30 || echo 120) "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" $mode >/dev/null 2>&1 || code=$?
     grep -F '[crash]' "$LOG"
     if [[ $mode == crash ]]; then
         check "crash: first-chance fault with module, section and KB name" '\[crash\] #1 first-chance .*ACCESS_VIOLATION .* at F1_25\.exe\+0x[0-9a-f]+ \.text Fake_Crash_Here\+0x'
@@ -616,11 +616,11 @@ for mode in crash exit heap abort; do
         check "heap: the fatal heap error 0x16 is logged" '\[crash\] Ne heap error 0x16 \(fatal\).*Failed to find address'
         check "heap: a report is written before the abort" '\[crash\] crash report .*crash-.*: fatal Ne heap error 0x16'
         parse_report "fatal Ne heap error 0x16" "Ne heap,FakeHeap,Failed to find address,capacity 65536,guard 32 bytes,CORRUPT" || status=1
-        [[ $code != 0 ]] && echo "ok  : heap: the process aborted ($code)" || { echo "FAIL: heap: process exited 0"; status=1; }
+        [[ $code != 0 && $code != 124 && $code != 137 ]] && echo "ok  : heap: the process aborted ($code)" || { echo "FAIL: heap: the process did not abort on its own (exit $code)"; status=1; }
     else
         check "abort: Ne_FatalAbort is recognised" '\[crash\] crash report .*crash-.*: the game aborted itself'
         parse_report "the game aborted itself" "Ne_FatalAbort" || status=1
-        [[ $code != 0 ]] && echo "ok  : abort: the process aborted ($code)" || { echo "FAIL: abort: process exited 0"; status=1; }
+        [[ $code != 0 && $code != 124 && $code != 137 ]] && echo "ok  : abort: the process aborted ($code)" || { echo "FAIL: abort: the process did not abort on its own (exit $code)"; status=1; }
     fi
 done
 for guard in on off; do
