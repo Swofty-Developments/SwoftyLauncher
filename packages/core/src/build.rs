@@ -1193,6 +1193,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     };
     let mut stock_removals = BTreeMap::new();
     let mut kept_lists = BTreeMap::new();
+    let mut udp_ids = crate::udp_ids::UdpIds::default();
     if !maps.is_empty() || planner.has_db() || room_asked.is_some() {
         let shipped = std::fs::read(&db_src).map_err(io_err(&db_src))?;
         let mut db = Gvdb::parse(&shipped)?;
@@ -1325,6 +1326,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             c.quiet = c.addon == CORE_ID;
         }
         built.row_ids = added_row_ids(&db, &copies);
+        udp_ids = crate::udp_ids::build(&db, &copies);
         let addon_name = |id: &str| addons.get(id).map_or(id, |m| m.name.as_str()).to_owned();
         let side = crate::dbedit::deps::check(&db, &copies, &addon_name);
         built.warnings.extend(side.warnings);
@@ -1865,6 +1867,18 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 }
             }
             session.plugins = plugins.dlls;
+            if !udp_ids.is_empty() {
+                let rel = format!("{LOADER_DIR}/{}", crate::udp_ids::FILE);
+                let src = built.overlay.join(crate::udp_ids::FILE);
+                std::fs::create_dir_all(&built.overlay).map_err(io_err(&built.overlay))?;
+                crate::write_json(&src, &udp_ids)?;
+                built.plan.loader.insert(rel, src);
+                built.lines.push(format!(
+                    "udp: telemetry reports {} added team id(s) and {} added driver id(s) under stock ids",
+                    udp_ids.teams.len(),
+                    udp_ids.drivers.len()
+                ));
+            }
             if let Some(placed) = &std_index {
                 let index = built.overlay.join("registry-index.json");
                 std::fs::create_dir_all(&built.overlay).map_err(io_err(&built.overlay))?;

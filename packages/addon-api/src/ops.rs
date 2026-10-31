@@ -109,12 +109,12 @@ const STAT_ID_CEILINGS: &[(&str, &str, StatIdCeiling)] = &[
         "vehicle_package",
         StatIdCeiling { max: 254, from: None },
     ),
-    // Driver ids are 0-254. A stock row holds 254; the core allocates 208-253.
+    // Driver ids are u16 in memory and 14 bits in saves and net (0x3fff = none); 254 is default_driver, and UDP 2024/2025 read a low byte of 255 as a network player.
     (
         "entrants.drivers",
         "driver",
         StatIdCeiling {
-            max: 254,
+            max: 16382,
             from: Some(208),
         },
     ),
@@ -189,6 +189,11 @@ pub fn stat_id_ceiling(table: &str, row: &str) -> Option<StatIdCeiling> {
         .iter()
         .find(|(t, r, _)| *t == table && *r == row)
         .map(|(_, _, c)| *c)
+}
+
+/// Whether a fresh row of `table`'s rows named `row` may not take `id`: driver ids 254 and 255, and any with a low byte of 0xff.
+pub fn stat_id_unusable(table: &str, row: &str, id: i64) -> bool {
+    table == "entrants.drivers" && row == "driver" && (id == 254 || id & 0xff == 0xff)
 }
 
 /// An `add-row` applied: the source row's path and the new row's path.
@@ -648,6 +653,7 @@ struct Db<'a> {
     removed: Vec<usize>,
     added_rows: HashSet<String>,
     moved: HashMap<(String, String), String>,
+    ties: std::cell::RefCell<Vec<String>>,
 }
 
 impl<'a> Db<'a> {
@@ -662,7 +668,20 @@ impl<'a> Db<'a> {
             removed: Vec::new(),
             added_rows: HashSet::new(),
             moved: HashMap::new(),
+            ties: std::cell::RefCell::new(Vec::new()),
         }
+    }
+
+    fn drain_ties(&self, cx: &mut Cx) -> Result<()> {
+        for tie in self.ties.take() {
+            if cx.strict {
+                return Err(Error::Resolve(format!("{tie} (strict)")));
+            }
+            if !cx.report.warnings.contains(&tie) {
+                cx.report.warnings.push(tie);
+            }
+        }
+        Ok(())
     }
 
     fn remove(&mut self, key: u64) -> bool {
@@ -764,7 +783,14 @@ pub fn first_segment(path: &str) -> Result<(Segment<'_>, Option<&str>)> {
     Ok((segment, inner[close + 1..].strip_prefix('.')))
 }
 
-fn select_row(db: &Db, table: &Base, row: &str, field: &str, want: &str) -> std::result::Result<Base, usize> {
+fn select_row(
+    db: &Db,
+    table: &Base,
+    row: &str,
+    field: &str,
+    want: &str,
+    first_wins: bool,
+) -> std::result::Result<(Base, usize), usize> {
     let count = match table {
         Base::Path(t) if !row.is_empty() => db.instance_count(t, row),
         _ => None,
@@ -789,7 +815,9 @@ fn select_row(db: &Db, table: &Base, row: &str, field: &str, want: &str) -> std:
         }
     }
     match hits.len() {
-        1 => Ok(hits.remove(0)),
+        0 => Err(0),
+        1 => Ok((hits.remove(0), 1)),
+        n if first_wins => Ok((hits.remove(0), n)),
         n => Err(n),
     }
 }
@@ -802,6 +830,10 @@ pub fn no_row(e: &Error) -> bool {
 }
 
 fn resolve_path(db: &Db, path: &str) -> Result<Base> {
+    resolve_path_with(db, path, true)
+}
+
+fn resolve_path_with(db: &Db, path: &str, first_wins: bool) -> Result<Base> {
     if !path.contains('[') {
         return parse_base(path);
     }
@@ -821,9 +853,16 @@ fn resolve_path(db: &Db, path: &str) -> Result<Base> {
                     Some(b) => (b, seg.name),
                     None => (parse_base(seg.name)?, ""),
                 };
-                match select_row(db, &table, row, field, want) {
-                    Ok(b) => {
+                match select_row(db, &table, row, field, want, first_wins) {
+                    Ok((b, matched)) => {
                         nested = true;
+                        if matched > 1 {
+                            let upto = &path[..path.len() - tail.map_or(0, |t| t.len() + 1)];
+                            db.ties.borrow_mut().push(format!(
+                                "{upto}: {matched} rows match; using the first, {}",
+                                b.key("")
+                            ));
+                        }
                         b
                     }
                     Err(n) => {
@@ -865,7 +904,7 @@ fn resolve_value(db: &Db, path: &str) -> Result<String> {
 fn resolve_key(db: &Db, key: &str) -> Result<u64> {
     match key.starts_with("0x") || !key.contains('[') {
         true => record_key(key),
-        false => Ok(resolve_path(db, key)?.key("")),
+        false => Ok(resolve_path_with(db, key, false)?.key("")),
     }
 }
 
@@ -890,7 +929,9 @@ pub fn apply_db_ops_report(
     };
     let mut replaced = Vec::new();
     for op in &ops.ops {
-        replaced.extend(apply(&mut db, op, &schema, &mut cx)?);
+        let applied = apply(&mut db, op, &schema, &mut cx);
+        db.drain_ties(&mut cx)?;
+        replaced.extend(applied?);
     }
     db.finish();
     Ok(replaced)
@@ -916,7 +957,9 @@ pub fn apply_db_ops_lenient(
     let mut replaced = Vec::new();
     let mut failed = Vec::new();
     for (i, op) in ops.ops.iter().enumerate() {
-        match apply(&mut db, op, &schema, &mut cx) {
+        let applied = apply(&mut db, op, &schema, &mut cx);
+        let ties = db.drain_ties(&mut cx);
+        match applied.and_then(|key| ties.map(|()| key)) {
             Ok(key) => replaced.extend(key),
             Err(e) => failed.push((i, e)),
         }
@@ -933,6 +976,7 @@ pub fn apply_db_op(db: &mut Gvdb, op: &DbOp, names: &dyn FieldNames) -> Result<O
         report: &mut report,
     };
     let replaced = apply(&mut db, op, names, &mut cx)?;
+    db.drain_ties(&mut cx)?;
     db.finish();
     Ok(replaced)
 }
@@ -1286,6 +1330,7 @@ fn free_stat_id(
     ceiling: StatIdCeiling,
     skip: &dyn Fn(i64) -> bool,
 ) -> Option<i64> {
+    let skip = |id: i64| skip(id) || stat_id_unusable(table, row, id);
     let field = stat_id_field(table, row);
     let mut used = HashSet::new();
     let mut stock = -1;
@@ -1436,7 +1481,7 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
         .iter()
         .find(|r| r.key == dst.field("_metadata_"))
         .map(|r| r.text().into_owned());
-    let later = |id: i64| names.reserved(&path, row, id);
+    let later = |id: i64| names.reserved(&path, row, id) || stat_id_unusable(&path, row, id);
     let held = |id: i64| {
         (0..n).map(|i| format!("{path}.{row}_{i}")).find(|r| {
             db.text(fnv1a64(format!("{r}.{field}")))
@@ -1451,15 +1496,16 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
             .into_iter()
             .max()
             .map_or(0, |m| m + 1);
-        while moving && later(top) {
+        while (moving && later(top)) || stat_id_unusable(&path, row, top) {
             top += 1;
         }
         match ceiling {
-            Some(c) if top > c.max => free_stat_id(db, names, &path, row, n, c, &later)
+            Some(c) if top > c.max || c.from.is_some() => free_stat_id(db, names, &path, row, n, c, &later)
                 .map(|id| {
                     (
                         id,
-                        Some(format!("{top} is above {}, the highest the game reads", c.max)),
+                        (top > c.max)
+                            .then(|| format!("{top} is above {}, the highest the game reads", c.max)),
                     )
                 })
                 .ok_or_else(|| {
@@ -1485,6 +1531,9 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
         let unfit = |id: i64| -> Option<String> {
             if let Some(c) = ceiling.filter(|c| id > c.max || id < 0) {
                 return Some(format!("is above {}, the highest the game reads", c.max));
+            }
+            if stat_id_unusable(&path, row, id) {
+                return Some("is an id the game reads as another driver or none".to_owned());
             }
             let r = held(id)?;
             let label = db.text(fnv1a64(format!("{r}._metadata_")));
@@ -1889,6 +1938,60 @@ mod tests {
         apply_db_ops(&mut db(), &ops(&strict), &names()).unwrap();
     }
 
+    fn set_track_op(select: &str, value: &str) -> DbOp {
+        DbOp::Set {
+            select: select.to_owned(),
+            field: "track".into(),
+            value: Some(value.into()),
+            value_from: None,
+            datasets: Vec::new(),
+            create: false,
+            tag: None,
+        }
+    }
+
+    #[test]
+    fn duplicate_labels_resolve_to_the_earliest_row_with_a_warning() {
+        let select = "track_data.game_setup.TrackDataSet[_metadata_=f1].TrackData[_metadata_=okayama]";
+        let mut ops = ops(r#"{"schema_version": 1, "ops": []}"#);
+        ops.ops = vec![set_track_op(select, "first"), set_track_op(select, "again")];
+        let mut db = track_db();
+        let mut report = DbReport::default();
+        apply_db_ops_report(&mut db, &ops, &names(), &mut report).unwrap();
+        assert_eq!(report.warnings.len(), 1, "{:?}", report.warnings);
+        assert!(
+            report.warnings[0].starts_with(&format!("{select}: 2 rows match; using the first")),
+            "{:?}",
+            report.warnings
+        );
+        let value = |row: usize| {
+            let key = fnv1a64(format!("{SETS}.TrackDataSet_0.TrackData_{row}.track"));
+            db.records
+                .iter()
+                .find(|r| r.key == key)
+                .map(|r| String::from_utf8_lossy(&r.value).into_owned())
+        };
+        assert_eq!(value(1).as_deref(), Some("again"));
+        assert_eq!(value(2).as_deref(), Some("okayama"));
+    }
+
+    #[test]
+    fn duplicate_labels_still_fail_where_the_choice_changes_the_result() {
+        let key =
+            "track_data.game_setup.TrackDataSet[_metadata_=f1].TrackData[_metadata_=okayama]._metadata_";
+        let op = DbOp::RemoveRecord {
+            key: key.into(),
+            allow_stock_removal: true,
+        };
+        let err = apply_db_op(&mut track_db(), &op, &names())
+            .unwrap_err()
+            .to_string();
+        assert!(
+            err.ends_with("2 rows match in track_data.game_setup.TrackDataSet_0.TrackData"),
+            "{err}"
+        );
+    }
+
     #[test]
     fn remove_record_keeps_stock_records_unless_the_op_allows_it() {
         let mut db = db();
@@ -2044,11 +2147,6 @@ mod tests {
         assert_eq!(
             set("track_data.game_setup.TrackDataSet[_metadata_=f9].TrackData[_metadata_=suzuka]"),
             "track_data.game_setup.TrackDataSet[_metadata_=f9]: no row matches"
-        );
-        assert_eq!(
-            set("track_data.game_setup.TrackDataSet[_metadata_=f1].TrackData[_metadata_=okayama]"),
-            "track_data.game_setup.TrackDataSet[_metadata_=f1].TrackData[_metadata_=okayama]: \
-             2 rows match in track_data.game_setup.TrackDataSet_0.TrackData"
         );
         assert_eq!(
             set("track_data.game_setup.TrackDataSet[_metadata_=f1_2026].TrackData[_metadata_=okayama]"),
@@ -2646,16 +2744,41 @@ mod tests {
     }
 
     #[test]
-    fn driver_ids_fill_the_core_pool_under_254_and_fail_when_it_is_full() {
+    fn driver_ids_fill_208_to_253_then_256_up_and_skip_254_255_and_low_byte_0xff() {
         let mut db = table("entrants.drivers", "driver", &[254, 0, 207, 210]);
         let stock: HashSet<u64> = db.records.iter().map(|r| r.key).collect();
-        let labels: Vec<String> = (0..45).map(|i| format!("d_{i}")).collect();
+        let labels: Vec<String> = (0..300).map(|i| format!("d_{i}")).collect();
         let rows: Vec<(&str, Option<i64>)> = labels.iter().map(|l| (l.as_str(), None)).collect();
         apply_db_ops(&mut db, &add_rows("entrants.drivers", "driver", &rows), &stock).unwrap();
         let all = ids(&db, "entrants.drivers", "driver");
         assert_eq!(all[4..7], [208, 209, 211]);
-        assert_eq!(*all.last().unwrap(), 253);
-        assert!(all.iter().all(|id| *id <= 254));
+        let added = &all[4..];
+        assert_eq!(
+            added[..45],
+            (208..=253).filter(|id| *id != 210).collect::<Vec<_>>()[..45]
+        );
+        assert_eq!(added[45], 256);
+        assert_eq!(added[300 - 1], 510);
+        assert!(
+            added
+                .iter()
+                .all(|id| *id != 254 && *id != 255 && id & 0xff != 0xff && *id <= 16382)
+        );
+        assert_eq!(added.iter().filter(|id| **id > 255).count(), 300 - 45);
+    }
+
+    #[test]
+    fn driver_ids_stop_at_the_14_bit_ceiling() {
+        let mut db = table("entrants.drivers", "driver", &[254]);
+        let stock: HashSet<u64> = db.records.iter().map(|r| r.key).collect();
+        let usable = (208..=16382)
+            .filter(|id| !stat_id_unusable("entrants.drivers", "driver", *id))
+            .count();
+        let labels: Vec<String> = (0..usable).map(|i| format!("d_{i}")).collect();
+        let rows: Vec<(&str, Option<i64>)> = labels.iter().map(|l| (l.as_str(), None)).collect();
+        apply_db_ops(&mut db, &add_rows("entrants.drivers", "driver", &rows), &stock).unwrap();
+        let all = ids(&db, "entrants.drivers", "driver");
+        assert_eq!(*all.last().unwrap(), 16382);
         let e = apply_db_ops(
             &mut db,
             &add_rows("entrants.drivers", "driver", &[("full", None)]),
@@ -2664,7 +2787,7 @@ mod tests {
         .unwrap_err()
         .to_string();
         assert!(
-            e.contains("entrants.drivers has no free stat_id up to 254"),
+            e.contains("entrants.drivers has no free stat_id up to 16382"),
             "{e}"
         );
         let (_, failed) = apply_db_ops_lenient(
@@ -2674,7 +2797,7 @@ mod tests {
             &mut DbReport::default(),
         );
         assert_eq!(failed.len(), 1);
-        assert_eq!(db.instance_count("entrants.drivers", "driver"), Some(49));
+        assert_eq!(db.instance_count("entrants.drivers", "driver"), Some(1 + usable));
     }
 
     #[test]

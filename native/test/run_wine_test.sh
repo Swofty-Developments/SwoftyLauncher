@@ -13,8 +13,8 @@ export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../
 PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 rm -rf "$OUT/game" "$OUT/stages" "$OUT/packed" "$OUT/filled"
 mkdir -p "$OUT/game" "$OUT/stages" "$OUT/packed" "$OUT/filled"
-"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -o "$OUT/game/F1_25.exe" fake_game.c -lversion -luser32 &
-"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -DPACKED_TEST -o "$OUT/packed/F1_25.exe" fake_game.c -lversion -luser32 &
+"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -o "$OUT/game/F1_25.exe" fake_game.c -lversion -luser32 -lws2_32 &
+"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -DPACKED_TEST -o "$OUT/packed/F1_25.exe" fake_game.c -lversion -luser32 -lws2_32 &
 "${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -o "$OUT/filled/F1_25.exe" fake_filled_iat.c -luser32 &
 cp -r ../dist/. "$OUT/game/"
 cp -r ../dist/. "$OUT/filled/"
@@ -106,7 +106,7 @@ count() {
     if [[ $n == "$2" ]]; then echo "ok  : $1"; else echo "FAIL: $1 (logged $n times, want $2)"; status=1; fi
 }
 CACHE=$OUT/game/swofty/cache/scan-cache.tsv
-for mode in trigger fallback vm settings settings_local session state gamelog_off assets assets_ro nearfull nopool cache_ro; do
+for mode in trigger fallback vm settings settings_local session state gamelog_off assets assets_ro nearfull nopool cache_ro udp udp_off; do
     echo "==== $mode"
     if [[ $mode == cache_ro ]]; then
         rm -rf "$OUT/game/swofty/cache" "$WINEPREFIX"/drive_c/users/*/AppData/Local/Swofty/cache/game
@@ -129,6 +129,9 @@ EOF
     resolve=
     [[ $mode == gamelog_off ]] && resolve=scan
     [[ $mode == session ]] && cp session.test.json "$OUT/game/swofty/session.json"
+    [[ $mode == udp* ]] && cp udp_ids.test.json "$OUT/game/swofty/udp_ids.json"
+    udp_ids=
+    [[ $mode == udp_off ]] && udp_ids=0
     req=
     [[ $mode == settings ]] && req=$OUT/state/requests/wine-test.json
     [[ $mode == settings_local ]] && req=$OUT/game/swofty/requests.json
@@ -186,7 +189,7 @@ EOF
     gl_channels=
     [[ $mode == trigger ]] && gl_rate=0
     [[ $mode == trigger || $mode == vm ]] && gl_channels=default,verbose
-    SWOFTY_RESOLVE=$resolve SWOFTY_TEST_ASSETS=$([[ $mode == assets* ]] && echo 1) SWOFTY_GAME_LOG=$gl_level SWOFTY_GAME_LOG_RATE=$gl_rate SWOFTY_GAME_LOG_CHANNELS=$gl_channels SWOFTY_TEST_REQUESTS=${req:+Z:${req//\//\\}} SWOFTY_TEST_ITEMS=$ITEMS \
+    SWOFTY_UDP_STOCK_IDS=$udp_ids SWOFTY_RESOLVE=$resolve SWOFTY_TEST_ASSETS=$([[ $mode == assets* ]] && echo 1) SWOFTY_GAME_LOG=$gl_level SWOFTY_GAME_LOG_RATE=$gl_rate SWOFTY_GAME_LOG_CHANNELS=$gl_channels SWOFTY_TEST_REQUESTS=${req:+Z:${req//\//\\}} SWOFTY_TEST_ITEMS=$ITEMS \
         "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" $mode || status=1
     if [[ $mode == assets_ro ]]; then
         GAME_ADDON=$OUT/game/swofty/addons/example.sample-mod
@@ -196,10 +199,19 @@ EOF
         chmod -R u+w "$GAME_ADDON"
     fi
     [[ $mode == cache_ro ]] && chmod u+w "$OUT/game/swofty/cache"
-    rm -rf "$OUT/game/swofty/session.json" "$OUT/game/swofty/settings.json" "$OUT/game/swofty/assets.json" \
+    rm -rf "$OUT/game/swofty/udp_ids.json" "$OUT/game/swofty/session.json" "$OUT/game/swofty/settings.json" "$OUT/game/swofty/assets.json" \
         "$OUT/game/swofty/addons/example.sample-mod"
     echo "---- $LOG ($mode)"
     grep -v '  section ' "$LOG"
+    if [[ $mode == udp ]]; then
+        once "udp: the map is read and sendto is hooked" '\[udp\] stock ids on: 1 team id\(s\), 1 driver id\(s\), 1 sendto slot\(s\)'
+        once "udp: the launcher's mapping lines are logged" '\[udp\] stock ids: team 507 -> 4 \(forceindia\); driver 197 -> 255 \(no stock driver\)'
+        once "udp: the first rewritten packet is logged once" '\[udp\] first telemetry packet rewritten: format 2025, packet 4: driver 197 -> 255, team 251 -> 4'
+    fi
+    if [[ $mode == udp_off ]]; then
+        once "udp: SWOFTY_UDP_STOCK_IDS=0 is logged" '\[udp\] stock ids off \(SWOFTY_UDP_STOCK_IDS=0\)'
+        count "udp: nothing is hooked or rewritten when off" 0 '\[udp\] (stock ids on|first telemetry)'
+    fi
     if [[ $mode == trigger ]]; then
         check "addons: core folder lists swofty_core" 'addons: swofty[\]addons[\]core: 1 dll\(s\)[[:space:]]*$'
         check "addons: legacy core folder still loads" 'addons: swofty[\]mods[\]core: 1 dll\(s\) \(legacy folder\)'

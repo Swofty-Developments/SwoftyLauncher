@@ -69,6 +69,7 @@ applying yourname.my-addon: rules.stop_go_penalty.penalty_duraton: no such key
 - `value_from` instead of `value` copies the value of another database path.
 - `"create": true` with a `"type"` tag adds the field when the row lacks it.
 - A `select` that matches no row waits for a later addon to add the row ([Applying changes](#applying-changes)), and fails the build if none does. A missing field, without `create`, fails the build.
+- A `select` that matches several rows takes the first one, which is the stock row, or else the row the earliest addon in the load order added. The build warns once per selector: `<select>: 2 rows match; using the first, <row>`. `key` paths of `put-record` and `remove-record` still fail with `<select>: 2 rows match`, and so does a `strict` file.
 - `datasets` is accepted but not built: a `set` with it fails.
 
 ```text
@@ -281,7 +282,7 @@ The game keeps the id of some tables in one byte, and of game setup modes and se
 | Table | Highest `stat_id` |
 | --- | --- |
 | `entrants.vehicles.vehicle_packages.vehicle_package_N` | 254 |
-| `entrants.drivers.driver_N` | 254 |
+| `entrants.drivers.driver_N` | 16382 |
 | `entrants.engines.Engine_N` | 254 |
 | `entrants.characters.character_N` | 254 |
 | `entrants.animation.driver_animation_sets.driver_animation_set_N` | 254 |
@@ -292,7 +293,7 @@ The game keeps the id of some tables in one byte, and of game setup modes and se
 | `game_setup.seasons.season_N` (`statId`) | 31 |
 | `entrants.entrant_setup_modes.entrant_setup_mode_N` | 31 |
 
-A game setup mode or season id above 31 stops the game at boot.
+A game setup mode or season id above 31 stops the game at boot. A driver id is 16 bits in memory and 14 in saves and net messages, so 16382 is the highest; a copy takes 208 to 253 first, then 256 upward.
 
 When the next id above the table's highest would pass it, the copy gets the lowest id above the stock rows' highest that no row holds, and a driver the lowest free id from 208. The build prints it:
 
@@ -300,7 +301,7 @@ When the next id above the table's highest would pass it, the copy gets the lowe
 swofty.classic-seasons-2021: add-row entrants.vehicles.vehicle_packages.vehicle_package_122 (from entrants.vehicles.vehicle_packages.vehicle_package[_metadata_=f1_2025]): stat_id 83 (the source's is 24; 255 is above 254, the highest the game reads)
 ```
 
-When no id is free and no addon the build leaves out keeps one, the `add-row` fails like any op that can't apply. The core allocates registry vehicle packages and entrant lists above the highest id the database ops leave in the table, and registry drivers from the free ids in 208 to 253 ([Stat ids](/std/registry#stat-ids)). An explicit `stat_id` near the ceiling leaves the registry fewer ids.
+When no id is free and no addon the build leaves out keeps one, the `add-row` fails like any op that can't apply. The core allocates registry vehicle packages and entrant lists above the highest id the database ops leave in the table, and registry drivers from the free ids in 208 to 16382, never 254, 255 or an id whose low byte is 0xff ([Stat ids](/std/registry#stat-ids)). An explicit `stat_id` near the ceiling leaves the registry fewer ids.
 
 A `stat_id` in `set` wins, unless a row an addon added earlier in the build holds that id. The copy then gets an id of its own ([Kept ids](#kept-ids)) that no addon later in the load order sets on a row it adds, references to it by label follow, a `[stat_id=<id>]` selector later in the same file finds the copy, and the build warns with both addons and both ids:
 
