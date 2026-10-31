@@ -43,6 +43,9 @@
 // its careers again. A failed write stores the error in the result and continues at
 // site_Game_SaveData_ContainersDone, the game's own path for a failed write in that block.
 //
+// Career saves: the splice also fires career.saving at site_Game_SaveData_ContainersCount and career.saved at
+// site_Game_SaveData_ContainersDone (a separate mixin; a good result in [r12]) for the root (career_saves.cpp).
+//
 // SWOFTY_SAVE_SPLICE=0 turns it off.
 
 namespace {
@@ -54,6 +57,7 @@ namespace layout = runtime::layout;
 
 constexpr const char *MIXIN = "swofty_core.dll (save splice)";
 constexpr const char *SLOT_MIXIN = "swofty_core.dll (save slot)";
+constexpr const char *SAVED_MIXIN = "swofty_core.dll (career saved)";
 constexpr size_t CHILD_SLOT = 0x88;
 constexpr size_t FRAME_SELF = 0x30;
 constexpr size_t FRAME_CHILDREN = 0x38;
@@ -289,6 +293,7 @@ void count_entry(SwoftyContext *c)
     uintptr_t self = 0;
     if (!live || !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self))
         return;
+    runtime::career_saves_saving();
     // W4: the career snapshots' new swofty_registry body, when they changed since the last write.
     std::vector<uint8_t> entry;
     bool has_entry = entry_hooks.saving && entry_hooks.saving(entry);
@@ -396,6 +401,15 @@ void children_entry(SwoftyContext *c)
                 names.c_str());
 }
 
+void saved_entry(SwoftyContext *c)
+{
+    uintptr_t self = 0;
+    int result = 1;
+    if (!live || !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self) || !mem::read(c->r12, result) || result)
+        return;
+    runtime::career_saves_saved();
+}
+
 uintptr_t need(const char *id, std::string &missing)
 {
     uintptr_t a = swofty::api->resolve(id);
@@ -447,11 +461,13 @@ std::vector<CoreMixins> save_splice_mixins()
                     {"site_Game_SaveData_ContainersCount", SWOFTY_MIXIN_SITE, 100, (void *)&count_entry, nullptr},
                     {"site_Game_SaveData_ContainersChildren", SWOFTY_MIXIN_SITE, 100, (void *)&children_entry,
                      nullptr}}});
+    out.push_back({SAVED_MIXIN, {{"site_Game_SaveData_ContainersDone", SWOFTY_MIXIN_SITE, 100, (void *)&saved_entry, nullptr}}});
     return out;
 }
 
 void save_splice_commit()
 {
+    career_saves_start();
     if (!offered || settled || !b.done) {
         snapshots_start(false);
         return;

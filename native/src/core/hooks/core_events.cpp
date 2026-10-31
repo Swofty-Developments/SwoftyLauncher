@@ -45,6 +45,8 @@ static_assert(declared<ce::Unloaded>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<ce::SeasonEnd>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<ce::SeasonBreak>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<ce::Saving>(SWOFTY_POINT_MODIFY));
+static_assert(declared<ce::Saved>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<ce::Missing>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<ca::UpgradesFit>(SWOFTY_POINT_MODIFY));
 static_assert(declared<ca::VtfRead>(SWOFTY_POINT_MODIFY));
 static_assert(declared<ca::Built>(SWOFTY_POINT_NOTIFY));
@@ -72,6 +74,8 @@ bool career_created() { return shell<ce::Created>(); }
 bool career_season_end() { return shell<ce::SeasonEnd>(); }
 bool career_season_break() { return shell<ce::SeasonBreak>(); }
 bool career_saving() { return shell<ce::Saving>(); }
+bool career_saved() { return shell<ce::Saved>(); }
+bool career_missing() { return shell<ce::Missing>(); }
 
 bool career_season_start(int year, int season_index)
 {

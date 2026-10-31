@@ -38,6 +38,8 @@ bool career_season_start(int year, int season_index);
 bool career_season_end();
 bool career_season_break();
 bool career_saving();
+bool career_saved();
+bool career_missing();
 bool career_add_activity(swofty::career::events::AddActivity &payload);
 bool career_standings_rebuild(swofty::career::events::StandingsRebuild &payload);
 bool car_upgrades_fit(swofty::cars::events::UpgradesFit &payload);
