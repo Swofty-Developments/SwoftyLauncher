@@ -51,7 +51,7 @@ fn refused(o: &Output) -> String {
 }
 
 fn store(root: &Path, profile: &str) -> PathBuf {
-    root.join("data/saves").join(profile).join("remote")
+    root.join("data").join("saves").join(profile).join("remote")
 }
 
 #[test]
