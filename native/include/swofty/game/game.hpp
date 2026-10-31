@@ -624,6 +624,8 @@ inline constexpr address<"Game_GameSessionMigrationManager_SendSelfState"> Game_
 inline constexpr address<"Game_GameSessionMigrationManager_SetPeerStatus"> Game_GameSessionMigrationManager_SetPeerStatus{}; // L2 experimental
 inline constexpr address<"Game_GameSessionUI_Shutdown"> Game_GameSessionUI_Shutdown{}; // L2 experimental
 inline constexpr address<"Game_Game_OnRetireLocalPlayersMessage"> Game_Game_OnRetireLocalPlayersMessage{}; // L2 experimental
+using Game_Game_SetCurrentGameMode_t = uint64_t(void *mode_context, void *mode);
+inline constexpr fn<"Game_Game_SetCurrentGameMode", Game_Game_SetCurrentGameMode_t> Game_Game_SetCurrentGameMode{}; // L2 experimental
 inline constexpr address<"Game_GarageCrewInstance_PlayOverlaySequence"> Game_GarageCrewInstance_PlayOverlaySequence{}; // L2 experimental
 inline constexpr address<"Game_GarageCrewInstance_PlaySequence"> Game_GarageCrewInstance_PlaySequence{}; // L2 experimental
 inline constexpr address<"Game_GarageModule_Initialise"> Game_GarageModule_Initialise{}; // L2 experimental
@@ -744,6 +746,7 @@ inline constexpr address<"Game_NetworkReady_OnUnpauseSendSuperReady"> Game_Netwo
 inline constexpr address<"Game_NetworkReady_OnUnreadyMessage"> Game_NetworkReady_OnUnreadyMessage{}; // L2 experimental
 inline constexpr address<"Game_NetworkReady_SendSuperReady"> Game_NetworkReady_SendSuperReady{}; // L2 experimental
 inline constexpr address<"Game_NetworkReady_SetRelevantSet"> Game_NetworkReady_SetRelevantSet{}; // L2 experimental
+inline constexpr address<"Game_NetworkSubsystem_ChangeMPMode"> Game_NetworkSubsystem_ChangeMPMode{}; // L2 experimental, NetworkSubsystem::changeMPMode
 inline constexpr address<"Game_NetworkSubsystem_SelectTitleConfig"> Game_NetworkSubsystem_SelectTitleConfig{}; // L2 experimental
 inline constexpr address<"Game_NetworkUI_StartRankedDivisionSearch"> Game_NetworkUI_StartRankedDivisionSearch{}; // L2 experimental
 inline constexpr address<"Game_NetworkUI_StartRankedRematching"> Game_NetworkUI_StartRankedRematching{}; // L2 experimental
@@ -812,6 +815,9 @@ inline constexpr fn<"Game_Place_Vehicle", Game_Place_Vehicle_t> Game_Place_Vehic
 inline constexpr address<"Game_PlatformAuthorisationTask_OnStart"> Game_PlatformAuthorisationTask_OnStart{}; // L2 experimental
 inline constexpr address<"Game_PlatformAuthorisationTask_Update"> Game_PlatformAuthorisationTask_Update{}; // L2 experimental
 inline constexpr address<"Game_PlayerManager_HandleControllerUnplugged"> Game_PlayerManager_HandleControllerUnplugged{}; // L2 experimental
+inline constexpr address<"Game_PlayerSetSubsystem_CreateHumanPlayers"> Game_PlayerSetSubsystem_CreateHumanPlayers{}; // L2 experimental, PlayerSetSubsystem::createHumanPlayers
+using Game_PlayerSetSubsystem_HandleUpdatePresenceNameMessage_t = void(void *player_set, void *msg);
+inline constexpr fn<"Game_PlayerSetSubsystem_HandleUpdatePresenceNameMessage", Game_PlayerSetSubsystem_HandleUpdatePresenceNameMessage_t> Game_PlayerSetSubsystem_HandleUpdatePresenceNameMessage{}; // L2 experimental, PlayerSetSubsystem::handleUpdatePresenceNameMessage
 inline constexpr address<"Game_PlayerSetSubsystem_Init"> Game_PlayerSetSubsystem_Init{}; // L2 experimental
 inline constexpr address<"Game_PlayerSetSubsystem_OnNewConnection"> Game_PlayerSetSubsystem_OnNewConnection{}; // L2 experimental
 inline constexpr address<"Game_PlayerSetSubsystem_UpdatePresence"> Game_PlayerSetSubsystem_UpdatePresence{}; // L2 experimental
@@ -897,6 +903,8 @@ using Game_SaveData_DeserialiseContainer_t = int *(SaveDataContainer *self, int 
 inline constexpr fn<"Game_SaveData_DeserialiseContainer", Game_SaveData_DeserialiseContainer_t> Game_SaveData_DeserialiseContainer{}; // L3 stable
 using Game_SaveData_SerialiseContainer_t = int *(SaveDataContainer *self, int *result, void *bag, uint64_t groups);
 inline constexpr fn<"Game_SaveData_SerialiseContainer", Game_SaveData_SerialiseContainer_t> Game_SaveData_SerialiseContainer{}; // L2 experimental
+using Game_SaveData_SerialiseContainer_2_t = int *(SaveDataContainer *self, int *result, void *stream, void *a4, uint64_t groups, void *a6);
+inline constexpr fn<"Game_SaveData_SerialiseContainer_2", Game_SaveData_SerialiseContainer_2_t> Game_SaveData_SerialiseContainer_2{}; // L2 experimental
 using Game_SaveData_WriteBag_t = int(NeBagCodec *codec, void *bag);
 inline constexpr fn<"Game_SaveData_WriteBag", Game_SaveData_WriteBag_t> Game_SaveData_WriteBag{}; // L3 stable
 using Game_SaveMgr_RequestProfileSave_Thunk_t = bool(void *save_mgr, void *callback, uint8_t a3, uint8_t a4);
@@ -1035,6 +1043,7 @@ inline constexpr address<"Game_TyreWearRelevanceCriterion_Update"> Game_TyreWear
 inline constexpr address<"Game_UDPPreferences_OnLocalPreferenceChange"> Game_UDPPreferences_OnLocalPreferenceChange{}; // L2 experimental
 inline constexpr address<"Game_UDPPreferences_OnLocalShowPlayerNameChange"> Game_UDPPreferences_OnLocalShowPlayerNameChange{}; // L2 experimental
 inline constexpr address<"Game_UIConnectionManager_ShowConnectionLostPopup"> Game_UIConnectionManager_ShowConnectionLostPopup{}; // L2 experimental
+inline constexpr address<"Game_UIThumbnailSystem_FindDriverCustomisationWill"> Game_UIThumbnailSystem_FindDriverCustomisationWill{}; // L2 experimental
 inline constexpr address<"Game_UiMessageScreen_Destructor"> Game_UiMessageScreen_Destructor{}; // L2 experimental
 inline constexpr address<"Game_VehicleAntiStallSystem_GetStateByPlayerId"> Game_VehicleAntiStallSystem_GetStateByPlayerId{}; // L2 experimental
 inline constexpr address<"Game_VehicleAntiStallSystem_IsLaunchPending"> Game_VehicleAntiStallSystem_IsLaunchPending{}; // L2 experimental

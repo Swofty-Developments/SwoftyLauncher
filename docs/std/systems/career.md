@@ -9,6 +9,52 @@ With the career system you build Driver Career and My Team careers: a career's t
 
 A **career mode** is the game's mode row, with its own save container and **data group** (the key that keeps one mode's career tables and save slots apart). A **season** record is one year's line-up. Each season names the **box** it races in: the Grand Prix and Time Trial season build whose cars, looks and rules it uses.
 
+## Career scope
+
+An addon that owns a career mode changes only its own careers. The addon owns a mode when it registers a `career.mode` or `career.content` record, or a content through `career::content::add`, with a data group. Every layer and selector that addon registers on a registry applied at `content`, `session` or `read` takes an implicit `{"data_group": <its group>}` selector. The core enforces it where the store decides which layers are active, so a layer needs no `.in()`:
+
+```cpp
+SWOFTY_REGISTER(swofty::Registrar &r)
+{
+    career::contents.add("progressive", {.mode = "driver_career_progressive", .data_group = "f1_career_progressive"});
+
+    // A mid-season change, in Progressive careers only. Every other career reads 2019 unchanged.
+    career::seasons.layer(career::seasons["swofty.progressive/2019"], [](career::Season &s) {
+        s.changes.push_back({.round = 13, .slot = 7, .seat = 1, .out = drivers::identities["game/pierre_gasly"],
+                             .in = drivers::identities["game/alex_albon"], .kind = career::ChangeKind::swap});
+    });
+}
+```
+
+An addon without a career mode keeps today's behaviour: its layers apply in every career and outside them. A layer on a registry applied at `boot` (`vehicle`, `livery`, `engine_sound`, `team.identity`, `suit` and the others the core lowers into the game database) is not filtered: boot records are lowered once, before any career is loaded, and `.in()` on them is refused for the same reason. Registries applied at `content`, `session` or `read` (`career.season`, `career.driver_ratings`, `content.package`, `hub.tab`, `team.logo`, `track.per_package`, `vehicle.handling`) are filtered.
+
+To apply in every career, pass `Scope::global`:
+
+```cpp
+career::seasons.layer(career::seasons["swofty.progressive/2019"], edit, Scope::global);
+```
+
+In a data file the same opt-out is `"scope": "global"` on a `$select` entry:
+
+```json
+{
+  "team.logo": {
+    "$select": [
+      { "ids": "swofty.classic-seasons-2019/*", "scope": "global", "patch": { "images": { "hud": "logos/hud.png" } } }
+    ]
+  }
+}
+```
+
+A calendar can name its career with `data_group`. A `career.calendar` record with one exists only while a career of that group is loaded; one without is visible everywhere. Two career addons each keep their own calendar for the same year under different ids:
+
+```cpp
+career::calendars.add("cs_calendar_2019", {.data_group = "cs_career", .rounds = classic_rounds});
+career::calendars.add("pg_calendar_2019", {.data_group = "f1_career_progressive", .rounds = progressive_rounds});
+```
+
+Database operations (`db/*.json`, `swofty::db`) are global: they write rows into the game database before any career exists. The core cannot scope them. Put team names, colours, logos, kits, calendars and car or sound swaps in registry records and layers, and keep database operations for rows that only your own mode reads, such as its data group's tables.
+
 ## The header
 
 <Split>

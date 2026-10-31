@@ -185,6 +185,7 @@ struct Waiting {
     ops: DbOps,
     later: HashSet<(String, i64)>,
     errors: Vec<swofty_addon::Error>,
+    since: usize,
 }
 
 fn stat_row(row: &str) -> &str {
@@ -259,6 +260,7 @@ pub struct Planner<'a> {
     removals: usize,
     fields: BTreeMap<String, BTreeMap<String, Vec<String>>>,
     skipped: Vec<String>,
+    waits: BTreeSet<(String, String)>,
     stock_removals: BTreeMap<String, usize>,
     track_removals: BTreeMap<String, usize>,
     lists: Option<StockLists>,
@@ -310,6 +312,8 @@ fn erp_target(op: &ErpOp) -> Option<(Target, bool)> {
         ErpOp::Overlay { .. } => None,
         // The build writes one target per slice it changes, through `Planner::replaced`.
         ErpOp::MergeSlices { .. } => None,
+        // It adds slices after the array as earlier addons left it, so it replaces nothing.
+        ErpOp::AppendSlices { .. } => None,
     }
 }
 
@@ -351,6 +355,7 @@ impl<'a> Planner<'a> {
             removals: 0,
             fields: BTreeMap::new(),
             skipped: Vec::new(),
+            waits: BTreeSet::new(),
             stock_removals: BTreeMap::new(),
             track_removals: BTreeMap::new(),
             lists: None,
@@ -752,17 +757,21 @@ impl<'a> Planner<'a> {
             row_ids: row_ids.as_ref(),
         };
         let mut waiting = Vec::new();
+        let mut grew: Vec<String> = Vec::new();
         for ((origin, ops), later) in pending.into_iter().zip(later) {
             let size = db.records.len();
             let names = shared.names(&origin.addon, &later);
             let (failed, rows) = self.apply_ops(db, &origin, &ops, &names, report, false);
             added.extend(rows);
-            waiting.extend(self.wait(origin, &ops, later, failed)?);
+            let since = grew.len();
+            let adder = origin.addon.clone();
+            waiting.extend(self.wait(origin, &ops, later, failed, since)?);
             if db.records.len() != size {
-                self.retry(db, &mut waiting, &shared, report, &mut added)?;
+                grew.push(adder);
+                self.retry(db, &mut waiting, &shared, report, &mut added, &grew)?;
             }
         }
-        self.retry(db, &mut waiting, &shared, report, &mut added)?;
+        self.retry(db, &mut waiting, &shared, report, &mut added, &grew)?;
         for w in waiting {
             self.settle(&w.origin, w.errors, true)?;
         }
@@ -777,15 +786,28 @@ impl<'a> Planner<'a> {
         shared: &Shared,
         report: &mut DbReport,
         added: &mut Vec<Added>,
+        grew: &[String],
     ) -> Result<()> {
         for Waiting {
-            origin, ops, later, ..
+            origin,
+            ops,
+            later,
+            since,
+            ..
         } in std::mem::take(waiting)
         {
             let names = shared.names(&origin.addon, &later);
             let (failed, rows) = self.apply_ops(db, &origin, &ops, &names, report, true);
             added.extend(rows);
-            waiting.extend(self.wait(origin, &ops, later, failed)?);
+            if failed.len() < ops.ops.len() {
+                for adder in grew[since.min(grew.len())..]
+                    .iter()
+                    .filter(|a| **a != origin.addon)
+                {
+                    self.waits.insert((origin.addon.clone(), adder.clone()));
+                }
+            }
+            waiting.extend(self.wait(origin, &ops, later, failed, since)?);
         }
         Ok(())
     }
@@ -798,6 +820,7 @@ impl<'a> Planner<'a> {
         ops: &DbOps,
         later: HashSet<(String, i64)>,
         mut failed: Vec<(usize, swofty_addon::Error)>,
+        since: usize,
     ) -> Result<Option<Waiting>> {
         let at = failed.iter().position(|(_, e)| no_row(e)).unwrap_or(failed.len());
         let rest = failed.split_off(at);
@@ -818,6 +841,7 @@ impl<'a> Planner<'a> {
             ops,
             later,
             errors,
+            since,
         }))
     }
 
@@ -963,6 +987,12 @@ impl<'a> Planner<'a> {
     }
 
     /// Per addon id, the removals of stock records the last `apply_db` left out.
+    /// The (addon, other) pairs where `addon` had ops wait for rows that `other` added, so `addon`
+    /// has to load below `other`.
+    pub fn take_waits(&mut self) -> BTreeSet<(String, String)> {
+        std::mem::take(&mut self.waits)
+    }
+
     pub fn take_stock_removals(&mut self) -> BTreeMap<String, usize> {
         std::mem::take(&mut self.stock_removals)
     }
@@ -1324,6 +1354,10 @@ mod tests {
         assert_eq!(db.get_text("t.list_1.colour").as_deref(), Some("late"));
         assert_eq!(db.get_text("t.list_0.name").as_deref(), Some("cs"));
         assert!(p.take_skipped().is_empty());
+        assert_eq!(
+            p.take_waits(),
+            BTreeSet::from([("simplified".to_owned(), "cs".to_owned())])
+        );
         let key = |path: &str| Target::Record(swofty_formats::hash::fnv1a64(path));
         let winner = |p: &Planned, path: &str| {
             let c = p.conflicts.iter().find(|c| c.target == key(path)).unwrap();

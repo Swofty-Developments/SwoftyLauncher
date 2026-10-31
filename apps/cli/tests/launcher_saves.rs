@@ -199,7 +199,11 @@ fn export_needs_steam_and_the_game_closed_and_spares_remotecache() {
     );
     assert_eq!(std::fs::read_to_string(&cache).unwrap(), "\"3059520\"\n{\n}\n");
 
-    let list = ok(&swofty(&root, "", &["saves", "list"]));
+    let list = ok(&swofty(
+        &root,
+        "",
+        &["saves", "list", "--source", "steam-843502855"],
+    ));
     assert!(list.contains("before a restore"), "{list}");
     let err = refused(&swofty(&root, "", &["saves", "export", "--to", "somewhere"]));
     assert!(err.contains("--to takes steam"), "{err}");
@@ -211,4 +215,22 @@ fn export_of_an_empty_store_says_so() {
     steam(&root);
     let err = refused(&swofty(&root, "", &["saves", "export", "--to", "steam"]));
     assert!(err.contains("are empty; there is nothing to export"), "{err}");
+}
+
+#[test]
+fn list_defaults_to_the_active_profiles_launcher_store() {
+    let root = root("default-store");
+    steam(&root);
+    ok(&swofty(&root, "", &["saves", "import"]));
+    let list = ok(&swofty(&root, "", &["saves", "list"]));
+    let want = std::path::Path::new("career-vault").join("launcher-default");
+    assert!(list.contains(&want.display().to_string()), "{list}");
+    assert!(!list.contains("steam-843502855"), "{list}");
+    std::fs::write(
+        root.join("data").join("config.json"),
+        r#"{"active_profile":"vanilla"}"#,
+    )
+    .unwrap();
+    let list = ok(&swofty(&root, "", &["saves", "list"]));
+    assert!(list.contains("steam-843502855"), "{list}");
 }

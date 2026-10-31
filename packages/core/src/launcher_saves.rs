@@ -195,6 +195,35 @@ pub fn marker(data: &Path) -> Option<Marker> {
     serde_json::from_slice(&std::fs::read(marker_path(data)).ok()?).ok()
 }
 
+/// Record in `imported.json` that profile `from` is now called `to`.
+pub fn rename_in_marker(data: &Path, from: &str, to: &str) -> Result<()> {
+    let Some(mut m) = marker(data) else {
+        return Ok(());
+    };
+    if !m.profiles.iter().any(|p| p == from) {
+        return Ok(());
+    }
+    for p in m.profiles.iter_mut().filter(|p| *p == from) {
+        *p = to.to_owned();
+    }
+    crate::write_json(&marker_path(data), &m)
+}
+
+/// Move the vaults of launcher profile `from` to the names for `to`.
+pub fn rename_vaults(data: &Path, from: &str, to: &str) -> Result<()> {
+    for (old, new) in [
+        (Location::launcher(data, from), Location::launcher(data, to)),
+        (Location::launcher_ea(data, from), Location::launcher_ea(data, to)),
+    ] {
+        let old = Vault::root(data).join(&old.source);
+        let new = Vault::root(data).join(&new.source);
+        if old.is_dir() && !new.exists() {
+            std::fs::rename(&old, &new).map_err(io_err(&old))?;
+        }
+    }
+    Ok(())
+}
+
 /// Whether the launcher still has to tell the player about the first-start import: it copied the Steam
 /// save into at least one profile and the player hasn't seen the notice.
 pub fn notice_due(data: &Path) -> bool {

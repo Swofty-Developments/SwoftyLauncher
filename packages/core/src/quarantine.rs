@@ -662,7 +662,7 @@ pub fn refused(fallback: &str) -> Option<String> {
 pub fn refused_text() -> &'static str {
     "F1 25 can't create files in its folder, so this session the loader logs to the data folder and addons keep \
      their files in addon-storage in the data folder. An addon that writes in the game folder by itself can't save \
-     there; moving F1 25 to a folder outside Program Files fixes that."
+     there; moving F1 25 out of Program Files with EA app > F1 25 > Manage > Move, not File Explorer, fixes that."
 }
 
 /// Follows the game folder's loader.log after the game starts. The stub

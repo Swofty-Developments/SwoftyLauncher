@@ -734,6 +734,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         order: p.enabled().map(str::to_owned).collect(),
         stock_removals: BTreeMap::new(),
         kept_lists: BTreeMap::new(),
+        waits: Vec::new(),
     };
     if p.is_vanilla() {
         built.plan = Plan::vanilla();
@@ -1220,6 +1221,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     };
     let mut stock_removals = BTreeMap::new();
     let mut kept_lists = BTreeMap::new();
+    let mut waits = Vec::new();
     let mut udp_ids = crate::udp_ids::UdpIds::default();
     let mut id_aliases = crate::row_ids::IdAliases::default();
     if !maps.is_empty() || planner.has_db() || room_asked.is_some() {
@@ -1345,6 +1347,11 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             let name = addons.get(&id).map_or(id.as_str(), |m| m.name.as_str());
             built.warnings.push(track_removals_line(name, n));
         }
+        waits = planner
+            .take_waits()
+            .into_iter()
+            .map(|(addon, on)| crate::conflicts::Wait { addon, on })
+            .collect();
         kept_lists = planner.take_kept_lists();
         for (id, lists) in &kept_lists {
             let name = addons.get(id).map_or(id.as_str(), |m| m.name.as_str());
@@ -2032,6 +2039,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         order: built.report.order.clone(),
         stock_removals,
         kept_lists,
+        waits,
         ..report
     };
     built.conflicts = planned.conflicts;
@@ -2296,9 +2304,10 @@ fn slice_merges(ops: &[Op]) -> Vec<(usize, &str, &str)> {
     ops.iter()
         .enumerate()
         .filter_map(|(i, op)| match &op.op {
-            AssetOp::Erp(crate::ops::ErpOp::MergeSlices { erp, resource, .. }) => {
-                Some((i, erp.as_str(), resource.as_str()))
-            }
+            AssetOp::Erp(
+                crate::ops::ErpOp::MergeSlices { erp, resource, .. }
+                | crate::ops::ErpOp::AppendSlices { erp, resource, .. },
+            ) => Some((i, erp.as_str(), resource.as_str())),
             _ => None,
         })
         .collect()

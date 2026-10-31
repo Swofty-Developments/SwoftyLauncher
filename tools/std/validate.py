@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import stdschema as S
 
 REGISTRIES = "packages/sdk/std/registries"
-SELECT_KEYS = {"ids", "where", "tag", "in", "when", "except", "patch"}
+SELECT_KEYS = {"ids", "where", "tag", "in", "when", "except", "scope", "patch"}
 
 
 def is_layers_name(path):
@@ -173,6 +173,8 @@ def validate_select(entries, schemas, name, versions, path, result):
             result.problems.append((S.pointer(at), f"unknown selector fields {sorted(unknown)}"))
         if not set(entry) & {"ids", "where", "tag"}:
             result.problems.append((S.pointer(at), "a selector entry has ids, where or tag"))
+        if "scope" in entry and entry["scope"] != "global":
+            result.problems.append((S.pointer(at + ["scope"]), "a selector entry's scope is \"global\" when it has one"))
         if not isinstance(entry.get("patch"), dict):
             result.problems.append((S.pointer(at + ["patch"]), "a selector entry has a patch object"))
             continue

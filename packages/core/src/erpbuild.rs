@@ -334,6 +334,7 @@ pub fn reads(op: &ErpOp) -> Vec<&str> {
         | ErpOp::AddResource { erp, .. }
         | ErpOp::RemoveResource { erp, .. }
         | ErpOp::MergeSlices { erp, .. }
+        | ErpOp::AppendSlices { erp, .. }
         | ErpOp::SetMaterial { erp, .. } => vec![erp.as_str()],
         ErpOp::Overlay { erps, .. } => erps.iter().map(String::as_str).collect(),
         ErpOp::AddMipmaps { .. } => Vec::new(),
@@ -350,6 +351,7 @@ pub fn writes(op: &ErpOp) -> Vec<&str> {
         | ErpOp::RemoveResource { erp, .. }
         | ErpOp::PatchPkg { erp, .. }
         | ErpOp::MergeSlices { erp, .. }
+        | ErpOp::AppendSlices { erp, .. }
         | ErpOp::SetMaterial { erp, .. } => vec![erp.as_str()],
         ErpOp::Overlay { erps, .. } => erps.iter().map(String::as_str).collect(),
         ErpOp::AddMipmaps { .. } => Vec::new(),
@@ -510,7 +512,8 @@ impl<'a> ErpBuild<'a> {
                 .last()
                 .filter(|m| m.whole || !m.changed.is_empty())
                 .map(|_| (erp, resource.as_str())),
-            ErpOp::AddMipmaps { .. } | ErpOp::Overlay { .. } => None,
+            // Appending replaces nothing an earlier addon wrote.
+            ErpOp::AddMipmaps { .. } | ErpOp::Overlay { .. } | ErpOp::AppendSlices { .. } => None,
         };
         if let Some((erp, name)) = written {
             self.writers
@@ -654,6 +657,14 @@ impl<'a> ErpBuild<'a> {
                 self.merges.push(merge);
                 Ok(())
             }
+            ErpOp::AppendSlices {
+                erp,
+                resource,
+                source,
+            } => {
+                let path = resolve(source)?;
+                self.append_slices(erp, resource, &path)
+            }
             ErpOp::Overlay { erps, source } => {
                 let path = resolve(source)?;
                 for name in overlay_names(&path)? {
@@ -790,6 +801,74 @@ impl<'a> ErpBuild<'a> {
             Slot::Owned(r) => r.clone(),
             Slot::Stock(j) => target.file.load(&target.file.erp.resources[*j])?,
         }))
+    }
+
+    // Puts every slice of `resource` in `from` after the slices of the array in `erp`, as
+    // the game or earlier addons left it, and sets the slice count in the array's
+    // header and in its view (the same name without `.image`, the count at 0x14).
+    fn append_slices(&mut self, erp: &str, resource: &str, from: &Path) -> Result<()> {
+        const VIEW_COUNT: usize = 0x14;
+        let source = self.load_from(from, resource)?;
+        let theirs = Array::read_slices(&source).ok_or_else(|| {
+            fail(format!(
+                "append-slices: {resource} in {} is not a texture array",
+                from.display()
+            ))
+        })?;
+        let mut res = match self.current(erp, resource)? {
+            Some(r) => r,
+            None => self
+                .stock_copy(erp, resource)?
+                .ok_or_else(|| fail(format!("append-slices: the game has no {resource}")))?,
+        };
+        let mut into = Array::read(&res).ok_or_else(|| {
+            fail(format!(
+                "append-slices: {resource} in {erp} is not a texture array"
+            ))
+        })?;
+        if !theirs.fits(&into) {
+            return Err(fail(format!(
+                "append-slices: {resource} differs in format or slice size from the array in {erp}"
+            )));
+        }
+        let added = into.append(&theirs);
+        let head = res
+            .fragments
+            .first()
+            .ok_or_else(|| fail(format!("{resource}: no fragment 0")))?
+            .data()?;
+        let head =
+            Array::with_count(&head, into.count).ok_or_else(|| fail(format!("{resource}: short header")))?;
+        res.set_fragment(0, &head)
+            .map_err(|e| fail(format!("{erp}: {e}")))?;
+        res.set_fragment(1, &into.data)
+            .map_err(|e| fail(format!("{erp}: {e}")))?;
+        self.place(erp, res, true)?;
+        if let Some(view) = resource.strip_suffix(".image") {
+            let found = match self.current(erp, view)? {
+                Some(r) => Some(r),
+                None => self.stock_copy(erp, view)?,
+            };
+            if let Some(mut v) = found {
+                let mut d = v
+                    .fragments
+                    .first()
+                    .ok_or_else(|| fail(format!("{view}: no fragment 0")))?
+                    .data()?;
+                if let Some(at) = d.get_mut(VIEW_COUNT..VIEW_COUNT + 4) {
+                    at.copy_from_slice(&(into.count as u32).to_le_bytes());
+                    v.set_fragment(0, &d).map_err(|e| fail(format!("{erp}: {e}")))?;
+                    self.place(erp, v, true)?;
+                }
+            }
+        }
+        self.notes.push(format!(
+            "{erp}: {} slice(s) appended to {resource} at {}..{}",
+            added.len(),
+            added.start,
+            added.end
+        ));
+        Ok(())
     }
 
     fn merge_slices(&mut self, erp: &str, resource: &str, from: &Path) -> Result<SliceMerge> {

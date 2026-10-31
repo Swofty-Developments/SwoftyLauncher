@@ -12,7 +12,7 @@ use crate::{Error, Result, io_err};
 
 pub const CLOSE_STEAM: &str = "Exit Steam completely (Steam menu > Exit), then restore again. Starting Steam \
                                afterwards uploads the restored save.";
-pub const CLOSE_GAME: &str = "Close F1 25, then try again.";
+pub const CLOSE_GAME: &str = "F1 25 is running; close it, then try again.";
 pub const CLOSE_EA: &str = "Exit the EA app completely (its tray icon > Quit), then restore again.";
 
 /// What runs that a restore must wait for.
@@ -47,13 +47,12 @@ impl Running {
 
 /// Why a restore into a save of `layout` must wait.
 pub fn blocker(layout: Layout, r: Running) -> Option<String> {
-    let close = match layout {
-        Layout::Steam => CLOSE_STEAM,
-        Layout::Ea => CLOSE_EA,
-        Layout::Launcher | Layout::LauncherEa => CLOSE_GAME,
-    };
     if r.game {
-        return Some(format!("F1 25 is running; close it first. {close}"));
+        return Some(match layout {
+            Layout::Steam => format!("F1 25 is running; close it first. {CLOSE_STEAM}"),
+            Layout::Ea => format!("F1 25 is running; close it first. {CLOSE_EA}"),
+            Layout::Launcher | Layout::LauncherEa => CLOSE_GAME.to_owned(),
+        });
     }
     match layout {
         Layout::Steam if r.steam => Some(format!(

@@ -291,6 +291,8 @@ fn restore_refuses_while_steam_or_the_game_runs() {
             .to_string()
             .contains("F1 25 is running")
     );
+    let msg = super::restore::blocker(Layout::Launcher, game).unwrap();
+    assert_eq!(msg.matches("F1 25").count(), 1, "{msg}");
     assert_eq!(std::fs::read(loc.dir.join(DATA)).unwrap(), [2u8; 500]);
     assert_eq!(v.list().unwrap().len(), 1, "a refused restore takes no snapshot");
     assert!(kinds(&v).contains(&EventKind::RestoreRefused));
