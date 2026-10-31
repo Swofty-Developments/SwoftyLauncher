@@ -160287,6 +160287,83 @@
    "used_by": [
     "native/src/core/garage_setup.cpp"
    ]
+  },
+  {
+   "id": "session.ai_records_first_group_read",
+   "section": ".xtls",
+   "pattern": "8B 94 24 F8 00 00 00 48 8B 84 24 18 01 00 00",
+   "match": "0x1438a41ad",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1438a41b4",
+   "kind": "mid",
+   "expect": "48 8B 84 24 18 01 00 00",
+   "names": [
+    "site_Sess_AiRecords_FirstGroupRead"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "sessguard",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.ai_records_vehicle_next",
+   "section": ".xtls",
+   "pattern": "48 89 BB 38 01 00 00 49 89 DD 48 8B 74 24 60",
+   "match": "0x1438a488b",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1438a4892",
+   "kind": "mid",
+   "expect": "49 89 DD 48 8B 74 24 60",
+   "names": [
+    "site_Sess_AiRecords_VehicleNext"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "sessguard",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.ai_records_name_hash",
+   "section": ".xtls",
+   "pattern": "4C 89 E9 49 89 C5 48 8B 81 08 01 00 00",
+   "match": "0x1438a3c91",
+   "anchor": "0x6",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1438a3c97",
+   "kind": "mid",
+   "expect": "48 8B 81 08 01 00 00",
+   "names": [
+    "site_Sess_AiRecords_NameHash"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "sessguard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/session_enter.cpp"
+   ]
   }
  ]
 }
