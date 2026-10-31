@@ -299,11 +299,17 @@ template <class Tag> struct Set {
         if (!begin || end <= begin || vehicle >= (end - begin) / 8)
             return false;
         auto set = *reinterpret_cast<const uintptr_t *>(begin + uintptr_t(vehicle) * 8);
-        uint32_t mode = 0;
-        return set && mode_of(*reinterpret_cast<const uint32_t *>(set + SET_MODE_MASKED),
-                              *reinterpret_cast<const uint32_t *>(set + SET_MODE_KEY), mode) == SWOFTY_ASSET_OK &&
-               mode == 1;
+        uint32_t masked = 0, key = 0, mode = 0;
+        if (!plausible(set) || !env.read || !env.read(set + SET_MODE_MASKED, &masked, sizeof masked) ||
+            !env.read(set + SET_MODE_KEY, &key, sizeof key))
+            return false;
+        return mode_of(masked, key, mode) == SWOFTY_ASSET_OK && mode == 1;
     }
+
+    // A controller set pointer while the game builds or tears down a session can be a stale or poison value
+    // (a non-canonical address faults even through a null check), so a set is read only at a user-mode,
+    // 8-byte aligned address.
+    static bool plausible(uintptr_t p) { return p >= 0x10000 && p < 0x0000800000000000ull && (p & 7) == 0; }
 
     // The apply-site fallback: at the call in the per-car loop of ApplyInputs rcx is the controller system, edx
     // the vehicle, rax the input record. The record is already the game's decision for the frame, so replace
