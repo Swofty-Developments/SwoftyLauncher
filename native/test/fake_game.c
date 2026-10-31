@@ -822,6 +822,8 @@ static void crash_standings(void)
     uint64_t r = fake_standings_weekend(standings_view, NULL, 4, standings_weekend[1]);
     printf("      standings: the round returned %llu\n", (unsigned long long)r);
     fflush(stdout);
+}
+
 // The tail of Game_GarageCrewModule_SpawnGarageCrew's assignment loop, copied byte for byte from the Steam build
 // (0x14038930e..0x14038931a and 0x14038931e), in a small frame that takes the vector begin in rcx, its end in rdx and
 // the garage id in r8d and returns the entry count the game computes after the site. Core's garage crew guard resolves
