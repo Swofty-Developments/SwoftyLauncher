@@ -386,7 +386,7 @@ def main(argv=None):
             report = []
             try:
                 doc = S.load(f)
-                result = validate_data(doc, schemas, is_layers_name(f), skip_unknown=True, corpus=corpus)
+                result = validate_data(doc, schemas, is_layers_name(f), skip_unknown=True, pin=file_pin(f), corpus=corpus)
                 report += [f"{w}: {m}" for w, m in result.problems + result.missing]
                 report += [f"{v} {w}: {m}" for v, errs in sorted(result.by_version.items()) for w, m in errs]
                 checked = ", ".join(sorted(result.by_version)) or "no SDK registry"

@@ -797,7 +797,12 @@ impl Store {
 
     pub fn session_settings(&self, profile: &str) -> Result<SessionSettings> {
         let requests = crate::paths::game_folder_view(&self.requests_path(profile));
-        let mut s = SessionSettings::build(&self.profile(profile)?, &self.addons()?, Some(requests))?;
+        let p = self.profile(profile)?;
+        let mut s = SessionSettings::build(&p, &self.addons()?, Some(requests))?;
+        s.launcher_saves = p.launcher_saves.then(|| settings::SessionSaves {
+            profile: p.name.clone(),
+            remote: crate::paths::game_folder_view(&crate::launcher_saves::remote_dir(&self.root, &p.name)),
+        });
         s.addons
             .retain(|a| a.id == CORE_ID || !self.is_builtin(&a.id) || !a.options.is_empty());
         Ok(s)
@@ -1503,7 +1508,7 @@ mod tests {
         };
         write_addon(&Store::new(&root).addons_dir().join("a.user"), "a.user");
         let plain = Store::new(&root).with_builtins(vec![tuned()]);
-        let expected = SessionSettings::build(
+        let mut expected = SessionSettings::build(
             &plain.profile(DEFAULT_PROFILE).unwrap(),
             &plain.addons().unwrap(),
             Some(crate::paths::game_folder_view(
@@ -1511,6 +1516,13 @@ mod tests {
             )),
         )
         .unwrap();
+        expected.launcher_saves = Some(settings::SessionSaves {
+            profile: DEFAULT_PROFILE.into(),
+            remote: crate::paths::game_folder_view(&crate::launcher_saves::remote_dir(
+                &plain.root,
+                DEFAULT_PROFILE,
+            )),
+        });
         let plain_json = serde_json::to_vec(&plain.session_settings(DEFAULT_PROFILE).unwrap()).unwrap();
         assert_eq!(plain_json, serde_json::to_vec(&expected).unwrap());
 

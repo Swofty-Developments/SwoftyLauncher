@@ -28,7 +28,7 @@ struct CarBrakeEcu {
     /* 0x2058 */ CarObfFloat brake_rear_forwards;             // L2 decomp:re/decomp/1446752f0.c;kb:subsystems/car.md#brakeecu VTF BrakeECU/BrakeRearForwards
     /* 0x2068 */ CarObfFloat brake_migration_torque;          // L2 decomp:re/decomp/1446752f0.c;kb:subsystems/car.md#brakeecu VTF BrakeECU/BrakeMigrationTorque
     /* 0x2078 */ CarObfFloat brake_migration_torque_ai;       // L2 decomp:re/decomp/1446752f0.c;kb:subsystems/car.md#brakeecu VTF BrakeECU/BrakeMigrationTorqueAI AI-only value
-    /* 0x2088 */ CarObfFloat brake_pressure;                  // L2 decomp:re/decomp/1446752f0.c;kb:subsystems/car.md#brakeecu VTF BrakeECU/BrakePressure
+    /* 0x2088 */ CarObfFloat vtf_brake_pressure;                // L2 decomp:re/decomp/1446752f0.c;kb:subsystems/car.md#brakeecu VTF BrakeECU/BrakePressure
     /* 0x2098 */ CarObfFloat brake_atcstrength;               // L2 decomp:re/decomp/1446752f0.c;kb:subsystems/car.md#brakeecu VTF BrakeECU/BrakeATCStrength
     /* 0x20a8 */ CarObfFloat atcmedium_grip_factor_player;    // L2 decomp:re/decomp/1446752f0.c;kb:subsystems/car.md#brakeecu VTF BrakeECU/ATCMediumGripFactorPlayer
     /* 0x20b8 */ CarObfFloat atcmedium_grip_factor_player_wet; // L2 decomp:re/decomp/1446752f0.c;kb:subsystems/car.md#brakeecu VTF BrakeECU/ATCMediumGripFactorPlayerWet

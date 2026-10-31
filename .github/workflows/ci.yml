@@ -429,6 +429,8 @@ jobs:
         run: native/test/run_ers_newlap_test.sh
       - name: Tyre slot guard unit test
         run: native/test/run_tyre_slots_test.sh
+      - name: Pit slot guard unit test
+        run: native/test/run_pit_slots_test.sh
       - name: Audio job queue fix unit test
         run: native/test/run_audio_queue_test.sh
       - name: Pattern scan and scan cache unit test
@@ -519,6 +521,9 @@ jobs:
 
       - name: Save sandbox host and Wine test
         run: native/test/run_save_sandbox_test.sh
+
+      - name: Career list Wine test
+        run: native/test/run_career_list_test.sh
 
       - name: Loader log fallback Wine test
         run: native/test/run_log_fallback_test.sh

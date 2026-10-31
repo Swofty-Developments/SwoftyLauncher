@@ -27,6 +27,7 @@ pub mod install;
 pub mod journal;
 pub mod known_problems;
 pub mod launch;
+pub mod launcher_saves;
 pub mod loader_check;
 pub mod managed;
 pub mod map;
@@ -69,6 +70,7 @@ pub mod ui;
 pub mod update;
 pub mod updater;
 pub mod usage;
+pub mod vault;
 pub mod vdf;
 
 pub const STEAM_APP_ID: u32 = 3_059_520;

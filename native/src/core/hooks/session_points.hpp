@@ -112,10 +112,12 @@ public:
         return true;
     }
 
+    void keep(bool on) { keep_ = on; }
+
     void uninstall() override
     {
         std::lock_guard<std::recursive_mutex> g(lock_);
-        if (!hook_)
+        if (!hook_ || keep_)
             return;
         hook_.reset();
         log("[hooks] " + point_ + " has no subscriber left; the mid-hook on " + binding_ + " is removed");
@@ -144,6 +146,7 @@ private:
     GameOps ops_;
     mutable std::recursive_mutex lock_;
     safetyhook::MidHook hook_;
+    bool keep_ = false;
 };
 
 class AiLink final : public GameLink {
