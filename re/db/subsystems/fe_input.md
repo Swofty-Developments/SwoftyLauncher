@@ -17,3 +17,6 @@ Owner: see `subsystems.tsv`. Rows: `kb.py find '\tfe_input\t'`. How input device
 - The GameInputModule object layout (provider list, active-device slots at module+0xd0/+0xd8) and `SettingsControlsScreenViewModel::deviceConnectionStatusChanged` (0x141d9efb0, game lane) are the next steps for a full input→UI map.
 
 ## Inbox
+- engine-re finding for FeInput_Add_PlayerProvider 0x1434d6fd0: cxx=game::Player::addPlayerInputProvider; attaches an input device provider to a Player and publishes device-present bools on VM nodes player+0x290/+0x2b0/+0x2d0 via Vm_NodeSet_Bool; returns 0x16 if the provider is incomplete; INPUT log; L1 (no clean caller xref, reached indirectly)
+- engine-re finding for FeInput_Remove_PlayerProvider 0x1434d7340: cxx=game::Player::removePlayerInputProvider
+- engine-re finding for FeInput_RemoveAll_PlayerProviders 0x1434d7850: cxx=game::Player::removeAllPlayerInputProviders

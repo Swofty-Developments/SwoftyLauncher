@@ -20,3 +20,5 @@ Owner: see `subsystems.tsv`. Rows: `kb.py find '\tfe_popup\t'`. The "on top of e
 
 ## Inbox
 - 2026-10-21 20:16 intro-1990: Fullscreen video player documented in core.md (Ne_Play_FullscreenVideo 0x14416de50, L2 dev): feature system path, on_end callback, videos/ prefix, Bink 1 .bik support, AllowVideoSkip skip path. Used by addons/f1-1990/native/src/intro_video.cpp.
+- engine-re finding for FePopup_Start_BusySpinner 0x1408225a0: game::FullScreenBusySpinner::startBusySpinner; allocates a 0x218 spinner controller (vtable 0x14565f790) with linked-list nodes; start and stop pretty-functions are both inlined here; L1 (start vs stop ambiguous)
+- engine-re finding for FePopup_Broadcast_Notifications 0x143885700: cxx=game::UIConnectionManager::broadcastNotifications; KB addr is mid-function (true pdata entry is 0x143883040); broadcasts connection/notification state to listeners (mgr+0xd8..+0xe0); TOP_LEVEL_UI log; L1 inlined region lb19-verify partial/disagree
