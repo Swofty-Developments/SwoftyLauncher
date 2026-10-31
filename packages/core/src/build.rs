@@ -1240,9 +1240,10 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         planner.keep_entrant_lists(crate::entrant_lists::StockLists::new(&shipped_db));
         let row_ids_lock = crate::row_ids::lock(&store.root)?;
         let last = crate::row_ids::last_build(&store.overlays_dir(profile), &built.buildhash, GVDB);
-        let (row_ids, row_id_warnings) =
+        let (mut row_ids, row_id_warnings) =
             crate::row_ids::Store::load(&store.root, Some(&game.dir), profile, last);
         built.warnings.extend(row_id_warnings);
+        built.lines.extend(row_ids.recover(&store.sessions_dir()).lines);
         planner.keep_row_ids(row_ids);
         let added = planner.apply_db_report(&mut db, &stock, &tracked, &mut db_report)?;
         if let Some(ids) = planner.take_row_ids() {
@@ -3343,17 +3344,16 @@ mod tests {
             Some("team12_26")
         );
         let key = "t.rows/entrants.teams.team/team12_26";
-        let hashed = crate::ops::hash_probe(key, crate::ops::hash_pool(None, 101, 1))
-            .next()
-            .unwrap();
+        let next_id = 102;
         assert_eq!(
             db.get_text("entrants.teams.team_2.stat_id"),
-            Some(hashed.to_string())
+            Some(next_id.to_string())
         );
         assert!(
-            built.lines.iter().any(|l| l.ends_with(&format!(
-                "stat_id {hashed} (the source's is 100; from the row's key)"
-            ))),
+            built
+                .lines
+                .iter()
+                .any(|l| l.ends_with(&format!("stat_id {next_id} (the source's is 100)"))),
             "{:?}",
             built.lines
         );
@@ -3362,14 +3362,14 @@ mod tests {
                 .unwrap();
         assert_eq!(
             outputs["default"]["t.rows"]["row_ids"]["entrants.teams.team/team12_26"],
-            hashed
+            next_id
         );
         let ids = crate::row_ids::path(&store.root);
         let kept: serde_json::Value = serde_json::from_slice(&std::fs::read(&ids).unwrap()).unwrap();
-        assert_eq!(kept["rows"][key]["id"], hashed);
+        assert_eq!(kept["rows"][key]["id"], next_id);
         std::fs::write(
             &ids,
-            format!(r#"{{"version":1,"rows":{{"{key}":{{"id":140,"from":"hashed"}}}}}}"#),
+            format!(r#"{{"version":1,"rows":{{"{key}":{{"id":140,"from":"next"}}}}}}"#),
         )
         .unwrap();
         std::fs::remove_file(built.overlay.join(SAVED_FILE)).unwrap();
