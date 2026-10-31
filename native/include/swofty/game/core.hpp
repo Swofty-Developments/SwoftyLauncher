@@ -127,6 +127,9 @@ static_assert(offsetof(SaveDataContainer, retained_count) == 0x1c8);
 
 inline constexpr address<"Ne_ActorSceneDataResourceFactory_DestroyResource"> Ne_ActorSceneDataResourceFactory_DestroyResource{}; // L2 experimental
 inline constexpr address<"Ne_ActorSceneDataResource_DestroyScenes"> Ne_ActorSceneDataResource_DestroyScenes{}; // L2 experimental
+inline constexpr address<"Ne_AnimClipResourceFactory_CreateResource"> Ne_AnimClipResourceFactory_CreateResource{}; // L2 experimental, NeAnimClipResourceFactory::createResource
+inline constexpr address<"Ne_Application2_OnFocusChanged"> Ne_Application2_OnFocusChanged{}; // L2 experimental, NeApplication2::onFocusChanged
+inline constexpr address<"Ne_Application2_OnVisibilityChanged"> Ne_Application2_OnVisibilityChanged{}; // L2 experimental, NeApplication2::onVisibilityChanged
 inline constexpr address<"Ne_BufferedAssetGroupLoader_GroupSwapAssetGroups"> Ne_BufferedAssetGroupLoader_GroupSwapAssetGroups{}; // L2 experimental, NeBufferedAssetGroupLoader::groupSwapAssetGroups
 inline constexpr address<"Ne_CloudGenerator_Destroy"> Ne_CloudGenerator_Destroy{}; // L2 experimental, NeCloudGenerator::~NeCloudGenerator
 inline constexpr address<"Ne_CloudUploader_Upload"> Ne_CloudUploader_Upload{}; // L2 experimental
@@ -136,6 +139,9 @@ inline constexpr address<"Ne_CrowdAnimationLoader_LoadBehavioursInStage"> Ne_Cro
 inline constexpr address<"Ne_CrowdAnimationLoader_OnAnimClipChanged"> Ne_CrowdAnimationLoader_OnAnimClipChanged{}; // L2 experimental, NeCrowdAnimationLoader::onAnimClipChanged
 inline constexpr address<"Ne_CrowdPluginConnection_ProcessMessage"> Ne_CrowdPluginConnection_ProcessMessage{}; // L2 experimental, NeCrowdPluginConnection::processMessage
 inline constexpr address<"Ne_CrowdPlugin_LoadXml"> Ne_CrowdPlugin_LoadXml{}; // L2 experimental
+inline constexpr address<"Ne_Crt_Atanf"> Ne_Crt_Atanf{}; // L2 experimental
+inline constexpr address<"Ne_Crt_Powf"> Ne_Crt_Powf{}; // L2 experimental
+inline constexpr address<"Ne_Crt_Sinf"> Ne_Crt_Sinf{}; // L2 experimental
 inline constexpr address<"Ne_CustomisationDecalRenderer_Render"> Ne_CustomisationDecalRenderer_Render{}; // L2 experimental, NeCustomisationDecalRenderer::render
 inline constexpr address<"Ne_CustomisationDecalsProjectionAreasSetPlugin_CloseConnection"> Ne_CustomisationDecalsProjectionAreasSetPlugin_CloseConnection{}; // L2 experimental, NeCustomisationDecalsProjectionAreasSetPlugin::closeConnection
 inline constexpr address<"Ne_CustomisationDecalsSetPlugin_CloseConnection"> Ne_CustomisationDecalsSetPlugin_CloseConnection{}; // L2 experimental, NeCustomisationDecalsSetPlugin::closeConnection
@@ -152,19 +158,25 @@ inline constexpr address<"Ne_EadpPresenceService_UnsubscribeFriends"> Ne_EadpPre
 using Ne_Entity_FindComponent_t = void *(void *entity, const void *type);
 inline constexpr fn<"Ne_Entity_FindComponent", Ne_Entity_FindComponent_t> Ne_Entity_FindComponent{}; // L2 experimental
 inline constexpr address<"Ne_EventDispatcher_SendEvent"> Ne_EventDispatcher_SendEvent{}; // L2 experimental
+inline constexpr address<"Ne_FlowStateInterruptManager_ConsumeInterrupt"> Ne_FlowStateInterruptManager_ConsumeInterrupt{}; // L2 experimental, NeFlowStateInterruptManager::consumeInterrupt
 inline constexpr address<"Ne_FogSet_SetFogData"> Ne_FogSet_SetFogData{}; // L2 experimental, NeFogSet::setFogData
 using Ne_Format_String_t = int64_t(NeStr **out, const char *fmt, ...);
 inline constexpr fn<"Ne_Format_String", Ne_Format_String_t> Ne_Format_String{}; // L2 experimental
+inline constexpr address<"Ne_Get_CStrLen"> Ne_Get_CStrLen{}; // L2 experimental
 using Ne_Get_SettingBool_t = uint64_t(void *node, const char *name, uint8_t *out, uint8_t def);
 inline constexpr fn<"Ne_Get_SettingBool", Ne_Get_SettingBool_t> Ne_Get_SettingBool{}; // L2 experimental
 using Ne_Get_SettingU32_t = uint64_t(void *node, const char *name, uint32_t *out, uint32_t def);
 inline constexpr fn<"Ne_Get_SettingU32", Ne_Get_SettingU32_t> Ne_Get_SettingU32{}; // L2 experimental
+using Ne_Heap_DeallocateNonSmall_t = uint64_t(void *heap, uint8_t *ptr);
+inline constexpr fn<"Ne_Heap_DeallocateNonSmall", Ne_Heap_DeallocateNonSmall_t> Ne_Heap_DeallocateNonSmall{}; // L2 experimental
 inline constexpr address<"Ne_IBLCubeProbe_FreeInterpolatedArrays"> Ne_IBLCubeProbe_FreeInterpolatedArrays{}; // L2 experimental
+inline constexpr address<"Ne_InputDeviceDirectInput_ResetForceFeedback"> Ne_InputDeviceDirectInput_ResetForceFeedback{}; // L2 experimental, NeInputDeviceDirectInput::resetForceFeedback
 inline constexpr address<"Ne_InputDevicePadPS_Cleanup"> Ne_InputDevicePadPS_Cleanup{}; // L2 experimental, NeInputDevicePadPS::cleanup
 inline constexpr address<"Ne_InputDevicePadPS_Initialise"> Ne_InputDevicePadPS_Initialise{}; // L2 experimental, NeInputDevicePadPS::initialise
 inline constexpr address<"Ne_InputLibraryDirectInput_EnumDevicesCallback"> Ne_InputLibraryDirectInput_EnumDevicesCallback{}; // L2 experimental, NeInputLibraryDirectInput::enumDevicesCallback
 inline constexpr address<"Ne_InputLibraryDirectInput_IsXInputDevice"> Ne_InputLibraryDirectInput_IsXInputDevice{}; // L2 experimental, NeInputLibraryDirectInput::isXInputDevice
 inline constexpr address<"Ne_InputSystem_DeviceConnection"> Ne_InputSystem_DeviceConnection{}; // L2 experimental, NeInputSystem::deviceConnection
+inline constexpr address<"Ne_InputSystem_Init"> Ne_InputSystem_Init{}; // L2 experimental
 inline constexpr address<"Ne_InputSystem_MergePreset"> Ne_InputSystem_MergePreset{}; // L2 experimental
 inline constexpr address<"Ne_InputSystem_UnbindDevice"> Ne_InputSystem_UnbindDevice{}; // L2 experimental
 inline constexpr address<"Ne_LinkResolver_ResolveLinks"> Ne_LinkResolver_ResolveLinks{}; // L2 experimental, NeLinkResolver::resolveLinks
@@ -249,6 +261,8 @@ inline constexpr address<"Ne_NetTransportPlayFab_SendToConnectionInfo"> Ne_NetTr
 inline constexpr address<"Ne_NetVoiceNotificationClient_WaveInAddBuffer"> Ne_NetVoiceNotificationClient_WaveInAddBuffer{}; // L2 experimental, NeNetVoiceNotificationClient::waveInAddBuffer
 inline constexpr address<"Ne_Network_Init"> Ne_Network_Init{}; // L2 experimental, neon::NeNetwork::init
 inline constexpr address<"Ne_Network_StartAsync"> Ne_Network_StartAsync{}; // L2 experimental, neon::NeNetwork::startAsync
+inline constexpr address<"Ne_OSHTTPRequestAndResponseResponseHandler_CbHttpResponse"> Ne_OSHTTPRequestAndResponseResponseHandler_CbHttpResponse{}; // L2 experimental, neon::NeOSHTTPRequestAndResponse::ResponseHandler::cbHttpResponse
+inline constexpr address<"Ne_OSOperationHandle_UnregisterSelf"> Ne_OSOperationHandle_UnregisterSelf{}; // L2 experimental, neon::NeOSOperationHandle::unregisterSelf
 using Ne_Parse_Long_t = int32_t(const char *text, char **end, int32_t base);
 inline constexpr fn<"Ne_Parse_Long", Ne_Parse_Long_t> Ne_Parse_Long{}; // L2 experimental, strtol
 using Ne_PhysBody_ApplyImpulse_t = void(void *body, const float *J, const float *worldPoint);
@@ -256,7 +270,11 @@ inline constexpr fn<"Ne_PhysBody_ApplyImpulse", Ne_PhysBody_ApplyImpulse_t> Ne_P
 inline constexpr address<"Ne_Phys_ParseMaterials"> Ne_Phys_ParseMaterials{}; // L2 experimental
 using Ne_Play_FullscreenVideo_t = void(void *feature_system, NeStr **path, const void *on_end, const void *frame_callbacks, int32_t layer);
 inline constexpr fn<"Ne_Play_FullscreenVideo", Ne_Play_FullscreenVideo_t> Ne_Play_FullscreenVideo{}; // L2 experimental, neon::NeUIGenericFeatureSystem::playFullscreenVideo
+inline constexpr address<"Ne_PlayerCustomInputProvider_BindToDevices"> Ne_PlayerCustomInputProvider_BindToDevices{}; // L2 experimental, NePlayerCustomInputProvider::bindToDevices
+inline constexpr address<"Ne_PlayerManager_DisplayUnsupportedDeviceWarning"> Ne_PlayerManager_DisplayUnsupportedDeviceWarning{}; // L2 experimental, NePlayerManager::displayUnsupportedDeviceWarning
 inline constexpr address<"Ne_PlayerManager_HandleLeadPlayerLogoutOrChangeCallback"> Ne_PlayerManager_HandleLeadPlayerLogoutOrChangeCallback{}; // L2 experimental, NePlayerManager::handleLeadPlayerLogoutOrChangeCallback
+inline constexpr address<"Ne_PlayerManager_PlatformProcessAllInputDevices"> Ne_PlayerManager_PlatformProcessAllInputDevices{}; // L2 experimental, NePlayerManager::platformProcessAllInputDevices
+inline constexpr address<"Ne_PlayerManager_PlatformTryAssignInputToPlayer"> Ne_PlayerManager_PlatformTryAssignInputToPlayer{}; // L2 experimental, NePlayerManager::platformTryAssignInputToPlayer
 inline constexpr address<"Ne_Player_AddPlayerInputProvider"> Ne_Player_AddPlayerInputProvider{}; // L2 experimental, NePlayer::addPlayerInputProvider
 inline constexpr address<"Ne_Player_DestroyCustomInputProvider"> Ne_Player_DestroyCustomInputProvider{}; // L2 experimental, NePlayer::destroyCustomInputProvider
 inline constexpr address<"Ne_Player_DisableCustomControls"> Ne_Player_DisableCustomControls{}; // L2 experimental, NePlayer::disableCustomControls
@@ -264,14 +282,33 @@ inline constexpr address<"Ne_Player_RemovePlayerInputProvider"> Ne_Player_Remove
 inline constexpr address<"Ne_Player_SetFFBInputDeviceId"> Ne_Player_SetFFBInputDeviceId{}; // L2 experimental, NePlayer::setFFBInputDeviceId
 using Ne_Post_BusMessage_t = uint64_t(void *bus, void *msg);
 inline constexpr fn<"Ne_Post_BusMessage", Ne_Post_BusMessage_t> Ne_Post_BusMessage{}; // L2 experimental
+inline constexpr address<"Ne_PresenceNameResolverEADP_OnBatchPlayerCardsRequestComplete"> Ne_PresenceNameResolverEADP_OnBatchPlayerCardsRequestComplete{}; // L2 experimental, neon::NePresenceNameResolverEADP::onBatchPlayerCardsRequestComplete
+inline constexpr address<"Ne_PresenceNameResolverEADP_UpdateToResolveList"> Ne_PresenceNameResolverEADP_UpdateToResolveList{}; // L2 experimental, neon::NePresenceNameResolverEADP::updateToResolveList
+inline constexpr address<"Ne_PresenceNameResolverEADP_UpdateToResolveList_Lambda"> Ne_PresenceNameResolverEADP_UpdateToResolveList_Lambda{}; // L2 experimental, neon::NePresenceNameResolverEADP::updateToResolveList
+using Ne_PresenceNameResolverFixed_AddName_t = void(void *resolver, const void *user, const char *name);
+inline constexpr fn<"Ne_PresenceNameResolverFixed_AddName", Ne_PresenceNameResolverFixed_AddName_t> Ne_PresenceNameResolverFixed_AddName{}; // L2 experimental, neon::NePresenceNameResolverFixed::addName
+inline constexpr address<"Ne_PresenceNameResolverFixed_StartResolving"> Ne_PresenceNameResolverFixed_StartResolving{}; // L2 experimental, neon::NePresenceNameResolverFixed::startResolving
+inline constexpr address<"Ne_Replay_SetState"> Ne_Replay_SetState{}; // L2 experimental
 using Ne_SaveSystem2Win_Mount_t = uint32_t(void *device, void *op, void *save, uint8_t for_saving, uint8_t a5, uint8_t *created);
 inline constexpr fn<"Ne_SaveSystem2Win_Mount", Ne_SaveSystem2Win_Mount_t> Ne_SaveSystem2Win_Mount{}; // L2 experimental
 using Ne_SaveSystem2Win_Start_t = uint64_t(void *device);
 inline constexpr fn<"Ne_SaveSystem2Win_Start", Ne_SaveSystem2Win_Start_t> Ne_SaveSystem2Win_Start{}; // L2 experimental
 inline constexpr address<"Ne_SaveSystem2Win_WriteInfoXml"> Ne_SaveSystem2Win_WriteInfoXml{}; // L2 experimental
+inline constexpr address<"Ne_SaveSystem_AutoSave"> Ne_SaveSystem_AutoSave{}; // L2 experimental
 inline constexpr address<"Ne_SaveSystem_BuildSaveInfoList"> Ne_SaveSystem_BuildSaveInfoList{}; // L2 experimental
+inline constexpr address<"Ne_SaveSystem_CreateTempDirectory"> Ne_SaveSystem_CreateTempDirectory{}; // L2 experimental
+inline constexpr address<"Ne_SaveSystem_Delete"> Ne_SaveSystem_Delete{}; // L2 experimental
+inline constexpr address<"Ne_SaveSystem_DeleteDirectory"> Ne_SaveSystem_DeleteDirectory{}; // L2 experimental
+inline constexpr address<"Ne_SaveSystem_Enumerate"> Ne_SaveSystem_Enumerate{}; // L2 experimental
 using Ne_SaveSystem_InitDevice_t = int(void *save_system);
 inline constexpr fn<"Ne_SaveSystem_InitDevice", Ne_SaveSystem_InitDevice_t> Ne_SaveSystem_InitDevice{}; // L2 experimental
+inline constexpr address<"Ne_SaveSystem_ListDelete"> Ne_SaveSystem_ListDelete{}; // L2 experimental
+inline constexpr address<"Ne_SaveSystem_ListLoad"> Ne_SaveSystem_ListLoad{}; // L2 experimental
+inline constexpr address<"Ne_SaveSystem_ListSave"> Ne_SaveSystem_ListSave{}; // L2 experimental
+inline constexpr address<"Ne_SaveSystem_SelectAndDelete"> Ne_SaveSystem_SelectAndDelete{}; // L2 experimental
+inline constexpr address<"Ne_SaveSystem_SelectAndLoad"> Ne_SaveSystem_SelectAndLoad{}; // L2 experimental
+inline constexpr address<"Ne_SaveSystem_SelectAndSave"> Ne_SaveSystem_SelectAndSave{}; // L2 experimental
+inline constexpr address<"Ne_SaveSystem_Terminate"> Ne_SaveSystem_Terminate{}; // L2 experimental
 inline constexpr address<"Ne_SequenceAudioStreamPacket_PreloadAudioStream"> Ne_SequenceAudioStreamPacket_PreloadAudioStream{}; // L2 experimental, NeSequenceAudioStreamPacket::preloadAudioStream
 inline constexpr address<"Ne_SequenceClipInstance_BindOptional"> Ne_SequenceClipInstance_BindOptional{}; // L2 experimental, NeSequenceClipInstance::bindOptional
 inline constexpr address<"Ne_SequenceResource_CreateResource"> Ne_SequenceResource_CreateResource{}; // L2 experimental, NeSequenceResource::createResource
@@ -280,8 +317,31 @@ inline constexpr fn<"Ne_StringTable_Lookup", Ne_StringTable_Lookup_t> Ne_StringT
 inline constexpr address<"Ne_TerrainResource_GetMaterialResourcel"> Ne_TerrainResource_GetMaterialResourcel{}; // L2 experimental, NeTerrainResource::getMaterialResourcel
 inline constexpr address<"Ne_TextureDecompressionGeneratorFactory_ObtainGeneratorResource"> Ne_TextureDecompressionGeneratorFactory_ObtainGeneratorResource{}; // L2 experimental, NeTextureDecompressionGeneratorFactory::obtainGeneratorResource
 inline constexpr address<"Ne_Thread_Destroy"> Ne_Thread_Destroy{}; // L2 experimental, NeThread::~NeThread
+inline constexpr address<"Ne_UIAction_C_closeScreenId"> Ne_UIAction_C_closeScreenId{}; // L2 experimental, NeUIAction::c_closeScreenId
+inline constexpr address<"Ne_UICrashDumpInfo_OnScreenEvent"> Ne_UICrashDumpInfo_OnScreenEvent{}; // L2 experimental
 inline constexpr address<"Ne_UICrashDumpInfo_SettingsScreenClearSelectedCategory"> Ne_UICrashDumpInfo_SettingsScreenClearSelectedCategory{}; // L2 experimental
+inline constexpr address<"Ne_UIFlow_AssetGroupPreUnloaded"> Ne_UIFlow_AssetGroupPreUnloaded{}; // L2 experimental, NeUIFlow::assetGroupPreUnloaded
+inline constexpr address<"Ne_UIFlow_AssetGroupPreloaded"> Ne_UIFlow_AssetGroupPreloaded{}; // L2 experimental, NeUIFlow::assetGroupPreloaded
+inline constexpr address<"Ne_UIFlow_FlowAssetsUnloaded"> Ne_UIFlow_FlowAssetsUnloaded{}; // L2 experimental, NeUIFlow::flowAssetsUnloaded
+inline constexpr address<"Ne_UIFlow_UnloadAssetsGroups"> Ne_UIFlow_UnloadAssetsGroups{}; // L2 experimental, NeUIFlow::unloadAssetsGroups
+inline constexpr address<"Ne_UIInterrupt_HandleSignal"> Ne_UIInterrupt_HandleSignal{}; // L2 experimental, NeUIInterrupt::handleSignal
+inline constexpr address<"Ne_UIMessageSystem_OnMetadataAssetCleanup"> Ne_UIMessageSystem_OnMetadataAssetCleanup{}; // L2 experimental, neon::NeUIMessageSystem::onMetadataAssetCleanup
+inline constexpr address<"Ne_UINodeBase_OnElementNodeBind"> Ne_UINodeBase_OnElementNodeBind{}; // L2 experimental, NeUINodeBase::onElementNodeBind
+inline constexpr address<"Ne_UINodeBase_OnElementNodeUnBind"> Ne_UINodeBase_OnElementNodeUnBind{}; // L2 experimental, NeUINodeBase::onElementNodeUnBind
+inline constexpr address<"Ne_UINodeBase_ParentVisible"> Ne_UINodeBase_ParentVisible{}; // L2 experimental, NeUINodeBase::parentVisible
+inline constexpr address<"Ne_UINodeBase_SetElementVisibility"> Ne_UINodeBase_SetElementVisibility{}; // L2 experimental, NeUINodeBase::setElementVisibility
+inline constexpr address<"Ne_UINodeBase_Visible"> Ne_UINodeBase_Visible{}; // L2 experimental, NeUINodeBase::visible
 inline constexpr address<"Ne_UIPCOptions_PopulateOutputMonitors"> Ne_UIPCOptions_PopulateOutputMonitors{}; // L2 experimental, NeUIPCOptions::populateOutputMonitors
+inline constexpr address<"Ne_UITextElement_SetText"> Ne_UITextElement_SetText{}; // L2 experimental, NeUITextElement::setText
+inline constexpr address<"Ne_UITextElement_UpdateDocument"> Ne_UITextElement_UpdateDocument{}; // L2 experimental, NeUITextElement::updateDocument
+inline constexpr address<"Ne_UgcSearcher_SearchCallback"> Ne_UgcSearcher_SearchCallback{}; // L2 experimental
+inline constexpr address<"Ne_UgcSearcher_StartSearch"> Ne_UgcSearcher_StartSearch{}; // L2 experimental
+inline constexpr address<"Ne_UgcUtil_BrowseWorkshopInSteamOverlay"> Ne_UgcUtil_BrowseWorkshopInSteamOverlay{}; // L2 experimental
+inline constexpr address<"Ne_UgcUtil_OpenWorkshopFileInSteamOverlay"> Ne_UgcUtil_OpenWorkshopFileInSteamOverlay{}; // L2 experimental
+inline constexpr address<"Ne_Ugc_DeleteTemporaryFiles"> Ne_Ugc_DeleteTemporaryFiles{}; // L2 experimental
+inline constexpr address<"Ne_Ugc_GameOverlayActivatedCallback"> Ne_Ugc_GameOverlayActivatedCallback{}; // L2 experimental
+inline constexpr address<"Ne_Ugc_ReadInstalledItem"> Ne_Ugc_ReadInstalledItem{}; // L2 experimental
+inline constexpr address<"Ne_Ugc_UpdateItemCallback"> Ne_Ugc_UpdateItemCallback{}; // L2 experimental
 inline constexpr address<"Ne_VideoResource_Destroy"> Ne_VideoResource_Destroy{}; // L2 experimental, NeVideoResource::~NeVideoResource
 inline constexpr address<"Ne_WindowWin_MonitorEnumProc"> Ne_WindowWin_MonitorEnumProc{}; // L2 experimental, NeWindowWin::monitorEnumProc
 inline constexpr address<"Ne_WindowWin_ResizeTarget"> Ne_WindowWin_ResizeTarget{}; // L2 experimental, NeWindowWin::resizeTarget
@@ -292,8 +352,11 @@ inline constexpr address<"Ne_WindowWin_Startup"> Ne_WindowWin_Startup{}; // L2 e
 inline constexpr address<"Ne_WindowWin_ToggleFullScreen"> Ne_WindowWin_ToggleFullScreen{}; // L2 experimental, NeWindowWin::toggleFullScreen
 inline constexpr address<"Ne_WindowWin_Update"> Ne_WindowWin_Update{}; // L2 experimental, NeWindowWin::update
 inline constexpr address<"Ne_WindowWin_WinProc"> Ne_WindowWin_WinProc{}; // L2 experimental, NeWindowWin::winProc
+inline constexpr address<"Ne_WorldInstance_DestroyAllWorldObjectsInLayer"> Ne_WorldInstance_DestroyAllWorldObjectsInLayer{}; // L2 experimental
+inline constexpr address<"Ne_WorldLayerModule_DeregisterLayer"> Ne_WorldLayerModule_DeregisterLayer{}; // L2 experimental, NeWorldLayerModule::deregisterLayer
 inline constexpr data<"g_Ne_DefaultAllocator", void *> g_Ne_DefaultAllocator{}; // L2 experimental
 inline constexpr data<"g_Ne_LogGate", NeLogGate> g_Ne_LogGate{}; // L2 experimental
+inline constexpr data<"g_Ne_NameTable", void *> g_Ne_NameTable{}; // L2 experimental
 inline constexpr data<"g_Ne_StringTable", void *> g_Ne_StringTable{}; // L3 stable
 inline constexpr vtable<"k_Ne_BagCodecVtbl", 4> k_Ne_BagCodecVtbl{}; // L3 stable
 inline constexpr vtable<"k_Ne_CountingStreamVtbl", 24> k_Ne_CountingStreamVtbl{}; // L3 stable

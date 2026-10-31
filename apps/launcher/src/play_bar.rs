@@ -515,7 +515,6 @@ impl Shell {
         let shell = cx.entity().downgrade();
         let vr = self.launch_mode().is_vr();
         let start_store = self.start_store;
-        let dev_mode = self.store.config().developer;
         let start_label = match self.install.as_ref().map(|i| i.source) {
             Some(Source::EaApp) => "Start the EA app automatically",
             _ => "Start Steam automatically",
@@ -527,7 +526,10 @@ impl Shell {
             .rounded_r(px(9.))
             .primary()
             .child(Icon::new(IconName::ChevronDown).size(px(16.)))
-            .dropdown_menu_with_anchor(Anchor::TopRight, move |menu, _, _| {
+            .dropdown_menu_with_anchor(Anchor::TopRight, move |menu, _, cx| {
+                let dev_mode = shell
+                    .upgrade()
+                    .is_some_and(|s| s.read(cx).store.config().developer);
                 let mode = |label: &'static str, icon: IconName, mode: LaunchMode| {
                     let shell = shell.clone();
                     PopupMenuItem::new(label)

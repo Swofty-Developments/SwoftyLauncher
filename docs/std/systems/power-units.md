@@ -343,6 +343,7 @@ power::set_component_wear(drivers::identities["game/max_verstappen"], power::Com
 - **Fixed in the game:** the one-second DRS detection gap (set at session load) and each track's DRS zones (its track markup). `drs_capable` on each vehicle row is read at boot; what reads it in a session is not traced.
 - **The game picks a component set by season only.** Choosing one per career needs the selector found.
 - **AI tables carry baked ERS data per car** (`ers_boost_data`, `ers_use_granular`). A new unit can outrun the baked tables.
+- **The panel slot site: experimental, no std operation yet.** `site_Sess_PuPanel_SlotHolder` in `swofty/game.hpp` sits in the slot loop of the power-unit panel's view model build (the garage monitor and laptop lists): `rbp` is the slot (0 ICE, 1 MGU-K, 2 MGU-H, 3 ES, 4 TC, 5 CE, 6 event gearbox) and `rax` its holder. The panel lists a slot only when the holder's fitted index (+0x30) is below its part count, so a site mixin can leave a slot out; F1 1990 leaves out the MGU-H row. The build (`Sess_PuPanel_BuildComponents`) and the row filler (`Sess_PuPanel_FillComponent`) are in the KB but not exported.
 - **The HUD dial differs per package** (`hud_dial` modern, 26, f2).
 - **Live physics values are XOR-obfuscated.** Units apply to the handling file before it loads.
 - **2025 fuel mixes:** only Lean differs. In 2026 and F2 cars the mixes have no effect.

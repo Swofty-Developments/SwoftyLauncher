@@ -9,8 +9,8 @@
 
 // Sessions: in 1.6.0 the rules a Grand Prix or Time Trial box carries (content::Package::rules), applied
 // when a session loads in that box, and who drives a car: set_control hands a car to the AI or back to its
-// human, and session.player.control runs around the game's own switches. The rest of the sessions system
-// ships later.
+// human, and session.player.control runs around the game's own switches; session.lap fires when a car
+// crosses the line. The rest of the sessions system ships later.
 
 namespace swofty::sessions {
 
@@ -42,6 +42,17 @@ struct PlayerControl {
     cars::live::Car car;
     Control from, to;
     int32_t reason;
+};
+
+// A car crosses the line and its lap counter changes (notify). It fires once per crossing for each car the
+// session's ERS system tracks, on the game thread, inside the game's per-car progress update: a handler
+// that wants to change the session queues the work for a later frame. The counter also changes when a car
+// crosses the line backwards, and a crossing in the pit lane fires too.
+struct Lap {
+    static constexpr const char *point = "session.lap";
+    static constexpr uint32_t version = 1;
+    uint32_t size, payload_version;
+    cars::live::Car car;
 };
 
 }

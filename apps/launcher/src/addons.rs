@@ -1423,58 +1423,54 @@ impl Shell {
     fn install_cards(&self, p: Palette, cx: &mut Context<Self>) -> impl IntoElement {
         let roomy = self.content_width >= 900. && !self.short;
         let short = self.short;
-        let wide = self.content_width >= 900.;
         let card =
             |id: &'static str, icon: IconName, color: Hsla, title: &'static str, body: &'static str| {
-                let title = div()
-                    .flex_shrink_0()
-                    .text_size(px(if short { 13. } else { 14. }))
-                    .font_weight(FontWeight::SEMIBOLD)
-                    .text_color(p.text)
-                    .child(title);
-                let body = div()
-                    .min_w_0()
-                    .text_size(px(13.))
-                    .line_height(px(18.))
-                    .text_color(p.text_muted)
-                    .when(short, |d| d.truncate())
-                    .child(body);
-                let text = if short {
-                    h_flex()
-                        .flex_1()
-                        .min_w_0()
-                        .gap(px(8.))
-                        .child(Icon::new(icon).size(px(15.)).text_color(color))
-                        .child(title)
-                        .when(wide, |d| d.child(body))
-                } else {
-                    v_flex().flex_1().min_w_0().gap(px(2.)).child(title).child(body)
-                };
-                h_flex()
-                    .id(id)
+                let text = v_flex()
                     .flex_1()
                     .min_w_0()
-                    .min_h(px(if short { 40. } else { 78. }))
+                    .gap(px(2.))
+                    .child(
+                        div()
+                            .text_size(px(if short { 13. } else { 14. }))
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .text_color(p.text)
+                            .child(title),
+                    )
+                    .when(!short, |d| {
+                        d.child(
+                            div()
+                                .text_size(px(13.))
+                                .line_height(px(18.))
+                                .text_color(p.text_muted)
+                                .child(body),
+                        )
+                    });
+                v_flex()
+                    .id(id)
+                    .flex_1()
+                    .flex_basis(px(280.))
+                    .min_w_0()
+                    .items_start()
                     .px(px(if short { 12. } else { 16. }))
-                    .py(px(if short { 6. } else { 12. }))
-                    .gap(px(if short { 10. } else { 14. }))
+                    .py(px(if short { 10. } else { 12. }))
+                    .gap(px(if short { 8. } else { 12. }))
                     .rounded(px(8.))
                     .border_1()
                     .bg(p.surface)
-                    .when(roomy, |d| {
-                        d.child(
-                            div()
-                                .size(px(40.))
-                                .flex_shrink_0()
-                                .rounded(px(8.))
-                                .bg(color.opacity(0.14))
-                                .flex()
-                                .items_center()
-                                .justify_center()
-                                .child(Icon::new(icon).size(px(19.)).text_color(color)),
-                        )
-                    })
-                    .child(text)
+                    .child(
+                        h_flex()
+                            .flex_1()
+                            .w_full()
+                            .items_start()
+                            .gap(px(10.))
+                            .child(
+                                Icon::new(icon)
+                                    .size(px(if short { 15. } else { 19. }))
+                                    .flex_shrink_0()
+                                    .text_color(color),
+                            )
+                            .child(text),
+                    )
             };
         let folder = div()
             .id("install-folder")
@@ -1548,6 +1544,8 @@ impl Shell {
                 .on_click(cx.listener(|this, _, _, cx| this.open_page(Page::Browser, cx))),
         );
         h_flex()
+            .flex_wrap()
+            .items_stretch()
             .px(px(GUTTER))
             .pb(px(if short { 12. } else { 18. }))
             .gap(px(if short { 10. } else { 14. }))
@@ -2527,7 +2525,7 @@ impl Shell {
         let Some(item) = self.library.addons.iter().find(|a| a.manifest.id == id) else {
             return Changes::default();
         };
-        let c = Changes::read(&self.store, item);
+        let c = Changes::read(&self.store, &self.library.profile, item);
         self.addons.changes.insert(id.to_owned(), c.clone());
         c
     }

@@ -873,7 +873,7 @@ fn play(
     if mode.is_vr() {
         say("info", &format!("starting F1 25 in VR ({})", extra.join(" ")));
     }
-    let usage = swofty_core::usage::Session::start(&store.root);
+    let usage = swofty_core::usage::Session::start(&store.root, game);
     let new_watch =
         || AttachWatch::new(loader.clone(), before.clone(), Instant::now()).with_fallback(fallback.clone());
     let mut watch = placed_loader.then(new_watch);

@@ -106,6 +106,11 @@ typedef struct SwoftyEvPlayerControl {
     int32_t reason;
 } SwoftyEvPlayerControl;
 
+typedef struct SwoftyEvLap {
+    uint32_t size, payload_version;
+    SwoftyEvCar car;
+} SwoftyEvLap;
+
 typedef struct SwoftyEvControllersRebuilt {
     uint32_t size, payload_version;
     SwoftyEvCar car;
@@ -203,6 +208,7 @@ typedef struct SwoftyEvCatalogueBuild {
     X(SwoftyEvReset, cars, Reset, 32)                                                                          \
     X(SwoftyEvControllerUpdate, ai, ControllerUpdate, 24)                                                      \
     X(SwoftyEvPlayerControl, sessions, PlayerControl, 40)                                                      \
+    X(SwoftyEvLap, sessions, Lap, 24)                                                                          \
     X(SwoftyEvControllersRebuilt, cars, ControllersRebuilt, 32)                                                \
     X(SwoftyEvHudVisible, spectator, HudVisible, 32)                                                           \
     X(SwoftyEvPartsRegister, cars, PartsRegister, 48)                                                          \
@@ -263,6 +269,7 @@ typedef struct SwoftyEvCatalogueBuild {
     X(SwoftyEvPlayerControl, sessions, PlayerControl, from, 24)                                                \
     X(SwoftyEvPlayerControl, sessions, PlayerControl, to, 28)                                                  \
     X(SwoftyEvPlayerControl, sessions, PlayerControl, reason, 32)                                              \
+    X(SwoftyEvLap, sessions, Lap, car, 8)                                                                      \
     X(SwoftyEvControllersRebuilt, cars, ControllersRebuilt, car, 8)                                            \
     X(SwoftyEvControllersRebuilt, cars, ControllersRebuilt, reason, 24)                                        \
     X(SwoftyEvHudVisible, spectator, HudVisible, following, 8)                                                 \

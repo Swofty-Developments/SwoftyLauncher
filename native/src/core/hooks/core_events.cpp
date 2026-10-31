@@ -53,6 +53,7 @@ static_assert(declared<ca::PartsRegister>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<ca::ControllersRebuilt>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::ai::events::ControllerUpdate>(SWOFTY_POINT_CANCEL));
 static_assert(declared<swofty::sessions::events::PlayerControl>(SWOFTY_POINT_CANCEL));
+static_assert(declared<swofty::sessions::events::Lap>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::spectator::events::HudVisible>(SWOFTY_POINT_MODIFY));
 static_assert(declared<so::BundleResolve>(SWOFTY_POINT_MODIFY));
 static_assert(sizeof(ce::Loaded) == sizeof(Shell) && sizeof(ce::Created) == sizeof(Shell));
@@ -112,6 +113,13 @@ bool car_parts_register(int32_t car, const char *vehicle, void *front_wing, cons
 bool audio_bundle_resolve(int32_t car, const char *vehicle, const char *switch_name, std::string &engine_sound)
 {
     return payloads::bundle_resolve(fire_core, car, vehicle, switch_name, engine_sound);
+}
+
+bool session_lap(uint32_t car)
+{
+    swofty::sessions::events::Lap e{};
+    e.car = swofty::cars::live::Car(car);
+    return fire(e);
 }
 
 }

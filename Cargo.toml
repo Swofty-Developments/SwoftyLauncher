@@ -4,7 +4,7 @@ members = ["addons/builtins", "apps/cli", "apps/launcher", "installer", "package
 default-members = ["addons/builtins", "apps/cli", "packages/addon-api", "packages/core", "packages/formats", "packages/sdk", "templates/launcher-addon", "templates/std/whatif/launcher"]
 
 [workspace.package]
-version = "1.6.9"
+version = "1.6.11"
 edition = "2024"
 rust-version = "1.95"
 license = "AGPL-3.0-or-later"
@@ -50,3 +50,19 @@ all = { level = "warn", priority = -1 }
 [profile.release]
 lto = "thin"
 strip = true
+
+# keep native UI optimized on dev profile
+[profile.dev.package.gpui-pre]
+opt-level = 2
+
+[profile.dev.package.gpui-base]
+opt-level = 2
+
+[profile.dev.package.gpui-component]
+opt-level = 2
+
+[profile.dev.package.taffy]
+opt-level = 3
+
+[profile.dev.package.swofty-launcher]
+opt-level = 1
