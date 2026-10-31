@@ -214,6 +214,7 @@ The game's own UDP telemetry (formats 2024, 2025 and 2026) reports the stat id o
 The rule:
 
 - An added team reports its stock ancestor's stat id, found by following the `add-row` `from` chain to a row the game ships.
+- In the 2026 format an added team reports the 2026 stock team of its ancestor's slot, 476 + the 2025 id (476 Mercedes, 477 Ferrari, 478 Red Bull, 479 Williams, 480 Aston Martin, 481 Alpine, 482 RB, 483 Haas, 484 McLaren, 485 Audi, 486 Cadillac). When the session's Participants or Lobby Info packet shows only the 2025 teams (ids 0-9), it keeps the 2025 id.
 - An added driver reports its stock ancestor's id when `first_name`, `last_name` and `full_name` equal the ancestor's. Otherwise it reports 255, the spec's network human, and overlays show the driver by `m_name`. A driver id above 254 with no stock ancestor reports 255.
 - Stock rows keep their ids.
 - The 2024 and 2025 formats carry one byte per id. An added id whose low byte a stock row or another mapped id shares is not rewritten in those formats.
