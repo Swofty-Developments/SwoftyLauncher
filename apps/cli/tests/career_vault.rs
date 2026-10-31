@@ -154,7 +154,7 @@ fn moves_old_backups_into_the_vault() {
     assert!(
         out.lines().any(|l| l
             == "20261027-010203-migrated  from save-backups, profile default, without swofty.progressive, 2 file(s), \
-                1316 bytes"),
+                1316 bytes, pinned (migrated)"),
         "{out}"
     );
     assert!(b.dir.is_dir(), "the old backup stays until the first prune");
