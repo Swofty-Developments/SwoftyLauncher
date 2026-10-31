@@ -2217,6 +2217,8 @@ pub type Car_Register_DetachablePart_Thunk_t = unsafe extern "C" fn(
     k: f32,
 );
 pub type Car_Reset_LastFittedUpgrade_t = unsafe extern "C" fn(inst: *mut c_void);
+pub type Car_Tyre_SetWearFactor_t =
+    unsafe extern "C" fn(tyre_component: *mut c_void, apply_set: bool, force: u16);
 pub type Career_Add_SeasonWeekend_t = unsafe extern "C" fn(season: *mut c_void, weekend: *mut c_void) -> u64;
 pub type Career_Add_TeamModifier_t = unsafe extern "C" fn(list: *mut c_void, key: u32, value: f32);
 pub type Career_Adjust_RpDriverWallet_t =
@@ -2442,6 +2444,8 @@ pub type Game_PitLane_MoveDownSpline_t = unsafe extern "C" fn(
     p8: bool,
     p9: bool,
 );
+pub type Game_PitLane_PutVehicleInPitBox_t = unsafe extern "C" fn(pitlane: *mut c_void, vehicle: u8);
+pub type Game_Pitlane_SetVehicleStatus_t = unsafe extern "C" fn(self_: *mut c_void, vehicle: u8, status: u32);
 pub type Game_Place_Vehicle_t = unsafe extern "C" fn(
     car: *mut c_void,
     tag: *const c_char,
@@ -2504,6 +2508,8 @@ pub type Game_Teleport_Vehicle_t = unsafe extern "C" fn(
     dt: f32,
     flags: u32,
 );
+pub type Game_TyreAllocationComponent_SetPresetChoiceForHumanDriver_t =
+    unsafe extern "C" fn(component: *mut c_void, preset: u32, local_player: c_int);
 pub type Gdb_HashMap_Rehash_t = unsafe extern "C" fn(map: *mut GdbValueMap, num_buckets: u64);
 pub type Gdb_Load_GameDatabase_t =
     unsafe extern "C" fn(db: *mut GdbDatabase, cfg: *mut c_void) -> *mut GdbDatabase;
@@ -2517,6 +2523,7 @@ pub type Ne_Get_SettingBool_t =
     unsafe extern "C" fn(node: *mut c_void, name: *const c_char, out: *mut u8, def: u8) -> u64;
 pub type Ne_Get_SettingU32_t =
     unsafe extern "C" fn(node: *mut c_void, name: *const c_char, out: *mut u32, def: u32) -> u64;
+pub type Ne_Heap_DeallocateNonSmall_t = unsafe extern "C" fn(heap: *mut c_void, ptr: *mut u8) -> u64;
 pub type Ne_Log_Thunk_t = unsafe extern "C" fn(channel: *const c_char, fmt: *const c_char, ...);
 pub type Ne_Make_StrFromCStr_t =
     unsafe extern "C" fn(out: *mut *mut NeStr, s: *const c_char, flags: u32, len: usize) -> u32;
@@ -2531,6 +2538,8 @@ pub type Ne_Play_FullscreenVideo_t = unsafe extern "C" fn(
     layer: i32,
 );
 pub type Ne_Post_BusMessage_t = unsafe extern "C" fn(bus: *mut c_void, msg: *mut c_void) -> u64;
+pub type Ne_PresenceNameResolverFixed_AddName_t =
+    unsafe extern "C" fn(resolver: *mut c_void, user: *const c_void, name: *const c_char);
 pub type Ne_SaveSystem2Win_Mount_t = unsafe extern "C" fn(
     device: *mut c_void,
     op: *mut c_void,
@@ -2570,6 +2579,7 @@ pub type Sess_Issue_TimePenalty_t =
     unsafe extern "C" fn(rules: *mut c_void, incident: *mut u8, reason: u32, seconds: u32);
 pub type Sess_Issue_Warning_t = unsafe extern "C" fn(rules: *mut c_void, incident: *mut u8, reason: u32);
 pub type Sess_Load_Teams_t = unsafe extern "C" fn(entrants_system: *mut c_void, set: u8);
+pub type Sess_PitStopUpdateJob_Update_t = unsafe extern "C" fn(job: *mut c_void);
 pub type Sess_PreRaceToRace_Update_t = unsafe extern "C" fn(state: *mut c_void, route: *mut u32) -> *mut u32;
 pub type Sess_PreRace_Update_t =
     unsafe extern "C" fn(state: *mut c_void, route: *mut u32, dt: f64) -> *mut u32;
@@ -2614,6 +2624,7 @@ pub type Sess_Weekend_Start_t =
     unsafe extern "C" fn(weekend: *mut c_void, entrants: *const c_void, begin: bool);
 pub type Sess_WinnerSequence_Update_t =
     unsafe extern "C" fn(state: *mut c_void, route: *mut u32, dt: f64) -> *mut u32;
+pub type Snd_Request_JobWorker_t = unsafe extern "C" fn(worker: *mut c_void, job_type: u32, count: u32);
 pub type Trk_GrandPrixTrackSelectVm_OnCommandRaised_t =
     unsafe extern "C" fn(vm: *mut c_void, cmd: *mut *mut u32) -> *mut *mut c_void;
 pub type Trk_TimeTrialTrackSelectVm_OnCommandRaised_t =
@@ -2653,6 +2664,26 @@ pub type Vm_Set_TabEnabled_t = unsafe extern "C" fn(tabs: usize, node: usize, en
 
 pub mod bindings {
     use super::{Binding, Status};
+    pub const Asset_Load_DevSessionWorlds: Binding = Binding {
+        id: "Asset_Load_DevSessionWorlds",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Asset_Map_EaidToGroupA: Binding = Binding {
+        id: "Asset_Map_EaidToGroupA",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Asset_Unk_142a982b0: Binding = Binding {
+        id: "Asset_Unk_142a982b0",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Asset_Unk_14379dd00: Binding = Binding {
+        id: "Asset_Unk_14379dd00",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Car_Assets_CreateSystemForPerformanceMode: Binding = Binding {
         id: "Car_Assets_CreateSystemForPerformanceMode",
         kind: "func",
@@ -2745,6 +2776,11 @@ pub mod bindings {
     };
     pub const Car_Tyre_MagicFormula: Binding = Binding {
         id: "Car_Tyre_MagicFormula",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Tyre_SetWearFactor: Binding = Binding {
+        id: "Car_Tyre_SetWearFactor",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3003,6 +3039,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Stable,
     };
+    pub const FeHome_StoryItem_Populate: Binding = Binding {
+        id: "FeHome_StoryItem_Populate",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const FeTile_Add_EraTile: Binding = Binding {
         id: "FeTile_Add_EraTile",
         kind: "func",
@@ -3037,6 +3078,11 @@ pub mod bindings {
         id: "FeTile_ItemBase_Populate",
         kind: "func",
         status: Status::Stable,
+    };
+    pub const FeTile_ItemGeneric_Populate: Binding = Binding {
+        id: "FeTile_ItemGeneric_Populate",
+        kind: "func",
+        status: Status::Experimental,
     };
     pub const FeTile_Press_EraTile: Binding = Binding {
         id: "FeTile_Press_EraTile",
@@ -3198,6 +3244,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_PitLane_PutVehicleInPitBox: Binding = Binding {
+        id: "Game_PitLane_PutVehicleInPitBox",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_PitLane_VehicleEnteringInternal: Binding = Binding {
         id: "Game_PitLane_VehicleEnteringInternal",
         kind: "func",
@@ -3313,6 +3364,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_TyreAllocationComponent_SetPresetChoiceForHumanDriver: Binding = Binding {
+        id: "Game_TyreAllocationComponent_SetPresetChoiceForHumanDriver",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Gdb_HashMap_Rehash: Binding = Binding {
         id: "Gdb_HashMap_Rehash",
         kind: "func",
@@ -3335,6 +3391,21 @@ pub mod bindings {
     };
     pub const Ne_ActorSceneDataResource_DestroyScenes: Binding = Binding {
         id: "Ne_ActorSceneDataResource_DestroyScenes",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_AnimClipResourceFactory_CreateResource: Binding = Binding {
+        id: "Ne_AnimClipResourceFactory_CreateResource",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Application2_OnFocusChanged: Binding = Binding {
+        id: "Ne_Application2_OnFocusChanged",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Application2_OnVisibilityChanged: Binding = Binding {
+        id: "Ne_Application2_OnVisibilityChanged",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3375,6 +3446,21 @@ pub mod bindings {
     };
     pub const Ne_CrowdPlugin_LoadXml: Binding = Binding {
         id: "Ne_CrowdPlugin_LoadXml",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_Atanf: Binding = Binding {
+        id: "Ne_Crt_Atanf",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_Powf: Binding = Binding {
+        id: "Ne_Crt_Powf",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_Sinf: Binding = Binding {
+        id: "Ne_Crt_Sinf",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3448,6 +3534,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_FlowStateInterruptManager_ConsumeInterrupt: Binding = Binding {
+        id: "Ne_FlowStateInterruptManager_ConsumeInterrupt",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_FogSet_SetFogData: Binding = Binding {
         id: "Ne_FogSet_SetFogData",
         kind: "func",
@@ -3455,6 +3546,11 @@ pub mod bindings {
     };
     pub const Ne_Format_String: Binding = Binding {
         id: "Ne_Format_String",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Get_CStrLen: Binding = Binding {
+        id: "Ne_Get_CStrLen",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3468,8 +3564,18 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Heap_DeallocateNonSmall: Binding = Binding {
+        id: "Ne_Heap_DeallocateNonSmall",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_IBLCubeProbe_FreeInterpolatedArrays: Binding = Binding {
         id: "Ne_IBLCubeProbe_FreeInterpolatedArrays",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_InputDeviceDirectInput_ResetForceFeedback: Binding = Binding {
+        id: "Ne_InputDeviceDirectInput_ResetForceFeedback",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3495,6 +3601,11 @@ pub mod bindings {
     };
     pub const Ne_InputSystem_DeviceConnection: Binding = Binding {
         id: "Ne_InputSystem_DeviceConnection",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_InputSystem_Init: Binding = Binding {
+        id: "Ne_InputSystem_Init",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3620,6 +3731,16 @@ pub mod bindings {
     };
     pub const Ne_NetConnectionQuality_SetTesterState: Binding = Binding {
         id: "Ne_NetConnectionQuality_SetTesterState",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_NetConnectionStore_Deinitialise: Binding = Binding {
+        id: "Ne_NetConnectionStore_Deinitialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_NetConnectionStore_Dtor: Binding = Binding {
+        id: "Ne_NetConnectionStore_Dtor",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3908,6 +4029,16 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_OSHTTPRequestAndResponseResponseHandler_CbHttpResponse: Binding = Binding {
+        id: "Ne_OSHTTPRequestAndResponseResponseHandler_CbHttpResponse",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_OSOperationHandle_UnregisterSelf: Binding = Binding {
+        id: "Ne_OSOperationHandle_UnregisterSelf",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Parse_Long: Binding = Binding {
         id: "Ne_Parse_Long",
         kind: "func",
@@ -3928,8 +4059,28 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_PlayerCustomInputProvider_BindToDevices: Binding = Binding {
+        id: "Ne_PlayerCustomInputProvider_BindToDevices",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PlayerManager_DisplayUnsupportedDeviceWarning: Binding = Binding {
+        id: "Ne_PlayerManager_DisplayUnsupportedDeviceWarning",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_PlayerManager_HandleLeadPlayerLogoutOrChangeCallback: Binding = Binding {
         id: "Ne_PlayerManager_HandleLeadPlayerLogoutOrChangeCallback",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PlayerManager_PlatformProcessAllInputDevices: Binding = Binding {
+        id: "Ne_PlayerManager_PlatformProcessAllInputDevices",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PlayerManager_PlatformTryAssignInputToPlayer: Binding = Binding {
+        id: "Ne_PlayerManager_PlatformTryAssignInputToPlayer",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3963,6 +4114,41 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_PresenceNameResolverEADP_OnBatchPlayerCardsRequestComplete: Binding = Binding {
+        id: "Ne_PresenceNameResolverEADP_OnBatchPlayerCardsRequestComplete",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PresenceNameResolverEADP_UpdateToResolveList: Binding = Binding {
+        id: "Ne_PresenceNameResolverEADP_UpdateToResolveList",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PresenceNameResolverEADP_UpdateToResolveList_Lambda: Binding = Binding {
+        id: "Ne_PresenceNameResolverEADP_UpdateToResolveList_Lambda",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PresenceNameResolverFixed_AddName: Binding = Binding {
+        id: "Ne_PresenceNameResolverFixed_AddName",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PresenceNameResolverFixed_StartResolving: Binding = Binding {
+        id: "Ne_PresenceNameResolverFixed_StartResolving",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Replay_SetState: Binding = Binding {
+        id: "Ne_Replay_SetState",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_RobinHoodMap_U8F_Insert: Binding = Binding {
+        id: "Ne_RobinHoodMap_U8F_Insert",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_SaveSystem2Win_Mount: Binding = Binding {
         id: "Ne_SaveSystem2Win_Mount",
         kind: "func",
@@ -3978,13 +4164,73 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_SaveSystem_AutoSave: Binding = Binding {
+        id: "Ne_SaveSystem_AutoSave",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_SaveSystem_BuildSaveInfoList: Binding = Binding {
         id: "Ne_SaveSystem_BuildSaveInfoList",
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_SaveSystem_CreateTempDirectory: Binding = Binding {
+        id: "Ne_SaveSystem_CreateTempDirectory",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_Delete: Binding = Binding {
+        id: "Ne_SaveSystem_Delete",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_DeleteDirectory: Binding = Binding {
+        id: "Ne_SaveSystem_DeleteDirectory",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_Enumerate: Binding = Binding {
+        id: "Ne_SaveSystem_Enumerate",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_SaveSystem_InitDevice: Binding = Binding {
         id: "Ne_SaveSystem_InitDevice",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_ListDelete: Binding = Binding {
+        id: "Ne_SaveSystem_ListDelete",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_ListLoad: Binding = Binding {
+        id: "Ne_SaveSystem_ListLoad",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_ListSave: Binding = Binding {
+        id: "Ne_SaveSystem_ListSave",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_SelectAndDelete: Binding = Binding {
+        id: "Ne_SaveSystem_SelectAndDelete",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_SelectAndLoad: Binding = Binding {
+        id: "Ne_SaveSystem_SelectAndLoad",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_SelectAndSave: Binding = Binding {
+        id: "Ne_SaveSystem_SelectAndSave",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_Terminate: Binding = Binding {
+        id: "Ne_SaveSystem_Terminate",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4023,13 +4269,128 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_UIAction_C_closeScreenId: Binding = Binding {
+        id: "Ne_UIAction_C_closeScreenId",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UICrashDumpInfo_OnScreenEvent: Binding = Binding {
+        id: "Ne_UICrashDumpInfo_OnScreenEvent",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_UICrashDumpInfo_SettingsScreenClearSelectedCategory: Binding = Binding {
         id: "Ne_UICrashDumpInfo_SettingsScreenClearSelectedCategory",
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_UIFlow_AssetGroupPreUnloaded: Binding = Binding {
+        id: "Ne_UIFlow_AssetGroupPreUnloaded",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UIFlow_AssetGroupPreloaded: Binding = Binding {
+        id: "Ne_UIFlow_AssetGroupPreloaded",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UIFlow_FlowAssetsUnloaded: Binding = Binding {
+        id: "Ne_UIFlow_FlowAssetsUnloaded",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UIFlow_UnloadAssetsGroups: Binding = Binding {
+        id: "Ne_UIFlow_UnloadAssetsGroups",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UIInterrupt_HandleSignal: Binding = Binding {
+        id: "Ne_UIInterrupt_HandleSignal",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UIMessageSystem_OnMetadataAssetCleanup: Binding = Binding {
+        id: "Ne_UIMessageSystem_OnMetadataAssetCleanup",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UINodeBase_OnElementNodeBind: Binding = Binding {
+        id: "Ne_UINodeBase_OnElementNodeBind",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UINodeBase_OnElementNodeUnBind: Binding = Binding {
+        id: "Ne_UINodeBase_OnElementNodeUnBind",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UINodeBase_ParentVisible: Binding = Binding {
+        id: "Ne_UINodeBase_ParentVisible",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UINodeBase_SetElementVisibility: Binding = Binding {
+        id: "Ne_UINodeBase_SetElementVisibility",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UINodeBase_Visible: Binding = Binding {
+        id: "Ne_UINodeBase_Visible",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_UIPCOptions_PopulateOutputMonitors: Binding = Binding {
         id: "Ne_UIPCOptions_PopulateOutputMonitors",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UITextElement_SetText: Binding = Binding {
+        id: "Ne_UITextElement_SetText",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UITextElement_UpdateDocument: Binding = Binding {
+        id: "Ne_UITextElement_UpdateDocument",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UgcSearcher_SearchCallback: Binding = Binding {
+        id: "Ne_UgcSearcher_SearchCallback",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UgcSearcher_StartSearch: Binding = Binding {
+        id: "Ne_UgcSearcher_StartSearch",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UgcUtil_BrowseWorkshopInSteamOverlay: Binding = Binding {
+        id: "Ne_UgcUtil_BrowseWorkshopInSteamOverlay",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UgcUtil_OpenWorkshopFileInSteamOverlay: Binding = Binding {
+        id: "Ne_UgcUtil_OpenWorkshopFileInSteamOverlay",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Ugc_DeleteTemporaryFiles: Binding = Binding {
+        id: "Ne_Ugc_DeleteTemporaryFiles",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Ugc_GameOverlayActivatedCallback: Binding = Binding {
+        id: "Ne_Ugc_GameOverlayActivatedCallback",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Ugc_ReadInstalledItem: Binding = Binding {
+        id: "Ne_Ugc_ReadInstalledItem",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Ugc_UpdateItemCallback: Binding = Binding {
+        id: "Ne_Ugc_UpdateItemCallback",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4083,6 +4444,36 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_WorldInstance_ActivateAllWorldObjects: Binding = Binding {
+        id: "Ne_WorldInstance_ActivateAllWorldObjects",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_WorldInstance_DeactivateAllWorldObjects: Binding = Binding {
+        id: "Ne_WorldInstance_DeactivateAllWorldObjects",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_WorldInstance_DestroyAllWorldObjectsInLayer: Binding = Binding {
+        id: "Ne_WorldInstance_DestroyAllWorldObjectsInLayer",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_WorldInstance_PreWarmTextures: Binding = Binding {
+        id: "Ne_WorldInstance_PreWarmTextures",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_WorldInstance_ReleaseWarmedTextures: Binding = Binding {
+        id: "Ne_WorldInstance_ReleaseWarmedTextures",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_WorldLayerModule_DeregisterLayer: Binding = Binding {
+        id: "Ne_WorldLayerModule_DeregisterLayer",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_Apply_ContentAvailability: Binding = Binding {
         id: "Sess_Apply_ContentAvailability",
         kind: "func",
@@ -4133,6 +4524,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_EntrantVec_PushBack: Binding = Binding {
+        id: "Sess_EntrantVec_PushBack",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_Find_GroupRowPosition: Binding = Binding {
         id: "Sess_Find_GroupRowPosition",
         kind: "func",
@@ -4145,6 +4541,16 @@ pub mod bindings {
     };
     pub const Sess_FormationLapLogic_CheckAllParked: Binding = Binding {
         id: "Sess_FormationLapLogic_CheckAllParked",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_FormationLapLogic_IsActiveOtherType: Binding = Binding {
+        id: "Sess_FormationLapLogic_IsActiveOtherType",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_FormationLapLogic_IsActiveType0: Binding = Binding {
+        id: "Sess_FormationLapLogic_IsActiveType0",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4390,6 +4796,11 @@ pub mod bindings {
     };
     pub const Sess_PenaltyLog_SendRecord_2: Binding = Binding {
         id: "Sess_PenaltyLog_SendRecord_2",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_PitStopUpdateJob_Update: Binding = Binding {
+        id: "Sess_PitStopUpdateJob_Update",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4953,6 +5364,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Snd_Request_JobWorker: Binding = Binding {
+        id: "Snd_Request_JobWorker",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Trk_GrandPrixTrackSelectVm_OnCommandRaised: Binding = Binding {
         id: "Trk_GrandPrixTrackSelectVm_OnCommandRaised",
         kind: "func",
@@ -5098,6 +5514,11 @@ pub mod bindings {
         kind: "data",
         status: Status::Experimental,
     };
+    pub const g_Ne_NameTable: Binding = Binding {
+        id: "g_Ne_NameTable",
+        kind: "data",
+        status: Status::Experimental,
+    };
     pub const g_Ne_StringTable: Binding = Binding {
         id: "g_Ne_StringTable",
         kind: "data",
@@ -5115,6 +5536,21 @@ pub mod bindings {
     };
     pub const g_Sess_TyreRulesSessionType: Binding = Binding {
         id: "g_Sess_TyreRulesSessionType",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const g_Snd_JobWorkerLock: Binding = Binding {
+        id: "g_Snd_JobWorkerLock",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const g_Snd_JobWorkerOverflow: Binding = Binding {
+        id: "g_Snd_JobWorkerOverflow",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const g_Snd_JobWorkerPending: Binding = Binding {
+        id: "g_Snd_JobWorkerPending",
         kind: "data",
         status: Status::Experimental,
     };
@@ -5913,6 +6349,16 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Career_StandingsWeekendTrackDone: Binding = Binding {
+        id: "site_Career_StandingsWeekendTrackDone",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Career_StandingsWeekendTrackLoad: Binding = Binding {
+        id: "site_Career_StandingsWeekendTrackLoad",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Career_TeamDeptEnumStore: Binding = Binding {
         id: "site_Career_TeamDeptEnumStore",
         kind: "site",
@@ -6416,6 +6862,11 @@ pub mod bindings {
     pub const site_Sess_InGameSessionCompleteAiCall: Binding = Binding {
         id: "site_Sess_InGameSessionCompleteAiCall",
         kind: "call",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PuPanel_SlotHolder: Binding = Binding {
+        id: "site_Sess_PuPanel_SlotHolder",
+        kind: "site",
         status: Status::Experimental,
     };
     pub const site_Team_LoadInsertCall: Binding = Binding {

@@ -171,6 +171,7 @@ career.contract.sign             swofty/systems/career.hpp   career::events::Con
 career.standings.rebuild         swofty/systems/career.hpp   career::events::StandingsRebuild
 session.fuel.load                swofty/systems/tracks.hpp   tracks::events::FuelLoad
 session.player.control           swofty/systems/sessions.hpp sessions::events::PlayerControl
+session.lap                      swofty/systems/sessions.hpp sessions::events::Lap
 ai.controller.update             swofty/systems/ai.hpp       ai::events::ControllerUpdate
 hud.spectator.visible            swofty/systems/spectator.hpp spectator::events::HudVisible
 car.built / car.reset / car.vtf.read / car.parts.register / car.upgrades.fit / car.controllers.rebuilt
@@ -183,7 +184,7 @@ team.logo.resolve / team.name.resolve
 wearable.catalogue.build         swofty/systems/wearables.hpp wearables::events::CatalogueBuild
 ```
 
-`ai.controller.update` and `car.controllers.rebuilt` need the in-game checks T145 and T144. The other points in the tree (`session.state.enter`, `session.weather.setup`, `session.safety_car.deploy`, `session.pit_stop`, `session.results.finalise`, `career.season.process` and the rest of the session group) are the design for later headers; addons made for 1.5 and earlier subscribe to some of these moments by shorter names, which still work: see [Compatibility](/std/compatibility#events).
+`ai.controller.update` and `car.controllers.rebuilt` need the in-game checks T145 and T144. `session.lap` fires from the core's ERS new-lap site (see [Sessions](/std/systems/sessions#a-cars-lap)). The other points in the tree (`session.state.enter`, `session.weather.setup`, `session.safety_car.deploy`, `session.pit_stop`, `session.results.finalise`, `career.season.process` and the rest of the session group) are the design for later headers; addons made for 1.5 and earlier subscribe to some of these moments by shorter names, which still work: see [Compatibility](/std/compatibility#events).
 
 **Every start has one end.** The core keeps a lifecycle stack. If the player quits from the pause menu, the core fires the missing ends itself, with `reason = abandoned`:
 
