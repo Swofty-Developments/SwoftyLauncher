@@ -254,6 +254,71 @@ static void continue_tests()
            "both reasons are named together: " + stop);
 }
 
+struct GridSetup {
+    alignas(8) uint8_t mem[0x300] = {};
+    explicit GridSetup(int32_t limit) { set(limit); }
+    void set(int32_t v) { *reinterpret_cast<int32_t *>(mem + era::ENTRANT_SETUP_MAX_ENTRANTS) = v; }
+    int32_t get() const { return *reinterpret_cast<const int32_t *>(mem + era::ENTRANT_SETUP_MAX_ENTRANTS); }
+};
+
+static void grid_limit_tests()
+{
+    GridSetup press(20);
+    era::GridLimit pressed;
+    std::string line = pressed.raise(press.mem, 24);
+    expect(press.get() == 24 && !line.empty() && line.find("20 -> 24") != std::string::npos &&
+               line.find("clamped") == std::string::npos,
+           "a box press on a 24-car list raises max_entrants from 20 to 24");
+    pressed.restore();
+    expect(press.get() == 20, "the put-back restores max_entrants to 20");
+    pressed.restore();
+    expect(press.get() == 20, "a second put-back changes nothing");
+
+    GridSetup small(20);
+    era::GridLimit none;
+    expect(none.raise(small.mem, 18).empty() && small.get() == 20, "a list within the limit leaves max_entrants alone");
+    expect(none.raise(small.mem, 20).empty() && small.get() == 20, "a list equal to the limit leaves max_entrants alone");
+    expect(none.raise(small.mem, 0).empty() && none.raise(nullptr, 24).empty(), "an unread car count or setup mode changes nothing");
+    GridSetup unset(0);
+    expect(none.raise(unset.mem, 24).empty() && unset.get() == 0, "a max_entrants of 0 is left alone");
+
+    GridSetup clamp(20);
+    era::GridLimit clamped;
+    line = clamped.raise(clamp.mem, 40);
+    expect(clamp.get() == 26 && line.find("clamped to the 26-slot vehicle table") != std::string::npos,
+           "a 40-car list clamps max_entrants to the 26 vehicle table slots and says so");
+    clamped.restore();
+    expect(clamp.get() == 20, "the clamped limit is restored too");
+    GridSetup at_table(26);
+    expect(none.raise(at_table.mem, 40).empty() && at_table.get() == 26, "a limit already at the table size is not lowered or logged");
+
+    GridSetup moved(20);
+    era::GridLimit stale;
+    stale.raise(moved.mem, 24);
+    moved.set(22);
+    stale.restore();
+    expect(moved.get() == 22, "a limit someone else changed since the raise is not overwritten on put-back");
+
+    GridSetup career(20);
+    era::GridLimit box, cont;
+    box.raise(career.mem, 24);
+    expect(cont.raise(career.mem, 24).empty() && career.get() == 24, "the Continue path finds a limit a box press already raised");
+    cont.restore();
+    expect(career.get() == 24, "...and its put-back leaves the press's raise to the press's put-back");
+    box.restore();
+    expect(career.get() == 20, "the press's put-back restores it");
+
+    GridSetup resume(20);
+    era::GridLimit load;
+    line = load.raise(resume.mem, 26);
+    expect(resume.get() == 26 && line.find("clamped") == std::string::npos,
+           "the Continue path (no box press) raises max_entrants to a 26-car list's count");
+    line = load.raise(resume.mem, 24);
+    expect(resume.get() == 24 && line.find("20 -> 24") != std::string::npos, "a new raise first puts the earlier one back");
+    load.restore();
+    expect(resume.get() == 20, "the Continue path's put-back restores max_entrants to 20");
+}
+
 int main()
 {
     std::vector<era::Box> have;
@@ -666,6 +731,7 @@ int main()
     drs_swap_tests();
     continue_tests();
     setup_guard_tests();
+    grid_limit_tests();
 
     printf("%s\n", fails ? "era_logic_test: FAILED" : "era_logic_test: all passed");
     return fails ? 1 : 0;

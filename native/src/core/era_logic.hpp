@@ -369,6 +369,44 @@ inline int64_t time_trial_fallback(const std::vector<ListCars> &lists, const std
     return -1;
 }
 
+constexpr size_t ENTRANT_SETUP_MAX_ENTRANTS = 0x268;
+
+struct GridLimit {
+    uint8_t *esm = nullptr;
+    int32_t was = 0, set = 0;
+
+    std::string raise(uint8_t *setup_mode, int64_t cars)
+    {
+        restore();
+        if (!setup_mode || cars <= 0)
+            return "";
+        int32_t limit = *reinterpret_cast<int32_t *>(setup_mode + ENTRANT_SETUP_MAX_ENTRANTS);
+        if (limit <= 0 || cars <= limit)
+            return "";
+        bool clamped = size_t(cars) > TT_TABLE;
+        int32_t target = clamped ? int32_t(TT_TABLE) : int32_t(cars);
+        if (target <= limit)
+            return "";
+        esm = setup_mode;
+        was = limit;
+        set = target;
+        *reinterpret_cast<int32_t *>(esm + ENTRANT_SETUP_MAX_ENTRANTS) = set;
+        std::string line = "max_entrants " + std::to_string(was) + " -> " + std::to_string(set) + " for a list of " +
+                           std::to_string(cars) + " cars";
+        if (clamped)
+            line += "; clamped to the " + std::to_string(TT_TABLE) + "-slot vehicle table";
+        return line;
+    }
+
+    void restore()
+    {
+        if (set && esm && *reinterpret_cast<int32_t *>(esm + ENTRANT_SETUP_MAX_ENTRANTS) == set)
+            *reinterpret_cast<int32_t *>(esm + ENTRANT_SETUP_MAX_ENTRANTS) = was;
+        esm = nullptr;
+        was = set = 0;
+    }
+};
+
 inline int32_t time_trial_limit(int32_t max_entrants)
 {
     return max_entrants < 1 || size_t(max_entrants) > TT_MAX_CARS ? int32_t(TT_MAX_CARS) : max_entrants;
