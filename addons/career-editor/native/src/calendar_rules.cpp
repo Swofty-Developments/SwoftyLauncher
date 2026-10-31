@@ -81,9 +81,16 @@ Repair repair(const std::vector<RoundState> &rounds, uint32_t current, int race_
         tracks.insert(c.track);
         r.add.push_back(c);
     }
+    for (auto &c : known) {
+        if (r.add.size() == need)
+            break;
+        if (c.track == 0xff || c.name.empty() || !names.insert(c.name).second)
+            continue;
+        r.add.push_back(c);
+    }
     if (r.add.size() < need) {
         r.error = "unknown_track: " + std::to_string(need) + " round(s) needed, " + std::to_string(r.add.size()) +
-                  " track(s) of this championship are not on this calendar; send the weekends to add";
+                  " weekend(s) of this championship are not on this calendar; send the weekends to add";
         r.add.clear();
     }
     return r;

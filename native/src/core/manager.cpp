@@ -84,6 +84,8 @@ std::vector<CoreMixins> team_slots_mixins();
 void team_slots_commit();
 std::vector<CoreMixins> netplay_icons_mixins();
 void netplay_icons_commit();
+std::vector<CoreMixins> leaderboard_guard_mixins();
+void leaderboard_guard_commit();
 std::vector<CoreMixins> characters_mixins();
 std::vector<CoreMixins> wizard_mixins();
 std::vector<CoreMixins> tile_route_mixins();
@@ -1770,7 +1772,8 @@ size_t offer_core_sets()
                        runtime::tile_route_mixins, runtime::era_mixins, runtime::tt_guard_mixins, runtime::career_alias_mixins, runtime::car_category_mixins,
                        runtime::save_splice_mixins, runtime::ers_newlap_mixins, runtime::ers_mode_mixins, runtime::car_levers_mixins,
                        runtime::garage_crew_mixins, runtime::pit_slots_mixins, runtime::standings_guard_mixins, runtime::tyre_slots_mixins, runtime::track_acclim_mixins,
-                       runtime::audio_queue_mixins, runtime::team_slots_mixins, runtime::track_select_mixins, runtime::netplay_icons_mixins})
+                       runtime::audio_queue_mixins, runtime::team_slots_mixins, runtime::track_select_mixins, runtime::netplay_icons_mixins,
+                       runtime::leaderboard_guard_mixins})
         add_core_sets(sets());
     return addons.size() - before;
 }
@@ -1799,6 +1802,7 @@ void settle_core_sets()
     runtime::team_slots_commit();
     runtime::track_select_commit();
     runtime::netplay_icons_commit();
+    runtime::leaderboard_guard_commit();
 }
 
 void install_groups(size_t from, bool late, size_t *count)

@@ -247,11 +247,11 @@ mod tests {
         super::super::careers::listing(
             &parse(
                 r#"{"careers":[
-                {"career":"a","driver_raw":5,"team_raw":7,"last_played":3},
-                {"career":"b","driver_raw":16,"team_raw":16387,"last_played":2},
-                {"career":"c","driver_raw":99,"team_raw":99,"last_played":1},
-                {"career":"d","driver":"Kept Name","team":"Kept Team","driver_raw":5,"team_raw":7},
-                {"career":"e","last_played":0}
+                {"career":"a","slot":"a","driver_raw":5,"team_raw":7,"last_played":3},
+                {"career":"b","slot":"b","driver_raw":16,"team_raw":16387,"last_played":2},
+                {"career":"c","slot":"c","driver_raw":99,"team_raw":99,"last_played":1},
+                {"career":"d","slot":"d","driver":"Kept Name","team":"Kept Team","driver_raw":5,"team_raw":7},
+                {"career":"e","slot":"e","last_played":0}
                 ]}"#,
             ),
             None,
@@ -328,7 +328,9 @@ mod tests {
     #[test]
     fn the_none_id_names_nothing() {
         let l = super::super::careers::listing(
-            &parse(r#"{"careers":[{"career":"f1_career_2026","driver_raw":16383,"team_raw":16383}]}"#),
+            &parse(
+                r#"{"careers":[{"career":"driver_career:n1","slot":"n1","driver_raw":16383,"team_raw":16383}]}"#,
+            ),
             None,
         );
         let mut l = l;

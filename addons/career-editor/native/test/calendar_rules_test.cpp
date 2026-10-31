@@ -110,6 +110,17 @@ int main()
                    .error) == "duplicate_weekend");
     CHECK(code(repair(states(k), k.current, k.stops, {{"rw_a", 0xff}, {"rw_b", 41}, {"rw_c", 42}, {"rw_d", 43}}, known)
                    .error) == "unknown_track");
+    // every track already on the calendar: unused weekend names are reused on their tracks, in order
+    Season all{std::vector<int>(21, 0), 0, 24};
+    std::vector<Candidate> twice;
+    for (int i = 0; i < 21; ++i)
+        twice.push_back({std::to_string(i), static_cast<uint8_t>(i)});
+    for (int i = 0; i < 21; ++i)
+        twice.push_back({"b" + std::to_string(i), static_cast<uint8_t>(i)});
+    r = repair(states(all), all.current, all.stops, {}, twice);
+    CHECK(r.error.empty() && r.add.size() == 3 && r.add[0].name == "b0" && r.add[2].name == "b2");
+    CHECK(play(apply(all, r)) == End::Finished);
+    CHECK(code(repair(states(all), all.current, all.stops, {}, {{"0", 0}, {"b0", 0}}).error) == "unknown_track");
     // not enough other tracks known
     CHECK(code(repair(states(k), k.current, k.stops, {}, {{"0", 0}, {"rw_x", 30}}).error) == "unknown_track");
 

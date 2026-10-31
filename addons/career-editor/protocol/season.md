@@ -166,6 +166,10 @@ keep the count. `add_round` and `remove_round` are accepted only when they leave
 `race_weekends` or move it closer (a season edited before this rule); otherwise `round_count`, also when
 `race_weekends` is unreadable.
 
+The calendar section also carries `race_weekends_estimate`: when this season's record is empty (the daily tick that fills it
+hasn't run, so the clock can't move), the count of the nearest other season with a record, previous seasons first.
+`season.calendar.repair` uses it when `race_weekends` is unreadable.
+
 ## Ops
 
 All ops run on the flow thread while `ce::safe()` (plain `CE_OP`), both modes.
@@ -251,7 +255,8 @@ round count back to `race_weekends`:
 - fewer rounds: appends the missing rounds after the last one. With `weekends` (exactly the missing
   count, each checked like `add_round`), those; without, weekends of this championship's other seasons
   (the previous seasons first, latest first, then later ones, each in round order) whose name and track
-  are not on this calendar, with that weekend's name and track id (`unknown_track` when too few).
+  are not on this calendar first, then those whose name alone is not on this calendar (a track may repeat),
+  each with that weekend's name and track id (`unknown_track` when too few).
 - equal: nothing (`ok`, `before` = `after`).
 
 `round_count` when `race_weekends` is unreadable. Result `before`/`after` as for the other calendar ops.

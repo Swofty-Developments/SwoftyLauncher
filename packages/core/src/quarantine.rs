@@ -11,6 +11,7 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use serde::{Deserialize, Serialize};
 
+use crate::GAME_EXE;
 use crate::baseline::sha256_file;
 use crate::builtin::{CORE_DLL, LOADER_ENV};
 use crate::install::PROXY;
@@ -98,8 +99,14 @@ pub enum Cause {
     /// The registry lists version.dll as a KnownDLL.
     KnownDll,
     /// The game holds a version.dll from another folder and not the game
-    /// folder's (`prefer_system32`: its exploit protection asks for that).
-    OtherCopy { path: String, prefer_system32: bool },
+    /// folder's (`prefer_system32`: it runs with that DLL load policy, which
+    /// `from` turns on; None when no setting the session reads does).
+    OtherCopy {
+        path: String,
+        prefer_system32: bool,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        from: Option<PreferSource>,
+    },
     /// The game holds another version.dll, and F1_25.exe has Exploit
     /// protection program settings.
     ExploitProtection { path: String },
@@ -122,6 +129,37 @@ pub enum Cause {
     /// Windows denied the session a look inside the game process, and no
     /// block event or other antivirus explains the miss.
     Unreadable,
+}
+
+/// Where Windows turns on "prefer System32 DLLs" for F1_25.exe.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum PreferSource {
+    /// F1_25.exe's Exploit protection program settings, by name.
+    Program,
+    /// F1_25.exe's Exploit protection program settings for one path.
+    Path { path: String },
+    /// Exploit protection's system settings.
+    System,
+    /// An Exploit protection policy; `from` is the file it names.
+    Policy {
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        from: Option<String>,
+    },
+}
+
+impl PreferSource {
+    pub fn name(&self) -> String {
+        match self {
+            Self::Program => format!("the Exploit protection program settings for {GAME_EXE}"),
+            Self::Path { path } => format!("the Exploit protection program settings for {path}"),
+            Self::System => "Exploit protection's system settings".to_owned(),
+            Self::Policy { from } => format!(
+                "an Exploit protection policy set by an organisation or a tool{}",
+                from.as_ref().map(|f| format!(" ({f})")).unwrap_or_default()
+            ),
+        }
+    }
 }
 
 /// A program that hands compatibility layers on to the game it starts.
@@ -171,9 +209,27 @@ impl Cause {
             Self::OtherCopy {
                 path,
                 prefer_system32: true,
+                from,
             } => format!(
-                "the game loaded {path} instead of the game folder's {PROXY}: Exploit protection makes F1_25.exe \
-                 prefer System32 DLLs"
+                "the game loaded {path} instead of the game folder's {PROXY}: {}",
+                match from {
+                    Some(PreferSource::Program) => {
+                        "F1_25.exe's Exploit protection program settings make it prefer System32 DLLs"
+                            .to_owned()
+                    }
+                    Some(PreferSource::System) => {
+                        "Exploit protection's system settings make every program prefer System32 DLLs"
+                            .to_owned()
+                    }
+                    Some(source @ PreferSource::Policy { .. }) => {
+                        format!("{} makes F1_25.exe prefer System32 DLLs", source.name())
+                    }
+                    Some(source) => format!("{} make F1_25.exe prefer System32 DLLs", source.name()),
+                    None =>
+                        "Windows makes F1_25.exe prefer System32 DLLs, and Swofty Launcher found no Exploit \
+                             protection setting that asks for that"
+                            .to_owned(),
+                }
             ),
             Self::OtherCopy { path, .. } => format!(
                 "the game loaded {path} instead of the game folder's {PROXY}. Security software on this PC most \
@@ -247,9 +303,42 @@ impl Cause {
             Self::SignedOnly
             | Self::OtherCopy {
                 prefer_system32: true,
+                from: Some(PreferSource::Program),
                 ..
             } => "To fix it, close F1 25, remove the F1_25.exe settings in Windows Security > App & browser \
                  control > Exploit protection > Program settings, then launch again."
+                .to_owned(),
+            Self::OtherCopy {
+                prefer_system32: true,
+                from: Some(PreferSource::Path { path }),
+                ..
+            } => format!(
+                "To fix it, close F1 25, remove the F1_25.exe entry for {path} in Windows Security > App & browser \
+                 control > Exploit protection > Program settings, then launch again."
+            ),
+            Self::OtherCopy {
+                prefer_system32: true,
+                from: Some(PreferSource::System),
+                ..
+            } => "To fix it, close F1 25, run Set-ProcessMitigation -System -Disable PreferSystem32 in PowerShell \
+                 as administrator, restart the PC, then launch again. If that command reports an error, or mods \
+                 still don't load, run Get-ProcessMitigation -System in PowerShell and post what it prints in the \
+                 support Discord."
+                .to_owned(),
+            Self::OtherCopy {
+                prefer_system32: true,
+                from: Some(PreferSource::Policy { .. }),
+                ..
+            } => "To fix it, close F1 25, ask whoever manages this PC to remove PreferSystem32 for F1_25.exe from \
+                 the policy, or undo the tool that set it, then restart the PC and launch again."
+                .to_owned(),
+            Self::OtherCopy {
+                prefer_system32: true,
+                from: None,
+                ..
+            } => "To fix it, close F1 25, restart the PC, then launch again. If mods still don't load, run \
+                 Get-ProcessMitigation -Name F1_25.exe and Get-ProcessMitigation -System in PowerShell and post \
+                 what they print in the support Discord."
                 .to_owned(),
             Self::KnownDll => format!(
                 "To fix it, close F1 25, remove {PROXY} from HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\\
@@ -950,24 +1039,14 @@ mod tests {
                 &mut r,
                 Cause::OtherCopy {
                     path: r"C:\WINDOWS\SYSTEM32\VERSION.dll".into(),
-                    prefer_system32: false
+                    prefer_system32: false,
+                    from: None,
                 }
             ),
             "F1 25 is running without mods: the game loaded C:\\WINDOWS\\SYSTEM32\\VERSION.dll instead of the game \
              folder's version.dll. Security software on this PC most likely redirected it. To fix it, close F1 25, \
              turn off your antivirus's DLL or behaviour protection for F1_25.exe (a folder exclusion is often not \
              enough), then launch again."
-        );
-        let prefer = text(
-            &mut r,
-            Cause::OtherCopy {
-                path: r"C:\WINDOWS\SYSTEM32\VERSION.dll".into(),
-                prefer_system32: true,
-            },
-        );
-        assert!(
-            prefer.contains("Exploit protection makes F1_25.exe prefer System32 DLLs. To fix it"),
-            "{prefer}"
         );
         let system = || r"C:\WINDOWS\SYSTEM32\VERSION.dll".to_owned();
         let exploit = text(&mut r, Cause::ExploitProtection { path: system() });
@@ -1111,6 +1190,91 @@ mod tests {
     }
 
     #[test]
+    fn names_what_makes_the_game_prefer_system32_and_the_fix_for_it() {
+        let r = |from: Option<PreferSource>| {
+            Report {
+                at: 1.0,
+                stage: Stage::InGame,
+                files: vec!["version.dll".into()],
+                removed: false,
+                game: PathBuf::from(r"E:\SteamLibrary\steamapps\common\F1 25"),
+                launcher: None,
+                cause: Some(Box::new(Cause::OtherCopy {
+                    path: r"C:\WINDOWS\SYSTEM32\VERSION.dll".into(),
+                    prefer_system32: true,
+                    from,
+                })),
+            }
+            .text()
+        };
+        const LOADED: &str = "F1 25 is running without mods: the game loaded C:\\WINDOWS\\SYSTEM32\\VERSION.dll \
+                              instead of the game folder's version.dll: ";
+        assert_eq!(
+            r(None),
+            format!(
+                "{LOADED}Windows makes F1_25.exe prefer System32 DLLs, and Swofty Launcher found no Exploit protection \
+                 setting that asks for that. To fix it, close F1 25, restart the PC, then launch again. If mods still \
+                 don't load, run Get-ProcessMitigation -Name F1_25.exe and Get-ProcessMitigation -System in \
+                 PowerShell and post what they print in the support Discord."
+            )
+        );
+        assert_eq!(
+            r(Some(PreferSource::Program)),
+            format!(
+                "{LOADED}F1_25.exe's Exploit protection program settings make it prefer System32 DLLs. To fix it, \
+                 close F1 25, remove the F1_25.exe settings in Windows Security > App & browser control > Exploit \
+                 protection > Program settings, then launch again."
+            )
+        );
+        assert_eq!(
+            r(Some(PreferSource::Path {
+                path: r"E:\SteamLibrary\steamapps\common\F1 25\F1_25.exe".into()
+            })),
+            format!(
+                "{LOADED}the Exploit protection program settings for \
+                 E:\\SteamLibrary\\steamapps\\common\\F1 25\\F1_25.exe make F1_25.exe prefer System32 DLLs. To \
+                 fix it, close F1 25, remove the F1_25.exe entry for \
+                 E:\\SteamLibrary\\steamapps\\common\\F1 25\\F1_25.exe in Windows Security > App & browser \
+                 control > Exploit protection > Program settings, then launch again."
+            )
+        );
+        assert_eq!(
+            r(Some(PreferSource::System)),
+            format!(
+                "{LOADED}Exploit protection's system settings make every program prefer System32 DLLs. To fix it, \
+                 close F1 25, run Set-ProcessMitigation -System -Disable PreferSystem32 in PowerShell as \
+                 administrator, restart the PC, then launch again. If that command reports an error, or mods still \
+                 don't load, run Get-ProcessMitigation -System in PowerShell and post what it prints in the support \
+                 Discord."
+            )
+        );
+        assert_eq!(
+            r(Some(PreferSource::Policy {
+                from: Some(r"C:\Policies\exploit.xml".into())
+            })),
+            format!(
+                "{LOADED}an Exploit protection policy set by an organisation or a tool (C:\\Policies\\exploit.xml) \
+                 makes F1_25.exe prefer System32 DLLs. To fix it, close F1 25, ask whoever manages this PC to remove \
+                 PreferSystem32 for F1_25.exe from the policy, or undo the tool that set it, then restart the PC and \
+                 launch again."
+            )
+        );
+        let managed = r(Some(PreferSource::Policy { from: None }));
+        assert!(
+            managed.contains("an Exploit protection policy set by an organisation or a tool makes F1_25.exe"),
+            "{managed}"
+        );
+        for from in [
+            None,
+            Some(PreferSource::System),
+            Some(PreferSource::Policy { from: None }),
+        ] {
+            let text = r(from);
+            assert!(!text.contains("Program settings"), "{text}");
+        }
+    }
+
+    #[test]
     fn an_install_without_a_loader_folder_says_reinstall() {
         let root = temp("no-loader");
         let bin = root.join("bin");
@@ -1142,9 +1306,21 @@ mod tests {
         r.cause = Some(Box::new(Cause::OtherCopy {
             path: r"C:\WINDOWS\SYSTEM32\VERSION.dll".into(),
             prefer_system32: false,
+            from: None,
         }));
         let json = serde_json::to_value(&r).unwrap();
         assert_eq!(json["cause"]["kind"], "other_copy");
+        assert!(json["cause"].get("from").is_none());
+        assert_eq!(serde_json::from_value::<Report>(json).unwrap(), r);
+        r.cause = Some(Box::new(Cause::OtherCopy {
+            path: r"C:\WINDOWS\SYSTEM32\VERSION.dll".into(),
+            prefer_system32: true,
+            from: Some(PreferSource::Path {
+                path: r"D:\Games\F1 25\F1_25.exe".into(),
+            }),
+        }));
+        let json = serde_json::to_value(&r).unwrap();
+        assert_eq!(json["cause"]["from"]["kind"], "path");
         assert_eq!(serde_json::from_value::<Report>(json).unwrap(), r);
         let old = r#"{"at":1.0,"stage":"in_game","files":["version.dll"],"game":"/games/F1 25"}"#;
         assert_eq!(serde_json::from_str::<Report>(old).unwrap().cause, None);
