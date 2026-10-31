@@ -895,9 +895,10 @@ swofty::events::on<career::events::Missing>().after(
 - **`mode` and `content`:** the mode kind and the data group the career loaded with. `content_record` is the `career.content` record that owns the group.
 - **`driver`, `team`, `season`, `round`:** what the core knows when it writes the record, which is the career's year and round once the hub has run. `saves::describe` sets them from an addon that knows better, and a described value stays for the session. A field nobody knows is left out.
 - **`last_saved`:** milliseconds since 1970 at the last `career.saved` of the session in which the career was loaded.
-- **`status`:** `present`, or `missing` after a profile load did not find the career.
+- **`status`:** `present`; `deleted` when the game listed the career's save slot earlier in the session and no longer does; `missing` when a profile load or save did not find it and the session had not listed it.
+- **`slot`, `slot_name`, `slot_season`, `slot_weekend`, `last_played`, `hidden`, `driver_raw`, `team_raw`, `vehicle_raw`:** what the game's save slot holds, the fields the Resume Career screen reads. `slot_season` is the season number the game shows, `last_played` is Unix seconds, `hidden` is set for a slot the game keeps out of that screen, and the `_raw` fields are the slot's driver, team and vehicle values. A career that was never loaded has no `driver` or `team` text.
 - **`addons`:** the owner of the career's data group, the `needs` of its content record and every `saves::need` call. The launcher reads this list; a version range is optional.
-- **When it is written:** at `career.loaded`, before each profile save and after it. Careers the session did not load keep their records.
+- **When it is written:** after each profile load and each profile save the core lists the save slots of every game mode and adds, updates or marks every career in the index; it also writes at `career.loaded` and before each profile save. A career whose slot the game lists but the session never loaded gets a record from the slot list (`<mode>:<slot key>`), and `career.loaded` renames it to the loaded id.
 
 ### Per-career addon data
 

@@ -183,6 +183,8 @@ pub struct Marker {
     pub profiles: Vec<String>,
     #[serde(default)]
     pub note: String,
+    #[serde(default)]
+    pub seen: bool,
 }
 
 pub fn marker_path(data: &Path) -> PathBuf {
@@ -191,6 +193,24 @@ pub fn marker_path(data: &Path) -> PathBuf {
 
 pub fn marker(data: &Path) -> Option<Marker> {
     serde_json::from_slice(&std::fs::read(marker_path(data)).ok()?).ok()
+}
+
+/// Whether the launcher still has to tell the player about the first-start import: it copied the Steam
+/// save into at least one profile and the player hasn't seen the notice.
+pub fn notice_due(data: &Path) -> bool {
+    marker(data).is_some_and(|m| !m.seen && !m.profiles.is_empty())
+}
+
+/// Record in `imported.json` that the player has seen the first-start notice.
+pub fn mark_seen(data: &Path) -> Result<()> {
+    let Some(mut m) = marker(data) else {
+        return Ok(());
+    };
+    if m.seen {
+        return Ok(());
+    }
+    m.seen = true;
+    crate::write_json(&marker_path(data), &m)
 }
 
 /// The first launcher start with launcher saves: copy the Steam save into every launcher profile's
@@ -252,6 +272,7 @@ pub fn first_start_import_from(
         launcher: env!("CARGO_PKG_VERSION").to_owned(),
         profiles: done,
         note,
+        seen: false,
     };
     if let Err(e) = crate::write_json(&marker_path(data), &m) {
         out.push(format!("saves: could not record the import: {e}"));
@@ -301,6 +322,29 @@ pub fn import(
         Taken::NoSave => None,
     };
     Ok((files, bytes, snapshot))
+}
+
+/// Copy the save at `from` over the store of `to_profile`: the Steam save, or another profile's store. The
+/// store is kept in the vault first, and the copy is snapshotted as `Imported` for a Steam save and
+/// `ImportedProfile` for another profile.
+pub fn copy_to(
+    data: &Path,
+    from: &Location,
+    to_profile: &str,
+    running: Running,
+    now: i64,
+) -> Result<(usize, u64, Option<String>)> {
+    let to = store_for(data, to_profile, from).expect("every layout has a store");
+    if to.source == from.source {
+        return Err(Error::Other(format!(
+            "{to_profile} is the profile the save comes from"
+        )));
+    }
+    let reason = match from.layout {
+        Layout::Launcher | Layout::LauncherEa => Reason::ImportedProfile,
+        Layout::Steam | Layout::Ea => Reason::Imported,
+    };
+    import(data, to_profile, from, reason, running, now)
 }
 
 /// Copy a launcher profile's store over the Steam save, through the vault's restore path: the store is

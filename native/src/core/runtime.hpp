@@ -157,10 +157,13 @@ void save_splice_commit();
 const std::string &settings_json_text();
 std::string build_distribution();
 // Career saves (career_saves.cpp): the career index and per-career addon data.
+namespace career_saves {
+struct SlotRead;
+}
 void career_saves_start();
 void career_saves_saving();
 void career_saves_saved();
-void career_saves_found(const std::set<std::string> &keys);
+void career_saves_listed(const std::vector<career_saves::SlotRead> &slots, bool complete, bool at_load);
 // Save sandbox (save_sandbox.cpp): under `swofty test` with a run token, or with the launcher's saves.
 std::vector<CoreMixins> save_sandbox_mixins();
 void save_sandbox_commit();
