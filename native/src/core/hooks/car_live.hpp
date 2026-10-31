@@ -125,7 +125,7 @@ template <class Tag> struct Ops {
 
     static int cars(uint32_t &n)
     {
-        uint8_t c = 0;
+        uint32_t c = 0;
         if (!available() || !rd(env.count, c))
             return SWOFTY_ASSET_UNAVAILABLE;
         n = c < MAX_CARS ? c : MAX_CARS;
