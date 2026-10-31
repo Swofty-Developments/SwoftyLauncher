@@ -328,6 +328,10 @@ EOF
         once "ers mode: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(ers mode guard\)': 1 mixin"
         once "ers mode: the guard is armed" '\[ers\] mode guard armed'
         count "ers mode: each car whose ERS mode is out of range is set to Medium and logged once" 2 '\[ers\] car (8: ERS mode -2141928108|9: ERS mode 4) out of range; set to 1 \(Medium\)'
+        once "standings: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(standings track guard\)': 1 mixin"
+        once "standings: the guard is armed" '\[career\] standings guard armed'
+        once "standings: a round whose track is off is skipped and logged once" '\[career\] standings: round 7 has no track data \(track 200 is off\); skipped'
+        once "standings: a round whose weekend can't be read is skipped and logged once" '\[career\] standings: round 10 has no track data; skipped'
         count "ers: each participant without a vehicle is skipped and logged" 4 '\[ers\] vehicle_newlap for vehicle (9|24): participant [01] of 4 has no vehicle'
         once "acclim: the track acclimatisation guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(track acclimatisation guard\)': 1 mixin"
         once "acclim: the track acclimatisation guard is armed" '\[acclim\] track acclimatisation guard armed'
@@ -663,6 +667,26 @@ for guard in on off; do
         check "ers_mode off: the step faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Car_Powertrain_Step\+0x20'
         parse_report "Car_Powertrain_Step+0x20" "" || status=1
         [[ $code != 0 ]] && echo "ok  : ers_mode off: process ended with $code" || { echo "FAIL: ers_mode off: process exited 0"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== standings ($guard)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_STANDINGS_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" standings >"$OUT/standings.out" 2>&1 || code=$?
+    grep -E '\[career\] standings|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    if [[ $guard == on ]]; then
+        once "standings on: the round is skipped and logged" '\[career\] standings: round 5 has no track data \(track 200 is off\); skipped'
+        grep -q 'standings: the round returned 0\b' "$OUT/standings.out" && echo "ok  : standings on: the round took the game's no-record path" ||
+            { echo "FAIL: standings on: the round did not take the game's no-record path"; status=1; }
+        count "standings on: no unhandled fault" 0 '\[crash\] unhandled '
+        compgen -G "$SW/crash-*.txt" >/dev/null && { echo "FAIL: standings on: a crash report was written"; status=1; } ||
+            echo "ok  : standings on: no crash report"
+    else
+        once "standings off: the guard is off" '\[career\] standings guard off \(SWOFTY_STANDINGS_GUARD=0\)'
+        check "standings off: the round faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Career_Standings_BuildWeekendNode\+0x28'
+        parse_report "Career_Standings_BuildWeekendNode+0x28" "" || status=1
+        [[ $code != 0 ]] && echo "ok  : standings off: process ended with $code" || { echo "FAIL: standings off: process exited 0"; status=1; }
     fi
 done
 echo "==== ntpage"
