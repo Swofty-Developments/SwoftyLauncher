@@ -47,6 +47,9 @@ constexpr size_t NODE_REFS = 0x24;
 constexpr size_t NODE_HOLDERS = 0x28;
 constexpr size_t HOLDER_PREV = 0x10;
 constexpr size_t TT_TABLE = 26;
+// A raised grid stops one short of the table: the safety car registers after the grid, and a 27th registration
+// overruns the game's 26-slot physics body registry (Car_Chassis_Build).
+constexpr size_t GRID_RAISE_MAX = TT_TABLE - 1;
 constexpr size_t TT_EXTRA_CARS = 3;
 constexpr size_t TT_MAX_CARS = TT_TABLE - TT_EXTRA_CARS;
 constexpr size_t LIST_ENTRANTS_BEGIN = 0x10;
@@ -383,8 +386,8 @@ struct GridLimit {
         int32_t limit = *reinterpret_cast<int32_t *>(setup_mode + ENTRANT_SETUP_MAX_ENTRANTS);
         if (limit <= 0 || cars <= limit)
             return "";
-        bool clamped = size_t(cars) > TT_TABLE;
-        int32_t target = clamped ? int32_t(TT_TABLE) : int32_t(cars);
+        bool clamped = size_t(cars) > GRID_RAISE_MAX;
+        int32_t target = clamped ? int32_t(GRID_RAISE_MAX) : int32_t(cars);
         if (target <= limit)
             return "";
         esm = setup_mode;
@@ -394,7 +397,7 @@ struct GridLimit {
         std::string line = "max_entrants " + std::to_string(was) + " -> " + std::to_string(set) + " for a list of " +
                            std::to_string(cars) + " cars";
         if (clamped)
-            line += "; clamped to the " + std::to_string(TT_TABLE) + "-slot vehicle table";
+            line += "; clamped to " + std::to_string(GRID_RAISE_MAX) + " cars, one short of the " + std::to_string(TT_TABLE) + "-slot vehicle table for the safety car";
         return line;
     }
 
