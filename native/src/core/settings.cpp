@@ -7,7 +7,12 @@
 #include <unordered_map>
 #include <vector>
 #include "json.hpp"
+#include "registry/older.hpp"
+#include "runtime.hpp"
 #include "swofty_api.h"
+
+bool ui_vm_set_path(const std::string &path, int type, const void *value);
+bool settings_command(uint32_t hash);
 
 namespace {
 
@@ -45,6 +50,10 @@ struct Command {
     size_t addon, option, state;
 };
 
+struct MfdRow {
+    size_t addon, option;
+};
+
 struct Owner {
     int addon;
     std::string dll;
@@ -59,6 +68,7 @@ unsigned long long seq;
 std::string profile;
 std::wstring requests;
 std::vector<AddonSettings> addons;
+std::vector<MfdRow> mfd_rows;
 std::unordered_map<uint32_t, Command> commands;
 std::unordered_map<HMODULE, Owner> owners;
 std::set<std::string> warned;
@@ -193,9 +203,9 @@ BOOL CALLBACK close_main(HWND h, LPARAM count)
     return TRUE;
 }
 
-SwoftySettingValue value_of(const Option &o)
+SwoftySettingValue value_of(const Option &o, size_t at)
 {
-    const State &s = o.states[o.current];
+    const State &s = o.states[at];
     SwoftySettingValue v{o.type, 0, 0, nullptr};
     if (o.type == SWOFTY_SETTING_TOGGLE)
         v.toggle = s.value.b;
@@ -204,6 +214,35 @@ SwoftySettingValue value_of(const Option &o)
     else
         v.choice = s.value.s.c_str();
     return v;
+}
+
+namespace older = swofty_core::registry::older;
+
+swofty::json::Value to_record_value(const json::Value &v)
+{
+    if (v.type == json::Value::Bool)
+        return swofty::json::Value(v.b);
+    if (v.type == json::Value::Num)
+        return v.n == std::floor(v.n) && std::fabs(v.n) < 9e15 ? swofty::json::Value(int64_t(v.n)) : swofty::json::Value(v.n);
+    if (v.type == json::Value::Str)
+        return swofty::json::Value(v.s);
+    return swofty::json::Value();
+}
+
+std::vector<older::OptionState> option_states(const Option &o)
+{
+    std::vector<older::OptionState> out;
+    for (auto &st : o.states)
+        out.push_back({st.text, to_record_value(st.value)});
+    return out;
+}
+
+void put_option(const std::string &addon, const Option &o)
+{
+    if (addon.empty())
+        return;
+    older::put(runtime::older_store(), addon, older::OPTION, o.id, older::option_record(type_names[o.type], option_states(o), o.current),
+               "settings.json options");
 }
 
 const char *invalid(const Option &o)
@@ -264,11 +303,23 @@ Option *find_option(const Owner *w, const char *id)
 
 }
 
+namespace {
+std::string settings_text;
+}
+
+namespace runtime {
+const std::string &settings_json_text()
+{
+    return settings_text;
+}
+}
+
 void settings_attach(SwoftyApi *a, const std::wstring &dir)
 {
     api = a;
     std::wstring path = full(dir + L"..\\..\\settings.json");
     std::string text = read_file(path);
+    settings_text = text;
     json::Value doc;
     if (text.empty())
         return api->log("[settings] no settings.json; every addon setting keeps its code default");
@@ -297,6 +348,11 @@ void settings_attach(SwoftyApi *a, const std::wstring &dir)
             else
                 m.options.push_back(std::move(o)), count++;
         }
+        bool on = jm["enabled"].type == json::Value::Bool ? jm["enabled"].b : true;
+        for (auto &r : jm["mfd"]["rows"].a)
+            for (size_t j = 0; on && j < m.options.size(); j++)
+                if (m.options[j].id == r.str() && mfd_rows.size() < 8)
+                    mfd_rows.push_back({addons.size(), j});
         addons.push_back(std::move(m));
     }
     for (size_t i = 0; i < addons.size(); i++) {
@@ -308,8 +364,28 @@ void settings_attach(SwoftyApi *a, const std::wstring &dir)
     }
     add_command(doc["restart_command"].str(), {RESTART, 0, 0, 0});
     loaded = true;
+    for (auto &m : addons)
+        for (auto &o : m.options)
+            put_option(m.id, o);
     api->log("[settings] %ls: profile '%s', %zu addon(s), %zu option(s), %zu command(s); requests file %ls", path.c_str(),
              profile.c_str(), addons.size(), count, commands.size(), requests.c_str());
+}
+
+size_t settings_mfd_rows()
+{
+    return mfd_rows.size();
+}
+
+bool settings_mfd_step(size_t row, int dir)
+{
+    if (row >= mfd_rows.size())
+        return false;
+    AcquireSRWLockExclusive(&lock);
+    const Option &o = addons[mfd_rows[row].addon].options[mfd_rows[row].option];
+    size_t n = o.states.size(), at = o.current < n ? o.current : 0;
+    std::string command = n ? o.states[(at + n + (dir < 0 ? n - 1 : 1)) % n].command : std::string();
+    ReleaseSRWLockExclusive(&lock);
+    return !command.empty() && settings_command(djb2(command));
 }
 
 std::string settings_addon(const void *from, std::string &dll)
@@ -325,12 +401,16 @@ int settings_get(const char *id, uint32_t type, SwoftySettingValue *out)
     if (!loaded || !id)
         return 0;
     const Owner *w = owner_of(from);
+    swofty::json::Value rec;
+    if (w->addon >= 0)
+        rec = older::effective(runtime::older_store(), older::OPTION, addons[w->addon].id + "/" + id);
     AcquireSRWLockExclusive(&lock);
     const Option *o = find_option(w, id);
     bool ok = o && o->type == type;
     bool warn = !ok && warned.insert((w->addon < 0 ? w->dll : addons[w->addon].id) + '\n' + id).second;
-    if (ok && out)
-        *out = value_of(*o);
+    if (ok && out) {
+        *out = value_of(*o, older::option_current(rec, option_states(*o), o->current));
+    }
     ReleaseSRWLockExclusive(&lock);
     const char *want = type < 4 ? type_names[type] : "?";
     if (warn && w->addon < 0)
@@ -403,13 +483,15 @@ bool settings_command(uint32_t hash)
     Option *o = c.kind == SET ? &m->options[c.option] : nullptr;
     std::vector<Watcher> call;
     SwoftySettingValue v{};
+    Option changed;
     AcquireSRWLockExclusive(&io);
     AcquireSRWLockExclusive(&lock);
     if (o) {
         o->current = c.state;
         o->requested = true;
         call = o->watchers;
-        v = value_of(*o);
+        v = value_of(*o, o->current);
+        changed = *o;
     } else if (m) {
         m->enabled = (int)c.state;
     } else {
@@ -419,11 +501,16 @@ bool settings_command(uint32_t hash)
     std::string text = requests_text();
     ReleaseSRWLockExclusive(&lock);
     if (o)
+        put_option(m->id, changed);
+    if (o)
         api->log("[settings] %s.%s = %s", m->id.c_str(), o->id.c_str(), o->states[c.state].text.c_str());
     else if (m)
         api->log("[settings] %s: %s from the next launch", m->id.c_str(), c.state ? "enabled" : "disabled");
     else
         api->log("[settings] restart requested: relaunch = true");
+    for (size_t k = 0; o && k < mfd_rows.size(); k++)
+        if (mfd_rows[k].addon == c.addon && mfd_rows[k].option == c.option)
+            ui_vm_set_path("ui_menu_data.swofty.m" + std::to_string(k), 0, o->states[c.state].text.c_str());
     DWORD err = write_requests(text);
     ReleaseSRWLockExclusive(&io);
     if (err)

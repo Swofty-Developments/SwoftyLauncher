@@ -12,7 +12,12 @@
   kb.py --agent A import <rows.tsv> <table>           add rows not yet present (ghidra_export output)
 Tables: functions globals db_keys strings_anchors subsystems verify
 """
-import argparse, datetime, fcntl, json, os, re, sys, contextlib
+import argparse, datetime, json, os, re, sys, contextlib
+try:
+    import fcntl
+except ImportError:  # Windows
+    fcntl = None
+    import msvcrt
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 RE = os.path.dirname(HERE)
@@ -227,6 +232,16 @@ def djb2(s):
 def locked():
     os.makedirs(DB, exist_ok=True)
     with open(LOCK, 'a') as lf:
+        if fcntl is None:
+            # Windows: lock the first byte, blocking until it is free.
+            lf.seek(0)
+            msvcrt.locking(lf.fileno(), msvcrt.LK_LOCK, 1)
+            try:
+                yield
+            finally:
+                lf.seek(0)
+                msvcrt.locking(lf.fileno(), msvcrt.LK_UNLCK, 1)
+            return
         fcntl.flock(lf, fcntl.LOCK_EX)
         try:
             yield
@@ -418,7 +433,8 @@ def cmd_verify(a):
         raise SystemExit('refused:\n  ' + '\n  '.join(e))
     with locked():
         rows, _ = read_table('verify')
-        n = len(rows) + 1
+        taken = [int(m.group(1)) for x in rows if (m := re.match(r'V(\d+) ', x['notes']))]
+        n = max([len(rows), *taken]) + 1
         r['notes'] = f'V{n:04d} ' + r['notes']
         rows.append(r)
         cols = TABLES['verify'][0]

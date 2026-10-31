@@ -29,7 +29,7 @@ Load a career and go to Team HQ. The **Career Editor** page shows the game, the 
 
 ## Calendar
 
-**Season** lists the calendar with each round's track and country, and changes rounds after the current one that haven't started: move a round, add one, replace its track or remove it. **Move a round** shows what the move does before you apply it, such as "Suzuka becomes round 9, Monaco moves to round 10". With Swofty Launcher 1.0.12 or later, **Add a round** and **Replace track** list every Grand Prix track in your profile's last build, in three groups:
+**Season** lists the calendar with each round's track and country, and changes rounds after the current one that haven't started: move a round or replace its track. **Move a round** shows what the move does before you apply it, such as "Suzuka becomes round 9, Monaco moves to round 10". With Swofty Launcher 1.0.12 or later, **Add a round** and **Replace track** list every Grand Prix track in your profile's last build, in three groups:
 
 | Group | Tracks |
 |---|---|
@@ -38,6 +38,17 @@ Load a career and go to Team HQ. The **Career Editor** page shows the game, the 
 | Modded tracks | Community tracks turned on in [Mods and tracks](/using/mods#tracks), such as Okayama or Sepang |
 
 To race a modded track, import its zip on the **Mods** page, turn it on in the profile and press **Play** to build; it then shows under **Modded tracks**. A track already on this season's calendar isn't listed again. A track turned on after the last build appears once the profile builds again; **Play** builds it. Under the forms, the page names each track it doesn't offer and why, such as a track whose mod is off. An older launcher lists only tracks this championship already has.
+
+The number of rounds stays as the season started. The game keeps its own list of race weekends for the season, set by the season length, and the career moves through those dates; the season ends after its last race weekend. **Add a round** and **Remove a round** are open only on a season whose round count no longer matches that list.
+
+A season edited with Career Mode Editor 0.3.4 or older can have more or fewer rounds than race weekends. After its last round the game then goes to a race weekend that no longer exists and crashes, or the season can't finish. **Season** then shows **Round count** with **Repair the round count**:
+
+| The calendar has | Repair |
+|---|---|
+| Fewer rounds than race weekends | Adds the missing rounds at the end, with tracks of this career's other seasons that aren't on this calendar. Replace them afterwards with **Replace track**. |
+| More rounds than race weekends | Removes the last rounds that haven't started |
+
+The repair has no undo; **History** restores a save backup.
 
 ## Your own ratings
 

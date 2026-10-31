@@ -20,6 +20,8 @@ You'll also see a panel on the home screen confirming you launched with Swofty L
 
 Three columns fit on screen. When there are more, moving past the right edge slides the row along by a column, and moving left slides it back. Coming back from an addon's page returns to the tile you opened, with the row slid to show it.
 
+A page holds up to 24 tiles, eight columns. With more, the list continues on further pages, and the title shows the page, such as **PAGE 1/3**. The last column of a page holds **NEXT PAGE** and, from the second page on, **PREVIOUS PAGE**; each shows the first names on that page. **Back** on a later page returns to the page before it, with **NEXT PAGE** selected.
+
 ## Change a setting
 
 1. On **ADDON SETTINGS**, select the tile for the addon you want to change.

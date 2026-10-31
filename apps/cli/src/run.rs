@@ -49,6 +49,11 @@ pub struct RunArgs {
     via_ea: bool,
     #[arg(
         long,
+        help = "Play this one session on Steam's saves, though the profile uses launcher saves"
+    )]
+    steam_saves_once: bool,
+    #[arg(
+        long,
         help = "Start F1 25 in VR, like Steam's VR launch option (passes -vr; on Linux, starts SteamVR first)"
     )]
     vr: bool,
@@ -59,6 +64,14 @@ pub struct RunArgs {
     apply: bool,
     #[arg(long, help = crate::GAME_HELP)]
     game: Option<PathBuf>,
+    #[arg(
+        long = "game-arg",
+        value_name = "ARG",
+        allow_hyphen_values = true,
+        requires = "direct",
+        help = "Pass ARG to F1 25 in a direct launch; repeat it for more, such as --game-arg=-benchmark --game-arg=x.xml"
+    )]
+    game_arg: Vec<String>,
     #[arg(
         long,
         env = "SWOFTY_EXE_COPY",
@@ -142,6 +155,7 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
         profile: Some(profile.into()),
         apply: args.apply,
         netplay: std::env::var(NETPLAY_ENV).ok().filter(|v| !v.is_empty()),
+        steam_saves_once: args.steam_saves_once,
     };
     write_json(&store.root.join("state/launch.json"), &request)?;
     let mode = if args.vr {
@@ -155,7 +169,8 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
     let loader = game.join(LOADER_LOG);
     let before = LogMark::read(&loader);
     let asked = now_secs();
-    let mut wrapper = launch(store, &game, args.direct, mode).inspect_err(|e| note_blocked(store, e))?;
+    let mut wrapper =
+        launch(store, &game, args.direct, mode, &args.game_arg).inspect_err(|e| note_blocked(store, e))?;
     let mut silence = Silence::new();
     let dir = loop {
         if let Some(d) = store
@@ -435,11 +450,29 @@ fn wrapper(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Result<Exi
     }
     let installed = apply.then(Instant::now);
     become_subreaper();
+    let vanilla = store.profile(&profile).is_ok_and(|p| p.is_vanilla());
+    if crate::ea::stages_offline(args.via_ea, vanilla) {
+        stage_offline(store, &game)?;
+    } else {
+        say(
+            "info",
+            "offline play: not staged; the vanilla profile starts F1 25 through the EA app as installed, \
+             with EA AntiCheat",
+        );
+    }
+    let before = crate::saves::before_session(store, &profile, g, &request.id, !request.steam_saves_once);
+    let result = run_loop(store, args, &config, &request, &profile, g, installed);
+    let out = finish(session, result);
+    crate::saves::after_session(before);
+    out
+}
+
+fn stage_offline(store: &Store, game: &Path) -> Result<()> {
     let artifacts = crate::offline::ensure_extension(store)?;
     if let Some(note) = crate::offline::loader_note(&artifacts) {
         say("info", &format!("offline play: {note}"));
     }
-    let probe = swofty_core::offline::probe_cached(&store.root, &game, &artifacts)?;
+    let probe = swofty_core::offline::probe_cached(&store.root, game, &artifacts)?;
     if !probe.supported {
         bail!(
             "this F1 25 build is not supported by the offline play extension yet ({}); \
@@ -449,17 +482,20 @@ fn wrapper(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Result<Exi
     }
     say("info", &format!("game build supported: {}", probe.report));
     let journal = swofty_core::offline::journal_path(&store.root);
-    for note in swofty_core::offline::stage(&game, &artifacts, &journal)? {
+    let staged = swofty_core::offline::stage(game, &artifacts, &journal);
+    if let Err(swofty_core::Error::MissingStock { files, version }) = &staged {
+        swofty_core::stock::Report::missing(files.clone(), game, version.clone())
+            .write(&store.root)
+            .ok();
+    }
+    for note in staged? {
         say("info", &format!("offline play: {note}"));
     }
     say(
         "info",
         "staged offline play: EA AntiCheat is not started this session; multiplayer is unavailable",
     );
-    let backup = crate::saves::before_session(store, &profile, g);
-    let result = run_loop(store, args, &config, &request, &profile, g, installed);
-    crate::saves::after_session(store, backup.as_ref());
-    finish(session, result)
+    Ok(())
 }
 
 /// A launch the loader check refused before the game started.
@@ -771,6 +807,9 @@ fn play(
         .chain(library_path.map(|p| ("LD_LIBRARY_PATH", p)))
         .map(|(k, v)| (k.to_owned(), v)),
     );
+    if request.steam_saves_once {
+        game_env.insert(swofty_core::launcher_saves::OFF_ENV.to_owned(), "off".to_owned());
+    }
     if let Some(armed) = &request.netplay {
         for (name, value) in armed_env(armed) {
             game_env.entry(name.to_owned()).or_insert(value);
@@ -845,7 +884,7 @@ fn play(
     if mode.is_vr() {
         say("info", &format!("starting F1 25 in VR ({})", extra.join(" ")));
     }
-    let usage = swofty_core::usage::Session::start(&store.root);
+    let usage = swofty_core::usage::Session::start(&store.root, game);
     let new_watch =
         || AttachWatch::new(loader.clone(), before.clone(), Instant::now()).with_fallback(fallback.clone());
     let mut watch = placed_loader.then(new_watch);
@@ -926,9 +965,7 @@ fn play(
     end.write(&dir)?;
     std::fs::write(dir.join("exit_code"), format!("{code}\n"))?;
     std::fs::write(dir.join("game_end"), format!("{}\n", now_secs()))?;
-    if end.end == swofty_core::session::Ending::Crash {
-        note_known_problem(store, game, &dir);
-    }
+    note_known_problem(store, game, &dir, end.end == swofty_core::session::Ending::Crash);
     for g in game_processes()
         .into_iter()
         .filter(|g| descends_from(g.pid, std::process::id()))
@@ -939,10 +976,17 @@ fn play(
     Ok(code)
 }
 
-/// The known problem a crashed session matches, for the session log and Send
-/// Logs; the launcher shows the same diagnosis to the player.
-fn note_known_problem(store: &Store, game: &Path, dir: &Path) {
+/// The known problem a crashed session, or one that ended stuck, matches, for
+/// the session log and Send Logs; the launcher shows the same diagnosis to the
+/// player.
+fn note_known_problem(store: &Store, game: &Path, dir: &Path, crashed: bool) {
     let record = SessionRecord::read(dir);
+    if !crashed {
+        if let Some(d) = swofty_core::known_problems::stall(&record, Some(game), store) {
+            say("warning", &format!("known problem {}: {}", d.id, d.title));
+        }
+        return;
+    }
     match swofty_core::known_problems::crash(&record, Some(game), store) {
         Some(d) => say("crash", &format!("known problem {}: {}", d.id, d.title)),
         None => say("crash", "no known problem matches this crash"),
@@ -1527,7 +1571,9 @@ fn steam_launch_args(mode: LaunchMode) -> Vec<String> {
         .collect()
 }
 
-fn wrapper_command(proton: Option<&Path>, game: &Path, mode: LaunchMode) -> Vec<OsString> {
+/// The Steam command a direct launch hands the wrapper; `extra` goes to the
+/// game after the target, where Steam puts a launch option's arguments.
+fn wrapper_command(proton: Option<&Path>, game: &Path, mode: LaunchMode, extra: &[String]) -> Vec<OsString> {
     let mut out: Vec<OsString> = vec!["--".into()];
     if let Some(p) = proton {
         out.push(p.join("proton").into());
@@ -1535,10 +1581,11 @@ fn wrapper_command(proton: Option<&Path>, game: &Path, mode: LaunchMode) -> Vec<
     }
     out.push(game.join(GAME_EXE).into());
     out.extend(mode.args().iter().map(OsString::from));
+    out.extend(extra.iter().map(OsString::from));
     out
 }
 
-fn launch(store: &Store, game: &Path, direct: bool, mode: LaunchMode) -> Result<Wrapper> {
+fn launch(store: &Store, game: &Path, direct: bool, mode: LaunchMode, extra: &[String]) -> Result<Wrapper> {
     let install = steam::find_game();
     let wrapped = install
         .as_ref()
@@ -1557,7 +1604,7 @@ fn launch(store: &Store, game: &Path, direct: bool, mode: LaunchMode) -> Result<
             .arg("--game")
             .arg(game)
             .arg("--via-ea")
-            .args(wrapper_command(None, game, mode));
+            .args(wrapper_command(None, game, mode, extra));
         #[cfg(unix)]
         std::os::unix::process::CommandExt::process_group(&mut c, 0);
         let log = store.root.join(WRAPPER_LOG);
@@ -1584,14 +1631,16 @@ fn launch(store: &Store, game: &Path, direct: bool, mode: LaunchMode) -> Result<
             .arg("--game")
             .arg(game);
         if let Some(g) = install.as_ref().filter(|_| !cfg!(windows)) {
-            let tool = steam::compat_tool(&g.steam_root).unwrap_or_default();
-            let proton = [
-                g.steam_root.join("compatibilitytools.d").join(&tool),
-                g.library.join("steamapps/common").join(&tool),
-            ]
-            .into_iter()
-            .find(|p| p.join("proton").is_file())
-            .context("could not find the Proton build Steam uses for F1 25")?;
+            let tool = steam::compat_tool(&g.steam_root)
+                .context("Steam has no Proton build set for F1 25 and no default; pick one in the game's Properties > Compatibility")?;
+            let search = steam::find_proton(&g.steam_root, Some(&g.library), &tool);
+            let proton = search.found.with_context(|| {
+                let looked: Vec<String> = search.searched.iter().map(|p| p.display().to_string()).collect();
+                format!(
+                    "could not find the Proton build Steam uses for F1 25 ({tool}); looked in {}",
+                    looked.join(", ")
+                )
+            })?;
             let runtime =
                 [&g.library, &g.steam_root].map(|l| l.join("steamapps/common/SteamLinuxRuntime_sniper"));
             let runtime = runtime.iter().find(|p| p.is_dir()).unwrap_or(&runtime[0]);
@@ -1606,9 +1655,9 @@ fn launch(store: &Store, game: &Path, direct: bool, mode: LaunchMode) -> Result<
             .env("STEAM_COMPAT_APP_ID", STEAM_APP_ID.to_string())
             .env("SteamAppId", STEAM_APP_ID.to_string())
             .env("SteamGameId", STEAM_APP_ID.to_string());
-            c.args(wrapper_command(Some(&proton), game, mode));
+            c.args(wrapper_command(Some(&proton), game, mode, extra));
         } else {
-            c.args(wrapper_command(None, game, mode));
+            c.args(wrapper_command(None, game, mode, extra));
         }
         if which("steam-run") {
             let mut fhs = Command::new("steam-run");
@@ -2241,7 +2290,7 @@ mod tests {
     fn a_vr_launch_reaches_the_game_on_every_path() {
         let game = Path::new("/games/F1 25");
         let proton = Path::new("/steam/compatibilitytools.d/GE");
-        let direct = strings(&wrapper_command(Some(proton), game, LaunchMode::Vr));
+        let direct = strings(&wrapper_command(Some(proton), game, LaunchMode::Vr, &[]));
         assert_eq!(
             direct,
             [
@@ -2257,12 +2306,21 @@ mod tests {
         assert_eq!(LaunchMode::of(seen.game_args()), LaunchMode::Vr);
         assert_eq!(game_args(seen.game_args(), LaunchMode::Vr), ["-vr"]);
 
-        let flat = strings(&wrapper_command(Some(proton), game, LaunchMode::Normal));
+        let flat = strings(&wrapper_command(Some(proton), game, LaunchMode::Normal, &[]));
         assert!(parse_steam_command(&flat[1..]).game_args().is_empty());
 
-        let native = strings(&wrapper_command(None, game, LaunchMode::Vr));
+        let native = strings(&wrapper_command(None, game, LaunchMode::Vr, &[]));
         assert_eq!(native, ["--", "/games/F1 25/F1_25.exe", "-vr"]);
         assert_eq!(parse_steam_command(&native[1..]).game_args(), ["-vr"]);
+
+        let bench = ["-benchmark".to_owned(), "swofty_test.xml".to_owned()];
+        let passed = strings(&wrapper_command(Some(proton), game, LaunchMode::Normal, &bench));
+        let seen = parse_steam_command(&passed[1..]);
+        assert_eq!(seen.game_args(), bench, "game arguments reach the game");
+        assert_eq!(
+            game_args(seen.game_args(), LaunchMode::of(seen.game_args())),
+            bench
+        );
 
         assert_eq!(steam_launch_args(LaunchMode::Normal), ["-applaunch", "3059520"]);
         assert_eq!(
@@ -2379,6 +2437,11 @@ mod tests {
             "a build whose heartbeat stopped is silent"
         );
         drop(lock);
+        drop(
+            SessionLock::wait(&data, Duration::from_secs(10))
+                .unwrap()
+                .expect("a forked child still holds the dropped lock"),
+        );
         beat(&data, 2_000);
         assert!(
             silence.of(&log, &data) >= Duration::from_millis(30),
@@ -2549,7 +2612,7 @@ mod tests {
             "attached\n"
         );
         let notice = swofty_core::recovery::Notice::read(&m.store.root).unwrap();
-        assert!(notice.lines[0].ends_with("(5 change(s) for profile MODDED) that a session left open"));
+        assert!(notice.lines[0].ends_with("(6 change(s) for profile MODDED) that a session left open"));
     }
 
     #[test]

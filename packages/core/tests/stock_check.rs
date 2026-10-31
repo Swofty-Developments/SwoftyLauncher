@@ -175,6 +175,25 @@ fn ea_anticheat_launcher_files_drift_without_blocking() {
 }
 
 #[test]
+fn a_replaced_vr_runtime_is_reported_without_blocking() {
+    let f = Fixture::new("vr-runtime");
+    f.write("openvr_api.dll", b"opencomposite's openvr_api.dll");
+    f.write("F1_25.exe", b"stock exe bytes");
+    let d = depots(&[
+        ("openvr_api.dll", b"stock openvr"),
+        ("F1_25.exe", b"stock exe bytes"),
+    ]);
+    let c = stock::check(&f.data, &f.game, &d).unwrap();
+    assert!(c.foreign.is_empty(), "{:?}", c.foreign);
+    assert_eq!(c.vr.len(), 1, "the replaced vr runtime is reported, not blocked");
+    assert_eq!(c.vr[0].rel, "openvr_api.dll");
+    assert!(
+        f.baseline().stock_checked,
+        "a replaced vr runtime still lets the sweep finish"
+    );
+}
+
+#[test]
 fn a_stock_launcher_exe_with_a_stale_backup_is_not_foreign() {
     let f = Fixture::new("eac-stale-bak");
     f.write(EAC, b"stock exe");
@@ -398,4 +417,101 @@ fn missing_files_are_told_to_update_an_older_game_and_verify_a_current_one() {
     let back: stock::Report = serde_json::from_str(&serde_json::to_string(&r).unwrap()).unwrap();
     assert_eq!(back, r);
     assert_eq!(back.fix(), stock::Fix::Update);
+}
+
+#[test]
+fn a_missing_anti_cheat_launcher_with_no_backup_is_reported() {
+    let f = Fixture::new("eac-missing");
+    f.write(UI, b"stock ui");
+    let d = depots(&[(EAC, b"stock exe"), (UI, b"stock ui")]);
+    let c = stock::check(&f.data, &f.game, &d).unwrap();
+    assert_eq!(c.missing, vec![EAC.to_owned()]);
+    assert!(c.foreign.is_empty(), "{:?}", c.foreign);
+}
+
+#[test]
+fn a_parked_or_present_anti_cheat_launcher_is_not_missing() {
+    let f = Fixture::new("eac-not-missing");
+    let d = depots(&[(EAC, b"stock exe")]);
+    f.write(EAC, b"ea rewrote it");
+    assert!(stock::check(&f.data, &f.game, &d).unwrap().missing.is_empty());
+    std::fs::remove_file(f.game.dir.join(EAC)).unwrap();
+    f.write(&format!("{EAC}.bak"), b"stock exe");
+    assert!(stock::check(&f.data, &f.game, &d).unwrap().missing.is_empty());
+}
+
+fn replace_plan(f: &Fixture) -> swofty_core::install::Plan {
+    let src = f.root.join("src");
+    std::fs::create_dir_all(&src).unwrap();
+    std::fs::write(src.join("db"), b"modded db").unwrap();
+    swofty_core::install::Plan {
+        profile: "MODDED".into(),
+        data: std::collections::BTreeMap::from([(DB.to_owned(), src.join("db"))]),
+        added: Default::default(),
+        loader: Default::default(),
+        registry_override: false,
+    }
+}
+
+fn stale_baseline(f: &Fixture) {
+    f.write(DB, b"old recorded db");
+    f.record_first_sight(DB);
+}
+
+#[test]
+fn a_stale_baseline_whose_file_matches_steam_is_rerecorded_and_the_install_goes_on() {
+    let f = Fixture::new("stale-match");
+    stale_baseline(&f);
+    f.write(DB, b"stock db");
+    let d = depots(&[(DB, b"stock db")]);
+    let inst = swofty_core::install::Installer {
+        depot: &d,
+        ..swofty_core::install::Installer::new(&f.data, &f.game)
+    };
+    inst.apply(&replace_plan(&f)).unwrap();
+    let rec = &f.baseline().files[DB];
+    assert_eq!(rec.source, Source::Depot);
+    assert_eq!(std::fs::read(f.objects().path(&rec.sha256)).unwrap(), b"stock db");
+    assert_eq!(std::fs::read(f.game.dir.join(DB)).unwrap(), b"modded db");
+}
+
+#[test]
+fn a_file_that_differs_from_steam_and_the_baseline_stops_with_the_not_stock_error() {
+    let f = Fixture::new("stale-mismatch");
+    stale_baseline(&f);
+    f.write(DB, b"a mod copied in by hand");
+    let d = depots(&[(DB, b"stock db")]);
+    let log = std::cell::RefCell::new(Vec::new());
+    let out = |s: &str| log.borrow_mut().push(s.to_owned());
+    let inst = swofty_core::install::Installer {
+        depot: &d,
+        out: &out,
+        ..swofty_core::install::Installer::new(&f.data, &f.game)
+    };
+    let err = inst.apply(&replace_plan(&f)).unwrap_err();
+    assert!(matches!(&err, swofty_core::Error::NotStock(files) if files == &[DB.to_owned()]));
+    assert!(err.to_string().contains("verify the game files"));
+    let want = sha256_file(&f.game.dir.join(DB)).unwrap();
+    assert!(
+        log.borrow()
+            .iter()
+            .any(|l| l.contains(&want) && l.contains("size 23"))
+    );
+    assert_eq!(
+        std::fs::read(f.game.dir.join(DB)).unwrap(),
+        b"a mod copied in by hand",
+        "the file is left alone"
+    );
+    assert_eq!(f.baseline().files[DB].source, Source::FirstSight);
+}
+
+#[test]
+fn without_steams_list_the_conflict_is_still_refused() {
+    let f = Fixture::new("stale-unknown");
+    stale_baseline(&f);
+    f.write(DB, b"stock db");
+    let inst = swofty_core::install::Installer::new(&f.data, &f.game);
+    let err = inst.apply(&replace_plan(&f)).unwrap_err();
+    assert!(matches!(&err, swofty_core::Error::Leftovers(c) if c.len() == 1 && !c[0].owned));
+    assert_eq!(std::fs::read(f.game.dir.join(DB)).unwrap(), b"stock db");
 }

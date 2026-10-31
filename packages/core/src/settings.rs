@@ -41,6 +41,15 @@ pub struct SessionSettings {
     pub early_plugins: Vec<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub plugins: Vec<String>,
+    /// Present when the profile uses launcher saves: the core serves the game's profile save from `remote`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub launcher_saves: Option<SessionSaves>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct SessionSaves {
+    pub profile: String,
+    pub remote: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -134,6 +143,14 @@ pub struct SessionAddon {
     pub career_setup: Option<CareerSetup>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub hub_tab: Option<HubTab>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mfd: Option<SessionMfd>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct SessionMfd {
+    pub title: String,
+    pub rows: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -271,6 +288,10 @@ impl SessionSettings {
                     .collect(),
                 career_setup: m.career_setup.clone(),
                 hub_tab: m.hub_tab.clone(),
+                mfd: m.hud.as_ref().and_then(|h| h.mfd.as_ref()).map(|f| SessionMfd {
+                    title: f.title.clone().unwrap_or_else(|| m.name.clone()),
+                    rows: f.rows.clone(),
+                }),
             })
             .collect();
         let out = Self {
@@ -285,6 +306,7 @@ impl SessionSettings {
             owned_items: Vec::new(),
             early_plugins,
             plugins: Vec::new(),
+            launcher_saves: None,
         };
         out.check_commands()?;
         Ok(out)

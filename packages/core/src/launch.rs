@@ -51,6 +51,9 @@ pub enum Cause {
     ClosedEarly { after: f64 },
     /// Windows refused to start one of Swofty's programs.
     Blocked(Block),
+    /// An EA app repair replaced offline play's file, so the game started
+    /// without mods; the session put the file back.
+    EaRepaired,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -95,6 +98,7 @@ impl Failure {
             Cause::SecondCopy { .. } => "F1 25 was opened twice",
             Cause::ClosedEarly { .. } => "F1 25 closed as it started",
             Cause::Blocked(b) => b.title(),
+            Cause::EaRepaired => "The EA app repaired F1 25",
         }
     }
 
@@ -107,6 +111,9 @@ impl Failure {
             Cause::SecondCopy { .. } => "another copy of F1 25 was running, so the modded copy closed".into(),
             Cause::ClosedEarly { .. } => "F1 25 closed itself before its window opened".into(),
             Cause::Blocked(b) => b.headline(),
+            Cause::EaRepaired => {
+                "the EA app's repair replaced offline play's file, so F1 25 started without mods".into()
+            }
         }
     }
 
@@ -134,6 +141,14 @@ impl Failure {
                  Send Logs to Developers right after it happens."
             ),
             Cause::Blocked(b) => b.text(),
+            Cause::EaRepaired => {
+                "The EA app's repair replaced offline play's file in the F1 25 folder, so F1 25 \
+                 started without mods. The launcher put the file back. Close F1 25, then press Play in the \
+                 launcher again. If the EA app asks to repair F1 25 again, it checks that file on this PC \
+                 and modded play can't start through it: play the vanilla profile instead, which leaves \
+                 the file as the EA app installed it."
+                    .into()
+            }
         }
     }
 }
@@ -395,6 +410,33 @@ mod tests {
         let text = std::fs::read_to_string(Failure::path(&root)).unwrap();
         assert!(text.contains("\"kind\": \"blocked\""), "{text}");
         assert!(text.contains("\"code\": 4551"), "{text}");
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn an_ea_app_repair_says_what_to_do_and_round_trips() {
+        let root = std::env::temp_dir().join(format!("swofty-launch-ea-repaired-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("state")).unwrap();
+        let f = Failure {
+            at: 1_792_594_036.5,
+            cause: Cause::EaRepaired,
+        };
+        assert_eq!(f.title(), "The EA app repaired F1 25");
+        assert!(f.text().contains("started without mods"), "{}", f.text());
+        assert!(
+            f.text().contains("press Play in the launcher again."),
+            "{}",
+            f.text()
+        );
+        assert!(
+            f.text().contains("play the vanilla profile instead"),
+            "{}",
+            f.text()
+        );
+        f.write(&root).unwrap();
+        assert_eq!(Failure::read(&root), Some(f));
+        let text = std::fs::read_to_string(Failure::path(&root)).unwrap();
+        assert!(text.contains("\"kind\": \"ea_repaired\""), "{text}");
         std::fs::remove_dir_all(&root).ok();
     }
 }

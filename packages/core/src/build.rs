@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, BTreeSet, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
@@ -8,10 +8,12 @@ use swofty_formats::gvdb::Gvdb;
 use crate::activation::db::{Registry, TrackHost, activate};
 use crate::activation::ers::{self, ErsMap, build_ers};
 use crate::activation::grid::grid_size;
+use crate::activation::handling::{self, HandlingMap};
 use crate::activation::place::{
-    PlaceInput, SLOTS, place, slot_asset_group, slot_asset_root, slot_file, track_group,
+    PlaceInput, SLOTS, layer_worlds, missing_worlds, place, slot_asset_group, slot_asset_root, slot_file,
+    track_group,
 };
-use crate::activation::ui::{MapUi, build_ui, plan_lists, stamp as ui_stamp};
+use crate::activation::ui::{Kept, MapUi, build_ui, plan_lists, stamp as ui_stamp};
 use crate::asset::{
     AssetOp, FileKind, FileOp, GroupOp, ItemOp, LangOp, Op, OpFile, Origin, Root, Source, TrackOp,
 };
@@ -19,7 +21,7 @@ use crate::baseline::{Baseline, Objects, hex, sha256_file, sha256_opt};
 use crate::builtin::{CORE_DB, CORE_ID, LOADER_ENV, core_db_ops, loader_dir, loader_files};
 use crate::conflicts::Report;
 use crate::dbedit::driver_manager;
-use crate::erpbuild::{ErpBuild, Resized, SliceMerge, reads, unsupported, writes};
+use crate::erpbuild::{ErpBuild, Held, Resized, SliceMerge, reads, unsupported, writes};
 use crate::install::{Game, LOADER_DIR, Plan};
 use crate::launcher::BuildCx;
 use crate::manifest::{AddonManifest, PassValue, PostFx, Strength, relative_inside};
@@ -28,13 +30,15 @@ use crate::multiplayer::fingerprint::{self, OutputBuilder};
 use crate::owned;
 use crate::placed::Placed;
 use crate::planner::{
-    Conflict, Features, Kind, Planner, Route, Target, load_features, stock_removals_line,
+    Conflict, Features, Kind, Planner, Route, Target, kept_lists_line, load_features, stock_removals_line,
     track_removals_line, waiting_lines,
 };
 use crate::profile::Profile;
 use crate::registry::Host;
 use crate::resolver::resolve;
-use crate::runtime::{Prebuilt, Runtime, db_edits, overlay_fits, runtime_record_room};
+use crate::runtime::{
+    Prebuilt, Runtime, db_edits, overlay_fits, runtime_loaded_estimate, runtime_record_room,
+};
 use crate::settings::{
     SessionMod, SessionSettings, SessionUi, render_ops, render_text, screen_file, screens,
 };
@@ -66,6 +70,8 @@ pub struct Built {
     pub conflicts: Vec<Conflict>,
     pub waiting: Vec<Op>,
     pub report: Report,
+    /// Each addon's added rows with a stat id, as `<table>.<row>/<label>` to the id the build gave.
+    pub row_ids: BTreeMap<String, BTreeMap<String, i64>>,
 }
 
 /// The recorded originals of the last baseline read, by its path and when it
@@ -106,6 +112,25 @@ pub fn original(data: &Path, game: &Game, rel: &str) -> PathBuf {
         .path(sha256),
         None => game.dir.join(rel),
     }
+}
+
+/// Stop a build whose record of original game files names backups that are
+/// gone, and send the player through the setup again, which starts the record
+/// over.
+fn check_originals(data: &Path, game: &Game) -> Result<()> {
+    let objects = Objects {
+        root: data.join("baseline/objects"),
+    };
+    let missing: Vec<String> = originals(data, game)
+        .iter()
+        .filter(|(_, sha256)| !objects.has(sha256))
+        .map(|(rel, _)| rel.clone())
+        .collect();
+    if missing.is_empty() {
+        return Ok(());
+    }
+    crate::setup::redo(data)?;
+    Err(Error::Other(crate::setup::backups_missing(&missing)))
 }
 
 pub type TrackPackages = (Vec<(PathBuf, TrackPackage, Origin)>, Vec<(Origin, Unusable)>);
@@ -263,15 +288,29 @@ fn render_file(
     p: &Profile,
     hasher: &mut Sha256,
 ) -> Result<OpFile> {
-    let json = |source| Error::Json {
+    let doc = render_doc(path, m, p)?;
+    hasher.update(serde_json::to_vec(&doc).expect("serialisable"));
+    OpFile::from_value(doc, kind).map_err(json_at(path))
+}
+
+/// One of an addon's op files as a build reads it, with its option
+/// templating filled from the profile's settings.
+pub fn read_op_file(path: &Path, kind: FileKind, m: &AddonManifest, p: &Profile) -> Result<OpFile> {
+    OpFile::from_value(render_doc(path, m, p)?, kind).map_err(json_at(path))
+}
+
+fn render_doc(path: &Path, m: &AddonManifest, p: &Profile) -> Result<serde_json::Value> {
+    let raw = std::fs::read(path).map_err(io_err(path))?;
+    let mut doc = serde_json::from_slice(&raw).map_err(json_at(path))?;
+    render_ops(&mut doc, m, p)?;
+    Ok(doc)
+}
+
+fn json_at(path: &Path) -> impl FnOnce(serde_json::Error) -> Error + '_ {
+    move |source| Error::Json {
         path: path.to_owned(),
         source,
-    };
-    let raw = std::fs::read(path).map_err(io_err(path))?;
-    let mut doc: serde_json::Value = serde_json::from_slice(&raw).map_err(json)?;
-    render_ops(&mut doc, m, p)?;
-    hasher.update(serde_json::to_vec(&doc).expect("serialisable"));
-    OpFile::from_value(doc, kind).map_err(json)
+    }
 }
 
 /// A DB Editor package's ops, generated from its `dbedit.json` rather than
@@ -385,6 +424,8 @@ struct Saved {
     waiting: Vec<Op>,
     #[serde(default)]
     report: Option<Report>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    row_ids: BTreeMap<String, BTreeMap<String, i64>>,
 }
 
 impl Saved {
@@ -411,6 +452,7 @@ impl Saved {
             conflicts: built.conflicts.clone(),
             waiting: built.waiting.clone(),
             report: Some(built.report.clone()),
+            row_ids: built.row_ids.clone(),
         })
     }
 
@@ -470,6 +512,7 @@ impl Saved {
         built.report.built_at = crate::conflicts::now();
         built.conflicts = self.conflicts;
         built.waiting = self.waiting;
+        built.row_ids = self.row_ids;
         Ok(())
     }
 }
@@ -565,6 +608,75 @@ pub fn named(store: &Store, game: &Path, e: Error) -> Error {
     e
 }
 
+/// What to do when Windows refused Swofty a file in the game folder `game` or
+/// in its data folder `data`; None for any other error.
+pub fn refused_fix(data: &Path, game: &Path, e: &Error) -> Option<String> {
+    let (Error::Io { path, source } | Error::Formats(swofty_formats::Error::IoAt { path, source })) = e
+    else {
+        return None;
+    };
+    let refused = source.kind() == std::io::ErrorKind::PermissionDenied
+        || (cfg!(windows) && source.raw_os_error() == Some(32));
+    if !refused {
+        return None;
+    }
+    if path.starts_with(game) {
+        return Some(format!(
+            "Windows refused to let Swofty change files in {}; run Swofty Launcher as administrator, or move F1 25 \
+             to a folder outside Program Files",
+            game.display()
+        ));
+    }
+    path.starts_with(data).then(|| {
+        format!(
+            "Windows refused to let Swofty change its own files in {data}, which an antivirus does while it scans \
+             them; add {data} and the F1 25 folder {game} as exclusions in your antivirus, then try again",
+            data = data.display(),
+            game = game.display()
+        )
+    })
+}
+
+/// The names of the addons in `order` the core has registry records of to apply at boot (data
+/// files or `SWOFTY_REGISTER` registrations), whatever route the database takes.
+fn registering_addons<'a>(
+    order: &[String],
+    std16: &'a BTreeMap<String, crate::stdlib::deps::Std>,
+) -> Vec<&'a str> {
+    order
+        .iter()
+        .filter_map(|id| std16.get(id))
+        .filter(|s| s.registers())
+        .map(|s| s.name.as_str())
+        .collect()
+}
+
+/// The build line for the addons whose registry records turn the early stage on.
+fn early_stage_line(names: &[&str]) -> String {
+    format!(
+        "registry: the core loads at the early stage for the registry records of {}",
+        names.join(", ")
+    )
+}
+
+/// The `registry.json` of each addon whose `replaced_operations` the core in
+/// `loader` applies instead: the core lists the rows feature and the addon has
+/// data files, which reach the core through the registry index.
+fn replaced_operations<'a>(
+    std16: &'a BTreeMap<String, crate::stdlib::deps::Std>,
+    loader: Option<&Path>,
+) -> BTreeMap<&'a str, &'a crate::stdlib::manifest::RegistryManifest> {
+    if !loader.is_some_and(crate::stdlib::manifest::core_applies_rows) {
+        return BTreeMap::new();
+    }
+    std16
+        .iter()
+        .filter(|(_, s)| !s.data_files.is_empty())
+        .filter_map(|(id, s)| Some((id.as_str(), s.registry.as_ref()?)))
+        .filter(|(_, r)| !r.replaced_operations.is_empty())
+        .collect()
+}
+
 /// A `checking` build gives addon build hooks a host that lists addons but
 /// cannot install, remove, turn on or move them.
 pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool) -> Result<Built> {
@@ -579,6 +691,14 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         }
     }
     let resolved = resolve(&p, &addons)?;
+    let mut std16 = match p.is_vanilla() {
+        true => BTreeMap::new(),
+        false => crate::stdlib::deps::read_all(store, &addons),
+    };
+    let deps = crate::stdlib::deps::for_order(profile, &resolved.order, &addons, &std16);
+    if let Some(stop) = deps.stop_text() {
+        return Err(Error::Dependencies(stop));
+    }
     let mut built = Built {
         order: resolved.order.clone(),
         warnings: skipped
@@ -591,17 +711,35 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         },
         ..Built::default()
     };
+    built
+        .warnings
+        .extend(deps.of(crate::stdlib::deps::Level::Warn).map(|f| f.line()));
+    built.lines.extend(
+        deps.of(crate::stdlib::deps::Level::Hint)
+            .map(|f| format!("registry: {}", f.line())),
+    );
+    built
+        .lines
+        .extend(deps.notes.iter().map(|n| format!("registry: {n}")));
+    if !p.is_vanilla() {
+        let careers = crate::stdlib::careers::read(&crate::stdlib::careers::data_path(&store.root));
+        if let Some(line) = crate::stdlib::careers::play_line(&careers, &resolved.order, &addons) {
+            built.warnings.push(line);
+        }
+    }
     built.report = Report {
         profile: profile.into(),
         built_at: crate::conflicts::now(),
         pairs: Vec::new(),
         order: p.enabled().map(str::to_owned).collect(),
         stock_removals: BTreeMap::new(),
+        kept_lists: BTreeMap::new(),
     };
     if p.is_vanilla() {
         built.plan = Plan::vanilla();
         return Ok(built);
     }
+    check_originals(&store.root, game)?;
     let _lock = lock(store, profile)?;
     crate::now_doing("reading the addons");
     let mut hasher = Sha256::new();
@@ -720,6 +858,8 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     }
     let mut head_puts = crate::heads::Puts::default();
     let mut outputs = BTreeMap::new();
+    let replaced = replaced_operations(&std16, loader_dir().as_deref());
+    let mut left_to_core = false;
     for id in &resolved.order {
         let m = &addons[id];
         let mut out = OutputBuilder::default();
@@ -751,6 +891,15 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         }
         for (kind, rel) in m.operations.op_files() {
             if package.is_some() && kind == FileKind::Database {
+                continue;
+            }
+            if replaced.get(id.as_str()).is_some_and(|r| r.replaces(rel)) {
+                left_to_core = true;
+                hasher.update(format!("replaced {rel};"));
+                built.lines.push(format!(
+                    "registry: {}: {rel} is applied by the core from the addon's registry records",
+                    m.name
+                ));
                 continue;
             }
             let file = render_file(&dir.join(rel), kind, m, &p, &mut hasher)?;
@@ -875,6 +1024,16 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         }
         outputs.insert(id.clone(), out.finish());
     }
+    // The core applies registry records at boot only when it loads at the early stage, on the runtime and the
+    // file database route alike.
+    let registering = match loader_dir().is_some() {
+        true => registering_addons(&resolved.order, &std16),
+        false => Vec::new(),
+    };
+    if !registering.is_empty() {
+        built.lines.push(early_stage_line(&registering));
+    }
+    runtime.assets.early_stage |= left_to_core || !registering.is_empty();
     if head_puts.pending() {
         let path = original(&store.root, game, GVDB);
         let stock = crate::heads::labels(&Gvdb::parse(&std::fs::read(&path).map_err(io_err(&path))?)?);
@@ -891,7 +1050,12 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             planner.push(op);
         }
     }
-    let (tracks, left_out) = track_packages(store, planner.take_tracks())?;
+    let (mut tracks, mut left_out) = track_packages(store, planner.take_tracks())?;
+    let recorded = crate::tracks::with_records(&resolved.order, &std16);
+    let (more, unusable) = crate::tracks::record_packages(store, &resolved.order, &std16, &tracks);
+    tracks.extend(more);
+    left_out.extend(unusable);
+    crate::tracks::keep_track_folders(store, &tracks, &mut std16);
     for (origin, why) in &left_out {
         let name = addons
             .get(&origin.addon)
@@ -944,6 +1108,26 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         hasher.update(format!("{}|{:?}", meta.len(), meta.modified().ok()));
     }
     let resolve = |rel: &str| original(&store.root, game, rel);
+    let addon_dir = |id: &str| store.addons_dir().join(id);
+    let (handling_maps, handling_notes) = {
+        let dirs: Vec<(String, PathBuf)> = resolved
+            .order
+            .iter()
+            .map(|id| (id.clone(), addon_dir(id)))
+            .collect();
+        let options = |addon: &str, name: &str| {
+            let m = addons.get(addon)?;
+            m.options.iter().find(|o| o.id == name).map(|o| p.option(m, o))
+        };
+        handling::read_maps(&dirs, &options)
+    };
+    built
+        .warnings
+        .extend(handling_notes.iter().map(|n| format!("handling: {n}")));
+    if !handling_maps.is_empty() {
+        let sources = handling::sources(&handling_maps, &resolve, &addon_dir);
+        hasher.update(handling::stamp(&handling_maps, &sources)?);
+    }
     let ui_maps: Vec<MapUi> = maps
         .iter()
         .zip(&slots)
@@ -960,6 +1144,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     if !ui_maps.is_empty() {
         hasher.update(ui_stamp(&ui_maps, &resolve)?);
     }
+    let record_ui = record_ui_lists(&ui_maps, &tracks, &recorded, &resolve, &mut built.warnings);
     let mut caches = Vec::new();
     let mut session = store.session_settings(profile)?;
     session.set_maps(maps.iter().map(|(_, pkg)| pkg));
@@ -977,6 +1162,38 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     hasher.update(sha256_file(&db_src)?);
     let order: Vec<&AddonManifest> = resolved.order.iter().map(|id| &addons[id]).collect();
     hash_unread(&mut hasher, store, game, &order, planner.erp_ops(), &resolve)?;
+    let std_index = loader_dir()
+        .is_some()
+        .then(|| {
+            crate::stdlib::index::Index::plan(profile, &resolved.order, &addons, &std16, &store.addons_dir())
+        })
+        .flatten();
+    if let Some(placed) = &std_index {
+        hasher.update(crate::stdlib::index::Index::stamp(placed)?);
+        for id in &resolved.order {
+            for path in std16.get(id).into_iter().flat_map(|s| &s.files.missing) {
+                built.warnings.push(format!(
+                    "{}: its registry data names {path}, which isn't a file or folder inside the addon; the game \
+                     reports it missing",
+                    addons[id].name
+                ));
+            }
+        }
+    }
+    let room_asked = std16
+        .values()
+        .any(|s| resolved.order.contains(&s.id) && s.is_std())
+        .then(|| {
+            crate::stdlib::room::asked(
+                crate::stdlib::reports::Room::read(&store.root, Some(&game.dir)).as_ref(),
+                profile,
+                &resolved.order,
+            )
+        })
+        .flatten();
+    if let Some(asked) = room_asked {
+        hasher.update(format!("room {asked};"));
+    }
     built.buildhash = hex(&hasher.finalize())[..16].to_owned();
     built.overlay = store.overlay_dir(profile, &built.buildhash);
     let (lines_at, warnings_at) = (built.lines.len(), built.warnings.len());
@@ -985,7 +1202,8 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         built.report.order = p.enabled().map(str::to_owned).collect();
         crate::write_json(&crate::conflicts::path(store, profile), &built.report)?;
         if !checking {
-            fingerprint::record_outputs(store, profile, outputs).ok();
+            fingerprint::record_outputs(store, profile, with_row_ids(outputs, &built.row_ids)).ok();
+            track_files(store, game, &mut built, &tracks, &slots, &recorded, &record_ui);
         }
         return Ok(built);
     }
@@ -1001,11 +1219,21 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         plan_lists(&ui_maps, &resolve)?.0
     };
     let mut stock_removals = BTreeMap::new();
-    if !maps.is_empty() || planner.has_db() {
+    let mut kept_lists = BTreeMap::new();
+    let mut udp_ids = crate::udp_ids::UdpIds::default();
+    let mut id_aliases = crate::row_ids::IdAliases::default();
+    if !maps.is_empty() || planner.has_db() || room_asked.is_some() {
         let shipped = std::fs::read(&db_src).map_err(io_err(&db_src))?;
         let mut db = Gvdb::parse(&shipped)?;
         let stock: HashSet<u64> = db.records.iter().map(|r| r.key).collect();
-        for ((_, pkg), slot) in maps.iter().zip(&slots) {
+        for (((_, pkg), slot), (_, _, origin)) in maps.iter().zip(&slots).zip(&tracks) {
+            if recorded.contains(&origin.addon) {
+                built.lines.push(format!(
+                    "{}: files only; its track record adds its rows in game",
+                    pkg.track_code
+                ));
+                continue;
+            }
             let names = slot.map(|s| (slot_asset_group(s), format!("{s}.assetgroup")));
             let root = slot_asset_root();
             let route = match &names {
@@ -1038,7 +1266,23 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         };
         let staged = (planner.route(Kind::Db) == Route::Runtime && planner.has_db()).then(|| db.clone());
         let mut db_report = crate::ops::DbReport::default();
+        planner.keep_entrant_lists(crate::entrant_lists::StockLists::new(&shipped_db));
+        let row_ids_lock = crate::row_ids::lock(&store.root)?;
+        let last = crate::row_ids::last_build(&store.overlays_dir(profile), &built.buildhash, GVDB);
+        let (mut row_ids, row_id_warnings) =
+            crate::row_ids::Store::load(&store.root, Some(&game.dir), profile, last);
+        built.warnings.extend(row_id_warnings);
+        built.lines.extend(row_ids.recover(&store.sessions_dir()).lines);
+        planner.keep_row_ids(row_ids);
         let added = planner.apply_db_report(&mut db, &stock, &tracked, &mut db_report)?;
+        if let Some(ids) = planner.take_row_ids() {
+            id_aliases = ids.id_aliases();
+            built.lines.extend(ids.summary());
+            if !checking {
+                ids.save(&store.root)?;
+            }
+        }
+        drop(row_ids_lock);
         built.lines.extend(db_report.lines);
         built.warnings.extend(db_report.warnings);
         built.warnings.extend(planner.take_skipped());
@@ -1057,6 +1301,26 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         if !left_codes.is_empty() {
             let weekends = crate::tracks::restore_weekends(&mut db, &shipped_db, &left_codes);
             built.warnings.extend(weekends);
+        }
+        let in_game: Vec<&str> = tracks
+            .iter()
+            .filter(|(_, _, o)| recorded.contains(&o.addon))
+            .map(|(_, p, _)| p.track_code.as_str())
+            .collect();
+        let missing = crate::tracks::keep_track_refs(&mut db, &shipped_db, &in_game, &left_codes);
+        if !missing.is_empty() {
+            let codes = missing.iter().map(|m| m.track.clone()).collect();
+            let adders = crate::tracks::adders(store, &codes);
+            let name = |id: &str| addons.get(id).map_or(id, |m| m.name.as_str()).to_owned();
+            for m in &missing {
+                let adds = adders
+                    .get(&m.track)
+                    .filter(|id| !left_codes.contains(&m.track.as_str()) && !resolved.order.contains(*id));
+                let by = planner.record_writer(m.key).map(name);
+                built
+                    .warnings
+                    .push(m.line(by.as_deref(), adds.map(|id| name(id)).as_deref()));
+            }
         }
         if let Ok(cat) = crate::dbedit::Catalog::open(store, game) {
             for t in crate::dbedit::rows::trim_row_counts(&cat, &mut db) {
@@ -1081,10 +1345,17 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             let name = addons.get(&id).map_or(id.as_str(), |m| m.name.as_str());
             built.warnings.push(track_removals_line(name, n));
         }
+        kept_lists = planner.take_kept_lists();
+        for (id, lists) in &kept_lists {
+            let name = addons.get(id).map_or(id.as_str(), |m| m.name.as_str());
+            built.warnings.push(kept_lists_line(name, lists));
+        }
         let mut copies = planner.take_copies();
         for c in &mut copies {
             c.quiet = c.addon == CORE_ID;
         }
+        built.row_ids = added_row_ids(&db, &copies);
+        udp_ids = crate::udp_ids::build(&db, &copies);
         let addon_name = |id: &str| addons.get(id).map_or(id, |m| m.name.as_str()).to_owned();
         let side = crate::dbedit::deps::check(&db, &copies, &addon_name);
         built.warnings.extend(side.warnings);
@@ -1106,21 +1377,39 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             session.owned_items = found.items;
         }
         let cars = grid_size(&db);
+        let worlds = layer_worlds(&db);
+        let mut on_file = true;
         if let Some(staged) = staged {
-            let room = runtime_record_room(staged.records.len());
-            let created = db.records.len().saturating_sub(staged.records.len());
+            let loaded = runtime_loaded_estimate(staged.records.len());
+            let room = runtime_record_room(loaded);
+            let known: HashSet<u64> = staged.records.iter().map(|r| r.key).collect();
+            let created = db.records.iter().filter(|r| !known.contains(&r.key)).count();
+            let route = crate::stdlib::room::route(loaded, created, room_asked);
             match db_edits(&staged, &db) {
                 Ok(_) if created > room => built.lines.push(format!(
                     "database: built into the game file; the addons add {created} record(s) and the game's \
                      database takes {room} more once it has loaded"
                 )),
-                Ok(edits) => {
+                Ok(edits) if route == crate::stdlib::room::Route::Runtime => {
                     runtime.db(edits);
                     db = staged;
+                    on_file = false;
                 }
+                Ok(_) => {}
                 Err(why) => built
                     .warnings
                     .push(format!("database: built into the game file; {why}")),
+            }
+        }
+        if let Some(asked) = room_asked.filter(|_| on_file)
+            && let crate::stdlib::room::Route::File { pad_to, short } =
+                crate::stdlib::room::file_route(db.records.len(), asked)
+        {
+            let added = crate::stdlib::room::pad(&mut db, pad_to);
+            if added > 0 || short > 0 {
+                built
+                    .lines
+                    .push(crate::stdlib::room::line(pad_to, added, asked, short));
             }
         }
         let bytes = db.to_bytes();
@@ -1135,6 +1424,9 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         }
         for ((dir, pkg, origin), slot) in tracks.iter().zip(&slots) {
             let slot_original = slot.map(|s| original(&store.root, game, &slot_file(s)));
+            let track_worlds = missing_worlds(&worlds, &pkg.track_code, |group| {
+                planner.last_writer(&[Target::Group(group.to_owned())]).is_some()
+            });
             let placement = place(
                 &PlaceInput {
                     pkg,
@@ -1142,6 +1434,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                     game: &game.dir,
                     slot: slot.zip(slot_original.as_deref()),
                     cars,
+                    worlds: &track_worlds,
                 },
                 &store.root.join("cache/maps").join(&pkg.track_code),
             )?;
@@ -1223,9 +1516,11 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             }
         }
     }
+    let mut menu_kept = Kept::new();
     if !ui_maps.is_empty() {
         let ui = build_ui(&ui_maps, &resolve, &store.root.join("cache/menus"))?;
         caches.push(ui.dir.clone());
+        menu_kept = ui.kept;
         built
             .warnings
             .extend(ui.notes.iter().map(|n| format!("menus: {n}")));
@@ -1250,8 +1545,30 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             values: &pkg.ers,
         })
         .collect();
+    let mut handled: BTreeMap<String, PathBuf> = BTreeMap::new();
+    if handling_maps
+        .iter()
+        .any(|m| matches!(m.target, handling::Target::Stock(_)))
+    {
+        let hb = handling::build_stock(&handling_maps, &resolve, &store.root.join("cache/handling"))?;
+        caches.extend(hb.dir.clone());
+        built.lines.extend(hb.lines);
+        handled = hb.replaced;
+    }
+    let current = |rel: &str| handled.get(rel).cloned().unwrap_or_else(|| resolve(rel));
+    let ers_cars = |rel: &str| !ers_maps.is_empty() && ers::is_car_archive(rel);
+    for (rel, src) in &handled {
+        if !ers_cars(rel) && built.plan.data.insert(rel.clone(), src.clone()).is_some() {
+            return Err(Error::Map(format!("{rel} is replaced twice")));
+        }
+    }
     if !ers_maps.is_empty() {
-        let ers = build_ers(&ers_maps, &game.dir, &resolve, &store.root.join("cache/ers"))?;
+        let ers = build_ers(&ers_maps, &game.dir, &current, &store.root.join("cache/ers"))?;
+        for (rel, src) in &handled {
+            if ers_cars(rel) && !ers.replaced.contains_key(rel) {
+                built.plan.data.insert(rel.clone(), src.clone());
+            }
+        }
         caches.extend(ers.dir.clone());
         built.lines.push(format!(
             "ers: {} handling file(s) in {} car archive(s) get the tracks' settings",
@@ -1304,6 +1621,27 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 .cloned()
                 .unwrap_or_else(|| resolve(rel))
         };
+        let mut absent: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+        erp_ops.retain(|op| {
+            let AssetOp::Erp(e) = &op.op else {
+                return true;
+            };
+            let gone: Vec<&str> = reads(e)
+                .into_iter()
+                .filter(|rel| relative_inside(rel) && !base(rel).is_file())
+                .collect();
+            if gone.is_empty() {
+                return true;
+            }
+            absent
+                .entry(op.origin.addon.clone())
+                .or_default()
+                .extend(gone.into_iter().map(str::to_owned));
+            false
+        });
+        for (id, rels) in &absent {
+            built.warnings.push(missing_archives(&name(id), rels));
+        }
         for (rel, put) in &puts {
             if erp_ops
                 .iter()
@@ -1316,6 +1654,9 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             }
         }
         let mut erps = ErpBuild::new(&base);
+        for (erp, resource) in menu_kept.keys() {
+            erps.keep(erp, resource);
+        }
         let runtime_route = planner.route(Kind::Erp) == Route::Runtime;
         // Every origin that writes, in load order: the later wins.
         let mut ranks: Vec<String> = Vec::new();
@@ -1336,10 +1677,16 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                     source,
                 }) if runtime_route => {
                     let path = resolve(source)?;
-                    let stale =
-                        crate::erpbuild::stale_stats_in(&swofty_formats::erp::ErpFile::open(&path)?)?.len();
+                    let file = swofty_formats::erp::ErpFile::open(&path)?;
+                    let stale = crate::erpbuild::stale_stats_in(&file)?.len();
+                    let menus = file
+                        .erp
+                        .resources
+                        .iter()
+                        .any(|r| targets.iter().any(|t| erps.keeps(t, &r.name)));
                     let fits = match merged_later(&slices, at, targets, &path)? {
                         Some(why) => Err(why),
+                        None if menus => Err("it carries the track menu pictures".to_owned()),
                         None if targets.iter().any(|t| !crate::erpbuild::served_at_runtime(t)) => {
                             Err("the in-game loader patches only archives under 2025_asset_groups".to_owned())
                         }
@@ -1397,6 +1744,29 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 ));
             }
         }
+        let keeper = |h: &Held| {
+            let codes = menu_kept.get(&(h.erp.clone(), h.resource.clone()))?;
+            tracks
+                .iter()
+                .filter(|(_, p, _)| codes.contains(&p.track_code))
+                .map(|(_, _, o)| o)
+                .max_by_key(|o| rank(o))
+                .cloned()
+        };
+        let origin = |s: &str| {
+            erp_ops
+                .iter()
+                .find(|op| op.origin.to_string() == s)
+                .map(|op| op.origin.clone())
+        };
+        keep_menus(
+            &mut built,
+            &mut planner,
+            erps.take_held(),
+            &keeper,
+            &origin,
+            &name,
+        );
         for n in erps.take_notes() {
             built.lines.push(format!("erp: {n}"));
         }
@@ -1480,7 +1850,15 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     }
     cancel()?;
     crate::now_doing("placing files");
-    put_files(&mut built, store, game, mipmaps, file_ops, &built_over, &ers_maps)?;
+    put_files(
+        &mut built,
+        store,
+        game,
+        mipmaps,
+        file_ops,
+        &built_over,
+        (&ers_maps, &handling_maps),
+    )?;
     match loader_dir() {
         Some(dir) => {
             built.plan.loader = loader_files(&dir)?;
@@ -1548,6 +1926,61 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 }
             }
             session.plugins = plugins.dlls;
+            if !udp_ids.is_empty() {
+                let rel = format!("{LOADER_DIR}/{}", crate::udp_ids::FILE);
+                let src = built.overlay.join(crate::udp_ids::FILE);
+                std::fs::create_dir_all(&built.overlay).map_err(io_err(&built.overlay))?;
+                crate::write_json(&src, &udp_ids)?;
+                built.plan.loader.insert(rel, src);
+                built.lines.push(format!(
+                    "udp: telemetry reports {} added team id(s) and {} added driver id(s) under stock ids",
+                    udp_ids.teams.len(),
+                    udp_ids.drivers.len()
+                ));
+            }
+            if !id_aliases.is_empty() {
+                let rel = format!("{LOADER_DIR}/{}", crate::row_ids::ALIASES_FILE);
+                let src = built.overlay.join(crate::row_ids::ALIASES_FILE);
+                std::fs::create_dir_all(&built.overlay).map_err(io_err(&built.overlay))?;
+                id_aliases.write(&src)?;
+                built.plan.loader.insert(rel, src);
+                let n: usize = id_aliases.tables.values().map(|t| t.len()).sum();
+                built.lines.push(format!(
+                    "database: {LOADER_DIR}/{} maps {n} earlier row id(s) to the ids the rows have now, so saves made under the earlier ids load",
+                    crate::row_ids::ALIASES_FILE
+                ));
+            }
+            if let Some(placed) = &std_index {
+                let index = built.overlay.join("registry-index.json");
+                std::fs::create_dir_all(&built.overlay).map_err(io_err(&built.overlay))?;
+                std::fs::write(&index, placed.index.to_json()).map_err(io_err(&index))?;
+                for (rel, src) in placed
+                    .files
+                    .iter()
+                    .map(|(r, s)| (r.clone(), s.clone()))
+                    .chain([(crate::stdlib::index::PATH.to_owned(), index)])
+                {
+                    match built.plan.loader.insert(rel.clone(), src.clone()) {
+                        Some(before) if before != src => {
+                            return Err(Error::Other(format!("{rel} is placed twice")));
+                        }
+                        _ => {}
+                    }
+                }
+                let data: usize = placed.index.addons.iter().map(|a| a.data.len()).sum();
+                let named: usize = placed
+                    .index
+                    .addons
+                    .iter()
+                    .filter_map(|a| std16.get(&a.id))
+                    .map(|s| s.files.files.len())
+                    .sum();
+                built.lines.push(format!(
+                    "registry: index for {} addon(s) with {data} data file(s) and {named} file(s) they name, under \
+                     {LOADER_DIR}/registry and {LOADER_DIR}/{ADDONS_DIR}",
+                    placed.index.addons.len()
+                ));
+            }
         }
         None => built.warnings.push(format!(
             "{CORE_ID}: the in-game loader was not found (native/dist, loader/ beside the swofty command, or {LOADER_ENV}); the game starts without it"
@@ -1586,9 +2019,11 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         .then(|| crate::dbedit::Catalog::open(store, game).ok())
         .flatten();
     let record = |key: u64| {
-        catalog
-            .as_deref()
-            .and_then(|c| crate::conflicts::record_name(c, key))
+        planned.record_names.get(&key).cloned().or_else(|| {
+            catalog
+                .as_deref()
+                .and_then(|c| crate::conflicts::record_name(c, key))
+        })
     };
     let (report, within) = crate::conflicts::summarise(profile, &planned.conflicts, &record);
     built.warnings.extend(report.pairs.iter().map(|p| p.line(&name)));
@@ -1596,6 +2031,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     built.report = Report {
         order: built.report.order.clone(),
         stock_removals,
+        kept_lists,
         ..report
     };
     built.conflicts = planned.conflicts;
@@ -1647,9 +2083,200 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     }
     crate::write_json(&crate::conflicts::path(store, profile), &built.report)?;
     if !checking {
-        fingerprint::record_outputs(store, profile, outputs).ok();
+        fingerprint::record_outputs(store, profile, with_row_ids(outputs, &built.row_ids)).ok();
+        track_files(store, game, &mut built, &tracks, &slots, &recorded, &record_ui);
     }
     Ok(built)
+}
+
+// Each addon's added rows of top-level tables with a stat id, as `<table>.<row>/<label>` to its id.
+fn added_row_ids(db: &Gvdb, copies: &[crate::dbedit::deps::Copy]) -> BTreeMap<String, BTreeMap<String, i64>> {
+    let rows: HashSet<&str> = copies.iter().map(|c| c.row.as_str()).collect();
+    let mut wanted: HashMap<u64, (&str, &str, &str)> = HashMap::new();
+    for c in copies {
+        let Some((table, last)) = c.row.rsplit_once('.') else {
+            continue;
+        };
+        let Some((row, _)) = last.rsplit_once('_') else {
+            continue;
+        };
+        if crate::ops::row_shape(table).contains("_N") {
+            continue;
+        }
+        let field = crate::ops::stat_id_field(table, row);
+        wanted.insert(
+            swofty_formats::hash::fnv1a64(format!("{}.{field}", c.row)),
+            (&c.addon, &c.row, "id"),
+        );
+        wanted.insert(
+            swofty_formats::hash::fnv1a64(format!("{}._metadata_", c.row)),
+            (&c.addon, &c.row, "label"),
+        );
+    }
+    let mut found: BTreeMap<&str, (&str, Option<String>, Option<i64>)> = BTreeMap::new();
+    for r in &db.records {
+        let Some(&(addon, row, what)) = wanted.get(&r.key) else {
+            continue;
+        };
+        let e = found.entry(row).or_insert((addon, None, None));
+        match what {
+            "label" => e.1 = Some(r.text().into_owned()),
+            _ => e.2 = r.text().trim().parse().ok(),
+        }
+    }
+    let mut out: BTreeMap<String, BTreeMap<String, i64>> = BTreeMap::new();
+    for (row, (addon, label, id)) in found {
+        let (Some(label), Some(id)) = (label, id) else {
+            continue;
+        };
+        if !rows.contains(row) {
+            continue;
+        }
+        let table = row.rsplit_once('_').map_or(row, |(t, _)| t);
+        out.entry(addon.to_owned())
+            .or_default()
+            .insert(format!("{table}/{label}"), id);
+    }
+    out
+}
+
+fn with_row_ids(
+    mut outputs: BTreeMap<String, fingerprint::Output>,
+    row_ids: &BTreeMap<String, BTreeMap<String, i64>>,
+) -> BTreeMap<String, fingerprint::Output> {
+    for (addon, ids) in row_ids {
+        if let Some(o) = outputs.get_mut(addon) {
+            o.row_ids = ids.clone();
+        }
+    }
+    outputs
+}
+
+/// The menu UI lists the build makes a track record's pictures for: its rows come from the core
+/// at boot, so the core points their `TrackTextures` at those pictures from the facts file.
+fn record_ui_lists(
+    ui_maps: &[MapUi],
+    tracks: &[(PathBuf, TrackPackage, Origin)],
+    recorded: &BTreeSet<String>,
+    resolve: &dyn Fn(&str) -> PathBuf,
+    warnings: &mut Vec<String>,
+) -> crate::activation::ui::Lists {
+    let codes: BTreeSet<&str> = tracks
+        .iter()
+        .filter(|(_, _, o)| recorded.contains(&o.addon))
+        .map(|(_, p, _)| p.track_code.as_str())
+        .collect();
+    let maps: Vec<MapUi> = ui_maps
+        .iter()
+        .filter(|m| codes.contains(m.pkg.track_code.as_str()))
+        .map(|m| MapUi {
+            pkg: m.pkg,
+            dir: m.dir,
+            asset_group: m.asset_group.clone(),
+        })
+        .collect();
+    if maps.is_empty() {
+        return Default::default();
+    }
+    match plan_lists(&maps, resolve) {
+        Ok((lists, _)) => lists,
+        Err(e) => {
+            warnings.push(format!(
+                "tracks: the record tracks' menu pictures can't be planned: {e}"
+            ));
+            Default::default()
+        }
+    }
+}
+
+/// Writes `$DATA/registry/track-facts.json` and `older-tracks.json` for a build of a profile with
+/// addons. A file that can't be written is a warning; the build stands.
+fn track_files(
+    store: &Store,
+    game: &Game,
+    built: &mut Built,
+    tracks: &[(PathBuf, TrackPackage, Origin)],
+    slots: &[Option<&str>],
+    recorded: &BTreeSet<String>,
+    record_ui: &crate::activation::ui::Lists,
+) {
+    if built.plan.is_vanilla() {
+        return;
+    }
+    let file = |rel: &str| {
+        built
+            .plan
+            .data
+            .get(rel)
+            .or_else(|| built.plan.added.get(rel))
+            .cloned()
+            .unwrap_or_else(|| original(&store.root, game, rel))
+    };
+    let placed_archive = |code: &str, slot: Option<&str>| match slot {
+        Some(s) => slot_file(s),
+        None => crate::activation::place::track_file(code),
+    };
+    let added: Vec<crate::activation::facts::Added> = tracks
+        .iter()
+        .zip(slots)
+        .map(|((dir, pkg, origin), slot)| crate::activation::facts::Added {
+            code: pkg.track_code.clone(),
+            shipped: dir.join(&pkg.erp),
+            placed: file(&placed_archive(&pkg.track_code, *slot)),
+            base: recorded
+                .contains(&origin.addon)
+                .then(|| pkg.activation.base_track().map(str::to_owned))
+                .flatten(),
+            ui_lists: match recorded.contains(&origin.addon) {
+                true => record_ui
+                    .get(&pkg.track_code)
+                    .map(|l| l.iter().cloned().collect())
+                    .unwrap_or_default(),
+                false => Vec::new(),
+            },
+        })
+        .collect();
+    let scan = crate::activation::facts::Scan {
+        profile: &built.plan.profile,
+        db: file(GVDB),
+        game: &game.dir,
+        file: &file,
+        placed: built
+            .plan
+            .data
+            .keys()
+            .chain(built.plan.added.keys())
+            .cloned()
+            .collect(),
+        added,
+        edits: built.plan.loader.get(crate::runtime::ASSETS_FILE).cloned(),
+    };
+    let mut warnings = Vec::new();
+    if let Err(e) = crate::activation::facts::write(&store.root, &scan) {
+        warnings.push(format!(
+            "tracks: {} could not be written: {e}",
+            crate::activation::facts::FILE
+        ));
+    }
+    let older: Vec<(&str, &TrackPackage)> = tracks
+        .iter()
+        .filter(|(_, _, o)| !recorded.contains(&o.addon))
+        .map(|(_, pkg, o)| (o.addon.as_str(), pkg))
+        .collect();
+    let written = crate::tracks::write_older(
+        &store.root,
+        &built.plan.profile,
+        &older,
+        &original(&store.root, game, GVDB),
+        &file(GVDB),
+    );
+    if let Err(e) = written {
+        warnings.push(format!(
+            "tracks: {} could not be written: {e}",
+            crate::tracks::OLDER_FILE
+        ));
+    }
+    built.warnings.extend(warnings);
 }
 
 /// A file an earlier session created that still holds exactly what it wrote
@@ -1697,6 +2324,37 @@ fn merged_later(
         .iter()
         .find(|(_, _, uri)| names.iter().any(|n| n == uri))
         .map(|(_, erp, uri)| format!("a later erp.merge-slices merges into {uri} in {erp}")))
+}
+
+fn kept_menus_line(name: &str) -> String {
+    format!("{name} ships its own track menu pictures; the launcher's track menus are kept")
+}
+
+fn keep_menus(
+    built: &mut Built,
+    planner: &mut Planner,
+    held: Vec<Held>,
+    keeper: &dyn Fn(&Held) -> Option<Origin>,
+    origin: &dyn Fn(&str) -> Option<Origin>,
+    name: &dyn Fn(&str) -> String,
+) {
+    let mut warned = Vec::new();
+    for h in held {
+        let line = kept_menus_line(&name(&h.origin));
+        if !warned.contains(&line) {
+            built.warnings.push(line.clone());
+            warned.push(line);
+        }
+        if let (Some(keeper), Some(lost)) = (keeper(&h), origin(&h.origin))
+            && keeper.addon != lost.addon
+        {
+            let target = Target::Resource {
+                erp: h.erp,
+                uri: h.resource,
+            };
+            planner.kept(target, &keeper, &lost);
+        }
+    }
 }
 
 fn record_merge(built: &mut Built, planner: &mut Planner, origin: &Origin, m: SliceMerge) {
@@ -1747,6 +2405,19 @@ fn stage_erps(built: &mut Built, staged: &BTreeMap<String, PathBuf>, rels: Vec<S
         }
     }
     Ok(())
+}
+
+/// The warning for an addon's archive changes a build skips because the
+/// archives they change aren't in the game folder.
+fn missing_archives(name: &str, rels: &BTreeSet<String>) -> String {
+    let first = rels.first().map_or("", String::as_str);
+    let what = match rels.len() {
+        1 => format!("{first} is not a file in F1 25"),
+        n => format!("{n} of the files it changes are not in F1 25, such as {first}"),
+    };
+    format!(
+        "{name}: archive changes skipped; {what}. Turn {name} off if it doesn't work, and tell its author"
+    )
 }
 
 /// An archive a `file.put` replaces whole while ERP ops change it too: its last
@@ -1894,8 +2565,9 @@ fn put_files(
     mipmaps: BTreeMap<String, PathBuf>,
     ops: Vec<Op>,
     built_over: &BTreeSet<String>,
-    ers_maps: &[ErsMap],
+    car_maps: (&[ErsMap], &[HandlingMap]),
 ) -> Result<()> {
+    let (ers_maps, handling_maps) = car_maps;
     let mips = mipmaps.len();
     let mut put: BTreeMap<String, (PathBuf, Option<Origin>)> =
         mipmaps.into_iter().map(|(rel, src)| (rel, (src, None))).collect();
@@ -1920,7 +2592,17 @@ fn put_files(
             || (game.dir.join(rel).is_file() && !left_over(store, game, rel))
     };
     let (mut replaced, mut added, mut handling) = (0, 0, 0);
+    let addon_dir = |id: &str| store.addons_dir().join(id);
     for (rel, (mut src, origin)) in put {
+        let group = handling::for_source(handling_maps, &addon_dir, &src);
+        if !group.is_empty() && !built_over.contains(&rel) {
+            let out = built.overlay.join("handling").join(&rel);
+            let mut lines = Vec::new();
+            if handling::edit_archive(&src, &group, &out, &mut lines)? > 0 {
+                src = out;
+            }
+            built.lines.extend(lines);
+        }
         let car = !ers_maps.is_empty() && ers::is_car_archive(&rel);
         if car && !built_over.contains(&rel) {
             let out = built.overlay.join("ers").join(&rel);
@@ -2039,6 +2721,93 @@ mod tests {
     use crate::launcher::{Addon, Builtin};
 
     #[test]
+    fn only_a_core_with_the_rows_feature_takes_the_replaced_operations_of_addons_with_data_files() {
+        let root = std::env::temp_dir().join(format!("swofty-replaced-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let features = root.join(crate::planner::FEATURES_FILE);
+        std::fs::create_dir_all(features.parent().unwrap()).unwrap();
+        let std = |id: &str, data: bool, registry: Option<&str>| crate::stdlib::deps::Std {
+            id: id.into(),
+            name: id.into(),
+            version: semver::Version::new(1, 0, 0),
+            registry: registry.map(|r| crate::stdlib::manifest::RegistryManifest::parse(r).unwrap()),
+            lock: None,
+            data_files: match data {
+                true => vec!["registry/content.json".into()],
+                false => Vec::new(),
+            },
+            records: Vec::new(),
+            files: Default::default(),
+            unreadable: Vec::new(),
+            older_tracks: Vec::new(),
+        };
+        let replaces = r#"{ "replaced_operations": ["db/records.json"] }"#;
+        let std16 = BTreeMap::from([
+            ("a.season".to_owned(), std("a.season", true, Some(replaces))),
+            ("b.nodata".to_owned(), std("b.nodata", false, Some(replaces))),
+            (
+                "c.plain".to_owned(),
+                std("c.plain", true, Some(r#"{ "requires": [] }"#)),
+            ),
+            ("d.old".to_owned(), std("d.old", true, None)),
+        ]);
+        assert!(replaced_operations(&std16, None).is_empty(), "no loader");
+        std::fs::write(&features, r#"{ "schema": 1, "features": { "db": "stable" } }"#).unwrap();
+        assert!(
+            replaced_operations(&std16, Some(&root)).is_empty(),
+            "a core without the rows feature"
+        );
+        std::fs::write(
+            &features,
+            r#"{ "schema": 1, "features": { "db": "stable", "registry_rows": "stable" } }"#,
+        )
+        .unwrap();
+        let r = replaced_operations(&std16, Some(&root));
+        assert_eq!(r.keys().copied().collect::<Vec<_>>(), ["a.season"]);
+        assert!(r["a.season"].replaces("db/records.json") && !r["a.season"].replaces("db/season.json"));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn registry_records_turn_the_early_stage_on_whatever_the_database_route() {
+        let std = |id: &str, data: bool, lock: Option<&str>, registry: bool| crate::stdlib::deps::Std {
+            id: id.into(),
+            name: format!("{id} name"),
+            version: semver::Version::new(1, 0, 0),
+            registry: registry.then(|| crate::stdlib::manifest::RegistryManifest::parse("{}").unwrap()),
+            lock: lock.map(|l| crate::stdlib::lock::Lock::parse(l).unwrap()),
+            data_files: match data {
+                true => vec!["registry/teams.json".into()],
+                false => Vec::new(),
+            },
+            records: Vec::new(),
+            files: Default::default(),
+            unreadable: Vec::new(),
+            older_tracks: Vec::new(),
+        };
+        let registers = r#"{ "provides": { "team.identity": [ { "id": "dll.teams/hrt" } ] } }"#;
+        let std16 = BTreeMap::from([
+            ("a.data".to_owned(), std("a.data", true, None, true)),
+            ("b.code".to_owned(), std("b.code", false, Some(registers), false)),
+            ("c.needs".to_owned(), std("c.needs", false, Some("{}"), true)),
+            ("d.off".to_owned(), std("d.off", true, None, false)),
+        ]);
+        let order: Vec<String> = ["swofty.core", "c.needs", "b.code", "a.data", "e.old"]
+            .map(str::to_owned)
+            .to_vec();
+        let on = registering_addons(&order, &std16);
+        assert_eq!(on, ["b.code name", "a.data name"]);
+        assert_eq!(
+            early_stage_line(&on),
+            "registry: the core loads at the early stage for the registry records of b.code name, a.data name"
+        );
+        assert!(
+            registering_addons(&order[..2], &std16).is_empty(),
+            "a registry.json or a lock without registrations leaves it off"
+        );
+    }
+
+    #[test]
     fn a_missing_or_cut_short_file_names_its_addon_or_the_game() {
         let root = std::env::temp_dir().join(format!("swofty-named-{}", std::process::id()));
         std::fs::remove_dir_all(&root).ok();
@@ -2119,6 +2888,59 @@ mod tests {
             ),
         );
         assert!(matches!(denied, Error::Io { .. }), "{denied}");
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_missing_backup_stops_the_build_and_sends_the_player_through_the_setup_again() {
+        let root = std::env::temp_dir().join(format!("swofty-build-backup-gone-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        std::fs::write(dir.join("a.erp"), "stock").unwrap();
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        let records = vec![swofty_formats::gvdb::Record::new(
+            "entrants.teams._team_instancecount_",
+            0,
+            "0",
+        )];
+        std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir: dir.clone(),
+            user_reg: None,
+        };
+        let store = Store::new(root.join("data"));
+        crate::setup::reset(&store.root, &game, false).unwrap();
+        crate::setup::finish(&store.root).unwrap();
+        let objects = Objects {
+            root: store.root.join("baseline/objects"),
+        };
+        let mut baseline = Baseline::new(&game.identity);
+        let sha = baseline
+            .record(&objects, &dir, "a.erp", &())
+            .unwrap()
+            .sha256
+            .clone();
+        baseline.save(&store.root).unwrap();
+
+        build(&store, "default", &game).unwrap();
+        assert!(crate::setup::done(&store.root));
+
+        std::fs::remove_dir_all(objects.path(&sha).parent().unwrap()).unwrap();
+        let e = build(&store, "default", &game).unwrap_err();
+        assert_eq!(
+            e.to_string(),
+            "Swofty's backup of the original a.erp is missing from its data folder. Run the one-time setup \
+             again: open Swofty Launcher and press Play, or run `swofty setup reset`, repair the game in the EA \
+             app or verify the game files in Steam, then run `swofty setup done`"
+        );
+        assert!(!crate::setup::done(&store.root));
+        assert!(
+            build(&store, crate::profile::VANILLA, &game).is_ok(),
+            "a build without addons reads no backups"
+        );
         std::fs::remove_dir_all(&root).ok();
     }
 
@@ -2400,6 +3222,99 @@ mod tests {
         std::fs::remove_dir_all(&root).ok();
     }
 
+    struct Grid(AddonManifest);
+
+    impl Addon for Grid {
+        fn manifest(&self) -> &AddonManifest {
+            &self.0
+        }
+
+        fn build(&self, cx: &BuildCx) -> swofty_addon::Result<AssetBatch> {
+            let op: AssetOp = serde_json::from_value(serde_json::json!({
+                "op": "db.set", "select": "t.list[_metadata_=cs_f1_2016]", "field": "name", "value": "edited"
+            }))
+            .map_err(|e| swofty_addon::Error::Other(e.to_string()))?;
+            Ok(AssetBatch {
+                ops: vec![Op {
+                    op,
+                    origin: Origin {
+                        addon: cx.cx.addon.into(),
+                        item: Some("grid-editor".into()),
+                    },
+                }],
+                ..AssetBatch::default()
+            })
+        }
+    }
+
+    #[test]
+    fn an_editor_op_on_a_row_a_later_addon_adds_applies() {
+        use swofty_formats::gvdb::Record;
+        if loader_dir().is_some() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("swofty-build-late-row-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        let records = vec![
+            Record::new("t._list_instancecount_", 0, "1"),
+            Record::new("t.list_0._metadata_", 4, "f1"),
+            Record::new("t.list_0.name", 4, "stock"),
+        ];
+        std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir,
+            user_reg: None,
+        };
+        let manifest = AddonManifest::parse(
+            r#"{ "schema_version": 1, "id": "t.grid", "name": "Grid", "version": "1.0.0", "author": "t",
+                 "compat": { "game": "f1_25" } }"#,
+        )
+        .unwrap();
+        let store = Store::new(root.join("data")).with_builtins(vec![Builtin {
+            addon: Arc::new(Grid(manifest)),
+            locked: false,
+            default_on: true,
+        }]);
+        let src = root.join("src");
+        std::fs::create_dir_all(&src).unwrap();
+        std::fs::write(
+            src.join("swofty.json"),
+            r#"{ "schema_version": 1, "id": "t.seasons", "name": "Seasons", "version": "1.0.0", "author": "t",
+                 "compat": { "game": "f1_25" }, "operations": { "database": ["db.json"] } }"#,
+        )
+        .unwrap();
+        std::fs::write(
+            src.join("db.json"),
+            r#"{ "schema_version": 1, "fields": { "t.list": ["_metadata_", "name"] }, "ops": [
+                 { "op": "add-row", "table": "t", "from": "t.list[_metadata_=f1]", "set": { "_metadata_": "cs_f1_2016", "name": "seasons" } } ] }"#,
+        )
+        .unwrap();
+        store.install_addon(&src).unwrap();
+        store
+            .update_profile("default", |p| p.set_enabled("t.seasons", true))
+            .unwrap();
+
+        let built = build(&store, "default", &game).unwrap();
+        assert_eq!(built.order, [CORE_ID, "t.grid", "t.seasons"]);
+        let out = Gvdb::parse(&std::fs::read(&built.plan.data[GVDB]).unwrap()).unwrap();
+        assert_eq!(out.get_text("t.list_1._metadata_").as_deref(), Some("cs_f1_2016"));
+        assert_eq!(out.get_text("t.list_1.name").as_deref(), Some("edited"));
+
+        store
+            .update_profile("default", |p| p.set_enabled("t.seasons", false))
+            .unwrap();
+        let e = build(&store, "default", &game).unwrap_err().to_string();
+        assert!(
+            e.contains("applying t.grid (grid-editor): t.list[_metadata_=cs_f1_2016]: no row matches, even after every addon's changes"),
+            "{e}"
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
     #[test]
     fn runs_the_build_hooks_of_builtin_addons() {
         if loader_dir().is_some() {
@@ -2617,17 +3532,65 @@ mod tests {
             db.get_text("entrants.teams.team_2._metadata_").as_deref(),
             Some("team12_26")
         );
+        let key = "t.rows/entrants.teams.team/team12_26";
+        let next_id = 102;
         assert_eq!(
-            db.get_text("entrants.teams.team_2.stat_id").as_deref(),
-            Some("102")
+            db.get_text("entrants.teams.team_2.stat_id"),
+            Some(next_id.to_string())
         );
         assert!(
             built
                 .lines
                 .iter()
-                .any(|l| l.ends_with("stat_id 102 (the source's is 100)")),
+                .any(|l| l.ends_with(&format!("stat_id {next_id} (the source's is 100)"))),
             "{:?}",
             built.lines
+        );
+        let outputs: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(store.root.join(fingerprint::OUTPUTS_FILE)).unwrap())
+                .unwrap();
+        assert_eq!(
+            outputs["default"]["t.rows"]["row_ids"]["entrants.teams.team/team12_26"],
+            next_id
+        );
+        let ids = crate::row_ids::path(&store.root);
+        let kept: serde_json::Value = serde_json::from_slice(&std::fs::read(&ids).unwrap()).unwrap();
+        assert_eq!(kept["rows"][key]["id"], next_id);
+        std::fs::write(
+            &ids,
+            format!(r#"{{"version":1,"rows":{{"{key}":{{"id":140,"from":"next"}}}}}}"#),
+        )
+        .unwrap();
+        std::fs::remove_file(built.overlay.join(SAVED_FILE)).unwrap();
+        let again = build(&store, "default", &game).unwrap();
+        let db = Gvdb::parse(&std::fs::read(&again.plan.data[GVDB]).unwrap()).unwrap();
+        assert_eq!(
+            db.get_text("entrants.teams.team_2.stat_id").as_deref(),
+            Some("140")
+        );
+        assert!(
+            again
+                .lines
+                .iter()
+                .any(|l| l.ends_with("stat_id 140 (the source's is 100; kept from row-ids.json)")),
+            "{:?}",
+            again.lines
+        );
+        std::fs::remove_file(&ids).unwrap();
+        std::fs::rename(&again.overlay, store.overlays_dir("default").join("older")).unwrap();
+        let seeded = build(&store, "default", &game).unwrap();
+        assert!(
+            seeded
+                .lines
+                .iter()
+                .any(|l| l.ends_with("stat_id 140 (the source's is 100; as the last build gave it)")),
+            "{:?}",
+            seeded.lines
+        );
+        let kept: serde_json::Value = serde_json::from_slice(&std::fs::read(&ids).unwrap()).unwrap();
+        assert_eq!(
+            kept["rows"][key],
+            serde_json::json!({ "id": 140, "from": "seeded" })
         );
         std::fs::remove_dir_all(&root).ok();
     }
@@ -3564,6 +4527,292 @@ mod tests {
     }
 
     #[test]
+    fn warns_of_the_entrant_lists_an_addon_renames_or_removes() {
+        use swofty_formats::gvdb::Record;
+        if loader_dir().is_some() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("swofty-build-keeplists-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        let lists = "entrants.entrant_lists";
+        let whitelist = "content_sets.content_set_0.available_entrant_lists_0.entrant_lists";
+        let mut records = vec![
+            Record::new(&format!("{lists}._entrant_list_instancecount_"), 0, "3"),
+            Record::new("content_sets._content_set_instancecount_", 0, "1"),
+            Record::new(
+                "content_sets.content_set_0._available_entrant_lists_instancecount_",
+                0,
+                "1",
+            ),
+            Record::new(whitelist, 13, "f1_2026,f2_2026,f2_2025"),
+        ];
+        for (i, (name, id)) in [("f1_2026", "67"), ("f2_2026", "104"), ("f2_2025", "95")]
+            .into_iter()
+            .enumerate()
+        {
+            records.push(Record::new(
+                &format!("{lists}.entrant_list_{i}._metadata_"),
+                4,
+                name,
+            ));
+            records.push(Record::new(&format!("{lists}.entrant_list_{i}.stat_id"), 0, id));
+            records.push(Record::new(
+                &format!("{lists}.entrant_list_{i}.display_name"),
+                4,
+                format!("lng_{name}"),
+            ));
+        }
+        let stock = Gvdb { records };
+        std::fs::write(dir.join(GVDB), stock.to_bytes()).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir: dir.clone(),
+            user_reg: None,
+        };
+        let store = Store::new(root.join("data"));
+        let src = root.join("src").join("t.old");
+        std::fs::create_dir_all(&src).unwrap();
+        std::fs::write(
+            src.join("swofty.json"),
+            r#"{ "schema_version": 1, "id": "t.old", "name": "Old Team Pack", "version": "1.0.0", "author": "t",
+                 "compat": { "game": "f1_25" }, "operations": { "assets": ["ops.json"] } }"#,
+        )
+        .unwrap();
+        let put = |key: &str, value: &str| {
+            format!(
+                r#"{{"op":"db.put-record","key":"{key}","type":0,"value":"{}"}}"#,
+                hex(value.as_bytes())
+            )
+        };
+        let ops = [
+            put(&format!("{lists}._entrant_list_instancecount_"), "2"),
+            put(&format!("{lists}.entrant_list_1._metadata_"), "f2_2025"),
+            put(&format!("{lists}.entrant_list_1.stat_id"), "95"),
+            put(whitelist, "f1_2026,f2_2025"),
+        ]
+        .join(",");
+        std::fs::write(
+            src.join("ops.json"),
+            format!(r#"{{ "schema_version": 1, "ops": [{ops}] }}"#),
+        )
+        .unwrap();
+        store.install_addon(&src).unwrap();
+        store
+            .update_profile("default", |p| p.set_enabled("t.old", true))
+            .unwrap();
+
+        let built = build(&store, "default", &game).unwrap();
+        let line =
+            "Old Team Pack: renames or removes the entrant list(s) f2_2026; F2 menus may crash with it";
+        assert!(built.warnings.iter().any(|w| w == line), "{:?}", built.warnings);
+        assert_eq!(
+            built.report.kept_lists,
+            BTreeMap::from([("t.old".to_owned(), vec!["f2_2026".to_owned()])])
+        );
+        let out = Gvdb::parse(&std::fs::read(&built.plan.data[GVDB]).unwrap()).unwrap();
+        assert_eq!(
+            out.get_text(&format!("{lists}._entrant_list_instancecount_"))
+                .as_deref(),
+            Some("2")
+        );
+        assert_eq!(
+            out.get_text(&format!("{lists}.entrant_list_1._metadata_"))
+                .as_deref(),
+            Some("f2_2025")
+        );
+        assert_eq!(out.get_text(&format!("{lists}.entrant_list_3._metadata_")), None);
+        assert_eq!(out.get_text(whitelist).as_deref(), Some("f1_2026,f2_2025"));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_track_record_places_the_files_only_and_the_build_writes_the_track_files() {
+        use swofty_formats::gvdb::Record;
+        if loader_dir().is_some() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("swofty-build-trackrecord-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        for s in &SLOTS[..4] {
+            let slot = dir.join(slot_file(s));
+            std::fs::create_dir_all(slot.parent().unwrap()).unwrap();
+            std::fs::write(&slot, archive(&["eaid://ui_package/slot.uil"], 0)).unwrap();
+        }
+        let res = "tracks.track_resource.TrackResource_0";
+        let set = "track_data.game_setup.TrackDataSet_0";
+        let layer = "track_data.track_layers.TrackLayer_0";
+        let records = vec![
+            Record::new("tracks._Track_instancecount_", 0, "2"),
+            Record::new("tracks.Track_0._metadata_", 2, "melbourne"),
+            Record::new("tracks.Track_0.statId", 0, "5"),
+            Record::new("tracks.Track_0.track_resource", 2, "2019"),
+            Record::new("tracks.Track_1._metadata_", 2, "sochi"),
+            Record::new("tracks.Track_1.statId", 0, "9"),
+            Record::new("tracks.Track_1.track_resource", 2, "2019"),
+            Record::new("tracks.track_resource._TrackResource_instancecount_", 0, "1"),
+            Record::new(&format!("{res}._metadata_"), 2, "2019"),
+            Record::new(&format!("{res}.iblAssetGroupsRoot"), 2, "probes/"),
+            Record::new(&format!("{res}.iblKey"), 2, "key_2019.assetgroup"),
+            Record::new("track_data.game_setup._TrackDataSet_instancecount_", 0, "1"),
+            Record::new(&format!("{set}._metadata_"), 2, "f1"),
+            Record::new(&format!("{set}._TrackData_instancecount_"), 0, "1"),
+            Record::new(&format!("{set}.TrackData_0._metadata_"), 2, "melbourne"),
+            Record::new(&format!("{set}.TrackData_0.track"), 2, "melbourne"),
+            Record::new("track_data.track_layers._TrackLayer_instancecount_", 0, "1"),
+            Record::new(&format!("{layer}._metadata_"), 2, "f1_26"),
+            Record::new(&format!("{layer}.game_setup_modes"), 2, "f1_26"),
+            Record::new(&format!("{layer}.is_invalid"), 2, "False"),
+            Record::new(&format!("{layer}.seasons"), 2, "season_2026"),
+            Record::new(&format!("{layer}.weekend_formats"), 2, "default"),
+            Record::new(
+                &format!("{layer}.worldEri"),
+                2,
+                "eaid://environment_package/tracks/[FILENAME]/wep/[FILENAME]_f1_26.wep",
+            ),
+        ];
+        std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir: dir.clone(),
+            user_reg: None,
+        };
+        let store = Store::new(root.join("data"));
+        let install = |id: &str, code: &str, name: &str, ops: bool, record: Option<&str>| {
+            let src = root.join("src").join(id);
+            std::fs::create_dir_all(src.join("track")).unwrap();
+            let operations = match ops {
+                true => r#"{ "assets": ["ops.json"] }"#,
+                false => "{}",
+            };
+            std::fs::write(
+                src.join("swofty.json"),
+                format!(
+                    r#"{{ "schema_version": 1, "id": "{id}", "name": "{name}", "version": "1.0.0", "author": "t",
+                         "compat": {{ "game": "f1_25" }}, "operations": {operations} }}"#
+                ),
+            )
+            .unwrap();
+            if ops {
+                std::fs::write(
+                    src.join("ops.json"),
+                    r#"{ "schema_version": 1, "ops": [{"op":"track.add","source":"track"}] }"#,
+                )
+                .unwrap();
+                std::fs::write(
+                    src.join("track/manifest.json"),
+                    format!(
+                        r#"{{ "track_code": "{code}", "track_name": "{name}", "erp": "{code}.erp",
+                             "activation": {{ "copy_from_track": "melbourne", "copy_slot": "melbourne" }} }}"#
+                    ),
+                )
+                .unwrap();
+            }
+            if let Some(record) = record {
+                std::fs::create_dir_all(src.join("registry")).unwrap();
+                std::fs::write(src.join("registry/track.json"), record).unwrap();
+            }
+            let world = format!("eaid://environment_package/tracks/{code}/wep/{code}_common.wep");
+            std::fs::write(
+                src.join(format!("track/{code}.erp")),
+                archive_of("WEP", &[&world], 0),
+            )
+            .unwrap();
+            store.install_addon(&src).unwrap();
+            store
+                .update_profile("default", |p| p.set_enabled(id, true))
+                .unwrap();
+        };
+        install("mod.okayama", "okayama", "Okayama", true, None);
+        install("mod.sochi", "sochi", "Sochi Autodrom", true, None);
+        install(
+            "mod.testring",
+            "testring",
+            "Test Ring",
+            true,
+            Some(
+                r#"{ "track": { "testring": { "code": "testring", "base": "game/melbourne", "files": "track/",
+                                                "provides": ["venue/sepang"] } } }"#,
+            ),
+        );
+        install(
+            "mod.ring2",
+            "ring2",
+            "Ring Two",
+            false,
+            Some(
+                r#"{ "track": { "ring2": { "code": "ring2", "name": "Ring Two", "base": "game/melbourne",
+                                             "files": "track/" } } }"#,
+            ),
+        );
+
+        let built = build(&store, "default", &game).unwrap();
+        for code in ["testring", "ring2"] {
+            let line = format!("{code}: files only; its track record adds its rows in game");
+            assert!(built.lines.contains(&line), "{:?}", built.lines);
+        }
+        let out = Gvdb::parse(&std::fs::read(&built.plan.data[GVDB]).unwrap()).unwrap();
+        assert_eq!(out.get_text("tracks._Track_instancecount_").as_deref(), Some("3"));
+        let labels: Vec<String> = (0..3)
+            .filter_map(|i| out.get_text(&format!("tracks.Track_{i}._metadata_")))
+            .collect();
+        assert_eq!(labels, ["melbourne", "sochi", "okayama"]);
+        let placed: Vec<&String> = built
+            .plan
+            .data
+            .keys()
+            .filter(|k| k.contains("invitational_image"))
+            .collect();
+        assert_eq!(placed.len(), 4, "{placed:?}");
+
+        let older: crate::tracks::OlderTracks = crate::read_json(&crate::stdlib::reports::path(
+            &store.root,
+            crate::tracks::OLDER_FILE,
+        ))
+        .unwrap();
+        assert_eq!(older.profile, "default");
+        let entry = |code: &str| {
+            let t = older.tracks.iter().find(|t| t.code == code).unwrap();
+            (t.addon.as_str(), t.slot.as_deref(), t.stat_id, t.venue.as_deref())
+        };
+        assert_eq!(older.tracks.len(), 2, "{:?}", older.tracks);
+        assert_eq!(
+            entry("okayama"),
+            ("mod.okayama", None, Some(10), Some("venue/okayama"))
+        );
+        assert_eq!(
+            entry("sochi"),
+            ("mod.sochi", Some("game/sochi"), Some(9), Some("venue/sochi"))
+        );
+        let facts = crate::activation::facts::read(&store.root).unwrap();
+        assert_eq!((facts.profile.as_str(), facts.layers.len()), ("default", 1));
+        assert_eq!(facts.layers[0].world, "f1_26");
+        let mut codes: Vec<&String> = facts.tracks.keys().collect();
+        codes.sort();
+        assert_eq!(codes, ["okayama", "ring2", "sochi", "testring"]);
+        let written = std::fs::metadata(crate::activation::facts::path(&store.root))
+            .unwrap()
+            .modified()
+            .unwrap();
+        let again = build(&store, "default", &game).unwrap();
+        assert_eq!(again.buildhash, built.buildhash);
+        let kept = std::fs::metadata(crate::activation::facts::path(&store.root))
+            .unwrap()
+            .modified()
+            .unwrap();
+        assert_eq!(
+            kept, written,
+            "a reused build with the same inputs keeps the facts file"
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
     fn skips_removals_of_the_records_a_track_adds() {
         use swofty_formats::gvdb::Record;
         if loader_dir().is_some() {
@@ -3991,6 +5240,505 @@ mod tests {
         std::fs::remove_dir_all(&root).ok();
     }
 
+    #[test]
+    fn a_handling_record_changes_the_stock_team_archive_and_an_addons_own() {
+        use swofty_formats::bxml::{Document, Element, Kind};
+        use swofty_formats::erp::{Erp, ErpFile, Fragment, HEADER_LEN, MAGIC, Resource, STORED};
+        use swofty_formats::gvdb::Record;
+        if loader_dir().is_some() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("swofty-build-handling-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        let slot = dir.join(slot_file(SLOTS[0]));
+        std::fs::create_dir_all(slot.parent().unwrap()).unwrap();
+        std::fs::write(&slot, archive(&["eaid://ui_package/slot.uil"], 0)).unwrap();
+        let records = vec![Record::new("tracks._Track_instancecount_", 0, "0")];
+        std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+        let el = |name: &str, attrs: &[(&str, &str)], children: Vec<Element>| Element {
+            kind: Kind::Element,
+            pad: 0,
+            name: name.as_bytes().to_vec(),
+            attrs: attrs
+                .iter()
+                .map(|(k, v)| (k.as_bytes().to_vec(), v.as_bytes().to_vec()))
+                .collect(),
+            children,
+            end_pad: 0,
+        };
+        let leaf = |name: &str, v: &str| el(name, &[("value", v)], Vec::new());
+        let uri = "eaid://f1_2026_vehicle_package/teams/mclaren/handling/mclaren.vtf";
+        let handling = || {
+            let doc = Document {
+                root: el(
+                    "VTF",
+                    &[],
+                    vec![
+                        el(
+                            "GearBox",
+                            &[],
+                            vec![
+                                leaf("GearRatio1st", "3.5"),
+                                leaf("GearRatio2nd", "2.6"),
+                                leaf("GearRatio3rd", "2.0"),
+                                leaf("GearUpSpeedMultiple1st", "0.8"),
+                                leaf("GearUpSpeedMultiple2nd", "0.9"),
+                                leaf("GearUpSpeedMultiple3rd", "1.0"),
+                            ],
+                        ),
+                        el("Chassis", &[], vec![leaf("Mass", "771")]),
+                        el(
+                            "EnergyRecoverySystem",
+                            &[],
+                            vec![el("Common", &[], vec![leaf("MaxDeployPower", "350000")])],
+                        ),
+                        el(
+                            "Upgrade",
+                            &[("name", "radUpgradeERS")],
+                            vec![el("EnergyRecoverySystem", &[], vec![leaf("X", "1")])],
+                        ),
+                    ],
+                ),
+                tail: Vec::new(),
+            };
+            let data = doc.to_bytes();
+            let mut header = [0u8; HEADER_LEN];
+            header[..4].copy_from_slice(MAGIC);
+            header[4..8].copy_from_slice(&3u32.to_le_bytes());
+            Erp {
+                header,
+                version: 3,
+                resources: vec![Resource {
+                    name: uri.into(),
+                    kind: swofty_formats::erp::kind("VTF").unwrap(),
+                    unk: vec![0; 4],
+                    fragments: vec![Fragment {
+                        name: *b"temp",
+                        offset: 0,
+                        size: data.len() as u64,
+                        flags: 0x10,
+                        compression: STORED,
+                        packed: data.len() as u64,
+                        raw: data,
+                    }],
+                    hash: [0; 16],
+                }],
+            }
+            .to_bytes()
+        };
+        let team = "2025_asset_groups/f1_2026_vehicle_package/teams/mclaren/wep/mclaren.erp";
+        std::fs::create_dir_all(dir.join(team).parent().unwrap()).unwrap();
+        std::fs::write(dir.join(team), handling()).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir: dir.clone(),
+            user_reg: None,
+        };
+        let store = Store::new(root.join("data"));
+        let season = "2025_asset_groups/f1_1990_vehicle_package/teams/mclaren/wep/mclaren_handling.erp";
+        let src = root.join("src/t.cars");
+        std::fs::create_dir_all(src.join("registry")).unwrap();
+        std::fs::write(
+            src.join("swofty.json"),
+            r#"{ "schema_version": 1, "id": "t.cars", "name": "t.cars", "version": "1.0.0", "author": "t",
+                 "compat": { "game": "f1_25" }, "operations": { "assets": ["ops.json"] },
+                 "options": [{ "id": "gears", "type": "choice", "values": ["six", "four"], "default": "six", "binds": "db" }] }"#,
+        )
+        .unwrap();
+        std::fs::write(
+            src.join("ops.json"),
+            format!(r#"{{ "schema_version": 1, "ops": [{{"op":"file.put","source":"h.erp","target":"{season}"}}] }}"#),
+        )
+        .unwrap();
+        std::fs::write(src.join("h.erp"), handling()).unwrap();
+        std::fs::write(
+            src.join("registry/handling.json"),
+            format!(
+                r#"{{ "vehicle.handling": {{
+                    "stock_mclaren": {{ "vtf": {{ "stock": "{team}" }}, "ers": null,
+                        "edits": [{{ "path": "chassis.mass", "op": "scale", "value": 0.8 }}],
+                        "gearbox": {{ "ratios": [3.0, 2.2] }} }},
+                    "own": {{ "vtf": "h.erp", "chassis": {{ "mass": 600 }} }},
+                    "$select": [{{ "ids": "t.cars/own", "when": {{ "option": "gears", "is": "four" }},
+                        "patch": {{ "gearbox": {{ "ratios": [3.0, 2.0, 1.5, 1.0] }} }} }}]
+                }} }}"#
+            ),
+        )
+        .unwrap();
+        store.install_addon(&src).unwrap();
+        store
+            .update_profile("default", |p| p.set_enabled("t.cars", true))
+            .unwrap();
+        let read = |archive: &Path| {
+            let file = ErpFile::open(archive).unwrap();
+            let r = file.erp.resources.iter().find(|r| r.name == uri).unwrap();
+            Document::parse(&file.load(r).unwrap().fragments[0].data().unwrap()).unwrap()
+        };
+        let value = |doc: &Document, section: &str, key: &str| {
+            doc.root
+                .child(section.as_bytes())
+                .and_then(|s| s.child(key.as_bytes()))
+                .and_then(|f| f.attr(b"value"))
+                .map(|v| String::from_utf8_lossy(v).into_owned())
+        };
+
+        let built = build(&store, "default", &game).unwrap();
+        let doc = read(&built.plan.data[team]);
+        assert_eq!(value(&doc, "Chassis", "Mass").as_deref(), Some("616.8"));
+        assert_eq!(value(&doc, "GearBox", "GearRatio1st").as_deref(), Some("3"));
+        assert_eq!(value(&doc, "GearBox", "GearRatio3rd").as_deref(), Some("0"));
+        assert!(
+            doc.root
+                .child(b"GearBox")
+                .unwrap()
+                .child(b"GearUpSpeedMultiple2nd")
+                .is_none()
+        );
+        assert!(doc.root.child(b"EnergyRecoverySystem").is_none());
+        let doc = read(&built.plan.added[season]);
+        assert_eq!(value(&doc, "Chassis", "Mass").as_deref(), Some("600"));
+        assert_eq!(value(&doc, "GearBox", "GearRatio3rd").as_deref(), Some("2.0"));
+        assert!(
+            built
+                .lines
+                .iter()
+                .any(|l| l.contains("handling t.cars/stock_mclaren -> mclaren.vtf")),
+            "{:?}",
+            built.lines
+        );
+        assert!(
+            built
+                .lines
+                .iter()
+                .any(|l| l.contains("Chassis/Mass: 771 -> 616.8"))
+        );
+
+        store
+            .update_profile("default", |p| {
+                let m = store.addons().unwrap()["t.cars"].clone();
+                p.set_option(&m, "gears", "four".into()).map(drop)
+            })
+            .unwrap();
+        let built = build(&store, "default", &game).unwrap();
+        let doc = read(&built.plan.added[season]);
+        assert_eq!(value(&doc, "GearBox", "GearRatio3rd").as_deref(), Some("1.5"));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn the_tracks_keep_their_menu_pictures_over_an_addon_that_ships_its_own() {
+        use swofty_formats::erp::{Erp, ErpFile, Fragment, HEADER_LEN, MAGIC, Resource, STORED};
+        use swofty_formats::gvdb::Record;
+        use swofty_formats::pkg::{Arr, Node, Obj, Pkg, Val};
+        if loader_dir().is_some() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("swofty-build-menus-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        let write = |rel: &str, data: Vec<u8>| {
+            let p = dir.join(rel);
+            std::fs::create_dir_all(p.parent().unwrap()).unwrap();
+            std::fs::write(p, data).unwrap();
+        };
+        for slot in [SLOTS[0], SLOTS[1], crate::activation::ui::PICTURE_SLOT] {
+            write(&slot_file(slot), archive(&["eaid://ui_package/slot.uil"], 0));
+        }
+        let res = "tracks.track_resource.TrackResource_0";
+        let set = "track_data.game_setup.TrackDataSet_0";
+        let records = vec![
+            Record::new("tracks._Track_instancecount_", 0, "1"),
+            Record::new("tracks.Track_0._metadata_", 2, "melbourne"),
+            Record::new("tracks.Track_0.statId", 0, "5"),
+            Record::new("tracks.Track_0.track_resource", 2, "2019"),
+            Record::new("tracks.track_resource._TrackResource_instancecount_", 0, "1"),
+            Record::new(&format!("{res}._metadata_"), 2, "2019"),
+            Record::new(&format!("{res}.iblAssetGroupsRoot"), 2, "probes/"),
+            Record::new(&format!("{res}.iblKey"), 2, "key_2019.assetgroup"),
+            Record::new("track_data.game_setup._TrackDataSet_instancecount_", 0, "1"),
+            Record::new(&format!("{set}._metadata_"), 2, "f1"),
+            Record::new(&format!("{set}._TrackData_instancecount_"), 0, "1"),
+            Record::new(&format!("{set}.TrackData_0._metadata_"), 2, "melbourne"),
+            Record::new(&format!("{set}.TrackData_0.track"), 2, "melbourne"),
+        ];
+        std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+
+        let resource = |name: &str, kind: &str, fragments: Vec<Vec<u8>>| {
+            let mut r = Resource {
+                name: name.into(),
+                kind: swofty_formats::erp::kind(kind).unwrap(),
+                unk: vec![0; 4],
+                fragments: fragments
+                    .into_iter()
+                    .map(|data| Fragment {
+                        name: *b"temp",
+                        offset: 0,
+                        size: data.len() as u64,
+                        flags: 0x10,
+                        compression: STORED,
+                        packed: data.len() as u64,
+                        raw: data,
+                    })
+                    .collect(),
+                hash: [0; 16],
+            };
+            r.hash = r.content_hash().unwrap();
+            r
+        };
+        let surface = |name: &str, slices: &[u8]| {
+            let mut head = vec![0u8; 40];
+            head[12..16].copy_from_slice(&2u32.to_le_bytes());
+            head[16..20].copy_from_slice(&2u32.to_le_bytes());
+            head[28..32].copy_from_slice(&(slices.len() as u32).to_le_bytes());
+            let data = slices.iter().flat_map(|b| [*b; 4]).collect();
+            resource(&format!("{name}.image"), "GfxSurfaceRes", vec![head, data])
+        };
+        let view = |name: &str, slices: u32| {
+            let mut v = vec![0u8; 0x18];
+            v[0x14..].copy_from_slice(&slices.to_le_bytes());
+            resource(name, "GfxSurfaceRes", vec![v])
+        };
+        let erp_of = |resources: Vec<Resource>| {
+            let mut header = [0u8; HEADER_LEN];
+            header[..4].copy_from_slice(MAGIC);
+            header[4..8].copy_from_slice(&3u32.to_le_bytes());
+            Erp {
+                header,
+                version: 3,
+                resources,
+            }
+            .to_bytes()
+        };
+        let obj = |pairs: Vec<(&str, Node)>| {
+            Node::Obj(Obj::new(
+                pairs.into_iter().map(|(k, v)| (Val::str(k), v)).collect(),
+            ))
+        };
+        let list = |names: &[&str]| {
+            let items = names
+                .iter()
+                .map(|n| {
+                    obj(vec![
+                        ("Name", Node::Val(Val::str(*n))),
+                        ("Value", Node::Val(Val::str("ui_package/stock.tif"))),
+                    ])
+                })
+                .collect();
+            obj(vec![("Contents", Node::Arr(Arr::new(items)))])
+        };
+        let in_contents = |key: &str, inner: Node| obj(vec![(key, obj(vec![("Contents", inner)]))]);
+        let pkg = |name: &str, root: Node| {
+            let data = Pkg {
+                name: *b"UIDB",
+                root,
+                vca: Vec::new(),
+                layout: None,
+            }
+            .to_bytes()
+            .unwrap();
+            resource(name, "UIDB", vec![data])
+        };
+        const OVERRIDES: &str = "eaid://ui_package/databases/overrides.uidb";
+        const MINIMAP: &str = "eaid://ui_package/databases/minimap.uidb";
+        const UIDTA: &str = "eaid://ui_package/art/texture_arrays/ui_dynamic_texture_loading.uidta";
+        const FLAGS: &str =
+            "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.tracks.flags_circle.texarray";
+        const TRACKS: &str =
+            "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.fe_world.tracks.texarray";
+        const LOGO: &str = "eaid://ui_package/art/textures/team_logo.tif";
+        let stock = ["bahrain", "blank", "melbourne"];
+        let overrides = obj(vec![(
+            "overrides",
+            obj(vec![(
+                "Contents",
+                obj(vec![
+                    (
+                        "tracks",
+                        obj(vec![("Contents", obj(vec![("flags_circle", list(&stock))]))]),
+                    ),
+                    (
+                        "fe_world",
+                        obj(vec![("Contents", obj(vec![("tracks", list(&stock))]))]),
+                    ),
+                ]),
+            )]),
+        )]);
+        let entry = obj(vec![("Name", Node::Val(Val::str("bahrain")))]);
+        let minimap = in_contents(
+            "hud",
+            in_contents("minimap", in_contents("tracks", Node::Arr(Arr::new(vec![entry])))),
+        );
+        let ui = |rel: &str| format!("2025_asset_groups/ui_package/{rel}");
+        let (front, hub) = (ui("common_front_end.erp"), ui("flow_career_hub.erp"));
+        for rel in crate::activation::ui::UI_ERPS {
+            let resources = match *rel {
+                "databases.erp" => vec![pkg(OVERRIDES, overrides.clone()), pkg(MINIMAP, minimap.clone())],
+                "flow_race.erp" => vec![pkg(MINIMAP, minimap.clone())],
+                "persistent.erp" => vec![pkg(
+                    UIDTA,
+                    obj(vec![("TextureArrays", Node::Arr(Arr::new(Vec::new())))]),
+                )],
+                "common_front_end.erp" => vec![
+                    view(FLAGS, 3),
+                    surface(FLAGS, &[0, 1, 2]),
+                    view(TRACKS, 3),
+                    surface(TRACKS, &[0, 1, 2]),
+                    surface(LOGO, &[0]),
+                ],
+                "flow_career_hub.erp" => vec![view(FLAGS, 3), surface(FLAGS, &[0, 1, 2])],
+                _ => vec![view("eaid://ui_package/other.tif", 1)],
+            };
+            write(&ui(rel), erp_of(resources));
+        }
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir: dir.clone(),
+            user_reg: None,
+        };
+        let store = Store::new(root.join("data"));
+        let install = |id: &str, ops: &str, files: Vec<(&str, Vec<u8>)>| {
+            let src = root.join("src").join(id);
+            std::fs::create_dir_all(src.join("track")).unwrap();
+            std::fs::write(
+                src.join("swofty.json"),
+                format!(
+                    r#"{{ "schema_version": 1, "id": "{id}", "name": "{id}", "version": "1.0.0", "author": "t",
+                         "compat": {{ "game": "f1_25" }}, "operations": {{ "assets": ["ops.json"] }} }}"#
+                ),
+            )
+            .unwrap();
+            std::fs::write(
+                src.join("ops.json"),
+                format!(r#"{{ "schema_version": 1, "ops": [{ops}] }}"#),
+            )
+            .unwrap();
+            for (rel, data) in files {
+                std::fs::write(src.join(rel), data).unwrap();
+            }
+            store.install_addon(&src).unwrap();
+            store
+                .update_profile("default", |p| p.set_enabled(id, true))
+                .unwrap();
+        };
+        for (code, pixel) in [("ring_a", 0xa0u8), ("ring_b", 0xb0)] {
+            let picture =
+                |key: &str| format!("eaid://ui_package/art/textures/track_installer/{code}/{key}.tif");
+            let images = serde_json::json!({ "resources": {
+                "flag_circle": picture("flag_circle"),
+                "preview_small": picture("preview_small"),
+            } });
+            let manifest = serde_json::json!({
+                "track_code": code,
+                "track_name": code,
+                "erp": format!("{code}.erp"),
+                "activation": { "copy_from_track": "melbourne", "copy_slot": "melbourne" },
+                "ui": { "images_file": "images.json" },
+            });
+            let world = format!("eaid://environment_package/tracks/{code}/wep/{code}_common.wep");
+            let archive = erp_of(vec![
+                resource(&world, "WEP", vec![vec![0]]),
+                view(&picture("flag_circle"), 1),
+                surface(&picture("flag_circle"), &[pixel]),
+                view(&picture("preview_small"), 1),
+                surface(&picture("preview_small"), &[pixel + 1]),
+            ]);
+            install(
+                &format!("mod.{code}"),
+                r#"{"op":"track.add","source":"track"}"#,
+                vec![
+                    ("track/manifest.json", manifest.to_string().into_bytes()),
+                    ("track/images.json", images.to_string().into_bytes()),
+                    (&format!("track/{code}.erp"), archive),
+                ],
+            );
+        }
+        install(
+            "t.pack",
+            &format!(
+                r#"{{"op":"erp.overlay","erps":["{front}"],"source":"front.erp"}},
+                   {{"op":"erp.overlay","erps":["{hub}"],"source":"hub.erp"}}"#
+            ),
+            vec![
+                (
+                    "front.erp",
+                    erp_of(vec![
+                        view(FLAGS, 4),
+                        surface(FLAGS, &[0, 1, 2, 9]),
+                        view(TRACKS, 2),
+                        surface(TRACKS, &[0, 9]),
+                        surface(LOGO, &[7]),
+                    ]),
+                ),
+                (
+                    "hub.erp",
+                    erp_of(vec![view(FLAGS, 4), surface(FLAGS, &[0, 1, 2, 9])]),
+                ),
+            ],
+        );
+
+        let built = build(&store, "default", &game).unwrap();
+        assert!(
+            built.warnings.contains(&kept_menus_line("t.pack")),
+            "{:#?}",
+            built.warnings
+        );
+        let slices = |rel: &str, name: &str| {
+            let file = ErpFile::open(&built.plan.data[rel]).unwrap();
+            let r = file.load(file.erp.find(name).unwrap()).unwrap();
+            let data = r.fragments.last().unwrap().data().unwrap();
+            match name.ends_with(".image") {
+                true => data.chunks(4).map(|c| c[0]).collect::<Vec<u8>>(),
+                false => data[0x14..0x18].to_vec(),
+            }
+        };
+        let image = |name: &str| format!("{name}.image");
+        assert_eq!(slices(&front, &image(FLAGS)), [0, 1, 2, 0xa0, 0xb0]);
+        assert_eq!(slices(&front, FLAGS), 5u32.to_le_bytes());
+        assert_eq!(slices(&front, &image(TRACKS)), [0, 1, 2, 0xa1, 0xb1]);
+        assert_eq!(slices(&front, TRACKS), 5u32.to_le_bytes());
+        assert_eq!(slices(&hub, &image(FLAGS)), [0, 1, 2, 0xa0, 0xb0]);
+        assert_eq!(slices(&front, &image(LOGO)), [7]);
+        let db = ErpFile::open(&built.plan.data[&ui("databases.erp")]).unwrap();
+        let res = db.load(db.erp.find(OVERRIDES).unwrap()).unwrap();
+        let pkg = Pkg::parse(&res.fragments[0].data().unwrap()).unwrap();
+        let names = |a: &str, b: &str| -> Vec<String> {
+            let mut cur = &pkg.root;
+            for p in ["overrides", "Contents", a, "Contents", b, "Contents"] {
+                cur = cur.as_obj().unwrap().get(p).unwrap();
+            }
+            cur.as_arr()
+                .unwrap()
+                .items
+                .iter()
+                .map(|n| {
+                    let name = n.as_obj().unwrap().get("Name").unwrap();
+                    name.as_val().unwrap().as_str().unwrap().to_owned()
+                })
+                .collect()
+        };
+        let indexed = ["bahrain", "blank", "melbourne", "ring_a", "ring_b"];
+        assert_eq!(names("tracks", "flags_circle"), indexed);
+        assert_eq!(names("fe_world", "tracks"), indexed);
+        let pair = built
+            .report
+            .pairs
+            .iter()
+            .find(|p| p.loser == "t.pack")
+            .unwrap_or_else(|| panic!("{:#?}", built.report.pairs));
+        assert_eq!((pair.winner.as_str(), pair.resources), ("mod.ring_b", 6));
+        assert!(pair.items.contains(&format!("{front}:{}", image(FLAGS))));
+        assert_eq!(
+            crate::conflicts::last(&store, "default").unwrap().pairs,
+            built.report.pairs
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
     fn archive(names: &[&str], byte: u8) -> Vec<u8> {
         archive_of("UILayout", names, byte)
     }
@@ -4023,6 +5771,76 @@ mod tests {
                 .collect(),
         }
         .to_bytes()
+    }
+
+    #[test]
+    fn skips_archive_changes_to_files_the_game_does_not_have() {
+        if loader_dir().is_some() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("swofty-build-absent-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::create_dir_all(dir.join("2025_asset_groups")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        std::fs::write(dir.join(GVDB), Gvdb::default().to_bytes()).unwrap();
+        let erp = "2025_asset_groups/t.erp";
+        let uri = "eaid://t/a.idf";
+        std::fs::write(dir.join(erp), archive(&[uri], 0)).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir: dir.clone(),
+            user_reg: None,
+        };
+        let store = Store::new(root.join("data"));
+        let src = root.join("src");
+        std::fs::create_dir_all(&src).unwrap();
+        std::fs::write(
+            src.join("swofty.json"),
+            r#"{ "schema_version": 1, "id": "t.cams", "name": "Cams", "version": "1.0.0", "author": "t",
+                 "compat": { "game": "f1_25" }, "operations": { "assets": ["ops.json"] } }"#,
+        )
+        .unwrap();
+        let put = |erp: &str| {
+            format!(r#"{{"op":"erp.put-resource","erp":"{erp}","resource":"{uri}","source":"a.erp"}}"#)
+        };
+        std::fs::write(
+            src.join("ops.json"),
+            format!(
+                r#"{{ "schema_version": 1, "ops": [{}, {}] }}"#,
+                put(erp),
+                put("2025_asset_groups/game_package/t.erp")
+            ),
+        )
+        .unwrap();
+        std::fs::write(src.join("a.erp"), archive(&[uri], 7)).unwrap();
+        store.install_addon(&src).unwrap();
+        store
+            .update_profile("default", |p| p.set_enabled("t.cams", true))
+            .unwrap();
+        let built = build(&store, "default", &game).unwrap();
+        assert!(
+            built.warnings.contains(
+                &"Cams: archive changes skipped; 2025_asset_groups/game_package/t.erp is not a file in F1 25. \
+                  Turn Cams off if it doesn't work, and tell its author"
+                    .to_owned()
+            ),
+            "{:?}",
+            built.warnings
+        );
+        assert!(built.plan.data.contains_key(erp), "{:?}", built.plan.data);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn missing_archive_warnings_count_the_files() {
+        let rels: BTreeSet<String> = ["b/x.erp", "a/x.erp"].map(str::to_owned).into();
+        assert_eq!(
+            missing_archives("Cams", &rels),
+            "Cams: archive changes skipped; 2 of the files it changes are not in F1 25, such as a/x.erp. \
+             Turn Cams off if it doesn't work, and tell its author"
+        );
     }
 
     #[test]
@@ -4246,6 +6064,7 @@ mod tests {
     fn a_resource_edit_that_leaves_stale_tsmd_stats_gets_them_rebuilt() {
         use swofty_formats::bxml::{Document, Element, Kind};
         use swofty_formats::erp::{Erp, Fragment, HEADER_LEN, MAGIC, Resource, STORED};
+        let _pin = crate::builtin::LoaderPin::none();
         let root = std::env::temp_dir().join(format!("swofty-build-tsmd-{}", std::process::id()));
         std::fs::remove_dir_all(&root).ok();
         let dir = root.join("game");
@@ -4483,7 +6302,8 @@ mod tests {
         assert!(!built.order.iter().any(|id| id == "w3.hud"), "{:?}", built.order);
         assert!(
             built.warnings.contains(
-                &"Race HUD is left out: it needs a newer Swofty Launcher (unknown field `hud`)".to_owned()
+                &"Race HUD is left out: it needs a newer Swofty Launcher (unknown field `widgets`)"
+                    .to_owned()
             ),
             "{:?}",
             built.warnings
@@ -4865,8 +6685,15 @@ mod tests {
             "{:?}",
             without.warnings
         );
+        let off = "Calendar sets race weekend rw_melbourne to portimao, which is off: turn Portimao on; until then \
+                   this build puts back melbourne";
+        assert!(
+            without.warnings.iter().any(|w| w == off),
+            "{:?}",
+            without.warnings
+        );
         let out = Gvdb::parse(&std::fs::read(&without.plan.data[GVDB]).unwrap()).unwrap();
-        assert_eq!(out.get_text(weekend).as_deref(), Some("portimao"));
+        assert_eq!(out.get_text(weekend).as_deref(), Some("melbourne"));
 
         store
             .update_profile("default", |p| p.set_enabled("mod.portimao", true))
@@ -4904,6 +6731,49 @@ mod tests {
             let plan: serde_json::Value = crate::read_json(&built.overlay.join(PLAN_FILE)).unwrap();
             assert_eq!(plan["tracks"], serde_json::json!([]), "{pass}");
         }
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn an_op_file_is_read_with_its_option_templating_filled_from_the_profile() {
+        let root = std::env::temp_dir().join(format!("swofty-read-op-file-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        std::fs::create_dir_all(&root).unwrap();
+        let m = AddonManifest::parse(
+            r#"{
+              "schema_version": 1, "id": "a.dnf", "name": "DNF", "version": "1.0.0", "author": "a",
+              "compat": { "game": "f1_25" },
+              "options": [
+                { "id": "failures", "type": "toggle", "default": false, "binds": "db" },
+                { "id": "chance", "type": "slider", "min": 0, "max": 10, "step": 1, "default": 2, "binds": "db" }
+              ],
+              "operations": { "database": ["db/dnf.json"] }
+            }"#,
+        )
+        .unwrap();
+        let path = root.join("dnf.json");
+        std::fs::write(
+            &path,
+            r#"{"schema_version": 1, "ops": [
+              {"op": "set", "select": "t.r", "field": "chance", "value": "{{chance}}"},
+              {"op": "set", "select": "t.r", "field": "failures", "value": "1", "when": {"failures": true}}
+            ]}"#,
+        )
+        .unwrap();
+        let raw = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+        assert!(OpFile::from_value(raw, FileKind::Database).is_err());
+        let mut p = Profile::new("x");
+        let file = read_op_file(&path, FileKind::Database, &m, &p).unwrap();
+        assert_eq!(file.ops.len(), 1);
+        p.set_option(&m, "failures", serde_json::json!(true)).unwrap();
+        p.set_option(&m, "chance", serde_json::json!(7)).unwrap();
+        let file = read_op_file(&path, FileKind::Database, &m, &p).unwrap();
+        assert_eq!(file.ops.len(), 2);
+        assert!(
+            matches!(&file.ops[0], AssetOp::Db(crate::ops::DbOp::Set { value, .. }) if value.as_deref() == Some("7"))
+        );
+        std::fs::write(&path, r#"{"ops": [{"op": "set", "value": "{{missing}}"}]}"#).unwrap();
+        assert!(read_op_file(&path, FileKind::Database, &m, &p).is_err());
         std::fs::remove_dir_all(&root).ok();
     }
 }

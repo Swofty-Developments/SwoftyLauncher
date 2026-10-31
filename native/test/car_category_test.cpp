@@ -47,6 +47,11 @@ int main()
                                      {"cs_f1_2016", "lng_cs_f1_2016"}};
     expect(cc::value_of(values, "cs_f1_2016") == 2, "a box finds its category value by game name");
     expect(cc::value_of(values, "cs_f1_2017") == -1, "a box without a value finds none");
+    std::vector<cc::Scenario> scenarios = {{0, "f1"}, {5, "f1_generic_2026"}, {15, "cs_f1_2016"}};
+    expect(cc::scenario_of(scenarios, "cs_f1_2016") == 15, "a category value finds its scenario by name");
+    expect(cc::scenario_of(scenarios, "cs_f1_2017") == -1, "a value without a scenario finds none");
+    expect(cc::decides_scenario(0) && cc::decides_scenario(1), "offline and the host decide the scenario");
+    expect(!cc::decides_scenario(2) && !cc::decides_scenario(-1), "a client takes the host's scenario");
 
     Node node;
     era::Handle a{}, b{}, c{};

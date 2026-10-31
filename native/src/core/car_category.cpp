@@ -36,9 +36,15 @@
 // Press (wrapped): button_<3 + i> is added box i. It remembers that box's category value and runs the stock
 // F1 2025 path (button_1). Other commands go to the stock handler; one it does not know is logged.
 //
-// setupFromUnranked (wrapped): with a remembered value, the category option's index is set to it through
-// the option's vtable (+0x10 get, +0x18 set), read back, and the original runs. The previous index comes
-// back at the next build of the screen or a press on a stock box, if the option still holds ours.
+// setupFromUnranked (wrapped): the original resets the session (scenario 0), forces the category option to
+// the index the content domain gives (3, f1, on the F1 2025 path), reads it and plays the scenario of that
+// name, so an index set before it does not last. With a remembered value, on a game that decides the
+// scenario (session role offline or host), after the original the category option's index is set to it
+// through the option's vtable (+0x10 get, +0x18 set) and Game_Network_SetScenario plays the scenario of the
+// value's name (Classic Seasons' cs_f1_2016 is stat id 15, setup mode swofty_f1). That call sets the setup
+// mode and entrants, marks the session dirty and, on the host, sends the scenario to the players. The
+// previous index comes back at the next build of the screen or a press on a stock box, if the option still
+// holds ours.
 //
 // Every hook falls back to the stock behaviour when a shape is not what it expects.
 
@@ -54,6 +60,7 @@ using swofty::game::Game_CreateSessionDlcSelectTab_BuildTiles_t;
 using swofty::game::Game_CreateSessionDlcSelectTab_FillTile_t;
 using swofty::game::Game_CreateSessionDlcSelectTab_HandleCommand_t;
 using swofty::game::Game_Network_CategoryOptionUsing_t;
+using swofty::game::Game_Network_SetScenario_t;
 using swofty::game::Game_OptionsStore_FindOption_t;
 using swofty::game::Vm_List_AppendChild_t;
 using swofty::game::Vm_Release_Node_t;
@@ -84,10 +91,24 @@ constexpr size_t NAME_PLAIN = 0x40;
 constexpr size_t NAME_BUF = 0x48;
 constexpr size_t DISPLAY_TEXT = 0x10;
 constexpr size_t MAX_VALUES = 64;
+constexpr size_t SELF_NETWORK = 0x10;
+constexpr size_t NETWORK_SESSION = 0x418;
+constexpr size_t SESSION_ROLE = 8;
+constexpr size_t SESSION_SPEC = 0x18;
+constexpr size_t SESSION_SPEC_SET = 0x1c;
+constexpr size_t SESSION_SCENARIO = 0x410;
+constexpr size_t SESSION_SPAN = 0x770;
+constexpr size_t SCENARIOS_BEGIN = 0x68;
+constexpr size_t SCENARIOS_END = 0x70;
+constexpr size_t SCENARIO_BYTES = 0x50;
+constexpr size_t SCENARIO_NAME_HOLDER = 8;
+constexpr size_t HOLDER_NAME = 0x10;
+constexpr size_t MAX_SCENARIOS = 512;
+constexpr uint32_t DEFAULT_SPEC = 0x3fff0000;
 constexpr size_t MAX_CHILDREN = 4096;
 
 struct Bound {
-    uintptr_t build, press, fill, append, release, setup, find, store, key, registry;
+    uintptr_t build, press, fill, append, release, setup, find, store, key, registry, set_scenario, scenarios;
 } b;
 
 struct Added {
@@ -112,7 +133,8 @@ Forced forced;
 Game_CreateSessionDlcSelectTab_BuildTiles_t *build_orig;
 Game_CreateSessionDlcSelectTab_HandleCommand_t *press_orig;
 Game_Network_CategoryOptionUsing_t *setup_orig;
-uint32_t logged_builds, logged_values, logged_unknown, logged_refused, logged_setup;
+uint32_t logged_builds, logged_values, logged_unknown, logged_refused, logged_setup, logged_scenario;
+thread_local bool applying;
 
 template <class T> T at(const void *base, size_t off)
 {
@@ -394,43 +416,114 @@ char *press_entry(void *vm, void *command)
     return press_orig(vm, fake);
 }
 
+std::vector<logic::Scenario> scenarios()
+{
+    std::vector<logic::Scenario> out;
+    void *registry = *reinterpret_cast<void **>(b.scenarios);
+    if (!mem::readable(registry, SCENARIOS_END + 8))
+        return out;
+    auto *e = at<uint8_t *>(registry, SCENARIOS_BEGIN), *end = at<uint8_t *>(registry, SCENARIOS_END);
+    if (!e || end < e || size_t(end - e) % SCENARIO_BYTES || size_t(end - e) / SCENARIO_BYTES > MAX_SCENARIOS ||
+        !mem::readable(e, size_t(end - e)))
+        return out;
+    for (; e < end; e += SCENARIO_BYTES) {
+        auto *holder = at<uint8_t *>(e, SCENARIO_NAME_HOLDER);
+        std::string name = mem::readable(holder, HOLDER_NAME + 8) ? text_at(at<const char *>(holder, HOLDER_NAME)) : "";
+        out.push_back({e[0], name});
+    }
+    return out;
+}
+
+// Puts the category option on the remembered value after setupFromUnranked forced its own. True when the
+// option holds it.
+bool hold_category(const std::string &want)
+{
+    std::string why;
+    void *option = category_option(why);
+    std::vector<logic::Value> values = option ? values_of(option) : std::vector<logic::Value>{};
+    int target = logic::value_of(values, want), before = -1, after = -1;
+    if (!option) {
+        swofty::log("[car-category] setupFromUnranked: category %s not set: %s", want.c_str(), why.c_str());
+        return false;
+    }
+    if (target < 0) {
+        swofty::log("[car-category] setupFromUnranked: category %s not set: no value has that name (%zu value(s))",
+                    want.c_str(), values.size());
+        return false;
+    }
+    if (!option_index(option, before) || before < 0 || size_t(before) >= values.size()) {
+        swofty::log("[car-category] setupFromUnranked: category %s not set: the option's current index is %d of %zu",
+                    want.c_str(), before, values.size());
+        return false;
+    }
+    if (before == target)
+        return true;
+    if (!set_option_index(option, target) || !option_index(option, after) || after != target) {
+        swofty::log("[car-category] setupFromUnranked: setting the category option to %d (%s) read back %d; putting %d "
+                    "back",
+                    target, want.c_str(), after, before);
+        set_option_index(option, before);
+        return false;
+    }
+    if (!forced.option)
+        forced = {option, before, target};
+    swofty::log("[car-category] setupFromUnranked: category option index %d (%s) -> %d (%s)", before,
+                values[size_t(before)].name.c_str(), after, want.c_str());
+    return true;
+}
+
+// Plays the scenario of the remembered value's name on the session setupFromUnranked just set up.
+void play_scenario(void *self, const std::string &want)
+{
+    auto *network = mem::readable(self, SELF_NETWORK + 8) ? at<uint8_t *>(self, SELF_NETWORK) : nullptr;
+    auto *session = mem::readable(network, NETWORK_SESSION + 8) ? at<uint8_t *>(network, NETWORK_SESSION) : nullptr;
+    if (!mem::readable(session, SESSION_SPAN)) {
+        swofty::log("[car-category] setupFromUnranked: scenario for %s not played: the session is not readable", want.c_str());
+        return;
+    }
+    int role = at<int>(session, SESSION_ROLE);
+    if (!logic::decides_scenario(role)) {
+        if (logged_scenario++ < LOG_FIRST)
+            swofty::log("[car-category] setupFromUnranked: session role %d takes the host's scenario", role);
+        return;
+    }
+    std::vector<logic::Scenario> all = scenarios();
+    int stat = logic::scenario_of(all, want);
+    if (stat < 0) {
+        swofty::log("[car-category] setupFromUnranked: scenario for %s not played: no scenario has that name (%zu "
+                    "scenario(s))",
+                    want.c_str(), all.size());
+        return;
+    }
+    uint8_t now = at<uint8_t>(session, SESSION_SCENARIO);
+    if (now == uint8_t(stat))
+        return;
+    uint32_t spec = at<uint8_t>(session, SESSION_SPEC_SET) ? at<uint32_t>(session, SESSION_SPEC) : DEFAULT_SPEC;
+    reinterpret_cast<Game_Network_SetScenario_t *>(b.set_scenario)(session, uint8_t(stat), &spec);
+    swofty::log("[car-category] setupFromUnranked: scenario %u -> %d (%s), now %u, session role %d%s", now, stat,
+                want.c_str(), at<uint8_t>(session, SESSION_SCENARIO), role,
+                role == 1 ? "; the host sends it to the players" : "");
+}
+
 void setup_entry(void *self)
 {
+    if (applying) {
+        setup_orig(self);
+        return;
+    }
+    setup_orig(self);
     std::unique_lock<std::recursive_mutex> g(lock);
     std::string want = chosen;
-    if (!want.empty()) {
-        std::string why;
-        void *option = category_option(why);
-        std::vector<logic::Value> values = option ? values_of(option) : std::vector<logic::Value>{};
-        int target = logic::value_of(values, want), before = -1, after = -1;
-        if (!option)
-            swofty::log("[car-category] setupFromUnranked: category %s not set: %s", want.c_str(), why.c_str());
-        else if (target < 0)
-            swofty::log("[car-category] setupFromUnranked: category %s not set: no value has that name (%zu value(s))",
-                        want.c_str(), values.size());
-        else if (!option_index(option, before) || before < 0 || size_t(before) >= values.size())
-            swofty::log("[car-category] setupFromUnranked: category %s not set: the option's current index is %d of %zu",
-                        want.c_str(), before, values.size());
-        else if (before == target)
-            swofty::log("[car-category] setupFromUnranked: the category option already holds %s (index %d)", want.c_str(),
-                        target);
-        else if (!set_option_index(option, target) || !option_index(option, after) || after != target) {
-            swofty::log("[car-category] setupFromUnranked: setting the category option to %d (%s) read back %d; putting %d "
-                        "back",
-                        target, want.c_str(), after, before);
-            set_option_index(option, before);
-        } else {
-            if (!forced.option)
-                forced = {option, before, target};
-            swofty::log("[car-category] setupFromUnranked: category option index %d (%s) -> %d (%s)", before,
-                        values[size_t(before)].name.c_str(), after, want.c_str());
-        }
-    } else if (forced.option && logged_setup++ < LOG_FIRST) {
-        swofty::log("[car-category] setupFromUnranked with no addon category chosen; the forced index stays until the "
-                    "next build or stock press");
+    if (want.empty()) {
+        if (forced.option && logged_setup++ < LOG_FIRST)
+            swofty::log("[car-category] setupFromUnranked with no addon category chosen; the forced index stays until "
+                        "the next build or stock press");
+        return;
     }
-    g.unlock();
-    setup_orig(self);
+    applying = true;
+    if (hold_category(want))
+        play_scenario(self, want);
+    applying = false;
 }
 
 uintptr_t need(const char *id, std::string &missing)
@@ -454,6 +547,8 @@ bool bind_all(std::string &why)
     b.store = need("g_Game_OptionsStore", missing);
     b.key = need("k_Gdb_StringXorKey", missing);
     b.registry = need("g_Vm_Registry", missing);
+    b.set_scenario = need("Game_Network_SetScenario", missing);
+    b.scenarios = need("g_Game_Scenarios", missing);
     if (missing.empty())
         return true;
     why = "needs " + missing + ", which this build does not resolve";

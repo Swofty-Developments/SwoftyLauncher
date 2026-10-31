@@ -84,6 +84,7 @@ pub struct UiBuild {
     pub dir: PathBuf,
     pub replaced: BTreeMap<String, PathBuf>,
     pub lists: BTreeMap<String, BTreeSet<String>>,
+    pub kept: Kept,
     pub notes: Vec<String>,
 }
 
@@ -430,6 +431,43 @@ pub fn stamp(maps: &[MapUi], original: &dyn Fn(&str) -> PathBuf) -> Result<Strin
 
 pub type Lists = BTreeMap<String, BTreeSet<String>>;
 
+pub type Kept = BTreeMap<(String, String), BTreeSet<String>>;
+
+fn kept(maps: &[MapUi], lists: &Lists, array_erps: &BTreeMap<String, Vec<&str>>) -> Kept {
+    let mut kept = Kept::new();
+    let pictured: BTreeSet<String> = lists
+        .iter()
+        .filter(|(_, s)| !s.is_empty())
+        .map(|(c, _)| c.clone())
+        .collect();
+    if !pictured.is_empty() {
+        kept.insert((ui_file("databases.erp"), OVERRIDES.into()), pictured);
+    }
+    let mapped: BTreeSet<String> = maps
+        .iter()
+        .filter(|m| m.pkg.ui.as_ref().is_some_and(|u| u.minimap_file.is_some()))
+        .map(|m| m.pkg.track_code.clone())
+        .collect();
+    if !mapped.is_empty() {
+        for rel in ["databases.erp", "flow_race.erp"] {
+            kept.insert((ui_file(rel), MINIMAP.into()), mapped.clone());
+        }
+    }
+    for (rel, ls) in array_erps {
+        for list in ls {
+            let codes: BTreeSet<String> = lists
+                .iter()
+                .filter(|(_, s)| s.contains(*list))
+                .map(|(c, _)| c.clone())
+                .collect();
+            for name in [texarray(list), format!("{}.image", texarray(list))] {
+                kept.insert((rel.clone(), name), codes.clone());
+            }
+        }
+    }
+    kept
+}
+
 pub fn plan_lists(maps: &[MapUi], original: &dyn Fn(&str) -> PathBuf) -> Result<(Lists, Vec<String>)> {
     let mut lists = BTreeMap::new();
     let mut notes = Vec::new();
@@ -505,6 +543,7 @@ pub fn build_ui(maps: &[MapUi], original: &dyn Fn(&str) -> PathBuf, cache: &Path
             }
         }
     }
+    build.kept = kept(maps, &lists, &array_erps);
     targets.extend(array_erps.keys().cloned());
     targets.sort();
     targets.dedup();

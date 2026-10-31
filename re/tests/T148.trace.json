@@ -1,0 +1,31 @@
+{
+ "log": {
+  "max_mb": 4,
+  "on_full": "stop",
+  "summary_every_s": 60
+ },
+ "limits": {
+  "max_events_total": 2000,
+  "max_read": 64
+ },
+ "hooks": [
+  {
+   "id": "t147.tt_cmd",
+   "test": "T148",
+   "sig": "tracks.time_trial_track_select_vm_on_command_raised",
+   "kind": "func_start",
+   "fields": [
+    "cmd=u32:[[rdx]]",
+    "changed=u8:[rcx+0x300]",
+    "ready=u8:[rcx+0x301]",
+    "fading=u8:[rcx+0x303]",
+    "s130=u32:[[rcx+0x2c0]+0x130]",
+    "s134=u32:[[rcx+0x2c0]+0x134]"
+   ],
+   "ret": true,
+   "bt": 2,
+   "max_per_sec": 20,
+   "max_events": 400
+  }
+ ]
+}

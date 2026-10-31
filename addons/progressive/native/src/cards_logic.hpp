@@ -9,7 +9,9 @@
 // two rows with no count check). A team neither list names (the F2 teams of the career list's F2
 // drivers) keeps its rows as they are.
 //   1. the season list's drivers of that team on their season seats, with the season row's look,
-//      car, livery and number (the career row keeps its identity, ordinal and driver key);
+//      car, livery and number (the career row keeps its identity, ordinal and driver key); a season
+//      driver the career list has no row for takes his row from the driver pool list when it holds
+//      him (an added team's new driver, whose teamless entrant the core put there at boot);
 //   2. a seat the season leaves empty gets a career row of that team's 2026 seats whose driver is
 //      not in the season, else a free row whose driver is not in the season, with the team's car
 //      of the season, else of the first season list, else the team's 2026 car;
@@ -96,21 +98,114 @@ template <class R> bool seated(const R &r)
     return !none(r.team_stat_id) && (r.team_position >> 8) && (r.team_position & 0xff) < 2;
 }
 
+// Choose Driver's commands (slot 10 0x141a5df70, the djb2 hash of the command's name):
+// driver_selected_changed moves the focus to another card (vm +0x480 becomes the focused driver),
+// driver_selected is the pick (the focused driver goes into the pick 0x146066bb0 and
+// open_team_select or open_confirm_selections fires).
+constexpr uint32_t kCommandFocus = 0x30aef1e2u;
+constexpr uint32_t kCommandPick = 0x09d96b39u;
+
+// Team choice (cards.cpp gate_team): the wizard's Team Select lists only the picked driver's team
+// when his line-up row has one and every team when it has none, and it makes one tile per team
+// from the line-up rows, so a team with no row left on it has no tile. Only the pick changes a
+// row: the picked driver's row gets team_select_team(), and a row an earlier pick changed for
+// another driver gets its team back first. A focus change writes nothing; up to 1.2.4 it set the
+// focused driver's row, so in choose every team whose drivers the player scrolled past (2018:
+// Ferrari, Force India) was missing from Team Select.
+inline bool gates_team(uint32_t command)
+{
+    return command == kCommandPick;
+}
+
+// The picked driver's line-up team for Team Select: his start season team from the view with
+// follow_driver (none when the view does not seat him), none with choose.
+template <class R> uint32_t team_select_team(bool follow, const R *view_row)
+{
+    return follow && view_row && seated(*view_row) ? view_row->team_stat_id : kNoKey;
+}
+
+template <class R> struct TeamGate {
+    struct Swap {
+        R *row;
+        uint8_t id_lo;
+        uint16_t id_hi;
+        uint32_t was, now;
+    };
+    uint32_t driver = kNoKey;
+    std::vector<Swap> swaps;
+};
+
+enum class Gate { not_pick, no_driver, no_row, kept, already, changed, write_failed };
+
+// Puts every row the gate changed back on its own team, newest first, when the row still holds the
+// same driver and the team the gate wrote. read(row, out) and put(row, team) return false when the
+// row can't be read or written. Returns the rows put back.
+template <class R, class Read, class Put> size_t ungate(TeamGate<R> &g, Read &&read, Put &&put)
+{
+    size_t back = 0;
+    for (auto w = g.swaps.rbegin(); w != g.swaps.rend(); ++w) {
+        R r{};
+        if (read(w->row, r) && r.id_lo == w->id_lo && r.id_hi == w->id_hi && r.team_stat_id == w->now &&
+            put(w->row, w->was))
+            ++back;
+    }
+    g.swaps.clear();
+    g.driver = kNoKey;
+    return back;
+}
+
+// One Choose Driver command for the line-up rows[0..n): the pick of driver puts his row on team;
+// any other command changes nothing. *restored counts the rows of an earlier pick put back.
+template <class R, class Read, class Put>
+Gate gate(TeamGate<R> &g, uint32_t command, uint32_t driver, R *rows, size_t n, uint32_t team, Read &&read, Put &&put,
+          size_t *restored = nullptr)
+{
+    if (restored)
+        *restored = 0;
+    if (!gates_team(command))
+        return Gate::not_pick;
+    if (none(driver))
+        return Gate::no_driver;
+    if (g.driver != driver) {
+        size_t back = ungate(g, read, put);
+        if (restored)
+            *restored = back;
+    }
+    R *row = nullptr;
+    for (size_t i = 0; i < n && !row; ++i)
+        if (rows[i].id_lo == (driver & 0xff) && rows[i].id_hi == (driver >> 16))
+            row = &rows[i];
+    if (!row)
+        return Gate::no_row;
+    if (g.driver == driver && row->team_stat_id == team)
+        return Gate::kept;
+    g.driver = driver;
+    if (row->team_stat_id == team)
+        return Gate::already;
+    typename TeamGate<R>::Swap w{row, row->id_lo, row->id_hi, row->team_stat_id, team};
+    if (!put(row, team))
+        return Gate::write_failed;
+    g.swaps.push_back(w);
+    return Gate::changed;
+}
+
 template <class R> struct Rows {
     const R *begin = nullptr;
     size_t count = 0;
 };
 
 struct Stats {
-    size_t season = 0, missing = 0, looks = 0, cars = 0, numbers = 0, filled = 0, benched = 0, teams = 0;
+    size_t season = 0, missing = 0, looks = 0, cars = 0, numbers = 0, filled = 0, benched = 0, teams = 0, pooled = 0;
 };
 
-template <class R> size_t build(const Rows<R> &career, const Rows<R> &season, const Rows<R> &first_season, R *out,
-                                size_t cap, Stats &st)
+template <class R>
+size_t build(const Rows<R> &career, const Rows<R> &season, const Rows<R> &first_season, R *out, size_t cap, Stats &st,
+             const Rows<R> &pool = {})
 {
     if (career.count > kMaxRows || cap < career.count)
         return 0;
     bool used[kMaxRows] = {};
+    bool pool_used[kMaxRows] = {};
     uint32_t teams[kMaxTeams];
     size_t team_count = 0, n = 0;
     uint16_t free_position = 0x00ff;
@@ -165,11 +260,16 @@ template <class R> size_t build(const Rows<R> &career, const Rows<R> &season, co
                 if (!same_team(y.team_stat_id, team) || (y.team_position & 0xff) != pos)
                     continue;
                 size_t i = find(y);
-                if (i == career.count) {
+                size_t from_pool = pool.count;
+                if (i == career.count)
+                    for (size_t j = 0; j < pool.count && j < kMaxRows && from_pool == pool.count; ++j)
+                        if (!pool_used[j] && same_driver(pool.begin[j], y))
+                            from_pool = j;
+                if (i == career.count && from_pool == pool.count) {
                     ++st.missing;
                     continue;
                 }
-                R r = career.begin[i];
+                R r = i != career.count ? career.begin[i] : pool.begin[from_pool];
                 if (!none(y.driver_customisation)) {
                     r.driver_customisation = y.driver_customisation;
                     ++st.looks;
@@ -186,7 +286,12 @@ template <class R> size_t build(const Rows<R> &career, const Rows<R> &season, co
                 r.team_stat_id = y.team_stat_id;
                 r.team_position = static_cast<uint16_t>(0x100 | placed);
                 out[n++] = r;
-                used[i] = true;
+                if (i != career.count)
+                    used[i] = true;
+                else {
+                    pool_used[from_pool] = true;
+                    ++st.pooled;
+                }
                 ++placed;
                 ++st.season;
             }
@@ -279,6 +384,49 @@ constexpr std::string_view kLogoArrays[] = {
     "team_logos.f1_2023",          "team_logos.driver_career_2024_team_select", "teams.mp_team_select_logos",
     "teams.driver_select_team_logos", "teams.badges_broadcast",              "broadcast_ui_generic.grid_team_logos",
     "osd.timing_tower.team_badges_hud", "osd.timing_tower.team_badges_broadcast"};
+
+// The arrays the core's team.logo build gives an added team's own key in, from its own images (another context's
+// where it gives none) or, for a team with no image, its donor's slice (native/src/core/apply/content/teams.hpp
+// logo_arrays, all but the timing tower's, which the team row's badge key names).
+constexpr std::string_view kAddedLogoArrays[] = {"teams.driver_select_team_logos", "team_logos.driver_career_2024_team_select",
+                                                 "teams.mp_team_select_logos", "teams.badges_broadcast",
+                                                 "broadcast_ui_generic.grid_team_logos"};
+
+inline bool split_logo_path(std::string_view p, std::string_view &array, std::string_view &label, size_t &dot)
+{
+    constexpr std::string_view kRoot = "overrides.";
+    size_t at = !p.empty() && p[0] == '#' ? 1 : 0;
+    if (p.size() < at + kRoot.size() || p.substr(at, kRoot.size()) != kRoot)
+        return false;
+    dot = p.rfind('.');
+    if (dot == std::string_view::npos || dot <= at + kRoot.size())
+        return false;
+    array = p.substr(at + kRoot.size(), dot - at - kRoot.size());
+    label = p.substr(dot + 1);
+    return true;
+}
+
+// A registry path "[#]overrides.<array>.<label>" of an array in kAddedLogoArrays whose label is the slot row of an
+// added team (key_of gives the team's own logo key, empty for any other row) gets that key: out is the path with
+// the label replaced. Anything else stays (false), for logo_path() to map from years.json.
+template <class KeyOf> bool added_logo_path(const char *path, KeyOf &&key_of, std::string &out)
+{
+    std::string_view array, label;
+    size_t dot = 0;
+    if (!path || !split_logo_path(path, array, label, dot))
+        return false;
+    bool built = false;
+    for (std::string_view a : kAddedLogoArrays)
+        built = built || a == array;
+    if (!built)
+        return false;
+    std::string key = key_of(std::string(label));
+    if (key.empty() || key == label)
+        return false;
+    out.assign(path, dot + 1);
+    out += key;
+    return true;
+}
 
 inline const char *logo_for(const std::vector<LogoMap> &map, int year, const char *label)
 {

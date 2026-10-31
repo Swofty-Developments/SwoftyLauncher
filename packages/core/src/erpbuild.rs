@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::{Path, PathBuf};
 
 use swofty_formats::erp::{self, Entry, Erp, ErpFile, Resource};
@@ -92,6 +92,15 @@ pub struct ErpBuild<'a> {
     stock: HashMap<String, Option<Resource>>,
     merges: Vec<SliceMerge>,
     notes: Vec<String>,
+    kept: HashSet<(String, String)>,
+    held: Vec<Held>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Held {
+    pub erp: String,
+    pub resource: String,
+    pub origin: String,
 }
 
 // What one merge-slices op did: the stock slice count (0 without a stock array), the
@@ -285,8 +294,10 @@ fn write_archive(out: &Path, rel: &str, archive: Archive, cache: Option<&Path>) 
             Slot::Owned(r) => Entry::Owned(r),
         })
         .collect();
-    file.write(entries, &path)
-        .map_err(|e| fail(format!("{rel}: {e}")))?;
+    file.write(entries, &path).map_err(|e| match e {
+        swofty_formats::Error::IoAt { .. } => Error::Formats(e),
+        e => fail(format!("{rel}: {e}")),
+    })?;
     if let Some(c) = cached {
         if let Some(dir) = c.parent() {
             std::fs::create_dir_all(dir).ok();
@@ -345,6 +356,27 @@ pub fn writes(op: &ErpOp) -> Vec<&str> {
     }
 }
 
+fn replaces(op: &ErpOp) -> Option<(&str, &str)> {
+    match op {
+        ErpOp::PutResource {
+            erp,
+            resource,
+            rename,
+            ..
+        }
+        | ErpOp::CopyResource {
+            erp,
+            resource,
+            rename,
+            ..
+        } => Some((erp, rename.as_deref().unwrap_or(resource))),
+        ErpOp::ReplaceResource { erp, resource, .. } | ErpOp::RemoveResource { erp, resource } => {
+            Some((erp, resource))
+        }
+        _ => None,
+    }
+}
+
 pub fn unsupported(op: &ErpOp) -> Option<&'static str> {
     match op {
         ErpOp::PatchPkg { edits, .. } => edits.iter().find(|e| !supported(e)).map(edit_name),
@@ -391,7 +423,21 @@ impl<'a> ErpBuild<'a> {
             stock: HashMap::new(),
             merges: Vec::new(),
             notes: Vec::new(),
+            kept: HashSet::new(),
+            held: Vec::new(),
         }
+    }
+
+    pub fn keep(&mut self, erp: &str, resource: &str) {
+        self.kept.insert((erp.to_owned(), resource.to_owned()));
+    }
+
+    pub fn keeps(&self, erp: &str, resource: &str) -> bool {
+        !self.kept.is_empty() && self.kept.contains(&(erp.to_owned(), resource.to_owned()))
+    }
+
+    pub fn take_held(&mut self) -> Vec<Held> {
+        std::mem::take(&mut self.held)
     }
 
     fn erp(&mut self, rel: &str) -> Result<&mut Archive> {
@@ -427,6 +473,14 @@ impl<'a> ErpBuild<'a> {
                     self.apply_for(&put, origin, resolve)?;
                 }
             }
+            return Ok(());
+        }
+        if let Some((erp, resource)) = replaces(op).filter(|(e, r)| self.keeps(e, r)) {
+            self.held.push(Held {
+                erp: erp.to_owned(),
+                resource: resource.to_owned(),
+                origin: origin.to_owned(),
+            });
             return Ok(());
         }
         self.apply(op, resolve)?;
@@ -2408,6 +2462,75 @@ mod tests {
         assert_eq!(resized.len(), 1);
         assert_eq!(resized[0].erp, UI);
         assert!(b.take_merges().iter().all(|m| m.slices == 4));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn kept_resources_stay_when_an_addon_replaces_them() {
+        let root = std::env::temp_dir().join(format!("swofty-erpbuild-kept-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let (game, addon) = (root.join("game"), root.join("addon"));
+        std::fs::create_dir_all(game.join(UI).parent().unwrap()).unwrap();
+        std::fs::create_dir_all(&addon).unwrap();
+        let view = LOGOS.strip_suffix(".image").unwrap();
+        let other = "eaid://ui_package/art/textures/team_logo.image";
+        let named = |name: &str, r: Resource| Resource {
+            name: name.into(),
+            ..r
+        };
+        let built = array(2, &[[0; 4], [1; 4], [7; 4], [8; 4]]);
+        std::fs::write(
+            game.join(UI),
+            texture_erp(vec![
+                built.clone(),
+                named(view, array(2, &[[4; 4]])),
+                named(other, array(2, &[[0; 4]])),
+            ]),
+        )
+        .unwrap();
+        std::fs::write(
+            addon.join("pack.erp"),
+            texture_erp(vec![
+                array(2, &[[0; 4], [1; 4], [5; 4]]),
+                named(view, array(2, &[[3; 4]])),
+                named(other, array(2, &[[9; 4]])),
+            ]),
+        )
+        .unwrap();
+        let original = |rel: &str| game.join(rel);
+        let resolve = |s: &Source| Ok(s.resolve(&addon)?);
+        let mut b = ErpBuild::new(&original);
+        b.keep(UI, LOGOS);
+        b.keep(UI, view);
+        assert!(b.keeps(UI, LOGOS) && !b.keeps(UI, other) && !b.keeps(BOOT, LOGOS));
+        let overlay = ErpOp::Overlay {
+            erps: vec![UI.into()],
+            source: Source::addon("pack.erp"),
+        };
+        b.apply_for(&overlay, "pack", &resolve).unwrap();
+        let put = ErpOp::PutResource {
+            erp: UI.into(),
+            resource: LOGOS.into(),
+            source: Source::addon("pack.erp"),
+            rename: None,
+        };
+        b.apply_for(&put, "later", &resolve).unwrap();
+        let written: Vec<(String, Vec<u8>, String)> = b
+            .resources()
+            .map(|(_, r, _, o)| (r.name.clone(), slices_in(r), o.to_owned()))
+            .collect();
+        assert_eq!(written, [(other.to_owned(), vec![9], "pack".to_owned())]);
+        let taken = b.take_held();
+        let shown: Vec<(&str, &str, &str)> = taken
+            .iter()
+            .map(|h| (h.erp.as_str(), h.resource.as_str(), h.origin.as_str()))
+            .collect();
+        assert_eq!(
+            shown,
+            [(UI, LOGOS, "pack"), (UI, view, "pack"), (UI, LOGOS, "later")]
+        );
+        assert_eq!(b.origins(), ["pack"]);
+        assert!(b.take_held().is_empty());
         std::fs::remove_dir_all(&root).ok();
     }
 

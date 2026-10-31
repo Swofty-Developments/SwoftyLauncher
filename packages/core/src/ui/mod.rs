@@ -5,6 +5,7 @@ pub mod check;
 pub mod era;
 pub mod hub;
 pub mod idf;
+pub mod mfd;
 pub mod node;
 pub mod pages;
 pub mod patch;
@@ -19,8 +20,8 @@ use crate::builtin::CORE_ID;
 use crate::manifest::CAREER_SETUP_BACK;
 use crate::settings::{SessionScreen, SessionSettings, UI_DIR, screen_file};
 use crate::{Error, Result, io_err};
-use node::err;
-use pages::{ADJUST_TOOLTIP, HOME, Sources, TILES};
+use node::{boolv, err, s, uidb_var};
+use pages::{ADJUST_TOOLTIP, Sources, TILES};
 use patch::Popup;
 
 pub const UI: &str = "2025_asset_groups/ui_package";
@@ -128,6 +129,7 @@ fn write_archive_copying(
             .ok_or_else(|| err(format!("{name} has no fragment {index}")))?;
         let data = f(&frag.data()?)?;
         res.set_fragment(index, &data)?;
+        res.repair_stats()?;
         owned.insert(name.to_owned(), res);
     }
     let mut extra = Vec::new();
@@ -200,6 +202,38 @@ fn core_version(settings: &SessionSettings) -> String {
         .find(|m| m.id == CORE_ID)
         .map(|m| m.version.clone())
         .unwrap_or_else(|| crate::builtin::core_manifest().version.to_string())
+}
+
+pub struct MfdRow {
+    pub addon: String,
+    pub title: String,
+    pub option: String,
+    pub label: String,
+    pub text: String,
+}
+
+pub fn mfd_rows(settings: &SessionSettings) -> Vec<MfdRow> {
+    let mut out = Vec::new();
+    for a in settings.addons.iter().filter(|a| a.enabled) {
+        let Some(m) = &a.mfd else { continue };
+        for id in &m.rows {
+            if let Some(o) = a.options.iter().find(|o| &o.id == id) {
+                out.push(MfdRow {
+                    addon: a.id.clone(),
+                    title: m.title.clone(),
+                    option: o.id.clone(),
+                    label: o.label.clone(),
+                    text: o
+                        .states
+                        .get(o.current)
+                        .map(|s| s.text.clone())
+                        .unwrap_or_default(),
+                });
+            }
+        }
+    }
+    out.truncate(swofty_addon::manifest::MFD_ROWS_MAX);
+    out
 }
 
 pub fn build(
@@ -314,9 +348,17 @@ pub fn build(
         problems.extend(report.hard.iter().map(|h| h.to_string()));
     }
 
-    let pages: Vec<(String, String)> = flow
+    let homes = pages::home_plan(flow.len());
+    let pages: Vec<(String, String, String)> = flow
         .iter()
-        .map(|e| (format!("open_{}_{}", e.kind.key(), e.index), e.screen.clone()))
+        .enumerate()
+        .map(|(i, e)| {
+            (
+                format!("open_{}_{}", e.kind.key(), e.index),
+                e.screen.clone(),
+                pages::home_of(i),
+            )
+        })
         .collect();
     let mut setup_ids: Vec<String> = Vec::new();
     for s in &setups {
@@ -327,10 +369,22 @@ pub fn build(
             format!("{}.{}", s.next, s.back_route),
         ]);
     }
-    let mut groups: Vec<&str> = vec![HOME, "fe_home.mod_menu"];
-    groups.extend(pages.iter().map(|(_, s)| s.as_str()));
+    let mut groups: Vec<&str> = homes.iter().map(|h| h.screen.as_str()).collect();
+    groups.push("fe_home.mod_menu");
+    groups.extend(pages.iter().map(|(_, s, _)| s.as_str()));
     groups.extend(setup_ids.iter().map(String::as_str));
-    let state = pages::state_entries(&flow)?;
+    let mut state = pages::state_entries(&flow)?;
+    let mfd_rows = mfd_rows(settings);
+    if !mfd_rows.is_empty() {
+        state.push((
+            "mfd_enabled".to_owned(),
+            uidb_var("mfd_enabled", "bool", boolv(true)),
+        ));
+        for (k, r) in mfd_rows.iter().enumerate() {
+            let name = format!("m{k}");
+            state.push((name.clone(), uidb_var(&name, "uistring", s(&r.text))));
+        }
+    }
     let popup = Popup::for_version(&core_version(settings));
     let show_panel = panel_shown(settings);
 
@@ -345,7 +399,7 @@ pub fn build(
         (
             ROUTES,
             Box::new(|d| {
-                let mut groups = patch::route_groups(&pages);
+                let mut groups = patch::route_groups(&homes, &pages);
                 groups.extend(setup_groups);
                 let b = patch::routes(d, groups, patch::screen_route_groups(&addon_groups))?;
                 let b = patch::setup_routes(&b, &setups, &mut placed.borrow_mut())?;
@@ -381,6 +435,9 @@ pub fn build(
                 Ok(b)
             }),
         ));
+    }
+    if !mfd_rows.is_empty() {
+        persistent.push((mfd::METADATA, Box::new(mfd::metadata)));
     }
     write_erp(&src_p, &dst_p, persistent)?;
     for s in &setups {
@@ -485,6 +542,41 @@ pub fn build(
     build.lines.extend(setup_lines);
     build.lines.extend(career_lines);
     build.warnings.extend(career_warnings);
+    if !mfd_rows.is_empty() {
+        let mut rows: Vec<mfd::Row> = Vec::new();
+        for (k, r) in mfd_rows.iter().enumerate() {
+            if k == 0 || mfd_rows[k - 1].addon != r.addon {
+                rows.push(mfd::Row {
+                    label: r.title.clone(),
+                    value: None,
+                });
+            }
+            rows.push(mfd::Row {
+                label: r.label.clone(),
+                value: Some(mfd::value_path(k)),
+            });
+        }
+        for rel in mfd::TEMPLATE_ERPS {
+            let (src, dst) = erp(rel);
+            write_erp(
+                &src,
+                &dst,
+                vec![(mfd::TEMPLATES, Box::new(|d| mfd::templates(d, &rows)))],
+            )?;
+            build.erps.insert(ui_file(rel), dst);
+        }
+        build.lines.push(format!(
+            "ADDONS MFD page: {} row(s) from {}",
+            mfd_rows.len(),
+            mfd_rows
+                .iter()
+                .map(|r| r.addon.as_str())
+                .collect::<std::collections::BTreeSet<_>>()
+                .into_iter()
+                .collect::<Vec<_>>()
+                .join(", ")
+        ));
+    }
     let mut eras = era_rows(input, writer, out, &mut build.lines, &mut build.warnings)?;
     for rel in car_category_boxes(input, writer, out, &eras, &mut build.lines, &mut build.warnings)? {
         if !eras.contains(&rel) {
@@ -851,7 +943,7 @@ fn car_category_boxes(
             ],
             Vec::new(),
         )?;
-        std::fs::rename(&tmp, &dst).map_err(io_err(&dst))?;
+        swofty_formats::erp::replace(&tmp, &dst).map_err(io_err(&dst))?;
         written.push(rel);
     }
     if written.is_empty() {

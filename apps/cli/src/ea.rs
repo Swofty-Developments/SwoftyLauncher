@@ -5,6 +5,8 @@ use std::time::{Duration, Instant};
 use anyhow::{Result, anyhow, bail};
 use swofty_core::ea_app::{self, Handoff};
 use swofty_core::install::{Game, Source};
+use swofty_core::launch;
+use swofty_core::offline::{self, Slot};
 use swofty_core::process::{GameProcess, game_processes, stop_process};
 use swofty_core::recovery::Scope;
 use swofty_core::steam_client;
@@ -16,7 +18,9 @@ const APP_START_TIMEOUT: Duration = Duration::from_secs(90);
 // A link handed over while the EA app is still starting can be dropped:
 // under Proton one sent a second after EADesktop.exe appeared never arrived.
 const APP_SETTLE: Duration = Duration::from_secs(10);
-const HANDOFF_TIMEOUT: Duration = Duration::from_secs(180);
+// The EA app syncs cloud saves before it starts the game, which took about
+// 170 s on a test copy, so the wait for the link outlasts that sync.
+const HANDOFF_TIMEOUT: Duration = Duration::from_secs(300);
 #[cfg(not(windows))]
 const SERVER_STOP_TIMEOUT: Duration = Duration::from_secs(30);
 const PRESS_PLAY_TIMEOUT: Duration = Duration::from_secs(600);
@@ -74,6 +78,18 @@ pub fn check_recorded(game: &Path) -> Result<()> {
     bail!("{}{pick}", m.text())
 }
 
+fn desktop_opener(h: &Handoff) -> Option<(std::process::Command, bool)> {
+    ea_app::desktop_opener(h, swofty_core::compat::elevated())
+}
+
+/// Whether a session puts offline play's file in EA AntiCheat's launcher's
+/// place. The EA app runs that launcher to start F1 25 and asks to repair
+/// F1 25 when another file is there, so a vanilla session through the EA
+/// app leaves it as installed.
+pub fn stages_offline(via_ea: bool, vanilla: bool) -> bool {
+    !(via_ea && vanilla)
+}
+
 /// An EA app copy needs the EA app: start it when it is closed and wait for
 /// it, as Steam is for a Steam copy. On Linux the launch.ea_launch_command
 /// setting, run without a link, starts it; a command that needs the link
@@ -88,8 +104,8 @@ pub fn ensure(store: &Store, opted_out: bool) -> Result<()> {
             "the EA app is closed and starting it is turned off (launch.start_store or --no-start-store); \
              open the EA app and press Play again"
         ),
-        Policy::Start => match h.as_ref().and_then(ea_app::opener) {
-            Some(mut open) => {
+        Policy::Start => match h.as_ref().and_then(desktop_opener) {
+            Some((mut open, exit_tells)) => {
                 say("ea app", "detected: closed; starting the EA app");
                 let stage = StageFile(store.root.join(steam_client::STAGE_FILE));
                 stage.set("Starting the EA app…");
@@ -97,7 +113,7 @@ pub fn ensure(store: &Store, opted_out: bool) -> Result<()> {
                     anyhow!("could not start the EA app ({e}); open the EA app and press Play again")
                 })?;
                 let since = Instant::now();
-                match wait_for_app(&mut child, || since.elapsed() >= APP_START_TIMEOUT) {
+                match wait_for_app(&mut child, exit_tells, || since.elapsed() >= APP_START_TIMEOUT) {
                     AppStart::Running => {
                         say(
                             "ea app",
@@ -180,13 +196,15 @@ enum AppStart {
 }
 
 /// Wait for EADesktop.exe after `child` was asked to open the EA app. A
-/// command that exits with an error opened nothing, so waiting is pointless.
-fn wait_for_app(child: &mut Child, timed_out: impl Fn() -> bool) -> AppStart {
+/// command that exits with an error opened nothing, so waiting is pointless,
+/// unless its exit code says nothing about the EA app (`exit_tells` false).
+fn wait_for_app(child: &mut Child, exit_tells: bool, timed_out: impl Fn() -> bool) -> AppStart {
     loop {
         if ea_app::running() {
             return AppStart::Running;
         }
         if let Ok(Some(exit)) = child.try_wait()
+            && exit_tells
             && !exit.success()
         {
             return AppStart::CommandFailed(exit);
@@ -268,14 +286,23 @@ pub fn start(store: &Store, game: &Path, args: &[String], session: &Path, before
     let pid = match wait_for_game(game, before, HANDOFF_TIMEOUT, &mut handoff)? {
         Some(pid) => pid,
         None => {
-            if let Some(mut open) = ea_app::opener(&h) {
+            if let Some((mut open, _)) = desktop_opener(&h) {
                 detach(&mut open).ok();
             }
-            say(
-                "ea app",
-                "F1 25 did not start from the launch link; press Play on F1 25 in the EA app",
-            );
-            stage.set("Press Play on F1 25 in the EA app");
+            let slot = offline::slot(&offline::journal_path(&store.root));
+            match &slot {
+                Ok(Some(Slot::Staged)) => say("ea app", "offline play's file is in place"),
+                Ok(Some(Slot::Replaced)) => say("ea app", "the EA app put its own file over offline play's"),
+                Ok(Some(Slot::Missing)) => say("ea app", "offline play's file is gone from the game folder"),
+                Ok(Some(Slot::Unknown)) => {
+                    say("ea app", "offline play's file was changed by another program")
+                }
+                Ok(None) => {}
+                Err(e) => say("ea app", &format!("could not check offline play's file: {e}")),
+            }
+            let (line, status) = waiting(slot.ok().flatten());
+            say("ea app", line);
+            stage.set(status);
             wait_for_game(game, before, PRESS_PLAY_TIMEOUT, &mut None)?.ok_or_else(|| {
                 anyhow!(
                     "F1 25 was not started from the EA app within {} min; the game files are rolled back",
@@ -285,7 +312,51 @@ pub fn start(store: &Store, game: &Path, args: &[String], session: &Path, before
         }
     };
     say("ea app", &format!("F1 25 started (pid {pid})"));
+    restage(store);
     Ok(Started { pid, handoff })
+}
+
+/// What the session says and shows while it waits for the EA app after the
+/// launch link started nothing. An EA app that took offline play's file out
+/// is repairing F1 25 and starts it once the repair is done.
+fn waiting(slot: Option<Slot>) -> (&'static str, &'static str) {
+    match slot {
+        Some(Slot::Missing | Slot::Replaced) => (
+            "the EA app took offline play's file out to repair F1 25; F1 25 starts without mods after the repair",
+            "The EA app is repairing F1 25",
+        ),
+        _ => (
+            "F1 25 did not start from the launch link; press Play on F1 25 in the EA app",
+            "Press Play on F1 25 in the EA app",
+        ),
+    }
+}
+
+/// An EA app repair puts EA's anti-cheat launcher over offline play's file,
+/// and the game it then starts has no mods. Put the file back for the next
+/// Play and tell the player.
+fn restage(store: &Store) {
+    let journal = offline::journal_path(&store.root);
+    if matches!(offline::slot(&journal), Ok(None)) {
+        return;
+    }
+    let done = offline::artifacts(&store.root).and_then(|a| offline::restage(&a, &journal));
+    match done {
+        Ok(Some(Slot::Staged) | None) => {}
+        Ok(Some(Slot::Replaced | Slot::Missing)) => {
+            let failure = launch::Failure::new(launch::Cause::EaRepaired);
+            say("warning", &format!("{}: {}", failure.title(), failure.text()));
+            if let Err(e) = failure.write(&store.root) {
+                say("info", &format!("could not record it for the launcher: {e}"));
+            }
+        }
+        Ok(Some(Slot::Unknown)) => say(
+            "ea app",
+            "EAAntiCheat.GameServiceLauncher.exe changed after staging and is neither offline play's nor EA's; \
+             left as is",
+        ),
+        Err(e) => say("ea app", &format!("could not put offline play's file back: {e}")),
+    }
 }
 
 /// An EA app copy started by the EA app as it is installed, with nothing
@@ -419,9 +490,16 @@ mod tests {
         };
         let mut child = fail.spawn().unwrap();
         assert!(matches!(
-            wait_for_app(&mut child, || false),
+            wait_for_app(&mut child, true, || false),
             AppStart::CommandFailed(_)
         ));
+        let mut child = fail.spawn().unwrap();
+        let polls = std::cell::Cell::new(0);
+        let timed_out = || {
+            polls.set(polls.get() + 1);
+            polls.get() > 3
+        };
+        assert_eq!(wait_for_app(&mut child, false, timed_out), AppStart::TimedOut);
         let mut ok = if cfg!(windows) {
             let mut c = std::process::Command::new("cmd");
             c.args(["/c", "exit 0"]);
@@ -435,7 +513,35 @@ mod tests {
             polls.set(polls.get() + 1);
             polls.get() > 3
         };
-        assert_eq!(wait_for_app(&mut child, timed_out), AppStart::TimedOut);
+        assert_eq!(wait_for_app(&mut child, true, timed_out), AppStart::TimedOut);
+    }
+
+    #[test]
+    fn a_vanilla_session_through_the_ea_app_leaves_the_anti_cheat_launcher_alone() {
+        assert!(!stages_offline(true, true));
+        assert!(stages_offline(true, false));
+        assert!(stages_offline(false, true));
+        assert!(stages_offline(false, false));
+    }
+
+    #[test]
+    fn says_the_ea_app_is_repairing_when_it_took_offline_plays_file_out() {
+        for slot in [Slot::Missing, Slot::Replaced] {
+            let (line, status) = waiting(Some(slot));
+            assert!(
+                line.starts_with("the EA app took offline play's file out"),
+                "{line}"
+            );
+            assert_eq!(status, "The EA app is repairing F1 25");
+        }
+        for slot in [Some(Slot::Staged), Some(Slot::Unknown), None] {
+            let (line, status) = waiting(slot);
+            assert!(
+                line.starts_with("F1 25 did not start from the launch link"),
+                "{line}"
+            );
+            assert_eq!(status, "Press Play on F1 25 in the EA app");
+        }
     }
 
     #[cfg(unix)]

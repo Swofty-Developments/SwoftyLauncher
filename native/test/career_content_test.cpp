@@ -175,6 +175,24 @@ int main()
         expect(content::stock_command(content::SELECT_PRESSED) == 0, "command: a stock command is left alone");
     }
     {
+        const uintptr_t select = 0x145738430, showroom = 0x1457390a0;
+        const char *career[] = {"career_default_content", "career_dlc_content"};
+        const char *cars[] = {"showroom_f1_DLC", "showroom_f1", "showroom_f2_next", "showroom_f2",
+                              "showroom_player_cars_dlc", "showroom_player_cars", nullptr};
+        expect(content::content_select(select, select, career, 2), "select: the content select view model's list");
+        expect(content::content_select(select, select, nullptr, 0),
+               "select: the content select view model's list before its tiles are read");
+        expect(!content::content_select(showroom, select, cars, 7), "select: the showroom's car tiles are left alone");
+        expect(!content::content_select(0, select, cars, 7),
+               "select: car tiles with no view model found are left alone");
+        expect(content::content_select(0, select, career, 2),
+               "select: the stock career tiles with no view model found are the content select");
+        expect(!content::content_select(0, 0, nullptr, 0), "select: no vtable bound and no tiles is left alone");
+        expect(!content::career_tile_id(nullptr) && !content::career_tile_id("career") &&
+                   content::career_tile_id("career_dlc_content"),
+               "select: only the two stock career content ids count");
+    }
+    {
         Fake f;
         build(f, {"f1_2024", "f1_career_2025", "f1_career_2026", "f1_career_1990"}, 3);
         content::Access a{fake_setup, fake_index, fake_readable, &f};

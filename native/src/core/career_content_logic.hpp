@@ -72,6 +72,28 @@ inline uint32_t stock_command(uint32_t hash)
     return hash == ADDON_SELECT_PRESSED ? SELECT_PRESSED : hash == ADDON_FOCUS_CHANGED ? FOCUS_CHANGED : 0;
 }
 
+// FeTile_Build_List's showroom case (menu kind 4, fe_showroom) ends through the career content case's
+// closing jmp, so site_FeTile_CareerContentEnd runs for both. A list is the content select's when its view
+// model has the content select vtable or it holds a stock career tile (item ids of FeTile_Build_List case 6).
+constexpr const char *ITEM_ID_2025 = "career_default_content";
+constexpr const char *ITEM_ID_2026 = "career_dlc_content";
+constexpr size_t SELECT_SCAN_TILES = 16;
+
+inline bool career_tile_id(const char *id)
+{
+    return id && (!std::strcmp(id, ITEM_ID_2025) || !std::strcmp(id, ITEM_ID_2026));
+}
+
+inline bool content_select(uintptr_t owner_vtable, uintptr_t select_vtable, const char *const *ids, size_t n)
+{
+    if (owner_vtable && owner_vtable == select_vtable)
+        return true;
+    for (size_t i = 0; i < n; i++)
+        if (career_tile_id(ids[i]))
+            return true;
+    return false;
+}
+
 // A career (the championship entity, or the career a save-slot predicate is asked about) lists its
 // championships at +0x1040..+0x1048 (16-byte entries, championship at +8). Each championship's
 // CareerSetupComponent (registry at championship +0x208) answers its data-group index from vtable

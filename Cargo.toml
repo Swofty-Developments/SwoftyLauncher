@@ -1,10 +1,10 @@
 [workspace]
 resolver = "3"
-members = ["addons/builtins", "apps/cli", "apps/launcher", "installer", "packages/addon-api", "packages/core", "packages/formats", "packages/sdk", "templates/launcher-addon"]
-default-members = ["addons/builtins", "apps/cli", "packages/addon-api", "packages/core", "packages/formats", "packages/sdk", "templates/launcher-addon"]
+members = ["addons/builtins", "apps/cli", "apps/launcher", "installer", "packages/addon-api", "packages/core", "packages/formats", "packages/sdk", "templates/launcher-addon", "templates/std/whatif/launcher"]
+default-members = ["addons/builtins", "apps/cli", "packages/addon-api", "packages/core", "packages/formats", "packages/sdk", "templates/launcher-addon", "templates/std/whatif/launcher"]
 
 [workspace.package]
-version = "1.5.24"
+version = "1.7.0"
 edition = "2024"
 rust-version = "1.95"
 license = "AGPL-3.0-or-later"
@@ -24,6 +24,7 @@ flate2 = "1"
 md-5 = "0.11"
 png = "0.18"
 rars = { version = "=0.12.0", default-features = false }
+regex = "1"
 ring = "0.17"
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
 semver = { version = "1", features = ["serde"] }
@@ -49,3 +50,19 @@ all = { level = "warn", priority = -1 }
 [profile.release]
 lto = "thin"
 strip = true
+
+# keep native UI optimized on dev profile
+[profile.dev.package.gpui-pre]
+opt-level = 2
+
+[profile.dev.package.gpui-base]
+opt-level = 2
+
+[profile.dev.package.gpui-component]
+opt-level = 2
+
+[profile.dev.package.taffy]
+opt-level = 3
+
+[profile.dev.package.swofty-launcher]
+opt-level = 1

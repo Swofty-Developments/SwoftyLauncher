@@ -95,7 +95,11 @@ impl Busy {
     pub fn progress(&self) -> String {
         match self.step {
             Step::Building if self.done > 0 => {
-                format!("building the mods ({} files so far)", thousands(self.done))
+                format!(
+                    "building the mods ({} {} so far)",
+                    thousands(self.done),
+                    if self.done == 1 { "file" } else { "files" }
+                )
             }
             Step::Building => "building the mods".to_owned(),
             Step::Copying => format!(
@@ -232,6 +236,11 @@ mod tests {
         assert!(refuse_change(data, "mod.a", "Mod A").is_err());
         refuse_change(data, "mod.b", "Mod B").unwrap();
         drop(lock);
+        drop(
+            SessionLock::wait(data, std::time::Duration::from_secs(10))
+                .unwrap()
+                .expect("a forked child still holds the dropped lock"),
+        );
         assert_eq!(Busy::live(data), None, "its process let go of the lock");
         refuse_change(data, "mod.a", "Mod A").unwrap();
         let own = Busy::new("default", vec!["mod.a".into()]);

@@ -292,13 +292,28 @@ impl HelperAddon {
         }
     }
 
+    fn removed(&self, rel: &str) -> String {
+        let then = match crate::managed::is_managed(&self.manifest.id) {
+            true => "press Play again to download it again".to_owned(),
+            false => format!("reinstall {}", self.name()),
+        };
+        format!(
+            "could not start: its program {rel} is missing, most likely removed by an antivirus. Allow {} in your \
+             antivirus, then {then}",
+            self.dir.display()
+        )
+    }
+
     fn start(&self, cx: &Cx) -> std::result::Result<Live, String> {
         let rel = self
             .spec
             .program()
             .ok_or_else(|| format!("has no helper for {}", std::env::consts::OS))?;
         let program = self.dir.join(rel);
-        executable(&program).map_err(|e| format!("could not start {}: {e}", program.display()))?;
+        executable(&program).map_err(|e| match e.kind() {
+            std::io::ErrorKind::NotFound if self.dir.is_dir() => self.removed(rel),
+            _ => format!("could not start {}: {e}", program.display()),
+        })?;
         let log = std::fs::File::create(cx.cache_dir.join(LOG_FILE)).map(Stdio::from);
         let mut command = Command::new(&program);
         command
@@ -508,6 +523,7 @@ fn host_call(cx: &Cx, call: HostCall) -> std::result::Result<Value, String> {
             .map(|p| Value::String(p.to_string_lossy().into_owned())),
         HostCall::GameDir => Ok(path_value(cx.game.and_then(|g| g.dir()))),
         HostCall::AddonGameDir => Ok(path_value(cx.game.and_then(|g| g.addon_dir(cx.addon)))),
+        HostCall::RegistryDir => Ok(path_value(Some(crate::stdlib::reports::dir(cx.data_dir)))),
         HostCall::GameStatus => {
             let status = cx
                 .game
@@ -1316,6 +1332,61 @@ read -r l
             assert_eq!(h.event(&cx, "items", restart).unwrap(), Effect::Reload);
             assert!(h.failure().is_none());
         }
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_missing_program_names_the_antivirus() {
+        let root = tmp("missing");
+        let dir = root.join("t.helper");
+        addon(&dir, "read -r l");
+        std::fs::remove_file(dir.join("bin/helper")).unwrap();
+        let state = Memory::default();
+        let p = profile("default");
+        let cache = root.join("cache");
+        std::fs::create_dir_all(&cache).unwrap();
+        let cx = Cx::new("t.helper", &p, &root, &cache, None, &state);
+        let view = helper(&dir).view(&cx, "items").unwrap();
+        assert_eq!(
+            view.notices[0].text,
+            format!(
+                "Helper could not start: its program bin/helper is missing, most likely removed by an antivirus. \
+                 Allow {} in your antivirus, then reinstall Helper",
+                dir.display()
+            )
+        );
+        let manifest = AddonManifest::load(&dir).unwrap();
+        std::fs::remove_dir_all(&dir).unwrap();
+        let view = HelperAddon::new(manifest, &dir)
+            .unwrap()
+            .view(&cx, "items")
+            .unwrap();
+        assert!(
+            view.notices[0].text.starts_with("Helper could not start "),
+            "{}",
+            view.notices[0].text
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn the_managed_addon_comes_back_on_play() {
+        let root = tmp("managed-missing");
+        let dir = root.join(crate::managed::ID);
+        addon(&dir, "read -r l");
+        std::fs::remove_file(dir.join("bin/helper")).unwrap();
+        let manifest = AddonManifest {
+            id: crate::managed::ID.into(),
+            name: crate::managed::NAME.into(),
+            ..AddonManifest::load(&dir).unwrap()
+        };
+        let h = HelperAddon::new(manifest, &dir).unwrap();
+        assert!(
+            h.removed("bin/helper")
+                .ends_with("then press Play again to download it again"),
+            "{}",
+            h.removed("bin/helper")
+        );
         std::fs::remove_dir_all(&root).ok();
     }
 

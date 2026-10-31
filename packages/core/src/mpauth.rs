@@ -186,29 +186,50 @@ impl Pending {
 }
 
 /// Re-check the current session against the server (user still valid, still
-/// cleared for multiplayer). Returns the refreshed session, or `None` if the
-/// session is no longer valid (in which case it's forgotten).
+/// cleared for multiplayer). Returns the refreshed session, or `None` once the
+/// server says the session is gone (401), in which case it's forgotten. When
+/// the server can't be reached, answers with another error, or can't tell
+/// whether the user has the role, the session stays as it was.
 pub fn refresh(data_dir: &Path, session: &Session) -> Option<Session> {
-    let url = format!("{}/v1/auth/launcher/me", base_url());
-    let mut response = ureq::get(&url)
+    refresh_at(&base_url(), data_dir, session)
+}
+
+fn refresh_at(base: &str, data_dir: &Path, session: &Session) -> Option<Session> {
+    let url = format!("{base}/v1/auth/launcher/me");
+    let response = ureq::get(&url)
         .header("Authorization", &format!("Bearer {}", session.token))
         .header("User-Agent", "swofty-launcher")
         .config()
         .timeout_global(Some(Duration::from_secs(20)))
         .http_status_as_error(false)
         .build()
-        .call()
-        .ok()?;
-    if response.status().as_u16() != 200 {
-        forget(data_dir);
-        return None;
+        .call();
+    let Ok(mut response) = response else {
+        return Some(session.clone());
+    };
+    match response.status().as_u16() {
+        200 => {}
+        401 => {
+            forget(data_dir);
+            return None;
+        }
+        _ => return Some(session.clone()),
     }
-    let text = response.body_mut().read_to_string().ok()?;
-    let body: MeResponse = serde_json::from_str(&text).ok()?;
+    let body = response
+        .body_mut()
+        .read_to_string()
+        .ok()
+        .and_then(|text| serde_json::from_str::<MeResponse>(&text).ok());
+    let Some(body) = body else {
+        return Some(session.clone());
+    };
     let fresh = Session {
         token: session.token.clone(),
         name: body.user.name,
-        allowed: body.multiplayer_allowed,
+        allowed: match body.multiplayer_known {
+            Some(false) => session.allowed,
+            _ => body.multiplayer_allowed,
+        },
     };
     let _ = save(data_dir, &fresh);
     Some(fresh)
@@ -231,6 +252,10 @@ pub fn sign_out(data_dir: &Path, session: &Session) {
 struct MeResponse {
     user: MeUser,
     multiplayer_allowed: bool,
+    /// Whether the server could look up the role; servers before this field
+    /// always could.
+    #[serde(default)]
+    multiplayer_known: Option<bool>,
 }
 
 #[derive(Deserialize)]
@@ -273,5 +298,89 @@ pub(crate) fn getrandom(buf: &mut [u8]) {
             }
         }
         counter += 1;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::io::{Read, Write};
+    use std::net::TcpListener;
+
+    use super::*;
+
+    fn serve(status: &str, body: &str) -> String {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        let reply = format!(
+            "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+            body.len()
+        );
+        std::thread::spawn(move || {
+            if let Ok((mut stream, _)) = listener.accept() {
+                let mut request = [0u8; 4096];
+                let _ = stream.read(&mut request);
+                let _ = stream.write_all(reply.as_bytes());
+            }
+        });
+        format!("http://{addr}")
+    }
+
+    fn me(allowed: bool, known: Option<bool>) -> String {
+        let known = known.map_or(String::new(), |k| format!(r#","multiplayer_known":{k}"#));
+        format!(
+            r#"{{"user":{{"id":"1","name":"xsoul","avatar":null}},"multiplayer_allowed":{allowed}{known}}}"#
+        )
+    }
+
+    #[test]
+    fn only_a_401_ends_the_session_and_an_unknown_role_keeps_the_last_answer() {
+        let dir = std::env::temp_dir().join(format!("swofty-mpauth-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        let session = Session {
+            token: "t".into(),
+            name: "xsoul".into(),
+            allowed: true,
+        };
+        save(&dir, &session).unwrap();
+        let closed = {
+            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            format!("http://{}", listener.local_addr().unwrap())
+        };
+
+        assert!(refresh_at(&closed, &dir, &session).unwrap().allowed);
+        assert!(
+            refresh_at(&serve("500 Internal Server Error", ""), &dir, &session)
+                .unwrap()
+                .allowed
+        );
+        assert!(
+            refresh_at(&serve("429 Too Many Requests", ""), &dir, &session)
+                .unwrap()
+                .allowed
+        );
+        assert!(
+            refresh_at(&serve("200 OK", "not json"), &dir, &session)
+                .unwrap()
+                .allowed
+        );
+        assert!(
+            refresh_at(&serve("200 OK", &me(false, Some(false))), &dir, &session)
+                .unwrap()
+                .allowed
+        );
+        assert!(load(&dir).is_some());
+
+        assert!(
+            refresh_at(&serve("200 OK", &me(true, None)), &dir, &session)
+                .unwrap()
+                .allowed
+        );
+        let denied = refresh_at(&serve("200 OK", &me(false, Some(true))), &dir, &session).unwrap();
+        assert!(!denied.allowed);
+        assert!(!load(&dir).unwrap().allowed);
+
+        assert!(refresh_at(&serve("401 Unauthorized", "not signed in"), &dir, &session).is_none());
+        assert!(load(&dir).is_none());
+        std::fs::remove_dir_all(&dir).ok();
     }
 }

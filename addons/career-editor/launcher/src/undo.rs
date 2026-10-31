@@ -272,6 +272,7 @@ pub fn inverse(e: &Entry) -> Undo {
         | "economy.sponsor.loyalty.add"
         | "economy.costcap.refund"
         | "drivers.contracts.repair"
+        | "season.calendar.repair"
         | "drivers.freeAgent.add" => Undo::BackupOnly,
         "bridge.ping" => Undo::None("nothing to undo"),
         _ => Undo::None("no undo is defined for this edit"),
@@ -345,6 +346,10 @@ mod tests {
         assert!(matches!(inverse(&e), Undo::None(_)));
         assert!(matches!(
             inverse(&entry("drivers.contracts.repair", json!({}), Value::Null)),
+            Undo::BackupOnly
+        ));
+        assert!(matches!(
+            inverse(&entry("season.calendar.repair", json!({}), Value::Null)),
             Undo::BackupOnly
         ));
     }

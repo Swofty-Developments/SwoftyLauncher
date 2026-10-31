@@ -1711,6 +1711,60 @@ fn move_card(app: &App, live: &Live, cal: &Value) -> Value {
     )
 }
 
+fn count_note(stops: Option<i64>, rounds: usize) -> String {
+    match stops {
+        Some(n) if n == rounds as i64 => format!(
+            "The game keeps {n} race weekends in this season, so it keeps {n} rounds. Rounds can't be removed or added: the game rebuilds them from its own race list when a career loads. To change the calendar, replace a round's track or move a round."
+        ),
+        Some(n) => format!(
+            "The game keeps {n} race weekends in this season but the calendar has {rounds} rounds. Repair the round count before you race on."
+        ),
+        None => "Rounds can't be added or removed until the game's race dates for this season are readable. Replace a round's track or move a round instead.".into(),
+    }
+}
+
+fn calendar_count_card(live: &Live, cal: &Value) -> Option<Value> {
+    let rounds = cal["rounds"].as_array().map_or(0, Vec::len);
+    let Some(stops) = int(&cal["race_weekends"]) else {
+        return Some(card_full(
+            "Round count",
+            Some("The game's race dates for this season aren't readable yet"),
+            vec![],
+            vec![],
+            vec![text(
+                "Repair the round count is unavailable until the game has loaded this season's race dates. Advance a day in the game, then open this page again. If it stays unavailable, load the career again.",
+                "warn",
+            )],
+        ));
+    };
+    if stops == rounds as i64 {
+        return None;
+    }
+    let op = "season.calendar.repair";
+    let what = if stops > rounds as i64 {
+        format!(
+            "This season has {rounds} rounds, but the game still has {stops} race weekends on its calendar. After round {rounds} the game would go to a race weekend that no longer exists and crash. Repairing adds {} round(s) at the end, using tracks from this career's other seasons. Replace them afterwards if you want other tracks.",
+            stops - rounds as i64
+        )
+    } else {
+        format!(
+            "This season has {rounds} rounds, but the game only has {stops} race weekends on its calendar, so the season can't finish. Repairing removes the last {} round(s) that haven't started.",
+            rounds as i64 - stops
+        )
+    };
+    Some(card_full(
+        "Round count",
+        Some("The calendar doesn't match the game's race weekends"),
+        vec![pill("Backup-only undo", "warn")],
+        if live.can(op) {
+            vec![button("repair_calendar", "Repair the round count", "", "primary")]
+        } else {
+            vec![]
+        },
+        vec![text(&what, "warn")],
+    ))
+}
+
 fn calendar_ops_card(app: &App, live: &Live, cal: &Value) -> Value {
     let rounds = cal["rounds"].as_array().cloned().unwrap_or_default();
     let in_season = season_weekends(cal);
@@ -1771,14 +1825,19 @@ fn calendar_ops_card(app: &App, live: &Live, cal: &Value) -> Value {
     let first = int(&cal["editable_from"]).unwrap_or(1);
     let last = rounds.len() as i64 + 1;
     let can_edit = !editable.is_empty();
+    let stops = int(&cal["race_weekends"]);
+    let (can_add, can_remove) = match stops {
+        Some(n) => (n > rounds.len() as i64, n < rounds.len() as i64),
+        None => (false, false),
+    };
     let mut blocks = vec![
-        json!({ "form": { "id": "cal_add", "columns": 2, "apply": "Add round", "disabled": !any || !live.can("season.calendar.add_round"), "fields": [
+        json!({ "form": { "id": "cal_add", "columns": 2, "apply": "Add round", "disabled": !can_add || !any || !live.can("season.calendar.add_round"), "fields": [
             { "select": { "id": "weekend", "label": "Add a round: track", "value": "", "options": spare_opts } },
             { "number": { "id": "at", "label": "As round", "value": last, "min": first, "max": last, "step": 1, "help": format!("{first} to {last}; later rounds move back one") } } ] } }),
         json!({ "form": { "id": "cal_set", "columns": 2, "apply": "Replace track", "disabled": !(can_edit && any && live.can("season.calendar.set_round")), "fields": [
             { "select": { "id": "round", "label": "Replace the track of", "value": "", "options": round_opts } },
             { "select": { "id": "weekend", "label": "With", "value": "", "options": spare_opts } } ] } }),
-        json!({ "form": { "id": "cal_remove", "columns": 2, "apply": "Remove round", "disabled": !(can_edit && live.can("season.calendar.remove_round")), "fields": [
+        json!({ "form": { "id": "cal_remove", "columns": 2, "apply": "Remove round", "disabled": !(can_remove && can_edit && live.can("season.calendar.remove_round")), "fields": [
             { "select": { "id": "round", "label": "Remove", "value": "", "options": round_opts } } ] } }),
     ];
     if let Some(m) = modded_line {
@@ -1788,6 +1847,7 @@ fn calendar_ops_card(app: &App, live: &Live, cal: &Value) -> Value {
         "Only rounds after this weekend that haven't started can change. A track already on this calendar isn't offered again. Sprint format can't be changed live.",
         "muted",
     ));
+    blocks.push(text(&count_note(stops, rounds.len()), "muted"));
     for n in notes {
         blocks.push(text(&n, "muted"));
     }
@@ -2333,6 +2393,9 @@ fn season(app: &App, live: &Live) -> Value {
         if crate::calendar::index_named(&rounds) && rounds.iter().all(|r| r["track_stat_id"].is_null()) {
             b.push(text("This career names its rounds by number, so the track of each round shows once the Career Editor addon is updated.", "warn"));
         }
+        if let Some(c) = calendar_count_card(live, cal) {
+            blocks.push(c);
+        }
         blocks.push(card("Calendar", b));
         blocks.push(move_card(app, live, cal));
         blocks.push(calendar_ops_card(app, live, cal));
@@ -2653,6 +2716,7 @@ fn op_label(op: &str) -> String {
         "season.calendar.set_round" => "Replace a round".into(),
         "season.calendar.add_round" => "Add a round".into(),
         "season.calendar.remove_round" => "Remove a round".into(),
+        "season.calendar.repair" => "Repair the round count".into(),
         "season.calendar.toggle_sprint" => "Sprint format".into(),
         "batch" => "Batch".into(),
         other => other.to_owned(),
@@ -3026,6 +3090,16 @@ fn click(app: &mut App, host: &mut Host, live: &Live, _section: &str, id: &str) 
             live,
             "Sign seat contracts",
             vec![json!({ "op": "drivers.contracts.repair", "args": {} })],
+            None,
+        );
+    }
+    if id == "repair_calendar" {
+        return send(
+            app,
+            host,
+            live,
+            "Repair the round count",
+            vec![json!({ "op": "season.calendar.repair", "args": {} })],
             None,
         );
     }
@@ -4051,5 +4125,49 @@ mod swap_card_tests {
             json!({ "driverStatId": 1, "team": vcarb, "seat": { "hasCar": true }, "player": false }),
         ]);
         assert!(old.contains("Contract edits are My Team only."));
+    }
+}
+
+#[cfg(test)]
+mod calendar_count_tests {
+    use super::*;
+
+    fn cal(rounds: usize, stops: Value) -> Value {
+        let rs: Vec<Value> = (0..rounds)
+            .map(|i| json!({ "round": i + 1, "weekend": i.to_string(), "editable": i > 0 }))
+            .collect();
+        json!({ "rounds": rs, "race_weekends": stops, "editable_from": 2 })
+    }
+
+    fn live() -> Live {
+        let snap = json!({
+            "written": now_ms(),
+            "status": { "game": "running", "career": true, "mode": "driver_career", "safe": true },
+            "bridge": { "ops": [{ "name": "season.calendar.repair" }] },
+            "sections": {},
+        });
+        Live::new(None, &snap, true, None, None)
+    }
+
+    #[test]
+    fn a_matching_round_count_needs_no_repair_and_locks_add_and_remove() {
+        assert!(calendar_count_card(&live(), &cal(24, json!(24))).is_none());
+        let unread =
+            serde_json::to_string(&calendar_count_card(&live(), &cal(24, Value::Null)).unwrap()).unwrap();
+        assert!(unread.contains("aren't readable yet") && !unread.contains("repair_calendar"));
+        assert!(count_note(Some(24), 24).contains("Rounds can't be removed"));
+        assert!(count_note(Some(24), 24).contains("keeps 24 rounds"));
+        assert!(count_note(None, 24).contains("can't be added or removed"));
+    }
+
+    #[test]
+    fn a_short_or_long_calendar_offers_the_repair() {
+        let short =
+            serde_json::to_string(&calendar_count_card(&live(), &cal(20, json!(24))).unwrap()).unwrap();
+        assert!(short.contains("repair_calendar") && short.contains("adds 4 round(s) at the end"));
+        let long =
+            serde_json::to_string(&calendar_count_card(&live(), &cal(25, json!(24))).unwrap()).unwrap();
+        assert!(long.contains("repair_calendar") && long.contains("removes the last 1 round(s)"));
+        assert_eq!(op_label("season.calendar.repair"), "Repair the round count");
     }
 }

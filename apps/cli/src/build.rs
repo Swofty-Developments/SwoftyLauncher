@@ -8,6 +8,7 @@ use swofty_core::baseline::DepotHashes;
 use swofty_core::build::GVDB;
 use swofty_core::busy::{self, Busy, Step};
 use swofty_core::install::{EA_APP_EXPERIMENTAL, Game, Installer, Source};
+use swofty_core::managed;
 use swofty_core::recovery::{Blocked, Scope, SessionLock};
 use swofty_core::settings::SETTINGS_FILE;
 use swofty_core::stock::{self, Depots};
@@ -15,6 +16,7 @@ use swofty_core::store::Store;
 use swofty_core::{GAME_EXE, steam};
 use swofty_formats::erp::Erp;
 use swofty_formats::gvdb::Gvdb;
+const REPAIR_TIMEOUT: Duration = Duration::from_secs(20);
 pub const UI_ERPS: &[&str] = &[
     "2025_asset_groups/ui_package/flow_frontend.erp",
     "2025_asset_groups/ui_package/persistent.erp",
@@ -171,6 +173,7 @@ pub fn install(store: &Store, profile: &str, g: &Game, session: bool, out: &dyn 
     if swofty_core::compat::write_blocker(&g.dir).is_some() {
         bail!("{}", swofty_core::compat::write_blocked_text(&g.dir));
     }
+    repair_importer(store, profile, out);
     let done = AtomicBool::new(false);
     let copied = Copied::default();
     let progress = |n: usize, total: usize| {
@@ -189,7 +192,7 @@ pub fn install(store: &Store, profile: &str, g: &Game, session: bool, out: &dyn 
         s.spawn(|| heartbeat(&done, &store.root, busy, &copied));
         let r = install_checked(store, profile, g, session, out, &progress)
             .map_err(|e| named(store, g, e))
-            .map_err(|e| denied(e, &g.dir))
+            .map_err(|e| denied(e, &store.root, &g.dir))
             .map_err(|e| outdated(store, g, e));
         done.store(true, Ordering::Relaxed);
         r
@@ -199,6 +202,31 @@ pub fn install(store: &Store, profile: &str, g: &Game, session: bool, out: &dyn 
         busy::clear_cancel(&store.root);
     }
     r
+}
+
+/// Downloads Simplified for Swofty again when its program for this OS is gone,
+/// which an antivirus does, before the build starts it.
+fn repair_importer(store: &Store, profile: &str, out: &dyn Fn(&str)) {
+    let on = store
+        .profile(profile)
+        .is_ok_and(|p| p.enabled().any(|id| id == managed::ID));
+    let Some(version) = managed::broken(store).filter(|_| on) else {
+        return;
+    };
+    out(&format!(
+        "[repair] {} {version} is missing its program; downloading it again",
+        managed::NAME
+    ));
+    let repaired = managed::release_of(&version, REPAIR_TIMEOUT)
+        .map_err(|e| e.to_string())
+        .and_then(|r| managed::repair(store, &r).map_err(|e| e.to_string()));
+    match repaired {
+        Ok(v) => out(&format!("[repair] installed {} {v} again", managed::NAME)),
+        Err(e) => out(&format!(
+            "[repair] could not install {} again: {e}",
+            managed::NAME
+        )),
+    }
 }
 
 #[derive(Default)]
@@ -285,24 +313,17 @@ fn named(store: &Store, g: &Game, e: anyhow::Error) -> anyhow::Error {
     }
 }
 
-/// Names the game folder and the fix when Windows refused a write in it.
-fn denied(e: anyhow::Error, game: &Path) -> anyhow::Error {
-    let refused = e.chain().any(|c| match c.downcast_ref::<swofty_core::Error>() {
-        Some(
-            swofty_core::Error::Io { path, source }
-            | swofty_core::Error::Formats(swofty_formats::Error::IoAt { path, source }),
-        ) => source.kind() == std::io::ErrorKind::PermissionDenied && path.starts_with(game),
-        _ => false,
+/// Names the folder and the fix when Windows refused a write in the game
+/// folder or the data folder.
+fn denied(e: anyhow::Error, data: &Path, game: &Path) -> anyhow::Error {
+    let fix = e.chain().find_map(|c| {
+        c.downcast_ref::<swofty_core::Error>()
+            .and_then(|c| swofty_core::build::refused_fix(data, game, c))
     });
-    if !refused {
-        return e;
+    match fix {
+        Some(fix) => anyhow::anyhow!("{e}. {fix}"),
+        None => e,
     }
-    anyhow::anyhow!(
-        "{e}. Windows refused to let Swofty change files in {}; run Swofty Launcher as administrator, \
-         or move F1 25 to a folder outside Program Files{}",
-        game.display(),
-        swofty_core::copies::move_hint(swofty_core::install::Source::detect(game))
-    )
 }
 
 /// Leads with the update to install when an addon's changes failed to apply
@@ -400,6 +421,17 @@ fn check_stock(store: &Store, g: &Game, out: &dyn Fn(&str)) -> Result<Option<Dep
     };
     heal_launcher(store, &g.dir, Some(&depots as &dyn DepotHashes), out)?;
     let checked = stock::check(&store.root, g, &depots)?;
+    if !checked.missing.is_empty() {
+        let version = swofty_core::exe_version::read(&g.dir.join(swofty_core::GAME_EXE));
+        stock::Report::missing(checked.missing.clone(), &g.dir, version.clone())
+            .write(&store.root)
+            .ok();
+        return Err(swofty_core::Error::MissingStock {
+            files: checked.missing,
+            version,
+        }
+        .into());
+    }
     if checked.proven > 0 {
         out(&format!(
             "[stock] {} original(s) on record match Steam's copy",
@@ -414,6 +446,14 @@ fn check_stock(store: &Store, g: &Game, out: &dyn Fn(&str)) -> Result<Option<Dep
     for d in &checked.eac {
         out(&format!(
             "[stock] {} differs from Steam's copy (size {}, Steam {}); not used by modded sessions, continuing",
+            d.rel,
+            d.size.map_or("missing".to_owned(), |n| n.to_string()),
+            d.steam
+        ));
+    }
+    for d in &checked.vr {
+        out(&format!(
+            "[stock] {} differs from Steam's copy (size {}, Steam {}); a VR runtime replaces it, continuing",
             d.rel,
             d.size.map_or("missing".to_owned(), |n| n.to_string()),
             d.steam
@@ -575,12 +615,12 @@ mod tests {
 
     #[test]
     fn names_the_game_folder_when_windows_refuses_a_write() {
-        let game = Path::new("/games/F1 25");
+        let (data, game) = (Path::new("/data/Swofty"), Path::new("/games/F1 25"));
         let refused = swofty_core::Error::Io {
             path: game.join("2025_asset_groups/ui_package/databases.erp"),
             source: std::io::Error::from(std::io::ErrorKind::PermissionDenied),
         };
-        let text = denied(anyhow::Error::from(refused), game).to_string();
+        let text = denied(anyhow::Error::from(refused), data, game).to_string();
         assert!(
             text.ends_with(
                 "Windows refused to let Swofty change files in /games/F1 25; run Swofty Launcher as \
@@ -589,13 +629,40 @@ mod tests {
             "{text}"
         );
         let elsewhere = swofty_core::Error::Io {
-            path: "/data/cache/x".into(),
+            path: "/other/cache/x".into(),
             source: std::io::Error::from(std::io::ErrorKind::PermissionDenied),
         };
+        assert_eq!(
+            denied(anyhow::Error::from(elsewhere), data, game).to_string(),
+            "/other/cache/x: permission denied"
+        );
+    }
+
+    #[test]
+    fn names_the_antivirus_exclusions_when_windows_refuses_an_overlay_archive() {
+        let (data, game) = (Path::new("/data/Swofty"), Path::new("/games/F1 25"));
+        let overlay = data.join("cache/overlay/default/0123/2025_asset_groups/ui_package/databases.erp");
+        let refused = swofty_core::Error::Formats(swofty_formats::Error::IoAt {
+            path: overlay.clone(),
+            source: std::io::Error::from(std::io::ErrorKind::PermissionDenied),
+        });
+        assert_eq!(
+            denied(anyhow::Error::from(refused), data, game).to_string(),
+            format!(
+                "{}: permission denied. Windows refused to let Swofty change its own files in /data/Swofty, which \
+                 an antivirus does while it scans them; add /data/Swofty and the F1 25 folder /games/F1 25 as \
+                 exclusions in your antivirus, then try again",
+                overlay.display()
+            )
+        );
+        let missing = swofty_core::Error::Io {
+            path: overlay,
+            source: std::io::Error::from(std::io::ErrorKind::NotFound),
+        };
         assert!(
-            !denied(anyhow::Error::from(elsewhere), game)
+            !denied(anyhow::Error::from(missing), data, game)
                 .to_string()
-                .contains("administrator")
+                .contains("antivirus")
         );
     }
 

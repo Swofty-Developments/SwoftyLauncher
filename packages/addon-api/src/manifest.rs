@@ -73,6 +73,9 @@ pub struct AddonManifest {
     /// [`AddonManifest::multiplayer`] for the default.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub multiplayer: Option<Multiplayer>,
+    /// What the addon adds to the race HUD.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hud: Option<Hud>,
 }
 
 /// What an addon, or one of its options, is to a multiplayer session.
@@ -192,6 +195,27 @@ impl CareerSetup {
         own_options(&self.options, options)
     }
 }
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct Hud {
+    /// Rows on the ADDONS page of the race MFD.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mfd: Option<HudMfd>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct HudMfd {
+    /// The group title the page shows above the addon's rows; the addon name when unset.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub title: Option<String>,
+    /// Option ids, in page order; each is a toggle or choice option of this addon.
+    pub rows: Vec<String>,
+}
+
+pub const MFD_ROWS_MAX: usize = 8;
+pub const MFD_TEXT_MAX: usize = 32;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(rename_all = "kebab-case")]
@@ -782,6 +806,9 @@ impl AddonManifest {
             self.validate_postfx(p)
                 .or_else(|e| fail(format!("postfx[{i}]: {e}")))?;
         }
+        if let Some(m) = self.hud.as_ref().and_then(|h| h.mfd.as_ref()) {
+            self.validate_mfd(m).or_else(|e| fail(format!("hud.mfd: {e}")))?;
+        }
         if let Some(l) = &self.launcher {
             if l.program.is_empty() {
                 return fail("launcher.program names no program".into());
@@ -831,6 +858,35 @@ impl AddonManifest {
                 None => return Err(format!("{{{{{id}}}}} names no option")),
                 Some(o) if o.binds != Binds::Db => return Err(format!("option {id} must bind db")),
                 Some(_) => {}
+            }
+        }
+        Ok(())
+    }
+
+    fn validate_mfd(&self, m: &HudMfd) -> std::result::Result<(), String> {
+        if m.rows.is_empty() || m.rows.len() > MFD_ROWS_MAX {
+            return Err(format!("rows must list 1 to {MFD_ROWS_MAX} options"));
+        }
+        if let Some(t) = &m.title
+            && (t.trim().is_empty() || t.chars().count() > MFD_TEXT_MAX)
+        {
+            return Err(format!("title must be 1 to {MFD_TEXT_MAX} characters"));
+        }
+        let mut seen = BTreeMap::new();
+        for r in &m.rows {
+            if seen.insert(r.as_str(), ()).is_some() {
+                return Err(format!("row {r} is listed twice"));
+            }
+            let Some(o) = self.options.iter().find(|o| &o.id == r) else {
+                return Err(format!("row {r} names no option of this addon"));
+            };
+            if o.kind == OptionType::Slider {
+                return Err(format!("row {r}: only toggle and choice options can be MFD rows"));
+            }
+            if o.label.as_deref().unwrap_or(&o.id).chars().count() > MFD_TEXT_MAX {
+                return Err(format!(
+                    "row {r}: the option label is longer than {MFD_TEXT_MAX} characters"
+                ));
             }
         }
         Ok(())
@@ -916,6 +972,53 @@ mod tests {
                     "values": ["titlesponsor", { "value": "tier01", "label": "Tier 1" }, "replica"], "binds": "db" }],
       "operations": { "database": ["db/grid24.json"] }
     }"#;
+
+    #[test]
+    fn hud_mfd_rows_name_toggle_or_choice_options() {
+        let with = |hud: &str| GRID24.replace(r#""operations":"#, &format!(r#""hud": {hud}, "operations":"#));
+        let m = AddonManifest::parse(&with(
+            r#"{ "mfd": { "title": "LIVERY", "rows": ["team_livery"] } }"#,
+        ))
+        .unwrap();
+        let mfd = m.hud.unwrap().mfd.unwrap();
+        assert_eq!(mfd.title.as_deref(), Some("LIVERY"));
+        assert_eq!(mfd.rows, ["team_livery"]);
+        for (bad, why) in [
+            (r#"{ "mfd": { "rows": [] } }"#, "rows must list"),
+            (r#"{ "mfd": { "rows": ["missing"] } }"#, "names no option"),
+            (
+                r#"{ "mfd": { "rows": ["team_livery", "team_livery"] } }"#,
+                "listed twice",
+            ),
+            (
+                r#"{ "mfd": { "title": "", "rows": ["team_livery"] } }"#,
+                "title must be",
+            ),
+            (
+                r#"{ "mfd": { "rows": ["team_livery"], "page": 2 } }"#,
+                "unknown field",
+            ),
+        ] {
+            let e = AddonManifest::parse(&with(bad)).unwrap_err().to_string();
+            assert!(e.contains(why), "{bad}: {e}");
+        }
+        let slider = GRID24
+            .replace(
+                r#""type": "choice", "default": "titlesponsor","#,
+                r#""type": "slider", "default": 1, "min": 0, "max": 2, "step": 1,"#,
+            )
+            .replace(
+                r#""values": ["titlesponsor", { "value": "tier01", "label": "Tier 1" }, "replica"], "#,
+                "",
+            );
+        let e = AddonManifest::parse(&slider.replace(
+            r#""operations":"#,
+            r#""hud": { "mfd": { "rows": ["team_livery"] } }, "operations":"#,
+        ))
+        .unwrap_err()
+        .to_string();
+        assert!(e.contains("only toggle and choice"), "{e}");
+    }
 
     #[test]
     fn parses_design_example() {

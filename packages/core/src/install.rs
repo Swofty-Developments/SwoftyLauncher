@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
 use crate::baseline::{
-    Baseline, DepotHashes, Hashes, Identity, Objects, sha256_bytes, sha256_file, sha256_opt,
+    Baseline, DepotHashes, FileRecord, Hashes, Identity, Objects, sha256_bytes, sha256_file, sha256_opt,
 };
 use crate::journal::{Journal, Op, State};
 use crate::placed::{self, Placed};
@@ -406,6 +406,10 @@ impl<'a> Installer<'a> {
     fn rollback(&self, j: Journal, hashes: &mut Hashes) -> Result<(Vec<Drift>, Vec<String>)> {
         let ids = addon_storage::ids(j.entries.iter().map(|e| e.path.as_str()));
         let kept = self.keep_storage(&ids, std::slice::from_ref(&j))?;
+        for id in &ids {
+            addon_storage::save_current(self.data, id)?;
+        }
+        crate::stdlib::careers::sync(self.data, Some(&self.game.dir), Some(&j.profile)).ok();
         let mut report = Vec::new();
         let same_build = j.build_id == self.game.identity.build_id;
         for e in j.entries.iter().rev() {
@@ -676,6 +680,20 @@ impl<'a> Installer<'a> {
         if plan.is_vanilla() {
             return Ok(());
         }
+        let mut with_state;
+        let plan = if plan.loader.is_empty() {
+            plan
+        } else {
+            let file = self.data.join("state").join("core-state.json");
+            let dir = file.parent().expect("has parent");
+            std::fs::create_dir_all(dir).map_err(io_err(dir))?;
+            std::fs::write(&file, crate::stdlib::state::text(self.data)).map_err(io_err(&file))?;
+            with_state = plan.clone();
+            with_state
+                .loader
+                .insert(crate::stdlib::state::FILE.to_owned(), file);
+            &with_state
+        };
         let loaded = self.baseline()?;
         let space = self.space(plan, &loaded);
         for (dir, v, need) in &space {
@@ -783,8 +801,40 @@ impl<'a> Installer<'a> {
                 .clone();
             let now = hashes.sha256(&path)?;
             if now != rec.sha256 {
+                let owned = placed.wrote(rel, &now) || after[rel.as_str()] == now;
+                if !owned {
+                    match self.depot.stock(rel, &path)? {
+                        Some(true) => {
+                            let size = std::fs::metadata(&path).map_err(io_err(&path))?.len();
+                            let sha256 = objects.put_file(&path)?;
+                            baseline.files.insert(
+                                rel.clone(),
+                                FileRecord {
+                                    size,
+                                    sha256,
+                                    source: crate::baseline::Source::Depot,
+                                },
+                            );
+                            (self.out)(&format!(
+                                "{rel} matches Steam's copy; its recorded original was out of date and has been replaced"
+                            ));
+                            continue;
+                        }
+                        Some(false) => {
+                            (self.out)(&format!(
+                                "{rel} is not Steam's copy and swofty did not write it: {}",
+                                describe_file(&path, &now)
+                            ));
+                            return Err(Error::NotStock(vec![rel.clone()]));
+                        }
+                        None => (self.out)(&format!(
+                            "{rel} differs from its recorded original and cannot be checked against Steam's list: {}",
+                            describe_file(&path, &now)
+                        )),
+                    }
+                }
                 conflicts.push(Conflict {
-                    owned: placed.wrote(rel, &now) || after[rel.as_str()] == now,
+                    owned,
                     path: rel.clone(),
                     sha256: Some(now),
                     replaced: true,
@@ -962,6 +1012,7 @@ impl<'a> Installer<'a> {
         }
         let planned: BTreeSet<String> = sources.keys().map(|rel| placed::key(rel)).collect();
         for id in addon_storage::ids(sources.keys().copied()) {
+            addon_storage::load_profile(self.data, &id, &plan.profile)?;
             let moved = addon_storage::put_back(self.data, &self.game.dir, &id, &planned)?;
             if !moved.is_empty() {
                 (self.out)(&format!(
@@ -969,6 +1020,11 @@ impl<'a> Installer<'a> {
                     moved.len(),
                     addon_storage::addon_dir(self.data, &id).display()
                 ));
+            }
+        }
+        if !plan.loader.is_empty() {
+            for line in crate::stdlib::state::migrate(self.data, &self.game.dir)? {
+                (self.out)(&line);
             }
         }
         j.commit()
@@ -984,8 +1040,13 @@ impl<'a> Installer<'a> {
         }
         let loader = self.path(LOADER_DIR);
         if loader.is_dir() {
+            crate::stdlib::careers::keep(self.data, &self.game.dir)?;
             let ids = addon_storage::present(&self.game.dir)?;
             self.keep_storage(&ids, &Journal::open(self.data)?)?;
+            let stranded = addon_storage::addon_dir(self.data, addon_storage::LOGO_CACHE);
+            if stranded.is_dir() {
+                with_retry(&stranded, || std::fs::remove_dir_all(&stranded))?;
+            }
             let logs = self.data.join("sessions/orphaned-logs");
             for e in std::fs::read_dir(&loader).map_err(io_err(&loader))?.flatten() {
                 if e.path().extension().is_some_and(|x| x == "log") {
@@ -1076,6 +1137,18 @@ fn remove_empty(dir: &Path) -> Result<bool> {
         with_retry(dir, || std::fs::remove_dir(dir))?;
     }
     Ok(empty)
+}
+
+fn describe_file(path: &Path, sha256: &str) -> String {
+    let meta = std::fs::metadata(path).ok();
+    let size = meta
+        .as_ref()
+        .map_or_else(|| "?".to_owned(), |m| m.len().to_string());
+    let mtime = meta
+        .and_then(|m| m.modified().ok())
+        .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+        .map_or_else(|| "?".to_owned(), |d| d.as_secs().to_string());
+    format!("size {size}, modified {mtime} (unix seconds), sha256 {sha256}")
 }
 
 #[cfg(test)]

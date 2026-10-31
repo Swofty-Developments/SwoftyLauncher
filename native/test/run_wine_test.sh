@@ -5,6 +5,7 @@ cd "$(dirname "$SELF")"
 if ! command -v wine >/dev/null || ! command -v xvfb-run >/dev/null || ! command -v zig >/dev/null; then
     exec nix shell nixpkgs#zig nixpkgs#wineWow64Packages.stable nixpkgs#xvfb-run -c "$SELF" "$@"
 fi
+. ./game_lock.sh
 OUT=${1:-$PWD/../build/wine-test}
 ITEMS=
 grep -qa '\[items\] ownership check hooked' ../dist/swofty/addons/core/swofty_core.dll && ITEMS=1
@@ -12,18 +13,19 @@ export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../
 PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 rm -rf "$OUT/game" "$OUT/stages" "$OUT/packed" "$OUT/filled"
 mkdir -p "$OUT/game" "$OUT/stages" "$OUT/packed" "$OUT/filled"
-"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -o "$OUT/game/F1_25.exe" fake_game.c -lversion -luser32 &
-"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -DPACKED_TEST -o "$OUT/packed/F1_25.exe" fake_game.c -lversion -luser32 &
+"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -o "$OUT/game/F1_25.exe" fake_game.c -lversion -luser32 -lws2_32 &
+"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -DPACKED_TEST -o "$OUT/packed/F1_25.exe" fake_game.c -lversion -luser32 -lws2_32 &
 "${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -o "$OUT/filled/F1_25.exe" fake_filled_iat.c -luser32 &
 cp -r ../dist/. "$OUT/game/"
 cp -r ../dist/. "$OUT/filled/"
-mkdir -p "$OUT/game/swofty/mods/core"
+mkdir -p "$OUT/game/swofty/mods/core" "$OUT/register"
 mv "$OUT/game/swofty/addons/core/swofty_gamelog.dll" "$OUT/game/swofty/addons/core/log_channels.tsv" "$OUT/game/swofty/mods/core/"
 for m in addons/t_*.cpp; do
     name=$(basename "${m%.cpp}")
     case $name in
     t_chain_b) dest=$OUT/game/swofty/mods ;;
     t_stage_*) dest=$OUT/stages ;;
+    t_register) dest=$OUT/register ;;
     t_packed*) dest=$OUT/packed ;;
     t_ntpage | t_int3hook) dest=$OUT ;;
     *) dest=$OUT/game/swofty/addons ;;
@@ -104,7 +106,7 @@ count() {
     if [[ $n == "$2" ]]; then echo "ok  : $1"; else echo "FAIL: $1 (logged $n times, want $2)"; status=1; fi
 }
 CACHE=$OUT/game/swofty/cache/scan-cache.tsv
-for mode in trigger fallback vm settings settings_local session gamelog_off assets assets_ro nearfull nopool cache_ro; do
+for mode in trigger fallback vm settings settings_local session state gamelog_off assets assets_ro nearfull nopool cache_ro udp udp_off; do
     echo "==== $mode"
     if [[ $mode == cache_ro ]]; then
         rm -rf "$OUT/game/swofty/cache" "$WINEPREFIX"/drive_c/users/*/AppData/Local/Swofty/cache/game
@@ -127,6 +129,9 @@ EOF
     resolve=
     [[ $mode == gamelog_off ]] && resolve=scan
     [[ $mode == session ]] && cp session.test.json "$OUT/game/swofty/session.json"
+    [[ $mode == udp* ]] && cp udp_ids.test.json "$OUT/game/swofty/udp_ids.json"
+    udp_ids=
+    [[ $mode == udp_off ]] && udp_ids=0
     req=
     [[ $mode == settings ]] && req=$OUT/state/requests/wine-test.json
     [[ $mode == settings_local ]] && req=$OUT/game/swofty/requests.json
@@ -158,7 +163,8 @@ json.dump({'schema': 1, 'profile': 'wine-test',
            'addons': [{'id': 'example.sample-mod', 'dlls': ['t_assets.dll'], 'options': []}],
            'plugins': ['addons/example.sample-mod/native/t_assets.dll']},
           open(os.path.join(root, 'settings.json'), 'w'))
-json.dump({'features': ['file', 'telemetry']}, open(os.path.join(root, 'assets.json'), 'w'))
+json.dump({'features': ['file', 'telemetry'], 'overlay_off': ['example.sample-mod']},
+          open(os.path.join(root, 'assets.json'), 'w'))
 EOF
     ro_skip=
     if [[ $mode == assets_ro ]]; then
@@ -168,12 +174,22 @@ EOF
         chmod -R a-w "$OUT/game/swofty/addons/example.sample-mod"
         [[ -w $OUT/game/swofty/addons/example.sample-mod ]] && ro_skip=1
     fi
+    if [[ $mode == state ]]; then
+        STATE_DIR="$OUT/state-dir-üス"
+        rm -rf "$STATE_DIR" "$OUT/game/swofty/registry/ids.json" "$OUT/game/swofty/registry/room.json"
+        mkdir -p "$OUT/game/swofty/registry"
+        printf '{"version":1,"ids":{"track":{"wine.state/old":{"id":4242}}}}' >"$OUT/game/swofty/registry/ids.json"
+        python3 - "$OUT/game/swofty/state.json" "$(winepath -w "$STATE_DIR" | tr -d '\r')" <<'EOF'
+import json, sys
+json.dump({'version': 1, 'state_dir': sys.argv[2]}, open(sys.argv[1], 'w'))
+EOF
+    fi
     gl_level=; gl_rate=
     [[ $mode == gamelog_off ]] && gl_level=off
     gl_channels=
     [[ $mode == trigger ]] && gl_rate=0
     [[ $mode == trigger || $mode == vm ]] && gl_channels=default,verbose
-    SWOFTY_RESOLVE=$resolve SWOFTY_TEST_ASSETS=$([[ $mode == assets* ]] && echo 1) SWOFTY_GAME_LOG=$gl_level SWOFTY_GAME_LOG_RATE=$gl_rate SWOFTY_GAME_LOG_CHANNELS=$gl_channels SWOFTY_TEST_REQUESTS=${req:+Z:${req//\//\\}} SWOFTY_TEST_ITEMS=$ITEMS \
+    SWOFTY_UDP_STOCK_IDS=$udp_ids SWOFTY_RESOLVE=$resolve SWOFTY_TEST_ASSETS=$([[ $mode == assets* ]] && echo 1) SWOFTY_GAME_LOG=$gl_level SWOFTY_GAME_LOG_RATE=$gl_rate SWOFTY_GAME_LOG_CHANNELS=$gl_channels SWOFTY_TEST_REQUESTS=${req:+Z:${req//\//\\}} SWOFTY_TEST_ITEMS=$ITEMS \
         "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" $mode || status=1
     if [[ $mode == assets_ro ]]; then
         GAME_ADDON=$OUT/game/swofty/addons/example.sample-mod
@@ -183,10 +199,19 @@ EOF
         chmod -R u+w "$GAME_ADDON"
     fi
     [[ $mode == cache_ro ]] && chmod u+w "$OUT/game/swofty/cache"
-    rm -rf "$OUT/game/swofty/session.json" "$OUT/game/swofty/settings.json" "$OUT/game/swofty/assets.json" \
+    rm -rf "$OUT/game/swofty/udp_ids.json" "$OUT/game/swofty/session.json" "$OUT/game/swofty/settings.json" "$OUT/game/swofty/assets.json" \
         "$OUT/game/swofty/addons/example.sample-mod"
     echo "---- $LOG ($mode)"
     grep -v '  section ' "$LOG"
+    if [[ $mode == udp ]]; then
+        once "udp: the map is read and sendto is hooked" '\[udp\] stock ids on: 1 team id\(s\), 1 driver id\(s\), 1 sendto slot\(s\)'
+        once "udp: the launcher's mapping lines are logged" '\[udp\] stock ids: team 507 -> 4 \(forceindia\); driver 197 -> 255 \(no stock driver\)'
+        once "udp: the first rewritten packet is logged once" '\[udp\] first telemetry packet rewritten: format 2025, packet 4: driver 197 -> 255, team 251 -> 4'
+    fi
+    if [[ $mode == udp_off ]]; then
+        once "udp: SWOFTY_UDP_STOCK_IDS=0 is logged" '\[udp\] stock ids off \(SWOFTY_UDP_STOCK_IDS=0\)'
+        count "udp: nothing is hooked or rewritten when off" 0 '\[udp\] (stock ids on|first telemetry)'
+    fi
     if [[ $mode == trigger ]]; then
         check "addons: core folder lists swofty_core" 'addons: swofty[\]addons[\]core: 1 dll\(s\)[[:space:]]*$'
         check "addons: legacy core folder still loads" 'addons: swofty[\]mods[\]core: 1 dll\(s\) \(legacy folder\)'
@@ -194,8 +219,22 @@ EOF
         once "addons: a dll in both folders loads from addons only" 'addon t_drop\.dll: also in .*[\]swofty[\]mods, skipped'
         once "mixins: a binding bindings.json does not list is named as missing" 'addon t_want\.dll needs wine-test:Fake_Unlisted, which bindings\.json does not list'
         once "mixins: a listed binding that does not match stays unresolved" 'addon t_want\.dll needs wine-test:Fake_Missing, which does not resolve on this build'
-        check "addons: SwoftyAddonInit is called" 'addon t_chain_a\.dll: loaded at .*, calling SwoftyAddonInit \(API v8\)'
-        check "addons: SWOFTY_MOD exports SwoftyAddonInit" 'addon t_conflict_y\.dll: loaded at .*, calling SwoftyAddonInit \(API v8\)'
+        check "addons: SwoftyAddonInit is called" 'addon t_chain_a\.dll: loaded at .*, calling SwoftyAddonInit \(API v9\)'
+        once "apply: the boot plan runs the content appliers with no records" '\[apply\] boot plan: [0-9]+ boot applier\(s\), 0 new database key\(s\) for the value map; nothing for the database to apply'
+        check "apply: every boot applier plans no database keys with no content records" '\[apply\] [a-z_.]+ boot: 0 new database key\(s\) planned; no addon records or layers'
+        count "apply: no boot applier plans a database key" 0 '\[apply\] [a-z_.]+ boot: [1-9][0-9]* new database key\(s\) planned'
+        once "apply: the boot moment runs once with nothing to apply" '\[apply\] boot: [0-9]+ applier\(s\); 0 applied, 0 put back, 0 refused'
+        count "apply: no content rows read the database file" 0 '\[apply\] content: read'
+        once "apply: the read moment installs at the window stage" '\[apply\] read: [0-9]+ read path\(s\) installed at the window stage'
+        once "room: a profile with nothing to size leaves the value map alone" "\\[registry\\] room: nothing to size \\(no older addons' database edits, no 1\\.6 database records\\); the value map is the game's own"
+        once "room: room.json is written after boot" '\[registry\] room report written to .*registry.room\.json'
+        count "room: no reserve hook without anything to size" 0 'site_Gdb_ReserveTarget hooked'
+        python3 - "$OUT/game/swofty/registry/room.json" <<'PY' && echo "ok  : room: room.json says not_needed and names the profile" || { echo "FAIL: room: room.json says not_needed and names the profile"; status=1; }
+import json, sys
+r = json.load(open(sys.argv[1]))
+assert r['version'] == 1 and r['presize'] == 'not_needed' and r['profile'] and r['registry']['asked_keys'] == 0, r
+PY
+        check "addons: SWOFTY_MOD exports SwoftyAddonInit" 'addon t_conflict_y\.dll: loaded at .*, calling SwoftyAddonInit \(API v9\)'
         if grep -q "core mixin set 'swofty_core.dll (flow states)'" "$LOG"; then
             once "career: the flow-state site is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(flow states\)': 1 mixin"
             once "career: a missing flow-state site drops only its own set" 'addon swofty_core\.dll \(flow states\) dropped: needs site_FeFlow_SetStateStatus'
@@ -221,6 +260,19 @@ EOF
         done
     fi
     case $mode in
+    state)
+        once "state: the core names the folder the launcher gave it" '\[state\] the core.s state files are in .*state-dir-.*\(from swofty/state\.json\)'
+        once "state: the old stat-id store moves to it" '\[registry\] stat ids: moved ids\.json from the game folder to .*state-dir-.*registry.ids\.json'
+        once "state: the moved stat ids are loaded" '\[registry\] stat ids: ids\.json holds 1 id\(s\)'
+        once "state: room.json is written there" '\[registry\] room report written to .*state-dir-.*registry.room\.json'
+        count "state: nothing fails to write" 0 '\[state\] .*can.t write to'
+        if [[ -s $STATE_DIR/registry/room.json && -s $STATE_DIR/registry/ids.json && ! -e $OUT/game/swofty/registry/room.json && ! -e $OUT/game/swofty/registry/ids.json ]]; then
+            echo "ok  : state: room.json and ids.json are in the state folder and not in the game folder"
+        else
+            echo "FAIL: state: room.json and ids.json are in the state folder and not in the game folder"; status=1
+        fi
+        rm -rf "$STATE_DIR" "$OUT/game/swofty/state.json"
+        ;;
     trigger)
         once "hook pool: the loader reserves it next to the image at attach" 'hook pool: 2048 KB reserved at [0-9A-Fa-f]+ \((above|below) the image\)'
         once "hook pool: the core adopts it" '\[core\] hook pool: 2048 KB at 0x[0-9a-f]+ \(base[-+]0x[0-9a-f]+\), reserved at loader attach'
@@ -285,7 +337,23 @@ EOF
     trigger)
         once "ers: the new-lap guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(ers new lap guard\)': 1 mixin"
         once "ers: the new-lap guard is armed" '\[ers\] new-lap guard armed'
+        once "ers mode: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(ers mode guard\)': 1 mixin"
+        once "ers mode: the guard is armed" '\[ers\] mode guard armed'
+        count "ers mode: each car whose ERS mode is out of range is set to Medium and logged once" 2 '\[ers\] car (8: ERS mode -2141928108|9: ERS mode 4) out of range; set to 1 \(Medium\)'
+        once "standings: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(standings track guard\)': 1 mixin"
+        once "standings: the guard is armed" '\[career\] standings guard armed'
+        once "standings: a round whose track is off is skipped and logged once" '\[career\] standings: round 7 has no track data \(track 200 is off\); skipped'
+        once "standings: a round whose weekend can't be read is skipped and logged once" '\[career\] standings: round 10 has no track data; skipped'
+        once "garage crew: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(garage crew guard\)': 1 mixin"
+        once "garage crew: the guard is armed" '\[garage\] crew guard armed'
+        count "garage crew: each car dropped from a garage's crew vector is logged once" 4 '\[garage\] garage [5-7]: team 1[2-4] car #4[0-9] \(driver 3[0-9][0-9]\) is the (third|extra) car of its garage'
         count "ers: each participant without a vehicle is skipped and logged" 4 '\[ers\] vehicle_newlap for vehicle (9|24): participant [01] of 4 has no vehicle'
+        once "acclim: the track acclimatisation guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(track acclimatisation guard\)': 1 mixin"
+        once "acclim: the track acclimatisation guard is armed" '\[acclim\] track acclimatisation guard armed'
+        once "acclim: the programme without targets is skipped and logged" '\[acclim\] Track Acclimatisation programme 0x[0-9a-f]+ has no targets at this track \(targets 0x0\); refresh skipped'
+        once "acclim: the track acclimatisation penalty guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(track acclimatisation penalty guard\)': 1 mixin"
+        once "acclim: the track acclimatisation penalty guard is armed" '\[acclim\] track acclimatisation penalty guard armed'
+        once "acclim: the penalty flag of a programme without targets is skipped and logged" '\[acclim\] Track Acclimatisation programme 0x[0-9a-f]+ has no targets at this track \(targets 0x0\); penalty flag skipped'
         check "events: flow-tick hook installed" '\[events\] Vm_Update_FlowStateMachine hooked at base\+0x[0-9a-f]+'
         check "events: setup reports the onFrame tick live" '\[events\] setup: live; onFrame armed'
         once "events: first flow tick fires with dt 0" '\[events\] flow tick 1 observed, dt 0\.0'
@@ -311,6 +379,7 @@ EOF
         once "gamelog: Solution-style error from Ne_Format_String" '\[game\] UI_ROUTE \(error\): Failed to find screen swofty_settings\. Solution: Make sure the the screen is loaded into the runtime[[:space:]]*$'
         once "gamelog: later route error" '\[game\] UI_ROUTE \(error\): No screen called late_screen exists[[:space:]]*$'
         count "gamelog: ordinary formats are not logged" 0 'button_7'
+        once "gamelog: a %s into reserved memory logs the raw format" '\[game\] TEST_WARN \(warn\): \(unformattable\) fake replay record %s[[:space:]]*$'
         count "gamelog: rate limit off (SWOFTY_GAME_LOG_RATE=0)" 0 'dropped by the rate limit'
         ;;
     fallback)
@@ -340,6 +409,8 @@ EOF
         once "plugins: the loose copy of a listed plugin is skipped" 'addon t_assets\.dll: settings\.json lists it in an addon folder, the copy in .*[\]swofty[\]addons is skipped'
         once "plugins: the plugin initialises" 'addon t_assets\.dll: SwoftyAddonInit returned 1 \(ok\)'
         check "assets: available follows the features" '\[t_assets\] available: group 1, erp 1, db 1, lang 1, file 1, sound 0'
+        once "overlay: on_paint from an addon in overlay_off is refused" '\[overlay\] api: example\.sample-mod on_paint -> unavailable \(turned off for this addon in the launcher\)'
+        check "overlay: an addon in overlay_off sees the overlay unavailable" '\[t_assets\] overlay available 0 on_paint unavailable'
         once "assets: register_group during plugin init" "$api register_group asset_groups/t_assets/t\.assetgroup -> ok[[:space:]]*\$"
         once "assets: put_resource during plugin init" "$api put_resource eaid://t_assets/t\.tif\.image -> ok[[:space:]]*\$"
         once "assets: db_set by key is late at the window stage" "$api db_set entrants\.teams\.team\.t_assets = 1 -> late: the core loaded at the window stage"
@@ -408,7 +479,7 @@ EOF
     fi
     count "$mode: no SDK calls, no api lines" 0 '\[assets\] api:'
     if [[ $ITEMS && $req ]]; then
-        once "items: owned_items summary" '\[items\] settings\.json: 1 mod item\(s\) to report as owned'
+        once "items: owned_items summary" '\[items\] 1 mod item\(s\) to report as owned'
         once "items: key without 0x skipped" "\\[items\\] skipping owned_items entry key 'f01d03c7'"
         once "items: ownership check hooked" '\[items\] ownership check hooked at base\+0x[0-9a-f]+'
         once "items: mod key logged once" '\[items\] reporting mod item 0xf01d03c7 \(se_livery 22, rmdesigns\.alphatauri-orlen-livery\) as owned'
@@ -549,6 +620,122 @@ for mode in crash exit heap abort; do
         [[ $code != 0 ]] && echo "ok  : abort: the process aborted ($code)" || { echo "FAIL: abort: process exited 0"; status=1; }
     fi
 done
+for guard in on off; do
+    echo "==== acclim ($guard)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_ACCLIM_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" acclim >"$OUT/acclim.out" 2>&1 || code=$?
+    grep -E '\[acclim\]|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    if [[ $guard == on ]]; then
+        once "acclim on: the refresh of a programme without targets is skipped" '\[acclim\] Track Acclimatisation programme 0x[0-9a-f]+ has no targets at this track \(targets 0x0\); refresh skipped'
+        grep -q 'acclim: the refresh returned' "$OUT/acclim.out" && echo "ok  : acclim on: the refresh returned" ||
+            { echo "FAIL: acclim on: the refresh did not return"; status=1; }
+        count "acclim on: no unhandled fault" 0 '\[crash\] unhandled '
+        compgen -G "$SW/crash-*.txt" >/dev/null && { echo "FAIL: acclim on: a crash report was written"; status=1; } ||
+            echo "ok  : acclim on: no crash report"
+    else
+        once "acclim off: the guard is off" '\[acclim\] track acclimatisation guard off \(SWOFTY_ACCLIM_GUARD=0\)'
+        check "acclim off: the refresh faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Game_PracticeTrackAcclimatisation_RefreshState\+0x1fb'
+        check "acclim off: faulting access" '\[crash\]   reading 0x4'
+        parse_report "Game_PracticeTrackAcclimatisation_RefreshState+0x1fb" "reading 0x4" || status=1
+        [[ $code != 0 ]] && echo "ok  : acclim off: process ended with $code" || { echo "FAIL: acclim off: process exited 0"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== acclim_penalty ($guard)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_ACCLIM_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" acclim_penalty >"$OUT/acclim_penalty.out" 2>&1 || code=$?
+    grep -E '\[acclim\]|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    if [[ $guard == on ]]; then
+        once "acclim_penalty on: the penalty flag of a programme without targets is skipped" '\[acclim\] Track Acclimatisation programme 0x[0-9a-f]+ has no targets at this track \(targets 0x0\); penalty flag skipped'
+        grep -q 'acclim: the penalty flag returned' "$OUT/acclim_penalty.out" && echo "ok  : acclim_penalty on: the penalty flag returned" ||
+            { echo "FAIL: acclim_penalty on: the penalty flag did not return"; status=1; }
+        count "acclim_penalty on: no unhandled fault" 0 '\[crash\] unhandled '
+        compgen -G "$SW/crash-*.txt" >/dev/null && { echo "FAIL: acclim_penalty on: a crash report was written"; status=1; } ||
+            echo "ok  : acclim_penalty on: no crash report"
+    else
+        once "acclim_penalty off: the guard is off" '\[acclim\] track acclimatisation guard off \(SWOFTY_ACCLIM_GUARD=0\)'
+        flag=$(grep -P '\tGame_PracticeTrackAcclimatisation_FlagCurrentTarget\t' "$SW/addons/core/symbols.tsv" | cut -f1)
+        fault=$(printf '%x' $((0x${flag:-0} + 0x14)))
+        check "acclim_penalty off: the penalty flag faults where the game does" "\[crash\] unhandled ACCESS_VIOLATION \(0xc0000005\) at F1_25\.exe\+0x$fault "
+        check "acclim_penalty off: faulting access" '\[crash\]   reading 0xc4'
+        parse_report "F1_25.exe+0x$fault" "reading 0xc4" || status=1
+        [[ $code != 0 ]] && echo "ok  : acclim_penalty off: process ended with $code" || { echo "FAIL: acclim_penalty off: process exited 0"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== ers_mode ($guard)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_ERS_MODE_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" ers_mode >"$OUT/ers_mode.out" 2>&1 || code=$?
+    grep -E '\[ers\] (mode|car)|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    if [[ $guard == on ]]; then
+        once "ers_mode on: the car's ERS mode is set to Medium before the load" '\[ers\] car 7: ERS mode -2141928108 out of range; set to 1 \(Medium\)'
+        grep -q 'ers mode: the step returned 0.50' "$OUT/ers_mode.out" && echo "ok  : ers_mode on: the step loaded the Medium gear modifier" ||
+            { echo "FAIL: ers_mode on: the step did not load the Medium gear modifier"; status=1; }
+        count "ers_mode on: no unhandled fault" 0 '\[crash\] unhandled '
+        compgen -G "$SW/crash-*.txt" >/dev/null && { echo "FAIL: ers_mode on: a crash report was written"; status=1; } ||
+            echo "ok  : ers_mode on: no crash report"
+    else
+        once "ers_mode off: the guard is off" '\[ers\] mode guard off \(SWOFTY_ERS_MODE_GUARD=0\)'
+        check "ers_mode off: the step faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Car_Powertrain_Step\+0x20'
+        parse_report "Car_Powertrain_Step+0x20" "" || status=1
+        [[ $code != 0 ]] && echo "ok  : ers_mode off: process ended with $code" || { echo "FAIL: ers_mode off: process exited 0"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== standings ($guard)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_STANDINGS_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" standings >"$OUT/standings.out" 2>&1 || code=$?
+    grep -E '\[career\] standings|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    if [[ $guard == on ]]; then
+        once "standings on: the round is skipped and logged" '\[career\] standings: round 5 has no track data \(track 200 is off\); skipped'
+        grep -q 'standings: the round returned 0\b' "$OUT/standings.out" && echo "ok  : standings on: the round took the game's no-record path" ||
+            { echo "FAIL: standings on: the round did not take the game's no-record path"; status=1; }
+        count "standings on: no unhandled fault" 0 '\[crash\] unhandled '
+        compgen -G "$SW/crash-*.txt" >/dev/null && { echo "FAIL: standings on: a crash report was written"; status=1; } ||
+            echo "ok  : standings on: no crash report"
+    else
+        once "standings off: the guard is off" '\[career\] standings guard off \(SWOFTY_STANDINGS_GUARD=0\)'
+        check "standings off: the round faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Career_Standings_BuildWeekendNode\+0x28'
+        parse_report "Career_Standings_BuildWeekendNode+0x28" "" || status=1
+        [[ $code != 0 ]] && echo "ok  : standings off: process ended with $code" || { echo "FAIL: standings off: process exited 0"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== garage_crew ($guard)"
+    code=0
+    SWOFTY_GARAGE_CREW_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" garage_crew >"$OUT/garage_crew.out" 2>&1 || code=$?
+    grep -E '\[garage\]' "$LOG" || true
+    if [[ $guard == on ]]; then
+        [[ $code == 0 ]] && echo "ok  : garage_crew on: the test run finished" || { echo "FAIL: garage_crew on: exit $code"; status=1; }
+        grep -q 'FAIL' "$OUT/garage_crew.out" && { echo "FAIL: garage_crew on: a check failed"; grep FAIL "$OUT/garage_crew.out"; status=1; } || echo "ok  : garage_crew on: every check passed"
+    else
+        once "garage_crew off: the guard is off" '\[garage\] crew guard off \(SWOFTY_GARAGE_CREW_GUARD=0\)'
+        grep -q 'garage 5 with slots 0,1,2 keeps 3 entries' "$OUT/garage_crew.out" && echo "ok  : garage_crew off: the vector keeps the third car" ||
+            { echo "FAIL: garage_crew off: the vector lost the third car"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== pit_slots ($guard)"
+    code=0
+    SWOFTY_PIT_SLOT_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" pit_slots >"$OUT/pit_slots.out" 2>&1 || code=$?
+    grep -E '\[pit\]' "$LOG" || true
+    if [[ $guard == on ]]; then
+        [[ $code == 0 ]] && echo "ok  : pit_slots on: the test run finished" || { echo "FAIL: pit_slots on: exit $code"; status=1; }
+        grep -q 'FAIL' "$OUT/pit_slots.out" && { echo "FAIL: pit_slots on: a check failed"; grep FAIL "$OUT/pit_slots.out"; status=1; } || echo "ok  : pit_slots on: every check passed"
+        check "pit_slots on: the guard is armed" '\[pit\] slot guard armed'
+        check "pit_slots on: a listed car without a slot is logged" '\[pit\] guard: vehicle [0-9]+ has no race slot, a listed car .*the entry is skipped'
+        check "pit_slots on: an own car without a slot is logged" '\[pit\] guard: vehicle [0-9]+ has no race slot, its own car .*the check answers no'
+    else
+        once "pit_slots off: the guard is off" '\[pit\] slot guard off \(SWOFTY_PIT_SLOT_GUARD=0\)'
+        grep -q 'FAIL' "$OUT/pit_slots.out" && { echo "FAIL: pit_slots off: a check failed"; grep FAIL "$OUT/pit_slots.out"; status=1; } || echo "ok  : pit_slots off: the unguarded cases pass"
+        grep -q 'guard off, the null slot cases are not run' "$OUT/pit_slots.out" && echo "ok  : pit_slots off: the null slot cases are left out" ||
+            { echo "FAIL: pit_slots off: the test did not reach its end"; status=1; }
+    fi
+done
 echo "==== ntpage"
 cp "$OUT/t_ntpage.dll" "$SW/mods/core/ntpage_hook.dll"
 rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
@@ -603,6 +790,8 @@ SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$SG/F1_25.exe" stages || stat
 echo "---- $LOG (stages)"
 grep -v '  section ' "$LOG"
 check "stages: early stage on from the environment" 'early stage: on \(SWOFTY_EARLY_STAGE=1\)'
+once "stages: the boot moment runs at the early stage" '\[apply\] boot: [0-9]+ applier\(s\); 0 applied, 0 put back, 0 refused'
+once "stages: the room line at the early stage" "\\[registry\\] room: nothing to size"
 check "stages: early plugin list read from settings.json" 'early stage: plugin t_stage_early\.dll has "early": true'
 check "stages: early trigger fired inside the game's CreateMutexW" "trigger: KERNEL32!CreateMutexW from .* \(\.text\) name 'Codemasters F1 25' on thread .*loading addons now \(early stage\)"
 once "stages: the window-stage plugin waits for the window" 'addon t_stage_late\.dll: loads at the window stage'
@@ -748,4 +937,34 @@ once "filled: RegisterClassExW is found in the filled table" 'trigger armed: gam
 once "filled: CreateWindowExW is found in the filled table" 'trigger armed: game IAT slot USER32!CreateWindowExW at [0-9A-Fa-f]+ \(was [0-9A-Fa-f]+\), in the import table the exe filled at load'
 once "filled: the window stage runs at RegisterClassExW" 'stage: window \(USER32!RegisterClassExW from [0-9A-Fa-f]+ \(\.text\)\), addons were loaded at the early stage'
 count "filled: the fallback watcher leaves the window stage to the armed slots" 0 'waiting for a visible main window for the window stage'
+echo "==== register"
+SR=$OUT/register/game
+rm -rf "$SR"
+cp -r "$OUT/game" "$SR"
+rm -f "$SR"/swofty/addons/t_*.dll "$SR"/swofty/mods/t_*.dll "$SR/swofty/loader.log"
+cp "$OUT/register/t_register.dll" "$SR/swofty/addons/"
+python3 - "$SR/swofty" <<'EOF'
+import json, os, sys
+root = sys.argv[1]
+json.dump({'schema': 1, 'profile': 'wine-test', 'addons': [{'id': 't.register', 'dlls': ['t_register.dll'], 'options': []}]},
+          open(root + '/settings.json', 'w'))
+os.makedirs(root + '/registry', exist_ok=True)
+os.makedirs(root + '/addons/wine.data/registry', exist_ok=True)
+json.dump({'version': 1, 'profile': 'wine-test', 'order': ['t.register', 'wine.data'],
+           'data': {'wine.data': ['addons/wine.data/registry/records.json']}}, open(root + '/registry/index.json', 'w'))
+json.dump({'wine.thing': {'extra': {'name': 'extra', 'n': 7}}}, open(root + '/addons/wine.data/registry/records.json', 'w'))
+EOF
+LOG=$SR/swofty/loader.log
+env -u SWOFTY_EARLY_STAGE "${PIN[@]}" xvfb-run -a wine "$SR/F1_25.exe" register || status=1
+echo "---- $LOG (register)"
+grep -v '  section ' "$LOG"
+check "register: a dll that exports SwoftyAddonRegister turns the early stage on" 'early stage: on for 1 addon dll\(s\) that export SwoftyAddonRegister'
+check "register: SwoftyAddonRegister is called at the early stage" 'addon t_register\.dll: calling SwoftyAddonRegister \(API v9\) at the early stage'
+check "register: index.json's data file waits for its registry and lands on declare" '\[registry\] wine\.thing: declared; applying 1 call'
+check "register: the code record and a data-only addon's record read back" '\[t_register\] on_load: t\.register/one n=1, wine\.data/extra n=7'
+awk '/addon t_register\.dll: calling SwoftyAddonRegister/ && !a {a = NR} /\[t_register\] register: SWOFTY_REGISTER runs/ && !b {b = NR}
+     /fake game: the game database loads now/ && !c {c = NR} /addon t_register\.dll: loaded at .*, calling SwoftyAddonInit/ && !d {d = NR}
+     END {exit !(a && b && c && d && a < b && b < c && c < d)}' "$LOG" &&
+    echo "ok  : register: the register pass, then the database load, then SwoftyAddonInit" ||
+    { echo "FAIL: register: the register pass, then the database load, then SwoftyAddonInit"; status=1; }
 exit $status

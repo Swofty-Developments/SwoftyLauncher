@@ -28,6 +28,9 @@ pub struct Report {
     /// Per addon id, the removals of stock database records the build skipped.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub stock_removals: BTreeMap<String, usize>,
+    /// Per addon id, the game's entrant lists it renamed or removed that the build kept.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub kept_lists: BTreeMap<String, Vec<String>>,
 }
 
 impl Report {
@@ -188,6 +191,7 @@ pub(crate) fn summarise(
         pairs: pairs.into_values().collect(),
         order: Vec::new(),
         stock_removals: BTreeMap::new(),
+        kept_lists: BTreeMap::new(),
     };
     (report, within)
 }
@@ -217,7 +221,13 @@ pub fn last(store: &Store, profile: &str) -> Option<Report> {
 
 /// Plans the profile's build without installing it and returns its conflicts.
 pub fn check(store: &Store, profile: &str, game: &Game) -> Result<Report> {
-    Ok(crate::build::build_as(store, profile, game, true)?.report)
+    let built = crate::build::build_as(store, profile, game, true).map_err(|e| {
+        match crate::build::refused_fix(&store.root, &game.dir, &e) {
+            Some(fix) => crate::Error::Other(format!("{e}. {fix}")),
+            None => e,
+        }
+    })?;
+    Ok(built.report)
 }
 
 #[cfg(test)]

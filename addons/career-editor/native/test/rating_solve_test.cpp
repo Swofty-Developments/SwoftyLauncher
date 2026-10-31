@@ -93,6 +93,14 @@ int main() {
     CHECK(!above.reached);
     CHECK(100.0f > above.high);
 
+    // the game shows a rating rounded down, so the search lands on the target or just above it
+    for (float t : {33.3f, 66.7f, 90.0f, 12.34f}) {
+        Solve r = solve(0.0f, 1.0f, t, [](float p) { return p * 99.7f + 0.1f; });
+        CHECK(r.reached);
+        CHECK(r.value >= t);
+        CHECK(r.value - t <= 0.01f);
+    }
+
     // a getter that can't be read reaches nothing
     CHECK(!solve(0.0f, 1.0f, 50.0f, [](float) { return NAN; }).reached);
 

@@ -68,6 +68,28 @@ inline int value_of(const std::vector<Value> &values, const std::string &entrant
     return -1;
 }
 
+struct Scenario {
+    uint8_t stat_id;
+    std::string name;
+};
+
+// The scenario a category value plays: the one with the value's game name, as setupFromUnranked looks it up.
+// -1 when none has it.
+inline int scenario_of(const std::vector<Scenario> &scenarios, const std::string &value)
+{
+    for (const auto &s : scenarios)
+        if (s.name == value)
+            return s.stat_id;
+    return -1;
+}
+
+// Whether this game decides the session's scenario: setupFromUnranked and Game_Network_SetScenario act on a
+// session role below 2 (offline or host); a client (2) takes the host's.
+inline bool decides_scenario(int role)
+{
+    return role >= 0 && role < 2;
+}
+
 // Unlinks a handle from its node's holder list and drops its reference, as the game's tile set clear does
 // (prev.next = next, next.prev = prev, the node's head moves on when it was this handle). release is
 // Vm_Release_Node. A handle the game already cleared (node null) is left alone.

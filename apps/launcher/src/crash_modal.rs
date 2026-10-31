@@ -20,11 +20,12 @@ const UNKNOWN: &str = "We couldn't tell why it crashed";
 const UNKNOWN_WHAT: &str = "Swofty Launcher looked at what the game left behind and didn't recognise this crash. \
      Send your logs to the developers, then join the Swofty Developments Discord so they can get back to you.";
 
-/// What the crash modal shows for one crashed session.
+/// What the crash modal shows for one crashed session, or one that ended stuck.
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct CrashView {
     pub dir: PathBuf,
     pub diagnosis: Option<Diagnosis>,
+    pub crashed: bool,
     /// The exit code and last exception, as the play bar shows them.
     pub summary: String,
 }
@@ -185,7 +186,11 @@ impl Shell {
                             .text_size(px(13.))
                             .font_weight(FontWeight::SEMIBOLD)
                             .text_color(p.error)
-                            .child("F1 25 crashed"),
+                            .child(if view.crashed {
+                                "F1 25 crashed"
+                            } else {
+                                "F1 25 got stuck"
+                            }),
                     )
                     .child(
                         div()

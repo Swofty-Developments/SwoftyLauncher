@@ -18,7 +18,6 @@ use swofty_core::folders::{self, Entry, Key, Spot};
 use swofty_core::import::{self, Route};
 use swofty_core::manifest::{Category, Kind, MANIFEST_FILE};
 use swofty_core::profile::VANILLA;
-use swofty_core::save_backup;
 
 use crate::library::{AddonItem, Changes, Source, plural};
 use crate::pages::{GUTTER, addon_icon, badge, chevron, fact, label, logo, tag, track_badge};
@@ -27,8 +26,8 @@ use crate::theme::{Palette, SCROLLBAR_GAP, ScrollArea, palette};
 
 const FADE: Duration = Duration::from_secs(4);
 pub(crate) const FILTERS_W: f32 = 226.;
-const DETAIL_W: f32 = 380.;
-const SPLIT_AT: f32 = 1000.;
+pub(crate) const DETAIL_W: f32 = 380.;
+pub(crate) const SPLIT_AT: f32 = 1000.;
 const ITEMS_SHOWN: usize = 10;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -271,6 +270,10 @@ pub(crate) struct AddonsPage {
     advanced: bool,
     changes: HashMap<String, Changes>,
     drop: Option<DropAt>,
+    /// From the core's reports of the last session: each addon's status lines, and the registry
+    /// conflicts with the addons each is about.
+    status: std::collections::BTreeMap<String, Vec<String>>,
+    registry_conflicts: Vec<(Vec<String>, swofty_core::stdlib::reports::Conflict)>,
     _search: Subscription,
 }
 
@@ -305,6 +308,8 @@ impl AddonsPage {
             advanced: false,
             changes: HashMap::new(),
             drop: None,
+            status: Default::default(),
+            registry_conflicts: Vec::new(),
             _search: changed,
         }
     }
@@ -470,8 +475,19 @@ pub(crate) fn facet_row(
     count: usize,
     p: Palette,
 ) -> Stateful<Div> {
+    facet_row_with(id, on, text, count.to_string(), count == 0, p)
+}
+
+pub(crate) fn facet_row_with(
+    id: impl Into<SharedString>,
+    on: bool,
+    text: impl Into<SharedString>,
+    count: String,
+    empty: bool,
+    p: Palette,
+) -> Stateful<Div> {
     let id: SharedString = id.into();
-    let dim = count == 0 && !on;
+    let dim = empty && !on;
     h_flex()
         .id(id)
         .h(px(26.))
@@ -494,7 +510,7 @@ pub(crate) fn facet_row(
             div()
                 .text_size(px(12.))
                 .text_color(if on { p.text_muted } else { p.text_placeholder })
-                .child(count.to_string()),
+                .child(count),
         )
 }
 
@@ -706,6 +722,18 @@ impl Shell {
         let last = (!self.vanilla())
             .then(|| conflicts::last(&self.store, &profile))
             .flatten();
+        let game = self.panel_install().map(|i| i.dir);
+        let registry = swofty_core::stdlib::reports::Conflicts::read(&self.store.root, game.as_deref());
+        let room = swofty_core::stdlib::reports::Room::read(&self.store.root, game.as_deref());
+        self.addons.status = swofty_core::stdlib::reports::status_lines(registry.as_ref(), room.as_ref());
+        self.addons.registry_conflicts = registry
+            .map(|c| {
+                c.registry
+                    .into_iter()
+                    .map(|e| (e.addons().into_iter().map(str::to_owned).collect(), e))
+                    .collect()
+            })
+            .unwrap_or_default();
         let checked = self.addons.report.take().filter(|r| r.profile == profile);
         self.addons.report = match (last, checked) {
             (Some(l), Some(c)) => Some(if c.built_at > l.built_at { c } else { l }),
@@ -1268,7 +1296,7 @@ impl Shell {
                     self.library.profile.name
                 ))
         });
-        let saves = self.save_notice(p, cx);
+        let saves = self.saves_banner(false, p, cx);
         let hidden = self.library.addons.len() - self.library.listed().count();
         let tracks = self.library.tracks_page.filter(|_| hidden > 0).map(|i| {
             h_flex()
@@ -1328,135 +1356,57 @@ impl Shell {
             .into_any_element()
     }
 
-    fn save_notice(&self, p: Palette, cx: &mut Context<Self>) -> Option<Div> {
-        let notice = save_backup::read_notice(&self.store.root)?;
-        let name = notice.backup.clone();
-        Some(
-            h_flex()
-                .px(px(GUTTER))
-                .pb(px(12.))
-                .gap(px(8.))
-                .flex_shrink_0()
-                .items_center()
-                .text_size(px(13.))
-                .text_color(p.text_muted)
-                .child(
-                    Icon::new(IconName::CircleAlert)
-                        .size(px(14.))
-                        .text_color(p.warning),
-                )
-                .child(div().flex_1().min_w_0().child(format!(
-                    "The profile save shrank from {} to {} bytes in a session without {}; their careers may be \
-                     gone. Backup {} holds the save from before that session.",
-                    notice.before,
-                    notice.after,
-                    notice.absent.join(", "),
-                    notice.backup
-                )))
-                .child(
-                    Button::new("restore-save")
-                        .outline()
-                        .small()
-                        .label("Restore")
-                        .on_click(cx.listener(move |this, _, window, cx| this.restore_save(&name, window, cx))),
-                )
-                .child(
-                    Button::new("dismiss-save-notice")
-                        .ghost()
-                        .small()
-                        .label("Dismiss")
-                        .on_click(cx.listener(|this, _, _, cx| {
-                            save_backup::clear_notice(&this.store.root);
-                            cx.notify();
-                        })),
-                ),
-        )
-    }
-
-    fn restore_save(&mut self, name: &str, window: &mut Window, cx: &mut Context<Self>) {
-        if swofty_core::process::game_running() {
-            window.push_notification(Notification::warning("Close F1 25, then restore the save."), cx);
-            return;
-        }
-        let root = self.store.root.clone();
-        let restored = save_backup::find(&root, name).and_then(|b| {
-            let dir = match b.manifest.save_dir.is_dir() {
-                true => Some(b.manifest.save_dir.clone()),
-                false => swofty_core::steam::find_save_dir(),
-            }
-            .ok_or_else(|| swofty_core::Error::Other("no Steam save folder found to restore into".into()))?;
-            save_backup::restore(&root, name, &dir, &save_backup::now_stamp())
-        });
-        let note = match restored {
-            Ok(Some(before)) => Notification::success(format!(
-                "Restored the profile save from {name}. The save it replaced is backup {}.",
-                before.name
-            )),
-            Ok(None) => Notification::success(format!("Restored the profile save from {name}.")),
-            Err(e) => {
-                crate::app_log::action("restore a save").failed(&e);
-                Notification::error(format!("The save was not restored: {e}"))
-            }
-        };
-        window.push_notification(note, cx);
-        cx.notify();
-    }
-
     fn install_cards(&self, p: Palette, cx: &mut Context<Self>) -> impl IntoElement {
         let roomy = self.content_width >= 900. && !self.short;
         let short = self.short;
-        let wide = self.content_width >= 900.;
         let card =
             |id: &'static str, icon: IconName, color: Hsla, title: &'static str, body: &'static str| {
-                let title = div()
-                    .flex_shrink_0()
-                    .text_size(px(if short { 13. } else { 14. }))
-                    .font_weight(FontWeight::SEMIBOLD)
-                    .text_color(p.text)
-                    .child(title);
-                let body = div()
-                    .min_w_0()
-                    .text_size(px(13.))
-                    .line_height(px(18.))
-                    .text_color(p.text_muted)
-                    .when(short, |d| d.truncate())
-                    .child(body);
-                let text = if short {
-                    h_flex()
-                        .flex_1()
-                        .min_w_0()
-                        .gap(px(8.))
-                        .child(Icon::new(icon).size(px(15.)).text_color(color))
-                        .child(title)
-                        .when(wide, |d| d.child(body))
-                } else {
-                    v_flex().flex_1().min_w_0().gap(px(2.)).child(title).child(body)
-                };
-                h_flex()
-                    .id(id)
+                let text = v_flex()
                     .flex_1()
                     .min_w_0()
-                    .min_h(px(if short { 40. } else { 78. }))
+                    .gap(px(2.))
+                    .child(
+                        div()
+                            .text_size(px(if short { 13. } else { 14. }))
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .text_color(p.text)
+                            .child(title),
+                    )
+                    .when(!short, |d| {
+                        d.child(
+                            div()
+                                .text_size(px(13.))
+                                .line_height(px(18.))
+                                .text_color(p.text_muted)
+                                .child(body),
+                        )
+                    });
+                v_flex()
+                    .id(id)
+                    .flex_1()
+                    .flex_basis(px(280.))
+                    .min_w_0()
+                    .items_start()
                     .px(px(if short { 12. } else { 16. }))
-                    .py(px(if short { 6. } else { 12. }))
-                    .gap(px(if short { 10. } else { 14. }))
+                    .py(px(if short { 10. } else { 12. }))
+                    .gap(px(if short { 8. } else { 12. }))
                     .rounded(px(8.))
                     .border_1()
                     .bg(p.surface)
-                    .when(roomy, |d| {
-                        d.child(
-                            div()
-                                .size(px(40.))
-                                .flex_shrink_0()
-                                .rounded(px(8.))
-                                .bg(color.opacity(0.14))
-                                .flex()
-                                .items_center()
-                                .justify_center()
-                                .child(Icon::new(icon).size(px(19.)).text_color(color)),
-                        )
-                    })
-                    .child(text)
+                    .child(
+                        h_flex()
+                            .flex_1()
+                            .w_full()
+                            .items_start()
+                            .gap(px(10.))
+                            .child(
+                                Icon::new(icon)
+                                    .size(px(if short { 15. } else { 19. }))
+                                    .flex_shrink_0()
+                                    .text_color(color),
+                            )
+                            .child(text),
+                    )
             };
         let folder = div()
             .id("install-folder")
@@ -1530,6 +1480,8 @@ impl Shell {
                 .on_click(cx.listener(|this, _, _, cx| this.open_page(Page::Browser, cx))),
         );
         h_flex()
+            .flex_wrap()
+            .items_stretch()
             .px(px(GUTTER))
             .pb(px(if short { 12. } else { 18. }))
             .gap(px(if short { 10. } else { 14. }))
@@ -2363,6 +2315,20 @@ impl Shell {
                     .flex_shrink_0()
                     .gap(px(4.))
                     .justify_end()
+                    .when_some(
+                        self.addons.status.get(&id).filter(|l| !l.is_empty()),
+                        |d, lines| {
+                            let first = lines[0].clone();
+                            let tip = format!("As of your last session: {}", lines.join("; "));
+                            d.child(
+                                pill(IconName::TriangleAlert, first, p.warning)
+                                    .id(SharedString::from(format!("status-{id}")))
+                                    .max_w(px(240.))
+                                    .truncate()
+                                    .tooltip(move |window, cx| Tooltip::new(tip.clone()).build(window, cx)),
+                            )
+                        },
+                    )
                     .when(self.update_ready(m), |d| {
                         let to = self.catalog_update(&id).map(|u| format!("v{}", u.to.version));
                         d.child(
@@ -2495,7 +2461,7 @@ impl Shell {
         let Some(item) = self.library.addons.iter().find(|a| a.manifest.id == id) else {
             return Changes::default();
         };
-        let c = Changes::read(&self.store, item);
+        let c = Changes::read(&self.store, &self.library.profile, item);
         self.addons.changes.insert(id.to_owned(), c.clone());
         c
     }
@@ -2871,6 +2837,15 @@ impl Shell {
         };
         let stale = report
             .is_some_and(|r| !r.is_current(&self.library.profile) || self.changed_since(id, r.built_at));
+        let name = |a: &str| self.addon_name(a);
+        let registry: Vec<String> = self
+            .addons
+            .registry_conflicts
+            .iter()
+            .filter(|(about, _)| about.iter().any(|a| a == id))
+            .map(|(_, e)| e.line(&name))
+            .chain(self.addons.status.get(id).into_iter().flatten().cloned())
+            .collect();
         let pairs: Vec<&Pair> = self.pairs_of(id).collect();
         let rows: Vec<AnyElement> = pairs
             .iter()
@@ -2930,6 +2905,27 @@ impl Shell {
                         .overflow_hidden()
                         .children(rows),
                 )
+            })
+            .when(!registry.is_empty(), |d| {
+                d.child(
+                    div()
+                        .text_size(px(12.))
+                        .text_color(p.text_placeholder)
+                        .child("In game, as of your last session"),
+                )
+                .children(registry.into_iter().map(|line| {
+                    h_flex()
+                        .gap(px(6.))
+                        .items_start()
+                        .text_size(px(13.))
+                        .text_color(p.text_muted)
+                        .child(
+                            Icon::new(IconName::TriangleAlert)
+                                .size(px(14.))
+                                .text_color(p.warning),
+                        )
+                        .child(line)
+                }))
             })
     }
 

@@ -35,8 +35,20 @@ pub const STEAM_VERIFY_URL: &str = "steam://validate/3059520";
 /// rewrites the launcher exe and its dll on a normal start, so their sizes
 /// drift from Steam's. Modded sessions never use them, so a drifted one is
 /// logged and never blocks; offline play parks and restores the exe itself.
+pub const EAC_LAUNCHER: &str = "EAAntiCheat.GameServiceLauncher.exe";
+
 fn is_eac(rel: &str) -> bool {
     !rel.contains('/') && rel.to_ascii_lowercase().starts_with("eaanticheat.")
+}
+
+/// VR tools (OpenComposite and other OpenVR runtimes) replace `openvr_api.dll`
+/// in the game folder. A replaced one is logged and never blocks.
+pub const VR_RUNTIME: &str = "openvr_api.dll";
+
+fn is_vr_runtime(rel: &str) -> bool {
+    rel.rsplit('/')
+        .next()
+        .is_some_and(|name| name.eq_ignore_ascii_case(VR_RUNTIME))
 }
 
 fn modified_secs(path: &Path) -> Option<f64> {
@@ -286,12 +298,15 @@ pub struct EacDrift {
 }
 
 /// What `check` found: the files that are not Steam's, the EA AntiCheat files
-/// that drifted without blocking, and what it did to the baseline on the way.
+/// and the VR runtime that drifted without blocking, and what it did to the
+/// baseline on the way.
 #[derive(Debug, Default, PartialEq)]
 pub struct Checked {
     pub foreign: Vec<String>,
     pub detail: Vec<Foreign>,
     pub eac: Vec<EacDrift>,
+    pub vr: Vec<EacDrift>,
+    pub missing: Vec<String>,
     pub proven: usize,
     pub rerecorded: Vec<String>,
     pub swept: Option<usize>,
@@ -307,6 +322,13 @@ pub struct Checked {
 /// it. The game folder is only read.
 pub fn check(data: &Path, game: &Game, depots: &Depots) -> Result<Checked> {
     let mut out = Checked::default();
+    let launcher = game.dir.join(EAC_LAUNCHER);
+    if depots.get(EAC_LAUNCHER).is_some()
+        && std::fs::symlink_metadata(&launcher).is_err()
+        && std::fs::symlink_metadata(game.dir.join(format!("{EAC_LAUNCHER}.bak"))).is_err()
+    {
+        out.missing.push(EAC_LAUNCHER.to_owned());
+    }
     let loaded = Baseline::load_or_new(data, &game.identity)?;
     let mut baseline = loaded.clone();
     let objects = Objects {
@@ -335,6 +357,12 @@ pub fn check(data: &Path, game: &Game, depots: &Depots) -> Result<Checked> {
             r.sha256 = sha256;
             r.source = Source::Depot;
             out.rerecorded.push(rel);
+        } else if is_vr_runtime(&rel) {
+            out.vr.push(EacDrift {
+                size: std::fs::metadata(&live).ok().map(|m| m.len()),
+                steam: e.size,
+                rel,
+            });
         } else {
             let size = std::fs::metadata(&live).ok().map(|m| m.len());
             out.detail.push(Foreign {
@@ -370,6 +398,14 @@ pub fn check(data: &Path, game: &Game, depots: &Depots) -> Result<Checked> {
                 });
                 continue;
             }
+            if is_vr_runtime(rel) {
+                out.vr.push(EacDrift {
+                    rel: rel.clone(),
+                    size,
+                    steam: e.size,
+                });
+                continue;
+            }
             out.detail.push(Foreign {
                 rel: rel.clone(),
                 measured: rel.clone(),
@@ -386,6 +422,7 @@ pub fn check(data: &Path, game: &Game, depots: &Depots) -> Result<Checked> {
     out.foreign.dedup();
     out.detail.sort_by(|a, b| a.rel.cmp(&b.rel));
     out.eac.sort_by(|a, b| a.rel.cmp(&b.rel));
+    out.vr.sort_by(|a, b| a.rel.cmp(&b.rel));
     if baseline != loaded {
         baseline.save(data)?;
     }
