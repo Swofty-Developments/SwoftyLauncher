@@ -25,6 +25,7 @@ the last two are committed. The tyre compound archive the
 group.register op names comes from addons/f1-1990/tools/tyres.py (tyres/<supplier>/tyrecompounds.erp). A full build fails at the end when an AI archive that assets/ai.json names is not in erp/ai.
 """
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -72,6 +73,8 @@ POD_CAMERA = {
     'ligier_prost': (0.658, 0.119), 'minardi': (0.634, 0.256), 'brabham': (0.602, -0.095), 'dallara': (0.626, -0.109),
     'arrows': (0.652, 0.123),
 }
+TEXTURE_CAP = 2048
+TEAM_TEXTURE = re.compile(r'/teams/[^/]+/textures/')
 POD_ATTACHMENTS = ('pod', 'podoffset', 'pod_left', 'pod_right')
 POD_FOV = 100.0
 MESH_HEADER, MESH_RECORD = 76, 88
@@ -256,6 +259,22 @@ def shadow_triangles(e):
     return worst
 
 
+def cap_declared(e):
+    capped = []
+    for r in e.res:
+        if kind(r) != 'GfxSurfaceRes' or len(r.frags) < 3 or not TEAM_TEXTURE.search(r.name):
+            continue
+        head = struct.unpack('<10I', e.frag_data(r, 0))
+        side = e.frag_data(r, 2)
+        count = struct.unpack_from('<I', side, 1 + side[0] + 1)[0]
+        if max(head[3], head[4]) << count <= TEXTURE_CAP:
+            continue
+        del r.frags[2:]
+        r.hash = hashlib.md5(b''.join(e.frag_data(r, i) for i in range(len(r.frags)))).digest()
+        capped.append((r.name, max(head[3], head[4]) << count, max(head[3], head[4])))
+    return capped
+
+
 def build_car(c, src, out, bspec=False):
     e = erpw.Erp(src)
     renamed, rewritten = rename_archive(e, c.donor, c.stem, bspec)
@@ -289,11 +308,12 @@ def build_car(c, src, out, bspec=False):
     cams = move_pod_cameras(e, c)
     tyres = set_tyres(e, c)
     groups = set_tyre_group(e)
+    capped = cap_declared(e)
     os.makedirs(os.path.dirname(out), exist_ok=True)
     e.to_file(out)
     return {'team': c.team, 'folder': c.folder, 'stem': c.stem, 'bspec': bspec, 'source': os.path.relpath(src, TRIES),
             'audio': sound, 'shadow_triangles': shadow, 'pod_cameras': len(cams), 'tyre_overrides': tyres,
-            'tyre_supplier': tyre_sets.supplier(c), 'tyre_groups': groups,
+            'tyre_supplier': tyre_sets.supplier(c), 'tyre_groups': groups, 'capped_textures': len(capped),
             'resources': len(e.res), 'renamed': renamed, 'rewritten': rewritten, 'handling_dropped': dropped,
             'folder_copies': extra, 'bytes': os.path.getsize(out)}
 
@@ -386,7 +406,8 @@ def main():
         for x in rs:
             print(f'{c.team:13} {"B" if x["bspec"] else "A"} {c.folder:15} stem {c.stem:12} {x["resources"]:5} res, '
                   f'{x["renamed"]} renamed, {x["rewritten"]} fragments, handling -{x["handling_dropped"]}, '
-                  f'+{x["folder_copies"]} folder copies, audio {x["audio"]}, {x["bytes"] / 1e6:.1f} MB')
+                  f'+{x["folder_copies"]} folder copies, audio {x["audio"]}, {x["capped_textures"]} declared sizes capped, '
+                  f'{x["bytes"] / 1e6:.1f} MB')
     if not only and not args.bspec_only:
         report['common'] = build_plain(args.common, os.path.join(PACK, 'erp', 'teams', 'common.erp'))
         print('common', report['common'])
