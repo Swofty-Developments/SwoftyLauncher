@@ -7493,6 +7493,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_ThrustmasterLcd_UpdateSectors: Binding = Binding {
+        id: "Game_ThrustmasterLcd_UpdateSectors",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Thrustmaster_SetWheelRange: Binding = Binding {
         id: "Game_Thrustmaster_SetWheelRange",
         kind: "func",
@@ -15241,6 +15246,16 @@ pub mod bindings {
     pub const site_Game_TeamSelect_TeamLogoFormat: Binding = Binding {
         id: "site_Game_TeamSelect_TeamLogoFormat",
         kind: "call",
+        status: Status::Experimental,
+    };
+    pub const site_Game_ThrustmasterLcd_EntrantRecord: Binding = Binding {
+        id: "site_Game_ThrustmasterLcd_EntrantRecord",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_ThrustmasterLcd_SectorTail: Binding = Binding {
+        id: "site_Game_ThrustmasterLcd_SectorTail",
+        kind: "site",
         status: Status::Experimental,
     };
     pub const site_Game_TimeTrialLeaderboard_BoardRead: Binding = Binding {
