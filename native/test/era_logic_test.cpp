@@ -230,6 +230,9 @@ static void continue_tests()
     expect(!ap.remapped && ap.pick.index == 2 && ap.teams == saved, "teams a list already holds are not mapped");
     ap = era::continue_list_aliased(lists, hashed, "", "swofty_f1", era::IdAliases{});
     expect(!ap.remapped && ap.pick.index < 0, "without aliases the teams stay unmatched");
+    expect(era::saved_predates(aliases, {9, 646, 4}) && !era::saved_predates(aliases, {9, 4, 510}) &&
+               !era::saved_predates(aliases, {0, era::NO_TEAM}) && !era::saved_predates(era::IdAliases{}, hashed),
+           "a career vector is mapped only when one of its teams is an earlier id");
     std::vector<uint16_t> stray{646, 4000};
     ap = era::continue_list_aliased(lists, stray, "cs_f1_2017", "swofty_f1", aliases);
     expect(!ap.remapped && ap.pick.index == 1, "a mapping no list holds falls back to the pressed box as before");

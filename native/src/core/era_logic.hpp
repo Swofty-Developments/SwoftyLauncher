@@ -600,6 +600,14 @@ inline std::vector<uint16_t> remap_teams(const IdAliases &aliases, std::vector<u
     return teams;
 }
 
+inline bool saved_predates(const IdAliases &aliases, const std::vector<uint16_t> &teams)
+{
+    for (uint16_t t : teams)
+        if (t && t != NO_TEAM && aliases.teams.count(t))
+            return true;
+    return false;
+}
+
 inline std::vector<uint16_t> distinct_teams(const std::vector<uint16_t> &teams)
 {
     std::vector<uint16_t> out;

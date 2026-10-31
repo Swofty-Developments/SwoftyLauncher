@@ -120099,6 +120099,32 @@
    "used_by": [
     "native/src/core/pit_slots.cpp"
    ]
+  },
+  {
+   "id": "entrants.deserialise_entrant_vector",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 48 89 D3 48 89 CE 48 8B 41 08",
+   "match": "0x142458f20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142458f20",
+   "kind": "func_start",
+   "names": [
+    "Ent_Deserialise_EntrantVector"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "career-alias",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/era_picker.cpp"
+   ]
   }
  ]
 }
