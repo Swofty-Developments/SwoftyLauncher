@@ -1,4 +1,5 @@
 #define WIN32_LEAN_AND_MEAN
+#include <winsock2.h>
 #include <windows.h>
 #include <math.h>
 #include <stdarg.h>
@@ -824,6 +825,72 @@ static void crash_standings(void)
     fflush(stdout);
 }
 
+// The tail of Game_GarageCrewModule_SpawnGarageCrew's assignment loop, copied byte for byte from the Steam build
+// (0x14038930e..0x14038931a and 0x14038931e), in a small frame that takes the vector begin in rcx, its end in rdx and
+// the garage id in r8d and returns the entry count the game computes after the site. Core's garage crew guard resolves
+// site_Game_GarageCrew_SpawnVector here, at +0x12.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_garage_crew\n"
+    ".def fake_garage_crew; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_garage_crew\n"
+    "fake_garage_crew:\n"
+    ".byte 0x41,0x55\n.seh_pushreg %r13\n"
+    ".byte 0x55\n.seh_pushreg %rbp\n"
+    ".seh_endprologue\n"
+    ".byte 0x49,0x89,0xD5,0x44,0x89,0xC5\n"
+    ".byte 0xEB,0x04,0x31,0xF6,0x31,0xC9\n"
+    ".byte 0x4D,0x89,0xE8,0x49,0x29,0xC8,0x49,0xC1,0xF8,0x04,0x4C,0x89,0xEA\n"
+    ".byte 0x4C,0x89,0xC0,0x5D,0x41,0x5D,0xC3\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_garage_crew\"\n"
+    ".text\n");
+uint64_t fake_garage_crew(void *begin, void *end, uint32_t garage);
+
+static void crew_entries(uint8_t (*records)[0x98], uint8_t (*entries)[16], const uint32_t *slots, int n, int first)
+{
+    for (int i = 0; i < n; i++) {
+        uint8_t *rec = records[i];
+        memset(rec, 0, 0x98);
+        *(uint16_t *)(rec + 0x52) = (uint16_t)(300 + first + i);
+        *(uint16_t *)(rec + 0x5a) = (uint16_t)(11 + first);
+        rec[0x83] = (uint8_t)(40 + first + i);
+        memset(entries[i], 0, 16);
+        *(uint8_t **)entries[i] = rec;
+        *(uint32_t *)(entries[i] + 8) = slots[i];
+    }
+}
+
+static void test_garage_crew(int guard)
+{
+    static uint8_t records[5][0x98], entries[5][16];
+    uint32_t two[] = {0, 1}, three[] = {0, 1, 2}, shuffled[] = {2, 0, 1}, four[] = {0, 1, 2, 3};
+    crew_entries(records, entries, two, 2, 0);
+    uint64_t n = fake_garage_crew(entries, entries + 2, 4);
+    expect(n == 2 && *(uint8_t **)entries[0] == records[0] && *(uint8_t **)entries[1] == records[1],
+           "garage crew: a garage with two cars keeps both crews and its vector is untouched");
+    crew_entries(records, entries, three, 3, 1);
+    n = fake_garage_crew(entries, entries + 3, 5);
+    printf("      garage crew: garage 5 with slots 0,1,2 keeps %llu entries\n", (unsigned long long)n);
+    if (!guard) {
+        expect(n == 3, "garage crew: with the guard off the third car stays in the vector, as in the game");
+        return;
+    }
+    expect(n == 2 && *(uint8_t **)entries[0] == records[0] && *(uint8_t **)entries[1] == records[1],
+           "garage crew: a third car in one garage is dropped from the crew vector, the first two keep their crews");
+    crew_entries(records, entries, shuffled, 3, 2);
+    n = fake_garage_crew(entries, entries + 3, 6);
+    expect(n == 2 && *(uint8_t **)entries[0] == records[1] && *(uint32_t *)(entries[0] + 8) == 0 &&
+               *(uint8_t **)entries[1] == records[2] && *(uint32_t *)(entries[1] + 8) == 1,
+           "garage crew: a slot 2 record ahead of the others is dropped and the rest close up in order");
+    crew_entries(records, entries, four, 4, 3);
+    n = fake_garage_crew(entries, entries + 4, 7);
+    expect(n == 2, "garage crew: a garage with four records keeps two");
+    n = fake_garage_crew(NULL, NULL, 8);
+    expect(n == 0, "garage crew: a garage with no records runs the game's empty path");
+}
+
 static void test_settings(int on, uint64_t chain)
 {
     HMODULE t = GetModuleHandleW(L"t_settings.dll");
@@ -1263,6 +1330,86 @@ static int exhaust_near(int release_pool)
     return taken;
 }
 
+
+static void udp_participants(uint8_t *b, size_t size, size_t stride, int format, int driver, int team)
+{
+    memset(b, 0, size);
+    b[0] = (uint8_t)format;
+    b[1] = (uint8_t)(format >> 8);
+    b[6] = 4;
+    b[29] = 2;
+    b[30 + 1] = (uint8_t)driver;
+    b[30 + 3] = (uint8_t)team;
+    b[30 + stride + 1] = 5;
+    b[30 + stride + 3] = 2;
+}
+
+static int udp_get(SOCKET rx, uint8_t *out, int cap)
+{
+    DWORD ms = 1500;
+    setsockopt(rx, SOL_SOCKET, SO_RCVTIMEO, (const char *)&ms, sizeof ms);
+    return recvfrom(rx, (char *)out, cap, 0, NULL, NULL);
+}
+
+static void test_udp(int off)
+{
+    WSADATA wsa;
+    WSAStartup(MAKEWORD(2, 2), &wsa);
+    SOCKET tx = socket(AF_INET, SOCK_DGRAM, 0), rx = socket(AF_INET, SOCK_DGRAM, 0), lan = socket(AF_INET, SOCK_DGRAM, 0);
+    struct sockaddr_in a = {.sin_family = AF_INET, .sin_addr.s_addr = htonl(INADDR_LOOPBACK)}, to, lan_to;
+    int n = sizeof a;
+    bind(rx, (struct sockaddr *)&a, sizeof a);
+    getsockname(rx, (struct sockaddr *)&a, &n);
+    to = a;
+    struct sockaddr_in l = {.sin_family = AF_INET, .sin_addr.s_addr = htonl(INADDR_LOOPBACK), .sin_port = htons(21414)};
+    int lan_bound = bind(lan, (struct sockaddr *)&l, sizeof l) == 0;
+    lan_to = l;
+    uint8_t sent[1500], got[1500];
+    int want_driver = off ? 197 : 255, want_team = off ? 251 : 4;
+
+    udp_participants(sent, 1284, 57, 2025, 197, 251);
+    uint8_t keep[1500];
+    memcpy(keep, sent, 1284);
+    int r = sendto(tx, (char *)sent, 1284, 0, (struct sockaddr *)&to, sizeof to);
+    expect(r == 1284, "udp: sendto returns the packet length");
+    expect(!memcmp(sent, keep, 1284), "udp: the game's own buffer is not changed");
+    r = udp_get(rx, got, sizeof got);
+    expect(r == 1284 && got[31] == want_driver && got[33] == want_team,
+           off ? "udp: SWOFTY_UDP_STOCK_IDS=0 sends the ids as the game wrote them"
+               : "udp: a 2025 Participants packet arrives with driver 197 as 255 and team 251 as 4");
+    expect(r == 1284 && got[30 + 57 + 1] == 5 && got[30 + 57 + 3] == 2, "udp: stock ids in the next entry arrive as sent");
+    if (r == 1284)
+        got[31] = 197, got[33] = 251;
+    expect(r == 1284 && !memcmp(got, keep, 1284), "udp: no other byte of the packet changes");
+
+    udp_participants(sent, 1283, 57, 2025, 197, 251);
+    sendto(tx, (char *)sent, 1283, 0, (struct sockaddr *)&to, sizeof to);
+    r = udp_get(rx, got, sizeof got);
+    expect(r == 1283 && got[31] == 197 && got[33] == 251, "udp: a buffer one byte short of the packet size is untouched");
+
+    udp_participants(sent, 1284, 57, 2023, 197, 251);
+    sendto(tx, (char *)sent, 1284, 0, (struct sockaddr *)&to, sizeof to);
+    r = udp_get(rx, got, sizeof got);
+    expect(r == 1284 && got[31] == 197 && got[33] == 251, "udp: a buffer with another packet format is untouched");
+
+    memset(sent, 0x41, 64);
+    sendto(tx, (char *)sent, 64, 0, (struct sockaddr *)&to, sizeof to);
+    r = udp_get(rx, got, sizeof got);
+    expect(r == 64 && !memcmp(sent, got, 64), "udp: other traffic arrives byte for byte");
+
+    if (lan_bound) {
+        udp_participants(sent, 1284, 57, 2025, 197, 251);
+        sendto(tx, (char *)sent, 1284, 0, (struct sockaddr *)&lan_to, sizeof lan_to);
+        r = udp_get(lan, got, sizeof got);
+        expect(r == 1284 && got[31] == 197 && got[33] == 251, "udp: a packet to the LAN game port is untouched");
+    } else {
+        printf("      port 21414 was taken; the LAN-port case is skipped\n");
+    }
+    closesocket(tx);
+    closesocket(rx);
+    closesocket(lan);
+}
+
 int main(int argc, char **argv)
 {
     int fallback = argc > 1 && !strcmp(argv[1], "fallback"), vm = argc > 1 && !strcmp(argv[1], "vm");
@@ -1403,10 +1550,13 @@ int main(int argc, char **argv)
 
     test_settings(settings, chain);
     test_items(settings);
+    if (argc > 1 && (!strcmp(argv[1], "udp") || !strcmp(argv[1], "udp_off")))
+        test_udp(!strcmp(argv[1], "udp_off"));
     if (argc > 1 && !strcmp(argv[1], "trigger")) {
         test_ers_newlap();
         test_ers_mode();
         test_standings();
+        test_garage_crew(1);
         test_track_acclim();
     }
     HMODULE ta = GetModuleHandleW(L"t_assets.dll");
@@ -1443,6 +1593,10 @@ int main(int argc, char **argv)
         crash_ers_mode();
     if (argc > 1 && !strcmp(argv[1], "standings"))
         crash_standings();
+    if (argc > 1 && !strcmp(argv[1], "garage_crew")) {
+        const char *off = getenv("SWOFTY_GARAGE_CREW_GUARD");
+        test_garage_crew(!(off && *off));
+    }
     if (argc > 1 && !strcmp(argv[1], "heap")) {
         SetErrorMode(SEM_NOGPFAULTERRORBOX);
         for (int i = 0; i < 3; i++)

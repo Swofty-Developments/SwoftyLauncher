@@ -12957,6 +12957,11 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_GarageCrew_SpawnVector: Binding = Binding {
+        id: "site_Game_GarageCrew_SpawnVector",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_SaveData_ContainersChildren: Binding = Binding {
         id: "site_Game_SaveData_ContainersChildren",
         kind: "site",
@@ -13194,6 +13199,26 @@ pub mod bindings {
     };
     pub const site_Sess_PuPanel_SlotHolder: Binding = Binding {
         id: "site_Sess_PuPanel_SlotHolder",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_TyreVisSlotLookup: Binding = Binding {
+        id: "site_Sess_TyreVisSlotLookup",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_TyreVisTailCall: Binding = Binding {
+        id: "site_Sess_TyreVisTailCall",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_TyreWearReturn: Binding = Binding {
+        id: "site_Sess_TyreWearReturn",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_TyreWearSlotLookup: Binding = Binding {
+        id: "site_Sess_TyreWearSlotLookup",
         kind: "site",
         status: Status::Experimental,
     };

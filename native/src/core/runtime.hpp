@@ -188,6 +188,10 @@ std::vector<CoreMixins> car_levers_mixins();
 void car_levers_commit();
 std::vector<CoreMixins> standings_guard_mixins();
 void standings_guard_commit();
+std::vector<CoreMixins> tyre_slots_mixins();
+void tyre_slots_commit();
+std::vector<CoreMixins> garage_crew_mixins();
+void garage_crew_commit();
 std::vector<CoreMixins> track_acclim_mixins();
 void track_acclim_commit();
 std::vector<CoreMixins> audio_queue_mixins();
@@ -217,6 +221,7 @@ bool netplay_popup(const char *id, void *fn, void *ctx);
 void netplay_home_vm(void *vm);
 void netplay_tick();
 void net_trace_setup();
+void udp_ids_setup();
 // The test agent (native/src/core/testagent/agent.cpp): armed only by `swofty test`'s run token.
 void testagent_setup();
 void testagent_tick();

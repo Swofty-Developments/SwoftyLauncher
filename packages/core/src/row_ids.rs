@@ -851,6 +851,23 @@ mod tests {
     }
 
     #[test]
+    fn driver_ids_above_255_skip_254_255_and_low_byte_0xff() {
+        const DRIVERS: (&str, &str) = ("entrants.drivers", "driver");
+        let labels: Vec<String> = (0..120).map(|i| format!("d{i}")).collect();
+        let refs: Vec<&str> = labels.iter().map(String::as_str).collect();
+        let built = build(DRIVERS, 254, &[("a", &refs)], Store::default());
+        let ids: BTreeSet<i64> = built.ids.values().copied().collect();
+        assert_eq!(ids.len(), 120);
+        assert!(ids.iter().any(|id| *id > 255));
+        assert!(
+            ids.iter()
+                .all(|id| (208..=16382).contains(id) && *id != 254 && id & 0xff != 0xff)
+        );
+        let again = build(DRIVERS, 254, &[("a", &refs)], built.store);
+        assert_eq!(again.ids, built.ids);
+    }
+
+    #[test]
     fn a_full_table_reuses_an_id_kept_for_an_addon_the_build_leaves_out_and_logs_it() {
         let first = build(
             PACKAGES,
