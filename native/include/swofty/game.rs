@@ -13733,6 +13733,16 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_PitLane_BoxPoseFalse: Binding = Binding {
+        id: "site_Game_PitLane_BoxPoseFalse",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_PitLane_BoxSlotRead: Binding = Binding {
+        id: "site_Game_PitLane_BoxSlotRead",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_SaveData_ContainersChildren: Binding = Binding {
         id: "site_Game_SaveData_ContainersChildren",
         kind: "site",
