@@ -220,7 +220,7 @@
     },
     {
       "id": "handling", "type": "choice", "label": "Handling", "default": "1990",
-      "description": "1990: period engines (620-690 hp), 6-speed boxes (Ferrari 7), 620 kg, 41% front, drag x0.96, downforce x0.5, grip 0.915/0.925, heavier wheel. 1990, low grip: same, downforce x0.33, grip 0.83/0.85. Modern: earlier handling.",
+      "description": "1990: period engines (620-690 hp), 6-speed boxes (Ferrari 7), 620 kg, 41% front, drag x0.96, downforce x0.5, grip 0.935/0.915, 12% more lock, heavier wheel. 1990, low grip: same, downforce x0.33, grip 0.848/0.841. Modern: earlier.",
       "values": [
         { "value": "1990", "label": "1990" }, { "value": "1990_low", "label": "1990, low grip" },
         { "value": "modern", "label": "Modern" }

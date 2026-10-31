@@ -373,6 +373,36 @@
    }
   },
   {
+   "op": "set",
+   "select": "car_setup.presets.vehicle_package_setups[_metadata_=f1_1990_vehicle_package]",
+   "field": "player.balanced.off_throttle",
+   "value": "11"
+  },
+  {
+   "op": "set",
+   "select": "car_setup.presets.vehicle_package_setups[_metadata_=f1_1990_vehicle_package]",
+   "field": "player.max_downforce.off_throttle",
+   "value": "7"
+  },
+  {
+   "op": "set",
+   "select": "car_setup.presets.vehicle_package_setups[_metadata_=f1_1990_vehicle_package]",
+   "field": "player.max_speed.off_throttle",
+   "value": "11"
+  },
+  {
+   "op": "set",
+   "select": "car_setup.presets.vehicle_package_setups[_metadata_=f1_1990_vehicle_package]",
+   "field": "player.med_downforce.off_throttle",
+   "value": "11"
+  },
+  {
+   "op": "set",
+   "select": "car_setup.presets.vehicle_package_setups[_metadata_=f1_1990_vehicle_package]",
+   "field": "player.med_speed.off_throttle",
+   "value": "11"
+  },
+  {
    "op": "add-row",
    "table": "entrants.vehicles.vehicle_packages",
    "from": "entrants.vehicles.vehicle_packages.vehicle_package[_metadata_=f1_2026]",
@@ -402,6 +432,36 @@
    "set": {
     "_metadata_": "f1_1990_vehicle_b_specs"
    }
+  },
+  {
+   "op": "set",
+   "select": "car_setup.presets.vehicle_package_setups[_metadata_=f1_1990_vehicle_b_specs]",
+   "field": "player.balanced.off_throttle",
+   "value": "11"
+  },
+  {
+   "op": "set",
+   "select": "car_setup.presets.vehicle_package_setups[_metadata_=f1_1990_vehicle_b_specs]",
+   "field": "player.max_downforce.off_throttle",
+   "value": "7"
+  },
+  {
+   "op": "set",
+   "select": "car_setup.presets.vehicle_package_setups[_metadata_=f1_1990_vehicle_b_specs]",
+   "field": "player.max_speed.off_throttle",
+   "value": "11"
+  },
+  {
+   "op": "set",
+   "select": "car_setup.presets.vehicle_package_setups[_metadata_=f1_1990_vehicle_b_specs]",
+   "field": "player.med_downforce.off_throttle",
+   "value": "11"
+  },
+  {
+   "op": "set",
+   "select": "car_setup.presets.vehicle_package_setups[_metadata_=f1_1990_vehicle_b_specs]",
+   "field": "player.med_speed.off_throttle",
+   "value": "11"
   },
   {
    "op": "add-row",

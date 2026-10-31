@@ -273,13 +273,17 @@ MOMENTS = (b'MOIX', b'MOIY', b'MOIZ')
 PERIOD_DRAG = 0.96
 PERIOD_MASS = 500.0 + 72.0 + 48.0
 PERIOD = {
-    '1990': {'aero': 0.5, 'grip': {'Front': 0.915, 'Rear': 0.925}, 'brake': 1.0, 'moi': 1.0},
-    '1990_low': {'aero': 0.33, 'grip': {'Front': 0.83, 'Rear': 0.85}, 'brake': 0.9, 'moi': 0.0},
+    '1990': {'aero': 0.5, 'grip': {'Front': 0.935, 'Rear': 0.915}, 'brake': 1.0, 'moi': 1.0},
+    '1990_low': {'aero': 0.33, 'grip': {'Front': 0.848, 'Rear': 0.841}, 'brake': 0.9, 'moi': 0.0},
     'modern': None,
 }
 FRONT_WEIGHT_1990 = 0.41
-ROLL_1990 = {'Front': 0.85, 'Rear': 1.45}
-AERO_BALANCE_1990 = {'Front': 1.08, 'Rear': 0.952}
+ROLL_1990 = {'Front': 0.85, 'Rear': 1.3}
+AERO_BALANCE_1990 = {'Front': 1.04, 'Rear': 0.976}
+BRAKE_FRONT_SHIFT_1990 = 0.035
+STEER_LOCK_1990 = 1.12
+COAST_DIFF_1990 = {'balanced': 11, 'max_downforce': 7, 'max_speed': 11, 'med_downforce': 11, 'med_speed': 11}
+STEER_MODEL_LOCKS = (b'SteerModelMaxLock1', b'SteerModelMaxLock2')
 FRONT_LIFT = (b'FrontCoeffLiftVsRideHeight', b'FrontCoeffLiftVsChassisRake', b'FrontWingCoL0', b'FrontWingCoL1',
               b'FrontWingCoL2')
 HANDLING_VALUES = tuple(PERIOD)
@@ -594,12 +598,31 @@ def period(root, ratio, cut):
     brakes = section(root, b'BrakeECU')
     for k in BRAKES:
         set_value(brakes, k, round(value(brakes, k) * ratio * cut['brake']))
+    for front, rear in zip(BRAKES[::2], BRAKES[1::2]):
+        total = value(brakes, front) + value(brakes, rear)
+        share = value(brakes, front) / total + BRAKE_FRONT_SHIFT_1990
+        set_value(brakes, front, round(total * share))
+        set_value(brakes, rear, total - round(total * share))
+    steering(root)
     chassis = section(root, b'Chassis')
     set_value(chassis, b'FFBScale', value(chassis, b'FFBScale') * FFB_1990)
     for k, (stock, v) in SLIPSTREAM_1990.items():
         if value(aero, k) != stock:
             raise ValueError(f'{k.decode()} is {value(aero, k)}, expected the stock {stock}')
         set_value(aero, k, v)
+
+
+def steering(root):
+    node = section(root, b'Steering')
+    set_value(node, b'MaxSteeringLock', round(value(node, b'MaxSteeringLock') * STEER_LOCK_1990, 5))
+    for u in root.children:
+        if u.kind == 0 and u.name == b'Upgrade':
+            for st in u.children:
+                if st.kind == 0 and st.name == b'Steering':
+                    set_value(st, b'MaxSteeringLock', round(value(st, b'MaxSteeringLock') * STEER_LOCK_1990, 5))
+    assists = section(root, b'F1Assists')
+    for k in STEER_MODEL_LOCKS:
+        set_value(assists, k, round(value(assists, k) / STEER_LOCK_1990, 4))
 
 
 def scale_x(node, k):
@@ -926,7 +949,9 @@ def package_ops(name, folder, **extra):
              'field': 'is_26_aero_regulations', 'value': 'False', 'when': {'classic_aero': True}},
             {'op': 'add-row', 'table': 'car_setup.presets',
              'from': f'car_setup.presets.vehicle_package_setups[_metadata_={C.SOURCE_PACKAGE}]',
-             'set': {'_metadata_': folder}}]
+             'set': {'_metadata_': folder}}] + [
+        {'op': 'set', 'select': f'car_setup.presets.vehicle_package_setups[_metadata_={folder}]',
+         'field': f'player.{mode}.off_throttle', 'value': str(idx)} for mode, idx in COAST_DIFF_1990.items()]
 
 
 def pinned(table, values):
