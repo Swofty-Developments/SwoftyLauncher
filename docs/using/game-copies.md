@@ -75,11 +75,23 @@ An EA app copy is not checked against a list of its files. When the launcher fin
 The EA app installs F1 25 in `C:\Program Files\EA Games\F1 25` by default, a folder Windows lets only administrators change. Swofty can't add your mods there while Swofty Launcher runs normally. **Play** then stops before it changes anything and shows **F1 25 needs administrator rights**, naming the folder:
 
 - **Restart as administrator** opens Swofty Launcher again with administrator rights, after Windows asks you to allow it. This one minimizes and closes once the administrator copy has run for 6 seconds. If you decline, or the administrator copy closes before then, this one stays open and says so. `state/launcher-app.log` in the data folder records each step.
-- Or move F1 25 to a folder outside Program Files in the EA app, then press **Play** again.
+- Or move F1 25 to a folder outside Program Files with **EA app** > **F1 25** > **Manage** > **Move**, not File Explorer, then press **Play** again.
 
-F1 25 started from the EA app can run without administrator rights even when Swofty Launcher runs as administrator and starts the EA app itself. The game then can't create files in its folder. The loader writes its log to `state/loader-fallback.log` in the data folder, and addons that save files through Swofty keep them in `addon-storage/<id>/` in the data folder for that session. The session says so on `[loader]` and `[warning]` lines in `state/wrapper-run.log`. An addon that writes in the game folder by itself can't save there; moving F1 25 to a folder outside Program Files fixes that. Restart as administrator from your own Windows account: an administrator account with a different user name has its own Swofty data folder.
+F1 25 started from the EA app can run without administrator rights even when Swofty Launcher runs as administrator and starts the EA app itself. The game then can't create files in its folder. The loader writes its log to `state/loader-fallback.log` in the data folder, and addons that save files through Swofty keep them in `addon-storage/<id>/` in the data folder for that session. The session says so on `[loader]` and `[warning]` lines in `state/wrapper-run.log`. An addon that writes in the game folder by itself can't save there; moving F1 25 out of Program Files with **EA app** > **F1 25** > **Manage** > **Move** fixes that. Restart as administrator from your own Windows account: an administrator account with a different user name has its own Swofty data folder.
 
 `swofty run --apply` and `swofty apply` stop with the same message. Steam library folders can be changed without administrator rights.
+
+## An EA app copy moved by hand
+
+The EA app starts F1 25 only from the folder it has on record: `Install Dir` under `HKEY_LOCAL_MACHINE\SOFTWARE\Codemasters\F1_25` (and the other EA keys) and the F1 25 uninstall entry. A copy moved in File Explorer stays on record at its old folder, and the EA app shows F1 25 as not installed.
+
+Before **Play** builds anything for an EA app copy, it compares the copy's folder with that record. When the EA app has F1 25 in another folder, **Play** stops with **The EA app has F1 25 in another folder**, naming both folders:
+
+- Move the folder back to the one the EA app has, then press **Play** again.
+- To keep F1 25 somewhere else, move it back first, then use **EA app** > **F1 25** > **Manage** > **Move**.
+- When the game is in the recorded folder, the **Play the copy in** button, which names that folder, switches to that copy.
+
+`swofty run` and `swofty game launch` stop with the same message, and name `swofty game use "<folder>"` when the game is in the recorded folder. With no record in the registry, as on Linux, there is no check.
 
 ## The EA app copy on Linux
 

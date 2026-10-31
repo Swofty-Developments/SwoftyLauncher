@@ -700,13 +700,21 @@ inline VehicleSet vehicle_for(const Data &d, const Resolve &r, int year, int slo
 // database. Before 1.6.6 an addon's add-row ids were numbered afresh by every build, so an update moved Classic
 // Seasons' cars (cs16_mercedes 534 -> 725 for vanderlinde0401) and a save's seats kept the old ids: entering a
 // session, Sess_Build_AiSystem read a null vehicle (0xce8). The seat gets its team slot's season car back, by
-// label (vehicle_for, the season apply's car). A seat with no car, or whose car exists, is left alone; `left`
-// says why a seat with a missing car cannot be repaired.
+// label (vehicle_for, the season apply's car). A seat with no car is left alone; `left` says why a seat with a
+// missing car cannot be repaired.
+// A moved id can also name another row: launcher 1.6.10 (#553) hashes add-row ids, so on a player's first 1.6.10+
+// build Classic Seasons' cars moved once and minik8824's 2019 save (cs19 cars at 550-559) kept five ids that now
+// name cs20_lotus, cs20_mercedes, cs16_toro_rosso, cs19_force_india and cs23_sauber; the race loaded three more
+// years' engine bundles and AUDIO_BUNDLE ran out. With `year_cars` (the career's seats are on the year's cars,
+// seats_logic.hpp year_cars) a race seat of a career slot before 2026 whose car exists but is not the slot's own
+// car of the year (vehicle_for, from that year) gets it too, `other_car` set. 2026 cars are stock rows, whose ids
+// never move.
 struct CarRepair {
     int old_stat = -1;
     int slot = -1;
     VehicleSet car;
     const char *left = nullptr;
+    bool other_car = false;
 };
 
 inline bool empty_key(uint32_t key)
@@ -715,10 +723,26 @@ inline bool empty_key(uint32_t key)
 }
 
 inline std::optional<CarRepair> car_repair(const Data &d, const Resolve &r, int year, uint32_t team_key,
-                                           uint32_t vehicle_ref, const std::function<bool(int)> &vehicle_known)
+                                           uint32_t vehicle_ref, const std::function<bool(int)> &vehicle_known,
+                                           bool year_cars = false)
 {
-    if (empty_key(vehicle_ref) || vehicle_known(static_cast<int>(vehicle_ref >> 16)))
+    if (empty_key(vehicle_ref))
         return std::nullopt;
+    if (vehicle_known(static_cast<int>(vehicle_ref >> 16))) {
+        if (!year_cars || year >= kLastYear || empty_key(team_key))
+            return std::nullopt;
+        CarRepair out;
+        out.old_stat = static_cast<int>(vehicle_ref >> 16);
+        out.slot = slot_of_team(d, static_cast<int>(team_key >> 16));
+        if (out.slot < 0)
+            return std::nullopt;
+        out.car = vehicle_for(d, r, year, out.slot);
+        if (out.car.stat < 0 || out.car.stat == out.old_stat || out.car.from_year != year ||
+            !vehicle_known(out.car.stat))
+            return std::nullopt;
+        out.other_car = true;
+        return out;
+    }
     CarRepair out;
     out.old_stat = static_cast<int>(vehicle_ref >> 16);
     if (empty_key(team_key)) {

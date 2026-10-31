@@ -8,6 +8,7 @@ use swofty_core::app_control::{self, Block};
 use swofty_core::busy::Busy;
 use swofty_core::copies::{self, Found, GameCopy};
 use swofty_core::crash::{LogScan, StartFailure, Symbols, fatal_name};
+use swofty_core::ea_app;
 use swofty_core::install::{Game, Source};
 use swofty_core::launch;
 use swofty_core::multiplayer::bridge::{ARMED, armed_env};
@@ -31,6 +32,7 @@ pub struct Install {
     pub via_steam: bool,
     pub manual: bool,
     pub source: Source,
+    pub moved: Option<ea_app::Moved>,
 }
 
 impl Install {
@@ -238,8 +240,14 @@ pub fn discover(store: &Store) -> Option<Install> {
 pub fn discover_all(store: &Store) -> Copies {
     let config = store.config();
     let found = copies::discover(&config);
-    let active = copies::active(&found, &config).map(|c| c.dir.clone());
-    let all: Vec<Install> = found.iter().map(install).collect();
+    let active = copies::active(&found, &config);
+    let recorded = if active.is_some_and(|c| c.source == Source::EaApp) {
+        ea_app::recorded_here()
+    } else {
+        Vec::new()
+    };
+    let active = active.map(|c| c.dir.clone());
+    let all: Vec<Install> = found.iter().map(|c| install(c, &recorded)).collect();
     Copies {
         active: active.and_then(|dir| all.iter().find(|i| i.dir == dir).cloned()),
         missing: copies::missing(&found, &config),
@@ -247,7 +255,7 @@ pub fn discover_all(store: &Store) -> Copies {
     }
 }
 
-fn install(copy: &GameCopy) -> Install {
+fn install(copy: &GameCopy, recorded: &[PathBuf]) -> Install {
     let steam_root = copy.steam.as_ref().map(|g| g.steam_root.clone());
     let via_steam = steam_root.as_deref().is_some_and(|root| {
         steam::launch_options(root)
@@ -270,6 +278,9 @@ fn install(copy: &GameCopy) -> Install {
         via_steam,
         manual: copy.found == Found::Added,
         source: copy.source,
+        moved: (copy.source == Source::EaApp)
+            .then(|| ea_app::moved(&copy.dir, recorded, ea_app::is_install))
+            .flatten(),
     }
 }
 
