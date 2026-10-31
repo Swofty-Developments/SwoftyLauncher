@@ -279,6 +279,7 @@ void ready()
     grade_setup();
     telemetry_setup();
     net_trace_setup();
+    udp_ids_setup();
     netplay_setup();
     netplay_drive_setup();
     testagent_setup();

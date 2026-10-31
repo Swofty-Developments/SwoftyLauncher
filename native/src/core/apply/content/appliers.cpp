@@ -137,7 +137,7 @@ rows::Base base_of(Database &d)
 void ensure_stock(Store &st)
 {
     State &s = state();
-    if (s.stock_seeded || (in_load_order(st, "team.identity").empty() && in_load_order(st, "team.pit_times").empty()))
+    if (s.stock_seeded)
         return;
     Database &d = database();
     if (!d.ok)
@@ -573,6 +573,15 @@ class Constructors : public Applier {
 public:
     const char *registry() const override { return "team.constructor"; }
     Applies applies() const override { return Applies::boot; }
+
+    void prepare(Store &st) override
+    {
+        std::lock_guard g(mu);
+        ensure_stock(st);
+        if (!has_records(st))
+            release_database();
+    }
+
     void boot(Store &st, Report &report) override
     {
         std::lock_guard g(mu);

@@ -109,6 +109,31 @@ int main()
     expect(cat["build"].as_string() == "b2" && cat["tracks"].size() == 1 && cat["tracks"]["game/bdx_s5_2012"].is_object(),
            "a box press of a new build of the same profile drops the earlier build's boxes");
 
+    trk::Facts with2012 = trk::parse_facts(R"({"version": 1, "grid_size": 24, "layers": [
+        {"label": "bdx_s5_track_24", "setup_modes": ["bdx_2012_mode"], "seasons": ["season_2025"], "world": "2012"}],
+      "tracks": {
+        "melbourne": {"worlds": {"2012": {"grid": 24, "garages": 12, "pit_boxes": 12}}},
+        "bahrain": {"worlds": {"2012": {"grid": 24, "garages": 12, "pit_boxes": 12}}},
+        "igora_drive": {"worlds": {"2012": {"grid": 24, "garages": 10, "pit_boxes": 10}}},
+        "okayama": {"worlds": {"f1_26": {"grid": 24, "garages": 11, "pit_boxes": 11}}}}})");
+    trk::BoxInfo b2012;
+    b2012.package = "game/bdx_s5_2012";
+    b2012.entrant_list = "bdx_s5_2012";
+    b2012.setup_mode = "bdx_2012_mode";
+    b2012.season = "season_2025";
+    b2012.teams = 12;
+    b2012.cars = 24;
+    trk::List l2012 = trk::build_list(base, &with2012, b2012, trk::Mode::grand_prix, {}, none);
+    bool okayama_out = false, igora_out = false;
+    for (auto &o : l2012.left_out) {
+        okayama_out = okayama_out || (o.track == "mod.okayama/okayama" &&
+                                      o.reason == "its files hold no 2012 world, which the box's bdx_2012_mode layer loads");
+        igora_out = igora_out || (o.track == "mod.miami24/igora_drive" &&
+                                  o.reason == "its bdx_2012_mode world has 10 garages; the box has 12 teams");
+    }
+    expect(okayama_out && igora_out && l2012.more.front() == "game/melbourne",
+           "a 12-team era box made from its entrant list: a track without its world and a 10-garage world are left out");
+
     printf("%s\n", fails ? "list_test: FAILED" : "list_test: all passed");
     return fails ? 1 : 0;
 }

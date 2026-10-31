@@ -64,6 +64,7 @@ using FeTile_Is_EraScenarioAvailable_Thunk_t = uint8_t(void *mode, const char *s
 inline constexpr fn<"FeTile_Is_EraScenarioAvailable_Thunk", FeTile_Is_EraScenarioAvailable_Thunk_t> FeTile_Is_EraScenarioAvailable_Thunk{}; // L2 experimental
 using FeTile_ItemBase_Populate_t = void(HomeItem *item, void *node, uint32_t a7);
 inline constexpr fn<"FeTile_ItemBase_Populate", FeTile_ItemBase_Populate_t> FeTile_ItemBase_Populate{}; // L3 stable
+inline constexpr address<"FeTile_ItemGeneric_Populate"> FeTile_ItemGeneric_Populate{}; // L2 experimental
 using FeTile_Press_EraTile_t = char *(void *view_model, void *command);
 inline constexpr fn<"FeTile_Press_EraTile", FeTile_Press_EraTile_t> FeTile_Press_EraTile{}; // L2 experimental
 using FeTile_Route_CareerItem_t = Action *(HomeItem *item, Action *out);

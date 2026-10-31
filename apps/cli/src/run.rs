@@ -2426,6 +2426,11 @@ mod tests {
             "a build whose heartbeat stopped is silent"
         );
         drop(lock);
+        drop(
+            SessionLock::wait(&data, Duration::from_secs(10))
+                .unwrap()
+                .expect("a forked child still holds the dropped lock"),
+        );
         beat(&data, 2_000);
         assert!(
             silence.of(&log, &data) >= Duration::from_millis(30),

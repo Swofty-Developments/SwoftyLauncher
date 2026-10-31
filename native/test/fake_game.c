@@ -1,4 +1,5 @@
 #define WIN32_LEAN_AND_MEAN
+#include <winsock2.h>
 #include <windows.h>
 #include <math.h>
 #include <stdarg.h>
@@ -242,6 +243,8 @@ const char fake_arg_a[] = "site_a", fake_arg_b[] = "site_b", fake_arg_c[] = "sit
 void fake_log_site_a(void);
 void fake_log_site_b(void);
 void fake_log_site_c(void);
+void fake_log_thunk(const char *channel, const char *fmt, ...);
+const char fake_fmt_bad[] = "fake replay record %s";
 int64_t fake_format_string(NeStr **out, const char *fmt, ...);
 
 void fake_log_body_impl(void) { gamelog_body_calls++; }
@@ -751,6 +754,77 @@ static void crash_ers_mode(void)
     fflush(stdout);
 }
 
+// Career_Standings_BuildWeekendNode's track read, copied byte for byte from the Steam build (0x14181e195..0x14181e1af
+// and 0x14181e4dc..0x14181e4f0, the je's rel32 aside), in a small frame that takes the standings view in rcx, the
+// round's TrackDataRecord in rdx, the round index in r8 and the round's Weekend in r9 (kept at [rsp+0xa0] as the game
+// does). It returns the record's +0x2c0 on the unchecked path, its +0x128 on the checked one and 0 for a round without
+// a record. Core's standings guard resolves site_Career_StandingsWeekendTrackLoad here at +0x28 and
+// site_Career_StandingsWeekendTrackDone at +0x38.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_standings_weekend\n"
+    ".def fake_standings_weekend; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_standings_weekend\n"
+    "fake_standings_weekend:\n"
+    ".byte 0x55\n.seh_pushreg %rbp\n"
+    ".byte 0x53\n.seh_pushreg %rbx\n"
+    ".byte 0x41,0x54\n.seh_pushreg %r12\n"
+    ".byte 0x48,0x81,0xEC,0xB0,0x00,0x00,0x00\n.seh_stackalloc 0xb0\n"
+    ".seh_endprologue\n"
+    ".byte 0x49,0x89,0xCC,0x48,0x89,0xD3,0x4C,0x89,0xC5,0x4C,0x89,0x8C,0x24,0xA0,0x00,0x00,0x00\n"
+    ".byte 0x41,0x80,0x7C,0x24,0x4A,0x00,0x0F,0x84,0x10,0x00,0x00,0x00\n"
+    ".byte 0x48,0x8B,0x83,0xC0,0x02,0x00,0x00,0x48,0x8D,0x48,0x08,0x48,0x85,0xC0\n"
+    ".byte 0xEB,0x64\n"
+    ".byte 0x48,0x85,0xDB,0x74,0x5D,0x41,0x80,0x7C,0x24,0x49,0x00,0x74,0x55,0x48,0x8B,0x83,0x28,0x01,0x00,0x00\n"
+    ".byte 0xEB,0x4E\n"
+    ".fill 76,1,0xCC\n"
+    ".byte 0x31,0xC0\n"
+    ".byte 0x48,0x81,0xC4,0xB0,0x00,0x00,0x00,0x41,0x5C,0x5B,0x5D,0xC3\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_standings_weekend\"\n"
+    ".text\n");
+uint64_t fake_standings_weekend(void *view, void *record, uint64_t round, void *weekend);
+
+static uint8_t standings_view[0x50], standings_record[0x2c8], standings_weekend[2][0x280];
+
+static void standings_setup(void)
+{
+    standings_view[0x4a] = 1;
+    standings_view[0x49] = 1;
+    *(uint64_t *)(standings_record + 0x2c0) = 0x2c0c0de;
+    *(uint64_t *)(standings_record + 0x128) = 0x128c0de;
+    standings_weekend[0][0x278] = 3;
+    standings_weekend[1][0x278] = 200;
+}
+
+static void test_standings(void)
+{
+    standings_setup();
+    uint64_t r = fake_standings_weekend(standings_view, standings_record, 0, standings_weekend[0]);
+    expect(r == 0x2c0c0de, "standings: a round with track data reads its record as the game does");
+    r = fake_standings_weekend(standings_view, NULL, 6, standings_weekend[1]);
+    uint64_t again = fake_standings_weekend(standings_view, NULL, 6, standings_weekend[1]);
+    expect(r == 0 && again == 0, "standings: a round whose track has no track data takes the game's no-record path");
+    r = fake_standings_weekend(standings_view, NULL, 9, NULL);
+    expect(r == 0, "standings: so does a round whose weekend can't be read");
+    standings_view[0x4a] = 0;
+    r = fake_standings_weekend(standings_view, standings_record, 1, standings_weekend[0]);
+    expect(r == 0x128c0de, "standings: the game's checked path still reads the round's record");
+    standings_view[0x4a] = 1;
+}
+
+static void crash_standings(void)
+{
+    SetErrorMode(SEM_NOGPFAULTERRORBOX);
+    standings_setup();
+    printf("      standings: building a round whose track has no track data\n");
+    fflush(stdout);
+    uint64_t r = fake_standings_weekend(standings_view, NULL, 4, standings_weekend[1]);
+    printf("      standings: the round returned %llu\n", (unsigned long long)r);
+    fflush(stdout);
+}
+
 static void test_settings(int on, uint64_t chain)
 {
     HMODULE t = GetModuleHandleW(L"t_settings.dll");
@@ -959,6 +1033,12 @@ static void test_gamelog(int on)
     fake_format_string(&s, "No screen called %hs exists", "late_screen");
     expect(!strcmp(chars(s), "No screen called late_screen exists"), "gamelog: a later route error is formatted normally");
     nestr_release(&s);
+    if (on) {
+        char *reserved = VirtualAlloc(NULL, 0x10000, MEM_RESERVE, PAGE_NOACCESS);
+        fake_log_thunk(fake_chan_warn, fake_fmt_bad, reserved + 0x685);
+        VirtualFree(reserved, 0, MEM_RELEASE);
+        expect(1, "gamelog: a %s argument into reserved memory is survived");
+    }
     expect(gamelog_body_calls == 0, "gamelog: the overwritten logger never runs the game's own body");
 }
 
@@ -1184,6 +1264,86 @@ static int exhaust_near(int release_pool)
     return taken;
 }
 
+
+static void udp_participants(uint8_t *b, size_t size, size_t stride, int format, int driver, int team)
+{
+    memset(b, 0, size);
+    b[0] = (uint8_t)format;
+    b[1] = (uint8_t)(format >> 8);
+    b[6] = 4;
+    b[29] = 2;
+    b[30 + 1] = (uint8_t)driver;
+    b[30 + 3] = (uint8_t)team;
+    b[30 + stride + 1] = 5;
+    b[30 + stride + 3] = 2;
+}
+
+static int udp_get(SOCKET rx, uint8_t *out, int cap)
+{
+    DWORD ms = 1500;
+    setsockopt(rx, SOL_SOCKET, SO_RCVTIMEO, (const char *)&ms, sizeof ms);
+    return recvfrom(rx, (char *)out, cap, 0, NULL, NULL);
+}
+
+static void test_udp(int off)
+{
+    WSADATA wsa;
+    WSAStartup(MAKEWORD(2, 2), &wsa);
+    SOCKET tx = socket(AF_INET, SOCK_DGRAM, 0), rx = socket(AF_INET, SOCK_DGRAM, 0), lan = socket(AF_INET, SOCK_DGRAM, 0);
+    struct sockaddr_in a = {.sin_family = AF_INET, .sin_addr.s_addr = htonl(INADDR_LOOPBACK)}, to, lan_to;
+    int n = sizeof a;
+    bind(rx, (struct sockaddr *)&a, sizeof a);
+    getsockname(rx, (struct sockaddr *)&a, &n);
+    to = a;
+    struct sockaddr_in l = {.sin_family = AF_INET, .sin_addr.s_addr = htonl(INADDR_LOOPBACK), .sin_port = htons(21414)};
+    int lan_bound = bind(lan, (struct sockaddr *)&l, sizeof l) == 0;
+    lan_to = l;
+    uint8_t sent[1500], got[1500];
+    int want_driver = off ? 197 : 255, want_team = off ? 251 : 4;
+
+    udp_participants(sent, 1284, 57, 2025, 197, 251);
+    uint8_t keep[1500];
+    memcpy(keep, sent, 1284);
+    int r = sendto(tx, (char *)sent, 1284, 0, (struct sockaddr *)&to, sizeof to);
+    expect(r == 1284, "udp: sendto returns the packet length");
+    expect(!memcmp(sent, keep, 1284), "udp: the game's own buffer is not changed");
+    r = udp_get(rx, got, sizeof got);
+    expect(r == 1284 && got[31] == want_driver && got[33] == want_team,
+           off ? "udp: SWOFTY_UDP_STOCK_IDS=0 sends the ids as the game wrote them"
+               : "udp: a 2025 Participants packet arrives with driver 197 as 255 and team 251 as 4");
+    expect(r == 1284 && got[30 + 57 + 1] == 5 && got[30 + 57 + 3] == 2, "udp: stock ids in the next entry arrive as sent");
+    if (r == 1284)
+        got[31] = 197, got[33] = 251;
+    expect(r == 1284 && !memcmp(got, keep, 1284), "udp: no other byte of the packet changes");
+
+    udp_participants(sent, 1283, 57, 2025, 197, 251);
+    sendto(tx, (char *)sent, 1283, 0, (struct sockaddr *)&to, sizeof to);
+    r = udp_get(rx, got, sizeof got);
+    expect(r == 1283 && got[31] == 197 && got[33] == 251, "udp: a buffer one byte short of the packet size is untouched");
+
+    udp_participants(sent, 1284, 57, 2023, 197, 251);
+    sendto(tx, (char *)sent, 1284, 0, (struct sockaddr *)&to, sizeof to);
+    r = udp_get(rx, got, sizeof got);
+    expect(r == 1284 && got[31] == 197 && got[33] == 251, "udp: a buffer with another packet format is untouched");
+
+    memset(sent, 0x41, 64);
+    sendto(tx, (char *)sent, 64, 0, (struct sockaddr *)&to, sizeof to);
+    r = udp_get(rx, got, sizeof got);
+    expect(r == 64 && !memcmp(sent, got, 64), "udp: other traffic arrives byte for byte");
+
+    if (lan_bound) {
+        udp_participants(sent, 1284, 57, 2025, 197, 251);
+        sendto(tx, (char *)sent, 1284, 0, (struct sockaddr *)&lan_to, sizeof lan_to);
+        r = udp_get(lan, got, sizeof got);
+        expect(r == 1284 && got[31] == 197 && got[33] == 251, "udp: a packet to the LAN game port is untouched");
+    } else {
+        printf("      port 21414 was taken; the LAN-port case is skipped\n");
+    }
+    closesocket(tx);
+    closesocket(rx);
+    closesocket(lan);
+}
+
 int main(int argc, char **argv)
 {
     int fallback = argc > 1 && !strcmp(argv[1], "fallback"), vm = argc > 1 && !strcmp(argv[1], "vm");
@@ -1324,9 +1484,12 @@ int main(int argc, char **argv)
 
     test_settings(settings, chain);
     test_items(settings);
+    if (argc > 1 && (!strcmp(argv[1], "udp") || !strcmp(argv[1], "udp_off")))
+        test_udp(!strcmp(argv[1], "udp_off"));
     if (argc > 1 && !strcmp(argv[1], "trigger")) {
         test_ers_newlap();
         test_ers_mode();
+        test_standings();
         test_track_acclim();
     }
     HMODULE ta = GetModuleHandleW(L"t_assets.dll");
@@ -1361,6 +1524,8 @@ int main(int argc, char **argv)
         crash_track_acclim(1);
     if (argc > 1 && !strcmp(argv[1], "ers_mode"))
         crash_ers_mode();
+    if (argc > 1 && !strcmp(argv[1], "standings"))
+        crash_standings();
     if (argc > 1 && !strcmp(argv[1], "heap")) {
         SetErrorMode(SEM_NOGPFAULTERRORBOX);
         for (int i = 0; i < 3; i++)

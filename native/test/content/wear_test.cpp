@@ -354,7 +354,7 @@ static void apply_tests(const std::string &regs)
               written(e, drv + ".garage_slot_preference") == "1" && written(e, drv + ".date_of_birth.year") == "1966" &&
               written(e, drv + ".expression_label") == "jarno_opmeer",
           "a driver row has his names, number, nationality, head and extra keys, and keeps the donor's other keys");
-    check(written(e, drv + ".stat_id") == "208", "his stat id is the lowest free one of Driver Manager's 208..253 range");
+    check(written(e, drv + ".stat_id") == "208", "his stat id is the lowest free one of Driver Manager's 208..16382 range");
     auto texts = x.texts["driver.identity"];
     auto has_text = [&](const std::string &tag, const std::string &value) {
         return std::find(texts.begin(), texts.end(), std::pair<std::string, std::string>{tag, value}) != texts.end();
@@ -475,6 +475,38 @@ static void literal_name_tests(const std::string &regs)
     check(texts.size() == 6, "only the literal names become texts");
 }
 
+static void driver_pool_tests()
+{
+    Db db;
+    db.put("entrants.drivers._driver_instancecount_", 0, "47");
+    for (int i = 0; i < 46; i++)
+        db.row("entrants.drivers.driver_" + std::to_string(i), {{"_metadata_", "d" + std::to_string(i)}, {"stat_id", std::to_string(208 + i)}});
+    db.row("entrants.drivers.driver_46", {{"_metadata_", "default_driver"}, {"stat_id", "254"}});
+    auto text = [&](const std::string &path) -> std::optional<std::string> {
+        auto r = db.base()(content::gvdb::fnv64(path));
+        return r ? std::optional<std::string>(r->text) : std::nullopt;
+    };
+    apply::ids::Store ids;
+    for (auto &scan : content::scan_all_pools(text)) {
+        apply::ids::Pool pool;
+        if (!scan.holes.empty())
+            pool.ranges = scan.holes;
+        else if (scan.lo <= scan.hi)
+            pool.ranges.push_back({scan.lo, scan.hi});
+        ids.define_pool(scan.registry, pool);
+    }
+    bool dense = true, clean = true;
+    int64_t last = 0;
+    for (int i = 0; i < 300; i++) {
+        int64_t id = ids.allocate("driver.identity", "d_" + std::to_string(i), "test").id;
+        dense = dense && id > last;
+        clean = clean && id != 254 && (id & 0xff) != 0xff && id >= 256 && id <= 16382;
+        last = id;
+    }
+    check(dense && clean, "driver ids above the full 208..253 run skip 254, 255 and every low byte 0xff, and stay under 16382");
+    check(ids.allocate("driver.identity", "d_next", "test").id == 557, "the 301st driver id is 557, after 256..510 and 512..556");
+}
+
 int main(int argc, char **argv)
 {
     if (argc < 2) {
@@ -483,6 +515,7 @@ int main(int argc, char **argv)
     }
     apply_tests(argv[1]);
     literal_name_tests(argv[1]);
+    driver_pool_tests();
     std::printf("%s\n", failures ? "FAILED" : "all passed");
     return failures ? 1 : 0;
 }
