@@ -22,23 +22,29 @@ chmod 440 /etc/sudoers.d/runner
 TOOLCHAIN=$(curl -fsSL https://raw.githubusercontent.com/Swofty-Developments/SwoftyLauncher/main/rust-toolchain.toml | sed -n 's/^channel = "\(.*\)"/\1/p')
 sudo -iu runner bash -c "curl -fsSL https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain $TOOLCHAIN -c rustfmt -c clippy"
 
-VERSION=$(curl -fsSL https://api.github.com/repos/actions/runner/releases/latest | jq -r .tag_name | tr -d v)
+RUNNER_VERSION=$(curl -fsSL https://api.github.com/repos/actions/runner/releases/latest | jq -r .tag_name | tr -d v)
 mkdir -p /opt/actions-runner /opt/hostedtoolcache
-curl -fsSL "https://github.com/actions/runner/releases/download/v$VERSION/actions-runner-linux-x64-$VERSION.tar.gz" | tar xz -C /opt/actions-runner
-/opt/actions-runner/bin/installdependencies.sh
+curl -fsSL "https://github.com/actions/runner/releases/download/v$RUNNER_VERSION/actions-runner-linux-x64-$RUNNER_VERSION.tar.gz" | tar xz -C /opt/actions-runner
+# The runner's script lists the ICU releases it knows; a newer Ubuntu's comes from apt directly.
+apt-get install -y "$(apt-cache search --names-only '^libicu[0-9]+$' | awk '{print $1}' | sort -V | tail -1)"
+/opt/actions-runner/bin/installdependencies.sh || true
 . /etc/os-release
-# The hosted runners' python3 is a 3.14 from actions/python-versions; the native schema tests rely on its re module.
+# Python 3.14 in the tool cache, as setup-python leaves it, where actions/python-versions builds one for this
+# release; on 26.04, the hosted ubuntu-latest, the system python3 is already 3.14.
+PYTHON_PATH=
 PYTHON_URL=$(curl -fsSL https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json | jq -r --arg os "$VERSION_ID" \
   '[.[] | select(.stable and (.version | startswith("3.14.")))][0].files[] | select(.platform == "linux" and .platform_version == $os and .arch == "x64") | .download_url')
-mkdir -p /tmp/python && curl -fsSL "$PYTHON_URL" | tar xz -C /tmp/python
-(cd /tmp/python && RUNNER_TOOL_CACHE=/opt/hostedtoolcache AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache bash ./setup.sh)
-PYTHON_BIN=$(ls -d /opt/hostedtoolcache/Python/3.14.*/x64/bin | head -1)
+if [ -n "$PYTHON_URL" ] && [ "${VERSION_ID%%.*}" -lt 26 ]; then
+  mkdir -p /tmp/python && curl -fsSL "$PYTHON_URL" | tar xz -C /tmp/python
+  (cd /tmp/python && RUNNER_TOOL_CACHE=/opt/hostedtoolcache AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache bash ./setup.sh)
+  PYTHON_PATH="$(ls -d /opt/hostedtoolcache/Python/3.14.*/x64/bin | head -1):"
+fi
 cat > /opt/actions-runner/.env <<EOF
 ImageOS=ubuntu${VERSION_ID%%.*}
 RUNNER_TOOL_CACHE=/opt/hostedtoolcache
 AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache
 LANG=C.UTF-8
-PATH=$PYTHON_BIN:/home/runner/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin
+PATH=$PYTHON_PATH/home/runner/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin
 EOF
 
 cat > /opt/actions-runner/swofty-run.sh <<'EOF'

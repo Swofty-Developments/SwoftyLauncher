@@ -8,7 +8,7 @@ that fails, run on the hosted runners.
 
 | Image | Used by | Instance |
 |---|---|---|
-| `linux-2404` | native, Rust (ubuntu-latest) | m8a.8xlarge, 32 cores |
+| `linux-2604` | native, Rust (ubuntu-latest, which is 26.04) | m8a.8xlarge, 32 cores |
 | `linux-2204` | release Linux build (glibc baseline) | m8a.8xlarge |
 | `windows` | Rust (windows-latest), release Windows build | m8a.4xlarge, 16 cores |
 
@@ -22,7 +22,7 @@ The images use the hosted runners' paths (`/home/runner/work`, `/home/runner/.ca
 ## Rebaking an image
 
 ```sh
-.github/runners/bake.sh linux-2404   # or linux-2204, windows
+.github/runners/bake.sh linux-2604   # or linux-2204, windows
 ```
 
 `bake.sh` boots the stock Ubuntu or Windows Server image with `bake-linux.sh` or `bake-windows.ps1` as

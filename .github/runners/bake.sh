@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Bakes one runner image: ./bake.sh linux-2404 | linux-2204 | windows
+# Bakes one runner image: ./bake.sh linux-2604 | linux-2204 | windows
 # launch.sh picks the newest image tagged swofty-ci-image=<kind>; this keeps the two newest of each kind.
 set -euo pipefail
 
@@ -9,11 +9,11 @@ HERE=$(cd "$(dirname "$0")" && pwd)
 SG=$(aws ec2 describe-security-groups --region "$REGION" --filters Name=group-name,Values=swofty-ci-runners --query 'SecurityGroups[0].GroupId' --output text)
 
 case $KIND in
-  linux-2404|linux-2204)
+  linux-2604|linux-2204)
     VERSION=${KIND#linux-}; VERSION=${VERSION:0:2}.${VERSION:2}
     BASE=$(aws ssm get-parameter --region "$REGION" --name "/aws/service/canonical/ubuntu/server/$VERSION/stable/current/amd64/hvm/ebs-gp3/ami-id" --query Parameter.Value --output text 2>/dev/null ||
       aws ssm get-parameter --region "$REGION" --name "/aws/service/canonical/ubuntu/server/$VERSION/stable/current/amd64/hvm/ebs-gp2/ami-id" --query Parameter.Value --output text)
-    WINE=$([ "$KIND" = linux-2404 ] && echo 1 || echo 0)
+    WINE=$([ "$KIND" = linux-2604 ] && echo 1 || echo 0)
     USERDATA=$(sed "s/@WINE@/$WINE/" "$HERE/bake-linux.sh")
     DISK=30 DEVICE=/dev/sda1 ;;
   windows)
