@@ -31,7 +31,7 @@ pub const STOP_EXIT: u8 = 3;
 pub const CORE_REGISTRIES: &[(&str, &str)] = &[
     ("addon.option", "1.0"),
     ("car.profile", "1.0"),
-    ("career.calendar", "1.0"),
+    ("career.calendar", "1.1"),
     ("career.character", "1.0"),
     ("career.content", "1.1"),
     ("career.driver_ratings", "1.0"),

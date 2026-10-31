@@ -15,7 +15,7 @@ STATUSES = ("experimental", "stable", "superseded")
 SEMVER = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
 
 ANNOTATIONS = frozenset({"$comment", "title", "description", "examples", "deprecated"})
-TOP_ONLY = frozenset({"$schema", "x-registry", "x-version", "x-applies", "x-snapshot", "x-snapshot-budget", "x-adapter", "x-shared"})
+TOP_ONLY = frozenset({"$schema", "x-registry", "x-version", "x-applies", "x-snapshot", "x-snapshot-budget", "x-adapter", "x-shared", "x-data-group"})
 KEYWORDS = ANNOTATIONS | TOP_ONLY | frozenset({
     "$id", "$ref", "$defs", "definitions", "default",
     "type", "enum", "const",

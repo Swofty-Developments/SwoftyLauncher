@@ -29,7 +29,7 @@ const SCHEMAS: &[(&str, &str)] = &[
     ),
     (
         "career.calendar",
-        include_str!("../../../sdk/std/registries/career.calendar/1.0.json"),
+        include_str!("../../../sdk/std/registries/career.calendar/1.1.json"),
     ),
     (
         "career.character",

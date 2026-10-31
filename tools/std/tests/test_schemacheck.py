@@ -115,6 +115,27 @@ class Rules(TempRegistries):
         self.edit("1.1", lambda s: s.__setitem__("x-applies", "boot"))
         self.assertRule("minor", "changes x-applies")
 
+    def unscope(self, s):
+        s["required"].remove("data_group")
+        s["properties"].pop("data_group")
+
+    def test_minor_may_scope_to_a_new_optional_data_group(self):
+        def scope(s):
+            self.unscope(s)
+            s["x-data-group"] = True
+            s["properties"]["data_group"] = {"type": "string"}
+        self.edit("1.0", self.unscope)
+        self.edit("1.1", scope)
+        self.assertEqual(self.violations(), [])
+
+    def test_data_group_scope_without_the_field(self):
+        def scope(s):
+            self.unscope(s)
+            s["x-data-group"] = True
+        self.edit("1.0", self.unscope)
+        self.edit("1.1", scope)
+        self.assertRule("minor", "adds x-data-group")
+
     def test_snapshot_budget_shrunk(self):
         self.edit("1.1", lambda s: s.__setitem__("x-snapshot-budget", 1024))
         self.assertRule("minor", "shrinks x-snapshot-budget")
