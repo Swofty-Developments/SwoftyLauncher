@@ -958,6 +958,8 @@ inline constexpr call<"site_Ne_HwInt_WorldShadowMapSize"> site_Ne_HwInt_WorldSha
 inline constexpr call<"site_Ne_HwXmlParseCall"> site_Ne_HwXmlParseCall{}; // L2 experimental
 inline constexpr call<"site_Ne_HwXmlWriteCall"> site_Ne_HwXmlWriteCall{}; // L2 experimental
 inline constexpr site<"site_Ne_ReplayAfterRecord"> site_Ne_ReplayAfterRecord{}; // L2 experimental
+inline constexpr site<"site_Ne_WatchdogKillPath"> site_Ne_WatchdogKillPath{}; // L2 experimental
+inline constexpr site<"site_Ne_WatchdogKillSkip"> site_Ne_WatchdogKillSkip{}; // L2 experimental
 inline constexpr vtable<"vt_Ne_ParticleEffectComponent", 16> vt_Ne_ParticleEffectComponent{}; // L2 experimental
 inline constexpr vtable<"vt_Ne_SaveSystem2Win", 16> vt_Ne_SaveSystem2Win{}; // L2 experimental
 

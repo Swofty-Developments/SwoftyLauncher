@@ -22,7 +22,8 @@
 // At site_Ne_WatchdogKillPath, reached only when the time since the last tick (r14d, ms) exceeds the max delay,
 // the hook continues at site_Ne_WatchdogKillSkip, the branch the game takes while the delay has not run out, when
 // a flow is in Entering (career.cpp reports every flow transition) and the silence is under 180 s. A stall with no
-// flow in Entering, or one past 180 s, reaches the game's kill unchanged.
+// flow in Entering, or one past 180 s, reaches the game's kill unchanged. A kill with the shutdown flag set (dil, the
+// object's +0x120) is never held.
 //
 // SWOFTY_BOOT_WATCHDOG_GRACE=0 turns it off.
 
@@ -41,6 +42,8 @@ std::atomic<uint64_t> held{0};
 
 void kill_path(SwoftyContext *c)
 {
+    if (static_cast<uint8_t>(c->rdi))
+        return;
     uint32_t elapsed = static_cast<uint32_t>(c->r14);
     uint64_t now = GetTickCount64();
     wg::Entering where;

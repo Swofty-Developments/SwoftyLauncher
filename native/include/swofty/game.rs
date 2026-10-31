@@ -2600,7 +2600,6 @@ pub type Game_Handle_GarageCrewEvent_Thunk_t =
     unsafe extern "C" fn(cars: *mut *mut c_void, event: *mut c_void) -> u64;
 pub type Game_Handle_SpecGarageCrewEvent_Thunk_t =
     unsafe extern "C" fn(self_: *mut c_void, event: *mut c_void) -> u64;
-pub type Game_Network_CategoryOptionUsing_t = unsafe extern "C" fn(self_: *mut c_void);
 pub type Game_Network_SendingRedFlagVehicleStatusUpdate_t =
     unsafe extern "C" fn(red_flag_state: *mut c_void, dt: *const f64);
 pub type Game_Network_SetScenario_t =
@@ -6353,11 +6352,6 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
-    pub const Game_Network_CategoryOptionUsing: Binding = Binding {
-        id: "Game_Network_CategoryOptionUsing",
-        kind: "func",
-        status: Status::Experimental,
-    };
     pub const Game_Network_SendingRedFlagVehicleStatusUpdate: Binding = Binding {
         id: "Game_Network_SendingRedFlagVehicleStatusUpdate",
         kind: "func",
@@ -7630,11 +7624,6 @@ pub mod bindings {
     };
     pub const Game_UIConnectionManager_ShowConnectionLostPopup: Binding = Binding {
         id: "Game_UIConnectionManager_ShowConnectionLostPopup",
-        kind: "func",
-        status: Status::Experimental,
-    };
-    pub const Game_UIThumbnailSystem_FindDriverCustomisationWill: Binding = Binding {
-        id: "Game_UIThumbnailSystem_FindDriverCustomisationWill",
         kind: "func",
         status: Status::Experimental,
     };
@@ -15430,6 +15419,16 @@ pub mod bindings {
     };
     pub const site_Ne_ReplayAfterRecord: Binding = Binding {
         id: "site_Ne_ReplayAfterRecord",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Ne_WatchdogKillPath: Binding = Binding {
+        id: "site_Ne_WatchdogKillPath",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Ne_WatchdogKillSkip: Binding = Binding {
+        id: "site_Ne_WatchdogKillSkip",
         kind: "site",
         status: Status::Experimental,
     };

@@ -751,8 +751,6 @@ inline constexpr address<"Game_NetworkSubsystem_SelectTitleConfig"> Game_Network
 inline constexpr address<"Game_NetworkUI_StartRankedDivisionSearch"> Game_NetworkUI_StartRankedDivisionSearch{}; // L2 experimental
 inline constexpr address<"Game_NetworkUI_StartRankedRematching"> Game_NetworkUI_StartRankedRematching{}; // L2 experimental
 inline constexpr address<"Game_Network_ApplyInitialPitAndGridState"> Game_Network_ApplyInitialPitAndGridState{}; // L2 experimental
-using Game_Network_CategoryOptionUsing_t = void(void *self);
-inline constexpr fn<"Game_Network_CategoryOptionUsing", Game_Network_CategoryOptionUsing_t> Game_Network_CategoryOptionUsing{}; // L2 experimental
 using Game_Network_SendingRedFlagVehicleStatusUpdate_t = void(void *red_flag_state, const double *dt);
 inline constexpr fn<"Game_Network_SendingRedFlagVehicleStatusUpdate", Game_Network_SendingRedFlagVehicleStatusUpdate_t> Game_Network_SendingRedFlagVehicleStatusUpdate{}; // L2 experimental
 using Game_Network_SetScenario_t = void(void *session, uint8_t stat_id, const void *spec);
@@ -1043,7 +1041,6 @@ inline constexpr address<"Game_TyreWearRelevanceCriterion_Update"> Game_TyreWear
 inline constexpr address<"Game_UDPPreferences_OnLocalPreferenceChange"> Game_UDPPreferences_OnLocalPreferenceChange{}; // L2 experimental
 inline constexpr address<"Game_UDPPreferences_OnLocalShowPlayerNameChange"> Game_UDPPreferences_OnLocalShowPlayerNameChange{}; // L2 experimental
 inline constexpr address<"Game_UIConnectionManager_ShowConnectionLostPopup"> Game_UIConnectionManager_ShowConnectionLostPopup{}; // L2 experimental
-inline constexpr address<"Game_UIThumbnailSystem_FindDriverCustomisationWill"> Game_UIThumbnailSystem_FindDriverCustomisationWill{}; // L2 experimental
 inline constexpr address<"Game_UiMessageScreen_Destructor"> Game_UiMessageScreen_Destructor{}; // L2 experimental
 inline constexpr address<"Game_VehicleAntiStallSystem_GetStateByPlayerId"> Game_VehicleAntiStallSystem_GetStateByPlayerId{}; // L2 experimental
 inline constexpr address<"Game_VehicleAntiStallSystem_IsLaunchPending"> Game_VehicleAntiStallSystem_IsLaunchPending{}; // L2 experimental
