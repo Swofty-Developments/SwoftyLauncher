@@ -84,6 +84,13 @@ static void paths()
     expect(ss::windows_path("C:\\Users\\a\\saves\\") == "C:\\Users\\a\\saves", "a Windows path stays");
     expect(ss::ansi_path("Z:\\home\\a\\local") && !ss::ansi_path("Z:\\h\xc3\xa9") && !ss::ansi_path(""),
            "the user data folder must be plain ASCII");
+    for (const char *u : {"C:\\Users\\H\xc3\xbcseyin\\AppData\\Local\\Swofty\\saves\\default\\remote",
+                          "C:\\Users\\\xd0\x98\xd0\xb2\xd0\xb0\xd0\xbd\\AppData\\Local\\Swofty\\saves\\default\\remote",
+                          "C:\\Users\\\xe7\x8e\x8b\\AppData\\Local\\Swofty\\saves\\default\\remote"})
+        expect(ss::store_path_ok(u, "default"), std::string("a store under a non-ASCII user folder is accepted: ") + u);
+    for (const char *u : {"C:\\Users\\H\xfcseyin\\saves\\default\\remote", "C:\\Users\\a\x01\\saves\\default\\remote",
+                          "C:\\Users\\\xe7\x8e\\saves\\default\\remote"})
+        expect(!ss::store_path_ok(u, "default"), "a store path that is not clean UTF-8 is refused");
     for (const char *n : {"savegame@profile#NXDSMWW.BWW", "savegame@profile#QKRHMYXE", "corrupt_saves#7656.zip"})
         expect(ss::valid_name(n), std::string("remote name ") + n + " is valid");
     for (const char *n : {"", ".", "..", "../x", "a/b", "a\\b", "C:x", "x.swofty-tmp", "a..b"})
