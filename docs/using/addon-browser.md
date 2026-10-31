@@ -33,6 +33,18 @@ An addon can require other addons (its manifest's [`requires`](/reference/addons
 
 The addon's page lists **Also installs** with the other addons the install brings, and its card shows the same line. The progress bar covers every download, and **Activity** records what else was installed. Each version in **Versions** lists what it requires.
 
+### If a download fails {#if-a-download-fails}
+
+When the connection drops or breaks partway through a download, the launcher waits a few seconds and asks for the rest of the file. It gives up after four tries in a row that bring no new data, or twelve tries in all. The finished file is still checked against its size and SHA-256.
+
+When it keeps breaking, the install fails with **the connection kept breaking during the download**. Antivirus HTTPS or web scanning, a VPN or a proxy usually causes it:
+
+1. Turn off your antivirus's HTTPS or web scanning, or add an exclusion for Swofty Launcher.
+2. Turn off any VPN or proxy.
+3. Install again. If it still fails, try another network, such as a phone hotspot.
+
+The error's second line holds the network error, and `state/registry.log` in the data folder keeps it.
+
 ## Updates
 
 When an installed addon has a newer version, **Play** becomes **Update addons** with the number of updates. See [Updating](/using/updating#addon-updates).

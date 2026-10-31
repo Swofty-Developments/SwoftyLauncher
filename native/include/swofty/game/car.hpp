@@ -284,6 +284,7 @@ inline constexpr fn<"Car_Reset_LastFittedUpgrade", Car_Reset_LastFittedUpgrade_t
 inline constexpr address<"Car_Setup_ApplyTuning"> Car_Setup_ApplyTuning{}; // L3 stable
 inline constexpr address<"Car_Systems_Reset_Thunk"> Car_Systems_Reset_Thunk{}; // L3 stable
 inline constexpr address<"Car_Tuning_SetChassisZCom"> Car_Tuning_SetChassisZCom{}; // L2 experimental
+inline constexpr address<"Car_Tuning_SetFinalDrive"> Car_Tuning_SetFinalDrive{}; // L2 experimental
 inline constexpr address<"Car_Tyre_GripScale"> Car_Tyre_GripScale{}; // L2 experimental
 inline constexpr address<"Car_Tyre_MagicFormula"> Car_Tyre_MagicFormula{}; // L2 experimental
 using Car_Tyre_SetWearFactor_t = void(void *tyre_component, bool apply_set, uint16_t force);
