@@ -224,6 +224,11 @@ pub fn rename_vaults(data: &Path, from: &str, to: &str) -> Result<()> {
     Ok(())
 }
 
+/// Whether the first-start import has not yet found a Steam save to read.
+pub fn import_pending(data: &Path) -> bool {
+    !marker_path(data).exists()
+}
+
 /// Whether the launcher still has to tell the player about the first-start import: it copied the Steam
 /// save into at least one profile and the player hasn't seen the notice.
 pub fn notice_due(data: &Path) -> bool {
@@ -244,7 +249,8 @@ pub fn mark_seen(data: &Path) -> Result<()> {
 
 /// The first launcher start with launcher saves: copy the Steam save into every launcher profile's
 /// empty store, snapshot each in the vault, and record that it ran so it never repeats on its own. A
-/// running game defers it to the next start; the Steam save is only read.
+/// running game defers it to the next start, and a start that finds no Steam save to read records
+/// nothing, so the next start tries again; the Steam save is only read.
 pub fn first_start_import(data: &Path, profiles: &[String], running: Running, now: i64) -> Vec<String> {
     first_start_import_from(data, profiles, || steam_source(data), running, now)
 }
@@ -265,11 +271,12 @@ pub fn first_start_import_from(
     let mut out = Vec::new();
     let mut done = Vec::new();
     let note;
+    let mut found = false;
     match source() {
         None => {
             note = "no Steam save of the active copy".to_owned();
             out.push(format!(
-                "saves: no Steam save found to import into the launcher saves ({note}); profiles start with empty launcher saves"
+                "saves: no Steam save found to import into the launcher saves ({note}); profiles start with empty launcher saves, and the import is tried again at the next start"
             ));
         }
         Some(from) => {
@@ -281,6 +288,7 @@ pub fn first_start_import_from(
                 let to = store_for(data, p, &from).expect("every layout has a store");
                 match seed(data, p, &from, Reason::Imported, now) {
                     Ok(s) => {
+                        found |= !matches!(s, Seeded::NoSource);
                         if matches!(s, Seeded::Copied { .. }) {
                             done.push(p.clone());
                         }
@@ -295,6 +303,9 @@ pub fn first_start_import_from(
                 }
             }
         }
+    }
+    if !found {
+        return out;
     }
     let m = Marker {
         at: now,

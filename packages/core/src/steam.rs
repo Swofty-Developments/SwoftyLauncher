@@ -376,6 +376,35 @@ pub fn save_dir(steam_root: &Path) -> Option<PathBuf> {
     })
 }
 
+/// The Steam install whose `userdata` holds the saves of the game at `game`
+/// (`<library>/steamapps/common/<game>`): the library itself when it is a Steam root,
+/// else the known root whose `libraryfolders.vdf` lists the library.
+pub fn root_of_game_in(game: &Path, roots: &[PathBuf]) -> Option<PathBuf> {
+    let common = game.parent()?;
+    let steamapps = common.parent()?;
+    let named = |p: &Path, name: &str| {
+        p.file_name()
+            .is_some_and(|n| n.to_string_lossy().eq_ignore_ascii_case(name))
+    };
+    if !named(common, "common") || !named(steamapps, "steamapps") {
+        return None;
+    }
+    let library = steamapps.parent()?;
+    let real = |x: &Path| x.canonicalize().unwrap_or_else(|_| x.to_path_buf());
+    let is_root = |r: &Path| r.join("userdata").is_dir() || r.join("config/loginusers.vdf").is_file();
+    if is_root(library) {
+        return Some(library.to_path_buf());
+    }
+    roots
+        .iter()
+        .find(|r| libraries(r).iter().any(|l| real(l) == real(library)))
+        .cloned()
+}
+
+pub fn root_of_game(game: &Path) -> Option<PathBuf> {
+    root_of_game_in(game, &steam_roots())
+}
+
 /// save_dir for the Steam install that holds the game, then for every other one.
 pub fn find_save_dir() -> Option<PathBuf> {
     let game_root = find_game().map(|g| g.steam_root);
@@ -576,6 +605,50 @@ mod tests {
         .unwrap();
         assert!(steamvr_installed(&root));
         std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn finds_the_steam_root_of_a_game_on_another_drive_with_spaces() {
+        let base = std::env::temp_dir().join(format!("swofty-root-{}", std::process::id()));
+        let root = base.join("Bagas").join("New Folder").join("Apps").join("Steam");
+        std::fs::create_dir_all(root.join("steamapps/common/F1 25")).unwrap();
+        std::fs::create_dir_all(root.join("userdata/1163457660/3059520/remote")).unwrap();
+        let game = root.join("steamapps").join("common").join("F1 25");
+        assert_eq!(root_of_game_in(&game, &[]), Some(root.clone()));
+        assert_eq!(
+            save_dir(&root),
+            Some(root.join("userdata/1163457660/3059520/remote"))
+        );
+        std::fs::remove_dir_all(&base).ok();
+    }
+
+    #[test]
+    fn finds_the_steam_root_of_a_game_in_a_secondary_library() {
+        let base = std::env::temp_dir().join(format!("swofty-root2-{}", std::process::id()));
+        let root = base.join("Steam Main");
+        let lib = base.join("Games Lib").join("SteamLibrary");
+        std::fs::create_dir_all(root.join("steamapps")).unwrap();
+        std::fs::create_dir_all(root.join("userdata/5")).unwrap();
+        std::fs::create_dir_all(lib.join("steamapps/common/F1 25")).unwrap();
+        std::fs::write(
+            root.join("steamapps/libraryfolders.vdf"),
+            format!(r#""libraryfolders" {{ "1" {{ "path" "{}" }} }}"#, vdf_path(&lib)),
+        )
+        .unwrap();
+        let game = lib.join("steamapps").join("common").join("F1 25");
+        assert_eq!(
+            root_of_game_in(&game, std::slice::from_ref(&root)),
+            Some(root.clone())
+        );
+        assert_eq!(root_of_game_in(&game, &[]), None);
+        assert_eq!(root_of_game_in(&base.join("loose").join("F1 25"), &[root]), None);
+        std::fs::remove_dir_all(&base).ok();
+    }
+
+    #[test]
+    fn a_windows_shaped_game_path_without_a_steam_root_finds_none() {
+        let game = Path::new(r"D:\Bagas\New Folder\Apps\Steam\steamapps\common\F1 25");
+        assert_eq!(root_of_game_in(game, &[]), None);
     }
 
     #[test]

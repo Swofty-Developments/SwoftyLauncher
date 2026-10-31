@@ -454,9 +454,24 @@ impl Shell {
                             },
                         )));
                 }
+                if self.saves_await_import() {
+                    return row.text_color(p.text_muted).child(dot(p.warning)).child(
+                        div()
+                            .min_w_0()
+                            .truncate()
+                            .child(crate::career_saves::EMPTY_SAVE_SHORT),
+                    );
+                }
                 row
             }
         }
+    }
+
+    fn saves_await_import(&self) -> bool {
+        self.saves
+            .view
+            .as_ref()
+            .is_some_and(|v| v.awaiting_import_for(&self.library.profile.name))
     }
 
     fn wrapper_log(&self) -> Option<std::path::PathBuf> {
