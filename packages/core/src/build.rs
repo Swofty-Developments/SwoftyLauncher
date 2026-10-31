@@ -1271,6 +1271,26 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             let weekends = crate::tracks::restore_weekends(&mut db, &shipped_db, &left_codes);
             built.warnings.extend(weekends);
         }
+        let in_game: Vec<&str> = tracks
+            .iter()
+            .filter(|(_, _, o)| recorded.contains(&o.addon))
+            .map(|(_, p, _)| p.track_code.as_str())
+            .collect();
+        let missing = crate::tracks::keep_track_refs(&mut db, &shipped_db, &in_game, &left_codes);
+        if !missing.is_empty() {
+            let codes = missing.iter().map(|m| m.track.clone()).collect();
+            let adders = crate::tracks::adders(store, &codes);
+            let name = |id: &str| addons.get(id).map_or(id, |m| m.name.as_str()).to_owned();
+            for m in &missing {
+                let adds = adders
+                    .get(&m.track)
+                    .filter(|id| !left_codes.contains(&m.track.as_str()) && !resolved.order.contains(*id));
+                let by = planner.record_writer(m.key).map(name);
+                built
+                    .warnings
+                    .push(m.line(by.as_deref(), adds.map(|id| name(id)).as_deref()));
+            }
+        }
         if let Ok(cat) = crate::dbedit::Catalog::open(store, game) {
             for t in crate::dbedit::rows::trim_row_counts(&cat, &mut db) {
                 let by = planner
@@ -6288,8 +6308,15 @@ mod tests {
             "{:?}",
             without.warnings
         );
+        let off = "Calendar sets race weekend rw_melbourne to portimao, which is off: turn Portimao on; until then \
+                   this build puts back melbourne";
+        assert!(
+            without.warnings.iter().any(|w| w == off),
+            "{:?}",
+            without.warnings
+        );
         let out = Gvdb::parse(&std::fs::read(&without.plan.data[GVDB]).unwrap()).unwrap();
-        assert_eq!(out.get_text(weekend).as_deref(), Some("portimao"));
+        assert_eq!(out.get_text(weekend).as_deref(), Some("melbourne"));
 
         store
             .update_profile("default", |p| p.set_enabled("mod.portimao", true))
