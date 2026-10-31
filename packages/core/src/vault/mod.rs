@@ -334,23 +334,29 @@ pub struct Notice {
 }
 
 impl Notice {
-    pub fn text(&self) -> String {
+    /// The notice's first sentence: what changed and which version the
+    /// vault kept.
+    pub fn headline(&self) -> String {
         let when = human(self.kept_at);
         let smaller = self.before.saturating_sub(self.after).div_ceil(1024);
-        let what = match self.kind {
+        match self.kind {
             NoticeKind::ChangedOutside => format!(
                 "Your F1 25 save changed outside a launcher session (a Steam or EA app launch) and is {smaller} KB \
-                 smaller than before. The vault kept the version from {when}"
+                 smaller than before. The career vault kept the version from {when}"
             ),
             NoticeKind::Shrank => format!(
-                "Your F1 25 save got {smaller} KB smaller in a session without {}. The vault kept the version from \
-                 before that session, {when}",
+                "Your F1 25 save got {smaller} KB smaller in a session without {}. The career vault kept the \
+                 version from before that session, {when}",
                 self.absent.join(", ")
             ),
-        };
+        }
+    }
+
+    pub fn text(&self) -> String {
         format!(
-            "{what}: {}. If a career is missing, restore it with `swofty saves restore {}` while F1 25 and {} are \
+            "{}: {}. If a career is missing, restore it with `swofty saves restore {}` while F1 25 and {} are \
              closed",
+            self.headline(),
             self.snapshot,
             self.snapshot,
             match self.source.starts_with("ea-") {
@@ -443,6 +449,31 @@ fn hash_all(loc: &Location) -> Result<Vec<Hashed>> {
             })
         })
         .collect()
+}
+
+/// The save at `loc` now: its size and Steam Cloud status.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SaveStatus {
+    pub files: usize,
+    pub total: u64,
+    pub cloud: cloud::Status,
+}
+
+pub fn save_status(loc: &Location) -> Result<SaveStatus> {
+    let files = hash_all(loc)?;
+    let cache = loc.remotecache().map(|p| cloud::read(&p)).unwrap_or_default();
+    let status = match loc.layout {
+        Layout::Ea => cloud::Status::Local,
+        Layout::Steam => cloud::combine(files.iter().map(|f| {
+            let name = f.path.file_name().unwrap_or_default().to_string_lossy();
+            cloud::status(cache.get(name.as_ref()), &f.sha1)
+        })),
+    };
+    Ok(SaveStatus {
+        files: files.len(),
+        total: files.iter().map(|f| f.size).sum(),
+        cloud: status,
+    })
 }
 
 fn changed_during(path: &Path) -> Error {

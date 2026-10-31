@@ -64,12 +64,13 @@ pub struct Watch {
 
 impl Watch {
     /// `game` is the running F1 25's pid, `session` whether a launcher
-    /// session (the wrapper) holds the session lock.
-    pub fn tick(&mut self, data: &Path, game: Option<u32>, session: bool) -> Vec<String> {
+    /// session (the wrapper) holds the session lock; it's asked once per
+    /// new game process.
+    pub fn tick(&mut self, data: &Path, game: Option<u32>, session: impl FnOnce() -> bool) -> Vec<String> {
         match (game, self.foreign) {
             (Some(pid), Some(seen)) if pid == seen => Vec::new(),
             (Some(pid), _) if self.ours == Some(pid) => Vec::new(),
-            (Some(pid), _) if session => {
+            (Some(pid), _) if session() => {
                 self.ours = Some(pid);
                 Vec::new()
             }

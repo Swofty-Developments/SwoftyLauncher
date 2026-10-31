@@ -453,10 +453,11 @@ fn wrapper(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Result<Exi
              with EA AntiCheat",
         );
     }
-    let backup = crate::saves::before_session(store, &profile, g);
+    let before = crate::saves::before_session(store, &profile, g, &request.id);
     let result = run_loop(store, args, &config, &request, &profile, g, installed);
-    crate::saves::after_session(store, backup.as_ref());
-    finish(session, result)
+    let out = finish(session, result);
+    crate::saves::after_session(before);
+    out
 }
 
 fn stage_offline(store: &Store, game: &Path) -> Result<()> {
