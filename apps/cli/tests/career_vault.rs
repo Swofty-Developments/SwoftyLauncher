@@ -99,7 +99,7 @@ fn backs_up_lists_shows_and_restores() {
     );
     assert_eq!(
         lines[2],
-        format!("{id}  backup, profile default, 2 file(s), 1316 bytes, pinned (backup)")
+        format!("{id}  backup, profile vanilla, 2 file(s), 1316 bytes, pinned (backup)")
     );
 
     let show = stdout(&swofty(&root, &["saves", "show", &id]));

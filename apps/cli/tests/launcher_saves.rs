@@ -199,7 +199,11 @@ fn export_needs_steam_and_the_game_closed_and_spares_remotecache() {
     );
     assert_eq!(std::fs::read_to_string(&cache).unwrap(), "\"3059520\"\n{\n}\n");
 
-    let list = ok(&swofty(&root, "", &["saves", "list"]));
+    let list = ok(&swofty(
+        &root,
+        "",
+        &["saves", "list", "--source", "steam-843502855"],
+    ));
     assert!(list.contains("before a restore"), "{list}");
     let err = refused(&swofty(&root, "", &["saves", "export", "--to", "somewhere"]));
     assert!(err.contains("--to takes steam"), "{err}");
