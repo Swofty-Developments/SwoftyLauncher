@@ -19,6 +19,13 @@ if ($vs.ExitCode -notin 0, 3010) { throw "vs_buildtools exited $($vs.ExitCode)" 
 Invoke-WebRequest (Get-Asset 'git-for-windows/git' 'Git-*-64-bit.exe') -OutFile C:\git.exe
 Start-Process C:\git.exe -Wait -ArgumentList '/VERYSILENT', '/NORESTART', '/NOCANCEL', '/SP-', '/SUPPRESSMSGBOXES'
 
+# Actions' composite steps run bash, and actions/cache compresses with zstd; the hosted image has both on the path.
+Invoke-WebRequest (Get-Asset 'facebook/zstd' 'zstd-v*-win64.zip') -OutFile C:\zstd.zip
+Expand-Archive C:\zstd.zip C:\zstd-extract
+New-Item -ItemType Directory 'C:\Program Files\zstd' -Force | Out-Null
+Get-ChildItem C:\zstd-extract -Recurse -Filter zstd.exe | Select-Object -First 1 | Copy-Item -Destination 'C:\Program Files\zstd'
+Remove-Item C:\zstd.zip, C:\zstd-extract -Recurse -Force
+
 Invoke-WebRequest (Get-Asset 'PowerShell/PowerShell' 'PowerShell-*-win-x64.msi') -OutFile C:\pwsh.msi
 Start-Process msiexec.exe -Wait -ArgumentList '/i', 'C:\pwsh.msi', '/quiet', '/norestart'
 
@@ -34,7 +41,7 @@ $toolchain = ((Invoke-WebRequest https://raw.githubusercontent.com/Swofty-Develo
 Invoke-WebRequest https://win.rustup.rs/x86_64 -OutFile C:\rustup-init.exe
 Start-Process C:\rustup-init.exe -Wait -ArgumentList '-y', '--profile', 'minimal', '--default-toolchain', $toolchain, '-c', 'rustfmt', '-c', 'clippy', '--no-modify-path'
 $path = [Environment]::GetEnvironmentVariable('Path', 'Machine')
-[Environment]::SetEnvironmentVariable('Path', "$cargo\bin;$path", 'Machine')
+[Environment]::SetEnvironmentVariable('Path', "$cargo\bin;C:\Program Files\Git\bin;C:\Program Files\zstd;$path", 'Machine')
 
 $version = (Invoke-RestMethod https://api.github.com/repos/actions/runner/releases/latest).tag_name.TrimStart('v')
 Invoke-WebRequest "https://github.com/actions/runner/releases/download/v$version/actions-runner-win-x64-$version.zip" -OutFile C:\runner.zip

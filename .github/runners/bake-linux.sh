@@ -27,13 +27,19 @@ mkdir -p /opt/actions-runner /opt/hostedtoolcache
 curl -fsSL "https://github.com/actions/runner/releases/download/v$VERSION/actions-runner-linux-x64-$VERSION.tar.gz" | tar xz -C /opt/actions-runner
 /opt/actions-runner/bin/installdependencies.sh
 . /etc/os-release
+# The hosted runners' python3 is a 3.14 from actions/python-versions; the native schema tests rely on its re module.
+PYTHON_URL=$(curl -fsSL https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json | jq -r --arg os "$VERSION_ID" \
+  '[.[] | select(.stable and (.version | startswith("3.14.")))][0].files[] | select(.platform == "linux" and .platform_version == $os and .arch == "x64") | .download_url')
+mkdir -p /tmp/python && curl -fsSL "$PYTHON_URL" | tar xz -C /tmp/python
+(cd /tmp/python && RUNNER_TOOL_CACHE=/opt/hostedtoolcache AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache ./setup.sh)
+PYTHON_BIN=$(ls -d /opt/hostedtoolcache/Python/3.14.*/x64/bin | head -1)
 cat > /opt/actions-runner/.env <<EOF
 ImageOS=ubuntu${VERSION_ID%%.*}
 RUNNER_TOOL_CACHE=/opt/hostedtoolcache
 AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache
 LANG=C.UTF-8
 EOF
-echo "/home/runner/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin" > /opt/actions-runner/.path
+echo "$PYTHON_BIN:/home/runner/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin" > /opt/actions-runner/.path
 
 cat > /opt/actions-runner/swofty-run.sh <<'EOF'
 #!/bin/bash

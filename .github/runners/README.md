@@ -12,6 +12,10 @@ that fails, run on the hosted runners.
 | `linux-2204` | release Linux build (glibc baseline) | m8a.8xlarge |
 | `windows` | Rust (windows-latest), release Windows build | m8a.4xlarge, 16 cores |
 
+Re-run a failed run with **Re-run all jobs** (`gh run rerun <id>`), not "Re-run failed jobs" (`--failed`).
+A failed job's rerun keeps the label of its first runner, which has terminated, and waits in the queue for
+it until GitHub gives up after a day.
+
 The images use the hosted runners' paths (`/home/runner/work`, `/home/runner/.cargo`, `D:\a`,
 `C:\Users\runneradmin\.cargo`), so Rust caches saved on either kind restore on the other.
 
