@@ -266,19 +266,37 @@ Profiles compose by priority, then by record id. A profile whose `cars` names a 
 ## Events
 
 ```cpp
-events::on<cars::events::Built>().after([](cars::events::Built &e, const events::Context &) {});
-events::on<cars::events::Reset>().after([](cars::events::Reset &e, const events::Context &) {});
-events::on<cars::events::UpgradesReplayed>().after([](cars::events::UpgradesReplayed &e, const events::Context &) {
+events::on<cars::events::Built>().after([](const cars::events::Built &e, const events::Context &) {});
+events::on<cars::events::Reset>().after([](const cars::events::Reset &e, const events::Context &) {});
+events::on<cars::events::UpgradesReplayed>().after([](const cars::events::UpgradesReplayed &e, const events::Context &) {
     float progress = e.progress;                // the development progress the block was replayed at
 });
-events::on<cars::events::SetupApplied>().after([](cars::events::SetupApplied &e, const events::Context &) {});
+events::on<cars::events::SetupApplied>().after([](const cars::events::SetupApplied &e, const events::Context &) {});
+
+events::on<cars::events::PartsRegister>().after([](const cars::events::PartsRegister &e, const events::Context &) {
+    e.add(cars::Part{.node = "frontwing_fl_03", .detach_at = 0.9f});     // one more piece of the front wing
+});
+
+events::on<cars::events::Damage>().after([](const cars::events::Damage &e, const events::Context &) {
+    if (e.part == cars::events::Damage::front_wing_left)
+        log("car %u lost %.2f of its left front wing", e.car.index(), e.amount);
+});
+
+events::on<sessions::events::Pit>().after([](const sessions::events::Pit &e, const events::Context &) {
+    log("car %u: pit status %u -> %u", e.car, e.previous, e.status);
+});
+events::on<sessions::events::PitStop>().after([](const sessions::events::PitStop &e, const events::Context &) {
+    log("car %u has made %u stop(s)", e.car, e.stops);
+});
 ```
 
 - `car.built` fires once for every car the game builds: at session load and when a restart builds the cars again.
 - `car.reset` fires when the game re-reads a car's parts without building it again: during loading (twice for every car) and when it hands a car to the AI or back (T120).
 - `car.upgrades.replayed` fires after the game replays an R&D upgrade block onto a car. The replay resets `aero.lift_scale`, `aero.drag_scale` and the fuel mode.
 - `car.setup.applied` fires after a setup is written to the car: the differential, suspension, brakes and centre of mass.
-- `car.parts.register` is declared and does not fire yet: it is off until `Car_FrontWing_Init` is verified.
+- `car.parts.register` fires after the game has registered the front wing's own 11 pieces, once per car (not on a reset or an upgrade replay). `add` registers one more piece on that wing: `node` is the model node, `detach_at` the multiplier `k` the piece comes off at (it comes off when `k` times the wing's full detach scale is at most the left and right damage together), and a node the car's model doesn't have adds nothing. `debris` is stored, not applied.
+- `car.damage` fires after the front wing takes a hit that adds damage: `part` is `front_wing_left` or `front_wing_right` and `amount` the damage the hit added to that side. It fires on the next frame, like the events above.
+- `session.pit` fires when a car's pit status changes, with the status it had and the one the game stored. `session.pit_stop` fires on the change where the game adds one to the car's stop count. A stop's stationary time and tyre change are off: they need a row for the PitStopInstance's car.
 
 The game builds cars on a loading thread, so the core holds each event and fires it on the next frame, on the flow thread, where `set` works. The core applies its layers and profiles to the car first, so a handler sees the layered values. A car already gone from its slot by then gets none.
 
@@ -552,3 +570,24 @@ tyres::physical.add("f1_1990_soft", tyres::Physical{ .group = "F1_1990", .code =
 - `ers.modes`, `damage_scale`, `class` and the radUpgrade splines.
 - The ConvexHull vertices.
 - Archives written by `erp.*` ops. Put the archive with `file.put`.
+
+## Template
+
+`templates/std/car-physics` is a working addon with all three layers: a `car.profile` record (F1 1990's race engine and AI grip), a `vehicle.handling` record (six gears, no ERS) and live layers made on `car.built`, with a `car.parts.register` handler. Its test runs on the host against a fake car table:
+
+```cpp
+static Layer lift, ballast;
+
+void make_layers()
+{
+    if (!lift.ok())
+        lift = Layer::scale(Cars::all(), "aero.lift_scale", 0.95f, 0);
+    if (!ballast.ok())
+        ballast = Layer::add(Cars::player(), "chassis.ballast_kg", 12.0f, 0);
+}
+
+SWOFTY_REGISTER
+{
+    events::on<cars::events::Built>().after([](const cars::events::Built &, const events::Context &) { make_layers(); });
+}
+```
