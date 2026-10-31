@@ -9,6 +9,7 @@
 //!   events.jsonl                    snapshot / unchanged / changed-outside / shrank / restored / pruned
 //! ```
 
+pub mod careers;
 pub mod cloud;
 pub mod locate;
 pub mod migrate;
@@ -239,6 +240,8 @@ pub enum EventKind {
     ChangedOutside,
     Shrank,
     Pinned,
+    Unpinned,
+    CareersMissing,
     Pruned,
     Restored,
     RestoreRefused,
@@ -748,6 +751,7 @@ impl Vault {
                 Some(why) => self.pin_locked(&newest.id, &why, now)?,
                 None => newest,
             };
+            self.observe_careers(&newest.id, now);
             return Ok(Taken::Unchanged(newest));
         }
         let cache = loc.remotecache().map(|p| cloud::read(&p)).unwrap_or_default();
@@ -775,6 +779,7 @@ impl Vault {
                 return Err(changed_during(&f.path));
             }
         }
+        let careers_ref = self.store_index();
         let s = Snapshot {
             id: self.unique_id(now, meta.reason),
             created: crate::save_backup::stamp(now),
@@ -789,7 +794,7 @@ impl Vault {
             save_dir: loc.dir.clone(),
             files: entries,
             absent_addons: meta.absent,
-            careers_ref: None,
+            careers_ref,
             pinned: meta.pin.into_iter().collect(),
             note: meta.note,
         };
@@ -798,6 +803,7 @@ impl Vault {
         e.reason = Some(s.reason);
         e.after = Some(s.total());
         self.log(&e);
+        self.observe_careers(&s.id, now);
         Ok(Taken::New(s))
     }
 
@@ -812,6 +818,17 @@ impl Vault {
             s.pinned.push(why.to_owned());
             self.write_snapshot(&s)?;
             self.log(&Event::new(now, EventKind::Pinned).snapshot(id).detail(why));
+        }
+        Ok(s)
+    }
+
+    pub fn unpin_why(&self, id: &str, why: &str, now: i64) -> Result<Snapshot> {
+        let _lock = self.lock()?;
+        let mut s = self.find(id)?;
+        if s.pinned.iter().any(|p| p == why) {
+            s.pinned.retain(|p| p != why);
+            self.write_snapshot(&s)?;
+            self.log(&Event::new(now, EventKind::Unpinned).snapshot(id).detail(why));
         }
         Ok(s)
     }
@@ -879,6 +896,21 @@ impl Vault {
         {
             let name = e.file_name().to_string_lossy().into_owned();
             if !name.starts_with('.') && !used.contains(&name) {
+                std::fs::remove_file(e.path()).ok();
+            }
+        }
+        let kept_refs: BTreeSet<String> = snaps
+            .iter()
+            .filter(|s| !gone.contains(&s.id))
+            .filter_map(|s| s.careers_ref.clone())
+            .collect();
+        for e in std::fs::read_dir(self.dir.join(careers::INDEX_DIR))
+            .into_iter()
+            .flatten()
+            .flatten()
+        {
+            let name = e.file_name().to_string_lossy().into_owned();
+            if !name.starts_with('.') && !kept_refs.contains(&format!("{}/{name}", careers::INDEX_DIR)) {
                 std::fs::remove_file(e.path()).ok();
             }
         }
@@ -1032,6 +1064,88 @@ impl Vault {
         }
         self.prune_locked(now)?;
         Ok(out)
+    }
+
+    /// The core's career index as it is now, stored beside the snapshot that
+    /// is about to be written. `None` before the core has written one.
+    fn store_index(&self) -> Option<String> {
+        let list = crate::stdlib::careers::read(&crate::stdlib::careers::data_path(&self.data));
+        if list.is_empty() {
+            return None;
+        }
+        let value = serde_json::json!({ "version": 1, "careers": list });
+        let sha = hex(&Sha256::digest(serde_json::to_vec(&value).ok()?));
+        let rel = format!("{}/{sha}.json", careers::INDEX_DIR);
+        let path = self.dir.join(&rel);
+        if !path.is_file() {
+            crate::write_json(&path, &value).ok()?;
+        }
+        Some(rel)
+    }
+
+    /// The career index stored with a snapshot; `None` when it has none.
+    pub fn index_of(&self, s: &Snapshot) -> Option<Vec<crate::stdlib::careers::Career>> {
+        let rel = s.careers_ref.as_deref()?;
+        if rel.contains("..") || rel.starts_with('/') {
+            return None;
+        }
+        Some(crate::stdlib::careers::read(&self.dir.join(rel)))
+    }
+
+    pub fn careers(&self) -> careers::Careers {
+        careers::Careers::read(&self.dir)
+    }
+
+    /// Fold the core's career index as it is now into `careers.json`, as
+    /// seen at snapshot `id`. A career that was in the last index and isn't
+    /// in this one is `missing-since:<id>`, and the snapshot that last held
+    /// it is pinned so retention keeps it.
+    fn observe_careers(&self, id: &str, now: i64) {
+        let index = crate::stdlib::careers::read(&crate::stdlib::careers::data_path(&self.data));
+        if index.is_empty() {
+            return;
+        }
+        let mut table = self.careers();
+        let before = table.clone();
+        let dropped = table.observe(id, now, &index);
+        for (career, held) in &dropped {
+            self.pin_locked(held, "holds-missing-career", now).ok();
+            self.log(
+                &Event::new(now, EventKind::CareersMissing)
+                    .snapshot(id)
+                    .detail(format!("{career} was last in {held}")),
+            );
+        }
+        if table != before {
+            table.write(&self.dir).ok();
+        }
+    }
+
+    pub fn dismiss_drop(&self) -> Result<()> {
+        let _lock = self.lock()?;
+        let mut table = self.careers();
+        if table.dismiss() {
+            table.write(&self.dir)?;
+        }
+        Ok(())
+    }
+
+    pub fn archive_career(&self, id: &str) -> Result<bool> {
+        let _lock = self.lock()?;
+        let mut table = self.careers();
+        let found = table.archive(id);
+        if found {
+            table.write(&self.dir)?;
+        }
+        Ok(found)
+    }
+
+    /// What restoring `s` does to the careers: `None` when the vault has no
+    /// index for it or none for the save as it is.
+    pub fn preview(&self, s: &Snapshot) -> Option<careers::Diff> {
+        let version = self.index_of(s)?;
+        let now = crate::stdlib::careers::read(&crate::stdlib::careers::data_path(&self.data));
+        (!now.is_empty()).then(|| careers::diff(&now, &version))
     }
 
     /// Copy a migrated `save-backups/` backup in as a snapshot.

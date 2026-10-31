@@ -648,3 +648,169 @@ fn humane_times() {
     assert_eq!(human(T0), "2026-10-31 00:00 UTC");
     assert_eq!(human(T0 + 3723), "2026-10-31 01:02 UTC");
 }
+
+fn write_index(root: &Path, careers: &[(&str, &str, i64, i64)]) {
+    let list: Vec<serde_json::Value> = careers
+        .iter()
+        .map(|(id, status, season, round)| {
+            serde_json::json!({
+                "career": id,
+                "status": status,
+                "label": format!("{id} label"),
+                "mode": "progressive",
+                "driver": "Verstappen",
+                "team": "Red Bull",
+                "season": season,
+                "round": round,
+                "last_saved": 1_793_400_000_000i64,
+                "addons": [{"id": "swofty.progressive"}]
+            })
+        })
+        .collect();
+    let path = root.join("data/careers/index.json");
+    std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+    std::fs::write(
+        path,
+        serde_json::json!({ "version": 1, "careers": list }).to_string(),
+    )
+    .unwrap();
+}
+
+fn take(v: &Vault, loc: &Location, reason: Reason, at: i64, data: &[u8]) -> Snapshot {
+    std::fs::write(loc.dir.join(DATA), data).unwrap();
+    new(v.snapshot(loc, Meta::new(reason), at).unwrap())
+}
+
+#[test]
+fn a_career_goes_missing_and_comes_back() {
+    let root = tmp("career-drop");
+    let loc = steam(&root, "843502855", &[1u8; 900]);
+    let v = vault(&root, &loc);
+    write_index(&root, &[("p:1", "present", 2016, 7), ("p:2", "present", 2017, 1)]);
+    let a = take(&v, &loc, Reason::AfterSession, T0, &[2u8; 900]);
+    assert!(a.careers_ref.is_some());
+    let t = v.careers();
+    assert_eq!(t.careers.len(), 2);
+    assert!(t.careers.iter().all(|r| r.status == careers::Status::Present));
+    assert_eq!(t.find("p:1").unwrap().place().unwrap(), "season 2016, round 7");
+    assert_eq!(t.find("p:1").unwrap().last_played, Some(1_793_400_000));
+
+    write_index(&root, &[("p:2", "present", 2017, 2)]);
+    let b = take(&v, &loc, Reason::BeforeSession, T0 + 100, &[3u8; 900]);
+    let t = v.careers();
+    assert_eq!(
+        t.find("p:1").unwrap().status.slug(),
+        format!("missing-since:{}", b.id)
+    );
+    assert_eq!(t.find("p:1").unwrap().last_seen, a.id);
+    assert_eq!(t.find("p:1").unwrap().found_at, Some(T0 + 100));
+    assert_eq!(t.find("p:2").unwrap().status, careers::Status::Present);
+    assert_eq!(t.drop_to_show().len(), 1);
+    assert!(
+        v.find(&a.id)
+            .unwrap()
+            .pinned
+            .contains(&"holds-missing-career".to_owned())
+    );
+    assert!(kinds(&v).contains(&EventKind::CareersMissing));
+
+    let diff = v.preview(&v.find(&a.id).unwrap()).unwrap();
+    assert_eq!(diff.get_back.len(), 1);
+    assert_eq!(diff.get_back[0].career, "p:1");
+    assert_eq!(diff.progress.len(), 1);
+    assert!(diff.lose.is_empty());
+
+    write_index(&root, &[("p:1", "present", 2016, 7), ("p:2", "present", 2017, 2)]);
+    let c = take(&v, &loc, Reason::AfterSession, T0 + 200, &[4u8; 900]);
+    let t = v.careers();
+    assert_eq!(t.find("p:1").unwrap().status, careers::Status::Present);
+    assert_eq!(t.find("p:1").unwrap().last_seen, c.id);
+    assert!(t.drop_to_show().is_empty());
+}
+
+#[test]
+fn a_dismissed_drop_stays_dismissed_until_the_next_one() {
+    let root = tmp("career-dismiss");
+    let loc = steam(&root, "843502855", &[1u8; 900]);
+    let v = vault(&root, &loc);
+    write_index(&root, &[("p:1", "present", 2016, 7)]);
+    take(&v, &loc, Reason::AfterSession, T0, &[2u8; 900]);
+    write_index(&root, &[("p:9", "present", 2016, 7)]);
+    take(&v, &loc, Reason::BeforeSession, T0 + 10, &[3u8; 900]);
+    assert_eq!(v.careers().drop_to_show().len(), 1);
+    v.dismiss_drop().unwrap();
+    assert!(v.careers().drop_to_show().is_empty());
+    take(&v, &loc, Reason::AfterSession, T0 + 20, &[4u8; 900]);
+    assert!(v.careers().drop_to_show().is_empty());
+    assert_eq!(v.careers().missing().count(), 1);
+}
+
+#[test]
+fn a_career_deleted_in_game_is_not_a_drop() {
+    let root = tmp("career-deleted");
+    let loc = steam(&root, "843502855", &[1u8; 900]);
+    let v = vault(&root, &loc);
+    write_index(&root, &[("p:1", "present", 2016, 7), ("p:2", "present", 2017, 1)]);
+    take(&v, &loc, Reason::AfterSession, T0, &[2u8; 900]);
+    write_index(&root, &[("p:1", "deleted", 2016, 7), ("p:2", "present", 2017, 1)]);
+    take(&v, &loc, Reason::AfterSession, T0 + 10, &[3u8; 900]);
+    let t = v.careers();
+    assert_eq!(t.find("p:1").unwrap().status, careers::Status::DeletedInGame);
+    assert!(t.drop_to_show().is_empty());
+    take(&v, &loc, Reason::AfterSession, T0 + 20, &[4u8; 900]);
+    assert_eq!(
+        v.careers().find("p:1").unwrap().status,
+        careers::Status::DeletedInGame
+    );
+}
+
+#[test]
+fn the_first_run_with_no_index_makes_no_claims() {
+    let root = tmp("career-first");
+    let loc = steam(&root, "843502855", &[1u8; 900]);
+    let v = vault(&root, &loc);
+    let a = take(&v, &loc, Reason::LauncherStart, T0, &[2u8; 900]);
+    assert_eq!(a.careers_ref, None);
+    assert!(v.careers().careers.is_empty());
+    assert!(!v.dir.join(careers::FILE).exists());
+    assert!(v.preview(&a).is_none());
+    write_index(&root, &[("p:1", "present", 2016, 7)]);
+    let b = take(&v, &loc, Reason::AfterSession, T0 + 10, &[3u8; 900]);
+    assert!(b.careers_ref.is_some());
+    assert!(v.careers().drop_to_show().is_empty());
+    assert!(v.preview(&a).is_none());
+}
+
+#[test]
+fn an_unchanged_save_still_sees_the_index_and_prune_keeps_referenced_indexes() {
+    let root = tmp("career-unchanged");
+    let loc = steam(&root, "843502855", &[1u8; 900]);
+    let v = vault(&root, &loc);
+    write_index(&root, &[("p:1", "present", 2016, 7)]);
+    let a = take(&v, &loc, Reason::AfterSession, T0, &[2u8; 900]);
+    write_index(&root, &[("p:1", "missing", 2016, 7)]);
+    assert!(matches!(
+        v.snapshot(&loc, Meta::new(Reason::BeforeSession), T0 + 5)
+            .unwrap(),
+        Taken::Unchanged(_)
+    ));
+    assert_eq!(v.careers().missing().count(), 1);
+    let rel = a.careers_ref.unwrap();
+    v.prune(T0 + 6).unwrap();
+    assert!(v.dir.join(rel).is_file());
+    std::fs::write(v.dir.join("index/stray.json"), "{}").unwrap();
+    v.prune(T0 + 7).unwrap();
+    assert!(!v.dir.join("index/stray.json").exists());
+}
+
+#[test]
+fn pin_and_unpin_only_touch_the_players_pin() {
+    let root = tmp("career-pin");
+    let loc = steam(&root, "843502855", &[1u8; 900]);
+    let v = vault(&root, &loc);
+    let a = take(&v, &loc, Reason::AfterSession, T0, &[2u8; 900]);
+    v.pin(&a.id, "backup", T0).unwrap();
+    v.pin(&a.id, "pinned", T0).unwrap();
+    let s = v.unpin_why(&a.id, "pinned", T0 + 1).unwrap();
+    assert_eq!(s.pinned, vec!["backup".to_owned()]);
+}
