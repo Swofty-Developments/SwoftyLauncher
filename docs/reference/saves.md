@@ -70,14 +70,32 @@ When F1 25 is running at that start, the launcher logs that the import waits and
 
 ```text
 $ swofty saves import
-imported 2 file(s), 961752 bytes, from /home/you/.local/share/Steam/userdata/843502855/3059520/remote into /home/you/.local/share/swofty/saves/default/remote
-the vault holds it as snapshot 20261031-201502-imported
+[info] saves: imported 2 file(s) from /home/you/.local/share/Steam/userdata/843502855/3059520/remote into the launcher saves of profile default
+imported 2 file(s), 400416 bytes, from /home/you/.local/share/Steam/userdata/843502855/3059520/remote into /home/you/.local/share/swofty/saves/default/remote
+the vault holds it as snapshot 20261031-153037-imported
 
 $ swofty saves import --from-profile default --profile progressive
+[info] saves: imported 2 file(s) from /home/you/.local/share/swofty/saves/default/remote into the launcher saves of profile progressive
+imported 2 file(s), 400416 bytes, from /home/you/.local/share/swofty/saves/default/remote into /home/you/.local/share/swofty/saves/progressive/remote
+the vault holds it as snapshot 20261031-153038-imported-profile
+
 $ swofty saves export --to steam --profile default
 the Steam save it replaced is snapshot 20261031-203010-before-restore
 exported the launcher saves of profile default into /home/you/.local/share/Steam/userdata/843502855/3059520/remote
 start Steam to upload the exported save; if it asks which copy to keep, keep the local files (this computer)
+```
+
+Refusals name the reason and change nothing:
+
+```text
+$ swofty saves export --to steam
+swofty: Steam is running and would call the restored save corrupted. Exit Steam completely (Steam menu > Exit), then restore again. Starting Steam afterwards uploads the restored save.
+
+$ swofty saves import --from foo
+swofty: --from takes steam; use --from-profile for another profile
+
+$ swofty saves import --profile vanilla
+swofty: vanilla plays without the Swofty core and always uses Steam's saves
 ```
 
 The **Saves** page does the same from its header: **Import from Steam**, **Export to Steam**, and **Copy careers to…** (another profile's save, or the Steam save from the Vanilla profile). A copy is `launcher_saves::copy_to(data, &from, "progressive", running, now)`; it takes a Steam save or another profile's store as `from`.
@@ -312,6 +330,10 @@ restored 20261030-221500-after-session into /home/you/.local/share/Steam/userdat
 start Steam to upload the restored save; if it asks which copy to keep, keep the local files (this computer)
 
 $ swofty saves restore 20261031-201502-imported --source launcher-default
+[info] [vault] restored 20261031-201502-imported into /home/you/.local/share/swofty/saves/default/remote
+the save it replaced is snapshot 20261031-201502-imported
+restored 20261031-201502-imported into /home/you/.local/share/swofty/saves/default/remote
+the launcher saves are restored; Steam's saves are not touched
 ```
 
 `backup` pins its snapshot, so retention never removes it. A restore:

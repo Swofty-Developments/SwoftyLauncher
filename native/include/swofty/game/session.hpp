@@ -635,6 +635,8 @@ inline constexpr fn<"Sess_TyreAllocation_OnSessionStart", Sess_TyreAllocation_On
 inline constexpr address<"Sess_TyreAllocation_SwapSets"> Sess_TyreAllocation_SwapSets{}; // L2 experimental
 using Sess_TyreClass_FromName_t = void *(void *classes, const void *name, uint8_t check_weekend_format);
 inline constexpr fn<"Sess_TyreClass_FromName", Sess_TyreClass_FromName_t> Sess_TyreClass_FromName{}; // L2 experimental
+inline constexpr address<"Sess_TyreCompoundClasses_SortEntries"> Sess_TyreCompoundClasses_SortEntries{}; // L2 experimental
+inline constexpr address<"Sess_TyreCompoundClasses_SortEntriesB"> Sess_TyreCompoundClasses_SortEntriesB{}; // L2 experimental
 using Sess_Tyres_ClosestAvailableCompound_t = uint32_t(void *tyre_rules, uint8_t vehicle, const uint32_t *preference, float wear_scale);
 inline constexpr fn<"Sess_Tyres_ClosestAvailableCompound", Sess_Tyres_ClosestAvailableCompound_t> Sess_Tyres_ClosestAvailableCompound{}; // L2 experimental
 inline constexpr address<"Sess_Veh_UpdateWheelMap"> Sess_Veh_UpdateWheelMap{}; // L2 experimental

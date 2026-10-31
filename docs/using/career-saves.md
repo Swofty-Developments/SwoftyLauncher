@@ -49,6 +49,16 @@ Also           Settings and setups go back to 2026-10-30 22:15 UTC. The save as 
 
 Restore waits until F1 25 is closed, and for the Vanilla save until Steam is closed too, as in [Restoring a profile save](/using/profiles-and-restoring#restoring-a-profile-save).
 
+## Using your Steam saves instead
+
+The arrow beside **Play** opens a menu. **Use launcher saves** (ticked by default, absent for Vanilla) turns the profile's own save on or off; with it off the profile plays on your Steam save like Vanilla does. While it is on, **Play once with your Steam saves** runs one session on the Steam save and leaves the setting on:
+
+```text
+$ swofty run --steam-saves-once
+```
+
+If the core can't use launcher saves it closes F1 25 before the title screen, and the play bar says `Launcher saves could not be used, so F1 25 closed before loading a save`, with the same **Play once with your Steam saves**, **Open logs** and **Dismiss**. Nothing was read or written. The EA app copy keeps its own saves, so launcher saves don't apply to it.
+
 ## The first time
 
 The first launcher start of 1.7.0 copies your Steam save into every profile's save and opens one dialog:
@@ -86,3 +96,29 @@ pinned snapshot 20261030-221500-after-session
 $ swofty saves unpin 20261030-221500-after-session
 unpinned snapshot 20261030-221500-after-session; it stays kept for holds-missing-career
 ```
+
+Before the core has written a career index, the commands say so and list the versions without careers:
+
+```text
+$ swofty saves careers
+no careers yet: the vault learns them from the career index F1 25 writes in a launcher session
+
+$ swofty saves versions
+1 version(s) in /home/you/.local/share/swofty/career-vault/steam-843502855, 0.4 MB of 500.0 MB
+Steam Cloud now: unknown
+20261031-153032-manual  backup, profile default, 0.4 MB, Steam Cloud: unknown, careers unknown, pinned (backup)
+
+$ swofty careers
+no careers in the index yet: the core lists each career it creates or loads
+```
+
+`swofty saves backup`, `restore`, `import` and `export` act on the active profile; pass `--profile <name>` to `swofty` or to `import` and `export` for another. `--source launcher-<profile>` points `list`, `show`, `versions`, `careers`, `pin`, `unpin` and `restore` at a profile's launcher saves instead of the Steam save:
+
+```text
+$ swofty saves list --source launcher-default
+vault /home/you/.local/share/swofty/career-vault/launcher-default: 1 snapshot(s), 0.4 MB of 500.0 MB
+save /home/you/.local/share/swofty/saves/default/remote: 2 file(s), 400416 bytes, Steam Cloud: local only (no Steam Cloud)
+20261031-153037-imported  Imported from Steam saves, profile default, 2 file(s), 400416 bytes
+```
+
+See [`swofty saves`](/reference/cli#swofty-saves) for every flag and [Saves and the career vault](/reference/saves) for the folders.

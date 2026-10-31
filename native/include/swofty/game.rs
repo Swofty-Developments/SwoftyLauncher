@@ -7863,6 +7863,16 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_ActorManager_InsertEntryNode: Binding = Binding {
+        id: "Ne_ActorManager_InsertEntryNode",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_ActorManager_RegisterEntry: Binding = Binding {
+        id: "Ne_ActorManager_RegisterEntry",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_ActorSceneDataResourceFactory_DestroyResource: Binding = Binding {
         id: "Ne_ActorSceneDataResourceFactory_DestroyResource",
         kind: "func",
@@ -7938,6 +7948,16 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_BitAllocator_AllocBit: Binding = Binding {
+        id: "Ne_BitAllocator_AllocBit",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_BitStream_ReadQuantisedFloat: Binding = Binding {
+        id: "Ne_BitStream_ReadQuantisedFloat",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_BitStream_ReadQuantizedFloat: Binding = Binding {
         id: "Ne_BitStream_ReadQuantizedFloat",
         kind: "func",
@@ -7973,13 +7993,43 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_BitStream_WriteZeroBits: Binding = Binding {
+        id: "Ne_BitStream_WriteZeroBits",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Bitset_ThrowInvalidPosition_A: Binding = Binding {
+        id: "Ne_Bitset_ThrowInvalidPosition_A",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Bitset_ThrowInvalidPosition_B: Binding = Binding {
+        id: "Ne_Bitset_ThrowInvalidPosition_B",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Bitset_ThrowInvalidPosition_C: Binding = Binding {
+        id: "Ne_Bitset_ThrowInvalidPosition_C",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_BufferedAssetGroupLoader_GroupSwapAssetGroups: Binding = Binding {
         id: "Ne_BufferedAssetGroupLoader_GroupSwapAssetGroups",
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_BusMessage_SubscribeHandlerUnique: Binding = Binding {
+        id: "Ne_BusMessage_SubscribeHandlerUnique",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_ByteVector_InsertUnique: Binding = Binding {
         id: "Ne_ByteVector_InsertUnique",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_CallbackList_InvokeReverse: Binding = Binding {
+        id: "Ne_CallbackList_InvokeReverse",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8008,6 +8058,36 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Component_ResolveProviderChain: Binding = Binding {
+        id: "Ne_Component_ResolveProviderChain",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Component_ResolveProviderChain2: Binding = Binding {
+        id: "Ne_Component_ResolveProviderChain2",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_ConcurrentHashMap_FatalStub: Binding = Binding {
+        id: "Ne_ConcurrentHashMap_FatalStub",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_ConcurrentHashMap_FindOrInsert: Binding = Binding {
+        id: "Ne_ConcurrentHashMap_FindOrInsert",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_ConcurrentHashMap_Rehash: Binding = Binding {
+        id: "Ne_ConcurrentHashMap_Rehash",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_ConfigDict_FindStringIndex: Binding = Binding {
+        id: "Ne_ConfigDict_FindStringIndex",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_ConfigValue_ReadInt: Binding = Binding {
         id: "Ne_ConfigValue_ReadInt",
         kind: "func",
@@ -8025,6 +8105,36 @@ pub mod bindings {
     };
     pub const Ne_Config_ReadSize: Binding = Binding {
         id: "Ne_Config_ReadSize",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Container_AbortNoReturn_142b52980: Binding = Binding {
+        id: "Ne_Container_AbortNoReturn_142b52980",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Container_AbortNoReturn_142cc4e50: Binding = Binding {
+        id: "Ne_Container_AbortNoReturn_142cc4e50",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Container_AbortNoReturn_142ee16c0: Binding = Binding {
+        id: "Ne_Container_AbortNoReturn_142ee16c0",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Container_AbortNoReturn_1435d82f0: Binding = Binding {
+        id: "Ne_Container_AbortNoReturn_1435d82f0",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Container_AbortNoReturn_1443908d0: Binding = Binding {
+        id: "Ne_Container_AbortNoReturn_1443908d0",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Container_GrowVectorChecked: Binding = Binding {
+        id: "Ne_Container_GrowVectorChecked",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8083,6 +8193,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Crt_AsinfImpl: Binding = Binding {
+        id: "Ne_Crt_AsinfImpl",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Crt_Atan2f: Binding = Binding {
         id: "Ne_Crt_Atan2f",
         kind: "func",
@@ -8108,8 +8223,18 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Crt_DiffClock: Binding = Binding {
+        id: "Ne_Crt_DiffClock",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Crt_Exp2f: Binding = Binding {
         id: "Ne_Crt_Exp2f",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_FastFailTerminate: Binding = Binding {
+        id: "Ne_Crt_FastFailTerminate",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8118,8 +8243,23 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Crt_FatalTrapB: Binding = Binding {
+        id: "Ne_Crt_FatalTrapB",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_FatalTrapC: Binding = Binding {
+        id: "Ne_Crt_FatalTrapC",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Crt_Fmodf: Binding = Binding {
         id: "Ne_Crt_Fmodf",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_ForwardTo14534a050: Binding = Binding {
+        id: "Ne_Crt_ForwardTo14534a050",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8128,13 +8268,38 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Crt_InvalidParameterAbort: Binding = Binding {
+        id: "Ne_Crt_InvalidParameterAbort",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_InvalidParameterDispatch: Binding = Binding {
+        id: "Ne_Crt_InvalidParameterDispatch",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Crt_InvalidParameterNoReturn: Binding = Binding {
         id: "Ne_Crt_InvalidParameterNoReturn",
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Crt_LazyInitPreserveLastError: Binding = Binding {
+        id: "Ne_Crt_LazyInitPreserveLastError",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Crt_Localtime64: Binding = Binding {
         id: "Ne_Crt_Localtime64",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_LogFloatAvx: Binding = Binding {
+        id: "Ne_Crt_LogFloatAvx",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_MathErrorHandlerF: Binding = Binding {
+        id: "Ne_Crt_MathErrorHandlerF",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8153,8 +8318,33 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Crt_ParseNumber_L: Binding = Binding {
+        id: "Ne_Crt_ParseNumber_L",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Crt_Powf: Binding = Binding {
         id: "Ne_Crt_Powf",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_Qsort_Impl: Binding = Binding {
+        id: "Ne_Crt_Qsort_Impl",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_SecurityCookieFailure: Binding = Binding {
+        id: "Ne_Crt_SecurityCookieFailure",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_SetMxcsrExceptionFlags: Binding = Binding {
+        id: "Ne_Crt_SetMxcsrExceptionFlags",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_Setjmp: Binding = Binding {
+        id: "Ne_Crt_Setjmp",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8183,8 +8373,18 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Crt_Strnicmp: Binding = Binding {
+        id: "Ne_Crt_Strnicmp",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Crt_Strstr: Binding = Binding {
         id: "Ne_Crt_Strstr",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_StrtolCore: Binding = Binding {
+        id: "Ne_Crt_StrtolCore",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8220,6 +8420,11 @@ pub mod bindings {
     };
     pub const Ne_Crt_TrigDouble: Binding = Binding {
         id: "Ne_Crt_TrigDouble",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_VsnprintfWrapper: Binding = Binding {
+        id: "Ne_Crt_VsnprintfWrapper",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8273,6 +8478,21 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Debug_RecordRenderError: Binding = Binding {
+        id: "Ne_Debug_RecordRenderError",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Debug_RecordTraceEvent3: Binding = Binding {
+        id: "Ne_Debug_RecordTraceEvent3",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Debug_RecordTraceEvent5: Binding = Binding {
+        id: "Ne_Debug_RecordTraceEvent5",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_DecalsProjectionAreaProxy_Ctor: Binding = Binding {
         id: "Ne_DecalsProjectionAreaProxy_Ctor",
         kind: "func",
@@ -8290,6 +8510,11 @@ pub mod bindings {
     };
     pub const Ne_Delegate_InvokeAll: Binding = Binding {
         id: "Ne_Delegate_InvokeAll",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Deque_Grow_Qword: Binding = Binding {
+        id: "Ne_Deque_Grow_Qword",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8333,6 +8558,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_ErrorContext_SetCode: Binding = Binding {
+        id: "Ne_ErrorContext_SetCode",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_ErrorTrace_PushRing: Binding = Binding {
         id: "Ne_ErrorTrace_PushRing",
         kind: "func",
@@ -8343,8 +8573,38 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_EventDispatcher_ProcessQueue: Binding = Binding {
+        id: "Ne_EventDispatcher_ProcessQueue",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_EventDispatcher_SendEvent: Binding = Binding {
         id: "Ne_EventDispatcher_SendEvent",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_EventDispatcher_TrackQueuePeak: Binding = Binding {
+        id: "Ne_EventDispatcher_TrackQueuePeak",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_EventQueue_DispatchPending: Binding = Binding {
+        id: "Ne_EventQueue_DispatchPending",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Event_ResetWithErrorTrace: Binding = Binding {
+        id: "Ne_Event_ResetWithErrorTrace",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_FatalFormat: Binding = Binding {
+        id: "Ne_FatalFormat",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_FatalFormat_Trap: Binding = Binding {
+        id: "Ne_FatalFormat_Trap",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8355,6 +8615,21 @@ pub mod bindings {
     };
     pub const Ne_FlagMaskSet_SetBit: Binding = Binding {
         id: "Ne_FlagMaskSet_SetBit",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_FlatHashMap_FindSlotU64_A: Binding = Binding {
+        id: "Ne_FlatHashMap_FindSlotU64_A",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_FlatHashMap_FindSlotU64_B: Binding = Binding {
+        id: "Ne_FlatHashMap_FindSlotU64_B",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_FlatHashMap_FindSlotU64_C: Binding = Binding {
+        id: "Ne_FlatHashMap_FindSlotU64_C",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8388,13 +8663,118 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Gfx2CommandQueue_FlushResourceBarriers: Binding = Binding {
+        id: "Ne_Gfx2CommandQueue_FlushResourceBarriers",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2CommandQueue_PopProfileMarker: Binding = Binding {
+        id: "Ne_Gfx2CommandQueue_PopProfileMarker",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2CommandQueue_PushProfileMarker: Binding = Binding {
+        id: "Ne_Gfx2CommandQueue_PushProfileMarker",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2Renderer_BuildRfgSubmitJob: Binding = Binding {
+        id: "Ne_Gfx2Renderer_BuildRfgSubmitJob",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2Renderer_ConstructDevice: Binding = Binding {
+        id: "Ne_Gfx2Renderer_ConstructDevice",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2Renderer_ConstructQueueState: Binding = Binding {
+        id: "Ne_Gfx2Renderer_ConstructQueueState",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2Renderer_DestroyDeferredEntryB: Binding = Binding {
+        id: "Ne_Gfx2Renderer_DestroyDeferredEntryB",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2Renderer_EnqueueJobLocked: Binding = Binding {
+        id: "Ne_Gfx2Renderer_EnqueueJobLocked",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2Renderer_ForwardEventToListener: Binding = Binding {
+        id: "Ne_Gfx2Renderer_ForwardEventToListener",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2Renderer_FrameEntryNameMap_FatalStub: Binding = Binding {
+        id: "Ne_Gfx2Renderer_FrameEntryNameMap_FatalStub",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2Renderer_FrameEntryNameMap_Rehash: Binding = Binding {
+        id: "Ne_Gfx2Renderer_FrameEntryNameMap_Rehash",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2Renderer_FrameStartEnd: Binding = Binding {
+        id: "Ne_Gfx2Renderer_FrameStartEnd",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2Renderer_GetCommandList: Binding = Binding {
+        id: "Ne_Gfx2Renderer_GetCommandList",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Gfx2Renderer_Initialise: Binding = Binding {
         id: "Ne_Gfx2Renderer_Initialise",
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Gfx2Renderer_PostEvent_AllocateResource: Binding = Binding {
+        id: "Ne_Gfx2Renderer_PostEvent_AllocateResource",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2Renderer_PostEvent_ErpLoaded: Binding = Binding {
+        id: "Ne_Gfx2Renderer_PostEvent_ErpLoaded",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2Renderer_PostEvent_ErpRead: Binding = Binding {
+        id: "Ne_Gfx2Renderer_PostEvent_ErpRead",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2Renderer_PostEvent_ErpUnloaded: Binding = Binding {
+        id: "Ne_Gfx2Renderer_PostEvent_ErpUnloaded",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2Renderer_ProcessResourceEvent: Binding = Binding {
+        id: "Ne_Gfx2Renderer_ProcessResourceEvent",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2Renderer_RecordCommandNodes: Binding = Binding {
+        id: "Ne_Gfx2Renderer_RecordCommandNodes",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2Renderer_ReleaseDeferredObjects: Binding = Binding {
+        id: "Ne_Gfx2Renderer_ReleaseDeferredObjects",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Gfx2Renderer_RenderFrame: Binding = Binding {
         id: "Ne_Gfx2Renderer_RenderFrame",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2Renderer_UploadTransientBatch: Binding = Binding {
+        id: "Ne_Gfx2Renderer_UploadTransientBatch",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8408,6 +8788,26 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Gfx2_BeginTripleBufferedScope: Binding = Binding {
+        id: "Ne_Gfx2_BeginTripleBufferedScope",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2_TrackResourceInsert_A: Binding = Binding {
+        id: "Ne_Gfx2_TrackResourceInsert_A",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2_TrackResourceInsert_B: Binding = Binding {
+        id: "Ne_Gfx2_TrackResourceInsert_B",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2_TrackResourceInsert_C: Binding = Binding {
+        id: "Ne_Gfx2_TrackResourceInsert_C",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_GlobalHandle_Release: Binding = Binding {
         id: "Ne_GlobalHandle_Release",
         kind: "func",
@@ -8418,8 +8818,238 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_HashMap_FatalStub_GroundCover: Binding = Binding {
+        id: "Ne_HashMap_FatalStub_GroundCover",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_FatalStub_Hbcn: Binding = Binding {
+        id: "Ne_HashMap_FatalStub_Hbcn",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_FatalStub_ModelMaterial: Binding = Binding {
+        id: "Ne_HashMap_FatalStub_ModelMaterial",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_FatalStub_ParticleResourcePack: Binding = Binding {
+        id: "Ne_HashMap_FatalStub_ParticleResourcePack",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_FatalStub_Particles: Binding = Binding {
+        id: "Ne_HashMap_FatalStub_Particles",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_FatalStub_SkidmarksA: Binding = Binding {
+        id: "Ne_HashMap_FatalStub_SkidmarksA",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_FatalStub_SkidmarksB: Binding = Binding {
+        id: "Ne_HashMap_FatalStub_SkidmarksB",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_FindOrInsert_Float: Binding = Binding {
+        id: "Ne_HashMap_FindOrInsert_Float",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_FindSlot_Thumbnail: Binding = Binding {
+        id: "Ne_HashMap_FindSlot_Thumbnail",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_Find_141b732f0: Binding = Binding {
+        id: "Ne_HashMap_Find_141b732f0",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_GrowRehash_DecalLinks: Binding = Binding {
+        id: "Ne_HashMap_GrowRehash_DecalLinks",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_GrowRehash_Decals: Binding = Binding {
+        id: "Ne_HashMap_GrowRehash_Decals",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_Grow_Gfx2ResourceObject: Binding = Binding {
+        id: "Ne_HashMap_Grow_Gfx2ResourceObject",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_Grow_GroundCoverPlugin: Binding = Binding {
+        id: "Ne_HashMap_Grow_GroundCoverPlugin",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_Grow_Hbcn: Binding = Binding {
+        id: "Ne_HashMap_Grow_Hbcn",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_Grow_MaterialActorId: Binding = Binding {
+        id: "Ne_HashMap_Grow_MaterialActorId",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_Grow_ParticleResourcePack: Binding = Binding {
+        id: "Ne_HashMap_Grow_ParticleResourcePack",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_Grow_SkidmarksA: Binding = Binding {
+        id: "Ne_HashMap_Grow_SkidmarksA",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_Grow_SkidmarksB: Binding = Binding {
+        id: "Ne_HashMap_Grow_SkidmarksB",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_Guid128_Grow: Binding = Binding {
+        id: "Ne_HashMap_Guid128_Grow",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_Insert_DecalLinks: Binding = Binding {
+        id: "Ne_HashMap_Insert_DecalLinks",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_MoveAssign_Decals: Binding = Binding {
+        id: "Ne_HashMap_MoveAssign_Decals",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_HashMap_Rehash: Binding = Binding {
         id: "Ne_HashMap_Rehash",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_Rehash_142b52990: Binding = Binding {
+        id: "Ne_HashMap_Rehash_142b52990",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_Rehash_142ee16d0: Binding = Binding {
+        id: "Ne_HashMap_Rehash_142ee16d0",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_Rehash_1435d8440: Binding = Binding {
+        id: "Ne_HashMap_Rehash_1435d8440",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_Rehash_1443908e0: Binding = Binding {
+        id: "Ne_HashMap_Rehash_1443908e0",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_Rehash_Gfx2Renderer: Binding = Binding {
+        id: "Ne_HashMap_Rehash_Gfx2Renderer",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_ReserveBuckets_Gfx: Binding = Binding {
+        id: "Ne_HashMap_ReserveBuckets_Gfx",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_ThrowLengthError_DecalFiles: Binding = Binding {
+        id: "Ne_HashMap_ThrowLengthError_DecalFiles",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_ThrowLengthError_DecalLinks: Binding = Binding {
+        id: "Ne_HashMap_ThrowLengthError_DecalLinks",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_ThrowLengthError_DecalLinks2: Binding = Binding {
+        id: "Ne_HashMap_ThrowLengthError_DecalLinks2",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_ThrowLengthError_Decals: Binding = Binding {
+        id: "Ne_HashMap_ThrowLengthError_Decals",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_ThrowLengthError_Decals2: Binding = Binding {
+        id: "Ne_HashMap_ThrowLengthError_Decals2",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_ThrowLengthError_Gfx2ResourceObject: Binding = Binding {
+        id: "Ne_HashMap_ThrowLengthError_Gfx2ResourceObject",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_ThrowLengthError_MaterialActorId: Binding = Binding {
+        id: "Ne_HashMap_ThrowLengthError_MaterialActorId",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_ThrowLengthError_Thumbnail: Binding = Binding {
+        id: "Ne_HashMap_ThrowLengthError_Thumbnail",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_U64_FindOrInsertSlot: Binding = Binding {
+        id: "Ne_HashMap_U64_FindOrInsertSlot",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_U64_Grow: Binding = Binding {
+        id: "Ne_HashMap_U64_Grow",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_U64_Insert: Binding = Binding {
+        id: "Ne_HashMap_U64_Insert",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_U64_Insert_Fnv: Binding = Binding {
+        id: "Ne_HashMap_U64_Insert_Fnv",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Hash_Djb2Xor: Binding = Binding {
+        id: "Ne_Hash_Djb2Xor",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Hash_Md5Digest: Binding = Binding {
+        id: "Ne_Hash_Md5Digest",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Hash_Md5Finalize: Binding = Binding {
+        id: "Ne_Hash_Md5Finalize",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Hash_Md5PadFinalBlock: Binding = Binding {
+        id: "Ne_Hash_Md5PadFinalBlock",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Hash_Md5Transform: Binding = Binding {
+        id: "Ne_Hash_Md5Transform",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Hash_Md5Transform_Alt: Binding = Binding {
+        id: "Ne_Hash_Md5Transform_Alt",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8438,6 +9068,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Heap_AllocUnknownTag: Binding = Binding {
+        id: "Ne_Heap_AllocUnknownTag",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Heap_DeallocateNonSmall: Binding = Binding {
         id: "Ne_Heap_DeallocateNonSmall",
         kind: "func",
@@ -8450,6 +9085,11 @@ pub mod bindings {
     };
     pub const Ne_IBLCubeProbe_FreeInterpolatedArrays: Binding = Binding {
         id: "Ne_IBLCubeProbe_FreeInterpolatedArrays",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Import_ResolveSlotWithRetry: Binding = Binding {
+        id: "Ne_Import_ResolveSlotWithRetry",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8475,6 +9115,11 @@ pub mod bindings {
     };
     pub const Ne_InputLibraryDirectInput_IsXInputDevice: Binding = Binding {
         id: "Ne_InputLibraryDirectInput_IsXInputDevice",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_InputMapper_FindBindingByHash: Binding = Binding {
+        id: "Ne_InputMapper_FindBindingByHash",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8538,6 +9183,26 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_IntrusiveList_ClearAndRelease: Binding = Binding {
+        id: "Ne_IntrusiveList_ClearAndRelease",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_IntrusivePtr_Assign: Binding = Binding {
+        id: "Ne_IntrusivePtr_Assign",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_JobQueue_FindBestJob: Binding = Binding {
+        id: "Ne_JobQueue_FindBestJob",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_JobQueue_RunPendingJobs: Binding = Binding {
+        id: "Ne_JobQueue_RunPendingJobs",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_JobSignal_WaitWithTimeout: Binding = Binding {
         id: "Ne_JobSignal_WaitWithTimeout",
         kind: "func",
@@ -8563,8 +9228,148 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Libpng_CheckIhdr: Binding = Binding {
+        id: "Ne_Libpng_CheckIhdr",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_DeflateEndChecked: Binding = Binding {
+        id: "Ne_Libpng_DeflateEndChecked",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_ErrorNoReturn: Binding = Binding {
+        id: "Ne_Libpng_ErrorNoReturn",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_PrepareWrite: Binding = Binding {
+        id: "Ne_Libpng_PrepareWrite",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_SetIhdr: Binding = Binding {
+        id: "Ne_Libpng_SetIhdr",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_SetjmpCleanup_1447a0cf0: Binding = Binding {
+        id: "Ne_Libpng_SetjmpCleanup_1447a0cf0",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_Warning: Binding = Binding {
+        id: "Ne_Libpng_Warning",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_WriteChunkBkgd: Binding = Binding {
+        id: "Ne_Libpng_WriteChunkBkgd",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_WriteChunkHeader: Binding = Binding {
+        id: "Ne_Libpng_WriteChunkHeader",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_WriteChunkHist: Binding = Binding {
+        id: "Ne_Libpng_WriteChunkHist",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_WriteChunkIccp: Binding = Binding {
+        id: "Ne_Libpng_WriteChunkIccp",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_WriteChunkPcal: Binding = Binding {
+        id: "Ne_Libpng_WriteChunkPcal",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_WriteChunkPlte: Binding = Binding {
+        id: "Ne_Libpng_WriteChunkPlte",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_WriteChunkSbit: Binding = Binding {
+        id: "Ne_Libpng_WriteChunkSbit",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_WriteChunkSplt: Binding = Binding {
+        id: "Ne_Libpng_WriteChunkSplt",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_WriteChunkTrns: Binding = Binding {
+        id: "Ne_Libpng_WriteChunkTrns",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_WriteEXIf: Binding = Binding {
+        id: "Ne_Libpng_WriteEXIf",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_WriteEnd: Binding = Binding {
+        id: "Ne_Libpng_WriteEnd",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_WriteITXt: Binding = Binding {
+        id: "Ne_Libpng_WriteITXt",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_WriteIhdr: Binding = Binding {
+        id: "Ne_Libpng_WriteIhdr",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_WriteImage: Binding = Binding {
+        id: "Ne_Libpng_WriteImage",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_WriteInfo: Binding = Binding {
+        id: "Ne_Libpng_WriteInfo",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_WriteRow: Binding = Binding {
+        id: "Ne_Libpng_WriteRow",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_WriteTEXt: Binding = Binding {
+        id: "Ne_Libpng_WriteTEXt",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Libpng_WriteZTXt: Binding = Binding {
+        id: "Ne_Libpng_WriteZTXt",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_LinkResolver_PushPending: Binding = Binding {
+        id: "Ne_LinkResolver_PushPending",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_LinkResolver_RegisterLinkable: Binding = Binding {
+        id: "Ne_LinkResolver_RegisterLinkable",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_LinkResolver_ResolveLinks: Binding = Binding {
         id: "Ne_LinkResolver_ResolveLinks",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_List_PushEntryOrFail: Binding = Binding {
+        id: "Ne_List_PushEntryOrFail",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8583,6 +9388,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Loader_RegisterRequest: Binding = Binding {
+        id: "Ne_Loader_RegisterRequest",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Log_Thunk: Binding = Binding {
         id: "Ne_Log_Thunk",
         kind: "func",
@@ -8593,18 +9403,63 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Make_StrFromBuffer: Binding = Binding {
+        id: "Ne_Make_StrFromBuffer",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Make_StrFromCStr: Binding = Binding {
         id: "Ne_Make_StrFromCStr",
         kind: "func",
         status: Status::Stable,
+    };
+    pub const Ne_Map_DestroySubtree: Binding = Binding {
+        id: "Ne_Map_DestroySubtree",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Map_DestroySubtree_Decals: Binding = Binding {
+        id: "Ne_Map_DestroySubtree_Decals",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Map_FindOrDefaultWithErrorContext: Binding = Binding {
+        id: "Ne_Map_FindOrDefaultWithErrorContext",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Map_LowerBoundPairIntInt: Binding = Binding {
+        id: "Ne_Map_LowerBoundPairIntInt",
+        kind: "func",
+        status: Status::Experimental,
     };
     pub const Ne_Math_BasisFromNormal: Binding = Binding {
         id: "Ne_Math_BasisFromNormal",
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Math_Mat4Invert: Binding = Binding {
+        id: "Ne_Math_Mat4Invert",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Math_Mat4Multiply: Binding = Binding {
+        id: "Ne_Math_Mat4Multiply",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Math_Matrix4x4_Invert: Binding = Binding {
+        id: "Ne_Math_Matrix4x4_Invert",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Math_ObbOverlapTest: Binding = Binding {
         id: "Ne_Math_ObbOverlapTest",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Math_QuatFromEulerXYZ: Binding = Binding {
+        id: "Ne_Math_QuatFromEulerXYZ",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8673,6 +9528,16 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_MoverCollision_BuildMoverShapes: Binding = Binding {
+        id: "Ne_MoverCollision_BuildMoverShapes",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_MoverCollision_BuildQueryContext: Binding = Binding {
+        id: "Ne_MoverCollision_BuildQueryContext",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_MoverCollision_CreateResource: Binding = Binding {
         id: "Ne_MoverCollision_CreateResource",
         kind: "func",
@@ -8680,6 +9545,11 @@ pub mod bindings {
     };
     pub const Ne_NameRegistry_FindId: Binding = Binding {
         id: "Ne_NameRegistry_FindId",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_NameTable_FindByFnv1a_B: Binding = Binding {
+        id: "Ne_NameTable_FindByFnv1a_B",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9133,6 +10003,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Node_DestroyTreeRecursive: Binding = Binding {
+        id: "Ne_Node_DestroyTreeRecursive",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Noise_Fbm1D: Binding = Binding {
         id: "Ne_Noise_Fbm1D",
         kind: "func",
@@ -9163,6 +10038,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_OptionalSharedPtr_Reset: Binding = Binding {
+        id: "Ne_OptionalSharedPtr_Reset",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_OptionalVector56_CopyAssign: Binding = Binding {
         id: "Ne_OptionalVector56_CopyAssign",
         kind: "func",
@@ -9188,6 +10068,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_PathBuf_Construct: Binding = Binding {
+        id: "Ne_PathBuf_Construct",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_PhysBody_ApplyImpulse: Binding = Binding {
         id: "Ne_PhysBody_ApplyImpulse",
         kind: "func",
@@ -9208,8 +10093,28 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_PhysCollision_FreeIntersectionUnits: Binding = Binding {
+        id: "Ne_PhysCollision_FreeIntersectionUnits",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysDeform_BuildTyreWallSoftBody: Binding = Binding {
+        id: "Ne_PhysDeform_BuildTyreWallSoftBody",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_PhysMesh_RaycastTriangles: Binding = Binding {
         id: "Ne_PhysMesh_RaycastTriangles",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysPool_AllocZeroed: Binding = Binding {
+        id: "Ne_PhysPool_AllocZeroed",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysShape_BuildConvexFromPoints: Binding = Binding {
+        id: "Ne_PhysShape_BuildConvexFromPoints",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9218,8 +10123,83 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_PhysShape_InitConvexDefaults: Binding = Binding {
+        id: "Ne_PhysShape_InitConvexDefaults",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysUpdateStage_FinishStepNotifyBodies: Binding = Binding {
+        id: "Ne_PhysUpdateStage_FinishStepNotifyBodies",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysUpdateStage_FlushSubstepRecords: Binding = Binding {
+        id: "Ne_PhysUpdateStage_FlushSubstepRecords",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysUpdateStage_InterpolateBodyStates: Binding = Binding {
+        id: "Ne_PhysUpdateStage_InterpolateBodyStates",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysUpdateStage_RunSubsteps: Binding = Binding {
+        id: "Ne_PhysUpdateStage_RunSubsteps",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysWorld_AdvanceStepState: Binding = Binding {
+        id: "Ne_PhysWorld_AdvanceStepState",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysWorld_ApplyBroadPhaseCcdCollisions: Binding = Binding {
+        id: "Ne_PhysWorld_ApplyBroadPhaseCcdCollisions",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysWorld_ApplyBroadPhaseCollisions: Binding = Binding {
+        id: "Ne_PhysWorld_ApplyBroadPhaseCollisions",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysWorld_BuildBroadphaseGrid: Binding = Binding {
+        id: "Ne_PhysWorld_BuildBroadphaseGrid",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysWorld_CollectBroadphasePairsForBody: Binding = Binding {
+        id: "Ne_PhysWorld_CollectBroadphasePairsForBody",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_PhysWorld_CommitBody: Binding = Binding {
         id: "Ne_PhysWorld_CommitBody",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysWorld_CreateConstrainedBody: Binding = Binding {
+        id: "Ne_PhysWorld_CreateConstrainedBody",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysWorld_CreateRigidBody: Binding = Binding {
+        id: "Ne_PhysWorld_CreateRigidBody",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysWorld_InitFromConfig: Binding = Binding {
+        id: "Ne_PhysWorld_InitFromConfig",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysWorld_NotifyBodyStepCallbacks: Binding = Binding {
+        id: "Ne_PhysWorld_NotifyBodyStepCallbacks",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysWorld_PostSolveIslands: Binding = Binding {
+        id: "Ne_PhysWorld_PostSolveIslands",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9233,6 +10213,36 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_PhysWorld_ReleaseContainers: Binding = Binding {
+        id: "Ne_PhysWorld_ReleaseContainers",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysWorld_ResetFrameState: Binding = Binding {
+        id: "Ne_PhysWorld_ResetFrameState",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysWorld_ResizeWorkerContexts: Binding = Binding {
+        id: "Ne_PhysWorld_ResizeWorkerContexts",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysWorld_RunIntegratorJobs: Binding = Binding {
+        id: "Ne_PhysWorld_RunIntegratorJobs",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysWorld_RunSolveJobs: Binding = Binding {
+        id: "Ne_PhysWorld_RunSolveJobs",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysWorld_RunStepPipeline: Binding = Binding {
+        id: "Ne_PhysWorld_RunStepPipeline",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_PhysWorld_UpdateBodyBroadphase: Binding = Binding {
         id: "Ne_PhysWorld_UpdateBodyBroadphase",
         kind: "func",
@@ -9243,8 +10253,33 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Phys_EnsureReflectionRegistered: Binding = Binding {
+        id: "Ne_Phys_EnsureReflectionRegistered",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Phys_GridSegmentTraverse: Binding = Binding {
+        id: "Ne_Phys_GridSegmentTraverse",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Phys_ObbOverlapTest: Binding = Binding {
+        id: "Ne_Phys_ObbOverlapTest",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Phys_ParseMaterials: Binding = Binding {
         id: "Ne_Phys_ParseMaterials",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Phys_PrepareConstraintRowsBatch: Binding = Binding {
+        id: "Ne_Phys_PrepareConstraintRowsBatch",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Phys_SolveRowsIterate: Binding = Binding {
+        id: "Ne_Phys_SolveRowsIterate",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9313,6 +10348,56 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_PoolAllocator_GrowChunk112: Binding = Binding {
+        id: "Ne_PoolAllocator_GrowChunk112",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PoolAllocator_GrowChunk24: Binding = Binding {
+        id: "Ne_PoolAllocator_GrowChunk24",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PoolAllocator_GrowChunk80: Binding = Binding {
+        id: "Ne_PoolAllocator_GrowChunk80",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PoolList_DestroyNodeChain_A: Binding = Binding {
+        id: "Ne_PoolList_DestroyNodeChain_A",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PoolList_DestroyNodeChain_B: Binding = Binding {
+        id: "Ne_PoolList_DestroyNodeChain_B",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PoolList_DestroyNodes: Binding = Binding {
+        id: "Ne_PoolList_DestroyNodes",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PoolList_Resize: Binding = Binding {
+        id: "Ne_PoolList_Resize",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PoolList_Resize_B: Binding = Binding {
+        id: "Ne_PoolList_Resize_B",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Pool_ComputeBlockRange: Binding = Binding {
+        id: "Ne_Pool_ComputeBlockRange",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Pool_ReleaseVirtualBlock: Binding = Binding {
+        id: "Ne_Pool_ReleaseVirtualBlock",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_PostProcessXGenerator_Copy_Render: Binding = Binding {
         id: "Ne_PostProcessXGenerator_Copy_Render",
         kind: "func",
@@ -9325,6 +10410,11 @@ pub mod bindings {
     };
     pub const Ne_Post_BusMessageQueued_FlashbackUsed: Binding = Binding {
         id: "Ne_Post_BusMessageQueued_FlashbackUsed",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PresenceEadp_ProcessPlayerCardList: Binding = Binding {
+        id: "Ne_PresenceEadp_ProcessPlayerCardList",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9343,8 +10433,23 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_PresenceNameResolverEADP_VectorGrow: Binding = Binding {
+        id: "Ne_PresenceNameResolverEADP_VectorGrow",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_PresenceNameResolverFixed_AddName: Binding = Binding {
         id: "Ne_PresenceNameResolverFixed_AddName",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PresenceNameResolverFixed_InsertName: Binding = Binding {
+        id: "Ne_PresenceNameResolverFixed_InsertName",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PresenceNameResolverFixed_MapFatalStub: Binding = Binding {
+        id: "Ne_PresenceNameResolverFixed_MapFatalStub",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9353,13 +10458,83 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_PresenceQueue_Enqueue: Binding = Binding {
+        id: "Ne_PresenceQueue_Enqueue",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PresenceQueue_VectorPush: Binding = Binding {
+        id: "Ne_PresenceQueue_VectorPush",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Presence_OnSubscribeResult: Binding = Binding {
         id: "Ne_Presence_OnSubscribeResult",
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Property_ResolveBindingChain: Binding = Binding {
+        id: "Ne_Property_ResolveBindingChain",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Property_SetS32IfChanged: Binding = Binding {
+        id: "Ne_Property_SetS32IfChanged",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Property_SetS64IfChanged: Binding = Binding {
+        id: "Ne_Property_SetS64IfChanged",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PtrList_RemoveLocked: Binding = Binding {
+        id: "Ne_PtrList_RemoveLocked",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Queue_EnqueueEventRecord: Binding = Binding {
+        id: "Ne_Queue_EnqueueEventRecord",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_RbTree_EraseSubtree: Binding = Binding {
+        id: "Ne_RbTree_EraseSubtree",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_RbTree_EraseSubtree_RefValues: Binding = Binding {
+        id: "Ne_RbTree_EraseSubtree_RefValues",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_RefCounted_Release: Binding = Binding {
+        id: "Ne_RefCounted_Release",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_RefPtr_MoveAssign: Binding = Binding {
+        id: "Ne_RefPtr_MoveAssign",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_RegisteredHandle_Assign: Binding = Binding {
         id: "Ne_RegisteredHandle_Assign",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_RenderGraph_ApplyBindingsByType: Binding = Binding {
+        id: "Ne_RenderGraph_ApplyBindingsByType",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_RenderGraph_BuildPassFlagsDesc: Binding = Binding {
+        id: "Ne_RenderGraph_BuildPassFlagsDesc",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_RenderGraph_ResolveHandleFlag: Binding = Binding {
+        id: "Ne_RenderGraph_ResolveHandleFlag",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9418,6 +10593,26 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_ResourceMgr_ReleaseIfOwned: Binding = Binding {
+        id: "Ne_ResourceMgr_ReleaseIfOwned",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_ResourceRefGroup_Destruct: Binding = Binding {
+        id: "Ne_ResourceRefGroup_Destruct",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_RichText_ConstructMixedString: Binding = Binding {
+        id: "Ne_RichText_ConstructMixedString",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_RingDeque_PushBack_F1os: Binding = Binding {
+        id: "Ne_RingDeque_PushBack_F1os",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_RobinHoodMap12_Rehash: Binding = Binding {
         id: "Ne_RobinHoodMap12_Rehash",
         kind: "func",
@@ -9445,6 +10640,11 @@ pub mod bindings {
     };
     pub const Ne_RobinHoodMap_U8F_Insert: Binding = Binding {
         id: "Ne_RobinHoodMap_U8F_Insert",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_RttRenderer_CreateSceneJob: Binding = Binding {
+        id: "Ne_RttRenderer_CreateSceneJob",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9708,6 +10908,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_SharedPtr_CopyAssign: Binding = Binding {
+        id: "Ne_SharedPtr_CopyAssign",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_SharedPtr_MoveAssign: Binding = Binding {
         id: "Ne_SharedPtr_MoveAssign",
         kind: "func",
@@ -9743,8 +10948,53 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Sort_Elem32ByU64: Binding = Binding {
+        id: "Ne_Sort_Elem32ByU64",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Sort_Elem40WithPred: Binding = Binding {
         id: "Ne_Sort_Elem40WithPred",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Sort_Elem48_Median3Order: Binding = Binding {
+        id: "Ne_Sort_Elem48_Median3Order",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Sort_IntroSort16: Binding = Binding {
+        id: "Ne_Sort_IntroSort16",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Sort_Introsort_Elem48: Binding = Binding {
+        id: "Ne_Sort_Introsort_Elem48",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Sort_Introsort_Pair16_A: Binding = Binding {
+        id: "Ne_Sort_Introsort_Pair16_A",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Sort_Introsort_Pair16_B: Binding = Binding {
+        id: "Ne_Sort_Introsort_Pair16_B",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_StdMap_At_141107280: Binding = Binding {
+        id: "Ne_StdMap_At_141107280",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_StdMap_At_141403b30: Binding = Binding {
+        id: "Ne_StdMap_At_141403b30",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Std_FatalExceptionTerminate: Binding = Binding {
+        id: "Ne_Std_FatalExceptionTerminate",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9753,8 +11003,18 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Std_ThrowBadArrayNewLength: Binding = Binding {
+        id: "Ne_Std_ThrowBadArrayNewLength",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Std_ThrowBadFunctionCall: Binding = Binding {
         id: "Ne_Std_ThrowBadFunctionCall",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Std_ThrowDequeTooLong: Binding = Binding {
+        id: "Ne_Std_ThrowDequeTooLong",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9763,8 +11023,18 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Std_ThrowExceptionNoReturn: Binding = Binding {
+        id: "Ne_Std_ThrowExceptionNoReturn",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Std_ThrowInvalidBitsetPosition: Binding = Binding {
         id: "Ne_Std_ThrowInvalidBitsetPosition",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Std_ThrowMapSetTooLong: Binding = Binding {
+        id: "Ne_Std_ThrowMapSetTooLong",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9773,8 +11043,28 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Std_ThrowStringTooLong: Binding = Binding {
+        id: "Ne_Std_ThrowStringTooLong",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Std_ThrowVectorSubscriptError: Binding = Binding {
+        id: "Ne_Std_ThrowVectorSubscriptError",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Std_ThrowVectorTooLong: Binding = Binding {
         id: "Ne_Std_ThrowVectorTooLong",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Std_ThrowVectorTooLongC: Binding = Binding {
+        id: "Ne_Std_ThrowVectorTooLongC",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Std_ThrowVectorTooLong_14029b1a0: Binding = Binding {
+        id: "Ne_Std_ThrowVectorTooLong_14029b1a0",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9793,6 +11083,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_StrBuf_CopyConstruct: Binding = Binding {
+        id: "Ne_StrBuf_CopyConstruct",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_StrBuf_Printf: Binding = Binding {
         id: "Ne_StrBuf_Printf",
         kind: "func",
@@ -9805,6 +11100,11 @@ pub mod bindings {
     };
     pub const Ne_StringPool_InternByHash: Binding = Binding {
         id: "Ne_StringPool_InternByHash",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_StringPool_InternCStr: Binding = Binding {
+        id: "Ne_StringPool_InternCStr",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9823,8 +11123,43 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_String_AssignWithMode: Binding = Binding {
+        id: "Ne_String_AssignWithMode",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_String_CloneAppendCStr: Binding = Binding {
+        id: "Ne_String_CloneAppendCStr",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_String_ConstructFromCStr: Binding = Binding {
+        id: "Ne_String_ConstructFromCStr",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_String_FormatToPool: Binding = Binding {
+        id: "Ne_String_FormatToPool",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_String_ParseTokens: Binding = Binding {
+        id: "Ne_String_ParseTokens",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_String_Reserve: Binding = Binding {
         id: "Ne_String_Reserve",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_String_Utf8ToWide: Binding = Binding {
+        id: "Ne_String_Utf8ToWide",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Struct_CopyConstructInlineStrings: Binding = Binding {
+        id: "Ne_Struct_CopyConstructInlineStrings",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9853,6 +11188,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Tga_ConvertToRgba8Buffer: Binding = Binding {
+        id: "Ne_Tga_ConvertToRgba8Buffer",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Thread_Destroy: Binding = Binding {
         id: "Ne_Thread_Destroy",
         kind: "func",
@@ -9863,8 +11203,28 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Thunk_ExternalCall: Binding = Binding {
+        id: "Ne_Thunk_ExternalCall",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_TimeManager_OnSetFixedTimeStep: Binding = Binding {
         id: "Ne_TimeManager_OnSetFixedTimeStep",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Time_BreakDownMicroseconds: Binding = Binding {
+        id: "Ne_Time_BreakDownMicroseconds",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Time_FormatBrokenDownUnits: Binding = Binding {
+        id: "Ne_Time_FormatBrokenDownUnits",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Timer_ConstructQpcDeadline: Binding = Binding {
+        id: "Ne_Timer_ConstructQpcDeadline",
         kind: "func",
         status: Status::Experimental,
     };
@@ -10058,6 +11418,71 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_UniquePtr_MoveAssign: Binding = Binding {
+        id: "Ne_UniquePtr_MoveAssign",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UnorderedMap_FindOrEmplace_Fnv8_A: Binding = Binding {
+        id: "Ne_UnorderedMap_FindOrEmplace_Fnv8_A",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UnorderedMap_FindOrEmplace_Fnv8_B: Binding = Binding {
+        id: "Ne_UnorderedMap_FindOrEmplace_Fnv8_B",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UnorderedMap_FindOrEmplace_Fnv8_C: Binding = Binding {
+        id: "Ne_UnorderedMap_FindOrEmplace_Fnv8_C",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UnorderedMap_FindOrEmplace_Fnv8_D: Binding = Binding {
+        id: "Ne_UnorderedMap_FindOrEmplace_Fnv8_D",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UnorderedMap_FindOrEmplace_Fnv_E: Binding = Binding {
+        id: "Ne_UnorderedMap_FindOrEmplace_Fnv_E",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UnorderedMap_RehashBuckets: Binding = Binding {
+        id: "Ne_UnorderedMap_RehashBuckets",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UnorderedMap_Rehash_Gfx2Buffer: Binding = Binding {
+        id: "Ne_UnorderedMap_Rehash_Gfx2Buffer",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UnorderedMap_Rehash_Gfx2DeferredCommand: Binding = Binding {
+        id: "Ne_UnorderedMap_Rehash_Gfx2DeferredCommand",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UserId_Equals: Binding = Binding {
+        id: "Ne_UserId_Equals",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UserId_ToDisplayString: Binding = Binding {
+        id: "Ne_UserId_ToDisplayString",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Variant_FormatToString: Binding = Binding {
+        id: "Ne_Variant_FormatToString",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Vector16_InsertGrow: Binding = Binding {
+        id: "Ne_Vector16_InsertGrow",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Vector16_PushBack: Binding = Binding {
         id: "Ne_Vector16_PushBack",
         kind: "func",
@@ -10095,6 +11520,31 @@ pub mod bindings {
     };
     pub const Ne_VectorOfFloatVec_Assign: Binding = Binding {
         id: "Ne_VectorOfFloatVec_Assign",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Vector_GrowEmplace_Elem384: Binding = Binding {
+        id: "Ne_Vector_GrowEmplace_Elem384",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Vector_InsertGrow_Elem40: Binding = Binding {
+        id: "Ne_Vector_InsertGrow_Elem40",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Vector_PushBack_Elem16: Binding = Binding {
+        id: "Ne_Vector_PushBack_Elem16",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Vector_PushBack_Ptr_Locked: Binding = Binding {
+        id: "Ne_Vector_PushBack_Ptr_Locked",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Vector_ResizeIntrusivePtrs: Binding = Binding {
+        id: "Ne_Vector_ResizeIntrusivePtrs",
         kind: "func",
         status: Status::Experimental,
     };
@@ -10160,6 +11610,11 @@ pub mod bindings {
     };
     pub const Ne_VmNode_SetFloat: Binding = Binding {
         id: "Ne_VmNode_SetFloat",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Vsnprintf: Binding = Binding {
+        id: "Ne_Vsnprintf",
         kind: "func",
         status: Status::Experimental,
     };
@@ -12265,6 +13720,16 @@ pub mod bindings {
     };
     pub const Sess_TyreClass_FromName: Binding = Binding {
         id: "Sess_TyreClass_FromName",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_TyreCompoundClasses_SortEntries: Binding = Binding {
+        id: "Sess_TyreCompoundClasses_SortEntries",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_TyreCompoundClasses_SortEntriesB: Binding = Binding {
+        id: "Sess_TyreCompoundClasses_SortEntriesB",
         kind: "func",
         status: Status::Experimental,
     };

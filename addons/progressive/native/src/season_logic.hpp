@@ -765,6 +765,16 @@ inline uint32_t repaired_ref(uint32_t vehicle_ref, int stat)
     return (static_cast<uint32_t>(stat) << 16) | (vehicle_ref & 0xffffu);
 }
 
+// A season already applied is fitted again only when its mid-season line-up changed: seats that differ
+// from the plan because the player edited them stay as he left them.
+inline bool refit_due(bool new_season, bool mid, int applied_year, int year, const std::string &applied_ids,
+                      const std::string &ids)
+{
+    if (new_season)
+        return true;
+    return mid && (applied_year != year || applied_ids != ids);
+}
+
 // move_player (follow mode): when the player raced in the year (at the career's round, with `at`)
 // for another slot, he moves to his real seat and the real line-ups stand around him.
 // at: the year's line-up at the career's round (midseason_logic.hpp); the season's own otherwise.

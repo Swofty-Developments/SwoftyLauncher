@@ -303,6 +303,21 @@ pub fn notice_since(store: &Store, since: f64) -> Option<String> {
     Notice::read(&store.root).map(|n| n.text())
 }
 
+fn default_location(store: &Store, active: Option<Location>) -> Option<Location> {
+    let name = store.active_profile();
+    let uses_launcher_saves = store
+        .profile(&name)
+        .is_ok_and(|p| !p.is_vanilla() && p.launcher_saves);
+    if !uses_launcher_saves {
+        return active;
+    }
+    match &active {
+        Some(l) if !launcher_saves::supported(l.layout) => active,
+        Some(l) => launcher_saves::store_for(&store.root, &name, l),
+        None => Some(launcher_saves::location(&store.root, &name)),
+    }
+}
+
 fn open(store: &Store, source: Option<&str>) -> Result<(Vault, Option<Location>)> {
     let active = Location::active(&store.root);
     match source {
@@ -312,7 +327,7 @@ fn open(store: &Store, source: Option<&str>) -> Result<(Vault, Option<Location>)
                 .filter(|l| l.source == s)
                 .or_else(|| Location::of_source(&store.root, s)),
         )),
-        None => match active {
+        None => match default_location(store, active) {
             Some(l) => Ok((Vault::of(&store.root, &l)?, Some(l))),
             None => match Vault::sources(&store.root).as_slice() {
                 [only] => Ok((Vault::open(&store.root, only)?, None)),

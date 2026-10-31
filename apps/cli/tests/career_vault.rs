@@ -10,6 +10,12 @@ fn root(name: &str) -> PathBuf {
     let root = std::env::temp_dir().join(format!("swofty-cli-vault-{name}-{}", std::process::id()));
     std::fs::remove_dir_all(&root).ok();
     std::fs::create_dir_all(root.join("home")).unwrap();
+    std::fs::create_dir_all(root.join("data")).unwrap();
+    std::fs::write(
+        root.join("data").join("config.json"),
+        r#"{"active_profile":"vanilla"}"#,
+    )
+    .unwrap();
     root
 }
 
@@ -93,7 +99,7 @@ fn backs_up_lists_shows_and_restores() {
     );
     assert_eq!(
         lines[2],
-        format!("{id}  backup, profile default, 2 file(s), 1316 bytes, pinned (backup)")
+        format!("{id}  backup, profile vanilla, 2 file(s), 1316 bytes, pinned (backup)")
     );
 
     let show = stdout(&swofty(&root, &["saves", "show", &id]));

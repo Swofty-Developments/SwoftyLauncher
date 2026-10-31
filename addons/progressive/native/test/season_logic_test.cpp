@@ -767,6 +767,16 @@ void missing_cars_go_back_to_the_season_car_by_label()
 
 } // namespace
 
+void applied_season_is_not_refitted_over_player_edits()
+{
+    using progressive::season::refit_due;
+    EXPECT(refit_due(true, false, -1, 2019, "", ""));
+    EXPECT(!refit_due(false, false, 2019, 2019, "", ""));
+    EXPECT(!refit_due(false, true, 2019, 2019, "a,b", "a,b"));
+    EXPECT(refit_due(false, true, 2019, 2019, "a", "a,b"));
+    EXPECT(refit_due(false, true, 2018, 2019, "a,b", "a,b"));
+}
+
 int main(int argc, char **argv)
 {
     const char *path = argc > 1 ? argv[1] : "../../data/years.json";
@@ -801,6 +811,7 @@ int main(int argc, char **argv)
     added_team_names_leave_the_dressed_slot_alone();
     wizard_names_follow_the_start_season();
     missing_cars_go_back_to_the_season_car_by_label();
+    applied_season_is_not_refitted_over_player_edits();
     if (failures) {
         std::printf("season_logic_test: %d failure(s)\n", failures);
         return EXIT_FAILURE;

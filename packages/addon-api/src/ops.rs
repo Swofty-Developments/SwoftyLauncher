@@ -322,6 +322,14 @@ pub enum ErpOp {
         resource: String,
         source: Source,
     },
+    // Every slice of the texture array `resource` in `source` goes after the slices of
+    // the array already in `erp` (the game's, or as earlier addons left it), in load
+    // order, and the array's view (`resource` without `.image`) counts them.
+    AppendSlices {
+        erp: String,
+        resource: String,
+        source: Source,
+    },
     /// Sets constants of a `.material` resource in place: a number for a scalar, a list for a
     /// vector, written as the material declares them.
     SetMaterial {
@@ -654,6 +662,93 @@ struct Db<'a> {
     added_rows: HashSet<String>,
     moved: HashMap<(String, String), String>,
     ties: std::cell::RefCell<Vec<String>>,
+    // Bumped by every write, so a cached read of the records knows when it is stale.
+    generation: u64,
+    stat_ids: std::cell::RefCell<HashMap<(String, String), StatIds>>,
+}
+
+// The stat_ids of a table's rows, read once and kept up to date by add-row until any other write.
+struct StatIds {
+    table: String,
+    row: String,
+    generation: u64,
+    ids: Vec<Option<i64>>,
+    used: HashSet<i64>,
+    max: Option<i64>,
+    // The highest id of a stock or track row.
+    stock: i64,
+    // The ids of the rows this apply didn't add, as a count and a set, to tell whether they are all distinct.
+    kept: usize,
+    kept_distinct: HashSet<i64>,
+    // A start and the lowest id from it that no row holds and the game can read.
+    lowest_free: Option<(i64, i64)>,
+}
+
+impl StatIds {
+    fn read(db: &Db, names: &dyn FieldNames, table: &str, row: &str, rows: usize) -> Self {
+        let field = stat_id_field(table, row);
+        let mut ids = Self {
+            table: table.to_owned(),
+            row: row.to_owned(),
+            generation: db.generation,
+            ids: Vec::with_capacity(rows),
+            used: HashSet::with_capacity(rows),
+            max: None,
+            stock: -1,
+            kept: 0,
+            kept_distinct: HashSet::new(),
+            lowest_free: None,
+        };
+        for i in 0..rows {
+            let name = format!("{table}.{row}_{i}");
+            let key = fnv1a64(format!("{name}.{field}"));
+            let id = db.text(key).and_then(|v| v.trim().parse::<i64>().ok());
+            ids.push(names, key, id, db.added_rows.contains(&name));
+        }
+        ids
+    }
+
+    fn push(&mut self, names: &dyn FieldNames, key: u64, id: Option<i64>, added: bool) {
+        self.ids.push(id);
+        let Some(id) = id else {
+            return;
+        };
+        if names.stock(key) || names.track(key) {
+            self.stock = self.stock.max(id);
+        }
+        if !added {
+            self.kept += 1;
+            self.kept_distinct.insert(id);
+        }
+        self.used.insert(id);
+        self.max = Some(self.max.map_or(id, |m| m.max(id)));
+        if let Some((_, low)) = &mut self.lowest_free
+            && *low == id
+        {
+            while self.used.contains(low) || stat_id_unusable(&self.table, &self.row, *low) {
+                *low += 1;
+            }
+        }
+    }
+
+    // Whether the rows this apply didn't add have ids, all different.
+    fn indexed(&self) -> bool {
+        self.kept > 0 && self.kept_distinct.len() == self.kept
+    }
+
+    fn lowest_free(&mut self, from: i64) -> i64 {
+        if let Some((start, low)) = self.lowest_free
+            && start == from
+        {
+            return low;
+        }
+        let mut low = from;
+        while self.used.contains(&low) || stat_id_unusable(&self.table, &self.row, low) {
+            low += 1;
+        }
+        self.lowest_free = Some((from, low));
+        low
+    }
 }
 
 impl<'a> Db<'a> {
@@ -669,7 +764,51 @@ impl<'a> Db<'a> {
             added_rows: HashSet::new(),
             moved: HashMap::new(),
             ties: std::cell::RefCell::new(Vec::new()),
+            generation: 0,
+            stat_ids: std::cell::RefCell::new(HashMap::new()),
         }
+    }
+
+    fn stat_ids(
+        &self,
+        names: &dyn FieldNames,
+        table: &str,
+        row: &str,
+        rows: usize,
+    ) -> std::cell::RefMut<'_, StatIds> {
+        std::cell::RefMut::map(self.stat_ids.borrow_mut(), |all| {
+            let ids = all
+                .entry((table.to_owned(), row.to_owned()))
+                .or_insert_with(|| StatIds::read(self, names, table, row, rows));
+            if ids.generation != self.generation || ids.ids.len() != rows {
+                *ids = StatIds::read(self, names, table, row, rows);
+            }
+            ids
+        })
+    }
+
+    // Adds the row `name`, the table's `rows`th, to its cached ids, when nothing but that row's writes
+    // came since generation `before`.
+    fn row_added(
+        &self,
+        names: &dyn FieldNames,
+        table: &str,
+        row: &str,
+        rows: usize,
+        name: &str,
+        before: u64,
+    ) {
+        let mut all = self.stat_ids.borrow_mut();
+        let Some(ids) = all.get_mut(&(table.to_owned(), row.to_owned())) else {
+            return;
+        };
+        if ids.generation != before || ids.ids.len() != rows {
+            return;
+        }
+        let key = fnv1a64(format!("{name}.{}", stat_id_field(table, row)));
+        let id = self.text(key).and_then(|v| v.trim().parse::<i64>().ok());
+        ids.push(names, key, id, true);
+        ids.generation = self.generation;
     }
 
     fn drain_ties(&self, cx: &mut Cx) -> Result<()> {
@@ -685,6 +824,7 @@ impl<'a> Db<'a> {
     }
 
     fn remove(&mut self, key: u64) -> bool {
+        self.generation += 1;
         match self.index.remove(&key) {
             Some(i) => {
                 self.removed.push(i);
@@ -711,6 +851,7 @@ impl<'a> Db<'a> {
     }
 
     fn get_mut(&mut self, key: u64) -> Option<&mut Record> {
+        self.generation += 1;
         self.index.get(&key).map(|&i| &mut self.gvdb.records[i])
     }
 
@@ -719,6 +860,7 @@ impl<'a> Db<'a> {
     }
 
     fn push(&mut self, record: Record) {
+        self.generation += 1;
         self.index.insert(record.key, self.gvdb.records.len());
         self.gvdb.records.push(record);
     }
@@ -1286,16 +1428,6 @@ fn preview(keys: &[&String]) -> String {
     }
 }
 
-fn stat_ids(db: &Db, table: &str, row: &str, rows: usize, skip: &HashSet<String>) -> Vec<i64> {
-    let field = stat_id_field(table, row);
-    (0..rows)
-        .map(|i| format!("{table}.{row}_{i}"))
-        .filter(|r| !skip.contains(r))
-        .filter_map(|r| db.text(fnv1a64(format!("{r}.{field}"))))
-        .filter_map(|v| v.trim().parse::<i64>().ok())
-        .collect()
-}
-
 // The row added earlier that holds `id`, unless a stock row holds it too.
 fn added_holder(
     db: &Db,
@@ -1331,20 +1463,11 @@ fn free_stat_id(
     skip: &dyn Fn(i64) -> bool,
 ) -> Option<i64> {
     let skip = |id: i64| skip(id) || stat_id_unusable(table, row, id);
-    let field = stat_id_field(table, row);
-    let mut used = HashSet::new();
-    let mut stock = -1;
-    for i in 0..rows {
-        let key = fnv1a64(format!("{table}.{row}_{i}.{field}"));
-        let Some(id) = db.text(key).and_then(|v| v.trim().parse::<i64>().ok()) else {
-            continue;
-        };
-        if names.stock(key) || names.track(key) {
-            stock = stock.max(id);
-        }
-        used.insert(id);
-    }
-    (ceiling.from.unwrap_or(stock + 1)..=ceiling.max).find(|id| !used.contains(id) && !skip(*id))
+    let mut ids = db.stat_ids(names, table, row, rows);
+    let from = ceiling.from.unwrap_or(ids.stock + 1);
+    // Every id below the lowest free one is held or unreadable, so the search starts there.
+    let low = ids.lowest_free(from);
+    (low..=ceiling.max).find(|id| !ids.used.contains(id) && !skip(*id))
 }
 
 fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Result<()> {
@@ -1451,11 +1574,7 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
         });
     }
     let stat_key = dst.field("stat_id");
-    let indexed = || {
-        let ids = stat_ids(db, &path, row, n, &db.added_rows);
-        let unique: HashSet<i64> = ids.iter().copied().collect();
-        !ids.is_empty() && unique.len() == ids.len()
-    };
+    let indexed = || db.stat_ids(names, &path, row, n).indexed();
     let top_level = row_shape(&dst_path).matches("_N").count() == 1;
     let fresh = match (stat_id, set.contains_key("stat_id")) {
         (_, true) | (Some(StatIdMode::Keep), _) => false,
@@ -1492,10 +1611,7 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
     // The next id above the table's highest, or the lowest free one when that passes the ceiling.
     // A moved id, and any id under the ceiling, passes over the ids later addons set on their rows.
     let next = |moving: bool| -> Result<(i64, Option<String>)> {
-        let mut top = stat_ids(db, &path, row, n, &HashSet::new())
-            .into_iter()
-            .max()
-            .map_or(0, |m| m + 1);
+        let mut top = db.stat_ids(names, &path, row, n).max.map_or(0, |m| m + 1);
         while (moving && later(top)) || stat_id_unusable(&path, row, top) {
             top += 1;
         }
@@ -1565,10 +1681,7 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
                 }
             }
         }
-        let top = stat_ids(db, &path, row, n, &HashSet::new())
-            .into_iter()
-            .max()
-            .map_or(0, |m| m + 1);
+        let top = db.stat_ids(names, &path, row, n).max.map_or(0, |m| m + 1);
         let picked = (top..=ceiling.map_or(i64::MAX, |c| c.max))
             .find(|id| blocked(*id).is_none() && !(moving && later(*id)))
             .or_else(|| {
@@ -1666,6 +1779,7 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
             "{what}: reuses {reused} stock key(s) of a row above the table's count"
         ));
     }
+    let before = db.generation;
     for r in rows {
         match db.get_mut(r.key) {
             Some(old) => *old = r,
@@ -1676,11 +1790,12 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
         from: src_path.clone(),
         row: dst_path.clone(),
     });
-    db.added_rows.insert(dst_path);
     let count = db
         .get_mut(fnv1a64(&count_path))
         .expect("instance_count read it above");
     count.value = (n + 1).to_string().into_bytes();
+    db.row_added(names, &path, row, n, &dst_path, before);
+    db.added_rows.insert(dst_path);
     Ok(())
 }
 
@@ -2798,6 +2913,98 @@ mod tests {
         );
         assert_eq!(failed.len(), 1);
         assert_eq!(db.instance_count("entrants.drivers", "driver"), Some(1 + usable));
+    }
+
+    // The ids fresh rows took before 1.7.1, when each add-row read every row's id again: the next above
+    // the table's highest, or for a table with a ceiling the lowest free one from its `from` (or above
+    // the stock rows) that the game reads. None once nothing is free.
+    fn ids_before_the_cache(stock: &[i64], path: &str, row: &str, adds: usize) -> Vec<Option<i64>> {
+        let ceiling = stat_id_ceiling(path, row);
+        let stock_max = stock.iter().copied().max().unwrap_or(-1);
+        let mut all = stock.to_vec();
+        (0..adds)
+            .map(|_| {
+                let mut top = all.iter().copied().max().map_or(0, |m| m + 1);
+                while stat_id_unusable(path, row, top) {
+                    top += 1;
+                }
+                let id = match ceiling {
+                    Some(c) if top > c.max || c.from.is_some() => {
+                        let used: HashSet<i64> = all.iter().copied().collect();
+                        (c.from.unwrap_or(stock_max + 1)..=c.max)
+                            .find(|id| !used.contains(id) && !stat_id_unusable(path, row, *id))
+                    }
+                    _ => Some(top),
+                };
+                all.extend(id);
+                id
+            })
+            .collect()
+    }
+
+    fn added_ids(stock: &[i64], path: &str, row: &str, adds: usize) -> Vec<Option<i64>> {
+        let mut db = table(path, row, stock);
+        let names: HashSet<u64> = db.records.iter().map(|r| r.key).collect();
+        let labels: Vec<String> = (0..adds).map(|i| format!("added_{i}")).collect();
+        let rows: Vec<(&str, Option<i64>)> = labels.iter().map(|l| (l.as_str(), None)).collect();
+        let (_, failed) = apply_db_ops_lenient(
+            &mut db,
+            &add_rows(path, row, &rows),
+            &names,
+            &mut DbReport::default(),
+        );
+        let mut got: Vec<Option<i64>> = ids(&db, path, row)[stock.len()..]
+            .iter()
+            .copied()
+            .map(Some)
+            .collect();
+        got.extend(failed.iter().map(|_| None));
+        got
+    }
+
+    #[test]
+    fn fresh_driver_ids_match_the_search_before_the_cache() {
+        let stock = [1, 7, 30, 207, 254];
+        assert_eq!(
+            added_ids(&stock, "entrants.drivers", "driver", 400),
+            ids_before_the_cache(&stock, "entrants.drivers", "driver", 400)
+        );
+    }
+
+    #[test]
+    fn fresh_driver_ids_up_to_the_14_bit_ceiling_match_the_search_before_the_cache() {
+        let mut stock: Vec<i64> = (208..=16100)
+            .filter(|id| !stat_id_unusable("entrants.drivers", "driver", *id) && id % 97 != 0)
+            .collect();
+        stock.push(254);
+        let before = ids_before_the_cache(&stock, "entrants.drivers", "driver", 450);
+        assert_eq!(before.iter().flatten().max(), Some(&16382));
+        assert!(before.last().unwrap().is_none());
+        assert_eq!(added_ids(&stock, "entrants.drivers", "driver", 450), before);
+    }
+
+    #[test]
+    fn fresh_package_ids_past_the_byte_ceiling_match_the_search_before_the_cache() {
+        let stock = [2, 5, 58];
+        let before = ids_before_the_cache(&stock, PACKAGES, "vehicle_package", 300);
+        assert!(before.last().unwrap().is_none());
+        assert_eq!(added_ids(&stock, PACKAGES, "vehicle_package", 300), before);
+    }
+
+    #[test]
+    fn an_id_set_between_add_rows_frees_the_one_it_replaced() {
+        let mut db = table("entrants.drivers", "driver", &[1, 7]);
+        let names: HashSet<u64> = db.records.iter().map(|r| r.key).collect();
+        let ops = self::ops(
+            r#"{"schema_version":1,"fields":{"entrants.drivers.driver":["_metadata_","stat_id"]},"ops":[
+            {"op":"add-row","table":"entrants.drivers","from":"entrants.drivers.driver_0","set":{"_metadata_":"a"}},
+            {"op":"add-row","table":"entrants.drivers","from":"entrants.drivers.driver_0","set":{"_metadata_":"b"}},
+            {"op":"set","select":"entrants.drivers.driver_2","field":"stat_id","value":"300"},
+            {"op":"add-row","table":"entrants.drivers","from":"entrants.drivers.driver_0","set":{"_metadata_":"c"}},
+            {"op":"add-row","table":"entrants.drivers","from":"entrants.drivers.driver_0","set":{"_metadata_":"d"}}]}"#,
+        );
+        apply_db_ops(&mut db, &ops, &names).unwrap();
+        assert_eq!(ids(&db, "entrants.drivers", "driver"), [1, 7, 300, 209, 208, 210]);
     }
 
     #[test]

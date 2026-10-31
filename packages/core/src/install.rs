@@ -620,6 +620,10 @@ impl<'a> Installer<'a> {
         {
             return Ok(0);
         }
+        let status = self.path(crate::launcher_saves::STATUS_FILE);
+        if status.is_file() {
+            with_retry(&status, || std::fs::remove_file(&status))?;
+        }
         let mut moved = 0;
         for e in std::fs::read_dir(&loader).map_err(io_err(&loader))?.flatten() {
             let path = e.path();
