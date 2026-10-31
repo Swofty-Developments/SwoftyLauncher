@@ -414,6 +414,10 @@ def mode(fields):
         "has_tyre_warmers": "False",
         "drs_allowed_lap_group": NAME,
         "tyre_regulations.allow_strategy_mandatory_stop_check": "False",
+        "tyre_regulations.allow_strategy_valid_laps_check": "False",
+        "tyre_regulations.race0_length_requirement": "",
+        "tyre_regulations.race1_length_requirement": "",
+        "tyre_regulations.race2_length_requirement": "",
         "pit_crew_training_probability_set": PIT_CREW_NAME,
         "pit_crew_training_probability_set_equal_performance": PIT_CREW_NAME,
     })]

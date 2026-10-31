@@ -38,6 +38,19 @@ inline bool box_list_selected()
     return swofty::mem::c_string(name, text, 64) && box_list_name(text) && host_mode_name(mode_text);
 }
 
+inline uintptr_t box_host_mode()
+{
+    constexpr size_t kContext = 0xc0, kModeSetup = 0x88, kSetupModes = 0x260, kGameSetupMode = 0x2b0;
+    if (!swofty::api || !swofty::api->resolve)
+        return 0;
+    uintptr_t slot = swofty::api->resolve("g_Game_Manager"), mgr = 0, ctx = 0, owner = 0, modes = 0, mode = 0;
+    if (!slot || !swofty::mem::read(slot, mgr) || !mgr || !read_chain(mgr, kContext, &ctx) ||
+        !read_chain(ctx, kModeSetup, &owner) || !read_chain(owner, kSetupModes, &modes) ||
+        !read_chain(modes, kGameSetupMode, &mode))
+        return 0;
+    return mode;
+}
+
 inline Play play_now()
 {
     void *career = swofty::career::entity();
