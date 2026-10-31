@@ -5,104 +5,104 @@
   "las_vegas": {
    "cars": {
     "mclaren": {
-     "lap1990": 100.81,
-     "lap1990_race": 105.032,
+     "lap1990": 100.861,
+     "lap1990_race": 105.072,
      "lap2026": 95.182,
-     "ratio": 1.05913,
-     "model_ratio": 1.06515
+     "ratio": 1.05966,
+     "model_ratio": 1.0654
     },
     "ferrari": {
-     "lap1990": 100.02,
-     "lap1990_race": 104.292,
+     "lap1990": 100.033,
+     "lap1990_race": 104.302,
      "lap2026": 96.032,
-     "ratio": 1.04153,
-     "model_ratio": 1.06258
+     "ratio": 1.04167,
+     "model_ratio": 1.0624
     },
     "williams": {
-     "lap1990": 102.521,
-     "lap1990_race": 106.662,
+     "lap1990": 102.554,
+     "lap1990_race": 106.658,
      "lap2026": 95.227,
-     "ratio": 1.0766,
-     "model_ratio": 1.07945
+     "ratio": 1.07695,
+     "model_ratio": 1.07897
     },
     "lotus": {
-     "lap1990": 102.406,
-     "lap1990_race": 106.567,
+     "lap1990": 102.418,
+     "lap1990_race": 106.563,
      "lap2026": 95.872,
-     "ratio": 1.06815,
-     "model_ratio": 1.07595
+     "ratio": 1.06828,
+     "model_ratio": 1.076
     },
     "mercedes": {
-     "lap1990": 103.37,
-     "lap1990_race": 107.404,
+     "lap1990": 103.383,
+     "lap1990_race": 107.388,
      "lap2026": 95.247,
-     "ratio": 1.08529,
-     "model_ratio": 1.093
+     "ratio": 1.08542,
+     "model_ratio": 1.09383
     },
     "redbull": {
-     "lap1990": 103.24,
-     "lap1990_race": 107.406,
+     "lap1990": 103.26,
+     "lap1990_race": 107.401,
      "lap2026": 95.33,
-     "ratio": 1.08297,
-     "model_ratio": 1.08839
+     "ratio": 1.08318,
+     "model_ratio": 1.08868
     },
     "force_india": {
-     "lap1990": 103.641,
-     "lap1990_race": 108.005,
+     "lap1990": 103.649,
+     "lap1990_race": 108.029,
      "lap2026": 96.395,
-     "ratio": 1.07516,
-     "model_ratio": 1.08564
+     "ratio": 1.07525,
+     "model_ratio": 1.08636
     },
     "myteam_ferrari": {
-     "lap1990": 102.088,
-     "lap1990_race": 106.546,
+     "lap1990": 102.12,
+     "lap1990_race": 106.555,
      "lap2026": 96.323,
-     "ratio": 1.05986,
-     "model_ratio": 1.07721
+     "ratio": 1.06018,
+     "model_ratio": 1.07761
     },
     "sauber": {
-     "lap1990": 104.874,
-     "lap1990_race": 109.078,
+     "lap1990": 104.842,
+     "lap1990_race": 109.028,
      "lap2026": 96.66,
-     "ratio": 1.08498,
-     "model_ratio": 1.09447
+     "ratio": 1.08464,
+     "model_ratio": 1.09453
     },
     "toro_rosso": {
-     "lap1990": 103.842,
-     "lap1990_race": 107.934,
+     "lap1990": 103.854,
+     "lap1990_race": 107.898,
      "lap2026": 96.191,
-     "ratio": 1.07954,
-     "model_ratio": 1.09377
+     "ratio": 1.07966,
+     "model_ratio": 1.09454
     },
     "gm_cadillac": {
-     "lap1990": 104.065,
-     "lap1990_race": 108.154,
+     "lap1990": 104.019,
+     "lap1990_race": 108.114,
      "lap2026": 96.734,
-     "ratio": 1.07578,
-     "model_ratio": 1.08517
+     "ratio": 1.0753,
+     "model_ratio": 1.08515
     },
     "myteam_honda": {
-     "lap1990": 105.088,
-     "lap1990_race": 109.251,
+     "lap1990": 105.051,
+     "lap1990_race": 109.195,
      "lap2026": 96.553,
-     "ratio": 1.0884,
-     "model_ratio": 1.09307
+     "ratio": 1.08802,
+     "model_ratio": 1.09322
     },
     "haas": {
-     "lap1990": 105.33,
-     "lap1990_race": 109.498,
+     "lap1990": 105.282,
+     "lap1990_race": 109.445,
      "lap2026": 96.298,
-     "ratio": 1.09379,
-     "model_ratio": 1.09878
+     "ratio": 1.09329,
+     "model_ratio": 1.09891
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.0766,
-    "median_model_ratio": 1.08564,
+    "median_ratio": 1.07695,
+    "median_model_ratio": 1.08636,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 100.02
+     "lap": 100.033
     },
     "fastest_2026": 95.182,
     "variation": "low",
@@ -112,104 +112,104 @@
   "brazil": {
    "cars": {
     "mclaren": {
-     "lap1990": 76.166,
-     "lap1990_race": 80.04,
+     "lap1990": 76.446,
+     "lap1990_race": 80.366,
      "lap2026": 69.5,
-     "ratio": 1.09591,
-     "model_ratio": 1.12268
+     "ratio": 1.09994,
+     "model_ratio": 1.12203
     },
     "ferrari": {
-     "lap1990": 75.312,
-     "lap1990_race": 79.109,
+     "lap1990": 75.556,
+     "lap1990_race": 79.377,
      "lap2026": 70.453,
-     "ratio": 1.06897,
-     "model_ratio": 1.11862
+     "ratio": 1.07243,
+     "model_ratio": 1.11823
     },
     "williams": {
-     "lap1990": 77.237,
-     "lap1990_race": 81.087,
+     "lap1990": 77.533,
+     "lap1990_race": 81.39,
      "lap2026": 69.784,
-     "ratio": 1.10679,
-     "model_ratio": 1.13477
+     "ratio": 1.11104,
+     "model_ratio": 1.13332
     },
     "lotus": {
-     "lap1990": 77.117,
-     "lap1990_race": 81.098,
+     "lap1990": 77.402,
+     "lap1990_race": 81.399,
      "lap2026": 70.092,
-     "ratio": 1.10023,
-     "model_ratio": 1.12907
+     "ratio": 1.1043,
+     "model_ratio": 1.12763
     },
     "mercedes": {
-     "lap1990": 77.722,
-     "lap1990_race": 81.534,
+     "lap1990": 77.981,
+     "lap1990_race": 81.799,
      "lap2026": 70.156,
-     "ratio": 1.10786,
-     "model_ratio": 1.15201
+     "ratio": 1.11154,
+     "model_ratio": 1.15015
     },
     "redbull": {
-     "lap1990": 77.549,
-     "lap1990_race": 81.364,
+     "lap1990": 77.84,
+     "lap1990_race": 81.659,
      "lap2026": 69.603,
-     "ratio": 1.11416,
-     "model_ratio": 1.14682
+     "ratio": 1.11834,
+     "model_ratio": 1.14526
     },
     "force_india": {
-     "lap1990": 78.336,
-     "lap1990_race": 82.216,
+     "lap1990": 78.621,
+     "lap1990_race": 82.499,
      "lap2026": 70.553,
-     "ratio": 1.11032,
-     "model_ratio": 1.14075
+     "ratio": 1.11435,
+     "model_ratio": 1.13921
     },
     "myteam_ferrari": {
-     "lap1990": 76.883,
-     "lap1990_race": 80.785,
+     "lap1990": 77.144,
+     "lap1990_race": 81.048,
      "lap2026": 70.54,
-     "ratio": 1.08992,
-     "model_ratio": 1.13114
+     "ratio": 1.09362,
+     "model_ratio": 1.12894
     },
     "sauber": {
-     "lap1990": 79.269,
-     "lap1990_race": 83.001,
+     "lap1990": 79.523,
+     "lap1990_race": 83.231,
      "lap2026": 70.639,
-     "ratio": 1.12217,
-     "model_ratio": 1.15234
+     "ratio": 1.12576,
+     "model_ratio": 1.15042
     },
     "toro_rosso": {
-     "lap1990": 77.9,
-     "lap1990_race": 81.708,
+     "lap1990": 78.182,
+     "lap1990_race": 81.971,
      "lap2026": 70.023,
-     "ratio": 1.11249,
-     "model_ratio": 1.15005
+     "ratio": 1.11652,
+     "model_ratio": 1.14836
     },
     "gm_cadillac": {
-     "lap1990": 78.628,
-     "lap1990_race": 82.497,
+     "lap1990": 78.876,
+     "lap1990_race": 82.73,
      "lap2026": 70.957,
-     "ratio": 1.10811,
-     "model_ratio": 1.13856
+     "ratio": 1.1116,
+     "model_ratio": 1.13657
     },
     "myteam_honda": {
-     "lap1990": 79.485,
-     "lap1990_race": 83.191,
+     "lap1990": 79.718,
+     "lap1990_race": 83.45,
      "lap2026": 70.54,
-     "ratio": 1.12681,
-     "model_ratio": 1.15082
+     "ratio": 1.13011,
+     "model_ratio": 1.14886
     },
     "haas": {
-     "lap1990": 79.555,
-     "lap1990_race": 83.204,
+     "lap1990": 79.774,
+     "lap1990_race": 83.435,
      "lap2026": 70.52,
-     "ratio": 1.12812,
-     "model_ratio": 1.15595
+     "ratio": 1.13123,
+     "model_ratio": 1.15402
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.10811,
-    "median_model_ratio": 1.14075,
+    "median_ratio": 1.1116,
+    "median_model_ratio": 1.13921,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 75.312
+     "lap": 75.556
     },
     "fastest_2026": 69.5,
     "variation": "medium",
@@ -219,104 +219,104 @@
   "imola": {
    "cars": {
     "mclaren": {
-     "lap1990": 83.208,
-     "lap1990_race": 86.706,
+     "lap1990": 83.197,
+     "lap1990_race": 86.69,
      "lap2026": 76.479,
-     "ratio": 1.08799,
-     "model_ratio": 1.10256
+     "ratio": 1.08784,
+     "model_ratio": 1.1013
     },
     "ferrari": {
-     "lap1990": 82.374,
-     "lap1990_race": 86.061,
+     "lap1990": 82.342,
+     "lap1990_race": 86.036,
      "lap2026": 77.397,
-     "ratio": 1.06431,
-     "model_ratio": 1.09549
+     "ratio": 1.06389,
+     "model_ratio": 1.09462
     },
     "williams": {
-     "lap1990": 84.417,
-     "lap1990_race": 87.965,
+     "lap1990": 84.382,
+     "lap1990_race": 87.933,
      "lap2026": 76.672,
-     "ratio": 1.10102,
-     "model_ratio": 1.11369
+     "ratio": 1.10056,
+     "model_ratio": 1.11283
     },
     "lotus": {
-     "lap1990": 84.595,
-     "lap1990_race": 88.309,
+     "lap1990": 84.531,
+     "lap1990_race": 88.277,
      "lap2026": 77.282,
-     "ratio": 1.09463,
-     "model_ratio": 1.10813
+     "ratio": 1.0938,
+     "model_ratio": 1.10707
     },
     "mercedes": {
-     "lap1990": 85.302,
-     "lap1990_race": 88.79,
+     "lap1990": 85.247,
+     "lap1990_race": 88.712,
      "lap2026": 77.043,
-     "ratio": 1.1072,
-     "model_ratio": 1.1315
+     "ratio": 1.10649,
+     "model_ratio": 1.13047
     },
     "redbull": {
-     "lap1990": 85.045,
-     "lap1990_race": 88.604,
+     "lap1990": 85.0,
+     "lap1990_race": 88.526,
      "lap2026": 76.636,
-     "ratio": 1.10974,
-     "model_ratio": 1.12437
+     "ratio": 1.10914,
+     "model_ratio": 1.1234
     },
     "force_india": {
-     "lap1990": 85.9,
-     "lap1990_race": 89.489,
+     "lap1990": 85.845,
+     "lap1990_race": 89.405,
      "lap2026": 77.645,
-     "ratio": 1.10632,
-     "model_ratio": 1.12067
+     "ratio": 1.10562,
+     "model_ratio": 1.1194
     },
     "myteam_ferrari": {
-     "lap1990": 84.102,
-     "lap1990_race": 87.82,
+     "lap1990": 84.072,
+     "lap1990_race": 87.76,
      "lap2026": 77.595,
-     "ratio": 1.08387,
-     "model_ratio": 1.11006
+     "ratio": 1.08348,
+     "model_ratio": 1.10892
     },
     "sauber": {
-     "lap1990": 87.046,
-     "lap1990_race": 90.428,
+     "lap1990": 86.958,
+     "lap1990_race": 90.358,
      "lap2026": 77.706,
-     "ratio": 1.1202,
-     "model_ratio": 1.1322
+     "ratio": 1.11907,
+     "model_ratio": 1.1308
     },
     "toro_rosso": {
-     "lap1990": 85.94,
-     "lap1990_race": 89.431,
+     "lap1990": 85.87,
+     "lap1990_race": 89.39,
      "lap2026": 77.264,
-     "ratio": 1.11229,
-     "model_ratio": 1.13059
+     "ratio": 1.11138,
+     "model_ratio": 1.12948
     },
     "gm_cadillac": {
-     "lap1990": 86.06,
-     "lap1990_race": 89.545,
+     "lap1990": 85.985,
+     "lap1990_race": 89.467,
      "lap2026": 78.04,
-     "ratio": 1.10277,
-     "model_ratio": 1.12037
+     "ratio": 1.10181,
+     "model_ratio": 1.11886
     },
     "myteam_honda": {
-     "lap1990": 86.792,
-     "lap1990_race": 90.165,
+     "lap1990": 86.729,
+     "lap1990_race": 90.092,
      "lap2026": 77.595,
-     "ratio": 1.11853,
-     "model_ratio": 1.13134
+     "ratio": 1.11772,
+     "model_ratio": 1.12965
     },
     "haas": {
-     "lap1990": 87.347,
-     "lap1990_race": 90.8,
+     "lap1990": 87.277,
+     "lap1990_race": 90.678,
      "lap2026": 77.672,
-     "ratio": 1.12456,
-     "model_ratio": 1.13839
+     "ratio": 1.12366,
+     "model_ratio": 1.13661
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.10632,
-    "median_model_ratio": 1.12067,
+    "median_ratio": 1.10562,
+    "median_model_ratio": 1.1194,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 82.374
+     "lap": 82.342
     },
     "fastest_2026": 76.479,
     "variation": "medium",
@@ -326,104 +326,104 @@
   "monaco": {
    "cars": {
     "mclaren": {
-     "lap1990": 75.528,
-     "lap1990_race": 80.394,
+     "lap1990": 78.307,
+     "lap1990_race": 83.426,
      "lap2026": 68.596,
-     "ratio": 1.10105,
-     "model_ratio": 1.07266
+     "ratio": 1.14157,
+     "model_ratio": 1.07078
     },
     "ferrari": {
-     "lap1990": 74.969,
-     "lap1990_race": 79.697,
+     "lap1990": 77.906,
+     "lap1990_race": 82.881,
      "lap2026": 68.993,
-     "ratio": 1.08663,
-     "model_ratio": 1.06771
+     "ratio": 1.12919,
+     "model_ratio": 1.06571
     },
     "williams": {
-     "lap1990": 76.187,
-     "lap1990_race": 80.994,
+     "lap1990": 79.145,
+     "lap1990_race": 84.193,
      "lap2026": 68.812,
-     "ratio": 1.10717,
-     "model_ratio": 1.0794
+     "ratio": 1.15016,
+     "model_ratio": 1.07735
     },
     "lotus": {
-     "lap1990": 76.445,
-     "lap1990_race": 81.309,
+     "lap1990": 79.452,
+     "lap1990_race": 84.558,
      "lap2026": 69.233,
-     "ratio": 1.10417,
-     "model_ratio": 1.07738
+     "ratio": 1.14761,
+     "model_ratio": 1.07515
     },
     "mercedes": {
-     "lap1990": 76.361,
-     "lap1990_race": 81.034,
+     "lap1990": 79.315,
+     "lap1990_race": 84.228,
      "lap2026": 68.63,
-     "ratio": 1.11265,
-     "model_ratio": 1.08751
+     "ratio": 1.15569,
+     "model_ratio": 1.0851
     },
     "redbull": {
-     "lap1990": 76.434,
-     "lap1990_race": 81.169,
+     "lap1990": 79.357,
+     "lap1990_race": 84.397,
      "lap2026": 68.704,
-     "ratio": 1.11251,
-     "model_ratio": 1.087
+     "ratio": 1.15506,
+     "model_ratio": 1.08518
     },
     "force_india": {
-     "lap1990": 77.135,
-     "lap1990_race": 81.933,
+     "lap1990": 80.039,
+     "lap1990_race": 85.073,
      "lap2026": 69.511,
-     "ratio": 1.10968,
-     "model_ratio": 1.08466
+     "ratio": 1.15146,
+     "model_ratio": 1.08261
     },
     "myteam_ferrari": {
-     "lap1990": 76.151,
-     "lap1990_race": 80.939,
+     "lap1990": 79.066,
+     "lap1990_race": 84.073,
      "lap2026": 69.431,
-     "ratio": 1.09678,
-     "model_ratio": 1.07237
+     "ratio": 1.13877,
+     "model_ratio": 1.07041
     },
     "sauber": {
-     "lap1990": 77.532,
-     "lap1990_race": 82.283,
+     "lap1990": 80.427,
+     "lap1990_race": 85.422,
      "lap2026": 69.41,
-     "ratio": 1.11701,
-     "model_ratio": 1.0913
+     "ratio": 1.15872,
+     "model_ratio": 1.08902
     },
     "toro_rosso": {
-     "lap1990": 76.607,
-     "lap1990_race": 81.212,
+     "lap1990": 79.508,
+     "lap1990_race": 84.372,
      "lap2026": 69.046,
-     "ratio": 1.10951,
-     "model_ratio": 1.08635
+     "ratio": 1.15151,
+     "model_ratio": 1.08438
     },
     "gm_cadillac": {
-     "lap1990": 77.032,
-     "lap1990_race": 81.793,
+     "lap1990": 79.883,
+     "lap1990_race": 84.891,
      "lap2026": 69.62,
-     "ratio": 1.10648,
-     "model_ratio": 1.07988
+     "ratio": 1.14742,
+     "model_ratio": 1.07745
     },
     "myteam_honda": {
-     "lap1990": 77.365,
-     "lap1990_race": 82.062,
+     "lap1990": 80.23,
+     "lap1990_race": 85.181,
      "lap2026": 69.42,
-     "ratio": 1.11444,
-     "model_ratio": 1.08744
+     "ratio": 1.15571,
+     "model_ratio": 1.08552
     },
     "haas": {
-     "lap1990": 77.772,
-     "lap1990_race": 82.554,
+     "lap1990": 80.727,
+     "lap1990_race": 85.736,
      "lap2026": 69.306,
-     "ratio": 1.12215,
-     "model_ratio": 1.09487
+     "ratio": 1.16478,
+     "model_ratio": 1.09306
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.10951,
-    "median_model_ratio": 1.08466,
+    "median_ratio": 1.15146,
+    "median_model_ratio": 1.08261,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 74.969
+     "lap": 77.906
     },
     "fastest_2026": 68.596,
     "variation": "very_high",
@@ -433,104 +433,104 @@
   "montreal": {
    "cars": {
     "mclaren": {
-     "lap1990": 76.525,
-     "lap1990_race": 80.458,
+     "lap1990": 77.349,
+     "lap1990_race": 81.339,
      "lap2026": 71.19,
-     "ratio": 1.07495,
-     "model_ratio": 1.07832
+     "ratio": 1.08651,
+     "model_ratio": 1.07786
     },
     "ferrari": {
-     "lap1990": 75.772,
-     "lap1990_race": 79.725,
+     "lap1990": 76.574,
+     "lap1990_race": 80.597,
      "lap2026": 71.686,
-     "ratio": 1.05699,
-     "model_ratio": 1.07024
+     "ratio": 1.06818,
+     "model_ratio": 1.06958
     },
     "williams": {
-     "lap1990": 77.625,
-     "lap1990_race": 81.464,
+     "lap1990": 78.427,
+     "lap1990_race": 82.327,
      "lap2026": 71.379,
-     "ratio": 1.08751,
-     "model_ratio": 1.09036
+     "ratio": 1.09874,
+     "model_ratio": 1.08966
     },
     "lotus": {
-     "lap1990": 77.588,
-     "lap1990_race": 81.45,
+     "lap1990": 78.364,
+     "lap1990_race": 82.287,
      "lap2026": 71.723,
-     "ratio": 1.08177,
-     "model_ratio": 1.08721
+     "ratio": 1.09259,
+     "model_ratio": 1.08652
     },
     "mercedes": {
-     "lap1990": 78.134,
-     "lap1990_race": 81.84,
+     "lap1990": 78.906,
+     "lap1990_race": 82.686,
      "lap2026": 71.075,
-     "ratio": 1.09932,
-     "model_ratio": 1.10332
+     "ratio": 1.11018,
+     "model_ratio": 1.10248
     },
     "redbull": {
-     "lap1990": 77.976,
-     "lap1990_race": 81.726,
+     "lap1990": 78.752,
+     "lap1990_race": 82.565,
      "lap2026": 71.207,
-     "ratio": 1.09507,
-     "model_ratio": 1.09873
+     "ratio": 1.10597,
+     "model_ratio": 1.0979
     },
     "force_india": {
-     "lap1990": 78.675,
-     "lap1990_race": 82.511,
+     "lap1990": 79.443,
+     "lap1990_race": 83.38,
      "lap2026": 72.091,
-     "ratio": 1.09132,
-     "model_ratio": 1.09681
+     "ratio": 1.10198,
+     "model_ratio": 1.09576
     },
     "myteam_ferrari": {
-     "lap1990": 77.454,
-     "lap1990_race": 81.257,
+     "lap1990": 78.215,
+     "lap1990_race": 82.125,
      "lap2026": 71.92,
-     "ratio": 1.07695,
-     "model_ratio": 1.08528
+     "ratio": 1.08753,
+     "model_ratio": 1.08443
     },
     "sauber": {
-     "lap1990": 79.286,
-     "lap1990_race": 83.027,
+     "lap1990": 80.046,
+     "lap1990_race": 83.857,
      "lap2026": 72.185,
-     "ratio": 1.09838,
-     "model_ratio": 1.10303
+     "ratio": 1.10891,
+     "model_ratio": 1.10205
     },
     "toro_rosso": {
-     "lap1990": 78.499,
-     "lap1990_race": 82.239,
+     "lap1990": 79.266,
+     "lap1990_race": 83.076,
      "lap2026": 71.796,
-     "ratio": 1.09336,
-     "model_ratio": 1.10258
+     "ratio": 1.10404,
+     "model_ratio": 1.10166
     },
     "gm_cadillac": {
-     "lap1990": 78.646,
-     "lap1990_race": 82.398,
+     "lap1990": 79.396,
+     "lap1990_race": 83.219,
      "lap2026": 72.251,
-     "ratio": 1.0885,
-     "model_ratio": 1.0943
+     "ratio": 1.09888,
+     "model_ratio": 1.0933
     },
     "myteam_honda": {
-     "lap1990": 79.375,
-     "lap1990_race": 83.048,
+     "lap1990": 80.107,
+     "lap1990_race": 83.823,
      "lap2026": 72.023,
-     "ratio": 1.10207,
-     "model_ratio": 1.10417
+     "ratio": 1.11224,
+     "model_ratio": 1.10323
     },
     "haas": {
-     "lap1990": 79.512,
-     "lap1990_race": 83.277,
+     "lap1990": 80.255,
+     "lap1990_race": 84.082,
      "lap2026": 71.89,
-     "ratio": 1.10603,
-     "model_ratio": 1.10858
+     "ratio": 1.11636,
+     "model_ratio": 1.1077
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.09132,
-    "median_model_ratio": 1.09681,
+    "median_ratio": 1.10198,
+    "median_model_ratio": 1.09576,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 75.772
+     "lap": 76.574
     },
     "fastest_2026": 71.075,
     "variation": "low",
@@ -540,104 +540,104 @@
   "mexico": {
    "cars": {
     "mclaren": {
-     "lap1990": 83.413,
-     "lap1990_race": 87.655,
+     "lap1990": 83.928,
+     "lap1990_race": 88.216,
      "lap2026": 76.766,
-     "ratio": 1.08659,
-     "model_ratio": 1.09826
+     "ratio": 1.09329,
+     "model_ratio": 1.09683
     },
     "ferrari": {
-     "lap1990": 83.164,
-     "lap1990_race": 87.363,
+     "lap1990": 83.706,
+     "lap1990_race": 87.94,
      "lap2026": 77.271,
-     "ratio": 1.07626,
-     "model_ratio": 1.06212
+     "ratio": 1.08329,
+     "model_ratio": 1.05983
     },
     "williams": {
-     "lap1990": 84.62,
-     "lap1990_race": 88.729,
+     "lap1990": 85.143,
+     "lap1990_race": 89.277,
      "lap2026": 77.353,
-     "ratio": 1.09395,
-     "model_ratio": 1.10902
+     "ratio": 1.10071,
+     "model_ratio": 1.10638
     },
     "lotus": {
-     "lap1990": 84.56,
-     "lap1990_race": 88.738,
+     "lap1990": 85.068,
+     "lap1990_race": 89.27,
      "lap2026": 77.322,
-     "ratio": 1.0936,
-     "model_ratio": 1.10511
+     "ratio": 1.10018,
+     "model_ratio": 1.10238
     },
     "mercedes": {
-     "lap1990": 85.27,
-     "lap1990_race": 89.367,
+     "lap1990": 85.767,
+     "lap1990_race": 89.918,
      "lap2026": 77.278,
-     "ratio": 1.10342,
-     "model_ratio": 1.12377
+     "ratio": 1.10985,
+     "model_ratio": 1.12136
     },
     "redbull": {
-     "lap1990": 85.235,
-     "lap1990_race": 89.346,
+     "lap1990": 85.755,
+     "lap1990_race": 89.884,
      "lap2026": 77.41,
-     "ratio": 1.10109,
-     "model_ratio": 1.11859
+     "ratio": 1.10781,
+     "model_ratio": 1.11662
     },
     "force_india": {
-     "lap1990": 85.73,
-     "lap1990_race": 89.866,
+     "lap1990": 86.215,
+     "lap1990_race": 90.374,
      "lap2026": 77.819,
-     "ratio": 1.10165,
-     "model_ratio": 1.11572
+     "ratio": 1.10789,
+     "model_ratio": 1.11387
     },
     "myteam_ferrari": {
-     "lap1990": 84.504,
-     "lap1990_race": 88.616,
+     "lap1990": 84.971,
+     "lap1990_race": 89.124,
      "lap2026": 77.624,
-     "ratio": 1.08864,
-     "model_ratio": 1.07364
+     "ratio": 1.09465,
+     "model_ratio": 1.07154
     },
     "sauber": {
-     "lap1990": 86.655,
-     "lap1990_race": 90.685,
+     "lap1990": 87.133,
+     "lap1990_race": 91.181,
      "lap2026": 77.801,
-     "ratio": 1.11381,
-     "model_ratio": 1.09967
+     "ratio": 1.11995,
+     "model_ratio": 1.09756
     },
     "toro_rosso": {
-     "lap1990": 85.632,
-     "lap1990_race": 89.558,
+     "lap1990": 86.06,
+     "lap1990_race": 90.008,
      "lap2026": 77.255,
-     "ratio": 1.10844,
-     "model_ratio": 1.09043
+     "ratio": 1.11398,
+     "model_ratio": 1.08824
     },
     "gm_cadillac": {
-     "lap1990": 85.688,
-     "lap1990_race": 89.778,
+     "lap1990": 86.14,
+     "lap1990_race": 90.237,
      "lap2026": 77.937,
-     "ratio": 1.09945,
-     "model_ratio": 1.08631
+     "ratio": 1.10525,
+     "model_ratio": 1.08434
     },
     "myteam_honda": {
-     "lap1990": 86.393,
-     "lap1990_race": 90.345,
+     "lap1990": 86.855,
+     "lap1990_race": 90.837,
      "lap2026": 77.593,
-     "ratio": 1.11342,
-     "model_ratio": 1.08944
+     "ratio": 1.11936,
+     "model_ratio": 1.08735
     },
     "haas": {
-     "lap1990": 86.68,
-     "lap1990_race": 90.733,
+     "lap1990": 87.17,
+     "lap1990_race": 91.259,
      "lap2026": 77.458,
-     "ratio": 1.11905,
-     "model_ratio": 1.09783
+     "ratio": 1.12538,
+     "model_ratio": 1.09566
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.10109,
-    "median_model_ratio": 1.09826,
+    "median_ratio": 1.10781,
+    "median_model_ratio": 1.09683,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 83.164
+     "lap": 83.706
     },
     "fastest_2026": 76.766,
     "variation": "high",
@@ -647,104 +647,104 @@
   "austria": {
    "cars": {
     "mclaren": {
-     "lap1990": 72.222,
-     "lap1990_race": 75.679,
+     "lap1990": 72.762,
+     "lap1990_race": 76.258,
      "lap2026": 66.988,
-     "ratio": 1.07812,
-     "model_ratio": 1.10264
+     "ratio": 1.08618,
+     "model_ratio": 1.10245
     },
     "ferrari": {
-     "lap1990": 71.437,
-     "lap1990_race": 74.92,
+     "lap1990": 71.95,
+     "lap1990_race": 75.488,
      "lap2026": 67.597,
-     "ratio": 1.05681,
-     "model_ratio": 1.09252
+     "ratio": 1.06441,
+     "model_ratio": 1.09185
     },
     "williams": {
-     "lap1990": 73.288,
-     "lap1990_race": 76.659,
+     "lap1990": 73.831,
+     "lap1990_race": 77.231,
      "lap2026": 67.196,
-     "ratio": 1.09066,
-     "model_ratio": 1.11522
+     "ratio": 1.09874,
+     "model_ratio": 1.11454
     },
     "lotus": {
-     "lap1990": 73.108,
-     "lap1990_race": 76.514,
+     "lap1990": 73.64,
+     "lap1990_race": 77.086,
      "lap2026": 67.498,
-     "ratio": 1.0831,
-     "model_ratio": 1.11122
+     "ratio": 1.09099,
+     "model_ratio": 1.11053
     },
     "mercedes": {
-     "lap1990": 74.055,
-     "lap1990_race": 77.28,
+     "lap1990": 74.56,
+     "lap1990_race": 77.835,
      "lap2026": 66.999,
-     "ratio": 1.10532,
-     "model_ratio": 1.13051
+     "ratio": 1.11285,
+     "model_ratio": 1.12967
     },
     "redbull": {
-     "lap1990": 73.794,
-     "lap1990_race": 77.08,
+     "lap1990": 74.312,
+     "lap1990_race": 77.649,
      "lap2026": 67.138,
-     "ratio": 1.09915,
-     "model_ratio": 1.12495
+     "ratio": 1.10686,
+     "model_ratio": 1.12421
     },
     "force_india": {
-     "lap1990": 74.374,
-     "lap1990_race": 77.738,
+     "lap1990": 74.883,
+     "lap1990_race": 78.309,
      "lap2026": 67.957,
-     "ratio": 1.09443,
-     "model_ratio": 1.1212
+     "ratio": 1.10192,
+     "model_ratio": 1.12048
     },
     "myteam_ferrari": {
-     "lap1990": 73.175,
-     "lap1990_race": 76.53,
+     "lap1990": 73.764,
+     "lap1990_race": 77.181,
      "lap2026": 67.815,
-     "ratio": 1.07903,
-     "model_ratio": 1.10867
+     "ratio": 1.08771,
+     "model_ratio": 1.10786
     },
     "sauber": {
-     "lap1990": 75.006,
-     "lap1990_race": 78.28,
+     "lap1990": 75.5,
+     "lap1990_race": 78.832,
      "lap2026": 68.011,
-     "ratio": 1.10286,
-     "model_ratio": 1.12559
+     "ratio": 1.11012,
+     "model_ratio": 1.12446
     },
     "toro_rosso": {
-     "lap1990": 74.337,
-     "lap1990_race": 77.59,
+     "lap1990": 74.848,
+     "lap1990_race": 78.14,
      "lap2026": 67.62,
-     "ratio": 1.09934,
-     "model_ratio": 1.12851
+     "ratio": 1.10688,
+     "model_ratio": 1.12752
     },
     "gm_cadillac": {
-     "lap1990": 74.327,
-     "lap1990_race": 77.624,
+     "lap1990": 74.81,
+     "lap1990_race": 78.167,
      "lap2026": 68.104,
-     "ratio": 1.09137,
-     "model_ratio": 1.11729
+     "ratio": 1.09846,
+     "model_ratio": 1.11629
     },
     "myteam_honda": {
-     "lap1990": 75.142,
-     "lap1990_race": 78.338,
+     "lap1990": 75.658,
+     "lap1990_race": 78.934,
      "lap2026": 67.91,
-     "ratio": 1.10649,
-     "model_ratio": 1.12853
+     "ratio": 1.1141,
+     "model_ratio": 1.1275
     },
     "haas": {
-     "lap1990": 75.18,
-     "lap1990_race": 78.412,
+     "lap1990": 75.661,
+     "lap1990_race": 78.965,
      "lap2026": 67.715,
-     "ratio": 1.11024,
-     "model_ratio": 1.13161
+     "ratio": 1.11734,
+     "model_ratio": 1.131
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.09443,
-    "median_model_ratio": 1.1212,
+    "median_ratio": 1.10192,
+    "median_model_ratio": 1.12048,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 71.437
+     "lap": 71.95
     },
     "fastest_2026": 66.988,
     "variation": "low",
@@ -754,104 +754,104 @@
   "silverstone": {
    "cars": {
     "mclaren": {
-     "lap1990": 98.582,
-     "lap1990_race": 103.163,
+     "lap1990": 98.526,
+     "lap1990_race": 103.052,
      "lap2026": 89.17,
-     "ratio": 1.10555,
-     "model_ratio": 1.10164
+     "ratio": 1.10493,
+     "model_ratio": 1.10017
     },
     "ferrari": {
-     "lap1990": 97.477,
-     "lap1990_race": 101.64,
+     "lap1990": 97.394,
+     "lap1990_race": 101.471,
      "lap2026": 90.433,
-     "ratio": 1.0779,
-     "model_ratio": 1.10047
+     "ratio": 1.07698,
+     "model_ratio": 1.09888
     },
     "williams": {
-     "lap1990": 100.13,
-     "lap1990_race": 104.493,
+     "lap1990": 100.038,
+     "lap1990_race": 104.35,
      "lap2026": 89.368,
-     "ratio": 1.12042,
-     "model_ratio": 1.11695
+     "ratio": 1.11939,
+     "model_ratio": 1.11493
     },
     "lotus": {
-     "lap1990": 99.99,
-     "lap1990_race": 104.614,
+     "lap1990": 99.891,
+     "lap1990_race": 104.464,
      "lap2026": 89.848,
-     "ratio": 1.11288,
-     "model_ratio": 1.10679
+     "ratio": 1.11178,
+     "model_ratio": 1.10475
     },
     "mercedes": {
-     "lap1990": 100.939,
-     "lap1990_race": 105.418,
+     "lap1990": 100.839,
+     "lap1990_race": 105.263,
      "lap2026": 89.998,
-     "ratio": 1.12156,
-     "model_ratio": 1.13617
+     "ratio": 1.12046,
+     "model_ratio": 1.13421
     },
     "redbull": {
-     "lap1990": 100.808,
-     "lap1990_race": 105.132,
+     "lap1990": 100.715,
+     "lap1990_race": 104.965,
      "lap2026": 89.209,
-     "ratio": 1.13002,
-     "model_ratio": 1.13051
+     "ratio": 1.12898,
+     "model_ratio": 1.12843
     },
     "force_india": {
-     "lap1990": 101.775,
-     "lap1990_race": 106.108,
+     "lap1990": 101.677,
+     "lap1990_race": 105.956,
      "lap2026": 90.473,
-     "ratio": 1.12492,
-     "model_ratio": 1.12051
+     "ratio": 1.12384,
+     "model_ratio": 1.11853
     },
     "myteam_ferrari": {
-     "lap1990": 99.721,
-     "lap1990_race": 104.12,
+     "lap1990": 99.63,
+     "lap1990_race": 103.974,
      "lap2026": 90.437,
-     "ratio": 1.10266,
-     "model_ratio": 1.11497
+     "ratio": 1.10165,
+     "model_ratio": 1.11279
     },
     "sauber": {
-     "lap1990": 102.881,
-     "lap1990_race": 106.999,
+     "lap1990": 102.711,
+     "lap1990_race": 106.8,
      "lap2026": 90.549,
-     "ratio": 1.1362,
-     "model_ratio": 1.13343
+     "ratio": 1.13432,
+     "model_ratio": 1.13174
     },
     "toro_rosso": {
-     "lap1990": 101.437,
-     "lap1990_race": 105.743,
+     "lap1990": 101.318,
+     "lap1990_race": 105.555,
      "lap2026": 89.842,
-     "ratio": 1.12907,
-     "model_ratio": 1.13002
+     "ratio": 1.12774,
+     "model_ratio": 1.12793
     },
     "gm_cadillac": {
-     "lap1990": 102.068,
-     "lap1990_race": 106.199,
+     "lap1990": 101.87,
+     "lap1990_race": 105.998,
      "lap2026": 90.9,
-     "ratio": 1.12287,
-     "model_ratio": 1.12154
+     "ratio": 1.12069,
+     "model_ratio": 1.11982
     },
     "myteam_honda": {
-     "lap1990": 103.556,
-     "lap1990_race": 107.497,
+     "lap1990": 103.385,
+     "lap1990_race": 107.296,
      "lap2026": 90.437,
-     "ratio": 1.14506,
-     "model_ratio": 1.13106
+     "ratio": 1.14317,
+     "model_ratio": 1.12908
     },
     "haas": {
-     "lap1990": 103.603,
-     "lap1990_race": 107.601,
+     "lap1990": 103.428,
+     "lap1990_race": 107.381,
      "lap2026": 90.806,
-     "ratio": 1.14094,
-     "model_ratio": 1.13594
+     "ratio": 1.139,
+     "model_ratio": 1.13404
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.12287,
-    "median_model_ratio": 1.12154,
+    "median_ratio": 1.12069,
+    "median_model_ratio": 1.11982,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 97.477
+     "lap": 97.394
     },
     "fastest_2026": 89.17,
     "variation": "medium",
@@ -861,104 +861,104 @@
   "shanghai": {
    "cars": {
     "mclaren": {
-     "lap1990": 101.649,
-     "lap1990_race": 107.184,
+     "lap1990": 102.623,
+     "lap1990_race": 108.207,
      "lap2026": 92.473,
-     "ratio": 1.09922,
-     "model_ratio": 1.08543
+     "ratio": 1.10976,
+     "model_ratio": 1.08385
     },
     "ferrari": {
-     "lap1990": 100.616,
-     "lap1990_race": 106.206,
+     "lap1990": 101.507,
+     "lap1990_race": 107.13,
      "lap2026": 93.658,
-     "ratio": 1.07429,
-     "model_ratio": 1.07666
+     "ratio": 1.0838,
+     "model_ratio": 1.07518
     },
     "williams": {
-     "lap1990": 102.985,
-     "lap1990_race": 108.397,
+     "lap1990": 103.883,
+     "lap1990_race": 109.35,
      "lap2026": 92.787,
-     "ratio": 1.10991,
-     "model_ratio": 1.09587
+     "ratio": 1.11958,
+     "model_ratio": 1.09407
     },
     "lotus": {
-     "lap1990": 102.962,
-     "lap1990_race": 108.497,
+     "lap1990": 103.836,
+     "lap1990_race": 109.42,
      "lap2026": 93.244,
-     "ratio": 1.10422,
-     "model_ratio": 1.09046
+     "ratio": 1.11359,
+     "model_ratio": 1.08873
     },
     "mercedes": {
-     "lap1990": 103.589,
-     "lap1990_race": 108.918,
+     "lap1990": 104.503,
+     "lap1990_race": 109.888,
      "lap2026": 92.922,
-     "ratio": 1.11479,
-     "model_ratio": 1.10816
+     "ratio": 1.12463,
+     "model_ratio": 1.10629
     },
     "redbull": {
-     "lap1990": 103.472,
-     "lap1990_race": 108.822,
+     "lap1990": 104.406,
+     "lap1990_race": 109.8,
      "lap2026": 92.572,
-     "ratio": 1.11774,
-     "model_ratio": 1.10434
+     "ratio": 1.12783,
+     "model_ratio": 1.1028
     },
     "force_india": {
-     "lap1990": 104.372,
-     "lap1990_race": 109.78,
+     "lap1990": 105.284,
+     "lap1990_race": 110.75,
      "lap2026": 93.719,
-     "ratio": 1.11368,
-     "model_ratio": 1.1012
+     "ratio": 1.12341,
+     "model_ratio": 1.09931
     },
     "myteam_ferrari": {
-     "lap1990": 102.542,
-     "lap1990_race": 108.032,
+     "lap1990": 103.443,
+     "lap1990_race": 108.999,
      "lap2026": 93.591,
-     "ratio": 1.09564,
-     "model_ratio": 1.08962
+     "ratio": 1.10527,
+     "model_ratio": 1.08786
     },
     "sauber": {
-     "lap1990": 105.073,
-     "lap1990_race": 110.258,
+     "lap1990": 105.959,
+     "lap1990_race": 111.187,
      "lap2026": 93.624,
-     "ratio": 1.12229,
-     "model_ratio": 1.1127
+     "ratio": 1.13174,
+     "model_ratio": 1.11042
     },
     "toro_rosso": {
-     "lap1990": 103.822,
-     "lap1990_race": 109.081,
+     "lap1990": 104.737,
+     "lap1990_race": 110.028,
      "lap2026": 93.034,
-     "ratio": 1.11596,
-     "model_ratio": 1.10704
+     "ratio": 1.12579,
+     "model_ratio": 1.1048
     },
     "gm_cadillac": {
-     "lap1990": 104.276,
-     "lap1990_race": 109.429,
+     "lap1990": 105.179,
+     "lap1990_race": 110.379,
      "lap2026": 93.941,
-     "ratio": 1.11002,
-     "model_ratio": 1.10086
+     "ratio": 1.11964,
+     "model_ratio": 1.09863
     },
     "myteam_honda": {
-     "lap1990": 105.367,
-     "lap1990_race": 110.533,
+     "lap1990": 106.27,
+     "lap1990_race": 111.486,
      "lap2026": 93.591,
-     "ratio": 1.12582,
-     "model_ratio": 1.11045
+     "ratio": 1.13547,
+     "model_ratio": 1.10822
     },
     "haas": {
-     "lap1990": 105.561,
-     "lap1990_race": 110.848,
+     "lap1990": 106.452,
+     "lap1990_race": 111.769,
      "lap2026": 93.682,
-     "ratio": 1.1268,
-     "model_ratio": 1.1175
+     "ratio": 1.13631,
+     "model_ratio": 1.1154
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.11368,
-    "median_model_ratio": 1.1012,
+    "median_ratio": 1.12341,
+    "median_model_ratio": 1.09931,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 100.616
+     "lap": 101.507
     },
     "fastest_2026": 92.473,
     "variation": "medium",
@@ -968,104 +968,104 @@
   "hungaroring": {
    "cars": {
     "mclaren": {
-     "lap1990": 85.281,
-     "lap1990_race": 90.483,
+     "lap1990": 85.163,
+     "lap1990_race": 90.315,
      "lap2026": 76.676,
-     "ratio": 1.11223,
-     "model_ratio": 1.11485
+     "ratio": 1.1107,
+     "model_ratio": 1.11294
     },
     "ferrari": {
-     "lap1990": 84.11,
-     "lap1990_race": 89.375,
+     "lap1990": 84.003,
+     "lap1990_race": 89.222,
      "lap2026": 77.169,
-     "ratio": 1.08995,
-     "model_ratio": 1.07065
+     "ratio": 1.08856,
+     "model_ratio": 1.06794
     },
     "williams": {
-     "lap1990": 86.349,
-     "lap1990_race": 91.429,
+     "lap1990": 86.23,
+     "lap1990_race": 91.276,
      "lap2026": 77.258,
-     "ratio": 1.11767,
-     "model_ratio": 1.12285
+     "ratio": 1.11612,
+     "model_ratio": 1.12035
     },
     "lotus": {
-     "lap1990": 85.985,
-     "lap1990_race": 91.117,
+     "lap1990": 85.867,
+     "lap1990_race": 90.981,
      "lap2026": 77.077,
-     "ratio": 1.11558,
-     "model_ratio": 1.11869
+     "ratio": 1.11405,
+     "model_ratio": 1.11545
     },
     "mercedes": {
-     "lap1990": 86.769,
-     "lap1990_race": 91.782,
+     "lap1990": 86.6,
+     "lap1990_race": 91.6,
      "lap2026": 76.989,
-     "ratio": 1.12703,
-     "model_ratio": 1.13807
+     "ratio": 1.12483,
+     "model_ratio": 1.13506
     },
     "redbull": {
-     "lap1990": 86.669,
-     "lap1990_race": 91.729,
+     "lap1990": 86.517,
+     "lap1990_race": 91.547,
      "lap2026": 77.185,
-     "ratio": 1.12287,
-     "model_ratio": 1.13043
+     "ratio": 1.12091,
+     "model_ratio": 1.12749
     },
     "force_india": {
-     "lap1990": 87.396,
-     "lap1990_race": 92.461,
+     "lap1990": 87.281,
+     "lap1990_race": 92.297,
      "lap2026": 77.869,
-     "ratio": 1.12235,
-     "model_ratio": 1.12577
+     "ratio": 1.12087,
+     "model_ratio": 1.12329
     },
     "myteam_ferrari": {
-     "lap1990": 85.881,
-     "lap1990_race": 90.959,
+     "lap1990": 85.732,
+     "lap1990_race": 90.791,
      "lap2026": 77.73,
-     "ratio": 1.10487,
-     "model_ratio": 1.08176
+     "ratio": 1.10296,
+     "model_ratio": 1.07923
     },
     "sauber": {
-     "lap1990": 87.732,
-     "lap1990_race": 92.659,
+     "lap1990": 87.571,
+     "lap1990_race": 92.498,
      "lap2026": 77.503,
-     "ratio": 1.13199,
-     "model_ratio": 1.10342
+     "ratio": 1.12991,
+     "model_ratio": 1.10071
     },
     "toro_rosso": {
-     "lap1990": 86.911,
-     "lap1990_race": 91.778,
+     "lap1990": 86.766,
+     "lap1990_race": 91.627,
      "lap2026": 77.248,
-     "ratio": 1.12509,
-     "model_ratio": 1.10125
+     "ratio": 1.12322,
+     "model_ratio": 1.09862
     },
     "gm_cadillac": {
-     "lap1990": 87.378,
-     "lap1990_race": 92.291,
+     "lap1990": 87.179,
+     "lap1990_race": 92.063,
      "lap2026": 78.056,
-     "ratio": 1.11943,
-     "model_ratio": 1.092
+     "ratio": 1.11687,
+     "model_ratio": 1.08893
     },
     "myteam_honda": {
-     "lap1990": 88.177,
-     "lap1990_race": 92.966,
+     "lap1990": 87.995,
+     "lap1990_race": 92.768,
      "lap2026": 77.713,
-     "ratio": 1.13464,
-     "model_ratio": 1.1025
+     "ratio": 1.1323,
+     "model_ratio": 1.09931
     },
     "haas": {
-     "lap1990": 88.394,
-     "lap1990_race": 93.306,
+     "lap1990": 88.201,
+     "lap1990_race": 93.071,
      "lap2026": 77.53,
-     "ratio": 1.14013,
-     "model_ratio": 1.10824
+     "ratio": 1.13764,
+     "model_ratio": 1.10542
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.12235,
-    "median_model_ratio": 1.10824,
+    "median_ratio": 1.12087,
+    "median_model_ratio": 1.10542,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 84.11
+     "lap": 84.003
     },
     "fastest_2026": 76.676,
     "variation": "high",
@@ -1075,104 +1075,104 @@
   "spa_francorchamps": {
    "cars": {
     "mclaren": {
-     "lap1990": 115.67,
-     "lap1990_race": 120.842,
+     "lap1990": 116.48,
+     "lap1990_race": 121.711,
      "lap2026": 106.024,
-     "ratio": 1.09098,
-     "model_ratio": 1.06825
+     "ratio": 1.09861,
+     "model_ratio": 1.06719
     },
     "ferrari": {
-     "lap1990": 114.172,
-     "lap1990_race": 119.425,
+     "lap1990": 114.945,
+     "lap1990_race": 120.242,
      "lap2026": 107.172,
-     "ratio": 1.06532,
-     "model_ratio": 1.06562
+     "ratio": 1.07253,
+     "model_ratio": 1.06422
     },
     "williams": {
-     "lap1990": 117.748,
-     "lap1990_race": 122.753,
+     "lap1990": 118.519,
+     "lap1990_race": 123.599,
      "lap2026": 106.126,
-     "ratio": 1.10951,
-     "model_ratio": 1.08287
+     "ratio": 1.11678,
+     "model_ratio": 1.08173
     },
     "lotus": {
-     "lap1990": 117.511,
-     "lap1990_race": 122.645,
+     "lap1990": 118.273,
+     "lap1990_race": 123.477,
      "lap2026": 106.785,
-     "ratio": 1.10045,
-     "model_ratio": 1.07909
+     "ratio": 1.10758,
+     "model_ratio": 1.07805
     },
     "mercedes": {
-     "lap1990": 118.499,
-     "lap1990_race": 123.422,
+     "lap1990": 119.194,
+     "lap1990_race": 124.204,
      "lap2026": 106.035,
-     "ratio": 1.11754,
-     "model_ratio": 1.09645
+     "ratio": 1.1241,
+     "model_ratio": 1.0953
     },
     "redbull": {
-     "lap1990": 118.613,
-     "lap1990_race": 123.495,
+     "lap1990": 119.347,
+     "lap1990_race": 124.309,
      "lap2026": 106.377,
-     "ratio": 1.11503,
-     "model_ratio": 1.09207
+     "ratio": 1.12193,
+     "model_ratio": 1.09076
     },
     "force_india": {
-     "lap1990": 119.001,
-     "lap1990_race": 124.439,
+     "lap1990": 119.757,
+     "lap1990_race": 125.219,
      "lap2026": 107.453,
-     "ratio": 1.10747,
-     "model_ratio": 1.09351
+     "ratio": 1.1145,
+     "model_ratio": 1.09256
     },
     "myteam_ferrari": {
-     "lap1990": 116.721,
-     "lap1990_race": 122.18,
+     "lap1990": 117.463,
+     "lap1990_race": 122.985,
      "lap2026": 107.517,
-     "ratio": 1.0856,
-     "model_ratio": 1.08156
+     "ratio": 1.0925,
+     "model_ratio": 1.08047
     },
     "sauber": {
-     "lap1990": 120.518,
-     "lap1990_race": 125.567,
+     "lap1990": 121.109,
+     "lap1990_race": 126.195,
      "lap2026": 107.793,
-     "ratio": 1.11806,
-     "model_ratio": 1.10329
+     "ratio": 1.12353,
+     "model_ratio": 1.10174
     },
     "toro_rosso": {
-     "lap1990": 119.165,
-     "lap1990_race": 124.334,
+     "lap1990": 119.858,
+     "lap1990_race": 125.025,
      "lap2026": 107.22,
-     "ratio": 1.11141,
-     "model_ratio": 1.09762
+     "ratio": 1.11787,
+     "model_ratio": 1.09631
     },
     "gm_cadillac": {
-     "lap1990": 119.747,
-     "lap1990_race": 124.817,
+     "lap1990": 120.366,
+     "lap1990_race": 125.434,
      "lap2026": 108.058,
-     "ratio": 1.10817,
-     "model_ratio": 1.09305
+     "ratio": 1.11389,
+     "model_ratio": 1.09149
     },
     "myteam_honda": {
-     "lap1990": 121.176,
-     "lap1990_race": 126.274,
+     "lap1990": 121.868,
+     "lap1990_race": 126.939,
      "lap2026": 107.68,
-     "ratio": 1.12534,
-     "model_ratio": 1.10167
+     "ratio": 1.13176,
+     "model_ratio": 1.10052
     },
     "haas": {
-     "lap1990": 121.193,
-     "lap1990_race": 126.205,
+     "lap1990": 121.844,
+     "lap1990_race": 126.914,
      "lap2026": 107.391,
-     "ratio": 1.12852,
-     "model_ratio": 1.10799
+     "ratio": 1.13458,
+     "model_ratio": 1.10675
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.10951,
-    "median_model_ratio": 1.09305,
+    "median_ratio": 1.11678,
+    "median_model_ratio": 1.09149,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 114.172
+     "lap": 114.945
     },
     "fastest_2026": 106.024,
     "variation": "low",
@@ -1182,104 +1182,104 @@
   "monza": {
    "cars": {
     "mclaren": {
-     "lap1990": 87.851,
-     "lap1990_race": 91.191,
+     "lap1990": 88.184,
+     "lap1990_race": 91.578,
      "lap2026": 83.059,
-     "ratio": 1.05769,
-     "model_ratio": 1.07194
+     "ratio": 1.06171,
+     "model_ratio": 1.07126
     },
     "ferrari": {
-     "lap1990": 86.774,
-     "lap1990_race": 90.211,
+     "lap1990": 87.124,
+     "lap1990_race": 90.589,
      "lap2026": 83.702,
-     "ratio": 1.03671,
-     "model_ratio": 1.06327
+     "ratio": 1.04089,
+     "model_ratio": 1.06261
     },
     "williams": {
-     "lap1990": 89.488,
-     "lap1990_race": 92.699,
+     "lap1990": 89.841,
+     "lap1990_race": 93.066,
      "lap2026": 83.459,
-     "ratio": 1.07223,
-     "model_ratio": 1.08467
+     "ratio": 1.07647,
+     "model_ratio": 1.0842
     },
     "lotus": {
-     "lap1990": 89.153,
-     "lap1990_race": 92.604,
+     "lap1990": 89.51,
+     "lap1990_race": 92.972,
      "lap2026": 83.62,
-     "ratio": 1.06617,
-     "model_ratio": 1.08113
+     "ratio": 1.07043,
+     "model_ratio": 1.08127
     },
     "mercedes": {
-     "lap1990": 90.495,
-     "lap1990_race": 93.565,
+     "lap1990": 90.813,
+     "lap1990_race": 93.938,
      "lap2026": 82.882,
-     "ratio": 1.09185,
-     "model_ratio": 1.10507
+     "ratio": 1.09568,
+     "model_ratio": 1.10416
     },
     "redbull": {
-     "lap1990": 90.197,
-     "lap1990_race": 93.546,
+     "lap1990": 90.537,
+     "lap1990_race": 93.898,
      "lap2026": 83.312,
-     "ratio": 1.08263,
-     "model_ratio": 1.09482
+     "ratio": 1.08672,
+     "model_ratio": 1.09412
     },
     "force_india": {
-     "lap1990": 90.749,
-     "lap1990_race": 94.118,
+     "lap1990": 91.093,
+     "lap1990_race": 94.464,
      "lap2026": 84.024,
-     "ratio": 1.08003,
-     "model_ratio": 1.09313
+     "ratio": 1.08413,
+     "model_ratio": 1.09246
     },
     "myteam_ferrari": {
-     "lap1990": 89.26,
-     "lap1990_race": 92.503,
+     "lap1990": 89.597,
+     "lap1990_race": 92.867,
      "lap2026": 84.111,
-     "ratio": 1.06122,
-     "model_ratio": 1.08459
+     "ratio": 1.06523,
+     "model_ratio": 1.08503
     },
     "sauber": {
-     "lap1990": 91.6,
-     "lap1990_race": 94.769,
+     "lap1990": 91.897,
+     "lap1990_race": 95.094,
      "lap2026": 83.975,
-     "ratio": 1.0908,
-     "model_ratio": 1.09905
+     "ratio": 1.09434,
+     "model_ratio": 1.09866
     },
     "toro_rosso": {
-     "lap1990": 90.776,
-     "lap1990_race": 93.876,
+     "lap1990": 91.079,
+     "lap1990_race": 94.21,
      "lap2026": 83.681,
-     "ratio": 1.0848,
-     "model_ratio": 1.10249
+     "ratio": 1.08842,
+     "model_ratio": 1.10172
     },
     "gm_cadillac": {
-     "lap1990": 91.038,
-     "lap1990_race": 94.023,
+     "lap1990": 91.323,
+     "lap1990_race": 94.347,
      "lap2026": 84.046,
-     "ratio": 1.08319,
-     "model_ratio": 1.09292
+     "ratio": 1.08659,
+     "model_ratio": 1.09175
     },
     "myteam_honda": {
-     "lap1990": 92.066,
-     "lap1990_race": 95.12,
+     "lap1990": 92.365,
+     "lap1990_race": 95.433,
      "lap2026": 84.189,
-     "ratio": 1.09355,
-     "model_ratio": 1.10272
+     "ratio": 1.09712,
+     "model_ratio": 1.10176
     },
     "haas": {
-     "lap1990": 92.044,
-     "lap1990_race": 95.159,
+     "lap1990": 92.339,
+     "lap1990_race": 95.497,
      "lap2026": 83.778,
-     "ratio": 1.09867,
-     "model_ratio": 1.10478
+     "ratio": 1.1022,
+     "model_ratio": 1.10382
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.08263,
-    "median_model_ratio": 1.09313,
+    "median_ratio": 1.08659,
+    "median_model_ratio": 1.09246,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 86.774
+     "lap": 87.124
     },
     "fastest_2026": 82.882,
     "variation": "very_low",
@@ -1289,104 +1289,104 @@
   "madrid": {
    "cars": {
     "mclaren": {
-     "lap1990": 101.934,
-     "lap1990_race": 107.481,
+     "lap1990": 102.184,
+     "lap1990_race": 107.7,
      "lap2026": 89.694,
-     "ratio": 1.13648,
-     "model_ratio": 1.08005
+     "ratio": 1.13925,
+     "model_ratio": 1.07934
     },
     "ferrari": {
-     "lap1990": 101.127,
-     "lap1990_race": 106.624,
+     "lap1990": 101.451,
+     "lap1990_race": 106.856,
      "lap2026": 90.297,
-     "ratio": 1.11994,
-     "model_ratio": 1.07499
+     "ratio": 1.12353,
+     "model_ratio": 1.0739
     },
     "williams": {
-     "lap1990": 103.268,
-     "lap1990_race": 108.809,
+     "lap1990": 103.43,
+     "lap1990_race": 109.02,
      "lap2026": 90.103,
-     "ratio": 1.14611,
-     "model_ratio": 1.09314
+     "ratio": 1.1479,
+     "model_ratio": 1.09169
     },
     "lotus": {
-     "lap1990": 103.568,
-     "lap1990_race": 109.185,
+     "lap1990": 103.732,
+     "lap1990_race": 109.368,
      "lap2026": 90.605,
-     "ratio": 1.14308,
-     "model_ratio": 1.08876
+     "ratio": 1.14488,
+     "model_ratio": 1.0874
     },
     "mercedes": {
-     "lap1990": 103.854,
-     "lap1990_race": 109.403,
+     "lap1990": 103.986,
+     "lap1990_race": 109.653,
      "lap2026": 89.746,
-     "ratio": 1.1572,
-     "model_ratio": 1.10314
+     "ratio": 1.15867,
+     "model_ratio": 1.10269
     },
     "redbull": {
-     "lap1990": 103.646,
-     "lap1990_race": 109.239,
+     "lap1990": 103.817,
+     "lap1990_race": 109.441,
      "lap2026": 89.871,
-     "ratio": 1.15328,
-     "model_ratio": 1.10225
+     "ratio": 1.15518,
+     "model_ratio": 1.10088
     },
     "force_india": {
-     "lap1990": 104.926,
-     "lap1990_race": 110.424,
+     "lap1990": 105.031,
+     "lap1990_race": 110.584,
      "lap2026": 91.265,
-     "ratio": 1.14968,
-     "model_ratio": 1.10046
+     "ratio": 1.15083,
+     "model_ratio": 1.09826
     },
     "myteam_ferrari": {
-     "lap1990": 102.965,
-     "lap1990_race": 108.349,
+     "lap1990": 103.237,
+     "lap1990_race": 108.552,
      "lap2026": 91.256,
-     "ratio": 1.1283,
-     "model_ratio": 1.08252
+     "ratio": 1.13129,
+     "model_ratio": 1.08128
     },
     "sauber": {
-     "lap1990": 105.445,
-     "lap1990_race": 111.251,
+     "lap1990": 105.506,
+     "lap1990_race": 111.311,
      "lap2026": 91.113,
-     "ratio": 1.1573,
-     "model_ratio": 1.11162
+     "ratio": 1.15797,
+     "model_ratio": 1.10983
     },
     "toro_rosso": {
-     "lap1990": 104.179,
-     "lap1990_race": 109.7,
+     "lap1990": 104.274,
+     "lap1990_race": 109.882,
      "lap2026": 90.425,
-     "ratio": 1.1521,
-     "model_ratio": 1.10249
+     "ratio": 1.15315,
+     "model_ratio": 1.10186
     },
     "gm_cadillac": {
-     "lap1990": 104.667,
-     "lap1990_race": 110.475,
+     "lap1990": 104.733,
+     "lap1990_race": 110.52,
      "lap2026": 91.313,
-     "ratio": 1.14624,
-     "model_ratio": 1.09905
+     "ratio": 1.14698,
+     "model_ratio": 1.09708
     },
     "myteam_honda": {
-     "lap1990": 105.858,
-     "lap1990_race": 111.555,
+     "lap1990": 105.993,
+     "lap1990_race": 111.651,
      "lap2026": 91.254,
-     "ratio": 1.16005,
-     "model_ratio": 1.10727
+     "ratio": 1.16152,
+     "model_ratio": 1.10537
     },
     "haas": {
-     "lap1990": 105.871,
-     "lap1990_race": 111.59,
+     "lap1990": 106.004,
+     "lap1990_race": 111.686,
      "lap2026": 90.79,
-     "ratio": 1.16611,
-     "model_ratio": 1.1113
+     "ratio": 1.16757,
+     "model_ratio": 1.1121
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.14968,
-    "median_model_ratio": 1.10046,
+    "median_ratio": 1.15083,
+    "median_model_ratio": 1.09826,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 101.127
+     "lap": 101.451
     },
     "fastest_2026": 89.694,
     "variation": "very_high",
@@ -1396,104 +1396,104 @@
   "catalunya": {
    "cars": {
     "mclaren": {
-     "lap1990": 82.519,
-     "lap1990_race": 86.727,
+     "lap1990": 82.471,
+     "lap1990_race": 86.63,
      "lap2026": 73.406,
-     "ratio": 1.12415,
-     "model_ratio": 1.12245
+     "ratio": 1.12349,
+     "model_ratio": 1.12131
     },
     "ferrari": {
-     "lap1990": 81.677,
-     "lap1990_race": 85.829,
+     "lap1990": 81.583,
+     "lap1990_race": 85.74,
      "lap2026": 73.928,
-     "ratio": 1.10481,
-     "model_ratio": 1.06791
+     "ratio": 1.10355,
+     "model_ratio": 1.0664
     },
     "williams": {
-     "lap1990": 83.761,
-     "lap1990_race": 87.765,
+     "lap1990": 83.68,
+     "lap1990_race": 87.642,
      "lap2026": 73.955,
-     "ratio": 1.13259,
-     "model_ratio": 1.13605
+     "ratio": 1.1315,
+     "model_ratio": 1.13427
     },
     "lotus": {
-     "lap1990": 83.654,
-     "lap1990_race": 87.833,
+     "lap1990": 83.552,
+     "lap1990_race": 87.707,
      "lap2026": 74.038,
-     "ratio": 1.12988,
-     "model_ratio": 1.13145
+     "ratio": 1.1285,
+     "model_ratio": 1.12943
     },
     "mercedes": {
-     "lap1990": 84.523,
-     "lap1990_race": 88.501,
+     "lap1990": 84.406,
+     "lap1990_race": 88.378,
      "lap2026": 73.852,
-     "ratio": 1.14449,
-     "model_ratio": 1.15109
+     "ratio": 1.14291,
+     "model_ratio": 1.14904
     },
     "redbull": {
-     "lap1990": 84.315,
-     "lap1990_race": 88.284,
+     "lap1990": 84.246,
+     "lap1990_race": 88.134,
      "lap2026": 73.981,
-     "ratio": 1.13968,
-     "model_ratio": 1.14519
+     "ratio": 1.13875,
+     "model_ratio": 1.14373
     },
     "force_india": {
-     "lap1990": 85.06,
-     "lap1990_race": 89.095,
+     "lap1990": 84.948,
+     "lap1990_race": 88.946,
      "lap2026": 74.679,
-     "ratio": 1.139,
-     "model_ratio": 1.14357
+     "ratio": 1.1375,
+     "model_ratio": 1.14127
     },
     "myteam_ferrari": {
-     "lap1990": 83.281,
-     "lap1990_race": 87.402,
+     "lap1990": 83.175,
+     "lap1990_race": 87.28,
      "lap2026": 74.415,
-     "ratio": 1.11915,
-     "model_ratio": 1.08578
+     "ratio": 1.11773,
+     "model_ratio": 1.0843
     },
     "sauber": {
-     "lap1990": 85.894,
-     "lap1990_race": 89.722,
+     "lap1990": 85.81,
+     "lap1990_race": 89.552,
      "lap2026": 74.602,
-     "ratio": 1.15136,
-     "model_ratio": 1.11915
+     "ratio": 1.15024,
+     "model_ratio": 1.11744
     },
     "toro_rosso": {
-     "lap1990": 84.77,
-     "lap1990_race": 88.479,
+     "lap1990": 84.668,
+     "lap1990_race": 88.324,
      "lap2026": 73.957,
-     "ratio": 1.14621,
-     "model_ratio": 1.10617
+     "ratio": 1.14483,
+     "model_ratio": 1.10415
     },
     "gm_cadillac": {
-     "lap1990": 85.225,
-     "lap1990_race": 89.077,
+     "lap1990": 85.126,
+     "lap1990_race": 88.928,
      "lap2026": 74.84,
-     "ratio": 1.13877,
-     "model_ratio": 1.10689
+     "ratio": 1.13744,
+     "model_ratio": 1.10443
     },
     "myteam_honda": {
-     "lap1990": 86.212,
-     "lap1990_race": 89.853,
+     "lap1990": 86.073,
+     "lap1990_race": 89.693,
      "lap2026": 74.409,
-     "ratio": 1.15862,
-     "model_ratio": 1.11069
+     "ratio": 1.15675,
+     "model_ratio": 1.10847
     },
     "haas": {
-     "lap1990": 86.309,
-     "lap1990_race": 90.06,
+     "lap1990": 86.193,
+     "lap1990_race": 89.895,
      "lap2026": 74.281,
-     "ratio": 1.16193,
-     "model_ratio": 1.11888
+     "ratio": 1.16036,
+     "model_ratio": 1.11676
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.139,
-    "median_model_ratio": 1.11915,
+    "median_ratio": 1.1375,
+    "median_model_ratio": 1.11744,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 81.677
+     "lap": 81.583
     },
     "fastest_2026": 73.406,
     "variation": "high",
@@ -1503,104 +1503,104 @@
   "suzuka": {
    "cars": {
     "mclaren": {
-     "lap1990": 98.673,
-     "lap1990_race": 103.158,
+     "lap1990": 99.212,
+     "lap1990_race": 103.723,
      "lap2026": 89.031,
-     "ratio": 1.1083,
-     "model_ratio": 1.12642
+     "ratio": 1.11435,
+     "model_ratio": 1.12501
     },
     "ferrari": {
-     "lap1990": 97.432,
-     "lap1990_race": 101.849,
+     "lap1990": 97.921,
+     "lap1990_race": 102.338,
      "lap2026": 90.369,
-     "ratio": 1.07816,
-     "model_ratio": 1.11996
+     "ratio": 1.08357,
+     "model_ratio": 1.11888
     },
     "williams": {
-     "lap1990": 100.088,
-     "lap1990_race": 104.614,
+     "lap1990": 100.556,
+     "lap1990_race": 105.118,
      "lap2026": 89.325,
-     "ratio": 1.12049,
-     "model_ratio": 1.13744
+     "ratio": 1.12573,
+     "model_ratio": 1.13615
     },
     "lotus": {
-     "lap1990": 99.919,
-     "lap1990_race": 104.631,
+     "lap1990": 100.398,
+     "lap1990_race": 105.116,
      "lap2026": 89.707,
-     "ratio": 1.11384,
-     "model_ratio": 1.12936
+     "ratio": 1.11918,
+     "model_ratio": 1.12773
     },
     "mercedes": {
-     "lap1990": 100.694,
-     "lap1990_race": 105.09,
+     "lap1990": 101.204,
+     "lap1990_race": 105.615,
      "lap2026": 89.588,
-     "ratio": 1.12396,
-     "model_ratio": 1.15646
+     "ratio": 1.12966,
+     "model_ratio": 1.15545
     },
     "redbull": {
-     "lap1990": 100.818,
-     "lap1990_race": 105.274,
+     "lap1990": 101.3,
+     "lap1990_race": 105.771,
      "lap2026": 89.186,
-     "ratio": 1.13043,
-     "model_ratio": 1.14754
+     "ratio": 1.13583,
+     "model_ratio": 1.14661
     },
     "force_india": {
-     "lap1990": 101.727,
-     "lap1990_race": 106.223,
+     "lap1990": 102.164,
+     "lap1990_race": 106.668,
      "lap2026": 90.338,
-     "ratio": 1.12608,
-     "model_ratio": 1.14249
+     "ratio": 1.13092,
+     "model_ratio": 1.14065
     },
     "myteam_ferrari": {
-     "lap1990": 99.515,
-     "lap1990_race": 104.102,
+     "lap1990": 100.023,
+     "lap1990_race": 104.64,
      "lap2026": 90.367,
-     "ratio": 1.10123,
-     "model_ratio": 1.13061
+     "ratio": 1.10684,
+     "model_ratio": 1.1302
     },
     "sauber": {
-     "lap1990": 102.945,
-     "lap1990_race": 107.14,
+     "lap1990": 103.357,
+     "lap1990_race": 107.62,
      "lap2026": 90.305,
-     "ratio": 1.13997,
-     "model_ratio": 1.15486
+     "ratio": 1.14453,
+     "model_ratio": 1.15265
     },
     "toro_rosso": {
-     "lap1990": 101.458,
-     "lap1990_race": 105.906,
+     "lap1990": 101.874,
+     "lap1990_race": 106.301,
      "lap2026": 89.788,
-     "ratio": 1.12996,
-     "model_ratio": 1.15197
+     "ratio": 1.1346,
+     "model_ratio": 1.15046
     },
     "gm_cadillac": {
-     "lap1990": 102.359,
-     "lap1990_race": 106.535,
+     "lap1990": 102.771,
+     "lap1990_race": 106.982,
      "lap2026": 90.821,
-     "ratio": 1.12704,
-     "model_ratio": 1.14118
+     "ratio": 1.13157,
+     "model_ratio": 1.13899
     },
     "myteam_honda": {
-     "lap1990": 103.627,
-     "lap1990_race": 107.842,
+     "lap1990": 104.058,
+     "lap1990_race": 108.331,
      "lap2026": 90.368,
-     "ratio": 1.14672,
-     "model_ratio": 1.15285
+     "ratio": 1.1515,
+     "model_ratio": 1.15075
     },
     "haas": {
-     "lap1990": 103.729,
-     "lap1990_race": 107.912,
+     "lap1990": 104.142,
+     "lap1990_race": 108.34,
      "lap2026": 90.515,
-     "ratio": 1.14598,
-     "model_ratio": 1.15865
+     "ratio": 1.15055,
+     "model_ratio": 1.15648
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.12608,
-    "median_model_ratio": 1.14249,
+    "median_ratio": 1.13092,
+    "median_model_ratio": 1.14065,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 97.432
+     "lap": 97.921
     },
     "fastest_2026": 89.031,
     "variation": "medium",
@@ -1610,104 +1610,104 @@
   "melbourne": {
    "cars": {
     "mclaren": {
-     "lap1990": 87.092,
-     "lap1990_race": 91.018,
+     "lap1990": 87.088,
+     "lap1990_race": 91.057,
      "lap2026": 79.027,
-     "ratio": 1.10206,
-     "model_ratio": 1.11186
+     "ratio": 1.10201,
+     "model_ratio": 1.11088
     },
     "ferrari": {
-     "lap1990": 85.96,
-     "lap1990_race": 89.9,
+     "lap1990": 85.958,
+     "lap1990_race": 89.899,
      "lap2026": 80.021,
-     "ratio": 1.07422,
-     "model_ratio": 1.10761
+     "ratio": 1.07419,
+     "model_ratio": 1.1061
     },
     "williams": {
-     "lap1990": 88.372,
-     "lap1990_race": 92.297,
+     "lap1990": 88.416,
+     "lap1990_race": 92.332,
      "lap2026": 79.227,
-     "ratio": 1.11543,
-     "model_ratio": 1.1288
+     "ratio": 1.11598,
+     "model_ratio": 1.12698
     },
     "lotus": {
-     "lap1990": 88.232,
-     "lap1990_race": 92.398,
+     "lap1990": 88.262,
+     "lap1990_race": 92.422,
      "lap2026": 79.648,
-     "ratio": 1.10777,
-     "model_ratio": 1.12177
+     "ratio": 1.10815,
+     "model_ratio": 1.11996
     },
     "mercedes": {
-     "lap1990": 89.072,
-     "lap1990_race": 92.945,
+     "lap1990": 89.088,
+     "lap1990_race": 92.963,
      "lap2026": 79.724,
-     "ratio": 1.11726,
-     "model_ratio": 1.14543
+     "ratio": 1.11745,
+     "model_ratio": 1.14355
     },
     "redbull": {
-     "lap1990": 88.992,
-     "lap1990_race": 92.854,
+     "lap1990": 89.012,
+     "lap1990_race": 92.877,
      "lap2026": 79.122,
-     "ratio": 1.12475,
-     "model_ratio": 1.13935
+     "ratio": 1.125,
+     "model_ratio": 1.1373
     },
     "force_india": {
-     "lap1990": 89.79,
-     "lap1990_race": 93.725,
+     "lap1990": 89.747,
+     "lap1990_race": 93.712,
      "lap2026": 80.172,
-     "ratio": 1.11996,
-     "model_ratio": 1.13627
+     "ratio": 1.11943,
+     "model_ratio": 1.13433
     },
     "myteam_ferrari": {
-     "lap1990": 87.712,
-     "lap1990_race": 91.784,
+     "lap1990": 87.737,
+     "lap1990_race": 91.796,
      "lap2026": 80.05,
-     "ratio": 1.09572,
-     "model_ratio": 1.124
+     "ratio": 1.09603,
+     "model_ratio": 1.12235
     },
     "sauber": {
-     "lap1990": 90.739,
-     "lap1990_race": 94.516,
+     "lap1990": 90.697,
+     "lap1990_race": 94.459,
      "lap2026": 80.189,
-     "ratio": 1.13157,
-     "model_ratio": 1.14844
+     "ratio": 1.13105,
+     "model_ratio": 1.14658
     },
     "toro_rosso": {
-     "lap1990": 89.405,
-     "lap1990_race": 93.311,
+     "lap1990": 89.407,
+     "lap1990_race": 93.309,
      "lap2026": 79.626,
-     "ratio": 1.12281,
-     "model_ratio": 1.14322
+     "ratio": 1.12283,
+     "model_ratio": 1.14151
     },
     "gm_cadillac": {
-     "lap1990": 90.136,
-     "lap1990_race": 93.998,
+     "lap1990": 90.088,
+     "lap1990_race": 93.94,
      "lap2026": 80.572,
-     "ratio": 1.1187,
-     "model_ratio": 1.13453
+     "ratio": 1.1181,
+     "model_ratio": 1.13282
     },
     "myteam_honda": {
-     "lap1990": 91.305,
-     "lap1990_race": 95.018,
+     "lap1990": 91.234,
+     "lap1990_race": 94.953,
      "lap2026": 80.05,
-     "ratio": 1.1406,
-     "model_ratio": 1.14676
+     "ratio": 1.13972,
+     "model_ratio": 1.14506
     },
     "haas": {
-     "lap1990": 91.371,
-     "lap1990_race": 95.169,
+     "lap1990": 91.269,
+     "lap1990_race": 95.09,
      "lap2026": 80.274,
-     "ratio": 1.13824,
-     "model_ratio": 1.15145
+     "ratio": 1.13696,
+     "model_ratio": 1.14984
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.1187,
-    "median_model_ratio": 1.13627,
+    "median_ratio": 1.1181,
+    "median_model_ratio": 1.13433,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 85.96
+     "lap": 85.958
     },
     "fastest_2026": 79.027,
     "variation": "medium",
@@ -1717,104 +1717,104 @@
   "abu_dhabi": {
    "cars": {
     "mclaren": {
-     "lap1990": 93.854,
-     "lap1990_race": 98.292,
+     "lap1990": 94.131,
+     "lap1990_race": 98.53,
      "lap2026": 85.435,
-     "ratio": 1.09855,
-     "model_ratio": 1.0932
+     "ratio": 1.10178,
+     "model_ratio": 1.0919
     },
     "ferrari": {
-     "lap1990": 92.703,
-     "lap1990_race": 97.302,
+     "lap1990": 92.917,
+     "lap1990_race": 97.538,
      "lap2026": 86.459,
-     "ratio": 1.07222,
-     "model_ratio": 1.08981
+     "ratio": 1.07469,
+     "model_ratio": 1.08876
     },
     "williams": {
-     "lap1990": 95.092,
-     "lap1990_race": 99.505,
+     "lap1990": 95.3,
+     "lap1990_race": 99.72,
      "lap2026": 85.635,
-     "ratio": 1.11042,
-     "model_ratio": 1.1059
+     "ratio": 1.11285,
+     "model_ratio": 1.10443
     },
     "lotus": {
-     "lap1990": 94.956,
-     "lap1990_race": 99.582,
+     "lap1990": 95.184,
+     "lap1990_race": 99.777,
      "lap2026": 85.983,
-     "ratio": 1.10435,
-     "model_ratio": 1.10049
+     "ratio": 1.107,
+     "model_ratio": 1.09929
     },
     "mercedes": {
-     "lap1990": 95.868,
-     "lap1990_race": 100.264,
+     "lap1990": 96.081,
+     "lap1990_race": 100.449,
      "lap2026": 86.051,
-     "ratio": 1.11408,
-     "model_ratio": 1.12275
+     "ratio": 1.11656,
+     "model_ratio": 1.12143
     },
     "redbull": {
-     "lap1990": 95.718,
-     "lap1990_race": 100.011,
+     "lap1990": 95.912,
+     "lap1990_race": 100.249,
      "lap2026": 85.463,
-     "ratio": 1.12,
-     "model_ratio": 1.11678
+     "ratio": 1.12226,
+     "model_ratio": 1.11599
     },
     "force_india": {
-     "lap1990": 96.52,
-     "lap1990_race": 100.951,
+     "lap1990": 96.729,
+     "lap1990_race": 101.146,
      "lap2026": 86.65,
-     "ratio": 1.11391,
-     "model_ratio": 1.11176
+     "ratio": 1.11632,
+     "model_ratio": 1.11001
     },
     "myteam_ferrari": {
-     "lap1990": 94.807,
-     "lap1990_race": 99.295,
+     "lap1990": 95.015,
+     "lap1990_race": 99.523,
      "lap2026": 86.573,
-     "ratio": 1.09511,
-     "model_ratio": 1.1017
+     "ratio": 1.09751,
+     "model_ratio": 1.10072
     },
     "sauber": {
-     "lap1990": 97.457,
-     "lap1990_race": 101.802,
+     "lap1990": 97.586,
+     "lap1990_race": 101.962,
      "lap2026": 86.697,
-     "ratio": 1.12411,
-     "model_ratio": 1.12338
+     "ratio": 1.1256,
+     "model_ratio": 1.12192
     },
     "toro_rosso": {
-     "lap1990": 96.196,
-     "lap1990_race": 100.557,
+     "lap1990": 96.385,
+     "lap1990_race": 100.693,
      "lap2026": 86.037,
-     "ratio": 1.11807,
-     "model_ratio": 1.121
+     "ratio": 1.12027,
+     "model_ratio": 1.12031
     },
     "gm_cadillac": {
-     "lap1990": 96.614,
-     "lap1990_race": 100.971,
+     "lap1990": 96.721,
+     "lap1990_race": 101.076,
      "lap2026": 86.863,
-     "ratio": 1.11226,
-     "model_ratio": 1.11241
+     "ratio": 1.11349,
+     "model_ratio": 1.11045
     },
     "myteam_honda": {
-     "lap1990": 97.794,
-     "lap1990_race": 101.951,
+     "lap1990": 97.897,
+     "lap1990_race": 102.088,
      "lap2026": 86.574,
-     "ratio": 1.1296,
-     "model_ratio": 1.12209
+     "ratio": 1.13079,
+     "model_ratio": 1.12025
     },
     "haas": {
-     "lap1990": 97.868,
-     "lap1990_race": 102.175,
+     "lap1990": 97.986,
+     "lap1990_race": 102.335,
      "lap2026": 86.678,
-     "ratio": 1.1291,
-     "model_ratio": 1.12774
+     "ratio": 1.13045,
+     "model_ratio": 1.12572
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.11391,
-    "median_model_ratio": 1.11241,
+    "median_ratio": 1.11632,
+    "median_model_ratio": 1.11045,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 92.703
+     "lap": 92.917
     },
     "fastest_2026": 85.435,
     "variation": "medium",
@@ -1824,104 +1824,104 @@
   "austria_reverse": {
    "cars": {
     "mclaren": {
-     "lap1990": 72.319,
-     "lap1990_race": 75.815,
+     "lap1990": 72.916,
+     "lap1990_race": 76.403,
      "lap2026": 66.876,
-     "ratio": 1.08138,
-     "model_ratio": 1.09158
+     "ratio": 1.09031,
+     "model_ratio": 1.09107
     },
     "ferrari": {
-     "lap1990": 71.477,
-     "lap1990_race": 74.995,
+     "lap1990": 72.07,
+     "lap1990_race": 75.619,
      "lap2026": 67.429,
-     "ratio": 1.06004,
-     "model_ratio": 1.08148
+     "ratio": 1.06882,
+     "model_ratio": 1.08084
     },
     "williams": {
-     "lap1990": 73.492,
-     "lap1990_race": 76.881,
+     "lap1990": 74.079,
+     "lap1990_race": 77.462,
      "lap2026": 67.116,
-     "ratio": 1.09499,
-     "model_ratio": 1.10299
+     "ratio": 1.10375,
+     "model_ratio": 1.10232
     },
     "lotus": {
-     "lap1990": 73.399,
-     "lap1990_race": 76.701,
+     "lap1990": 73.972,
+     "lap1990_race": 77.266,
      "lap2026": 67.358,
-     "ratio": 1.08968,
-     "model_ratio": 1.09893
+     "ratio": 1.09819,
+     "model_ratio": 1.09865
     },
     "mercedes": {
-     "lap1990": 74.128,
-     "lap1990_race": 77.315,
+     "lap1990": 74.686,
+     "lap1990_race": 77.93,
      "lap2026": 66.861,
-     "ratio": 1.10869,
-     "model_ratio": 1.11808
+     "ratio": 1.11704,
+     "model_ratio": 1.11722
     },
     "redbull": {
-     "lap1990": 74.165,
-     "lap1990_race": 77.49,
+     "lap1990": 74.795,
+     "lap1990_race": 78.119,
      "lap2026": 67.24,
-     "ratio": 1.10299,
-     "model_ratio": 1.11194
+     "ratio": 1.11236,
+     "model_ratio": 1.11138
     },
     "force_india": {
-     "lap1990": 74.606,
-     "lap1990_race": 78.007,
+     "lap1990": 75.172,
+     "lap1990_race": 78.566,
      "lap2026": 67.934,
-     "ratio": 1.09821,
-     "model_ratio": 1.10874
+     "ratio": 1.10655,
+     "model_ratio": 1.10912
     },
     "myteam_ferrari": {
-     "lap1990": 73.248,
-     "lap1990_race": 76.593,
+     "lap1990": 73.767,
+     "lap1990_race": 77.127,
      "lap2026": 67.598,
-     "ratio": 1.08357,
-     "model_ratio": 1.09839
+     "ratio": 1.09125,
+     "model_ratio": 1.09763
     },
     "sauber": {
-     "lap1990": 75.306,
-     "lap1990_race": 78.594,
+     "lap1990": 75.862,
+     "lap1990_race": 79.2,
      "lap2026": 67.962,
-     "ratio": 1.10806,
-     "model_ratio": 1.11743
+     "ratio": 1.11624,
+     "model_ratio": 1.11673
     },
     "toro_rosso": {
-     "lap1990": 74.477,
-     "lap1990_race": 77.664,
+     "lap1990": 75.061,
+     "lap1990_race": 78.263,
      "lap2026": 67.497,
-     "ratio": 1.1034,
-     "model_ratio": 1.11659
+     "ratio": 1.11206,
+     "model_ratio": 1.1156
     },
     "gm_cadillac": {
-     "lap1990": 74.679,
-     "lap1990_race": 77.988,
+     "lap1990": 75.244,
+     "lap1990_race": 78.598,
      "lap2026": 68.059,
-     "ratio": 1.09727,
-     "model_ratio": 1.10814
+     "ratio": 1.10556,
+     "model_ratio": 1.10737
     },
     "myteam_honda": {
-     "lap1990": 75.356,
-     "lap1990_race": 78.583,
+     "lap1990": 75.829,
+     "lap1990_race": 79.1,
      "lap2026": 67.693,
-     "ratio": 1.1132,
-     "model_ratio": 1.12013
+     "ratio": 1.12019,
+     "model_ratio": 1.1194
     },
     "haas": {
-     "lap1990": 75.58,
-     "lap1990_race": 78.9,
+     "lap1990": 76.159,
+     "lap1990_race": 79.486,
      "lap2026": 67.796,
-     "ratio": 1.11481,
-     "model_ratio": 1.12339
+     "ratio": 1.12335,
+     "model_ratio": 1.12261
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.09821,
-    "median_model_ratio": 1.10874,
+    "median_ratio": 1.10655,
+    "median_model_ratio": 1.10912,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 71.477
+     "lap": 72.07
     },
     "fastest_2026": 66.861,
     "variation": "low",
@@ -1931,104 +1931,104 @@
   "bahrain": {
    "cars": {
     "mclaren": {
-     "lap1990": 96.057,
-     "lap1990_race": 100.813,
+     "lap1990": 96.81,
+     "lap1990_race": 101.651,
      "lap2026": 88.33,
-     "ratio": 1.08748,
-     "model_ratio": 1.09222
+     "ratio": 1.096,
+     "model_ratio": 1.09194
     },
     "ferrari": {
-     "lap1990": 95.144,
-     "lap1990_race": 99.984,
+     "lap1990": 95.857,
+     "lap1990_race": 100.784,
      "lap2026": 89.283,
-     "ratio": 1.06565,
-     "model_ratio": 1.08609
+     "ratio": 1.07363,
+     "model_ratio": 1.08569
     },
     "williams": {
-     "lap1990": 97.437,
-     "lap1990_race": 102.096,
+     "lap1990": 98.147,
+     "lap1990_race": 102.917,
      "lap2026": 88.568,
-     "ratio": 1.10015,
-     "model_ratio": 1.10427
+     "ratio": 1.10815,
+     "model_ratio": 1.10411
     },
     "lotus": {
-     "lap1990": 97.276,
-     "lap1990_race": 102.038,
+     "lap1990": 98.087,
+     "lap1990_race": 102.895,
      "lap2026": 88.862,
-     "ratio": 1.09468,
-     "model_ratio": 1.09871
+     "ratio": 1.10381,
+     "model_ratio": 1.09834
     },
     "mercedes": {
-     "lap1990": 98.243,
-     "lap1990_race": 102.804,
+     "lap1990": 98.953,
+     "lap1990_race": 103.606,
      "lap2026": 88.81,
-     "ratio": 1.10622,
-     "model_ratio": 1.11998
+     "ratio": 1.11422,
+     "model_ratio": 1.11979
     },
     "redbull": {
-     "lap1990": 98.178,
-     "lap1990_race": 102.774,
+     "lap1990": 98.877,
+     "lap1990_race": 103.573,
      "lap2026": 88.587,
-     "ratio": 1.10826,
-     "model_ratio": 1.1143
+     "ratio": 1.11616,
+     "model_ratio": 1.11376
     },
     "force_india": {
-     "lap1990": 98.806,
-     "lap1990_race": 103.405,
+     "lap1990": 99.531,
+     "lap1990_race": 104.219,
      "lap2026": 89.5,
-     "ratio": 1.10398,
-     "model_ratio": 1.1086
+     "ratio": 1.11208,
+     "model_ratio": 1.10876
     },
     "myteam_ferrari": {
-     "lap1990": 97.28,
-     "lap1990_race": 101.958,
+     "lap1990": 98.025,
+     "lap1990_race": 102.781,
      "lap2026": 89.394,
-     "ratio": 1.08821,
-     "model_ratio": 1.09912
+     "ratio": 1.09655,
+     "model_ratio": 1.09874
     },
     "sauber": {
-     "lap1990": 99.707,
-     "lap1990_race": 104.249,
+     "lap1990": 100.387,
+     "lap1990_race": 105.012,
      "lap2026": 89.49,
-     "ratio": 1.11417,
-     "model_ratio": 1.11947
+     "ratio": 1.12177,
+     "model_ratio": 1.11921
     },
     "toro_rosso": {
-     "lap1990": 98.651,
-     "lap1990_race": 103.141,
+     "lap1990": 99.339,
+     "lap1990_race": 103.908,
      "lap2026": 88.957,
-     "ratio": 1.10898,
-     "model_ratio": 1.11692
+     "ratio": 1.11671,
+     "model_ratio": 1.11663
     },
     "gm_cadillac": {
-     "lap1990": 98.968,
-     "lap1990_race": 103.524,
+     "lap1990": 99.647,
+     "lap1990_race": 104.279,
      "lap2026": 89.867,
-     "ratio": 1.10128,
-     "model_ratio": 1.10833
+     "ratio": 1.10883,
+     "model_ratio": 1.10771
     },
     "myteam_honda": {
-     "lap1990": 99.929,
-     "lap1990_race": 104.255,
+     "lap1990": 100.589,
+     "lap1990_race": 104.998,
      "lap2026": 89.395,
-     "ratio": 1.11784,
-     "model_ratio": 1.11846
+     "ratio": 1.12523,
+     "model_ratio": 1.11807
     },
     "haas": {
-     "lap1990": 100.111,
-     "lap1990_race": 104.604,
+     "lap1990": 100.827,
+     "lap1990_race": 105.373,
      "lap2026": 89.492,
-     "ratio": 1.11866,
-     "model_ratio": 1.12429
+     "ratio": 1.12667,
+     "model_ratio": 1.12361
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.10398,
-    "median_model_ratio": 1.1086,
+    "median_ratio": 1.11208,
+    "median_model_ratio": 1.10876,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 95.144
+     "lap": 95.857
     },
     "fastest_2026": 88.33,
     "variation": "medium",
@@ -2038,104 +2038,104 @@
   "baku": {
    "cars": {
     "mclaren": {
-     "lap1990": 107.651,
-     "lap1990_race": 113.373,
+     "lap1990": 107.975,
+     "lap1990_race": 113.744,
      "lap2026": 101.292,
-     "ratio": 1.06278,
-     "model_ratio": 1.06159
+     "ratio": 1.06597,
+     "model_ratio": 1.06146
     },
     "ferrari": {
-     "lap1990": 107.105,
-     "lap1990_race": 112.993,
+     "lap1990": 107.456,
+     "lap1990_race": 113.353,
      "lap2026": 102.247,
-     "ratio": 1.04751,
-     "model_ratio": 1.05523
+     "ratio": 1.05095,
+     "model_ratio": 1.05458
     },
     "williams": {
-     "lap1990": 109.281,
-     "lap1990_race": 114.935,
+     "lap1990": 109.655,
+     "lap1990_race": 115.309,
      "lap2026": 101.456,
-     "ratio": 1.07713,
-     "model_ratio": 1.07284
+     "ratio": 1.08082,
+     "model_ratio": 1.07232
     },
     "lotus": {
-     "lap1990": 109.284,
-     "lap1990_race": 114.903,
+     "lap1990": 109.598,
+     "lap1990_race": 115.272,
      "lap2026": 102.071,
-     "ratio": 1.07066,
-     "model_ratio": 1.0697
+     "ratio": 1.07375,
+     "model_ratio": 1.0693
     },
     "mercedes": {
-     "lap1990": 109.776,
-     "lap1990_race": 115.263,
+     "lap1990": 110.217,
+     "lap1990_race": 115.638,
      "lap2026": 101.305,
-     "ratio": 1.08361,
-     "model_ratio": 1.08538
+     "ratio": 1.08797,
+     "model_ratio": 1.08475
     },
     "redbull": {
-     "lap1990": 109.913,
-     "lap1990_race": 115.499,
+     "lap1990": 110.217,
+     "lap1990_race": 115.827,
      "lap2026": 101.42,
-     "ratio": 1.08374,
-     "model_ratio": 1.08116
+     "ratio": 1.08674,
+     "model_ratio": 1.08051
     },
     "force_india": {
-     "lap1990": 110.627,
-     "lap1990_race": 116.38,
+     "lap1990": 110.948,
+     "lap1990_race": 116.727,
      "lap2026": 102.613,
-     "ratio": 1.07811,
-     "model_ratio": 1.07903
+     "ratio": 1.08123,
+     "model_ratio": 1.07848
     },
     "myteam_ferrari": {
-     "lap1990": 109.122,
-     "lap1990_race": 114.891,
+     "lap1990": 109.561,
+     "lap1990_race": 115.335,
      "lap2026": 102.47,
-     "ratio": 1.06492,
-     "model_ratio": 1.06992
+     "ratio": 1.0692,
+     "model_ratio": 1.06934
     },
     "sauber": {
-     "lap1990": 111.874,
-     "lap1990_race": 117.372,
+     "lap1990": 112.211,
+     "lap1990_race": 117.745,
      "lap2026": 102.768,
-     "ratio": 1.08861,
-     "model_ratio": 1.0868
+     "ratio": 1.09189,
+     "model_ratio": 1.08611
     },
     "toro_rosso": {
-     "lap1990": 110.62,
-     "lap1990_race": 115.981,
+     "lap1990": 110.957,
+     "lap1990_race": 116.327,
      "lap2026": 102.275,
-     "ratio": 1.0816,
-     "model_ratio": 1.08359
+     "ratio": 1.08489,
+     "model_ratio": 1.08305
     },
     "gm_cadillac": {
-     "lap1990": 110.939,
-     "lap1990_race": 116.426,
+     "lap1990": 111.233,
+     "lap1990_race": 116.721,
      "lap2026": 102.861,
-     "ratio": 1.07853,
-     "model_ratio": 1.07797
+     "ratio": 1.08139,
+     "model_ratio": 1.0773
     },
     "myteam_honda": {
-     "lap1990": 111.598,
-     "lap1990_race": 117.116,
+     "lap1990": 111.935,
+     "lap1990_race": 117.439,
      "lap2026": 102.587,
-     "ratio": 1.08784,
-     "model_ratio": 1.0855
+     "ratio": 1.09113,
+     "model_ratio": 1.08483
     },
     "haas": {
-     "lap1990": 112.068,
-     "lap1990_race": 117.618,
+     "lap1990": 112.348,
+     "lap1990_race": 117.947,
      "lap2026": 102.367,
-     "ratio": 1.09477,
-     "model_ratio": 1.0914
+     "ratio": 1.0975,
+     "model_ratio": 1.09078
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.07853,
-    "median_model_ratio": 1.07903,
+    "median_ratio": 1.08139,
+    "median_model_ratio": 1.07848,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 107.105
+     "lap": 107.456
     },
     "fastest_2026": 101.292,
     "variation": "low",
@@ -2145,104 +2145,104 @@
   "jeddah": {
    "cars": {
     "mclaren": {
-     "lap1990": 100.102,
-     "lap1990_race": 104.925,
+     "lap1990": 100.149,
+     "lap1990_race": 104.946,
      "lap2026": 91.934,
-     "ratio": 1.08885,
-     "model_ratio": 1.10736
+     "ratio": 1.08936,
+     "model_ratio": 1.10601
     },
     "ferrari": {
-     "lap1990": 98.844,
-     "lap1990_race": 103.69,
+     "lap1990": 98.824,
+     "lap1990_race": 103.77,
      "lap2026": 93.011,
-     "ratio": 1.06272,
-     "model_ratio": 1.09872
+     "ratio": 1.0625,
+     "model_ratio": 1.0973
     },
     "williams": {
-     "lap1990": 101.975,
-     "lap1990_race": 106.7,
+     "lap1990": 101.935,
+     "lap1990_race": 106.639,
      "lap2026": 92.373,
-     "ratio": 1.10395,
-     "model_ratio": 1.12108
+     "ratio": 1.10352,
+     "model_ratio": 1.1196
     },
     "lotus": {
-     "lap1990": 101.798,
-     "lap1990_race": 106.445,
+     "lap1990": 101.821,
+     "lap1990_race": 106.53,
      "lap2026": 92.916,
-     "ratio": 1.09559,
-     "model_ratio": 1.11731
+     "ratio": 1.09584,
+     "model_ratio": 1.11584
     },
     "mercedes": {
-     "lap1990": 102.797,
-     "lap1990_race": 107.369,
+     "lap1990": 102.745,
+     "lap1990_race": 107.298,
      "lap2026": 92.208,
-     "ratio": 1.11484,
-     "model_ratio": 1.13756
+     "ratio": 1.11427,
+     "model_ratio": 1.13585
     },
     "redbull": {
-     "lap1990": 102.691,
-     "lap1990_race": 107.203,
+     "lap1990": 102.619,
+     "lap1990_race": 107.182,
      "lap2026": 92.42,
-     "ratio": 1.11113,
-     "model_ratio": 1.13049
+     "ratio": 1.11036,
+     "model_ratio": 1.12927
     },
     "force_india": {
-     "lap1990": 103.033,
-     "lap1990_race": 107.848,
+     "lap1990": 103.012,
+     "lap1990_race": 107.867,
      "lap2026": 93.39,
-     "ratio": 1.10325,
-     "model_ratio": 1.13013
+     "ratio": 1.10302,
+     "model_ratio": 1.1285
     },
     "myteam_ferrari": {
-     "lap1990": 100.901,
-     "lap1990_race": 105.729,
+     "lap1990": 100.914,
+     "lap1990_race": 105.733,
      "lap2026": 93.107,
-     "ratio": 1.08371,
-     "model_ratio": 1.11674
+     "ratio": 1.08385,
+     "model_ratio": 1.11505
     },
     "sauber": {
-     "lap1990": 104.131,
-     "lap1990_race": 108.594,
+     "lap1990": 104.057,
+     "lap1990_race": 108.542,
      "lap2026": 93.554,
-     "ratio": 1.11305,
-     "model_ratio": 1.13747
+     "ratio": 1.11227,
+     "model_ratio": 1.13562
     },
     "toro_rosso": {
-     "lap1990": 103.23,
-     "lap1990_race": 107.646,
+     "lap1990": 103.151,
+     "lap1990_race": 107.598,
      "lap2026": 93.218,
-     "ratio": 1.1074,
-     "model_ratio": 1.13651
+     "ratio": 1.10656,
+     "model_ratio": 1.13462
     },
     "gm_cadillac": {
-     "lap1990": 103.492,
-     "lap1990_race": 107.942,
+     "lap1990": 103.386,
+     "lap1990_race": 107.843,
      "lap2026": 93.798,
-     "ratio": 1.10336,
-     "model_ratio": 1.12741
+     "ratio": 1.10223,
+     "model_ratio": 1.12556
     },
     "myteam_honda": {
-     "lap1990": 104.648,
-     "lap1990_race": 109.12,
+     "lap1990": 104.609,
+     "lap1990_race": 109.085,
      "lap2026": 93.352,
-     "ratio": 1.12101,
-     "model_ratio": 1.13965
+     "ratio": 1.12059,
+     "model_ratio": 1.13776
     },
     "haas": {
-     "lap1990": 104.872,
-     "lap1990_race": 109.399,
+     "lap1990": 104.779,
+     "lap1990_race": 109.338,
      "lap2026": 93.319,
-     "ratio": 1.1238,
-     "model_ratio": 1.14284
+     "ratio": 1.1228,
+     "model_ratio": 1.14091
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.10395,
-    "median_model_ratio": 1.13013,
+    "median_ratio": 1.10352,
+    "median_model_ratio": 1.1285,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 98.844
+     "lap": 98.824
     },
     "fastest_2026": 91.934,
     "variation": "low",
@@ -2252,104 +2252,104 @@
   "losail": {
    "cars": {
     "mclaren": {
-     "lap1990": 93.982,
-     "lap1990_race": 98.777,
+     "lap1990": 93.966,
+     "lap1990_race": 98.733,
      "lap2026": 83.685,
-     "ratio": 1.12305,
-     "model_ratio": 1.13617
+     "ratio": 1.12286,
+     "model_ratio": 1.13463
     },
     "ferrari": {
-     "lap1990": 93.145,
-     "lap1990_race": 97.712,
+     "lap1990": 93.126,
+     "lap1990_race": 97.639,
      "lap2026": 84.367,
-     "ratio": 1.10405,
-     "model_ratio": 1.08809
+     "ratio": 1.10383,
+     "model_ratio": 1.08607
     },
     "williams": {
-     "lap1990": 95.837,
-     "lap1990_race": 100.435,
+     "lap1990": 95.766,
+     "lap1990_race": 100.333,
      "lap2026": 84.757,
-     "ratio": 1.13073,
-     "model_ratio": 1.15028
+     "ratio": 1.12989,
+     "model_ratio": 1.14796
     },
     "lotus": {
-     "lap1990": 95.315,
-     "lap1990_race": 99.933,
+     "lap1990": 95.249,
+     "lap1990_race": 99.865,
      "lap2026": 84.414,
-     "ratio": 1.12914,
-     "model_ratio": 1.14538
+     "ratio": 1.12836,
+     "model_ratio": 1.14302
     },
     "mercedes": {
-     "lap1990": 96.291,
-     "lap1990_race": 100.865,
+     "lap1990": 96.24,
+     "lap1990_race": 100.779,
      "lap2026": 84.139,
-     "ratio": 1.14442,
-     "model_ratio": 1.16691
+     "ratio": 1.14382,
+     "model_ratio": 1.16445
     },
     "redbull": {
-     "lap1990": 96.451,
-     "lap1990_race": 101.023,
+     "lap1990": 96.354,
+     "lap1990_race": 100.845,
      "lap2026": 84.629,
-     "ratio": 1.13969,
-     "model_ratio": 1.16008
+     "ratio": 1.13856,
+     "model_ratio": 1.15849
     },
     "force_india": {
-     "lap1990": 97.274,
-     "lap1990_race": 101.807,
+     "lap1990": 97.12,
+     "lap1990_race": 101.644,
      "lap2026": 85.382,
-     "ratio": 1.13927,
-     "model_ratio": 1.15765
+     "ratio": 1.13748,
+     "model_ratio": 1.15491
     },
     "myteam_ferrari": {
-     "lap1990": 95.113,
-     "lap1990_race": 99.743,
+     "lap1990": 94.985,
+     "lap1990_race": 99.582,
      "lap2026": 85.001,
-     "ratio": 1.11898,
-     "model_ratio": 1.09684
+     "ratio": 1.11746,
+     "model_ratio": 1.09498
     },
     "sauber": {
-     "lap1990": 98.175,
-     "lap1990_race": 102.485,
+     "lap1990": 98.021,
+     "lap1990_race": 102.287,
      "lap2026": 85.2,
-     "ratio": 1.15228,
-     "model_ratio": 1.12464
+     "ratio": 1.15048,
+     "model_ratio": 1.12291
     },
     "toro_rosso": {
-     "lap1990": 96.763,
-     "lap1990_race": 101.133,
+     "lap1990": 96.735,
+     "lap1990_race": 101.019,
      "lap2026": 84.463,
-     "ratio": 1.14562,
-     "model_ratio": 1.12127
+     "ratio": 1.1453,
+     "model_ratio": 1.11921
     },
     "gm_cadillac": {
-     "lap1990": 97.247,
-     "lap1990_race": 101.284,
+     "lap1990": 97.136,
+     "lap1990_race": 101.192,
      "lap2026": 85.178,
-     "ratio": 1.14169,
-     "model_ratio": 1.11145
+     "ratio": 1.14039,
+     "model_ratio": 1.10866
     },
     "myteam_honda": {
-     "lap1990": 98.451,
-     "lap1990_race": 102.691,
+     "lap1990": 98.276,
+     "lap1990_race": 102.485,
      "lap2026": 84.986,
-     "ratio": 1.15843,
-     "model_ratio": 1.12323
+     "ratio": 1.15638,
+     "model_ratio": 1.12056
     },
     "haas": {
-     "lap1990": 98.664,
-     "lap1990_race": 102.873,
+     "lap1990": 98.589,
+     "lap1990_race": 102.731,
      "lap2026": 84.872,
-     "ratio": 1.1625,
-     "model_ratio": 1.12949
+     "ratio": 1.16162,
+     "model_ratio": 1.12705
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.13969,
-    "median_model_ratio": 1.12949,
+    "median_ratio": 1.13856,
+    "median_model_ratio": 1.12705,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 93.145
+     "lap": 93.126
     },
     "fastest_2026": 83.685,
     "variation": "high",
@@ -2359,104 +2359,104 @@
   "miami": {
    "cars": {
     "mclaren": {
-     "lap1990": 95.221,
-     "lap1990_race": 100.036,
+     "lap1990": 95.844,
+     "lap1990_race": 100.676,
      "lap2026": 88.757,
-     "ratio": 1.07283,
-     "model_ratio": 1.07674
+     "ratio": 1.07985,
+     "model_ratio": 1.07549
     },
     "ferrari": {
-     "lap1990": 94.263,
-     "lap1990_race": 99.096,
+     "lap1990": 94.873,
+     "lap1990_race": 99.723,
      "lap2026": 89.44,
-     "ratio": 1.05392,
-     "model_ratio": 1.07098
+     "ratio": 1.06074,
+     "model_ratio": 1.06969
     },
     "williams": {
-     "lap1990": 96.755,
-     "lap1990_race": 101.513,
+     "lap1990": 97.336,
+     "lap1990_race": 102.115,
      "lap2026": 88.931,
-     "ratio": 1.08798,
-     "model_ratio": 1.08907
+     "ratio": 1.09452,
+     "model_ratio": 1.08765
     },
     "lotus": {
-     "lap1990": 96.467,
-     "lap1990_race": 101.201,
+     "lap1990": 97.048,
+     "lap1990_race": 101.821,
      "lap2026": 89.301,
-     "ratio": 1.08025,
-     "model_ratio": 1.08577
+     "ratio": 1.08675,
+     "model_ratio": 1.0844
     },
     "mercedes": {
-     "lap1990": 97.168,
-     "lap1990_race": 101.723,
+     "lap1990": 97.749,
+     "lap1990_race": 102.318,
      "lap2026": 88.637,
-     "ratio": 1.09624,
-     "model_ratio": 1.1011
+     "ratio": 1.1028,
+     "model_ratio": 1.09964
     },
     "redbull": {
-     "lap1990": 97.249,
-     "lap1990_race": 101.938,
+     "lap1990": 97.821,
+     "lap1990_race": 102.544,
      "lap2026": 88.89,
-     "ratio": 1.09405,
-     "model_ratio": 1.09712
+     "ratio": 1.10048,
+     "model_ratio": 1.09572
     },
     "force_india": {
-     "lap1990": 97.763,
-     "lap1990_race": 102.636,
+     "lap1990": 98.327,
+     "lap1990_race": 103.23,
      "lap2026": 89.915,
-     "ratio": 1.08727,
-     "model_ratio": 1.09596
+     "ratio": 1.09355,
+     "model_ratio": 1.09443
     },
     "myteam_ferrari": {
-     "lap1990": 96.292,
-     "lap1990_race": 101.126,
+     "lap1990": 96.861,
+     "lap1990_race": 101.753,
      "lap2026": 89.869,
-     "ratio": 1.07148,
-     "model_ratio": 1.08481
+     "ratio": 1.0778,
+     "model_ratio": 1.08334
     },
     "sauber": {
-     "lap1990": 98.589,
-     "lap1990_race": 103.287,
+     "lap1990": 99.127,
+     "lap1990_race": 103.855,
      "lap2026": 90.033,
-     "ratio": 1.09504,
-     "model_ratio": 1.10282
+     "ratio": 1.10101,
+     "model_ratio": 1.10102
     },
     "toro_rosso": {
-     "lap1990": 97.681,
-     "lap1990_race": 102.246,
+     "lap1990": 98.244,
+     "lap1990_race": 102.837,
      "lap2026": 89.664,
-     "ratio": 1.0894,
-     "model_ratio": 1.1008
+     "ratio": 1.09568,
+     "model_ratio": 1.09912
     },
     "gm_cadillac": {
-     "lap1990": 97.83,
-     "lap1990_race": 102.488,
+     "lap1990": 98.365,
+     "lap1990_race": 103.05,
      "lap2026": 90.186,
-     "ratio": 1.08476,
-     "model_ratio": 1.09309
+     "ratio": 1.09069,
+     "model_ratio": 1.09136
     },
     "myteam_honda": {
-     "lap1990": 99.024,
-     "lap1990_race": 103.729,
+     "lap1990": 99.563,
+     "lap1990_race": 104.274,
      "lap2026": 90.053,
-     "ratio": 1.09962,
-     "model_ratio": 1.10292
+     "ratio": 1.1056,
+     "model_ratio": 1.10116
     },
     "haas": {
-     "lap1990": 99.042,
-     "lap1990_race": 103.724,
+     "lap1990": 99.565,
+     "lap1990_race": 104.29,
      "lap2026": 89.607,
-     "ratio": 1.1053,
-     "model_ratio": 1.10731
+     "ratio": 1.11113,
+     "model_ratio": 1.10562
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.08798,
-    "median_model_ratio": 1.09596,
+    "median_ratio": 1.09452,
+    "median_model_ratio": 1.09443,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 94.263
+     "lap": 94.873
     },
     "fastest_2026": 88.637,
     "variation": "low",
@@ -2466,104 +2466,104 @@
   "silverstone_reverse": {
    "cars": {
     "mclaren": {
-     "lap1990": 99.385,
-     "lap1990_race": 103.845,
+     "lap1990": 99.34,
+     "lap1990_race": 103.783,
      "lap2026": 89.183,
-     "ratio": 1.1144,
-     "model_ratio": 1.10978
+     "ratio": 1.11389,
+     "model_ratio": 1.10875
     },
     "ferrari": {
-     "lap1990": 97.601,
-     "lap1990_race": 102.061,
+     "lap1990": 97.571,
+     "lap1990_race": 101.953,
      "lap2026": 90.447,
-     "ratio": 1.07911,
-     "model_ratio": 1.10673
+     "ratio": 1.07877,
+     "model_ratio": 1.10572
     },
     "williams": {
-     "lap1990": 100.773,
-     "lap1990_race": 105.124,
+     "lap1990": 100.695,
+     "lap1990_race": 105.005,
      "lap2026": 89.299,
-     "ratio": 1.12849,
-     "model_ratio": 1.12261
+     "ratio": 1.12762,
+     "model_ratio": 1.12254
     },
     "lotus": {
-     "lap1990": 100.505,
-     "lap1990_race": 105.219,
+     "lap1990": 100.389,
+     "lap1990_race": 105.059,
      "lap2026": 89.764,
-     "ratio": 1.11966,
-     "model_ratio": 1.1152
+     "ratio": 1.11836,
+     "model_ratio": 1.11545
     },
     "mercedes": {
-     "lap1990": 101.469,
-     "lap1990_race": 105.876,
+     "lap1990": 101.392,
+     "lap1990_race": 105.768,
      "lap2026": 90.04,
-     "ratio": 1.12693,
-     "model_ratio": 1.13981
+     "ratio": 1.12607,
+     "model_ratio": 1.13914
     },
     "redbull": {
-     "lap1990": 101.479,
-     "lap1990_race": 105.793,
+     "lap1990": 101.326,
+     "lap1990_race": 105.628,
      "lap2026": 89.202,
-     "ratio": 1.13764,
-     "model_ratio": 1.13379
+     "ratio": 1.13592,
+     "model_ratio": 1.13335
     },
     "force_india": {
-     "lap1990": 102.437,
-     "lap1990_race": 106.772,
+     "lap1990": 102.303,
+     "lap1990_race": 106.605,
      "lap2026": 90.39,
-     "ratio": 1.13328,
-     "model_ratio": 1.13054
+     "ratio": 1.13179,
+     "model_ratio": 1.12982
     },
     "myteam_ferrari": {
-     "lap1990": 100.025,
-     "lap1990_race": 104.515,
+     "lap1990": 99.982,
+     "lap1990_race": 104.349,
      "lap2026": 90.321,
-     "ratio": 1.10744,
-     "model_ratio": 1.11909
+     "ratio": 1.10696,
+     "model_ratio": 1.11903
     },
     "sauber": {
-     "lap1990": 103.567,
-     "lap1990_race": 107.799,
+     "lap1990": 103.369,
+     "lap1990_race": 107.55,
      "lap2026": 90.553,
-     "ratio": 1.14372,
-     "model_ratio": 1.1415
+     "ratio": 1.14153,
+     "model_ratio": 1.14132
     },
     "toro_rosso": {
-     "lap1990": 101.819,
-     "lap1990_race": 106.26,
+     "lap1990": 101.688,
+     "lap1990_race": 106.115,
      "lap2026": 89.869,
-     "ratio": 1.13297,
-     "model_ratio": 1.13788
+     "ratio": 1.13151,
+     "model_ratio": 1.13656
     },
     "gm_cadillac": {
-     "lap1990": 102.857,
-     "lap1990_race": 107.082,
+     "lap1990": 102.688,
+     "lap1990_race": 106.898,
      "lap2026": 90.907,
-     "ratio": 1.13146,
-     "model_ratio": 1.12843
+     "ratio": 1.1296,
+     "model_ratio": 1.12778
     },
     "myteam_honda": {
-     "lap1990": 104.212,
-     "lap1990_race": 108.279,
+     "lap1990": 104.073,
+     "lap1990_race": 108.046,
      "lap2026": 90.321,
-     "ratio": 1.15379,
-     "model_ratio": 1.1395
+     "ratio": 1.15226,
+     "model_ratio": 1.139
     },
     "haas": {
-     "lap1990": 104.271,
-     "lap1990_race": 108.432,
+     "lap1990": 104.139,
+     "lap1990_race": 108.226,
      "lap2026": 90.743,
-     "ratio": 1.14909,
-     "model_ratio": 1.14402
+     "ratio": 1.14763,
+     "model_ratio": 1.14324
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.13146,
-    "median_model_ratio": 1.13054,
+    "median_ratio": 1.1296,
+    "median_model_ratio": 1.12982,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 97.601
+     "lap": 97.571
     },
     "fastest_2026": 89.183,
     "variation": "medium",
@@ -2573,104 +2573,104 @@
   "singapore": {
    "cars": {
     "mclaren": {
-     "lap1990": 98.308,
-     "lap1990_race": 104.127,
+     "lap1990": 99.173,
+     "lap1990_race": 104.978,
      "lap2026": 89.894,
-     "ratio": 1.0936,
-     "model_ratio": 1.0959
+     "ratio": 1.10322,
+     "model_ratio": 1.09461
     },
     "ferrari": {
-     "lap1990": 97.898,
-     "lap1990_race": 103.495,
+     "lap1990": 98.816,
+     "lap1990_race": 104.407,
      "lap2026": 90.527,
-     "ratio": 1.08142,
-     "model_ratio": 1.06593
+     "ratio": 1.09156,
+     "model_ratio": 1.06609
     },
     "williams": {
-     "lap1990": 99.412,
-     "lap1990_race": 105.102,
+     "lap1990": 100.36,
+     "lap1990_race": 106.029,
      "lap2026": 90.529,
-     "ratio": 1.09813,
-     "model_ratio": 1.1045
+     "ratio": 1.10859,
+     "model_ratio": 1.10331
     },
     "lotus": {
-     "lap1990": 99.377,
-     "lap1990_race": 105.151,
+     "lap1990": 100.307,
+     "lap1990_race": 106.073,
      "lap2026": 90.706,
-     "ratio": 1.09559,
-     "model_ratio": 1.10086
+     "ratio": 1.10584,
+     "model_ratio": 1.09954
     },
     "mercedes": {
-     "lap1990": 100.042,
-     "lap1990_race": 105.617,
+     "lap1990": 100.874,
+     "lap1990_race": 106.458,
      "lap2026": 90.282,
-     "ratio": 1.10811,
-     "model_ratio": 1.11789
+     "ratio": 1.11732,
+     "model_ratio": 1.11664
     },
     "redbull": {
-     "lap1990": 100.017,
-     "lap1990_race": 105.689,
+     "lap1990": 100.886,
+     "lap1990_race": 106.578,
      "lap2026": 90.471,
-     "ratio": 1.10552,
-     "model_ratio": 1.11261
+     "ratio": 1.11512,
+     "model_ratio": 1.11131
     },
     "force_india": {
-     "lap1990": 100.57,
-     "lap1990_race": 106.263,
+     "lap1990": 101.521,
+     "lap1990_race": 107.227,
      "lap2026": 91.238,
-     "ratio": 1.10228,
-     "model_ratio": 1.10879
+     "ratio": 1.11271,
+     "model_ratio": 1.10763
     },
     "myteam_ferrari": {
-     "lap1990": 99.363,
-     "lap1990_race": 105.03,
+     "lap1990": 100.205,
+     "lap1990_race": 105.867,
      "lap2026": 90.986,
-     "ratio": 1.09208,
-     "model_ratio": 1.07629
+     "ratio": 1.10133,
+     "model_ratio": 1.07514
     },
     "sauber": {
-     "lap1990": 101.411,
-     "lap1990_race": 107.044,
+     "lap1990": 102.256,
+     "lap1990_race": 107.896,
      "lap2026": 91.039,
-     "ratio": 1.11393,
-     "model_ratio": 1.09651
+     "ratio": 1.12321,
+     "model_ratio": 1.09515
     },
     "toro_rosso": {
-     "lap1990": 100.372,
-     "lap1990_race": 105.889,
+     "lap1990": 101.198,
+     "lap1990_race": 106.697,
      "lap2026": 90.527,
-     "ratio": 1.10876,
-     "model_ratio": 1.09382
+     "ratio": 1.11788,
+     "model_ratio": 1.09282
     },
     "gm_cadillac": {
-     "lap1990": 100.569,
-     "lap1990_race": 106.168,
+     "lap1990": 101.449,
+     "lap1990_race": 107.056,
      "lap2026": 91.39,
-     "ratio": 1.10043,
-     "model_ratio": 1.08561
+     "ratio": 1.11007,
+     "model_ratio": 1.08396
     },
     "myteam_honda": {
-     "lap1990": 101.331,
-     "lap1990_race": 106.821,
+     "lap1990": 102.117,
+     "lap1990_race": 107.611,
      "lap2026": 90.958,
-     "ratio": 1.11405,
-     "model_ratio": 1.09402
+     "ratio": 1.12269,
+     "model_ratio": 1.09269
     },
     "haas": {
-     "lap1990": 101.678,
-     "lap1990_race": 107.332,
+     "lap1990": 102.529,
+     "lap1990_race": 108.178,
      "lap2026": 90.839,
-     "ratio": 1.11931,
-     "model_ratio": 1.10095
+     "ratio": 1.12868,
+     "model_ratio": 1.09966
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.10228,
-    "median_model_ratio": 1.09651,
+    "median_ratio": 1.11271,
+    "median_model_ratio": 1.09515,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 97.898
+     "lap": 98.816
     },
     "fastest_2026": 89.894,
     "variation": "high",
@@ -2680,104 +2680,104 @@
   "texas": {
    "cars": {
     "mclaren": {
-     "lap1990": 102.582,
-     "lap1990_race": 108.313,
+     "lap1990": 102.945,
+     "lap1990_race": 108.725,
      "lap2026": 92.72,
-     "ratio": 1.10637,
-     "model_ratio": 1.1046
+     "ratio": 1.11028,
+     "model_ratio": 1.10343
     },
     "ferrari": {
-     "lap1990": 101.719,
-     "lap1990_race": 107.306,
+     "lap1990": 102.097,
+     "lap1990_race": 107.618,
      "lap2026": 93.341,
-     "ratio": 1.08975,
-     "model_ratio": 1.03075
+     "ratio": 1.0938,
+     "model_ratio": 1.02949
     },
     "williams": {
-     "lap1990": 104.17,
-     "lap1990_race": 109.674,
+     "lap1990": 104.543,
+     "lap1990_race": 110.065,
      "lap2026": 93.467,
-     "ratio": 1.11452,
-     "model_ratio": 1.11261
+     "ratio": 1.1185,
+     "model_ratio": 1.11134
     },
     "lotus": {
-     "lap1990": 104.081,
-     "lap1990_race": 109.636,
+     "lap1990": 104.38,
+     "lap1990_race": 109.965,
      "lap2026": 93.426,
-     "ratio": 1.11404,
-     "model_ratio": 1.10821
+     "ratio": 1.11724,
+     "model_ratio": 1.10689
     },
     "mercedes": {
-     "lap1990": 104.727,
-     "lap1990_race": 110.248,
+     "lap1990": 105.1,
+     "lap1990_race": 110.561,
      "lap2026": 93.234,
-     "ratio": 1.12327,
-     "model_ratio": 1.13219
+     "ratio": 1.12727,
+     "model_ratio": 1.13093
     },
     "redbull": {
-     "lap1990": 104.656,
-     "lap1990_race": 110.189,
+     "lap1990": 105.064,
+     "lap1990_race": 110.539,
      "lap2026": 93.408,
-     "ratio": 1.12042,
-     "model_ratio": 1.12251
+     "ratio": 1.12479,
+     "model_ratio": 1.12098
     },
     "force_india": {
-     "lap1990": 105.52,
-     "lap1990_race": 111.025,
+     "lap1990": 105.868,
+     "lap1990_race": 111.394,
      "lap2026": 94.129,
-     "ratio": 1.12102,
-     "model_ratio": 1.11796
+     "ratio": 1.12471,
+     "model_ratio": 1.1168
     },
     "myteam_ferrari": {
-     "lap1990": 103.677,
-     "lap1990_race": 109.135,
+     "lap1990": 104.043,
+     "lap1990_race": 109.51,
      "lap2026": 93.862,
-     "ratio": 1.10457,
-     "model_ratio": 1.0601
+     "ratio": 1.10847,
+     "model_ratio": 1.05901
     },
     "sauber": {
-     "lap1990": 106.563,
-     "lap1990_race": 111.785,
+     "lap1990": 106.879,
+     "lap1990_race": 112.161,
      "lap2026": 94.036,
-     "ratio": 1.13322,
-     "model_ratio": 1.08593
+     "ratio": 1.13658,
+     "model_ratio": 1.0844
     },
     "toro_rosso": {
-     "lap1990": 105.094,
-     "lap1990_race": 110.286,
+     "lap1990": 105.442,
+     "lap1990_race": 110.699,
      "lap2026": 93.354,
-     "ratio": 1.12575,
-     "model_ratio": 1.07864
+     "ratio": 1.12948,
+     "model_ratio": 1.07765
     },
     "gm_cadillac": {
-     "lap1990": 105.664,
-     "lap1990_race": 111.065,
+     "lap1990": 105.985,
+     "lap1990_race": 111.358,
      "lap2026": 94.3,
-     "ratio": 1.1205,
-     "model_ratio": 1.07539
+     "ratio": 1.12391,
+     "model_ratio": 1.07401
     },
     "myteam_honda": {
-     "lap1990": 106.606,
-     "lap1990_race": 111.737,
+     "lap1990": 106.9,
+     "lap1990_race": 112.132,
      "lap2026": 93.819,
-     "ratio": 1.1363,
-     "model_ratio": 1.07533
+     "ratio": 1.13944,
+     "model_ratio": 1.07419
     },
     "haas": {
-     "lap1990": 106.934,
-     "lap1990_race": 112.17,
+     "lap1990": 107.218,
+     "lap1990_race": 112.491,
      "lap2026": 93.676,
-     "ratio": 1.14153,
-     "model_ratio": 1.08376
+     "ratio": 1.14456,
+     "model_ratio": 1.08195
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.1205,
-    "median_model_ratio": 1.08593,
+    "median_ratio": 1.12471,
+    "median_model_ratio": 1.0844,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 101.719
+     "lap": 102.097
     },
     "fastest_2026": 92.72,
     "variation": "high",
@@ -2787,104 +2787,104 @@
   "zandvoort": {
    "cars": {
     "mclaren": {
-     "lap1990": 78.678,
-     "lap1990_race": 82.953,
+     "lap1990": 78.884,
+     "lap1990_race": 83.164,
      "lap2026": 70.411,
-     "ratio": 1.11741,
-     "model_ratio": 1.14599
+     "ratio": 1.12033,
+     "model_ratio": 1.14358
     },
     "ferrari": {
-     "lap1990": 78.262,
-     "lap1990_race": 81.975,
+     "lap1990": 78.418,
+     "lap1990_race": 82.189,
      "lap2026": 70.827,
-     "ratio": 1.10499,
-     "model_ratio": 1.07672
+     "ratio": 1.10719,
+     "model_ratio": 1.07416
     },
     "williams": {
-     "lap1990": 79.636,
-     "lap1990_race": 83.798,
+     "lap1990": 79.86,
+     "lap1990_race": 84.009,
      "lap2026": 70.892,
-     "ratio": 1.12334,
-     "model_ratio": 1.14464
+     "ratio": 1.12649,
+     "model_ratio": 1.14223
     },
     "lotus": {
-     "lap1990": 79.652,
-     "lap1990_race": 83.879,
+     "lap1990": 79.873,
+     "lap1990_race": 84.099,
      "lap2026": 70.982,
-     "ratio": 1.12214,
-     "model_ratio": 1.13851
+     "ratio": 1.12525,
+     "model_ratio": 1.1366
     },
     "mercedes": {
-     "lap1990": 80.26,
-     "lap1990_race": 84.342,
+     "lap1990": 80.501,
+     "lap1990_race": 84.606,
      "lap2026": 70.716,
-     "ratio": 1.13497,
-     "model_ratio": 1.17149
+     "ratio": 1.13837,
+     "model_ratio": 1.16865
     },
     "redbull": {
-     "lap1990": 80.093,
-     "lap1990_race": 84.263,
+     "lap1990": 80.277,
+     "lap1990_race": 84.411,
      "lap2026": 70.894,
-     "ratio": 1.12976,
-     "model_ratio": 1.15488
+     "ratio": 1.13235,
+     "model_ratio": 1.15213
     },
     "force_india": {
-     "lap1990": 80.849,
-     "lap1990_race": 85.008,
+     "lap1990": 81.075,
+     "lap1990_race": 85.185,
      "lap2026": 71.503,
-     "ratio": 1.13071,
-     "model_ratio": 1.14933
+     "ratio": 1.13387,
+     "model_ratio": 1.14686
     },
     "myteam_ferrari": {
-     "lap1990": 79.224,
-     "lap1990_race": 83.374,
+     "lap1990": 79.415,
+     "lap1990_race": 83.543,
      "lap2026": 71.273,
-     "ratio": 1.11156,
-     "model_ratio": 1.0854
+     "ratio": 1.11424,
+     "model_ratio": 1.08279
     },
     "sauber": {
-     "lap1990": 81.795,
-     "lap1990_race": 85.803,
+     "lap1990": 81.91,
+     "lap1990_race": 85.97,
      "lap2026": 71.393,
-     "ratio": 1.1457,
-     "model_ratio": 1.09929
+     "ratio": 1.14731,
+     "model_ratio": 1.09686
     },
     "toro_rosso": {
-     "lap1990": 80.387,
-     "lap1990_race": 84.437,
+     "lap1990": 80.569,
+     "lap1990_race": 84.597,
      "lap2026": 70.821,
-     "ratio": 1.13508,
-     "model_ratio": 1.10615
+     "ratio": 1.13764,
+     "model_ratio": 1.10332
     },
     "gm_cadillac": {
-     "lap1990": 81.315,
-     "lap1990_race": 85.275,
+     "lap1990": 81.458,
+     "lap1990_race": 85.436,
      "lap2026": 71.733,
-     "ratio": 1.13358,
-     "model_ratio": 1.08506
+     "ratio": 1.13557,
+     "model_ratio": 1.08239
     },
     "myteam_honda": {
-     "lap1990": 81.923,
-     "lap1990_race": 85.858,
+     "lap1990": 82.102,
+     "lap1990_race": 86.048,
      "lap2026": 71.256,
-     "ratio": 1.14971,
-     "model_ratio": 1.09525
+     "ratio": 1.15222,
+     "model_ratio": 1.09241
     },
     "haas": {
-     "lap1990": 82.248,
-     "lap1990_race": 86.257,
+     "lap1990": 82.401,
+     "lap1990_race": 86.462,
      "lap2026": 71.196,
-     "ratio": 1.15523,
-     "model_ratio": 1.10214
+     "ratio": 1.15737,
+     "model_ratio": 1.09937
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.13071,
-    "median_model_ratio": 1.10615,
+    "median_ratio": 1.13387,
+    "median_model_ratio": 1.10332,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 78.262
+     "lap": 78.418
     },
     "fastest_2026": 70.411,
     "variation": "high",
@@ -2894,104 +2894,104 @@
   "zandvoort_reverse": {
    "cars": {
     "mclaren": {
-     "lap1990": 78.701,
-     "lap1990_race": 82.962,
+     "lap1990": 78.868,
+     "lap1990_race": 83.121,
      "lap2026": 70.252,
-     "ratio": 1.12026,
-     "model_ratio": 1.12204
+     "ratio": 1.12264,
+     "model_ratio": 1.11995
     },
     "ferrari": {
-     "lap1990": 77.621,
-     "lap1990_race": 81.852,
+     "lap1990": 77.785,
+     "lap1990_race": 81.99,
      "lap2026": 70.588,
-     "ratio": 1.09963,
-     "model_ratio": 1.06662
+     "ratio": 1.10195,
+     "model_ratio": 1.06497
     },
     "williams": {
-     "lap1990": 79.621,
-     "lap1990_race": 83.828,
+     "lap1990": 79.729,
+     "lap1990_race": 83.915,
      "lap2026": 70.783,
-     "ratio": 1.12485,
-     "model_ratio": 1.13428
+     "ratio": 1.12638,
+     "model_ratio": 1.13173
     },
     "lotus": {
-     "lap1990": 79.443,
-     "lap1990_race": 83.726,
+     "lap1990": 79.598,
+     "lap1990_race": 83.861,
      "lap2026": 70.647,
-     "ratio": 1.12451,
-     "model_ratio": 1.1304
+     "ratio": 1.12671,
+     "model_ratio": 1.12802
     },
     "mercedes": {
-     "lap1990": 80.203,
-     "lap1990_race": 84.275,
+     "lap1990": 80.356,
+     "lap1990_race": 84.389,
      "lap2026": 70.475,
-     "ratio": 1.13803,
-     "model_ratio": 1.15197
+     "ratio": 1.1402,
+     "model_ratio": 1.15063
     },
     "redbull": {
-     "lap1990": 79.927,
-     "lap1990_race": 84.156,
+     "lap1990": 80.06,
+     "lap1990_race": 84.254,
      "lap2026": 70.6,
-     "ratio": 1.13211,
-     "model_ratio": 1.14299
+     "ratio": 1.13399,
+     "model_ratio": 1.14269
     },
     "force_india": {
-     "lap1990": 80.705,
-     "lap1990_race": 84.883,
+     "lap1990": 80.811,
+     "lap1990_race": 84.962,
      "lap2026": 71.275,
-     "ratio": 1.13232,
-     "model_ratio": 1.13931
+     "ratio": 1.13379,
+     "model_ratio": 1.13675
     },
     "myteam_ferrari": {
-     "lap1990": 79.175,
-     "lap1990_race": 83.53,
+     "lap1990": 79.329,
+     "lap1990_race": 83.611,
      "lap2026": 71.238,
-     "ratio": 1.11142,
-     "model_ratio": 1.07424
+     "ratio": 1.11358,
+     "model_ratio": 1.07226
     },
     "sauber": {
-     "lap1990": 81.784,
-     "lap1990_race": 85.829,
+     "lap1990": 81.906,
+     "lap1990_race": 85.907,
      "lap2026": 71.263,
-     "ratio": 1.14764,
-     "model_ratio": 1.10585
+     "ratio": 1.14934,
+     "model_ratio": 1.10278
     },
     "toro_rosso": {
-     "lap1990": 80.397,
-     "lap1990_race": 84.411,
+     "lap1990": 80.516,
+     "lap1990_race": 84.525,
      "lap2026": 70.701,
-     "ratio": 1.13715,
-     "model_ratio": 1.09518
+     "ratio": 1.13882,
+     "model_ratio": 1.09404
     },
     "gm_cadillac": {
-     "lap1990": 81.178,
-     "lap1990_race": 85.202,
+     "lap1990": 81.268,
+     "lap1990_race": 85.25,
      "lap2026": 71.531,
-     "ratio": 1.13486,
-     "model_ratio": 1.09004
+     "ratio": 1.13612,
+     "model_ratio": 1.08782
     },
     "myteam_honda": {
-     "lap1990": 81.925,
-     "lap1990_race": 85.933,
+     "lap1990": 82.028,
+     "lap1990_race": 86.032,
      "lap2026": 71.223,
-     "ratio": 1.15027,
-     "model_ratio": 1.09533
+     "ratio": 1.15172,
+     "model_ratio": 1.09258
     },
     "haas": {
-     "lap1990": 82.094,
-     "lap1990_race": 86.135,
+     "lap1990": 82.245,
+     "lap1990_race": 86.226,
      "lap2026": 70.947,
-     "ratio": 1.15711,
-     "model_ratio": 1.10846
+     "ratio": 1.15925,
+     "model_ratio": 1.10564
     }
    },
    "summary": {
     "cars": 13,
-    "median_ratio": 1.13232,
-    "median_model_ratio": 1.10846,
+    "median_ratio": 1.13399,
+    "median_model_ratio": 1.10564,
     "fastest_1990": {
      "folder": "ferrari",
-     "lap": 77.621
+     "lap": 77.785
     },
     "fastest_2026": 70.252,
     "variation": "high",
