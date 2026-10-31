@@ -2520,6 +2520,7 @@ pub type Game_CreateSessionDlcSelectTab_FillTile_t = unsafe extern "C" fn(
 ) -> *mut c_void;
 pub type Game_CreateSessionDlcSelectTab_HandleCommand_t =
     unsafe extern "C" fn(view_model: *mut c_void, command: *mut c_void) -> *mut c_char;
+pub type Game_DRS_OnSessionLoad_t = unsafe extern "C" fn(drs: *mut c_void);
 pub type Game_DriverContracts_AdvanceSecretMeeting_t =
     unsafe extern "C" fn(contracts: *mut c_void, driver: u32, notify: u8);
 pub type Game_DriverContracts_BuildOffers_t = unsafe extern "C" fn(contracts: *mut c_void, driver: u32);
@@ -2806,6 +2807,41 @@ pub type Vm_Set_TabEnabled_t = unsafe extern "C" fn(tabs: usize, node: usize, en
 
 pub mod bindings {
     use super::{Binding, Status};
+    pub const Ai_BehaviourTestRetire_Update: Binding = Binding {
+        id: "Ai_BehaviourTestRetire_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ai_Calc_GripLimitScaleA: Binding = Binding {
+        id: "Ai_Calc_GripLimitScaleA",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ai_Calc_GripLimitScaleB: Binding = Binding {
+        id: "Ai_Calc_GripLimitScaleB",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ai_DriverVariationInRaceSystem_Setup: Binding = Binding {
+        id: "Ai_DriverVariationInRaceSystem_Setup",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ai_Job_UpdateCarsParallel: Binding = Binding {
+        id: "Ai_Job_UpdateCarsParallel",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ai_Select_ErsDeployMode: Binding = Binding {
+        id: "Ai_Select_ErsDeployMode",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ai_Update_CompoundPaceCurves: Binding = Binding {
+        id: "Ai_Update_CompoundPaceCurves",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Asset_Load_DevSessionWorlds: Binding = Binding {
         id: "Asset_Load_DevSessionWorlds",
         kind: "func",
@@ -2846,6 +2882,36 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Car_Deformation_AcquireParticles: Binding = Binding {
+        id: "Car_Deformation_AcquireParticles",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Deformation_ClearPool: Binding = Binding {
+        id: "Car_Deformation_ClearPool",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Deformation_CreateBody: Binding = Binding {
+        id: "Car_Deformation_CreateBody",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Deformation_DestroyBody: Binding = Binding {
+        id: "Car_Deformation_DestroyBody",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Deformation_ReleaseParticles: Binding = Binding {
+        id: "Car_Deformation_ReleaseParticles",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Deformation_ReservePool: Binding = Binding {
+        id: "Car_Deformation_ReservePool",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Car_Engine_ComputeDerived_Thunk: Binding = Binding {
         id: "Car_Engine_ComputeDerived_Thunk",
         kind: "func",
@@ -2863,6 +2929,11 @@ pub mod bindings {
     };
     pub const Car_Load_Vtf: Binding = Binding {
         id: "Car_Load_Vtf",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Model_BindCockpitNodes: Binding = Binding {
+        id: "Car_Model_BindCockpitNodes",
         kind: "func",
         status: Status::Experimental,
     };
@@ -2911,6 +2982,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Stable,
     };
+    pub const Car_SteeringWheelLeds_Update: Binding = Binding {
+        id: "Car_SteeringWheelLeds_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Car_Systems_FindOrCreate: Binding = Binding {
         id: "Car_Systems_FindOrCreate",
         kind: "func",
@@ -2931,6 +3007,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Car_TyreSystem_PitstopComplete: Binding = Binding {
+        id: "Car_TyreSystem_PitstopComplete",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Car_Tyre_GripScale: Binding = Binding {
         id: "Car_Tyre_GripScale",
         kind: "func",
@@ -2948,6 +3029,21 @@ pub mod bindings {
     };
     pub const Car_Tyre_UpdateWear: Binding = Binding {
         id: "Car_Tyre_UpdateWear",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_TyresPitstopComplete_ForCarPair: Binding = Binding {
+        id: "Car_TyresPitstopComplete_ForCarPair",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Tyres_ApplyStateToCarPair: Binding = Binding {
+        id: "Car_Tyres_ApplyStateToCarPair",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Tyres_CompletePitstopForCarList: Binding = Binding {
+        id: "Car_Tyres_CompletePitstopForCarList",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3021,6 +3117,21 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Career_Calendar_IgnoreActivitiesInRange: Binding = Binding {
+        id: "Career_Calendar_IgnoreActivitiesInRange",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_Calendar_IgnoreActivityById: Binding = Binding {
+        id: "Career_Calendar_IgnoreActivityById",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_Calendar_MoveTrackData: Binding = Binding {
+        id: "Career_Calendar_MoveTrackData",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Career_Cancel_UpgradeDevelopment: Binding = Binding {
         id: "Career_Cancel_UpgradeDevelopment",
         kind: "func",
@@ -3031,6 +3142,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Career_CareerOnlineDoc_ResetAfterSync: Binding = Binding {
+        id: "Career_CareerOnlineDoc_ResetAfterSync",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Career_Complete_PerkTreeNode: Binding = Binding {
         id: "Career_Complete_PerkTreeNode",
         kind: "func",
@@ -3038,6 +3154,11 @@ pub mod bindings {
     };
     pub const Career_Construct_RnDDeptCard: Binding = Binding {
         id: "Career_Construct_RnDDeptCard",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_ContractHubVM_OnActivate: Binding = Binding {
+        id: "Career_ContractHubVM_OnActivate",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3058,6 +3179,11 @@ pub mod bindings {
     };
     pub const Career_ContractOutro_OnUpdate: Binding = Binding {
         id: "Career_ContractOutro_OnUpdate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_ContractPerksVM_OnActivate: Binding = Binding {
+        id: "Career_ContractPerksVM_OnActivate",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3116,8 +3242,88 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Career_MyTeamCorporateSetupVM_OnAction: Binding = Binding {
+        id: "Career_MyTeamCorporateSetupVM_OnAction",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_MyTeamCorporateSetupVM_OnActivate: Binding = Binding {
+        id: "Career_MyTeamCorporateSetupVM_OnActivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_MyTeamOwnerBackgroundVM_OnAction: Binding = Binding {
+        id: "Career_MyTeamOwnerBackgroundVM_OnAction",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_MyTeamSetup_AdvanceFadeOut: Binding = Binding {
+        id: "Career_MyTeamSetup_AdvanceFadeOut",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_MyTeamVM_RequestThumbnails: Binding = Binding {
+        id: "Career_MyTeamVM_RequestThumbnails",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Career_Needs_DriverContract: Binding = Binding {
         id: "Career_Needs_DriverContract",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_OnlineNegotiationsB_EndFlow: Binding = Binding {
+        id: "Career_OnlineNegotiationsB_EndFlow",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_OnlineNegotiationsB_OnNegotiationsFinished: Binding = Binding {
+        id: "Career_OnlineNegotiationsB_OnNegotiationsFinished",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_OnlineNegotiationsB_ProcessContractRecv: Binding = Binding {
+        id: "Career_OnlineNegotiationsB_ProcessContractRecv",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_OnlineNegotiationsB_ProcessContractSent: Binding = Binding {
+        id: "Career_OnlineNegotiationsB_ProcessContractSent",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_OnlineNegotiations_EndFlow: Binding = Binding {
+        id: "Career_OnlineNegotiations_EndFlow",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_OnlineNegotiations_IsLeadPlayerParticipating: Binding = Binding {
+        id: "Career_OnlineNegotiations_IsLeadPlayerParticipating",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_OnlineNegotiations_IsLeadPlayersTurnTeamSel: Binding = Binding {
+        id: "Career_OnlineNegotiations_IsLeadPlayersTurnTeamSel",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_OnlineNegotiations_OnNegotiationsFinished: Binding = Binding {
+        id: "Career_OnlineNegotiations_OnNegotiationsFinished",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_OnlineNegotiations_ProcessContractRecv: Binding = Binding {
+        id: "Career_OnlineNegotiations_ProcessContractRecv",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_OnlineNegotiations_ProcessContractSent: Binding = Binding {
+        id: "Career_OnlineNegotiations_ProcessContractSent",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_OnlineNegotiations_ShouldShowFiredState: Binding = Binding {
+        id: "Career_OnlineNegotiations_ShouldShowFiredState",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3148,6 +3354,26 @@ pub mod bindings {
     };
     pub const Career_Refresh_UpgradeAvailability: Binding = Binding {
         id: "Career_Refresh_UpgradeAvailability",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_ScheduleEntryDeptEvent_Start: Binding = Binding {
+        id: "Career_ScheduleEntryDeptEvent_Start",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_ScheduleEntry_Finish: Binding = Binding {
+        id: "Career_ScheduleEntry_Finish",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_ScheduleEntry_TryStart: Binding = Binding {
+        id: "Career_ScheduleEntry_TryStart",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_SecretMeetingsVM_OnScreenDeactivated: Binding = Binding {
+        id: "Career_SecretMeetingsVM_OnScreenDeactivated",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3186,8 +3412,143 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Career_StateTeamHq_OnStateExit: Binding = Binding {
+        id: "Career_StateTeamHq_OnStateExit",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqAdvanceVM_AllowOnlineUnready: Binding = Binding {
+        id: "Career_TeamHqAdvanceVM_AllowOnlineUnready",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqAdvanceVM_EnterPressInterview: Binding = Binding {
+        id: "Career_TeamHqAdvanceVM_EnterPressInterview",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqAdvanceVM_Initialise: Binding = Binding {
+        id: "Career_TeamHqAdvanceVM_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqAdvanceVM_OnNotificationsAnimOff: Binding = Binding {
+        id: "Career_TeamHqAdvanceVM_OnNotificationsAnimOff",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqAdvance_ClearDelayedByAnims: Binding = Binding {
+        id: "Career_TeamHqAdvance_ClearDelayedByAnims",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqAdvance_RestartTimer: Binding = Binding {
+        id: "Career_TeamHqAdvance_RestartTimer",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqAdvance_SetAdvanceRequested: Binding = Binding {
+        id: "Career_TeamHqAdvance_SetAdvanceRequested",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqContainerVM_OnAction: Binding = Binding {
+        id: "Career_TeamHqContainerVM_OnAction",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqContainerVM_OnScreenActivated: Binding = Binding {
+        id: "Career_TeamHqContainerVM_OnScreenActivated",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqDriverRender_Init: Binding = Binding {
+        id: "Career_TeamHqDriverRender_Init",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqFacilities_CameraCycleFadeIn: Binding = Binding {
+        id: "Career_TeamHqFacilities_CameraCycleFadeIn",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqFacilities_CameraCycleFadeInNamed: Binding = Binding {
+        id: "Career_TeamHqFacilities_CameraCycleFadeInNamed",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqFacilities_CameraCycleFadeInOnEnter: Binding = Binding {
+        id: "Career_TeamHqFacilities_CameraCycleFadeInOnEnter",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqFacilities_CameraCycleStep: Binding = Binding {
+        id: "Career_TeamHqFacilities_CameraCycleStep",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqLaptopVM_OnAction: Binding = Binding {
+        id: "Career_TeamHqLaptopVM_OnAction",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqLaptopVM_OnDeactivate: Binding = Binding {
+        id: "Career_TeamHqLaptopVM_OnDeactivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqMyTeamVM_ClearStopping: Binding = Binding {
+        id: "Career_TeamHqMyTeamVM_ClearStopping",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqMyTeamVM_Initialise: Binding = Binding {
+        id: "Career_TeamHqMyTeamVM_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqMyTeamVM_OnCommandRaised: Binding = Binding {
+        id: "Career_TeamHqMyTeamVM_OnCommandRaised",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqMyTeamVM_OnTimer: Binding = Binding {
+        id: "Career_TeamHqMyTeamVM_OnTimer",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqMyTeamVM_SignalStartAdvancing: Binding = Binding {
+        id: "Career_TeamHqMyTeamVM_SignalStartAdvancing",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqMyTeamVM_StopAdvancing: Binding = Binding {
+        id: "Career_TeamHqMyTeamVM_StopAdvancing",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqMyTeamVM_Update: Binding = Binding {
+        id: "Career_TeamHqMyTeamVM_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_TeamHqRender_ResolveServices: Binding = Binding {
+        id: "Career_TeamHqRender_ResolveServices",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Career_Teardown_Weekend: Binding = Binding {
         id: "Career_Teardown_Weekend",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_WizardTitleSliceVM_OnActivate: Binding = Binding {
+        id: "Career_WizardTitleSliceVM_OnActivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_WizardTitleSliceVM_OnDeactivate: Binding = Binding {
+        id: "Career_WizardTitleSliceVM_OnDeactivate",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3261,6 +3622,146 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_AccelerationDecelerationForcesCameraModifier_OnEnable: Binding = Binding {
+        id: "Game_AccelerationDecelerationForcesCameraModifier_OnEnable",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ActorAssetGroupManager_Update: Binding = Binding {
+        id: "Game_ActorAssetGroupManager_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ActorManager_Initialise: Binding = Binding {
+        id: "Game_ActorManager_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_AdaptiveAi_RecordSessionFinished: Binding = Binding {
+        id: "Game_AdaptiveAi_RecordSessionFinished",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_AiManager_Initialise: Binding = Binding {
+        id: "Game_AiManager_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_AiPitDecision_UpdateDroppedPlayerCar: Binding = Binding {
+        id: "Game_AiPitDecision_UpdateDroppedPlayerCar",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_AnimLayers_EvaluateBlend: Binding = Binding {
+        id: "Game_AnimLayers_EvaluateBlend",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_AnimLayers_EvaluateFallback: Binding = Binding {
+        id: "Game_AnimLayers_EvaluateFallback",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_AnimLayers_EvaluateSingle: Binding = Binding {
+        id: "Game_AnimLayers_EvaluateSingle",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_AnimatedDriver_Initialise: Binding = Binding {
+        id: "Game_AnimatedDriver_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_AudioAutodetect_Initialise: Binding = Binding {
+        id: "Game_AudioAutodetect_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_AudioEngineBundle_Initialise: Binding = Binding {
+        id: "Game_AudioEngineBundle_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_BenchmarkGameMode_BuildSessionSettings: Binding = Binding {
+        id: "Game_BenchmarkGameMode_BuildSessionSettings",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_BetaCode_OnEntered: Binding = Binding {
+        id: "Game_BetaCode_OnEntered",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Breakable_SpawnPieceRenderModel: Binding = Binding {
+        id: "Game_Breakable_SpawnPieceRenderModel",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_BroadcastViewVehicleVM_OnActivate: Binding = Binding {
+        id: "Game_BroadcastViewVehicleVM_OnActivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_BroadcastViewVehicleVM_OnDeactivate: Binding = Binding {
+        id: "Game_BroadcastViewVehicleVM_OnDeactivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_BusySpinner_StopAndFadeOutUi: Binding = Binding {
+        id: "Game_BusySpinner_StopAndFadeOutUi",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CameraActor_ProcessPendingCameraChanges: Binding = Binding {
+        id: "Game_CameraActor_ProcessPendingCameraChanges",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CameraActor_SyncClipTarget: Binding = Binding {
+        id: "Game_CameraActor_SyncClipTarget",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CameraCollection_FindByName: Binding = Binding {
+        id: "Game_CameraCollection_FindByName",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CameraCollection_FindByUid: Binding = Binding {
+        id: "Game_CameraCollection_FindByUid",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CarCustomisation_ApplyAllCustomisation: Binding = Binding {
+        id: "Game_CarCustomisation_ApplyAllCustomisation",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CarCustomisation_ApplyDriverNumbers: Binding = Binding {
+        id: "Game_CarCustomisation_ApplyDriverNumbers",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CarCustomisation_ApplyLiveryPreview: Binding = Binding {
+        id: "Game_CarCustomisation_ApplyLiveryPreview",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CarCustomisation_MarkCarDirtyOff: Binding = Binding {
+        id: "Game_CarCustomisation_MarkCarDirtyOff",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CarCustomisation_SetupWritableCamera: Binding = Binding {
+        id: "Game_CarCustomisation_SetupWritableCamera",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CarDecals_BuildList: Binding = Binding {
+        id: "Game_CarDecals_BuildList",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_CareerActivities_AddActivity: Binding = Binding {
         id: "Game_CareerActivities_AddActivity",
         kind: "func",
@@ -3276,6 +3777,96 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_CareerEventResourceManager_DeactivateExtraWorld: Binding = Binding {
+        id: "Game_CareerEventResourceManager_DeactivateExtraWorld",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CareerEventResourceManager_ShutdownExtraWorlds: Binding = Binding {
+        id: "Game_CareerEventResourceManager_ShutdownExtraWorlds",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CareerEvent_OnEventKey: Binding = Binding {
+        id: "Game_CareerEvent_OnEventKey",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CareerEvent_OnSequenceEvent: Binding = Binding {
+        id: "Game_CareerEvent_OnSequenceEvent",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CareerEventsSequencer_CloseLaptop: Binding = Binding {
+        id: "Game_CareerEventsSequencer_CloseLaptop",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CareerEventsSequencer_Destroy: Binding = Binding {
+        id: "Game_CareerEventsSequencer_Destroy",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CareerEventsSequencer_Initialise: Binding = Binding {
+        id: "Game_CareerEventsSequencer_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CareerEventsSequencer_IsPausableA: Binding = Binding {
+        id: "Game_CareerEventsSequencer_IsPausableA",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CareerEventsSequencer_IsPausableB: Binding = Binding {
+        id: "Game_CareerEventsSequencer_IsPausableB",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CareerEventsSequencer_OnFadedOutForExit: Binding = Binding {
+        id: "Game_CareerEventsSequencer_OnFadedOutForExit",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CareerEventsSequencer_OnHubClosed: Binding = Binding {
+        id: "Game_CareerEventsSequencer_OnHubClosed",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CareerEventsSequencer_OpenLaptop: Binding = Binding {
+        id: "Game_CareerEventsSequencer_OpenLaptop",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CareerEventsSequencer_SetAllEnabled: Binding = Binding {
+        id: "Game_CareerEventsSequencer_SetAllEnabled",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CareerEventsSequencer_SetLoadingEnabled: Binding = Binding {
+        id: "Game_CareerEventsSequencer_SetLoadingEnabled",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CareerEventsSequencer_SpawnDriverScene: Binding = Binding {
+        id: "Game_CareerEventsSequencer_SpawnDriverScene",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CareerEventsSequencer_TriggerFadeOutForExit: Binding = Binding {
+        id: "Game_CareerEventsSequencer_TriggerFadeOutForExit",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CareerEventsSequencer_UnloadAll: Binding = Binding {
+        id: "Game_CareerEventsSequencer_UnloadAll",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CareerHubRndAreaScript_Initialise: Binding = Binding {
+        id: "Game_CareerHubRndAreaScript_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_CareerSetup_ResetEntrants: Binding = Binding {
         id: "Game_CareerSetup_ResetEntrants",
         kind: "func",
@@ -3286,13 +3877,123 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_CareerWizard_ResolveOrExit: Binding = Binding {
+        id: "Game_CareerWizard_ResolveOrExit",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_CareerWizard_StartsInF1: Binding = Binding {
         id: "Game_CareerWizard_StartsInF1",
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_Career_FadeOutForSessionRequest: Binding = Binding {
+        id: "Game_Career_FadeOutForSessionRequest",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Career_HideDriversOnExit: Binding = Binding {
+        id: "Game_Career_HideDriversOnExit",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Career_IsDriverCareerMode: Binding = Binding {
         id: "Game_Career_IsDriverCareerMode",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Career_SpawnMainDriverPose: Binding = Binding {
+        id: "Game_Career_SpawnMainDriverPose",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ChallengeEvent_HandleCommand: Binding = Binding {
+        id: "Game_ChallengeEvent_HandleCommand",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ChallengeEvent_OnTabActivated: Binding = Binding {
+        id: "Game_ChallengeEvent_OnTabActivated",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ChallengeEvent_OnTabDeactivated: Binding = Binding {
+        id: "Game_ChallengeEvent_OnTabDeactivated",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ChampSession_Reset: Binding = Binding {
+        id: "Game_ChampSession_Reset",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ChampionshipGameMode_BuildSessionSettings: Binding = Binding {
+        id: "Game_ChampionshipGameMode_BuildSessionSettings",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Championship_AddSessionDefaultLength: Binding = Binding {
+        id: "Game_Championship_AddSessionDefaultLength",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Championship_AddSessionFromDef: Binding = Binding {
+        id: "Game_Championship_AddSessionFromDef",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Championship_AddSessionWithFormat: Binding = Binding {
+        id: "Game_Championship_AddSessionWithFormat",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Championship_ResetSessionsForRestart: Binding = Binding {
+        id: "Game_Championship_ResetSessionsForRestart",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CinematicDirector_SendCinematicData: Binding = Binding {
+        id: "Game_CinematicDirector_SendCinematicData",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CinematicPitStop_Start: Binding = Binding {
+        id: "Game_CinematicPitStop_Start",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CinematicPitStop_Stop: Binding = Binding {
+        id: "Game_CinematicPitStop_Stop",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CinematicSafetyCar_FadeIn: Binding = Binding {
+        id: "Game_CinematicSafetyCar_FadeIn",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CinematicSafetyCar_FadeOut: Binding = Binding {
+        id: "Game_CinematicSafetyCar_FadeOut",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CinematicSafetyCar_HideHud: Binding = Binding {
+        id: "Game_CinematicSafetyCar_HideHud",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CinematicSafetyCar_RunThenFadeIn: Binding = Binding {
+        id: "Game_CinematicSafetyCar_RunThenFadeIn",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CinematicSafetyCar_Stop: Binding = Binding {
+        id: "Game_CinematicSafetyCar_Stop",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CollisionBasedShakeCameraModifier_OnEnable: Binding = Binding {
+        id: "Game_CollisionBasedShakeCameraModifier_OnEnable",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3311,6 +4012,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_ControllerState_SyncHudHideReason13: Binding = Binding {
+        id: "Game_ControllerState_SyncHudHideReason13",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_CreateSessionDlcSelectTab_BuildTiles: Binding = Binding {
         id: "Game_CreateSessionDlcSelectTab_BuildTiles",
         kind: "func",
@@ -3323,6 +4029,336 @@ pub mod bindings {
     };
     pub const Game_CreateSessionDlcSelectTab_HandleCommand: Binding = Binding {
         id: "Game_CreateSessionDlcSelectTab_HandleCommand",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CreditsSelectVM_OnScreenActivated: Binding = Binding {
+        id: "Game_CreditsSelectVM_OnScreenActivated",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CrewWorkingOnCar_Initialise: Binding = Binding {
+        id: "Game_CrewWorkingOnCar_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CustomDriverNetworkMessageHandler_AddReplicatedDriver: Binding = Binding {
+        id: "Game_CustomDriverNetworkMessageHandler_AddReplicatedDriver",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CustomDriverNetworkMessageHandler_FindOrCreateDriverStatId: Binding = Binding {
+        id: "Game_CustomDriverNetworkMessageHandler_FindOrCreateDriverStatId",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CustomDriverNetworkMessageHandler_HandleResponse: Binding = Binding {
+        id: "Game_CustomDriverNetworkMessageHandler_HandleResponse",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CustomDriverNetworkMessageHandler_RemoveCustomDriver: Binding = Binding {
+        id: "Game_CustomDriverNetworkMessageHandler_RemoveCustomDriver",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CustomDriverNetworkMessageHandler_RemovePlayerReplData: Binding = Binding {
+        id: "Game_CustomDriverNetworkMessageHandler_RemovePlayerReplData",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver: Binding = Binding {
+        id: "Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CustomDriverNetworkMessageHandler_UpdateReplicatedDriver: Binding = Binding {
+        id: "Game_CustomDriverNetworkMessageHandler_UpdateReplicatedDriver",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CustomisationDecals_DeleteFiles: Binding = Binding {
+        id: "Game_CustomisationDecals_DeleteFiles",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CustomisationDecals_Destroy: Binding = Binding {
+        id: "Game_CustomisationDecals_Destroy",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CustomisationDecals_DestroyMaterialOverride: Binding = Binding {
+        id: "Game_CustomisationDecals_DestroyMaterialOverride",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CustomisationDecals_DestroySetProxy: Binding = Binding {
+        id: "Game_CustomisationDecals_DestroySetProxy",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CustomisationDecals_LoadConfig: Binding = Binding {
+        id: "Game_CustomisationDecals_LoadConfig",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CustomisationDecals_OpenFile: Binding = Binding {
+        id: "Game_CustomisationDecals_OpenFile",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CustomisationDecals_UnloadAssetBatch: Binding = Binding {
+        id: "Game_CustomisationDecals_UnloadAssetBatch",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CustomisationOptionsVM_OnActivate: Binding = Binding {
+        id: "Game_CustomisationOptionsVM_OnActivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CustomisationOptionsVM_OnDeactivate: Binding = Binding {
+        id: "Game_CustomisationOptionsVM_OnDeactivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneParams_SetCameraIndex: Binding = Binding {
+        id: "Game_CutSceneParams_SetCameraIndex",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneParams_SetCutSceneName: Binding = Binding {
+        id: "Game_CutSceneParams_SetCutSceneName",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneParams_SetupDataFromEntrant: Binding = Binding {
+        id: "Game_CutSceneParams_SetupDataFromEntrant",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneParams_SetupFromSpecificInfoFallbacks: Binding = Binding {
+        id: "Game_CutSceneParams_SetupFromSpecificInfoFallbacks",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneParams_SetupLeadEngineerFromTeam: Binding = Binding {
+        id: "Game_CutSceneParams_SetupLeadEngineerFromTeam",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneScriptCmd_SetStateLoading: Binding = Binding {
+        id: "Game_CutSceneScriptCmd_SetStateLoading",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneScript_ActivateExtraWorld: Binding = Binding {
+        id: "Game_CutSceneScript_ActivateExtraWorld",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneScript_ActivatePrimaryWorld: Binding = Binding {
+        id: "Game_CutSceneScript_ActivatePrimaryWorld",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneScript_AddDriverBodyToAssetGroupPaths: Binding = Binding {
+        id: "Game_CutSceneScript_AddDriverBodyToAssetGroupPaths",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneScript_AddDriverBodyToAssetGroupPaths_2: Binding = Binding {
+        id: "Game_CutSceneScript_AddDriverBodyToAssetGroupPaths_2",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneScript_AdvanceStartTimeOffset: Binding = Binding {
+        id: "Game_CutSceneScript_AdvanceStartTimeOffset",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneScript_ApplyDriverPartOptions: Binding = Binding {
+        id: "Game_CutSceneScript_ApplyDriverPartOptions",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneScript_DeactivatePrimaryWorld: Binding = Binding {
+        id: "Game_CutSceneScript_DeactivatePrimaryWorld",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneScript_Initialise: Binding = Binding {
+        id: "Game_CutSceneScript_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneScript_LoadAssetGroups: Binding = Binding {
+        id: "Game_CutSceneScript_LoadAssetGroups",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneScript_ResetStartTimeOffset: Binding = Binding {
+        id: "Game_CutSceneScript_ResetStartTimeOffset",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneScript_ResolveDriverOutfitAssets: Binding = Binding {
+        id: "Game_CutSceneScript_ResolveDriverOutfitAssets",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneScript_RunCommand: Binding = Binding {
+        id: "Game_CutSceneScript_RunCommand",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneScript_SetGarageLocation: Binding = Binding {
+        id: "Game_CutSceneScript_SetGarageLocation",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneScript_SetGridLocation: Binding = Binding {
+        id: "Game_CutSceneScript_SetGridLocation",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneScript_SetStateFinished: Binding = Binding {
+        id: "Game_CutSceneScript_SetStateFinished",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneScript_SpawnDynamicDriverActor: Binding = Binding {
+        id: "Game_CutSceneScript_SpawnDynamicDriverActor",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneScript_SpawnGarageGantry: Binding = Binding {
+        id: "Game_CutSceneScript_SpawnGarageGantry",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneScript_SpawnLeadEngineer: Binding = Binding {
+        id: "Game_CutSceneScript_SpawnLeadEngineer",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutSceneScript_StopWorldNotification: Binding = Binding {
+        id: "Game_CutSceneScript_StopWorldNotification",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutsceneContext_ParseSceneContext: Binding = Binding {
+        id: "Game_CutsceneContext_ParseSceneContext",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutsceneManager_IsPreparingScenes: Binding = Binding {
+        id: "Game_CutsceneManager_IsPreparingScenes",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutsceneManager_SyncAssetGroups: Binding = Binding {
+        id: "Game_CutsceneManager_SyncAssetGroups",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CutsceneManager_WaitTextureStreaming: Binding = Binding {
+        id: "Game_CutsceneManager_WaitTextureStreaming",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DRS_OnSessionLoad: Binding = Binding {
+        id: "Game_DRS_OnSessionLoad",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DataDrivenCutSceneScript_CreateComponents: Binding = Binding {
+        id: "Game_DataDrivenCutSceneScript_CreateComponents",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DataDrivenCutSceneScript_Destructor: Binding = Binding {
+        id: "Game_DataDrivenCutSceneScript_Destructor",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DataDrivenCutSceneScript_FireEvent: Binding = Binding {
+        id: "Game_DataDrivenCutSceneScript_FireEvent",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DataDrivenCutSceneScript_IsPreloadSeqDataComplete: Binding = Binding {
+        id: "Game_DataDrivenCutSceneScript_IsPreloadSeqDataComplete",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DataDrivenCutSceneScript_IsStateUnloaded: Binding = Binding {
+        id: "Game_DataDrivenCutSceneScript_IsStateUnloaded",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DataDrivenCutSceneScript_OnShutDownComplete: Binding = Binding {
+        id: "Game_DataDrivenCutSceneScript_OnShutDownComplete",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DataDrivenCutSceneScript_PostInitialise: Binding = Binding {
+        id: "Game_DataDrivenCutSceneScript_PostInitialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DataDrivenCutSceneScript_SetStateStop: Binding = Binding {
+        id: "Game_DataDrivenCutSceneScript_SetStateStop",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DataDrivenCutSceneScript_Shutdown: Binding = Binding {
+        id: "Game_DataDrivenCutSceneScript_Shutdown",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DataGathererPlayers_Update: Binding = Binding {
+        id: "Game_DataGathererPlayers_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DecalFileDeleteOp_DoJob: Binding = Binding {
+        id: "Game_DecalFileDeleteOp_DoJob",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DecalFileLoadOp_OnLoaded: Binding = Binding {
+        id: "Game_DecalFileLoadOp_OnLoaded",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DecalGeneration_CacheMaterialHandle: Binding = Binding {
+        id: "Game_DecalGeneration_CacheMaterialHandle",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DecalGeneration_ReadBackCompressed: Binding = Binding {
+        id: "Game_DecalGeneration_ReadBackCompressed",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DecalGeneration_SetDecalComponent: Binding = Binding {
+        id: "Game_DecalGeneration_SetDecalComponent",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DeptEventViewModel_Update: Binding = Binding {
+        id: "Game_DeptEventViewModel_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DriverCareer_SpawnDriverPair: Binding = Binding {
+        id: "Game_DriverCareer_SpawnDriverPair",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DriverCareer_TeamMateSelectSpawn: Binding = Binding {
+        id: "Game_DriverCareer_TeamMateSelectSpawn",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3341,8 +4377,148 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_DriverCustomisationReplicationManager_ReplaceCustomisation: Binding = Binding {
+        id: "Game_DriverCustomisationReplicationManager_ReplaceCustomisation",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DriverCustomisationReplicationManager_ReplaceCustomisatn_2: Binding = Binding {
+        id: "Game_DriverCustomisationReplicationManager_ReplaceCustomisatn_2",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DriverHqAgentIntroTransition_Initialise: Binding = Binding {
+        id: "Game_DriverHqAgentIntroTransition_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DriverHqContractsTransition_Initialise: Binding = Binding {
+        id: "Game_DriverHqContractsTransition_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DriverInCarIdle03_Initialise: Binding = Binding {
+        id: "Game_DriverInCarIdle03_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DriverInCarIdle05_Initialise: Binding = Binding {
+        id: "Game_DriverInCarIdle05_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DriverProfileTabVM_OnTabActivated: Binding = Binding {
+        id: "Game_DriverProfileTabVM_OnTabActivated",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DriverProfileTabVM_OnTabDeactivated: Binding = Binding {
+        id: "Game_DriverProfileTabVM_OnTabDeactivated",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DriverSatInCar06_PreStart: Binding = Binding {
+        id: "Game_DriverSatInCar06_PreStart",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DriverSelectGridVM_OnActivate: Binding = Binding {
+        id: "Game_DriverSelectGridVM_OnActivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DriverSelectGridVM_OnDeactivate: Binding = Binding {
+        id: "Game_DriverSelectGridVM_OnDeactivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_DriverSelectHeader_SetTabState: Binding = Binding {
         id: "Game_DriverSelectHeader_SetTabState",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DriverTalkToEngineer02_Initialise: Binding = Binding {
+        id: "Game_DriverTalkToEngineer02_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DriverTalksToPress_Initialise: Binding = Binding {
+        id: "Game_DriverTalksToPress_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DynObjAchievePosition_Activate: Binding = Binding {
+        id: "Game_DynObjAchievePosition_Activate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DynObjAchievePosition_UpdateStatus: Binding = Binding {
+        id: "Game_DynObjAchievePosition_UpdateStatus",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DynObjCriterion_UpdateGapAhead: Binding = Binding {
+        id: "Game_DynObjCriterion_UpdateGapAhead",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DynObjCriterion_UpdateGapBehind: Binding = Binding {
+        id: "Game_DynObjCriterion_UpdateGapBehind",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DynObjCriterion_UpdateGapCurve: Binding = Binding {
+        id: "Game_DynObjCriterion_UpdateGapCurve",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DynObjCriterion_UpdatePositionCurve: Binding = Binding {
+        id: "Game_DynObjCriterion_UpdatePositionCurve",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DynObjDefendPosition_AccumulateTime: Binding = Binding {
+        id: "Game_DynObjDefendPosition_AccumulateTime",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DynObjDefendPosition_CheckRivalChange: Binding = Binding {
+        id: "Game_DynObjDefendPosition_CheckRivalChange",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DynObjDefendPosition_Update: Binding = Binding {
+        id: "Game_DynObjDefendPosition_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DynObjGapCurve_Evaluate: Binding = Binding {
+        id: "Game_DynObjGapCurve_Evaluate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DynObjGapCurve_Update: Binding = Binding {
+        id: "Game_DynObjGapCurve_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DynamicObjective_GetLapsLeft: Binding = Binding {
+        id: "Game_DynamicObjective_GetLapsLeft",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DynamicObjective_TryActivatePosition: Binding = Binding {
+        id: "Game_DynamicObjective_TryActivatePosition",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_EALoginTask_OnStart: Binding = Binding {
+        id: "Game_EALoginTask_OnStart",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_EALoginTask_Update: Binding = Binding {
+        id: "Game_EALoginTask_Update",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3356,6 +4532,51 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_EngineMgmt_ClearRaceGridPenalties: Binding = Binding {
+        id: "Game_EngineMgmt_ClearRaceGridPenalties",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_EngineMgmt_OnRaceSessionEnded: Binding = Binding {
+        id: "Game_EngineMgmt_OnRaceSessionEnded",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_EngineMgmt_SyncGridPenaltyLog: Binding = Binding {
+        id: "Game_EngineMgmt_SyncGridPenaltyLog",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_EntrantsManager_ClaimFreeEntrant: Binding = Binding {
+        id: "Game_EntrantsManager_ClaimFreeEntrant",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_EntrantsManager_HandleCustomSELiveryReplace: Binding = Binding {
+        id: "Game_EntrantsManager_HandleCustomSELiveryReplace",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_EntrantsManager_OnMutableRoleChanged: Binding = Binding {
+        id: "Game_EntrantsManager_OnMutableRoleChanged",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_EntrantsManager_RegisterEntrant: Binding = Binding {
+        id: "Game_EntrantsManager_RegisterEntrant",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_EntrantsManager_ResolveAndCloseDocument: Binding = Binding {
+        id: "Game_EntrantsManager_ResolveAndCloseDocument",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_EntrantsManager_ResolveEntrants: Binding = Binding {
+        id: "Game_EntrantsManager_ResolveEntrants",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_EntrantsUi_BuildCharacterRef: Binding = Binding {
         id: "Game_EntrantsUi_BuildCharacterRef",
         kind: "func",
@@ -3366,8 +4587,918 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_EventDispatcher_SendPositionEvent: Binding = Binding {
+        id: "Game_EventDispatcher_SendPositionEvent",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_EventObjectives_OnTargetPositionDone: Binding = Binding {
+        id: "Game_EventObjectives_OnTargetPositionDone",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_EventObjectives_ShowTargetPosition: Binding = Binding {
+        id: "Game_EventObjectives_ShowTargetPosition",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ExcitementEventPair_TraceLog: Binding = Binding {
+        id: "Game_ExcitementEventPair_TraceLog",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1CGRuleset_ForceFinishAll: Binding = Binding {
+        id: "Game_F1CGRuleset_ForceFinishAll",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1CGRuleset_OnVehicleStatusRequest: Binding = Binding {
+        id: "Game_F1CGRuleset_OnVehicleStatusRequest",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1WLoadout_Initialise: Binding = Binding {
+        id: "Game_F1WLoadout_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1WorldActivityContainer_GoHome: Binding = Binding {
+        id: "Game_F1WorldActivityContainer_GoHome",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1WorldActivityContainer_OnExit: Binding = Binding {
+        id: "Game_F1WorldActivityContainer_OnExit",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_F1WorldActivityContainer_SelectEntrantList: Binding = Binding {
         id: "Game_F1WorldActivityContainer_SelectEntrantList",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1WorldGoals_HandleCommand: Binding = Binding {
+        id: "Game_F1WorldGoals_HandleCommand",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1WorldGoals_OnTabActivated: Binding = Binding {
+        id: "Game_F1WorldGoals_OnTabActivated",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1WorldGoals_OnTabDeactivated: Binding = Binding {
+        id: "Game_F1WorldGoals_OnTabDeactivated",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1WorldGoals_PopulateGoalList: Binding = Binding {
+        id: "Game_F1WorldGoals_PopulateGoalList",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1WorldHub_BuildPlayTiles: Binding = Binding {
+        id: "Game_F1WorldHub_BuildPlayTiles",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1WorldHub_OnPopupResult: Binding = Binding {
+        id: "Game_F1WorldHub_OnPopupResult",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1WorldHub_RestoreLastActivity: Binding = Binding {
+        id: "Game_F1WorldHub_RestoreLastActivity",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1WorldHub_RouteToActivity: Binding = Binding {
+        id: "Game_F1WorldHub_RouteToActivity",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1WorldHub_SelectTab: Binding = Binding {
+        id: "Game_F1WorldHub_SelectTab",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1WorldRewards_PopulateXpScreen: Binding = Binding {
+        id: "Game_F1WorldRewards_PopulateXpScreen",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1WorldScreenVM_Update: Binding = Binding {
+        id: "Game_F1WorldScreenVM_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1WorldScreen_NavigateEp1_2: Binding = Binding {
+        id: "Game_F1WorldScreen_NavigateEp1_2",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1WorldScreen_NavigateEp1_4: Binding = Binding {
+        id: "Game_F1WorldScreen_NavigateEp1_4",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1WorldScreen_RefreshAndNavigate: Binding = Binding {
+        id: "Game_F1WorldScreen_RefreshAndNavigate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1World_NavigateWithEntryPoint1: Binding = Binding {
+        id: "Game_F1World_NavigateWithEntryPoint1",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osHttpTask_Ctor_Vt14583cd40: Binding = Binding {
+        id: "Game_F1osHttpTask_Ctor_Vt14583cd40",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTask_CollectResults_Vt145835c00: Binding = Binding {
+        id: "Game_F1osTask_CollectResults_Vt145835c00",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTask_Ctor_Vt145835090: Binding = Binding {
+        id: "Game_F1osTask_Ctor_Vt145835090",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTask_FinishIfNoPending_GetFriendsList: Binding = Binding {
+        id: "Game_F1osTask_FinishIfNoPending_GetFriendsList",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTask_FinishLocked_PlayerSearch: Binding = Binding {
+        id: "Game_F1osTask_FinishLocked_PlayerSearch",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTask_OnChildFinished_Vt145835c00: Binding = Binding {
+        id: "Game_F1osTask_OnChildFinished_Vt145835c00",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTask_OnJoinFailed_Vt145832400: Binding = Binding {
+        id: "Game_F1osTask_OnJoinFailed_Vt145832400",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTask_OnResultSetFinished_Vt145832400: Binding = Binding {
+        id: "Game_F1osTask_OnResultSetFinished_Vt145832400",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTask_ProcessFriendsReply_Vt145834f90: Binding = Binding {
+        id: "Game_F1osTask_ProcessFriendsReply_Vt145834f90",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTask_RegisterEntrant_Vt1458323b0: Binding = Binding {
+        id: "Game_F1osTask_RegisterEntrant_Vt1458323b0",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTask_ResolveNames_GetFriendsList: Binding = Binding {
+        id: "Game_F1osTask_ResolveNames_GetFriendsList",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTask_SetFinishedReleaseRef: Binding = Binding {
+        id: "Game_F1osTask_SetFinishedReleaseRef",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTask_SetFinished_B: Binding = Binding {
+        id: "Game_F1osTask_SetFinished_B",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTask_SpawnChild_Vt1458323b0: Binding = Binding {
+        id: "Game_F1osTask_SpawnChild_Vt1458323b0",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTask_SpawnChild_Vt145835c00: Binding = Binding {
+        id: "Game_F1osTask_SpawnChild_Vt145835c00",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTasksystem_CreateTask_FinalisePackagePTask: Binding = Binding {
+        id: "Game_F1osTasksystem_CreateTask_FinalisePackagePTask",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTasksystem_CreateTask_GetPPackagesData: Binding = Binding {
+        id: "Game_F1osTasksystem_CreateTask_GetPPackagesData",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTasksystem_CreateTask_HoldingPageHint: Binding = Binding {
+        id: "Game_F1osTasksystem_CreateTask_HoldingPageHint",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTasksystem_CreateTask_PurchaseVIP: Binding = Binding {
+        id: "Game_F1osTasksystem_CreateTask_PurchaseVIP",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTasksystem_CreateTask_RequestPackagePTask: Binding = Binding {
+        id: "Game_F1osTasksystem_CreateTask_RequestPackagePTask",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTasksystem_CreateTask_Vt145834f90: Binding = Binding {
+        id: "Game_F1osTasksystem_CreateTask_Vt145834f90",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTasksystem_CreateTask_Vt145835090: Binding = Binding {
+        id: "Game_F1osTasksystem_CreateTask_Vt145835090",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTasksystem_CreateTask_Vt1458352e0: Binding = Binding {
+        id: "Game_F1osTasksystem_CreateTask_Vt1458352e0",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTasksystem_CreateTask_Vt145835490: Binding = Binding {
+        id: "Game_F1osTasksystem_CreateTask_Vt145835490",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTasksystem_CreateTask_Vt145835780: Binding = Binding {
+        id: "Game_F1osTasksystem_CreateTask_Vt145835780",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTasksystem_CreateTask_Vt145835ba0: Binding = Binding {
+        id: "Game_F1osTasksystem_CreateTask_Vt145835ba0",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTasksystem_CreateTask_Vt14583c2a0: Binding = Binding {
+        id: "Game_F1osTasksystem_CreateTask_Vt14583c2a0",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTasksystem_CreateTask_Vt14583d000: Binding = Binding {
+        id: "Game_F1osTasksystem_CreateTask_Vt14583d000",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1osTasksystem_Update: Binding = Binding {
+        id: "Game_F1osTasksystem_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_CreateHttpRequest: Binding = Binding {
+        id: "Game_F1os_CreateHttpRequest",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_CreateOnlineServiceTask: Binding = Binding {
+        id: "Game_F1os_CreateOnlineServiceTask",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_CreateTask_GetFriendsLeaderboard: Binding = Binding {
+        id: "Game_F1os_CreateTask_GetFriendsLeaderboard",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_CreateTask_GetLeaderboard: Binding = Binding {
+        id: "Game_F1os_CreateTask_GetLeaderboard",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_CreateTask_Login: Binding = Binding {
+        id: "Game_F1os_CreateTask_Login",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_CreateTask_ReconcileUserEntitlements: Binding = Binding {
+        id: "Game_F1os_CreateTask_ReconcileUserEntitlements",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_CreateTask_RefreshSessionToken: Binding = Binding {
+        id: "Game_F1os_CreateTask_RefreshSessionToken",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_CreateTask_RequestPackageP: Binding = Binding {
+        id: "Game_F1os_CreateTask_RequestPackageP",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_Create_CompleteEvent: Binding = Binding {
+        id: "Game_F1os_Create_CompleteEvent",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_Create_CraftBlueprint: Binding = Binding {
+        id: "Game_F1os_Create_CraftBlueprint",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_Create_GetCCLeaderboard: Binding = Binding {
+        id: "Game_F1os_Create_GetCCLeaderboard",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_Create_RemoveMember: Binding = Binding {
+        id: "Game_F1os_Create_RemoveMember",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_Create_SessionBrowserSearchSessions: Binding = Binding {
+        id: "Game_F1os_Create_SessionBrowserSearchSessions",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_Create_SetPlayerInfo: Binding = Binding {
+        id: "Game_F1os_Create_SetPlayerInfo",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_Create_StartEvent: Binding = Binding {
+        id: "Game_F1os_Create_StartEvent",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_DestroyOnlineServiceTaskBase: Binding = Binding {
+        id: "Game_F1os_DestroyOnlineServiceTaskBase",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_DestroyTaskBody_GetFriendsLeaderboard: Binding = Binding {
+        id: "Game_F1os_DestroyTaskBody_GetFriendsLeaderboard",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_F1CGTask_CheckLogout: Binding = Binding {
+        id: "Game_F1os_F1CGTask_CheckLogout",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_F1CGTask_OnRequestResult: Binding = Binding {
+        id: "Game_F1os_F1CGTask_OnRequestResult",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_F1CGTask_Reset: Binding = Binding {
+        id: "Game_F1os_F1CGTask_Reset",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_F1CGTask_Update: Binding = Binding {
+        id: "Game_F1os_F1CGTask_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_F1WorldTask_CheckLogout: Binding = Binding {
+        id: "Game_F1os_F1WorldTask_CheckLogout",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_F1WorldTask_OnRequestResult: Binding = Binding {
+        id: "Game_F1os_F1WorldTask_OnRequestResult",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_F1WorldTask_Reset: Binding = Binding {
+        id: "Game_F1os_F1WorldTask_Reset",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_F1WorldTask_Update: Binding = Binding {
+        id: "Game_F1os_F1WorldTask_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_LogF: Binding = Binding {
+        id: "Game_F1os_LogF",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_LogLargePayload_ClaimRewards: Binding = Binding {
+        id: "Game_F1os_LogLargePayload_ClaimRewards",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_LogLargePayload_GetActiveChallengeCareer: Binding = Binding {
+        id: "Game_F1os_LogLargePayload_GetActiveChallengeCareer",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_LogLargePayload_GetCalendar: Binding = Binding {
+        id: "Game_F1os_LogLargePayload_GetCalendar",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_LogLargePayload_GetCareerBackupData: Binding = Binding {
+        id: "Game_F1os_LogLargePayload_GetCareerBackupData",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_LogLargePayload_GetCompendiumRewards: Binding = Binding {
+        id: "Game_F1os_LogLargePayload_GetCompendiumRewards",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_LogLargePayload_GetInbox: Binding = Binding {
+        id: "Game_F1os_LogLargePayload_GetInbox",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_LogLargePayload_GetStorefront: Binding = Binding {
+        id: "Game_F1os_LogLargePayload_GetStorefront",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_LogLargePayload_SessionBrowserGetSessionByID: Binding = Binding {
+        id: "Game_F1os_LogLargePayload_SessionBrowserGetSessionByID",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_LogLargePayload_SessionBrowserSearchSessions: Binding = Binding {
+        id: "Game_F1os_LogLargePayload_SessionBrowserSearchSessions",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1os_LogLargePayload_UpgradeCard: Binding = Binding {
+        id: "Game_F1os_LogLargePayload_UpgradeCard",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1wAction_Destroy_EmptyAction: Binding = Binding {
+        id: "Game_F1wAction_Destroy_EmptyAction",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FakeOption_GetMaxIndex: Binding = Binding {
+        id: "Game_FakeOption_GetMaxIndex",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FakeOption_SetValue: Binding = Binding {
+        id: "Game_FakeOption_SetValue",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FanZoneSeasonResults_Exit: Binding = Binding {
+        id: "Game_FanZoneSeasonResults_Exit",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FanZoneStandingsVM_OnScreenDeactivated: Binding = Binding {
+        id: "Game_FanZoneStandingsVM_OnScreenDeactivated",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FanZoneStandingsVM_OnSkip: Binding = Binding {
+        id: "Game_FanZoneStandingsVM_OnSkip",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FanZone_BuildStandingsDriverList: Binding = Binding {
+        id: "Game_FanZone_BuildStandingsDriverList",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FanzonesOnboardingVM_FadeIn: Binding = Binding {
+        id: "Game_FanzonesOnboardingVM_FadeIn",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FlowState_EnterBootLogout: Binding = Binding {
+        id: "Game_FlowState_EnterBootLogout",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FormationLapPresentation_BuildTimeline: Binding = Binding {
+        id: "Game_FormationLapPresentation_BuildTimeline",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FreeLookCameraModifier_Update: Binding = Binding {
+        id: "Game_FreeLookCameraModifier_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FriendsList_OnGetFriendsDone: Binding = Binding {
+        id: "Game_FriendsList_OnGetFriendsDone",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontEnd_CloseFadeOut: Binding = Binding {
+        id: "Game_FrontEnd_CloseFadeOut",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendLobbyVM_OnScreenActivated: Binding = Binding {
+        id: "Game_FrontendLobbyVM_OnScreenActivated",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCameraManager_GetSequencePosition: Binding = Binding {
+        id: "Game_FrontendSceneCameraManager_GetSequencePosition",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCameraManager_SetActiveCamera: Binding = Binding {
+        id: "Game_FrontendSceneCameraManager_SetActiveCamera",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCameraManager_Update: Binding = Binding {
+        id: "Game_FrontendSceneCameraManager_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCarManager_SetCarOverride: Binding = Binding {
+        id: "Game_FrontendSceneCarManager_SetCarOverride",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCarManager_SpawnCarAtPlacement: Binding = Binding {
+        id: "Game_FrontendSceneCarManager_SpawnCarAtPlacement",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCarManager_SpawnCarAtTransform: Binding = Binding {
+        id: "Game_FrontendSceneCarManager_SpawnCarAtTransform",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCar_SetCustomDecalNodes: Binding = Binding {
+        id: "Game_FrontendSceneCar_SetCustomDecalNodes",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCar_SetCustomLivery: Binding = Binding {
+        id: "Game_FrontendSceneCar_SetCustomLivery",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCar_SetVisibilityInternal: Binding = Binding {
+        id: "Game_FrontendSceneCar_SetVisibilityInternal",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCar_SetupComponents: Binding = Binding {
+        id: "Game_FrontendSceneCar_SetupComponents",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCar_SpawnFromLiveryData: Binding = Binding {
+        id: "Game_FrontendSceneCar_SpawnFromLiveryData",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCar_SpawnFromLiveryData2: Binding = Binding {
+        id: "Game_FrontendSceneCar_SpawnFromLiveryData2",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneComponentDriver_ChangeDriver: Binding = Binding {
+        id: "Game_FrontendSceneComponentDriver_ChangeDriver",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneComponentDriver_NeedsRespawn: Binding = Binding {
+        id: "Game_FrontendSceneComponentDriver_NeedsRespawn",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneComponentDriver_SetAnimOverlay: Binding = Binding {
+        id: "Game_FrontendSceneComponentDriver_SetAnimOverlay",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneComponentDriver_Spawn: Binding = Binding {
+        id: "Game_FrontendSceneComponentDriver_Spawn",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneComponentDriver_UpdateDecals: Binding = Binding {
+        id: "Game_FrontendSceneComponentDriver_UpdateDecals",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneComponentObject_DespawnComplete: Binding = Binding {
+        id: "Game_FrontendSceneComponentObject_DespawnComplete",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneComponentObject_LogState: Binding = Binding {
+        id: "Game_FrontendSceneComponentObject_LogState",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneComponentObject_NeedsRespawn: Binding = Binding {
+        id: "Game_FrontendSceneComponentObject_NeedsRespawn",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneComponentObject_SetVisible: Binding = Binding {
+        id: "Game_FrontendSceneComponentObject_SetVisible",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneComponentObject_Spawn: Binding = Binding {
+        id: "Game_FrontendSceneComponentObject_Spawn",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneComponent_StopDriverAnimOverlay: Binding = Binding {
+        id: "Game_FrontendSceneComponent_StopDriverAnimOverlay",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCustomObject_SpawnObject: Binding = Binding {
+        id: "Game_FrontendSceneCustomObject_SpawnObject",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCustomObject_Update: Binding = Binding {
+        id: "Game_FrontendSceneCustomObject_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCutsceneManager_OnSubsceneChanged: Binding = Binding {
+        id: "Game_FrontendSceneCutsceneManager_OnSubsceneChanged",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCutsceneManager_PlayCutscene: Binding = Binding {
+        id: "Game_FrontendSceneCutsceneManager_PlayCutscene",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCutsceneManager_PreInitCutscene: Binding = Binding {
+        id: "Game_FrontendSceneCutsceneManager_PreInitCutscene",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCutsceneManager_PreInitCutscenes: Binding = Binding {
+        id: "Game_FrontendSceneCutsceneManager_PreInitCutscenes",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCutsceneManager_PreloadCutscene: Binding = Binding {
+        id: "Game_FrontendSceneCutsceneManager_PreloadCutscene",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCutsceneManager_PreloadSubsceneCutscenes: Binding = Binding {
+        id: "Game_FrontendSceneCutsceneManager_PreloadSubsceneCutscenes",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCutsceneManager_StopActiveCutscene: Binding = Binding {
+        id: "Game_FrontendSceneCutsceneManager_StopActiveCutscene",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCutsceneManager_StopAllCutscenes: Binding = Binding {
+        id: "Game_FrontendSceneCutsceneManager_StopAllCutscenes",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCutsceneManager_StopCutsceneEntry: Binding = Binding {
+        id: "Game_FrontendSceneCutsceneManager_StopCutsceneEntry",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneCutsceneManager_Update: Binding = Binding {
+        id: "Game_FrontendSceneCutsceneManager_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneDriver_BindActorsToSequence: Binding = Binding {
+        id: "Game_FrontendSceneDriver_BindActorsToSequence",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneDriver_ChooseSequence: Binding = Binding {
+        id: "Game_FrontendSceneDriver_ChooseSequence",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneDriver_Despawn: Binding = Binding {
+        id: "Game_FrontendSceneDriver_Despawn",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneDriver_FillHelmetPreviewData: Binding = Binding {
+        id: "Game_FrontendSceneDriver_FillHelmetPreviewData",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneDriver_SetPartsVisible: Binding = Binding {
+        id: "Game_FrontendSceneDriver_SetPartsVisible",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneDriver_SpawnActors: Binding = Binding {
+        id: "Game_FrontendSceneDriver_SpawnActors",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneDriver_SpawnActorsAlt: Binding = Binding {
+        id: "Game_FrontendSceneDriver_SpawnActorsAlt",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneDriver_Update: Binding = Binding {
+        id: "Game_FrontendSceneDriver_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneDriver_UpdatePfx: Binding = Binding {
+        id: "Game_FrontendSceneDriver_UpdatePfx",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneDriver_UpdateTransform: Binding = Binding {
+        id: "Game_FrontendSceneDriver_UpdateTransform",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneManager_GetDriverHelmetData: Binding = Binding {
+        id: "Game_FrontendSceneManager_GetDriverHelmetData",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneManager_ProcessPendingCarChanges: Binding = Binding {
+        id: "Game_FrontendSceneManager_ProcessPendingCarChanges",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneManager_ProcessPendingDriverChanges: Binding = Binding {
+        id: "Game_FrontendSceneManager_ProcessPendingDriverChanges",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneManager_ResetComponents: Binding = Binding {
+        id: "Game_FrontendSceneManager_ResetComponents",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneManager_SetCarVisible: Binding = Binding {
+        id: "Game_FrontendSceneManager_SetCarVisible",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneManager_SetDriverAnimationOverlay: Binding = Binding {
+        id: "Game_FrontendSceneManager_SetDriverAnimationOverlay",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneManager_SetDriverVisible: Binding = Binding {
+        id: "Game_FrontendSceneManager_SetDriverVisible",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneManager_SetDriverVisibleById: Binding = Binding {
+        id: "Game_FrontendSceneManager_SetDriverVisibleById",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneManager_SetObjectVisible: Binding = Binding {
+        id: "Game_FrontendSceneManager_SetObjectVisible",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneManager_SetPendingSwitch: Binding = Binding {
+        id: "Game_FrontendSceneManager_SetPendingSwitch",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneManager_SetupCarInternal: Binding = Binding {
+        id: "Game_FrontendSceneManager_SetupCarInternal",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneManager_SetupDriverInternal: Binding = Binding {
+        id: "Game_FrontendSceneManager_SetupDriverInternal",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneManager_SetupObjectInternal: Binding = Binding {
+        id: "Game_FrontendSceneManager_SetupObjectInternal",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneManager_StopCutscene: Binding = Binding {
+        id: "Game_FrontendSceneManager_StopCutscene",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneManager_SwitchScene: Binding = Binding {
+        id: "Game_FrontendSceneManager_SwitchScene",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneManager_SwitchSceneFromPreset: Binding = Binding {
+        id: "Game_FrontendSceneManager_SwitchSceneFromPreset",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneObject_RespawnAll: Binding = Binding {
+        id: "Game_FrontendSceneObject_RespawnAll",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendScenePreview_Refresh: Binding = Binding {
+        id: "Game_FrontendScenePreview_Refresh",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendScenePreview_SelectEntry: Binding = Binding {
+        id: "Game_FrontendScenePreview_SelectEntry",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendScenePreview_UpdateTick: Binding = Binding {
+        id: "Game_FrontendScenePreview_UpdateTick",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneScreenF_Destructor: Binding = Binding {
+        id: "Game_FrontendSceneScreenF_Destructor",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneScreen_Destructor: Binding = Binding {
+        id: "Game_FrontendSceneScreen_Destructor",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneScript_AddFzMultiActorGroup: Binding = Binding {
+        id: "Game_FrontendSceneScript_AddFzMultiActorGroup",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneScript_AddToMultiActorAnim: Binding = Binding {
+        id: "Game_FrontendSceneScript_AddToMultiActorAnim",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneScript_RemoveFzMultiActorGroup: Binding = Binding {
+        id: "Game_FrontendSceneScript_RemoveFzMultiActorGroup",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneScript_SpawnSequenceForActor: Binding = Binding {
+        id: "Game_FrontendSceneScript_SpawnSequenceForActor",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneScript_SpawnSequences: Binding = Binding {
+        id: "Game_FrontendSceneScript_SpawnSequences",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneSystem_ChangeMainCamera: Binding = Binding {
+        id: "Game_FrontendSceneSystem_ChangeMainCamera",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneSystem_PreloadScene: Binding = Binding {
+        id: "Game_FrontendSceneSystem_PreloadScene",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneSystem_ProcessCommand: Binding = Binding {
+        id: "Game_FrontendSceneSystem_ProcessCommand",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneSystem_SetSubscene: Binding = Binding {
+        id: "Game_FrontendSceneSystem_SetSubscene",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneUi_SetMappedDriverVisible: Binding = Binding {
+        id: "Game_FrontendSceneUi_SetMappedDriverVisible",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FuelDynamicObjective_Activate: Binding = Binding {
+        id: "Game_FuelDynamicObjective_Activate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FuelDynamicObjective_Activate_2: Binding = Binding {
+        id: "Game_FuelDynamicObjective_Activate_2",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3376,8 +5507,313 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_GameReplaySystem_SubscribeRewindTutorial: Binding = Binding {
+        id: "Game_GameReplaySystem_SubscribeRewindTutorial",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionConfig_Destroy: Binding = Binding {
+        id: "Game_GameSessionConfig_Destroy",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionManager_Connect: Binding = Binding {
+        id: "Game_GameSessionManager_Connect",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionManager_Destroy: Binding = Binding {
+        id: "Game_GameSessionManager_Destroy",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionManager_ReportJoinError: Binding = Binding {
+        id: "Game_GameSessionManager_ReportJoinError",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionMatchingCareer_CreateSession: Binding = Binding {
+        id: "Game_GameSessionMatchingCareer_CreateSession",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionMatchingCareer_JoinSession: Binding = Binding {
+        id: "Game_GameSessionMatchingCareer_JoinSession",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionMatchingCareer_OnCreateSessionComplete: Binding = Binding {
+        id: "Game_GameSessionMatchingCareer_OnCreateSessionComplete",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionMatchingCustom_SearchSession: Binding = Binding {
+        id: "Game_GameSessionMatchingCustom_SearchSession",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionMatchingCustom_SearchSessionWithPresence: Binding = Binding {
+        id: "Game_GameSessionMatchingCustom_SearchSessionWithPresence",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionMatchingF1WSocialGP_Cancel: Binding = Binding {
+        id: "Game_GameSessionMatchingF1WSocialGP_Cancel",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionMatchingF1WSocialGP_CreateSession: Binding = Binding {
+        id: "Game_GameSessionMatchingF1WSocialGP_CreateSession",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionMatchingF1WSocialGP_CreateSessionForMembers: Binding = Binding {
+        id: "Game_GameSessionMatchingF1WSocialGP_CreateSessionForMembers",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionMatchingF1WSocialGP_JoinSession: Binding = Binding {
+        id: "Game_GameSessionMatchingF1WSocialGP_JoinSession",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionMatchingF1WSocialGP_OnCreateSessionComplete: Binding = Binding {
+        id: "Game_GameSessionMatchingF1WSocialGP_OnCreateSessionComplete",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionMatchingHopperCommon_OnSessionCreateComplete: Binding = Binding {
+        id: "Game_GameSessionMatchingHopperCommon_OnSessionCreateComplete",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionMatching_ApplySessionAttributes: Binding = Binding {
+        id: "Game_GameSessionMatching_ApplySessionAttributes",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionMigrationManager_ClearHaveResults: Binding = Binding {
+        id: "Game_GameSessionMigrationManager_ClearHaveResults",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionMigrationManager_OnMutableRoleChanged: Binding = Binding {
+        id: "Game_GameSessionMigrationManager_OnMutableRoleChanged",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionMigrationManager_SendSelfState: Binding = Binding {
+        id: "Game_GameSessionMigrationManager_SendSelfState",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionMigrationManager_SetPeerStatus: Binding = Binding {
+        id: "Game_GameSessionMigrationManager_SetPeerStatus",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameSessionUI_Shutdown: Binding = Binding {
+        id: "Game_GameSessionUI_Shutdown",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Game_OnRetireLocalPlayersMessage: Binding = Binding {
+        id: "Game_Game_OnRetireLocalPlayersMessage",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GarageCrewInstance_PlayOverlaySequence: Binding = Binding {
+        id: "Game_GarageCrewInstance_PlayOverlaySequence",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GarageCrewInstance_PlaySequence: Binding = Binding {
+        id: "Game_GarageCrewInstance_PlaySequence",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GarageModule_Initialise: Binding = Binding {
+        id: "Game_GarageModule_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GarageMonitorTvFeedVM_OnActivate: Binding = Binding {
+        id: "Game_GarageMonitorTvFeedVM_OnActivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GarageMonitorTvFeedVM_OnDeactivate: Binding = Binding {
+        id: "Game_GarageMonitorTvFeedVM_OnDeactivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GarageReturn_ComputeTimeSkip: Binding = Binding {
+        id: "Game_GarageReturn_ComputeTimeSkip",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Garage_FadeInAfterReturn: Binding = Binding {
+        id: "Game_Garage_FadeInAfterReturn",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Garage_FadeOutForExit: Binding = Binding {
+        id: "Game_Garage_FadeOutForExit",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Garage_LeaveGarageShowHud: Binding = Binding {
+        id: "Game_Garage_LeaveGarageShowHud",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Garage_OnFadedOutInRace: Binding = Binding {
+        id: "Game_Garage_OnFadedOutInRace",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Get_ModelNodeId: Binding = Binding {
         id: "Game_Get_ModelNodeId",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GettingReadyToRace_Initialise: Binding = Binding {
+        id: "Game_GettingReadyToRace_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GhostLapHandler_CancelTasks: Binding = Binding {
+        id: "Game_GhostLapHandler_CancelTasks",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GhostLapHandler_Ctor: Binding = Binding {
+        id: "Game_GhostLapHandler_Ctor",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GhostLapHandler_Dtor: Binding = Binding {
+        id: "Game_GhostLapHandler_Dtor",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GhostLapHandler_EvaluatePerformanceState: Binding = Binding {
+        id: "Game_GhostLapHandler_EvaluatePerformanceState",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GhostLapHandler_FreeSessionRivalStorage: Binding = Binding {
+        id: "Game_GhostLapHandler_FreeSessionRivalStorage",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GhostLapHandler_OnSessionRivalSearchCompleted: Binding = Binding {
+        id: "Game_GhostLapHandler_OnSessionRivalSearchCompleted",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GhostLapHandler_StartLeaderboardEntryWrite: Binding = Binding {
+        id: "Game_GhostLapHandler_StartLeaderboardEntryWrite",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GhostLapHandler_StartRemoteStorageDownload: Binding = Binding {
+        id: "Game_GhostLapHandler_StartRemoteStorageDownload",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GhostLapHandler_StartRemoteStorageUpload: Binding = Binding {
+        id: "Game_GhostLapHandler_StartRemoteStorageUpload",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GhostLapHandler_Update: Binding = Binding {
+        id: "Game_GhostLapHandler_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GhostLapsStorageSystem_Connect: Binding = Binding {
+        id: "Game_GhostLapsStorageSystem_Connect",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GhostLapsStorageSystem_Dtor: Binding = Binding {
+        id: "Game_GhostLapsStorageSystem_Dtor",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GhostLapsStorageSystem_OnSessionEnter: Binding = Binding {
+        id: "Game_GhostLapsStorageSystem_OnSessionEnter",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GhostLapsStorageSystem_OnSessionExit: Binding = Binding {
+        id: "Game_GhostLapsStorageSystem_OnSessionExit",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GhostLapsStorageSystem_OnSessionRestart: Binding = Binding {
+        id: "Game_GhostLapsStorageSystem_OnSessionRestart",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GhostRivalFinder_Finish: Binding = Binding {
+        id: "Game_GhostRivalFinder_Finish",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GhostRivalFinder_OnEnumerateRivalsCompleted: Binding = Binding {
+        id: "Game_GhostRivalFinder_OnEnumerateRivalsCompleted",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GhostRivalFinder_SetState: Binding = Binding {
+        id: "Game_GhostRivalFinder_SetState",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GridCutSceneScript_SetupDriverTalkToPress: Binding = Binding {
+        id: "Game_GridCutSceneScript_SetupDriverTalkToPress",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GridDriverAdjustGloves_Initialise: Binding = Binding {
+        id: "Game_GridDriverAdjustGloves_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GridDriverTalkToEngineer_Initialise: Binding = Binding {
+        id: "Game_GridDriverTalkToEngineer_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GridLeadEngineer_Initialise: Binding = Binding {
+        id: "Game_GridLeadEngineer_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GridPlayerShot_Initialise: Binding = Binding {
+        id: "Game_GridPlayerShot_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GridReveal_SetStateLoading: Binding = Binding {
+        id: "Game_GridReveal_SetStateLoading",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GridSafetyCarShotGscs_Initialise: Binding = Binding {
+        id: "Game_GridSafetyCarShotGscs_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GridSafetyCarShot_Initialise: Binding = Binding {
+        id: "Game_GridSafetyCarShot_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_HandleUserEntitlementsUpdateTask_OnChildDone: Binding = Binding {
+        id: "Game_HandleUserEntitlementsUpdateTask_OnChildDone",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3388,6 +5824,406 @@ pub mod bindings {
     };
     pub const Game_Handle_SpecGarageCrewEvent_Thunk: Binding = Binding {
         id: "Game_Handle_SpecGarageCrewEvent_Thunk",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_HomeScreen_OnHomeScreenInfoResult: Binding = Binding {
+        id: "Game_HomeScreen_OnHomeScreenInfoResult",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_HomeScreen_RequestHomeScreenInfo: Binding = Binding {
+        id: "Game_HomeScreen_RequestHomeScreenInfo",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_HudDriverCardVM_OnBound: Binding = Binding {
+        id: "Game_HudDriverCardVM_OnBound",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_HudDriverListVM_OnBound: Binding = Binding {
+        id: "Game_HudDriverListVM_OnBound",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_HudFeaturedDriverVM_OnBound: Binding = Binding {
+        id: "Game_HudFeaturedDriverVM_OnBound",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_HudFeaturedDriverVM_OnUnbound: Binding = Binding {
+        id: "Game_HudFeaturedDriverVM_OnUnbound",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_InCarDriver_EvaluateAnimLayers: Binding = Binding {
+        id: "Game_InCarDriver_EvaluateAnimLayers",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_InGameMenuVM_OnReturnToGarage: Binding = Binding {
+        id: "Game_InGameMenuVM_OnReturnToGarage",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_InboxTabVM_OnTabActivated: Binding = Binding {
+        id: "Game_InboxTabVM_OnTabActivated",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_InboxTabVM_OnTabDeactivated: Binding = Binding {
+        id: "Game_InboxTabVM_OnTabDeactivated",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Input_OnControlSchemeAdded: Binding = Binding {
+        id: "Game_Input_OnControlSchemeAdded",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_InviteManager_ChangeState: Binding = Binding {
+        id: "Game_InviteManager_ChangeState",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_InviteManager_Join: Binding = Binding {
+        id: "Game_InviteManager_Join",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_InviteManager_OnCareerLoadedSoC: Binding = Binding {
+        id: "Game_InviteManager_OnCareerLoadedSoC",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_InviteManager_OnJoinCompleted: Binding = Binding {
+        id: "Game_InviteManager_OnJoinCompleted",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_InviteManager_OnJoinCompleted_2: Binding = Binding {
+        id: "Game_InviteManager_OnJoinCompleted_2",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_LapSectors_InitFromTrack: Binding = Binding {
+        id: "Game_LapSectors_InitFromTrack",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_LeaderboardRowVM_Populate: Binding = Binding {
+        id: "Game_LeaderboardRowVM_Populate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_LiveryAssignVM_OnActivate: Binding = Binding {
+        id: "Game_LiveryAssignVM_OnActivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_LiveryAssignVM_OnDeactivate: Binding = Binding {
+        id: "Game_LiveryAssignVM_OnDeactivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_LoadingScreenVM_OnScreenActivated: Binding = Binding {
+        id: "Game_LoadingScreenVM_OnScreenActivated",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MatchingContext_OnPostRaceResultSyncEnter: Binding = Binding {
+        id: "Game_MatchingContext_OnPostRaceResultSyncEnter",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MatchingContext_OnSessionEnter: Binding = Binding {
+        id: "Game_MatchingContext_OnSessionEnter",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MatchingContext_OnSessionLobby: Binding = Binding {
+        id: "Game_MatchingContext_OnSessionLobby",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MatchingContext_OnSessionRestart: Binding = Binding {
+        id: "Game_MatchingContext_OnSessionRestart",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MatchingContext_OnStartRematch: Binding = Binding {
+        id: "Game_MatchingContext_OnStartRematch",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MatchingContext_SetRankedSearchParams: Binding = Binding {
+        id: "Game_MatchingContext_SetRankedSearchParams",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MatchingContext_SetupRankedGameSession: Binding = Binding {
+        id: "Game_MatchingContext_SetupRankedGameSession",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MidSession_SaveReplaySnapshot: Binding = Binding {
+        id: "Game_MidSession_SaveReplaySnapshot",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ModelProxyList_Resolve: Binding = Binding {
+        id: "Game_ModelProxyList_Resolve",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MpSeasonCompleteVM_OnActivate: Binding = Binding {
+        id: "Game_MpSeasonCompleteVM_OnActivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MultiVotingManager_CastVote: Binding = Binding {
+        id: "Game_MultiVotingManager_CastVote",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MultiVotingManager_HandleBallot: Binding = Binding {
+        id: "Game_MultiVotingManager_HandleBallot",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MultiVotingManager_HandleStatus: Binding = Binding {
+        id: "Game_MultiVotingManager_HandleStatus",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MyTeamContract_SetDriversVisible: Binding = Binding {
+        id: "Game_MyTeamContract_SetDriversVisible",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MyTeamContract_ShowDriverComparison: Binding = Binding {
+        id: "Game_MyTeamContract_ShowDriverComparison",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MyTeamCustomisation_SpawnScene: Binding = Binding {
+        id: "Game_MyTeamCustomisation_SpawnScene",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MyTeamDriverMarket_Close: Binding = Binding {
+        id: "Game_MyTeamDriverMarket_Close",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MyTeamDriverMarket_Open: Binding = Binding {
+        id: "Game_MyTeamDriverMarket_Open",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MyTeamHq_SetupSceneForState: Binding = Binding {
+        id: "Game_MyTeamHq_SetupSceneForState",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MyTeamHq_SpawnFoyerCar: Binding = Binding {
+        id: "Game_MyTeamHq_SpawnFoyerCar",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MyTeamHq_SpawnFoyerDrivers: Binding = Binding {
+        id: "Game_MyTeamHq_SpawnFoyerDrivers",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MyTeamIntroScript_PollAssetsLoaded: Binding = Binding {
+        id: "Game_MyTeamIntroScript_PollAssetsLoaded",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MyTeamIntroScript_PreStart: Binding = Binding {
+        id: "Game_MyTeamIntroScript_PreStart",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetFormationLap_BroadcastAll: Binding = Binding {
+        id: "Game_NetFormationLap_BroadcastAll",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetFormationLap_HandleSessionState: Binding = Binding {
+        id: "Game_NetFormationLap_HandleSessionState",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetFormationLap_SendToConnection: Binding = Binding {
+        id: "Game_NetFormationLap_SendToConnection",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetFormationLap_SetVehicleLocal: Binding = Binding {
+        id: "Game_NetFormationLap_SetVehicleLocal",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetFormationLap_Update: Binding = Binding {
+        id: "Game_NetFormationLap_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetMarshalZones_HandleMessage: Binding = Binding {
+        id: "Game_NetMarshalZones_HandleMessage",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetMarshalZones_HostBroadcast: Binding = Binding {
+        id: "Game_NetMarshalZones_HostBroadcast",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetMarshalZones_OnHostMigrated: Binding = Binding {
+        id: "Game_NetMarshalZones_OnHostMigrated",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetMarshalZones_Update: Binding = Binding {
+        id: "Game_NetMarshalZones_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetPlayerSync_OnMutableRoleChanged: Binding = Binding {
+        id: "Game_NetPlayerSync_OnMutableRoleChanged",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetPlayerSync_OnPlayerSetEntryDiscarded: Binding = Binding {
+        id: "Game_NetPlayerSync_OnPlayerSetEntryDiscarded",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetSafetyCarCinematic_SendCameraSelect: Binding = Binding {
+        id: "Game_NetSafetyCarCinematic_SendCameraSelect",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetSafetyCarCinematic_SendCarsPassedPits: Binding = Binding {
+        id: "Game_NetSafetyCarCinematic_SendCarsPassedPits",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetSafetyCarCinematic_SendIntroEnd: Binding = Binding {
+        id: "Game_NetSafetyCarCinematic_SendIntroEnd",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetSafetyCarCinematic_SendLapsRemaining: Binding = Binding {
+        id: "Game_NetSafetyCarCinematic_SendLapsRemaining",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetSafetyCarCinematic_SendNamedState: Binding = Binding {
+        id: "Game_NetSafetyCarCinematic_SendNamedState",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetSafetyCarCinematic_SendStart: Binding = Binding {
+        id: "Game_NetSafetyCarCinematic_SendStart",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetSafetyCarCinematic_UpdateCameraSelect: Binding = Binding {
+        id: "Game_NetSafetyCarCinematic_UpdateCameraSelect",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetSafetyCarCinematic_UpdateCarsPassedPits: Binding = Binding {
+        id: "Game_NetSafetyCarCinematic_UpdateCarsPassedPits",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetSafetyCarCinematic_UpdateIntroEnd: Binding = Binding {
+        id: "Game_NetSafetyCarCinematic_UpdateIntroEnd",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetSafetyCarCinematic_UpdateLapsRemaining: Binding = Binding {
+        id: "Game_NetSafetyCarCinematic_UpdateLapsRemaining",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetSafetyCarCinematic_UpdateNamedState: Binding = Binding {
+        id: "Game_NetSafetyCarCinematic_UpdateNamedState",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetSafetyCarCinematic_UpdateStart: Binding = Binding {
+        id: "Game_NetSafetyCarCinematic_UpdateStart",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetSafetyCar_UnregisterStale: Binding = Binding {
+        id: "Game_NetSafetyCar_UnregisterStale",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetStartLights_HandleStateMessage: Binding = Binding {
+        id: "Game_NetStartLights_HandleStateMessage",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetStartLights_HandleTimeOffset: Binding = Binding {
+        id: "Game_NetStartLights_HandleTimeOffset",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetStartLights_OnRoleChanged: Binding = Binding {
+        id: "Game_NetStartLights_OnRoleChanged",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetworkReady_OnPauseSendSuperReady: Binding = Binding {
+        id: "Game_NetworkReady_OnPauseSendSuperReady",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetworkReady_OnUnpauseSendSuperReady: Binding = Binding {
+        id: "Game_NetworkReady_OnUnpauseSendSuperReady",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetworkReady_OnUnreadyMessage: Binding = Binding {
+        id: "Game_NetworkReady_OnUnreadyMessage",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetworkReady_SendSuperReady: Binding = Binding {
+        id: "Game_NetworkReady_SendSuperReady",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetworkReady_SetRelevantSet: Binding = Binding {
+        id: "Game_NetworkReady_SetRelevantSet",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetworkSubsystem_SelectTitleConfig: Binding = Binding {
+        id: "Game_NetworkSubsystem_SelectTitleConfig",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetworkUI_StartRankedDivisionSearch: Binding = Binding {
+        id: "Game_NetworkUI_StartRankedDivisionSearch",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_NetworkUI_StartRankedRematching: Binding = Binding {
+        id: "Game_NetworkUI_StartRankedRematching",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Network_ApplyInitialPitAndGridState: Binding = Binding {
+        id: "Game_Network_ApplyInitialPitAndGridState",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3406,8 +6242,218 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_Objective_CheckFinishPosition: Binding = Binding {
+        id: "Game_Objective_CheckFinishPosition",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Objective_CheckOvertakeTarget: Binding = Binding {
+        id: "Game_Objective_CheckOvertakeTarget",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Objective_CheckPositionTarget: Binding = Binding {
+        id: "Game_Objective_CheckPositionTarget",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OnMessageDriverPlayerChanged: Binding = Binding {
+        id: "Game_OnMessageDriverPlayerChanged",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OnlineCareer_FadeOutForSessionRequest: Binding = Binding {
+        id: "Game_OnlineCareer_FadeOutForSessionRequest",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OnlineCareer_OnFirstRequestResult: Binding = Binding {
+        id: "Game_OnlineCareer_OnFirstRequestResult",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OnlineCareer_OnSecondRequestResult: Binding = Binding {
+        id: "Game_OnlineCareer_OnSecondRequestResult",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OnlineDocumentComponent_Create: Binding = Binding {
+        id: "Game_OnlineDocumentComponent_Create",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OnlineDocumentSubComponent_Ctor: Binding = Binding {
+        id: "Game_OnlineDocumentSubComponent_Ctor",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OnlineRole_HandleSessionDataRequest: Binding = Binding {
+        id: "Game_OnlineRole_HandleSessionDataRequest",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OnlineRole_OnConnectionVerified: Binding = Binding {
+        id: "Game_OnlineRole_OnConnectionVerified",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OnlineServerLogInTask_FinishWithState: Binding = Binding {
+        id: "Game_OnlineServerLogInTask_FinishWithState",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OnlineServerLogInTask_OnError: Binding = Binding {
+        id: "Game_OnlineServerLogInTask_OnError",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OnlineServerLogInTask_OnStart: Binding = Binding {
+        id: "Game_OnlineServerLogInTask_OnStart",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OnlineServerLogInTask_SetFinished: Binding = Binding {
+        id: "Game_OnlineServerLogInTask_SetFinished",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OnlineServerLogInTask_SetFinishedReleaseRef: Binding = Binding {
+        id: "Game_OnlineServerLogInTask_SetFinishedReleaseRef",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OnlineServer_TriggerLogout: Binding = Binding {
+        id: "Game_OnlineServer_TriggerLogout",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OnlineSubsystemTaskOnServiceBase_Ctor: Binding = Binding {
+        id: "Game_OnlineSubsystemTaskOnServiceBase_Ctor",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OnlineSystemEADPAsyncTask_Update: Binding = Binding {
+        id: "Game_OnlineSystemEADPAsyncTask_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OnlineSystemGetFriendRequestListTask_OnPlayerCards: Binding = Binding {
+        id: "Game_OnlineSystemGetFriendRequestListTask_OnPlayerCards",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OnlineSystemGetFriendRequestListTask_Update: Binding = Binding {
+        id: "Game_OnlineSystemGetFriendRequestListTask_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OptionsColourCorrectionVM_OnScreenActivated: Binding = Binding {
+        id: "Game_OptionsColourCorrectionVM_OnScreenActivated",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OptionsCrossplayVM_OnScreenActivated: Binding = Binding {
+        id: "Game_OptionsCrossplayVM_OnScreenActivated",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_OptionsStore_FindOption: Binding = Binding {
         id: "Game_OptionsStore_FindOption",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OptionsSystem_ResolveOptionValue: Binding = Binding {
+        id: "Game_OptionsSystem_ResolveOptionValue",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_OptionsUI_ApplyFilterLevelCollectChanges: Binding = Binding {
+        id: "Game_OptionsUI_ApplyFilterLevelCollectChanges",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PagedBuffer_Transfer: Binding = Binding {
+        id: "Game_PagedBuffer_Transfer",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PagedBuffer_UsePageAt: Binding = Binding {
+        id: "Game_PagedBuffer_UsePageAt",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ParcFermeCutScene_Initialise: Binding = Binding {
+        id: "Game_ParcFermeCutScene_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Particles_BindMeshModel: Binding = Binding {
+        id: "Game_Particles_BindMeshModel",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Particles_CreateEffectNode: Binding = Binding {
+        id: "Game_Particles_CreateEffectNode",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Particles_CreateStoredEffect: Binding = Binding {
+        id: "Game_Particles_CreateStoredEffect",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Particles_FindVehicleIndex: Binding = Binding {
+        id: "Game_Particles_FindVehicleIndex",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Particles_RemoveEffect: Binding = Binding {
+        id: "Game_Particles_RemoveEffect",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Particles_RestoreLongLivedParticles: Binding = Binding {
+        id: "Game_Particles_RestoreLongLivedParticles",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Particles_RestoreParticleSlot: Binding = Binding {
+        id: "Game_Particles_RestoreParticleSlot",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Particles_StoreParticleSlot: Binding = Binding {
+        id: "Game_Particles_StoreParticleSlot",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Particles_UpdateEmitters: Binding = Binding {
+        id: "Game_Particles_UpdateEmitters",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PelvisHeightModifier_Init: Binding = Binding {
+        id: "Game_PelvisHeightModifier_Init",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PhotoModeHelper_CaptureFrame: Binding = Binding {
+        id: "Game_PhotoModeHelper_CaptureFrame",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitBoxCarActor_Update: Binding = Binding {
+        id: "Game_PitBoxCarActor_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitCrewActor_Update: Binding = Binding {
+        id: "Game_PitCrewActor_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitDriveThrough_OnNoAnimFadeOut: Binding = Binding {
+        id: "Game_PitDriveThrough_OnNoAnimFadeOut",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3436,8 +6482,138 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_PitstopCutScene_Initialise: Binding = Binding {
+        id: "Game_PitstopCutScene_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Place_Vehicle: Binding = Binding {
         id: "Game_Place_Vehicle",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PlatformAuthorisationTask_OnStart: Binding = Binding {
+        id: "Game_PlatformAuthorisationTask_OnStart",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PlatformAuthorisationTask_Update: Binding = Binding {
+        id: "Game_PlatformAuthorisationTask_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PlayerManager_HandleControllerUnplugged: Binding = Binding {
+        id: "Game_PlayerManager_HandleControllerUnplugged",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PlayerSetSubsystem_Init: Binding = Binding {
+        id: "Game_PlayerSetSubsystem_Init",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PlayerSetSubsystem_OnNewConnection: Binding = Binding {
+        id: "Game_PlayerSetSubsystem_OnNewConnection",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PlayerSetSubsystem_UpdatePresence: Binding = Binding {
+        id: "Game_PlayerSetSubsystem_UpdatePresence",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PlayerSet_ChangePlayerConnectionId: Binding = Binding {
+        id: "Game_PlayerSet_ChangePlayerConnectionId",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PlayerSet_ChangePlayerIsWatching: Binding = Binding {
+        id: "Game_PlayerSet_ChangePlayerIsWatching",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PlayerSet_SetEntriesPlaying: Binding = Binding {
+        id: "Game_PlayerSet_SetEntriesPlaying",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PlayerSet_SetEntryLocked: Binding = Binding {
+        id: "Game_PlayerSet_SetEntryLocked",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Pod2019FirstScript_Initialise: Binding = Binding {
+        id: "Game_Pod2019FirstScript_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Pod2019FirstScript_OnShutDownComplete: Binding = Binding {
+        id: "Game_Pod2019FirstScript_OnShutDownComplete",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Pod2019FirstScript_Shutdown: Binding = Binding {
+        id: "Game_Pod2019FirstScript_Shutdown",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Pod2019First_ReleasePodiumThumbnails: Binding = Binding {
+        id: "Game_Pod2019First_ReleasePodiumThumbnails",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Pod2019First_RequestPodiumThumbnails: Binding = Binding {
+        id: "Game_Pod2019First_RequestPodiumThumbnails",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PodiumCarFiller_Initialise: Binding = Binding {
+        id: "Game_PodiumCarFiller_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PodiumParcFermeScript_SetStateLoading: Binding = Binding {
+        id: "Game_PodiumParcFermeScript_SetStateLoading",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PodiumParcFerme_Initialise: Binding = Binding {
+        id: "Game_PodiumParcFerme_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PostraceReactionsD01Fail_Initialise: Binding = Binding {
+        id: "Game_PostraceReactionsD01Fail_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PostraceReactionsD02Success_Initialise: Binding = Binding {
+        id: "Game_PostraceReactionsD02Success_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PostraceReactionsD03Success_Initialise: Binding = Binding {
+        id: "Game_PostraceReactionsD03Success_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PracticeProgrammeSystem_IsolatePlayer: Binding = Binding {
+        id: "Game_PracticeProgrammeSystem_IsolatePlayer",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PracticeProgrammeSystem_OnCompareVehicleChanged: Binding = Binding {
+        id: "Game_PracticeProgrammeSystem_OnCompareVehicleChanged",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PracticeProgrammeSystem_OnCompareVehicleChanged_2: Binding = Binding {
+        id: "Game_PracticeProgrammeSystem_OnCompareVehicleChanged_2",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PracticeProgrammes_Init: Binding = Binding {
+        id: "Game_PracticeProgrammes_Init",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3451,8 +6627,93 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_ProLeaguesVM_OnExit: Binding = Binding {
+        id: "Game_ProLeaguesVM_OnExit",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ProLeaguesVM_OnLeaguesResult: Binding = Binding {
+        id: "Game_ProLeaguesVM_OnLeaguesResult",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ProfanityFilter_CheckWord: Binding = Binding {
+        id: "Game_ProfanityFilter_CheckWord",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ProfanityFilter_FilterText: Binding = Binding {
+        id: "Game_ProfanityFilter_FilterText",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ProfanityFilter_MatchList: Binding = Binding {
+        id: "Game_ProfanityFilter_MatchList",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ProgressBasedFocusTowardsTrackCentreCameraModifier_OnEnable: Binding = Binding {
+        id: "Game_ProgressBasedFocusTowardsTrackCentreCameraModifier_OnEnable",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ProgressBasedRollCameraModifier_OnEnable: Binding = Binding {
+        id: "Game_ProgressBasedRollCameraModifier_OnEnable",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ProgressBasedStaticZoomCameraModifier_OnEnable: Binding = Binding {
+        id: "Game_ProgressBasedStaticZoomCameraModifier_OnEnable",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ProgressBasedTargetInhibitorCameraBehaviour_OnEnable: Binding = Binding {
+        id: "Game_ProgressBasedTargetInhibitorCameraBehaviour_OnEnable",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ProgressBasedTargetOffsetCameraModifier_OnEnable: Binding = Binding {
+        id: "Game_ProgressBasedTargetOffsetCameraModifier_OnEnable",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ProgressFloatInterpolator_Evaluate: Binding = Binding {
+        id: "Game_ProgressFloatInterpolator_Evaluate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ProximityBasedShakeCameraModifier_OnEnable: Binding = Binding {
+        id: "Game_ProximityBasedShakeCameraModifier_OnEnable",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_QualObjReaction01_Initialise: Binding = Binding {
+        id: "Game_QualObjReaction01_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RaceHelper_GetVehicleByPosition: Binding = Binding {
+        id: "Game_RaceHelper_GetVehicleByPosition",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RaceHelper_GetVehicleIdByChampPos: Binding = Binding {
+        id: "Game_RaceHelper_GetVehicleIdByChampPos",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RaceHelper_GetVehicleIndexByChampPos: Binding = Binding {
+        id: "Game_RaceHelper_GetVehicleIndexByChampPos",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_RaceMarshalSystem_Update: Binding = Binding {
         id: "Game_RaceMarshalSystem_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RaceSession_FinaliseAndSetLapsPct: Binding = Binding {
+        id: "Game_RaceSession_FinaliseAndSetLapsPct",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3461,8 +6722,123 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_RacingVehicles_Initialise: Binding = Binding {
+        id: "Game_RacingVehicles_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RainfallSystem_Initialise: Binding = Binding {
+        id: "Game_RainfallSystem_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RankedDivision_StartSearch: Binding = Binding {
+        id: "Game_RankedDivision_StartSearch",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RankedDivision_UpdateSearchAvailability: Binding = Binding {
+        id: "Game_RankedDivision_UpdateSearchAvailability",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RankedMatchingProcessor_CreateSession: Binding = Binding {
+        id: "Game_RankedMatchingProcessor_CreateSession",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RankedMatchingProcessor_Search: Binding = Binding {
+        id: "Game_RankedMatchingProcessor_Search",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Refresh_PerformanceComparison: Binding = Binding {
         id: "Game_Refresh_PerformanceComparison",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Renderer_CreateRenderPasses: Binding = Binding {
+        id: "Game_Renderer_CreateRenderPasses",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RepairTimes_FadeIn: Binding = Binding {
+        id: "Game_RepairTimes_FadeIn",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RepairTimes_FadeOut: Binding = Binding {
+        id: "Game_RepairTimes_FadeOut",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RepairTimes_FinishFadeIn: Binding = Binding {
+        id: "Game_RepairTimes_FinishFadeIn",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RepairTimes_OnVehicleStatusFadeIn: Binding = Binding {
+        id: "Game_RepairTimes_OnVehicleStatusFadeIn",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ReplayBuffer_WriteStats: Binding = Binding {
+        id: "Game_ReplayBuffer_WriteStats",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ReplayFile_ReadFooter: Binding = Binding {
+        id: "Game_ReplayFile_ReadFooter",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ReplaySystem_LoadMidSessionData: Binding = Binding {
+        id: "Game_ReplaySystem_LoadMidSessionData",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ReplaySystem_LoadSnapshotFile: Binding = Binding {
+        id: "Game_ReplaySystem_LoadSnapshotFile",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ReplaySystem_SaveMidSessionData: Binding = Binding {
+        id: "Game_ReplaySystem_SaveMidSessionData",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Replay_LoadSavedReplayJob: Binding = Binding {
+        id: "Game_Replay_LoadSavedReplayJob",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Replay_RestoreMainModuleBuffers: Binding = Binding {
+        id: "Game_Replay_RestoreMainModuleBuffers",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ResultsContainerVM_OnActivate: Binding = Binding {
+        id: "Game_ResultsContainerVM_OnActivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ResultsContainerVM_OnDeactivate: Binding = Binding {
+        id: "Game_ResultsContainerVM_OnDeactivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RetrieveConsumableEntitlementsTask_Ctor: Binding = Binding {
+        id: "Game_RetrieveConsumableEntitlementsTask_Ctor",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RetrieveConsumableEntitlementsTask_RequestSteamPrices: Binding = Binding {
+        id: "Game_RetrieveConsumableEntitlementsTask_RequestSteamPrices",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RewardSequence_PlayCutscene: Binding = Binding {
+        id: "Game_RewardSequence_PlayCutscene",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3473,6 +6849,31 @@ pub mod bindings {
     };
     pub const Game_Rnd_FillVehicleUpgrades: Binding = Binding {
         id: "Game_Rnd_FillVehicleUpgrades",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RttTaskManager_CleanupTask: Binding = Binding {
+        id: "Game_RttTaskManager_CleanupTask",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RttTaskManager_OnTaskComplete: Binding = Binding {
+        id: "Game_RttTaskManager_OnTaskComplete",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RttTaskManager_ProcessCompletedTasks: Binding = Binding {
+        id: "Game_RttTaskManager_ProcessCompletedTasks",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RttTaskManager_QueueTask: Binding = Binding {
+        id: "Game_RttTaskManager_QueueTask",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_RttTaskManager_StartTask: Binding = Binding {
+        id: "Game_RttTaskManager_StartTask",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3501,8 +6902,43 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_SceneManagerSpawn_MergeScene: Binding = Binding {
+        id: "Game_SceneManagerSpawn_MergeScene",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_SceneManagerSpawn_SpawnScene: Binding = Binding {
         id: "Game_SceneManagerSpawn_SpawnScene",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SceneManager_DestroyScene: Binding = Binding {
+        id: "Game_SceneManager_DestroyScene",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ScoreBreakdownVM_OnActivate: Binding = Binding {
+        id: "Game_ScoreBreakdownVM_OnActivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_ScoreBreakdownVM_OnDeactivate: Binding = Binding {
+        id: "Game_ScoreBreakdownVM_OnDeactivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SeasonDocument_CloseDocument: Binding = Binding {
+        id: "Game_SeasonDocument_CloseDocument",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SeasonDocument_HandleRebuildSeason: Binding = Binding {
+        id: "Game_SeasonDocument_HandleRebuildSeason",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SeasonDocument_SetTrackSetNameCustom: Binding = Binding {
+        id: "Game_SeasonDocument_SetTrackSetNameCustom",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3516,13 +6952,358 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_SeasonLobbyUi_SetTrackSetByMode: Binding = Binding {
+        id: "Game_SeasonLobbyUi_SetTrackSetByMode",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SeasonLobby_ResetTrackSet: Binding = Binding {
+        id: "Game_SeasonLobby_ResetTrackSet",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SeasonUI_SetupChampionshipVariables: Binding = Binding {
+        id: "Game_SeasonUI_SetupChampionshipVariables",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SecondWorld_RequestLoad: Binding = Binding {
+        id: "Game_SecondWorld_RequestLoad",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SecretMeetings_Initialise: Binding = Binding {
+        id: "Game_SecretMeetings_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SessionHud_OnPlayerDroppedIn: Binding = Binding {
+        id: "Game_SessionHud_OnPlayerDroppedIn",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SessionHud_OnSessionEnter: Binding = Binding {
+        id: "Game_SessionHud_OnSessionEnter",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SessionHud_OnSessionExit: Binding = Binding {
+        id: "Game_SessionHud_OnSessionExit",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SessionResults_PopulateTable: Binding = Binding {
+        id: "Game_SessionResults_PopulateTable",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SessionResults_ReleaseThumbnails: Binding = Binding {
+        id: "Game_SessionResults_ReleaseThumbnails",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SessionSettings_Reset: Binding = Binding {
+        id: "Game_SessionSettings_Reset",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SessionSettings_SetSessionId: Binding = Binding {
+        id: "Game_SessionSettings_SetSessionId",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SessionState_EnableOnDemandTextureStreaming: Binding = Binding {
+        id: "Game_SessionState_EnableOnDemandTextureStreaming",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SessionStatsTracker_OnPlayerDroppedIn: Binding = Binding {
+        id: "Game_SessionStatsTracker_OnPlayerDroppedIn",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SessionStatsTracker_ResetForSession: Binding = Binding {
+        id: "Game_SessionStatsTracker_ResetForSession",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SessionVector_EmplaceBack: Binding = Binding {
+        id: "Game_SessionVector_EmplaceBack",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Set_VehicleController_Thunk: Binding = Binding {
         id: "Game_Set_VehicleController_Thunk",
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_SettingsControlsScreenViewModel_ApplyFilterRebuildList: Binding = Binding {
+        id: "Game_SettingsControlsScreenViewModel_ApplyFilterRebuildList",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SettingsControlsScreenViewModel_RebindAxis: Binding = Binding {
+        id: "Game_SettingsControlsScreenViewModel_RebindAxis",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SettingsTabbingBaseViewModel_ApplyFilterRebuildCategories: Binding = Binding {
+        id: "Game_SettingsTabbingBaseViewModel_ApplyFilterRebuildCategories",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SettingsTabbingBaseViewModel_ApplyFilterRefresh: Binding = Binding {
+        id: "Game_SettingsTabbingBaseViewModel_ApplyFilterRefresh",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Showroom_HideInfoPanel: Binding = Binding {
+        id: "Game_Showroom_HideInfoPanel",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Showroom_ShowInfoPanel: Binding = Binding {
+        id: "Game_Showroom_ShowInfoPanel",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SillySeasonScript_PollAssetsLoaded: Binding = Binding {
+        id: "Game_SillySeasonScript_PollAssetsLoaded",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SillySeason_Initialise: Binding = Binding {
+        id: "Game_SillySeason_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SkinnedActor_PopulateSlotArray: Binding = Binding {
+        id: "Game_SkinnedActor_PopulateSlotArray",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SocialHubFriendsVM_OnFriendSelected: Binding = Binding {
+        id: "Game_SocialHubFriendsVM_OnFriendSelected",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SocialHubFriendsVM_OnInviteResult: Binding = Binding {
+        id: "Game_SocialHubFriendsVM_OnInviteResult",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SocialNotifications_Update: Binding = Binding {
+        id: "Game_SocialNotifications_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Social_OnFriendSearchDone: Binding = Binding {
+        id: "Game_Social_OnFriendSearchDone",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SpecialistsCutSceneScript_Initialise: Binding = Binding {
+        id: "Game_SpecialistsCutSceneScript_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SpecialistsRewards_Initialise: Binding = Binding {
+        id: "Game_SpecialistsRewards_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_SpeechSystem_PostLine: Binding = Binding {
         id: "Game_SpeechSystem_PostLine",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SpeedBasedFoVZoomCameraModifier_OnEnable: Binding = Binding {
+        id: "Game_SpeedBasedFoVZoomCameraModifier_OnEnable",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SponsorLoadout_BuildList: Binding = Binding {
+        id: "Game_SponsorLoadout_BuildList",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StabilisationCameraModifier_OnEnable: Binding = Binding {
+        id: "Game_StabilisationCameraModifier_OnEnable",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StatEvent_OnLapCompleted: Binding = Binding {
+        id: "Game_StatEvent_OnLapCompleted",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StatEvent_OnRaceFinished: Binding = Binding {
+        id: "Game_StatEvent_OnRaceFinished",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StatEvent_OnSectorCompleted: Binding = Binding {
+        id: "Game_StatEvent_OnSectorCompleted",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StatEvent_WriteCompleteF1WRace: Binding = Binding {
+        id: "Game_StatEvent_WriteCompleteF1WRace",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StatEvent_WriteF1WeekendFinished: Binding = Binding {
+        id: "Game_StatEvent_WriteF1WeekendFinished",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StatEvent_WriteFacilityUpgraded: Binding = Binding {
+        id: "Game_StatEvent_WriteFacilityUpgraded",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StatEvent_WriteFeaturedEventsCompleted: Binding = Binding {
+        id: "Game_StatEvent_WriteFeaturedEventsCompleted",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StatEvent_WriteFreeTimeBetweenRaces: Binding = Binding {
+        id: "Game_StatEvent_WriteFreeTimeBetweenRaces",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StatEvent_WriteRacesFinished: Binding = Binding {
+        id: "Game_StatEvent_WriteRacesFinished",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StatEvent_WriteResourcesPoints: Binding = Binding {
+        id: "Game_StatEvent_WriteResourcesPoints",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StatEvent_WriteRnDAndFacilityUpgrades: Binding = Binding {
+        id: "Game_StatEvent_WriteRnDAndFacilityUpgrades",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StateSession_OnStateExit: Binding = Binding {
+        id: "Game_StateSession_OnStateExit",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StoryHubCall_HandleInput: Binding = Binding {
+        id: "Game_StoryHubCall_HandleInput",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StoryHubCall_HangUp: Binding = Binding {
+        id: "Game_StoryHubCall_HangUp",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StoryHubCall_SetPaused: Binding = Binding {
+        id: "Game_StoryHubCall_SetPaused",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StoryHubCall_Update: Binding = Binding {
+        id: "Game_StoryHubCall_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StoryHubObjectives_OnAlwaysOnChanged: Binding = Binding {
+        id: "Game_StoryHubObjectives_OnAlwaysOnChanged",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StoryHubObjectives_OnAnimEvent: Binding = Binding {
+        id: "Game_StoryHubObjectives_OnAnimEvent",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StoryHubObjectives_PlayBonusCloseAnim: Binding = Binding {
+        id: "Game_StoryHubObjectives_PlayBonusCloseAnim",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StoryHubObjectives_PlayCloseAnim: Binding = Binding {
+        id: "Game_StoryHubObjectives_PlayCloseAnim",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StoryHubObjectives_PlayOpenAnim: Binding = Binding {
+        id: "Game_StoryHubObjectives_PlayOpenAnim",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StoryHubObjectives_Refresh: Binding = Binding {
+        id: "Game_StoryHubObjectives_Refresh",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StoryHubObjectives_StartFadeTimer: Binding = Binding {
+        id: "Game_StoryHubObjectives_StartFadeTimer",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StoryHubObjectives_Update: Binding = Binding {
+        id: "Game_StoryHubObjectives_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StoryHub_BuildCinematicsList: Binding = Binding {
+        id: "Game_StoryHub_BuildCinematicsList",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StoryHub_BuildConversationList: Binding = Binding {
+        id: "Game_StoryHub_BuildConversationList",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StoryModeObjective_Update: Binding = Binding {
+        id: "Game_StoryModeObjective_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StoryModeSelect_OnBeginFadeOut: Binding = Binding {
+        id: "Game_StoryModeSelect_OnBeginFadeOut",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StoryPressInterview_Initialise: Binding = Binding {
+        id: "Game_StoryPressInterview_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StoryTeamHub_Initialise: Binding = Binding {
+        id: "Game_StoryTeamHub_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_StreamingAssetLoadTask_Update: Binding = Binding {
+        id: "Game_StreamingAssetLoadTask_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TabHostVM_OnCommand: Binding = Binding {
+        id: "Game_TabHostVM_OnCommand",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TabHostVM_OnTabActivated: Binding = Binding {
+        id: "Game_TabHostVM_OnTabActivated",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TabHostVM_OnTabDeactivated: Binding = Binding {
+        id: "Game_TabHostVM_OnTabDeactivated",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TalkingPoints_UpdateBroadcastFades: Binding = Binding {
+        id: "Game_TalkingPoints_UpdateBroadcastFades",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3551,8 +7332,68 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_TeamHQTimeline_AnimateDeptEvent: Binding = Binding {
+        id: "Game_TeamHQTimeline_AnimateDeptEvent",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Teleport_Vehicle: Binding = Binding {
         id: "Game_Teleport_Vehicle",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TerminalDamage_Initialise: Binding = Binding {
+        id: "Game_TerminalDamage_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Thrustmaster_SetWheelRange: Binding = Binding {
+        id: "Game_Thrustmaster_SetWheelRange",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TimeAttackGates_CreateGateModel: Binding = Binding {
+        id: "Game_TimeAttackGates_CreateGateModel",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TimeOfDayDebug_Update: Binding = Binding {
+        id: "Game_TimeOfDayDebug_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TimeTrialMode_Shutdown: Binding = Binding {
+        id: "Game_TimeTrialMode_Shutdown",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TimingBoard_FormatPositionText: Binding = Binding {
+        id: "Game_TimingBoard_FormatPositionText",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TodData_FindParam: Binding = Binding {
+        id: "Game_TodData_FindParam",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TodData_FindScenarioParam: Binding = Binding {
+        id: "Game_TodData_FindScenarioParam",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TodParamBlock_SetScenario: Binding = Binding {
+        id: "Game_TodParamBlock_SetScenario",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TrackAcclimatisation_CalcTyreTarget: Binding = Binding {
+        id: "Game_TrackAcclimatisation_CalcTyreTarget",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TrackCameraShots_StopShot: Binding = Binding {
+        id: "Game_TrackCameraShots_StopShot",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3561,8 +7402,258 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_TrackExtraYacht_Initialise: Binding = Binding {
+        id: "Game_TrackExtraYacht_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TrackModelComponent_Initialise: Binding = Binding {
+        id: "Game_TrackModelComponent_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TrackSelectVM_OnScreenActivated: Binding = Binding {
+        id: "Game_TrackSelectVM_OnScreenActivated",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TrackSpaceDataResource_Load: Binding = Binding {
+        id: "Game_TrackSpaceDataResource_Load",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TrackSpaceTracker_Reset: Binding = Binding {
+        id: "Game_TrackSpaceTracker_Reset",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TrackSpace_GetDistanceAtPos: Binding = Binding {
+        id: "Game_TrackSpace_GetDistanceAtPos",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TrackSpace_LoadXml: Binding = Binding {
+        id: "Game_TrackSpace_LoadXml",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TrackSpace_RangeOverlaps: Binding = Binding {
+        id: "Game_TrackSpace_RangeOverlaps",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TrackSpline_ResolveRouteEnds: Binding = Binding {
+        id: "Game_TrackSpline_ResolveRouteEnds",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TrophyCabinetTabVM_OnActivate: Binding = Binding {
+        id: "Game_TrophyCabinetTabVM_OnActivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_TyreAllocationComponent_SetPresetChoiceForHumanDriver: Binding = Binding {
         id: "Game_TyreAllocationComponent_SetPresetChoiceForHumanDriver",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TyreSystem_SwapTyreModel: Binding = Binding {
+        id: "Game_TyreSystem_SwapTyreModel",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TyreWearDynamicObjective_Activate: Binding = Binding {
+        id: "Game_TyreWearDynamicObjective_Activate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TyreWearRelevanceCriterion_Update: Binding = Binding {
+        id: "Game_TyreWearRelevanceCriterion_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_UDPPreferences_OnLocalPreferenceChange: Binding = Binding {
+        id: "Game_UDPPreferences_OnLocalPreferenceChange",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_UDPPreferences_OnLocalShowPlayerNameChange: Binding = Binding {
+        id: "Game_UDPPreferences_OnLocalShowPlayerNameChange",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_UIConnectionManager_ShowConnectionLostPopup: Binding = Binding {
+        id: "Game_UIConnectionManager_ShowConnectionLostPopup",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_UiMessageScreen_Destructor: Binding = Binding {
+        id: "Game_UiMessageScreen_Destructor",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VehicleAntiStallSystem_GetStateByPlayerId: Binding = Binding {
+        id: "Game_VehicleAntiStallSystem_GetStateByPlayerId",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VehicleAntiStallSystem_IsLaunchPending: Binding = Binding {
+        id: "Game_VehicleAntiStallSystem_IsLaunchPending",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VehicleAntiStallSystem_IsStalled: Binding = Binding {
+        id: "Game_VehicleAntiStallSystem_IsStalled",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VehicleAntiStallSystem_IsStartPromptActive: Binding = Binding {
+        id: "Game_VehicleAntiStallSystem_IsStartPromptActive",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VehicleCustomisationReplicationManager_AddReplicatedPlayer: Binding = Binding {
+        id: "Game_VehicleCustomisationReplicationManager_AddReplicatedPlayer",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VehicleLapProgress_CommitNetLapDelta: Binding = Binding {
+        id: "Game_VehicleLapProgress_CommitNetLapDelta",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VehicleProgressManager_AddVehicleSync: Binding = Binding {
+        id: "Game_VehicleProgressManager_AddVehicleSync",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VehicleProgressManager_RefreshAuthority: Binding = Binding {
+        id: "Game_VehicleProgressManager_RefreshAuthority",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VehicleProgressSystem_EraseNetProgressRecords: Binding = Binding {
+        id: "Game_VehicleProgressSystem_EraseNetProgressRecords",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VehicleProgressSystem_GetDistanceData: Binding = Binding {
+        id: "Game_VehicleProgressSystem_GetDistanceData",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VehicleProgressSystem_GetLapProgress: Binding = Binding {
+        id: "Game_VehicleProgressSystem_GetLapProgress",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VehicleProgressSystem_OnVehicleRemoved: Binding = Binding {
+        id: "Game_VehicleProgressSystem_OnVehicleRemoved",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VehicleProgressSystem_SendOnHostMigration: Binding = Binding {
+        id: "Game_VehicleProgressSystem_SendOnHostMigration",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VehicleProgressSystem_SendProgressToConnection: Binding = Binding {
+        id: "Game_VehicleProgressSystem_SendProgressToConnection",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VehicleProgressSystem_SubscribeAndClearNet: Binding = Binding {
+        id: "Game_VehicleProgressSystem_SubscribeAndClearNet",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VehicleRaceStart_SendRaceStartMessages: Binding = Binding {
+        id: "Game_VehicleRaceStart_SendRaceStartMessages",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VendorA_Initialise: Binding = Binding {
+        id: "Game_VendorA_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VfxManager_Initialise: Binding = Binding {
+        id: "Game_VfxManager_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VictoryVO_DetectWinnerAndNotify: Binding = Binding {
+        id: "Game_VictoryVO_DetectWinnerAndNotify",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VictoryVO_OnSpeechFinished: Binding = Binding {
+        id: "Game_VictoryVO_OnSpeechFinished",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VictoryVO_PlayVictoryVO: Binding = Binding {
+        id: "Game_VictoryVO_PlayVictoryVO",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VirtualHelpPageVM_OnActivate: Binding = Binding {
+        id: "Game_VirtualHelpPageVM_OnActivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VirtualHelpPageVM_OnDeactivate: Binding = Binding {
+        id: "Game_VirtualHelpPageVM_OnDeactivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VirtualPerformance_Initialise: Binding = Binding {
+        id: "Game_VirtualPerformance_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VirtualSession_Simulate: Binding = Binding {
+        id: "Game_VirtualSession_Simulate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VoPlaySoundEffectNode_Execute: Binding = Binding {
+        id: "Game_VoPlaySoundEffectNode_Execute",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VotingManager_CastVote: Binding = Binding {
+        id: "Game_VotingManager_CastVote",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VotingManager_Destroy: Binding = Binding {
+        id: "Game_VotingManager_Destroy",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VotingManager_HandleStatus: Binding = Binding {
+        id: "Game_VotingManager_HandleStatus",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VotingManager_SetStatus: Binding = Binding {
+        id: "Game_VotingManager_SetStatus",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_WonDriverChampionship_Initialise: Binding = Binding {
+        id: "Game_WonDriverChampionship_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_WonDriverChampionship_Initialise_2: Binding = Binding {
+        id: "Game_WonDriverChampionship_Initialise_2",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_WrinkleModifierMorphRig_Parse: Binding = Binding {
+        id: "Game_WrinkleModifierMorphRig_Parse",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3578,6 +7669,41 @@ pub mod bindings {
     };
     pub const Gdb_Lookup_Key: Binding = Binding {
         id: "Gdb_Lookup_Key",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Hud_HideReasons_Add: Binding = Binding {
+        id: "Hud_HideReasons_Add",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Hud_PitStartClutchPrompt_Update: Binding = Binding {
+        id: "Hud_PitStartClutchPrompt_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Hud_PushProIncidentPointsMessage: Binding = Binding {
+        id: "Hud_PushProIncidentPointsMessage",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Hud_RaceStartClutchPrompt_Update: Binding = Binding {
+        id: "Hud_RaceStartClutchPrompt_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Hud_ReplayHudVM_OnScreenDeactivated: Binding = Binding {
+        id: "Hud_ReplayHudVM_OnScreenDeactivated",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Hud_SpectatorScreenVM_OnScreenDeactivated: Binding = Binding {
+        id: "Hud_SpectatorScreenVM_OnScreenDeactivated",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Hud_StoryRaceEvent_Begin: Binding = Binding {
+        id: "Hud_StoryRaceEvent_Begin",
         kind: "func",
         status: Status::Experimental,
     };
@@ -5666,6 +9792,126 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Render_BackBuffer_CopyToCpu: Binding = Binding {
+        id: "Render_BackBuffer_CopyToCpu",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_Batch_Submit: Binding = Binding {
+        id: "Render_Batch_Submit",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_CloudGenerator_Update: Binding = Binding {
+        id: "Render_CloudGenerator_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_DDGISystem_Render: Binding = Binding {
+        id: "Render_DDGISystem_Render",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_DamageMaskGenerator_Render: Binding = Binding {
+        id: "Render_DamageMaskGenerator_Render",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_Gfx2Buffer_Construct: Binding = Binding {
+        id: "Render_Gfx2Buffer_Construct",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_Gfx2Buffer_Destroy: Binding = Binding {
+        id: "Render_Gfx2Buffer_Destroy",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_Gfx2Device_Initialise: Binding = Binding {
+        id: "Render_Gfx2Device_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_GroundCoverPlugin_Render: Binding = Binding {
+        id: "Render_GroundCoverPlugin_Render",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_Hbcn_OnCompressRequest: Binding = Binding {
+        id: "Render_Hbcn_OnCompressRequest",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_LightListResource_Create: Binding = Binding {
+        id: "Render_LightListResource_Create",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_Model_ValidateMaterialParams: Binding = Binding {
+        id: "Render_Model_ValidateMaterialParams",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_OnRaytracingValidationMsg: Binding = Binding {
+        id: "Render_OnRaytracingValidationMsg",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_ParticleManager_DrawMeshParticles: Binding = Binding {
+        id: "Render_ParticleManager_DrawMeshParticles",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_Particles_ReadbackVertexBuffer: Binding = Binding {
+        id: "Render_Particles_ReadbackVertexBuffer",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_RainFile_Load: Binding = Binding {
+        id: "Render_RainFile_Load",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_RainFile_ParseMaterials: Binding = Binding {
+        id: "Render_RainFile_ParseMaterials",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_SceneView_SubmitCamera: Binding = Binding {
+        id: "Render_SceneView_SubmitCamera",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_Screenshot_CaptureAndSave: Binding = Binding {
+        id: "Render_Screenshot_CaptureAndSave",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_TerrainPlugin_Render: Binding = Binding {
+        id: "Render_TerrainPlugin_Render",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_Texture_CreateFromResource: Binding = Binding {
+        id: "Render_Texture_CreateFromResource",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_Write_PngFile: Binding = Binding {
+        id: "Render_Write_PngFile",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_XeSS_Evaluate: Binding = Binding {
+        id: "Render_XeSS_Evaluate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Render_XeSS_PrepareInputs: Binding = Binding {
+        id: "Render_XeSS_PrepareInputs",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_Apply_ContentAvailability: Binding = Binding {
         id: "Sess_Apply_ContentAvailability",
         kind: "func",
@@ -7431,6 +11677,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Team_Build_FanZoneStandings: Binding = Binding {
+        id: "Team_Build_FanZoneStandings",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Team_Insert_RecordByStatId: Binding = Binding {
         id: "Team_Insert_RecordByStatId",
         kind: "func",
@@ -8971,6 +13222,11 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const vt_Car_VehicleEnvironment: Binding = Binding {
+        id: "vt_Car_VehicleEnvironment",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
     pub const vt_Career_BankTransactionMessage: Binding = Binding {
         id: "vt_Career_BankTransactionMessage",
         kind: "vtable",
@@ -9065,6 +13321,11 @@ pub mod bindings {
         id: "vt_Game_SaveDataRootContainer",
         kind: "vtable",
         status: Status::Stable,
+    };
+    pub const vt_Game_TrackInformationModule: Binding = Binding {
+        id: "vt_Game_TrackInformationModule",
+        kind: "vtable",
+        status: Status::Experimental,
     };
     pub const vt_Game_TrackListComponent: Binding = Binding {
         id: "vt_Game_TrackListComponent",

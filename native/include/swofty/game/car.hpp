@@ -266,11 +266,18 @@ inline constexpr address<"Car_Build_VtfComponents"> Car_Build_VtfComponents{}; /
 inline constexpr address<"Car_Chassis_Build"> Car_Chassis_Build{}; // L3 stable
 using Car_Create_DetachablePart_t = void *(void *part_manager, void **cb, uint32_t *name_id, int32_t *params, float k);
 inline constexpr fn<"Car_Create_DetachablePart", Car_Create_DetachablePart_t> Car_Create_DetachablePart{}; // L2 experimental
+inline constexpr address<"Car_Deformation_AcquireParticles"> Car_Deformation_AcquireParticles{}; // L2 experimental
+inline constexpr address<"Car_Deformation_ClearPool"> Car_Deformation_ClearPool{}; // L2 experimental
+inline constexpr address<"Car_Deformation_CreateBody"> Car_Deformation_CreateBody{}; // L2 experimental
+inline constexpr address<"Car_Deformation_DestroyBody"> Car_Deformation_DestroyBody{}; // L2 experimental
+inline constexpr address<"Car_Deformation_ReleaseParticles"> Car_Deformation_ReleaseParticles{}; // L2 experimental
+inline constexpr address<"Car_Deformation_ReservePool"> Car_Deformation_ReservePool{}; // L2 experimental
 inline constexpr address<"Car_Engine_ComputeDerived_Thunk"> Car_Engine_ComputeDerived_Thunk{}; // L2 experimental
 using Car_FrontWing_Init_t = void(void *front_wing, char reset);
 inline constexpr fn<"Car_FrontWing_Init", Car_FrontWing_Init_t> Car_FrontWing_Init{}; // L2 experimental, game::FrontWing
 inline constexpr address<"Car_FrontWing_OnCollision"> Car_FrontWing_OnCollision{}; // L2 experimental
 inline constexpr address<"Car_Load_Vtf"> Car_Load_Vtf{}; // L2 experimental
+inline constexpr address<"Car_Model_BindCockpitNodes"> Car_Model_BindCockpitNodes{}; // L2 experimental
 inline constexpr address<"Car_Physics_PostVehicleUpdate"> Car_Physics_PostVehicleUpdate{}; // L2 experimental
 inline constexpr address<"Car_Read_Engine"> Car_Read_Engine{}; // L2 experimental
 inline constexpr address<"Car_Read_F1Aero"> Car_Read_F1Aero{}; // L2 experimental
@@ -282,15 +289,20 @@ inline constexpr fn<"Car_Register_DetachablePart_Thunk", Car_Register_Detachable
 using Car_Reset_LastFittedUpgrade_t = void(void *inst);
 inline constexpr fn<"Car_Reset_LastFittedUpgrade", Car_Reset_LastFittedUpgrade_t> Car_Reset_LastFittedUpgrade{}; // L2 experimental
 inline constexpr address<"Car_Setup_ApplyTuning"> Car_Setup_ApplyTuning{}; // L3 stable
+inline constexpr address<"Car_SteeringWheelLeds_Update"> Car_SteeringWheelLeds_Update{}; // L2 experimental
 inline constexpr address<"Car_Systems_FindOrCreate"> Car_Systems_FindOrCreate{}; // L2 experimental
 inline constexpr address<"Car_Systems_Reset_Thunk"> Car_Systems_Reset_Thunk{}; // L3 stable
 inline constexpr address<"Car_Tuning_SetChassisZCom"> Car_Tuning_SetChassisZCom{}; // L2 experimental
 inline constexpr address<"Car_Tuning_SetFinalDrive"> Car_Tuning_SetFinalDrive{}; // L2 experimental
+inline constexpr address<"Car_TyreSystem_PitstopComplete"> Car_TyreSystem_PitstopComplete{}; // L2 experimental
 inline constexpr address<"Car_Tyre_GripScale"> Car_Tyre_GripScale{}; // L2 experimental
 inline constexpr address<"Car_Tyre_MagicFormula"> Car_Tyre_MagicFormula{}; // L2 experimental
 using Car_Tyre_SetWearFactor_t = void(void *tyre_component, bool apply_set, uint16_t force);
 inline constexpr fn<"Car_Tyre_SetWearFactor", Car_Tyre_SetWearFactor_t> Car_Tyre_SetWearFactor{}; // L2 experimental
 inline constexpr address<"Car_Tyre_UpdateWear"> Car_Tyre_UpdateWear{}; // L2 experimental
+inline constexpr address<"Car_TyresPitstopComplete_ForCarPair"> Car_TyresPitstopComplete_ForCarPair{}; // L2 experimental
+inline constexpr address<"Car_Tyres_ApplyStateToCarPair"> Car_Tyres_ApplyStateToCarPair{}; // L2 experimental
+inline constexpr address<"Car_Tyres_CompletePitstopForCarList"> Car_Tyres_CompletePitstopForCarList{}; // L2 experimental
 inline constexpr address<"Car_Upgrades_ApplyToVehicle"> Car_Upgrades_ApplyToVehicle{}; // L3 experimental
 inline constexpr address<"Car_Upgrades_CalcNonLinearMass"> Car_Upgrades_CalcNonLinearMass{}; // L2 experimental
 inline constexpr address<"Car_Upgrades_CalcTypeMass"> Car_Upgrades_CalcTypeMass{}; // L2 experimental
@@ -310,5 +322,6 @@ inline constexpr site<"site_Car_RegisterVehicleId"> site_Car_RegisterVehicleId{}
 inline constexpr site<"site_Car_SetupTuningApplied"> site_Car_SetupTuningApplied{}; // L3 stable
 inline constexpr site<"site_Car_UpgradeSectionApplyCall"> site_Car_UpgradeSectionApplyCall{}; // L2 experimental
 inline constexpr site<"site_Car_VehicleTableRemove"> site_Car_VehicleTableRemove{}; // L3 stable
+inline constexpr vtable<"vt_Car_VehicleEnvironment", 7> vt_Car_VehicleEnvironment{}; // L2 experimental
 
 }

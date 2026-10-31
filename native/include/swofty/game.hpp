@@ -1,4 +1,5 @@
 #pragma once
+#include <swofty/game/ai.hpp>
 #include <swofty/game/assets.hpp>
 #include <swofty/game/audio.hpp>
 #include <swofty/game/car.hpp>
@@ -10,6 +11,8 @@
 #include <swofty/game/fe_tiles.hpp>
 #include <swofty/game/game.hpp>
 #include <swofty/game/gamedb.hpp>
+#include <swofty/game/hud.hpp>
+#include <swofty/game/render.hpp>
 #include <swofty/game/session.hpp>
 #include <swofty/game/teams.hpp>
 #include <swofty/game/tracks.hpp>
