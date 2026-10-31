@@ -918,11 +918,11 @@ swofty::events::on<career::events::Missing>().after(
 | --- | --- | --- |
 | `career.saving` | modify | before the profile's save containers are written (`site_Game_SaveData_ContainersCount`); a handler sets the loaded career's data |
 | `career.saved` | notify | after the containers block was written with no error (`site_Game_SaveData_ContainersDone`) |
-| `career.missing` | notify | declared; does not fire yet (see below) |
+| `career.missing` | notify | after a profile load, a career the index knew has no slot in any mode (see below) |
 
 `career.saving` and `career.saved` fire only while the save splice is armed, on the thread that writes the profile. A handler stays short and uses no game calls. Both carry no payload: `saves::current()` names the career.
 
-`career.missing` needs the list of slots a profile load found. That is the slots of every mode's `SaveSlotManager` (`slots_begin` and `slots_end`) after `Game_SaveSlotManager_Deserialise`, and the KB has no `agree` verify rows for the function or the two fields. Until it does, `live<career::events::Missing>()` is false and `saves::missing()` returns the careers the core has marked missing (none). The launcher sees the same loss from its snapshots of the save.
+`career.missing` fires at the end of a good profile load, on the loading thread, when a career of the index has no slot in the `SaveSlotManager` of any mode after `Game_SaveSlotManager_Deserialise`. The core marks those careers missing in the index and `saves::missing()` lists them. A career is matched by its slot guid, or its slot id when the slot has no guid.
 
 ### Requirements
 
@@ -974,7 +974,7 @@ The template `templates/std/career-saves` is such an addon with its tests.
 - **The save heap** is 3 MB. The core keeps career snapshots outside it, in the `swofty_registry` entry, with a budget per registry and per career.
 - **R&D:** four departments drawn natively; upgrade types are a table of 19 and a `std::bitset<19>` (ids of 19 and up throw without native code).
 - **The 10-season career limit** is calendar data (`_season_instancecount_`), not code. Career days are 16-bit (about 200 seasons). Stock retirement schedules end in December 2035.
-- **Career saves** (since 1.6.13) are experimental: `career.missing` does not fire, and `career.saving` and `career.saved` run on the profile-writing thread.
+- **Career saves** (since 1.6.13) are experimental: `career.saving` and `career.saved` run on the profile-writing thread, and `career.missing` on the profile-loading thread.
 - **Saves keep the season list.** Rounds of a season that hasn't started can be replaced, added or removed. The upgrade loader drops instances it doesn't know.
 - **Hashed per-team career tables** can't gain rows. **Eight tables** are partitioned by data group.
 - **My Team** freezes when the upgrade availability is refreshed over and over. **Follow-career scene paths** crashed new Progressive careers (#411).

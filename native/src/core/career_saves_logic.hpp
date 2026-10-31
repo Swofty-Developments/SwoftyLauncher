@@ -168,6 +168,19 @@ public:
         list.push_back(std::move(a));
     }
 
+    std::set<std::string> found_in(const std::set<std::string> &keys) const
+    {
+        std::set<std::string> out;
+        for (const Value &c : careers_) {
+            std::string id(c["career"].as_string());
+            size_t cut = id.rfind(':');
+            std::string tail = cut == std::string::npos ? id : id.substr(cut + 1);
+            if (tail.compare(0, 3, "new") == 0 || keys.count(tail))
+                out.insert(id);
+        }
+        return out;
+    }
+
     std::vector<std::string> reconcile(const std::set<std::string> &present)
     {
         std::vector<std::string> gone;

@@ -119883,6 +119883,32 @@
    "used_by": [
     "native/src/core/tyre_slots.cpp"
    ]
+  },
+  {
+   "id": "game.save_slot_manager_deserialise",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4D 89 C7 49 89 D6",
+   "match": "0x1429d6810",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1429d6810",
+   "kind": "func_start",
+   "names": [
+    "Game_SaveSlotManager_Deserialise"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "kbverify-saves1",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/save_splice.cpp"
+   ]
   }
  ]
 }

@@ -66,7 +66,7 @@ inline constexpr Event EVENTS[] = {
     {"career.season.break", N, "swofty::career::events::SeasonBreak", 1, false, Fired::no, nullptr},
     {"career.saving", M, "swofty::career::events::Saving", 1, false, Fired::yes, nullptr},
     {"career.saved", N, "swofty::career::events::Saved", 1, false, Fired::yes, nullptr},
-    {"career.missing", N, "swofty::career::events::Missing", 1, false, Fired::no, nullptr},
+    {"career.missing", N, "swofty::career::events::Missing", 1, false, Fired::yes, nullptr},
     {"career.unloaded", N, "swofty::career::events::Unloaded", 1, false, Fired::yes, SWOFTY_EVENT_CAREER_UNLOADED},
     {"career.standings.rebuild", M, "swofty::career::events::StandingsRebuild", 1, false, Fired::no, nullptr},
 

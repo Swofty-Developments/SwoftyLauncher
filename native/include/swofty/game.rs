@@ -1698,9 +1698,14 @@ const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, slot_guid) == 0x8);
 
 #[repr(C)]
 pub struct SaveSlotManager {
-    _pad_0x0: [u8; 0x280],
+    _pad_0x0: [u8; 0x268],
+    pub slots_begin: *mut *mut SaveSlotInfo,
+    pub slots_end: *mut *mut SaveSlotInfo,
+    _pad_0x278: [u8; 0x8],
     pub current: *mut SaveSlotInfo,
 }
+const _: () = assert!(core::mem::offset_of!(SaveSlotManager, slots_begin) == 0x268);
+const _: () = assert!(core::mem::offset_of!(SaveSlotManager, slots_end) == 0x270);
 const _: () = assert!(core::mem::offset_of!(SaveSlotManager, current) == 0x280);
 
 #[repr(C)]
@@ -2604,6 +2609,8 @@ pub type Game_SaveData_SerialiseContainer_t = unsafe extern "C" fn(
 pub type Game_SaveData_WriteBag_t = unsafe extern "C" fn(codec: *mut NeBagCodec, bag: *mut c_void) -> c_int;
 pub type Game_SaveMgr_RequestProfileSave_Thunk_t =
     unsafe extern "C" fn(save_mgr: *mut c_void, callback: *mut c_void, a3: u8, a4: u8) -> bool;
+pub type Game_SaveSlotManager_Deserialise_t =
+    unsafe extern "C" fn(iface: *mut c_void, bag: *mut c_void, ctx: *mut c_void) -> c_int;
 pub type Game_SaveSlotManager_SelectSlot_t =
     unsafe extern "C" fn(manager: *mut c_void, slot_id: u64, force: bool, a4: u32) -> c_int;
 pub type Game_SceneManagerSpawn_SpawnScene_t = unsafe extern "C" fn(
@@ -6894,6 +6901,11 @@ pub mod bindings {
     };
     pub const Game_SaveMgr_RequestProfileSave_Thunk: Binding = Binding {
         id: "Game_SaveMgr_RequestProfileSave_Thunk",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SaveSlotManager_Deserialise: Binding = Binding {
+        id: "Game_SaveSlotManager_Deserialise",
         kind: "func",
         status: Status::Experimental,
     };
