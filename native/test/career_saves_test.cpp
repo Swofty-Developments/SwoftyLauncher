@@ -62,6 +62,15 @@ static void missing_and_back()
     ix.reconcile({"a", "b", "c"});
     expect(ix.missing_ids().empty(), "a career that comes back is present again");
     ix.reconcile({"a"});
+    cs::Index fx;
+    fx.touch("driver_career:00000000000000ab");
+    fx.touch("driver_career_progressive:00000000000000cd");
+    fx.touch("my_team:7");
+    fx.touch("driver_career:new1");
+    auto here = fx.found_in({"00000000000000ab", "7"});
+    expect(here.size() == 3 && here.count("driver_career:00000000000000ab") && here.count("my_team:7") &&
+               here.count("driver_career:new1") && !here.count("driver_career_progressive:00000000000000cd"),
+           "found_in matches a career by its slot key and keeps a provisional one");
     Value only = swofty::json::parse(ix.only_json(ix.missing_ids()));
     expect(only["careers"].size() == 2, "only_json holds the missing records");
 }

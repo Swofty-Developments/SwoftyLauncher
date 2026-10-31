@@ -26,8 +26,8 @@
 // Writes happen at career.loaded (the career's record is made or refreshed), before each profile save
 // (career.saving, where a handler may set its data) and after it (career.saved, at
 // site_Game_SaveData_ContainersDone of the root with a good result; see save_splice.cpp). career.missing
-// is declared and does not fire: the profile load has no L2 list of the slots it found (needs verify rows
-// for Game_SaveSlotManager_Deserialise and SaveSlotManager.slots_begin and slots_end).
+// fires at the end of a good profile load for the careers of the index whose slot (slot_guid as 16 hex digits,
+// else slot_id) no mode's slot manager listed after Game_SaveSlotManager_Deserialise.
 
 namespace {
 
@@ -354,13 +354,13 @@ void career_saves_saving()
     flush_locked();
 }
 
-void career_saves_found(const std::set<std::string> &ids)
+void career_saves_found(const std::set<std::string> &keys)
 {
     bool gone;
     {
         std::lock_guard<std::mutex> g(mu);
         read_index_locked();
-        std::vector<std::string> now = index_.reconcile(ids);
+        std::vector<std::string> now = index_.reconcile(index_.found_in(keys));
         gone = !now.empty();
         if (gone) {
             for (auto &id : now)

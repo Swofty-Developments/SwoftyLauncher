@@ -154,7 +154,7 @@ void save_splice_commit();
 void career_saves_start();
 void career_saves_saving();
 void career_saves_saved();
-void career_saves_found(const std::set<std::string> &ids);
+void career_saves_found(const std::set<std::string> &keys);
 // Test save sandbox (save_sandbox.cpp): only under `swofty test` with a run token.
 std::vector<CoreMixins> save_sandbox_mixins();
 void save_sandbox_commit();
