@@ -30,7 +30,7 @@ runtime: swofty/assets.json with 77 asset group(s), 0 resource(s), 0 database ed
 ```
 
 - Both `swofty build` and `swofty apply` activate every `track.add`, in load order, before the other database ops. Those ops can't remove the records activation adds; see [Removing stock records](/reference/ops/database#removing-stock-records).
-- Two `track.add` ops with one track code fail the build with `track okayama is added twice`.
+- Two `track.add` ops with one track code fail the build and name both addons: `track okayama is added by both mod.okayama and mod.okayama-night; turn one of them off on the Addons page`.
 - Mods in the importer's library that haven't converted yet get a `track.add` from the importer's build hook instead, with the source `library/<id>/track` in Team Simplified's `addon-data` folder.
 - The code is in `packages/core/src/activation/`.
 

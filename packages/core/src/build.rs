@@ -151,8 +151,14 @@ pub fn track_packages(store: &Store, ops: Vec<Op>) -> Result<TrackPackages> {
                 continue;
             }
         };
-        if out.iter().any(|(_, p, _)| p.track_code == pkg.track_code) {
-            return Err(Error::Map(format!("track {} is added twice", pkg.track_code)));
+        if let Some((_, _, first)) = out.iter().find(|(_, p, _)| p.track_code == pkg.track_code) {
+            return Err(Error::Map(match first.addon == op.origin.addon {
+                true => format!("track {} is added twice by {}", pkg.track_code, first.addon),
+                false => format!(
+                    "track {} is added by both {} and {}; turn one of them off on the Addons page",
+                    pkg.track_code, first.addon, op.origin.addon
+                ),
+            }));
         }
         out.push((dir, pkg, op.origin));
     }
