@@ -1709,9 +1709,33 @@ const _: () = assert!(core::mem::offset_of!(SaveDataContainer, retained_count) =
 pub struct SaveSlotInfo {
     pub slot_id: u64,
     pub slot_guid: u64,
+    _pad_0x10: [u8; 0x10],
+    pub name: *mut c_char,
+    _pad_0x28: [u8; 0x80],
+    pub game_setup_mode: u8,
+    _pad_0xa9: [u8; 0x3],
+    pub info_season: u32,
+    pub info_weekend: u32,
+    _pad_0xb4: [u8; 0xa],
+    pub info_team: u16,
+    pub info_driver: u16,
+    pub info_vehicle: u16,
+    _pad_0xc4: [u8; 0x4],
+    pub info_date: u64,
+    _pad_0xd0: [u8; 0xa1],
+    pub type_flags: u8,
 }
 const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, slot_id) == 0x0);
 const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, slot_guid) == 0x8);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, name) == 0x20);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, game_setup_mode) == 0xa8);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, info_season) == 0xac);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, info_weekend) == 0xb0);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, info_team) == 0xbe);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, info_driver) == 0xc0);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, info_vehicle) == 0xc2);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, info_date) == 0xc8);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, type_flags) == 0x171);
 
 #[repr(C)]
 pub struct SaveSlotManager {
