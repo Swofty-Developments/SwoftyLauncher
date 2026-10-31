@@ -109,12 +109,12 @@ const STAT_ID_CEILINGS: &[(&str, &str, StatIdCeiling)] = &[
         "vehicle_package",
         StatIdCeiling { max: 254, from: None },
     ),
-    // Driver ids are 0-254. A stock row holds 254; the core allocates 208-253.
+    // Driver ids are u16 in memory and 14 bits in saves and net (0x3fff = none); 254 is default_driver, and UDP 2024/2025 read a low byte of 255 as a network player.
     (
         "entrants.drivers",
         "driver",
         StatIdCeiling {
-            max: 254,
+            max: 16382,
             from: Some(208),
         },
     ),
@@ -189,6 +189,11 @@ pub fn stat_id_ceiling(table: &str, row: &str) -> Option<StatIdCeiling> {
         .iter()
         .find(|(t, r, _)| *t == table && *r == row)
         .map(|(_, _, c)| *c)
+}
+
+/// Whether a fresh row of `table`'s rows named `row` may not take `id`: driver ids 254 and 255, and any with a low byte of 0xff.
+pub fn stat_id_unusable(table: &str, row: &str, id: i64) -> bool {
+    table == "entrants.drivers" && row == "driver" && (id == 254 || id & 0xff == 0xff)
 }
 
 /// An `add-row` applied: the source row's path and the new row's path.
@@ -1331,6 +1336,7 @@ fn free_stat_id(
     ceiling: StatIdCeiling,
     skip: &dyn Fn(i64) -> bool,
 ) -> Option<i64> {
+    let skip = |id: i64| skip(id) || stat_id_unusable(table, row, id);
     let field = stat_id_field(table, row);
     let mut used = HashSet::new();
     let mut stock = -1;
@@ -1481,7 +1487,7 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
         .iter()
         .find(|r| r.key == dst.field("_metadata_"))
         .map(|r| r.text().into_owned());
-    let later = |id: i64| names.reserved(&path, row, id);
+    let later = |id: i64| names.reserved(&path, row, id) || stat_id_unusable(&path, row, id);
     let held = |id: i64| {
         (0..n).map(|i| format!("{path}.{row}_{i}")).find(|r| {
             db.text(fnv1a64(format!("{r}.{field}")))
@@ -1496,15 +1502,16 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
             .into_iter()
             .max()
             .map_or(0, |m| m + 1);
-        while moving && later(top) {
+        while (moving && later(top)) || stat_id_unusable(&path, row, top) {
             top += 1;
         }
         match ceiling {
-            Some(c) if top > c.max => free_stat_id(db, names, &path, row, n, c, &later)
+            Some(c) if top > c.max || c.from.is_some() => free_stat_id(db, names, &path, row, n, c, &later)
                 .map(|id| {
                     (
                         id,
-                        Some(format!("{top} is above {}, the highest the game reads", c.max)),
+                        (top > c.max)
+                            .then(|| format!("{top} is above {}, the highest the game reads", c.max)),
                     )
                 })
                 .ok_or_else(|| {
@@ -1529,6 +1536,9 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
         let unfit = |id: i64| -> Option<String> {
             if let Some(c) = ceiling.filter(|c| id > c.max || id < 0) {
                 return Some(format!("is above {}, the highest the game reads", c.max));
+            }
+            if stat_id_unusable(&path, row, id) {
+                return Some("is an id the game reads as another driver or none".to_owned());
             }
             let r = held(id)?;
             let label = db.text(fnv1a64(format!("{r}._metadata_")));
@@ -2699,16 +2709,41 @@ mod tests {
     }
 
     #[test]
-    fn driver_ids_fill_the_core_pool_under_254_and_fail_when_it_is_full() {
+    fn driver_ids_fill_208_to_253_then_256_up_and_skip_254_255_and_low_byte_0xff() {
         let mut db = table("entrants.drivers", "driver", &[254, 0, 207, 210]);
         let stock: HashSet<u64> = db.records.iter().map(|r| r.key).collect();
-        let labels: Vec<String> = (0..45).map(|i| format!("d_{i}")).collect();
+        let labels: Vec<String> = (0..300).map(|i| format!("d_{i}")).collect();
         let rows: Vec<(&str, Option<i64>)> = labels.iter().map(|l| (l.as_str(), None)).collect();
         apply_db_ops(&mut db, &add_rows("entrants.drivers", "driver", &rows), &stock).unwrap();
         let all = ids(&db, "entrants.drivers", "driver");
         assert_eq!(all[4..7], [208, 209, 211]);
-        assert_eq!(*all.last().unwrap(), 253);
-        assert!(all.iter().all(|id| *id <= 254));
+        let added = &all[4..];
+        assert_eq!(
+            added[..45],
+            (208..=253).filter(|id| *id != 210).collect::<Vec<_>>()[..45]
+        );
+        assert_eq!(added[45], 256);
+        assert_eq!(added[300 - 1], 510);
+        assert!(
+            added
+                .iter()
+                .all(|id| *id != 254 && *id != 255 && id & 0xff != 0xff && *id <= 16382)
+        );
+        assert_eq!(added.iter().filter(|id| **id > 255).count(), 300 - 45);
+    }
+
+    #[test]
+    fn driver_ids_stop_at_the_14_bit_ceiling() {
+        let mut db = table("entrants.drivers", "driver", &[254]);
+        let stock: HashSet<u64> = db.records.iter().map(|r| r.key).collect();
+        let usable = (208..=16382)
+            .filter(|id| !stat_id_unusable("entrants.drivers", "driver", *id))
+            .count();
+        let labels: Vec<String> = (0..usable).map(|i| format!("d_{i}")).collect();
+        let rows: Vec<(&str, Option<i64>)> = labels.iter().map(|l| (l.as_str(), None)).collect();
+        apply_db_ops(&mut db, &add_rows("entrants.drivers", "driver", &rows), &stock).unwrap();
+        let all = ids(&db, "entrants.drivers", "driver");
+        assert_eq!(*all.last().unwrap(), 16382);
         let e = apply_db_ops(
             &mut db,
             &add_rows("entrants.drivers", "driver", &[("full", None)]),
@@ -2717,7 +2752,7 @@ mod tests {
         .unwrap_err()
         .to_string();
         assert!(
-            e.contains("entrants.drivers has no free stat_id up to 254"),
+            e.contains("entrants.drivers has no free stat_id up to 16382"),
             "{e}"
         );
         let (_, failed) = apply_db_ops_lenient(
@@ -2727,7 +2762,7 @@ mod tests {
             &mut DbReport::default(),
         );
         assert_eq!(failed.len(), 1);
-        assert_eq!(db.instance_count("entrants.drivers", "driver"), Some(49));
+        assert_eq!(db.instance_count("entrants.drivers", "driver"), Some(1 + usable));
     }
 
     #[test]
