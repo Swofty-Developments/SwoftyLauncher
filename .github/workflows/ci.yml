@@ -5,8 +5,10 @@ on:
   push:
     branches: [main, ci/ec2-spot-runners]
 
+# A newer push to a pull request cancels its older run. Every push to main runs to the end in its own group:
+# a release tag needs its commit's run to pass.
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: true
 
 env:
