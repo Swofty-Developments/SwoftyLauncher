@@ -200,6 +200,77 @@ int main(int argc, char **argv)
     check(true, "archives written to " + out.string() + " for check_logo_build.py");
 
     {
+        fs::path ov = out / "overlay";
+        fs::create_directories(ov / "ov");
+        std::vector<lb::Want> first(1);
+        first[0] = {"teams.driver_select_team_logos", "newteam", "", std::string(px, 64 * 64 * 4), 64, 64};
+        lb::Result r1;
+        lb::build(env, first, r1);
+        auto count_of = [&](const fs::path &file, const std::string &rel_image) -> uint32_t {
+            auto src = open_file(file);
+            ef::Archive arc;
+            std::string head, w2;
+            if (!src || !ef::open(*src, arc, w2))
+                return 0;
+            const ef::Entry *e = arc.find(rel_image);
+            if (!e || e->frags.empty() || !ef::fragment(*src, arc, e->frags[0], head, w2))
+                return 0;
+            return content::logo_array::le32(head, content::logo_array::HEAD_COUNT);
+        };
+        std::string image = std::string(lb::ARRAY_URI) + "teams.driver_select_team_logos.texarray.image";
+        for (auto &[rel, changes] : r1.changes) {
+            auto src = open_file(game / rel);
+            ef::Archive arc;
+            ef::open(*src, arc, why);
+            std::string name = "ov/" + std::to_string(std::hash<std::string>{}(rel)) + ".erp";
+            std::ofstream(ov / name, std::ios::binary) << rewrite_to_string(*src, arc, changes, why);
+        }
+        auto overlay_of = [&](const std::string &rel) { return "ov/" + std::to_string(std::hash<std::string>{}(rel)) + ".erp"; };
+        uint32_t stock_count = count_of(game / list[1], image);
+        lb::Env layered;
+        layered.list = [&] { return list; };
+        layered.open = [&](const std::string &rel) { return rel.rfind("ov/", 0) == 0 ? open_file(ov / rel) : open_file(game / rel); };
+        layered.overlays = [&](const std::string &rel) {
+            std::vector<std::string> v;
+            if (r1.changes.count(rel))
+                v.push_back(overlay_of(rel));
+            return v;
+        };
+        std::vector<lb::Want> second(1);
+        second[0].array = "teams.driver_select_team_logos";
+        second[0].key = "second";
+        second[0].donor = "b";
+        lb::Result r5;
+        check(lb::build(layered, second, r5) && r5.built == 1 && r5.refused == 0, "a slice is added on top of an overlay that already grew the array");
+        std::string ovrel = overlay_of(list[1]);
+        bool both = r5.changes.count(ovrel) && r5.changes.count(list[1]);
+        check(both && r5.read.count(ovrel), "the overlay archive and the stock archive both change and the overlay is read");
+        if (both) {
+            for (auto &[rel, changes] : r5.changes) {
+                auto src = layered.open(rel);
+                ef::Archive arc;
+                ef::open(*src, arc, why);
+                std::ofstream(ov / ("out_" + std::to_string(std::hash<std::string>{}(rel)) + ".erp"), std::ios::binary)
+                    << rewrite_to_string(*src, arc, changes, why);
+            }
+            uint32_t over = count_of(ov / ("out_" + std::to_string(std::hash<std::string>{}(ovrel)) + ".erp"), image);
+            uint32_t stock_out = count_of(ov / ("out_" + std::to_string(std::hash<std::string>{}(list[1])) + ".erp"), image);
+            check(over == stock_count + 2, "the overlay's array keeps the slice it already had and gains the new one (" + std::to_string(over) + " of " + std::to_string(stock_count) + " + 2)");
+            check(stock_out == over, "the stock archive carries the same grown array, so the game gets it from either");
+        }
+        lb::Result r6, r7;
+        lb::build(env, second, r6);
+        lb::Env nolayer = layered;
+        nolayer.overlays = nullptr;
+        nolayer.open = env.open;
+        lb::build(nolayer, second, r7);
+        bool same = r6.changes.size() == r7.changes.size();
+        for (auto &[rel, changes] : r6.changes)
+            same = same && r7.changes.count(rel) && r7.changes[rel] == changes;
+        check(same, "with no overlay the changes are the ones built from the stock archives");
+    }
+
+    {
         auto bad = wants;
         bad[0].width = 32;
         lb::Result r2;
