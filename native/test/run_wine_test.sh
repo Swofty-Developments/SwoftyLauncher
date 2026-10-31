@@ -718,6 +718,24 @@ for guard in on off; do
             { echo "FAIL: garage_crew off: the vector lost the third car"; status=1; }
     fi
 done
+for guard in on off; do
+    echo "==== pit_slots ($guard)"
+    code=0
+    SWOFTY_PIT_SLOT_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" pit_slots >"$OUT/pit_slots.out" 2>&1 || code=$?
+    grep -E '\[pit\]' "$LOG" || true
+    if [[ $guard == on ]]; then
+        [[ $code == 0 ]] && echo "ok  : pit_slots on: the test run finished" || { echo "FAIL: pit_slots on: exit $code"; status=1; }
+        grep -q 'FAIL' "$OUT/pit_slots.out" && { echo "FAIL: pit_slots on: a check failed"; grep FAIL "$OUT/pit_slots.out"; status=1; } || echo "ok  : pit_slots on: every check passed"
+        check "pit_slots on: the guard is armed" '\[pit\] slot guard armed'
+        check "pit_slots on: a listed car without a slot is logged" '\[pit\] guard: vehicle [0-9]+ has no race slot, a listed car .*the entry is skipped'
+        check "pit_slots on: an own car without a slot is logged" '\[pit\] guard: vehicle [0-9]+ has no race slot, its own car .*the check answers no'
+    else
+        once "pit_slots off: the guard is off" '\[pit\] slot guard off \(SWOFTY_PIT_SLOT_GUARD=0\)'
+        grep -q 'FAIL' "$OUT/pit_slots.out" && { echo "FAIL: pit_slots off: a check failed"; grep FAIL "$OUT/pit_slots.out"; status=1; } || echo "ok  : pit_slots off: the unguarded cases pass"
+        grep -q 'guard off, the null slot cases are not run' "$OUT/pit_slots.out" && echo "ok  : pit_slots off: the null slot cases are left out" ||
+            { echo "FAIL: pit_slots off: the test did not reach its end"; status=1; }
+    fi
+done
 echo "==== ntpage"
 cp "$OUT/t_ntpage.dll" "$SW/mods/core/ntpage_hook.dll"
 rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
