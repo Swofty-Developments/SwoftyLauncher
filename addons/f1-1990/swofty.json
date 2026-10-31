@@ -4,7 +4,7 @@
   "name": "F1 1990",
   "version": "0.1.0",
   "author": "Swofty",
-  "description": "Adds a 1990 Driver Career next to the 2025 and 2026 ones: 1990 teams, drivers, calendar, rules and cars. Every other mode stays stock. Private test content: the car models are Codemasters classics from Jefry. Not for release.",
+  "description": "Adds a 1990 Driver Career next to the 2025 and 2026 ones: 1990 teams, drivers, calendar, rules and cars. Every other mode stays stock. Use its own profile: its 31 drivers leave no driver ids for F1 2012 Season. Private test content: the car models are Codemasters classics from Jefry. Not for release.",
   "license": "LicenseRef-private",
   "kind": ["database", "erp", "text", "native", "files"],
   "category": "seasons",
