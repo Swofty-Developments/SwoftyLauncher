@@ -17,6 +17,7 @@ use swofty_core::recovery::{self, Blocked, Notice, Scope, SessionLock};
 use swofty_core::session::{LaunchMode, SessionRecord};
 use swofty_core::stock;
 use swofty_core::store::Store;
+use swofty_core::vault;
 use swofty_core::{GAME_EXE, steam, steam_client};
 
 const KB: &str = include_str!("../../../re/db/functions.tsv");
@@ -84,8 +85,49 @@ pub struct Probe {
     pub busy: Option<Busy>,
 }
 
+static VAULT_WATCH: std::sync::LazyLock<std::sync::Mutex<vault::watch::Watch>> =
+    std::sync::LazyLock::new(Default::default);
+
+/// The career vault's snapshot of an F1 25 the launcher didn't start, and
+/// again once it closes.
+fn watch_vault(store: &Store, processes: &[GameProcess]) {
+    let pid = processes.first().map(|p| p.pid);
+    let session = || SessionLock::held_elsewhere(&store.root) || Busy::live(&store.root).is_some();
+    let lines = match VAULT_WATCH.lock() {
+        Ok(mut w) => w.tick(&store.root, pid, session),
+        Err(_) => Vec::new(),
+    };
+    lines.iter().for_each(|l| crate::app_log::note(l));
+}
+
+/// At launcher start, once an unfinished session is rolled back: move old
+/// save backups into the career vault and snapshot the save, unless F1 25
+/// runs (the probe's watch takes that one) or a session holds the lock.
+pub fn vault_at_start(store: &Store) {
+    if !game_processes().is_empty() {
+        if swofty_core::launcher_saves::marker(&store.root).is_none() {
+            crate::app_log::note(
+                "saves: F1 25 is running; the import of the Steam save into the launcher saves waits for the next launcher start",
+            );
+        }
+        return;
+    }
+    let Ok(Some(_lock)) = SessionLock::try_acquire(&store.root) else {
+        return;
+    };
+    for l in vault::watch::at_launcher_start(&store.root) {
+        crate::app_log::note(&l);
+    }
+    let profiles = store.profile_names().unwrap_or_default();
+    let running = vault::restore::Running::now();
+    for l in swofty_core::launcher_saves::first_start_import(&store.root, &profiles, running, vault::now()) {
+        crate::app_log::note(&l);
+    }
+}
+
 pub fn probe(store: &Store, rediscover: bool, seen: Option<SystemTime>) -> Probe {
     let processes = game_processes();
+    watch_vault(store, &processes);
     let (requests, merged) = merge_requests(store, processes.is_empty(), seen);
     Probe {
         install: rediscover.then(|| discover_all(store)),
@@ -247,6 +289,7 @@ impl Launch {
         install: &Install,
         mode: LaunchMode,
         netplay: bool,
+        steam_saves_once: bool,
     ) -> Result<Self, String> {
         let cli = cli_path(store).ok_or_else(|| app_control::missing(&expected_cli(store)))?;
         let at = now_secs();
@@ -265,6 +308,9 @@ impl Launch {
             .arg("--apply");
         if mode.is_vr() {
             c.arg("--vr");
+        }
+        if steam_saves_once {
+            c.arg("--steam-saves-once");
         }
         c.arg("--game").arg(&install.dir);
         if netplay {
@@ -351,7 +397,7 @@ fn beside_launcher() -> Option<PathBuf> {
         .and_then(|e| Some(e.parent()?.join(CLI)))
 }
 
-fn cli_path(store: &Store) -> Option<PathBuf> {
+pub(crate) fn cli_path(store: &Store) -> Option<PathBuf> {
     let path = std::env::var_os("PATH").unwrap_or_default();
     beside_launcher()
         .into_iter()

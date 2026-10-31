@@ -431,6 +431,29 @@ impl Shell {
                         )),
                     );
                 }
+                if let Some(refused) = self.saves_refused() {
+                    let dir = refused.dir.clone();
+                    return row
+                        .child(dot(p.warning))
+                        .child(
+                            div().min_w_0().truncate().child(
+                                "Launcher saves could not be used, so F1 25 closed before loading a save",
+                            ),
+                        )
+                        .child(link("steam-once", "Play once with your Steam saves", p).on_click(
+                            cx.listener(|this, _, window, cx| this.play_with_steam_saves(window, cx)),
+                        ))
+                        .child(
+                            link("saves-log", "Open logs", p)
+                                .on_click(move |_, _, cx| cx.open_with_system(&dir)),
+                        )
+                        .child(link("saves-dismiss", "Dismiss", p).on_click(cx.listener(
+                            |this, _, _, cx| {
+                                this.dismissed = this.session.as_ref().map(|s| s.dir.clone());
+                                cx.notify();
+                            },
+                        )));
+                }
                 row
             }
         }
@@ -526,7 +549,10 @@ impl Shell {
             .rounded_r(px(9.))
             .primary()
             .child(Icon::new(IconName::ChevronDown).size(px(16.)))
-            .dropdown_menu_with_anchor(Anchor::TopRight, move |menu, _, _| {
+            .dropdown_menu_with_anchor(Anchor::TopRight, move |menu, _, cx| {
+                let dev_mode = shell
+                    .upgrade()
+                    .is_some_and(|s| s.read(cx).store.config().developer);
                 let mode = |label: &'static str, icon: IconName, mode: LaunchMode| {
                     let shell = shell.clone();
                     PopupMenuItem::new(label)
@@ -541,7 +567,13 @@ impl Shell {
                                 .ok();
                         })
                 };
-                let (console, steam) = (shell.clone(), shell.clone());
+                let (console, steam, developer) = (shell.clone(), shell.clone(), shell.clone());
+                let (saves, once) = (shell.clone(), shell.clone());
+                let profile = shell.upgrade().map(|s| {
+                    let p = &s.read(cx).library.profile;
+                    (p.is_vanilla(), p.launcher_saves)
+                });
+                let (vanilla, saves_on) = profile.unwrap_or((true, false));
                 menu.min_w(px(220.))
                     .check_side(Side::Right)
                     .item(mode("Play", IconName::Play, LaunchMode::Normal))
@@ -560,6 +592,28 @@ impl Shell {
                             }),
                     )
                     .separator()
+                    .when(!vanilla, |menu| {
+                        menu.item(
+                            PopupMenuItem::new("Use launcher saves")
+                                .icon(IconName::Save)
+                                .checked(saves_on)
+                                .on_click(move |_, window, cx| {
+                                    saves
+                                        .update(cx, |s, cx| s.set_launcher_saves(!saves_on, window, cx))
+                                        .ok();
+                                }),
+                        )
+                        .when(saves_on, |menu| {
+                            menu.item(
+                                PopupMenuItem::new("Play once with your Steam saves")
+                                    .icon(IconName::Play)
+                                    .on_click(move |_, window, cx| {
+                                        once.update(cx, |s, cx| s.play_with_steam_saves(window, cx)).ok();
+                                    }),
+                            )
+                        })
+                    })
+                    .separator()
                     .item(
                         PopupMenuItem::new(start_label)
                             .icon(IconName::CirclePower)
@@ -567,6 +621,21 @@ impl Shell {
                             .on_click(move |_, window, cx| {
                                 steam
                                     .update(cx, |s, cx| s.set_start_store(!start_store, window, cx))
+                                    .ok();
+                            }),
+                    )
+                    .item(
+                        PopupMenuItem::new("Developer mode")
+                            .icon(IconName::SquareTerminal)
+                            .checked(dev_mode)
+                            .on_click(move |_, window, cx| {
+                                developer
+                                    .update(cx, |s, cx| {
+                                        s.set_developer(!dev_mode, window, cx);
+                                        if !dev_mode {
+                                            s.go(Page::Tools, cx);
+                                        }
+                                    })
                                     .ok();
                             }),
                     )

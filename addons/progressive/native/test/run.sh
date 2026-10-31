@@ -9,6 +9,14 @@ else
     ZIG=(nix run nixpkgs#zig --)
 fi
 
+manifest=$(sed -n 's/^  "version": "\(.*\)",$/\1/p' ../../swofty.json)
+loaded=$(sed -n 's/^constexpr const char \*kVersion = "\(.*\)";$/\1/p' ../src/plugin.cpp)
+if [[ -z $manifest || $manifest != "$loaded" ]]; then
+    echo "FAIL: src/plugin.cpp kVersion '$loaded' is not swofty.json's version '$manifest'" >&2
+    exit 1
+fi
+echo "ok: the load line names version $loaded (swofty.json)"
+
 OUT=${PG_TEST_DIR:-${TMPDIR:-/tmp}/progressive-test}
 mkdir -p "$OUT"
 export ZIG_GLOBAL_CACHE_DIR=$OUT/zig-cache ZIG_LOCAL_CACHE_DIR=$OUT/zig-cache
@@ -76,3 +84,7 @@ export ZIG_GLOBAL_CACHE_DIR=$OUT/zig-cache ZIG_LOCAL_CACHE_DIR=$OUT/zig-cache
 "${ZIG[@]}" c++ -target x86_64-linux-musl -std=c++23 -O1 -Wall -Wextra -Wno-nullability-completeness -I../src \
     -o "$OUT/fuel_logic_test" fuel_logic_test.cpp
 "$OUT/fuel_logic_test"
+
+register/run.sh
+
+PG_TEST_DIR=$OUT records/run.sh

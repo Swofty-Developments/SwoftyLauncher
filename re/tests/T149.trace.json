@@ -1,0 +1,39 @@
+{
+ "log": {
+  "max_mb": 4,
+  "on_full": "stop",
+  "summary_every_s": 60
+ },
+ "limits": {
+  "max_events_total": 3000,
+  "max_read": 64
+ },
+ "hooks": [
+  {
+   "id": "t148.set_matched",
+   "test": "T149",
+   "sig": "tracks.track_data_set_matched",
+   "kind": "mid",
+   "fields": [
+    "mode=u8:r10",
+    "mode_used=u8:rbx",
+    "season=u8:r9",
+    "season_used=u8:r15",
+    "format=u8:rcx",
+    "format_used=u8:r12",
+    "stat_id=u8:[rdx+1]",
+    "track=cstr[32]:[rdx+0xd0]",
+    "set=ptr:r11",
+    "sets_end=ptr:rsi",
+    "mode_mask=u32:[r11+0x20]",
+    "season_mask=u32:[r11+0x24]",
+    "format_mask=u32:[r11+0x28]",
+    "items_begin=ptr:[r11+8]",
+    "items_end=ptr:[r11+0x10]"
+   ],
+   "bt": 2,
+   "max_per_sec": 10,
+   "max_events": 1500
+  }
+ ]
+}

@@ -417,6 +417,24 @@ pub fn opener(handoff: &Handoff) -> Option<Command> {
     Some(c)
 }
 
+/// Starts a program as the signed-in user from an administrator's process.
+pub const DESKTOP_SHELL: &str = "explorer.exe";
+
+/// What opens the EA app for a process that may run as administrator, and
+/// whether the command's exit code says if it worked. A program started by an
+/// administrator's process runs as administrator too, so from one the EA app
+/// goes through Explorer and runs with the signed-in user's own rights, as
+/// from its shortcut. Explorer's exit code says nothing about the EA app.
+pub fn desktop_opener(handoff: &Handoff, elevated: bool) -> Option<(Command, bool)> {
+    let open = opener(handoff)?;
+    if !elevated || !matches!(handoff, Handoff::Program(_)) {
+        return Some((open, true));
+    }
+    let mut c = Command::new(DESKTOP_SHELL);
+    c.arg(open.get_program()).env_remove(COMPAT_LAYER);
+    Some((c, false))
+}
+
 pub fn running() -> bool {
     !crate::process::named(PROCESS).is_empty()
 }
@@ -597,6 +615,27 @@ mod tests {
         assert_eq!(open.get_program(), "sh");
         assert_eq!(args, ["-c", "/games/ea-app.sh wine start "]);
         assert!(opener(&Handoff::Program(vec!["open.bat".into()])).is_none());
+    }
+
+    #[test]
+    fn an_administrator_opens_the_ea_app_through_explorer() {
+        let h = Handoff::from_protocol(ORIGIN2_KEY).unwrap();
+        let exe = r"C:\Program Files\Electronic Arts\EA Desktop\EA Desktop\EALauncher.exe";
+        let (open, exit_tells) = desktop_opener(&h, true).unwrap();
+        let args: Vec<_> = open.get_args().collect();
+        assert_eq!(open.get_program(), DESKTOP_SHELL);
+        assert_eq!(args, [exe]);
+        assert!(!exit_tells);
+        assert!(open.get_envs().any(|(k, v)| k == COMPAT_LAYER && v.is_none()));
+        let (open, exit_tells) = desktop_opener(&h, false).unwrap();
+        assert_eq!(open.get_program(), exe);
+        assert_eq!(open.get_args().count(), 0);
+        assert!(exit_tells);
+        let shell = Handoff::Shell("/games/ea-app.sh wine start {url}".into());
+        let (open, exit_tells) = desktop_opener(&shell, true).unwrap();
+        assert_eq!(open.get_program(), "sh");
+        assert!(exit_tells);
+        assert!(desktop_opener(&Handoff::Program(vec!["open.bat".into()]), true).is_none());
     }
 
     // The values the EA app 13.813 installer writes, as `reg query` lists them.

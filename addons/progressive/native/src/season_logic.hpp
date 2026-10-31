@@ -33,6 +33,7 @@
 #include <cstdlib>
 #include <functional>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -44,6 +45,7 @@ namespace progressive::season {
 constexpr int kFirstYear = 2016;
 constexpr int kLastYear = 2026;
 constexpr int kSlots = lineup::kSlots;
+constexpr int kMaxSlots = kSlots + 1;
 constexpr uint8_t kNoNumber = 0xff;
 
 inline int clamp_year(int y)
@@ -55,6 +57,14 @@ inline int year_for(int start, uint32_t season_index)
 {
     long long y = static_cast<long long>(clamp_year(start)) + season_index;
     return y > kLastYear ? kLastYear : static_cast<int>(y);
+}
+
+// The season moment the core hears of (career::report_season, standard library 1.6): the first idle Team HQ
+// of a season (game season index plus test seasons) not applied yet whose Season has its race weekends and a
+// current weekend, once per career and season in a session.
+inline bool season_moment(int applied_season, uint32_t index, bool weekends_ready, bool reported)
+{
+    return applied_season != static_cast<int>(index) && weekends_ready && !reported;
 }
 
 struct Look {
@@ -76,12 +86,18 @@ struct DevPoint {
 
 struct Team {
     int slot = 0;
-    std::string kind, name, lang, vehicle;
+    std::string kind, name, lang, vehicle, team_id;
     int vehicle_stat = -1;
     double gap_pct = -1;
     std::vector<SeatDriver> drivers;
     std::vector<DevPoint> development;
+    std::array<std::string, 2> seat_ids{};
 };
+
+inline bool record_seats(const Team &t)
+{
+    return !t.seat_ids[0].empty() || !t.seat_ids[1].empty();
+}
 
 // A real line-up change of the year (tools/gen.py from the Jolpica race entries): from real round
 // `round` driver `in` races seat `seat` (team position) of career slot `slot` (0-based) in place
@@ -93,9 +109,16 @@ struct Change {
     Look look;
 };
 
+struct ExtraTeam {
+    int slot = 0;
+    std::string team_id;
+    std::array<std::string, 2> seats{};
+};
+
 struct Year {
     int year = 0;
     std::array<Team, kSlots> teams{};
+    std::vector<ExtraTeam> extra_teams;
     std::vector<int> real_tracks;
     std::vector<std::string> circuits;
     std::vector<Change> changes;
@@ -191,15 +214,29 @@ inline bool parse(const std::string &text, Data &out, std::string &err)
         yr.year = year;
         for (auto &t : y["teams"].a) {
             int i = num(t["slot"]) - 1;
+            if (i >= kSlots && i < kMaxSlots && t["team"].type == json::Value::Str && !t["team"].str().empty()) {
+                ExtraTeam x;
+                x.slot = i + 1;
+                x.team_id = t["team"].str();
+                const json::Value &ids = t["seats"];
+                for (size_t k = 0; k < x.seats.size() && k < ids.a.size(); ++k)
+                    x.seats[k] = ids.a[k].str();
+                yr.extra_teams.push_back(std::move(x));
+                continue;
+            }
             if (i < 0 || i >= kSlots)
                 continue;
             Team &o = yr.teams[i];
             o.slot = i + 1;
             o.kind = t["kind"].str();
+            o.team_id = t["team"].str();
             o.name = t["name"].str();
             o.lang = t["lang"].str();
             o.vehicle = t["vehicle"]["label"].str();
             o.vehicle_stat = num(t["vehicle"]["stat_id"]);
+            const json::Value &seat_ids = t["seats"];
+            for (size_t k = 0; k < o.seat_ids.size() && k < seat_ids.a.size(); ++k)
+                o.seat_ids[k] = seat_ids.a[k].str();
             const json::Value &pace = t["pace"];
             o.gap_pct = pace.type == json::Value::Obj && pace["gap_pct"].type == json::Value::Num ? pace["gap_pct"].n : -1;
             const json::Value &dev = t["development"];
@@ -222,7 +259,7 @@ inline bool parse(const std::string &text, Data &out, std::string &err)
         if (prev.type == json::Value::Obj) {
             yr.previous_year = num(prev["year"], 0);
             for (auto &v : prev["slots"].a)
-                if (int sl = num(v); sl >= 1 && sl <= kSlots)
+                if (int sl = num(v); sl >= 1 && sl <= kMaxSlots)
                     yr.previous_slots.push_back(sl - 1);
             for (auto &v : prev["drivers"].a)
                 if (!v.str().empty())
@@ -359,10 +396,166 @@ struct Plan {
     std::array<bool, kSlots> closed{};
 };
 
+inline bool names_new_teams(const Data &d, int year)
+{
+    const Year *y = d.year(clamp_year(year));
+    if (!y)
+        return false;
+    if (!y->extra_teams.empty())
+        return true;
+    for (int i = 0; i < kSlots; ++i)
+        if (!y->teams[i].team_id.empty() && y->teams[i].team_id != d.slots[i].team)
+            return true;
+    return false;
+}
+
+inline bool added_team(const Data &d, const Year &y, int slot)
+{
+    const std::string &id = y.teams[slot].team_id;
+    return !id.empty() && id != d.slots[slot].team && id.rfind("constructor/", 0) != 0;
+}
+
+struct NameWrite {
+    std::string key, text;
+    bool clear = false;
+};
+
+using IdentityNames = std::function<std::optional<std::array<std::string, 3>>(const std::string &team)>;
+
+inline std::vector<NameWrite> team_name_writes(const Data &d, int year, const IdentityNames &identity)
+{
+    std::vector<NameWrite> out;
+    const Year *y = d.year(year);
+    for (int i = 0; i < kSlots; ++i) {
+        bool added = year < kLastYear && y && added_team(d, *y, i);
+        std::optional<std::array<std::string, 3>> own;
+        if (added && identity)
+            own = identity(y->teams[i].team_id);
+        for (size_t k = 0; k < d.slots[i].name_keys.size(); ++k) {
+            const std::string &key = d.slots[i].name_keys[k];
+            if (key.empty())
+                continue;
+            if (year >= kLastYear || !y)
+                out.push_back({key, {}, true});
+            else if (added)
+                out.push_back(own && !(*own)[k].empty() ? NameWrite{key, (*own)[k], false} : NameWrite{key, {}, true});
+            else if (y->teams[i].name.empty())
+                out.push_back({key, {}, true});
+            else
+                out.push_back({key, y->teams[i].name, false});
+        }
+    }
+    return out;
+}
+
+// The new-career wizard's names for a start season (ui/cards.cpp): only the slots whose team is an added team get
+// that team's own names on their name keys, so Choose Driver and Team Select list it in its slot while every other
+// team keeps the names the wizard shows; a year with no added team writes nothing.
+inline std::vector<NameWrite> added_team_name_writes(const Data &d, int year, const IdentityNames &identity)
+{
+    std::vector<NameWrite> out;
+    const Year *y = d.year(year);
+    if (!y || year >= kLastYear || !identity)
+        return out;
+    for (int i = 0; i < kSlots; ++i) {
+        if (!added_team(d, *y, i))
+            continue;
+        std::optional<std::array<std::string, 3>> own = identity(y->teams[i].team_id);
+        if (!own)
+            continue;
+        for (size_t k = 0; k < d.slots[i].name_keys.size(); ++k)
+            if (!d.slots[i].name_keys[k].empty() && !(*own)[k].empty())
+                out.push_back({d.slots[i].name_keys[k], (*own)[k], false});
+    }
+    return out;
+}
+
+// Who the team names and event titles belong to when the new-career wizard sets its start season's
+// (ProgressiveWizardNames, at the tile press and every wizard step) or another career tile is pressed. A loaded
+// Progressive career with a live store entry (Team HQ, or its load matched an entry) owns them: its season apply
+// and Team HQ set its own year. A championship entity filed under f1_career_progressive without one is the wizard's
+// own new career: the game makes it at career.starting, before the setup page, so it never stops the wizard.
+enum class NamesOwner { none, wizard, career };
+
+inline NamesOwner names_owner(bool career_entry, bool progressive_entity)
+{
+    return career_entry ? NamesOwner::career : progressive_entity ? NamesOwner::wizard : NamesOwner::none;
+}
+
+// The year whose names the wizard sets for start season `start` while `names_year` is set (0: none yet), or 0 to
+// leave them: a step after the setup page moved the start season sets the new season's names (its writes put every
+// key of the previous season's back), the same season again writes nothing.
+inline int wizard_names_year(int start, int names_year, NamesOwner owner)
+{
+    if (owner == NamesOwner::career)
+        return 0;
+    int year = clamp_year(start);
+    return year == names_year ? 0 : year;
+}
+
+// Another career tile was pressed: the 2026 names come back unless a Progressive career owns them.
+inline bool tile_press_clears_names(int names_year, NamesOwner owner)
+{
+    return names_year && owner != NamesOwner::career;
+}
+
+// The logo key of an added team in a start season's slot whose career team row is `label`: the row label the core
+// gives the team's own row (its record key), whose logo slices the core's team applier built; empty when the slot
+// holds no added team that year.
+inline std::string added_team_logo(const Data &d, int year, const std::string &label)
+{
+    const Year *y = d.year(year);
+    if (!y || year >= kLastYear)
+        return std::string();
+    for (int i = 0; i < kSlots; ++i)
+        if (d.slots[i].team == label && added_team(d, *y, i)) {
+            const std::string &id = y->teams[i].team_id;
+            size_t slash = id.rfind('/');
+            return slash == std::string::npos ? id : id.substr(slash + 1);
+        }
+    return std::string();
+}
+
+inline std::string season_team(const Data &d, const Plan &p, int slot)
+{
+    const Year *y = d.year(clamp_year(p.year));
+    if (!y || slot < 0 || slot >= kSlots || p.closed[slot])
+        return std::string();
+    return y->teams[slot].team_id.empty() ? d.slots[slot].team : y->teams[slot].team_id;
+}
+
 inline bool no_team(const Data &d, int year, int slot)
 {
     const Year *y = d.year(clamp_year(year));
     return y && slot >= 0 && slot < kSlots && y->teams[slot].kind == "filler" && y->teams[slot].drivers.empty();
+}
+
+struct TeamSlot {
+    int slot = 0;
+    std::string team;
+    std::vector<std::string> seats;
+};
+
+inline std::vector<TeamSlot> team_slots(const Data &d, const Plan &p)
+{
+    std::vector<TeamSlot> out;
+    const Year *y = d.year(clamp_year(p.year));
+    for (int i = 0; i < kSlots; ++i) {
+        TeamSlot t{i + 1, season_team(d, p, i), {}};
+        if (y && !p.closed[i] && added_team(d, *y, i) && record_seats(y->teams[i]))
+            for (size_t k = 0; k < (y->teams[i].seat_ids[1].empty() ? 1u : 2u); ++k)
+                t.seats.push_back(y->teams[i].seat_ids[k]);
+        out.push_back(std::move(t));
+    }
+    if (y)
+        for (const ExtraTeam &x : y->extra_teams) {
+            TeamSlot t{x.slot, x.team_id, {}};
+            for (const std::string &id : x.seats)
+                if (!id.empty())
+                    t.seats.push_back(id);
+            out.push_back(std::move(t));
+        }
+    return out;
 }
 
 inline int closed_slots(const Plan &p)
@@ -398,10 +591,16 @@ inline lineup::Grid grid_of(const Year &y, const Resolve &r, const std::function
     for (int i = 0; i < kSlots; ++i) {
         std::vector<SeatDriver> ds = y.teams[i].drivers;
         std::stable_sort(ds.begin(), ds.end(), [](const SeatDriver &a, const SeatDriver &b) { return a.position < b.position; });
+        bool fixed = record_seats(y.teams[i]);
         int k = 0;
         for (auto &sd : ds) {
-            if (k >= lineup::kSeats)
+            if (fixed)
+                k = sd.position;
+            if (k < 0 || k >= lineup::kSeats || g[i][k] != lineup::kNone) {
+                if (fixed)
+                    continue;
                 break;
+            }
             int s = r.driver_stat(sd.driver);
             if (s < 0) {
                 if (notes)
@@ -495,6 +694,51 @@ inline VehicleSet vehicle_for(const Data &d, const Resolve &r, int year, int slo
                 take(yr->teams[slot].vehicle, y);
     take(d.slots[slot].vehicle_2026, kLastYear);
     return out;
+}
+
+// A seat whose car (vehicle_ref, the vehicle row's stat id in the high word) names no vehicle row of the loaded
+// database. Before 1.6.6 an addon's add-row ids were numbered afresh by every build, so an update moved Classic
+// Seasons' cars (cs16_mercedes 534 -> 725 for vanderlinde0401) and a save's seats kept the old ids: entering a
+// session, Sess_Build_AiSystem read a null vehicle (0xce8). The seat gets its team slot's season car back, by
+// label (vehicle_for, the season apply's car). A seat with no car, or whose car exists, is left alone; `left`
+// says why a seat with a missing car cannot be repaired.
+struct CarRepair {
+    int old_stat = -1;
+    int slot = -1;
+    VehicleSet car;
+    const char *left = nullptr;
+};
+
+inline bool empty_key(uint32_t key)
+{
+    return (key & 0xffff0000u) == 0x3fff0000u;
+}
+
+inline std::optional<CarRepair> car_repair(const Data &d, const Resolve &r, int year, uint32_t team_key,
+                                           uint32_t vehicle_ref, const std::function<bool(int)> &vehicle_known)
+{
+    if (empty_key(vehicle_ref) || vehicle_known(static_cast<int>(vehicle_ref >> 16)))
+        return std::nullopt;
+    CarRepair out;
+    out.old_stat = static_cast<int>(vehicle_ref >> 16);
+    if (empty_key(team_key)) {
+        out.left = "the seat has no team";
+        return out;
+    }
+    out.slot = slot_of_team(d, static_cast<int>(team_key >> 16));
+    if (out.slot < 0) {
+        out.left = "its team is none of Progressive's slots";
+        return out;
+    }
+    out.car = vehicle_for(d, r, year, out.slot);
+    if (out.car.stat < 0 || !vehicle_known(out.car.stat))
+        out.left = "no vehicle row resolves for the slot";
+    return out;
+}
+
+inline uint32_t repaired_ref(uint32_t vehicle_ref, int stat)
+{
+    return (static_cast<uint32_t>(stat) << 16) | (vehicle_ref & 0xffffu);
 }
 
 // move_player (follow mode): when the player raced in the year (at the career's round, with `at`)
@@ -841,18 +1085,40 @@ inline Plan plan(const Data &d, int year, const std::vector<CareerRow> &rows, co
     return p;
 }
 
+inline const ExtraTeam *extra_team(const Year &y, int slot)
+{
+    for (const ExtraTeam &x : y.extra_teams)
+        if (x.slot == slot)
+            return &x;
+    return nullptr;
+}
+
+// The team row label of the season's twelfth slot: the row the core's team applier makes for the added team is
+// labelled with its record key ("bydanix.f1-2012/hrt" -> "hrt"); empty when the year has no twelfth team.
+inline std::string extra_team_label(const Year &y, int slot)
+{
+    const ExtraTeam *x = extra_team(y, slot);
+    if (!x)
+        return std::string();
+    size_t at = x->team_id.rfind('/');
+    return at == std::string::npos ? x->team_id : x->team_id.substr(at + 1);
+}
+
 // The season-start order of the career's standings (all on 0 points): the constructors as the
 // previous year finished (data/years.json previous_standings, Jolpica), slots it does not list after
 // them in slot order, a closed slot (ten_team_years) left out; the drivers as the previous year
 // finished, the season's other drivers after them in the order given (the plan's seat order).
+// A season whose effective career.season record names a twelfth slot (extra_teams) has a 12-team order:
+// slot 12 (index kSlots) is listed where the previous standings put it, else after the career slots.
 inline std::vector<int> start_slot_order(const Year &y, const std::array<bool, kSlots> &closed = {})
 {
+    auto open = [&](int s) { return s >= 0 && (s < kSlots ? !closed[static_cast<size_t>(s)] : extra_team(y, s + 1) != nullptr); };
     std::vector<int> out;
     for (int s : y.previous_slots)
-        if (s >= 0 && s < kSlots && !closed[s] && std::find(out.begin(), out.end(), s) == out.end())
+        if (open(s) && std::find(out.begin(), out.end(), s) == out.end())
             out.push_back(s);
-    for (int s = 0; s < kSlots; ++s)
-        if (!closed[s] && std::find(out.begin(), out.end(), s) == out.end())
+    for (int s = 0; s < kMaxSlots; ++s)
+        if (open(s) && std::find(out.begin(), out.end(), s) == out.end())
             out.push_back(s);
     return out;
 }

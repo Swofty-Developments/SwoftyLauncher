@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "suite": "swofty.testsuite-nav",
+  "defaults": {
+    "addons": []
+  },
+  "tests": [
+    {
+      "id": "boot_reaches_the_home_screen",
+      "tags": [
+        "nav"
+      ],
+      "env": {
+        "kind": "boot"
+      },
+      "steps": [
+        {
+          "home": true,
+          "timeout_s": 120
+        }
+      ],
+      "assert": [
+        {
+          "log": "\\[test\\] title passed",
+          "min": 1
+        },
+        {
+          "log": "\\[test\\] home view model",
+          "min": 1
+        },
+        {
+          "no_crash": true
+        }
+      ]
+    },
+    {
+      "id": "time_trial_from_f1_world",
+      "tags": [
+        "nav"
+      ],
+      "fresh": true,
+      "env": {
+        "kind": "route",
+        "routes": [
+          "f1_world",
+          "play"
+        ]
+      },
+      "steps": [
+        {
+          "pad": {
+            "press": "right"
+          }
+        },
+        {
+          "pad": {
+            "press": "a",
+            "ms": 250
+          }
+        }
+      ],
+      "assert": [
+        {
+          "log": "\\[test\\] route play fired from the screen view model",
+          "min": 1
+        },
+        {
+          "no_crash": true
+        }
+      ]
+    },
+    {
+      "id": "career_team_hq_and_save",
+      "tags": [
+        "nav",
+        "career"
+      ],
+      "env": {
+        "kind": "career",
+        "fixture": "swofty-profile-20261028",
+        "at": "team_hq"
+      },
+      "steps": [
+        {
+          "save": "now",
+          "timeout_s": 60
+        }
+      ],
+      "assert": [
+        {
+          "log": "\\[test\\] career ready at team_hq",
+          "min": 1
+        },
+        {
+          "log": "\\[test\\] save now: the sandbox served",
+          "min": 1
+        },
+        {
+          "no_crash": true
+        }
+      ]
+    }
+  ]
+}

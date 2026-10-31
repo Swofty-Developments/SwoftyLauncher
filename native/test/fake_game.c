@@ -1,4 +1,5 @@
 #define WIN32_LEAN_AND_MEAN
+#include <winsock2.h>
 #include <windows.h>
 #include <math.h>
 #include <stdarg.h>
@@ -242,6 +243,8 @@ const char fake_arg_a[] = "site_a", fake_arg_b[] = "site_b", fake_arg_c[] = "sit
 void fake_log_site_a(void);
 void fake_log_site_b(void);
 void fake_log_site_c(void);
+void fake_log_thunk(const char *channel, const char *fmt, ...);
+const char fake_fmt_bad[] = "fake replay record %s";
 int64_t fake_format_string(NeStr **out, const char *fmt, ...);
 
 void fake_log_body_impl(void) { gamelog_body_calls++; }
@@ -590,9 +593,23 @@ static void acclim_listener(void *ctx, int code)
     acclim_notified += code == 2;
 }
 
+// Game_PracticeTrackAcclimatisation_FlagCurrentTarget, copied byte for byte from the Steam build
+// (0x1429a0620..0x1429a0647, a leaf without unwind data). Core's track acclimatisation penalty guard resolves its
+// entry and ret sites here, and the test flags the current target of a programme with targets and of one without.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_acclim_flag\nfake_acclim_flag:\n"
+    ".byte 0x8B,0x91,0x28,0x03,0x00,0x00,0x48,0x8B,0x81,0x50,0x03,0x00,0x00,0x48,0x69,0xCA,0x70,0x03,0x00,0x00,0x83,0xBC,0x08,0xC4\n"
+    ".byte 0x00,0x00,0x00,0x00,0x74,0x08,0xC6,0x84,0x08,0x62,0x03,0x00,0x00,0x01,0xC3,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_acclim_flag\"\n"
+    ".text\n");
+void fake_acclim_flag(void *self);
+
 static void test_track_acclim(void)
 {
     static uint8_t empty[0x840], before[0x840], held[0x840], targets[2][0x370], table[0x30], list[0x18];
+    static uint8_t flagged[0x840], marks[3][0x370];
     static void *vt[2] = {NULL, (void *)acclim_slot};
     static void *listeners[2] = {(void *)acclim_listener, NULL};
     memcpy(before, empty, sizeof empty);
@@ -616,17 +633,453 @@ static void test_track_acclim(void)
            lap, held[0x830], acclim_gates, acclim_notified);
     expect(g0 == 1 && g1 == 1 && g2 == 0 && lap == 0 && held[0x830] == 0 && acclim_gates == 1 && acclim_notified == 1,
            "acclim: a programme with two targets runs the game's refresh: two gate states set, listeners notified once");
+    memcpy(before, empty, sizeof empty);
+    fake_acclim_flag(empty);
+    expect(!memcmp(empty, before, sizeof empty),
+           "acclim: flagging a penalty on a Track Acclimatisation programme without targets returns and changes nothing");
+    *(uint32_t *)(marks[1] + 0xc4) = 2;
+    *(void **)(flagged + 0x350) = marks;
+    *(void **)(flagged + 0x358) = marks + 3;
+    *(uint32_t *)(flagged + 0x328) = 1;
+    fake_acclim_flag(flagged);
+    *(uint32_t *)(flagged + 0x328) = 2;
+    fake_acclim_flag(flagged);
+    printf("      penalty flag with 3 targets: flags %u %u %u\n", marks[0][0x362], marks[1][0x362], marks[2][0x362]);
+    expect(marks[0][0x362] == 0 && marks[1][0x362] == 1 && marks[2][0x362] == 0,
+           "acclim: a programme with targets runs the game's penalty flag: only the current target with gate flags is "
+           "flagged");
 }
 
-static void crash_track_acclim(void)
+static void crash_track_acclim(int penalty)
 {
     static uint8_t programme[0x840];
     SetErrorMode(SEM_NOGPFAULTERRORBOX);
-    printf("      acclim: refreshing a Track Acclimatisation programme without targets\n");
+    printf("      acclim: %s a Track Acclimatisation programme without targets\n",
+           penalty ? "flagging a penalty on" : "refreshing");
     fflush(stdout);
-    fake_acclim_refresh(programme);
-    printf("      acclim: the refresh returned\n");
+    if (penalty)
+        fake_acclim_flag(programme);
+    else
+        fake_acclim_refresh(programme);
+    printf("      acclim: the %s returned\n", penalty ? "penalty flag" : "refresh");
     fflush(stdout);
+}
+
+// The ERS mode load of Car_Powertrain_Step, copied byte for byte from the Steam build (0x1446e2858..0x1446e2878),
+// in a small frame that takes the powertrain in rcx and the ERS system in rdx and returns the gear modifier it loads.
+// Core's ERS mode guard resolves site_Car_ErsGearModifierLoad here, at +0x20.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_powertrain_ers\n"
+    ".def fake_powertrain_ers; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_powertrain_ers\n"
+    "fake_powertrain_ers:\n"
+    ".byte 0x56\n.seh_pushreg %rsi\n"
+    ".byte 0x41,0x56\n.seh_pushreg %r14\n"
+    ".seh_endprologue\n"
+    ".byte 0x48,0x89,0xCE,0x49,0x89,0xD6\n"
+    ".byte 0x8B,0x8E,0xF0,0x04,0x00,0x00,0x49,0x63,0x86,0x68,0x1A,0x00,0x00,0x48,0x89,0xC2,0x48,0xC1,0xE2,0x06\n"
+    ".byte 0x4C,0x01,0xF2,0xC5,0xFA,0x10,0x8C,0x8A,0x90,0x18,0x00,0x00\n"
+    ".byte 0xC5,0xF8,0x28,0xC1,0x41,0x5E,0x5E,0xC3\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_powertrain_ers\"\n"
+    ".text\n");
+float fake_powertrain_ers(void *powertrain, void *ers);
+
+static int ers_resets;
+static uint32_t ers_reset_flags;
+
+static void fake_ers_reset(uint8_t *ers, uint32_t flags)
+{
+    ers_resets++;
+    ers_reset_flags = flags;
+    if (~flags & 0x210)
+        return;
+    memcpy(ers + 0x19f0, ers + 0x60, 4);
+    *(uint64_t *)(ers + 0x1a68) = 0x500000001ull;
+}
+
+static void *fake_ers_vt[8] = {NULL, NULL, NULL, (void *)fake_ers_reset};
+static uint8_t ers_cars[3][0x100], ers_powertrain[0x500];
+static __attribute__((aligned(16))) uint8_t ers_systems[3][0x1a78];
+
+static uint8_t *ers_system(int i, int32_t mode)
+{
+    uint8_t *ers = ers_systems[i];
+    float capacity = 4e6f;
+    memset(ers, 0, sizeof ers_systems[i]);
+    *(void ***)ers = fake_ers_vt;
+    *(void **)(ers + 8) = ers_cars[i];
+    ers_cars[i][0xe8] = (uint8_t)(7 + i);
+    memcpy(ers + 0x60, &capacity, 4);
+    for (int m = 0; m < 4; m++) {
+        float modifier = 0.25f * (m + 1);
+        memcpy(ers + 0x1890 + m * 0x40 + 4, &modifier, 4);
+    }
+    memcpy(ers + 0x1a68, &mode, 4);
+    *(uint32_t *)(ers_powertrain + 0x4f0) = 1;
+    return ers;
+}
+
+static void test_ers_mode(void)
+{
+    float got = fake_powertrain_ers(ers_powertrain, ers_system(0, 2));
+    expect(got == 0.75f && ers_resets == 0,
+           "ers mode: a car in Overtake loads the Overtake gear modifier and its ERS is not reset");
+    uint8_t *ers = ers_system(1, (int32_t)0x8054c554);
+    got = fake_powertrain_ers(ers_powertrain, ers);
+    float energy = 0.0f;
+    int32_t mode = -1;
+    memcpy(&energy, ers + 0x19f0, 4);
+    memcpy(&mode, ers + 0x1a68, 4);
+    printf("      ERS mode 0x8054c554: loaded %.2f, mode %d, energy %.0f, %d reset(s) with flags 0x%x\n", got, mode,
+           energy, ers_resets, ers_reset_flags);
+    expect(got == 0.5f && mode == 1 && energy == 4e6f && ers_resets == 1 && ers_reset_flags == 0x210,
+           "ers mode: a car whose ERS mode was never set gets the game's ERS reset (0x10|0x200) and loads the Medium "
+           "gear modifier");
+    got = fake_powertrain_ers(ers_powertrain, ers);
+    expect(got == 0.5f && ers_resets == 1, "ers mode: that car's next step runs the game's code unchanged");
+    got = fake_powertrain_ers(ers_powertrain, ers_system(2, 4));
+    expect(got == 0.5f && ers_resets == 2, "ers mode: a mode one past Hotlap is reset to Medium too");
+}
+
+static void crash_ers_mode(void)
+{
+    SetErrorMode(SEM_NOGPFAULTERRORBOX);
+    printf("      ers mode: stepping a car whose ERS mode was never set\n");
+    fflush(stdout);
+    float got = fake_powertrain_ers(ers_powertrain, ers_system(0, (int32_t)0x8054c554));
+    printf("      ers mode: the step returned %.2f\n", got);
+    fflush(stdout);
+}
+
+// Career_Standings_BuildWeekendNode's track read, copied byte for byte from the Steam build (0x14181e195..0x14181e1af
+// and 0x14181e4dc..0x14181e4f0, the je's rel32 aside), in a small frame that takes the standings view in rcx, the
+// round's TrackDataRecord in rdx, the round index in r8 and the round's Weekend in r9 (kept at [rsp+0xa0] as the game
+// does). It returns the record's +0x2c0 on the unchecked path, its +0x128 on the checked one and 0 for a round without
+// a record. Core's standings guard resolves site_Career_StandingsWeekendTrackLoad here at +0x28 and
+// site_Career_StandingsWeekendTrackDone at +0x38.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_standings_weekend\n"
+    ".def fake_standings_weekend; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_standings_weekend\n"
+    "fake_standings_weekend:\n"
+    ".byte 0x55\n.seh_pushreg %rbp\n"
+    ".byte 0x53\n.seh_pushreg %rbx\n"
+    ".byte 0x41,0x54\n.seh_pushreg %r12\n"
+    ".byte 0x48,0x81,0xEC,0xB0,0x00,0x00,0x00\n.seh_stackalloc 0xb0\n"
+    ".seh_endprologue\n"
+    ".byte 0x49,0x89,0xCC,0x48,0x89,0xD3,0x4C,0x89,0xC5,0x4C,0x89,0x8C,0x24,0xA0,0x00,0x00,0x00\n"
+    ".byte 0x41,0x80,0x7C,0x24,0x4A,0x00,0x0F,0x84,0x10,0x00,0x00,0x00\n"
+    ".byte 0x48,0x8B,0x83,0xC0,0x02,0x00,0x00,0x48,0x8D,0x48,0x08,0x48,0x85,0xC0\n"
+    ".byte 0xEB,0x64\n"
+    ".byte 0x48,0x85,0xDB,0x74,0x5D,0x41,0x80,0x7C,0x24,0x49,0x00,0x74,0x55,0x48,0x8B,0x83,0x28,0x01,0x00,0x00\n"
+    ".byte 0xEB,0x4E\n"
+    ".fill 76,1,0xCC\n"
+    ".byte 0x31,0xC0\n"
+    ".byte 0x48,0x81,0xC4,0xB0,0x00,0x00,0x00,0x41,0x5C,0x5B,0x5D,0xC3\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_standings_weekend\"\n"
+    ".text\n");
+uint64_t fake_standings_weekend(void *view, void *record, uint64_t round, void *weekend);
+
+static uint8_t standings_view[0x50], standings_record[0x2c8], standings_weekend[2][0x280];
+
+static void standings_setup(void)
+{
+    standings_view[0x4a] = 1;
+    standings_view[0x49] = 1;
+    *(uint64_t *)(standings_record + 0x2c0) = 0x2c0c0de;
+    *(uint64_t *)(standings_record + 0x128) = 0x128c0de;
+    standings_weekend[0][0x278] = 3;
+    standings_weekend[1][0x278] = 200;
+}
+
+static void test_standings(void)
+{
+    standings_setup();
+    uint64_t r = fake_standings_weekend(standings_view, standings_record, 0, standings_weekend[0]);
+    expect(r == 0x2c0c0de, "standings: a round with track data reads its record as the game does");
+    r = fake_standings_weekend(standings_view, NULL, 6, standings_weekend[1]);
+    uint64_t again = fake_standings_weekend(standings_view, NULL, 6, standings_weekend[1]);
+    expect(r == 0 && again == 0, "standings: a round whose track has no track data takes the game's no-record path");
+    r = fake_standings_weekend(standings_view, NULL, 9, NULL);
+    expect(r == 0, "standings: so does a round whose weekend can't be read");
+    standings_view[0x4a] = 0;
+    r = fake_standings_weekend(standings_view, standings_record, 1, standings_weekend[0]);
+    expect(r == 0x128c0de, "standings: the game's checked path still reads the round's record");
+    standings_view[0x4a] = 1;
+}
+
+static void crash_standings(void)
+{
+    SetErrorMode(SEM_NOGPFAULTERRORBOX);
+    standings_setup();
+    printf("      standings: building a round whose track has no track data\n");
+    fflush(stdout);
+    uint64_t r = fake_standings_weekend(standings_view, NULL, 4, standings_weekend[1]);
+    printf("      standings: the round returned %llu\n", (unsigned long long)r);
+    fflush(stdout);
+}
+
+// The tail of Game_GarageCrewModule_SpawnGarageCrew's assignment loop, copied byte for byte from the Steam build
+// (0x14038930e..0x14038931a and 0x14038931e), in a small frame that takes the vector begin in rcx, its end in rdx and
+// the garage id in r8d and returns the entry count the game computes after the site. Core's garage crew guard resolves
+// site_Game_GarageCrew_SpawnVector here, at +0x12.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_garage_crew\n"
+    ".def fake_garage_crew; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_garage_crew\n"
+    "fake_garage_crew:\n"
+    ".byte 0x41,0x55\n.seh_pushreg %r13\n"
+    ".byte 0x55\n.seh_pushreg %rbp\n"
+    ".seh_endprologue\n"
+    ".byte 0x49,0x89,0xD5,0x44,0x89,0xC5\n"
+    ".byte 0xEB,0x04,0x31,0xF6,0x31,0xC9\n"
+    ".byte 0x4D,0x89,0xE8,0x49,0x29,0xC8,0x49,0xC1,0xF8,0x04,0x4C,0x89,0xEA\n"
+    ".byte 0x4C,0x89,0xC0,0x5D,0x41,0x5D,0xC3\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_garage_crew\"\n"
+    ".text\n");
+uint64_t fake_garage_crew(void *begin, void *end, uint32_t garage);
+
+static void crew_entries(uint8_t (*records)[0x98], uint8_t (*entries)[16], const uint32_t *slots, int n, int first)
+{
+    for (int i = 0; i < n; i++) {
+        uint8_t *rec = records[i];
+        memset(rec, 0, 0x98);
+        *(uint16_t *)(rec + 0x52) = (uint16_t)(300 + first + i);
+        *(uint16_t *)(rec + 0x5a) = (uint16_t)(11 + first);
+        rec[0x83] = (uint8_t)(40 + first + i);
+        memset(entries[i], 0, 16);
+        *(uint8_t **)entries[i] = rec;
+        *(uint32_t *)(entries[i] + 8) = slots[i];
+    }
+}
+
+static void test_garage_crew(int guard)
+{
+    static uint8_t records[5][0x98], entries[5][16];
+    uint32_t two[] = {0, 1}, three[] = {0, 1, 2}, shuffled[] = {2, 0, 1}, four[] = {0, 1, 2, 3};
+    crew_entries(records, entries, two, 2, 0);
+    uint64_t n = fake_garage_crew(entries, entries + 2, 4);
+    expect(n == 2 && *(uint8_t **)entries[0] == records[0] && *(uint8_t **)entries[1] == records[1],
+           "garage crew: a garage with two cars keeps both crews and its vector is untouched");
+    crew_entries(records, entries, three, 3, 1);
+    n = fake_garage_crew(entries, entries + 3, 5);
+    printf("      garage crew: garage 5 with slots 0,1,2 keeps %llu entries\n", (unsigned long long)n);
+    if (!guard) {
+        expect(n == 3, "garage crew: with the guard off the third car stays in the vector, as in the game");
+        return;
+    }
+    expect(n == 2 && *(uint8_t **)entries[0] == records[0] && *(uint8_t **)entries[1] == records[1],
+           "garage crew: a third car in one garage is dropped from the crew vector, the first two keep their crews");
+    crew_entries(records, entries, shuffled, 3, 2);
+    n = fake_garage_crew(entries, entries + 3, 6);
+    expect(n == 2 && *(uint8_t **)entries[0] == records[1] && *(uint32_t *)(entries[0] + 8) == 0 &&
+               *(uint8_t **)entries[1] == records[2] && *(uint32_t *)(entries[1] + 8) == 1,
+           "garage crew: a slot 2 record ahead of the others is dropped and the rest close up in order");
+    crew_entries(records, entries, four, 4, 3);
+    n = fake_garage_crew(entries, entries + 4, 7);
+    expect(n == 2, "garage crew: a garage with four records keeps two");
+    n = fake_garage_crew(NULL, NULL, 8);
+    expect(n == 0, "garage crew: a garage with no records runs the game's empty path");
+}
+
+// Pit strategy evaluators, rebuilt around the byte runs core's pit slot guard resolves its sites from (copied from the
+// Steam build: 0x143691fbb, 0x143692014, 0x143692129..0x14369214c for Sess_PitStrategy_EvaluateAgainstPitList and
+// 0x143691d44, 0x143691d80..0x143691db8, 0x143691dc9 for Sess_PitStrategy_EvaluateByRank). fake_pit_eval takes the
+// session in rcx, the pit record in rdx and the list bounds in r8 and r9. fake_pit_rank takes the session in rcx,
+// the pit record in rdx and the free-slot count in r8d, and reads its list from fake_pit_list.
+uint8_t fake_pit_blank[0x100] = {[0xa8] = 0x00, [0xa9] = 0x00, [0xaa] = 0xc8, [0xab] = 0x42};
+uint64_t fake_pit_list;
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_pit_stub\n"
+    ".def fake_pit_stub; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_pit_stub\n"
+    "fake_pit_stub:\n"
+    ".seh_endprologue\n"
+    "ret\n"
+    ".seh_endproc\n"
+    ".globl fake_pit_eval\n"
+    ".def fake_pit_eval; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_pit_eval\n"
+    "fake_pit_eval:\n"
+    "push %r15\n.seh_pushreg %r15\n"
+    "push %r12\n.seh_pushreg %r12\n"
+    "push %rbp\n.seh_pushreg %rbp\n"
+    "push %rbx\n.seh_pushreg %rbx\n"
+    "push %rsi\n.seh_pushreg %rsi\n"
+    "push %rdi\n.seh_pushreg %rdi\n"
+    "sub $0x48, %rsp\n.seh_stackalloc 0x48\n"
+    ".seh_endprologue\n"
+    "mov %rcx, 0x20(%rsp)\n"
+    "mov %rcx, 0x28(%rsp)\n"
+    "mov %rdx, %rdi\n"
+    "mov %r8, %r15\n"
+    "mov %r9, %r12\n"
+    "movzbl 0xc4(%rdi), %ecx\n"
+    "lea fake_pit_blank(%rip), %rax\n"
+    "cmp %r12, %r15\n"
+    "je 1f\n"
+    "2:\n"
+    "mov 0x20(%rsp), %r8\n"
+    "mov 0x148(%r8), %r8\n"
+    "mov 0xa8(%rax), %r9d\n"
+    ".byte 0x49,0x8B,0x0C,0xC8\n"
+    ".byte 0x44,0x33,0x88,0xB0,0x00,0x00,0x00\n"
+    ".byte 0x8B,0x69,0x48\n"
+    "xor 0x50(%rcx), %ebp\n"
+    "3:\n"
+    "movzbl (%r15), %edx\n"
+    "mov 0x20(%rsp), %rax\n"
+    "mov 0x148(%rax), %rax\n"
+    "mov (%rax,%rdx,8), %rax\n"
+    ".byte 0x8B,0x58,0x48,0x8B,0x70,0x50,0x48,0x8B,0x4C,0x24,0x28\n"
+    "call fake_pit_stub\n"
+    "xor %esi, %ebx\n"
+    "cmp %ebp, %ebx\n"
+    "setl %bl\n"
+    ".byte 0xF6,0xC3,0x01,0x75,0x1E,0x49,0x83,0xC7,0x08,0x4D,0x39,0xE7,0x0F,0x85\n"
+    ".long 3b - . - 4\n"
+    ".byte 0xEB,0x0F,0xC5,0xC8,0x57,0xF6,0x4D,0x39,0xE7,0x0F,0x85\n"
+    ".long 2b - . - 4\n"
+    "1:\n"
+    ".byte 0x31,0xDB\n"
+    "mov fake_pit_blank(%rip), %rcx\n"
+    "and $1, %bl\n"
+    "movzbl %bl, %eax\n"
+    "add $0x48, %rsp\n"
+    "pop %rdi\npop %rsi\npop %rbx\npop %rbp\npop %r12\npop %r15\n"
+    "ret\n"
+    ".seh_endproc\n"
+    ".globl fake_pit_rank\n"
+    ".def fake_pit_rank; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_pit_rank\n"
+    "fake_pit_rank:\n"
+    "push %rsi\n.seh_pushreg %rsi\n"
+    "push %rdi\n.seh_pushreg %rdi\n"
+    "push %rbp\n.seh_pushreg %rbp\n"
+    "push %rbx\n.seh_pushreg %rbx\n"
+    "sub $0x688, %rsp\n.seh_stackalloc 0x688\n"
+    ".seh_savexmm %xmm6, 0x670\n"
+    ".seh_endprologue\n"
+    "vxorps %xmm6, %xmm6, %xmm6\n"
+    "vmovaps %xmm6, 0x670(%rsp)\n"
+    "mov %rcx, %rbx\n"
+    "mov %rdx, %rsi\n"
+    "mov %r8d, %edi\n"
+    "lea fake_pit_blank(%rip), %rax\n"
+    "mov 0xa8(%rax), %ebp\n"
+    "xor 0xb0(%rax), %ebp\n"
+    "movzbl 0xc4(%rsi), %eax\n"
+    "mov 0x148(%rbx), %rcx\n"
+    ".byte 0x48,0x8B,0x04,0xC1,0x8B,0x70,0x48,0x33,0x70,0x50\n"
+    "mov fake_pit_list(%rip), %rcx\n"
+    "mov 8(%rcx), %rax\n"
+    "mov 0x10(%rcx), %rcx\n"
+    "cmp %rcx, %rax\n"
+    "je 6f\n"
+    "vmovd %ebp, %xmm0\n"
+    "xor %ebp, %ebp\n"
+    "jmp 5f\n"
+    ".byte 0x48,0x83,0xC0,0x08,0x48,0x39,0xC8,0x74,0x2F\n"
+    "5:\n"
+    ".byte 0xC5,0xFA,0x10,0x48,0x04\n"
+    ".byte 0xC5,0xF2,0x5C,0xCE,0xC5,0xF8,0x2E,0xC1,0x72,0xE8,0x0F,0xB6,0x10,0x4C,0x8B,0x83,0x48,0x01,0x00,0x00\n"
+    ".byte 0x49,0x8B,0x14,0xD0,0x44,0x8B,0x42,0x48,0x44,0x33,0x42,0x50,0x44,0x39,0xC6,0x83,0xD5,0x00,0xEB,0xCA\n"
+    "6:\n"
+    ".byte 0x31,0xED\n"
+    "mov fake_pit_list(%rip), %rcx\n"
+    "sub %esi, %edi\n"
+    "cmp %edi, %ebp\n"
+    ".byte 0x0F,0x9D,0xC0\n"
+    ".byte 0xC5,0xF8,0x28,0xB4,0x24,0x70,0x06,0x00,0x00\n"
+    "add $0x688, %rsp\n"
+    "pop %rbx\npop %rbp\npop %rdi\npop %rsi\n"
+    "ret\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_pit_eval -export:fake_pit_rank -export:fake_pit_stub\"\n"
+    ".text\n");
+uint64_t fake_pit_eval(void *session, void *record, void *begin, void *end);
+uint64_t fake_pit_rank(void *session, void *record, uint32_t free_slots);
+
+
+static uint8_t pit_module[0x200], pit_record[0xd0], pit_slot[4][0x60];
+static void *pit_table[4];
+static uint64_t pit_rank_list[3];
+static uint8_t pit_entries[3][8];
+
+static void pit_setup(uint8_t own, int own_slot_missing)
+{
+    memset(pit_module, 0, sizeof pit_module);
+    memset(pit_record, 0, sizeof pit_record);
+    memset(pit_slot, 0, sizeof pit_slot);
+    memset(pit_entries, 0, sizeof pit_entries);
+    uint32_t positions[4] = {5, 3, 0, 9};
+    for (int i = 0; i < 4; i++) {
+        *(uint32_t *)(pit_slot[i] + 0x48) = positions[i];
+        pit_table[i] = pit_slot[i];
+    }
+    pit_table[2] = NULL;
+    (void)own_slot_missing;
+    *(void ***)(pit_module + 0x148) = pit_table;
+    pit_record[0xc4] = own;
+}
+
+static void pit_listed(const uint8_t *vehicles, int n)
+{
+    float one = 1.0f;
+    for (int i = 0; i < n; i++) {
+        pit_entries[i][0] = vehicles[i];
+        memcpy(pit_entries[i] + 4, &one, sizeof one);
+    }
+    pit_rank_list[0] = 0;
+    pit_rank_list[1] = (uint64_t)(uintptr_t)pit_entries;
+    pit_rank_list[2] = (uint64_t)(uintptr_t)(pit_entries + n);
+    fake_pit_list = (uint64_t)(uintptr_t)pit_rank_list;
+}
+
+static uint64_t pit_eval(uint8_t own, const uint8_t *vehicles, int n)
+{
+    pit_setup(own, 0);
+    pit_listed(vehicles, n);
+    return fake_pit_eval(pit_module, pit_record, pit_entries, pit_entries + n) & 1;
+}
+
+static uint64_t pit_rank(uint8_t own, const uint8_t *vehicles, int n)
+{
+    pit_setup(own, 0);
+    pit_listed(vehicles, n);
+    return fake_pit_rank(pit_module, pit_record, 6) & 0xff;
+}
+
+static void test_pit_slots(int guard)
+{
+    uint8_t ahead[] = {1}, behind[] = {3}, hole[] = {2}, hole_first[] = {2, 1}, hole_behind[] = {2, 3};
+    expect(pit_eval(0, ahead, 1) == 1, "pit slots: an evaluation with every slot present sees a car ahead");
+    expect(pit_eval(0, behind, 1) == 0, "pit slots: an evaluation with every slot present sees a car behind");
+    expect(pit_eval(0, ahead, 0) == 0, "pit slots: an empty pit list answers no");
+    expect(pit_rank(0, behind, 1) == 1, "pit slots: the rank evaluator with every slot present counts a car behind it");
+    expect(pit_rank(0, ahead, 1) == 0, "pit slots: the rank evaluator counts no car for one ahead of it");
+    if (!guard) {
+        printf("      pit slots: guard off, the null slot cases are not run\n");
+        return;
+    }
+    expect(pit_eval(0, hole, 1) == 0, "pit slots: a listed car without a slot is skipped and the answer is no");
+    expect(pit_eval(0, hole_first, 2) == 1, "pit slots: a listed car without a slot is skipped and the next one is judged");
+    expect(pit_eval(0, hole_behind, 2) == 0, "pit slots: a skipped car does not stop the rest of the list from being judged");
+    expect(pit_eval(2, ahead, 1) == 0, "pit slots: a car without a slot of its own answers no");
+    expect(pit_rank(0, hole, 1) == 0, "pit slots: the rank evaluator skips a listed car without a slot");
+    expect(pit_rank(0, hole_behind, 2) == 1, "pit slots: the rank evaluator judges the cars after a skipped one");
+    expect(pit_rank(2, behind, 1) == 0, "pit slots: the rank evaluator answers no for a car without a slot of its own");
 }
 
 static void test_settings(int on, uint64_t chain)
@@ -837,6 +1290,12 @@ static void test_gamelog(int on)
     fake_format_string(&s, "No screen called %hs exists", "late_screen");
     expect(!strcmp(chars(s), "No screen called late_screen exists"), "gamelog: a later route error is formatted normally");
     nestr_release(&s);
+    if (on) {
+        char *reserved = VirtualAlloc(NULL, 0x10000, MEM_RESERVE, PAGE_NOACCESS);
+        fake_log_thunk(fake_chan_warn, fake_fmt_bad, reserved + 0x685);
+        VirtualFree(reserved, 0, MEM_RELEASE);
+        expect(1, "gamelog: a %s argument into reserved memory is survived");
+    }
     expect(gamelog_body_calls == 0, "gamelog: the overwritten logger never runs the game's own body");
 }
 
@@ -853,6 +1312,29 @@ static void stage_early(void)
            (long long)probe[32], wrap);
     expect(site == 7 && probe[32] == 1 && wrap == 91,
            "stages: the early plugin's site and wrap are installed at the entries of both targets");
+    if (mx)
+        CloseHandle(mx);
+}
+
+static void register_early(void)
+{
+    HANDLE mx = CreateMutexW(NULL, FALSE, L"Codemasters F1 25");
+    expect(mx && GetModuleHandleW(L"t_register.dll"), "register: CreateMutexW loaded the addon that exports SwoftyAddonRegister");
+    Sleep(600);
+    wchar_t path[MAX_PATH];
+    GetModuleFileNameW(NULL, path, MAX_PATH);
+    wchar_t *slash = wcsrchr(path, L'\\');
+    if (slash)
+        wcscpy(slash + 1, L"swofty\\loader.log");
+    HANDLE log = CreateFileW(path, FILE_APPEND_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
+                             OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    const char line[] = "fake game: the game database loads now\r\n";
+    DWORD put = 0;
+    expect(log != INVALID_HANDLE_VALUE && WriteFile(log, line, sizeof line - 1, &put, NULL),
+           "register: the database moment is marked in loader.log");
+    if (log != INVALID_HANDLE_VALUE)
+        CloseHandle(log);
+    Sleep(300);
     if (mx)
         CloseHandle(mx);
 }
@@ -1039,11 +1521,92 @@ static int exhaust_near(int release_pool)
     return taken;
 }
 
+
+static void udp_participants(uint8_t *b, size_t size, size_t stride, int format, int driver, int team)
+{
+    memset(b, 0, size);
+    b[0] = (uint8_t)format;
+    b[1] = (uint8_t)(format >> 8);
+    b[6] = 4;
+    b[29] = 2;
+    b[30 + 1] = (uint8_t)driver;
+    b[30 + 3] = (uint8_t)team;
+    b[30 + stride + 1] = 5;
+    b[30 + stride + 3] = 2;
+}
+
+static int udp_get(SOCKET rx, uint8_t *out, int cap)
+{
+    DWORD ms = 1500;
+    setsockopt(rx, SOL_SOCKET, SO_RCVTIMEO, (const char *)&ms, sizeof ms);
+    return recvfrom(rx, (char *)out, cap, 0, NULL, NULL);
+}
+
+static void test_udp(int off)
+{
+    WSADATA wsa;
+    WSAStartup(MAKEWORD(2, 2), &wsa);
+    SOCKET tx = socket(AF_INET, SOCK_DGRAM, 0), rx = socket(AF_INET, SOCK_DGRAM, 0), lan = socket(AF_INET, SOCK_DGRAM, 0);
+    struct sockaddr_in a = {.sin_family = AF_INET, .sin_addr.s_addr = htonl(INADDR_LOOPBACK)}, to, lan_to;
+    int n = sizeof a;
+    bind(rx, (struct sockaddr *)&a, sizeof a);
+    getsockname(rx, (struct sockaddr *)&a, &n);
+    to = a;
+    struct sockaddr_in l = {.sin_family = AF_INET, .sin_addr.s_addr = htonl(INADDR_LOOPBACK), .sin_port = htons(21414)};
+    int lan_bound = bind(lan, (struct sockaddr *)&l, sizeof l) == 0;
+    lan_to = l;
+    uint8_t sent[1500], got[1500];
+    int want_driver = off ? 197 : 255, want_team = off ? 251 : 4;
+
+    udp_participants(sent, 1284, 57, 2025, 197, 251);
+    uint8_t keep[1500];
+    memcpy(keep, sent, 1284);
+    int r = sendto(tx, (char *)sent, 1284, 0, (struct sockaddr *)&to, sizeof to);
+    expect(r == 1284, "udp: sendto returns the packet length");
+    expect(!memcmp(sent, keep, 1284), "udp: the game's own buffer is not changed");
+    r = udp_get(rx, got, sizeof got);
+    expect(r == 1284 && got[31] == want_driver && got[33] == want_team,
+           off ? "udp: SWOFTY_UDP_STOCK_IDS=0 sends the ids as the game wrote them"
+               : "udp: a 2025 Participants packet arrives with driver 197 as 255 and team 251 as 4");
+    expect(r == 1284 && got[30 + 57 + 1] == 5 && got[30 + 57 + 3] == 2, "udp: stock ids in the next entry arrive as sent");
+    if (r == 1284)
+        got[31] = 197, got[33] = 251;
+    expect(r == 1284 && !memcmp(got, keep, 1284), "udp: no other byte of the packet changes");
+
+    udp_participants(sent, 1283, 57, 2025, 197, 251);
+    sendto(tx, (char *)sent, 1283, 0, (struct sockaddr *)&to, sizeof to);
+    r = udp_get(rx, got, sizeof got);
+    expect(r == 1283 && got[31] == 197 && got[33] == 251, "udp: a buffer one byte short of the packet size is untouched");
+
+    udp_participants(sent, 1284, 57, 2023, 197, 251);
+    sendto(tx, (char *)sent, 1284, 0, (struct sockaddr *)&to, sizeof to);
+    r = udp_get(rx, got, sizeof got);
+    expect(r == 1284 && got[31] == 197 && got[33] == 251, "udp: a buffer with another packet format is untouched");
+
+    memset(sent, 0x41, 64);
+    sendto(tx, (char *)sent, 64, 0, (struct sockaddr *)&to, sizeof to);
+    r = udp_get(rx, got, sizeof got);
+    expect(r == 64 && !memcmp(sent, got, 64), "udp: other traffic arrives byte for byte");
+
+    if (lan_bound) {
+        udp_participants(sent, 1284, 57, 2025, 197, 251);
+        sendto(tx, (char *)sent, 1284, 0, (struct sockaddr *)&lan_to, sizeof lan_to);
+        r = udp_get(lan, got, sizeof got);
+        expect(r == 1284 && got[31] == 197 && got[33] == 251, "udp: a packet to the LAN game port is untouched");
+    } else {
+        printf("      port 21414 was taken; the LAN-port case is skipped\n");
+    }
+    closesocket(tx);
+    closesocket(rx);
+    closesocket(lan);
+}
+
 int main(int argc, char **argv)
 {
     int fallback = argc > 1 && !strcmp(argv[1], "fallback"), vm = argc > 1 && !strcmp(argv[1], "vm");
     int session = argc > 1 && !strcmp(argv[1], "session"), settings = argc > 1 && !strncmp(argv[1], "settings", 8);
     int stages = argc > 1 && !strcmp(argv[1], "stages");
+    int registers = argc > 1 && !strcmp(argv[1], "register");
     int nopool = argc > 1 && !strcmp(argv[1], "nopool");
     setvbuf(stdout, NULL, _IONBF, 0);
     fake_log_gate.hashes[0x22222222 % 373] = 0xbeef;
@@ -1078,6 +1641,8 @@ int main(int argc, char **argv)
            "IAT trigger armed on USER32!RegisterClassExW and CreateWindowExW before the window exists");
     if (stages)
         stage_early();
+    if (registers)
+        register_early();
     if (nopool || (argc > 1 && !strcmp(argv[1], "nearfull")))
         expect(exhaust_near(nopool) > 0, "the address space within 2 GB of the image is taken before the core loads");
     ATOM(WINAPI * rc)(const WNDCLASSEXW *) = fallback ? (void *)real_rc : (void *)__imp_RegisterClassExW;
@@ -1099,6 +1664,12 @@ int main(int argc, char **argv)
            "IAT slots restored after the trigger");
     if (stages)
         return stage_window(w);
+    if (registers) {
+        Sleep(800);
+        printf("%s (%d failure(s))\n", fails ? "FAILED" : "ALL PASSED", fails);
+        DestroyWindow(w);
+        return fails != 0;
+    }
     if (nopool) {
         printf("%s (%d failure(s))\n", fails ? "FAILED" : "ALL PASSED", fails);
         DestroyWindow(w);
@@ -1170,8 +1741,14 @@ int main(int argc, char **argv)
 
     test_settings(settings, chain);
     test_items(settings);
+    if (argc > 1 && (!strcmp(argv[1], "udp") || !strcmp(argv[1], "udp_off")))
+        test_udp(!strcmp(argv[1], "udp_off"));
     if (argc > 1 && !strcmp(argv[1], "trigger")) {
         test_ers_newlap();
+        test_ers_mode();
+        test_standings();
+        test_garage_crew(1);
+        test_pit_slots(1);
         test_track_acclim();
     }
     HMODULE ta = GetModuleHandleW(L"t_assets.dll");
@@ -1201,7 +1778,21 @@ int main(int argc, char **argv)
     if (argc > 1 && !strcmp(argv[1], "exit"))
         ExitProcess(255);
     if (argc > 1 && !strcmp(argv[1], "acclim"))
-        crash_track_acclim();
+        crash_track_acclim(0);
+    if (argc > 1 && !strcmp(argv[1], "acclim_penalty"))
+        crash_track_acclim(1);
+    if (argc > 1 && !strcmp(argv[1], "ers_mode"))
+        crash_ers_mode();
+    if (argc > 1 && !strcmp(argv[1], "standings"))
+        crash_standings();
+    if (argc > 1 && !strcmp(argv[1], "garage_crew")) {
+        const char *off = getenv("SWOFTY_GARAGE_CREW_GUARD");
+        test_garage_crew(!(off && *off));
+    }
+    if (argc > 1 && !strcmp(argv[1], "pit_slots")) {
+        const char *off = getenv("SWOFTY_PIT_SLOT_GUARD");
+        test_pit_slots(!(off && *off));
+    }
     if (argc > 1 && !strcmp(argv[1], "heap")) {
         SetErrorMode(SEM_NOGPFAULTERRORBOX);
         for (int i = 0; i < 3; i++)

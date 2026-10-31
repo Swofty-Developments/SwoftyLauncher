@@ -106,6 +106,7 @@ void run_route_hook(void *ui, void *node, void *name, void *group, int32_t flags
             if (runtime::wizard_route_running(text, name))
                 route_name(name, text);
             r = cs::classify(text);
+            runtime::testagent_route_ran(text);
         }
         if (!r && diag)
             swofty::log("[career] route '%s' (not a career start)", text.c_str());

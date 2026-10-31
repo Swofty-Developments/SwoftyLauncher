@@ -144,7 +144,9 @@ impl Failure {
             Cause::EaRepaired => {
                 "The EA app's repair replaced offline play's file in the F1 25 folder, so F1 25 \
                  started without mods. The launcher put the file back. Close F1 25, then press Play in the \
-                 launcher again."
+                 launcher again. If the EA app asks to repair F1 25 again, it checks that file on this PC \
+                 and modded play can't start through it: play the vanilla profile instead, which leaves \
+                 the file as the EA app installed it."
                     .into()
             }
         }
@@ -422,7 +424,12 @@ mod tests {
         assert_eq!(f.title(), "The EA app repaired F1 25");
         assert!(f.text().contains("started without mods"), "{}", f.text());
         assert!(
-            f.text().ends_with("press Play in the launcher again."),
+            f.text().contains("press Play in the launcher again."),
+            "{}",
+            f.text()
+        );
+        assert!(
+            f.text().contains("play the vanilla profile instead"),
             "{}",
             f.text()
         );

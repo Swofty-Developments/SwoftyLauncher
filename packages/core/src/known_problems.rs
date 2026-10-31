@@ -149,12 +149,16 @@ pub struct Evidence {
     pub enabled: Vec<String>,
     /// The enabled addons that are tracks.
     pub tracks: Vec<String>,
+    /// The installed track and season addons the profile has off.
+    pub off: Vec<String>,
     /// Which addon overrode which in the profile's last build.
     pub conflicts: Vec<Pair>,
     /// Per addon id, the game's entrant lists it renamed or removed that the last build kept.
     pub kept_lists: BTreeMap<String, Vec<String>>,
     /// The game's exit code, or the crash code the session recorded.
     pub code: Option<u32>,
+    /// The game exe's version, when it can be read.
+    pub game_version: Option<String>,
 }
 
 impl Evidence {
@@ -188,6 +192,7 @@ impl Evidence {
             .as_ref()
             .and_then(|e| e.crash_code.or(e.exit_code.map(|c| c as u32)))
             .or(session.exit_code.map(|c| c as u32));
+        let game_version = game.and_then(|g| crate::exe_version::read(&g.join(crate::GAME_EXE)));
         Self {
             loader,
             report,
@@ -195,13 +200,28 @@ impl Evidence {
             game_files,
             names,
             code,
+            game_version,
             ..Default::default()
         }
     }
 
     /// The profile's addons from its last build in `store`.
     pub fn with_profile(mut self, store: &Store, addons: &BTreeMap<String, AddonManifest>) -> Self {
-        if let Some(report) = crate::conflicts::last(store, &store.active_profile()) {
+        let profile = store.active_profile();
+        if let Ok(p) = store.profile(&profile) {
+            self.off = p
+                .addons
+                .into_iter()
+                .filter(|a| !a.enabled)
+                .filter(|a| {
+                    addons
+                        .get(&a.id)
+                        .is_some_and(|m| matches!(m.category, Some(Category::Tracks | Category::Seasons)))
+                })
+                .map(|a| a.id)
+                .collect();
+        }
+        if let Some(report) = crate::conflicts::last(store, &profile) {
             self.tracks = report
                 .order
                 .iter()
@@ -278,6 +298,8 @@ struct Fatal {
     returns: Vec<String>,
     /// The loader's record of the exception: registers, code and stack.
     record: Vec<String>,
+    /// The crashing thread's stack frames as written, nearest first.
+    frames: Vec<String>,
     /// Where the record starts among the loader's crash lines.
     at: Option<usize>,
 }
@@ -350,16 +372,18 @@ fn fatal(e: &Evidence) -> Fatal {
                 .and_then(|at| module_at(&crash[i][at + 4..]));
         }
         f.record = record_at(&crash, i).map(str::to_owned).collect();
-        f.stack = f
+        f.frames = f
             .record
             .iter()
             .filter(|l| l.trim_start().starts_with('#'))
-            .filter_map(|l| module_at(l))
+            .cloned()
             .collect();
+        f.stack = f.frames.iter().filter_map(|l| module_at(l)).collect();
     }
     if let Some(report) = &e.report {
         let mut section = "";
         let mut stack = Vec::new();
+        let mut frames = Vec::new();
         for line in report.lines() {
             if let Some(name) = line.strip_prefix("== ") {
                 section = name;
@@ -371,6 +395,9 @@ fn fatal(e: &Evidence) -> Fatal {
                 }
             } else if section.starts_with("Stack (") {
                 stack.extend(line.split_whitespace().nth(3).and_then(module_at));
+                if line.trim_start().starts_with('#') {
+                    frames.push(line.to_owned());
+                }
             } else if section.starts_with("Return addresses")
                 && let Some(m) = line.split_whitespace().nth(2).and_then(module_at)
                 && !f.returns.contains(&m)
@@ -380,6 +407,9 @@ fn fatal(e: &Evidence) -> Fatal {
         }
         if f.stack.is_empty() {
             f.stack = stack;
+        }
+        if f.frames.is_empty() {
+            f.frames = frames;
         }
     }
     f
@@ -714,6 +744,10 @@ const PITLANE_CRASH: &str = "F1_25.exe+0x389a1d7 ";
 /// The entrant list search by name (fn 0x141738eb0) that runs off the end of the
 /// game's loaded lists when the name is missing.
 const ENTRANT_LIST_SEARCH: &str = "F1_25.exe+0x1738f30 ";
+/// Where F1 25 sets up the track for a session it loads.
+const SETUP_TRACK: &str = "Sess_Loader_SetupTrackAssets";
+/// How long after a career loaded a crash counts as loading its next session.
+const CAREER_LOAD_SECS: f64 = 10.0;
 /// How long before the crash Manual Pit Lane's lines count, and after it.
 const PITLANE_SECS: f64 = 1.5;
 const PITLANE_AFTER_SECS: f64 = 0.5;
@@ -1000,13 +1034,15 @@ fn game_heap(e: &Evidence) -> Diagnosis {
     }
     let mut steps = Vec::new();
     if let Some(first) = tracks.first() {
-        let which = if e.tracks.iter().any(|t| t == SEPANG) {
-            first.clone()
-        } else {
-            list(&tracks)
+        let one = tracks.len() == 1 || e.tracks.iter().any(|t| t == SEPANG);
+        let (which, at) = match one {
+            true => (first.clone(), first.clone()),
+            false => (list(&tracks), "one of them".to_owned()),
         };
         steps.push(format!(
-            "Turn off {which} in your profile, or make a lighter profile without it for the sessions it crashes in."
+            "Turn off {which} in your profile, or make a lighter profile without it for the sessions it crashes in. \
+             If your career's next round is at {at}, change that round with the Career Mode Editor first: the career \
+             won't load while that track is off."
         ));
     }
     steps.push(if years_on > 0 {
@@ -1311,6 +1347,38 @@ fn entrant_list_crash(e: &Evidence, f: &Fatal) -> bool {
         && (crash_lines(&e.loader).into_iter().any(at) || e.report.iter().flat_map(|r| r.lines()).any(at))
 }
 
+/// The game function a stack frame names, as `Sess_Loader_SetupTrackAssets`
+/// in `#5  F1_25.exe+0x2d48bb7 .xtls Sess_Loader_SetupTrackAssets+0x47`. None
+/// for a frame the symbols don't name (`fn base+…`) and for other modules.
+fn game_function(frame: &str) -> Option<&str> {
+    let mut words = frame
+        .split_whitespace()
+        .skip_while(|w| !w.to_ascii_lowercase().starts_with("f1_25.exe+0x"))
+        .skip(2);
+    let name = words.next()?.split("+0x").next()?;
+    (!name.is_empty() && name != "fn").then_some(name)
+}
+
+/// Whether F1 25 crashed setting up the track for a career's session: the
+/// nearest game function the stack names is [`SETUP_TRACK`], and the career
+/// loaded at most [`CAREER_LOAD_SECS`] before.
+fn career_track_crash(e: &Evidence, f: &Fatal) -> bool {
+    let setup = f.frames.iter().take(NEAR_FRAMES).find_map(|l| game_function(l)) == Some(SETUP_TRACK);
+    if !setup || f.module.as_deref() != Some("f1_25.exe") {
+        return false;
+    }
+    let Some(end) = crash_time(e, f) else {
+        return false;
+    };
+    e.loader
+        .lines()
+        .rev()
+        .filter(|l| l.contains("] [career] career.loaded: ") || l.contains("] [career] career.unloaded "))
+        .filter_map(|l| Some((stamp(l)?, l)))
+        .find(|(t, _)| *t <= end)
+        .is_some_and(|(t, l)| l.contains("career.loaded: ") && end - t <= CAREER_LOAD_SECS)
+}
+
 /// The text `rdi` points at in the crash report's memory dump, the name the game looked up.
 fn searched_name(report: &str) -> Option<String> {
     let mut lines = report
@@ -1385,6 +1453,37 @@ fn missing_entrant_list(e: &Evidence) -> Diagnosis {
     }
 }
 
+fn career_content_off(e: &Evidence) -> Diagnosis {
+    let off: Vec<String> = e.off.iter().map(|id| name(e, id)).collect();
+    let what =
+        "F1 25 crashed setting up the track for your career's next session, just after the career loaded.";
+    let (title, what) = match off.as_slice() {
+        [one] => (
+            format!("Your career uses {one}, which is off"),
+            format!("{what} A race in your career uses {one}, which is off in this profile."),
+        ),
+        _ => (
+            "Your career uses a track or season that is off".to_owned(),
+            format!(
+                "{what} A race in your career uses a track or season that is off in this profile, which has {} off.",
+                list(&off)
+            ),
+        ),
+    };
+    Diagnosis {
+        id: "career_content_off",
+        title,
+        what,
+        steps: vec![
+            format!(
+                "Turn {} back on, or change that round with the Career Mode Editor.",
+                list(&off)
+            ),
+            "Press Play again.".to_owned(),
+        ],
+    }
+}
+
 fn pitlane(e: &Evidence) -> Diagnosis {
     let addon = e
         .names
@@ -1438,8 +1537,22 @@ fn quit_fault_diagnosis() -> Diagnosis {
     }
 }
 
-/// The cause of a crash, from the first rule that recognises it.
+/// The cause of a crash, from the first rule that recognises it. A crash no
+/// rule recognises, on an F1 25 older than [`LATEST_GAME_VERSION`], is put down
+/// to the old build.
 pub fn diagnose(e: &Evidence) -> Option<Diagnosis> {
+    matched(e).or_else(|| {
+        let mut d = outdated_exe(e.game_version.as_deref())?;
+        d.what = format!(
+            "Your F1 25 is {}. Mods are made for {LATEST_GAME_VERSION}, the latest update, and F1 25 crashed on \
+             the older one.",
+            e.game_version.as_deref().unwrap_or_default().trim()
+        );
+        Some(d)
+    })
+}
+
+fn matched(e: &Evidence) -> Option<Diagnosis> {
     if let Some((drive, free, need)) = low_disk(&e.loader) {
         return Some(low_disk_space(&drive, free, need));
     }
@@ -1491,6 +1604,9 @@ pub fn diagnose(e: &Evidence) -> Option<Diagnosis> {
     }
     if entrant_list_crash(e, &f) {
         return Some(missing_entrant_list(e));
+    }
+    if !e.off.is_empty() && career_track_crash(e, &f) {
+        return Some(career_content_off(e));
     }
     if windows && gpu_removed(e) {
         let overlay = SessionOverlay::scan(&e.loader).unwrap_or_default();
@@ -2092,6 +2208,7 @@ mod tests {
             ev(GAME_HEAP, &[]),
             &[
                 ("mod.hockenheim", "Hockenheim"),
+                ("mod.portimao", "Portimao"),
                 ("mod.bahrain24", "Sepang"),
                 ("swofty.classic-seasons", "Classic Seasons"),
                 ("swofty.classic-seasons-2016", "Classic Seasons 2016"),
@@ -2109,6 +2226,22 @@ mod tests {
         );
         assert!(
             d.steps[0].starts_with("Turn off Sepang in your profile"),
+            "{}",
+            d.steps[0]
+        );
+        assert!(
+            d.steps[0].ends_with(
+                "If your career's next round is at Sepang, change that round with the Career Mode Editor first: \
+                 the career won't load while that track is off."
+            ),
+            "{}",
+            d.steps[0]
+        );
+        e.tracks = vec!["mod.hockenheim".into(), "mod.portimao".into()];
+        let d = diagnose(&e).unwrap();
+        assert!(
+            d.steps[0].contains("Turn off Hockenheim and Portimao in your profile")
+                && d.steps[0].contains("next round is at one of them,"),
             "{}",
             d.steps[0]
         );
@@ -2392,9 +2525,176 @@ mod tests {
         );
     }
 
+    const CAREER_TRACK: &str = "\
+2026-10-28 20:58:46.394 [4936] [career] career.loaded: mode driver_career, key 'dc-00000003' (components live, component mode driver_career, Team HQ answer none)
+2026-10-28 20:58:47.933 [5060] [career] flow \"StateLoadSession\" None -> Entering
+2026-10-28 20:58:47.954 [7472] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 7472, 169 s after load, at F1_25.exe+0x2e57efb .xtls fn base+0x2e57e90+0x6b
+2026-10-28 20:58:47.954 [7472] [crash]   reading 0x78
+2026-10-28 20:58:47.954 [7472] [crash]   stack:
+2026-10-28 20:58:47.954 [7472] [crash]   #0  F1_25.exe+0x2e57efb .xtls fn base+0x2e57e90+0x6b
+2026-10-28 20:58:47.954 [7472] [crash]   #1  F1_25.exe+0x7a13ce .xtls fn base+0x7a1310+0xbe
+2026-10-28 20:58:47.954 [7472] [crash]   #2  F1_25.exe+0x8706316 .data1 fn base+0x87062f0+0x26
+2026-10-28 20:58:47.954 [7472] [crash]   #3  F1_25.exe+0x2d48bb7 .xtls Sess_Loader_SetupTrackAssets+0x47
+2026-10-28 20:58:47.954 [7472] [crash]   #4  F1_25.exe+0x2d471af .xtls Sess_Loader_RequestSessionLoad+0xef
+2026-10-28 20:58:47.955 [7472] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+0x2e57efb .xtls fn base+0x2e57e90+0x6b reached the top-level filter; passing it to the game's filter
+";
+
+    fn career_off(loader: &str, off: &[&str]) -> Evidence {
+        let mut e = with_names(
+            ev(loader, &[]),
+            &[
+                ("mod.bahrain24", "Sepang"),
+                ("swofty.classic-seasons-2018", "F1 2018 GP/TT Addon"),
+            ],
+        );
+        e.off = off.iter().map(|id| (*id).to_owned()).collect();
+        e
+    }
+
+    #[test]
+    fn a_career_crash_setting_up_the_track_names_the_addon_that_is_off() {
+        let d = diagnose(&career_off(CAREER_TRACK, &["mod.bahrain24"])).unwrap();
+        assert_eq!(d.id, "career_content_off");
+        assert_eq!(d.title, "Your career uses Sepang, which is off");
+        assert!(
+            d.what
+                .ends_with("A race in your career uses Sepang, which is off in this profile."),
+            "{}",
+            d.what
+        );
+        assert_eq!(
+            d.steps[0],
+            "Turn Sepang back on, or change that round with the Career Mode Editor."
+        );
+
+        let d = diagnose(&career_off(
+            CAREER_TRACK,
+            &["mod.bahrain24", "swofty.classic-seasons-2018"],
+        ))
+        .unwrap();
+        assert_eq!(d.id, "career_content_off");
+        assert_eq!(d.title, "Your career uses a track or season that is off");
+        assert!(
+            d.what.ends_with("which has Sepang and F1 2018 GP/TT Addon off."),
+            "{}",
+            d.what
+        );
+        assert!(!d.what.contains("uses Sepang"), "{}", d.what);
+        assert_eq!(
+            d.steps[0],
+            "Turn Sepang and F1 2018 GP/TT Addon back on, or change that round with the Career Mode Editor."
+        );
+    }
+
+    #[test]
+    fn a_career_track_crash_needs_an_addon_off_a_fresh_career_load_and_the_track_setup() {
+        assert_eq!(diagnose(&career_off(CAREER_TRACK, &[])), None, "nothing off");
+        let late = CAREER_TRACK.replace("20:58:46.394", "20:58:30.000");
+        assert_eq!(
+            diagnose(&career_off(&late, &["mod.bahrain24"])),
+            None,
+            "long after the career loaded"
+        );
+        let unloaded = CAREER_TRACK.replace(
+            "2026-10-28 20:58:47.933",
+            "2026-10-28 20:58:47.000 [4936] [career] career.unloaded (mode driver_career)\n2026-10-28 20:58:47.933",
+        );
+        assert_eq!(
+            diagnose(&career_off(&unloaded, &["mod.bahrain24"])),
+            None,
+            "the career unloaded"
+        );
+        let grid = CAREER_TRACK.replace(
+            ".xtls fn base+0x7a1310+0xbe",
+            ".xtls Game_GridSetup_DriverBasedGrid+0x847",
+        );
+        assert_eq!(
+            diagnose(&career_off(&grid, &["mod.bahrain24"])),
+            None,
+            "a nearer named frame"
+        );
+        let no_career = CAREER_TRACK.replace("career.loaded: ", "career.starting: ");
+        assert_eq!(
+            diagnose(&career_off(&no_career, &["mod.bahrain24"])),
+            None,
+            "no career"
+        );
+    }
+
+    #[test]
+    fn a_career_track_crash_reads_the_crash_reports_stack() {
+        let loader = CAREER_TRACK
+            .lines()
+            .filter(|l| !l.contains("[crash]   ") && !l.contains("first-chance"))
+            .map(|l| format!("{l}\n"))
+            .collect::<String>();
+        let mut e = career_off(&loader, &["mod.bahrain24"]);
+        e.report = Some(
+            "== Exception\n  ACCESS_VIOLATION (0xc0000005), flags 0x0, at F1_25.exe+0x2e57efb .xtls fn base+0x2e57e90+0x6b\n\
+             == Stack (unwound with the modules' exception data)\n  \
+             #0  0000000142e57efb rsp=000000006cfa7020  F1_25.exe+0x2e57efb .xtls fn base+0x2e57e90+0x6b\n  \
+             #1  0000000142d48bb7 rsp=000000006cfae970  F1_25.exe+0x2d48bb7 .xtls Sess_Loader_SetupTrackAssets+0x47\n"
+                .to_owned(),
+        );
+        assert_eq!(diagnose(&e).map(|d| d.id), Some("career_content_off"));
+    }
+
+    #[test]
+    fn the_profiles_track_and_season_addons_that_are_off_are_read() {
+        let root = std::env::temp_dir().join(format!("swofty-kp-off-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let store = Store::new(&root);
+        let manifest = |id: &str, category: &str| {
+            let m = AddonManifest::parse(&format!(
+                r#"{{"schema_version":1,"id":"{id}","name":"{id}","version":"1.0.0","author":"t",
+                "compat":{{"game":"f1_25"}},"category":"{category}"}}"#
+            ))
+            .unwrap();
+            (id.to_owned(), m)
+        };
+        let addons = BTreeMap::from([
+            manifest("t.track-on", "tracks"),
+            manifest("t.track-off", "tracks"),
+            manifest("t.season-off", "seasons"),
+            manifest("t.cars-off", "cars"),
+        ]);
+        let mut p = crate::profile::Profile::new("main");
+        for (id, enabled) in [
+            ("t.track-on", true),
+            ("t.track-off", false),
+            ("t.cars-off", false),
+            ("t.season-off", false),
+            ("t.gone", false),
+        ] {
+            p.addons.push(crate::profile::ProfileAddon {
+                id: id.to_owned(),
+                enabled,
+                unknown: BTreeMap::new(),
+            });
+        }
+        store.save_profile(&p).unwrap();
+        store.set_active_profile("main").unwrap();
+        let e = Evidence::default().with_profile(&store, &addons);
+        std::fs::remove_dir_all(&root).ok();
+        assert_eq!(e.off, ["t.track-off", "t.season-off"]);
+    }
+
     /// `SWOFTY_KP_CASES=<folder of extracted Send Logs bundles> cargo test -p swofty-core --lib
     /// diagnoses_real_bundles -- --ignored --nocapture` prints each crashed session's diagnosis,
     /// and each other session a rule recognises.
+    #[test]
+    fn unmatched_crash_on_old_build_names_the_update() {
+        let mut e = ev("", &[]);
+        assert_eq!(diagnose(&e), None);
+        e.game_version = Some("1.0.136.6820".to_owned());
+        let d = diagnose(&e).unwrap();
+        assert_eq!(d.id, "outdated_exe");
+        assert!(d.what.contains("1.0.136.6820"));
+        assert!(d.text().contains("Steam or the EA app"));
+        e.game_version = Some(LATEST_GAME_VERSION.to_owned());
+        assert_eq!(diagnose(&e), None);
+    }
+
     #[test]
     #[ignore]
     fn diagnoses_real_bundles() {
@@ -2437,6 +2737,21 @@ mod tests {
                 })
                 .cloned()
                 .collect();
+            let off: Vec<String> = addons["profiles"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter(|p| p["active"] == true)
+                .flat_map(|p| p["addons"].as_array().cloned().unwrap_or_default())
+                .filter(|a| a["enabled"] == false)
+                .filter_map(|a| a["id"].as_str().map(str::to_owned))
+                .filter(|id| {
+                    installed.iter().any(|a| {
+                        a["id"].as_str() == Some(id.as_str())
+                            && (a["category"] == "tracks" || a["category"] == "seasons")
+                    })
+                })
+                .collect();
             for session in dirs(&logs.join("sessions")) {
                 let record = SessionRecord::read(&session);
                 let loader = ["loader.log", "game-logs/loader.log"]
@@ -2450,13 +2765,20 @@ mod tests {
                 let report = report_name(&loader).and_then(|n| read_capped(&logs.join("crash").join(n)));
                 let game_files = report.as_deref().map(game_folder_modules).unwrap_or_default();
                 let mut e = Evidence::read(&record, None, BTreeMap::new());
+                let game_version = read_capped(&logs.join("summary.txt")).and_then(|t| {
+                    t.lines()
+                        .find_map(|l| l.strip_prefix("F1 25 "))
+                        .map(|v| v.trim().to_owned())
+                });
                 e = Evidence {
+                    game_version,
                     loader,
                     report,
                     game_files,
                     names: BTreeMap::clone(&names),
                     enabled: conflicts.order.clone(),
                     tracks: Vec::clone(&tracks),
+                    off: off.clone(),
                     conflicts: conflicts.pairs.clone(),
                     kept_lists: conflicts.kept_lists.clone(),
                     ..e
