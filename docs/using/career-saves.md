@@ -35,6 +35,8 @@ Versions use 2.7 MB of 500 MB · Change · Open folder
 
 Each version is one line: why it was kept (Before Play, After Play, Imported from Steam, Copied from another profile, Launcher start, Changed outside the launcher, Before restore, Restored, Old backup), how long ago (hover for the date), its size, **Pin** and **Restore**.
 
+A restore keeps the save it replaced as **Before restore**, and the careers list shows the restored version's careers until your next Play.
+
 **Pin** keeps a version; retention never removes it. **Unpin** lets retention have it again.
 
 **Restore** opens a panel before anything changes:

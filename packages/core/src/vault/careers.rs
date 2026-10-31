@@ -193,6 +193,26 @@ pub struct Listed {
 }
 
 impl Listed {
+    /// The game's "none" value for a driver or team id.
+    pub const NONE_ID: i64 = 0x3fff;
+
+    fn no_entrants(&self) -> bool {
+        let none = |id: Option<i64>| id.is_none_or(|i| i & Self::NONE_ID == Self::NONE_ID);
+        self.driver.is_none()
+            && self.team.is_none()
+            && (self.driver_id.is_some() || self.team_id.is_some())
+            && none(self.driver_id)
+            && none(self.team_id)
+    }
+
+    pub fn mode_label(&self) -> String {
+        match self.mode.as_deref().filter(|m| !m.is_empty()) {
+            Some(m) => mode_label(Some(m)),
+            None if self.career.contains("my_team") => "My Team".to_owned(),
+            None => "Driver Career".to_owned(),
+        }
+    }
+
     pub fn title(&self) -> String {
         let who = [self.driver.as_deref(), self.team.as_deref()]
             .into_iter()
@@ -201,24 +221,64 @@ impl Listed {
         if !who.is_empty() {
             return who.join(", ");
         }
-        if !self.label.is_empty() {
-            return self.label.clone();
+        if self.no_entrants() {
+            return "New career".to_owned();
         }
-        if let Some(n) = self.slot_name.as_deref().filter(|n| !n.is_empty()) {
+        if let Some(n) = self
+            .slot_name
+            .as_deref()
+            .filter(|n| !n.is_empty() && !n.contains(['_', ':']))
+        {
             return n.to_owned();
         }
-        let my_team = match self.mode.as_deref() {
-            Some(m) => m == "my_team",
-            None => self.career.contains("my_team"),
-        };
-        match my_team {
-            true => "My Team career".to_owned(),
-            false => "Driver career".to_owned(),
+        let season = year_in(&self.label)
+            .or_else(|| year_in(&self.career))
+            .map(|y| format!("{y} season"))
+            .or_else(|| self.season_no.map(|s| format!("season {s}")));
+        match season {
+            Some(s) => format!("{} · {s}", self.mode_label()),
+            None => self.mode_label(),
         }
     }
 
     pub fn place(&self) -> Option<String> {
         self.season_no.map(|s| format!("season {s}"))
+    }
+}
+
+fn year_in(text: &str) -> Option<u32> {
+    text.split(|c: char| !c.is_ascii_digit())
+        .filter(|t| t.len() == 4)
+        .filter_map(|t| t.parse::<u32>().ok())
+        .find(|y| (1950..=2100).contains(y))
+}
+
+/// The name the game's mode key goes by: `driver_career` is Driver Career, `my_team` is My Team.
+pub fn mode_label(mode: Option<&str>) -> String {
+    let raw = mode.unwrap_or("").trim();
+    let key: String = raw
+        .chars()
+        .filter(|c| c.is_ascii_alphanumeric())
+        .collect::<String>()
+        .to_lowercase();
+    match key.as_str() {
+        "" => "Career".to_owned(),
+        "driver" | "drivercareer" => "Driver Career".to_owned(),
+        "myteam" => "My Team".to_owned(),
+        "classic" | "classiccareer" => "Classic Career".to_owned(),
+        "progressive" => "Progressive".to_owned(),
+        "1990" | "f11990" => "1990".to_owned(),
+        _ => raw
+            .split(['_', '-', ' '])
+            .filter(|w| !w.is_empty())
+            .map(|w| {
+                let mut c = w.chars();
+                c.next()
+                    .map(|f| f.to_uppercase().chain(c).collect::<String>())
+                    .unwrap_or_default()
+            })
+            .collect::<Vec<_>>()
+            .join(" "),
     }
 }
 
@@ -536,9 +596,9 @@ mod tests {
         let c = l.iter().find(|c| c.career == "my_team:c3").unwrap();
         assert!(c.hidden);
         assert_eq!(c.last_played, Some(1_761_800_000));
-        assert_eq!(c.title(), "My Team career");
+        assert_eq!(c.title(), "My Team");
         let b = l.iter().find(|c| c.career == "driver_career:b2").unwrap();
-        assert_eq!(b.title(), "Driver career");
+        assert_eq!(b.title(), "Driver Career");
         assert!(!b.hidden);
     }
 

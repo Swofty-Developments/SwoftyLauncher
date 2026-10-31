@@ -68,11 +68,7 @@ struct Entry {
 
 impl Entry {
     fn mode(&self) -> String {
-        match self.l.mode.as_deref() {
-            Some(m) => mode_name(Some(m)),
-            None if self.l.career.contains("my_team") => "My Team".to_owned(),
-            None => "Driver Career".to_owned(),
-        }
+        self.l.mode_label()
     }
 }
 
@@ -185,24 +181,6 @@ fn mb_whole(bytes: u64) -> String {
     format!("{} MB", (bytes as f64 / (1024.0 * 1024.0)).round() as u64)
 }
 
-pub(crate) fn mode_name(mode: Option<&str>) -> String {
-    match mode.unwrap_or("") {
-        "" => "Career".to_owned(),
-        "driver" | "driver-career" => "Driver Career".to_owned(),
-        "myteam" | "my-team" => "My Team".to_owned(),
-        "progressive" => "Progressive".to_owned(),
-        "classic" | "classic-career" => "Classic Career".to_owned(),
-        "1990" | "f1-1990" => "1990".to_owned(),
-        other => {
-            let mut c = other.chars();
-            match c.next() {
-                Some(f) => f.to_uppercase().chain(c).collect(),
-                None => String::new(),
-            }
-        }
-    }
-}
-
 fn list(items: &[Brief]) -> String {
     items
         .iter()
@@ -212,6 +190,13 @@ fn list(items: &[Brief]) -> String {
         })
         .collect::<Vec<_>>()
         .join(", ")
+}
+
+fn version_label(s: &Snapshot) -> &'static str {
+    match s.pinned.iter().any(|p| p == "before-restore") {
+        true => "Before restore",
+        false => reason_label(s.reason),
+    }
 }
 
 fn reason_label(r: Reason) -> &'static str {
@@ -233,12 +218,7 @@ fn reason_label(r: Reason) -> &'static str {
 }
 
 fn careers_held(held: &[String]) -> String {
-    let shown = held.iter().take(3).cloned().collect::<Vec<_>>().join(", ");
-    match held.len() {
-        0 => "No careers".to_owned(),
-        n if n > 3 => format!("{n} careers: {shown} and {} more", n - 3),
-        n => format!("{}: {shown}", plural(n, "career", "careers")),
-    }
+    plural(held.len(), "career", "careers")
 }
 
 fn imported_from(snaps: &[Snapshot]) -> Imported {
@@ -267,13 +247,7 @@ fn imported_from(snaps: &[Snapshot]) -> Imported {
     }
 }
 
-fn card_careers(
-    root: &Path,
-    store: &Store,
-    game: Option<&Game>,
-    profile: &str,
-    table: &careers::Careers,
-) -> Vec<Entry> {
+fn card_careers(root: &Path, store: &Store, game: Option<&Game>, profile: &str) -> Vec<Entry> {
     let listing = match game {
         Some(g) => career_names::read_named_listing(root, store, g, Some(profile)),
         None => careers::read_listing(root, Some(profile)),
@@ -282,14 +256,19 @@ fn card_careers(
         .into_iter()
         .filter(|l| !l.hidden)
         .filter(|l| l.profile.as_deref().is_none_or(|p| p == profile))
-        .map(|l| {
-            let row = table.find(&l.career);
-            Entry {
-                place: row.and_then(|r| r.place()).or_else(|| l.place()),
-                l,
-            }
+        .map(|l| Entry {
+            place: season_round(&l),
+            l,
         })
         .collect()
+}
+
+fn season_round(l: &Listed) -> Option<String> {
+    match (l.season_no, l.weekend) {
+        (Some(s), Some(w)) => Some(format!("Season {s} · Round {}", w + 1)),
+        (Some(s), None) => Some(format!("Season {s}")),
+        _ => None,
+    }
 }
 
 fn short_block(layout: vault::Layout, r: Running) -> Option<&'static str> {
@@ -314,9 +293,8 @@ impl Shell {
             false => Some(Location::launcher(&root, &name)),
         };
         let vault = loc.as_ref().and_then(|l| Vault::of(&root, l).ok());
-        let table = vault.as_ref().map(|v| v.careers()).unwrap_or_default();
         let game = crate::sections::game(&self.store, self.install.as_ref());
-        let entries = card_careers(&root, &self.store, game.as_ref(), &name, &table);
+        let entries = card_careers(&root, &self.store, game.as_ref(), &name);
         let snaps = vault.as_ref().and_then(|v| v.list().ok()).unwrap_or_default();
         let has_save = loc.as_ref().is_some_and(launcher_saves::has_files);
         let imported = (has_save && entries.is_empty()).then(|| match vanilla {
@@ -602,6 +580,10 @@ impl Shell {
         cx: &mut Context<Self>,
     ) {
         let root = self.store.root.clone();
+        let when = Vault::open(&root, source)
+            .and_then(|v| v.find(name))
+            .ok()
+            .map(|s| s.at);
         let restored = Vault::open(&root, source).and_then(|v| {
             let snap = v.find(name)?;
             let loc = Location::of_source(&root, source)
@@ -617,9 +599,13 @@ impl Shell {
             Ok(r) => {
                 crate::app_log::note(&r.log_line());
                 self.saves.confirm = None;
-                Notification::success(match &r.before {
-                    Some(b) => format!("Restored the save from {name}. The save it replaced is version {b}."),
-                    None => format!("Restored the save from {name}."),
+                Notification::success(match (when, &r.before) {
+                    (Some(at), Some(_)) => format!(
+                        "Restored your save from {}. The save it replaced is kept as a version.",
+                        ago(at as f64)
+                    ),
+                    (Some(at), None) => format!("Restored your save from {}.", ago(at as f64)),
+                    (None, _) => "Restored your save.".to_owned(),
                 })
             }
             Err(e) => {
@@ -1125,7 +1111,7 @@ impl Shell {
                                     .truncate()
                                     .text_size(px(14.))
                                     .font_weight(FontWeight::MEDIUM)
-                                    .child(reason_label(s.reason)),
+                                    .child(version_label(s)),
                             )
                             .children(held.map(|h| {
                                 div()
@@ -1248,7 +1234,7 @@ mod tests {
 
     use swofty_core::launcher_saves::{self, Marker};
 
-    use super::{Banner, SavesPage, banner_from, list, mode_name, reason_label, whose};
+    use super::{Banner, SavesPage, banner_from, list, reason_label, whose};
 
     fn row(id: &str, status: Status, at: i64) -> Row {
         Row {
@@ -1321,10 +1307,27 @@ mod tests {
 
     #[test]
     fn mode_names_read_like_the_game() {
-        assert_eq!(mode_name(Some("myteam")), "My Team");
-        assert_eq!(mode_name(Some("progressive")), "Progressive");
-        assert_eq!(mode_name(Some("sprint")), "Sprint");
-        assert_eq!(mode_name(None), "Career");
+        use swofty_core::vault::careers::mode_label;
+        assert_eq!(mode_label(Some("driver_career")), "Driver Career");
+        assert_eq!(mode_label(Some("my_team")), "My Team");
+        assert_eq!(mode_label(Some("progressive")), "Progressive");
+        assert_eq!(mode_label(Some("sprint_cup")), "Sprint Cup");
+        assert_eq!(mode_label(None), "Career");
+    }
+
+    #[test]
+    fn versions_and_places_read_short() {
+        use super::{careers_held, season_round};
+        use swofty_core::vault::careers::listing;
+        assert_eq!(careers_held(&vec![String::new(); 10]), "10 careers");
+        let l = listing(
+            &swofty_core::stdlib::careers::parse(
+                r#"{"careers":[{"career":"f1_career_2026","slot_season":1,"slot_weekend":2}]}"#,
+            ),
+            None,
+        );
+        assert_eq!(season_round(&l[0]).as_deref(), Some("Season 1 · Round 3"));
+        assert_eq!(l[0].title(), "Driver Career · 2026 season");
     }
 
     #[test]

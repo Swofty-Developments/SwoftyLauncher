@@ -46,6 +46,53 @@ fn lookup(map: &HashMap<i64, String>, raw: i64) -> Option<&String> {
     }
 }
 
+#[derive(serde::Deserialize)]
+struct Assets {
+    #[serde(default)]
+    db_edits: Vec<Edit>,
+}
+
+#[derive(serde::Deserialize)]
+struct Edit {
+    hash: String,
+    #[serde(rename = "type", default = "text_tag")]
+    tag: u8,
+    value: String,
+}
+
+fn text_tag() -> u8 {
+    2
+}
+
+/// Put the runtime database edits of an overlay's `assets.json` over `db`, the way the game loads it:
+/// a record the edit names takes its value, and one the database lacks is added.
+pub fn apply_edits(db: &mut Gvdb, assets_json: &[u8]) {
+    let Ok(assets) = serde_json::from_slice::<Assets>(assets_json) else {
+        return;
+    };
+    let mut at: HashMap<u64, usize> = db.records.iter().enumerate().map(|(i, r)| (r.key, i)).collect();
+    for e in assets.db_edits {
+        let Ok(key) = u64::from_str_radix(&e.hash, 16) else {
+            continue;
+        };
+        match at.get(&key) {
+            Some(&i) => db.records[i].value = e.value.into_bytes(),
+            None => {
+                at.insert(key, db.records.len());
+                db.records.push(swofty_formats::gvdb::Record {
+                    key,
+                    tag: e.tag,
+                    value: e.value.into_bytes(),
+                });
+            }
+        }
+    }
+}
+
+fn is_none(raw: i64) -> bool {
+    raw & ID_BITS == ID_BITS
+}
+
 impl Names {
     pub fn from_db(db: Gvdb, english: Option<&[u8]>) -> Self {
         let mut cat = Catalog::from_gvdb(db.clone(), String::new());
@@ -59,14 +106,16 @@ impl Names {
     }
 
     pub fn load(store: &Store, game: &Game, profile: Option<&str>) -> Option<Self> {
-        let built = profile.and_then(|p| {
-            crate::row_ids::last_build(&store.overlays_dir(p), "", crate::build::GVDB).and_then(|b| b.db)
-        });
-        let path = match built {
+        let built =
+            profile.and_then(|p| crate::row_ids::last_build(&store.overlays_dir(p), "", crate::build::GVDB));
+        let path = match built.as_ref().and_then(|b| b.db.clone()) {
             Some(p) => p,
             None => crate::dbedit::stock_database(store, game).ok()?,
         };
-        let db = Gvdb::parse(&std::fs::read(&path).ok()?).ok()?;
+        let mut db = Gvdb::parse(&std::fs::read(&path).ok()?).ok()?;
+        if let Some(edits) = built.and_then(|b| b.edits).and_then(|p| std::fs::read(p).ok()) {
+            apply_edits(&mut db, &edits);
+        }
         let english = crate::baseline::original_lang(&store.root, &game.dir, &game.identity, "eng")
             .ok()
             .and_then(|p| std::fs::read(p).ok());
@@ -90,12 +139,12 @@ impl Names {
     pub fn name(&self, list: &mut [Listed]) {
         for c in list {
             if c.driver.is_none()
-                && let Some(id) = c.driver_id
+                && let Some(id) = c.driver_id.filter(|i| !is_none(*i))
             {
                 c.driver = Some(self.driver(id));
             }
             if c.team.is_none()
-                && let Some(id) = c.team_id
+                && let Some(id) = c.team_id.filter(|i| !is_none(*i))
             {
                 c.team = Some(self.team(id));
             }
@@ -239,5 +288,52 @@ mod tests {
         Names::from_db(db(), None).name(&mut l);
         let a = l.iter().find(|c| c.career == "a").unwrap();
         assert_eq!(a.title(), "Driver #5, Team #7");
+    }
+
+    #[test]
+    fn runtime_edits_add_the_rows_a_season_addon_brings() {
+        use swofty_formats::hash::fnv1a64;
+        let mut base = db();
+        let edit = |path: &str, tag: u8, value: &str| serde_json::json!({ "hash": format!("{:016x}", fnv1a64(path)), "type": tag, "value": value });
+        let assets = serde_json::json!({ "db_edits": [
+            edit("entrants.teams._team_instancecount_", 0, "3"),
+            edit("entrants.teams.team_2._metadata_", 2, "haas_26"),
+            edit("entrants.teams.team_2.stat_id", 0, "504"),
+            edit("entrants.teams.team_2.display_name", 2, "lng_team_haas"),
+            edit("entrants.drivers._driver_instancecount_", 0, "3"),
+            edit("entrants.drivers.driver_2._metadata_", 2, "added_driver"),
+            edit("entrants.drivers.driver_2.stat_id", 0, "104"),
+            edit("entrants.drivers.driver_2.first_name", 2, "lng_added"),
+            edit("entrants.drivers.driver_2.last_name", 2, "lng_driver"),
+        ]});
+        apply_edits(&mut base, assets.to_string().as_bytes());
+        let mut lng = Lng::parse(&english()).unwrap();
+        lng.entries.push(Entry {
+            key: "lng_team_haas".into(),
+            value: "Haas".into(),
+        });
+        lng.entries.push(Entry {
+            key: "lng_added".into(),
+            value: "Added".into(),
+        });
+        lng.entries.push(Entry {
+            key: "lng_driver".into(),
+            value: "Driver".into(),
+        });
+        let names = Names::from_db(base, Some(&lng.to_bytes()));
+        assert_eq!(names.driver(104), "Added Driver");
+        assert_eq!(names.team(504 & 0x3fff), "Haas");
+    }
+
+    #[test]
+    fn the_none_id_names_nothing() {
+        let l = super::super::careers::listing(
+            &parse(r#"{"careers":[{"career":"f1_career_2026","driver_raw":16383,"team_raw":16383}]}"#),
+            None,
+        );
+        let mut l = l;
+        Names::from_db(db(), Some(&english())).name(&mut l);
+        assert_eq!(l[0].driver, None);
+        assert_eq!(l[0].title(), "New career");
     }
 }
