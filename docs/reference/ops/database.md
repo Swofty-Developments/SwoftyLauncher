@@ -535,13 +535,7 @@ warning: My DB Edits: change skipped: entrants.teams.team[_metadata_=williams_26
 
 An addon whose track the build leaves out has its failing database ops skipped the same way.
 
-An op whose selector matches no row waits, with the ops after it in its file that fail. It applies right after the first later addon whose ops add records, once its row exists, and the addons after that still override it. A Team Simplified Grid Editor edit of a grid Classic Seasons adds applies this way, though Team Simplified loads first:
-
-```text
-teamsimplified.mods (grid-editor)   set  entrants.entrant_lists.entrant_list[_metadata_=cs_f1_2016]   waits: no row matches
-swofty.classic-seasons-2016         add-row  entrants.entrant_lists  _metadata_=cs_f1_2016
-teamsimplified.mods (grid-editor)   set  entrants.entrant_lists.entrant_list[_metadata_=cs_f1_2016]   applies
-```
+An op whose selector matches no row waits, with the ops after it in its file that fail. It applies right after the first later addon whose ops add records, once its row exists, and the addons after that still override it. A Team Simplified Grid Editor edit of a grid Classic Seasons adds applies this way, though Team Simplified loads first, and [`swofty conflicts`](/reference/cli#swofty-conflicts) lists the edit as the winner over Classic Seasons on the fields it sets.
 
 An op still waiting after every addon fails the build. A DB Editor package's op, or one of an addon whose track the build leaves out, is skipped with the warning above instead:
 
