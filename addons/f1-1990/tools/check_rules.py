@@ -88,7 +88,24 @@ def allowed(stock):
     return ok
 
 
+MANIFEST = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "swofty.json")
+LAUNCHER_LIMIT = 255
+
+
+def manifest_problems():
+    with open(MANIFEST, encoding="utf-8") as f:
+        m = json.load(f)
+    prefixed = f"by {m['author']}, v{m['version']}\n{m['description']}"
+    size = len(prefixed.encode("utf-8"))
+    if size > LAUNCHER_LIMIT:
+        return [f"addon description with the launcher's author and version prefix is {size} bytes, limit {LAUNCHER_LIMIT}"]
+    return []
+
+
 def main():
+    problems = manifest_problems()
+    if problems:
+        sys.exit("FAIL: " + "; ".join(problems))
     if len(sys.argv) != 3:
         sys.exit(__doc__)
     stock, built = career.Db(sys.argv[1]), career.Db(sys.argv[2])

@@ -4,7 +4,7 @@
   "name": "F1 1990",
   "version": "0.1.0",
   "author": "Swofty",
-  "description": "1990 Driver Career next to the 2025 and 2026 ones, and an F1 1990 box in Grand Prix and Time Trial: teams, drivers, calendar, rules and cars. Needs its own profile (driver ids run out beside F1 2012 Season). Private test content. Not for release.",
+  "description": "1990 Driver Career and an F1 1990 box in Grand Prix and Time Trial. Needs its own profile for now. Private test content, not for release.",
   "license": "LicenseRef-private",
   "kind": ["database", "erp", "text", "native", "files"],
   "category": "seasons",
