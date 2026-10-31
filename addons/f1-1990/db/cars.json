@@ -351,7 +351,8 @@
     "tyre_compounds_asset_group": "f1_1990_vehicle_package/tyrecompounds/tyrecompounds",
     "blob_shadow_decal": "eaid://f1_1990_vehicle_package/shared/ao/materials/blobshadowdecal.material",
     "_metadata_": "f1_1990",
-    "resource_path": "f1_1990_vehicle_package/teams/[FILENAME]/wep/[FILENAME]"
+    "resource_path": "f1_1990_vehicle_package/teams/[FILENAME]/wep/[FILENAME]",
+    "stat_id": "59"
    }
   },
   {
@@ -381,7 +382,8 @@
     "blob_shadow_decal": "eaid://f1_1990_vehicle_package/shared/ao/materials/blobshadowdecal.material",
     "_metadata_": "f1_1990b",
     "resource_path": "f1_1990_vehicle_b_specs/teams/[FILENAME]/wep/[FILENAME]",
-    "available": "True"
+    "available": "True",
+    "stat_id": "60"
    }
   },
   {
@@ -413,7 +415,8 @@
     "revLightsRedStart": "12440",
     "revLightsPurpleStart": "13220",
     "revLightWarning": "13840",
-    "revLightsEnd": "14000"
+    "revLightsEnd": "14000",
+    "stat_id": "34"
    }
   },
   {
@@ -428,7 +431,8 @@
     "revLightsRedStart": "11780",
     "revLightsPurpleStart": "12510",
     "revLightWarning": "13100",
-    "revLightsEnd": "13250"
+    "revLightsEnd": "13250",
+    "stat_id": "35"
    }
   },
   {
@@ -443,7 +447,8 @@
     "revLightsRedStart": "11820",
     "revLightsPurpleStart": "12560",
     "revLightWarning": "13150",
-    "revLightsEnd": "13300"
+    "revLightsEnd": "13300",
+    "stat_id": "36"
    }
   },
   {
@@ -458,7 +463,8 @@
     "revLightsRedStart": "11820",
     "revLightsPurpleStart": "12560",
     "revLightWarning": "13150",
-    "revLightsEnd": "13300"
+    "revLightsEnd": "13300",
+    "stat_id": "37"
    }
   },
   {
@@ -473,7 +479,8 @@
     "revLightsRedStart": "11560",
     "revLightsPurpleStart": "12280",
     "revLightWarning": "12860",
-    "revLightsEnd": "13000"
+    "revLightsEnd": "13000",
+    "stat_id": "38"
    }
   },
   {
@@ -488,7 +495,8 @@
     "revLightsRedStart": "12000",
     "revLightsPurpleStart": "12750",
     "revLightWarning": "13350",
-    "revLightsEnd": "13500"
+    "revLightsEnd": "13500",
+    "stat_id": "39"
    }
   },
   {
@@ -503,7 +511,8 @@
     "revLightsRedStart": "10440",
     "revLightsPurpleStart": "11100",
     "revLightWarning": "11620",
-    "revLightsEnd": "11750"
+    "revLightsEnd": "11750",
+    "stat_id": "40"
    }
   },
   {
@@ -521,7 +530,8 @@
     "chassis_name": "lng_f1990_chassis_mclaren",
     "engine_name_override": "lng_f1990_engine_mclaren",
     "equal_performance_vehicle": "",
-    "performance_tier": "0"
+    "performance_tier": "0",
+    "stat_id": "509"
    }
   },
   {
@@ -539,7 +549,8 @@
     "chassis_name": "lng_f1990_chassis_ferrari",
     "engine_name_override": "lng_f1990_engine_ferrari",
     "equal_performance_vehicle": "",
-    "performance_tier": "0"
+    "performance_tier": "0",
+    "stat_id": "510"
    }
   },
   {
@@ -557,7 +568,8 @@
     "chassis_name": "lng_f1990_chassis_williams",
     "engine_name_override": "lng_f1990_engine_williams",
     "equal_performance_vehicle": "",
-    "performance_tier": "0"
+    "performance_tier": "0",
+    "stat_id": "511"
    }
   },
   {
@@ -575,7 +587,8 @@
     "chassis_name": "lng_f1990_chassis_benetton",
     "engine_name_override": "lng_f1990_engine_benetton",
     "equal_performance_vehicle": "",
-    "performance_tier": "0"
+    "performance_tier": "0",
+    "stat_id": "512"
    }
   },
   {
@@ -593,7 +606,8 @@
     "chassis_name": "lng_f1990_chassis_tyrrell",
     "engine_name_override": "lng_f1990_engine_tyrrell",
     "equal_performance_vehicle": "",
-    "performance_tier": "1"
+    "performance_tier": "1",
+    "stat_id": "513"
    }
   },
   {
@@ -611,7 +625,8 @@
     "chassis_name": "lng_f1990_chassis_lotus",
     "engine_name_override": "lng_f1990_engine_lotus",
     "equal_performance_vehicle": "",
-    "performance_tier": "1"
+    "performance_tier": "1",
+    "stat_id": "514"
    }
   },
   {
@@ -629,7 +644,8 @@
     "chassis_name": "lng_f1990_chassis_march",
     "engine_name_override": "lng_f1990_engine_march",
     "equal_performance_vehicle": "",
-    "performance_tier": "1"
+    "performance_tier": "1",
+    "stat_id": "515"
    }
   },
   {
@@ -647,7 +663,8 @@
     "chassis_name": "lng_f1990_chassis_larrousse",
     "engine_name_override": "lng_f1990_engine_larrousse",
     "equal_performance_vehicle": "",
-    "performance_tier": "2"
+    "performance_tier": "2",
+    "stat_id": "516"
    }
   },
   {
@@ -665,7 +682,8 @@
     "chassis_name": "lng_f1990_chassis_ligier_prost",
     "engine_name_override": "lng_f1990_engine_ligier_prost",
     "equal_performance_vehicle": "",
-    "performance_tier": "2"
+    "performance_tier": "2",
+    "stat_id": "517"
    }
   },
   {
@@ -683,7 +701,8 @@
     "chassis_name": "lng_f1990_chassis_minardi",
     "engine_name_override": "lng_f1990_engine_minardi",
     "equal_performance_vehicle": "",
-    "performance_tier": "1"
+    "performance_tier": "1",
+    "stat_id": "518"
    }
   },
   {
@@ -701,7 +720,8 @@
     "chassis_name": "lng_f1990_chassis_brabham",
     "engine_name_override": "lng_f1990_engine_brabham",
     "equal_performance_vehicle": "",
-    "performance_tier": "1"
+    "performance_tier": "1",
+    "stat_id": "519"
    }
   },
   {
@@ -719,7 +739,8 @@
     "chassis_name": "lng_f1990_chassis_dallara",
     "engine_name_override": "lng_f1990_engine_dallara",
     "equal_performance_vehicle": "",
-    "performance_tier": "1"
+    "performance_tier": "1",
+    "stat_id": "520"
    }
   },
   {
@@ -737,7 +758,8 @@
     "chassis_name": "lng_f1990_chassis_arrows",
     "engine_name_override": "lng_f1990_engine_arrows",
     "equal_performance_vehicle": "",
-    "performance_tier": "1"
+    "performance_tier": "1",
+    "stat_id": "521"
    }
   },
   {
@@ -748,7 +770,8 @@
     "_metadata_": "mclaren_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_honda",
-    "available": "True"
+    "available": "True",
+    "stat_id": "522"
    }
   },
   {
@@ -759,7 +782,8 @@
     "_metadata_": "ferrari_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_ferrari",
-    "available": "True"
+    "available": "True",
+    "stat_id": "523"
    }
   },
   {
@@ -770,7 +794,8 @@
     "_metadata_": "williams_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_renault",
-    "available": "True"
+    "available": "True",
+    "stat_id": "524"
    }
   },
   {
@@ -781,7 +806,8 @@
     "_metadata_": "benetton_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_ford_hb",
-    "available": "True"
+    "available": "True",
+    "stat_id": "525"
    }
   },
   {
@@ -792,7 +818,8 @@
     "_metadata_": "tyrrell_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_ford_dfr",
-    "available": "True"
+    "available": "True",
+    "stat_id": "526"
    }
   },
   {
@@ -803,7 +830,8 @@
     "_metadata_": "lotus_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_lamborghini",
-    "available": "True"
+    "available": "True",
+    "stat_id": "527"
    }
   },
   {
@@ -814,7 +842,8 @@
     "_metadata_": "leytonhouse_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_judd",
-    "available": "True"
+    "available": "True",
+    "stat_id": "528"
    }
   },
   {
@@ -825,7 +854,8 @@
     "_metadata_": "larrousse_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_lamborghini",
-    "available": "True"
+    "available": "True",
+    "stat_id": "529"
    }
   },
   {
@@ -836,7 +866,8 @@
     "_metadata_": "ligier_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_ford_dfr",
-    "available": "True"
+    "available": "True",
+    "stat_id": "530"
    }
   },
   {
@@ -847,7 +878,8 @@
     "_metadata_": "minardi_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_ford_dfr",
-    "available": "True"
+    "available": "True",
+    "stat_id": "531"
    }
   },
   {
@@ -858,7 +890,8 @@
     "_metadata_": "brabham_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_judd",
-    "available": "True"
+    "available": "True",
+    "stat_id": "532"
    }
   },
   {
@@ -869,7 +902,8 @@
     "_metadata_": "dallara_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_ford_dfr",
-    "available": "True"
+    "available": "True",
+    "stat_id": "533"
    }
   },
   {
@@ -880,7 +914,8 @@
     "_metadata_": "arrows_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_ford_dfr",
-    "available": "True"
+    "available": "True",
+    "stat_id": "534"
    }
   }
  ]

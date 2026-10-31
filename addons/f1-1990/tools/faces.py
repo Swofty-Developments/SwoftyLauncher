@@ -50,6 +50,7 @@ DB = ROOT / "db" / "faces.json"
 SCENES = "animation_package/scenes/cinematics/drivers"
 KINDS = ("heads", "morph_poses")
 HEADS = "entrants.animation.driver_heads"
+STAT_IDS = json.loads((HERE / "stat_ids.json").read_text())[HEADS]
 ROW_TEMPLATE = "male_ls222"
 GROUP_TEMPLATE = "lando_norris"
 DEFAULT_BASE = "felipe_massa"
@@ -217,7 +218,7 @@ def write_ops(faces):
         ops = [
             {"op": "add-row", "table": HEADS, "from": f"{HEADS}.driver_head[_metadata_={ROW_TEMPLATE}]",
              "set": {"_metadata_": face["label"], "model_path": model_path(face), "has_morph_data": "True",
-                     "available_for_customisation": "False"}},
+                     "available_for_customisation": "False", "stat_id": str(STAT_IDS[face["label"]])}},
             {"op": "set", "select": f"{grid.DRIVERS}.driver[_metadata_={grid.driver_row(driver)}]", "field": "head",
              "value": face["label"]},
         ]

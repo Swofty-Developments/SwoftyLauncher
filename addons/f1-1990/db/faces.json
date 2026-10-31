@@ -9,7 +9,8 @@
     "_metadata_": "f90_alessandro_nannini",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_alessandro_nan/idf/f90_alessandro_nan_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "265"
    }
   },
   {
@@ -26,7 +27,8 @@
     "_metadata_": "f90_alex_caffi",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_alex_caf/idf/f90_alex_caf_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "266"
    }
   },
   {
@@ -43,7 +45,8 @@
     "_metadata_": "f90_andrea_de_cesaris",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_andrea_de_ces/idf/f90_andrea_de_ces_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "267"
    }
   },
   {
@@ -60,7 +63,8 @@
     "_metadata_": "f90_bernd_schneider",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_bernd_sch/idf/f90_bernd_sch_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "268"
    }
   },
   {
@@ -77,7 +81,8 @@
     "_metadata_": "f90_david_brabham",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_david_/idf/f90_david__rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "269"
    }
   },
   {
@@ -94,7 +99,8 @@
     "_metadata_": "f90_derek_warwick",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_derek_warwi/idf/f90_derek_warwi_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "270"
    }
   },
   {
@@ -111,7 +117,8 @@
     "_metadata_": "f90_emanuele_pirro",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_emanuele_pirr/idf/f90_emanuele_pirr_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "271"
    }
   },
   {
@@ -128,7 +135,8 @@
     "_metadata_": "f90_eric_bernard",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_eric_bern/idf/f90_eric_bern_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "272"
    }
   },
   {
@@ -145,7 +153,8 @@
     "_metadata_": "f90_gerhard_berger",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_gerhard_berger/idf/f90_gerhard_berger_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "273"
    }
   },
   {
@@ -162,7 +171,8 @@
     "_metadata_": "f90_gianni_morbidelli",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_gianni_mo/idf/f90_gianni_mo_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "274"
    }
   },
   {
@@ -179,7 +189,8 @@
     "_metadata_": "f90_gregor_foitek",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_gregor_f/idf/f90_gregor_f_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "275"
    }
   },
   {
@@ -196,7 +207,8 @@
     "_metadata_": "f90_ivan_capelli",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_ivan_cap/idf/f90_ivan_cap_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "276"
    }
   },
   {
@@ -213,7 +225,8 @@
     "_metadata_": "f90_jean_alesi",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_jean_ale/idf/f90_jean_ale_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "277"
    }
   },
   {
@@ -230,7 +243,8 @@
     "_metadata_": "f90_johnny_herbert",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_johnny_he/idf/f90_johnny_he_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "278"
    }
   },
   {
@@ -247,7 +261,8 @@
     "_metadata_": "f90_martin_donnelly",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_martin_do/idf/f90_martin_do_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "279"
    }
   },
   {
@@ -264,7 +279,8 @@
     "_metadata_": "f90_mauricio_gugelmin",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_mauricio/idf/f90_mauricio_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "280"
    }
   },
   {
@@ -281,7 +297,8 @@
     "_metadata_": "f90_michele_alboreto",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_michele_alb/idf/f90_michele_alb_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "281"
    }
   },
   {
@@ -298,7 +315,8 @@
     "_metadata_": "f90_nelson_piquet",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_nelson_pique/idf/f90_nelson_pique_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "282"
    }
   },
   {
@@ -315,7 +333,8 @@
     "_metadata_": "f90_nicola_larini",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_nicola_lar/idf/f90_nicola_lar_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "283"
    }
   },
   {
@@ -332,7 +351,8 @@
     "_metadata_": "f90_nigel_mansell",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_nigel_ma/idf/f90_nigel_ma_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "284"
    }
   },
   {
@@ -349,7 +369,8 @@
     "_metadata_": "f90_paolo_barilla",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_paolo_ba/idf/f90_paolo_ba_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "285"
    }
   },
   {
@@ -366,7 +387,8 @@
     "_metadata_": "f90_philippe_alliot",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_philippe_a/idf/f90_philippe_a_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "286"
    }
   },
   {
@@ -383,7 +405,8 @@
     "_metadata_": "f90_pierluigi_martini",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_pierluig/idf/f90_pierluig_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "287"
    }
   },
   {
@@ -400,7 +423,8 @@
     "_metadata_": "f90_riccardo_patrese",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_riccar/idf/f90_riccar_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "288"
    }
   },
   {
@@ -417,7 +441,8 @@
     "_metadata_": "f90_roberto_moreno",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_roberto_mor/idf/f90_roberto_mor_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "289"
    }
   },
   {
@@ -434,7 +459,8 @@
     "_metadata_": "f90_satoru_nakajima",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_satoru_na/idf/f90_satoru_na_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "290"
    }
   },
   {
@@ -451,7 +477,8 @@
     "_metadata_": "f90_stefano_modena",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_stefano_moden/idf/f90_stefano_moden_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "291"
    }
   },
   {
@@ -468,7 +495,8 @@
     "_metadata_": "f90_thierry_boutsen",
     "model_path": "eaid://[CHARACTER_PACKAGE]/heads/male_driver/f90_thierry_b/idf/f90_thierry_b_rig_head_morph_v1",
     "has_morph_data": "True",
-    "available_for_customisation": "False"
+    "available_for_customisation": "False",
+    "stat_id": "292"
    }
   },
   {

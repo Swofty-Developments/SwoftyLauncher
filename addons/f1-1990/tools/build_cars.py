@@ -179,6 +179,8 @@ ENGINES = {
 LIMITER_MARGIN_RPM = 500
 
 ENGINE_TABLE = 'entrants.engines'
+with open(os.path.join(HERE, 'stat_ids.json')) as _f:
+    STAT_IDS = json.load(_f)
 ENGINE_TEMPLATE = 'Cosworth_F1_V8_2009-2013'
 ENGINE_TEMPLATE_LIMITER = 18000
 REV_LIGHTS = {'revLightsStart': 13000, 'revLightsRedStart': 16000, 'revLightsPurpleStart': 17000,
@@ -916,6 +918,7 @@ def engine_key(c):
 def package_ops(name, folder, **extra):
     values = dict(PACKAGE_SET, _metadata_=name,
                   resource_path=f'{folder}/teams/[FILENAME]/wep/[FILENAME]', **extra)
+    values = pinned('entrants.vehicles.vehicle_packages', values)
     return [{'op': 'add-row', 'table': 'entrants.vehicles.vehicle_packages',
              'from': f'entrants.vehicles.vehicle_packages.vehicle_package[_metadata_={C.SOURCE_PACKAGE_ROW}]',
              'set': values},
@@ -926,6 +929,10 @@ def package_ops(name, folder, **extra):
              'set': {'_metadata_': folder}}]
 
 
+def pinned(table, values):
+    return dict(values, stat_id=str(STAT_IDS[table][values['_metadata_']]))
+
+
 def db_ops():
     with open(VEHICLE_FIELDS) as f:
         vehicle_fields = json.load(f)['fields']['entrants.vehicles.vehicle']
@@ -934,20 +941,22 @@ def db_ops():
     ops += package_ops(C.PACKAGE_B, C.PACKAGE_B_FOLDER, available='True')
     for row in engine_rows().values():
         ops.append({'op': 'add-row', 'table': ENGINE_TABLE,
-                    'from': f'{ENGINE_TABLE}.Engine[_metadata_={ENGINE_TEMPLATE}]', 'set': row})
+                    'from': f'{ENGINE_TABLE}.Engine[_metadata_={ENGINE_TEMPLATE}]', 'set': pinned(ENGINE_TABLE, row)})
     for c in C.CARS:
         ops.append({'op': 'add-row', 'table': 'entrants.vehicles',
                     'from': f'entrants.vehicles.vehicle[_metadata_={c.donor_vehicle}]',
-                    'set': {'_metadata_': c.vehicle, 'asset_filename': c.folder, 'engine': engine_label(c),
-                            'vehicle_package': C.PACKAGE, 'hud_dial': '{{hud_dial}}', 'drs_capable': 'False',
-                            'display_name': f'lng_f1990_team_{c.team}', 'chassis_name': chassis_key(c),
-                            'engine_name_override': engine_key(c), 'equal_performance_vehicle': '',
-                            'performance_tier': str(c.tier)}})
+                    'set': pinned('entrants.vehicles', {
+                        '_metadata_': c.vehicle, 'asset_filename': c.folder, 'engine': engine_label(c),
+                        'vehicle_package': C.PACKAGE, 'hud_dial': '{{hud_dial}}', 'drs_capable': 'False',
+                        'display_name': f'lng_f1990_team_{c.team}', 'chassis_name': chassis_key(c),
+                        'engine_name_override': engine_key(c), 'equal_performance_vehicle': '',
+                        'performance_tier': str(c.tier)})})
     for c in C.CARS:
         ops.append({'op': 'add-row', 'table': 'entrants.vehicles',
                     'from': f'entrants.vehicles.vehicle[_metadata_={c.vehicle}]',
-                    'set': {'_metadata_': c.vehicle_b, 'vehicle_package': C.PACKAGE_B, 'engine': engine_label(c),
-                            'available': 'True'}})
+                    'set': pinned('entrants.vehicles', {
+                        '_metadata_': c.vehicle_b, 'vehicle_package': C.PACKAGE_B, 'engine': engine_label(c),
+                        'available': 'True'})})
     return {'schema_version': 1,
             'fields': {'entrants.vehicles.vehicle_packages.vehicle_package': PACKAGE_FIELDS,
                        'entrants.vehicles.vehicle': vehicle_fields, f'{ENGINE_TABLE}.Engine': ENGINE_FIELDS},

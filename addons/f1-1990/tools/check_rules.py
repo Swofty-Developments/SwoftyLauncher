@@ -7,12 +7,14 @@ Protected: every stock row of the setup modes, the game-setup-mode option tags, 
 compounds, the allocation and mandatory tyre presets, the DRS lap groups, the points presets, the track layers and
 the light probes. Allowed changes: the row counts of the tables that gain a 1990 row, the option tag lists (stock
 value plus gamesetup_f1_1990) and the light probe list (stock value plus f1_1990). Exit code 1
-when a protected key changed or went missing, a 1990 row is missing, or the light probes lack a garage slot of a
-13-team grid.
+when a protected key changed or went missing, a 1990 row is missing, the light probes lack a garage slot of a
+13-team grid, or a car, package, engine or head row lacks the stat id of tools/stat_ids.json.
 """
+import json
 import os
 import re
 import sys
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import career  # noqa: E402
@@ -29,6 +31,9 @@ NEW_ROWS = [
     ("game_setup.session_standings", "session_standing_preset", rules.STANDINGS_NAME),
     ("track_data.game_setup", "TrackDataSet", rules.NAME),
 ]
+STAT_IDS = json.loads((Path(__file__).resolve().parent / "stat_ids.json").read_text())
+ROW_WORDS = {"entrants.vehicles": "vehicle", "entrants.vehicles.vehicle_packages": "vehicle_package",
+             "entrants.engines": "Engine", "entrants.animation.driver_heads": "driver_head"}
 PROTECTED = [(c, w) for c, w, _ in NEW_ROWS if c != "track_data.game_setup"] + [
     ("track_data.track_layers", "TrackLayer"),
     ("tracks.ibl_probes", "IblProbes"),
@@ -110,6 +115,16 @@ def main():
     for slot in range(rules.GARAGES):
         if built.get(f"{rules.PROBES}.{rules.garage(slot)}") is None:
             bad.append(f"missing light probe set {rules.PROBES}.{rules.garage(slot)}")
+    for table, rows in STAT_IDS.items():
+        word = ROW_WORDS[table]
+        for label, want in rows.items():
+            try:
+                got = built.get(f"{table}.{word}_{built.row_index(table, word, label)}.stat_id")
+            except KeyError:
+                bad.append(f"missing 1990 row {table}.{word}[_metadata_={label}]")
+                continue
+            if got != str(want):
+                bad.append(f"{table}.{word}[_metadata_={label}]: stat_id {got}, saved careers expect {want}")
     print(f"protected keys: {len(guard)}, other changed stock keys (other lanes): {other}")
     if bad:
         print(f"FAIL: {len(bad)} protected change(s)")
