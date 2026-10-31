@@ -35,14 +35,14 @@ enum class Kind { plain, obf, virt };
 // What set re-runs after the write so the game's derived copy follows: the engine's derived values
 // (Car_Engine_ComputeDerived_Thunk), the gearbox's ratio table (Car_Tuning_SetFinalDrive with 0x20|0x2000, which
 // leaves the current gear alone; 0x200 would shift to neutral) or the chassis' mass (sqrt_mass, then the system's
-// OnReset with 0x200).
+// OnReset with 0x208, flag 0x8 being the slot's gate).
 enum class Rederive { none, engine, gearbox, chassis };
 // Where the field's storage is: in the system at Field::system, in the suspension's tyre record of an axle (found by
 // its name), or in the suspension's axle object (the rear one has the lower local rest position).
 enum class Via { system, tyre_front, tyre_rear, axle_front, axle_rear };
 constexpr uintptr_t GEARBOX_USE_SETUP_RATIOS = 0x540;
 constexpr uint32_t GEARBOX_REBUILD = 0x2020;
-constexpr uint32_t CHASSIS_REBUILD = 0x200;
+constexpr uint32_t CHASSIS_REBUILD = 0x208;
 constexpr uintptr_t SUSPENSION = 0x580, SUSP_TYRE_TYPES = 0x38, SUSP_AXLE0 = 0x90, SUSP_AXLE1 = 0x98;
 constexpr uintptr_t AXLE_LOCAL_REST_Z = 0x1598, TYRE_TYPE_NAME = 0x00;
 constexpr uintptr_t CHASSIS_SQRT_MASS = 0x98;

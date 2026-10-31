@@ -12,9 +12,12 @@ static_assert(offsetof(CarBrakeEcu, brake_bias) == 0x21d8);
 static_assert(offsetof(CarBrakeEcu, brake_pressure) == 0x21dc);
 
 struct CarChassis {
-    uint8_t _pad_0x0[0x150];
+    uint8_t _pad_0x0[0x118];
+    uint8_t tyre_physics_group[40]; // L2 experimental
+    uint8_t _pad_0x140[0x10];
     float mass; // L3 stable
 };
+static_assert(offsetof(CarChassis, tyre_physics_group) == 0x118);
 static_assert(offsetof(CarChassis, mass) == 0x150);
 
 struct CarDamageFrontWing {
@@ -101,6 +104,14 @@ static_assert(offsetof(CarEngine, max_torque) == 0x2518);
 static_assert(offsetof(CarEngine, limiter_rotation_rate) == 0x2528);
 static_assert(offsetof(CarEngine, rotation_rate) == 0x2538);
 static_assert(offsetof(CarEngine, throttle) == 0x2574);
+
+struct CarF1Aero {
+    uint8_t _pad_0x0[0x19a0];
+    float drag_scale; // L3 experimental
+    float lift_scale; // L3 experimental
+};
+static_assert(offsetof(CarF1Aero, drag_scale) == 0x19a0);
+static_assert(offsetof(CarF1Aero, lift_scale) == 0x19a4);
 
 struct CarFuelEcu {
     uint8_t _pad_0x0[0x128];
@@ -252,6 +263,20 @@ struct CarSteering {
 static_assert(offsetof(CarSteering, car) == 0x8);
 static_assert(offsetof(CarSteering, max_steering_lock) == 0x28);
 
+struct CarSuspAxle {
+    uint8_t _pad_0x0[0x15e4];
+    float ride_height_offset; // L2 experimental
+    uint8_t _pad_0x15e8[0x68];
+    float setup_camber; // L2 experimental
+    float setup_toe; // L2 experimental
+    uint8_t _pad_0x1658[0xc];
+    float setup_anti_roll; // L2 experimental
+};
+static_assert(offsetof(CarSuspAxle, ride_height_offset) == 0x15e4);
+static_assert(offsetof(CarSuspAxle, setup_camber) == 0x1650);
+static_assert(offsetof(CarSuspAxle, setup_toe) == 0x1654);
+static_assert(offsetof(CarSuspAxle, setup_anti_roll) == 0x1664);
+
 struct CarTurbo {
     uint8_t _pad_0x0[0x8];
     CarLive *car; // L2 experimental
@@ -276,6 +301,7 @@ inline constexpr address<"Car_Engine_ComputeDerived_Thunk"> Car_Engine_ComputeDe
 using Car_FrontWing_Init_t = void(void *front_wing, char reset);
 inline constexpr fn<"Car_FrontWing_Init", Car_FrontWing_Init_t> Car_FrontWing_Init{}; // L2 experimental, game::FrontWing
 inline constexpr address<"Car_FrontWing_OnCollision"> Car_FrontWing_OnCollision{}; // L2 experimental
+inline constexpr address<"Car_FuelEcu_SetMode_Thunk"> Car_FuelEcu_SetMode_Thunk{}; // L2 experimental
 inline constexpr address<"Car_Load_Vtf"> Car_Load_Vtf{}; // L2 experimental
 inline constexpr address<"Car_Model_BindCockpitNodes"> Car_Model_BindCockpitNodes{}; // L2 experimental
 inline constexpr address<"Car_Physics_PostVehicleUpdate"> Car_Physics_PostVehicleUpdate{}; // L2 experimental

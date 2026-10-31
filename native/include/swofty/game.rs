@@ -68,11 +68,6 @@ pub struct CarErsMode {
 }
 
 #[repr(C)]
-pub struct CarF1Aero {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
 pub struct CarF1Plank {
     _opaque: [u8; 0],
 }
@@ -94,11 +89,6 @@ pub struct CarSetupValues {
 
 #[repr(C)]
 pub struct CarSpline {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct CarSuspAxle {
     _opaque: [u8; 0],
 }
 
@@ -367,9 +357,12 @@ const _: () = assert!(core::mem::offset_of!(CarBrakeEcu, brake_pressure) == 0x21
 
 #[repr(C)]
 pub struct CarChassis {
-    _pad_0x0: [u8; 0x150],
+    _pad_0x0: [u8; 0x118],
+    pub tyre_physics_group: [u8; 40],
+    _pad_0x140: [u8; 0x10],
     pub mass: f32,
 }
+const _: () = assert!(core::mem::offset_of!(CarChassis, tyre_physics_group) == 0x118);
 const _: () = assert!(core::mem::offset_of!(CarChassis, mass) == 0x150);
 
 #[repr(C)]
@@ -461,6 +454,15 @@ const _: () = assert!(core::mem::offset_of!(CarEngine, max_torque) == 0x2518);
 const _: () = assert!(core::mem::offset_of!(CarEngine, limiter_rotation_rate) == 0x2528);
 const _: () = assert!(core::mem::offset_of!(CarEngine, rotation_rate) == 0x2538);
 const _: () = assert!(core::mem::offset_of!(CarEngine, throttle) == 0x2574);
+
+#[repr(C)]
+pub struct CarF1Aero {
+    _pad_0x0: [u8; 0x19a0],
+    pub drag_scale: f32,
+    pub lift_scale: f32,
+}
+const _: () = assert!(core::mem::offset_of!(CarF1Aero, drag_scale) == 0x19a0);
+const _: () = assert!(core::mem::offset_of!(CarF1Aero, lift_scale) == 0x19a4);
 
 #[repr(C)]
 pub struct CarFuelEcu {
@@ -625,6 +627,21 @@ pub struct CarSteering {
 }
 const _: () = assert!(core::mem::offset_of!(CarSteering, car) == 0x8);
 const _: () = assert!(core::mem::offset_of!(CarSteering, max_steering_lock) == 0x28);
+
+#[repr(C)]
+pub struct CarSuspAxle {
+    _pad_0x0: [u8; 0x15e4],
+    pub ride_height_offset: f32,
+    _pad_0x15e8: [u8; 0x68],
+    pub setup_camber: f32,
+    pub setup_toe: f32,
+    _pad_0x1658: [u8; 0xc],
+    pub setup_anti_roll: f32,
+}
+const _: () = assert!(core::mem::offset_of!(CarSuspAxle, ride_height_offset) == 0x15e4);
+const _: () = assert!(core::mem::offset_of!(CarSuspAxle, setup_camber) == 0x1650);
+const _: () = assert!(core::mem::offset_of!(CarSuspAxle, setup_toe) == 0x1654);
+const _: () = assert!(core::mem::offset_of!(CarSuspAxle, setup_anti_roll) == 0x1664);
 
 #[repr(C)]
 pub struct CarTurbo {
@@ -2924,6 +2941,11 @@ pub mod bindings {
     };
     pub const Car_FrontWing_OnCollision: Binding = Binding {
         id: "Car_FrontWing_OnCollision",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_FuelEcu_SetMode_Thunk: Binding = Binding {
+        id: "Car_FuelEcu_SetMode_Thunk",
         kind: "func",
         status: Status::Experimental,
     };
@@ -12090,6 +12112,11 @@ pub mod bindings {
     pub const k_Sess_TyreComponentType: Binding = Binding {
         id: "k_Sess_TyreComponentType",
         kind: "data",
+        status: Status::Experimental,
+    };
+    pub const site_Ai_TableGripInput: Binding = Binding {
+        id: "site_Ai_TableGripInput",
+        kind: "site",
         status: Status::Experimental,
     };
     pub const site_Car_AeroStoreRearDownforce: Binding = Binding {
