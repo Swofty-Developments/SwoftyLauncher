@@ -751,6 +751,8 @@ inline constexpr address<"Game_NetworkSubsystem_SelectTitleConfig"> Game_Network
 inline constexpr address<"Game_NetworkUI_StartRankedDivisionSearch"> Game_NetworkUI_StartRankedDivisionSearch{}; // L2 experimental
 inline constexpr address<"Game_NetworkUI_StartRankedRematching"> Game_NetworkUI_StartRankedRematching{}; // L2 experimental
 inline constexpr address<"Game_Network_ApplyInitialPitAndGridState"> Game_Network_ApplyInitialPitAndGridState{}; // L2 experimental
+using Game_Network_CategoryOptionUsing_t = void(void *self);
+inline constexpr fn<"Game_Network_CategoryOptionUsing", Game_Network_CategoryOptionUsing_t> Game_Network_CategoryOptionUsing{}; // L2 experimental
 using Game_Network_SendingRedFlagVehicleStatusUpdate_t = void(void *red_flag_state, const double *dt);
 inline constexpr fn<"Game_Network_SendingRedFlagVehicleStatusUpdate", Game_Network_SendingRedFlagVehicleStatusUpdate_t> Game_Network_SendingRedFlagVehicleStatusUpdate{}; // L2 experimental
 using Game_Network_SetScenario_t = void(void *session, uint8_t stat_id, const void *spec);
@@ -1011,6 +1013,7 @@ inline constexpr address<"Game_TeamHQTimeline_AnimateDeptEvent"> Game_TeamHQTime
 using Game_Teleport_Vehicle_t = void(void *car, const char *name, float *prev_mtx, float *new_mtx, float dt, uint32_t flags);
 inline constexpr fn<"Game_Teleport_Vehicle", Game_Teleport_Vehicle_t> Game_Teleport_Vehicle{}; // L2 experimental
 inline constexpr address<"Game_TerminalDamage_Initialise"> Game_TerminalDamage_Initialise{}; // L2 experimental
+inline constexpr address<"Game_ThrustmasterLcd_UpdateSectors"> Game_ThrustmasterLcd_UpdateSectors{}; // L2 experimental
 inline constexpr address<"Game_Thrustmaster_SetWheelRange"> Game_Thrustmaster_SetWheelRange{}; // L2 experimental
 inline constexpr address<"Game_TimeAttackGates_CreateGateModel"> Game_TimeAttackGates_CreateGateModel{}; // L2 experimental
 inline constexpr address<"Game_TimeOfDayDebug_Update"> Game_TimeOfDayDebug_Update{}; // L2 experimental
@@ -1041,6 +1044,7 @@ inline constexpr address<"Game_TyreWearRelevanceCriterion_Update"> Game_TyreWear
 inline constexpr address<"Game_UDPPreferences_OnLocalPreferenceChange"> Game_UDPPreferences_OnLocalPreferenceChange{}; // L2 experimental
 inline constexpr address<"Game_UDPPreferences_OnLocalShowPlayerNameChange"> Game_UDPPreferences_OnLocalShowPlayerNameChange{}; // L2 experimental
 inline constexpr address<"Game_UIConnectionManager_ShowConnectionLostPopup"> Game_UIConnectionManager_ShowConnectionLostPopup{}; // L2 experimental
+inline constexpr address<"Game_UIThumbnailSystem_FindDriverCustomisationWill"> Game_UIThumbnailSystem_FindDriverCustomisationWill{}; // L2 experimental
 inline constexpr address<"Game_UiMessageScreen_Destructor"> Game_UiMessageScreen_Destructor{}; // L2 experimental
 inline constexpr address<"Game_VehicleAntiStallSystem_GetStateByPlayerId"> Game_VehicleAntiStallSystem_GetStateByPlayerId{}; // L2 experimental
 inline constexpr address<"Game_VehicleAntiStallSystem_IsLaunchPending"> Game_VehicleAntiStallSystem_IsLaunchPending{}; // L2 experimental
@@ -1099,6 +1103,8 @@ inline constexpr call<"site_Game_DriverSelect_TeamLogoFormat"> site_Game_DriverS
 inline constexpr site<"site_Game_ErsNewLap_NextVehicle"> site_Game_ErsNewLap_NextVehicle{}; // L2 experimental
 inline constexpr site<"site_Game_ErsNewLap_VehicleLookup"> site_Game_ErsNewLap_VehicleLookup{}; // L2 experimental
 inline constexpr site<"site_Game_GarageCrew_SpawnVector"> site_Game_GarageCrew_SpawnVector{}; // L2 experimental
+inline constexpr site<"site_Game_GarageSetups_EntryStep"> site_Game_GarageSetups_EntryStep{}; // L2 experimental
+inline constexpr site<"site_Game_GarageSetups_NotFound"> site_Game_GarageSetups_NotFound{}; // L2 experimental
 inline constexpr site<"site_Game_PitLane_BoxPoseFalse"> site_Game_PitLane_BoxPoseFalse{}; // L2 experimental
 inline constexpr site<"site_Game_PitLane_BoxSlotRead"> site_Game_PitLane_BoxSlotRead{}; // L2 experimental
 inline constexpr site<"site_Game_SaveData_ContainersChildren"> site_Game_SaveData_ContainersChildren{}; // L3 stable

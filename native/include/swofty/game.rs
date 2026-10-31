@@ -2600,6 +2600,7 @@ pub type Game_Handle_GarageCrewEvent_Thunk_t =
     unsafe extern "C" fn(cars: *mut *mut c_void, event: *mut c_void) -> u64;
 pub type Game_Handle_SpecGarageCrewEvent_Thunk_t =
     unsafe extern "C" fn(self_: *mut c_void, event: *mut c_void) -> u64;
+pub type Game_Network_CategoryOptionUsing_t = unsafe extern "C" fn(self_: *mut c_void);
 pub type Game_Network_SendingRedFlagVehicleStatusUpdate_t =
     unsafe extern "C" fn(red_flag_state: *mut c_void, dt: *const f64);
 pub type Game_Network_SetScenario_t =
@@ -6352,6 +6353,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_Network_CategoryOptionUsing: Binding = Binding {
+        id: "Game_Network_CategoryOptionUsing",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Network_SendingRedFlagVehicleStatusUpdate: Binding = Binding {
         id: "Game_Network_SendingRedFlagVehicleStatusUpdate",
         kind: "func",
@@ -7487,6 +7493,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_ThrustmasterLcd_UpdateSectors: Binding = Binding {
+        id: "Game_ThrustmasterLcd_UpdateSectors",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Thrustmaster_SetWheelRange: Binding = Binding {
         id: "Game_Thrustmaster_SetWheelRange",
         kind: "func",
@@ -7624,6 +7635,11 @@ pub mod bindings {
     };
     pub const Game_UIConnectionManager_ShowConnectionLostPopup: Binding = Binding {
         id: "Game_UIConnectionManager_ShowConnectionLostPopup",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_UIThumbnailSystem_FindDriverCustomisationWill: Binding = Binding {
+        id: "Game_UIThumbnailSystem_FindDriverCustomisationWill",
         kind: "func",
         status: Status::Experimental,
     };
@@ -15184,6 +15200,16 @@ pub mod bindings {
     };
     pub const site_Game_GarageCrew_SpawnVector: Binding = Binding {
         id: "site_Game_GarageCrew_SpawnVector",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_GarageSetups_EntryStep: Binding = Binding {
+        id: "site_Game_GarageSetups_EntryStep",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_GarageSetups_NotFound: Binding = Binding {
+        id: "site_Game_GarageSetups_NotFound",
         kind: "site",
         status: Status::Experimental,
     };
