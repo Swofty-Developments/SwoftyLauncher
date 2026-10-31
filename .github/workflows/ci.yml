@@ -120,11 +120,11 @@ jobs:
       id-token: write
       contents: read
     outputs:
-      native: ${{ steps.native.outputs.label || 'ubuntu-latest' }}
-      rust-linux: ${{ steps.rust-linux.outputs.label || 'ubuntu-latest' }}
-      rust-windows: ${{ steps.rust-windows.outputs.label || 'windows-latest' }}
-      release-linux: ${{ steps.release-linux.outputs.label || 'ubuntu-22.04' }}
-      release-windows: ${{ steps.release-windows.outputs.label || 'windows-latest' }}
+      native: ${{ steps.launch.outputs.native || 'ubuntu-latest' }}
+      rust-linux: ${{ steps.launch.outputs.rust-linux || 'ubuntu-latest' }}
+      rust-windows: ${{ steps.launch.outputs.rust-windows || 'windows-latest' }}
+      release-linux: ${{ steps.launch.outputs.release-linux || 'ubuntu-22.04' }}
+      release-windows: ${{ steps.launch.outputs.release-windows || 'windows-latest' }}
     steps:
       - if: github.event_name == 'push'
         uses: actions/checkout@v7
@@ -139,27 +139,19 @@ jobs:
           role-to-assume: arn:aws:iam::532818875494:role/swofty-launcher-ci-runners
           aws-region: ap-south-2
 
-      # m8a has a whole core per vCPU. Windows pays for its licence per vCPU, so it stops at 16.
-      - id: native
+      # All five at once. m8a has a whole core per vCPU; Windows pays for its licence per vCPU, so it stops at 16.
+      - id: launch
         if: steps.aws.outcome == 'success'
         continue-on-error: true
-        run: .github/runners/launch.sh linux-2604 m8a.8xlarge,c8i.8xlarge,c7i.8xlarge,m8a.4xlarge ubuntu-latest
-      - id: rust-linux
-        if: steps.aws.outcome == 'success'
-        continue-on-error: true
-        run: .github/runners/launch.sh linux-2604 m8a.8xlarge,c8i.8xlarge,c7i.8xlarge,m8a.4xlarge ubuntu-latest
-      - id: rust-windows
-        if: steps.aws.outcome == 'success'
-        continue-on-error: true
-        run: .github/runners/launch.sh windows m8a.4xlarge,c8i.4xlarge,c7i.4xlarge windows-latest
-      - id: release-linux
-        if: steps.aws.outcome == 'success'
-        continue-on-error: true
-        run: .github/runners/launch.sh linux-2204 m8a.8xlarge,c8i.8xlarge,c7i.8xlarge,m8a.4xlarge ubuntu-22.04
-      - id: release-windows
-        if: steps.aws.outcome == 'success'
-        continue-on-error: true
-        run: .github/runners/launch.sh windows m8a.4xlarge,c8i.4xlarge,c7i.4xlarge windows-latest
+        run: |
+          linux=m8a.8xlarge,c8i.8xlarge,c7i.8xlarge,m8a.4xlarge
+          windows=m8a.4xlarge,c8i.4xlarge,c7i.4xlarge
+          .github/runners/launch.sh native linux-2604 "$linux" ubuntu-latest &
+          .github/runners/launch.sh rust-linux linux-2604 "$linux" ubuntu-latest &
+          .github/runners/launch.sh rust-windows windows "$windows" windows-latest &
+          .github/runners/launch.sh release-linux linux-2204 "$linux" ubuntu-22.04 &
+          .github/runners/launch.sh release-windows windows "$windows" windows-latest &
+          wait
 
   rust:
     name: Rust (${{ matrix.os }})

@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 # Starts an EC2 spot instance that runs one job of this workflow run, and writes the label that job runs on
-# to $GITHUB_OUTPUT. Any failure writes the fallback hosted runner label instead, so the job still runs.
-# Usage: launch.sh <image kind> <instance types, comma separated, preferred first> <fallback label>
+# to $GITHUB_OUTPUT as <output>. Any failure writes the fallback hosted runner label instead, so the job still runs.
+# Usage: launch.sh <output> <image kind> <instance types, comma separated, preferred first> <fallback label>
 set -uo pipefail
 
-KIND=$1 TYPES=$2 FALLBACK=$3
+NAME=$1 KIND=$2 TYPES=$3 FALLBACK=$4
 REGION=${REGION:-ap-south-2}
 API=https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runners
 
 fallback() {
-  echo "::warning title=EC2 runner::$KIND: $1; the job runs on $FALLBACK"
-  echo "label=$FALLBACK" >> "$GITHUB_OUTPUT"
+  echo "::warning title=EC2 runner::$NAME: $1; the job runs on $FALLBACK"
+  echo "$NAME=$FALLBACK" >> "$GITHUB_OUTPUT"
   exit 0
 }
 
@@ -58,11 +58,11 @@ for TYPE in ${TYPES//,/ }; do
         --metadata-options HttpTokens=required,HttpEndpoint=enabled --block-device-mappings "$DISKS" \
         --tag-specifications "ResourceType=instance,$TAGS" "ResourceType=volume,$TAGS" \
         --user-data "$USERDATA" --query 'Instances[0].InstanceId' --output text 2>&1); then
-      echo "$KIND: $OUT ($TYPE, $SUBNET) runs $LABEL"
-      echo "label=$LABEL" >> "$GITHUB_OUTPUT"
+      echo "$NAME: $OUT ($TYPE, $SUBNET) runs $LABEL"
+      echo "$NAME=$LABEL" >> "$GITHUB_OUTPUT"
       exit 0
     fi
-    echo "$KIND: $TYPE in $SUBNET: $(grep -o 'An error occurred ([A-Za-z.]*)' <<< "$OUT" || echo "$OUT")"
+    echo "$NAME: $TYPE in $SUBNET: $(grep -o 'An error occurred ([A-Za-z.]*)' <<< "$OUT" || echo "$OUT")"
   done
 done
 curl -fsS -X DELETE -H "Authorization: Bearer $TOKEN" "$API/$RUNNER_ID" || true
