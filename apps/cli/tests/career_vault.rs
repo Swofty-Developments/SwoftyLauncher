@@ -10,6 +10,12 @@ fn root(name: &str) -> PathBuf {
     let root = std::env::temp_dir().join(format!("swofty-cli-vault-{name}-{}", std::process::id()));
     std::fs::remove_dir_all(&root).ok();
     std::fs::create_dir_all(root.join("home")).unwrap();
+    std::fs::create_dir_all(root.join("data")).unwrap();
+    std::fs::write(
+        root.join("data").join("config.json"),
+        r#"{"active_profile":"vanilla"}"#,
+    )
+    .unwrap();
     root
 }
 
