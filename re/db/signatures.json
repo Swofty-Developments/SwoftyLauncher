@@ -120205,6 +120205,60 @@
    "used_by": [
     "native/src/core/era_picker.cpp"
    ]
+  },
+  {
+   "id": "game.time_trial_leaderboard_board_read",
+   "section": ".xtls",
+   "pattern": "75 DB EB 02 31 C9 48 8B 81 98 00 00 00",
+   "match": "0x142fce9dd",
+   "anchor": "0x6",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142fce9e3",
+   "kind": "mid",
+   "expect": "48 8B 81 98 00 00 00",
+   "names": [
+    "site_Game_TimeTrialLeaderboard_BoardRead"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-29",
+     "by": "lbguard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/leaderboard_guard.cpp"
+   ]
+  },
+  {
+   "id": "game.time_trial_leaderboard_boards_done",
+   "section": ".xtls",
+   "pattern": "48 8B 44 24 60 48 89 87 78 08 00 00 48 8D 3D",
+   "match": "0x142fced92",
+   "anchor": "0xc",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142fced9e",
+   "kind": "mid",
+   "expect": "48 8D 3D",
+   "names": [
+    "site_Game_TimeTrialLeaderboard_BoardsDone"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-29",
+     "by": "lbguard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/leaderboard_guard.cpp"
+   ]
   }
  ]
 }

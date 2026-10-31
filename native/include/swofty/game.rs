@@ -13067,6 +13067,16 @@ pub mod bindings {
         kind: "call",
         status: Status::Experimental,
     };
+    pub const site_Game_TimeTrialLeaderboard_BoardRead: Binding = Binding {
+        id: "site_Game_TimeTrialLeaderboard_BoardRead",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_TimeTrialLeaderboard_BoardsDone: Binding = Binding {
+        id: "site_Game_TimeTrialLeaderboard_BoardsDone",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Gdb_DeptCountStore: Binding = Binding {
         id: "site_Gdb_DeptCountStore",
         kind: "site",

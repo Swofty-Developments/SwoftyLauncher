@@ -494,6 +494,109 @@ static void test_ers_newlap(void)
            "ers: past a participant without a vehicle and a null participant, the car's lap energy counters reset");
 }
 
+// Game_TimeTrialLeaderboard_SelectBoard's board search and threshold read, copied byte for byte from the Steam build
+// (0x142fce988..0x142fcea17, the one direct call to Ne_Compare_StringNoCase goes to fake_lb_compare) with the cleanup
+// entry 0x142fced92..0x142fced9e, so core's time trial leaderboard guard resolves its two sites here. The frame is
+// reduced to what those instructions use: rdi = the screen model, [rsp+0x38] = the board key. The return value is
+// esi (2 when a board was found, 0 from the guard) in the second byte and the rank index in the first.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_lb_select\n"
+    ".def fake_lb_select; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_lb_select\n"
+    "fake_lb_select:\n"
+    "push %rbx\n.seh_pushreg %rbx\n"
+    "push %rdi\n.seh_pushreg %rdi\n"
+    "push %rsi\n.seh_pushreg %rsi\n"
+    "push %rbp\n.seh_pushreg %rbp\n"
+    "push %r14\n.seh_pushreg %r14\n"
+    "push %r15\n.seh_pushreg %r15\n"
+    "sub $0x88,%rsp\n.seh_stackalloc 0x88\n"
+    ".seh_endprologue\n"
+    "mov %rcx,%rbx\n"
+    "mov %rcx,%rdi\n"
+    "mov $2,%esi\n"
+    "lea fake_lb_key(%rip),%rax\n"
+    "mov %rax,0x38(%rsp)\n"
+    ".byte 0x48,0x8B,0x83,0x78,0x04,0x00,0x00,0x48,0x8B,0x58,0x10,0x31,0xED,0x48,0x85,0xDB,0x74,0x47,0x4C,0x8B,0x73,0x18,0x4C,0x3B\n"
+    ".byte 0x73,0x20,0x74,0x3D,0x4C,0x8B,0x7C,0x24,0x38,0x49,0x83,0xC6,0x08,0xEB,0x14,0x90,0x49,0x8B,0x4E,0xF8,0x4C,0x3B,0x73,0x20\n"
+    ".byte 0x74,0x29,0x49,0x83,0xC6,0x08,0x48,0x85,0xC9,0x75,0x20,0x49,0x8B,0x46,0xF8,0x48,0x8B,0x48,0x68,0x4C,0x89,0xFA\n"
+    "call fake_lb_compare\n"
+    ".byte 0x85,0xC0,0x74,0xD9,0x31,0xC9,0x4C,0x3B,0x73,0x20,0x75,0xDB,0xEB,0x02,0x31,0xC9,0x48,0x8B,0x81,0x98,0x00,0x00,0x00,0x48\n"
+    ".byte 0x8B,0x91,0xA0,0x00,0x00,0x00,0x48,0x39,0xD0,0x74,0x1A,0x4C,0x8B,0x81,0x88,0x00,0x00,0x00,0x31,0xED,0x90,0x4C,0x39,0x00\n"
+    ".byte 0x77,0x0B,0xFF,0xC5,0x48,0x83,0xC0,0x08,0x48,0x39,0xD0,0x75,0xF0,0x0F,0xB6,0x87,0x4A,0x0E,0x00,0x00\n"
+    "jmp 1f\n"
+    ".byte 0x48,0x8B,0x44,0x24,0x60,0x48,0x89,0x87,0x78,0x08,0x00,0x00,0x48,0x8D,0x3D,0xA3,0x40,0x64,0x02\n"
+    "1:\n"
+    "mov %esi,%eax\n"
+    "shl $8,%eax\n"
+    "add %ebp,%eax\n"
+    "add $0x88,%rsp\n"
+    "pop %r15\n"
+    "pop %r14\n"
+    "pop %rbp\n"
+    "pop %rsi\n"
+    "pop %rdi\n"
+    "pop %rbx\n"
+    "ret\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_lb_select\"\n"
+    ".text\n");
+uint64_t fake_lb_select(void *screen);
+
+char fake_lb_key[16] = "LBV0105dry";
+
+__attribute__((used, noinline)) int fake_lb_compare(const char *a, const char *b)
+{
+    return _stricmp(a, b);
+}
+
+static void lb_screen(uint8_t *screen, void **boards, int count)
+{
+    static uint8_t reader[0x480], list[0x40];
+    *(void **)(screen + 0x478) = reader;
+    *(void **)(reader + 0x10) = list;
+    *(void ***)(list + 0x18) = boards;
+    *(void ***)(list + 0x20) = boards + count;
+}
+
+static void test_leaderboard_guard(void)
+{
+    static uint8_t screen[0x900], other[0xb0], wanted[0xb0];
+    static uint64_t thresholds[3] = {10, 20, 30};
+    static char other_name[] = "LBV0107wet", wanted_name[] = "lbv0105DRY";
+    void *boards[2] = {other, wanted};
+    *(char **)(other + 0x68) = other_name;
+    *(char **)(wanted + 0x68) = wanted_name;
+    *(uint64_t *)(wanted + 0x88) = 25;
+    *(uint64_t **)(wanted + 0x98) = thresholds;
+    *(uint64_t **)(wanted + 0xa0) = thresholds + 3;
+    lb_screen(screen, boards, 2);
+    uint64_t r = fake_lb_select(screen);
+    printf("      leaderboard: board found, returned 0x%llx\n", (unsigned long long)r);
+    expect(r == 0x202, "leaderboard: a board whose name matches the key runs the game's code: two thresholds passed");
+    lb_screen(screen, boards, 1);
+    r = fake_lb_select(screen);
+    printf("      leaderboard: no board for the key, returned 0x%llx\n", (unsigned long long)r);
+    expect(r == 0, "leaderboard: no board carries the key, the guard returns 0 through the game's cleanup");
+    lb_screen(screen, boards, 0);
+    r = fake_lb_select(screen);
+    expect(r == 0, "leaderboard: an empty board list, the guard returns 0 through the game's cleanup");
+}
+
+static void crash_leaderboard_guard(void)
+{
+    static uint8_t screen[0x900];
+    SetErrorMode(SEM_NOGPFAULTERRORBOX);
+    lb_screen(screen, NULL, 0);
+    printf("      leaderboard: View Leaderboards with an empty board list\n");
+    fflush(stdout);
+    fake_lb_select(screen);
+    printf("      leaderboard: the view returned\n");
+    fflush(stdout);
+}
+
 // Game_PracticeTrackAcclimatisation_RefreshState, copied byte for byte from the Steam build (0x14299e3a0..0x14299e8a6)
 // with its unwind data, except that its one direct call (to 0x1429a02d0) goes to fake_acclim_gates. Core's track
 // acclimatisation guard resolves it here, and the test refreshes a programme with targets and one without.
@@ -1749,6 +1852,7 @@ int main(int argc, char **argv)
         test_standings();
         test_garage_crew(1);
         test_pit_slots(1);
+        test_leaderboard_guard();
         test_track_acclim();
     }
     HMODULE ta = GetModuleHandleW(L"t_assets.dll");
@@ -1793,6 +1897,8 @@ int main(int argc, char **argv)
         const char *off = getenv("SWOFTY_PIT_SLOT_GUARD");
         test_pit_slots(!(off && *off));
     }
+    if (argc > 1 && !strcmp(argv[1], "leaderboard"))
+        crash_leaderboard_guard();
     if (argc > 1 && !strcmp(argv[1], "heap")) {
         SetErrorMode(SEM_NOGPFAULTERRORBOX);
         for (int i = 0; i < 3; i++)
