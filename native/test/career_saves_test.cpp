@@ -137,7 +137,8 @@ static void sdk_over_fake()
     expect(!career::saves::available(), "the table goes with the fake");
 }
 
-static cs::SlotRead slot(uint64_t id, uint64_t guid, uint16_t driver = 0, uint8_t flags = 0, bool details = true)
+static cs::SlotRead slot(uint64_t id, uint64_t guid, uint16_t driver = 0, uint8_t flags = 0, bool details = true,
+                         uint64_t date = 1761600000)
 {
     cs::SlotRead r;
     r.id = id;
@@ -148,7 +149,7 @@ static cs::SlotRead slot(uint64_t id, uint64_t guid, uint16_t driver = 0, uint8_
     r.flags = flags;
     r.season = 2;
     r.weekend = 4;
-    r.date = 1761600000;
+    r.date = date;
     r.name = "Slot";
     return r;
 }
@@ -233,10 +234,42 @@ static void slot_list()
     expect(!r.changed && !r.deleted.size(), "and the next list matches it by its slot key");
 
     cs::Index nd;
-    nd.apply_list({slot(1, 0xa1, 0, 0x41), slot(2, 0xb2, 0, 0, false)}, ctx("s1", true));
-    expect((*nd.find("driver_career:00000000000000a1"))["hidden"].as_bool() &&
-               !nd.find("driver_career:00000000000000b2")->contains("driver_raw"),
-           "a hidden slot is flagged; a slot without readable details is listed by its key");
+    r = nd.apply_list({slot(1, 0xa1, 0, 0x41), slot(2, 0xb2, 0, 0, false), slot(3, 0xc3, 0, 0x40), slot(4, 0xd4, 0, 0x01),
+                       slot(5, 0xe5, 0, 0, true, 0)},
+                      ctx("s1", true));
+    expect(nd.size() == 0 && r.added.empty() && !r.changed,
+           "hidden slots, slots without readable details and slots with no date are not careers");
+
+    cs::Index fx;
+    std::vector<cs::SlotRead> all;
+    for (int i = 0; i < 24; i++) {
+        uint8_t flags = i % 4 == 0 ? 0x40 : i % 4 == 1 ? 0x01 : 0;
+        uint64_t date = i % 4 == 2 ? 0 : 1761600000;
+        all.push_back(slot(100 + i, 0x1000 + i, 0, flags, i % 4 != 3, date));
+    }
+    all[5] = slot(105, 0x2005, 11, 0, true, 1761600000);
+    all[12] = slot(112, 0x2012, 12, 0, true, 1761000000);
+    all[20] = slot(120, 0x2020, 13, cs::FLAG_MY_TEAM, true, 1760000000);
+    r = fx.apply_list(all, ctx("s1", true));
+    expect(fx.size() == 3 && r.added.size() == 3 && fx.knows("driver_career:0000000000002005") &&
+               fx.knows("driver_career:0000000000002012") && fx.knows("my_team:0000000000002020"),
+           "24 slots of which 3 are real careers list exactly those 3, each named by its own flags");
+    r = fx.apply_list(all, ctx("s1", false));
+    expect(!r.changed && r.deleted.empty() && r.missing.empty(), "and the same list again changes nothing");
+
+    cs::Index junk;
+    junk.touch("driver_career:0000000000001007")["source"] = Value("slots");
+    junk.touch("driver_career:0000000000002005")["source"] = Value("slots");
+    r = junk.apply_list(all, ctx("s1", true));
+    expect(!junk.knows("driver_career:0000000000001007") && junk.knows("driver_career:0000000000002005") && r.changed,
+           "a slot-listed entry that is not a career is dropped from an older index");
+
+    cs::Index real;
+    real.set_text("driver_career:0000000000001007", "label", "Kept");
+    r = real.apply_list(all, ctx("s1", true));
+    expect(real.knows("driver_career:0000000000001007") && r.deleted.empty() && r.missing.empty() &&
+               (*real.find("driver_career:0000000000001007"))["status"].as_string() == "present",
+           "a snapshotted career whose slot turns hidden or empty is not reported gone");
 }
 
 int main()
