@@ -9,6 +9,7 @@
 //!   events.jsonl                    snapshot / unchanged / changed-outside / shrank / restored / pruned
 //! ```
 
+pub mod career_names;
 pub mod careers;
 pub mod cloud;
 pub mod locate;

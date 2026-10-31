@@ -199,7 +199,7 @@ impl Listed {
             .flatten()
             .collect::<Vec<_>>();
         if !who.is_empty() {
-            return who.join(" / ");
+            return who.join(", ");
         }
         if !self.label.is_empty() {
             return self.label.clone();
@@ -529,7 +529,7 @@ mod tests {
     fn reads_the_slot_details() {
         let l = listing(&index(), Some("p"));
         let a = l.iter().find(|c| c.career == "driver_career:a1").unwrap();
-        assert_eq!(a.title(), "Oscar PIASTRI / McLaren");
+        assert_eq!(a.title(), "Oscar PIASTRI, McLaren");
         assert_eq!(a.place().as_deref(), Some("season 3"));
         assert_eq!(a.last_played, Some(1_761_600_000));
         assert_eq!((a.driver_id, a.team_id, a.weekend), (Some(5), Some(7), Some(4)));
