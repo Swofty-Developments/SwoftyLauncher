@@ -3262,7 +3262,7 @@ mod tests {
         assert_eq!(kept["rows"][key]["id"], next_id);
         std::fs::write(
             &ids,
-            format!(r#"{{"version":1,"rows":{{"{key}":{{"id":140,"from":"hashed"}}}}}}"#),
+            format!(r#"{{"version":1,"rows":{{"{key}":{{"id":140,"from":"next"}}}}}}"#),
         )
         .unwrap();
         std::fs::remove_file(built.overlay.join(SAVED_FILE)).unwrap();
