@@ -216,6 +216,107 @@ int main()
                trk::setup_mode_stat_of(cell, "") == -1 && trk::setup_mode_stat_of({}, "swofty_f1") == -1,
            "no row, an id past 255, no mode or no database: -1");
 
+    std::map<std::string, std::string> texts;
+    std::map<std::string, int64_t> ints;
+    std::map<std::string, uint64_t> labels;
+    auto put_table = [&](const char *table, const char *row, const std::vector<std::string> &names) {
+        ints[std::string(table) + "._" + row + "_instancecount_"] = int64_t(names.size());
+        for (size_t i = 0; i < names.size(); ++i) {
+            labels[std::string(table) + "|" + names[i]] = i;
+            texts[trk::db_row_path(table, row, i) + "._metadata_"] = names[i];
+        }
+    };
+    put_table("game_setup.game_setup_modes", "game_setup_mode", {"f1", "swofty_f1", "bdx_2012_mode", "cs_mode"});
+    texts["game_setup.game_setup_modes.game_setup_mode_0.entrant_setup_modes"] = "f1";
+    texts["game_setup.game_setup_modes.game_setup_mode_1.entrant_setup_modes"] = "swofty_f1";
+    texts["game_setup.game_setup_modes.game_setup_mode_2.entrant_setup_modes"] = "bdx_2012_mode";
+    texts["game_setup.game_setup_modes.game_setup_mode_3.entrant_setup_modes"] = "swofty_f1";
+    put_table("entrants.entrant_setup_modes", "entrant_setup_mode", {"f1", "swofty_f1", "bdx_2012_mode"});
+    texts["entrants.entrant_setup_modes.entrant_setup_mode_0.entrant_lists"] = "f1_2025";
+    texts["entrants.entrant_setup_modes.entrant_setup_mode_1.entrant_lists"] = "cs_f1_2016, bdx_s5_2012,ref_box";
+    texts["entrants.entrant_setup_modes.entrant_setup_mode_2.entrant_lists"] = "bdx_s5_2012";
+    put_table("entrants.entrant_lists", "entrant_list", {"f1_2025", "bdx_s5_2012", "cs_f1_2016", "ref_box", "f1_2026"});
+    auto entrants = [&](uint64_t list, const std::vector<std::string> &teams) {
+        std::string row = trk::db_row_path("entrants.entrant_lists", "entrant_list", list);
+        ints[row + "._entrant_instancecount_"] = int64_t(teams.size());
+        for (size_t k = 0; k < teams.size(); ++k)
+            texts[row + ".entrant_" + std::to_string(k) + ".team"] = teams[k];
+    };
+    std::vector<std::string> grid2012;
+    for (int t = 700; t < 712; ++t)
+        grid2012.insert(grid2012.end(), {"team_" + std::to_string(t), "team_" + std::to_string(t)});
+    entrants(1, grid2012);
+    texts["entrants.entrant_lists.entrant_list_1.season"] = "season_2025";
+    entrants(2, {"a", "a", "b", "b", "c", "c"});
+    entrants(3, {"custom", ""});
+    texts["entrants.entrant_lists.entrant_list_3.entrant_list_references"] = "f1_2026";
+    entrants(4, {"x", "x", "y", "y"});
+    trk::ListDb ldb;
+    ldb.text = [&](const std::string &k) -> std::optional<std::string> {
+        auto it = texts.find(k);
+        return it == texts.end() ? std::nullopt : std::optional<std::string>(it->second);
+    };
+    ldb.integer = [&](const std::string &k) -> std::optional<int64_t> {
+        auto it = ints.find(k);
+        return it == ints.end() ? std::nullopt : std::optional<int64_t>(it->second);
+    };
+    ldb.row = [&](const std::string &t, const std::string &l) -> std::optional<uint64_t> {
+        auto it = labels.find(t + "|" + l);
+        return it == labels.end() ? std::nullopt : std::optional<uint64_t>(it->second);
+    };
+    expect(trk::db_names(" a, b ,,c ") == std::vector<std::string>{"a", "b", "c"} && trk::db_names("").empty(),
+           "a database list splits on commas and drops blanks");
+    trk::BoxInfo b2012 = trk::box_from_list("bdx_s5_2012", ldb);
+    expect(b2012.package == "game/bdx_s5_2012" && b2012.setup_mode == "bdx_2012_mode" && b2012.season == "season_2025" &&
+               b2012.teams == 12 && b2012.cars == 24,
+           "an era box with no record (F1 2012 Season): its own setup mode before swofty_f1, the list's season, 12 teams "
+           "and 24 cars from its entrant rows");
+    trk::BoxInfo bcs = trk::box_from_list("cs_f1_2016", ldb);
+    expect(bcs.setup_mode == "swofty_f1" && bcs.teams == 3 && bcs.cars == 6 && bcs.season.empty(),
+           "a list only swofty_f1's entrant setup mode offers runs under swofty_f1, not another mode sharing it; its "
+           "teams count once each");
+    trk::BoxInfo bref = trk::box_from_list("ref_box", ldb);
+    expect(bref.teams == 3 && bref.cars == 6, "entrant_list_references are walked first and their entrants counted");
+    trk::BoxInfo none_box = trk::box_from_list("f1_2026", ldb);
+    expect(none_box.setup_mode == "swofty_f1" && none_box.teams == -1 && none_box.cars == -1,
+           "a list no setup mode offers keeps the default mode and unknown counts");
+    texts.erase("entrants.entrant_lists.entrant_list_3.entrant_list_references");
+    texts["entrants.entrant_lists.entrant_list_3.entrant_list_references"] = "gone";
+    expect(trk::box_from_list("ref_box", ldb).teams == -1, "a reference to a list that isn't there leaves the counts unknown");
+    expect(trk::box_from_list("bdx_s5_2012", {}).teams == -1, "no database: unknown counts");
+
+    trk::Facts mugello = trk::parse_facts(R"({"version": 1, "grid_size": 24, "layers": [
+        {"label": "swofty_f1", "setup_modes": ["swofty_f1"], "seasons": ["season_2025"], "world": "f1_26"},
+        {"label": "bdx_s5_track_24", "setup_modes": ["bdx_2012_mode"], "seasons": ["season_2025", "season_2026"], "world": "2012"}],
+      "tracks": {
+        "melbourne": {"worlds": {"f1_26": {"grid": 22, "garages": 11, "pit_boxes": 11}, "2012": {"grid": 24, "garages": 12, "pit_boxes": 12}}},
+        "igora_drive": {"worlds": {"f1_26": {"grid": 22, "garages": 11, "pit_boxes": 11}, "2012": {"grid": 24, "garages": 10, "pit_boxes": 10}}},
+        "okayama": {"worlds": {"f1_26": {"grid": 24, "garages": 11, "pit_boxes": 11}}}}})");
+    f = trk::fits(b2012, *base.by_code("melbourne"), trk::Mode::grand_prix, &mugello);
+    expect(f.ok && f.no_facts.empty(), "the 12-team 2012 box fits a stock track whose 2012 world has 12 garages");
+    f = trk::fits(b2012, *base.by_code("igora_drive"), trk::Mode::grand_prix, &mugello);
+    expect(!f.ok && f.rule == trk::Rule::garages &&
+               f.reason == "its bdx_2012_mode world has 10 garages; the box has 12 teams",
+           "the 12-team 2012 box and a 10-garage 2012 world: the garages rule refuses it");
+    f = trk::fits(b2012, *base.by_code("okayama"), trk::Mode::grand_prix, &mugello);
+    expect(!f.ok && f.rule == trk::Rule::world &&
+               f.reason == "its files hold no 2012 world, which the box's bdx_2012_mode layer loads",
+           "a community track without the box's world, which other tracks hold: the world rule refuses it");
+    d = trk::decide(base.by_code("okayama"), b2012, trk::Mode::grand_prix, f, "");
+    expect(!d.ok && d.title == "Okayama can't run in game/bdx_s5_2012" &&
+               d.body == "It has no 2012 world, the one game/bdx_s5_2012 loads." &&
+               d.line == "[tracks] guard: mod.okayama/okayama in game/bdx_s5_2012 (grand_prix): refused (its files hold no "
+                         "2012 world, which the box's bdx_2012_mode layer loads)",
+           "the world rule's popup and refusal line");
+    trk::Facts unscanned = mugello;
+    unscanned.tracks["melbourne"].worlds.erase("2012");
+    unscanned.tracks["igora_drive"].worlds.erase("2012");
+    f = trk::fits(b2012, *base.by_code("okayama"), trk::Mode::grand_prix, &unscanned);
+    expect(f.ok && f.no_facts.front() == "no 2012 world",
+           "a world no track holds (facts from a launcher that didn't scan it) has no facts and passes");
+    f = trk::fits(bcs, *base.by_code("okayama"), trk::Mode::grand_prix, &mugello);
+    expect(f.ok, "a box whose world the track holds isn't touched by the world rule");
+
     printf("%s\n", fails ? "fits_test: FAILED" : "fits_test: all passed");
     return fails ? 1 : 0;
 }
