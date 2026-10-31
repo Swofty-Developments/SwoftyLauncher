@@ -138,6 +138,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
               { text: "Swofty's addons", link: "/using/swofty-addons" },
               { text: "Simplified Importer", link: "/using/mods" },
               { text: "Profiles", link: "/using/profiles" },
+              { text: "Career saves", link: "/using/career-saves" },
               { text: "In-game addon settings", link: "/using/swofty-mod" },
               { text: "Steam and EA app copies", link: "/using/game-copies" },
               { text: "Playing in VR", link: "/using/vr" },

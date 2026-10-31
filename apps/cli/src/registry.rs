@@ -257,11 +257,8 @@ pub fn careers(store: &Store, profile: &str) -> Result<()> {
 
 /// The careers that need `id`, for the warning before it's turned off.
 pub fn careers_needing(store: &Store, id: &str) -> Vec<careers::Career> {
-    careers::sync(&store.root, game_dir(store).as_deref(), None)
-        .unwrap_or_default()
-        .into_iter()
-        .filter(|c| c.addons.iter().any(|a| a.id == id))
-        .collect()
+    let list = careers::sync(&store.root, game_dir(store).as_deref(), None).unwrap_or_default();
+    careers::needing(&list, id).into_iter().cloned().collect()
 }
 
 #[cfg(test)]

@@ -119883,6 +119883,274 @@
    "used_by": [
     "native/src/core/tyre_slots.cpp"
    ]
+  },
+  {
+   "id": "game.save_slot_manager_deserialise",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4D 89 C7 49 89 D6",
+   "match": "0x1429d6810",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1429d6810",
+   "kind": "func_start",
+   "names": [
+    "Game_SaveSlotManager_Deserialise"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "kbverify-saves1",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/save_splice.cpp"
+   ]
+  },
+  {
+   "id": "session.pit_eval_own_slot",
+   "section": ".xtls",
+   "pattern": "49 8B 0C C8 44 33 88 B0 00 00 00 8B 69 48",
+   "match": "0x143691fbb",
+   "anchor": "0x4",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143691fbf",
+   "kind": "mid",
+   "expect": "44 33 88 B0 00 00 00",
+   "names": [
+    "site_Sess_PitEvalOwnSlot"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "pitguard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/pit_slots.cpp"
+   ]
+  },
+  {
+   "id": "session.pit_eval_list_slot",
+   "section": ".xtls",
+   "pattern": "8B 58 48 8B 70 50 48 8B 4C 24 28 E8",
+   "match": "0x143692014",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143692014",
+   "kind": "mid",
+   "expect": "8B 58 48 8B 70 50",
+   "names": [
+    "site_Sess_PitEvalListSlot"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "pitguard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/pit_slots.cpp"
+   ]
+  },
+  {
+   "id": "session.pit_eval_list_next",
+   "section": ".xtls",
+   "pattern": "F6 C3 01 75 1E 49 83 C7 08 4D 39 E7",
+   "match": "0x143692129",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14369212e",
+   "kind": "mid",
+   "expect": "49 83 C7 08 4D 39 E7",
+   "names": [
+    "site_Sess_PitEvalListNext"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "pitguard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/pit_slots.cpp"
+   ]
+  },
+  {
+   "id": "session.pit_eval_return_false",
+   "section": ".xtls",
+   "pattern": "4D 39 E7 0F 85 ?? ?? ?? ?? 31 DB 48 8B 0D",
+   "match": "0x143692141",
+   "anchor": "0x9",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14369214a",
+   "kind": "mid",
+   "expect": "31 DB 48 8B 0D A5 F1 A6 02",
+   "names": [
+    "site_Sess_PitEvalReturnFalse"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "pitguard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/pit_slots.cpp"
+   ]
+  },
+  {
+   "id": "session.pit_rank_own_slot",
+   "section": ".xtls",
+   "pattern": "48 8B 04 C1 8B 70 48 33 70 50 48 8B 0D",
+   "match": "0x143691d44",
+   "anchor": "0x4",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143691d48",
+   "kind": "mid",
+   "expect": "8B 70 48 33 70 50",
+   "names": [
+    "site_Sess_PitRankOwnSlot"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "pitguard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/pit_slots.cpp"
+   ]
+  },
+  {
+   "id": "session.pit_rank_list_slot",
+   "section": ".xtls",
+   "pattern": "49 8B 14 D0 44 8B 42 48 44 33 42 50",
+   "match": "0x143691da2",
+   "anchor": "0x4",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143691da6",
+   "kind": "mid",
+   "expect": "44 8B 42 48 44 33 42 50",
+   "names": [
+    "site_Sess_PitRankListSlot"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "pitguard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/pit_slots.cpp"
+   ]
+  },
+  {
+   "id": "session.pit_rank_list_next",
+   "section": ".xtls",
+   "pattern": "48 83 C0 08 48 39 C8 74 2F C5 FA 10 48 04",
+   "match": "0x143691d80",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143691d80",
+   "kind": "mid",
+   "expect": "48 83 C0 08 48 39 C8",
+   "names": [
+    "site_Sess_PitRankListNext"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "pitguard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/pit_slots.cpp"
+   ]
+  },
+  {
+   "id": "session.pit_rank_epilogue",
+   "section": ".xtls",
+   "pattern": "0F 9D C0 C5 F8 28 B4 24 70 06 00 00",
+   "match": "0x143691dc9",
+   "anchor": "0x3",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143691dcc",
+   "kind": "mid",
+   "expect": "C5 F8 28 B4 24 70 06 00 00",
+   "names": [
+    "site_Sess_PitRankEpilogue"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "pitguard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/pit_slots.cpp"
+   ]
+  },
+  {
+   "id": "entrants.deserialise_entrant_vector",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 48 89 D3 48 89 CE 48 8B 41 08",
+   "match": "0x142458f20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142458f20",
+   "kind": "func_start",
+   "names": [
+    "Ent_Deserialise_EntrantVector"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "career-alias",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/era_picker.cpp"
+   ]
   }
  ]
 }

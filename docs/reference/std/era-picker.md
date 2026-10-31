@@ -162,6 +162,13 @@ When a box is pressed, every `swofty_f1` entrant setup mode offers only that box
 [era] swofty_f1 offers only cs_f1_2017 (of 9 lists)
 ```
 
+The grid size follows the pressed list. A list with more cars than the setup mode's `max_entrants` (20 in `swofty_f1`) raises `max_entrants` to the list's car count, up to 25 cars, one short of the game's 26 car slots, which leaves room for the safety car; a Grand Prix career resumed with Continue gets the same raise for its list. Both put the value back when the session ends or another box is pressed:
+
+```text
+[era] cs_f1_2024 pressed: max_entrants 20 -> 24 for a list of 24 cars
+[era] cs_f1_2026 pressed: max_entrants 20 -> 25 for a list of 28 cars; clamped to 25 cars, one short of the 26-slot vehicle table for the safety car
+```
+
 ## Availability
 
 ```cpp

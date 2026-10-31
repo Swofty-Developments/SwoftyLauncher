@@ -168,3 +168,77 @@ fn sets_the_cap() {
     assert_eq!(stdout(&swofty(&root, &["saves", "cap"])), "800 MB\n");
     assert!(!swofty(&root, &["saves", "cap", "0"]).status.success());
 }
+
+fn index(root: &Path, careers: &[(&str, &str, i64)]) {
+    let list: Vec<serde_json::Value> = careers
+        .iter()
+        .map(|(id, status, round)| {
+            serde_json::json!({
+                "career": id, "status": status, "label": format!("{id} label"), "mode": "progressive",
+                "driver": "Verstappen", "team": "Red Bull", "season": 2016, "round": round,
+                "addons": [{"id": "swofty.progressive"}]
+            })
+        })
+        .collect();
+    let path = root.join("data/careers/index.json");
+    std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+    std::fs::write(
+        path,
+        serde_json::json!({ "version": 1, "careers": list }).to_string(),
+    )
+    .unwrap();
+}
+
+#[test]
+fn lists_careers_and_versions_and_pins() {
+    let root = root("careers");
+    let remote = steam(&root);
+    let out = stdout(&swofty(&root, &["saves", "careers"]));
+    assert!(out.starts_with("no careers"), "{out}");
+
+    index(&root, &[("p:1", "present", 7), ("p:2", "present", 1)]);
+    let out = stdout(&swofty(&root, &["saves", "backup"]));
+    let first = out.split_whitespace().nth(4).unwrap().to_owned();
+    std::fs::write(remote.join(DATA), [2u8; 910]).unwrap();
+    index(&root, &[("p:2", "present", 2)]);
+    let out = stdout(&swofty(&root, &["saves", "backup"]));
+    let second = out.split_whitespace().nth(4).unwrap().to_owned();
+
+    let careers = stdout(&swofty(&root, &["saves", "careers"]));
+    let lines: Vec<&str> = careers.lines().collect();
+    assert_eq!(
+        lines[0],
+        format!(
+            "p:1  p:1 label, progressive, Verstappen, Red Bull, season 2016, round 7, needs swofty.progressive, \
+             missing-since:{second}"
+        )
+    );
+    assert_eq!(lines[1], format!("    last in the save at snapshot {first}"));
+    assert!(lines[2].ends_with(", present"), "{careers}");
+
+    let versions = stdout(&swofty(&root, &["saves", "versions"]));
+    assert!(versions.contains("1 career(s): p:2 label"), "{versions}");
+    assert!(
+        versions.contains("2 career(s): p:1 label, p:2 label"),
+        "{versions}"
+    );
+    assert!(
+        versions.contains("    restoring it gets back: p:1 label (season 2016, round 7)"),
+        "{versions}"
+    );
+    assert!(
+        versions.contains(
+            "    restoring it loses progress in p:2 label: season 2016, round 2 back to season 2016, round 1"
+        ),
+        "{versions}"
+    );
+
+    let out = stdout(&swofty(&root, &["saves", "pin", &second]));
+    assert_eq!(out, format!("pinned snapshot {second}\n"));
+    let out = stdout(&swofty(&root, &["saves", "unpin", &second]));
+    assert_eq!(
+        out,
+        format!("unpinned snapshot {second}; it stays kept for backup\n")
+    );
+    assert!(!swofty(&root, &["saves", "pin", "nope"]).status.success());
+}

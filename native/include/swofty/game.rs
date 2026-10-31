@@ -1698,9 +1698,14 @@ const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, slot_guid) == 0x8);
 
 #[repr(C)]
 pub struct SaveSlotManager {
-    _pad_0x0: [u8; 0x280],
+    _pad_0x0: [u8; 0x268],
+    pub slots_begin: *mut *mut SaveSlotInfo,
+    pub slots_end: *mut *mut SaveSlotInfo,
+    _pad_0x278: [u8; 0x8],
     pub current: *mut SaveSlotInfo,
 }
+const _: () = assert!(core::mem::offset_of!(SaveSlotManager, slots_begin) == 0x268);
+const _: () = assert!(core::mem::offset_of!(SaveSlotManager, slots_end) == 0x270);
 const _: () = assert!(core::mem::offset_of!(SaveSlotManager, current) == 0x280);
 
 #[repr(C)]
@@ -2456,6 +2461,8 @@ pub type Career_Start_UpgradeResearch_t = unsafe extern "C" fn(
     store_duration: u8,
 );
 pub type Career_Teardown_Weekend_t = unsafe extern "C" fn(weekend: *mut c_void);
+pub type Ent_Deserialise_EntrantVector_t =
+    unsafe extern "C" fn(vector_object: *mut c_void, bag: *mut c_void) -> c_int;
 pub type FeHome_Add_CareerTile_t = unsafe extern "C" fn(list: *mut TileList, index: u8);
 pub type FeHome_Handle_Command_t =
     unsafe extern "C" fn(vm: *mut FEHomeViewModel, cmd: *mut *mut NeStr) -> u64;
@@ -2604,6 +2611,8 @@ pub type Game_SaveData_SerialiseContainer_t = unsafe extern "C" fn(
 pub type Game_SaveData_WriteBag_t = unsafe extern "C" fn(codec: *mut NeBagCodec, bag: *mut c_void) -> c_int;
 pub type Game_SaveMgr_RequestProfileSave_Thunk_t =
     unsafe extern "C" fn(save_mgr: *mut c_void, callback: *mut c_void, a3: u8, a4: u8) -> bool;
+pub type Game_SaveSlotManager_Deserialise_t =
+    unsafe extern "C" fn(iface: *mut c_void, bag: *mut c_void, ctx: *mut c_void) -> c_int;
 pub type Game_SaveSlotManager_SelectSlot_t =
     unsafe extern "C" fn(manager: *mut c_void, slot_id: u64, force: bool, a4: u32) -> c_int;
 pub type Game_SceneManagerSpawn_SpawnScene_t = unsafe extern "C" fn(
@@ -3549,6 +3558,11 @@ pub mod bindings {
     };
     pub const Career_WizardTitleSliceVM_OnDeactivate: Binding = Binding {
         id: "Career_WizardTitleSliceVM_OnDeactivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ent_Deserialise_EntrantVector: Binding = Binding {
+        id: "Ent_Deserialise_EntrantVector",
         kind: "func",
         status: Status::Experimental,
     };
@@ -6894,6 +6908,11 @@ pub mod bindings {
     };
     pub const Game_SaveMgr_RequestProfileSave_Thunk: Binding = Binding {
         id: "Game_SaveMgr_RequestProfileSave_Thunk",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SaveSlotManager_Deserialise: Binding = Binding {
+        id: "Game_SaveSlotManager_Deserialise",
         kind: "func",
         status: Status::Experimental,
     };
@@ -13195,6 +13214,46 @@ pub mod bindings {
     pub const site_Sess_InGameSessionCompleteAiCall: Binding = Binding {
         id: "site_Sess_InGameSessionCompleteAiCall",
         kind: "call",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitEvalListNext: Binding = Binding {
+        id: "site_Sess_PitEvalListNext",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitEvalListSlot: Binding = Binding {
+        id: "site_Sess_PitEvalListSlot",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitEvalOwnSlot: Binding = Binding {
+        id: "site_Sess_PitEvalOwnSlot",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitEvalReturnFalse: Binding = Binding {
+        id: "site_Sess_PitEvalReturnFalse",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitRankEpilogue: Binding = Binding {
+        id: "site_Sess_PitRankEpilogue",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitRankListNext: Binding = Binding {
+        id: "site_Sess_PitRankListNext",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitRankListSlot: Binding = Binding {
+        id: "site_Sess_PitRankListSlot",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitRankOwnSlot: Binding = Binding {
+        id: "site_Sess_PitRankOwnSlot",
+        kind: "site",
         status: Status::Experimental,
     };
     pub const site_Sess_PuPanel_SlotHolder: Binding = Binding {

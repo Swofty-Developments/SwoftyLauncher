@@ -12,6 +12,7 @@
 #include <cstdio>
 #include <cstring>
 #include <mutex>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -43,6 +44,9 @@
 // its careers again. A failed write stores the error in the result and continues at
 // site_Game_SaveData_ContainersDone, the game's own path for a failed write in that block.
 //
+// Career saves: the splice also fires career.saving at site_Game_SaveData_ContainersCount and career.saved at
+// site_Game_SaveData_ContainersDone (a separate mixin; a good result in [r12]) for the root (career_saves.cpp).
+//
 // SWOFTY_SAVE_SPLICE=0 turns it off.
 
 namespace {
@@ -54,6 +58,8 @@ namespace layout = runtime::layout;
 
 constexpr const char *MIXIN = "swofty_core.dll (save splice)";
 constexpr const char *SLOT_MIXIN = "swofty_core.dll (save slot)";
+constexpr const char *SLOTS_MIXIN = "swofty_core.dll (career slots)";
+constexpr const char *SAVED_MIXIN = "swofty_core.dll (career saved)";
 constexpr size_t CHILD_SLOT = 0x88;
 constexpr size_t FRAME_SELF = 0x30;
 constexpr size_t FRAME_CHILDREN = 0x38;
@@ -92,6 +98,14 @@ using WriteLength_t = int (*)(void *stream, uint32_t length);
 using Deserialise_t = int *(*)(void *self, int *result, void *bag, uint8_t reset_on_error, uint64_t groups);
 
 Deserialise_t deserialise_orig = nullptr;
+
+using SlotsLoad_t = int (*)(void *iface, void *bag, void *ctx);
+SlotsLoad_t slots_orig = nullptr;
+constexpr size_t SLOTS_BEGIN = 0x250;
+constexpr size_t SLOTS_END = 0x258;
+constexpr size_t MAX_SLOTS = 4096;
+std::set<std::string> slot_keys;
+bool in_root_load = false, slots_clean = true;
 
 void *method(const void *obj, size_t offset)
 {
@@ -191,9 +205,22 @@ int *deserialise_entry(void *self, int *result, void *bag, uint8_t reset_on_erro
         std::lock_guard<std::mutex> g(lock);
         store.begin_load();
         ++loads;
+        slot_keys.clear();
+        slots_clean = true;
+        in_root_load = true;
     }
     int *r = deserialise_orig(self, result, bag, reset_on_error, groups);
     if (root) {
+        std::set<std::string> keys;
+        bool report;
+        {
+            std::lock_guard<std::mutex> g(lock);
+            in_root_load = false;
+            report = slots_orig && slots_clean && r && *r == 0;
+            keys.swap(slot_keys);
+        }
+        if (report)
+            runtime::career_saves_found(keys);
         // W4: the swofty_registry body this load kept, for the career snapshots.
         std::vector<uint8_t> entry;
         bool has_entry = false;
@@ -211,6 +238,43 @@ int *deserialise_entry(void *self, int *result, void *bag, uint8_t reset_on_erro
             entry_hooks.loaded(has_entry ? &entry : nullptr);
     }
     return r;
+}
+
+std::string slot_key(uint64_t id, uint64_t guid)
+{
+    char b[24];
+    if (guid)
+        snprintf(b, sizeof b, "%016llx", (unsigned long long)guid);
+    else
+        snprintf(b, sizeof b, "%llu", (unsigned long long)id);
+    return b;
+}
+
+int slots_entry(void *iface, void *bag, void *ctx)
+{
+    int rc = slots_orig(iface, bag, ctx);
+    std::set<std::string> keys;
+    bool clean = rc == 0;
+    uintptr_t begin = 0, end = 0, base = reinterpret_cast<uintptr_t>(iface);
+    if (clean && !(mem::read(base + SLOTS_BEGIN, begin) && mem::read(base + SLOTS_END, end) && begin <= end &&
+                   (end - begin) / 8 <= MAX_SLOTS))
+        clean = false;
+    for (uintptr_t at = begin; clean && at < end; at += 8) {
+        uintptr_t slot = 0;
+        uint64_t id = 0, guid = 0;
+        if (!mem::read(at, slot) || !slot || !mem::read(slot, id) || !mem::read(slot + 8, guid))
+            clean = false;
+        else
+            keys.insert(slot_key(id, guid));
+    }
+    std::lock_guard<std::mutex> g(lock);
+    if (in_root_load) {
+        if (clean)
+            slot_keys.insert(keys.begin(), keys.end());
+        else
+            slots_clean = false;
+    }
+    return rc;
 }
 
 void unclaimed_entry(SwoftyContext *c)
@@ -289,6 +353,7 @@ void count_entry(SwoftyContext *c)
     uintptr_t self = 0;
     if (!live || !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self))
         return;
+    runtime::career_saves_saving();
     // W4: the career snapshots' new swofty_registry body, when they changed since the last write.
     std::vector<uint8_t> entry;
     bool has_entry = entry_hooks.saving && entry_hooks.saving(entry);
@@ -396,6 +461,15 @@ void children_entry(SwoftyContext *c)
                 names.c_str());
 }
 
+void saved_entry(SwoftyContext *c)
+{
+    uintptr_t self = 0;
+    int result = 1;
+    if (!live || !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self) || !mem::read(c->r12, result) || result)
+        return;
+    runtime::career_saves_saved();
+}
+
 uintptr_t need(const char *id, std::string &missing)
 {
     uintptr_t a = swofty::api->resolve(id);
@@ -447,11 +521,17 @@ std::vector<CoreMixins> save_splice_mixins()
                     {"site_Game_SaveData_ContainersCount", SWOFTY_MIXIN_SITE, 100, (void *)&count_entry, nullptr},
                     {"site_Game_SaveData_ContainersChildren", SWOFTY_MIXIN_SITE, 100, (void *)&children_entry,
                      nullptr}}});
+    if (swofty::api->resolve("Game_SaveSlotManager_Deserialise"))
+        out.push_back({SLOTS_MIXIN,
+                       {{"Game_SaveSlotManager_Deserialise", SWOFTY_MIXIN_WRAP, 100, (void *)&slots_entry,
+                         (void **)&slots_orig}}});
+    out.push_back({SAVED_MIXIN, {{"site_Game_SaveData_ContainersDone", SWOFTY_MIXIN_SITE, 100, (void *)&saved_entry, nullptr}}});
     return out;
 }
 
 void save_splice_commit()
 {
+    career_saves_start();
     if (!offered || settled || !b.done) {
         snapshots_start(false);
         return;

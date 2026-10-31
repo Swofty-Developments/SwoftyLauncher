@@ -119,7 +119,7 @@ constexpr size_t SETUP_MODES_VFUNC = 0x1d0;
 constexpr size_t SELECTED_LIST = 0xe18;
 constexpr size_t SETUP_ENTRANT_SETUP = 0xe10;
 constexpr size_t SETUP_GAME_SETUP_MODE = 0x2b0;
-constexpr size_t ENTRANT_SETUP_MAX_ENTRANTS = 0x268;
+using logic::ENTRANT_SETUP_MAX_ENTRANTS;
 constexpr size_t SETUP_MODE_NAME = 0xd8;
 constexpr size_t ENTRANT_SETUPS = 0x10;
 constexpr size_t ENTRANT_SETUP_COUNT = 0x70;
@@ -159,6 +159,7 @@ struct Narrowed {
     void *lists[LIST_SLOTS];
     void *kept_lists[LIST_SLOTS];
     bool time_trial;
+    logic::GridLimit grid;
 };
 
 std::mutex lock;
@@ -278,6 +279,7 @@ void put_back_drs()
 
 void put_back_narrowed(Narrowed &n)
 {
+    n.grid.restore();
     if (at<int64_t>(n.setup, LIST_COUNT) != n.kept || memcmp(n.setup + LISTS, n.kept_lists, size_t(n.kept) * sizeof(void *)))
         return;
     memcpy(n.setup + LISTS, n.lists, size_t(n.count) * sizeof(void *));
@@ -312,6 +314,10 @@ void restore()
     put_back_drs();
 }
 
+logic::ListCars list_cars(const void *list);
+
+logic::GridLimit continue_grid;
+
 void narrow(void *mode, const char *list)
 {
     restore_lists();
@@ -333,6 +339,10 @@ void narrow(void *mode, const char *list)
         n.count = count;
         n.kept = 1;
         n.time_trial = false;
+        n.grid = {};
+        std::string grid = n.grid.raise(setup, list_cars(hit).cars);
+        if (!grid.empty())
+            swofty::log("[era] %s pressed: %s", list, grid.c_str());
         n.kept_lists[0] = hit;
         memcpy(n.lists, lists, size_t(count) * sizeof(void *));
         lists[0] = hit;
@@ -415,6 +425,7 @@ bool holding;
 
 void put_back()
 {
+    continue_grid.restore();
     if (!holding)
         return;
     holding = false;
@@ -551,6 +562,7 @@ bool keep_time_trial_lists(void *mode)
         n.count = int64_t(info.size());
         n.kept = int64_t(keep.size());
         n.time_trial = true;
+        n.grid = {};
         memcpy(n.lists, ptrs.data(), info.size() * sizeof(void *));
         for (size_t i = 0; i < keep.size(); ++i)
             n.kept_lists[i] = ptrs[keep[i]];
@@ -748,6 +760,7 @@ void time_trial_budget(void *mode, uintptr_t setup)
                 n.count = at<int64_t>(slot.setup, LIST_COUNT);
                 memcpy(n.lists, slot.setup + LISTS, size_t(n.count) * sizeof(void *));
                 n.time_trial = true;
+                n.grid = {};
                 n.kept = n.count;
                 memcpy(n.kept_lists, n.lists, sizeof(n.lists));
             }
@@ -1066,6 +1079,74 @@ std::vector<uint16_t> teams_of(uintptr_t begin, uintptr_t end)
     return out;
 }
 
+logic::IdAliases id_aliases()
+{
+    static logic::IdAliases aliases;
+    static bool read;
+    if (read)
+        return aliases;
+    read = true;
+    std::string text = runtime::read_file(runtime::swofty_root() + L"id_aliases.json", size_t(4) << 20);
+    if (text.empty())
+        return aliases;
+    if (!logic::parse_aliases(text, aliases)) {
+        swofty::log("[era] swofty\\id_aliases.json is unusable; saves made under earlier row ids are not mapped");
+        return aliases;
+    }
+    swofty::log("[era] id aliases: %zu team id(s), %zu vehicle id(s), %zu driver id(s)", aliases.teams.size(),
+                aliases.vehicles.size(), aliases.drivers.size());
+    return aliases;
+}
+
+uint32_t remap_entrants(uintptr_t begin, uintptr_t end, const logic::IdAliases &aliases)
+{
+    uint32_t changed = 0;
+    int64_t n = logic::entrant_count(begin, end);
+    for (int64_t i = 0; i < n; ++i) {
+        uintptr_t at = begin + size_t(i) * logic::ENTRANT_RECORD;
+        const std::pair<size_t, const std::map<uint16_t, uint16_t> *> fields[] = {
+            {logic::ENTRANT_TEAM, &aliases.teams},
+            {logic::ENTRANT_VEHICLE_ID, &aliases.vehicles},
+            {logic::ENTRANT_DRIVER, &aliases.drivers}};
+        for (auto &[off, map] : fields) {
+            uint16_t id = 0;
+            if (!mem::read(at + off, id))
+                continue;
+            uint16_t now = logic::alias_of(*map, id);
+            if (now == id)
+                continue;
+            ref<uint16_t>(reinterpret_cast<void *>(at), off) = now;
+            changed++;
+        }
+    }
+    return changed;
+}
+
+constexpr const char *CAREER_ALIAS_FN = "Ent_Deserialise_EntrantVector";
+constexpr const char *CAREER_ALIAS_MIXIN = "swofty_core.dll (career id aliases)";
+constexpr size_t VECTOR_BEGIN = 0x8;
+constexpr size_t VECTOR_END = 0x10;
+int (*entrant_vector_orig)(void *, void *);
+std::atomic<bool> career_alias_offered, career_alias_settled, career_alias_bound;
+
+int entrant_vector_entry(void *vector, void *bag)
+{
+    static uint32_t logged;
+    int result = entrant_vector_orig(vector, bag);
+    const logic::IdAliases &aliases = id_aliases();
+    if (result != 0 || !vector || !aliases.any())
+        return result;
+    uintptr_t at = reinterpret_cast<uintptr_t>(vector), begin = 0, end = 0;
+    if (!mem::read(at + VECTOR_BEGIN, begin) || !mem::read(at + VECTOR_END, end) || logic::entrant_count(begin, end) <= 0)
+        return result;
+    if (!logic::saved_predates(aliases, teams_of(begin, end)))
+        return result;
+    uint32_t n = remap_entrants(begin, end, aliases);
+    if (n && logged++ < LOG_FIRST)
+        swofty::log("[era] career load: mapped %u saved entrant id(s) to the ids the rows have now", n);
+    return result;
+}
+
 [[noreturn]] void stop_session_load(const std::string &why)
 {
     swofty::log("[era] %s", why.c_str());
@@ -1109,11 +1190,19 @@ void grand_prix_load(uintptr_t ctx)
                 l.teams = teams_of(lb, le);
             lists.push_back(std::move(l));
         }
-        pick = logic::continue_list(lists, saved, last_press, setup_mode);
+        logic::AliasedPick aliased = logic::continue_list_aliased(lists, saved, last_press, setup_mode, id_aliases());
+        pick = aliased.pick;
+        if (aliased.remapped && track_why.empty()) {
+            uint32_t n = remap_entrants(begin, end, id_aliases());
+            swofty::log("[era] Grand Prix load: mapped %u saved entrant id(s) to the ids the rows have now", n);
+        }
         if (pick.index >= 0 && track_why.empty()) {
             ref<void *>(reinterpret_cast<void *>(setup), SELECTED_LIST) = ptrs[size_t(pick.index)];
             if (logged++ < LOG_FIRST)
                 swofty::log("[era] Grand Prix load: %s", pick.line.c_str());
+            std::string grid = continue_grid.raise(reinterpret_cast<uint8_t *>(entrant_setup), cars[size_t(pick.index)].cars);
+            if (!grid.empty())
+                swofty::log("[era] Grand Prix load: %s", grid.c_str());
         }
     }
     std::string why = logic::continue_stop(track_why, pick, empty);
@@ -1262,6 +1351,37 @@ std::vector<CoreMixins> tt_guard_mixins()
                        {{AVAILABILITY_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&availability_entry, (void **)&availability_orig}}});
     }
     return out;
+}
+
+std::vector<CoreMixins> career_alias_mixins()
+{
+    std::vector<CoreMixins> out;
+    if (career_alias_offered || !code_ready())
+        return out;
+    career_alias_offered = true;
+    if (!swofty::api->resolve(CAREER_ALIAS_FN)) {
+        swofty::log("[era] career id aliases off: needs %s, which this build does not resolve (a verify agree row on its "
+                    "saved record layout is missing)",
+                    CAREER_ALIAS_FN);
+        return out;
+    }
+    career_alias_bound = true;
+    out.push_back({CAREER_ALIAS_MIXIN,
+                   {{CAREER_ALIAS_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&entrant_vector_entry,
+                     (void **)&entrant_vector_orig}}});
+    return out;
+}
+
+void career_alias_commit()
+{
+    if (!career_alias_offered || career_alias_settled)
+        return;
+    career_alias_settled = true;
+    if (career_alias_bound)
+        swofty::log("[era] career id aliases %s",
+                    core_mixins_active(CAREER_ALIAS_MIXIN)
+                        ? "armed: a career saved with earlier row ids has its entrants mapped to the current ids as it loads"
+                        : "did not install (see the [core] lines)");
 }
 
 void tt_guard_commit()

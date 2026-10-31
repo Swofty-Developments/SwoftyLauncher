@@ -43,6 +43,32 @@ pub enum SavesCommand {
         #[arg(long, help = SOURCE_HELP)]
         source: Option<String>,
     },
+    #[command(
+        about = "List the versions of the profile save with the careers each holds, its cloud status, and what restoring it gets back and loses"
+    )]
+    Versions {
+        #[arg(long, help = SOURCE_HELP)]
+        source: Option<String>,
+    },
+    #[command(about = "List the careers the vault has seen, with their status and the addons they need")]
+    Careers {
+        #[arg(long, help = SOURCE_HELP)]
+        source: Option<String>,
+    },
+    #[command(about = "Keep a snapshot: retention never removes it")]
+    Pin {
+        #[arg(help = "The snapshot, as `swofty saves list` prints it")]
+        snapshot: String,
+        #[arg(long, help = SOURCE_HELP)]
+        source: Option<String>,
+    },
+    #[command(about = "Undo `pin`; reasons other than your own pin keep the snapshot")]
+    Unpin {
+        #[arg(help = "The snapshot, as `swofty saves list` prints it")]
+        snapshot: String,
+        #[arg(long, help = SOURCE_HELP)]
+        source: Option<String>,
+    },
     #[command(about = "Show or set the career vault's size cap in MB (500 by default)")]
     Cap { mb: Option<u64> },
     #[command(
@@ -75,6 +101,8 @@ pub enum SavesCommand {
         profile: Option<String>,
     },
 }
+
+const PINNED: &str = "pinned";
 
 const SOURCE_HELP: &str =
     "The vault to use, steam-<id>, ea-<user> or launcher-<profile> (default: the save of the copy Play uses)";
@@ -405,6 +433,152 @@ fn show(store: &Store, id: &str, source: Option<&str>) -> Result<()> {
     Ok(())
 }
 
+fn names(list: &[vault::careers::Brief]) -> String {
+    list.iter()
+        .map(|b| match &b.place {
+            Some(p) => format!("{} ({p})", b.name),
+            None => b.name.clone(),
+        })
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
+fn versions(store: &Store, source: Option<&str>) -> Result<()> {
+    if let Err(e) = migrate::migrate(&store.root).map(report) {
+        say("warning", &format!("saves: {e}"));
+    }
+    let (v, loc) = match open(store, source) {
+        Ok(x) => x,
+        Err(e) if source.is_none() && Vault::sources(&store.root).is_empty() => {
+            println!("no versions: {e}");
+            return Ok(());
+        }
+        Err(e) => return Err(e),
+    };
+    let snaps = v.list()?;
+    println!(
+        "{} version(s) in {}, {} of {}",
+        snaps.len(),
+        v.dir.display(),
+        mb(v.usage()),
+        mb(v.policy.cap_bytes)
+    );
+    if let Some(st) = loc.as_ref().and_then(|l| vault::save_status(l).ok()) {
+        println!("Steam Cloud now: {}", st.cloud.text());
+    }
+    for s in snaps {
+        let held = v.index_of(&s).map(|i| {
+            let held: Vec<String> = vault::careers::in_save(&i)
+                .map(|c| match c.label.is_empty() {
+                    true => c.career.clone(),
+                    false => c.label.clone(),
+                })
+                .collect();
+            match held.len() {
+                0 => "no careers".to_owned(),
+                n => format!("{n} career(s): {}", held.join(", ")),
+            }
+        });
+        println!(
+            "{}  {}, {}, {}, Steam Cloud: {}, {}{}",
+            s.id,
+            s.reason.text(),
+            match &s.profile {
+                Some(p) => format!("profile {p}"),
+                None => "no profile".to_owned(),
+            },
+            mb(s.total()),
+            s.cloud().text(),
+            held.as_deref().unwrap_or("careers unknown"),
+            match s.pinned.is_empty() {
+                true => String::new(),
+                false => format!(", pinned ({})", s.pinned.join(", ")),
+            }
+        );
+        if let Some(d) = v.preview(&s).filter(|d| !d.is_empty()) {
+            if !d.get_back.is_empty() {
+                println!("    restoring it gets back: {}", names(&d.get_back));
+            }
+            if !d.lose.is_empty() {
+                println!("    restoring it loses: {}", names(&d.lose));
+            }
+            for (now, then) in &d.progress {
+                println!(
+                    "    restoring it loses progress in {}: {} back to {}",
+                    now.name,
+                    now.place.as_deref().unwrap_or("now"),
+                    then.place.as_deref().unwrap_or("then")
+                );
+            }
+        }
+    }
+    Ok(())
+}
+
+fn careers(store: &Store, source: Option<&str>) -> Result<()> {
+    let (v, _) = match open(store, source) {
+        Ok(x) => x,
+        Err(e) if source.is_none() && Vault::sources(&store.root).is_empty() => {
+            println!("no careers: {e}");
+            return Ok(());
+        }
+        Err(e) => return Err(e),
+    };
+    let table = v.careers();
+    if table.careers.is_empty() {
+        println!(
+            "no careers yet: the vault learns them from the career index F1 25 writes in a launcher session"
+        );
+        return Ok(());
+    }
+    for r in &table.careers {
+        let mut line = format!("{}  {}", r.career, r.name());
+        if let Some(m) = &r.mode {
+            line.push_str(&format!(", {m}"));
+        }
+        if let Some(d) = &r.driver {
+            line.push_str(&format!(", {d}"));
+        }
+        if let Some(t) = &r.team {
+            line.push_str(&format!(", {t}"));
+        }
+        if let Some(p) = r.place() {
+            line.push_str(&format!(", {p}"));
+        }
+        if let Some(at) = r.last_played {
+            line.push_str(&format!(", last played {}", vault::human(at)));
+        }
+        let needs: Vec<&str> = r.needs().collect();
+        if !needs.is_empty() {
+            line.push_str(&format!(", needs {}", needs.join(" ")));
+        }
+        line.push_str(&format!(", {}", r.status.slug()));
+        println!("{line}");
+        if r.status.is_missing() {
+            println!("    last in the save at snapshot {}", r.last_seen);
+        }
+    }
+    Ok(())
+}
+
+fn pin_cmd(store: &Store, id: &str, source: Option<&str>, pin: bool) -> Result<()> {
+    let (v, _) = open(store, source)?;
+    let s = match pin {
+        true => v.pin(id, PINNED, vault::now())?,
+        false => v.unpin_why(id, PINNED, vault::now())?,
+    };
+    match (pin, s.pinned.is_empty()) {
+        (true, _) => println!("pinned snapshot {}", s.id),
+        (false, true) => println!("unpinned snapshot {}", s.id),
+        (false, false) => println!(
+            "unpinned snapshot {}; it stays kept for {}",
+            s.id,
+            s.pinned.join(", ")
+        ),
+    }
+    Ok(())
+}
+
 fn backup(store: &Store) -> Result<()> {
     migrate::migrate(&store.root).map(report).ok();
     let Some(loc) = Location::active(&store.root) else {
@@ -540,6 +714,10 @@ pub fn command(store: &Store, cmd: SavesCommand) -> Result<ExitCode> {
         SavesCommand::Export { to, profile } => export_cmd(store, &to, profile)?,
         SavesCommand::List { source } => list(store, source.as_deref())?,
         SavesCommand::Show { snapshot, source } => show(store, &snapshot, source.as_deref())?,
+        SavesCommand::Versions { source } => versions(store, source.as_deref())?,
+        SavesCommand::Careers { source } => careers(store, source.as_deref())?,
+        SavesCommand::Pin { snapshot, source } => pin_cmd(store, &snapshot, source.as_deref(), true)?,
+        SavesCommand::Unpin { snapshot, source } => pin_cmd(store, &snapshot, source.as_deref(), false)?,
         SavesCommand::Backup => backup(store)?,
         SavesCommand::Restore { snapshot, source } => restore_cmd(store, &snapshot, source.as_deref())?,
         SavesCommand::Cap { mb: None } => println!(

@@ -41,6 +41,7 @@ pub enum Page {
     Importer,
     Tools,
     Profiles,
+    Careers,
     Database,
     Multiplayer,
     Section(usize),
@@ -55,6 +56,7 @@ impl Page {
             Self::Importer => "Simplified Importer",
             Self::Tools => "Tools",
             Self::Profiles => "Profiles",
+            Self::Careers => "Career saves",
             Self::Database => "DB Editor",
             Self::Multiplayer => "Multiplayer",
             Self::Section(_) => "",
@@ -77,6 +79,7 @@ impl Page {
             Self::Importer => IconName::FolderInput,
             Self::Tools => IconName::Wrench,
             Self::Profiles => IconName::Layers,
+            Self::Careers => IconName::Save,
             Self::Database => IconName::Database,
             Self::Multiplayer => IconName::Users,
             Self::Section(_) => IconName::Package,
@@ -171,6 +174,7 @@ pub struct Shell {
     /// The addon the Addons page highlights, and since when.
     pub(crate) highlight: Option<(String, Instant)>,
     pub(crate) addons: crate::addons::AddonsPage,
+    pub(crate) saves: crate::career_saves::SavesPage,
     pub(crate) db: crate::db::Db,
     pub(crate) news: crate::news::News,
     pub(crate) news_scroll: crate::news::NewsScroll,
@@ -554,6 +558,7 @@ impl Shell {
             live_n: 0,
             highlight: None,
             addons: crate::addons::AddonsPage::new(window, cx),
+            saves: crate::career_saves::SavesPage::default(),
             db: crate::db::Db::new(cx),
             news,
             news_scroll: Default::default(),
@@ -631,6 +636,8 @@ impl Shell {
         let before = (self.requests, self.processes.clone(), self.session.clone());
         let was_live = self.launch.is_some();
         self.requests = probe.requests;
+        let root = self.store.root.clone();
+        self.saves.refresh_banner(&root);
         if let Some(n) = probe.recovered.filter(|n| n.at > self.recovered_seen) {
             self.recovered_seen = n.at;
             let mut text: Vec<String> = n.lines.iter().take(4).cloned().collect();
@@ -804,6 +811,7 @@ impl Shell {
         if matches!(self.page, Page::Section(i) if i >= self.library.sections.len()) {
             self.page = Page::Addons;
         }
+        self.refresh_saves();
         self.refresh_views(cx);
         self.db_profile_changed(cx);
         self.sync_catalog_updates();
@@ -976,6 +984,16 @@ impl Shell {
         };
         let all = deps::read_all(&self.store, &installed);
         let report = deps::for_order(&profile.name, &plan.order, &installed, &all);
+        let careers =
+            swofty_core::stdlib::careers::read(&swofty_core::stdlib::careers::data_path(&self.store.root));
+        if let Some(line) = swofty_core::stdlib::careers::play_line(&careers, &plan.order, &installed) {
+            window.push_notification(
+                Notification::warning(line)
+                    .title("Careers that need addons")
+                    .autohide(false),
+                cx,
+            );
+        }
         for f in &report.findings {
             let body = f.detail.join(" ");
             let n = match f.level {
@@ -1612,6 +1630,9 @@ impl Shell {
         }
         self.db_page_change(page, cx);
         self.page = page;
+        if page == Page::Careers {
+            self.refresh_saves();
+        }
         if let Some(i) = self.open_section().filter(|i| !self.section_loaded(*i)) {
             self.fetch_views(Some(i), cx);
         }
@@ -1787,6 +1808,14 @@ impl Shell {
             (Page::Browser, None),
             (Page::Tools, None),
             (Page::Profiles, Some(self.library.profiles.len())),
+            (
+                Page::Careers,
+                self.saves
+                    .view
+                    .as_ref()
+                    .map(|v| v.career_count())
+                    .filter(|n| *n > 0),
+            ),
         ];
         if self.mp_allowed() {
             big.push((Page::Multiplayer, None));
@@ -1936,6 +1965,7 @@ impl Render for Shell {
             Page::Browser => self.browser_page(p, cx),
             Page::Database => self.db_page(p, cx),
             Page::Profiles => self.profiles_page(p, wide, cx),
+            Page::Careers => self.careers_page(p, wide, cx),
             Page::Multiplayer => self.multiplayer_page(p, cx),
             Page::Section(i) => self.section_page(i, p, cx),
         };
