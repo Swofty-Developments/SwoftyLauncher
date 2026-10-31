@@ -38,8 +38,8 @@ ImageOS=ubuntu${VERSION_ID%%.*}
 RUNNER_TOOL_CACHE=/opt/hostedtoolcache
 AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache
 LANG=C.UTF-8
+PATH=$PYTHON_BIN:/home/runner/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin
 EOF
-echo "$PYTHON_BIN:/home/runner/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin" > /opt/actions-runner/.path
 
 cat > /opt/actions-runner/swofty-run.sh <<'EOF'
 #!/bin/bash

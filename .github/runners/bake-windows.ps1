@@ -17,7 +17,11 @@ $vs = Start-Process C:\vs_buildtools.exe -Wait -PassThru -ArgumentList '--quiet'
 if ($vs.ExitCode -notin 0, 3010) { throw "vs_buildtools exited $($vs.ExitCode)" }
 
 Invoke-WebRequest (Get-Asset 'git-for-windows/git' 'Git-*-64-bit.exe') -OutFile C:\git.exe
-Start-Process C:\git.exe -Wait -ArgumentList '/VERYSILENT', '/NORESTART', '/NOCANCEL', '/SP-', '/SUPPRESSMSGBOXES'
+# The hosted image's options: its path carries Git's Unix tools, which tests spawn (true, sleep).
+Start-Process C:\git.exe -Wait -ArgumentList '/VERYSILENT', '/NORESTART', '/NOCANCEL', '/SP-', '/SUPPRESSMSGBOXES',
+  '/o:PathOption=CmdTools', '/o:BashTerminalOption=ConHost', '/o:EnableSymlinks=Enabled', '/COMPONENTS=gitlfs'
+& 'C:\Program Files\Git\cmd\git.exe' config --system --add safe.directory '*'
+[Environment]::SetEnvironmentVariable('GCM_INTERACTIVE', 'Never', 'Machine')
 
 # Actions' composite steps run bash, and actions/cache compresses with zstd; the hosted image has both on the path.
 Invoke-WebRequest (Get-Asset 'facebook/zstd' 'zstd-v*-win64.zip') -OutFile C:\zstd.zip
