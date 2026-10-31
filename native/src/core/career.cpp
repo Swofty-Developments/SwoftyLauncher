@@ -256,12 +256,15 @@ void on_flow(SwoftyContext *c)
         perf_flow(hash, uint32_t(from), to, name);
     runtime::netplay_flow(hash, to);
     runtime::testagent_flow(name, to);
+    if (known) {
+        runtime::era_session_trace(known, int(to));
+        runtime::era_session_unloaded(known, int(to));
+    }
     if (known && to == 1 && !std::strcmp(known, "StateLoadSession")) {
         runtime::era_session_load();
         swofty_core::apply::moments::session_load("StateLoadSession");
     }
     if (known && to == 1 && !std::strcmp(known, "StateUnloadSession")) {
-        runtime::era_session_end();
         swofty_core::apply::moments::session_end("StateUnloadSession");
     }
     fire(SWOFTY_EVENT_FLOW_STATE, to, from, &f);

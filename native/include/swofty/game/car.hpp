@@ -147,6 +147,8 @@ inline constexpr address<"Car_Setup_ApplyTuning"> Car_Setup_ApplyTuning{}; // L3
 inline constexpr address<"Car_Tuning_SetChassisZCom"> Car_Tuning_SetChassisZCom{}; // L2 experimental
 inline constexpr address<"Car_Tyre_GripScale"> Car_Tyre_GripScale{}; // L2 experimental
 inline constexpr address<"Car_Tyre_MagicFormula"> Car_Tyre_MagicFormula{}; // L2 experimental
+using Car_Tyre_SetWearFactor_t = void(void *tyre_component, bool apply_set, uint16_t force);
+inline constexpr fn<"Car_Tyre_SetWearFactor", Car_Tyre_SetWearFactor_t> Car_Tyre_SetWearFactor{}; // L2 experimental
 inline constexpr address<"Car_Tyre_UpdateWear"> Car_Tyre_UpdateWear{}; // L2 experimental
 inline constexpr address<"Car_Upgrades_ApplyToVehicle"> Car_Upgrades_ApplyToVehicle{}; // L3 experimental
 inline constexpr address<"Car_Upgrades_CalcNonLinearMass"> Car_Upgrades_CalcNonLinearMass{}; // L2 experimental

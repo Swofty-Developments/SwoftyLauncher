@@ -10,7 +10,7 @@ With the session system you set what a race weekend looks like: its sessions, ho
 A **setup mode** is the game's row that a weekend runs under: its format, length, rules and grid all hang off it. Every Grand Prix and Time Trial box shares one setup mode, `swofty_f1`, and each box's own points, DRS, tyre class and rules apply when a session loads in that box. A box gets a setup mode of its own only when it needs a different shape at boot, such as F1 1990's two qualifying sessions.
 
 ::: info In 1.6.0
-The header `swofty/systems/sessions.hpp` has `sessions::Rules` (the `rules` of a `content::Package`), `sessions::set_control` and the `session.player.control` payload `sessions::events::PlayerControl`; `swofty/systems/control.hpp` has `Control` and `ControlState`. The registries on this page (`modes`, `formats`, `lengths`, `points`, `rules_profiles`, `safety_car`, `grids`) and the penalty, results and weekend events ship later; those sections describe that design.
+The header `swofty/systems/sessions.hpp` has `sessions::Rules` (the `rules` of a `content::Package`), `sessions::set_control`, the `session.player.control` payload `sessions::events::PlayerControl` and the `session.lap` payload `sessions::events::Lap`; `swofty/systems/control.hpp` has `Control` and `ControlState`. The registries on this page (`modes`, `formats`, `lengths`, `points`, `rules_profiles`, `safety_car`, `grids`) and the penalty, results and weekend events ship later; those sections describe that design.
 :::
 
 ## The header
@@ -435,6 +435,32 @@ events::on<cars::events::ControllersRebuilt>().after([](const cars::events::Cont
 - **`reason`** is the flag index the game passes as the fourth argument of `Game_Set_VehicleController`: the switch sets bit `reason` when `to` is `ai` and clears it when `to` is `human`. A `before` handler may change `to` and `reason`.
 - **`car.controllers.rebuilt`** fires after a flashback or a Return to Garage has rebuilt a car's controllers (see [Cars](./cars)).
 
+## A car's lap
+
+`session.lap` fires when a car crosses the line and its lap counter changes, once per crossing for each car of the session. The 1.x name `lap` fires at the same moment, with the car's index in `a`.
+
+```cpp
+namespace swofty::sessions::events {
+struct Lap {                                   // notify
+    static constexpr const char *point = "session.lap";
+    static constexpr uint32_t version = 1;
+    uint32_t size, payload_version;
+    cars::live::Car car;                       // car.index(): the vehicle index in the session
+};
+}
+```
+
+```cpp
+// count the laps each car starts in qualifying
+events::on<sessions::events::Lap>().when(events::session_type({ events::SessionType::qualifying }))
+    .after([](const sessions::events::Lap &l, const events::Context &) { my_addon::lap_started(l.car.index()); });
+```
+
+- **Where it fires.** The game posts `vehicle_newlap` from its per-car progress update, and the ERS system's handler (`Game_ErsSystem_HandleVehicleNewLap`) looks the car up among its participants. The core's ERS new-lap guard sits on that lookup (`site_Game_ErsNewLap_VehicleLookup`) and fires the event at the participant whose vehicle id is the message's. A participant without a vehicle never fires it, and `SWOFTY_ERS_GUARD=0` turns the event off with the guard.
+- **Thread.** The game thread, inside the progress update and the message publish. A handler that changes the session (sends a car to its garage, issues a penalty) queues the work and does it on a later frame.
+- **What counts as a crossing.** The counter also changes when a car crosses the line backwards, and when the line runs through the pit lane a car crossing it there fires too. Read the car's pit status when the difference matters.
+- **Cost.** The core logs the first fire of a session only.
+
 ## Events and operations
 
 ```cpp
@@ -468,3 +494,20 @@ sessions::issue_penalty(car, sessions::PenaltyKind::grid, 3.0f);
 - **Points** are whole numbers in arrays of 23, padded to the grid size. 1990's half points are rounded.
 - **Setup modes** take stat ids of 31 or lower. 18 are free (5, 7, 16 to 31), and F1 1990 uses 16. A mode needs the content set and an available mode row.
 - **Option restrictions** are tags shared across modes (`gamesetup_f1`).
+- **Pit lane bindings: experimental, no std operation yet.** `swofty/game.hpp` has `Game_Pitlane_SetVehicleStatus(pit_lane, car, status)`, which sets a car's pit status (0 to 16: 1 OnTrack, 4 InPitBox, 9 InGarage, 13 LeavingGarage), and `Game_PitLane_PutVehicleInPitBox(pit_lane, car)`, which puts a car in its pit box from any status the way the red flag does for every car. Both take the session's `PitLaneSystem`, the first argument of every pit status change. `Sess_PitStopUpdateJob_Update` (the per-frame pit stop update, which scales the crew sequence by the stop's rate) and `g_Ne_NameTable` (the engine's interned names, where a sequence's name hash resolves) are there too. F1 1990 uses them for its qualifying lap limit and its pit stop phases.
+
+```cpp
+#include <swofty/game.hpp>
+#include <swofty/mixin.hpp>
+
+void *pit_lane;
+
+SWOFTY_WRAP(Game_Pitlane_SetVehicleStatus, void, void *self, uint8_t car, uint32_t status)
+{
+    pit_lane = self;                           // the session's PitLaneSystem
+    orig(self, car, status);
+}
+
+// later, on the game thread: send car 5 back to its pit box
+swofty::game::Game_PitLane_PutVehicleInPitBox(pit_lane, 5);
+```

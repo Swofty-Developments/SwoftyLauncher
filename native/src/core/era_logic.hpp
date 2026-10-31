@@ -160,6 +160,200 @@ inline std::vector<size_t> time_trial_keep(const std::vector<ListCars> &lists)
     return keep;
 }
 
+// A Time Trial session's cars come from more than its own list: the Time Trial mode's descriptor fill
+// (0x142936760, vtable 0x1457b13d0 slot 0x80) walks every game setup mode of the mode (EntrantsManager slot
+// 0x1d0), each one's entrant setup modes (slot 0x1d8) and their selectable lists (+0x130, count +0x230), takes
+// every list whose leaderboard (the row's leaderboard descriptor stat id, optional byte +0xe0, engaged +0xf0)
+// matches the selected list's, and pushes one entrant per distinct vehicle ref (EntrantRecord +0x5c) of them,
+// plus 4 entries of its own. A stock F1 2025 Time Trial draws 11 cars (f1_custom_team, leaderboard f1) and
+// spawns 15 vehicles. A list an addon copies from f1_2025 keeps leaderboard f1, so F1 2012 Season's
+// bdx_s5_2012 (12 vehicles) made it 27, past the 26-slot vehicle table. Classic Seasons' lists use leaderboard
+// classic. A stock press in Time Trial narrows swofty_f1 whenever one of its lists is oversized, to no list at
+// all when none fits; at each Time Trial load the core also counts the distinct cars of every list of the
+// selected list's leaderboard and drops whole lists, addon lists first, until they fit 22 (26 less the 4).
+inline bool time_trial_narrows(const std::vector<ListCars> &lists, const std::vector<size_t> &keep)
+{
+    return !lists.empty() && keep.size() != lists.size();
+}
+
+constexpr size_t LIST_LEADERBOARD = 0xe0;
+constexpr size_t LIST_LEADERBOARD_SET = 0xf0;
+constexpr size_t ENTRANT_VEHICLE = 0x5c;
+constexpr size_t TT_OWN_ENTRIES = 4;
+constexpr size_t TT_ROOM = TT_TABLE - TT_OWN_ENTRIES;
+
+inline bool vehicle_ref_set(uint32_t ref)
+{
+    return (ref >> 16) != 0x3fff;
+}
+
+struct TtList {
+    std::string name;
+    bool selected = false, addon = false;
+    std::vector<uint32_t> refs;
+    bool fixed = false;
+};
+
+// The fill dedupes vehicle refs by their byte +0 and u16 +2 (0x1424a1c20), so byte +1 is not part of the key.
+inline uint32_t ref_key(uint32_t ref)
+{
+    return ref & 0xffff00ffu;
+}
+
+// Entrant setup mode overrides (the game mode's EntrantSetupModeOverride rows): the fill gets each game setup mode's
+// entrant setup modes through EntrantsManager slot 0x1d8 (body 0x1485b5280), which copies gsm +0x10 (count +0x70)
+// and swaps every mode whose stat id byte +0 has an entry in the flat map at manager +0xfd8: slots of 0x10 bytes
+// from +0xfe0 to the metadata bytes at +0xfe8 (key byte +0, override at +8), mask +0xff8 (0 = empty map). A slot is
+// in use when its metadata byte is not 0; keys are unique, so a scan finds what the game's probe finds.
+constexpr size_t MGR_OVERRIDES = 0xfe0;
+constexpr size_t MGR_OVERRIDE_META = 0xfe8;
+constexpr size_t MGR_OVERRIDE_MASK = 0xff8;
+constexpr size_t OVERRIDE_SLOT = 0x10;
+constexpr size_t MAX_OVERRIDE_SLOTS = 1024;
+
+struct Override {
+    bool found = false;
+    const void *to = nullptr;
+};
+
+// The game installs a row's value even when it is null (0x1485b5280 writes it unchecked), so a found row with a
+// null value leaves that entrant setup mode slot empty.
+inline Override override_for(uint8_t id, const uint8_t *slots, const uint8_t *meta, size_t count)
+{
+    if (!slots || !meta || count > MAX_OVERRIDE_SLOTS)
+        return {};
+    for (size_t i = 0; i < count; ++i)
+        if (meta[i] && slots[i * OVERRIDE_SLOT] == id)
+            return {true, *reinterpret_cast<void *const *>(slots + i * OVERRIDE_SLOT + 8)};
+    return {};
+}
+
+// 0x1424a1c20 takes a list's own records when the mode's flag word +0x258 + idx * 4 has bit 0 (idx 0 or 1 for the
+// fill's human record), every ref of the entrants system pool +0x338 with bit 1 and of +0x348 with bit 2.
+constexpr size_t ESM_VEHICLE_FLAGS = 0x258;
+constexpr uint32_t TAKES_LIST = 1, TAKES_POOL_A = 2, TAKES_POOL_B = 4;
+constexpr size_t ES_POOL_A = 0x338;
+constexpr size_t ES_POOL_B = 0x348;
+constexpr size_t GM_ENTRANTS_SYSTEM = 0x290;
+constexpr size_t POOL_SLOT = 0x10;
+constexpr size_t MAX_POOL = 8192;
+
+// An entrants system pool is indexed by vehicle stat id, so its length is the highest id + 1: 0x10-byte slots from
+// begin to end, a pointer to the vehicle ref at +8 or 0 when the id is free. read(address, value) is a guarded read.
+struct PoolRefs {
+    std::vector<uint32_t> refs;
+    bool capped = false;
+};
+
+template <class Read> PoolRefs pool_refs_from(uintptr_t begin, uintptr_t end, Read read)
+{
+    PoolRefs out;
+    if (!begin || end < begin || (end - begin) % POOL_SLOT)
+        return out;
+    size_t slots = (end - begin) / POOL_SLOT;
+    if (slots > MAX_POOL) {
+        out.capped = true;
+        slots = MAX_POOL;
+    }
+    for (size_t i = 0; i < slots; ++i) {
+        uintptr_t at_ref = 0;
+        uint32_t ref = 0;
+        if (read(begin + i * POOL_SLOT + 8, at_ref) && at_ref && read(at_ref, ref))
+            out.refs.push_back(ref);
+    }
+    return out;
+}
+
+inline uint32_t vehicle_flags(uint32_t player, uint32_t second_player)
+{
+    return player | second_player;
+}
+
+// A cut is made only where the restore stack can record it, or where an entry for that mode already does.
+inline bool cut_recordable(size_t used, size_t capacity, bool known)
+{
+    return known || used < capacity;
+}
+
+struct TtBudget {
+    std::vector<size_t> dropped;
+    size_t cars = 0;
+};
+
+// The selected list always stays; the other lists of its leaderboard join in the order stock lists, then addon
+// lists, each whole while the distinct vehicle refs of everything kept stay within room.
+inline TtBudget time_trial_budget(const std::vector<TtList> &lists, size_t room = TT_ROOM)
+{
+    std::vector<size_t> order(lists.size());
+    for (size_t i = 0; i < order.size(); ++i)
+        order[i] = i;
+    auto rank = [&](size_t i) { return lists[i].selected || lists[i].fixed ? 0 : lists[i].addon ? 2 : 1; };
+    std::stable_sort(order.begin(), order.end(), [&](size_t a, size_t b) { return rank(a) < rank(b); });
+    std::vector<uint32_t> have;
+    TtBudget out;
+    for (size_t i : order) {
+        std::vector<uint32_t> next = have;
+        for (uint32_t r : lists[i].refs)
+            if (vehicle_ref_set(r) && std::find(next.begin(), next.end(), ref_key(r)) == next.end())
+                next.push_back(ref_key(r));
+        if (lists[i].selected || lists[i].fixed || next.size() <= room)
+            have = std::move(next);
+        else
+            out.dropped.push_back(i);
+    }
+    std::sort(out.dropped.begin(), out.dropped.end());
+    out.cars = have.size();
+    return out;
+}
+
+inline size_t distinct_cars(const std::vector<uint32_t> &refs)
+{
+    std::vector<uint32_t> d;
+    for (uint32_t r : refs)
+        if (vehicle_ref_set(r) && std::find(d.begin(), d.end(), ref_key(r)) == d.end())
+            d.push_back(ref_key(r));
+    return d.size();
+}
+
+// Leaderboard descriptor stat ids of the stock leaderboards.leaderboard_descriptor rows, for the log only.
+inline std::string leaderboard_text(unsigned id)
+{
+    static constexpr const char *STOCK[] = {"f1", "classic", "f1_26", "f2", nullptr, "f2_26"};
+    std::string out = std::to_string(id);
+    if (id < std::size(STOCK) && STOCK[id])
+        out += std::string(", ") + STOCK[id];
+    return out;
+}
+
+inline std::string time_trial_budget_line(const std::vector<TtList> &lists, const TtBudget &b, unsigned leaderboard)
+{
+    std::string selected = "?";
+    size_t kept = 0, pool = 0;
+    for (size_t i = 0; i < lists.size(); ++i) {
+        if (lists[i].selected)
+            selected = lists[i].name;
+        if (lists[i].fixed)
+            pool += distinct_cars(lists[i].refs);
+        else if (std::find(b.dropped.begin(), b.dropped.end(), i) == b.dropped.end())
+            kept++;
+    }
+    std::string line = "the Time Trial session's list " + selected + " (leaderboard " + leaderboard_text(leaderboard) +
+                       ") draws " + std::to_string(b.cars) + " cars from " + std::to_string(kept) +
+                       " list(s) of its leaderboard" +
+                       (pool ? " and the entrants system pools (" + std::to_string(pool) + ")" : std::string()) +
+                       "; with the game's " + std::to_string(TT_OWN_ENTRIES) + " entries " +
+                       std::to_string(b.cars + TT_OWN_ENTRIES) + " of the " + std::to_string(TT_TABLE) + "-slot vehicle table";
+    if (!b.dropped.empty()) {
+        line += "; left out until the session unloads:";
+        for (size_t k = 0; k < b.dropped.size(); ++k) {
+            const auto &l = lists[b.dropped[k]];
+            line += std::string(k ? "," : "") + " " + l.name + " (" + std::to_string(distinct_cars(l.refs)) + " cars" +
+                    (l.addon ? "" : ", stock") + ")";
+        }
+    }
+    return line;
+}
+
 inline int64_t time_trial_fallback(const std::vector<ListCars> &lists, const std::vector<std::string> &prefer)
 {
     auto fits = [&](size_t i) { return lists[i].cars >= 0 && !oversized(lists[i].cars); };
@@ -205,6 +399,94 @@ inline size_t session_vehicles(uintptr_t begin, uintptr_t end)
 inline uintptr_t vehicles_end_within_table(uintptr_t begin, uintptr_t end)
 {
     return session_vehicles(begin, end) > TT_TABLE ? begin + TT_TABLE * VEHICLE_SLOT : end;
+}
+
+// Session trace (diagnostic, read only). A Time Trial after a Grand Prix on a 24-car box spawns 27 vehicles
+// while the entrants manager's session entrants (EntrantsManager +0x2e0..+0x2e8, 0x88-byte records, team stat
+// id u16 at +0x5a) hold at most 23 at StateLoadSession Entering. The Time Trial mode's descriptor fill
+// (0x142936760, vtable 0x1457b13d0 slot 0x80) clears those entrants, pushes its own and builds one 0x6780-byte
+// session participant per entrant with a vehicle into the descriptor (+0xad0 vector, begin +0xad8, end +0xae0).
+// The trace logs, at each StateLoadSession step, at StateSession Entering and at the session vehicle setup,
+// the manager's entrant count and team ids, its list and setup mode, the participant counts of the session
+// descriptors the game manager (+0x1a8) and game module (game manager +0x140, its +0x1a8 and +0x198) hold, and
+// the session module's vehicle count, so one run shows which of them holds the 27 and when it fills.
+constexpr size_t MGR_SESSION_BEGIN = 0x2e0;
+constexpr size_t MGR_SESSION_END = 0x2e8;
+constexpr size_t ENTRANT_TEAM = 0x5a;
+constexpr size_t PARTICIPANT = 0x6780;
+constexpr size_t DESC_PARTICIPANTS_BEGIN = 0xad8;
+constexpr size_t DESC_PARTICIPANTS_END = 0xae0;
+constexpr size_t GM_SESSION = 0x1a8;
+constexpr size_t GM_MODULE = 0x140;
+constexpr size_t MODULE_SESSION = 0x1a8;
+constexpr size_t MODULE_SESSION_NEXT = 0x198;
+constexpr size_t MAX_PARTICIPANTS = 64;
+constexpr uint32_t TRACE_LINES = 120;
+
+inline bool trace_flow(std::string_view state, int to)
+{
+    return ((state == "StateLoadSession" || state == "StateUnloadSession") && to >= 1 && to <= 3) ||
+           (state == "StateSession" && (to == 1 || to == 3));
+}
+
+// The Time Trial cut stays through StateSession onStateExit and StateUnloadSession onStateEnter, whose loader keep
+// checks (0x1436f8340, 0x143709970 -> 0x142d48040) fill a temporary descriptor and compare it with the live one; it
+// comes off at StateUnloadSession Exiting.
+inline bool time_trial_cut_off(std::string_view state, int to)
+{
+    return state == "StateUnloadSession" && to == 3;
+}
+
+inline int64_t participant_count(uintptr_t begin, uintptr_t end)
+{
+    if (!begin || end < begin || (end - begin) % PARTICIPANT || (end - begin) / PARTICIPANT > MAX_PARTICIPANTS)
+        return -1;
+    return int64_t((end - begin) / PARTICIPANT);
+}
+
+struct SessionTrace {
+    std::string where, mode, list, setup_mode;
+    int64_t entrants = -1, list_cars = -1;
+    std::vector<uint16_t> teams;
+    int64_t gm_session = -1, module_session = -1, module_next = -1;
+    int64_t vehicles = -1;
+    int64_t budget = -1;
+    int64_t previous = -1;
+};
+
+// The Time Trial budget's expected vehicles (its cars plus the game's 4 entries) against what the fill made: the
+// participants in the game manager's descriptor, or the vehicles at the session's vehicle setup.
+// The fill runs between StateLoadSession Updating and Exiting, so at Entering and Updating the descriptor may still
+// hold the previous session's participants: there a count is compared only when it changed since the previous
+// traced step (previous), which a fill before Entering would show.
+inline std::string budget_mismatch(const SessionTrace &t)
+{
+    int64_t seen = t.vehicles >= 0 ? t.vehicles : t.gm_session;
+    if (t.budget < 0 || seen <= 0 || seen == t.budget)
+        return {};
+    bool before_fill = t.where == "StateLoadSession Entering" || t.where == "StateLoadSession Updating";
+    if (before_fill && t.vehicles < 0 && t.gm_session == t.previous)
+        return {};
+    return "Time Trial fill at " + t.where + " made " + std::to_string(seen) + " vehicles where the budget expected " +
+           std::to_string(t.budget);
+}
+
+inline std::string count_text(int64_t n)
+{
+    return n < 0 ? std::string("-") : std::to_string(n);
+}
+
+inline std::string session_trace_line(const SessionTrace &t)
+{
+    std::string teams;
+    for (size_t i = 0; i < t.teams.size(); ++i)
+        teams += (i ? "," : "") + std::to_string(t.teams[i]);
+    return "session trace " + t.where + " (" + (t.mode.empty() ? "?" : t.mode) + "): entrants " + count_text(t.entrants) +
+           (teams.empty() ? "" : " (teams " + teams + ")") + ", list " + (t.list.empty() ? "?" : t.list) + " (" +
+           count_text(t.list_cars) + " cars) of setup mode " + (t.setup_mode.empty() ? "?" : t.setup_mode) +
+           "; participants: game manager " + count_text(t.gm_session) + ", game module " + count_text(t.module_session) +
+           " (next " + count_text(t.module_next) + "); session vehicles " + count_text(t.vehicles) +
+           (t.budget >= 0 ? "; Time Trial budget " + std::to_string(t.budget) : std::string());
 }
 
 inline std::vector<Box> ordered(std::vector<Box> boxes)

@@ -75436,9 +75436,7 @@
      "how": "static"
     }
    ],
-   "used_by": [
-    "native/src/core/save_sandbox.cpp"
-   ]
+   "used_by": []
   },
   {
    "id": "core.cloud_uploader_upload",
@@ -76669,7 +76667,7 @@
   {
    "id": "core.presence_name_resolver_fixed_add_name",
    "section": ".xtls",
-   "pattern": "56 57 53 48 81 EC 20 01 00 00 4C 89 C6",
+   "pattern": "56 57 53 48 81 EC 20 01 00 00 4C 89 C6 48 89 D7",
    "match": "0x14412a320",
    "anchor": "0x0",
    "resolve": {
@@ -76683,14 +76681,12 @@
    "verified": [
     {
      "build": "d873a1c8d2044cef",
-     "date": "2026-10-29",
-     "by": "driver-name",
+     "date": "2026-10-30",
+     "by": "engine-re",
      "how": "static"
     }
    ],
-   "used_by": [
-    "native/src/core/netplay.cpp"
-   ]
+   "used_by": []
   },
   {
    "id": "session.setup_vehicle_components",
@@ -81035,6 +81031,507 @@
    "expect": "75 2B 41 80 BE D8 10 00 00 00"
   },
   {
+   "id": "session.pu_panel_slot_holder",
+   "section": ".xtls",
+   "pattern": "48 85 C0 74 DB 48 8B 48 10 48 2B 48 08",
+   "match": "0x141f50ec7",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141f50ecc",
+   "kind": "mid",
+   "expect": "48 8B 48 10 48 2B 48 08",
+   "names": [
+    "site_Sess_PuPanel_SlotHolder"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "pu-1990",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.pit_lane_put_vehicle_in_pit_box",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 89 D3 48 89 CE 41 BE 0D 00 00 00",
+   "match": "0x1434d1260",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1434d1260",
+   "kind": "func_start",
+   "names": [
+    "Game_PitLane_PutVehicleInPitBox"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "qualilaps",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.pit_stop_update_job_update",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 70 02 00 00 C5 78 29 BC 24 60 02 00 00",
+   "match": "0x1403c06a0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1403c06a0",
+   "kind": "func_start",
+   "names": [
+    "Sess_PitStopUpdateJob_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "rules",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.sequence_name_table",
+   "section": ".xtls",
+   "pattern": "49 8B 78 08 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B 07 85 C0 0F 88 ?? ?? ?? ?? 48 8B 0D",
+   "match": "0x1403bbdaf",
+   "anchor": "0x1d",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x1a",
+    "len": 7
+   },
+   "target": "0x14618ce08",
+   "kind": "data",
+   "names": [
+    "g_Ne_NameTable"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "rules",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "audio.request_job_worker",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 44 89 C6 89 D7 48 89 CB 8B 15",
+   "match": "0x143fbdd00",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143fbdd00",
+   "kind": "func_start",
+   "names": [
+    "Snd_Request_JobWorker"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "crash2",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/audio_queue.cpp"
+   ]
+  },
+  {
+   "id": "audio.job_worker_lock",
+   "section": ".xtls",
+   "pattern": "FF 15 ?? ?? ?? ?? 89 C5 48 8B 0D ?? ?? ?? ?? FF 15 ?? ?? ?? ?? 83 3D ?? ?? ?? ?? 00 74",
+   "match": "0x143fbdd36",
+   "anchor": "0xb",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x8",
+    "len": 7
+   },
+   "target": "0x146c63ba0",
+   "kind": "data",
+   "names": [
+    "g_Snd_JobWorkerLock"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "crash2",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/audio_queue.cpp"
+   ]
+  },
+  {
+   "id": "audio.job_worker_overflow",
+   "section": ".xtls",
+   "pattern": "B8 28 00 00 00 8B 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? EB 16",
+   "match": "0x143fbddc2",
+   "anchor": "0xe",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0xb",
+    "len": 7
+   },
+   "target": "0x146c63e10",
+   "kind": "data",
+   "names": [
+    "g_Snd_JobWorkerOverflow"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "crash2",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/audio_queue.cpp"
+   ]
+  },
+  {
+   "id": "audio.job_worker_pending",
+   "section": ".xtls",
+   "pattern": "B8 28 00 00 00 8B 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? EB 16",
+   "match": "0x143fbddc2",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x5",
+    "len": 6
+   },
+   "target": "0x146c64294",
+   "kind": "data",
+   "names": [
+    "g_Snd_JobWorkerPending"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "crash2",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.heap_deallocate_non_small",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 49 89 D6",
+   "match": "0x143963f80",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143963f80",
+   "kind": "func_start",
+   "names": [
+    "Ne_Heap_DeallocateNonSmall"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "crash2",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.standings_weekend_track_load",
+   "section": ".xtls",
+   "pattern": "0F 84 ?? ?? ?? ?? 48 8B 83 C0 02 00 00 48 8D 48 08",
+   "match": "0x14181e19b",
+   "anchor": "0x6",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14181e1a1",
+   "kind": "mid",
+   "expect": "48 8B 83 C0 02 00 00",
+   "names": [
+    "site_Career_StandingsWeekendTrackLoad"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "standings-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/standings_guard.cpp"
+   ]
+  },
+  {
+   "id": "career.standings_weekend_track_done",
+   "section": ".xtls",
+   "pattern": "48 85 DB 74 5D 41 80 7C 24 49 00 74 55",
+   "match": "0x14181e4dc",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14181e4dc",
+   "kind": "mid",
+   "expect": "48 85 DB 74 5D",
+   "names": [
+    "site_Career_StandingsWeekendTrackDone"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "career-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/standings_guard.cpp"
+   ]
+  },
+  {
+   "id": "core.presence_name_resolver_e_a_d_p_update_to_resolve_list",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 48 8B 41 70 48",
+   "match": "0x1441266b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1441266b0",
+   "kind": "func_start",
+   "names": [
+    "Ne_PresenceNameResolverEADP_UpdateToResolveList"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.presence_name_resolver_e_a_d_p_on_batch_player_cards_request_complete",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 02 00 00 C5 F8 29 B4 24 10 02 00 00 4C 89 8C 24 70 01 00 00",
+   "match": "0x144127cc0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144127cc0",
+   "kind": "func_start",
+   "names": [
+    "Ne_PresenceNameResolverEADP_OnBatchPlayerCardsRequestComplete"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.presence_name_resolver_e_a_d_p_update_to_resolve_list_lambda",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 83 EC 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 C8 0F B6",
+   "match": "0x14412a040",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14412a040",
+   "kind": "func_start",
+   "names": [
+    "Ne_PresenceNameResolverEADP_UpdateToResolveList_Lambda"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.presence_name_resolver_fixed_start_resolving",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 31",
+   "match": "0x14412a4d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14412a4d0",
+   "kind": "func_start",
+   "names": [
+    "Ne_PresenceNameResolverFixed_StartResolving"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.u_i_message_system_on_metadata_asset_cleanup",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 83 79 48",
+   "match": "0x1442d98c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1442d98c0",
+   "kind": "func_start",
+   "names": [
+    "Ne_UIMessageSystem_OnMetadataAssetCleanup"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.o_s_operation_handle_register_self",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4D 89 C4 49 89 D7 49 89",
+   "match": "0x14443c380",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14443c380",
+   "kind": "func_start",
+   "names": [
+    "Ne_OSOperationHandle_RegisterSelf"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.o_s_operation_handle_unregister_self",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 65 B8 75",
+   "match": "0x14443d110",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14443d110",
+   "kind": "func_start",
+   "names": [
+    "Ne_OSOperationHandle_UnregisterSelf"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.o_s_h_t_t_p_request_and_response_response_handler_cb_http_response",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4D 89 CD 44",
+   "match": "0x14443f420",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14443f420",
+   "kind": "func_start",
+   "names": [
+    "Ne_OSHTTPRequestAndResponseResponseHandler_CbHttpResponse"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "core.get_c_str_len",
+   "section": ".xtls",
+   "pattern": "48 8B C1 48 F7 D9 48 A9 07 00 00 00 74 0F 66 90",
+   "match": "0x14535e010",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14535e010",
+   "kind": "func_start",
+   "names": [
+    "Ne_Get_CStrLen"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
    "id": "assets.map_eaid_to_group_a",
    "section": ".xtls",
    "pattern": "56 57 48 83 EC 28 48 8B B9 60 05 00 00 48 85 FF",
@@ -81070,7 +81567,7 @@
    "target": "0x140250ee0",
    "kind": "func_start",
    "names": [
-    "Asset_Init_AssetGroupInstance"
+    "Asset_Map_EaidToGroupB"
    ],
    "verified": [
     {
@@ -81118,7 +81615,7 @@
    "target": "0x1413b7640",
    "kind": "func_start",
    "names": [
-    "Hud_StoryRaceEvent_UpdateState"
+    "Asset_Get_AssetGroupsRoot"
    ],
    "verified": [
     {
@@ -81168,7 +81665,7 @@
    "target": "0x141698640",
    "kind": "func_start",
    "names": [
-    "FeTile_ItemBase_Slot78_Thunk"
+    "FeTile_ItemBase_Slot78"
    ],
    "verified": [
     {
@@ -81216,7 +81713,7 @@
    "target": "0x14172f1d0",
    "kind": "func_start",
    "names": [
-    "FeHome_StoryItem_GetAction_Thunk"
+    "FeHome_StoryItem_GetAction"
    ],
    "verified": [
     {
@@ -81338,7 +81835,7 @@
    "target": "0x143b130a0",
    "kind": "func_start",
    "names": [
-    "Asset_Load_MaterialList"
+    "Asset_Parse_EaidA"
    ],
    "verified": [
     {
@@ -81362,7 +81859,7 @@
    "target": "0x143b13710",
    "kind": "func_start",
    "names": [
-    "Asset_Load_ParticleResourcePack"
+    "Asset_Parse_EaidB"
    ],
    "verified": [
     {
@@ -81386,7 +81883,7 @@
    "target": "0x1445a28f0",
    "kind": "func_start",
    "names": [
-    "Gdb_MakeIndexedKey"
+    "Gdb_Get_RowByIndex"
    ],
    "verified": [
     {
@@ -81410,7 +81907,7 @@
    "target": "0x1445a3900",
    "kind": "func_start",
    "names": [
-    "Gdb_FindMetadata"
+    "Gdb_Get_RowName"
    ],
    "verified": [
     {
