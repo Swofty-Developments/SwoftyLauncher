@@ -63,6 +63,7 @@ pub mod stock;
 pub mod store;
 pub mod testsuite;
 pub mod tracks;
+pub mod transfer;
 pub mod ui;
 pub mod update;
 pub mod updater;
