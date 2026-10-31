@@ -20,6 +20,12 @@
 // torque per full throttle in Car_Powertrain_Step, rbx = the Engine system, xmm7 = rad/s) scales the
 // torque of every car by race_engine::kPower and cuts it over the last 60 rpm before a limit 300 rpm
 // under the engine's own (Engine +0x2528).
+//
+// F1 1990 box (Grand Prix and Time Trial, no career loaded): at each session start
+// (Sess_TyreAllocation_OnSessionStart), when every entrant of the session's line-up drives a 1990 car, the
+// race engine is on in practice (session ids 1 to 4) and the race (15 to 17) and off in qualifying (5 to
+// 14) and Time Trial (18). Every other session start without a career, and every session end without one,
+// turns it off, so other boxes keep the stock engines.
 
 #include <atomic>
 
@@ -29,6 +35,7 @@
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
+#include "box_session.hpp"
 #include "career_1990.hpp"
 #include "race_engine.hpp"
 #include "rnd_progress.hpp"
@@ -58,12 +65,20 @@ void on_career(const SwoftyEvent *, void *)
     set_race_engine(false, "career loaded or unloaded");
 }
 
-void subscribe(const char *event)
+void on_session_end(const SwoftyEvent *, void *)
+{
+    if (!swofty::career::entity())
+        set_race_engine(false, "session ended outside a career");
+}
+
+void subscribe(const char *event, SwoftyEventFn fn = on_career)
 {
     uint32_t token = 0;
-    if (swofty::events::subscribe(event, on_career, nullptr, &token) != swofty::events::Result::ok)
+    if (swofty::events::subscribe(event, fn, nullptr, &token) != swofty::events::Result::ok)
         swofty::log("[f1-1990] quali engine: subscribe %s failed", event);
 }
+
+std::atomic<uint32_t> g_box_logged;
 
 int current_group(void *component)
 {
@@ -115,6 +130,27 @@ SWOFTY_WRAP(Game_Rnd_CalcUpgradeTypeProgress, float, void *const *instances, uin
     return p;
 }
 
+SWOFTY_WRAP(Sess_TyreAllocation_OnSessionStart, void, void *component)
+{
+    orig(component);
+    if (!quali_engine_1990 || !component || swofty::career::entity())
+        return;
+    void *session = f1990::box::session_of(component);
+    uint32_t id = session ? at<uint32_t>(session, 0x08) : 0;
+    auto lineup = f1990::box::lineup(component);
+    bool box = session && lineup.all_1990();
+    bool race = box && (f1990::box::practice(id) || f1990::box::race(id));
+    if (g_box_logged++ < 16)
+        swofty::log("[f1-1990] quali engine: session %u without a career: %s (%zu of %zu entrants on 1990 cars)", id,
+                    !lineup.readable ? "line-up not readable, stock engines"
+                    : !box           ? "not the F1 1990 box, stock engines"
+                    : race           ? "F1 1990 box, race engine"
+                                     : "F1 1990 box, qualifying engine",
+                    lineup.on_1990, lineup.entrants);
+    set_race_engine(race, race ? "F1 1990 box practice or race" : box ? "F1 1990 box qualifying or Time Trial"
+                                                                      : "not the F1 1990 box");
+}
+
 SWOFTY_SITE(site_Car_EngineDriveTorque, swofty::Context &c)
 {
     if (!g_race_engine.load(std::memory_order_relaxed))
@@ -128,6 +164,7 @@ SWOFTY_ON_LOAD
 {
     subscribe(SWOFTY_EVENT_CAREER_LOADED);
     subscribe(SWOFTY_EVENT_CAREER_UNLOADED);
+    subscribe(SWOFTY_EVENT_SESSION_END, on_session_end);
 }
 
 SWOFTY_ADDON()

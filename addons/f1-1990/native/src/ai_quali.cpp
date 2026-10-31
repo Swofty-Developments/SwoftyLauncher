@@ -13,6 +13,11 @@
 // every other session, in other careers, and when a career loads or unloads. Braking (.brpd) and
 // traction (.acpd) lookups do not see it. The power gap comes from the cars' own engines
 // (f1_1990_quali.dll). Option quali_engine_1990 covers it.
+//
+// F1 1990 box (Grand Prix, no career loaded): at each session start (Sess_TyreAllocation_OnSessionStart),
+// when every entrant of the session's line-up drives a 1990 car, the scale is on in qualifying (session ids
+// 5 to 14) and off in every other session. Every other session start without a career, and every session
+// end without one, turns it off.
 
 #include <atomic>
 
@@ -22,6 +27,7 @@
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
+#include "box_session.hpp"
 #include "career_1990.hpp"
 #include "rnd_progress.hpp"
 
@@ -55,10 +61,16 @@ void on_career(const SwoftyEvent *, void *)
     set_quali(false, "career loaded or unloaded");
 }
 
-void subscribe(const char *event)
+void on_session_end(const SwoftyEvent *, void *)
+{
+    if (!swofty::career::entity())
+        set_quali(false, "session ended outside a career");
+}
+
+void subscribe(const char *event, SwoftyEventFn fn = on_career)
 {
     uint32_t token = 0;
-    if (swofty::events::subscribe(event, on_career, nullptr, &token) != swofty::events::Result::ok)
+    if (swofty::events::subscribe(event, fn, nullptr, &token) != swofty::events::Result::ok)
         swofty::log("[f1-1990] ai quali: subscribe %s failed", event);
 }
 
@@ -93,6 +105,19 @@ SWOFTY_WRAP(Game_Rnd_FillVehicleUpgrades, void, void *component, uint8_t car, ui
     orig(component, car, a3, a4);
 }
 
+SWOFTY_WRAP(Sess_TyreAllocation_OnSessionStart, void, void *component)
+{
+    orig(component);
+    if (!quali_engine_1990 || !component || swofty::career::entity())
+        return;
+    void *session = f1990::box::session_of(component);
+    uint32_t id = session ? at<uint32_t>(session, 0x08) : 0;
+    bool box = session && f1990::box::lineup(component).all_1990();
+    bool quali = box && f1990::box::qualifying(id);
+    set_quali(quali, quali ? "F1 1990 box qualifying" : box ? "F1 1990 box practice, race or Time Trial"
+                                                            : "not the F1 1990 box");
+}
+
 SWOFTY_WRAP(Ai_Eval_CurvatureModifier_1990, float, float grip, float mass_bias, void *settings, bool flag, void *line_a,
             float dist_a, void *line_b, float dist_b)
 {
@@ -109,6 +134,7 @@ SWOFTY_ON_LOAD
 {
     subscribe(SWOFTY_EVENT_CAREER_LOADED);
     subscribe(SWOFTY_EVENT_CAREER_UNLOADED);
+    subscribe(SWOFTY_EVENT_SESSION_END, on_session_end);
 }
 
 SWOFTY_ADDON()

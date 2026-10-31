@@ -16,7 +16,7 @@ Log lines (swofty log): `[f1-1990] GRID best-of (<why>)` once per pass, then one
 
 ## Build
 
-`./build.sh` builds the 22 DLLs with zig against the game headers in `native/include` and the SDK in `packages/sdk/include`. `f1_1990_parts.dll` binds `site_Sess_PuPanel_SlotHolder`, which has no `agree` verify row yet, so the core's `bindings.json` doesn't list it and the core drops that DLL; it loads with a loader whose `swofty/addons/core/bindings.json` adds the entry. `f1_1990_pitphases.dll` binds `Sess_PitStopUpdateJob_Update` and `g_Ne_NameTable`. `f1_1990_audiofix.dll` binds `Snd_Request_JobWorker`, `g_Snd_JobWorkerOverflow` and `g_Snd_JobWorkerLock`. `f1_1990_heapcheck.dll` binds `Ne_Heap_DeallocateNonSmall`.
+`./build.sh` builds the 24 DLLs with zig against the game headers in `native/include` and the SDK in `packages/sdk/include`. `f1_1990_parts.dll` binds `site_Sess_PuPanel_SlotHolder`, which has no `agree` verify row yet, so the core's `bindings.json` doesn't list it and the core drops that DLL; it loads with a loader whose `swofty/addons/core/bindings.json` adds the entry. `f1_1990_pitphases.dll` binds `Sess_PitStopUpdateJob_Update` and `g_Ne_NameTable`. `f1_1990_audiofix.dll` binds `Snd_Request_JobWorker`, `g_Snd_JobWorkerOverflow` and `g_Snd_JobWorkerLock`. `f1_1990_heapcheck.dll` binds `Ne_Heap_DeallocateNonSmall`.
 
 `test/run.sh` runs the ranking unit tests on the host.
 
@@ -185,6 +185,8 @@ The same DLL runs the race engine. The handling files carry the qualifying ratin
 
 The flag is set at each car's upgrade fill: on in a 1990 session outside groups 1 and 2, off in 1990 qualifying, off in any other career, and off on `career.loaded` and `career.unloaded`. A change logs `[f1-1990] quali engine: race engine on (1990 practice or race): power x0.9725, limit 300 rpm lower` or `race engine off (1990 qualifying|not a 1990 career|career loaded or unloaded): ...`. A qualifying engine that is worn out or not allocated still gives full power.
 
+F1 1990 box (Grand Prix and Time Trial, no career loaded): `Sess_TyreAllocation_OnSessionStart` is wrapped. At each session start, when every entrant of the session's line-up (session component `+0x278`, rows of 0x88 bytes at `+0x2e0`, vehicle stat id in the high word of `+0x5c`) drives a vehicle of `f1_1990` or `f1_1990b`, the race engine is on in practice (session ids 1 to 4) and the race (15 to 17) and off in qualifying (5 to 14) and Time Trial (18); any other session start without a career turns it off, and so does `session.end` without a career. Line, the first 16 session starts: `[f1-1990] quali engine: session <id> without a career: F1 1990 box, race engine|F1 1990 box, qualifying engine|not the F1 1990 box, stock engines|line-up not readable, stock engines (<n> of <n> entrants on 1990 cars)`.
+
 ## AI qualifying pace (`f1_1990_aiquali.dll`)
 
 A separate DLL, under option `quali_engine_1990`. The 1990 AI tables are built in race trim (race tyre, race engine), and the AI's grip input (vehicle state +0x24, from `Car_Tyre_ComputeGripMultiplier` at 0x140607110) carries wear, temperature and the handling file's GripMultiplier but not the compound's Peak, so on qualifiers the AI would corner at race tyre speeds. In 1990 qualifying every AI corner radius that goes through the modifier is 8.5 % larger.
@@ -201,6 +203,8 @@ Not covered: corner windows without a limit (+0x4b clear), the 0x140616b47 path 
 `Ai_Eval_CurvatureModifier` is L2 with signature `ai.eval_curvature_modifier`; the binding is declared in `src/ai_quali.cpp` as `Ai_Eval_CurvatureModifier_1990` (prototype with a `bool` flag, of which the game reads bit 0).
 
 Lines: `[f1-1990] ai quali: on (1990 qualifying): AI corner radius x1.085`, `ai quali: off (1990 practice or race|not a 1990 career|career loaded or unloaded): AI corner radius x1.000`, and once `ai quali: first scaled corner: radius factor A -> B`.
+
+F1 1990 box: the same session start check turns the scale on in qualifying (session ids 5 to 14) of a box session and off in every other session start and `session.end` without a career, with the `[f1-1990] ai quali: on|off (<why>)` line.
 
 ## R&D card art and department names (`f1_1990_rnd.dll`)
 
@@ -446,3 +450,7 @@ stack as exe offsets. `src/heap_check.hpp` is tested by `test/heap_check_test.cp
 and without guards, an overrun into the next header repaired and unlinked, no repair when the block before links
 elsewhere, out-of-range links, free blocks never taken as the block before, the 02:01 zeroed links repaired from both
 sides, a consistent block left alone by the walk, the walk stopping at a wild link and at its fix cap).
+
+## F1 1990 box (`f1_1990_box.dll`)
+
+Registers the F1 1990 box (`swofty::era::add_box`: entrant list `f1_1990_gp`, Time Trial list `f1_1990_tt`, title `lng_f1990_box`, image `#overrides.home_screen.tiles_solo_6x6[f1]`, order 1990) from its init check. Line: `[f1-1990] box: F1 1990 box registered (Grand Prix f1_1990_gp, Time Trial f1_1990_tt)`, or `refused`, or `this core has no era picker boxes`. The data side is `db/box.json` (README, Grand Prix and Time Trial box).
