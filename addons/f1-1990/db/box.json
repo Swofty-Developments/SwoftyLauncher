@@ -2317,6 +2317,12 @@
    "value": "swofty_f1"
   },
   {
+   "op": "set",
+   "select": "entrants.entrant_setup_modes.entrant_setup_mode[_metadata_=swofty_f1]",
+   "field": "max_entrants",
+   "value": "26"
+  },
+  {
    "op": "list-append",
    "select": "content_sets.content_set[_metadata_=2026]",
    "field": "available_game_setup_modes_0.setup_modes",

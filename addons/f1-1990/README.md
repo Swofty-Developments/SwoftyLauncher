@@ -219,7 +219,9 @@ Both lists are new rows copied from `f1_2026` (season `season_2026`, leaderboard
 
 Rules in the box: the race engine and the AI's qualifying grip follow the session (`f1_1990_quali.dll`, `f1_1990_aiquali.dll`, option `quali_engine_1990`, Qualifying and race engines below). Time Trial and qualifying run the qualifying engine; practice and the race run the race engine. Power-unit wear and grid penalties are career rows only. Career-only features stay career-only: power-unit parts, R&D and B-spec cars, the 12-lap qualifying limit, the pit crew pace, session names, the Friday qualifying tyre fix and the tyre supplier choice.
 
-Not covered: the box's `swofty_f1` entrant setup mode has `max_entrants` 20 (copied from `f1`), shared by every box; the pit crew training set is the `f1` one (the team `pit_lane.pit_times` rows do apply).
+The box sets `max_entrants` 26 on the `swofty_f1` entrant setup mode (copied from `f1` with 20), shared by every box: a list of up to 26 cars fields all its cars; lists of 20 to 22 cars (Classic Seasons) are unchanged and a 24-car list (F1 2012 Season) fields 24. Stock boxes use the `f1` mode and are unchanged.
+
+Not covered: the pit crew training set is the `f1` one (the team `pit_lane.pit_times` rows do apply).
 
 ```sh
 python3 addons/f1-1990/tools/box.py          # writes db/box.json and lang/box.json from db/grid.json

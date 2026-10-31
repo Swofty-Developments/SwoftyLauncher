@@ -19,6 +19,7 @@ GP_LIST = "f1_1990_gp"
 TT_LIST = "f1_1990_tt"
 TITLE = "lng_f1990_box"
 TT_CARS = 13
+HOST_MAX_ENTRANTS = "26"
 SCENARIO_IDS = {GP_LIST: "90", TT_LIST: "91"}
 LIST_SET = {"display_name": TITLE, "leaderboard": "classic"}
 LIST_ROW = re.compile(r"^entrants\.entrant_lists\.entrant_list\[_metadata_=" + SOURCE + r"\](\.entrant_(\d+))?$")
@@ -105,6 +106,8 @@ def build():
     ops = gp_list(src) + tt_list(src) + host_ops(GP_LIST) + host_ops(TT_LIST)
     for row in ("track_data.track_layers.TrackLayer", "track_data.game_setup.TrackDataSet", "tyres.compound_classes.CompoundClass"):
         ops.append({"op": "list-append", "select": f"{row}[_metadata_={SOURCE}]", "field": "game_setup_modes", "value": HOST})
+    ops.append({"op": "set", "select": f"entrants.entrant_setup_modes.entrant_setup_mode[_metadata_={HOST}]",
+                "field": "max_entrants", "value": HOST_MAX_ENTRANTS})
     ops += [
         {"op": "list-append", "select": "content_sets.content_set[_metadata_=2026]",
          "field": "available_game_setup_modes_0.setup_modes", "value": HOST},
