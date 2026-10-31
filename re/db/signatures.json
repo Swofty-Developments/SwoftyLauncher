@@ -119747,6 +119747,114 @@
     }
    ],
    "used_by": []
+  },
+  {
+   "id": "session.tyre_vis_slot_lookup",
+   "section": ".xtls",
+   "pattern": "4C 89 F9 E8 ?? ?? ?? ?? 49 8B 86 48 9C 00 00 49 8B 8E 98 9C 00 00",
+   "match": "0x142ea2ae4",
+   "anchor": "0x8",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142ea2aec",
+   "kind": "mid",
+   "expect": "49 8B 86 48 9C 00 00",
+   "names": [
+    "site_Sess_TyreVisSlotLookup"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "fix-sc",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/tyre_slots.cpp"
+   ]
+  },
+  {
+   "id": "session.tyre_vis_tail_call",
+   "section": ".xtls",
+   "pattern": "E9 ?? ?? ?? ?? 4C 89 F1 0F B6 54 24 2F",
+   "match": "0x142ea2d81",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142ea2d86",
+   "kind": "mid",
+   "expect": "4C 89 F1 0F B6 54 24 2F",
+   "names": [
+    "site_Sess_TyreVisTailCall"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "fix-sc",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/tyre_slots.cpp"
+   ]
+  },
+  {
+   "id": "session.tyre_wear_slot_lookup",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 4C 8B 86 48 9C 00 00",
+   "match": "0x142ea2351",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142ea2356",
+   "kind": "mid",
+   "expect": "4C 8B 86 48 9C 00 00",
+   "names": [
+    "site_Sess_TyreWearSlotLookup"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "fix-sc",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/tyre_slots.cpp"
+   ]
+  },
+  {
+   "id": "session.tyre_wear_return",
+   "section": ".xtls",
+   "pattern": "48 8D 54 24 50 E8 ?? ?? ?? ?? C5 F8 28 B4 24 80 02 00 00",
+   "match": "0x142ea2a5b",
+   "anchor": "0xa",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142ea2a65",
+   "kind": "mid",
+   "expect": "C5 F8 28 B4 24 80 02 00 00",
+   "names": [
+    "site_Sess_TyreWearReturn"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "fix-sc",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/tyre_slots.cpp"
+   ]
   }
  ]
 }

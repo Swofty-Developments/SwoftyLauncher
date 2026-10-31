@@ -1241,9 +1241,10 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         planner.keep_entrant_lists(crate::entrant_lists::StockLists::new(&shipped_db));
         let row_ids_lock = crate::row_ids::lock(&store.root)?;
         let last = crate::row_ids::last_build(&store.overlays_dir(profile), &built.buildhash, GVDB);
-        let (row_ids, row_id_warnings) =
+        let (mut row_ids, row_id_warnings) =
             crate::row_ids::Store::load(&store.root, Some(&game.dir), profile, last);
         built.warnings.extend(row_id_warnings);
+        built.lines.extend(row_ids.recover(&store.sessions_dir()).lines);
         planner.keep_row_ids(row_ids);
         let added = planner.apply_db_report(&mut db, &stock, &tracked, &mut db_report)?;
         if let Some(ids) = planner.take_row_ids() {
@@ -3139,6 +3140,99 @@ mod tests {
         std::fs::remove_dir_all(&root).ok();
     }
 
+    struct Grid(AddonManifest);
+
+    impl Addon for Grid {
+        fn manifest(&self) -> &AddonManifest {
+            &self.0
+        }
+
+        fn build(&self, cx: &BuildCx) -> swofty_addon::Result<AssetBatch> {
+            let op: AssetOp = serde_json::from_value(serde_json::json!({
+                "op": "db.set", "select": "t.list[_metadata_=cs_f1_2016]", "field": "name", "value": "edited"
+            }))
+            .map_err(|e| swofty_addon::Error::Other(e.to_string()))?;
+            Ok(AssetBatch {
+                ops: vec![Op {
+                    op,
+                    origin: Origin {
+                        addon: cx.cx.addon.into(),
+                        item: Some("grid-editor".into()),
+                    },
+                }],
+                ..AssetBatch::default()
+            })
+        }
+    }
+
+    #[test]
+    fn an_editor_op_on_a_row_a_later_addon_adds_applies() {
+        use swofty_formats::gvdb::Record;
+        if loader_dir().is_some() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("swofty-build-late-row-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        let records = vec![
+            Record::new("t._list_instancecount_", 0, "1"),
+            Record::new("t.list_0._metadata_", 4, "f1"),
+            Record::new("t.list_0.name", 4, "stock"),
+        ];
+        std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir,
+            user_reg: None,
+        };
+        let manifest = AddonManifest::parse(
+            r#"{ "schema_version": 1, "id": "t.grid", "name": "Grid", "version": "1.0.0", "author": "t",
+                 "compat": { "game": "f1_25" } }"#,
+        )
+        .unwrap();
+        let store = Store::new(root.join("data")).with_builtins(vec![Builtin {
+            addon: Arc::new(Grid(manifest)),
+            locked: false,
+            default_on: true,
+        }]);
+        let src = root.join("src");
+        std::fs::create_dir_all(&src).unwrap();
+        std::fs::write(
+            src.join("swofty.json"),
+            r#"{ "schema_version": 1, "id": "t.seasons", "name": "Seasons", "version": "1.0.0", "author": "t",
+                 "compat": { "game": "f1_25" }, "operations": { "database": ["db.json"] } }"#,
+        )
+        .unwrap();
+        std::fs::write(
+            src.join("db.json"),
+            r#"{ "schema_version": 1, "fields": { "t.list": ["_metadata_", "name"] }, "ops": [
+                 { "op": "add-row", "table": "t", "from": "t.list[_metadata_=f1]", "set": { "_metadata_": "cs_f1_2016", "name": "seasons" } } ] }"#,
+        )
+        .unwrap();
+        store.install_addon(&src).unwrap();
+        store
+            .update_profile("default", |p| p.set_enabled("t.seasons", true))
+            .unwrap();
+
+        let built = build(&store, "default", &game).unwrap();
+        assert_eq!(built.order, [CORE_ID, "t.grid", "t.seasons"]);
+        let out = Gvdb::parse(&std::fs::read(&built.plan.data[GVDB]).unwrap()).unwrap();
+        assert_eq!(out.get_text("t.list_1._metadata_").as_deref(), Some("cs_f1_2016"));
+        assert_eq!(out.get_text("t.list_1.name").as_deref(), Some("edited"));
+
+        store
+            .update_profile("default", |p| p.set_enabled("t.seasons", false))
+            .unwrap();
+        let e = build(&store, "default", &game).unwrap_err().to_string();
+        assert!(
+            e.contains("applying t.grid (grid-editor): t.list[_metadata_=cs_f1_2016]: no row matches, even after every addon's changes"),
+            "{e}"
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
     #[test]
     fn runs_the_build_hooks_of_builtin_addons() {
         if loader_dir().is_some() {
@@ -3357,17 +3451,16 @@ mod tests {
             Some("team12_26")
         );
         let key = "t.rows/entrants.teams.team/team12_26";
-        let hashed = crate::ops::hash_probe(key, crate::ops::hash_pool(None, 101, 1))
-            .next()
-            .unwrap();
+        let next_id = 102;
         assert_eq!(
             db.get_text("entrants.teams.team_2.stat_id"),
-            Some(hashed.to_string())
+            Some(next_id.to_string())
         );
         assert!(
-            built.lines.iter().any(|l| l.ends_with(&format!(
-                "stat_id {hashed} (the source's is 100; from the row's key)"
-            ))),
+            built
+                .lines
+                .iter()
+                .any(|l| l.ends_with(&format!("stat_id {next_id} (the source's is 100)"))),
             "{:?}",
             built.lines
         );
@@ -3376,14 +3469,14 @@ mod tests {
                 .unwrap();
         assert_eq!(
             outputs["default"]["t.rows"]["row_ids"]["entrants.teams.team/team12_26"],
-            hashed
+            next_id
         );
         let ids = crate::row_ids::path(&store.root);
         let kept: serde_json::Value = serde_json::from_slice(&std::fs::read(&ids).unwrap()).unwrap();
-        assert_eq!(kept["rows"][key]["id"], hashed);
+        assert_eq!(kept["rows"][key]["id"], next_id);
         std::fs::write(
             &ids,
-            format!(r#"{{"version":1,"rows":{{"{key}":{{"id":140,"from":"hashed"}}}}}}"#),
+            format!(r#"{{"version":1,"rows":{{"{key}":{{"id":140,"from":"next"}}}}}}"#),
         )
         .unwrap();
         std::fs::remove_file(built.overlay.join(SAVED_FILE)).unwrap();

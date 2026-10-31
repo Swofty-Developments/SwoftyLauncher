@@ -1,5 +1,6 @@
 #include "../../src/core/apply/content/boot.hpp"
 #include "../../src/core/apply/ids.hpp"
+#include "../../src/core/apply/scheduler.hpp"
 #include "../../src/core/career_ops/teams_plan.hpp"
 #include "../../src/core/career_ops/teams_store.hpp"
 #include "../../src/core/team_slots_logic.hpp"
@@ -1629,6 +1630,60 @@ static void id_clash_tests(const std::string &regs)
     check(again.writes == moved.writes, "the next boot moves it to the same id");
 }
 
+static void stock_only_tests(const std::string &regs)
+{
+    registry::reset_store();
+    auto &st = registry::store();
+    st.set_order({"mod.a"});
+    st.set_validator(&registry::schema_validator());
+    const SwoftyRegistry *t = registry::table();
+    for (const char *name : {"team.identity", "team.constructor", "team.pit_times", "team.logo"}) {
+        std::string schema = slurp(regs + "/" + name + (std::string(name) == "team.identity" ? "/1.1.json" : "/1.0.json"));
+        t->declare(name, SwoftyText{schema.data(), schema.size()});
+    }
+    st.end_register();
+    Db db;
+    stock_team_rows(db);
+    content::Read stock_read = [&](const std::string &path) -> std::optional<std::string> {
+        auto r = db.base()(content::gvdb::fnv64(path));
+        return r ? std::optional<std::string>(r->text) : std::nullopt;
+    };
+    check(content::in_load_order(st, "team.identity").empty() && content::in_load_order(st, "team.pit_times").empty(),
+          "a profile with no team records has none in load order");
+    for (auto &c : content::CONSTRUCTOR_SEEDS)
+        st.add_base("team.constructor", c.key,
+                    Value::object({{"name", Value(std::string(c.name))}, {"country", Value(std::string(c.country))}, {"team", Value()}}));
+    for (auto &team : content::stock_teams(stock_read))
+        st.add_base("team.identity", team.label, team.record);
+    st.stock_loaded("team.identity", true);
+    check(st.get("team.identity", "game/mercedes").status == registry::Status::ok &&
+              st.get("team.identity", "game/tororosso").status == registry::Status::ok &&
+              st.get("team.constructor", "constructor/mercedes").status == registry::Status::ok,
+          "the stock team and constructor records exist with no addon team records");
+    check(st.list("team.identity", "").size() == 2, "and the stock teams are the only team.identity records");
+    check(content::in_load_order(st, "team.identity").empty() && content::in_load_order(st, "team.pit_times").empty(),
+          "seeding adds no team.identity or team.pit_times record the content appliers walk in load order");
+    std::map<std::string, Value> keep;
+    auto lookup = content::own_lookup(st, keep);
+    auto refs = content::refs_of(st, lookup);
+    bool only_stock = true;
+    for (auto &[token, team] : refs.constructor_team)
+        only_stock = only_stock && team.rfind("game/", 0) == 0;
+    check(refs.constructors == 0 && refs.constructors_refused == 0 && refs.lines.empty() && only_stock && refs.pit_record.empty(),
+          "the constructor applier's report is unchanged: nothing applied, refused or logged, every constructor id resolves to a stock row");
+    apply::ids::Store ids;
+    ids.define_pool("team.identity", {{{4, 1023}}});
+    int64_t out = -1;
+    std::string line;
+    check(apply::stat_id(st, ids, "team.identity", "game/tororosso", &out, "test", &line) == SWOFTY_ASSET_OK && out == 3,
+          "stat_id on a stock record returns the row's own stat id");
+    check(apply::stat_id(st, ids, "team.identity", "game/mercedes", &out, "test", &line) == SWOFTY_ASSET_OK && out == 0,
+          "including stat id 0");
+    ids.allocate("team.identity", "mod.a/new", "test");
+    int64_t fresh = ids.allocate("team.identity", "mod.a/other", "test").id;
+    check(fresh == 5, "a stock stat_id call allocates nothing from the pool: the next free id is still the first above the table");
+}
+
 int main(int argc, char **argv)
 {
     box_time_trial_tests();
@@ -1642,6 +1697,8 @@ int main(int argc, char **argv)
         team_tests(argv[1]);
     if (argc > 1)
         twelve_team_tests(argv[1]);
+    if (argc > 1)
+        stock_only_tests(argv[1]);
     if (argc > 1)
         twelve_slot_tests(argv[1]);
     if (argc > 1)
