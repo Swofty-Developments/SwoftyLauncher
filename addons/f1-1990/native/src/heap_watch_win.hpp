@@ -15,10 +15,9 @@ namespace f1990::watch {
 
 inline constexpr uint32_t kMaxHits = 50000;
 inline constexpr int kLogHeapHits = 20;
-inline constexpr int kLogOtherHits = 40;
+inline constexpr int kLogOtherHits = 100;
 inline constexpr int kHeapPerSecond = 3;
 inline constexpr int kOtherPerSecond = 5;
-inline constexpr uint64_t kExpectDefault = 0x05b005c0;
 
 struct Watch {
     uint64_t addr[kSlots]{};
@@ -29,10 +28,10 @@ struct Watch {
     std::atomic<bool> trap_seen{false};
     std::atomic<bool> stop{false};
     std::atomic<bool> enabled{false};
-    std::atomic<bool> allocated{false};
+    std::atomic<uint32_t> heap_total_atomic{0};
+    uint64_t image_lo = 0;
     std::atomic<uint32_t> hits{0}, ignored{0};
     std::atomic<int> armed{0}, failed{0};
-    uint64_t expect = 0;
     int heap_logged = 0, other_logged = 0;
     uint32_t heap_total = 0, other_total = 0, limited = 0;
     uint64_t second = 0;
@@ -64,12 +63,9 @@ inline LONG CALLBACK on_trap(PEXCEPTION_POINTERS p)
                 now[i] = g_watch.shadow[i];
         uint32_t changed = changed_mask(g_watch.shadow, now, g_watch.n);
         std::memcpy(g_watch.shadow, now, sizeof now);
-        if (!g_watch.allocated.load(std::memory_order_relaxed)) {
-            uint64_t tag = 0;
-            if (!g_watch.expect || (read_word(g_watch.addr[0] + 8, tag) && tag == g_watch.expect))
-                g_watch.allocated.store(true);
-            else
-                changed = 0;
+        if (changed && in_allocator(c->Rip, g_watch.image_lo)) {
+            g_watch.heap_total_atomic.fetch_add(1, std::memory_order_relaxed);
+            changed = 0;
         }
         if (!changed)
             g_watch.ignored.fetch_add(1, std::memory_order_relaxed);
@@ -267,13 +263,13 @@ inline DWORD WINAPI watch_worker(LPVOID)
             g_watch.enabled.store(false);
             drain();
             swofty::log("[f1-1990] heap watch: %u hits, the watch is off for new threads; heap code %u, other %u", g_watch.hits.load(),
-                        g_watch.heap_total, g_watch.other_total);
+                        g_watch.heap_total_atomic.load(), g_watch.other_total);
             return 0;
         }
         if (pass % 300 == 299 && (g_watch.hits.load() || g_watch.limited))
             swofty::log("[f1-1990] heap watch: %u hits so far, heap code %u, other %u, %u not logged, %u unchanged writes ignored, "
                         "%d thread(s) armed",
-                        g_watch.hits.load(), g_watch.heap_total, g_watch.other_total, g_watch.limited, g_watch.ignored.load(),
+                        g_watch.hits.load(), g_watch.heap_total_atomic.load(), g_watch.other_total, g_watch.limited, g_watch.ignored.load(),
                         g_watch.armed.load());
         pass++;
         Sleep(200);
@@ -291,7 +287,7 @@ inline void start_watch()
     for (int i = 0; i < g_watch.n; i++)
         read_word(g_watch.addr[i], g_watch.shadow[i]);
     g_watch.start = GetTickCount64();
-    g_watch.expect = std::getenv("F1_1990_HEAP_WATCH") ? 0 : kExpectDefault;
+    g_watch.image_lo = swofty::mem::detail::image().lo;
     g_watch.live.store(true);
     g_watch.enabled.store(true);
     AddVectoredExceptionHandler(1, on_trap);

@@ -460,13 +460,12 @@ after load. The default addresses are the damaged header of the 0x5b0-byte block
 its older list neighbour (0x2FD806CF0). `F1_1990_HEAP_WATCH=addr,addr,...` (hex, up to four, rounded down to 8) in
 the game's environment replaces them and opens the allocation gate.
 
-A vectored exception handler runs on each trap. It re-reads the four words and ignores the hit when none changed
-(a write of the same value). Until the header at the first address reads size 0x5c0 and requested 0x5b0 (the block
-has been allocated for the first time) every hit is ignored. A real hit is copied into a lock-free ring (thread, rip,
-rax rcx rdx rbx rsi rdi r8 r9, 64 words of stack, the 16 code bytes before rip, the watched values) and the worker
-logs it. Writes by the heap's own code (exe+0x3960000 to exe+0x396c000) get one line, at most 3 a second and 20 in
-all; any other writer gets a full line, at most 5 a second and 40 in all. Past 50000 hits new threads stop arming. The
-trap marks the slot that changed with `*`.
+A vectored exception handler runs on each trap. It re-reads the four words and ignores the hit when none changed (a
+write of the same value) or when the writing instruction is in the heap's own code (exe+0x3960000 to exe+0x396c000,
+counted only). There is no condition on the block that lives at the address. Any other write that changes a watched
+value is copied into a lock-free ring (thread, rip, rax rcx rdx rbx rsi rdi r8 r9, 64 words of stack, the 16 code
+bytes before rip, the watched values) and the worker logs it, at most 5 a second and 100 in all. Past 50000 hits new
+threads stop arming. The slot that changed is marked `*`.
 
 Lines:
 - `[f1-1990] heap watch: on (write breakpoints on ... in every thread)`, then `armed N thread(s), M refused; write
@@ -474,14 +473,11 @@ Lines:
 - `heap watch: +T ms thread N rip exe+0x... is outside the heap code and wrote a watched address (* = value changed):
   <addr>=<value> ...; dr6 ...; code before rip ...; rax ... r9 ...; stack exe+0x...` is the writer. The instruction
   that wrote ends at rip.
-- `heap watch: +T ms thread N heap code exe+0x... wrote; <addr>=<value> ...` is the heap's own link, unlink and free
-  tree writes.
 
 Proton (proton-cachyos 10.0) honours debug registers set on a thread's own context with kernel.yama.ptrace_scope 1.
 `test/heap_watch_wine.cpp` (build with the DLL flags, run with `wine64`) creates 4000 short threads that call
 `on_thread_attach`, unarmed and armed: 157 us and 182 us per thread (+25 us, +100 ms over 4000 threads). Arming 41
-existing threads takes under 2 ms. Writes of the same value and writes from threads armed late are handled as above.
-The pure parts (DR7 bits, address list, hit ring, stack filter) are tested by `test/heap_watch_test.cpp`.
+existing threads takes under 2 ms. The pure parts (DR7 bits, address list, hit ring, stack filter) are tested by `test/heap_watch_test.cpp`.
 
 ## F1 1990 box (`f1_1990_box.dll`)
 

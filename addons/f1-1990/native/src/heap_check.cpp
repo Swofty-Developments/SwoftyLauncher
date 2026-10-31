@@ -21,9 +21,9 @@
 // Option heap_watch (default off) names the writer directly: it arms hardware write breakpoints (DR0-DR3, 8 bytes)
 // on four heap addresses in every thread of the process (the first damaged header of sessions 20261030-145707 and
 // 20261031-044641 and the 0x48 bytes in front of it; F1_1990_HEAP_WATCH overrides them with up to four hex
-// addresses). Threads that exist at load are armed once (suspended one by one); every thread created later arms itself from DLL_THREAD_ATTACH on its own context, with no polling. Hits that leave the watched values unchanged, and hits before the block at the first address has been allocated (its size and requested fields read 0x5c0/0x5b0), are ignored. A vectored exception handler copies each hit (thread, rip, registers, 64 stack words, the code bytes
+// addresses). Threads that exist at load are armed once (suspended one by one); every thread created later arms itself from DLL_THREAD_ATTACH on its own context, with no polling. Hits that leave the watched values unchanged and writes by the heap's own code are ignored; any other write that changes a watched value is logged, whatever block lives there. A vectored exception handler copies each hit (thread, rip, registers, 64 stack words, the code bytes
 // before rip, the watched values) into a lock-free ring and a worker thread logs it;
-// writes by the heap's own code are logged in one line, any other writer with its stack. Wine does not fill DR6, so
+// each logged writer comes with its registers and stack. Wine does not fill DR6, so
 // the slot that fired is the one whose value changed. No hit, no effect; past 50000 hits the breakpoints are cleared.
 
 #include <windows.h>
