@@ -1,13 +1,13 @@
 use std::collections::BTreeMap;
-use std::io::{Read, Write};
+use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use semver::Version;
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
 
 use crate::launcher::Progress;
+use crate::transfer;
 use crate::{Error, Result, io_err};
 
 pub const LATEST_URL: &str =
@@ -246,11 +246,11 @@ pub fn refusal(
     }
 }
 
-pub fn request(
+fn builder(
     url: &str,
     head: bool,
     timeout: Option<Duration>,
-) -> std::result::Result<ureq::http::Response<ureq::Body>, Failure> {
+) -> ureq::RequestBuilder<ureq::typestate::WithoutBody> {
     let target = endpoint(url);
     let builder = if head {
         ureq::head(&target)
@@ -265,10 +265,13 @@ pub fn request(
     .timeout_recv_response(Some(Duration::from_secs(30)))
     .http_status_as_error(false);
     let config = if head { builder.max_redirects(0) } else { builder };
-    let response = config
-        .build()
-        .call()
-        .map_err(|e| Failure::Failed(format!("{url}: {e}")))?;
+    config.build()
+}
+
+fn answered(
+    url: &str,
+    response: ureq::http::Response<ureq::Body>,
+) -> std::result::Result<ureq::http::Response<ureq::Body>, Failure> {
     let status = response.status().as_u16();
     if status < 400 {
         return Ok(response);
@@ -282,6 +285,17 @@ pub fn request(
         header("x-ratelimit-reset"),
         now_secs(),
     ))
+}
+
+pub fn request(
+    url: &str,
+    head: bool,
+    timeout: Option<Duration>,
+) -> std::result::Result<ureq::http::Response<ureq::Body>, Failure> {
+    let response = builder(url, head, timeout)
+        .call()
+        .map_err(|e| Failure::Failed(format!("{url}: {e}")))?;
+    answered(url, response)
 }
 
 pub fn get(url: &str, timeout: Option<Duration>) -> Result<ureq::Body> {
@@ -317,34 +331,32 @@ pub fn verifiable(release: &Release, asset: &Asset) -> bool {
     release.sums().is_some() || asset.digest.as_deref().is_some_and(|d| d.starts_with("sha256:"))
 }
 
+/// Downloads `asset` to `to` and returns its length and SHA-256. A download
+/// the connection breaks off resumes from the bytes it has.
 pub fn download(asset: &Asset, to: &Path, progress: &dyn Fn(u64)) -> Result<(u64, String)> {
     let url = &asset.browser_download_url;
-    let mut reader = get(url, Some(Duration::from_secs(30 * 60)))?.into_reader();
-    let mut file = std::fs::File::create(to).map_err(io_err(to))?;
-    let mut hash = Sha256::new();
-    let mut buf = vec![0; 64 * 1024];
-    let mut len = 0u64;
-    loop {
-        let n = reader
-            .read(&mut buf)
-            .map_err(|e| Error::Other(format!("{url}: {e}")))?;
-        if n == 0 {
-            break;
+    let too_long = || {
+        format!(
+            "{}: larger than the {} bytes the release lists",
+            asset.name, asset.size
+        )
+    };
+    let fetch = transfer::Fetch {
+        url,
+        size: asset.size,
+        lister: "the release",
+        too_long: &too_long,
+    };
+    let mut open = |from: u64| {
+        let mut request =
+            builder(url, false, Some(Duration::from_secs(30 * 60))).header("Accept-Encoding", "identity");
+        if from > 0 {
+            request = request.header("Range", format!("bytes={from}-"));
         }
-        len += n as u64;
-        if len > asset.size {
-            return Err(Error::Other(format!(
-                "{}: larger than the {} bytes the release lists",
-                asset.name, asset.size
-            )));
-        }
-        hash.update(&buf[..n]);
-        file.write_all(&buf[..n]).map_err(io_err(to))?;
-        progress(len);
-    }
-    file.sync_all().map_err(io_err(to))?;
-    let digest = hash.finalize().iter().map(|b| format!("{b:02x}")).collect();
-    Ok((len, digest))
+        let response = request.call().map_err(transfer::Opening::Call)?;
+        answered(url, response).map_err(|f| transfer::Opening::Refused(f.into()))
+    };
+    transfer::fetch(&fetch, to, &mut open, progress)
 }
 
 fn safe_path(name: &str) -> Option<PathBuf> {
@@ -688,6 +700,10 @@ pub fn apply(new: &Path, root: &Path, backup: &Path) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
+    use std::io::Write;
+
+    use sha2::{Digest, Sha256};
+
     use super::*;
 
     fn v(s: &str) -> Version {
@@ -733,6 +749,64 @@ mod tests {
             browser_download_url: format!("https://example.invalid/{name}"),
             digest: digest.map(Into::into),
         }
+    }
+
+    #[test]
+    fn resumes_a_release_download_the_connection_cut_off() {
+        let body = b"launcher bytes ".repeat(4000);
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let mut a = asset("swofty-launcher.zip", body.len() as u64, None);
+        a.browser_download_url = format!("http://{}/a.zip", listener.local_addr().unwrap());
+        let half = body.len() / 2;
+        let served = body.clone();
+        let server = std::thread::spawn(move || {
+            let mut heads = Vec::new();
+            for first in [true, false] {
+                let (mut stream, _) = listener.accept().unwrap();
+                let mut head = Vec::new();
+                let mut byte = [0u8; 1];
+                while !head.ends_with(b"\r\n\r\n") && stream.read(&mut byte).is_ok_and(|n| n == 1) {
+                    head.push(byte[0]);
+                }
+                heads.push(String::from_utf8_lossy(&head).to_ascii_lowercase());
+                let answer = if first {
+                    let mut out = format!(
+                        "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+                        served.len()
+                    )
+                    .into_bytes();
+                    out.extend(&served[..half]);
+                    out
+                } else {
+                    let mut out = format!(
+                        "HTTP/1.1 206 Partial Content\r\nContent-Range: bytes {half}-{}/{}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+                        served.len() - 1,
+                        served.len(),
+                        served.len() - half
+                    )
+                    .into_bytes();
+                    out.extend(&served[half..]);
+                    out
+                };
+                stream.write_all(&answer).unwrap();
+            }
+            heads
+        });
+        let dir = temp("resume");
+        let to = dir.join("a.zip");
+        let (len, sha256) = download(&a, &to, &|_| {}).unwrap();
+        assert_eq!(len, body.len() as u64);
+        assert_eq!(std::fs::read(&to).unwrap(), body);
+        let whole: String = Sha256::digest(&body).iter().map(|b| format!("{b:02x}")).collect();
+        assert_eq!(sha256, whole);
+        let heads = server.join().unwrap();
+        assert!(!heads[0].contains("range:"), "{}", heads[0]);
+        assert!(
+            heads[1].contains(&format!("range: bytes={half}-")),
+            "{}",
+            heads[1]
+        );
+        std::fs::remove_dir_all(&dir).ok();
     }
 
     #[test]
