@@ -17,20 +17,31 @@
 // the block before it in memory, the same for the neighbour whose header is damaged (the block before that header is
 // the one that ran over), the walk's result and the call stack, so the writer can be named. Option heap_check off
 // passes every free through unchecked.
+//
+// Option heap_watch (default off) names the writer directly: it arms hardware write breakpoints (DR0-DR3, 8 bytes)
+// on four heap addresses in every thread of the process (the first damaged header of sessions 20261030-145707 and
+// 20261031-044641 and the 0x48 bytes in front of it; F1_1990_HEAP_WATCH overrides them with up to four hex
+// addresses). A vectored exception handler copies each hit (thread, rip, registers, 64 stack words, the code bytes
+// before rip, the watched values) into a lock-free ring and a worker thread logs it and arms threads created later;
+// writes by the heap's own code are logged in one line, any other writer with its stack. Wine does not fill DR6, so
+// the slot that fired is the one whose value changed. No hit, no effect; past 50000 hits the breakpoints are cleared.
 
 #include <windows.h>
 
 #include <atomic>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
 #include "heap_check.hpp"
+#include "heap_watch_win.hpp"
 
 SWOFTY_SETTING(bool, heap_check, true);
+SWOFTY_SETTING(bool, heap_watch, false);
 
 namespace {
 
@@ -182,6 +193,8 @@ void inspect(void *heap, uint8_t *ptr)
     report(heap, ptr, h, h0, c, damaged, d0, repaired, nb, walk, r, guard);
 }
 
+namespace hw = f1990::watch;
+
 }
 
 SWOFTY_WRAP(Ne_Heap_DeallocateNonSmall, uint64_t, void *heap, uint8_t *ptr)
@@ -195,6 +208,8 @@ SWOFTY_ON_LOAD
 {
     swofty::log("[f1-1990] heap check: %s", heap_check ? "on (links of every large game heap free are checked)"
                                                        : "off (heap_check)");
+    if (heap_watch)
+        hw::start_watch();
 }
 
 SWOFTY_ADDON()

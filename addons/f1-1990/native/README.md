@@ -449,6 +449,33 @@ and without guards, an overrun into the next header repaired and unlinked, no re
 elsewhere, out-of-range links, free blocks never taken as the block before, the 02:01 zeroed links repaired from both
 sides, a consistent block left alone by the walk, the walk stopping at a wild link and at its fix cap).
 
+### Heap write watch (`heap_watch`)
+
+Option `heap_watch` (default off) in `f1_1990_heapcheck.dll`. Loading with it on arms hardware write breakpoints
+(DR0-DR3, 8 bytes each) on four heap addresses in every thread of the process and re-arms threads created later (a
+worker thread rescans every 250 ms). The default addresses are the damaged header of the 0x5b0-byte block seen in
+sessions 20261030-145707 and 20261031-044641 (0x2FD8487A0, its links), the two words in front of it (0x2FD848798,
+0x2FD848760) and the header of its older list neighbour (0x2FD806CF0). `F1_1990_HEAP_WATCH=addr,addr,...` (hex, up to
+four, rounded down to 8) in the game's environment replaces them. A vectored exception handler copies each hit into a
+lock-free ring (thread, rip, rax rcx rdx rbx rsi rdi r8 r9, 64 words of stack, the 16 code bytes before rip, the
+watched values); the worker logs it. Writes by the heap's own code (exe+0x3960000 to exe+0x396c000) get one line, the
+first 60; any other writer gets a full line, the first 100. Past 50000 hits the breakpoints are cleared. With no hit
+nothing runs besides the 50 ms worker. Wine reports DR6 as 0, so the slot that fired is the one marked `*` (its value
+changed).
+
+Lines:
+- `[f1-1990] heap watch: on (write breakpoints on ... in every thread)`, then `armed N thread(s), M refused; write
+  breakpoints on K address(es)`, or `debug registers were not honoured in N thread(s); the watch is off`;
+- `heap watch: +T ms thread N rip exe+0x... is outside the heap code and wrote a watched address (* = value changed):
+  <addr>=<value> ...; dr6 ...; code before rip ...; rax ... r9 ...; stack exe+0x...` is the writer. The instruction
+  that wrote ends at rip.
+- `heap watch: +T ms thread N heap code exe+0x... wrote; <addr>=<value> ...` is the heap's own link, unlink and free
+  tree writes.
+
+Proton (proton-cachyos 10.0) honours the registers with kernel.yama.ptrace_scope 1: `test/heap_watch_wine.cpp` (build
+with the DLL flags, run with `wine64`) arms an array in two threads, one created after the arming, and logs all six
+writes. The pure parts (DR7 bits, address list, hit ring, stack filter) are tested by `test/heap_watch_test.cpp`.
+
 ## F1 1990 box (`f1_1990_box.dll`)
 
 Registers the F1 1990 box (`swofty::era::add_box`: entrant list `f1_1990_gp`, Time Trial list `f1_1990_tt`, title `lng_f1990_box`, image `#overrides.home_screen.tiles_solo_6x6[f1]`, order 1990) from its init check. Line: `[f1-1990] box: F1 1990 box registered (Grand Prix f1_1990_gp, Time Trial f1_1990_tt)`, or `refused`, or `this core has no era picker boxes`. The data side is `db/box.json` (README, Grand Prix and Time Trial box).

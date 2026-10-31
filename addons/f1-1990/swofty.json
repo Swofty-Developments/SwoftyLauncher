@@ -59,6 +59,11 @@
       "binds": "native"
     },
     {
+      "id": "heap_watch", "type": "toggle", "label": "Heap write watch", "default": false,
+      "description": "Debugging only: arms hardware write breakpoints on the game heap blocks that were damaged in earlier sessions and logs every writer with its stack. Works in every mode.",
+      "binds": "native"
+    },
+    {
       "id": "crew_kit", "type": "toggle", "label": "1990 pit crew kit", "default": true,
       "description": "The pit stop and garage crews of the 1990 teams wear their team colours. Off: they wear the default crew uniform and crew_livery.erp and pitstop_26.erp stay stock.",
       "binds": "db"
