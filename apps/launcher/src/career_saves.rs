@@ -1322,7 +1322,7 @@ mod tests {
         assert_eq!(careers_held(&vec![String::new(); 10]), "10 careers");
         let l = listing(
             &swofty_core::stdlib::careers::parse(
-                r#"{"careers":[{"career":"f1_career_2026","slot_season":1,"slot_weekend":2}]}"#,
+                r#"{"careers":[{"career":"f1_career_2026","slot":"0","slot_season":1,"slot_weekend":2}]}"#,
             ),
             None,
         );
