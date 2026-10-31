@@ -3,7 +3,7 @@
 //! save first, writes each file through a temporary name and checks its
 //! hash, and never touches `remotecache.vdf`.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use super::{Event, EventKind, Layout, Location, Meta, Notice, Reason, Taken, Vault};
 use crate::baseline::sha256_file;
@@ -79,6 +79,24 @@ impl Restored {
     pub fn log_line(&self) -> String {
         format!("[vault] restored {} into {}", self.snapshot, self.dir.display())
     }
+}
+
+/// The launcher profile whose save `loc` is; the Steam save is Vanilla's.
+fn profile_of(loc: &Location) -> String {
+    match (loc.layout, loc.source.strip_prefix("launcher-")) {
+        (Layout::Launcher, Some(p)) => p.to_owned(),
+        _ => crate::profile::VANILLA.to_owned(),
+    }
+}
+
+/// Set a restored file's modified time to `now`, so it doesn't carry the epoch.
+fn touch(path: &Path, now: i64) -> Result<()> {
+    let at = std::time::UNIX_EPOCH + std::time::Duration::from_secs(now.max(0) as u64);
+    std::fs::OpenOptions::new()
+        .write(true)
+        .open(path)
+        .and_then(|f| f.set_modified(at))
+        .map_err(io_err(path))
 }
 
 pub fn restore(vault: &Vault, id: &str, loc: &Location, running: Running, now: i64) -> Result<Restored> {
@@ -166,7 +184,8 @@ pub fn restore_across(
             .and_then(|h| match h == f.sha256 {
                 true => Ok(()),
                 false => Err(Error::Other(format!("{} did not copy cleanly", tmp.display()))),
-            });
+            })
+            .and_then(|()| touch(&tmp, now));
         if let Err(e) = ok {
             for (tmp, _, _) in &staged {
                 std::fs::remove_file(tmp).ok();
@@ -206,6 +225,9 @@ pub fn restore_across(
         .filter(|f| !snap.files.iter().any(|s| s.name == f.key))
         .map(|f| f.key)
         .collect();
+    if let Some(index) = from.index_of(&snap) {
+        crate::stdlib::careers::replace_profile(&into.data, &profile_of(loc), &index).ok();
+    }
     let mut e = Event::new(now, EventKind::Restored).snapshot(id);
     e.from = before.clone();
     e.detail = Some(loc.dir.display().to_string());

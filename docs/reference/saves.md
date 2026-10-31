@@ -59,8 +59,10 @@ swofty-launcher: saves: copied the Steam save (2 file(s), 961752 bytes, ...) int
 ```
 
 ```json
-{ "at": 1793477702, "launcher": "1.7.0", "profiles": ["default", "progressive"], "note": "imported from /home/you/.local/share/Steam/userdata/843502855/3059520/remote" }
+{ "at": 1793477702, "launcher": "1.7.0", "profiles": ["default", "progressive"], "note": "imported from /home/you/.local/share/Steam/userdata/843502855/3059520/remote", "seen": false }
 ```
+
+The launcher shows one dialog about the import when `profiles` isn't empty and `seen` is `false`, then writes `"seen": true`. `launcher_saves::notice_due` and `launcher_saves::mark_seen` are the two calls.
 
 When F1 25 is running at that start, the launcher logs that the import waits and tries again at the next start. A profile created later, or one whose store is empty at Play, gets the same copy at its first Play. The Steam save is only read.
 
@@ -77,6 +79,8 @@ the Steam save it replaced is snapshot 20261031-203010-before-restore
 exported the launcher saves of profile default into /home/you/.local/share/Steam/userdata/843502855/3059520/remote
 start Steam to upload the exported save; if it asks which copy to keep, keep the local files (this computer)
 ```
+
+The **Saves** page does the same from its header: **Import from Steam**, **Export to Steam**, and **Copy careers to…** (another profile's save, or the Steam save from the Vanilla profile). A copy is `launcher_saves::copy_to(data, &from, "progressive", running, now)`; it takes a Steam save or another profile's store as `from`.
 
 Both need F1 25 closed. Export also needs Steam closed. An import keeps what the store held in the vault first, as a `before a restore` snapshot pinned `before-import`. Export goes through the vault's restore, so it snapshots the launcher store, snapshots the Steam save as `before-restore`, checks every file's SHA-256, and never touches `remotecache.vdf`. Only the profile save's files are copied; highlights and ghosts stay where they are. The profile argument defaults to the active profile.
 
@@ -287,7 +291,7 @@ Playing from Steam or the EA app runs F1 25 without the launcher, and a session 
 {"at":1793448044,"kind":"shrank","snapshot":"20261031-120044-changed-outside","from":"20261030-221500-after-session","before":961752,"after":640728,"detail":"found when the launcher started"}
 ```
 
-When the save is also at least 24 KB smaller, the [Career saves](/using/career-saves) page and the Addons page show a notice with **Review the restore** and **Dismiss**, and `swofty run` prints it:
+When the save is also at least 24 KB smaller, the [Saves](/using/career-saves) page and the Addons page show a notice with **Review the restore** and **Dismiss**, and `swofty run` prints it:
 
 ```text
 [warning] saves: Your F1 25 save changed outside a launcher session (a Steam or EA app launch) and is 314 KB smaller than before. The career vault kept the version from 2026-10-30 22:15 UTC: 20261030-221500-after-session. If a career is missing, restore it with `swofty saves restore 20261030-221500-after-session` while F1 25 and Steam are closed

@@ -814,3 +814,31 @@ fn pin_and_unpin_only_touch_the_players_pin() {
     let s = v.unpin_why(&a.id, "pinned", T0 + 1).unwrap();
     assert_eq!(s.pinned, vec!["backup".to_owned()]);
 }
+
+#[test]
+fn a_restore_puts_the_snapshots_careers_back_and_dates_the_files() {
+    let root = tmp("restore-careers");
+    let loc = steam(&root, "7", &[1u8; 900]);
+    let v = vault(&root, &loc);
+    write_index(&root, &[("p:1", "present", 2016, 7), ("p:2", "present", 2017, 1)]);
+    let a = take(&v, &loc, Reason::AfterSession, T0, &[2u8; 900]);
+    let other = serde_json::json!({ "career": "q:9", "profile": "other", "label": "q", "status": "present" });
+    let path = root.join("data/careers/index.json");
+    let mut now: serde_json::Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    now["careers"].as_array_mut().unwrap().push(other);
+    std::fs::write(&path, now.to_string()).unwrap();
+    let a = v.find(&a.id).unwrap();
+    write_index(&root, &[("p:2", "present", 2017, 5), ("p:3", "present", 2018, 1)]);
+    take(&v, &loc, Reason::AfterSession, T0 + 100, &[3u8; 900]);
+
+    restore(&v, &a.id, &loc, Running::default(), T0 + 200).unwrap();
+    let listed = crate::stdlib::careers::read(&crate::stdlib::careers::data_path(&root.join("data")));
+    let ids: Vec<&str> = listed.iter().map(|c| c.career.as_str()).collect();
+    assert!(ids.contains(&"p:1") && ids.contains(&"p:2"), "{ids:?}");
+    assert!(!ids.contains(&"p:3"), "{ids:?}");
+    let mtime = std::fs::metadata(loc.dir.join(DATA)).unwrap().modified().unwrap();
+    assert_eq!(
+        mtime,
+        std::time::UNIX_EPOCH + std::time::Duration::from_secs((T0 + 200) as u64)
+    );
+}

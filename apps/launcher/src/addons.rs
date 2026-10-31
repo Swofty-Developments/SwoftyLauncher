@@ -26,8 +26,8 @@ use crate::theme::{Palette, SCROLLBAR_GAP, ScrollArea, palette};
 
 const FADE: Duration = Duration::from_secs(4);
 pub(crate) const FILTERS_W: f32 = 226.;
-const DETAIL_W: f32 = 380.;
-const SPLIT_AT: f32 = 1000.;
+pub(crate) const DETAIL_W: f32 = 380.;
+pub(crate) const SPLIT_AT: f32 = 1000.;
 const ITEMS_SHOWN: usize = 10;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -475,8 +475,19 @@ pub(crate) fn facet_row(
     count: usize,
     p: Palette,
 ) -> Stateful<Div> {
+    facet_row_with(id, on, text, count.to_string(), count == 0, p)
+}
+
+pub(crate) fn facet_row_with(
+    id: impl Into<SharedString>,
+    on: bool,
+    text: impl Into<SharedString>,
+    count: String,
+    empty: bool,
+    p: Palette,
+) -> Stateful<Div> {
     let id: SharedString = id.into();
-    let dim = count == 0 && !on;
+    let dim = empty && !on;
     h_flex()
         .id(id)
         .h(px(26.))
@@ -499,7 +510,7 @@ pub(crate) fn facet_row(
             div()
                 .text_size(px(12.))
                 .text_color(if on { p.text_muted } else { p.text_placeholder })
-                .child(count.to_string()),
+                .child(count),
         )
 }
 

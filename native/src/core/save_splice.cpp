@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 
+#include "career_saves_logic.hpp"
 #include "layout.hpp"
 #include "save_splice_logic.hpp"
 
@@ -104,7 +105,12 @@ SlotsLoad_t slots_orig = nullptr;
 constexpr size_t SLOTS_BEGIN = 0x250;
 constexpr size_t SLOTS_END = 0x258;
 constexpr size_t MAX_SLOTS = 4096;
-std::set<std::string> slot_keys;
+namespace cs = runtime::career_saves;
+std::vector<cs::SlotRead> slot_reads;
+struct Manager {
+    uintptr_t iface = 0, vtable = 0;
+};
+std::vector<Manager> managers;
 bool in_root_load = false, slots_clean = true;
 
 void *method(const void *obj, size_t offset)
@@ -205,22 +211,23 @@ int *deserialise_entry(void *self, int *result, void *bag, uint8_t reset_on_erro
         std::lock_guard<std::mutex> g(lock);
         store.begin_load();
         ++loads;
-        slot_keys.clear();
+        slot_reads.clear();
+        managers.clear();
         slots_clean = true;
         in_root_load = true;
     }
     int *r = deserialise_orig(self, result, bag, reset_on_error, groups);
     if (root) {
-        std::set<std::string> keys;
+        std::vector<cs::SlotRead> reads;
         bool report;
         {
             std::lock_guard<std::mutex> g(lock);
             in_root_load = false;
             report = slots_orig && slots_clean && r && *r == 0;
-            keys.swap(slot_keys);
+            reads.swap(slot_reads);
         }
         if (report)
-            runtime::career_saves_found(keys);
+            runtime::career_saves_listed(reads, true, true);
         // W4: the swofty_registry body this load kept, for the career snapshots.
         std::vector<uint8_t> entry;
         bool has_entry = false;
@@ -240,38 +247,59 @@ int *deserialise_entry(void *self, int *result, void *bag, uint8_t reset_on_erro
     return r;
 }
 
-std::string slot_key(uint64_t id, uint64_t guid)
+template <class S = g::SaveSlotInfo>
+bool read_slot(uintptr_t slot, cs::SlotRead &out)
 {
-    char b[24];
-    if (guid)
-        snprintf(b, sizeof b, "%016llx", (unsigned long long)guid);
-    else
-        snprintf(b, sizeof b, "%llu", (unsigned long long)id);
-    return b;
+    if (!slot || !mem::read(slot, out.id) || !mem::read(slot + 8, out.guid))
+        return false;
+    if constexpr (layout::slot_details<S>) {
+        bool ok = mem::read(slot + offsetof(S, game_setup_mode), out.setup_mode) &&
+                  mem::read(slot + offsetof(S, info_season), out.season) &&
+                  mem::read(slot + offsetof(S, info_weekend), out.weekend) &&
+                  mem::read(slot + offsetof(S, info_team), out.team) &&
+                  mem::read(slot + offsetof(S, info_driver), out.driver) &&
+                  mem::read(slot + offsetof(S, info_vehicle), out.vehicle) &&
+                  mem::read(slot + offsetof(S, info_date), out.date) &&
+                  mem::read(slot + offsetof(S, type_flags), out.flags);
+        out.details = ok;
+        if constexpr (layout::slot_name<S>) {
+            uintptr_t name = 0;
+            if (ok && mem::read(slot + offsetof(S, name), name) && name)
+                mem::c_string(reinterpret_cast<const char *>(name), out.name, 129);
+        }
+    }
+    return true;
+}
+
+bool read_manager(uintptr_t base, std::vector<cs::SlotRead> &out)
+{
+    uintptr_t begin = 0, end = 0;
+    if (!(mem::read(base + SLOTS_BEGIN, begin) && mem::read(base + SLOTS_END, end) && begin <= end &&
+          (end - begin) / 8 <= MAX_SLOTS))
+        return false;
+    for (uintptr_t at = begin; at < end; at += 8) {
+        uintptr_t slot = 0;
+        cs::SlotRead r;
+        if (!mem::read(at, slot) || !read_slot(slot, r))
+            return false;
+        out.push_back(std::move(r));
+    }
+    return true;
 }
 
 int slots_entry(void *iface, void *bag, void *ctx)
 {
     int rc = slots_orig(iface, bag, ctx);
-    std::set<std::string> keys;
-    bool clean = rc == 0;
-    uintptr_t begin = 0, end = 0, base = reinterpret_cast<uintptr_t>(iface);
-    if (clean && !(mem::read(base + SLOTS_BEGIN, begin) && mem::read(base + SLOTS_END, end) && begin <= end &&
-                   (end - begin) / 8 <= MAX_SLOTS))
-        clean = false;
-    for (uintptr_t at = begin; clean && at < end; at += 8) {
-        uintptr_t slot = 0;
-        uint64_t id = 0, guid = 0;
-        if (!mem::read(at, slot) || !slot || !mem::read(slot, id) || !mem::read(slot + 8, guid))
-            clean = false;
-        else
-            keys.insert(slot_key(id, guid));
-    }
+    std::vector<cs::SlotRead> reads;
+    uintptr_t base = reinterpret_cast<uintptr_t>(iface), vt = 0;
+    bool clean = rc == 0 && read_manager(base, reads) && mem::read(base, vt);
     std::lock_guard<std::mutex> g(lock);
     if (in_root_load) {
-        if (clean)
-            slot_keys.insert(keys.begin(), keys.end());
-        else
+        if (clean) {
+            for (auto &r : reads)
+                slot_reads.push_back(std::move(r));
+            managers.push_back({base, vt});
+        } else
             slots_clean = false;
     }
     return rc;
@@ -467,6 +495,20 @@ void saved_entry(SwoftyContext *c)
     int result = 1;
     if (!live || !mem::read(c->rsp + FRAME_SELF, self) || !is_root(self) || !mem::read(c->r12, result) || result)
         return;
+    std::vector<cs::SlotRead> reads;
+    std::vector<Manager> known;
+    {
+        std::lock_guard<std::mutex> g(lock);
+        known = managers;
+    }
+    bool clean = !known.empty();
+    for (const Manager &m : known) {
+        uintptr_t vt = 0;
+        if (!mem::read(m.iface, vt) || vt != m.vtable || !read_manager(m.iface, reads))
+            clean = false;
+    }
+    if (clean)
+        runtime::career_saves_listed(reads, true, false);
     runtime::career_saves_saved();
 }
 
@@ -532,6 +574,10 @@ std::vector<CoreMixins> save_splice_mixins()
 void save_splice_commit()
 {
     career_saves_start();
+    if (!layout::SLOT_DETAILS)
+        swofty::log("[saves] career list details off: needs SaveSlotInfo.game_setup_mode, info_season, info_weekend, "
+                    "info_team, info_driver, info_vehicle, info_date and type_flags (a verify agree row each); the "
+                    "list still holds every save slot's key");
     if (!offered || settled || !b.done) {
         snapshots_start(false);
         return;
