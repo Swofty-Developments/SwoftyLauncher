@@ -90,9 +90,14 @@ pub(crate) struct SavesView {
     cap: u64,
     steam: Option<Location>,
     steam_running: bool,
+    awaiting_import: bool,
 }
 
 impl SavesView {
+    pub(crate) fn awaiting_import_for(&self, profile: &str) -> bool {
+        self.awaiting_import && self.profile == profile
+    }
+
     fn vanilla(&self) -> bool {
         self.profile == VANILLA
     }
@@ -126,6 +131,14 @@ impl SavesPage {
         }
         due
     }
+}
+
+pub(crate) const EMPTY_SAVE: &str =
+    "This profile's launcher save is empty. Import from Steam brings your careers in.";
+pub(crate) const EMPTY_SAVE_SHORT: &str = "Launcher save is empty · import from Steam on the Saves page";
+
+pub(crate) fn awaiting_import(vanilla: bool, has_save: bool, steam_has_save: bool) -> bool {
+    !vanilla && !has_save && steam_has_save
 }
 
 pub(crate) fn source_of_profile(root: &Path, profile: &str) -> Option<String> {
@@ -336,8 +349,14 @@ impl Shell {
             .into_iter()
             .filter(|n| n != VANILLA && *n != name)
             .collect();
+        let steam = active_loc.filter(|l| l.layout == vault::Layout::Steam);
+        let awaiting_import = awaiting_import(
+            vanilla,
+            has_save,
+            steam.as_ref().is_some_and(launcher_saves::has_files),
+        );
         self.saves.view = Some(SavesView {
-            steam: active_loc.filter(|l| l.layout == vault::Layout::Steam),
+            steam,
             profile: name,
             loc,
             entries,
@@ -349,6 +368,7 @@ impl Shell {
             usage,
             cap,
             steam_running: running.steam,
+            awaiting_import,
         });
     }
 
@@ -794,10 +814,12 @@ impl Shell {
         let careers = self.careers_block(view, p, cx);
         let versions = self.versions_block(view, p, cx);
         let footer = self.storage_line(view, p, cx);
+        let empty = self.empty_save_notice(view, p, cx);
         v_flex()
             .size_full()
             .child(self.header(title, subtitle, actions, p))
             .children(banner)
+            .children(empty)
             .child(
                 div()
                     .flex_1()
@@ -810,6 +832,42 @@ impl Shell {
             )
             .child(footer)
             .into_any_element()
+    }
+
+    fn empty_save_notice(&self, view: &SavesView, p: Palette, cx: &mut Context<Self>) -> Option<Div> {
+        if !view.awaiting_import {
+            return None;
+        }
+        let steam = view.steam.clone()?;
+        let name = view.profile.clone();
+        let blocked = self.saves.game_running;
+        Some(
+            h_flex()
+                .mx(px(GUTTER))
+                .mb(px(8.))
+                .px(px(12.))
+                .py(px(8.))
+                .gap(px(12.))
+                .items_center()
+                .rounded(px(8.))
+                .border_1()
+                .border_color(p.border)
+                .text_size(px(13.))
+                .text_color(p.text_muted)
+                .child(Icon::new(IconName::Info).size(px(15.)))
+                .child(div().flex_1().min_w_0().child(EMPTY_SAVE))
+                .child(
+                    Button::new("saves-empty-import")
+                        .small()
+                        .icon(IconName::Download)
+                        .label("Import from Steam")
+                        .disabled(blocked)
+                        .when(blocked, |b| b.tooltip("Close F1 25 first"))
+                        .on_click(cx.listener(move |this, _, window, cx| {
+                            this.ask_copy(steam.clone(), VANILLA.to_owned(), name.clone(), window, cx);
+                        })),
+                ),
+        )
     }
 
     fn saves_actions(&self, view: &SavesView, cx: &mut Context<Self>) -> impl IntoElement + use<> {
@@ -1238,7 +1296,15 @@ mod tests {
 
     use swofty_core::launcher_saves::{self, Marker};
 
-    use super::{Banner, SavesPage, banner_from, list, reason_label, whose};
+    use super::{Banner, SavesPage, awaiting_import, banner_from, list, reason_label, whose};
+
+    #[test]
+    fn an_empty_launcher_save_with_a_steam_save_waits_for_an_import() {
+        assert!(awaiting_import(false, false, true));
+        assert!(!awaiting_import(true, false, true));
+        assert!(!awaiting_import(false, true, true));
+        assert!(!awaiting_import(false, false, false));
+    }
 
     fn row(id: &str, status: Status, at: i64) -> Row {
         Row {
