@@ -235,6 +235,14 @@ static void pending_queue()
     expect(got.size() == 2 && got[1].index == 0 && got[1].car == addr(0) && got[1].what == Ops::What::reset,
            "car.reset finds the car from the reset thunk's loader (CarLive+0x4a0); a null loader is dropped");
     expect(Ops::take().empty(), "the queue is taken once");
+    alignas(16) static uint8_t front_wing[0x100];
+    *reinterpret_cast<uintptr_t *>(front_wing + cl::SYSTEM_CAR) = addr(1);
+    Ops::damaged(reinterpret_cast<uintptr_t>(front_wing), 1, 0.25f);
+    Ops::damaged(reinterpret_cast<uintptr_t>(front_wing), 0, 0.0f);
+    auto hit = Ops::take();
+    expect(hit.size() == 1 && hit[0].index == 1 && hit[0].what == Ops::What::damage && hit[0].part == 1 &&
+               hit[0].progress == 0.25f,
+           "car.damage queues a front wing hit with its side and amount and drops a hit that added none");
     for (int i = 0; i < 300; i++)
         Ops::built(addr(1));
     expect(Ops::take().size() == 8 * cl::MAX_CARS, "the queue is capped when no frame takes it");

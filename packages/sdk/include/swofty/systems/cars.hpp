@@ -615,13 +615,19 @@ public:
     Layer() = default;
     Layer(const Layer &) = delete;
     Layer &operator=(const Layer &) = delete;
-    Layer(Layer &&o) noexcept : tokens_(std::move(o.tokens_)) { o.tokens_.clear(); }
+    Layer(Layer &&o) noexcept : tokens_(std::move(o.tokens_)), result_(o.result_)
+    {
+        o.tokens_.clear();
+        o.result_ = Result::unavailable;
+    }
     Layer &operator=(Layer &&o) noexcept
     {
         if (this != &o) {
             release();
             tokens_ = std::move(o.tokens_);
+            result_ = o.result_;
             o.tokens_.clear();
+            o.result_ = Result::unavailable;
         }
         return *this;
     }
@@ -759,6 +765,16 @@ struct SetupApplied {
     static constexpr uint32_t version = 1;
     uint32_t size, payload_version;
     live::Car car;
+};
+
+struct Damage {
+    static constexpr const char *point = "car.damage";
+    static constexpr uint32_t version = 1;
+    enum Part : uint32_t { front_wing_left = 0, front_wing_right = 1 };
+    uint32_t size, payload_version;
+    live::Car car;
+    uint32_t part;
+    float amount;
 };
 
 struct ControllersRebuilt {

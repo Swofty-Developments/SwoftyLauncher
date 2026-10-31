@@ -174,7 +174,7 @@ session.player.control           swofty/systems/sessions.hpp sessions::events::P
 session.lap                      swofty/systems/sessions.hpp sessions::events::Lap
 ai.controller.update             swofty/systems/ai.hpp       ai::events::ControllerUpdate
 hud.spectator.visible            swofty/systems/spectator.hpp spectator::events::HudVisible
-car.built / car.reset / car.vtf.read / car.parts.register / car.upgrades.fit / car.controllers.rebuilt
+car.built / car.reset / car.vtf.read / car.parts.register / car.damage / car.upgrades.fit / car.controllers.rebuilt
                                  swofty/systems/cars.hpp     cars::events
 audio.bundle.resolve             swofty/systems/sounds.hpp   sounds::events::BundleResolve
 driver.ratings.read / driver.number.assign / driver.head.resolve
@@ -184,7 +184,7 @@ team.logo.resolve / team.name.resolve
 wearable.catalogue.build         swofty/systems/wearables.hpp wearables::events::CatalogueBuild
 ```
 
-`ai.controller.update` and `car.controllers.rebuilt` need the in-game checks T145 and T144. `session.lap` fires from the core's ERS new-lap site (see [Sessions](/std/systems/sessions#a-cars-lap)). `car.built` and `car.reset` fire once per built or re-read car on the next frame (see [Car physics](/std/systems/car-physics#changing-a-car-live)); `car.vtf.read`, `car.upgrades.fit` and `car.parts.register` are not fired yet. The other points in the tree (`session.state.enter`, `session.weather.setup`, `session.safety_car.deploy`, `session.pit_stop`, `session.results.finalise`, `career.season.process` and the rest of the session group) are the design for later headers; addons made for 1.5 and earlier subscribe to some of these moments by shorter names, which still work: see [Compatibility](/std/compatibility#events).
+`ai.controller.update` and `car.controllers.rebuilt` need the in-game checks T145 and T144. `session.lap` fires from the core's ERS new-lap site (see [Sessions](/std/systems/sessions#a-cars-lap)). `car.built` and `car.reset` fire once per built or re-read car on the next frame (see [Car physics](/std/systems/car-physics#changing-a-car-live)); `car.vtf.read` and `car.upgrades.fit` are not fired yet. `car.parts.register`, `car.damage`, `session.pit` and `session.pit_stop` fire from the game ([Car physics](/std/systems/car-physics#events)). The other points in the tree (`session.state.enter`, `session.weather.setup`, `session.safety_car.deploy`, `session.results.finalise`, `career.season.process` and the rest of the session group) are the design for later headers; addons made for 1.5 and earlier subscribe to some of these moments by shorter names, which still work: see [Compatibility](/std/compatibility#events).
 
 **Every start has one end.** The core keeps a lifecycle stack. If the player quits from the pause menu, the core fires the missing ends itself, with `reason = abandoned`:
 
@@ -436,8 +436,8 @@ Adding a core event takes one catalogue entry, a hand-written payload, one fire 
   "parent": "session",
   "payload": { "c": "SwoftyEvPitStop", "cpp": "swofty::sessions::events::PitStop", "header": "swofty/systems/sessions.hpp", "version": 1 },
   "context": { "session": "always", "player": "always", "participants": "always", "career": "in_career" },
-  "source": { "how": "bus", "message": "MessagePitStateChanged", "binding": "Ne_Subscribe_BusMessage" },
-  "doc": "A car stops in its pit box and leaves it."
+  "source": { "how": "detour", "binding": "Game_Pitlane_SetVehicleStatus" },
+  "doc": "The game counts a pit stop for a car."
 }
 ```
 
@@ -449,21 +449,15 @@ struct PitStop {
     static constexpr uint32_t version = 1;
     uint32_t size, payload_version;
     uint32_t car;            // vehicle index in the session
-    float stationary_s;      // time in the box
-    uint8_t tyres_changed;   // 0 or 1
+    uint32_t stops;          // the car's stop count after it
 };
 }
 ```
 
 ```cpp
-// native/src/core/session_events.cpp: the one fire call, from the pit state message
-void on_pit_state_changed(const MessagePitStateChanged &m)
-{
-    if (m.state == PitState::LeavingPitBox) {
-        swofty::sessions::events::PitStop e{ sizeof e, 1, m.car, pit_timer(m.car).stop(), tyres_changed(m.car) };
-        swofty::events::fire(e);
-    }
-}
+// native/src/core/hooks/car_live.cpp: the one fire call, after the game stores the new pit status
+if (stops_after != stops_before)
+    events::session_pit_stop(vehicle, stops_after);
 ```
 
 `tools/std/eventcheck.py` checks the rest in CI:
@@ -471,7 +465,7 @@ void on_pit_state_changed(const MessagePitStateChanged &m)
 ```text
 ok   62 events, every name unique and dotted; released entries unchanged since v1.6.0
 ok   swofty/systems/sessions.hpp: struct sessions::events::PitStop, point == "session.pit_stop", version == 1
-ok   native/src/core: a fire of session.pit_stop (session_events.cpp:88)
+ok   native/src/core: a fire of session.pit_stop (car_live.cpp:154)
 ok   native/test: a test names session.pit_stop
 ok   docs: a section for session.pit_stop
 ```

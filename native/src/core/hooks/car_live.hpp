@@ -738,24 +738,25 @@ template <class Tag> struct Ops {
     // (T119) and re-reads its parts through Car_Systems_Reset_Thunk (T120), so the hooks only queue the car and the
     // next frame takes the queue on the flow thread, where layers apply and set() may write, keeping the cars still
     // in their slot.
-    enum class What : uint8_t { built, reset, replayed, setup };
+    enum class What : uint8_t { built, reset, replayed, setup, damage };
     struct Pending {
         uint32_t index;
         uintptr_t car;
         What what;
         float progress;
+        uint32_t part;
     };
     static inline std::mutex pending_lock;
     static inline std::vector<Pending> pending;
 
-    static void queue(uintptr_t car, What what, float progress = 0)
+    static void queue(uintptr_t car, What what, float progress = 0, uint32_t part = 0)
     {
         uint8_t id = 0;
         if (!bound.load() || !car || !rd(car + CAR_VEHICLE_ID, id) || id >= MAX_CARS)
             return;
         std::lock_guard<std::mutex> g(pending_lock);
         if (pending.size() < MAX_CARS * 8)
-            pending.push_back({id, car, what, progress});
+            pending.push_back({id, car, what, progress, part});
     }
 
     static void built(uintptr_t car) { queue(car, What::built); }
@@ -763,6 +764,12 @@ template <class Tag> struct Ops {
     static void replayed(uintptr_t loader, float progress)
     {
         queue(loader >= CAR_LOADER ? loader - CAR_LOADER : 0, What::replayed, progress);
+    }
+    static void damaged(uintptr_t wing, uint32_t part, float amount)
+    {
+        uintptr_t car = 0;
+        if (amount > 0 && rd(wing + SYSTEM_CAR, car))
+            queue(car, What::damage, amount, part);
     }
     static void setup_applied(uintptr_t f1_tuning)
     {

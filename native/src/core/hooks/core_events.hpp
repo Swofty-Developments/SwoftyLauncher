@@ -62,6 +62,9 @@ bool car_setup_applied(const swofty::cars::live::Car &car);
 bool car_parts_register(int32_t car, const char *vehicle, void *front_wing,
                         const std::function<int32_t(const char *node, float detach_at, bool debris)> &add);
 bool audio_bundle_resolve(int32_t car, const char *vehicle, const char *switch_name, std::string &engine_sound);
+bool car_damage(const swofty::cars::live::Car &car, uint32_t part, float amount);
+bool session_pit(uint32_t car, uint32_t previous, uint32_t status);
+bool session_pit_stop(uint32_t car, uint32_t stops);
 bool session_lap(uint32_t car);
 
 }

@@ -42,7 +42,7 @@ bool on_flow_thread()
 }
 
 std::unique_ptr<session_points::MidPoint> g_built, g_setup;
-std::unique_ptr<GamePoint> g_reset, g_replay;
+std::unique_ptr<GamePoint> g_reset, g_replay, g_wing, g_hit, g_pit;
 
 // The KB rows the live levers rest on. A row is ready once it has an independent agree verify row (re/PROTOCOL.md
 // section 5); the others stay off and log "<field> off: needs <row>". Flip a row here after the lead's verify agent
@@ -69,7 +69,12 @@ constexpr Row ROWS[] = {
     {"Car_Tuning_SetChassisZCom", false},
     {"CarChassis.tyre_physics_group", false},
     {"Car_Tyre_SetWearFactor", false},
-    {"Car_FrontWing_Init", false},
+    {"Car_FrontWing_Init", true},
+    {"Car_Register_DetachablePart_Thunk", true},
+    {"Car_FrontWing_OnCollision", true},
+    {"Game_Pitlane_SetVehicleStatus", true},
+    {"Game_Get_ModelNodeId", true},
+    {"PitStopInstance.car", false},
     {"Car_FuelEcu_SetMode_Thunk", false},
 };
 
@@ -95,6 +100,85 @@ uint64_t d_replay(void *loader, void *name, uint32_t flag, float perc)
     uint64_t r = g_replay->original<uint64_t>(loader, name, flag, perc);
     Ops::replayed(reinterpret_cast<uintptr_t>(loader), perc);
     return r;
+}
+
+constexpr uintptr_t WING_CAR = 0x08, WING_SIDE_SCALE = 0x34, WING_FULL_SCALE = 0x38, WING_LEFT = 0x48, WING_RIGHT = 0x4c;
+constexpr uintptr_t PITLANE_STATUS_TABLE = 0x68, PITLANE_STATUS = 0x04, PITLANE_STOPS = 0x14;
+constexpr uint32_t MAX_PIT_CARS = 27;
+
+bool detach_predicate(void *wing, float k)
+{
+    float full = 0, left = 0, right = 0;
+    if (!mem::read(reinterpret_cast<uintptr_t>(wing) + WING_FULL_SCALE, full) ||
+        !mem::read(reinterpret_cast<uintptr_t>(wing) + WING_LEFT, left) ||
+        !mem::read(reinterpret_cast<uintptr_t>(wing) + WING_RIGHT, right))
+        return false;
+    return k * full <= left + right;
+}
+
+int32_t add_part(void *wing, const char *node, float detach_at, bool)
+{
+    uintptr_t reg = swofty::api->resolve("Car_Register_DetachablePart_Thunk");
+    uintptr_t intern = swofty::api->resolve("Game_Get_ModelNodeId");
+    if (!reg || !intern || !wing)
+        return SWOFTY_ASSET_UNAVAILABLE;
+    uint32_t id = reinterpret_cast<uint32_t (*)(const char *)>(intern)(node);
+    struct Callback {
+        bool (*fn)(void *, float);
+        void *ctx;
+    } cb{&detach_predicate, wing};
+    alignas(16) float params[28] = {};
+    int32_t kind = 2;
+    std::memcpy(&params[0], &kind, sizeof kind);
+    params[1] = 0.4f;
+    for (int i = 0; i < 4; i++)
+        params[4 + i * 5] = 1.0f;
+    params[20] = params[21] = params[22] = 0.05f;
+    reinterpret_cast<void (*)(void *, void *, uint32_t *, void *, float)>(reg)(wing, &cb, &id, params, detach_at);
+    return SWOFTY_ASSET_OK;
+}
+
+void d_wing_init(void *wing, char reset)
+{
+    g_wing->original<void>(wing, reset);
+    uintptr_t car = 0;
+    uint8_t id = 0;
+    if (reset || !mem::read(reinterpret_cast<uintptr_t>(wing) + WING_CAR, car) || !car ||
+        !mem::read(car + 0xe8, id))
+        return;
+    events::car_parts_register(id, "", wing, [wing](const char *node, float at, bool debris) {
+        return add_part(wing, node, at, debris);
+    });
+}
+
+void d_wing_hit(void *wing, void *contact)
+{
+    float left = 0, right = 0, left_after = 0, right_after = 0;
+    uintptr_t w = reinterpret_cast<uintptr_t>(wing);
+    bool ok = mem::read(w + WING_LEFT, left) && mem::read(w + WING_RIGHT, right);
+    g_hit->original<void>(wing, contact);
+    if (ok && mem::read(w + WING_LEFT, left_after) && mem::read(w + WING_RIGHT, right_after)) {
+        Ops::damaged(w, swofty::cars::events::Damage::front_wing_left, left_after - left);
+        Ops::damaged(w, swofty::cars::events::Damage::front_wing_right, right_after - right);
+    }
+}
+
+void d_pit_status(void *lane, uint8_t vehicle, uint32_t status)
+{
+    uint32_t before = 0, stops_before = 0, after = 0, stops_after = 0;
+    uintptr_t entry = 0;
+    auto read_entry = [&](uint32_t &state, uint32_t &stops) {
+        uintptr_t base = reinterpret_cast<uintptr_t>(lane) + PITLANE_STATUS_TABLE + uintptr_t(vehicle) * 16;
+        return mem::read(base, entry) && entry && mem::read(entry + PITLANE_STATUS, state) &&
+               mem::read(entry + PITLANE_STOPS, stops);
+    };
+    bool known = vehicle < MAX_PIT_CARS && read_entry(before, stops_before);
+    g_pit->original<void>(lane, vehicle, status);
+    if (!known || !read_entry(after, stops_after) || after == before)
+        return;
+    events::session_pit(vehicle, before, after);
+    if (stops_after != stops_before)
+        events::session_pit_stop(vehicle, stops_after);
 }
 
 std::string session_type()
@@ -189,6 +273,7 @@ void frame(double, void *)
         case Ops::What::reset: events::car_reset(car, false); break;
         case Ops::What::replayed: events::car_upgrades_replayed(car, p.progress); break;
         case Ops::What::setup: events::car_setup_applied(car); break;
+        case Ops::What::damage: events::car_damage(car, p.part, p.progress); break;
         }
     }
     Ops::flush();
@@ -246,7 +331,7 @@ void setup()
         for (const car_live::Field &f : car_live::FIELDS)
             if (f.needs && !row_ready(f.needs) && g_logged.insert(std::string("off:") + f.needs).second)
                 swofty::log("[cars] %s off: needs %s", f.name, f.needs);
-        swofty::log("[cars] car.parts.register off: needs Car_FrontWing_Init and a part descriptor row");
+        swofty::log("[session] session.pit_stop stationary time and tyre change off: needs PitStopInstance.car");
         swofty::log("[cars] refit_tyres off: needs Car_Tyre_SetWearFactor, CarChassis.tyre_physics_group and the car to tyre component path");
         swofty::log("[cars] set_fuel_mode is not offered: needs Car_FuelEcu_SetMode_Thunk at L2 with an agree row");
     }
@@ -270,6 +355,16 @@ void declare_car_points(Table &t)
                                            reinterpret_cast<void *>(&d_replay), game_ops());
     t.declare_game("car.upgrades.replayed", SWOFTY_POINT_NOTIFY, swofty::cars::events::UpgradesReplayed::version,
                    g_replay.get());
+    g_wing = std::make_unique<GamePoint>("car.parts.register", "Car_FrontWing_Init", reinterpret_cast<void *>(&d_wing_init),
+                                         game_ops());
+    t.declare_game("car.parts.register", SWOFTY_POINT_NOTIFY, swofty::cars::events::PartsRegister::version, g_wing.get());
+    g_hit = std::make_unique<GamePoint>("car.damage", "Car_FrontWing_OnCollision", reinterpret_cast<void *>(&d_wing_hit),
+                                        game_ops());
+    t.declare_game("car.damage", SWOFTY_POINT_NOTIFY, swofty::cars::events::Damage::version, g_hit.get());
+    g_pit = std::make_unique<GamePoint>("session.pit", "Game_Pitlane_SetVehicleStatus",
+                                        reinterpret_cast<void *>(&d_pit_status), game_ops());
+    t.declare_game("session.pit", SWOFTY_POINT_NOTIFY, swofty::sessions::events::Pit::version, g_pit.get());
+    t.declare_game("session.pit_stop", SWOFTY_POINT_NOTIFY, swofty::sessions::events::PitStop::version, g_pit.get());
     g_setup = std::make_unique<session_points::MidPoint>("car.setup.applied", "site_Car_SetupTuningApplied", &m_setup,
                                                          game_ops());
     t.declare_game("car.setup.applied", SWOFTY_POINT_NOTIFY, swofty::cars::events::SetupApplied::version, g_setup.get());
@@ -286,6 +381,10 @@ void arm_car_points()
     if (row_ready("Car_Upgrades_ApplyToVehicle")) {
         g_replay->keep(true);
         g_replay->install(false, "the core");
+    }
+    if (row_ready("Game_Pitlane_SetVehicleStatus")) {
+        g_pit->keep(true);
+        g_pit->install(false, "the core");
     }
     if (row_ready("site_Car_SetupTuningApplied")) {
         g_setup->keep(true);

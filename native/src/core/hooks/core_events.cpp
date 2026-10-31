@@ -52,6 +52,9 @@ static_assert(declared<ca::Reset>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<ca::UpgradesReplayed>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<ca::SetupApplied>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<ca::PartsRegister>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<ca::Damage>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::sessions::events::Pit>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::sessions::events::PitStop>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<ca::ControllersRebuilt>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::ai::events::ControllerUpdate>(SWOFTY_POINT_CANCEL));
 static_assert(declared<swofty::sessions::events::PlayerControl>(SWOFTY_POINT_CANCEL));
@@ -123,6 +126,18 @@ bool audio_bundle_resolve(int32_t car, const char *vehicle, const char *switch_n
 {
     return payloads::bundle_resolve(fire_core, car, vehicle, switch_name, engine_sound);
 }
+
+bool car_damage(const swofty::cars::live::Car &car, uint32_t part, float amount)
+{
+    return payloads::damage(fire_core, car, part, amount);
+}
+
+bool session_pit(uint32_t car, uint32_t previous, uint32_t status)
+{
+    return payloads::pit(fire_core, car, previous, status);
+}
+
+bool session_pit_stop(uint32_t car, uint32_t stops) { return payloads::pit_stop(fire_core, car, stops); }
 
 bool session_lap(uint32_t car)
 {
