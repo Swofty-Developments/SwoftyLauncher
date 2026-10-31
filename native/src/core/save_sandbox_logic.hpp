@@ -233,12 +233,13 @@ inline std::vector<std::string> split_path(std::string_view p)
 }
 
 inline bool ansi_path(std::string_view p);
+inline bool utf8_path(std::string_view p);
 
 // The store of a launcher profile ends in saves/<profile>/remote, so a setting that names any other folder
 // is refused.
 inline bool store_path_ok(std::string_view remote, std::string_view profile)
 {
-    if (remote.empty() || remote.size() > 400 || !ansi_path(remote))
+    if (remote.empty() || remote.size() > 400 || !utf8_path(remote))
         return false;
     auto parts = split_path(remote);
     if (parts.size() < 3)
@@ -312,6 +313,31 @@ inline std::string windows_path(std::string p)
 inline bool ansi_path(std::string_view p)
 {
     return !p.empty() && std::all_of(p.begin(), p.end(), [](char c) { return c >= 0x20 && c < 0x7f; });
+}
+
+// A store path from settings.json is UTF-8 (a Windows user folder can be "C:\\Users\\Hüseyin"); the sandbox opens it
+// through wide paths, so any well-formed UTF-8 without control characters is accepted.
+inline bool utf8_path(std::string_view p)
+{
+    if (p.empty())
+        return false;
+    for (size_t i = 0; i < p.size();) {
+        auto c = static_cast<unsigned char>(p[i]);
+        if (c < 0x80) {
+            if (c < 0x20 || c == 0x7f)
+                return false;
+            i++;
+            continue;
+        }
+        size_t n = c >= 0xc2 && c <= 0xdf ? 2 : c >= 0xe0 && c <= 0xef ? 3 : c >= 0xf0 && c <= 0xf4 ? 4 : 0;
+        if (!n || i + n > p.size())
+            return false;
+        for (size_t k = 1; k < n; k++)
+            if ((static_cast<unsigned char>(p[i + k]) & 0xc0) != 0x80)
+                return false;
+        i += n;
+    }
+    return true;
 }
 
 // A Steam remote storage file name: one flat name, as the save device builds them
