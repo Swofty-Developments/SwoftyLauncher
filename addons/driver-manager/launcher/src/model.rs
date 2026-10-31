@@ -5,9 +5,25 @@ use serde::{Deserialize, Serialize};
 use crate::game::{GameData, List};
 
 pub const FIRST_DRIVER_ID: u32 = 208;
-pub const LAST_DRIVER_ID: u32 = 253;
+pub const LAST_DRIVER_ID: u32 = 16382;
 pub const FIRST_PRESET_ID: u32 = 366;
-pub const MAX_DRIVERS: usize = (LAST_DRIVER_ID - FIRST_DRIVER_ID + 1) as usize;
+pub const MAX_DRIVERS: usize = usable_ids();
+
+pub const fn driver_id_usable(id: u32) -> bool {
+    id >= FIRST_DRIVER_ID && id <= LAST_DRIVER_ID && id != 254 && id & 0xff != 0xff
+}
+
+const fn usable_ids() -> usize {
+    let mut n = 0;
+    let mut id = FIRST_DRIVER_ID;
+    while id <= LAST_DRIVER_ID {
+        if driver_id_usable(id) {
+            n += 1;
+        }
+        id += 1;
+    }
+    n
+}
 pub const STATS: [(&str, &str); 5] = [
     ("experience", "Experience"),
     ("racecraft", "Racecraft"),
@@ -325,13 +341,13 @@ impl Roster {
 
     pub fn free_ids(&self, game: &GameData) -> usize {
         (self.next_driver.max(FIRST_DRIVER_ID)..=LAST_DRIVER_ID)
-            .filter(|id| !game.driver_ids.contains(id) && self.get(*id).is_none())
+            .filter(|id| driver_id_usable(*id) && !game.driver_ids.contains(id) && self.get(*id).is_none())
             .count()
     }
 
     pub fn allocate(&mut self, game: &GameData) -> Result<(u32, u32), String> {
         let driver = (self.next_driver.max(FIRST_DRIVER_ID)..=LAST_DRIVER_ID)
-            .find(|id| !game.driver_ids.contains(id) && self.get(*id).is_none())
+            .find(|id| driver_id_usable(*id) && !game.driver_ids.contains(id) && self.get(*id).is_none())
             .ok_or_else(|| {
                 format!("Every driver id from {FIRST_DRIVER_ID} to {LAST_DRIVER_ID} is used; no more drivers can be added.")
             })?;

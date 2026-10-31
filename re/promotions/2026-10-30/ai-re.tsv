@@ -1,0 +1,10 @@
+addr	name	sig	verify
+0x1405fa4b0	Ai_Select_ErsDeployMode	ai.select_ers_deploy_mode	d10-verify V2250
+0x1405fb3c0	Ai_Update_CompoundPaceCurves	ai.update_compound_pace_curves	d10-verify V2251
+0x1406069d0	Ai_Calc_GripLimitScaleA	ai.calc_grip_limit_scale_a	d10-verify V2252
+0x140606c10	Ai_Calc_GripLimitScaleB	ai.calc_grip_limit_scale_b	d10-verify V2253
+0x14063e370	Ai_Job_UpdateCarsParallel	ai.job_update_cars_parallel	d10-verify V2254
+0x1406487a0	Ai_Ers_DecidePushReasons	ai.ers_decide_push_reasons	aaa-verify V1158
+0x140653440	Ai_BehaviourRecover_Evaluate	-	gb-verify V1191
+0x140653ec0	Ai_BehaviourTestRetire_Update	ai.behaviour_test_retire_update	d10-verify V2255
+0x1409b0a00	Ai_DriverVariationInRaceSystem_Setup	ai.driver_variation_in_race_system_setup	d9-verify V2216

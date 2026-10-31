@@ -1,5 +1,6 @@
 use std::io::{Read, Seek, SeekFrom};
 use std::path::Path;
+use std::time::Duration;
 
 use crate::bytes::Reader;
 use crate::{Error, Result};
@@ -10,7 +11,15 @@ pub const HEADER_LEN: usize = 0x30;
 pub const ZSTD: u8 = 0x11;
 pub const STORED: u8 = 0x91;
 pub const ZSTD_LEVEL: i32 = 19;
+/// The window every frame is written with, whatever the level: 1 MiB, the
+/// largest the game's own archives use. The game's stream decoder sizes its
+/// buffer from a frame's window and content size, inside a fixed heap, so a
+/// level-19 window (8 MiB) on every fragment runs that heap out.
+pub const ZSTD_WINDOW_LOG: u32 = 20;
 const ZSTD_MAGIC: [u8; 4] = [0x28, 0xb5, 0x2f, 0xfd];
+/// The waits between tries of an archive's open or replace that Windows
+/// refused for now: an antivirus holds a file it scans for a moment.
+const BACKOFF_MS: [u64; 6] = [25, 50, 100, 200, 400, 800];
 
 #[derive(Debug, Clone)]
 pub struct Fragment {
@@ -218,7 +227,8 @@ fn zstd_error(code: usize) -> Error {
     Error::Format(format!("zstd: {}", zstd::zstd_safe::get_error_name(code)))
 }
 
-/// The settings the zstd command line compresses with: a checksum, and its
+/// The settings `zstd -c -<level> --zstd=wlog=20 --stream-size=<n>` compresses
+/// with: a checksum, the content size, a 1 MiB window, and the command line's
 /// multithreaded path with one worker, whose output differs from the
 /// single-threaded encoder's on large inputs.
 fn encoder(level: i32) -> Result<Encoder> {
@@ -227,6 +237,8 @@ fn encoder(level: i32) -> Result<Encoder> {
         Encoder::try_create().ok_or_else(|| Error::Format("zstd: no memory for an encoder".into()))?;
     for p in [
         CParameter::CompressionLevel(level),
+        CParameter::WindowLog(ZSTD_WINDOW_LOG),
+        CParameter::ContentSizeFlag(true),
         CParameter::ChecksumFlag(true),
         CParameter::NbWorkers(1),
     ] {
@@ -249,11 +261,12 @@ fn encode(data: &[u8], level: i32) -> Result<Vec<u8>> {
         None => encoder(level)?,
     };
     ctx.reset(ResetDirective::SessionOnly).map_err(zstd_error)?;
+    ctx.set_pledged_src_size(Some(data.len() as u64))
+        .map_err(zstd_error)?;
     let mut out: Vec<u8> = Vec::with_capacity(zstd::compress_bound(data.len()) + 64);
     let mut input = InBuffer::around(data);
-    // The input goes in first and the frame ends after, as a stream writer
-    // does, so the frame header carries no content size, like the command
-    // line's.
+    // The input goes in first and the frame ends after, as the command line
+    // does with a pledged size, so the bytes match the command line's.
     while input.pos() < data.len() {
         if out.capacity() - out.len() < (1 << 16) {
             out.reserve(1 << 16);
@@ -291,7 +304,7 @@ fn encode(data: &[u8], level: i32) -> Result<Vec<u8>> {
 fn compress_cached(dir: &Path, data: &[u8], level: i32) -> Result<Vec<u8>> {
     let digest: String = Md5::digest(data).iter().map(|b| format!("{b:02x}")).collect();
     let name = format!(
-        "{digest}-{}-{level}-{}",
+        "{digest}-{}-{level}-w{ZSTD_WINDOW_LOG}-{}",
         data.len(),
         zstd::zstd_safe::version_number()
     );
@@ -490,7 +503,7 @@ pub struct ErpFile {
 
 impl ErpFile {
     pub fn open(path: &Path) -> Result<Self> {
-        let mut file = std::fs::File::open(path).map_err(crate::io_at(path))?;
+        let mut file = open(path)?;
         let mut index = vec![0; HEADER_LEN];
         file.read_exact(&mut index).map_err(crate::io_at(path))?;
         if &index[..4] != MAGIC {
@@ -511,7 +524,7 @@ impl ErpFile {
     }
 
     pub fn load(&self, res: &Resource) -> Result<Resource> {
-        let mut file = std::fs::File::open(&self.path).map_err(crate::io_at(&self.path))?;
+        let mut file = open(&self.path)?;
         let mut out = res.clone();
         for f in &mut out.fragments {
             file.seek(SeekFrom::Start(self.data_off + f.offset))
@@ -548,10 +561,10 @@ impl ErpFile {
         };
         let head = erp.layout();
         let tmp = dst.with_extension("erp.tmp");
-        let mut src = std::fs::File::open(&self.path).map_err(crate::io_at(&self.path))?;
+        let mut src = open(&self.path)?;
         let mut out = std::io::BufWriter::with_capacity(
             1 << 20,
-            std::fs::File::create(&tmp).map_err(crate::io_at(&tmp))?,
+            retry(|| std::fs::File::create(&tmp)).map_err(crate::io_at(&tmp))?,
         );
         std::io::Write::write_all(&mut out, &head)?;
         let mut buf = vec![0; 1 << 20];
@@ -572,7 +585,8 @@ impl ErpFile {
         }
         std::io::Write::flush(&mut out)?;
         drop(out);
-        if let Err(e) = std::fs::rename(&tmp, dst) {
+        drop(src);
+        if let Err(e) = replace(&tmp, dst) {
             std::fs::remove_file(&tmp).ok();
             return Err(crate::io_at(dst)(e));
         }
@@ -580,6 +594,66 @@ impl ErpFile {
         Ok(())
     }
 }
+
+fn transient(e: &std::io::Error) -> bool {
+    const ERROR_ACCESS_DENIED: i32 = 5;
+    const ERROR_SHARING_VIOLATION: i32 = 32;
+    cfg!(windows)
+        && matches!(
+            e.raw_os_error(),
+            Some(ERROR_ACCESS_DENIED | ERROR_SHARING_VIOLATION)
+        )
+}
+
+fn retrying<T>(
+    transient: &dyn Fn(&std::io::Error) -> bool,
+    wait: &mut dyn FnMut(Duration),
+    mut f: impl FnMut() -> std::io::Result<T>,
+) -> std::io::Result<T> {
+    let mut waits = BACKOFF_MS.iter();
+    loop {
+        match f() {
+            Err(e) if transient(&e) => match waits.next() {
+                Some(ms) => wait(Duration::from_millis(*ms)),
+                None => return Err(e),
+            },
+            done => return done,
+        }
+    }
+}
+
+fn retry<T>(f: impl FnMut() -> std::io::Result<T>) -> std::io::Result<T> {
+    retrying(&transient, &mut std::thread::sleep, f)
+}
+
+fn open(path: &Path) -> Result<std::fs::File> {
+    retry(|| std::fs::File::open(path)).map_err(crate::io_at(path))
+}
+
+/// Moves `tmp` over `dst`, clearing a read-only `dst` first, and tries again
+/// for a moment while Windows refuses it, as it does while an antivirus scans
+/// either file. Nothing of ours may hold `dst` open.
+pub fn replace(tmp: &Path, dst: &Path) -> std::io::Result<()> {
+    retry(|| {
+        writable(dst);
+        std::fs::rename(tmp, dst)
+    })
+}
+
+#[cfg(windows)]
+#[allow(clippy::permissions_set_readonly_false)]
+fn writable(path: &Path) {
+    if let Ok(meta) = std::fs::metadata(path)
+        && meta.permissions().readonly()
+    {
+        let mut perms = meta.permissions();
+        perms.set_readonly(false);
+        std::fs::set_permissions(path, perms).ok();
+    }
+}
+
+#[cfg(not(windows))]
+fn writable(_: &Path) {}
 
 #[cfg(test)]
 mod tests {
@@ -614,6 +688,9 @@ mod tests {
     fn streamed(data: &[u8], level: i32) -> Vec<u8> {
         let mut enc = zstd::Encoder::new(Vec::new(), level).unwrap();
         enc.include_checksum(true).unwrap();
+        enc.include_contentsize(true).unwrap();
+        enc.window_log(ZSTD_WINDOW_LOG).unwrap();
+        enc.set_pledged_src_size(Some(data.len() as u64)).unwrap();
         enc.multithread(1).unwrap();
         std::io::Write::write_all(&mut enc, data).unwrap();
         enc.finish().unwrap()
@@ -660,6 +737,84 @@ mod tests {
         assert_eq!(
             encode(&inputs[2], ZSTD_LEVEL).unwrap(),
             streamed(&inputs[2], ZSTD_LEVEL)
+        );
+    }
+
+    /// The content size and window a frame header declares (RFC 8878 3.1.1.1).
+    fn frame_header(raw: &[u8]) -> (Option<u64>, u64) {
+        assert_eq!(raw[..4], ZSTD_MAGIC);
+        let fhd = raw[4];
+        let single = fhd & 0x20 != 0;
+        let mut at = 5;
+        let mut window = 0;
+        if !single {
+            let (exponent, mantissa) = (u64::from(raw[at] >> 3), u64::from(raw[at] & 7));
+            let base = 1u64 << (10 + exponent);
+            window = base + base / 8 * mantissa;
+            at += 1;
+        }
+        at += [0, 1, 2, 4][usize::from(fhd & 3)];
+        let size = match (fhd >> 6, single) {
+            (0, false) => None,
+            (0, true) => Some(u64::from(raw[at])),
+            (1, _) => Some(u64::from(u16::from_le_bytes([raw[at], raw[at + 1]])) + 256),
+            (2, _) => Some(u64::from(u32::from_le_bytes(raw[at..at + 4].try_into().unwrap()))),
+            _ => Some(u64::from_le_bytes(raw[at..at + 8].try_into().unwrap())),
+        };
+        (size, if single { size.unwrap() } else { window })
+    }
+
+    /// What zstd 1.5.6+'s stream decoder allocates for a frame: its input
+    /// block buffer and its window ring, which a known content size caps.
+    fn decoder_buffer(size: Option<u64>, window: u64) -> u64 {
+        let block = window.min(128 << 10);
+        let ring = window + 2 * block + 64;
+        size.map_or(ring, |s| s.min(ring)) + block.max(4)
+    }
+
+    #[test]
+    fn every_frame_carries_its_content_size_and_at_most_a_1_mib_window() {
+        let noisy = |n: usize| -> Vec<u8> {
+            let mut seed = n as u64 | 1;
+            (0..n)
+                .map(|i| {
+                    seed = seed
+                        .wrapping_mul(6364136223846793005)
+                        .wrapping_add(1442695040888963407);
+                    if i % 4 == 0 {
+                        (seed >> 56) as u8
+                    } else {
+                        b"livery_"[i % 7]
+                    }
+                })
+                .collect()
+        };
+        for level in [3, ZSTD_LEVEL] {
+            for n in [0, 1, 300, 70 << 10, 1 << 20, (1 << 20) + 1, 3 << 20, 9 << 20] {
+                let data = noisy(n);
+                let raw = compress_at(&data, level).unwrap();
+                let (size, window) = frame_header(&raw);
+                assert_eq!(size, Some(n as u64), "{n} bytes, level {level}");
+                assert_eq!(
+                    zstd::zstd_safe::get_frame_content_size(&raw).ok(),
+                    Some(Some(n as u64))
+                );
+                assert!(
+                    window <= 1 << ZSTD_WINDOW_LOG,
+                    "{n} bytes, level {level}: window {window}"
+                );
+                assert!(
+                    decoder_buffer(size, window) <= (1 << 20) + 393_280,
+                    "{n} bytes, level {level}: {}",
+                    decoder_buffer(size, window)
+                );
+                assert_eq!(zstd::decode_all(raw.as_slice()).unwrap(), data);
+            }
+        }
+        let (size, window) = frame_header(&compress(&noisy(9 << 20)).unwrap());
+        assert_eq!(
+            (size, window, decoder_buffer(size, window)),
+            (Some(9 << 20), 1 << 20, 1_441_856)
         );
     }
 
@@ -876,6 +1031,89 @@ mod tests {
         );
         assert_eq!(back.resources[1].fragments[1].data().unwrap(), b"abc");
         std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn an_archive_rewritten_over_itself_replaces_a_read_only_copy() {
+        let dir = std::env::temp_dir().join(format!("swofty-erp-in-place-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("databases.erp");
+        std::fs::write(&path, two().to_bytes()).unwrap();
+        let mut perms = std::fs::metadata(&path).unwrap().permissions();
+        perms.set_readonly(true);
+        std::fs::set_permissions(&path, perms).unwrap();
+        let file = ErpFile::open(&path).unwrap();
+        let mut owned = file.load(&file.erp.resources[1]).unwrap();
+        owned.set_fragment(0, b"patched").unwrap();
+        file.write(
+            vec![Entry::Copy(&file.erp.resources[0]), Entry::Owned(owned)],
+            &path,
+        )
+        .unwrap();
+        let back = Erp::parse(&std::fs::read(&path).unwrap()).unwrap();
+        assert_eq!(back.resources[1].fragments[0].data().unwrap(), b"patched");
+        assert_eq!(
+            back.resources[0].fragments[0].data().unwrap(),
+            b"!pkg sample payload"
+        );
+        assert!(!path.with_extension("erp.tmp").exists());
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    fn refused(code: i32) -> std::io::Error {
+        std::io::Error::from_raw_os_error(code)
+    }
+
+    #[test]
+    fn retries_a_file_windows_refuses_for_now() {
+        let held = |e: &std::io::Error| matches!(e.raw_os_error(), Some(5 | 32));
+        let mut waits = Vec::new();
+        let mut tries = [refused(5), refused(32)].into_iter();
+        let opened = retrying(&held, &mut |d| waits.push(d.as_millis()), || match tries.next() {
+            Some(e) => Err(e),
+            None => Ok("opened"),
+        });
+        assert_eq!(opened.unwrap(), "opened");
+        assert_eq!(waits, [25, 50]);
+
+        let mut waits = Vec::new();
+        let mut calls = 0;
+        let err = retrying(
+            &held,
+            &mut |d| waits.push(d.as_millis()),
+            || -> std::io::Result<()> {
+                calls += 1;
+                Err(refused(5))
+            },
+        )
+        .unwrap_err();
+        assert_eq!(err.raw_os_error(), Some(5));
+        assert_eq!(calls, BACKOFF_MS.len() + 1);
+        assert_eq!(waits, BACKOFF_MS.map(u128::from));
+
+        let mut waits = Vec::new();
+        let mut calls = 0;
+        let err = retrying(
+            &held,
+            &mut |d| waits.push(d.as_millis()),
+            || -> std::io::Result<()> {
+                calls += 1;
+                Err(std::io::Error::from(std::io::ErrorKind::NotFound))
+            },
+        )
+        .unwrap_err();
+        assert_eq!(err.kind(), std::io::ErrorKind::NotFound);
+        assert_eq!((calls, waits.len()), (1, 0));
+    }
+
+    #[test]
+    fn only_windows_refusals_count_as_held_for_now() {
+        assert_eq!(transient(&refused(5)), cfg!(windows));
+        assert_eq!(transient(&refused(32)), cfg!(windows));
+        assert!(!transient(&refused(2)));
+        assert!(!transient(&std::io::Error::from(
+            std::io::ErrorKind::PermissionDenied
+        )));
     }
 
     #[test]

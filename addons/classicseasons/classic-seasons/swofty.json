@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "swofty.classic-seasons",
   "name": "Classic Seasons",
-  "version": "0.6.2",
+  "version": "0.6.4",
   "author": "Swofty",
   "description": "Classic Seasons core: season boxes in Grand Prix and Time Trial, team logos, suits and the shared drivers with their real heads. Add the F1 2016 to F1 2024 seasons on top.",
   "license": "AGPL-3.0-or-later",

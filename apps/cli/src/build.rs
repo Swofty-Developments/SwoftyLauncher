@@ -192,7 +192,7 @@ pub fn install(store: &Store, profile: &str, g: &Game, session: bool, out: &dyn 
         s.spawn(|| heartbeat(&done, &store.root, busy, &copied));
         let r = install_checked(store, profile, g, session, out, &progress)
             .map_err(|e| named(store, g, e))
-            .map_err(|e| denied(e, &g.dir))
+            .map_err(|e| denied(e, &store.root, &g.dir))
             .map_err(|e| outdated(store, g, e));
         done.store(true, Ordering::Relaxed);
         r
@@ -313,23 +313,17 @@ fn named(store: &Store, g: &Game, e: anyhow::Error) -> anyhow::Error {
     }
 }
 
-/// Names the game folder and the fix when Windows refused a write in it.
-fn denied(e: anyhow::Error, game: &Path) -> anyhow::Error {
-    let refused = e.chain().any(|c| match c.downcast_ref::<swofty_core::Error>() {
-        Some(
-            swofty_core::Error::Io { path, source }
-            | swofty_core::Error::Formats(swofty_formats::Error::IoAt { path, source }),
-        ) => source.kind() == std::io::ErrorKind::PermissionDenied && path.starts_with(game),
-        _ => false,
+/// Names the folder and the fix when Windows refused a write in the game
+/// folder or the data folder.
+fn denied(e: anyhow::Error, data: &Path, game: &Path) -> anyhow::Error {
+    let fix = e.chain().find_map(|c| {
+        c.downcast_ref::<swofty_core::Error>()
+            .and_then(|c| swofty_core::build::refused_fix(data, game, c))
     });
-    if !refused {
-        return e;
+    match fix {
+        Some(fix) => anyhow::anyhow!("{e}. {fix}"),
+        None => e,
     }
-    anyhow::anyhow!(
-        "{e}. Windows refused to let Swofty change files in {}; run Swofty Launcher as administrator, \
-         or move F1 25 to a folder outside Program Files",
-        game.display()
-    )
 }
 
 /// Leads with the update to install when an addon's changes failed to apply
@@ -452,6 +446,14 @@ fn check_stock(store: &Store, g: &Game, out: &dyn Fn(&str)) -> Result<Option<Dep
     for d in &checked.eac {
         out(&format!(
             "[stock] {} differs from Steam's copy (size {}, Steam {}); not used by modded sessions, continuing",
+            d.rel,
+            d.size.map_or("missing".to_owned(), |n| n.to_string()),
+            d.steam
+        ));
+    }
+    for d in &checked.vr {
+        out(&format!(
+            "[stock] {} differs from Steam's copy (size {}, Steam {}); a VR runtime replaces it, continuing",
             d.rel,
             d.size.map_or("missing".to_owned(), |n| n.to_string()),
             d.steam
@@ -613,12 +615,12 @@ mod tests {
 
     #[test]
     fn names_the_game_folder_when_windows_refuses_a_write() {
-        let game = Path::new("/games/F1 25");
+        let (data, game) = (Path::new("/data/Swofty"), Path::new("/games/F1 25"));
         let refused = swofty_core::Error::Io {
             path: game.join("2025_asset_groups/ui_package/databases.erp"),
             source: std::io::Error::from(std::io::ErrorKind::PermissionDenied),
         };
-        let text = denied(anyhow::Error::from(refused), game).to_string();
+        let text = denied(anyhow::Error::from(refused), data, game).to_string();
         assert!(
             text.ends_with(
                 "Windows refused to let Swofty change files in /games/F1 25; run Swofty Launcher as \
@@ -627,13 +629,40 @@ mod tests {
             "{text}"
         );
         let elsewhere = swofty_core::Error::Io {
-            path: "/data/cache/x".into(),
+            path: "/other/cache/x".into(),
             source: std::io::Error::from(std::io::ErrorKind::PermissionDenied),
         };
+        assert_eq!(
+            denied(anyhow::Error::from(elsewhere), data, game).to_string(),
+            "/other/cache/x: permission denied"
+        );
+    }
+
+    #[test]
+    fn names_the_antivirus_exclusions_when_windows_refuses_an_overlay_archive() {
+        let (data, game) = (Path::new("/data/Swofty"), Path::new("/games/F1 25"));
+        let overlay = data.join("cache/overlay/default/0123/2025_asset_groups/ui_package/databases.erp");
+        let refused = swofty_core::Error::Formats(swofty_formats::Error::IoAt {
+            path: overlay.clone(),
+            source: std::io::Error::from(std::io::ErrorKind::PermissionDenied),
+        });
+        assert_eq!(
+            denied(anyhow::Error::from(refused), data, game).to_string(),
+            format!(
+                "{}: permission denied. Windows refused to let Swofty change its own files in /data/Swofty, which \
+                 an antivirus does while it scans them; add /data/Swofty and the F1 25 folder /games/F1 25 as \
+                 exclusions in your antivirus, then try again",
+                overlay.display()
+            )
+        );
+        let missing = swofty_core::Error::Io {
+            path: overlay,
+            source: std::io::Error::from(std::io::ErrorKind::NotFound),
+        };
         assert!(
-            !denied(anyhow::Error::from(elsewhere), game)
+            !denied(anyhow::Error::from(missing), data, game)
                 .to_string()
-                .contains("administrator")
+                .contains("antivirus")
         );
     }
 

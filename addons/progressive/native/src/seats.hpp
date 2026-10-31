@@ -20,6 +20,7 @@
 #pragma once
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -180,6 +181,11 @@ struct Mirror {
     size_t rows = 0, matched = 0, changed = 0, replaced = 0, race_before = 0, race_after = 0;
 };
 bool mirror_rows(uintptr_t begin_field, const std::vector<Row> &career, Mirror &out);
+
+// Each record of a line-up copy (checked as mirror_rows checks it, against the career rows' vtable) whose car
+// `want` changes gets the new vehicle_ref written in place. Returns the records written, -1 when the vector does not
+// look like a line-up copy.
+int patch_vehicles(uintptr_t begin_field, uintptr_t vtable, const std::function<uint32_t(const EntrantRecord &)> &want);
 
 uint64_t lineup_changes(uintptr_t entity, const Baseline &baseline);
 bool finalise(uintptr_t entity, const Baseline &baseline, uint64_t &changes);

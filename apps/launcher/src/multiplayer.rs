@@ -32,7 +32,7 @@ const GAME_EVERY: Duration = Duration::from_secs(2);
 const ROOMS_EVERY: Duration = Duration::from_secs(5);
 const STATUS_TIMEOUT: Duration = Duration::from_secs(3);
 const MIN_PLAYERS: u8 = 2;
-const MAX_PLAYERS: u8 = 20;
+const MAX_PLAYERS: u8 = 24;
 const TRACKS_SHOWN: usize = 3;
 const AVATARS_DIR: &str = "avatars";
 

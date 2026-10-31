@@ -350,6 +350,25 @@ impl Bundle {
                 }
             }
         }
+        for name in crate::stdlib::reports::SENT {
+            if let Some(file) = crate::stdlib::reports::found(&store.root, report.game.dir.as_deref(), name) {
+                c.file(format!("game/registry/{name}"), &file, None);
+            }
+        }
+        let careers = crate::stdlib::careers::data_path(&store.root);
+        let careers = if careers.is_file() {
+            Some(careers)
+        } else {
+            report
+                .game
+                .dir
+                .as_ref()
+                .map(|g| g.join(crate::stdlib::careers::GAME_PATH))
+                .filter(|p| p.is_file())
+        };
+        if let Some(careers) = careers {
+            c.file("game/careers/index.json".into(), &careers, None);
+        }
         if let Some(game) = &report.game.dir {
             let status = game.join(crate::multiplayer::bridge::STATUS_FILE);
             if status.is_file() {
@@ -405,6 +424,10 @@ impl Bundle {
         let not_stock = store.root.join("state/not-stock.json");
         if not_stock.is_file() {
             c.file("state/not-stock.json".into(), &not_stock, None);
+        }
+        let blocked = store.root.join("state/blocked.json");
+        if blocked.is_file() {
+            c.file("state/blocked.json".into(), &blocked, None);
         }
         for dir in &sessions {
             let session = file_name(dir);

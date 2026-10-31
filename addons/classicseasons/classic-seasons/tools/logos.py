@@ -22,7 +22,7 @@ sys.path[:0] = [str(HERE), str(REPO / "tools"), str(REPO / "addons/rnd-tyres-the
 import bc7enc
 from common import bc7_decode
 from erp import parse as erp_parse
-from erpw import ZSTD, Erp
+from erpw import ZSTD, Erp, zstd_c
 from logo_surfaces import Surface
 from pkg import Pkg
 from stock import Stock, fragments
@@ -275,7 +275,7 @@ def build(game, baseline, sheet):
 
 
 def zstd(data):
-    return subprocess.run(["zstd", "-c", "-19", "-T8", "-q"], input=data, capture_output=True, check=True).stdout
+    return zstd_c(data, threads=8)
 
 
 def set_frags(r, datas):

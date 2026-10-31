@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 
 use md5::{Digest as _, Md5};
 use swofty_formats::erp::{Entry, ErpFile, Resource, STORED, ZSTD, compress};
+use swofty_formats::gvdb::Gvdb;
 use swofty_formats::pkg::{Node, Pkg};
 
 use super::ailine::{self, Spacing};
@@ -119,12 +120,73 @@ fn world_variant<'a>(code: &str, eaid: &'a str) -> Option<&'a str> {
     eaid.strip_prefix(&prefix)?.strip_suffix(".wep")
 }
 
+const FILENAME: &str = "[FILENAME]";
+pub const TRACK_LAYERS: &str = "track_data.track_layers";
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct LayerWorld {
+    pub group: String,
+    pub eri: String,
+}
+
+impl LayerWorld {
+    pub fn new(group: &str, eri: &str) -> Option<Self> {
+        let group_ok = group.starts_with("asset_groups/") && group.ends_with(".assetgroup");
+        let eri_ok = eri.starts_with(EAID) && eri.ends_with(".wep") && !eri.contains('?');
+        let stock = std::iter::once("common")
+            .chain(WORLD_FALLBACKS.iter().map(|(v, _)| *v))
+            .any(|v| eri == world_eaid(FILENAME, v));
+        (group_ok && eri_ok && !stock && group.contains(FILENAME) && eri.contains(FILENAME)).then(|| Self {
+            group: group.to_owned(),
+            eri: eri.to_owned(),
+        })
+    }
+
+    pub fn group(&self, code: &str) -> String {
+        self.group.replace(FILENAME, code)
+    }
+
+    pub fn eri(&self, code: &str) -> String {
+        self.eri.replace(FILENAME, code)
+    }
+
+    fn label(&self, code: &str) -> String {
+        let eri = self.eri(code);
+        eri[EAID.len()..eri.len() - ".wep".len()].to_owned()
+    }
+
+    fn name(&self, code: &str) -> String {
+        let label = self.label(code);
+        label.rsplit('/').next().unwrap_or(&label).to_owned()
+    }
+}
+
+pub fn layer_worlds(db: &Gvdb) -> Vec<LayerWorld> {
+    let n = db.instance_count(TRACK_LAYERS, "TrackLayer").unwrap_or(0);
+    let worlds: BTreeSet<LayerWorld> = (0..n)
+        .filter_map(|i| {
+            let text = |f: &str| db.get_text(&format!("{TRACK_LAYERS}.TrackLayer_{i}.{f}"));
+            LayerWorld::new(&text("worldAssetGroup")?, &text("worldEri")?)
+        })
+        .collect();
+    worlds.into_iter().collect()
+}
+
+pub fn missing_worlds(worlds: &[LayerWorld], code: &str, provided: impl Fn(&str) -> bool) -> Vec<LayerWorld> {
+    worlds
+        .iter()
+        .filter(|w| !provided(&w.group(code)))
+        .cloned()
+        .collect()
+}
+
 pub struct PlaceInput<'a> {
     pub pkg: &'a TrackPackage,
     pub dir: &'a Path,
     pub game: &'a Path,
     pub slot: Option<(&'a str, &'a Path)>,
     pub cars: u32,
+    pub worlds: &'a [LayerWorld],
 }
 
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -146,10 +208,9 @@ fn alias_world(
     file: &ErpFile,
     world: &Resource,
     graph: &Resource,
-    code: &str,
-    to: &str,
+    eaid: String,
+    name: String,
 ) -> Result<[Resource; 2]> {
-    let eaid = world_eaid(code, to);
     let mut graph = file.load(graph)?;
     graph.name = format!("{eaid}?event_graph");
     let mut world = file.load(world)?;
@@ -159,10 +220,7 @@ fn alias_world(
         .root
         .as_obj_mut()
         .ok_or_else(|| Error::Map(format!("{}: world root is not an object", world.name)))?;
-    for (key, value) in [
-        ("name", format!("{code}_{to}")),
-        ("event_graph", graph.name.clone()),
-    ] {
+    for (key, value) in [("name", name), ("event_graph", graph.name.clone())] {
         match root.get_mut(key).and_then(Node::as_val_mut) {
             Some(v) if v.as_str().is_some() => v.set_str(value),
             _ => return Err(Error::Map(format!("{}: world has no {key} string", world.name))),
@@ -265,6 +323,9 @@ fn stamp(input: &PlaceInput) -> Result<String> {
             input.cars
         ),
     );
+    for w in input.worlds {
+        sha2::Digest::update(&mut h, format!("|{}|{}", w.group, w.eri));
+    }
     Ok(crate::baseline::hex(&sha2::Digest::finalize(h))[..16].to_owned())
 }
 
@@ -329,10 +390,42 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
         let (Some(world), Some(graph)) = (find(&src), find(&format!("{src}?event_graph"))) else {
             continue;
         };
-        owned.extend(alias_world(&file, world, graph, code, v)?);
+        owned.extend(alias_world(
+            &file,
+            world,
+            graph,
+            world_eaid(code, v),
+            format!("{code}_{v}"),
+        )?);
         placement
             .aliases
             .insert(format!("{code}_{v}"), format!("{code}_{from}"));
+    }
+    let mut layer_groups = Vec::new();
+    if input.slot.is_none() {
+        for w in input.worlds {
+            let eri = w.eri(code);
+            if !file.erp.resources.iter().any(|r| r.name == eri) {
+                let name = w.name(code);
+                let own = name
+                    .strip_prefix(&format!("{code}_"))
+                    .and_then(|v| present.get(v).copied());
+                let Some(from) = own.or_else(|| grid_variants().find(|v| present.contains(v))) else {
+                    placement
+                        .notes
+                        .push(format!("no world can stand in for {}", w.label(code)));
+                    continue;
+                };
+                let find = |name: &str| file.erp.resources.iter().find(|r| r.name == name);
+                let src = world_eaid(code, from);
+                let (Some(world), Some(graph)) = (find(&src), find(&format!("{src}?event_graph"))) else {
+                    continue;
+                };
+                owned.extend(alias_world(&file, world, graph, eri, name)?);
+                placement.aliases.insert(w.label(code), format!("{code}_{from}"));
+            }
+            layer_groups.push(w.group(code));
+        }
     }
     let mut repointed = BTreeMap::new();
     let mut used = BTreeSet::new();
@@ -393,6 +486,11 @@ pub fn place(input: &PlaceInput, cache: &Path) -> Result<Placement> {
             code,
             file.erp.resources.iter().chain(&owned).map(|r| r.name.as_str()),
         );
+        for group in layer_groups {
+            if !placement.groups.contains(&group) {
+                placement.groups.push(group);
+            }
+        }
     }
     if !done.is_file() {
         let own: BTreeSet<&str> = file.erp.resources.iter().map(|r| r.name.as_str()).collect();
@@ -469,20 +567,21 @@ fn variants<'a>(file: &'a ErpFile, code: &str) -> BTreeSet<&'a str> {
         .collect()
 }
 
+fn grid_variants() -> impl Iterator<Item = &'static str> {
+    let fallbacks = WORLD_FALLBACKS
+        .iter()
+        .find(|(v, _)| *v == GRID_WORLD)
+        .map_or(&[][..], |(_, f)| *f);
+    std::iter::once(GRID_WORLD).chain(fallbacks.iter().copied())
+}
+
 pub fn extend_grid(
     file: &ErpFile,
     code: &str,
     cars: u32,
 ) -> Result<Option<(usize, Resource, grid::Extension)>> {
     let present = variants(file, code);
-    let fallbacks = WORLD_FALLBACKS
-        .iter()
-        .find(|(v, _)| *v == GRID_WORLD)
-        .map_or(&[][..], |(_, f)| *f);
-    let Some(variant) = std::iter::once(GRID_WORLD)
-        .chain(fallbacks.iter().copied())
-        .find(|v| present.contains(v))
-    else {
+    let Some(variant) = grid_variants().find(|v| present.contains(v)) else {
         return Ok(None);
     };
     let mut names = world_layers(file, &world_eaid(code, "common"))?;
@@ -615,6 +714,7 @@ mod tests {
             game: &dir,
             slot: None,
             cars: 22,
+            worlds: &[],
         };
         let edited = line("a longer racing line");
         std::fs::write(dir.join(&pkg.erp), archive(edited.to_bytes())).unwrap();
@@ -690,6 +790,7 @@ mod tests {
             game: &dir,
             slot: None,
             cars: 22,
+            worlds: &[],
         };
         let placement = place(&input, &dir.join("cache")).unwrap();
         assert_eq!(placement.spaced, ["pit"]);
@@ -745,5 +846,154 @@ mod tests {
             track_file("okayama"),
             "2025_asset_groups/environment_package/tracks/okayama/okayama.erp"
         );
+    }
+
+    const MOD_GROUP: &str =
+        "asset_groups/mod_environment_package/tracks/[FILENAME]/wep/[FILENAME]_x.assetgroup";
+    const MOD_ERI: &str = "eaid://mod_environment_package/tracks/[FILENAME]/wep/[FILENAME]_x.wep";
+
+    fn world_archive(dir: &Path, pkg: &TrackPackage, extra: &[String]) {
+        use swofty_formats::erp::{Erp, Fragment, HEADER_LEN, MAGIC};
+        use swofty_formats::pkg::{Arr, Obj, Val};
+        let fragment = |raw: Vec<u8>| Fragment {
+            name: *b"temp",
+            offset: 0,
+            size: raw.len() as u64,
+            flags: 0x10,
+            compression: STORED,
+            packed: raw.len() as u64,
+            raw,
+        };
+        let resource = |name: &str, kind: &str, data: Vec<u8>| Resource {
+            name: name.into(),
+            kind: swofty_formats::erp::kind(kind).unwrap(),
+            unk: vec![0; 4],
+            fragments: vec![fragment(data)],
+            hash: [0; 16],
+        };
+        let world = |eaid: &str| {
+            let name = eaid.rsplit('/').next().unwrap().trim_end_matches(".wep");
+            let root = Obj::new(vec![
+                (Val::str("name"), Node::Val(Val::str(name))),
+                (
+                    Val::str("event_graph"),
+                    Node::Val(Val::str(format!("{eaid}?event_graph"))),
+                ),
+                (Val::str("layers"), Node::Arr(Arr::new(Vec::new()))),
+            ]);
+            let pkg = Pkg {
+                name: *b"WRLD",
+                root: Node::Obj(root),
+                vca: Vec::new(),
+                layout: None,
+            };
+            [
+                resource(eaid, "World", pkg.to_bytes().unwrap()),
+                resource(&format!("{eaid}?event_graph"), "EventGraph", vec![1]),
+            ]
+        };
+        let mut header = [0u8; HEADER_LEN];
+        header[..4].copy_from_slice(MAGIC);
+        header[4..8].copy_from_slice(&3u32.to_le_bytes());
+        let eaids = ["common", "f1", GRID_WORLD]
+            .iter()
+            .map(|v| world_eaid("testring", v))
+            .chain(extra.iter().cloned());
+        let bytes = Erp {
+            header,
+            version: 3,
+            resources: eaids.flat_map(|e| world(&e)).collect(),
+        }
+        .to_bytes();
+        std::fs::write(dir.join(&pkg.erp), bytes).unwrap();
+    }
+
+    fn place_with_worlds(name: &str, extra: &[String]) -> (Placement, ErpFile) {
+        let dir = std::env::temp_dir().join(format!("swofty-place-{name}-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(&dir).unwrap();
+        let pkg = TrackPackage::parse(crate::map::tests::OKAYAMA_LIKE.as_bytes()).unwrap();
+        world_archive(&dir, &pkg, extra);
+        let worlds = [LayerWorld::new(MOD_GROUP, MOD_ERI).unwrap()];
+        let input = PlaceInput {
+            pkg: &pkg,
+            dir: &dir,
+            game: &dir,
+            slot: None,
+            cars: 0,
+            worlds: &worlds,
+        };
+        let placement = place(&input, &dir.join("cache")).unwrap();
+        let placed = ErpFile::open(&placement.dir.join(&placement.archive)).unwrap();
+        (placement, placed)
+    }
+
+    #[test]
+    fn an_addon_layer_world_gets_a_stand_in_on_an_added_track() {
+        let (placement, placed) = place_with_worlds("layer-world", &[]);
+        let eri = "eaid://mod_environment_package/tracks/testring/wep/testring_x.wep";
+        assert_eq!(
+            placement
+                .aliases
+                .get("mod_environment_package/tracks/testring/wep/testring_x")
+                .map(String::as_str),
+            Some("testring_f1_26_myteam")
+        );
+        let group = "asset_groups/mod_environment_package/tracks/testring/wep/testring_x.assetgroup";
+        assert_eq!(placement.groups.iter().filter(|g| *g == group).count(), 1);
+        let world = placed.load(placed.erp.find(eri).unwrap()).unwrap();
+        let pkg = Pkg::parse(&world.fragments[0].data().unwrap()).unwrap();
+        let root = pkg.root.as_obj().unwrap();
+        let text = |k: &str| {
+            root.get(k)
+                .and_then(Node::as_val)
+                .and_then(|v| v.as_str())
+                .map(str::to_owned)
+        };
+        assert_eq!(text("name").as_deref(), Some("testring_x"));
+        assert_eq!(text("event_graph"), Some(format!("{eri}?event_graph")));
+        assert!(placed.erp.find(&format!("{eri}?event_graph")).is_ok());
+        std::fs::remove_dir_all(placement.dir.parent().unwrap().parent().unwrap()).ok();
+    }
+
+    #[test]
+    fn a_track_that_ships_the_layer_world_keeps_its_own() {
+        let eri = "eaid://mod_environment_package/tracks/testring/wep/testring_x.wep";
+        let (placement, placed) = place_with_worlds("own-layer-world", &[eri.to_owned()]);
+        assert!(placement.aliases.keys().all(|k| !k.ends_with("testring_x")));
+        assert_eq!(placed.erp.resources.iter().filter(|r| r.name == eri).count(), 1);
+        assert!(placement.groups.contains(
+            &"asset_groups/mod_environment_package/tracks/testring/wep/testring_x.assetgroup".into()
+        ));
+        std::fs::remove_dir_all(placement.dir.parent().unwrap().parent().unwrap()).ok();
+    }
+
+    #[test]
+    fn layer_worlds_skip_the_stock_worlds_and_groups_an_addon_registers() {
+        use swofty_formats::gvdb::Record;
+        let stock_group =
+            "asset_groups/environment_package/tracks/[FILENAME]/wep/[FILENAME]_f1_26.assetgroup";
+        let rows = [
+            ("f1_26", stock_group.to_owned(), world_eaid(FILENAME, "f1_26")),
+            ("mod_a", MOD_GROUP.to_owned(), MOD_ERI.to_owned()),
+            ("mod_b", MOD_GROUP.to_owned(), MOD_ERI.to_owned()),
+        ];
+        let mut records = vec![Record::new(
+            &format!("{TRACK_LAYERS}._TrackLayer_instancecount_"),
+            0,
+            rows.len().to_string(),
+        )];
+        for (i, (label, group, eri)) in rows.iter().enumerate() {
+            let row = format!("{TRACK_LAYERS}.TrackLayer_{i}");
+            records.push(Record::new(&format!("{row}._metadata_"), 4, *label));
+            records.push(Record::new(&format!("{row}.worldAssetGroup"), 4, group.as_str()));
+            records.push(Record::new(&format!("{row}.worldEri"), 4, eri.as_str()));
+        }
+        let worlds = layer_worlds(&Gvdb { records });
+        assert_eq!(worlds, [LayerWorld::new(MOD_GROUP, MOD_ERI).unwrap()]);
+        let registered = "asset_groups/mod_environment_package/tracks/monaco/wep/monaco_x.assetgroup";
+        assert!(missing_worlds(&worlds, "monaco", |g| g == registered).is_empty());
+        assert_eq!(missing_worlds(&worlds, "testring", |g| g == registered), worlds);
+        assert_eq!(LayerWorld::new("asset_groups/fixed.assetgroup", MOD_ERI), None);
     }
 }

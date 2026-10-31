@@ -1,0 +1,11 @@
+addr	name	sig	verify
+0x1413b7510	Hud_StoryRaceEvent_Begin	hud.story_race_event_begin	d7-verify V2047
+0x1414f5970	Hud_Bind_DynamicMfdViewModel	-	cg-verify V1135
+0x14152d760	Hud_RaceStartClutchPrompt_Update	hud.race_start_clutch_prompt_update	d9-verify V2218
+0x1415896b0	Hud_PitStartClutchPrompt_Update	hud.pit_start_clutch_prompt_update	d9-verify V2219
+0x141bd5790	Hud_ReplayHudVM_OnScreenDeactivated	hud.replay_hud_v_m_on_screen_deactivated	d7-verify V2056
+0x141c23a40	Hud_SpectatorScreenVM_OnScreenDeactivated	hud.spectator_screen_v_m_on_screen_deactivated	d7-verify V2058
+0x142a50cc0	Hud_PushProIncidentPointsMessage	hud.push_pro_incident_points_message	d14-verify V2629
+0x142a51290	Hud_PushDrsStateMessage	hud.push_drs_state_message	cs2-verify V2660
+0x142a51530	Hud_PushPartialModeMessage	hud.push_partial_mode_message	cs2-verify V2661
+0x142c74140	Hud_HideReasons_Add	hud.hide_reasons_add	d7-verify V2087
