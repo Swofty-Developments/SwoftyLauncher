@@ -31,7 +31,7 @@ curl -fsSL "https://github.com/actions/runner/releases/download/v$VERSION/action
 PYTHON_URL=$(curl -fsSL https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json | jq -r --arg os "$VERSION_ID" \
   '[.[] | select(.stable and (.version | startswith("3.14.")))][0].files[] | select(.platform == "linux" and .platform_version == $os and .arch == "x64") | .download_url')
 mkdir -p /tmp/python && curl -fsSL "$PYTHON_URL" | tar xz -C /tmp/python
-(cd /tmp/python && RUNNER_TOOL_CACHE=/opt/hostedtoolcache AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache ./setup.sh)
+(cd /tmp/python && RUNNER_TOOL_CACHE=/opt/hostedtoolcache AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache bash ./setup.sh)
 PYTHON_BIN=$(ls -d /opt/hostedtoolcache/Python/3.14.*/x64/bin | head -1)
 cat > /opt/actions-runner/.env <<EOF
 ImageOS=ubuntu${VERSION_ID%%.*}
