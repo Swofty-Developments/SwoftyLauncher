@@ -175012,6 +175012,60 @@
     "native/src/core/pit_box.cpp"
    ],
    "func_start": "0x1434c3520"
+  },
+  {
+   "id": "game.thrustmaster_lcd_entrant_record",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 48 89 C5 0F B6 43 08",
+   "match": "0x142fdc294",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142fdc299",
+   "kind": "mid",
+   "expect": "48 89 C5 0F B6 43 08",
+   "names": [
+    "site_Game_ThrustmasterLcd_EntrantRecord"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "tmlcd",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/thrustmaster_lcd.cpp"
+   ]
+  },
+  {
+   "id": "game.thrustmaster_lcd_sector_tail",
+   "section": ".xtls",
+   "pattern": "44 0F B6 B7 E8 00 00 00 BB FF FF FF FF",
+   "match": "0x142fdc7b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142fdc7b0",
+   "kind": "mid",
+   "expect": "44 0F B6 B7 E8 00 00 00",
+   "names": [
+    "site_Game_ThrustmasterLcd_SectorTail"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "tmlcd",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/thrustmaster_lcd.cpp"
+   ]
   }
  ]
 }
