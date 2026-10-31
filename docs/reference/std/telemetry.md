@@ -223,9 +223,20 @@ The core changes a buffer only when it parses as an F1 packet: `m_packetFormat` 
 ```text
 Participants (4)   2024 1350 B, 2025 1284 B: driverId, teamId (u8 per entry)
                    2026 1470 B: driverId, teamId (u16 per entry)
-Lobby Info (9)     2024 1306 B, 2025 954 B: teamId in each entry
-Time Trial (14)    2024 and 2025 101 B: teamId in each of the three data sets
+Lobby Info (9)     2024 1306 B, 2025 954 B: teamId in each entry (u8)
+                   2026 1062 B: teamId in each entry (u16)
+Time Trial (14)    2024 and 2025 101 B: teamId in each of the three data sets (u8)
+                   2026 104 B: teamId in each of the three data sets (u16)
 ```
+
+No other packet in any of the three formats carries a team or driver id.
+
+```text
+[udp] format 2025 packet 14 is 104 bytes, not the 101 the id rewrite expects; left alone
+[udp] first time trial packet: format 2025, team ids 29, 0, 0, rewritten
+```
+
+The core logs the first packet of each format and id whose length differs from the table, and the team ids of the first Time Trial packet it sees.
 
 `SWOFTY_UDP_STOCK_IDS=0` turns the rewrite off, for a tool that reads the real ids through an addon's registry `stat_id`.
 

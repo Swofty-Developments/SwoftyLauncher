@@ -23,8 +23,18 @@
 //     record's driver id from +1 and team id from +5).
 //   Lobby Info (9), 2024: 1306 bytes; numPlayers at 29, entries from 30, 58 bytes each, teamId u8 at entry+1.
 //   Lobby Info (9), 2025: 954 bytes; 42 bytes each, teamId u8 at entry+1.
+//   Lobby Info (9), 2026: 1062 bytes; 24 entries from 30, 43 bytes each, teamId u16 at entry+1 (the builder
+//     Game_TelemetryOutputDataSystem_UpdateUDPLobbyData 0x142d033d0 starts every entry's team at 0xffff and writes
+//     the team stat id as a u16 at entry+1; the name starts at entry+5, one byte later than in 2025).
 //   Time Trial (14), 2024 and 2025: 101 bytes; three data sets of 24 bytes from 29, teamId u8 at set+1.
-// The 2026 Lobby Info and Time Trial packets are left alone.
+//   Time Trial (14), 2026: 104 bytes; three data sets of 25 bytes from 29, teamId u16 at set+1 (the game keeps one
+//     2026-shaped record and Game_TelemetryUdp_Prepare2025 0x144733850 copies the low byte of that u16 into the
+//     2025 packet and skips the high byte).
+// Sizes come from the game's own table in Game_TelemetryUdp_LogPacketSizes 0x14472a6e0 and the destination
+// offsets of Game_TelemetryOutputUDPUpdateable_PreparePackets 0x144736210. No other 2026 packet carries a team or
+// driver id: Final Classification (1134), Session History (1460), Car Setups (1233), Car Damage (1133), Car
+// Status (1445), Car Telemetry (1448), Lap Data (1399), Lap Positions (1231), Tyre Sets (231), Motion Ex (273)
+// and Event (45) index cars by carIdx only.
 
 namespace runtime::udp_ids {
 
@@ -104,6 +114,8 @@ inline const Layout *layouts(size_t &n)
         {2025, 9, 954, 42, 22, 0, 1, false, false},
         {2024, 14, 101, 24, 3, 0, 1, false, true},
         {2025, 14, 101, 24, 3, 0, 1, false, true},
+        {2026, 9, 1062, 43, 24, 0, 1, true, false},
+        {2026, 14, 104, 25, 3, 0, 1, true, true},
     };
     n = sizeof table / sizeof *table;
     return table;
@@ -122,6 +134,24 @@ inline const Layout *identify(const uint8_t *p, size_t len)
         if (t[i].format == format && t[i].id == p[6] && t[i].size == len)
             return &t[i];
     return nullptr;
+}
+
+inline const Layout *misfit(const uint8_t *p, size_t len)
+{
+    if (!p || len < HEADER + 1 || len > MAX_PACKET)
+        return nullptr;
+    int format = p[0] | p[1] << 8;
+    size_t n;
+    const Layout *t = layouts(n);
+    const Layout *other = nullptr;
+    for (size_t i = 0; i < n; i++) {
+        if (t[i].format != format || t[i].id != p[6])
+            continue;
+        if (t[i].size == len)
+            return nullptr;
+        other = &t[i];
+    }
+    return other;
 }
 
 struct Change {
