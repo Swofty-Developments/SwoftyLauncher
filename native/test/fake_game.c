@@ -1,4 +1,5 @@
 #define WIN32_LEAN_AND_MEAN
+#include <winsock2.h>
 #include <windows.h>
 #include <math.h>
 #include <stdarg.h>
@@ -1263,6 +1264,86 @@ static int exhaust_near(int release_pool)
     return taken;
 }
 
+
+static void udp_participants(uint8_t *b, size_t size, size_t stride, int format, int driver, int team)
+{
+    memset(b, 0, size);
+    b[0] = (uint8_t)format;
+    b[1] = (uint8_t)(format >> 8);
+    b[6] = 4;
+    b[29] = 2;
+    b[30 + 1] = (uint8_t)driver;
+    b[30 + 3] = (uint8_t)team;
+    b[30 + stride + 1] = 5;
+    b[30 + stride + 3] = 2;
+}
+
+static int udp_get(SOCKET rx, uint8_t *out, int cap)
+{
+    DWORD ms = 1500;
+    setsockopt(rx, SOL_SOCKET, SO_RCVTIMEO, (const char *)&ms, sizeof ms);
+    return recvfrom(rx, (char *)out, cap, 0, NULL, NULL);
+}
+
+static void test_udp(int off)
+{
+    WSADATA wsa;
+    WSAStartup(MAKEWORD(2, 2), &wsa);
+    SOCKET tx = socket(AF_INET, SOCK_DGRAM, 0), rx = socket(AF_INET, SOCK_DGRAM, 0), lan = socket(AF_INET, SOCK_DGRAM, 0);
+    struct sockaddr_in a = {.sin_family = AF_INET, .sin_addr.s_addr = htonl(INADDR_LOOPBACK)}, to, lan_to;
+    int n = sizeof a;
+    bind(rx, (struct sockaddr *)&a, sizeof a);
+    getsockname(rx, (struct sockaddr *)&a, &n);
+    to = a;
+    struct sockaddr_in l = {.sin_family = AF_INET, .sin_addr.s_addr = htonl(INADDR_LOOPBACK), .sin_port = htons(21414)};
+    int lan_bound = bind(lan, (struct sockaddr *)&l, sizeof l) == 0;
+    lan_to = l;
+    uint8_t sent[1500], got[1500];
+    int want_driver = off ? 197 : 255, want_team = off ? 251 : 4;
+
+    udp_participants(sent, 1284, 57, 2025, 197, 251);
+    uint8_t keep[1500];
+    memcpy(keep, sent, 1284);
+    int r = sendto(tx, (char *)sent, 1284, 0, (struct sockaddr *)&to, sizeof to);
+    expect(r == 1284, "udp: sendto returns the packet length");
+    expect(!memcmp(sent, keep, 1284), "udp: the game's own buffer is not changed");
+    r = udp_get(rx, got, sizeof got);
+    expect(r == 1284 && got[31] == want_driver && got[33] == want_team,
+           off ? "udp: SWOFTY_UDP_STOCK_IDS=0 sends the ids as the game wrote them"
+               : "udp: a 2025 Participants packet arrives with driver 197 as 255 and team 251 as 4");
+    expect(r == 1284 && got[30 + 57 + 1] == 5 && got[30 + 57 + 3] == 2, "udp: stock ids in the next entry arrive as sent");
+    if (r == 1284)
+        got[31] = 197, got[33] = 251;
+    expect(r == 1284 && !memcmp(got, keep, 1284), "udp: no other byte of the packet changes");
+
+    udp_participants(sent, 1283, 57, 2025, 197, 251);
+    sendto(tx, (char *)sent, 1283, 0, (struct sockaddr *)&to, sizeof to);
+    r = udp_get(rx, got, sizeof got);
+    expect(r == 1283 && got[31] == 197 && got[33] == 251, "udp: a buffer one byte short of the packet size is untouched");
+
+    udp_participants(sent, 1284, 57, 2023, 197, 251);
+    sendto(tx, (char *)sent, 1284, 0, (struct sockaddr *)&to, sizeof to);
+    r = udp_get(rx, got, sizeof got);
+    expect(r == 1284 && got[31] == 197 && got[33] == 251, "udp: a buffer with another packet format is untouched");
+
+    memset(sent, 0x41, 64);
+    sendto(tx, (char *)sent, 64, 0, (struct sockaddr *)&to, sizeof to);
+    r = udp_get(rx, got, sizeof got);
+    expect(r == 64 && !memcmp(sent, got, 64), "udp: other traffic arrives byte for byte");
+
+    if (lan_bound) {
+        udp_participants(sent, 1284, 57, 2025, 197, 251);
+        sendto(tx, (char *)sent, 1284, 0, (struct sockaddr *)&lan_to, sizeof lan_to);
+        r = udp_get(lan, got, sizeof got);
+        expect(r == 1284 && got[31] == 197 && got[33] == 251, "udp: a packet to the LAN game port is untouched");
+    } else {
+        printf("      port 21414 was taken; the LAN-port case is skipped\n");
+    }
+    closesocket(tx);
+    closesocket(rx);
+    closesocket(lan);
+}
+
 int main(int argc, char **argv)
 {
     int fallback = argc > 1 && !strcmp(argv[1], "fallback"), vm = argc > 1 && !strcmp(argv[1], "vm");
@@ -1403,6 +1484,8 @@ int main(int argc, char **argv)
 
     test_settings(settings, chain);
     test_items(settings);
+    if (argc > 1 && (!strcmp(argv[1], "udp") || !strcmp(argv[1], "udp_off")))
+        test_udp(!strcmp(argv[1], "udp_off"));
     if (argc > 1 && !strcmp(argv[1], "trigger")) {
         test_ers_newlap();
         test_ers_mode();

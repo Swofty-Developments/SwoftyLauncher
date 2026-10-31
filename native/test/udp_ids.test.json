@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "teams": {"507": 4},
+  "drivers": {"197": 255},
+  "teams_byte": {"251": 4},
+  "drivers_byte": {"197": 255},
+  "lines": ["team 507 -> 4 (forceindia)", "driver 197 -> 255 (no stock driver)"]
+}
