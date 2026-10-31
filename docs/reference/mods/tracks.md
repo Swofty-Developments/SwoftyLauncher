@@ -89,6 +89,14 @@ Portimao (mod.portimao): track Portimao is left out; its manifest.json doesn't s
 
 A race weekend set to a track the build leaves out races at its stock track again, with a warning. Importing or installing such a package shows the same warning, and the **Addons** page marks its addon **Track left out**.
 
+A build also checks every record that names a track by its code: race weekends, track settings, the content sets' track lists and the game modes' left-out tracks. A record an addon sets to a track the build doesn't hold, such as a DB Editor change made while a track addon was on, gets its stock track back, and a list drops the track. The build warns, naming the addon that set it and the track addon to turn on:
+
+```text
+My Calendar sets race weekend bahrain to istanbul_park, which is off: turn Istanbul Park on; until then this build puts back bahrain
+```
+
+A record the game doesn't ship, such as a race weekend an addon adds, keeps its track, and the warning says to change it in DB Editor.
+
 For every table, archive and menu change made during activation, see [How tracks are installed](/reference/installing-tracks).
 
 ## The track's name
