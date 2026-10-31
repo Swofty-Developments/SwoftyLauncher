@@ -2215,6 +2215,10 @@ void season_hub(const swofty::career::State &state)
         contract_left_alone(before, c, year, "the season's race weekends are not built yet");
         return;
     }
+    if (!season::refit_due(new_season, mid, c->mid_year, year, c->mid_applied, mid_ids)) {
+        contract_left_alone(before, c, year, "the season is applied and its line-up has not changed");
+        return;
+    }
     char why[256];
     if (new_season)
         std::snprintf(why, sizeof why, "season %u of career %s, start %d%s: not applied yet", index, c->key.c_str(),
