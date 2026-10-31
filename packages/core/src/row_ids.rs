@@ -16,6 +16,10 @@ use crate::ops::{Claimed, DbOp, DbOps, IdFrom, RowIds, add_row_name, row_shape, 
 use crate::stdlib::reports;
 use crate::{Loaded, Result, io_err};
 
+mod recover;
+
+pub use recover::Recovery;
+
 pub const FILE: &str = "row-ids.json";
 const LOCK: &str = "row-ids.lock";
 const VERSION: u32 = 1;
@@ -43,6 +47,9 @@ struct File {
     /// The profiles whose last build before the store seeded it.
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     seeded: BTreeSet<String>,
+    /// The ids 1.6.10 and 1.6.11 gave from the rows' keys were put back once (see [`Store::recover`]).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    recovered: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -255,6 +262,8 @@ pub struct Store {
     rows: BTreeMap<String, i64>,
     from: HashMap<String, IdFrom>,
     seeded: BTreeSet<String>,
+    recovered: bool,
+    existed: bool,
     by_id: HashMap<String, BTreeMap<i64, String>>,
     pinned: HashMap<String, HashSet<i64>>,
     seed: Seed,
@@ -288,6 +297,8 @@ impl Store {
             Ok(Loaded::Found(f)) => {
                 store.read_only = f.version > VERSION;
                 store.seeded = f.seeded;
+                store.recovered = f.recovered;
+                store.existed = true;
                 for (key, e) in f.rows {
                     store.from.insert(key.clone(), e.from);
                     store.insert(key, e.id);
@@ -430,6 +441,7 @@ impl Store {
             version: VERSION,
             rows,
             seeded: self.seeded.clone(),
+            recovered: self.recovered,
         };
         crate::write_json(&path(data), &file)
     }

@@ -1206,9 +1206,10 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         planner.keep_entrant_lists(crate::entrant_lists::StockLists::new(&shipped_db));
         let row_ids_lock = crate::row_ids::lock(&store.root)?;
         let last = crate::row_ids::last_build(&store.overlays_dir(profile), &built.buildhash, GVDB);
-        let (row_ids, row_id_warnings) =
+        let (mut row_ids, row_id_warnings) =
             crate::row_ids::Store::load(&store.root, Some(&game.dir), profile, last);
         built.warnings.extend(row_id_warnings);
+        built.lines.extend(row_ids.recover(&store.sessions_dir()).lines);
         planner.keep_row_ids(row_ids);
         let added = planner.apply_db_report(&mut db, &stock, &tracked, &mut db_report)?;
         if let Some(ids) = planner.take_row_ids() {

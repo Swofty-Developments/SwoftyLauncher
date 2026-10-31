@@ -252,6 +252,7 @@ A copy keeps its id from build to build, so a career keeps its cars, teams and d
 - Any other new copy takes the next free id above the table's rows, in load order, as builds before 1.6.10 gave it, passing over the ids the file keeps for other rows and the ids the core's `ids.json` holds. A fresh install with the same addons in the same order gives a save made before 1.6.10 its ids back, and two installs that build the same addons in the same order from an empty file get the same ids.
 - An addon that is turned off or removed keeps its rows' ids. Turned back on, its rows get them back. An update that adds a row gives the new row a new id and leaves the others alone.
 - A kept id that a row of the database, the core's `ids.json` or the table's ceiling now rules out moves to the next free id.
+- 1.6.10 and 1.6.11 gave new copies an id from the hash of their key and kept none of the ids earlier builds gave. The first build after them puts those rows back once: each takes the id the newest game session log from before 1.6.10 (`$DATA/sessions/<stamp>/loader.log`) shows for its label, and a row no log shows takes the next free id in load order again. An addon whose hashed team ids a session loaded since 1.6.10, while none loaded its earlier ones, keeps the hashed ids.
 - A table with no free id left takes the lowest id kept for an addon the build leaves out.
 - Two copies with one label in one addon's table are `<label>` and `<label>#2`.
 
