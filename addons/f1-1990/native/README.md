@@ -187,16 +187,20 @@ The flag is set at each car's upgrade fill: on in a 1990 session outside groups 
 
 ## AI qualifying pace (`f1_1990_aiquali.dll`)
 
-A separate DLL, under option `quali_engine_1990`. The 1990 AI tables are built in race trim (race tyre, race engine), and the AI's grip input (vehicle state +0x24, from `Car_Tyre_ComputeGripMultiplier` at 0x140607110) carries wear, temperature and the handling file's GripMultiplier but not the compound's Peak, so on qualifiers the AI would corner at race tyre speeds. In 1990 qualifying every AI corner target is 4 % faster.
+A separate DLL, under option `quali_engine_1990`. The 1990 AI tables are built in race trim (race tyre, race engine), and the AI's grip input (vehicle state +0x24, from `Car_Tyre_ComputeGripMultiplier` at 0x140607110) carries wear, temperature and the handling file's GripMultiplier but not the compound's Peak, so on qualifiers the AI would corner at race tyre speeds. In 1990 qualifying every AI corner radius that goes through the modifier is 8.5 % larger.
 
 | binding | address | use |
 |---|---|---|
 | `Game_Rnd_FillVehicleUpgrades` | 0x141238cb0 | wrapped (chains with `f1_1990_quali.dll`): the flag is on when the session group is 1 or 2 in a 1990 career, off in other 1990 sessions and other careers, and off on `career.loaded` / `career.unloaded` |
-| `Ai_Eval_CurvatureModifier` | 0x14060dd70 | wrapped: the corner speed modifier every AI corner target multiplies in (9 callers, 5 in `Ai_Update_VehicleDriver`); while the flag is on it returns its value x 1.04 |
+| `Ai_Eval_CurvatureModifier` | 0x14060dd70 | wrapped: the AI's corner radius factor (the game's "ai Radius Mod"); while the flag is on it returns its value x 1.085 |
 
-`Ai_Eval_CurvatureModifier` is an L1 row with signature `ai.eval_curvature_modifier`, proposed for L2 in the ai lane's inbox. Until the owner raises it and an `agree` verify row exists it is a dev binding only, and the core drops this DLL (nothing else). The binding is declared in `src/ai_quali.cpp` as `Ai_Eval_CurvatureModifier_1990`. In the AI build's car model, 1.04 puts the AI's qualifying lap within about 1 % of the qualifier lap at Las Vegas, Monza and Suzuka and 1.5-2 % under it at Hungary and Monaco.
+The factor scales a radius, not a speed. `0x14068fd10` reads the corner speed at that radius from the `.copd` row (bilinear over grip and mass, linear in radius). On a grip-limited radius speed grows with the square root of radius times grip, so 1.085 is the qualifier/race tyre grip ratio (Goodyear 0.97/0.895, Pirelli 0.99/0.91): the qualifier's corner speed, about 4 % up. Radii where the row is at top speed gain nothing.
 
-Lines: `[f1-1990] ai quali: on (1990 qualifying): AI corner speeds x1.040`, `ai quali: off (1990 practice or race|not a 1990 career|career loaded or unloaded): AI corner speeds x1.000`, and once `ai quali: first scaled corner: modifier A -> B`.
+Not covered: corner windows without a limit (+0x4b clear), the 0x140616b47 path when window +0x5b is clear (radius from geometry only), and the braking (`.brpd`) and traction (`.acpd`) lookups, which stay at race tyre grip. In the AI build's car model the AI's qualifying lap is 1.2–2.5 % over the qualifier lap at Las Vegas, Monza, Hungary and Monaco and 2.4–3.6 % at Suzuka (radius x1.082), against 4.0–5.9 % with no factor.
+
+`Ai_Eval_CurvatureModifier` is L2 with signature `ai.eval_curvature_modifier`; the binding is declared in `src/ai_quali.cpp` as `Ai_Eval_CurvatureModifier_1990` (prototype with a `bool` flag, of which the game reads bit 0).
+
+Lines: `[f1-1990] ai quali: on (1990 qualifying): AI corner radius x1.085`, `ai quali: off (1990 practice or race|not a 1990 career|career loaded or unloaded): AI corner radius x1.000`, and once `ai quali: first scaled corner: radius factor A -> B`.
 
 ## R&D card art and department names (`f1_1990_rnd.dll`)
 
