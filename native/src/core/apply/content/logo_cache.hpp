@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -165,7 +166,10 @@ inline Keyed key_archives(uint64_t key, const std::vector<std::string> &files, c
                           const Stamps &before)
 {
     Keyed out;
-    for (auto &rel : files) {
+    std::vector<std::string> ordered = files;
+    std::sort(ordered.begin(), ordered.end());
+    ordered.erase(std::unique(ordered.begin(), ordered.end()), ordered.end());
+    for (auto &rel : ordered) {
         Seen now;
         if (!env.stat(rel, now.size, now.time))
             continue;
