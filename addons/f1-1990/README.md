@@ -167,7 +167,7 @@ nix shell nixpkgs#ffmpeg nixpkgs#wine64 nixpkgs#xvfb-run nixpkgs#p7zip -c \
 
 ### AI data
 
-`carpack/tools/ai/build_ai.py` writes the 1990 cars' per-track AI archives, `carpack/erp/ai/<track>/<folder>.erp`, for the 16 calendar tracks (`tools/career.py` ROUNDS) and the 13 car folders. `carpack/assets/ai.json` registers them: per archive a `file.put` to `2025_asset_groups/environment_package/tracks/<track>/ai/f1_1990_vehicle_package/<folder>/<folder>.erp` and a `group.register` of `asset_groups/environment_package/tracks/<track>/ai/f1_1990_vehicle_package/<folder>/<folder>.assetgroup` with the flags of the matching `f1_2026_vehicle_package` group. A full `build_pack.py` run fails at the end when one of those archives is not built.
+`carpack/tools/ai/build_ai.py` writes the 1990 cars' per-track AI archives, `carpack/erp/ai/<track>/<folder>.erp`, for the 16 calendar tracks (`tools/career.py` ROUNDS), the 12 other tracks of the box (`BOX_TRACKS`) and the 13 car folders. `carpack/assets/ai.json` registers them: per archive a `file.put` to `2025_asset_groups/environment_package/tracks/<track>/ai/f1_1990_vehicle_package/<folder>/<folder>.erp` and a `group.register` of `asset_groups/environment_package/tracks/<track>/ai/f1_1990_vehicle_package/<folder>/<folder>.assetgroup` with the flags of the matching `f1_2026_vehicle_package` group. A full `build_pack.py` run fails at the end when one of those archives is not built.
 
 ```sh
 nix shell --impure --expr 'with import <nixpkgs> {}; python314.withPackages (p: [p.numpy p.scipy])' -c \
@@ -182,7 +182,7 @@ python3 addons/f1-1990/carpack/tools/ai/build_ai.py --report-only   # index.json
 | `--game` | `/mnt/gaming/SteamLibrary/steamapps/common/F1 25`, read only, with the stock `f1_2026_vehicle_package` track AI archives |
 | `--swofty-ai` | `tools/swofty-ai` of this checkout (Swofty AI, branch `feat/swofty-ai`; Python 3.14, numpy, scipy). The game puts the centre of mass at -COMZ (axle loads 0x1446b5f60), so `CarConfig.from_vtf` must read the front weight as `(-comz - zr) / (zf - zr)`; feat/swofty-ai ecdf1be4 reads `(comz - zr) / (zf - zr)` and needs that one-line change |
 | `--handling` | `addons/f1-1990/cars/handling/removed_2026_1990` |
-| `--tracks`, `--folders` | The 16 tracks, the 13 folders (comma-separated) |
+| `--tracks`, `--folders` | The 28 tracks (ROUNDS and `BOX_TRACKS`), the 13 folders (comma-separated) |
 | `--compounds` | `tyres/historical/tyrecompounds.erp` (`tools/tyres.py`: Goodyear `F1_1990_*` and Pirelli `F1_1990P_*`, each car on its handling file's `TyrePhysicsGroup`); when it is missing, the stock 2026 compounds renamed `F1_2026_*` to `F1_1990_*` |
 | `--workers` | 12 |
 
@@ -219,7 +219,7 @@ Both lists are new rows copied from `f1_2026` (season `season_2026`, leaderboard
 
 Rules in the box: the race engine and the AI's qualifying grip follow the session (`f1_1990_quali.dll`, `f1_1990_aiquali.dll`, option `quali_engine_1990`, Qualifying and race engines below). Time Trial and qualifying run the qualifying engine; practice and the race run the race engine. Power-unit wear and grid penalties are career rows only. Career-only features stay career-only: power-unit parts, R&D and B-spec cars, the 12-lap qualifying limit, the pit crew pace, session names, the Friday qualifying tyre fix and the tyre supplier choice.
 
-Not covered: the box's `swofty_f1` entrant setup mode has `max_entrants` 20 (copied from `f1`), shared by every box; the 1990 AI data covers the 16 calendar tracks only (`carpack/erp/ai/`); the pit crew training set is the `f1` one (the team `pit_lane.pit_times` rows do apply).
+Not covered: the box's `swofty_f1` entrant setup mode has `max_entrants` 20 (copied from `f1`), shared by every box; the pit crew training set is the `f1` one (the team `pit_lane.pit_times` rows do apply).
 
 ```sh
 python3 addons/f1-1990/tools/box.py          # writes db/box.json and lang/box.json from db/grid.json
@@ -230,8 +230,8 @@ python3 addons/f1-1990/tools/box.py --check  # fails when either file is stale
 
 The game reads a car's AI data from `environment_package/tracks/<track>/ai/<ai_package_folder>/<asset_filename>/<asset_filename>.<ext>`: the path templates come from the row of `ai.asset_data.<ai_package_folder>` named by the car's folder (0x140614210), `<vehicle_package>` is the package row's `ai_package_folder` (0x142504a90) and `<team_name>` the vehicle row's `asset_filename`. A session asks for the AI data of the cars in it only (0x140612a80 walks the session's vehicles). On every track load (0x14065b570) the game reads `tracks.Track_N.ai_track_difficulties.<ai_package_folder>.{difficulty_ratio,mass_ratio,time,max_dificulty_no_balast_slider_position,max_slider_position}` for each available package and keeps the package only when all five keys exist. A car whose folder has no entry gets the track's first entry (Sess_Build_AiSystem, 0x140603a54), which is another package's difficulty.
 
-- `db/ai_difficulty.json`: the five keys under `f1_1990_vehicle_package` on the 16 calendar tracks, new keys only: the `f1_2026_vehicle_package` values, with `time` scaled by the track's 1990/2026 lap ratio (`tracks.<track>.summary.median_ratio` of `data/ai-laps-1990.json`, the median over the 13 folders of the simulated 1990 lap over the stock 2026 lap). `difficulty_ratio`, `mass_ratio` (a ratio of the car's own mass) and both slider limits stay as in 2026. Without a ratio a track keeps the 2026 times and the build warns.
-- `carpack/db/ai.json` adds `ai.asset_data.f1_1990_vehicle_package` (the 13 folders, the 2026 rows with `base_car` `<team_name>` in place of `fom_car`), points `f1_1990` and `f1_1990b` at `f1_1990_vehicle_package` and makes `f1_1990` available. `carpack/assets/ai.json` installs the 208 AI archives (16 tracks, 13 folders) and their asset groups. A build without the archives fails.
+- `db/ai_difficulty.json`: the five keys under `f1_1990_vehicle_package` on the 28 tracks of ROUNDS and `BOX_TRACKS`, new keys only: the `f1_2026_vehicle_package` values, with `time` scaled by the track's 1990/2026 lap ratio (`tracks.<track>.summary.median_ratio` of `data/ai-laps-1990.json`, the median over the 13 folders of the simulated 1990 lap over the stock 2026 lap). `difficulty_ratio`, `mass_ratio` (a ratio of the car's own mass) and both slider limits stay as in 2026. Without a ratio a track keeps the 2026 times and the build warns.
+- `carpack/db/ai.json` adds `ai.asset_data.f1_1990_vehicle_package` (the 13 folders, the 2026 rows with `base_car` `<team_name>` in place of `fom_car`), points `f1_1990` and `f1_1990b` at `f1_1990_vehicle_package` and makes `f1_1990` available. `carpack/assets/ai.json` installs the 364 AI archives (28 tracks, 13 folders) and their asset groups. A build without the archives fails.
 
 ```sh
 python3 addons/f1-1990/tools/ai_data.py [stock gamedatabases.2025.bin] [-v] [--check]

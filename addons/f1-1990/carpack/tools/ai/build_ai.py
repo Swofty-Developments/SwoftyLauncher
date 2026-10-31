@@ -47,13 +47,18 @@ SANITY_FOLDERS = ('mclaren', 'haas')
 AI_RACE_GRIP = 0.87
 
 
-def calendar_tracks():
+def career_tracks(name):
     with open(os.path.join(F1990, 'tools', 'career.py'), encoding='utf-8') as f:
         tree = ast.parse(f.read())
     for node in tree.body:
-        if isinstance(node, ast.Assign) and any(getattr(t, 'id', None) == 'ROUNDS' for t in node.targets):
-            return [r[1] for r in ast.literal_eval(node.value)]
-    raise SystemExit('addons/f1-1990/tools/career.py has no ROUNDS')
+        if isinstance(node, ast.Assign) and any(getattr(t, 'id', None) == name for t in node.targets):
+            value = ast.literal_eval(node.value)
+            return [r[1] if isinstance(r, tuple) else r for r in value]
+    raise SystemExit(f'addons/f1-1990/tools/career.py has no {name}')
+
+
+def calendar_tracks():
+    return career_tracks('ROUNDS') + career_tracks('BOX_TRACKS')
 
 
 def erp_rel(track, folder):
@@ -563,7 +568,7 @@ def main():
                     help='the tools/swofty-ai folder (feat/swofty-ai)')
     ap.add_argument('--handling', default=os.path.join(F1990, 'cars', 'handling', 'removed_2026_1990'),
                     help='folder with the 1990 <folder>_handling.erp files')
-    ap.add_argument('--tracks', help='comma-separated tracks (default: the 16 calendar tracks)')
+    ap.add_argument('--tracks', help='comma-separated tracks (default: the 16 calendar tracks and the 12 box tracks)')
     ap.add_argument('--folders', help='comma-separated car folders (default: the 13)')
     ap.add_argument('--out', default=os.path.join(PACK, 'erp', 'ai'))
     ap.add_argument('--compounds', default=os.path.join(F1990, 'tyres', 'historical', 'tyrecompounds.erp'),

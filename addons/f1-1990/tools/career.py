@@ -130,6 +130,9 @@ def gp_keys(code):
     return f"lng_f1990_gp_{code}", f"lng_f1990_gp_{code}_short"
 
 
+BOX_TRACKS = ["abu_dhabi", "austria_reverse", "bahrain", "baku", "jeddah", "losail", "miami", "silverstone_reverse",
+              "singapore", "texas", "zandvoort", "zandvoort_reverse"]
+
 TRACK_NAMES = {track: gp_keys(code) for _, track, _, _, _, code, _ in ROUNDS}
 TRACK_DATES = {track: (day, month) for _, track, _, day, month, _, _ in ROUNDS}
 CAREER_YEARS = [2026]

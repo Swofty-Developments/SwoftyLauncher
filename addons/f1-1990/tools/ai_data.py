@@ -41,7 +41,7 @@ sys.path.insert(0, str(HERE))
 
 import gamedb  # noqa: E402
 import cars as C  # noqa: E402
-from career import ROUNDS  # noqa: E402
+from career import BOX_TRACKS, ROUNDS  # noqa: E402
 
 STOCK_DB = "/mnt/work/.f1-1990/data-physics/fakegame-full/game_package/gamedatabases/gamedatabases.2025.bin"
 LAPS = [ADDON / "data" / "ai-laps-1990.json", CAR_PACK / "erp" / "ai" / "laps.json"]
@@ -53,7 +53,7 @@ TARGET = C.AI_PACKAGE_FOLDER
 FIELDS = ("time", "difficulty_ratio", "mass_ratio", "max_dificulty_no_balast_slider_position", "max_slider_position")
 SCALED = ("time",)
 PLACEHOLDER_RATIO = 1.0
-TRACKS = [r[1] for r in ROUNDS]
+TRACKS = [r[1] for r in ROUNDS] + BOX_TRACKS
 PACKAGES = "entrants.vehicles.vehicle_packages.vehicle_package"
 ASSET_DATA = "ai.asset_data"
 ASSET_FIELDS = ["_metadata_", "base_car", "brake_line_settings_file_name", "track_data_file_name",
