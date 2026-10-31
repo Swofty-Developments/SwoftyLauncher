@@ -822,6 +822,70 @@ static void crash_standings(void)
     uint64_t r = fake_standings_weekend(standings_view, NULL, 4, standings_weekend[1]);
     printf("      standings: the round returned %llu\n", (unsigned long long)r);
     fflush(stdout);
+// The tail of Game_GarageCrewModule_SpawnGarageCrew's assignment loop, copied byte for byte from the Steam build
+// (0x14038930e..0x14038931a and 0x14038931e), in a small frame that takes the vector begin in rcx, its end in rdx and
+// the garage id in r8d and returns the entry count the game computes after the site. Core's garage crew guard resolves
+// site_Game_GarageCrew_SpawnVector here, at +0x12.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_garage_crew\n"
+    ".def fake_garage_crew; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_garage_crew\n"
+    "fake_garage_crew:\n"
+    ".byte 0x41,0x55\n.seh_pushreg %r13\n"
+    ".byte 0x55\n.seh_pushreg %rbp\n"
+    ".seh_endprologue\n"
+    ".byte 0x49,0x89,0xD5,0x44,0x89,0xC5\n"
+    ".byte 0xEB,0x04,0x31,0xF6,0x31,0xC9\n"
+    ".byte 0x4D,0x89,0xE8,0x49,0x29,0xC8,0x49,0xC1,0xF8,0x04,0x4C,0x89,0xEA\n"
+    ".byte 0x4C,0x89,0xC0,0x5D,0x41,0x5D,0xC3\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_garage_crew\"\n"
+    ".text\n");
+uint64_t fake_garage_crew(void *begin, void *end, uint32_t garage);
+
+static void crew_entries(uint8_t (*records)[0x98], uint8_t (*entries)[16], const uint32_t *slots, int n, int first)
+{
+    for (int i = 0; i < n; i++) {
+        uint8_t *rec = records[i];
+        memset(rec, 0, 0x98);
+        *(uint16_t *)(rec + 0x52) = (uint16_t)(300 + first + i);
+        *(uint16_t *)(rec + 0x5a) = (uint16_t)(11 + first);
+        rec[0x83] = (uint8_t)(40 + first + i);
+        memset(entries[i], 0, 16);
+        *(uint8_t **)entries[i] = rec;
+        *(uint32_t *)(entries[i] + 8) = slots[i];
+    }
+}
+
+static void test_garage_crew(int guard)
+{
+    static uint8_t records[5][0x98], entries[5][16];
+    uint32_t two[] = {0, 1}, three[] = {0, 1, 2}, shuffled[] = {2, 0, 1}, four[] = {0, 1, 2, 3};
+    crew_entries(records, entries, two, 2, 0);
+    uint64_t n = fake_garage_crew(entries, entries + 2, 4);
+    expect(n == 2 && *(uint8_t **)entries[0] == records[0] && *(uint8_t **)entries[1] == records[1],
+           "garage crew: a garage with two cars keeps both crews and its vector is untouched");
+    crew_entries(records, entries, three, 3, 1);
+    n = fake_garage_crew(entries, entries + 3, 5);
+    printf("      garage crew: garage 5 with slots 0,1,2 keeps %llu entries\n", (unsigned long long)n);
+    if (!guard) {
+        expect(n == 3, "garage crew: with the guard off the third car stays in the vector, as in the game");
+        return;
+    }
+    expect(n == 2 && *(uint8_t **)entries[0] == records[0] && *(uint8_t **)entries[1] == records[1],
+           "garage crew: a third car in one garage is dropped from the crew vector, the first two keep their crews");
+    crew_entries(records, entries, shuffled, 3, 2);
+    n = fake_garage_crew(entries, entries + 3, 6);
+    expect(n == 2 && *(uint8_t **)entries[0] == records[1] && *(uint32_t *)(entries[0] + 8) == 0 &&
+               *(uint8_t **)entries[1] == records[2] && *(uint32_t *)(entries[1] + 8) == 1,
+           "garage crew: a slot 2 record ahead of the others is dropped and the rest close up in order");
+    crew_entries(records, entries, four, 4, 3);
+    n = fake_garage_crew(entries, entries + 4, 7);
+    expect(n == 2, "garage crew: a garage with four records keeps two");
+    n = fake_garage_crew(NULL, NULL, 8);
+    expect(n == 0, "garage crew: a garage with no records runs the game's empty path");
 }
 
 static void test_settings(int on, uint64_t chain)
@@ -1407,6 +1471,7 @@ int main(int argc, char **argv)
         test_ers_newlap();
         test_ers_mode();
         test_standings();
+        test_garage_crew(1);
         test_track_acclim();
     }
     HMODULE ta = GetModuleHandleW(L"t_assets.dll");
@@ -1443,6 +1508,10 @@ int main(int argc, char **argv)
         crash_ers_mode();
     if (argc > 1 && !strcmp(argv[1], "standings"))
         crash_standings();
+    if (argc > 1 && !strcmp(argv[1], "garage_crew")) {
+        const char *off = getenv("SWOFTY_GARAGE_CREW_GUARD");
+        test_garage_crew(!(off && *off));
+    }
     if (argc > 1 && !strcmp(argv[1], "heap")) {
         SetErrorMode(SEM_NOGPFAULTERRORBOX);
         for (int i = 0; i < 3; i++)

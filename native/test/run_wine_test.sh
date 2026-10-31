@@ -332,6 +332,9 @@ EOF
         once "standings: the guard is armed" '\[career\] standings guard armed'
         once "standings: a round whose track is off is skipped and logged once" '\[career\] standings: round 7 has no track data \(track 200 is off\); skipped'
         once "standings: a round whose weekend can't be read is skipped and logged once" '\[career\] standings: round 10 has no track data; skipped'
+        once "garage crew: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(garage crew guard\)': 1 mixin"
+        once "garage crew: the guard is armed" '\[garage\] crew guard armed'
+        count "garage crew: each car dropped from a garage's crew vector is logged once" 4 '\[garage\] garage [5-7]: team 1[2-4] car #4[0-9] \(driver 3[0-9][0-9]\) is the (third|extra) car of its garage'
         count "ers: each participant without a vehicle is skipped and logged" 4 '\[ers\] vehicle_newlap for vehicle (9|24): participant [01] of 4 has no vehicle'
         once "acclim: the track acclimatisation guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(track acclimatisation guard\)': 1 mixin"
         once "acclim: the track acclimatisation guard is armed" '\[acclim\] track acclimatisation guard armed'
@@ -687,6 +690,20 @@ for guard in on off; do
         check "standings off: the round faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Career_Standings_BuildWeekendNode\+0x28'
         parse_report "Career_Standings_BuildWeekendNode+0x28" "" || status=1
         [[ $code != 0 ]] && echo "ok  : standings off: process ended with $code" || { echo "FAIL: standings off: process exited 0"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== garage_crew ($guard)"
+    code=0
+    SWOFTY_GARAGE_CREW_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" garage_crew >"$OUT/garage_crew.out" 2>&1 || code=$?
+    grep -E '\[garage\]' "$LOG" || true
+    if [[ $guard == on ]]; then
+        [[ $code == 0 ]] && echo "ok  : garage_crew on: the test run finished" || { echo "FAIL: garage_crew on: exit $code"; status=1; }
+        grep -q 'FAIL' "$OUT/garage_crew.out" && { echo "FAIL: garage_crew on: a check failed"; grep FAIL "$OUT/garage_crew.out"; status=1; } || echo "ok  : garage_crew on: every check passed"
+    else
+        once "garage_crew off: the guard is off" '\[garage\] crew guard off \(SWOFTY_GARAGE_CREW_GUARD=0\)'
+        grep -q 'garage 5 with slots 0,1,2 keeps 3 entries' "$OUT/garage_crew.out" && echo "ok  : garage_crew off: the vector keeps the third car" ||
+            { echo "FAIL: garage_crew off: the vector lost the third car"; status=1; }
     fi
 done
 echo "==== ntpage"
