@@ -109,11 +109,61 @@ jobs:
               - *always
               - tools/compat/**
 
+  # A push to main starts its heavy jobs on EC2 spot instances that take one job each and terminate
+  # (.github/runners). Pull requests, and any launch that fails, get the hosted runner labels instead.
+  ec2:
+    name: EC2 runners
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    outputs:
+      native: ${{ steps.native.outputs.label || 'ubuntu-latest' }}
+      rust-linux: ${{ steps.rust-linux.outputs.label || 'ubuntu-latest' }}
+      rust-windows: ${{ steps.rust-windows.outputs.label || 'windows-latest' }}
+      release-linux: ${{ steps.release-linux.outputs.label || 'ubuntu-22.04' }}
+      release-windows: ${{ steps.release-windows.outputs.label || 'windows-latest' }}
+    steps:
+      - if: github.event_name == 'push'
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/runners
+
+      - id: aws
+        if: github.event_name == 'push'
+        continue-on-error: true
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::532818875494:role/swofty-launcher-ci-runners
+          aws-region: ap-south-2
+
+      # m8a has a whole core per vCPU. Windows pays for its licence per vCPU, so it stops at 16.
+      - id: native
+        if: steps.aws.outcome == 'success'
+        continue-on-error: true
+        run: .github/runners/launch.sh linux-2404 m8a.8xlarge,c8i.8xlarge,c7i.8xlarge,m8a.4xlarge ubuntu-latest
+      - id: rust-linux
+        if: steps.aws.outcome == 'success'
+        continue-on-error: true
+        run: .github/runners/launch.sh linux-2404 m8a.8xlarge,c8i.8xlarge,c7i.8xlarge,m8a.4xlarge ubuntu-latest
+      - id: rust-windows
+        if: steps.aws.outcome == 'success'
+        continue-on-error: true
+        run: .github/runners/launch.sh windows m8a.4xlarge,c8i.4xlarge,c7i.4xlarge windows-latest
+      - id: release-linux
+        if: steps.aws.outcome == 'success'
+        continue-on-error: true
+        run: .github/runners/launch.sh linux-2204 m8a.8xlarge,c8i.8xlarge,c7i.8xlarge,m8a.4xlarge ubuntu-22.04
+      - id: release-windows
+        if: steps.aws.outcome == 'success'
+        continue-on-error: true
+        run: .github/runners/launch.sh windows m8a.4xlarge,c8i.4xlarge,c7i.4xlarge windows-latest
+
   rust:
     name: Rust (${{ matrix.os }})
-    needs: changes
+    needs: [changes, ec2]
     if: needs.changes.outputs.rust == 'true'
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os == 'windows-latest' && needs.ec2.outputs.rust-windows || needs.ec2.outputs.rust-linux }}
     strategy:
       fail-fast: false
       matrix:
@@ -296,9 +346,9 @@ jobs:
 
   native:
     name: Native loader and Wine test
-    needs: changes
+    needs: [changes, ec2]
     if: needs.changes.outputs.native == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ${{ needs.ec2.outputs.native }}
     steps:
       - uses: actions/checkout@v7
 
@@ -551,8 +601,36 @@ jobs:
   # this commit takes its binaries from here (release.yml) instead of building again.
   release-binaries:
     name: Release binaries
+    needs: ec2
     if: github.event_name == 'push'
     uses: ./.github/workflows/release-binaries.yml
     with:
       ref: ${{ github.sha }}
       retention-days: 7
+      linux-runner: ${{ needs.ec2.outputs.release-linux }}
+      windows-runner: ${{ needs.ec2.outputs.release-windows }}
+
+  # Release tags need this run to pass, so the cleanup never fails it.
+  ec2-cleanup:
+    name: EC2 cleanup
+    needs: [ec2, rust, native, release-binaries]
+    if: always() && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/runners
+
+      - id: aws
+        continue-on-error: true
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::532818875494:role/swofty-launcher-ci-runners
+          aws-region: ap-south-2
+
+      - if: steps.aws.outcome == 'success'
+        continue-on-error: true
+        run: .github/runners/cleanup.sh
