@@ -48,6 +48,7 @@ DATASET = f"{DATASETS}.TrackDataSet[_metadata_={NAME}]"
 TAG_FOLDER = "options_system.context.tag_folder[_metadata_=game_setup_mode]"
 TAG = f"{TAG_FOLDER}.game_setup_mode_tag[_metadata_={TAG_NAME}].restrictions_0"
 PROBES = "tracks.ibl_probes.IblProbes_0"
+GARAGES = 13
 
 SESSION_ROWS = [
     ("practice1", "practice_1", "race", ""),
@@ -458,9 +459,17 @@ def mode(fields):
 
 
 def appends(stock):
-    return [
-        set_(PROBES, "game_setup_modes", f"{stock.text(f'{PROBES}.game_setup_modes')},{NAME}"),
-    ]
+    ops = [set_(PROBES, "game_setup_modes", f"{stock.text(f'{PROBES}.game_setup_modes')},{NAME}")]
+    slot, probes = 0, None
+    while stock.get(f"{PROBES}.{garage(slot)}") is not None:
+        probes = stock.text(f"{PROBES}.{garage(slot)}")
+        slot += 1
+    ops += [set_(PROBES, garage(n), probes, STRING) for n in range(slot, GARAGES)]
+    return ops
+
+
+def garage(slot):
+    return f"garage_{slot:02d}"
 
 
 def main():

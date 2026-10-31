@@ -7,7 +7,8 @@ Protected: every stock row of the setup modes, the game-setup-mode option tags, 
 compounds, the allocation and mandatory tyre presets, the DRS lap groups, the points presets, the track layers and
 the light probes. Allowed changes: the row counts of the tables that gain a 1990 row, the option tag lists (stock
 value plus gamesetup_f1_1990) and the light probe list (stock value plus f1_1990). Exit code 1
-when a protected key changed or went missing, or a 1990 row is missing.
+when a protected key changed or went missing, a 1990 row is missing, or the light probes lack a garage slot of a
+13-team grid.
 """
 import os
 import re
@@ -106,6 +107,9 @@ def main():
             built.row_index(container, word, label)
         except KeyError:
             bad.append(f"missing 1990 row {container}.{word}[_metadata_={label}]")
+    for slot in range(rules.GARAGES):
+        if built.get(f"{rules.PROBES}.{rules.garage(slot)}") is None:
+            bad.append(f"missing light probe set {rules.PROBES}.{rules.garage(slot)}")
     print(f"protected keys: {len(guard)}, other changed stock keys (other lanes): {other}")
     if bad:
         print(f"FAIL: {len(bad)} protected change(s)")

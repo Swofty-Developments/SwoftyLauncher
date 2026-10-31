@@ -8825,6 +8825,14 @@
    "select": "tracks.ibl_probes.IblProbes_0",
    "field": "game_setup_modes",
    "value": "f1,classic,f1_26,f1_generic_26,f2,f1_generic,f1_beta,f1_esports,f1_elimination,f1_tr,f1_1990"
+  },
+  {
+   "op": "set",
+   "select": "tracks.ibl_probes.IblProbes_0",
+   "field": "garage_12",
+   "value": "garage_10",
+   "create": true,
+   "type": 2
   }
  ]
 }
