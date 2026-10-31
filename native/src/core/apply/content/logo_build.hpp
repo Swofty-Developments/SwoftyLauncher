@@ -14,7 +14,8 @@
 
 // The archives a set of team logos changes. Each logo is a slice for one stock texture array (an encoded image, or a
 // copy of the slice a stock key already has) under a key in overrides.uidb. The result names, for every archive in
-// the game's ui_package folder that carries a changed array and for databases.erp, the fragments to replace.
+// the game's ui_package folder that carries a changed array and for databases.erp, the fragments to replace, and the
+// archives whose contents it read: databases.erp and every archive that carries a wanted array.
 
 namespace swofty_core::apply::content::logo_build {
 
@@ -38,6 +39,7 @@ struct Env {
 
 struct Result {
     std::map<std::string, erpfile::Changes> changes;
+    std::set<std::string> read;
     std::vector<std::string> lines;
     int built = 0, refused = 0;
 };
@@ -74,6 +76,8 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
         return &opened.emplace(rel, std::move(o)).first->second;
     };
     Open *db = get(DATABASES);
+    if (db)
+        out.read.insert(DATABASES);
     const erpfile::Entry *ue = db ? db->arc.find(OVERRIDES) : nullptr;
     std::string uidb_bytes;
     if (!ue || ue->frags.empty() || !erpfile::fragment(*db->src, db->arc, ue->frags[0], uidb_bytes, why)) {
@@ -113,6 +117,7 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
             const erpfile::Entry *ei = o->arc.find(image), *ev = o->arc.find(view);
             if (!ei && !ev)
                 continue;
+            out.read.insert(rel);
             logo_array::Stock got;
             if (!ei || !ev || ei->frags.size() != 2 || ev->frags.size() != 1 ||
                 !erpfile::fragment(*o->src, o->arc, ei->frags[0], got.head, why) ||

@@ -2525,7 +2525,7 @@ impl Shell {
         let Some(item) = self.library.addons.iter().find(|a| a.manifest.id == id) else {
             return Changes::default();
         };
-        let c = Changes::read(&self.store, item);
+        let c = Changes::read(&self.store, &self.library.profile, item);
         self.addons.changes.insert(id.to_owned(), c.clone());
         c
     }
