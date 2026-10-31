@@ -2456,6 +2456,8 @@ pub type Career_Start_UpgradeResearch_t = unsafe extern "C" fn(
     store_duration: u8,
 );
 pub type Career_Teardown_Weekend_t = unsafe extern "C" fn(weekend: *mut c_void);
+pub type Ent_Deserialise_EntrantVector_t =
+    unsafe extern "C" fn(vector_object: *mut c_void, bag: *mut c_void) -> c_int;
 pub type FeHome_Add_CareerTile_t = unsafe extern "C" fn(list: *mut TileList, index: u8);
 pub type FeHome_Handle_Command_t =
     unsafe extern "C" fn(vm: *mut FEHomeViewModel, cmd: *mut *mut NeStr) -> u64;
@@ -3549,6 +3551,11 @@ pub mod bindings {
     };
     pub const Career_WizardTitleSliceVM_OnDeactivate: Binding = Binding {
         id: "Career_WizardTitleSliceVM_OnDeactivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ent_Deserialise_EntrantVector: Binding = Binding {
+        id: "Ent_Deserialise_EntrantVector",
         kind: "func",
         status: Status::Experimental,
     };
