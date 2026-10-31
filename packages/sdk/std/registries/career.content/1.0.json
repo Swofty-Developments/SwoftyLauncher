@@ -92,6 +92,32 @@
       ],
       "default": "driver"
     },
+    "needs": {
+      "description": "Since 1.6.13: addons this content's careers need beyond its own addon. The career index lists them, and the launcher warns before Play when one is off.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 96
+          },
+          "range": {
+            "type": "string",
+            "maxLength": 48,
+            "description": "a version range such as ^1.2.0; empty: any"
+          },
+          "why": {
+            "type": "string",
+            "maxLength": 160
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      }
+    },
     "extends": {
       "description": "Data files only: this record is a variant of that record, and its value is a merge patch on the base.",
       "type": "string",
