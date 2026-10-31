@@ -1205,6 +1205,8 @@ inline constexpr site<"site_Career_RnDTreeRowCountProbe"> site_Career_RnDTreeRow
 inline constexpr site<"site_Career_RnDUpgradeInfoTypeLabel"> site_Career_RnDUpgradeInfoTypeLabel{}; // L2 experimental
 inline constexpr site<"site_Career_RnDUpgradeInfoTypeLabelJoin"> site_Career_RnDUpgradeInfoTypeLabelJoin{}; // L2 experimental
 inline constexpr site<"site_Career_RnDUpgradeListDeptIcon"> site_Career_RnDUpgradeListDeptIcon{}; // L2 experimental
+inline constexpr site<"site_Career_StandingsWeekendTrackDone"> site_Career_StandingsWeekendTrackDone{}; // L2 experimental
+inline constexpr site<"site_Career_StandingsWeekendTrackLoad"> site_Career_StandingsWeekendTrackLoad{}; // L2 experimental
 inline constexpr site<"site_Career_TeamDeptEnumStore"> site_Career_TeamDeptEnumStore{}; // L2 experimental
 inline constexpr site<"site_Career_TeamHqIsMyTeamResult"> site_Career_TeamHqIsMyTeamResult{}; // L2 experimental
 inline constexpr site<"site_Career_TeamHqRnDPopupTypeIcon"> site_Career_TeamHqRnDPopupTypeIcon{}; // L2 experimental
