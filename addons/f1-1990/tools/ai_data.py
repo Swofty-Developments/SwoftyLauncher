@@ -12,7 +12,9 @@ package only when all five keys exist.
 
 db/ai_difficulty.json (this addon) gives each of the 16 calendar tracks those five keys under
 `f1_1990_vehicle_package`: the f1_2026_vehicle_package values, with `time` times the track's 1990/2026 lap ratio. They
-are new keys that only a package whose folder is f1_1990_vehicle_package reads.
+are new keys that only a package whose folder is f1_1990_vehicle_package reads. MASS_RATIO (0.92, Monaco
+TRACK_MASS_RATIO 0.86) multiplies the `mass_ratio` points from slider 100 up: the AI car 8 % lighter at difficulty 100
+(14 % at Monaco), about 1.5 % (2.5 %) quicker on the tables' mass axis.
 
 The game finds a car's AI asset row in the table `ai.asset_data.<ai_package_folder>` by the vehicle's folder; the row
 names the path templates and a `base_car` (`fom_car` in every 2026 row). carpack/db/ai.json adds that table for
@@ -53,6 +55,9 @@ TARGET = C.AI_PACKAGE_FOLDER
 FIELDS = ("time", "difficulty_ratio", "mass_ratio", "max_dificulty_no_balast_slider_position", "max_slider_position")
 SCALED = ("time",)
 PLACEHOLDER_RATIO = 1.0
+MASS_RATIO = 0.92
+TRACK_MASS_RATIO = {"monaco": 0.86}
+MASS_FROM_POINT = 6
 TRACKS = [r[1] for r in ROUNDS] + BOX_TRACKS
 PACKAGES = "entrants.vehicles.vehicle_packages.vehicle_package"
 ASSET_DATA = "ai.asset_data"
@@ -122,6 +127,10 @@ def scale(value, ratio):
     return ",".join(fmt(float(x) * ratio) for x in value.split(","))
 
 
+def lighten(value, factor):
+    return ",".join(fmt(float(x) * factor if i >= MASS_FROM_POINT else float(x)) for i, x in enumerate(value.split(",")))
+
+
 def difficulty(stock, ratios):
     rows = []
     for track in TRACKS:
@@ -129,7 +138,10 @@ def difficulty(stock, ratios):
         ratio = ratios.get(track, PLACEHOLDER_RATIO)
         for field in FIELDS:
             tag, value = stock.get(key(i, SOURCE, field))
-            rows.append((track, field, tag, scale(value, ratio) if field in SCALED else value, ratio))
+            out = scale(value, ratio) if field in SCALED else value
+            if field == "mass_ratio":
+                out = lighten(out, TRACK_MASS_RATIO.get(track, MASS_RATIO))
+            rows.append((track, field, tag, out, ratio))
     return rows
 
 
