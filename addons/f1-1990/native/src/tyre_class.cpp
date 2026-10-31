@@ -21,7 +21,7 @@
 // A Grand Prix of the F1 1990 box has no career: its session takes the f1_1990 class from the setup mode's
 // rows while the cars still name f1_26, so every visual compound the session hands out was one their class
 // maps to slot 0xff and the tyres drew from garbage. The swap applies there too, when the setup's selected
-// entrant list is the box's f1_1990_gp. Setting tyre_class_fix turns it off.
+// entrant list is the box's f1_1990_gp or f1_1990_tt. Setting tyre_class_fix turns it off.
 
 #include <atomic>
 #include <bitset>
@@ -50,7 +50,7 @@ using f1990::at;
 namespace t = f1990::tyres;
 
 constexpr const char *kClass1990 = "f1_1990";
-constexpr const char *kBoxList = "f1_1990_gp";
+constexpr const char *kBoxList = "f1_1990_gp", *kBoxTimeTrial = "f1_1990_tt";
 constexpr size_t kContext = 0xc0, kModeSetup = 0x88, kSetupModes = 0x260, kSelectedList = 0xe18, kListName = 0x28;
 constexpr size_t kVisualEntry = 0x10, kMaxVisuals = 11, kFrontendDry = 0x10, kFrontendWet = 0x18;
 
@@ -150,7 +150,7 @@ bool box_grand_prix()
         !read_ptr(owner, 0x10, &name))
         return false;
     std::string text;
-    return swofty::mem::c_string(name, text, 64) && text == kBoxList;
+    return swofty::mem::c_string(name, text, 64) && (text == kBoxList || text == kBoxTimeTrial);
 }
 
 bool career_1990()
@@ -211,9 +211,9 @@ SWOFTY_WRAP(Sess_TyreClass_FromName, void *, void *classes, const void *name, ui
                     index, static_cast<long long>(stat));
     }
     if (box && same && !g_box_logged.exchange(true))
-        swofty::log("[f1-1990] tyre class: F1 1990 box Grand Prix (list %s): cars on compound class %zu take f1_1990 "
+        swofty::log("[f1-1990] tyre class: F1 1990 box session (list %s): cars on compound class %zu take f1_1990 "
                     "(class %lld)",
-                    kBoxList, index, static_cast<long long>(stat));
+                    "f1_1990_gp or f1_1990_tt", index, static_cast<long long>(stat));
     return same ? target : own;
 }
 
