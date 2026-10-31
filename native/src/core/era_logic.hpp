@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "apply/facts.hpp"
+#include "apply/tracks/base.hpp"
+#include "apply/tracks/seed.hpp"
 
 // Pure logic of the era picker addon row (era_picker.cpp): the box check, the box order, the image
 // default, the Time Trial list and its car limit, the press guard, the links of the row's two node handles
@@ -487,6 +489,120 @@ inline std::string session_trace_line(const SessionTrace &t)
            "; participants: game manager " + count_text(t.gm_session) + ", game module " + count_text(t.module_session) +
            " (next " + count_text(t.module_next) + "); session vehicles " + count_text(t.vehicles) +
            (t.budget >= 0 ? "; Time Trial budget " + std::to_string(t.budget) : std::string());
+}
+
+// Grand Prix load guard. Sess_Setup_ChampionshipEntrants (0x140ba3ad0) sets the entrants manager's list (+0xe18)
+// only when the weekend's entrant setup mode offers exactly one list; swofty_f1 hosts every season box, so a Grand
+// Prix > Continue lands at StateLoadSession with +0xe18 null and Sess_Assign_GarageSlotsByClass (0x1424a8cf0) reads
+// [0+0x48]. At StateLoadSession Entering the core picks the setup mode's list that holds every team of the saved
+// entrants (manager +0x2e0..+0x2e8, team stat id u16 at +0x5a of each 0x88-byte record, the same records a list
+// holds from +0x10 to +0x18), else the list of the last box pressed. A saved weekend whose track is no track of the
+// base (a dormant row whose addon is off: no track archive, no facts entry) would crash in
+// Sess_Loader_SetupTrackAssets. With no list or no track the load is stopped: the core logs why and closes F1 25
+// with CONTINUE_STOP_EXIT before the game touches either, and the launcher names the reason.
+constexpr uint16_t NO_TEAM = 0x3fff;
+constexpr unsigned CONTINUE_STOP_EXIT = 92;
+
+struct ListTeams {
+    std::string name;
+    std::vector<uint16_t> teams;
+};
+
+struct ContinuePick {
+    int64_t index = -1;
+    std::string line;
+};
+
+inline std::vector<uint16_t> distinct_teams(const std::vector<uint16_t> &teams)
+{
+    std::vector<uint16_t> out;
+    for (uint16_t t : teams)
+        if (t && t != NO_TEAM && std::find(out.begin(), out.end(), t) == out.end())
+            out.push_back(t);
+    std::sort(out.begin(), out.end());
+    return out;
+}
+
+inline std::string team_text(const std::vector<uint16_t> &teams)
+{
+    std::string s;
+    for (size_t i = 0; i < teams.size(); ++i)
+        s += (i ? "," : "") + std::to_string(teams[i]);
+    return s.empty() ? std::string("none") : s;
+}
+
+inline ContinuePick continue_list(const std::vector<ListTeams> &lists, const std::vector<uint16_t> &entrants,
+                                  const std::string &pressed, const std::string &setup_mode)
+{
+    ContinuePick p;
+    std::vector<uint16_t> want = distinct_teams(entrants);
+    std::string head = "the game left the entrants manager's list empty (setup mode " +
+                       (setup_mode.empty() ? std::string("?") : setup_mode) + " offers " + std::to_string(lists.size()) +
+                       " lists); ";
+    auto holds_all = [&](const ListTeams &l) {
+        if (want.empty())
+            return false;
+        std::vector<uint16_t> have = distinct_teams(l.teams);
+        return std::includes(have.begin(), have.end(), want.begin(), want.end());
+    };
+    int64_t first = -1, press = -1;
+    for (size_t i = 0; i < lists.size(); ++i) {
+        if (first < 0 && holds_all(lists[i]))
+            first = int64_t(i);
+        if (press < 0 && !pressed.empty() && lists[i].name == pressed)
+            press = int64_t(i);
+    }
+    if (press >= 0 && holds_all(lists[size_t(press)]))
+        first = press;
+    if (first >= 0) {
+        p.index = first;
+        p.line = head + "loading " + lists[size_t(first)].name + ", which holds all " + std::to_string(want.size()) +
+                 " teams of the saved entrants";
+        return p;
+    }
+    if (press >= 0) {
+        p.index = press;
+        p.line = head + "no list holds the saved entrants' teams (" + team_text(want) + "); loading " + pressed +
+                 ", the box pressed last";
+        return p;
+    }
+    p.line = head + "no list holds the saved entrants' teams (" + team_text(want) + ") and no box was pressed";
+    return p;
+}
+
+inline std::string track_code_of(const std::string &track)
+{
+    size_t slash = track.rfind('/');
+    return slash == std::string::npos ? track : track.substr(slash + 1);
+}
+
+inline std::string track_missing(const swofty_core::apply::tracks::Base &base, const std::string &track)
+{
+    if (!base.ready || track.empty() || base.by_id(track))
+        return {};
+    std::string code = track_code_of(track);
+    if (base.by_code(code))
+        return {};
+    std::string why = "the saved weekend's track " + track + " is not a track of this build";
+    if (swofty_core::apply::tracks::is_dormant(code))
+        why += " (" + code + " is a dormant row with no track archive; the addon that fills it is off)";
+    return why;
+}
+
+inline std::string continue_stop(const std::string &track_why, const ContinuePick &pick, bool list_missing)
+{
+    std::vector<std::string> why;
+    if (!track_why.empty())
+        why.push_back(track_why);
+    if (list_missing && pick.index < 0)
+        why.push_back(pick.line);
+    if (why.empty())
+        return {};
+    std::string s = "Grand Prix load stopped: ";
+    for (size_t i = 0; i < why.size(); ++i)
+        s += (i ? "; " : "") + why[i];
+    return s + ". F1 25 closes now instead of crashing on it; turn the addon that made the save back on, or start a "
+               "new Grand Prix in place of Continue";
 }
 
 inline std::vector<Box> ordered(std::vector<Box> boxes)
