@@ -10,6 +10,9 @@
 #include <vector>
 
 #include "apply/facts.hpp"
+#include "apply/tracks/base.hpp"
+#include "apply/tracks/seed.hpp"
+#include "json.hpp"
 
 // Pure logic of the era picker addon row (era_picker.cpp): the box check, the box order, the image
 // default, the Time Trial list and its car limit, the press guard, the links of the row's two node handles
@@ -45,6 +48,9 @@ constexpr size_t NODE_REFS = 0x24;
 constexpr size_t NODE_HOLDERS = 0x28;
 constexpr size_t HOLDER_PREV = 0x10;
 constexpr size_t TT_TABLE = 26;
+// A raised grid stops one short of the table: the safety car registers after the grid, and a 27th registration
+// overruns the game's 26-slot physics body registry (Car_Chassis_Build).
+constexpr size_t GRID_RAISE_MAX = TT_TABLE - 1;
 constexpr size_t TT_EXTRA_CARS = 3;
 constexpr size_t TT_MAX_CARS = TT_TABLE - TT_EXTRA_CARS;
 constexpr size_t LIST_ENTRANTS_BEGIN = 0x10;
@@ -367,6 +373,44 @@ inline int64_t time_trial_fallback(const std::vector<ListCars> &lists, const std
     return -1;
 }
 
+constexpr size_t ENTRANT_SETUP_MAX_ENTRANTS = 0x268;
+
+struct GridLimit {
+    uint8_t *esm = nullptr;
+    int32_t was = 0, set = 0;
+
+    std::string raise(uint8_t *setup_mode, int64_t cars)
+    {
+        restore();
+        if (!setup_mode || cars <= 0)
+            return "";
+        int32_t limit = *reinterpret_cast<int32_t *>(setup_mode + ENTRANT_SETUP_MAX_ENTRANTS);
+        if (limit <= 0 || cars <= limit)
+            return "";
+        bool clamped = size_t(cars) > GRID_RAISE_MAX;
+        int32_t target = clamped ? int32_t(GRID_RAISE_MAX) : int32_t(cars);
+        if (target <= limit)
+            return "";
+        esm = setup_mode;
+        was = limit;
+        set = target;
+        *reinterpret_cast<int32_t *>(esm + ENTRANT_SETUP_MAX_ENTRANTS) = set;
+        std::string line = "max_entrants " + std::to_string(was) + " -> " + std::to_string(set) + " for a list of " +
+                           std::to_string(cars) + " cars";
+        if (clamped)
+            line += "; clamped to " + std::to_string(GRID_RAISE_MAX) + " cars, one short of the " + std::to_string(TT_TABLE) + "-slot vehicle table for the safety car";
+        return line;
+    }
+
+    void restore()
+    {
+        if (set && esm && *reinterpret_cast<int32_t *>(esm + ENTRANT_SETUP_MAX_ENTRANTS) == set)
+            *reinterpret_cast<int32_t *>(esm + ENTRANT_SETUP_MAX_ENTRANTS) = was;
+        esm = nullptr;
+        was = set = 0;
+    }
+};
+
 inline int32_t time_trial_limit(int32_t max_entrants)
 {
     return max_entrants < 1 || size_t(max_entrants) > TT_MAX_CARS ? int32_t(TT_MAX_CARS) : max_entrants;
@@ -412,7 +456,9 @@ inline uintptr_t vehicles_end_within_table(uintptr_t begin, uintptr_t end)
 // the session module's vehicle count, so one run shows which of them holds the 27 and when it fills.
 constexpr size_t MGR_SESSION_BEGIN = 0x2e0;
 constexpr size_t MGR_SESSION_END = 0x2e8;
+constexpr size_t ENTRANT_DRIVER = 0x52;
 constexpr size_t ENTRANT_TEAM = 0x5a;
+constexpr size_t ENTRANT_VEHICLE_ID = 0x5e;
 constexpr size_t PARTICIPANT = 0x6780;
 constexpr size_t DESC_PARTICIPANTS_BEGIN = 0xad8;
 constexpr size_t DESC_PARTICIPANTS_END = 0xae0;
@@ -487,6 +533,201 @@ inline std::string session_trace_line(const SessionTrace &t)
            "; participants: game manager " + count_text(t.gm_session) + ", game module " + count_text(t.module_session) +
            " (next " + count_text(t.module_next) + "); session vehicles " + count_text(t.vehicles) +
            (t.budget >= 0 ? "; Time Trial budget " + std::to_string(t.budget) : std::string());
+}
+
+// Grand Prix load guard. Sess_Setup_ChampionshipEntrants (0x140ba3ad0) sets the entrants manager's list (+0xe18)
+// only when the weekend's entrant setup mode offers exactly one list; swofty_f1 hosts every season box, so a Grand
+// Prix > Continue lands at StateLoadSession with +0xe18 null and Sess_Assign_GarageSlotsByClass (0x1424a8cf0) reads
+// [0+0x48]. At StateLoadSession Entering the core picks the setup mode's list that holds every team of the saved
+// entrants (manager +0x2e0..+0x2e8, team stat id u16 at +0x5a of each 0x88-byte record, the same records a list
+// holds from +0x10 to +0x18), else the list of the last box pressed. A saved weekend whose track is no track of the
+// base (a dormant row whose addon is off: no track archive, no facts entry) would crash in
+// Sess_Loader_SetupTrackAssets. With no list or no track the load is stopped: the core logs why and closes F1 25
+// with CONTINUE_STOP_EXIT before the game touches either, and the launcher names the reason.
+constexpr uint16_t NO_TEAM = 0x3fff;
+constexpr unsigned CONTINUE_STOP_EXIT = 92;
+
+struct ListTeams {
+    std::string name;
+    std::vector<uint16_t> teams;
+};
+
+struct ContinuePick {
+    int64_t index = -1;
+    std::string line;
+    bool holds = false;
+};
+
+struct IdAliases {
+    std::map<uint16_t, uint16_t> teams, vehicles, drivers;
+
+    bool any() const
+    {
+        return !teams.empty() || !vehicles.empty() || !drivers.empty();
+    }
+};
+
+inline bool parse_aliases(const std::string &text, IdAliases &out)
+{
+    json::Value v;
+    if (!json::parse(text, v) || v.type != json::Value::Obj || v["version"].num() != 1)
+        return false;
+    IdAliases a;
+    auto table = [&](const char *name, std::map<uint16_t, uint16_t> &into) {
+        for (auto &[k, to] : v["tables"][name].o) {
+            long long from = strtoll(k.c_str(), nullptr, 10), now = to.num(-1);
+            if (from > 0 && from < NO_TEAM && now > 0 && now < NO_TEAM && from != now)
+                into[uint16_t(from)] = uint16_t(now);
+        }
+    };
+    table("teams", a.teams);
+    table("vehicles", a.vehicles);
+    table("drivers", a.drivers);
+    out = std::move(a);
+    return true;
+}
+
+inline uint16_t alias_of(const std::map<uint16_t, uint16_t> &map, uint16_t id)
+{
+    auto it = map.find(id);
+    return it == map.end() ? id : it->second;
+}
+
+inline std::vector<uint16_t> remap_teams(const IdAliases &aliases, std::vector<uint16_t> teams)
+{
+    for (uint16_t &t : teams)
+        t = alias_of(aliases.teams, t);
+    return teams;
+}
+
+inline bool saved_predates(const IdAliases &aliases, const std::vector<uint16_t> &teams)
+{
+    for (uint16_t t : teams)
+        if (t && t != NO_TEAM && aliases.teams.count(t))
+            return true;
+    return false;
+}
+
+inline std::vector<uint16_t> distinct_teams(const std::vector<uint16_t> &teams)
+{
+    std::vector<uint16_t> out;
+    for (uint16_t t : teams)
+        if (t && t != NO_TEAM && std::find(out.begin(), out.end(), t) == out.end())
+            out.push_back(t);
+    std::sort(out.begin(), out.end());
+    return out;
+}
+
+inline std::string team_text(const std::vector<uint16_t> &teams)
+{
+    std::string s;
+    for (size_t i = 0; i < teams.size(); ++i)
+        s += (i ? "," : "") + std::to_string(teams[i]);
+    return s.empty() ? std::string("none") : s;
+}
+
+inline ContinuePick continue_list(const std::vector<ListTeams> &lists, const std::vector<uint16_t> &entrants,
+                                  const std::string &pressed, const std::string &setup_mode)
+{
+    ContinuePick p;
+    std::vector<uint16_t> want = distinct_teams(entrants);
+    std::string head = "the game left the entrants manager's list empty (setup mode " +
+                       (setup_mode.empty() ? std::string("?") : setup_mode) + " offers " + std::to_string(lists.size()) +
+                       " lists); ";
+    auto holds_all = [&](const ListTeams &l) {
+        if (want.empty())
+            return false;
+        std::vector<uint16_t> have = distinct_teams(l.teams);
+        return std::includes(have.begin(), have.end(), want.begin(), want.end());
+    };
+    int64_t first = -1, press = -1;
+    for (size_t i = 0; i < lists.size(); ++i) {
+        if (first < 0 && holds_all(lists[i]))
+            first = int64_t(i);
+        if (press < 0 && !pressed.empty() && lists[i].name == pressed)
+            press = int64_t(i);
+    }
+    if (press >= 0 && holds_all(lists[size_t(press)]))
+        first = press;
+    if (first >= 0) {
+        p.index = first;
+        p.holds = true;
+        p.line = head + "loading " + lists[size_t(first)].name + ", which holds all " + std::to_string(want.size()) +
+                 " teams of the saved entrants";
+        return p;
+    }
+    if (press >= 0) {
+        p.index = press;
+        p.line = head + "no list holds the saved entrants' teams (" + team_text(want) + "); loading " + pressed +
+                 ", the box pressed last";
+        return p;
+    }
+    p.line = head + "no list holds the saved entrants' teams (" + team_text(want) + ") and no box was pressed";
+    return p;
+}
+
+struct AliasedPick {
+    ContinuePick pick;
+    std::vector<uint16_t> teams;
+    bool remapped = false;
+};
+
+inline AliasedPick continue_list_aliased(const std::vector<ListTeams> &lists, const std::vector<uint16_t> &entrants,
+                                         const std::string &pressed, const std::string &setup_mode,
+                                         const IdAliases &aliases)
+{
+    AliasedPick out;
+    out.pick = continue_list(lists, entrants, pressed, setup_mode);
+    out.teams = entrants;
+    if (out.pick.holds || !aliases.any())
+        return out;
+    std::vector<uint16_t> mapped = remap_teams(aliases, entrants);
+    if (mapped == entrants)
+        return out;
+    ContinuePick again = continue_list(lists, mapped, pressed, setup_mode);
+    if (!again.holds)
+        return out;
+    out.pick = again;
+    out.pick.line += " after mapping the saved team ids " + team_text(distinct_teams(entrants)) + " to " +
+                     team_text(distinct_teams(mapped)) + " (the ids the rows had before this build)";
+    out.teams = mapped;
+    out.remapped = true;
+    return out;
+}
+
+inline std::string track_code_of(const std::string &track)
+{
+    size_t slash = track.rfind('/');
+    return slash == std::string::npos ? track : track.substr(slash + 1);
+}
+
+inline std::string track_missing(const swofty_core::apply::tracks::Base &base, const std::string &track)
+{
+    if (!base.ready || track.empty() || base.by_id(track))
+        return {};
+    std::string code = track_code_of(track);
+    if (base.by_code(code))
+        return {};
+    std::string why = "the saved weekend's track " + track + " is not a track of this build";
+    if (swofty_core::apply::tracks::is_dormant(code))
+        why += " (" + code + " is a dormant row with no track archive; the addon that fills it is off)";
+    return why;
+}
+
+inline std::string continue_stop(const std::string &track_why, const ContinuePick &pick, bool list_missing)
+{
+    std::vector<std::string> why;
+    if (!track_why.empty())
+        why.push_back(track_why);
+    if (list_missing && pick.index < 0)
+        why.push_back(pick.line);
+    if (why.empty())
+        return {};
+    std::string s = "Grand Prix load stopped: ";
+    for (size_t i = 0; i < why.size(); ++i)
+        s += (i ? "; " : "") + why[i];
+    return s + ". F1 25 closes now instead of crashing on it; turn the addon that made the save back on, or start a "
+               "new Grand Prix in place of Continue";
 }
 
 inline std::vector<Box> ordered(std::vector<Box> boxes)

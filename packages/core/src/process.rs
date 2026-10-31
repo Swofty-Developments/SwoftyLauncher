@@ -198,13 +198,26 @@ pub(crate) fn named(name: &str) -> Vec<GameProcess> {
         .filter_map(|e| {
             let pid = e.file_name().to_str()?.parse().ok()?;
             let comm = std::fs::read_to_string(e.path().join("comm")).ok()?;
-            (comm.trim_end() == name).then(|| GameProcess {
+            (comm.trim_end() == name && !is_dead(&e.path())).then(|| GameProcess {
                 pid,
                 started: started(pid),
                 origin: Origin::default(),
             })
         })
         .collect()
+}
+
+/// A process that has exited and is only waiting for its parent to reap it (`Z`), or is gone (`X`).
+#[cfg(target_os = "linux")]
+fn is_dead(proc_dir: &Path) -> bool {
+    std::fs::read_to_string(proc_dir.join("stat")).is_ok_and(|s| state_is_dead(&s))
+}
+
+#[cfg(target_os = "linux")]
+fn state_is_dead(stat: &str) -> bool {
+    stat.rsplit_once(')')
+        .and_then(|(_, rest)| rest.split_whitespace().next())
+        .is_some_and(|state| matches!(state, "Z" | "X" | "x"))
 }
 
 #[cfg(target_os = "linux")]
@@ -330,7 +343,9 @@ mod win32 {
             let mut more = Process32FirstW(snapshot, &mut entry) != 0;
             while more {
                 let len = entry.exe_file.iter().position(|&c| c == 0).unwrap_or(MAX_PATH);
-                if String::from_utf16_lossy(&entry.exe_file[..len]).eq_ignore_ascii_case(name) {
+                if entry.threads > 0
+                    && String::from_utf16_lossy(&entry.exe_file[..len]).eq_ignore_ascii_case(name)
+                {
                     out.push(entry.process_id);
                 }
                 more = Process32NextW(snapshot, &mut entry) != 0;
@@ -431,6 +446,45 @@ fn image_path(pid: u32) -> Option<String> {
         ok
     };
     (ok != 0).then(|| String::from_utf16_lossy(&name[..len as usize]))
+}
+
+#[cfg(windows)]
+pub(crate) fn started(pid: u32) -> Option<SystemTime> {
+    use std::ffi::c_void;
+    const PROCESS_QUERY_LIMITED_INFORMATION: u32 = 0x1000;
+    #[link(name = "kernel32")]
+    unsafe extern "system" {
+        fn OpenProcess(access: u32, inherit: i32, pid: u32) -> *mut c_void;
+        fn GetProcessTimes(
+            process: *mut c_void,
+            creation: *mut u64,
+            exit: *mut u64,
+            kernel: *mut u64,
+            user: *mut u64,
+        ) -> i32;
+        fn CloseHandle(handle: *mut c_void) -> i32;
+    }
+    let [mut creation, mut exit, mut kernel, mut user] = [0u64; 4];
+    // SAFETY: the handle is checked before use and closed once, and each
+    // FILETIME the call fills is a u64, the same size with a wider alignment.
+    let ok = unsafe {
+        let process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid);
+        if process.is_null() {
+            return None;
+        }
+        let ok = GetProcessTimes(process, &mut creation, &mut exit, &mut kernel, &mut user);
+        CloseHandle(process);
+        ok
+    };
+    (ok != 0).then(|| filetime(creation)).flatten()
+}
+
+/// A FILETIME: 100 ns ticks since 1601-01-01 UTC.
+#[cfg(any(windows, test))]
+fn filetime(ticks: u64) -> Option<SystemTime> {
+    const UNIX_EPOCH_TICKS: u64 = 116_444_736_000_000_000;
+    let since = ticks.checked_sub(UNIX_EPOCH_TICKS)?;
+    UNIX_EPOCH.checked_add(std::time::Duration::from_micros(since / 10))
 }
 
 pub fn stop_process(pid: u32) -> std::io::Result<()> {
@@ -683,6 +737,30 @@ mod windows_tests {
         assert!(shouted.iter().any(|g| g.pid == me), "{shouted:?}");
         assert!(super::named("no-such-process-swofty.exe").is_empty());
     }
+
+    #[test]
+    fn reads_own_start_time() {
+        let age = super::started(std::process::id())
+            .unwrap()
+            .elapsed()
+            .unwrap_or_default();
+        assert!(age.as_secs() < 3600, "{age:?}");
+    }
+}
+
+#[cfg(test)]
+mod filetime_tests {
+    use std::time::{Duration, UNIX_EPOCH};
+
+    #[test]
+    fn counts_filetime_from_1601() {
+        assert_eq!(super::filetime(116_444_736_000_000_000), Some(UNIX_EPOCH));
+        assert_eq!(
+            super::filetime(134_062_272_000_000_000),
+            Some(UNIX_EPOCH + Duration::from_secs(1_761_753_600))
+        );
+        assert_eq!(super::filetime(0), None);
+    }
 }
 
 #[cfg(all(test, target_os = "linux"))]
@@ -703,5 +781,24 @@ mod tests {
             .elapsed()
             .unwrap_or_default();
         assert!(age.as_secs() < 3600, "{age:?}");
+    }
+}
+
+#[cfg(all(test, target_os = "linux"))]
+mod zombie_tests {
+    use super::*;
+
+    #[test]
+    fn a_zombie_or_dead_process_is_not_a_running_game() {
+        assert!(state_is_dead("4242 (F1_25.exe) Z 1 4242 4242 0 -1 4228620 0"));
+        assert!(state_is_dead("4242 (F1_25.exe) X 1 4242"));
+        assert!(!state_is_dead("4242 (F1_25.exe) S 1 4242 4242 0 -1"));
+        assert!(!state_is_dead("4242 (F1 (25).exe) R 1 4242"));
+        assert!(state_is_dead("4242 (F1 (25).exe) Z 1 4242"));
+    }
+
+    #[test]
+    fn this_test_process_is_alive() {
+        assert!(!is_dead(Path::new("/proc/self")));
     }
 }

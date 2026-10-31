@@ -30,6 +30,9 @@ mkdir -p "$OUT"
 "${PIN[@]}" zig c++ -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../../packages/sdk/include \
     -o "$OUT/save_splice_test" save_splice_test.cpp
 "$OUT/save_splice_test"
+"${PIN[@]}" zig c++ -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -Wno-missing-designated-field-initializers \
+    -I../../packages/sdk/include -o "$OUT/career_saves_test" career_saves_test.cpp
+"$OUT/career_saves_test"
 "${PIN[@]}" zig c++ -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../../packages/sdk/include \
     -o "$OUT/netplay_drive_test" netplay_drive_test.cpp
 "$OUT/netplay_drive_test"
@@ -45,3 +48,6 @@ mkdir -p "$OUT"
 "${PIN[@]}" zig c++ -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../../packages/sdk/include \
     -o "$OUT/state_logic_test" state_logic_test.cpp
 "$OUT/state_logic_test"
+"${PIN[@]}" zig c++ -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../../packages/sdk/include \
+    -o "$OUT/udp_ids_test" udp_ids_test.cpp
+"$OUT/udp_ids_test"

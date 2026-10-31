@@ -1,5 +1,6 @@
 #include "../../src/core/apply/content/boot.hpp"
 #include "../../src/core/apply/ids.hpp"
+#include "../../src/core/apply/scheduler.hpp"
 #include "../../src/core/career_ops/teams_plan.hpp"
 #include "../../src/core/career_ops/teams_store.hpp"
 #include "../../src/core/team_slots_logic.hpp"
@@ -207,7 +208,8 @@ static void stock_package_rows(Db &db)
              {"_metadata_", "f1_m_mercedes"}, {"bundle_name", "mercedes_2025.bdl"}, {"engine_offset_x", "0.1"}})
         db.put(std::string("audio.audio_car_data.f1_m_mercedes.") + f, std::string_view(f) == "engine_offset_x" ? 1 : 2, v);
     db.put("entrants.vehicles._vehicle_instancecount_", 0, "1");
-    row("entrants.vehicles.vehicle_0", {{"_metadata_", "mercedes_2025"}, {"performance_tier", "0"}, {"tyre_wear_scale", "1"}});
+    row("entrants.vehicles.vehicle_0", {{"_metadata_", "mercedes_2025"}, {"performance_tier", "0"}, {"tyre_wear_scale", "1"},
+                                          {"drs_capable", "True"}});
     db.put("entrants.vehicles.vehicle_0.stat_id", 0, "508");
     db.put("content_sets._content_set_instancecount_", 0, "1");
     row("content_sets.content_set_0", {{"_metadata_", "2025"}});
@@ -222,7 +224,7 @@ static void variant_tests(const std::string &regs)
     st.set_validator(&registry::schema_validator());
     const SwoftyRegistry *t = registry::table();
     for (const char *name : {"engine_sound", "vehicle.package", "vehicle", "livery", "content.package", "era.box"}) {
-        std::string schema = slurp(regs + "/" + name + "/1.0.json");
+        std::string schema = slurp(regs + "/" + name + (std::string_view(name) == "vehicle" ? "/1.1.json" : "/1.0.json"));
         t->declare(name, SwoftyText{schema.data(), schema.size()});
     }
     int r1 = registry::load_data_file("swofty.classic-seasons-2017", "registry/content.json", R"j({
@@ -244,7 +246,7 @@ static void variant_tests(const std::string &regs)
       "engine_sound": { "v10_screamer": { "bundle": "sounds/v10_screamer.bdl", "settings_from": "game/mercedes_2025" },
                         "mercedes_mix": { "extends": "swofty.classic-seasons-2017/mercedes", "settings_from": "game/mercedes_2025" } },
       "vehicle": { "mercedes_v10": { "extends": "swofty.classic-seasons-2017/mercedes", "label": "esp_cs17_mercedes",
-                                     "engine_sound": "mod.esp/v10_screamer" },
+                                     "engine_sound": "mod.esp/v10_screamer", "drs_capable": false, "tyre_group": "F1_1990" },
                    "mercedes_copy": { "extends": "swofty.classic-seasons-2017/mercedes" } },
       "content.package": { "f1_2017_v10": {
         "extends": "swofty.classic-seasons-2017/f1_2017",
@@ -317,6 +319,9 @@ static void variant_tests(const std::string &regs)
     check(written(x.engine, base_sw + "_metadata_") == "f1_M_mercedes" &&
               written(x.engine, base_sw + "bundle_name") == "cs17_mercedes.bdl",
           "the base car's sound rows keep the base's sound");
+    check(written(x.engine, v10 + ".drs_capable") == "False" &&
+              written(x.engine, car + ".drs_capable") == "True",
+          "a vehicle's drs_capable reaches its row; a row that names none keeps the donor's");
     check(written(x.engine, v10_sw + "_metadata_") == "esp_cs17_mercedes" &&
               written(x.engine, v10_sw + "bundle_name") == "v10_screamer.bdl" &&
               written(x.engine, v10_sw + "engine_offset_x") == "0.1",
@@ -1629,6 +1634,60 @@ static void id_clash_tests(const std::string &regs)
     check(again.writes == moved.writes, "the next boot moves it to the same id");
 }
 
+static void stock_only_tests(const std::string &regs)
+{
+    registry::reset_store();
+    auto &st = registry::store();
+    st.set_order({"mod.a"});
+    st.set_validator(&registry::schema_validator());
+    const SwoftyRegistry *t = registry::table();
+    for (const char *name : {"team.identity", "team.constructor", "team.pit_times", "team.logo"}) {
+        std::string schema = slurp(regs + "/" + name + (std::string(name) == "team.identity" ? "/1.1.json" : "/1.0.json"));
+        t->declare(name, SwoftyText{schema.data(), schema.size()});
+    }
+    st.end_register();
+    Db db;
+    stock_team_rows(db);
+    content::Read stock_read = [&](const std::string &path) -> std::optional<std::string> {
+        auto r = db.base()(content::gvdb::fnv64(path));
+        return r ? std::optional<std::string>(r->text) : std::nullopt;
+    };
+    check(content::in_load_order(st, "team.identity").empty() && content::in_load_order(st, "team.pit_times").empty(),
+          "a profile with no team records has none in load order");
+    for (auto &c : content::CONSTRUCTOR_SEEDS)
+        st.add_base("team.constructor", c.key,
+                    Value::object({{"name", Value(std::string(c.name))}, {"country", Value(std::string(c.country))}, {"team", Value()}}));
+    for (auto &team : content::stock_teams(stock_read))
+        st.add_base("team.identity", team.label, team.record);
+    st.stock_loaded("team.identity", true);
+    check(st.get("team.identity", "game/mercedes").status == registry::Status::ok &&
+              st.get("team.identity", "game/tororosso").status == registry::Status::ok &&
+              st.get("team.constructor", "constructor/mercedes").status == registry::Status::ok,
+          "the stock team and constructor records exist with no addon team records");
+    check(st.list("team.identity", "").size() == 2, "and the stock teams are the only team.identity records");
+    check(content::in_load_order(st, "team.identity").empty() && content::in_load_order(st, "team.pit_times").empty(),
+          "seeding adds no team.identity or team.pit_times record the content appliers walk in load order");
+    std::map<std::string, Value> keep;
+    auto lookup = content::own_lookup(st, keep);
+    auto refs = content::refs_of(st, lookup);
+    bool only_stock = true;
+    for (auto &[token, team] : refs.constructor_team)
+        only_stock = only_stock && team.rfind("game/", 0) == 0;
+    check(refs.constructors == 0 && refs.constructors_refused == 0 && refs.lines.empty() && only_stock && refs.pit_record.empty(),
+          "the constructor applier's report is unchanged: nothing applied, refused or logged, every constructor id resolves to a stock row");
+    apply::ids::Store ids;
+    ids.define_pool("team.identity", {{{4, 1023}}});
+    int64_t out = -1;
+    std::string line;
+    check(apply::stat_id(st, ids, "team.identity", "game/tororosso", &out, "test", &line) == SWOFTY_ASSET_OK && out == 3,
+          "stat_id on a stock record returns the row's own stat id");
+    check(apply::stat_id(st, ids, "team.identity", "game/mercedes", &out, "test", &line) == SWOFTY_ASSET_OK && out == 0,
+          "including stat id 0");
+    ids.allocate("team.identity", "mod.a/new", "test");
+    int64_t fresh = ids.allocate("team.identity", "mod.a/other", "test").id;
+    check(fresh == 5, "a stock stat_id call allocates nothing from the pool: the next free id is still the first above the table");
+}
+
 int main(int argc, char **argv)
 {
     box_time_trial_tests();
@@ -1642,6 +1701,8 @@ int main(int argc, char **argv)
         team_tests(argv[1]);
     if (argc > 1)
         twelve_team_tests(argv[1]);
+    if (argc > 1)
+        stock_only_tests(argv[1]);
     if (argc > 1)
         twelve_slot_tests(argv[1]);
     if (argc > 1)

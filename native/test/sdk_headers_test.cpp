@@ -24,6 +24,7 @@
 #include <swofty/systems/sounds.hpp>
 #include <swofty/systems/spectator.hpp>
 #include <swofty/systems/teams.hpp>
+#include <swofty/systems/tyres.hpp>
 #include <swofty/systems/wearables.hpp>
 #include <swofty/systems/tracks.hpp>
 
@@ -166,7 +167,7 @@ static void unavailable_without_core()
               }) == swofty::events::Result::unavailable);
     CHECK(on<career::events::AddActivity>().in(any({content("a/x"), not_(track("game/monaco"))})).replace(
               [](career::events::AddActivity &, const Context &) { return false; }) == swofty::events::Result::unavailable);
-    CHECK(on<cars::events::Built>().before([](cars::events::Built &e, const Context &) { e.car.f1_aero().lift_scale = 1.01f; }) ==
+    CHECK(on<cars::events::Built>().before([](cars::events::Built &e, const Context &) { (void)e.car.get(cars::live::Field::steering_lock); }) ==
           swofty::events::Result::unavailable);
     CHECK(on("swofty.progressive.seat_change").after([](std::span<const std::byte>, const Context &) {}) ==
           swofty::events::Result::unavailable);
@@ -220,6 +221,21 @@ static void unavailable_without_core()
     CHECK(career::set_seat(7, 1, Ref<drivers::Identity>("game/pierre_gasly")) == career::Result::unavailable);
     CHECK(cars::reset_upgrades(0) == Result::unavailable);
     CHECK(!cars::live::available() && cars::live::cars().empty());
+    CHECK(!cars::live::field("aero.lift_scale") && !cars::live::Car(0).get("aero.lift_scale") &&
+          cars::live::Car(0).set("aero.lift_scale", 0.5f) == Result::invalid);
+    {
+        auto layer = cars::live::Layer::scale(cars::live::Cars::all(), "engine.power_scale", 0.9725f, 5);
+        CHECK(!layer.ok() && layer.result() == Result::unavailable);
+    }
+    cars::Profile profile;
+    profile.power_scale = 0.9725f;
+    profile.limiter_offset_rpm = -300;
+    profile.ai_grip_scale = 0.87f;
+    profile.when = {events::SessionType::practice, events::SessionType::race};
+    cars::Profile round;
+    CHECK(from_json(to_json(profile), round) && round.power_scale == 0.9725f && round.limiter_offset_rpm == -300 &&
+          round.ai_grip_scale == 0.87f && round.when.size() == 2 && !round.fuel_modes);
+    CHECK(std::string(cars::profiles.name()) == "car.profile" && !cars::profiles.schema().empty());
     CHECK(detail::run_register(nullptr) == 1);
 }
 
@@ -456,6 +472,30 @@ static void schemas()
     std::string v = cars::vehicles.schema();
     CHECK(v.find("\"x-applies\":\"boot\"") != std::string::npos && v.find("\"enum\":[\"f1\",\"f1_26\"") != std::string::npos);
     CHECK(cars::handling.schema().find("\"class\":") != std::string::npos);
+    std::string hs = cars::handling.schema();
+    CHECK(hs.find("\"x-version\":\"1.1\"") != std::string::npos && v.find("\"x-version\":\"1.1\"") != std::string::npos);
+    CHECK(hs.find("\"ratios\":{\"type\":\"array\"") != std::string::npos);
+    CHECK(hs.find("\"ers\":{\"type\":[\"object\",\"null\"]") != std::string::npos);
+    CHECK(hs.find("\"ffb_scale\"") != std::string::npos && hs.find("\"tyre_physics_group\"") != std::string::npos);
+    CHECK(hs.find("\"slipstream\"") != std::string::npos && hs.find("\"hardware\"") != std::string::npos);
+    CHECK(hs.find("\"mode\":{\"type\":\"string\",\"enum\":[\"off\",\"lag_spoof\",\"full\"]") != std::string::npos);
+    CHECK(hs.find("\"chassis_com_z\":{\"type\":\"object\"") != std::string::npos);
+    CHECK(v.find("\"drs_capable\":{\"type\":[\"boolean\",\"null\"]") != std::string::npos);
+    CHECK(v.find("\"x-ref\":\"power.supplier\"") != std::string::npos && v.find("\"tyre_group\"") != std::string::npos);
+    {
+        cars::Handling h;
+        h.suspension.front.rest_z = 1.7f;
+        h.suspension.rear.rest_z = -1.7f;
+        h.chassis.com_z = 0.171f;
+        CHECK(std::abs(cars::front_weight(h) - 0.4497f) < 0.001f);
+        h.ers.reset();
+        CHECK(to_json(h).find("\"ers\":null") != std::string::npos);
+        cars::Handling back;
+        CHECK(from_json(to_json(h), back) && !back.ers.has_value());
+        h.gearbox.ratios = {3.0f, 2.0f, 1.0f};
+        CHECK(to_json(h).find("\"ratios\":[3,2,1]") != std::string::npos);
+    }
+    CHECK(tyres::physical.name() == std::string("tyre.physical") && power::suppliers.name() == std::string("power.supplier"));
     CHECK(content::packages.schema().find("\"x-key\":[\"key\"]") != std::string::npos);
     CHECK(test::things.schema().find("\"x-version\":\"1.2\"") != std::string::npos);
     CHECK(Registry<json::Value>("x.y").schema().empty());

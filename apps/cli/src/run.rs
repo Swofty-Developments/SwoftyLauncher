@@ -49,6 +49,11 @@ pub struct RunArgs {
     via_ea: bool,
     #[arg(
         long,
+        help = "Play this one session on Steam's saves, though the profile uses launcher saves"
+    )]
+    steam_saves_once: bool,
+    #[arg(
+        long,
         help = "Start F1 25 in VR, like Steam's VR launch option (passes -vr; on Linux, starts SteamVR first)"
     )]
     vr: bool,
@@ -149,6 +154,7 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
         profile: Some(profile.into()),
         apply: args.apply,
         netplay: std::env::var(NETPLAY_ENV).ok().filter(|v| !v.is_empty()),
+        steam_saves_once: args.steam_saves_once,
     };
     write_json(&store.root.join("state/launch.json"), &request)?;
     let mode = if args.vr {
@@ -453,10 +459,11 @@ fn wrapper(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Result<Exi
              with EA AntiCheat",
         );
     }
-    let backup = crate::saves::before_session(store, &profile, g);
+    let before = crate::saves::before_session(store, &profile, g, &request.id, !request.steam_saves_once);
     let result = run_loop(store, args, &config, &request, &profile, g, installed);
-    crate::saves::after_session(store, backup.as_ref());
-    finish(session, result)
+    let out = finish(session, result);
+    crate::saves::after_session(before);
+    out
 }
 
 fn stage_offline(store: &Store, game: &Path) -> Result<()> {
@@ -799,6 +806,9 @@ fn play(
         .chain(library_path.map(|p| ("LD_LIBRARY_PATH", p)))
         .map(|(k, v)| (k.to_owned(), v)),
     );
+    if request.steam_saves_once {
+        game_env.insert(swofty_core::launcher_saves::OFF_ENV.to_owned(), "off".to_owned());
+    }
     if let Some(armed) = &request.netplay {
         for (name, value) in armed_env(armed) {
             game_env.entry(name.to_owned()).or_insert(value);
@@ -2426,6 +2436,11 @@ mod tests {
             "a build whose heartbeat stopped is silent"
         );
         drop(lock);
+        drop(
+            SessionLock::wait(&data, Duration::from_secs(10))
+                .unwrap()
+                .expect("a forked child still holds the dropped lock"),
+        );
         beat(&data, 2_000);
         assert!(
             silence.of(&log, &data) >= Duration::from_millis(30),

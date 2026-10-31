@@ -138,7 +138,7 @@ pub fn add_track(root: &mut Element, map: &ErsMap) -> Result<bool> {
     Ok(true)
 }
 
-fn set_data(res: &mut Resource, index: usize, data: &[u8]) -> Result<()> {
+pub(crate) fn set_data(res: &mut Resource, index: usize, data: &[u8]) -> Result<()> {
     let f = res
         .fragments
         .get_mut(index)

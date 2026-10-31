@@ -144,7 +144,7 @@ If you route to an addon screen that didn't register, the route is cancelled and
 A screen in `flow_options` gets the flow entry, loading region and route group an ADDON SETTINGS page gets. Its group has the routes `open`, `open_no_input`, `close` and `back`. `back` closes the screen and opens its `anchor` again (`settings_container` when you give none).
 
 ::: warning Reserved names
-`swofty_settings`, `swofty_addon_<n>`, `swofty_map_<n>` and `swofty_mod_<n>` belong to ADDON SETTINGS, and `swofty_setup_<route>` to [career setup pages](#add-a-career-setup-page).
+`swofty_settings`, `swofty_settings_<n>`, `swofty_addon_<n>`, `swofty_map_<n>` and `swofty_mod_<n>` belong to ADDON SETTINGS, and `swofty_setup_<route>` to [career setup pages](#add-a-career-setup-page).
 :::
 
 ### Use your options page

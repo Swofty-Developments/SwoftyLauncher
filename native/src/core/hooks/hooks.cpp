@@ -149,6 +149,7 @@ Table &the_table()
         t->declare_core();
         declare_game_points(*t);
         declare_session_points(*t);
+        declare_car_points(*t);
         return t;
     }();
     return *t;
@@ -313,6 +314,7 @@ void window_stage()
         return;
     t.arm();
     arm_session_points();
+    arm_car_points();
     for (auto &[point, subs] : t.undefined())
         swofty::log("[hooks] %s: handlers from %s are attached, and no addon has defined it", point.c_str(), subs.c_str());
     if (runtime::enabled("events", nullptr))

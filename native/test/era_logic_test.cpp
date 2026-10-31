@@ -181,6 +181,170 @@ static bool holds(Node &n, const era::Handle &h)
     return false;
 }
 
+static void continue_tests()
+{
+    std::vector<uint16_t> saved{518, 517, 514, 520, 512, 519, 518, 513, 513, 516, 520, 511, 510, 519, 514, 515, 515, 511, 517,
+                                512, 516, 510};
+    std::vector<era::ListTeams> lists{
+        {"f1_2025", {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}},
+        {"cs_f1_2017", {521, 522, 523, 524, 525, 526, 527, 528, 529, 530}},
+        {"cs_f1_2016", {510, 511, 512, 513, 514, 515, 516, 517, 518, 519, 520, era::NO_TEAM}},
+    };
+    era::ContinuePick p = era::continue_list(lists, saved, "", "swofty_f1");
+    expect(p.index == 2 && p.line.find("loading cs_f1_2016, which holds all 11 teams") != std::string::npos,
+           "Continue with an empty list loads the list holding every team of the saved entrants: " + p.line);
+    p = era::continue_list(lists, saved, "cs_f1_2017", "swofty_f1");
+    expect(p.index == 2, "the teams win over a pressed box whose list doesn't hold them");
+    std::vector<era::ListTeams> twice{lists[2], {"cs_f1_2016_copy", lists[2].teams}};
+    p = era::continue_list(twice, saved, "cs_f1_2016_copy", "swofty_f1");
+    expect(p.index == 1, "of two lists holding the teams, the pressed box's is loaded");
+    std::vector<uint16_t> moved{646, 652, 559, 572, 600, 601, 602, 603, 604, 605, 606};
+    p = era::continue_list(lists, moved, "cs_f1_2017", "swofty_f1");
+    expect(p.index == 1 && p.line.find("the box pressed last") != std::string::npos,
+           "teams no list holds fall back to the pressed box's list: " + p.line);
+    p = era::continue_list(lists, moved, "", "swofty_f1");
+    expect(p.index < 0 && p.line.find("no box was pressed") != std::string::npos, "nothing to load is said: " + p.line);
+    std::string stop = era::continue_stop("", p, true);
+    expect(stop.find("Grand Prix load stopped: ") == 0 && stop.find("646") != std::string::npos &&
+               stop.find("start a new Grand Prix") != std::string::npos,
+           "no list and no press stops the load with the teams it looked for: " + stop);
+    expect(era::continue_stop("", p, false).empty(), "a list the game set is never stopped for");
+    p = era::continue_list(lists, {}, "", "swofty_f1");
+    expect(p.index < 0, "no saved entrants match no list");
+    p = era::continue_list(lists, {era::NO_TEAM, 0}, "", "f1");
+    expect(p.index < 0, "unresolved team ids match no list");
+
+    era::IdAliases aliases;
+    std::string doc = R"({"version":1,"tables":{"teams":{"646":510,"652":511,"559":512,"3":9,"0":4,"99999":5},"vehicles":{"700":701}}})";
+    expect(era::parse_aliases(doc, aliases), "the alias file parses");
+    expect(aliases.teams.size() == 4 && !aliases.teams.count(0) && !aliases.teams.count(uint16_t(99999)) && aliases.teams.at(646) == 510 && aliases.vehicles.at(700) == 701,
+           "ids outside the saved range or zero are left out");
+    expect(!era::parse_aliases("{\"version\":2}", aliases) && !era::parse_aliases("nope", aliases),
+           "an unknown version or text is refused");
+    std::vector<uint16_t> hashed{646, 652, 559, 646, 652};
+    era::AliasedPick ap = era::continue_list_aliased(lists, hashed, "", "swofty_f1", aliases);
+    expect(ap.remapped && ap.pick.index == 2 && ap.teams == std::vector<uint16_t>({510, 511, 512, 510, 511}) &&
+               ap.pick.line.find("after mapping the saved team ids 559,646,652 to 510,511,512") != std::string::npos,
+           "saved hashed teams map to the current ones and a list holds them: " + ap.pick.line);
+    ap = era::continue_list_aliased(lists, saved, "", "swofty_f1", aliases);
+    expect(!ap.remapped && ap.pick.index == 2 && ap.teams == saved, "teams a list already holds are not mapped");
+    ap = era::continue_list_aliased(lists, hashed, "", "swofty_f1", era::IdAliases{});
+    expect(!ap.remapped && ap.pick.index < 0, "without aliases the teams stay unmatched");
+    expect(era::saved_predates(aliases, {9, 646, 4}) && !era::saved_predates(aliases, {9, 4, 510}) &&
+               !era::saved_predates(aliases, {0, era::NO_TEAM}) && !era::saved_predates(era::IdAliases{}, hashed),
+           "a career vector is mapped only when one of its teams is an earlier id");
+    std::vector<uint16_t> stray{646, 4000};
+    ap = era::continue_list_aliased(lists, stray, "cs_f1_2017", "swofty_f1", aliases);
+    expect(!ap.remapped && ap.pick.index == 1, "a mapping no list holds falls back to the pressed box as before");
+
+    namespace trk = swofty_core::apply::tracks;
+    trk::Base base;
+    expect(era::track_missing(base, "game/bahrain24").empty(), "a base not built yet stops nothing");
+    base.ready = true;
+    trk::BaseTrack bahrain;
+    bahrain.id = "game/bahrain";
+    bahrain.code = "bahrain";
+    bahrain.stat_id = 3;
+    trk::BaseTrack hockenheim;
+    hockenheim.id = "mod.hockenheim/hockenheim";
+    hockenheim.code = "hockenheim";
+    hockenheim.stat_id = 43;
+    hockenheim.kind = trk::Kind::older;
+    base.tracks = {bahrain, hockenheim};
+    base.dormant = {"game/bahrain24", "game/sochi"};
+    expect(era::track_missing(base, "game/bahrain").empty(), "a stock track of the base loads");
+    expect(era::track_missing(base, "game/hockenheim").empty(), "a track made for 1.5 found by its code loads");
+    expect(era::track_missing(base, "mod.hockenheim/hockenheim").empty(), "a track found by its id loads");
+    expect(era::track_missing(base, "").empty(), "an unread track stops nothing");
+    std::string gone = era::track_missing(base, "game/bahrain24");
+    expect(gone.find("game/bahrain24 is not a track of this build") != std::string::npos &&
+               gone.find("dormant row with no track archive") != std::string::npos,
+           "a saved weekend at a dormant row whose addon is off is named: " + gone);
+    trk::BaseTrack sepang;
+    sepang.id = "mod.bahrain24/bahrain24";
+    sepang.code = "bahrain24";
+    sepang.kind = trk::Kind::record;
+    base.tracks.push_back(sepang);
+    expect(era::track_missing(base, "game/bahrain24").empty(), "the same row filled by its track record loads");
+    base.tracks.pop_back();
+    era::ContinuePick fine;
+    fine.index = 0;
+    stop = era::continue_stop(gone, fine, false);
+    expect(stop.find("Grand Prix load stopped: the saved weekend's track game/bahrain24") == 0,
+           "a missing track stops the load even when the list is set: " + stop);
+    stop = era::continue_stop(gone, p, true);
+    expect(stop.find("bahrain24") != std::string::npos && stop.find("no list holds") != std::string::npos,
+           "both reasons are named together: " + stop);
+}
+
+struct GridSetup {
+    alignas(8) uint8_t mem[0x300] = {};
+    explicit GridSetup(int32_t limit) { set(limit); }
+    void set(int32_t v) { *reinterpret_cast<int32_t *>(mem + era::ENTRANT_SETUP_MAX_ENTRANTS) = v; }
+    int32_t get() const { return *reinterpret_cast<const int32_t *>(mem + era::ENTRANT_SETUP_MAX_ENTRANTS); }
+};
+
+static void grid_limit_tests()
+{
+    GridSetup press(20);
+    era::GridLimit pressed;
+    std::string line = pressed.raise(press.mem, 24);
+    expect(press.get() == 24 && !line.empty() && line.find("20 -> 24") != std::string::npos &&
+               line.find("clamped") == std::string::npos,
+           "a box press on a 24-car list raises max_entrants from 20 to 24");
+    pressed.restore();
+    expect(press.get() == 20, "the put-back restores max_entrants to 20");
+    pressed.restore();
+    expect(press.get() == 20, "a second put-back changes nothing");
+
+    GridSetup small(20);
+    era::GridLimit none;
+    expect(none.raise(small.mem, 18).empty() && small.get() == 20, "a list within the limit leaves max_entrants alone");
+    expect(none.raise(small.mem, 20).empty() && small.get() == 20, "a list equal to the limit leaves max_entrants alone");
+    expect(none.raise(small.mem, 0).empty() && none.raise(nullptr, 24).empty(), "an unread car count or setup mode changes nothing");
+    GridSetup unset(0);
+    expect(none.raise(unset.mem, 24).empty() && unset.get() == 0, "a max_entrants of 0 is left alone");
+
+    GridSetup clamp(20);
+    era::GridLimit clamped;
+    line = clamped.raise(clamp.mem, 40);
+    expect(clamp.get() == 25 && line.find("clamped to 25 cars") != std::string::npos,
+           "a 40-car list clamps max_entrants to 25, one short of the 26-slot table, and says so");
+    clamped.restore();
+    expect(clamp.get() == 20, "the clamped limit is restored too");
+    GridSetup at_table(26);
+    expect(none.raise(at_table.mem, 40).empty() && at_table.get() == 26, "a limit already at the table size is not lowered or logged");
+
+    GridSetup moved(20);
+    era::GridLimit stale;
+    stale.raise(moved.mem, 24);
+    moved.set(22);
+    stale.restore();
+    expect(moved.get() == 22, "a limit someone else changed since the raise is not overwritten on put-back");
+
+    GridSetup career(20);
+    era::GridLimit box, cont;
+    box.raise(career.mem, 24);
+    expect(cont.raise(career.mem, 24).empty() && career.get() == 24, "the Continue path finds a limit a box press already raised");
+    cont.restore();
+    expect(career.get() == 24, "...and its put-back leaves the press's raise to the press's put-back");
+    box.restore();
+    expect(career.get() == 20, "the press's put-back restores it");
+
+    GridSetup resume(20);
+    era::GridLimit load;
+    line = load.raise(resume.mem, 25);
+    expect(resume.get() == 25 && line.find("clamped") == std::string::npos,
+           "the Continue path (no box press) raises max_entrants to a 25-car list's count");
+    line = load.raise(resume.mem, 26);
+    expect(resume.get() == 25 && line.find("clamped to 25 cars") != std::string::npos,
+           "a 26-car list is clamped to 25 so the safety car still fits");
+    line = load.raise(resume.mem, 24);
+    expect(resume.get() == 24 && line.find("20 -> 24") != std::string::npos, "a new raise first puts the earlier one back");
+    load.restore();
+    expect(resume.get() == 20, "the Continue path's put-back restores max_entrants to 20");
+}
+
 int main()
 {
     std::vector<era::Box> have;
@@ -591,7 +755,9 @@ int main()
            "djb2 of addon_select_pressed, select_pressed and addon_tiles");
 
     drs_swap_tests();
+    continue_tests();
     setup_guard_tests();
+    grid_limit_tests();
 
     printf("%s\n", fails ? "era_logic_test: FAILED" : "era_logic_test: all passed");
     return fails ? 1 : 0;

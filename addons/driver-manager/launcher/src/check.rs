@@ -1,6 +1,7 @@
 use crate::game::{GameData, List};
 use crate::model::{
     Driver, FIRST_DRIVER_ID, FIRST_PRESET_ID, LAST_DRIVER_ID, MAX_DRIVERS, Roster, STATS, TRAITS,
+    driver_id_usable,
 };
 
 pub const NAME_MAX: usize = 24;
@@ -202,11 +203,11 @@ pub fn check(d: &Driver, roster: &Roster, game: Option<&GameData>) -> Vec<Issue>
     }
 
     if !d.is_new() {
-        if !(FIRST_DRIVER_ID..=LAST_DRIVER_ID).contains(&d.stat_id) {
+        if !driver_id_usable(d.stat_id) {
             error(
                 &mut out,
                 format!(
-                    "Driver id {} is outside {FIRST_DRIVER_ID} to {LAST_DRIVER_ID}.",
+                    "Driver id {} is outside {FIRST_DRIVER_ID} to {LAST_DRIVER_ID}, or is 254 or an id ending in 255 in hex.",
                     d.stat_id
                 ),
             );

@@ -14,7 +14,7 @@ CXX=(zig c++ -target x86_64-linux-musl -std=c++23 -O1 -Wall -Wextra -Wno-nullabi
 pids=()
 "${PIN[@]}" "${CXX[@]}" -o "$OUT/lower_tool" content/lower_tool.cpp "${SRC[@]}" & pids+=($!)
 "${PIN[@]}" "${CXX[@]}" -o "$OUT/rows_tool" content/rows_tool.cpp ../src/core/apply/ids.cpp "${SRC[@]}" & pids+=($!)
-"${PIN[@]}" "${CXX[@]}" -o "$OUT/rows_test" content/rows_test.cpp ../src/core/apply/ids.cpp "${SRC[@]}" & pids+=($!)
+"${PIN[@]}" "${CXX[@]}" -o "$OUT/rows_test" content/rows_test.cpp ../src/core/apply/ids.cpp ../src/core/apply/scheduler.cpp "${SRC[@]}" & pids+=($!)
 "${PIN[@]}" "${CXX[@]}" -o "$OUT/wear_test" content/wear_test.cpp ../src/core/apply/ids.cpp "${SRC[@]}" & pids+=($!)
 "${PIN[@]}" zig c++ -target x86_64-windows-gnu -std=c++23 -O2 -Wall -Wextra -I../../packages/sdk/include -I../include \
     -c ../src/core/apply/content/appliers.cpp -o "$OUT/appliers.windows.o" & pids+=($!)

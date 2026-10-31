@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cstring>
 #include <functional>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -145,14 +146,29 @@ void era_session_trace(const char *state, int to);
 void era_session_unloaded(const char *state, int to);
 std::vector<CoreMixins> tt_guard_mixins();
 void tt_guard_commit();
+std::vector<CoreMixins> career_alias_mixins();
+void career_alias_commit();
 std::vector<CoreMixins> car_category_mixins();
 void car_category_commit();
 std::vector<CoreMixins> save_splice_mixins();
 void save_splice_commit();
-// Test save sandbox (save_sandbox.cpp): only under `swofty test` with a run token.
+// The text of swofty/settings.json as the launcher wrote it (empty when absent), and the running build's
+// distribution as the binding set names it: "steam", "ea" or "unknown".
+const std::string &settings_json_text();
+std::string build_distribution();
+// Career saves (career_saves.cpp): the career index and per-career addon data.
+namespace career_saves {
+struct SlotRead;
+}
+void career_saves_start();
+void career_saves_saving();
+void career_saves_saved();
+void career_saves_listed(const std::vector<career_saves::SlotRead> &slots, bool complete, bool at_load);
+// Save sandbox (save_sandbox.cpp): under `swofty test` with a run token, or with the launcher's saves.
 std::vector<CoreMixins> save_sandbox_mixins();
 void save_sandbox_commit();
 bool save_sandbox_test_mode();
+bool save_sandbox_launcher_mode();
 bool save_sandbox_armed();
 // FileWrite calls the sandbox has served: a save that reached the save device.
 uint32_t save_sandbox_writes();
@@ -184,6 +200,16 @@ std::vector<CoreMixins> ers_newlap_mixins();
 void ers_newlap_commit();
 std::vector<CoreMixins> ers_mode_mixins();
 void ers_mode_commit();
+std::vector<CoreMixins> car_levers_mixins();
+void car_levers_commit();
+std::vector<CoreMixins> standings_guard_mixins();
+void standings_guard_commit();
+std::vector<CoreMixins> tyre_slots_mixins();
+void tyre_slots_commit();
+std::vector<CoreMixins> garage_crew_mixins();
+std::vector<CoreMixins> pit_slots_mixins();
+void garage_crew_commit();
+void pit_slots_commit();
 std::vector<CoreMixins> track_acclim_mixins();
 void track_acclim_commit();
 std::vector<CoreMixins> audio_queue_mixins();
@@ -213,6 +239,7 @@ bool netplay_popup(const char *id, void *fn, void *ctx);
 void netplay_home_vm(void *vm);
 void netplay_tick();
 void net_trace_setup();
+void udp_ids_setup();
 // The test agent (native/src/core/testagent/agent.cpp): armed only by `swofty test`'s run token.
 void testagent_setup();
 void testagent_tick();

@@ -138,6 +138,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
               { text: "Swofty's addons", link: "/using/swofty-addons" },
               { text: "Simplified Importer", link: "/using/mods" },
               { text: "Profiles", link: "/using/profiles" },
+              { text: "Saves", link: "/using/career-saves" },
               { text: "In-game addon settings", link: "/using/swofty-mod" },
               { text: "Steam and EA app copies", link: "/using/game-copies" },
               { text: "Playing in VR", link: "/using/vr" },
@@ -157,11 +158,14 @@ export default defineConfigWithTheme<DocsThemeConfig>({
               { text: "Launching the game", link: "/reference/launch" },
               { text: "Offline play", link: "/reference/safety" },
               { text: "Backups and recovery", link: "/reference/restore" },
+              { text: "Saves and the career vault", link: "/reference/saves" },
             ],
           },
           {
             text: "Releases",
             items: [
+              { text: "1.7.0", link: "/releases/1.7.0" },
+              { text: "1.6.12", link: "/releases/1.6.12" },
               { text: "1.6.11", link: "/releases/1.6.11" },
               { text: "1.6.10", link: "/releases/1.6.10" },
               { text: "1.6.9", link: "/releases/1.6.9" },

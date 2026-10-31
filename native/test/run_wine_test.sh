@@ -13,8 +13,8 @@ export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../
 PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 rm -rf "$OUT/game" "$OUT/stages" "$OUT/packed" "$OUT/filled"
 mkdir -p "$OUT/game" "$OUT/stages" "$OUT/packed" "$OUT/filled"
-"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -o "$OUT/game/F1_25.exe" fake_game.c -lversion -luser32 &
-"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -DPACKED_TEST -o "$OUT/packed/F1_25.exe" fake_game.c -lversion -luser32 &
+"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -o "$OUT/game/F1_25.exe" fake_game.c -lversion -luser32 -lws2_32 &
+"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -DPACKED_TEST -o "$OUT/packed/F1_25.exe" fake_game.c -lversion -luser32 -lws2_32 &
 "${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -o "$OUT/filled/F1_25.exe" fake_filled_iat.c -luser32 &
 cp -r ../dist/. "$OUT/game/"
 cp -r ../dist/. "$OUT/filled/"
@@ -106,7 +106,7 @@ count() {
     if [[ $n == "$2" ]]; then echo "ok  : $1"; else echo "FAIL: $1 (logged $n times, want $2)"; status=1; fi
 }
 CACHE=$OUT/game/swofty/cache/scan-cache.tsv
-for mode in trigger fallback vm settings settings_local session state gamelog_off assets assets_ro nearfull nopool cache_ro; do
+for mode in trigger fallback vm settings settings_local session state gamelog_off assets assets_ro nearfull nopool cache_ro udp udp_off; do
     echo "==== $mode"
     if [[ $mode == cache_ro ]]; then
         rm -rf "$OUT/game/swofty/cache" "$WINEPREFIX"/drive_c/users/*/AppData/Local/Swofty/cache/game
@@ -129,6 +129,9 @@ EOF
     resolve=
     [[ $mode == gamelog_off ]] && resolve=scan
     [[ $mode == session ]] && cp session.test.json "$OUT/game/swofty/session.json"
+    [[ $mode == udp* ]] && cp udp_ids.test.json "$OUT/game/swofty/udp_ids.json"
+    udp_ids=
+    [[ $mode == udp_off ]] && udp_ids=0
     req=
     [[ $mode == settings ]] && req=$OUT/state/requests/wine-test.json
     [[ $mode == settings_local ]] && req=$OUT/game/swofty/requests.json
@@ -186,7 +189,7 @@ EOF
     gl_channels=
     [[ $mode == trigger ]] && gl_rate=0
     [[ $mode == trigger || $mode == vm ]] && gl_channels=default,verbose
-    SWOFTY_RESOLVE=$resolve SWOFTY_TEST_ASSETS=$([[ $mode == assets* ]] && echo 1) SWOFTY_GAME_LOG=$gl_level SWOFTY_GAME_LOG_RATE=$gl_rate SWOFTY_GAME_LOG_CHANNELS=$gl_channels SWOFTY_TEST_REQUESTS=${req:+Z:${req//\//\\}} SWOFTY_TEST_ITEMS=$ITEMS \
+    SWOFTY_UDP_STOCK_IDS=$udp_ids SWOFTY_RESOLVE=$resolve SWOFTY_TEST_ASSETS=$([[ $mode == assets* ]] && echo 1) SWOFTY_GAME_LOG=$gl_level SWOFTY_GAME_LOG_RATE=$gl_rate SWOFTY_GAME_LOG_CHANNELS=$gl_channels SWOFTY_TEST_REQUESTS=${req:+Z:${req//\//\\}} SWOFTY_TEST_ITEMS=$ITEMS \
         "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" $mode || status=1
     if [[ $mode == assets_ro ]]; then
         GAME_ADDON=$OUT/game/swofty/addons/example.sample-mod
@@ -196,10 +199,19 @@ EOF
         chmod -R u+w "$GAME_ADDON"
     fi
     [[ $mode == cache_ro ]] && chmod u+w "$OUT/game/swofty/cache"
-    rm -rf "$OUT/game/swofty/session.json" "$OUT/game/swofty/settings.json" "$OUT/game/swofty/assets.json" \
+    rm -rf "$OUT/game/swofty/udp_ids.json" "$OUT/game/swofty/session.json" "$OUT/game/swofty/settings.json" "$OUT/game/swofty/assets.json" \
         "$OUT/game/swofty/addons/example.sample-mod"
     echo "---- $LOG ($mode)"
     grep -v '  section ' "$LOG"
+    if [[ $mode == udp ]]; then
+        once "udp: the map is read and sendto is hooked" '\[udp\] stock ids on: 1 team id\(s\), 1 driver id\(s\), 1 sendto slot\(s\)'
+        once "udp: the launcher's mapping lines are logged" '\[udp\] stock ids: team 507 -> 4 \(forceindia\); driver 197 -> 255 \(no stock driver\)'
+        once "udp: the first rewritten packet is logged once" '\[udp\] first telemetry packet rewritten: format 2025, packet 4: driver 197 -> 255, team 251 -> 4'
+    fi
+    if [[ $mode == udp_off ]]; then
+        once "udp: SWOFTY_UDP_STOCK_IDS=0 is logged" '\[udp\] stock ids off \(SWOFTY_UDP_STOCK_IDS=0\)'
+        count "udp: nothing is hooked or rewritten when off" 0 '\[udp\] (stock ids on|first telemetry)'
+    fi
     if [[ $mode == trigger ]]; then
         check "addons: core folder lists swofty_core" 'addons: swofty[\]addons[\]core: 1 dll\(s\)[[:space:]]*$'
         check "addons: legacy core folder still loads" 'addons: swofty[\]mods[\]core: 1 dll\(s\) \(legacy folder\)'
@@ -328,6 +340,13 @@ EOF
         once "ers mode: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(ers mode guard\)': 1 mixin"
         once "ers mode: the guard is armed" '\[ers\] mode guard armed'
         count "ers mode: each car whose ERS mode is out of range is set to Medium and logged once" 2 '\[ers\] car (8: ERS mode -2141928108|9: ERS mode 4) out of range; set to 1 \(Medium\)'
+        once "standings: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(standings track guard\)': 1 mixin"
+        once "standings: the guard is armed" '\[career\] standings guard armed'
+        once "standings: a round whose track is off is skipped and logged once" '\[career\] standings: round 7 has no track data \(track 200 is off\); skipped'
+        once "standings: a round whose weekend can't be read is skipped and logged once" '\[career\] standings: round 10 has no track data; skipped'
+        once "garage crew: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(garage crew guard\)': 1 mixin"
+        once "garage crew: the guard is armed" '\[garage\] crew guard armed'
+        count "garage crew: each car dropped from a garage's crew vector is logged once" 4 '\[garage\] garage [5-7]: team 1[2-4] car #4[0-9] \(driver 3[0-9][0-9]\) is the (third|extra) car of its garage'
         count "ers: each participant without a vehicle is skipped and logged" 4 '\[ers\] vehicle_newlap for vehicle (9|24): participant [01] of 4 has no vehicle'
         once "acclim: the track acclimatisation guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(track acclimatisation guard\)': 1 mixin"
         once "acclim: the track acclimatisation guard is armed" '\[acclim\] track acclimatisation guard armed'
@@ -360,6 +379,7 @@ EOF
         once "gamelog: Solution-style error from Ne_Format_String" '\[game\] UI_ROUTE \(error\): Failed to find screen swofty_settings\. Solution: Make sure the the screen is loaded into the runtime[[:space:]]*$'
         once "gamelog: later route error" '\[game\] UI_ROUTE \(error\): No screen called late_screen exists[[:space:]]*$'
         count "gamelog: ordinary formats are not logged" 0 'button_7'
+        once "gamelog: a %s into reserved memory logs the raw format" '\[game\] TEST_WARN \(warn\): \(unformattable\) fake replay record %s[[:space:]]*$'
         count "gamelog: rate limit off (SWOFTY_GAME_LOG_RATE=0)" 0 'dropped by the rate limit'
         ;;
     fallback)
@@ -662,6 +682,58 @@ for guard in on off; do
         check "ers_mode off: the step faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Car_Powertrain_Step\+0x20'
         parse_report "Car_Powertrain_Step+0x20" "" || status=1
         [[ $code != 0 ]] && echo "ok  : ers_mode off: process ended with $code" || { echo "FAIL: ers_mode off: process exited 0"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== standings ($guard)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_STANDINGS_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" standings >"$OUT/standings.out" 2>&1 || code=$?
+    grep -E '\[career\] standings|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    if [[ $guard == on ]]; then
+        once "standings on: the round is skipped and logged" '\[career\] standings: round 5 has no track data \(track 200 is off\); skipped'
+        grep -q 'standings: the round returned 0\b' "$OUT/standings.out" && echo "ok  : standings on: the round took the game's no-record path" ||
+            { echo "FAIL: standings on: the round did not take the game's no-record path"; status=1; }
+        count "standings on: no unhandled fault" 0 '\[crash\] unhandled '
+        compgen -G "$SW/crash-*.txt" >/dev/null && { echo "FAIL: standings on: a crash report was written"; status=1; } ||
+            echo "ok  : standings on: no crash report"
+    else
+        once "standings off: the guard is off" '\[career\] standings guard off \(SWOFTY_STANDINGS_GUARD=0\)'
+        check "standings off: the round faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Career_Standings_BuildWeekendNode\+0x28'
+        parse_report "Career_Standings_BuildWeekendNode+0x28" "" || status=1
+        [[ $code != 0 ]] && echo "ok  : standings off: process ended with $code" || { echo "FAIL: standings off: process exited 0"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== garage_crew ($guard)"
+    code=0
+    SWOFTY_GARAGE_CREW_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" garage_crew >"$OUT/garage_crew.out" 2>&1 || code=$?
+    grep -E '\[garage\]' "$LOG" || true
+    if [[ $guard == on ]]; then
+        [[ $code == 0 ]] && echo "ok  : garage_crew on: the test run finished" || { echo "FAIL: garage_crew on: exit $code"; status=1; }
+        grep -q 'FAIL' "$OUT/garage_crew.out" && { echo "FAIL: garage_crew on: a check failed"; grep FAIL "$OUT/garage_crew.out"; status=1; } || echo "ok  : garage_crew on: every check passed"
+    else
+        once "garage_crew off: the guard is off" '\[garage\] crew guard off \(SWOFTY_GARAGE_CREW_GUARD=0\)'
+        grep -q 'garage 5 with slots 0,1,2 keeps 3 entries' "$OUT/garage_crew.out" && echo "ok  : garage_crew off: the vector keeps the third car" ||
+            { echo "FAIL: garage_crew off: the vector lost the third car"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== pit_slots ($guard)"
+    code=0
+    SWOFTY_PIT_SLOT_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" pit_slots >"$OUT/pit_slots.out" 2>&1 || code=$?
+    grep -E '\[pit\]' "$LOG" || true
+    if [[ $guard == on ]]; then
+        [[ $code == 0 ]] && echo "ok  : pit_slots on: the test run finished" || { echo "FAIL: pit_slots on: exit $code"; status=1; }
+        grep -q 'FAIL' "$OUT/pit_slots.out" && { echo "FAIL: pit_slots on: a check failed"; grep FAIL "$OUT/pit_slots.out"; status=1; } || echo "ok  : pit_slots on: every check passed"
+        check "pit_slots on: the guard is armed" '\[pit\] slot guard armed'
+        check "pit_slots on: a listed car without a slot is logged" '\[pit\] guard: vehicle [0-9]+ has no race slot, a listed car .*the entry is skipped'
+        check "pit_slots on: an own car without a slot is logged" '\[pit\] guard: vehicle [0-9]+ has no race slot, its own car .*the check answers no'
+    else
+        once "pit_slots off: the guard is off" '\[pit\] slot guard off \(SWOFTY_PIT_SLOT_GUARD=0\)'
+        grep -q 'FAIL' "$OUT/pit_slots.out" && { echo "FAIL: pit_slots off: a check failed"; grep FAIL "$OUT/pit_slots.out"; status=1; } || echo "ok  : pit_slots off: the unguarded cases pass"
+        grep -q 'guard off, the null slot cases are not run' "$OUT/pit_slots.out" && echo "ok  : pit_slots off: the null slot cases are left out" ||
+            { echo "FAIL: pit_slots off: the test did not reach its end"; status=1; }
     fi
 done
 echo "==== ntpage"

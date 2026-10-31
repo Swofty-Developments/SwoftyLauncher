@@ -291,12 +291,10 @@ SWOFTY_ON_LOAD
             c.chosen = f1990::borrow_unused(c.car, c.wanted_slot);
     });
 
-    // fire the system's own event when a car leaves its box on a new set
+    // fire the system's own event when a car makes a stop
     events::on<sessions::events::PitStop>().in(f1990::scope).after([](const sessions::events::PitStop &p, const events::Context &) {
-        if (p.tyres_changed) {
-            f1990::events::CompoundFitted e{ sizeof e, 1, p.car, f1990::current(p.car) };
-            events::fire(e);
-        }
+        f1990::events::CompoundFitted e{ sizeof e, 1, p.car, f1990::current(p.car) };
+        events::fire(e);
     });
 }
 ```
