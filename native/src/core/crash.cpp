@@ -33,11 +33,6 @@ void netplay_exit();
 // reporting thread waits, so a stack overflow or a corrupt stack still gets one. An exit before the
 // window stage logs its caller stack whatever its code; a clean one there still gets no report.
 
-namespace crash_unwind {
-bool unwinding_here();
-bool safe_unwind(CONTEXT *ctx, DWORD64 image_base, PRUNTIME_FUNCTION fn);
-}
-
 namespace {
 
 constexpr LONG MAX_REPORTS = 16;
@@ -492,8 +487,9 @@ template <class F> int walk(CONTEXT ctx, uintptr_t lo, uintptr_t hi, int max, F 
         DWORD64 ib = 0, before = ctx.Rsp;
         auto f = RtlLookupFunctionEntry(ctx.Rip, &ib, nullptr);
         if (f) {
-            if (!crash_unwind::safe_unwind(&ctx, ib, f))
-                break;
+            void *hd;
+            DWORD64 ef;
+            RtlVirtualUnwind(UNW_FLAG_NHANDLER, ib, ctx.Rip, f, &ctx, &hd, &ef, nullptr);
         } else {
             if (!readable(ctx.Rsp, 8))
                 break;
@@ -521,8 +517,9 @@ void backtrace(CONTEXT ctx, bool skip_self)
         DWORD64 ib = 0;
         auto f = RtlLookupFunctionEntry(ctx.Rip, &ib, nullptr);
         if (f) {
-            if (!crash_unwind::safe_unwind(&ctx, ib, f))
-                break;
+            void *hd;
+            DWORD64 ef;
+            RtlVirtualUnwind(UNW_FLAG_NHANDLER, ib, ctx.Rip, f, &ctx, &hd, &ef, nullptr);
         } else {
             if (!readable(ctx.Rsp, 8))
                 break;
@@ -684,8 +681,6 @@ bool writer_fault(EXCEPTION_POINTERS *e, bool breakpoint);
 
 LONG CALLBACK veh(EXCEPTION_POINTERS *e)
 {
-    if (crash_unwind::unwinding_here())
-        return EXCEPTION_CONTINUE_SEARCH;
     DWORD code = e->ExceptionRecord->ExceptionCode;
     if (writer_fault(e, false))
         return EXCEPTION_CONTINUE_EXECUTION;
