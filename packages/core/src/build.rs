@@ -268,15 +268,29 @@ fn render_file(
     p: &Profile,
     hasher: &mut Sha256,
 ) -> Result<OpFile> {
-    let json = |source| Error::Json {
+    let doc = render_doc(path, m, p)?;
+    hasher.update(serde_json::to_vec(&doc).expect("serialisable"));
+    OpFile::from_value(doc, kind).map_err(json_at(path))
+}
+
+/// One of an addon's op files as a build reads it, with its option
+/// templating filled from the profile's settings.
+pub fn read_op_file(path: &Path, kind: FileKind, m: &AddonManifest, p: &Profile) -> Result<OpFile> {
+    OpFile::from_value(render_doc(path, m, p)?, kind).map_err(json_at(path))
+}
+
+fn render_doc(path: &Path, m: &AddonManifest, p: &Profile) -> Result<serde_json::Value> {
+    let raw = std::fs::read(path).map_err(io_err(path))?;
+    let mut doc = serde_json::from_slice(&raw).map_err(json_at(path))?;
+    render_ops(&mut doc, m, p)?;
+    Ok(doc)
+}
+
+fn json_at(path: &Path) -> impl FnOnce(serde_json::Error) -> Error + '_ {
+    move |source| Error::Json {
         path: path.to_owned(),
         source,
-    };
-    let raw = std::fs::read(path).map_err(io_err(path))?;
-    let mut doc: serde_json::Value = serde_json::from_slice(&raw).map_err(json)?;
-    render_ops(&mut doc, m, p)?;
-    hasher.update(serde_json::to_vec(&doc).expect("serialisable"));
-    OpFile::from_value(doc, kind).map_err(json)
+    }
 }
 
 /// A DB Editor package's ops, generated from its `dbedit.json` rather than
@@ -6240,6 +6254,49 @@ mod tests {
             let plan: serde_json::Value = crate::read_json(&built.overlay.join(PLAN_FILE)).unwrap();
             assert_eq!(plan["tracks"], serde_json::json!([]), "{pass}");
         }
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn an_op_file_is_read_with_its_option_templating_filled_from_the_profile() {
+        let root = std::env::temp_dir().join(format!("swofty-read-op-file-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        std::fs::create_dir_all(&root).unwrap();
+        let m = AddonManifest::parse(
+            r#"{
+              "schema_version": 1, "id": "a.dnf", "name": "DNF", "version": "1.0.0", "author": "a",
+              "compat": { "game": "f1_25" },
+              "options": [
+                { "id": "failures", "type": "toggle", "default": false, "binds": "db" },
+                { "id": "chance", "type": "slider", "min": 0, "max": 10, "step": 1, "default": 2, "binds": "db" }
+              ],
+              "operations": { "database": ["db/dnf.json"] }
+            }"#,
+        )
+        .unwrap();
+        let path = root.join("dnf.json");
+        std::fs::write(
+            &path,
+            r#"{"schema_version": 1, "ops": [
+              {"op": "set", "select": "t.r", "field": "chance", "value": "{{chance}}"},
+              {"op": "set", "select": "t.r", "field": "failures", "value": "1", "when": {"failures": true}}
+            ]}"#,
+        )
+        .unwrap();
+        let raw = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+        assert!(OpFile::from_value(raw, FileKind::Database).is_err());
+        let mut p = Profile::new("x");
+        let file = read_op_file(&path, FileKind::Database, &m, &p).unwrap();
+        assert_eq!(file.ops.len(), 1);
+        p.set_option(&m, "failures", serde_json::json!(true)).unwrap();
+        p.set_option(&m, "chance", serde_json::json!(7)).unwrap();
+        let file = read_op_file(&path, FileKind::Database, &m, &p).unwrap();
+        assert_eq!(file.ops.len(), 2);
+        assert!(
+            matches!(&file.ops[0], AssetOp::Db(crate::ops::DbOp::Set { value, .. }) if value.as_deref() == Some("7"))
+        );
+        std::fs::write(&path, r#"{"ops": [{"op": "set", "value": "{{missing}}"}]}"#).unwrap();
+        assert!(read_op_file(&path, FileKind::Database, &m, &p).is_err());
         std::fs::remove_dir_all(&root).ok();
     }
 }
