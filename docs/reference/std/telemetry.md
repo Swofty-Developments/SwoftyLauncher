@@ -208,7 +208,7 @@ The game's own UDP telemetry (formats 2024, 2025 and 2026) reports the stat id o
 ```text
 [udp] stock ids on: 2 team id(s), 2 driver id(s), 1 sendto slot(s)
 [udp] stock ids: team 507 -> 4 (forceindia); driver 197 -> 255 (no stock driver)
-[udp] first telemetry packet rewritten: format 2025, packet 4: driver 197 -> 255, team 251 -> 4
+[udp] first telemetry packet rewritten: format 2025, packet 4, 2025 model: driver 197 -> 255, team 251 -> 4
 ```
 
 The rule:
