@@ -9,7 +9,8 @@
 #include <swofty/systems/forward.hpp>
 
 // Cars: vehicle rows and their packages (boot), each car's handling file (applied as the car is built at
-// every session load; the 1.6.0 core stores handling records and applies nothing from them). Handling parts are named after the handling
+// every session load). Handling records written in data files are applied by the launcher at build (experimental,
+// 1.6.13): see Handling. Handling parts are named after the handling
 // file's sections and their fields after its keys, in snake_case (FrontCoeffLiftMultiplier ->
 // front_coeff_lift_multiplier); a key this header doesn't name is kept in the part's `extra`. cars::live
 // is the cars on track, read and written through the core's car operations (SwoftyCoreCarOps): cars()
@@ -52,7 +53,7 @@ struct AiSlot {
 SWOFTY_RECORD(AiSlot, track_pack, asset_filename)
 
 struct Vehicle {
-    static constexpr Version version{1, 0};
+    static constexpr Version version{1, 1};
     Ref<Package> package;
     std::string label;
     Ref<Vehicle> donor;
@@ -66,10 +67,13 @@ struct Vehicle {
     int performance_tier = 0;
     float tyre_wear_scale = 1.0f;
     StatId stat_id = StatId::automatic;
+    std::optional<bool> drs_capable;
+    Ref<power::Supplier> engine;
+    std::string tyre_group;
     json::Value extra;
 };
 SWOFTY_RECORD(Vehicle, package, label, donor, model, engine_sound, livery, handling, power_unit, ai, performance_class,
-              performance_tier, tyre_wear_scale, stat_id)
+              performance_tier, tyre_wear_scale, stat_id, drs_capable, engine, tyre_group)
 
 struct WingDamage {
     float speed_threshold = 3, damage_scale = 0.0001f, chassis_damage_multiple = 0.3f, side_detach_scale = 0.5f,
@@ -88,18 +92,33 @@ SWOFTY_RECORD(SuspensionDamage, speed_threshold, front_damage_scale, rear_damage
 
 struct Chassis {
     float mass = 0, moi_x = 0, moi_y = 0, moi_z = 0, com_y = 0, com_z = 0;
+    float ffb_scale = 1;
+    std::string tyre_physics_group;
     json::Value extra;
 };
-SWOFTY_RECORD(Chassis, mass, moi_x, moi_y, moi_z, com_y, com_z)
+SWOFTY_RECORD(Chassis, mass, moi_x, moi_y, moi_z, com_y, com_z, ffb_scale, tyre_physics_group)
+
+struct Slipstream {
+    float drag = 0.8f, front_wing = 0.76f, rear_wing = 0.82f, lift = 0.91f, car_width = 1.5f;
+};
+SWOFTY_RECORD(Slipstream, drag, front_wing, rear_wing, lift, car_width)
+
+struct Drs {
+    bool hardware = true;
+    float angle = 0, open_close_speed = 0;
+};
+SWOFTY_RECORD(Drs, hardware, angle, open_close_speed)
 
 struct F1Aero {
     float front_coeff_lift_multiplier = 1, rear_coeff_lift_multiplier = 1, body_drag_coeff_min = 0,
           body_drag_coeff_max = 0;
     Curve front_coeff_lift_vs_ride_height, rear_coeff_lift_vs_ride_height;
+    Slipstream slipstream;
+    Drs drs;
     json::Value extra;
 };
 SWOFTY_RECORD(F1Aero, front_coeff_lift_multiplier, rear_coeff_lift_multiplier, body_drag_coeff_min, body_drag_coeff_max,
-              front_coeff_lift_vs_ride_height, rear_coeff_lift_vs_ride_height)
+              front_coeff_lift_vs_ride_height, rear_coeff_lift_vs_ride_height, slipstream, drs)
 
 struct CoreAero {
     bool slip_streaming = true, slip_stream_while_braking = false;
@@ -144,11 +163,29 @@ struct Ers {
 SWOFTY_RECORD(Ers, max_deploy_power, energy_store_capacity, exhaust_power_coefficient, overtake_power_efficiency,
               max_brake_torque_mguk, modes)
 
+struct Range {
+    float min = 0, max = 0;
+};
+SWOFTY_RECORD(Range, min, max)
+
 struct Tuning {
     float differential_on_throttle_multiple_min = 0, brake_bias_max = 0;
+    Range chassis_com_z, engine_braking, differential_on_throttle_multiple, differential_off_throttle_multiple,
+        differential_mid_corner_multiple, differential_high_speed_kph, differential_preload, front_suspension_camber,
+        rear_suspension_camber, front_suspension_toe, rear_suspension_toe, front_suspension_rest_length,
+        rear_suspension_rest_length, front_ride_height, rear_ride_height, front_suspension_spring_constant,
+        rear_suspension_spring_constant, front_suspension_third_spring, rear_suspension_third_spring,
+        front_suspension_anti_roll_bar, rear_suspension_anti_roll_bar, brake_pressure, brake_migration,
+        front_tyre_pressure, rear_tyre_pressure;
     json::Value extra;
 };
-SWOFTY_RECORD(Tuning, differential_on_throttle_multiple_min, brake_bias_max)
+SWOFTY_RECORD(Tuning, differential_on_throttle_multiple_min, brake_bias_max, chassis_com_z, engine_braking,
+              differential_on_throttle_multiple, differential_off_throttle_multiple, differential_mid_corner_multiple,
+              differential_high_speed_kph, differential_preload, front_suspension_camber, rear_suspension_camber,
+              front_suspension_toe, rear_suspension_toe, front_suspension_rest_length, rear_suspension_rest_length,
+              front_ride_height, rear_ride_height, front_suspension_spring_constant, rear_suspension_spring_constant,
+              front_suspension_third_spring, rear_suspension_third_spring, front_suspension_anti_roll_bar,
+              rear_suspension_anti_roll_bar, brake_pressure, brake_migration, front_tyre_pressure, rear_tyre_pressure)
 
 struct Plank {
     float offset_x = 0, offset_y = 0, offset_z = 0, extent_x = 0, extent_y = 0, extent_z = 0;
@@ -160,6 +197,81 @@ struct Section {
     json::Value extra;
 };
 SWOFTY_RECORD(Section)
+
+struct GearBox {
+    float final_drive_ratio = 0, gear_ratio_reverse = 0;
+    std::vector<float> ratios;
+    std::vector<float> up_speed_multiple, down_speed_multiple;
+    float upshift_clutch_time = 0, upshift_gear_delay = 0, time_off_throttle_gear_up = 0;
+    float downshift_clutch_time = 0, downshift_gear_delay = 0, time_on_throttle_gear_down = 0;
+    float max_clutch_torque = 0;
+    bool allow_gear_ratio_tuning = false, allow_h_pattern = false;
+    json::Value extra;
+};
+SWOFTY_RECORD(GearBox, final_drive_ratio, gear_ratio_reverse, ratios, up_speed_multiple, down_speed_multiple,
+              upshift_clutch_time, upshift_gear_delay, time_off_throttle_gear_up, downshift_clutch_time,
+              downshift_gear_delay, time_on_throttle_gear_down, max_clutch_torque, allow_gear_ratio_tuning,
+              allow_h_pattern)
+
+enum class TurboMode { off, lag_spoof, full };
+SWOFTY_ENUM(TurboMode, off, lag_spoof, full)
+
+struct Turbo {
+    TurboMode mode = TurboMode::full;
+    float max_boost = 0;
+    json::Value extra;
+};
+SWOFTY_RECORD(Turbo, mode, max_boost)
+
+struct Axle {
+    float rest_x = 0, rest_z = 0, rest_length = 0, min_height = 0, max_height = 0, bump_stop_height = 0,
+          ride_height_offset = 0;
+    float spring_constant = 0, third_spring_constant = 0, anti_roll_constant = 0, slow_bump_damping = 0,
+          fast_bump_damping = 0, slow_rebound_damping = 0, fast_rebound_damping = 0;
+    float bump_stop_rising_spring = 0, bump_stop_rising_damping = 0;
+    float grip_multiplier = 1, tyre_radius = 0;
+    json::Value extra;
+};
+SWOFTY_RECORD(Axle, rest_x, rest_z, rest_length, min_height, max_height, bump_stop_height, ride_height_offset,
+              spring_constant, third_spring_constant, anti_roll_constant, slow_bump_damping, fast_bump_damping,
+              slow_rebound_damping, fast_rebound_damping, bump_stop_rising_spring, bump_stop_rising_damping,
+              grip_multiplier, tyre_radius)
+
+struct Suspension {
+    Axle front, rear;
+    bool use_model_positions = false;
+    json::Value extra;
+};
+SWOFTY_RECORD(Suspension, front, rear, use_model_positions)
+
+struct BrakeEcu {
+    float brake_front = 0, brake_rear = 0, brake_front_backwards = 0, brake_rear_backwards = 0,
+          brake_front_forwards = 0, brake_rear_forwards = 0;
+    float brake_migration_torque = 0, brake_migration_torque_ai = 0, brake_pressure = 0;
+    json::Value extra;
+};
+SWOFTY_RECORD(BrakeEcu, brake_front, brake_rear, brake_front_backwards, brake_rear_backwards, brake_front_forwards,
+              brake_rear_forwards, brake_migration_torque, brake_migration_torque_ai, brake_pressure)
+
+enum class DriveType { rwd, fwd, awd };
+SWOFTY_ENUM(DriveType, rwd, fwd, awd)
+
+struct Differential {
+    DriveType drive_type = DriveType::rwd;
+    float rear_power_proportion = 100, diff_rear_max_locking_torque = 0;
+    json::Value extra;
+};
+SWOFTY_RECORD(Differential, drive_type, rear_power_proportion, diff_rear_max_locking_torque)
+
+enum class EditOp { set, scale, add };
+SWOFTY_ENUM(EditOp, set, scale, add)
+
+struct Edit {
+    std::string path;
+    EditOp op = EditOp::set;
+    float value = 0;
+};
+SWOFTY_RECORD(Edit, path, op, value)
 
 struct UpgradeChange {
     std::string section, key;
@@ -186,7 +298,7 @@ struct RadUpgrade {
 SWOFTY_RECORD(RadUpgrade, name, changes)
 
 struct Handling {
-    static constexpr Version version{1, 0};
+    static constexpr Version version{1, 1};
     Ref<Handling> from;
     Path vtf;
     Class cls = Class::f1;
@@ -200,19 +312,21 @@ struct Handling {
     Section body_damage;
     Section tyres;
     Engine engine;
-    Section gearbox;
+    GearBox gearbox;
     FuelTank fuel_tank;
     FuelEcu fuel_ecu;
-    Section brake_ecu;
+    BrakeEcu brake_ecu;
     Section steering;
-    Section differential;
-    Section suspension;
+    Differential differential;
+    Suspension suspension;
     Tuning tuning;
     Section assists;
-    Section turbo;
-    Ers ers;
+    Turbo turbo;
+    std::optional<Ers> ers = Ers{};
     Plank plank;
     std::vector<RadUpgrade> rad_upgrades;
+    std::vector<Edit> edits;
+    std::vector<std::string> remove;
     json::Value extra;
 
     RadUpgrade &upgrade(std::string_view name)
@@ -226,7 +340,7 @@ struct Handling {
 };
 SWOFTY_RECORD(Handling, from, vtf, cls, damage_scale, chassis, f1_aero, core_aero, wing_damage, suspension_damage,
               tyre_damage, body_damage, tyres, engine, gearbox, fuel_tank, fuel_ecu, brake_ecu, steering, differential,
-              suspension, tuning, assists, turbo, ers, plank, rad_upgrades)
+              suspension, tuning, assists, turbo, ers, plank, rad_upgrades, edits, remove)
 
 struct Part {
     std::string node;
@@ -234,6 +348,12 @@ struct Part {
     bool debris = true;
 };
 SWOFTY_RECORD(Part, node, detach_at, debris)
+
+inline float front_weight(const Handling &h)
+{
+    float wheelbase = h.suspension.front.rest_z - h.suspension.rear.rest_z;
+    return wheelbase > 0 ? (-h.chassis.com_z - h.suspension.rear.rest_z) / wheelbase : 0;
+}
 
 inline Registry<Vehicle> vehicles{"vehicle", {.applies = Applies::boot}};
 inline Registry<Package> packages{"vehicle.package", {.applies = Applies::boot}};
