@@ -77050,6 +77050,31 @@
      "how": "static"
     }
    ],
+   "used_by": []
+  },
+  {
+   "id": "ai.table_grip_input",
+   "section": ".xtls",
+   "pattern": "C5 FA 10 48 24 C5 FA 10 50 74 8B 80 84 00 00 00",
+   "match": "0x14063ebee",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14063ebf3",
+   "kind": "mid",
+   "expect": "C5 FA 10 50 74 8B 80 84 00 00 00",
+   "names": [
+    "site_Ai_TableGripInput"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "racepace",
+     "how": "static"
+    }
+   ],
    "used_by": [
     "addons/f1-1990/native/src/ai_quali.cpp"
    ]
