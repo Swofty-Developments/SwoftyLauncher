@@ -150,11 +150,11 @@ const SCHEMAS: &[(&str, &str)] = &[
     ),
     (
         "vehicle",
-        include_str!("../../../sdk/std/registries/vehicle/1.0.json"),
+        include_str!("../../../sdk/std/registries/vehicle/1.1.json"),
     ),
     (
         "vehicle.handling",
-        include_str!("../../../sdk/std/registries/vehicle.handling/1.0.json"),
+        include_str!("../../../sdk/std/registries/vehicle.handling/1.1.json"),
     ),
     (
         "vehicle.package",

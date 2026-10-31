@@ -62,8 +62,8 @@ pub const CORE_REGISTRIES: &[(&str, &str)] = &[
     ("track.data", "1.0"),
     ("track.per_package", "1.0"),
     ("track.venue", "1.0"),
-    ("vehicle", "1.0"),
-    ("vehicle.handling", "1.0"),
+    ("vehicle", "1.1"),
+    ("vehicle.handling", "1.1"),
     ("vehicle.package", "1.0"),
     ("wearable.season_set", "1.0"),
 ];
