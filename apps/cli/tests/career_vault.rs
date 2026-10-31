@@ -18,13 +18,17 @@ fn root(name: &str) -> PathBuf {
 fn steam(root: &Path) -> PathBuf {
     let steam = root.join("steam");
     std::fs::create_dir_all(steam.join("steamapps")).unwrap();
-    let remote = steam.join("userdata/843502855/3059520/remote");
+    let remote = steam
+        .join("userdata")
+        .join("843502855")
+        .join("3059520")
+        .join("remote");
     std::fs::create_dir_all(&remote).unwrap();
     std::fs::write(remote.join(DATA), [1u8; 900]).unwrap();
     std::fs::write(remote.join(INDEX), [7u8; 416]).unwrap();
     std::fs::write(remote.join("savegame@highlights001#QKRHMYXE"), b"replay").unwrap();
     std::fs::write(
-        steam.join("userdata/843502855/3059520/remotecache.vdf"),
+        steam.join("userdata").join("843502855").join("3059520").join("remotecache.vdf"),
         "\"3059520\"\n{\n\t\"savegame@profile#QKRHMYXE\"\n\t{\n\t\t\"size\"\t\t\"416\"\n\t\t\"sha\"\t\t\"00\"\n\t\t\"syncstate\"\t\t\"1\"\n\t}\n}\n",
     )
     .unwrap();
@@ -71,7 +75,7 @@ fn backs_up_lists_shows_and_restores() {
         out,
         format!("the profile save is unchanged since snapshot {id}; pinned it\n")
     );
-    let vault = root.join("data/career-vault/steam-843502855");
+    let vault = root.join("data").join("career-vault").join("steam-843502855");
     assert_eq!(std::fs::read_dir(vault.join("blobs")).unwrap().count(), 2);
 
     let list = stdout(&swofty(&root, &["saves", "list"]));
@@ -180,7 +184,7 @@ fn index(root: &Path, careers: &[(&str, &str, i64)]) {
             })
         })
         .collect();
-    let path = root.join("data/careers/index.json");
+    let path = root.join("data").join("careers").join("index.json");
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
     std::fs::write(
         path,
