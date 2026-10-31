@@ -254,6 +254,7 @@ void on_flow(SwoftyContext *c)
         perf::mark("flow", name + " " + STATUS[to]);
     if (perf_on())
         perf_flow(hash, uint32_t(from), to, name);
+    runtime::watchdog_flow(hash, to, name.c_str());
     runtime::netplay_flow(hash, to);
     runtime::testagent_flow(name, to);
     if (known) {
