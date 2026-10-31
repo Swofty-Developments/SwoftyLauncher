@@ -21,6 +21,8 @@ use crate::pages::{GUTTER, tag};
 use crate::shell::{Page, Prompt, Shell};
 use crate::theme::{Palette, ScrollArea};
 
+pub(crate) const VANILLA_NOTE: &str =
+    "Plays on your Steam save. Careers here show after you play a profile that started from it.";
 pub(crate) const NOTICE_TITLE: &str = "Your careers have their own saves now";
 pub(crate) const NOTICE_BODY: &str = "Each profile now has its own save, starting from a copy of your Steam save. Playing from Steam still uses your Steam save, and Vanilla plays on it too.";
 
@@ -233,7 +235,14 @@ fn careers_held(held: &[String]) -> String {
 }
 
 fn shown_career(r: &Row) -> bool {
-    matches!(r.status, Status::Present | Status::MissingSince(_))
+    matches!(
+        r.status,
+        Status::Present | Status::MissingSince(_) | Status::DeletedInGame
+    )
+}
+
+fn card_careers(v: &Vault) -> Vec<Row> {
+    v.careers().careers.into_iter().filter(shown_career).collect()
 }
 
 impl Shell {
@@ -255,13 +264,7 @@ impl Shell {
                 };
                 let launcher_off = !vanilla && self.store.profile(&name).is_ok_and(|p| !p.launcher_saves);
                 let vault = loc.as_ref().and_then(|l| Vault::of(&root, l).ok());
-                let careers: Vec<Row> = vault
-                    .as_ref()
-                    .map(|v| v.careers().careers)
-                    .unwrap_or_default()
-                    .into_iter()
-                    .filter(shown_career)
-                    .collect();
+                let careers: Vec<Row> = vault.as_ref().map(card_careers).unwrap_or_default();
                 let snaps = vault.as_ref().and_then(|v| v.list().ok()).unwrap_or_default();
                 let last_played = careers.iter().filter_map(|r| r.last_played).max().or_else(|| {
                     snaps
@@ -740,11 +743,22 @@ impl Shell {
                         },
                     )),
             )
+            .when(c.vanilla(), |d| {
+                d.child(
+                    div()
+                        .text_size(px(13.))
+                        .text_color(p.text_muted)
+                        .child(VANILLA_NOTE),
+                )
+            })
             .child(match careers.is_empty() {
                 true => div()
                     .text_size(px(13.))
                     .text_color(p.text_muted)
-                    .child("Careers show here after you play this profile")
+                    .child(match c.vanilla() {
+                        true => "No careers known yet",
+                        false => "Careers show here after you play this profile",
+                    })
                     .into_any_element(),
                 false => v_flex().gap(px(6.)).children(careers).into_any_element(),
             })
@@ -818,6 +832,14 @@ impl Shell {
                         .text_size(px(12.))
                         .text_color(p.warning)
                         .child("missing from the save"),
+                )
+            })
+            .when(r.status == Status::DeletedInGame, |d| {
+                d.child(
+                    div()
+                        .text_size(px(12.))
+                        .text_color(p.text_placeholder)
+                        .child("deleted in game"),
                 )
             })
             .children(off.into_iter().map(|n| {

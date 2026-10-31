@@ -18,6 +18,7 @@ Progressive   Progressive 2016 · Verstappen · Red Bull · season 2016, round 7
 
 vanilla   [Steam save]                                          Last played 2 days ago
 Driver Career   Classic 2020 · Hamilton · Mercedes · season 1, round 4 · played 2 days ago
+Plays on your Steam save. Careers here show after you play a profile that started from it.
 Steam Cloud: synced
 [Copy careers to…]                                                               [Versions]
 ```
