@@ -22,7 +22,7 @@ Launcher 1.6.4 also adds `career.rnd.tree` and `career.market` (both experimenta
 
 Launcher 1.6.5 adds the four tracks registries, experimental (`"feature": "registry_tracks"`): `track` (tracks; stock rows are `game/<code>`), `track.venue` (core-owned shared ids `venue/<key>`, provided by `track` records), `track.data` (a track's block in one data set, `<track id>/<data set>`) and `track.per_package` (one box's data for one track or venue, `<package id>/<key>`). `PackageTrack::world` names `track.layer`, which has no schema in 1.6.5.
 
-`career.calendar`, `career.mode` and `vehicle.handling` have schemas; the 1.6.0 core stores their records and applies nothing from them.
+`career.calendar`, `career.mode` and `vehicle.handling` have schemas; the 1.6.0 core stores their records and applies nothing from them. Launcher 1.6.13 adds `vehicle.handling` 1.1 and `vehicle` 1.1 (experimental): the launcher applies the handling records in data files to the handling files it ships at build, and a vehicle names `drs_capable`, `engine` and `tyre_group`.
 
 The 1.5 libraries store what addons give them in six more: `career.content` (career contents), `hub.tab` (Team HQ tabs), `career.wizard` (the career wizard), `career.character` (characters), `lang.string` (strings) and `addon.option` (addon options). The core declares them and adds a record under the calling addon's id for each 1.5 call; `lang.string` records are `game/<lng key>`, and a 1.5 `lang::set` writes the calling addon's global layer of one.
 
