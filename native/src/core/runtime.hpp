@@ -215,6 +215,7 @@ bool netplay_popup(const char *id, void *fn, void *ctx);
 void netplay_home_vm(void *vm);
 void netplay_tick();
 void net_trace_setup();
+void udp_ids_setup();
 // The test agent (native/src/core/testagent/agent.cpp): armed only by `swofty test`'s run token.
 void testagent_setup();
 void testagent_tick();
