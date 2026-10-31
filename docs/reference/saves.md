@@ -105,6 +105,55 @@ Steam Cloud when taken: synced
   event 2026-10-31 12:00 UTC changed-outside: found when the launcher started
 ```
 
+## Careers
+
+Each snapshot stores the core's career index (`$DATA/careers/index.json`, see [career saves](/std/systems/career)) as `index/<sha256>.json` and names it in `careers_ref`. `careers.json` in the vault folder is one row per career id, updated from each snapshot's index:
+
+```json
+{
+  "version": 1,
+  "careers": [
+    {
+      "career": "progressive:7f3a",
+      "mode": "progressive",
+      "label": "Progressive 2016, Verstappen, Red Bull",
+      "driver": "Verstappen",
+      "team": "Red Bull",
+      "season": 2016,
+      "round": 7,
+      "addons": [{ "id": "swofty.progressive" }],
+      "first_seen": "20261029-033200-after-session",
+      "first_seen_at": 1793244720,
+      "last_seen": "20261030-221500-after-session",
+      "last_seen_at": 1793398500,
+      "last_played": 1793398400,
+      "status": "missing-since:20261031-201502-after-session",
+      "found_at": 1793477702
+    }
+  ]
+}
+```
+
+`status` is one of:
+
+- `present`: in the newest index;
+- `missing-since:<snapshot>`: in the index of the snapshot before and not in the index of `<snapshot>`; `last_seen` is the snapshot to restore it from, and retention keeps that snapshot;
+- `deleted-in-game`: the index marks the career `deleted`;
+- `archived`.
+
+A career is only called missing by comparing two indexes. With no index yet (the first session after the update, the EA app copy before the core ran, the core off) the vault makes no rows and says nothing about careers. The size hint below stays as it is.
+
+`swofty saves versions` prints what restoring each version gets back and loses, from the stored index and the one for the save now:
+
+```text
+$ swofty saves versions
+20261030-221500-after-session  after Play, profile progressive, 0.9 MB, Steam Cloud: synced, 2 career(s): Progressive 2016, Classic 2020
+    restoring it gets back: Progressive 2016 (season 2016, round 7)
+    restoring it loses progress in Classic 2020: season 2020, round 9 back to season 2020, round 4
+```
+
+`swofty saves pin <snapshot>` adds the pin `pinned`; `unpin` removes only that pin. Pins from a backup, a restore or a missing career stay.
+
 ## Steam Cloud status
 
 The status compares each file's SHA-1 with the `sha` Steam recorded in `userdata/<steamid3>/3059520/remotecache.vdf`:
@@ -123,7 +172,7 @@ Playing from Steam or the EA app runs F1 25 without the launcher, and a session 
 {"at":1793448044,"kind":"shrank","snapshot":"20261031-120044-changed-outside","from":"20261030-221500-after-session","before":961752,"after":640728,"detail":"found when the launcher started"}
 ```
 
-When the save is also at least 24 KB smaller, the Addons page shows a notice with **Restore** and **Dismiss**, and `swofty run` prints it:
+When the save is also at least 24 KB smaller, the [Career saves](/using/career-saves) page and the Addons page show a notice with **Review the restore** and **Dismiss**, and `swofty run` prints it:
 
 ```text
 [warning] saves: Your F1 25 save changed outside a launcher session (a Steam or EA app launch) and is 314 KB smaller than before. The career vault kept the version from 2026-10-30 22:15 UTC: 20261030-221500-after-session. If a career is missing, restore it with `swofty saves restore 20261030-221500-after-session` while F1 25 and Steam are closed

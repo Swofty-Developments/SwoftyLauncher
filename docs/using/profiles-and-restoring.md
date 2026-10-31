@@ -54,7 +54,7 @@ Your [data folder](/guide/installation#where-your-files-are-stored) holds the or
 
 ## Restoring a profile save
 
-The launcher keeps copies of your profile save in the [career vault](/reference/saves): at launcher start, before and after every Play, and when F1 25 was started from Steam or the EA app. When the save changed outside the launcher and got smaller, or got smaller in a session without an addon that affects saves, the Addons page offers **Restore**. `swofty saves list` lists every copy and `swofty saves restore <snapshot>` puts one back.
+The launcher keeps copies of your profile save in the [career vault](/reference/saves): at launcher start, before and after every Play, and when F1 25 was started from Steam or the EA app. When the save changed outside the launcher and got smaller, or got smaller in a session without an addon that affects saves, the Addons page offers **Restore**, and the [Career saves](/using/career-saves) page lists every copy with the careers in it. `swofty saves list` lists every copy and `swofty saves restore <snapshot>` puts one back.
 
 A restore waits until F1 25 and Steam are closed (the EA app, for the EA app copy). Exit Steam completely (Steam menu > Exit) first, restore, then start Steam, which uploads the restored save. If Steam asks which copy to keep, keep the local files (this computer).
 
