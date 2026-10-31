@@ -302,10 +302,17 @@ fn listed(c: &Career) -> Listed {
 }
 
 /// Every career the core's index holds for `profile` (and the ones with no profile yet), with its
-/// state: the ones in the game's save slots first, the newest played first.
+/// state: the ones in the game's save slots first, the newest played first. Only careers with a save
+/// slot are listed: a record a career load made before the career had a slot is not a career in the save.
 pub fn listing(index: &[Career], profile: Option<&str>) -> Vec<Listed> {
     let mut out: Vec<Listed> = index
         .iter()
+        .filter(|c| {
+            c.extra
+                .get("slot")
+                .and_then(|v| v.as_str())
+                .is_some_and(|s| !s.is_empty())
+        })
         .filter(|c| match (profile, c.profile.as_deref()) {
             (Some(p), Some(q)) => p == q,
             _ => true,
@@ -547,11 +554,12 @@ mod tests {
     fn index() -> Vec<Career> {
         parse(
             r#"{"version":1,"careers":[
-            {"career":"driver_career:a1","profile":"p","status":"present","mode":"driver_career","driver":"Oscar PIASTRI","team":"McLaren","driver_raw":5,"team_raw":7,"slot_season":3,"slot_weekend":4,"last_played":1761600000,"slot_name":"Slot 1"},
-            {"career":"driver_career:b2","profile":"p","status":"deleted","last_played":1761700000},
-            {"career":"my_team:c3","status":"missing","hidden":true,"last_saved":1761800000000},
-            {"career":"driver_career:d4","profile":"q","status":"present"},
-            {"career":"driver_career:e5","profile":"p","last_played":1761900000}
+            {"career":"driver_career:a1","profile":"p","slot":"a1","status":"present","mode":"driver_career","driver":"Oscar PIASTRI","team":"McLaren","driver_raw":5,"team_raw":7,"slot_season":3,"slot_weekend":4,"last_played":1761600000,"slot_name":"Slot 1"},
+            {"career":"driver_career:b2","profile":"p","slot":"b2","status":"deleted","last_played":1761700000},
+            {"career":"my_team:c3","slot":"c3","status":"missing","hidden":true,"last_saved":1761800000000},
+            {"career":"driver_career:d4","profile":"q","slot":"d4","status":"present"},
+            {"career":"driver_career:e5","profile":"p","slot":"e5","last_played":1761900000},
+            {"career":"dc-00320000","profile":"p","label":"f1_career_2026","content":"f1_career_2026","mode":"driver_career","status":"missing","last_saved":1761950000000}
             ]}"#,
         )
     }
@@ -574,6 +582,15 @@ mod tests {
         assert_eq!(by("my_team:c3").state, State::Missing);
         assert_eq!(by("driver_career:b2").state, State::DeletedInGame);
         assert_eq!(by("driver_career:e5").state, State::Present);
+    }
+
+    #[test]
+    fn a_career_record_with_no_save_slot_is_not_listed() {
+        assert!(
+            !listing(&index(), Some("p"))
+                .iter()
+                .any(|c| c.career == "dc-00320000")
+        );
     }
 
     #[test]
@@ -607,7 +624,11 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("careers-listing-{}", std::process::id()));
         let file = crate::stdlib::careers::data_path(&dir);
         std::fs::create_dir_all(file.parent().unwrap()).unwrap();
-        std::fs::write(&file, r#"{"careers":[{"career":"x:1","status":"deleted"}]}"#).unwrap();
+        std::fs::write(
+            &file,
+            r#"{"careers":[{"career":"x:1","slot":"1","status":"deleted"}]}"#,
+        )
+        .unwrap();
         let l = read_listing(&dir, None);
         std::fs::remove_dir_all(&dir).ok();
         assert_eq!(l.len(), 1);
