@@ -441,6 +441,10 @@ inline constexpr call<"site_Sess_ControllerSystem_ApplyRecordCall"> site_Sess_Co
 inline constexpr call<"site_Sess_InGamePlayerFinishedAiCall"> site_Sess_InGamePlayerFinishedAiCall{}; // L2 experimental
 inline constexpr call<"site_Sess_InGameSessionCompleteAiCall"> site_Sess_InGameSessionCompleteAiCall{}; // L2 experimental
 inline constexpr site<"site_Sess_PuPanel_SlotHolder"> site_Sess_PuPanel_SlotHolder{}; // L2 experimental
+inline constexpr site<"site_Sess_TyreVisSlotLookup"> site_Sess_TyreVisSlotLookup{}; // L2 experimental
+inline constexpr site<"site_Sess_TyreVisTailCall"> site_Sess_TyreVisTailCall{}; // L2 experimental
+inline constexpr site<"site_Sess_TyreWearReturn"> site_Sess_TyreWearReturn{}; // L2 experimental
+inline constexpr site<"site_Sess_TyreWearSlotLookup"> site_Sess_TyreWearSlotLookup{}; // L2 experimental
 inline constexpr vtable<"vt_Sess_AiController", 4> vt_Sess_AiController{}; // L2 experimental
 inline constexpr vtable<"vt_Sess_RaceRuleset", 60> vt_Sess_RaceRuleset{}; // L2 experimental
 inline constexpr vtable<"vt_Sess_ScAheadOfLead", 11> vt_Sess_ScAheadOfLead{}; // L2 experimental

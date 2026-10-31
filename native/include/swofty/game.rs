@@ -6482,6 +6482,26 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Sess_TyreVisSlotLookup: Binding = Binding {
+        id: "site_Sess_TyreVisSlotLookup",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_TyreVisTailCall: Binding = Binding {
+        id: "site_Sess_TyreVisTailCall",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_TyreWearReturn: Binding = Binding {
+        id: "site_Sess_TyreWearReturn",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_TyreWearSlotLookup: Binding = Binding {
+        id: "site_Sess_TyreWearSlotLookup",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Team_LoadInsertCall: Binding = Binding {
         id: "site_Team_LoadInsertCall",
         kind: "call",
