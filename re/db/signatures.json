@@ -160311,9 +160311,7 @@
      "how": "static"
     }
    ],
-   "used_by": [
-    "native/src/core/session_enter.cpp"
-   ]
+   "used_by": []
   },
   {
    "id": "session.ai_records_vehicle_next",
@@ -160329,6 +160327,31 @@
    "expect": "49 89 DD 48 8B 74 24 60",
    "names": [
     "site_Sess_AiRecords_VehicleNext"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "sessguard",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.ai_records_name_hash",
+   "section": ".xtls",
+   "pattern": "4C 89 E9 49 89 C5 48 8B 81 08 01 00 00",
+   "match": "0x1438a3c91",
+   "anchor": "0x6",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1438a3c97",
+   "kind": "mid",
+   "expect": "48 8B 81 08 01 00 00",
+   "names": [
+    "site_Sess_AiRecords_NameHash"
    ],
    "verified": [
     {
