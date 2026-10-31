@@ -218,7 +218,7 @@ The rule:
 - Stock rows keep their ids.
 - The 2024 and 2025 formats carry one byte per id. An added id whose low byte a stock row or another mapped id shares is not rewritten in those formats.
 
-The core changes a buffer only when it parses as an F1 packet: `m_packetFormat` is 2024, 2025 or 2026, `m_packetId` is one below, and the length is that packet's size in that format. Datagrams to port 21414 and to 10.77.0.0/16 are never read.
+The core changes a buffer only when it parses as an F1 packet: `m_packetFormat` is 2024, 2025 or 2026, `m_packetId` is one below, and the length is that packet's size in that format.
 
 ```text
 Participants (4)   2024 1350 B, 2025 1284 B: driverId, teamId (u8 per entry)
