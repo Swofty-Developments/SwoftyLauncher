@@ -3236,17 +3236,16 @@ mod tests {
             Some("team12_26")
         );
         let key = "t.rows/entrants.teams.team/team12_26";
-        let hashed = crate::ops::hash_probe(key, crate::ops::hash_pool(None, 101, 1))
-            .next()
-            .unwrap();
+        let next_id = 102;
         assert_eq!(
             db.get_text("entrants.teams.team_2.stat_id"),
-            Some(hashed.to_string())
+            Some(next_id.to_string())
         );
         assert!(
-            built.lines.iter().any(|l| l.ends_with(&format!(
-                "stat_id {hashed} (the source's is 100; from the row's key)"
-            ))),
+            built
+                .lines
+                .iter()
+                .any(|l| l.ends_with(&format!("stat_id {next_id} (the source's is 100)"))),
             "{:?}",
             built.lines
         );
@@ -3255,11 +3254,11 @@ mod tests {
                 .unwrap();
         assert_eq!(
             outputs["default"]["t.rows"]["row_ids"]["entrants.teams.team/team12_26"],
-            hashed
+            next_id
         );
         let ids = crate::row_ids::path(&store.root);
         let kept: serde_json::Value = serde_json::from_slice(&std::fs::read(&ids).unwrap()).unwrap();
-        assert_eq!(kept["rows"][key]["id"], hashed);
+        assert_eq!(kept["rows"][key]["id"], next_id);
         std::fs::write(
             &ids,
             format!(r#"{{"version":1,"rows":{{"{key}":{{"id":140,"from":"hashed"}}}}}}"#),
