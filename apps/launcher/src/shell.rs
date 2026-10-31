@@ -56,7 +56,7 @@ impl Page {
             Self::Importer => "Simplified Importer",
             Self::Tools => "Tools",
             Self::Profiles => "Profiles",
-            Self::Careers => "Career saves",
+            Self::Careers => "Saves",
             Self::Database => "DB Editor",
             Self::Multiplayer => "Multiplayer",
             Self::Section(_) => "",
@@ -558,7 +558,7 @@ impl Shell {
             live_n: 0,
             highlight: None,
             addons: crate::addons::AddonsPage::new(window, cx),
-            saves: crate::career_saves::SavesPage::new(window, cx),
+            saves: crate::career_saves::SavesPage::default(),
             db: crate::db::Db::new(cx),
             news,
             news_scroll: Default::default(),
@@ -571,6 +571,9 @@ impl Shell {
             _catalog: catalog,
         };
         shell.refresh_views(cx);
+        if std::env::var("SWOFTY_LAUNCHER_OPEN_PAGE").is_ok_and(|v| v == "saves") {
+            shell.open_page(Page::Careers, cx);
+        }
         shell.fetch_news(cx);
         shell.sync_catalog_updates();
         shell.fetch_catalog(cx);
@@ -692,6 +695,9 @@ impl Shell {
             self.copies = found.all;
             self.missing_copies = found.missing;
             self.detected = true;
+            if self.page == Page::Careers {
+                self.refresh_saves();
+            }
             if probe.merged {
                 self.reload(cx);
             } else if changed {
@@ -1655,6 +1661,65 @@ impl Shell {
         self.big_row(page, page.nav_label().into(), art, count, p, cx)
     }
 
+    fn profile_pointer(&self, p: Palette) -> Div {
+        v_flex().flex_shrink_0().items_center().gap(px(2.)).child(
+            h_flex()
+                .w_full()
+                .gap(px(8.))
+                .items_center()
+                .px(px(10.))
+                .py(px(8.))
+                .rounded(px(8.))
+                .border_1()
+                .border_color(p.accent)
+                .bg(p.selected)
+                .text_size(px(12.))
+                .text_color(p.text)
+                .child(
+                    Icon::new(IconName::ArrowDown)
+                        .size(px(14.))
+                        .flex_shrink_0()
+                        .text_color(p.accent),
+                )
+                .child(
+                    div()
+                        .flex_1()
+                        .min_w_0()
+                        .child("Switch profiles here to see their saves"),
+                ),
+        )
+    }
+
+    fn sub_nav(&self, page: Page, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+        let active = self.page == page;
+        h_flex()
+            .id(SharedString::from(format!("nav-{}", page.nav_label())))
+            .h(px(32.))
+            .flex_shrink_0()
+            .ml(px(18.))
+            .pl(px(6.))
+            .pr(px(10.))
+            .gap(px(8.))
+            .rounded(px(8.))
+            .border_1()
+            .cursor_pointer()
+            .text_size(px(13.))
+            .font_weight(FontWeight::MEDIUM)
+            .map(|d| {
+                if active {
+                    d.bg(p.selected).border_color(p.accent).text_color(p.text)
+                } else {
+                    d.border_color(transparent_black())
+                        .text_color(p.text_muted)
+                        .hover(move |s| s.bg(p.hover).text_color(p.text))
+                }
+            })
+            .child(nav_art(NavArt::Icon(page.icon()), 22., active, p))
+            .child(div().flex_1().truncate().child(page.nav_label()))
+            .on_click(cx.listener(move |this, _, _, cx| this.open_page(page, cx)))
+            .into_any_element()
+    }
+
     fn big_row(
         &self,
         page: Page,
@@ -1811,14 +1876,7 @@ impl Shell {
             (Page::Addons, Some(self.library.listed().count())),
             (Page::Browser, None),
             (Page::Profiles, Some(self.library.profiles.len())),
-            (
-                Page::Careers,
-                self.saves
-                    .view
-                    .as_ref()
-                    .map(|v| v.career_count())
-                    .filter(|n| *n > 0),
-            ),
+            (Page::Careers, None),
         ];
         if self.store.config().developer {
             big.insert(3, (Page::Tools, None));
@@ -1851,12 +1909,12 @@ impl Shell {
                         .scroll_y("sidebar")
                         .pr(px(SCROLLBAR_GAP))
                         .gap(px(8.))
-                        .child(
-                            v_flex().flex_shrink_0().gap(px(2.)).children(
-                                big.into_iter()
-                                    .map(|(page, count)| self.big_nav(page, count, p, cx)),
-                            ),
-                        )
+                        .child(v_flex().flex_shrink_0().gap(px(2.)).children(big.into_iter().map(
+                            |(page, count)| match page {
+                                Page::Careers => self.sub_nav(page, p, cx),
+                                _ => self.big_nav(page, count, p, cx),
+                            },
+                        )))
                         .child(
                             v_flex()
                                 .flex_shrink_0()
@@ -1882,6 +1940,7 @@ impl Shell {
                     .gap(px(6.))
                     .pt(px(4.))
                     .pb(px(2.))
+                    .children((self.page == Page::Careers).then(|| self.profile_pointer(p)))
                     .child(label("ACTIVE PROFILE", p).px(px(4.)))
                     .child(self.profile_picker(p, cx)),
             )
