@@ -15448,6 +15448,16 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Ne_WatchdogKillPath: Binding = Binding {
+        id: "site_Ne_WatchdogKillPath",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Ne_WatchdogKillSkip: Binding = Binding {
+        id: "site_Ne_WatchdogKillSkip",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Sess_AiVehicleRegisterCall: Binding = Binding {
         id: "site_Sess_AiVehicleRegisterCall",
         kind: "call",

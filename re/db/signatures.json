@@ -160179,6 +160179,60 @@
    "used_by": [
     "native/src/core/thrustmaster_lcd.cpp"
    ]
+  },
+  {
+   "id": "core.watchdog_kill_path",
+   "section": ".xtls",
+   "pattern": "83 7C 24 40 00 75 70 40 84 FF 75 6B",
+   "match": "0x1443e0df9",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1443e0df9",
+   "kind": "mid",
+   "expect": "83 7C 24 40 00",
+   "names": [
+    "site_Ne_WatchdogKillPath"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "watchdog",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/watchdog_grace.cpp"
+   ]
+  },
+  {
+   "id": "core.watchdog_kill_skip",
+   "section": ".xtls",
+   "pattern": "85 ED 0F 94 C0 39 6C 24 44 0F 95 C1",
+   "match": "0x1443e0f9d",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1443e0f9d",
+   "kind": "mid",
+   "expect": "85 ED 0F 94 C0",
+   "names": [
+    "site_Ne_WatchdogKillSkip"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "watchdog",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/watchdog_grace.cpp"
+   ]
   }
  ]
 }
