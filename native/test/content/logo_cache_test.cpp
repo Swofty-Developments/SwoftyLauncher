@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -69,9 +70,21 @@ struct Boot {
     std::string stamps;
 };
 
+static const std::string DATABASES = "ui/databases.erp";
+
 static Boot boot(Disk &disk, const std::string &stamps)
 {
-    auto k = lc::key_archives(7, disk.list(), disk.env(), lc::parse(stamps));
+    auto before = lc::parse(stamps);
+    auto inputs = lc::inputs_of(before);
+    inputs.insert(DATABASES);
+    auto k = lc::key_archives(7, disk.list(), inputs, disk.env(), before);
+    return {k.key, k.hashed, lc::text(k.stamps)};
+}
+
+static Boot built(Disk &disk, const std::string &stamps, std::set<std::string> read)
+{
+    read.insert(DATABASES);
+    auto k = lc::key_archives(7, disk.list(), read, disk.env(), lc::parse(stamps));
     return {k.key, k.hashed, lc::text(k.stamps)};
 }
 
@@ -98,52 +111,82 @@ int main()
           "stamps read back what they wrote and skip broken lines");
 
     Disk disk;
+    disk.files[DATABASES] = {"database bytes", 100};
     disk.files["ui/common.erp"] = {data, 100};
     disk.files["ui/flow.erp"] = {"flow bytes", 100};
     disk.files["ui/stock.erp"] = {"stock bytes", 50};
 
     Boot first = boot(disk, "");
-    check(first.hashed == 3 && disk.hashes == 3, "a first boot hashes every archive");
-    Boot same = boot(disk, first.stamps);
-    check(same.key == first.key && same.hashed == 0 && disk.hashes == 3, "an untouched folder keeps its key without reading an archive");
+    check(first.hashed == 1 && disk.hashes == 1, "a first boot hashes only databases.erp");
+    Boot keyed = built(disk, first.stamps, {"ui/common.erp"});
+    check(keyed.hashed == 1 && disk.hashes == 2, "after a build only the archive it read is hashed besides databases.erp");
+    check(keyed.stamps.find("ui/common.erp") != std::string::npos && keyed.stamps.find("ui/flow.erp") == std::string::npos &&
+              keyed.stamps.find("ui/stock.erp") == std::string::npos,
+          "the stamps name the archives the build read and no other");
+    Boot same = boot(disk, keyed.stamps);
+    check(same.key == keyed.key && same.hashed == 0 && disk.hashes == 2, "the next boot finds the built key without reading an archive");
 
     disk.files["ui/common.erp"].time = 200;
+    disk.files[DATABASES].time = 200;
     Boot installed = boot(disk, same.stamps);
-    check(installed.key == first.key && installed.hashed == 1,
-          "the same bytes copied in again with a new write time keep the key (the cache is reused)");
+    check(installed.key == keyed.key && installed.hashed == 2,
+          "inputs copied in again with the same bytes and a new write time keep the key (the cache is reused)");
     Boot quiet = boot(disk, installed.stamps);
-    check(quiet.key == first.key && quiet.hashed == 0, "an archive hashed under its new write time is not read again");
+    check(quiet.key == keyed.key && quiet.hashed == 0, "an input hashed under its new write time is not read again");
+
+    disk.files["ui/flow.erp"].time = 300;
+    disk.files["ui/flow.erp"].bytes = "FLOW BYTES";
+    Boot recopied = boot(disk, quiet.stamps);
+    check(recopied.key == keyed.key && recopied.hashed == 0,
+          "an archive the build does not read keeps the key at the same size and is never read");
+
+    disk.files["ui/stock.erp"] = {"stock bytes, patched", 400};
+    Boot updated = boot(disk, recopied.stamps);
+    check(updated.key != keyed.key && updated.hashed == 0, "a game update that resizes another archive changes the key without reading it");
+    disk.files["ui/stock.erp"] = {"stock bytes", 50};
 
     disk.files["ui/common.erp"] = {flipped, 300};
     Boot edited = boot(disk, quiet.stamps);
-    check(edited.key != first.key && edited.hashed == 1, "changed bytes of the same size change the key");
+    check(edited.key != keyed.key && edited.hashed == 1, "changed bytes of the same size in an input change the key");
 
     disk.files["ui/common.erp"] = {data, 400};
     Boot restored = boot(disk, edited.stamps);
-    check(restored.key == first.key, "the earlier bytes copied back give the earlier key");
+    check(restored.key == keyed.key, "the earlier bytes copied back give the earlier key");
+
+    disk.files[DATABASES] = {"database bytes!", 500};
+    Boot patched = boot(disk, restored.stamps);
+    check(patched.key != keyed.key && patched.hashed == 1, "a game update to databases.erp changes the key");
+    disk.files[DATABASES] = {"database bytes", 200};
 
     disk.files["ui/common.erp"].time = 100;
     disk.files["ui/common.erp"].bytes = flipped;
-    Boot sneaky = boot(disk, first.stamps);
-    check(sneaky.key == first.key && sneaky.hashed == 0, "stamps are trusted while size and write time hold");
+    Boot sneaky = boot(disk, keyed.stamps);
+    check(sneaky.key == keyed.key && sneaky.hashed == 1, "stamps are trusted while size and write time hold");
 
     Boot fresh = boot(disk, "");
-    check(fresh.key == edited.key && fresh.hashed == 3, "without stamps every archive is read again");
+    Boot fresh_built = built(disk, fresh.stamps, {"ui/common.erp"});
+    check(fresh_built.key == edited.key && fresh.hashed + fresh_built.hashed == 2, "without stamps the inputs are read again after the build");
 
-    disk.files.erase("ui/flow.erp");
-    Boot removed = boot(disk, fresh.stamps);
-    check(removed.key != fresh.key && removed.hashed == 0 && removed.stamps.find("ui/flow.erp") == std::string::npos,
-          "a removed archive changes the key and leaves the stamps");
+    Boot moved = built(disk, fresh_built.stamps, {"ui/flow.erp"});
+    check(moved.key != fresh_built.key && moved.stamps.find("ui/common.erp") == std::string::npos,
+          "an archive the build no longer reads leaves the stamps");
+    Boot after_move = boot(disk, moved.stamps);
+    check(after_move.key == moved.key && after_move.hashed == 0, "the next boot keys the archives the last build read");
+
+    disk.files.erase("ui/stock.erp");
+    Boot removed = boot(disk, fresh_built.stamps);
+    check(removed.key != fresh_built.key && removed.hashed == 0, "a removed archive changes the key");
 
     disk.files["ui/new.erp"] = {"new bytes", 10};
     Boot added = boot(disk, removed.stamps);
-    check(added.key != removed.key && added.hashed == 1, "an added archive is hashed and changes the key");
+    check(added.key != removed.key && added.hashed == 0, "an added archive changes the key without being read");
 
     std::string unhashed = removed.stamps;
-    auto at = unhashed.find("ui/stock.erp");
-    unhashed = unhashed.substr(0, at) + "ui/stock.erp\t11\t50\t-\n" + unhashed.substr(unhashed.find('\n', at) + 1);
+    auto at = unhashed.find("ui/common.erp");
+    unhashed = unhashed.substr(0, at) + "ui/common.erp\t" + std::to_string(flipped.size()) + "\t100\t-\n" +
+               unhashed.substr(unhashed.find('\n', at) + 1);
     Boot retry = boot(disk, unhashed);
-    check(retry.key == added.key && retry.hashed == 2, "a stamp without a hash is hashed again");
+    check(retry.key == added.key && retry.hashed == 1, "a stamp without a hash is hashed again");
 
     std::printf("%s\n", failures ? "FAILED" : "all logo cache checks passed");
     return failures ? 1 : 0;
