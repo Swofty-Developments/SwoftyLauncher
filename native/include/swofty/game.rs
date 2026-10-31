@@ -12957,6 +12957,11 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_GarageCrew_SpawnVector: Binding = Binding {
+        id: "site_Game_GarageCrew_SpawnVector",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_SaveData_ContainersChildren: Binding = Binding {
         id: "site_Game_SaveData_ContainersChildren",
         kind: "site",
