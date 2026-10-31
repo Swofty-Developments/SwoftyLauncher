@@ -166,7 +166,7 @@ static void unavailable_without_core()
               }) == swofty::events::Result::unavailable);
     CHECK(on<career::events::AddActivity>().in(any({content("a/x"), not_(track("game/monaco"))})).replace(
               [](career::events::AddActivity &, const Context &) { return false; }) == swofty::events::Result::unavailable);
-    CHECK(on<cars::events::Built>().before([](cars::events::Built &e, const Context &) { e.car.f1_aero().lift_scale = 1.01f; }) ==
+    CHECK(on<cars::events::Built>().before([](cars::events::Built &e, const Context &) { (void)e.car.get(cars::live::Field::steering_lock); }) ==
           swofty::events::Result::unavailable);
     CHECK(on("swofty.progressive.seat_change").after([](std::span<const std::byte>, const Context &) {}) ==
           swofty::events::Result::unavailable);

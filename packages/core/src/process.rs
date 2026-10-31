@@ -433,6 +433,45 @@ fn image_path(pid: u32) -> Option<String> {
     (ok != 0).then(|| String::from_utf16_lossy(&name[..len as usize]))
 }
 
+#[cfg(windows)]
+pub(crate) fn started(pid: u32) -> Option<SystemTime> {
+    use std::ffi::c_void;
+    const PROCESS_QUERY_LIMITED_INFORMATION: u32 = 0x1000;
+    #[link(name = "kernel32")]
+    unsafe extern "system" {
+        fn OpenProcess(access: u32, inherit: i32, pid: u32) -> *mut c_void;
+        fn GetProcessTimes(
+            process: *mut c_void,
+            creation: *mut u64,
+            exit: *mut u64,
+            kernel: *mut u64,
+            user: *mut u64,
+        ) -> i32;
+        fn CloseHandle(handle: *mut c_void) -> i32;
+    }
+    let [mut creation, mut exit, mut kernel, mut user] = [0u64; 4];
+    // SAFETY: the handle is checked before use and closed once, and each
+    // FILETIME the call fills is a u64, the same size with a wider alignment.
+    let ok = unsafe {
+        let process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid);
+        if process.is_null() {
+            return None;
+        }
+        let ok = GetProcessTimes(process, &mut creation, &mut exit, &mut kernel, &mut user);
+        CloseHandle(process);
+        ok
+    };
+    (ok != 0).then(|| filetime(creation)).flatten()
+}
+
+/// A FILETIME: 100 ns ticks since 1601-01-01 UTC.
+#[cfg(any(windows, test))]
+fn filetime(ticks: u64) -> Option<SystemTime> {
+    const UNIX_EPOCH_TICKS: u64 = 116_444_736_000_000_000;
+    let since = ticks.checked_sub(UNIX_EPOCH_TICKS)?;
+    UNIX_EPOCH.checked_add(std::time::Duration::from_micros(since / 10))
+}
+
 pub fn stop_process(pid: u32) -> std::io::Result<()> {
     let pid = pid.to_string();
     if cfg!(windows) {
@@ -682,6 +721,30 @@ mod windows_tests {
         let shouted = super::named(&name.to_uppercase());
         assert!(shouted.iter().any(|g| g.pid == me), "{shouted:?}");
         assert!(super::named("no-such-process-swofty.exe").is_empty());
+    }
+
+    #[test]
+    fn reads_own_start_time() {
+        let age = super::started(std::process::id())
+            .unwrap()
+            .elapsed()
+            .unwrap_or_default();
+        assert!(age.as_secs() < 3600, "{age:?}");
+    }
+}
+
+#[cfg(test)]
+mod filetime_tests {
+    use std::time::{Duration, UNIX_EPOCH};
+
+    #[test]
+    fn counts_filetime_from_1601() {
+        assert_eq!(super::filetime(116_444_736_000_000_000), Some(UNIX_EPOCH));
+        assert_eq!(
+            super::filetime(134_062_272_000_000_000),
+            Some(UNIX_EPOCH + Duration::from_secs(1_761_753_600))
+        );
+        assert_eq!(super::filetime(0), None);
     }
 }
 
