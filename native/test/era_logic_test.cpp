@@ -288,10 +288,10 @@ static void grid_limit_tests()
 {
     GridSetup press(20);
     era::GridLimit pressed;
-    std::string line = pressed.raise(press.mem, 24);
-    expect(press.get() == 24 && !line.empty() && line.find("20 -> 24") != std::string::npos &&
+    std::string line = pressed.raise(press.mem, 22);
+    expect(press.get() == 22 && !line.empty() && line.find("20 -> 22") != std::string::npos &&
                line.find("clamped") == std::string::npos,
-           "a box press on a 24-car list raises max_entrants from 20 to 24");
+           "a box press on a 22-car list raises max_entrants from 20 to 22");
     pressed.restore();
     expect(press.get() == 20, "the put-back restores max_entrants to 20");
     pressed.restore();
@@ -308,8 +308,8 @@ static void grid_limit_tests()
     GridSetup clamp(20);
     era::GridLimit clamped;
     line = clamped.raise(clamp.mem, 40);
-    expect(clamp.get() == 25 && line.find("clamped to 25 cars") != std::string::npos,
-           "a 40-car list clamps max_entrants to 25, one short of the 26-slot table, and says so");
+    expect(clamp.get() == 22 && line.find("clamped to 22 cars") != std::string::npos,
+           "a 40-car list clamps max_entrants to the stock 22 cars and says so");
     clamped.restore();
     expect(clamp.get() == 20, "the clamped limit is restored too");
     GridSetup at_table(26);
@@ -317,30 +317,30 @@ static void grid_limit_tests()
 
     GridSetup moved(20);
     era::GridLimit stale;
-    stale.raise(moved.mem, 24);
+    stale.raise(moved.mem, 21);
     moved.set(22);
     stale.restore();
     expect(moved.get() == 22, "a limit someone else changed since the raise is not overwritten on put-back");
 
     GridSetup career(20);
     era::GridLimit box, cont;
-    box.raise(career.mem, 24);
-    expect(cont.raise(career.mem, 24).empty() && career.get() == 24, "the Continue path finds a limit a box press already raised");
+    box.raise(career.mem, 22);
+    expect(cont.raise(career.mem, 22).empty() && career.get() == 22, "the Continue path finds a limit a box press already raised");
     cont.restore();
-    expect(career.get() == 24, "...and its put-back leaves the press's raise to the press's put-back");
+    expect(career.get() == 22, "...and its put-back leaves the press's raise to the press's put-back");
     box.restore();
     expect(career.get() == 20, "the press's put-back restores it");
 
     GridSetup resume(20);
     era::GridLimit load;
-    line = load.raise(resume.mem, 25);
-    expect(resume.get() == 25 && line.find("clamped") == std::string::npos,
-           "the Continue path (no box press) raises max_entrants to a 25-car list's count");
-    line = load.raise(resume.mem, 26);
-    expect(resume.get() == 25 && line.find("clamped to 25 cars") != std::string::npos,
-           "a 26-car list is clamped to 25 so the safety car still fits");
+    line = load.raise(resume.mem, 22);
+    expect(resume.get() == 22 && line.find("clamped") == std::string::npos,
+           "the Continue path (no box press) raises max_entrants to a 22-car list's count");
     line = load.raise(resume.mem, 24);
-    expect(resume.get() == 24 && line.find("20 -> 24") != std::string::npos, "a new raise first puts the earlier one back");
+    expect(resume.get() == 22 && line.find("clamped to 22 cars") != std::string::npos,
+           "a 24-car list is clamped to the stock 22 cars");
+    line = load.raise(resume.mem, 21);
+    expect(resume.get() == 21 && line.find("20 -> 21") != std::string::npos, "a new raise first puts the earlier one back");
     load.restore();
     expect(resume.get() == 20, "the Continue path's put-back restores max_entrants to 20");
 }

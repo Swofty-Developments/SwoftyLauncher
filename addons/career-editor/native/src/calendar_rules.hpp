@@ -41,7 +41,7 @@ struct Repair {
 
 // The plan of season.calendar.repair. Too many rounds: the last future, not-started rounds go. Too few:
 // `given` (the launcher's picks) or else `known` (weekends of this championship's other seasons, in
-// order) supply new last rounds, skipping a name or track already on this calendar.
+// order) supply new last rounds: tracks not on this calendar first, then any weekend name not yet used.
 Repair repair(const std::vector<RoundState> &rounds, uint32_t current, int race_weekends,
               const std::vector<Candidate> &given, const std::vector<Candidate> &known);
 
