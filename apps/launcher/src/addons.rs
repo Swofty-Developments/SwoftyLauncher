@@ -18,7 +18,6 @@ use swofty_core::folders::{self, Entry, Key, Spot};
 use swofty_core::import::{self, Route};
 use swofty_core::manifest::{Category, Kind, MANIFEST_FILE};
 use swofty_core::profile::VANILLA;
-use swofty_core::vault;
 
 use crate::library::{AddonItem, Changes, Source, plural};
 use crate::pages::{GUTTER, addon_icon, badge, chevron, fact, label, logo, tag, track_badge};
@@ -1286,7 +1285,7 @@ impl Shell {
                     self.library.profile.name
                 ))
         });
-        let saves = self.save_notice(p, cx);
+        let saves = self.saves_banner(false, p, cx);
         let hidden = self.library.addons.len() - self.library.listed().count();
         let tracks = self.library.tracks_page.filter(|_| hidden > 0).map(|i| {
             h_flex()
@@ -1344,86 +1343,6 @@ impl Shell {
                     .children(detail),
             )
             .into_any_element()
-    }
-
-    fn save_notice(&self, p: Palette, cx: &mut Context<Self>) -> Option<Div> {
-        let notice = vault::Notice::read(&self.store.root)?;
-        let name = notice.snapshot.clone();
-        let source = notice.source.clone();
-        let close = match source.starts_with("ea-") {
-            true => "Exit the EA app completely before you restore.",
-            false => "Exit Steam completely before you restore.",
-        };
-        Some(
-            h_flex()
-                .px(px(GUTTER))
-                .pb(px(12.))
-                .gap(px(8.))
-                .flex_shrink_0()
-                .items_center()
-                .text_size(px(13.))
-                .text_color(p.text_muted)
-                .child(
-                    Icon::new(IconName::CircleAlert)
-                        .size(px(14.))
-                        .text_color(p.warning),
-                )
-                .child(div().flex_1().min_w_0().child(format!(
-                    "{}. If a career is missing, Restore puts that version back. {close}",
-                    notice.headline()
-                )))
-                .child(
-                    Button::new("restore-save")
-                        .outline()
-                        .small()
-                        .label("Restore")
-                        .on_click(cx.listener(move |this, _, window, cx| {
-                            this.restore_save(&source, &name, window, cx)
-                        })),
-                )
-                .child(
-                    Button::new("dismiss-save-notice")
-                        .ghost()
-                        .small()
-                        .label("Dismiss")
-                        .on_click(cx.listener(|this, _, _, cx| {
-                            vault::Notice::clear(&this.store.root);
-                            cx.notify();
-                        })),
-                ),
-        )
-    }
-
-    fn restore_save(&mut self, source: &str, name: &str, window: &mut Window, cx: &mut Context<Self>) {
-        let root = self.store.root.clone();
-        let restored = vault::Vault::open(&root, source).and_then(|v| {
-            let snap = v.find(name)?;
-            let loc = vault::Location::active(&root)
-                .filter(|l| l.source == source)
-                .unwrap_or(vault::Location {
-                    source: snap.source.clone(),
-                    layout: snap.layout,
-                    dir: snap.save_dir.clone(),
-                });
-            vault::restore::restore(&v, name, &loc, vault::restore::Running::now(), vault::now())
-        });
-        let note = match restored {
-            Ok(r) => {
-                crate::app_log::note(&r.log_line());
-                Notification::success(match &r.before {
-                    Some(b) => format!(
-                        "Restored the profile save from {name}. The save it replaced is snapshot {b}."
-                    ),
-                    None => format!("Restored the profile save from {name}."),
-                })
-            }
-            Err(e) => {
-                crate::app_log::action("restore a save").failed(&e);
-                Notification::warning(format!("The save was not restored: {e}"))
-            }
-        };
-        window.push_notification(note, cx);
-        cx.notify();
     }
 
     fn install_cards(&self, p: Palette, cx: &mut Context<Self>) -> impl IntoElement {
