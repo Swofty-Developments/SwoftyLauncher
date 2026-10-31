@@ -74404,6 +74404,34 @@
    "func_start": "0x1425180d0"
   },
   {
+   "id": "game.garage_crew_spawn_vector",
+   "section": ".xtls",
+   "pattern": "31 C9 4D 89 E8 49 29 C8 49 C1 F8 04",
+   "match": "0x140389312",
+   "anchor": "0x2",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140389314",
+   "kind": "mid",
+   "names": [
+    "site_Game_GarageCrew_SpawnVector"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-31",
+     "by": "crew",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/garage_crew.cpp"
+   ],
+   "expect": "4D 89 E8 49",
+   "func_start": "0x140388cf0"
+  },
+  {
    "id": "game.ers_new_lap_next_vehicle",
    "section": ".xtls",
    "pattern": "48 8B 41 30 4C 8B 41 38 4C 39 C0 74 2C 0F B6 52 10 66 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 4C 8B 08 4D 8B 49 28 41 38 91 E8 00 00 00 74 0C 48 83 C0 08 4C 39 C0",
