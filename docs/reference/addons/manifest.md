@@ -9,7 +9,7 @@ description: Every swofty.json field in one annotated manifest, then each group 
 
 ## Every field
 
-This manifest uses every field. Only `schema_version`, `id`, `name`, `version`, `author` and `compat` are required; leave out the rest until you need them.
+This manifest uses every field. Only `schema_version`, `id`, `name`, `version` and `author` are required; leave out the rest until you need them.
 
 ```jsonc [swofty.json]
 {
@@ -179,7 +179,7 @@ A launcher before 1.3.0 rejects `category` and `origin`; set `"compat": { "launc
 
 ### compat
 
-`compat` (object) is required.
+`compat` (object) is optional. Without it the addon is for F1 25 on every game build and every launcher, as `{ "game": "f1_25" }`. Launchers before 1.7.4 refuse a manifest without `compat`.
 
 ```jsonc
 "compat": {
