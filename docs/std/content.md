@@ -480,6 +480,7 @@ swofty::era::add_box({
   - Each session load logs a `session trace` line at StateLoadSession Entering, Updating and Exiting, at StateSession Entering and at the session's vehicle setup: the entrants with their team ids, the list, the setup mode, the session participants and the vehicles.
   - Everything the guard changed is put back when the session unloads (StateUnloadSession Exiting) or a box is pressed.
 - A core before launcher 1.6.2 ignores `time_trial` and has no guard.
+- **Tyre classes.** A car's tyres come from its own compound class (the `compound class` of its car template; a car built on the F2 template gets an F2 class), while the session's tyre sets come from the setup mode's class. A Time Trial at an F1 track narrows an F2 class's dry options to the track's F1 compounds, which it lacks, so only its Wet option is left. The game then refits every such car through a missing option and faults on session enter. Since launcher 1.6.12 the core's tyre slot guard gives the set a slot with the compounds of another option of the car's own class, dry first, so the car runs on its Wet compound instead of crashing, and logs a `[tyres] slot guard` line for the first 8 repairs. A box whose cars race under F1 rules should give them an F1-layout class (`f1`), as F1 1990 does with `Sess_TyreClass_FromName`.
 
 ```text
 [era]      box ex_f1_2012 from mod.example registered (title lng_ex_f1_2012, image #overrides.home_screen.tiles_solo_6x6[ex_f1_2012], order 2012, Time Trial list ex_f1_2012_tt): live from the next build of the picker
@@ -492,6 +493,7 @@ swofty::era::add_box({
 [era]      Time Trial session loads list f1_2025 (20 cars) of setup mode f1 (box pressed: f1_2025)
 [era]      the Time Trial session's list ex_f1_2016 (setup mode swofty_f1) holds 24 cars; Time Trial holds at most 23 (the game adds 3 cars of its own to a table of 26); loading ex_f1_2017 instead
 [era]      the Time Trial session's list ex_2012 (setup mode ex_2012_mode) holds 24 cars; Time Trial holds at most 23 (the game adds 3 cars of its own to a table of 26); its entrant setup mode offers no list of at most 23 cars; the session draws at most 23 cars (max_entrants 24 -> 23 until the session ends)
+[tyres]    slot guard (set visibility): vehicle 3's fitted option 0 has no usable slot in its class's table (count 1, options 4); slot 1 added with the compounds of option 4's slot
 ```
 
 ## Career seasons race in boxes
