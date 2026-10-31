@@ -73,8 +73,8 @@ bool stat_file(const std::string &rel, uint64_t &size, uint64_t &time)
 
 bool hash_file(const std::string &rel, uint64_t &hash)
 {
-    HANDLE h = CreateFileW(game_file(rel).c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
-                           FILE_FLAG_SEQUENTIAL_SCAN, nullptr);
+    HANDLE h = CreateFileW(game_file(rel).c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+                           OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, nullptr);
     if (h == INVALID_HANDLE_VALUE)
         return false;
     std::vector<char> buf(size_t(1) << 20);
