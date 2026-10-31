@@ -239,7 +239,7 @@ Writes `cars/handling/<ers>_<tyre_size>/<folder>_handling.erp` (one archive per 
 
 ## tyres.py
 
-`tyres.py --game <F1 25> [--check]` writes `tyres/<supplier>/tyrecompounds.erp` for `historical`, `goodyear` and `pirelli` and `tyres/compounds.json` (the `file.put` ops keyed by `tyre_supplier`). Each archive is the stock 2026 compound archive with one compound file, its 16 compounds written twice, as `F1_1990_*` (Goodyear teams) and `F1_1990P_*` (Pirelli teams), and the uso, sup and sof codes scaled per supplier (`GOODYEAR`, `PIRELLI`). With `--check` it exits 1 when that differs from the shipped files. The handling side, `TyrePhysicsGroup` per team, is `PIRELLI_TEAMS` in `build_cars.py`.
+`tyres.py --game <F1 25> [--check]` writes `tyres/<supplier>/tyrecompounds.erp` for `historical`, `goodyear` and `pirelli` and `tyres/compounds.json` (the `file.put` ops keyed by `tyre_supplier`). Each archive is the stock 2026 compound archive with one compound file, its 16 compounds written twice, as `F1_1990_*` (Goodyear teams) and `F1_1990P_*` (Pirelli teams), and the uso, sup and sof codes scaled per supplier (`GOODYEAR`, `PIRELLI`; the race tyres per axle for wear, heat and spin, with a flatter overheating side and a gentle wear fade). With `--check` it exits 1 when that differs from the shipped files. The handling side, `TyrePhysicsGroup` per team, is `PIRELLI_TEAMS` in `build_cars.py`.
 
 ## cars.py
 

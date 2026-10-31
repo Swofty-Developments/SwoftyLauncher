@@ -365,13 +365,15 @@ The game names a wheel's compound `<TyrePhysicsGroup>_<physics code><F|R>` and f
 | `goodyear` | Goodyear | Goodyear |
 | `pirelli` | Pirelli | Pirelli |
 
-The class's three dry codes are scaled from the stock compound of the same code: grip on every Peak, PeakMin and PeakMax; wear on WearRate and the pressure WearRateMin/Max; fade on the WearGrip spline (1 − (1 − y) × fade, at least 0.3); heat on WorkEnergyRate and the pressure WorkEnergyRateMin/Max (warm-up). Every other code, the intermediate and the wet stay stock.
+The class's three dry codes are scaled from the stock compound of the same code: grip on every Peak, PeakMin and PeakMax; wear on WearRate and the pressure WearRateMin/Max (per axle on the race tyres); fade on the WearGrip spline (1 − (1 − y) × fade, at least 0.3); heat on WorkEnergyRate and the pressure WorkEnergyRateMin/Max (warm-up, per axle on the race tyres); spin on SpinSkiddRate (race tyres, per axle); hot on the overheating side of the TemperatureGrip spline (the grip lost above 373 K is multiplied by 1 − ramp × (1 − hot), the ramp reaching 1 at 403 K). Every other code, the intermediate and the wet stay stock.
 
 | Code (badge) | Goodyear | Pirelli |
 |---|---|---|
 | `uso` (US, qualifier) | Q: grip × 0.97, wear × 6, fade × 2, heat × 1.2 | qualifier: grip × 0.99, wear × 7, fade × 2.4, heat × 1.3 |
-| `sup` (SS, soft race) | D: grip × 0.895, wear × 0.9 | soft: grip × 0.91, wear × 1.3, fade × 1.35, heat × 1.1 |
-| `sof` (S, race) | C: grip × 0.895, wear × 0.85 | medium: grip × 0.91, wear × 1.25, fade × 1.3, heat × 1.1 |
+| `sup` (SS, soft race) | D: grip × 0.90, wear × 0.30 front / 0.22 rear, fade × 0.30, heat × 0.95 / 0.80, spin × 0.8 / 0.6, hot × 0.5 | soft: grip × 0.915, wear × 0.35 / 0.26, fade × 0.38, heat × 1.05 / 0.88, spin × 0.8 / 0.6, hot × 0.65 |
+| `sof` (S, race) | C: grip × 0.895, wear × 0.22 / 0.17, fade × 0.28, heat × 0.95 / 0.80, spin × 0.8 / 0.6, hot × 0.45 | medium: grip × 0.91, wear × 0.26 / 0.20, fade × 0.34, heat × 1.05 / 0.88, spin × 0.8 / 0.6, hot × 0.6 |
+
+The rear race tyres wear, heat and spin less per unit of work than the fronts, which offsets the rear-biased 1990 cars (41 % front weight) sliding their rears under power. The race tyres last a stint of half to most of a race with 1–2 % of pace lost; the qualifiers still lose their grip in a lap or two.
 
 The stock 2026 compounds share one Peak, so the grip factors alone set the gap between qualifiers and race tyres. In 1990 the race's fastest lap, set late on low fuel, was 4–8 % over pole: Monza 1:26.254 (Senna, lap 46) against 1:22.533 (+4.5 %), Monaco 1:24.468 (Senna, lap 59) against 1:21.314 (+3.9 %), Hungary 1:22.058 (Patrese, lap 63) against Boutsen's 1:17.919 (+5.3 %), Suzuka 1:44.233 (Patrese, lap 40) against Senna's 1:36.996 (+7.5 %). In the AI build's car model (`carpack/tools/ai/build_ai.py` laps at the tables' middle mass, front weight read at -COMZ; the race laps are `data/ai-laps-1990.json`) the race tyres put the best race lap 4.0–6.2 % over the qualifier lap on the 16 tracks: 4.4–4.8 % at Las Vegas and Monza, 4.2–5.1 % at Hungary and Monaco, 5.2–6.2 % at Suzuka. Las Vegas: qualifiers 1:40.0 (Ferrari) to 1:42.4 (Benetton), race tyres 1:44.4 to 1:47.1, and a full 110 kg tank about 2.5 % slower again.
 

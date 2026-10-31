@@ -13,12 +13,14 @@ compounds twice: once as F1_1990_* and once as F1_1990P_*. The option tyre_suppl
 The f1_1990 compound class runs three dry physics codes: uso (C5, the qualifier, badge US), sup (C4, the soft race
 tyre, badge SS) and sof (C3, the race tyre, badge S). Each supplier scales the stock compound of that code: grip (Peak,
 PeakMin, PeakMax of every load row), wear (WearRate and the pressure WearRateMin/Max), fade (how far the WearGrip spline
-falls: 1 - (1 - y) x fade) and heat (WorkEnergyRate and the pressure WorkEnergyRateMin/Max, the warm-up). The other
+falls: 1 - (1 - y) x fade), heat (WorkEnergyRate and the pressure WorkEnergyRateMin/Max, the warm-up), spin
+(SpinSkiddRate) and hot (the grip lost on the overheating side of TemperatureGrip, from 373 K, full from 403 K). The
+race tyres give wear, heat and spin per axle (F, R). The other
 codes, the intermediate and the wet keep the stock values.
 
 The stock 2026 compounds share one Peak, so grip sets the gap between them. The qualifiers set the car's qualifying pace
-(Goodyear 0.97, Pirelli 0.99: Las Vegas 1:40.0-1:42.4 in the AI build's car model); the race tyres sit at 0.895 (Goodyear)
-and 0.91 (Pirelli), which with the race engine (native quali_engine.cpp) puts the best race lap 4-6.2 % over the
+(Goodyear 0.97, Pirelli 0.99: Las Vegas 1:40.0-1:42.4 in the AI build's car model); the race tyres sit at 0.895 to 0.90 (Goodyear)
+and 0.91 to 0.915 (Pirelli), which with the race engine (native quali_engine.cpp) puts the best race lap 4-6.2 % over the
 qualifying lap in the AI build's car model, the 1990 gap (pole to race fastest lap: Monza +4.5 %, Monaco +3.9 %, Hungary
 +5.3 %, Suzuka +7.5 %).
 
@@ -45,14 +47,20 @@ GROUPS = {"goodyear": "F1_1990", "pirelli": "F1_1990P"}
 
 GOODYEAR = {
     "uso": {"name": "Goodyear qualifier", "grip": 0.97, "wear": 6.0, "fade": 2.0, "heat": 1.2},
-    "sup": {"name": "Goodyear D", "grip": 0.895, "wear": 0.9, "fade": 1.0, "heat": 1.0},
-    "sof": {"name": "Goodyear C", "grip": 0.895, "wear": 0.85, "fade": 1.0, "heat": 1.0},
+    "sup": {"name": "Goodyear D", "grip": 0.90, "wear": {"F": 0.30, "R": 0.22}, "fade": 0.30,
+            "heat": {"F": 0.95, "R": 0.80}, "spin": {"F": 0.8, "R": 0.6}, "hot": 0.5},
+    "sof": {"name": "Goodyear C", "grip": 0.895, "wear": {"F": 0.22, "R": 0.17}, "fade": 0.28,
+            "heat": {"F": 0.95, "R": 0.80}, "spin": {"F": 0.8, "R": 0.6}, "hot": 0.45},
 }
 PIRELLI = {
     "uso": {"name": "Pirelli qualifier", "grip": 0.99, "wear": 7.0, "fade": 2.4, "heat": 1.3},
-    "sup": {"name": "Pirelli soft", "grip": 0.91, "wear": 1.3, "fade": 1.35, "heat": 1.1},
-    "sof": {"name": "Pirelli medium", "grip": 0.91, "wear": 1.25, "fade": 1.3, "heat": 1.1},
+    "sup": {"name": "Pirelli soft", "grip": 0.915, "wear": {"F": 0.35, "R": 0.26}, "fade": 0.38,
+            "heat": {"F": 1.05, "R": 0.88}, "spin": {"F": 0.8, "R": 0.6}, "hot": 0.65},
+    "sof": {"name": "Pirelli medium", "grip": 0.91, "wear": {"F": 0.26, "R": 0.20}, "fade": 0.34,
+            "heat": {"F": 1.05, "R": 0.88}, "spin": {"F": 0.8, "R": 0.6}, "hot": 0.6},
 }
+HOT_FROM = 373.15
+HOT_FULL = 403.15
 PHYSICS = {"goodyear": GOODYEAR, "pirelli": PIRELLI}
 VARIANTS = {
     "historical": {"goodyear": "goodyear", "pirelli": "pirelli"},
@@ -90,6 +98,28 @@ def fade(text, k):
     return re.sub(rb'<WearGrip .*?</WearGrip>', spline, text, flags=re.S)
 
 
+def per_end(v, end):
+    return v[end] if isinstance(v, dict) else v
+
+
+def spin(text, k):
+    return scale_values(text, (b'SpinSkiddRate',), k)
+
+
+def hot_side(text, k):
+    def temperature(m):
+        def one(p):
+            x = float(p.group(1))
+            if x <= HOT_FROM:
+                return p.group(0)
+            ramp = min(1.0, (x - HOT_FROM) / (HOT_FULL - HOT_FROM))
+            keep = 1 - ramp * (1 - k)
+            y = 1 - (1 - float(p.group(2))) * keep
+            return f'<SplineElement x="{p.group(1)}" y="{y:.6g}"'.encode()
+        return re.sub(rb'<SplineElement x="([-0-9.eE]+)" y="([-0-9.eE]+)"', one, m.group(0))
+    return re.sub(rb'<TemperatureGrip .*?</TemperatureGrip>', temperature, text, flags=re.S)
+
+
 def compound(block, code, end, group, physics):
     out = block.replace(f'name="{STOCK_GROUP}_{code.upper()}{end}"'.encode(),
                         f'name="{group}_{code.upper()}{end}"'.encode(), 1)
@@ -98,8 +128,12 @@ def compound(block, code, end, group, physics):
         return out
     out = re.sub(rb'<!--[^\n]*?-->', f'<!-- {p["name"]} {"front" if end == "F" else "rear"} -->'.encode(), out, count=1)
     out = scale_attrs(out, (b'Peak', b'PeakMin', b'PeakMax'), p["grip"])
-    out = scale_values(out, (b'WearRate', b'WearRateMin', b'WearRateMax'), p["wear"])
-    out = scale_values(out, (b'WorkEnergyRate', b'WorkEnergyRateMin', b'WorkEnergyRateMax'), p["heat"])
+    out = scale_values(out, (b'WearRate', b'WearRateMin', b'WearRateMax'), per_end(p["wear"], end))
+    out = scale_values(out, (b'WorkEnergyRate', b'WorkEnergyRateMin', b'WorkEnergyRateMax'), per_end(p["heat"], end))
+    if "spin" in p:
+        out = spin(out, per_end(p["spin"], end))
+    if "hot" in p:
+        out = hot_side(out, p["hot"])
     return fade(out, p["fade"]) if p["fade"] != 1.0 else out
 
 
