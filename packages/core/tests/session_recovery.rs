@@ -280,6 +280,20 @@ fn a_session_rolled_back_when_the_game_exits_leaves_the_folder_byte_identical() 
 }
 
 #[test]
+fn tidy_removes_the_launcher_saves_status_and_nothing_else_of_the_loaders() {
+    let f = Fixture::new("status");
+    let game = f.game();
+    let status = f.game.join("swofty").join("launcher-saves.json");
+    write(&status, "{}");
+    let other = f.game.join("swofty").join("keep.json");
+    write(&other, "{}");
+    let inst = Installer::new(&f.data, &game);
+    inst.tidy(&f.data.join("sessions").join("logs")).unwrap();
+    assert!(!status.exists());
+    assert!(other.is_file());
+}
+
+#[test]
 fn a_live_session_is_never_rolled_back_underneath_it() {
     let f = Fixture::new("live");
     let game = f.game();
