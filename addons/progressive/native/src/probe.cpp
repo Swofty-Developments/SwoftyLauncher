@@ -378,7 +378,7 @@ void probe(const swofty::career::State &state)
         skip_once(std::string(kProbePath) + " is not a JSON object");
         return;
     }
-    if (!names::load()) {
+    if (!names::load_wait()) {
         skip_once("the gamedb labels are not loaded yet");
         return;
     }

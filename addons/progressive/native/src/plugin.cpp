@@ -18,7 +18,7 @@
 
 namespace {
 
-constexpr const char *kVersion = "1.2.8";
+constexpr const char *kVersion = "1.2.9";
 
 void on_career(const SwoftyEvent *ev, void *)
 {
