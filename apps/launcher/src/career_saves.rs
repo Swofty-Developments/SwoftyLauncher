@@ -16,7 +16,7 @@ use swofty_core::vault::cloud;
 use swofty_core::vault::restore::Running;
 use swofty_core::vault::{self, EventKind, Location, Notice, Reason, Snapshot, Vault};
 
-use crate::addons::{DETAIL_W, FILTERS_W, SPLIT_AT, ago, facet_row};
+use crate::addons::{DETAIL_W, FILTERS_W, SPLIT_AT, ago, facet_row, facet_row_with};
 use crate::library::plural;
 use crate::pages::{GUTTER, fact, label, tag};
 use crate::shell::{Page, Prompt, Shell};
@@ -31,6 +31,7 @@ enum Group {
 
 pub(crate) const VANILLA_NOTE: &str =
     "Plays on your Steam save. Careers here show after you play a profile that started from it.";
+const IMPORTED_NOTE: &str = "Your careers are in this save. They're listed after you play this profile once.";
 pub(crate) const NOTICE_TITLE: &str = "Your careers have their own saves now";
 pub(crate) const NOTICE_BODY: &str = "Each profile now has its own save, starting from a copy of your Steam save. Playing from Steam still uses your Steam save, and Vanilla plays on it too.";
 
@@ -168,8 +169,14 @@ impl Entry {
     }
 }
 
+struct Imported {
+    title: String,
+    at: Option<i64>,
+}
+
 struct ProfileData {
     profile: String,
+    imported: Option<Imported>,
     active: bool,
     loc: Option<Location>,
     launcher_off: bool,
@@ -399,6 +406,32 @@ fn last_played(v: &Vault, snaps: &[Snapshot]) -> Option<i64> {
     events.chain(taken).max()
 }
 
+fn imported_from(snaps: &[Snapshot]) -> Imported {
+    let found = snaps
+        .iter()
+        .find(|s| matches!(s.reason, Reason::Imported | Reason::ImportedProfile));
+    let title = match found {
+        Some(s) if s.reason == Reason::ImportedProfile => {
+            let from = s
+                .note
+                .as_deref()
+                .and_then(|n| n.strip_prefix("copied from "))
+                .and_then(|d| Path::new(d).parent())
+                .and_then(|d| d.file_name())
+                .map(|n| n.to_string_lossy().into_owned());
+            match from {
+                Some(f) => format!("Copied from {f}"),
+                None => "Copied from another profile".to_owned(),
+            }
+        }
+        _ => "Imported Steam save".to_owned(),
+    };
+    Imported {
+        title,
+        at: found.map(|s| s.at),
+    }
+}
+
 fn save_size(loc: &Location) -> u64 {
     loc.files()
         .unwrap_or_default()
@@ -440,9 +473,11 @@ impl Shell {
                     Some(plan) => plan.order.into_iter().collect(),
                     None => BTreeSet::new(),
                 };
+                let has_save = loc.as_ref().is_some_and(launcher_saves::has_files);
                 ProfileData {
+                    imported: (!vanilla && has_save && entries.is_empty()).then(|| imported_from(&snaps)),
                     active: name == active_name,
-                    has_save: loc.as_ref().is_some_and(launcher_saves::has_files),
+                    has_save,
                     size: loc.as_ref().map(save_size).unwrap_or(0),
                     profile: name,
                     loc,
@@ -685,6 +720,17 @@ impl Shell {
             && e.matches(query)
     }
 
+    fn placeholder_passes(&self, d: &ProfileData, query: &str) -> bool {
+        d.imported.as_ref().is_some_and(|i| {
+            self.saves.profile.as_ref().is_none_or(|p| *p == d.profile)
+                && self.saves.statuses.is_empty()
+                && self.saves.modes.is_empty()
+                && (query.is_empty()
+                    || i.title.to_lowercase().contains(query)
+                    || d.profile.to_lowercase().contains(query))
+        })
+    }
+
     fn saves_filtering(&self, query: &str) -> bool {
         !query.is_empty()
             || self.saves.profile.is_some()
@@ -849,15 +895,26 @@ impl Shell {
             let name = d.profile.clone();
             let on = self.saves.profile.as_deref() == Some(name.as_str());
             let n = count(Group::Profile, &|e| e.profile == name);
+            let imported = self.placeholder_passes(d, query);
             profile_rows.push(
-                facet_row(format!("saves-profile-{name}"), on, d.name(), n, p)
-                    .on_click(cx.listener(move |this, _, _, cx| {
-                        this.saves.profile = Some(name.clone());
-                        this.saves.career = None;
-                        this.refresh_saves();
-                        cx.notify();
-                    }))
-                    .into_any_element(),
+                facet_row_with(
+                    format!("saves-profile-{name}"),
+                    on,
+                    d.name(),
+                    match imported {
+                        true => "Imported".to_owned(),
+                        false => n.to_string(),
+                    },
+                    n == 0 && !imported,
+                    p,
+                )
+                .on_click(cx.listener(move |this, _, _, cx| {
+                    this.saves.profile = Some(name.clone());
+                    this.saves.career = None;
+                    this.refresh_saves();
+                    cx.notify();
+                }))
+                .into_any_element(),
             );
         }
         let status_rows: Vec<AnyElement> = StatusFilter::ALL
@@ -987,10 +1044,17 @@ impl Shell {
         if !split && self.saves.career.is_none() && profile_only.is_some() {
             children.push(self.saves_detail(view, true, p, cx));
         }
-        for e in &rows {
-            children.push(self.career_row(e, view, p, cx));
-            if !split && self.saves.career.as_ref() == Some(&e.key()) {
-                children.push(self.saves_detail(view, true, p, cx));
+        let mut placeholders = 0;
+        for d in &view.profiles {
+            if self.placeholder_passes(d, query) {
+                placeholders += 1;
+                children.push(self.imported_row(d, p, cx));
+            }
+            for e in d.entries.iter().filter(|e| self.career_passes(e, query, None)) {
+                children.push(self.career_row(e, view, p, cx));
+                if !split && self.saves.career.as_ref() == Some(&e.key()) {
+                    children.push(self.saves_detail(view, true, p, cx));
+                }
             }
         }
         let empty = |text: &'static str, clear: bool, cx: &mut Context<Self>| {
@@ -1025,7 +1089,7 @@ impl Shell {
                 })
                 .into_any_element()
         };
-        if rows.is_empty() {
+        if rows.is_empty() && placeholders == 0 {
             let never = profile_only.is_some_and(|d| d.entries.is_empty())
                 && self.saves.statuses.is_empty()
                 && self.saves.modes.is_empty()
@@ -1080,6 +1144,90 @@ impl Shell {
                     )))
                     .children(children),
             )
+            .into_any_element()
+    }
+
+    fn imported_row(&self, d: &ProfileData, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+        let Some(i) = d.imported.as_ref() else {
+            return div().into_any_element();
+        };
+        let selected =
+            self.saves.profile.as_deref() == Some(d.profile.as_str()) && self.saves.career.is_none();
+        let name = d.profile.clone();
+        h_flex()
+            .id(SharedString::from(format!("imported-{}", d.profile)))
+            .relative()
+            .min_h(px(52.))
+            .px(px(12.))
+            .py(px(6.))
+            .gap(px(10.))
+            .flex_shrink_0()
+            .border_t_1()
+            .border_color(p.border_variant)
+            .cursor_pointer()
+            .map(|r| match selected {
+                true => r.bg(p.selected),
+                false => r.hover(move |s| s.bg(p.hover)),
+            })
+            .when(selected, |r| {
+                r.child(
+                    div()
+                        .absolute()
+                        .left_0()
+                        .top_0()
+                        .bottom_0()
+                        .w(px(3.))
+                        .bg(p.accent),
+                )
+            })
+            .child(
+                div().w(px(108.)).flex_shrink_0().child(
+                    h_flex()
+                        .gap(px(6.))
+                        .items_center()
+                        .text_color(p.text_muted)
+                        .child(Icon::new(IconName::Save).size(px(16.)))
+                        .child(div().text_size(px(12.)).child("Saved game")),
+                ),
+            )
+            .child(
+                v_flex()
+                    .flex_1()
+                    .min_w_0()
+                    .gap(px(2.))
+                    .child(
+                        div()
+                            .truncate()
+                            .text_size(px(14.))
+                            .font_weight(FontWeight::MEDIUM)
+                            .child(i.title.clone()),
+                    )
+                    .child(
+                        div()
+                            .truncate()
+                            .text_size(px(12.))
+                            .text_color(p.text_muted)
+                            .child(IMPORTED_NOTE),
+                    )
+                    .child(
+                        h_flex()
+                            .gap(px(6.))
+                            .text_size(px(12.))
+                            .text_color(p.text_placeholder)
+                            .child(tag(d.profile.clone(), p))
+                            .children(i.at.map(|at| format!("imported {}", ago(at as f64)))),
+                    ),
+            )
+            .on_click(cx.listener(move |this, _, _, cx| {
+                this.saves.profile = match this.saves.profile.as_deref() == Some(name.as_str()) {
+                    true => None,
+                    false => Some(name.clone()),
+                };
+                this.saves.career = None;
+                this.saves.confirm = None;
+                this.refresh_saves();
+                cx.notify();
+            }))
             .into_any_element()
     }
 
@@ -1335,7 +1483,10 @@ impl Shell {
             div()
                 .text_size(px(13.))
                 .text_color(p.text_muted)
-                .child("No careers listed yet. They appear the first time you play this profile.")
+                .child(match d.imported {
+                    Some(_) => IMPORTED_NOTE,
+                    None => "No careers listed yet. They appear the first time you play this profile.",
+                })
         });
         let (label_text, copy_note) = match entry {
             Some(_) => (
@@ -2098,5 +2249,27 @@ mod tests {
         assert_eq!(StatusFilter::of(State::Present), StatusFilter::Present);
         assert_eq!(StatusFilter::of(State::Missing).label(), "Missing");
         assert_eq!(StatusFilter::of(State::DeletedInGame).label(), "Deleted in game");
+    }
+
+    #[test]
+    fn an_imported_save_with_no_listing_gets_a_titled_placeholder() {
+        use swofty_core::vault::{Meta, Reason, Taken};
+        let d = data("imported");
+        let loc = swofty_core::vault::Location::launcher(&d, "default");
+        std::fs::create_dir_all(&loc.dir).unwrap();
+        std::fs::write(loc.dir.join("savegame@profile#NXDSMWW.BWW"), [1u8; 64]).unwrap();
+        std::fs::write(loc.dir.join("savegame@profile#QKRHMYXE"), [2u8; 16]).unwrap();
+        let v = Vault::of(&d, &loc).unwrap();
+        let note = format!("copied from {}", d.join("saves/progressive/remote").display());
+        let Taken::New(_) = v
+            .snapshot(&loc, Meta::new(Reason::ImportedProfile).note(note), 700)
+            .unwrap()
+        else {
+            panic!()
+        };
+        let i = super::imported_from(&v.list().unwrap());
+        assert_eq!(i.title, "Copied from progressive");
+        assert_eq!(i.at, Some(700));
+        assert_eq!(super::imported_from(&[]).title, "Imported Steam save");
     }
 }

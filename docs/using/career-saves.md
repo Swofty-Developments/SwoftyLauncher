@@ -28,7 +28,7 @@ MODE
 - **Profile**, **Status** and **Mode** filter the list, and the search box matches a career's name, driver, team, mode and profile.
 - Each row is one career: mode, driver and team, season, the profile it is in, when it was last played, the addons it needs (red when off in that profile) and a status chip when it isn't in your save.
 - Picking a career opens its details on the right, below the row on a narrow window. **Copy to profile…** copies the whole save of that profile over another profile's save, after a confirm that names both and keeps the target's current save as a version first.
-- Picking a profile in the filter with no career selected shows that profile: when it was last played (from its sessions), the size of its save, **Copy careers to…** and its versions. A profile that was never played from this launcher reads `No careers listed yet. They appear the first time you play this profile.`
+- Picking a profile in the filter with no career selected shows that profile: when it was last played (from its sessions), the size of its save, **Copy careers to…** and its versions. A profile whose save was imported or copied in, with no careers listed yet, shows one entry (`Imported Steam save` or `Copied from <profile>`) that opens the profile; the Profile filter counts it as `Imported`. A profile with no save at all reads `Your careers are in this save. They're listed after you play this profile once.`
 - The Vanilla profile plays on your Steam save. Its details show the Steam Cloud status when it is known.
 
 ## Versions
