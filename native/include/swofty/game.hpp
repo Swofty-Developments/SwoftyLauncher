@@ -1,4 +1,6 @@
 #pragma once
+#include <swofty/game/assets.hpp>
+#include <swofty/game/audio.hpp>
 #include <swofty/game/car.hpp>
 #include <swofty/game/career.hpp>
 #include <swofty/game/core.hpp>

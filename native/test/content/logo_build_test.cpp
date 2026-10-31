@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <set>
 #include <sstream>
 
 namespace content = swofty_core::apply::content;
@@ -182,6 +183,7 @@ int main(int argc, char **argv)
     check(res.changes.size() == 3 && res.changes.count(lb::DATABASES) && res.changes.count(list[1]) && res.changes.count(list[3]) &&
               !res.changes.count(list[2]),
           "the two carriers and databases.erp change, the archive without the array does not");
+    check(res.read == std::set<std::string>{lb::DATABASES, list[1], list[3]}, "the build reads databases.erp and the two carriers");
 
     fs::path out = argc > 2 ? argv[2] : "../build/bc7/logo_out";
     fs::create_directories(out);

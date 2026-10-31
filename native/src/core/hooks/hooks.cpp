@@ -4,6 +4,7 @@
 
 #include "../blackbox.hpp"
 #include "../perf.hpp"
+#include "core_events.hpp"
 #include "guard.hpp"
 #include "hooks.hpp"
 
@@ -344,6 +345,10 @@ void bridge_legacy(const char *event, int64_t a, int64_t b, const void *data)
     }
     if (id == "career.hub" && a != 1)
         return;
+    if (id == "session.lap") {
+        events::session_lap(uint32_t(a));
+        return;
+    }
     fire_shell(e->id);
     if (id == "career.unloaded")
         update_facts([](Facts &f) {
