@@ -689,6 +689,7 @@ struct Db<'a> {
     removed: Vec<usize>,
     added_rows: HashSet<String>,
     moved: HashMap<(String, String), String>,
+    ties: std::cell::RefCell<Vec<String>>,
 }
 
 impl<'a> Db<'a> {
@@ -703,7 +704,20 @@ impl<'a> Db<'a> {
             removed: Vec::new(),
             added_rows: HashSet::new(),
             moved: HashMap::new(),
+            ties: std::cell::RefCell::new(Vec::new()),
         }
+    }
+
+    fn drain_ties(&self, cx: &mut Cx) -> Result<()> {
+        for tie in self.ties.take() {
+            if cx.strict {
+                return Err(Error::Resolve(format!("{tie} (strict)")));
+            }
+            if !cx.report.warnings.contains(&tie) {
+                cx.report.warnings.push(tie);
+            }
+        }
+        Ok(())
     }
 
     fn remove(&mut self, key: u64) -> bool {
@@ -805,7 +819,14 @@ pub fn first_segment(path: &str) -> Result<(Segment<'_>, Option<&str>)> {
     Ok((segment, inner[close + 1..].strip_prefix('.')))
 }
 
-fn select_row(db: &Db, table: &Base, row: &str, field: &str, want: &str) -> std::result::Result<Base, usize> {
+fn select_row(
+    db: &Db,
+    table: &Base,
+    row: &str,
+    field: &str,
+    want: &str,
+    first_wins: bool,
+) -> std::result::Result<(Base, usize), usize> {
     let count = match table {
         Base::Path(t) if !row.is_empty() => db.instance_count(t, row),
         _ => None,
@@ -830,12 +851,18 @@ fn select_row(db: &Db, table: &Base, row: &str, field: &str, want: &str) -> std:
         }
     }
     match hits.len() {
-        1 => Ok(hits.remove(0)),
+        0 => Err(0),
+        1 => Ok((hits.remove(0), 1)),
+        n if first_wins => Ok((hits.remove(0), n)),
         n => Err(n),
     }
 }
 
 fn resolve_path(db: &Db, path: &str) -> Result<Base> {
+    resolve_path_with(db, path, true)
+}
+
+fn resolve_path_with(db: &Db, path: &str, first_wins: bool) -> Result<Base> {
     if !path.contains('[') {
         return parse_base(path);
     }
@@ -855,9 +882,16 @@ fn resolve_path(db: &Db, path: &str) -> Result<Base> {
                     Some(b) => (b, seg.name),
                     None => (parse_base(seg.name)?, ""),
                 };
-                match select_row(db, &table, row, field, want) {
-                    Ok(b) => {
+                match select_row(db, &table, row, field, want, first_wins) {
+                    Ok((b, matched)) => {
                         nested = true;
+                        if matched > 1 {
+                            let upto = &path[..path.len() - tail.map_or(0, |t| t.len() + 1)];
+                            db.ties.borrow_mut().push(format!(
+                                "{upto}: {matched} rows match; using the first, {}",
+                                b.key("")
+                            ));
+                        }
                         b
                     }
                     Err(n) => {
@@ -899,7 +933,7 @@ fn resolve_value(db: &Db, path: &str) -> Result<String> {
 fn resolve_key(db: &Db, key: &str) -> Result<u64> {
     match key.starts_with("0x") || !key.contains('[') {
         true => record_key(key),
-        false => Ok(resolve_path(db, key)?.key("")),
+        false => Ok(resolve_path_with(db, key, false)?.key("")),
     }
 }
 
@@ -924,7 +958,9 @@ pub fn apply_db_ops_report(
     };
     let mut replaced = Vec::new();
     for op in &ops.ops {
-        replaced.extend(apply(&mut db, op, &schema, &mut cx)?);
+        let applied = apply(&mut db, op, &schema, &mut cx);
+        db.drain_ties(&mut cx)?;
+        replaced.extend(applied?);
     }
     db.finish();
     Ok(replaced)
@@ -950,7 +986,9 @@ pub fn apply_db_ops_lenient(
     let mut replaced = Vec::new();
     let mut failed = Vec::new();
     for (i, op) in ops.ops.iter().enumerate() {
-        match apply(&mut db, op, &schema, &mut cx) {
+        let applied = apply(&mut db, op, &schema, &mut cx);
+        let ties = db.drain_ties(&mut cx);
+        match applied.and_then(|key| ties.map(|()| key)) {
             Ok(key) => replaced.extend(key),
             Err(e) => failed.push((i, e)),
         }
@@ -967,6 +1005,7 @@ pub fn apply_db_op(db: &mut Gvdb, op: &DbOp, names: &dyn FieldNames) -> Result<O
         report: &mut report,
     };
     let replaced = apply(&mut db, op, names, &mut cx)?;
+    db.drain_ties(&mut cx)?;
     db.finish();
     Ok(replaced)
 }
@@ -1942,6 +1981,60 @@ mod tests {
         apply_db_ops(&mut db(), &ops(&strict), &names()).unwrap();
     }
 
+    fn set_track_op(select: &str, value: &str) -> DbOp {
+        DbOp::Set {
+            select: select.to_owned(),
+            field: "track".into(),
+            value: Some(value.into()),
+            value_from: None,
+            datasets: Vec::new(),
+            create: false,
+            tag: None,
+        }
+    }
+
+    #[test]
+    fn duplicate_labels_resolve_to_the_earliest_row_with_a_warning() {
+        let select = "track_data.game_setup.TrackDataSet[_metadata_=f1].TrackData[_metadata_=okayama]";
+        let mut ops = ops(r#"{"schema_version": 1, "ops": []}"#);
+        ops.ops = vec![set_track_op(select, "first"), set_track_op(select, "again")];
+        let mut db = track_db();
+        let mut report = DbReport::default();
+        apply_db_ops_report(&mut db, &ops, &names(), &mut report).unwrap();
+        assert_eq!(report.warnings.len(), 1, "{:?}", report.warnings);
+        assert!(
+            report.warnings[0].starts_with(&format!("{select}: 2 rows match; using the first")),
+            "{:?}",
+            report.warnings
+        );
+        let value = |row: usize| {
+            let key = fnv1a64(format!("{SETS}.TrackDataSet_0.TrackData_{row}.track"));
+            db.records
+                .iter()
+                .find(|r| r.key == key)
+                .map(|r| String::from_utf8_lossy(&r.value).into_owned())
+        };
+        assert_eq!(value(1).as_deref(), Some("again"));
+        assert_eq!(value(2).as_deref(), Some("okayama"));
+    }
+
+    #[test]
+    fn duplicate_labels_still_fail_where_the_choice_changes_the_result() {
+        let key =
+            "track_data.game_setup.TrackDataSet[_metadata_=f1].TrackData[_metadata_=okayama]._metadata_";
+        let op = DbOp::RemoveRecord {
+            key: key.into(),
+            allow_stock_removal: true,
+        };
+        let err = apply_db_op(&mut track_db(), &op, &names())
+            .unwrap_err()
+            .to_string();
+        assert!(
+            err.ends_with("2 rows match in track_data.game_setup.TrackDataSet_0.TrackData"),
+            "{err}"
+        );
+    }
+
     #[test]
     fn remove_record_keeps_stock_records_unless_the_op_allows_it() {
         let mut db = db();
@@ -2097,11 +2190,6 @@ mod tests {
         assert_eq!(
             set("track_data.game_setup.TrackDataSet[_metadata_=f9].TrackData[_metadata_=suzuka]"),
             "track_data.game_setup.TrackDataSet[_metadata_=f9]: no row matches"
-        );
-        assert_eq!(
-            set("track_data.game_setup.TrackDataSet[_metadata_=f1].TrackData[_metadata_=okayama]"),
-            "track_data.game_setup.TrackDataSet[_metadata_=f1].TrackData[_metadata_=okayama]: \
-             2 rows match in track_data.game_setup.TrackDataSet_0.TrackData"
         );
         assert_eq!(
             set("track_data.game_setup.TrackDataSet[_metadata_=f1_2026].TrackData[_metadata_=okayama]"),

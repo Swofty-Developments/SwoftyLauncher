@@ -69,6 +69,7 @@ applying yourname.my-addon: rules.stop_go_penalty.penalty_duraton: no such key
 - `value_from` instead of `value` copies the value of another database path.
 - `"create": true` with a `"type"` tag adds the field when the row lacks it.
 - A `select` that matches no row fails the build. So does a missing field, without `create`.
+- A `select` that matches several rows takes the first one, which is the stock row, or else the row the earliest addon in the load order added. The build warns once per selector: `<select>: 2 rows match; using the first, <row>`. `key` paths of `put-record` and `remove-record` still fail with `<select>: 2 rows match`, and so does a `strict` file.
 - `datasets` is accepted but not built: a `set` with it fails.
 
 ```text
