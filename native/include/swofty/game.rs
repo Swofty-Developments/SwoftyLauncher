@@ -53,17 +53,7 @@ pub struct CarDamageBodyPart {
 }
 
 #[repr(C)]
-pub struct CarDamageSuspension {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
 pub struct CarDebugSystem {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct CarDifferential {
     _opaque: [u8; 0],
 }
 
@@ -108,11 +98,6 @@ pub struct CarSpline {
 }
 
 #[repr(C)]
-pub struct CarSteering {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
 pub struct CarSuspAxle {
     _opaque: [u8; 0],
 }
@@ -139,11 +124,6 @@ pub struct CarSuspension {
 
 #[repr(C)]
 pub struct CarTuning {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct CarTurbo {
     _opaque: [u8; 0],
 }
 
@@ -394,29 +374,90 @@ const _: () = assert!(core::mem::offset_of!(CarChassis, mass) == 0x150);
 
 #[repr(C)]
 pub struct CarDamageFrontWing {
-    _pad_0x0: [u8; 0xa8],
+    _pad_0x0: [u8; 0x28],
+    pub speed_threshold: f32,
+    pub damage_scale: f32,
+    _pad_0x30: [u8; 0x4],
+    pub side_detach_scale: f32,
+    pub full_detach_scale: f32,
+    _pad_0x3c: [u8; 0x6c],
     pub parts_allocator: *mut c_void,
     pub parts_begin: *mut *mut c_void,
     pub parts_end: *mut *mut c_void,
     pub parts_capacity: u64,
 }
+const _: () = assert!(core::mem::offset_of!(CarDamageFrontWing, speed_threshold) == 0x28);
+const _: () = assert!(core::mem::offset_of!(CarDamageFrontWing, damage_scale) == 0x2c);
+const _: () = assert!(core::mem::offset_of!(CarDamageFrontWing, side_detach_scale) == 0x34);
+const _: () = assert!(core::mem::offset_of!(CarDamageFrontWing, full_detach_scale) == 0x38);
 const _: () = assert!(core::mem::offset_of!(CarDamageFrontWing, parts_allocator) == 0xa8);
 const _: () = assert!(core::mem::offset_of!(CarDamageFrontWing, parts_begin) == 0xb0);
 const _: () = assert!(core::mem::offset_of!(CarDamageFrontWing, parts_end) == 0xb8);
 const _: () = assert!(core::mem::offset_of!(CarDamageFrontWing, parts_capacity) == 0xc0);
 
 #[repr(C)]
-pub struct CarObfFloat {}
+pub struct CarDamageSuspension {
+    _pad_0x0: [u8; 0x28],
+    pub speed_threshold_obf: u32,
+    _pad_0x2c: [u8; 0xc],
+    pub front_damage_scale_obf: u32,
+    _pad_0x3c: [u8; 0xc],
+    pub rear_damage_scale_obf: u32,
+    _pad_0x4c: [u8; 0xc],
+    pub wheel_detach_scale_obf: u32,
+    _pad_0x5c: [u8; 0xc],
+    pub parts_detach_scale_obf: u32,
+    _pad_0x6c: [u8; 0xc],
+    pub linear_fracture_limit: f32,
+    pub angular_fracture_limit: f32,
+}
+const _: () = assert!(core::mem::offset_of!(CarDamageSuspension, speed_threshold_obf) == 0x28);
+const _: () = assert!(core::mem::offset_of!(CarDamageSuspension, front_damage_scale_obf) == 0x38);
+const _: () = assert!(core::mem::offset_of!(CarDamageSuspension, rear_damage_scale_obf) == 0x48);
+const _: () = assert!(core::mem::offset_of!(CarDamageSuspension, wheel_detach_scale_obf) == 0x58);
+const _: () = assert!(core::mem::offset_of!(CarDamageSuspension, parts_detach_scale_obf) == 0x68);
+const _: () = assert!(core::mem::offset_of!(CarDamageSuspension, linear_fracture_limit) == 0x78);
+const _: () = assert!(core::mem::offset_of!(CarDamageSuspension, angular_fracture_limit) == 0x7c);
+
+#[repr(C)]
+pub struct CarDifferential {
+    _pad_0x0: [u8; 0x8],
+    pub car: *mut CarLive,
+    _pad_0x10: [u8; 0xdc],
+    pub diff_off_throttle: f32,
+    pub diff_on_throttle: f32,
+}
+const _: () = assert!(core::mem::offset_of!(CarDifferential, car) == 0x8);
+const _: () = assert!(core::mem::offset_of!(CarDifferential, diff_off_throttle) == 0xec);
+const _: () = assert!(core::mem::offset_of!(CarDifferential, diff_on_throttle) == 0xf0);
+
+#[repr(C)]
+pub struct CarObfFloat {
+    pub a: u32,
+    _pad_0x4: [u8; 0x4],
+    pub b: u32,
+}
+const _: () = assert!(core::mem::offset_of!(CarObfFloat, a) == 0x0);
+const _: () = assert!(core::mem::offset_of!(CarObfFloat, b) == 0x8);
 
 #[repr(C)]
 pub struct CarEngine {
-    _pad_0x0: [u8; 0x2528],
+    _pad_0x0: [u8; 0x8],
+    pub car: *mut CarLive,
+    _pad_0x10: [u8; 0x8a0],
+    pub vtf_limiter_rotation_rate: CarObfFloat,
+    _pad_0x8bc: [u8; 0x1c5c],
+    pub max_torque: CarObfFloat,
+    _pad_0x2524: [u8; 0x4],
     pub limiter_rotation_rate: f32,
     _pad_0x252c: [u8; 0xc],
     pub rotation_rate: f32,
     _pad_0x253c: [u8; 0x38],
     pub throttle: f32,
 }
+const _: () = assert!(core::mem::offset_of!(CarEngine, car) == 0x8);
+const _: () = assert!(core::mem::offset_of!(CarEngine, vtf_limiter_rotation_rate) == 0x8b0);
+const _: () = assert!(core::mem::offset_of!(CarEngine, max_torque) == 0x2518);
 const _: () = assert!(core::mem::offset_of!(CarEngine, limiter_rotation_rate) == 0x2528);
 const _: () = assert!(core::mem::offset_of!(CarEngine, rotation_rate) == 0x2538);
 const _: () = assert!(core::mem::offset_of!(CarEngine, throttle) == 0x2574);
@@ -430,20 +471,73 @@ const _: () = assert!(core::mem::offset_of!(CarFuelEcu, fuel_mode) == 0x128);
 
 #[repr(C)]
 pub struct CarFuelTank {
-    _pad_0x0: [u8; 0x100],
+    _pad_0x0: [u8; 0x8],
+    pub car: *mut CarLive,
+    _pad_0x10: [u8; 0x88],
+    pub fuel_capacity: CarObfFloat,
+    _pad_0xa4: [u8; 0x5c],
     pub fuel_mass: f32,
     _pad_0x104: [u8; 0x4],
     pub fuel_flow: f32,
 }
+const _: () = assert!(core::mem::offset_of!(CarFuelTank, car) == 0x8);
+const _: () = assert!(core::mem::offset_of!(CarFuelTank, fuel_capacity) == 0x98);
 const _: () = assert!(core::mem::offset_of!(CarFuelTank, fuel_mass) == 0x100);
 const _: () = assert!(core::mem::offset_of!(CarFuelTank, fuel_flow) == 0x108);
 
 #[repr(C)]
 pub struct CarGearBox {
-    _pad_0x0: [u8; 0x680],
+    _pad_0x0: [u8; 0x8],
+    pub car: *mut CarLive,
+    _pad_0x10: [u8; 0x18],
+    pub final_drive_ratio: CarObfFloat,
+    _pad_0x34: [u8; 0x4],
+    pub gear_ratio_reverse: CarObfFloat,
+    _pad_0x44: [u8; 0x14],
+    pub gear_ratio1st: CarObfFloat,
+    _pad_0x64: [u8; 0x4],
+    pub gear_ratio2nd: CarObfFloat,
+    _pad_0x74: [u8; 0x4],
+    pub gear_ratio3rd: CarObfFloat,
+    _pad_0x84: [u8; 0x4],
+    pub gear_ratio4th: CarObfFloat,
+    _pad_0x94: [u8; 0x4],
+    pub gear_ratio5th: CarObfFloat,
+    _pad_0xa4: [u8; 0x4],
+    pub gear_ratio6th: CarObfFloat,
+    _pad_0xb4: [u8; 0x4],
+    pub gear_ratio7th: CarObfFloat,
+    _pad_0xc4: [u8; 0x4],
+    pub gear_ratio8th: CarObfFloat,
+    _pad_0xd4: [u8; 0x4],
+    pub gear_ratio9th: CarObfFloat,
+    _pad_0xe4: [u8; 0x4],
+    pub max_clutch_torque: f32,
+    _pad_0xec: [u8; 0x454],
+    pub use_setup_ratios: u8,
+    _pad_0x541: [u8; 0xb7],
+    pub top_gear_index: i32,
+    pub inv_total_ratio: [f32; 11],
+    _pad_0x628: [u8; 0x58],
     pub gear_index: u32,
     pub target_gear_index: u32,
 }
+const _: () = assert!(core::mem::offset_of!(CarGearBox, car) == 0x8);
+const _: () = assert!(core::mem::offset_of!(CarGearBox, final_drive_ratio) == 0x28);
+const _: () = assert!(core::mem::offset_of!(CarGearBox, gear_ratio_reverse) == 0x38);
+const _: () = assert!(core::mem::offset_of!(CarGearBox, gear_ratio1st) == 0x58);
+const _: () = assert!(core::mem::offset_of!(CarGearBox, gear_ratio2nd) == 0x68);
+const _: () = assert!(core::mem::offset_of!(CarGearBox, gear_ratio3rd) == 0x78);
+const _: () = assert!(core::mem::offset_of!(CarGearBox, gear_ratio4th) == 0x88);
+const _: () = assert!(core::mem::offset_of!(CarGearBox, gear_ratio5th) == 0x98);
+const _: () = assert!(core::mem::offset_of!(CarGearBox, gear_ratio6th) == 0xa8);
+const _: () = assert!(core::mem::offset_of!(CarGearBox, gear_ratio7th) == 0xb8);
+const _: () = assert!(core::mem::offset_of!(CarGearBox, gear_ratio8th) == 0xc8);
+const _: () = assert!(core::mem::offset_of!(CarGearBox, gear_ratio9th) == 0xd8);
+const _: () = assert!(core::mem::offset_of!(CarGearBox, max_clutch_torque) == 0xe8);
+const _: () = assert!(core::mem::offset_of!(CarGearBox, use_setup_ratios) == 0x540);
+const _: () = assert!(core::mem::offset_of!(CarGearBox, top_gear_index) == 0x5f8);
+const _: () = assert!(core::mem::offset_of!(CarGearBox, inv_total_ratio) == 0x5fc);
 const _: () = assert!(core::mem::offset_of!(CarGearBox, gear_index) == 0x680);
 const _: () = assert!(core::mem::offset_of!(CarGearBox, target_gear_index) == 0x684);
 
@@ -460,7 +554,9 @@ pub struct CarLive {
     pub vehicle_id: u8,
     _pad_0xe9: [u8; 0x2af],
     pub system_count: u32,
-    _pad_0x39c: [u8; 0x194],
+    _pad_0x39c: [u8; 0x104],
+    pub upgrades_allocator: *mut c_void,
+    _pad_0x4a8: [u8; 0x88],
     pub engine: *mut c_void,
     pub gearbox: *mut c_void,
     pub fuel_tank: *mut c_void,
@@ -477,7 +573,10 @@ pub struct CarLive {
     pub f1_assists: *mut c_void,
     pub turbo: *mut c_void,
     pub ers: *mut c_void,
-    _pad_0x5b0: [u8; 0x9990],
+    _pad_0x5b0: [u8; 0x18],
+    pub f1_wing_damage: *mut c_void,
+    pub f1_suspension_damage: *mut c_void,
+    _pad_0x5d8: [u8; 0x9968],
     pub handling_version: u32,
 }
 const _: () = assert!(core::mem::offset_of!(CarLive, teleport_tag) == 0x0);
@@ -488,6 +587,7 @@ const _: () = assert!(core::mem::offset_of!(CarLive, teleport_dt) == 0x90);
 const _: () = assert!(core::mem::offset_of!(CarLive, teleport_flags) == 0x94);
 const _: () = assert!(core::mem::offset_of!(CarLive, vehicle_id) == 0xe8);
 const _: () = assert!(core::mem::offset_of!(CarLive, system_count) == 0x398);
+const _: () = assert!(core::mem::offset_of!(CarLive, upgrades_allocator) == 0x4a0);
 const _: () = assert!(core::mem::offset_of!(CarLive, engine) == 0x530);
 const _: () = assert!(core::mem::offset_of!(CarLive, gearbox) == 0x538);
 const _: () = assert!(core::mem::offset_of!(CarLive, fuel_tank) == 0x540);
@@ -503,6 +603,8 @@ const _: () = assert!(core::mem::offset_of!(CarLive, f1_tuning) == 0x590);
 const _: () = assert!(core::mem::offset_of!(CarLive, f1_assists) == 0x598);
 const _: () = assert!(core::mem::offset_of!(CarLive, turbo) == 0x5a0);
 const _: () = assert!(core::mem::offset_of!(CarLive, ers) == 0x5a8);
+const _: () = assert!(core::mem::offset_of!(CarLive, f1_wing_damage) == 0x5c8);
+const _: () = assert!(core::mem::offset_of!(CarLive, f1_suspension_damage) == 0x5d0);
 const _: () = assert!(core::mem::offset_of!(CarLive, handling_version) == 0x9f40);
 
 #[repr(C)]
@@ -513,6 +615,26 @@ pub struct CarNumberComponent {
 }
 const _: () = assert!(core::mem::offset_of!(CarNumberComponent, entity) == 0x278);
 const _: () = assert!(core::mem::size_of::<CarNumberComponent>() == 0x2b8);
+
+#[repr(C)]
+pub struct CarSteering {
+    _pad_0x0: [u8; 0x8],
+    pub car: *mut CarLive,
+    _pad_0x10: [u8; 0x18],
+    pub max_steering_lock: CarObfFloat,
+}
+const _: () = assert!(core::mem::offset_of!(CarSteering, car) == 0x8);
+const _: () = assert!(core::mem::offset_of!(CarSteering, max_steering_lock) == 0x28);
+
+#[repr(C)]
+pub struct CarTurbo {
+    _pad_0x0: [u8; 0x8],
+    pub car: *mut CarLive,
+    _pad_0x10: [u8; 0x2c8],
+    pub max_boost: f32,
+}
+const _: () = assert!(core::mem::offset_of!(CarTurbo, car) == 0x8);
+const _: () = assert!(core::mem::offset_of!(CarTurbo, max_boost) == 0x2d8);
 
 #[repr(C)]
 pub struct CareerBankComponent {
@@ -2538,6 +2660,8 @@ pub type Ne_Play_FullscreenVideo_t = unsafe extern "C" fn(
     layer: i32,
 );
 pub type Ne_Post_BusMessage_t = unsafe extern "C" fn(bus: *mut c_void, msg: *mut c_void) -> u64;
+pub type Ne_PresenceNameResolverFixed_AddName_t =
+    unsafe extern "C" fn(resolver: *mut c_void, user: *const c_void, name: *const c_char);
 pub type Ne_SaveSystem2Win_Mount_t = unsafe extern "C" fn(
     device: *mut c_void,
     op: *mut c_void,
@@ -2662,6 +2786,26 @@ pub type Vm_Set_TabEnabled_t = unsafe extern "C" fn(tabs: usize, node: usize, en
 
 pub mod bindings {
     use super::{Binding, Status};
+    pub const Asset_Load_DevSessionWorlds: Binding = Binding {
+        id: "Asset_Load_DevSessionWorlds",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Asset_Map_EaidToGroupA: Binding = Binding {
+        id: "Asset_Map_EaidToGroupA",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Asset_Unk_142a982b0: Binding = Binding {
+        id: "Asset_Unk_142a982b0",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Asset_Unk_14379dd00: Binding = Binding {
+        id: "Asset_Unk_14379dd00",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Car_Assets_CreateSystemForPerformanceMode: Binding = Binding {
         id: "Car_Assets_CreateSystemForPerformanceMode",
         kind: "func",
@@ -2679,6 +2823,11 @@ pub mod bindings {
     };
     pub const Car_Create_DetachablePart: Binding = Binding {
         id: "Car_Create_DetachablePart",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Engine_ComputeDerived_Thunk: Binding = Binding {
+        id: "Car_Engine_ComputeDerived_Thunk",
         kind: "func",
         status: Status::Experimental,
     };
@@ -2742,8 +2891,18 @@ pub mod bindings {
         kind: "func",
         status: Status::Stable,
     };
+    pub const Car_Systems_Reset_Thunk: Binding = Binding {
+        id: "Car_Systems_Reset_Thunk",
+        kind: "func",
+        status: Status::Stable,
+    };
     pub const Car_Tuning_SetChassisZCom: Binding = Binding {
         id: "Car_Tuning_SetChassisZCom",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Tuning_SetFinalDrive: Binding = Binding {
+        id: "Car_Tuning_SetFinalDrive",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3017,6 +3176,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Stable,
     };
+    pub const FeHome_StoryItem_Populate: Binding = Binding {
+        id: "FeHome_StoryItem_Populate",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const FeTile_Add_EraTile: Binding = Binding {
         id: "FeTile_Add_EraTile",
         kind: "func",
@@ -3051,6 +3215,11 @@ pub mod bindings {
         id: "FeTile_ItemBase_Populate",
         kind: "func",
         status: Status::Stable,
+    };
+    pub const FeTile_ItemGeneric_Populate: Binding = Binding {
+        id: "FeTile_ItemGeneric_Populate",
+        kind: "func",
+        status: Status::Experimental,
     };
     pub const FeTile_Press_EraTile: Binding = Binding {
         id: "FeTile_Press_EraTile",
@@ -3362,6 +3531,21 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_AnimClipResourceFactory_CreateResource: Binding = Binding {
+        id: "Ne_AnimClipResourceFactory_CreateResource",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Application2_OnFocusChanged: Binding = Binding {
+        id: "Ne_Application2_OnFocusChanged",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Application2_OnVisibilityChanged: Binding = Binding {
+        id: "Ne_Application2_OnVisibilityChanged",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_BufferedAssetGroupLoader_GroupSwapAssetGroups: Binding = Binding {
         id: "Ne_BufferedAssetGroupLoader_GroupSwapAssetGroups",
         kind: "func",
@@ -3397,8 +3581,28 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_CrowdPluginProxy_Destructor: Binding = Binding {
+        id: "Ne_CrowdPluginProxy_Destructor",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_CrowdPlugin_LoadXml: Binding = Binding {
         id: "Ne_CrowdPlugin_LoadXml",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_Atanf: Binding = Binding {
+        id: "Ne_Crt_Atanf",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_Powf: Binding = Binding {
+        id: "Ne_Crt_Powf",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_Sinf: Binding = Binding {
+        id: "Ne_Crt_Sinf",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3472,6 +3676,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_FlowStateInterruptManager_ConsumeInterrupt: Binding = Binding {
+        id: "Ne_FlowStateInterruptManager_ConsumeInterrupt",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_FogSet_SetFogData: Binding = Binding {
         id: "Ne_FogSet_SetFogData",
         kind: "func",
@@ -3479,6 +3688,11 @@ pub mod bindings {
     };
     pub const Ne_Format_String: Binding = Binding {
         id: "Ne_Format_String",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Get_CStrLen: Binding = Binding {
+        id: "Ne_Get_CStrLen",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3492,6 +3706,21 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Gfx2Renderer_Initialise: Binding = Binding {
+        id: "Ne_Gfx2Renderer_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2TextureManager_SetInRaceOff: Binding = Binding {
+        id: "Ne_Gfx2TextureManager_SetInRaceOff",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Gfx2TextureManager_SetInRaceOn: Binding = Binding {
+        id: "Ne_Gfx2TextureManager_SetInRaceOn",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Heap_DeallocateNonSmall: Binding = Binding {
         id: "Ne_Heap_DeallocateNonSmall",
         kind: "func",
@@ -3499,6 +3728,11 @@ pub mod bindings {
     };
     pub const Ne_IBLCubeProbe_FreeInterpolatedArrays: Binding = Binding {
         id: "Ne_IBLCubeProbe_FreeInterpolatedArrays",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_InputDeviceDirectInput_ResetForceFeedback: Binding = Binding {
+        id: "Ne_InputDeviceDirectInput_ResetForceFeedback",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3524,6 +3758,11 @@ pub mod bindings {
     };
     pub const Ne_InputSystem_DeviceConnection: Binding = Binding {
         id: "Ne_InputSystem_DeviceConnection",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_InputSystem_Init: Binding = Binding {
+        id: "Ne_InputSystem_Init",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3652,8 +3891,23 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_NetConnectionStore_Deinitialise: Binding = Binding {
+        id: "Ne_NetConnectionStore_Deinitialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_NetConnectionStore_Dtor: Binding = Binding {
+        id: "Ne_NetConnectionStore_Dtor",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_NetConnectionStore_Initialise: Binding = Binding {
         id: "Ne_NetConnectionStore_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_NetConnectionStore_RemoveConnection: Binding = Binding {
+        id: "Ne_NetConnectionStore_RemoveConnection",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3697,6 +3951,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_NetSessionF1OS_CallSessionBrowserCreateSession: Binding = Binding {
+        id: "Ne_NetSessionF1OS_CallSessionBrowserCreateSession",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_NetSessionF1OS_JoinSession: Binding = Binding {
         id: "Ne_NetSessionF1OS_JoinSession",
         kind: "func",
@@ -3717,8 +3976,23 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_NetSessionF1OS_SetSessionInfo: Binding = Binding {
+        id: "Ne_NetSessionF1OS_SetSessionInfo",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_NetSessionF1OS_SetSessionName: Binding = Binding {
         id: "Ne_NetSessionF1OS_SetSessionName",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_NetSessionF1OS_SetStateCreating: Binding = Binding {
+        id: "Ne_NetSessionF1OS_SetStateCreating",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_NetSessionF1OS_UpdateAttributes: Binding = Binding {
+        id: "Ne_NetSessionF1OS_UpdateAttributes",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3754,6 +4028,11 @@ pub mod bindings {
     };
     pub const Ne_NetSystemClassicMatchmaking_CreateSession: Binding = Binding {
         id: "Ne_NetSystemClassicMatchmaking_CreateSession",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_NetSystemClassicMatchmaking_JoinSession: Binding = Binding {
+        id: "Ne_NetSystemClassicMatchmaking_JoinSession",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3877,8 +4156,23 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_NetTransportCommon_BroadcastRemovedConnectionToClients: Binding = Binding {
+        id: "Ne_NetTransportCommon_BroadcastRemovedConnectionToClients",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_NetTransportCommon_FreeConnectionID: Binding = Binding {
+        id: "Ne_NetTransportCommon_FreeConnectionID",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_NetTransportCommon_HandleClientHello: Binding = Binding {
         id: "Ne_NetTransportCommon_HandleClientHello",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_NetTransportCommon_HandleServerDisconnection: Binding = Binding {
+        id: "Ne_NetTransportCommon_HandleServerDisconnection",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3897,8 +4191,23 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_NetTransportCommon_SetLocalConnectivity: Binding = Binding {
+        id: "Ne_NetTransportCommon_SetLocalConnectivity",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_NetTransportCommon_SetMyConnectionId: Binding = Binding {
+        id: "Ne_NetTransportCommon_SetMyConnectionId",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_NetTransportCommon_StartHandshaking: Binding = Binding {
         id: "Ne_NetTransportCommon_StartHandshaking",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_NetTransportLAN_OnConnectionLost: Binding = Binding {
+        id: "Ne_NetTransportLAN_OnConnectionLost",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3922,6 +4231,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_NetTransport_MigrateConnections: Binding = Binding {
+        id: "Ne_NetTransport_MigrateConnections",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_NetVoiceNotificationClient_WaveInAddBuffer: Binding = Binding {
         id: "Ne_NetVoiceNotificationClient_WaveInAddBuffer",
         kind: "func",
@@ -3934,6 +4248,16 @@ pub mod bindings {
     };
     pub const Ne_Network_StartAsync: Binding = Binding {
         id: "Ne_Network_StartAsync",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_OSHTTPRequestAndResponseResponseHandler_CbHttpResponse: Binding = Binding {
+        id: "Ne_OSHTTPRequestAndResponseResponseHandler_CbHttpResponse",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_OSOperationHandle_UnregisterSelf: Binding = Binding {
+        id: "Ne_OSOperationHandle_UnregisterSelf",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3957,8 +4281,38 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_PlayerCustomInputProvider_BindToDevices: Binding = Binding {
+        id: "Ne_PlayerCustomInputProvider_BindToDevices",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PlayerInputProvider_BindToDeviceNode: Binding = Binding {
+        id: "Ne_PlayerInputProvider_BindToDeviceNode",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PlayerInputProvider_SetDeviceBound: Binding = Binding {
+        id: "Ne_PlayerInputProvider_SetDeviceBound",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PlayerManager_DisplayUnsupportedDeviceWarning: Binding = Binding {
+        id: "Ne_PlayerManager_DisplayUnsupportedDeviceWarning",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_PlayerManager_HandleLeadPlayerLogoutOrChangeCallback: Binding = Binding {
         id: "Ne_PlayerManager_HandleLeadPlayerLogoutOrChangeCallback",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PlayerManager_PlatformProcessAllInputDevices: Binding = Binding {
+        id: "Ne_PlayerManager_PlatformProcessAllInputDevices",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PlayerManager_PlatformTryAssignInputToPlayer: Binding = Binding {
+        id: "Ne_PlayerManager_PlatformTryAssignInputToPlayer",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3992,8 +4346,158 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_PresenceNameResolverEADP_OnBatchPlayerCardsRequestComplete: Binding = Binding {
+        id: "Ne_PresenceNameResolverEADP_OnBatchPlayerCardsRequestComplete",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PresenceNameResolverEADP_UpdateToResolveList: Binding = Binding {
+        id: "Ne_PresenceNameResolverEADP_UpdateToResolveList",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PresenceNameResolverEADP_UpdateToResolveList_Lambda: Binding = Binding {
+        id: "Ne_PresenceNameResolverEADP_UpdateToResolveList_Lambda",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PresenceNameResolverFixed_AddName: Binding = Binding {
+        id: "Ne_PresenceNameResolverFixed_AddName",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PresenceNameResolverFixed_StartResolving: Binding = Binding {
+        id: "Ne_PresenceNameResolverFixed_StartResolving",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_ReplaySystem_ForceReset: Binding = Binding {
+        id: "Ne_ReplaySystem_ForceReset",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_ReplaySystem_ResetSlot24: Binding = Binding {
+        id: "Ne_ReplaySystem_ResetSlot24",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Replay_SetState: Binding = Binding {
+        id: "Ne_Replay_SetState",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_RobinHoodMap_U8F_Insert: Binding = Binding {
+        id: "Ne_RobinHoodMap_U8F_Insert",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_RttRenderer_FlushJobs: Binding = Binding {
+        id: "Ne_RttRenderer_FlushJobs",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_RttRenderer_SubmitJob: Binding = Binding {
+        id: "Ne_RttRenderer_SubmitJob",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Rtt_DefaultCallback: Binding = Binding {
+        id: "Ne_Rtt_DefaultCallback",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Rtt_RegisterCameras: Binding = Binding {
+        id: "Ne_Rtt_RegisterCameras",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Rtt_UnregisterGenerators: Binding = Binding {
+        id: "Ne_Rtt_UnregisterGenerators",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveError_CorruptFmtSUU: Binding = Binding {
+        id: "Ne_SaveError_CorruptFmtSUU",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveError_EncryptionSourceFailed: Binding = Binding {
+        id: "Ne_SaveError_EncryptionSourceFailed",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveError_NotDirectoryFmtSS: Binding = Binding {
+        id: "Ne_SaveError_NotDirectoryFmtSS",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveError_SelectedIndexOutOfRange: Binding = Binding {
+        id: "Ne_SaveError_SelectedIndexOutOfRange",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveError_SetFmt: Binding = Binding {
+        id: "Ne_SaveError_SetFmt",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveError_SetFmtSSS: Binding = Binding {
+        id: "Ne_SaveError_SetFmtSSS",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveError_SetFmtWS: Binding = Binding {
+        id: "Ne_SaveError_SetFmtWS",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveError_ThumbnailTooLarge: Binding = Binding {
+        id: "Ne_SaveError_ThumbnailTooLarge",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveError_TransformFailed: Binding = Binding {
+        id: "Ne_SaveError_TransformFailed",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveError_Win32FmtSSSU: Binding = Binding {
+        id: "Ne_SaveError_Win32FmtSSSU",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveError_Win32FmtSSU: Binding = Binding {
+        id: "Ne_SaveError_Win32FmtSSU",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveError_Win32FmtSU: Binding = Binding {
+        id: "Ne_SaveError_Win32FmtSU",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveError_Win32FmtU: Binding = Binding {
+        id: "Ne_SaveError_Win32FmtU",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem2Win_EmptyDirectory: Binding = Binding {
+        id: "Ne_SaveSystem2Win_EmptyDirectory",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_SaveSystem2Win_Mount: Binding = Binding {
         id: "Ne_SaveSystem2Win_Mount",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem2Win_RenameDirectory: Binding = Binding {
+        id: "Ne_SaveSystem2Win_RenameDirectory",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem2Win_SaveSelected: Binding = Binding {
+        id: "Ne_SaveSystem2Win_SaveSelected",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4007,13 +4511,78 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_SaveSystem_AutoSave: Binding = Binding {
+        id: "Ne_SaveSystem_AutoSave",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_SaveSystem_BuildSaveInfoList: Binding = Binding {
         id: "Ne_SaveSystem_BuildSaveInfoList",
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_SaveSystem_CreateTempDirectory: Binding = Binding {
+        id: "Ne_SaveSystem_CreateTempDirectory",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_Delete: Binding = Binding {
+        id: "Ne_SaveSystem_Delete",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_DeleteDirectory: Binding = Binding {
+        id: "Ne_SaveSystem_DeleteDirectory",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_Enumerate: Binding = Binding {
+        id: "Ne_SaveSystem_Enumerate",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_SaveSystem_InitDevice: Binding = Binding {
         id: "Ne_SaveSystem_InitDevice",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_ListDelete: Binding = Binding {
+        id: "Ne_SaveSystem_ListDelete",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_ListLoad: Binding = Binding {
+        id: "Ne_SaveSystem_ListLoad",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_ListSave: Binding = Binding {
+        id: "Ne_SaveSystem_ListSave",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_SelectAndDelete: Binding = Binding {
+        id: "Ne_SaveSystem_SelectAndDelete",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_SelectAndLoad: Binding = Binding {
+        id: "Ne_SaveSystem_SelectAndLoad",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_SelectAndSave: Binding = Binding {
+        id: "Ne_SaveSystem_SelectAndSave",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_Terminate: Binding = Binding {
+        id: "Ne_SaveSystem_Terminate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SaveSystem_ThreadProcessRequest: Binding = Binding {
+        id: "Ne_SaveSystem_ThreadProcessRequest",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4029,6 +4598,16 @@ pub mod bindings {
     };
     pub const Ne_SequenceResource_CreateResource: Binding = Binding {
         id: "Ne_SequenceResource_CreateResource",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SteamTransport_FlushPeerBuffers: Binding = Binding {
+        id: "Ne_SteamTransport_FlushPeerBuffers",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_SteamTransport_QueuePacket: Binding = Binding {
+        id: "Ne_SteamTransport_QueuePacket",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4052,8 +4631,73 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_UIAction_C_closeScreenId: Binding = Binding {
+        id: "Ne_UIAction_C_closeScreenId",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UICrashDumpInfo_OnScreenEvent: Binding = Binding {
+        id: "Ne_UICrashDumpInfo_OnScreenEvent",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_UICrashDumpInfo_SettingsScreenClearSelectedCategory: Binding = Binding {
         id: "Ne_UICrashDumpInfo_SettingsScreenClearSelectedCategory",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UIFlow_AssetGroupPreUnloaded: Binding = Binding {
+        id: "Ne_UIFlow_AssetGroupPreUnloaded",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UIFlow_AssetGroupPreloaded: Binding = Binding {
+        id: "Ne_UIFlow_AssetGroupPreloaded",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UIFlow_FlowAssetsUnloaded: Binding = Binding {
+        id: "Ne_UIFlow_FlowAssetsUnloaded",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UIFlow_UnloadAssetsGroups: Binding = Binding {
+        id: "Ne_UIFlow_UnloadAssetsGroups",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UIInterrupt_HandleSignal: Binding = Binding {
+        id: "Ne_UIInterrupt_HandleSignal",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UIMessageSystem_OnMetadataAssetCleanup: Binding = Binding {
+        id: "Ne_UIMessageSystem_OnMetadataAssetCleanup",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UINodeBase_OnElementNodeBind: Binding = Binding {
+        id: "Ne_UINodeBase_OnElementNodeBind",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UINodeBase_OnElementNodeUnBind: Binding = Binding {
+        id: "Ne_UINodeBase_OnElementNodeUnBind",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UINodeBase_ParentVisible: Binding = Binding {
+        id: "Ne_UINodeBase_ParentVisible",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UINodeBase_SetElementVisibility: Binding = Binding {
+        id: "Ne_UINodeBase_SetElementVisibility",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UINodeBase_Visible: Binding = Binding {
+        id: "Ne_UINodeBase_Visible",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4062,8 +4706,108 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_UITextElement_SetText: Binding = Binding {
+        id: "Ne_UITextElement_SetText",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UITextElement_UpdateDocument: Binding = Binding {
+        id: "Ne_UITextElement_UpdateDocument",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UgcSearcher_SearchCallback: Binding = Binding {
+        id: "Ne_UgcSearcher_SearchCallback",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UgcSearcher_StartSearch: Binding = Binding {
+        id: "Ne_UgcSearcher_StartSearch",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UgcUtil_BrowseWorkshopInSteamOverlay: Binding = Binding {
+        id: "Ne_UgcUtil_BrowseWorkshopInSteamOverlay",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UgcUtil_OpenWorkshopFileInSteamOverlay: Binding = Binding {
+        id: "Ne_UgcUtil_OpenWorkshopFileInSteamOverlay",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Ugc_DeleteTemporaryFiles: Binding = Binding {
+        id: "Ne_Ugc_DeleteTemporaryFiles",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Ugc_GameOverlayActivatedCallback: Binding = Binding {
+        id: "Ne_Ugc_GameOverlayActivatedCallback",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Ugc_ReadInstalledItem: Binding = Binding {
+        id: "Ne_Ugc_ReadInstalledItem",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Ugc_UpdateItemCallback: Binding = Binding {
+        id: "Ne_Ugc_UpdateItemCallback",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_VideoInstance_Close: Binding = Binding {
+        id: "Ne_VideoInstance_Close",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_VideoManager_OpenVideo: Binding = Binding {
+        id: "Ne_VideoManager_OpenVideo",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_VideoManager_PauseVideo: Binding = Binding {
+        id: "Ne_VideoManager_PauseVideo",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_VideoManager_PlayIntervalFrames: Binding = Binding {
+        id: "Ne_VideoManager_PlayIntervalFrames",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_VideoManager_PlayIntervalSeconds: Binding = Binding {
+        id: "Ne_VideoManager_PlayIntervalSeconds",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_VideoManager_PlayOneFrame: Binding = Binding {
+        id: "Ne_VideoManager_PlayOneFrame",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_VideoManager_PlayVideo: Binding = Binding {
+        id: "Ne_VideoManager_PlayVideo",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_VideoManager_ResumeVideo: Binding = Binding {
+        id: "Ne_VideoManager_ResumeVideo",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_VideoManager_StopVideo: Binding = Binding {
+        id: "Ne_VideoManager_StopVideo",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_VideoResource_Destroy: Binding = Binding {
         id: "Ne_VideoResource_Destroy",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Video_InitBinkThreads: Binding = Binding {
+        id: "Ne_Video_InitBinkThreads",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4112,13 +4856,58 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_WorldInstance_ActivateAllWorldObjects: Binding = Binding {
+        id: "Ne_WorldInstance_ActivateAllWorldObjects",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_WorldInstance_DeactivateAllWorldObjects: Binding = Binding {
+        id: "Ne_WorldInstance_DeactivateAllWorldObjects",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_WorldInstance_DestroyAllWorldObjectsInLayer: Binding = Binding {
+        id: "Ne_WorldInstance_DestroyAllWorldObjectsInLayer",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_WorldInstance_PreWarmTextures: Binding = Binding {
+        id: "Ne_WorldInstance_PreWarmTextures",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_WorldInstance_ReleaseWarmedTextures: Binding = Binding {
+        id: "Ne_WorldInstance_ReleaseWarmedTextures",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_WorldLayerModule_DeregisterLayer: Binding = Binding {
+        id: "Ne_WorldLayerModule_DeregisterLayer",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_WorldLoadTask_Update: Binding = Binding {
+        id: "Ne_WorldLoadTask_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_Apply_ContentAvailability: Binding = Binding {
         id: "Sess_Apply_ContentAvailability",
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_AutoCrossRuleset_PlaceVehicles: Binding = Binding {
+        id: "Sess_AutoCrossRuleset_PlaceVehicles",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_Build_GroupResult: Binding = Binding {
         id: "Sess_Build_GroupResult",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_Complete_Update: Binding = Binding {
+        id: "Sess_Complete_Update",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4142,8 +4931,18 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_DelayOnLoadingScreen_Update: Binding = Binding {
+        id: "Sess_DelayOnLoadingScreen_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_DoughnutSequence_Enter: Binding = Binding {
         id: "Sess_DoughnutSequence_Enter",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_DoughnutSequence_Update: Binding = Binding {
+        id: "Sess_DoughnutSequence_Update",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4162,6 +4961,36 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_EditMode_OnStateEnter: Binding = Binding {
+        id: "Sess_EditMode_OnStateEnter",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_EditMode_OnStateExit: Binding = Binding {
+        id: "Sess_EditMode_OnStateExit",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_ElimRuleset_FinaliseResults: Binding = Binding {
+        id: "Sess_ElimRuleset_FinaliseResults",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_ElimRuleset_ForceFinishAll: Binding = Binding {
+        id: "Sess_ElimRuleset_ForceFinishAll",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_ElimRuleset_RetireVehicle: Binding = Binding {
+        id: "Sess_ElimRuleset_RetireVehicle",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_EntrantVec_PushBack: Binding = Binding {
+        id: "Sess_EntrantVec_PushBack",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_Find_GroupRowPosition: Binding = Binding {
         id: "Sess_Find_GroupRowPosition",
         kind: "func",
@@ -4177,13 +5006,33 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_FormationLapLogic_IsActiveOtherType: Binding = Binding {
+        id: "Sess_FormationLapLogic_IsActiveOtherType",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_FormationLapLogic_IsActiveType0: Binding = Binding {
+        id: "Sess_FormationLapLogic_IsActiveType0",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_FormationLapLogic_Reset: Binding = Binding {
         id: "Sess_FormationLapLogic_Reset",
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_FormationLapStartLights_OnStateEnter: Binding = Binding {
+        id: "Sess_FormationLapStartLights_OnStateEnter",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_FormationLapType_Update: Binding = Binding {
         id: "Sess_FormationLapType_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_FormationLap_OnStateExit: Binding = Binding {
+        id: "Sess_FormationLap_OnStateExit",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4212,6 +5061,16 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_GarageState_OnStateExit: Binding = Binding {
+        id: "Sess_GarageState_OnStateExit",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_GarageState_RefreshHudVisibility: Binding = Binding {
+        id: "Sess_GarageState_RefreshHudVisibility",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_Get_PlayerVehicleIndex: Binding = Binding {
         id: "Sess_Get_PlayerVehicleIndex",
         kind: "func",
@@ -4227,8 +5086,33 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_InGameRace_OnStateExit: Binding = Binding {
+        id: "Sess_InGameRace_OnStateExit",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_InGameRace_Update: Binding = Binding {
+        id: "Sess_InGameRace_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_InGame_OnStateExitHideHud: Binding = Binding {
+        id: "Sess_InGame_OnStateExitHideHud",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_InGame_UpdateBase: Binding = Binding {
         id: "Sess_InGame_UpdateBase",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_IntroVideo_OnStateEnter: Binding = Binding {
+        id: "Sess_IntroVideo_OnStateEnter",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_IntroVideo_OnVideoDoneFadeIn: Binding = Binding {
+        id: "Sess_IntroVideo_OnVideoDoneFadeIn",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4382,6 +5266,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_NetJournalMonitorState_OnExit: Binding = Binding {
+        id: "Sess_NetJournalMonitorState_OnExit",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_OsqTeleportToStart: Binding = Binding {
         id: "Sess_OsqTeleportToStart",
         kind: "func",
@@ -4389,6 +5278,11 @@ pub mod bindings {
     };
     pub const Sess_OvertakeLog_SendAllRecords: Binding = Binding {
         id: "Sess_OvertakeLog_SendAllRecords",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_PQRuleset_FinaliseResults: Binding = Binding {
+        id: "Sess_PQRuleset_FinaliseResults",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4432,8 +5326,23 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_PostRaceSceneSetup_OnStateEnter: Binding = Binding {
+        id: "Sess_PostRaceSceneSetup_OnStateEnter",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_PreLights_OnStateEnter: Binding = Binding {
+        id: "Sess_PreLights_OnStateEnter",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_PreLights_Update: Binding = Binding {
         id: "Sess_PreLights_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_PreRaceGridState_OnEnter: Binding = Binding {
+        id: "Sess_PreRaceGridState_OnEnter",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4442,8 +5351,23 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_PreRace_OnStateExit: Binding = Binding {
+        id: "Sess_PreRace_OnStateExit",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_PreRace_Update: Binding = Binding {
         id: "Sess_PreRace_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_Progress_SyncResultRecord: Binding = Binding {
+        id: "Sess_Progress_SyncResultRecord",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_PursuitRuleset_FinaliseResults: Binding = Binding {
+        id: "Sess_PursuitRuleset_FinaliseResults",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4567,6 +5491,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_ResetReplay_OnStateEnter: Binding = Binding {
+        id: "Sess_ResetReplay_OnStateEnter",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_ResetReplay_Update: Binding = Binding {
         id: "Sess_ResetReplay_Update",
         kind: "func",
@@ -4579,6 +5508,16 @@ pub mod bindings {
     };
     pub const Sess_Result_DecodeVehicleResult: Binding = Binding {
         id: "Sess_Result_DecodeVehicleResult",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_Result_RequestDNF: Binding = Binding {
+        id: "Sess_Result_RequestDNF",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_Result_RequestStatus: Binding = Binding {
+        id: "Sess_Result_RequestStatus",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4689,6 +5628,21 @@ pub mod bindings {
     };
     pub const Sess_Ruleset_FinaliseResults: Binding = Binding {
         id: "Sess_Ruleset_FinaliseResults",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_Ruleset_FinaliseResultsDefault: Binding = Binding {
+        id: "Sess_Ruleset_FinaliseResultsDefault",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_Ruleset_ForceFinishAllDefault: Binding = Binding {
+        id: "Sess_Ruleset_ForceFinishAllDefault",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_Ruleset_SetupExtraTime: Binding = Binding {
+        id: "Sess_Ruleset_SetupExtraTime",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4832,6 +5786,26 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_SessionExit_OnStateEnter: Binding = Binding {
+        id: "Sess_SessionExit_OnStateEnter",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_SessionStateIntroCameras_OnEnter: Binding = Binding {
+        id: "Sess_SessionStateIntroCameras_OnEnter",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_SessionStateMidSessionSaveCutscene_OnEnter: Binding = Binding {
+        id: "Sess_SessionStateMidSessionSaveCutscene_OnEnter",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_Session_ResetForRestart: Binding = Binding {
+        id: "Sess_Session_ResetForRestart",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_Set_RowsAvailable: Binding = Binding {
         id: "Sess_Set_RowsAvailable",
         kind: "func",
@@ -4862,6 +5836,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_SpectatorHud_Show: Binding = Binding {
+        id: "Sess_SpectatorHud_Show",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_SpeedLimitPenalty_ReceiveData: Binding = Binding {
         id: "Sess_SpeedLimitPenalty_ReceiveData",
         kind: "func",
@@ -4869,6 +5848,16 @@ pub mod bindings {
     };
     pub const Sess_SpeedLimitPenalty_SendData: Binding = Binding {
         id: "Sess_SpeedLimitPenalty_SendData",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_StartLightsMachine_SetProxy: Binding = Binding {
+        id: "Sess_StartLightsMachine_SetProxy",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_StartLightsSync_MustAdvance: Binding = Binding {
+        id: "Sess_StartLightsSync_MustAdvance",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4884,6 +5873,26 @@ pub mod bindings {
     };
     pub const Sess_Start_VehiclesInGarages: Binding = Binding {
         id: "Sess_Start_VehiclesInGarages",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_State_EnterOnTrackCommon: Binding = Binding {
+        id: "Sess_State_EnterOnTrackCommon",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_State_OnPauseRequested: Binding = Binding {
+        id: "Sess_State_OnPauseRequested",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_State_Pause: Binding = Binding {
+        id: "Sess_State_Pause",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_State_Unpause: Binding = Binding {
+        id: "Sess_State_Unpause",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4904,6 +5913,16 @@ pub mod bindings {
     };
     pub const Sess_StoryPreLights_Update: Binding = Binding {
         id: "Sess_StoryPreLights_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_StoryRollingStart_OnStateEnter: Binding = Binding {
+        id: "Sess_StoryRollingStart_OnStateEnter",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_StoryStartLights_OnStateEnter: Binding = Binding {
+        id: "Sess_StoryStartLights_OnStateEnter",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4969,6 +5988,11 @@ pub mod bindings {
     };
     pub const Sess_VehiclePlacement_PlaceOnSlot: Binding = Binding {
         id: "Sess_VehiclePlacement_PlaceOnSlot",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_VirtualLapsRuleset_ForceFinishAll: Binding = Binding {
+        id: "Sess_VirtualLapsRuleset_ForceFinishAll",
         kind: "func",
         status: Status::Experimental,
     };
@@ -5159,6 +6183,16 @@ pub mod bindings {
     };
     pub const g_Sess_TyreRulesSessionType: Binding = Binding {
         id: "g_Sess_TyreRulesSessionType",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const g_Sess_VehicleCount: Binding = Binding {
+        id: "g_Sess_VehicleCount",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const g_Sess_VehicleTable: Binding = Binding {
+        id: "g_Sess_VehicleTable",
         kind: "data",
         status: Status::Experimental,
     };
@@ -5969,6 +7003,16 @@ pub mod bindings {
     };
     pub const site_Career_RnDUpgradeListDeptIcon: Binding = Binding {
         id: "site_Career_RnDUpgradeListDeptIcon",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Career_StandingsWeekendTrackDone: Binding = Binding {
+        id: "site_Career_StandingsWeekendTrackDone",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Career_StandingsWeekendTrackLoad: Binding = Binding {
+        id: "site_Career_StandingsWeekendTrackLoad",
         kind: "site",
         status: Status::Experimental,
     };
