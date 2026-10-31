@@ -385,14 +385,17 @@ Every track in the base is offered in every box where it fits. The track select 
 1. **The season's real calendar,** in round order. The box names its calendar with `content::Package::calendar`. A round whose venue no enabled track provides is dropped.
 2. **"More tracks":** every other track in the base that fits, in the base order. A track an addon adds next month appears here without the box knowing about it.
 
-A track that doesn't fit is left out of that box, with the reason in the log. A track fits a box when all four of these hold:
+A track that doesn't fit is left out of that box, with the reason in the log. A track fits a box when all five of these hold:
 
-- **Garages.** The world the box's setup mode loads at that track has a garage for every team in the box. The setup mode is the game's rule set a weekend runs under, and every Grand Prix and Time Trial box shares `swofty_f1`.
+- **World.** The track's files hold the world the box's setup mode loads, when other tracks hold it. F1 2012 Season's setup mode `bdx_2012_mode` loads its own `2012` worlds, which it ships for the stock tracks only. A community track such as Mugello is left out of that box.
+- **Garages.** The world the box's setup mode loads at that track has a garage for every team in the box. The setup mode is the game's rule set a weekend runs under. Boxes made from a `content::Package` share `swofty_f1`; an addon's box can bring its own.
 - **Grid size.** That world, with any extra slots from `tracks::slots`, has a grid slot for every car the box runs. Grid size is one boot setting per install, and each box is clamped to it.
 - **AI data.** Every car in the box has AI data at the track: an AI line for its `ai_package_folder/asset_filename`, and the track's `ai_track_difficulties` entry for its package.
 - **Time Trial support.** In a Time Trial box, the track is a stock track, a track made for 1.5 or a record track with `time_trial` set, and its facts don't say `time_trial: false`.
 
-Each build writes what the rules read to `$DATA/registry/track-facts.json`: the track layers of the database the game reads (the runtime database edits the core applies at its early stage included), and per track code the grid slots, garages and pit boxes of each world after the grid extension, the AI folders, the `ai_track_difficulties` packages, whether Time Trial can run there (`time_trial_why` when not) and, for a track record, the menu lists it has pictures in. A rule with no facts passes and logs `[tracks] <code>: no facts (<what>)`.
+A box with no `content.package` record, such as an addon's [era box](/std/systems/ui#an-era-box-and-a-team-logo), is read from the database the game reads: the core counts the teams and cars of its entrant list (its `entrant_list_references` included), reads the list's season and takes the setup mode whose entrant setup mode lists it. An addon's own entrant setup mode comes before `swofty_f1`, which holds every era box's list. A stock box with no record keeps unknown teams and cars, and those rules pass.
+
+Each build writes what the rules read to `$DATA/registry/track-facts.json`: the track layers of the database the game reads (the runtime database edits the core applies at its early stage included), and per track code the grid slots, garages and pit boxes of each world after the grid extension, each world read at the path its layer's `worldEri` names, the AI folders, the `ai_track_difficulties` packages, whether Time Trial can run there (`time_trial_why` when not) and, for a track record, the menu lists it has pictures in. A rule with no facts passes and logs `[tracks] <code>: no facts (<what>)`.
 
 ```json
 { "version": 1, "profile": "Classic Seasons", "inputs": "3f9a0c2e71d4b8a5", "grid_size": 22,
@@ -465,6 +468,17 @@ The track select screen's list builder needs reverse engineering (`ui.track_sele
 Igora Drive can't run in F1 2016
   Its garages hold 10 teams. F1 2016 has 11.
   [Back]
+```
+
+```text
+Mugello can't run in game/bdx_s5_2012
+  It has no 2012 world, the one game/bdx_s5_2012 loads.
+  [Back]
+```
+
+```text
+[tracks] box game/bdx_s5_2012: no content.package record; from its entrant list: setup mode bdx_2012_mode, 12 teams, 24 cars
+[tracks] guard: mod.mugello/mugello in game/bdx_s5_2012 (grand_prix): refused (its files hold no 2012 world, which the box's bdx_2012_mode layer loads)
 ```
 
 ## A box's own track data
@@ -715,6 +729,8 @@ tracks::set_data(tracks::tracks["game/monaco"], [](tracks::TrackData &d) { d.lap
 - **Track data is found by mode mask,** and sub-tables inherit from the parent set one table at a time. A session's query names the setup mode and the box's season; with no season, the first set listing the mode wins.
 - **AI packs** are per car folder (`ai_package_folder/asset_filename`). A car package with its own AI data, such as F1 1990's `f1_1990`, has an `ai_track_difficulties.<package folder>` key only on the tracks it was made for. A missing key reads the miss sentinel, not null.
 - **Worlds:** `_f1_26` worlds have 22 grid slots and 11 garages, `_myteam` 24 and 12, and `_f1` 10 garages. An 11-team box crashed on `_f1` worlds in `Sess_Assign_GarageSlotsByPreference`. Classic Seasons fixed it with a layer copy of `f1_26` for `swofty_f1`.
+- **Garage order:** `Sess_Assign_GarageSlotsByTeamOrder` gives the team at position i of the team order garage i with no bound check, so a team past the world's garage count reads past the garage vector. F1 2012 Season (12 teams) at Mugello, which has no `2012` world, crashed there. The world and garages rules stop it at the track select; a session that reaches the assignment some other way is not guarded.
+- **A world the track doesn't hold:** the game still loads the session. What it puts in the missing world's place is not reverse engineered. The world rule leaves such a track out. A world no track holds in the facts has no facts and passes.
 - **Grid slots per track** differ. Custom Grid Size's table gives Imola, Singapore and Abu Dhabi 26, and Monaco 28.
 - **Unknown:** the invitational slot limit (8 tracks without the loader), Time Trial on added tracks (crashes or freezes), and the 28-car session-enter crash on community maps.
 - **Size:** a track adds about 1,650 to 1,884 records and changes about 470 to 490. Autopolis alone sets 400.
