@@ -35,6 +35,7 @@
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
+#include "box_gate.hpp"
 #include "box_session.hpp"
 #include "career_1990.hpp"
 #include "race_engine.hpp"
@@ -67,8 +68,9 @@ void on_career(const SwoftyEvent *, void *)
 
 void on_session_end(const SwoftyEvent *, void *)
 {
-    if (!swofty::career::entity())
-        set_race_engine(false, "session ended outside a career");
+    void *career = swofty::career::entity();
+    if (!career || !f1990::is_1990_career(career))
+        set_race_engine(false, "session ended outside a 1990 career");
 }
 
 void subscribe(const char *event, SwoftyEventFn fn = on_career)
@@ -107,7 +109,7 @@ SWOFTY_WRAP(Game_Rnd_FillVehicleUpgrades, void, void *component, uint8_t car, ui
             if (g_fills++ < 8)
                 swofty::log("[f1-1990] quali engine: car %u set up for a session of group %d; qualifying engine lines %s",
                             car, group, group < 0 ? "as stock (no session)" : leave_out ? "left out" : "counted");
-        } else if (career) {
+        } else if (career && !f1990::box_list_selected()) {
             set_race_engine(false, "not a 1990 career");
         }
     }
@@ -133,16 +135,20 @@ SWOFTY_WRAP(Game_Rnd_CalcUpgradeTypeProgress, float, void *const *instances, uin
 SWOFTY_WRAP(Sess_TyreAllocation_OnSessionStart, void, void *component)
 {
     orig(component);
-    if (!quali_engine_1990 || !component || swofty::career::entity())
+    if (!quali_engine_1990 || !component)
+        return;
+    void *career = swofty::career::entity();
+    if (career && f1990::is_1990_career(career))
         return;
     void *session = f1990::box::session_of(component);
     uint32_t id = session ? at<uint32_t>(session, 0x08) : 0;
     auto lineup = f1990::box::lineup(component);
-    bool box = session && lineup.all_1990();
+    bool box = session && f1990::box_list_selected();
     bool race = box && (f1990::box::practice(id) || f1990::box::race(id));
     if (g_box_logged++ < 16)
-        swofty::log("[f1-1990] quali engine: session %u without a career: %s (%zu of %zu entrants on 1990 cars)", id,
-                    !lineup.readable ? "line-up not readable, stock engines"
+        swofty::log("[f1-1990] quali engine: session %u (%s): %s (%zu of %zu entrants on 1990 cars)", id,
+                    career ? "career entity, not a 1990 career" : "no career",
+                    !session         ? "session not readable, stock engines"
                     : !box           ? "not the F1 1990 box, stock engines"
                     : race           ? "F1 1990 box, race engine"
                                      : "F1 1990 box, qualifying engine",

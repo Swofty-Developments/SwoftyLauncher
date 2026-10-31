@@ -29,6 +29,7 @@
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
+#include "box_gate.hpp"
 #include "box_session.hpp"
 #include "career_1990.hpp"
 #include "rnd_progress.hpp"
@@ -63,8 +64,9 @@ void on_career(const SwoftyEvent *, void *)
 
 void on_session_end(const SwoftyEvent *, void *)
 {
-    if (!swofty::career::entity())
-        set_race(false, "session ended outside a career");
+    void *career = swofty::career::entity();
+    if (!career || !f1990::is_1990_career(career))
+        set_race(false, "session ended outside a 1990 career");
 }
 
 void subscribe(const char *event, SwoftyEventFn fn = on_career)
@@ -98,7 +100,7 @@ SWOFTY_WRAP(Game_Rnd_FillVehicleUpgrades, void, void *component, uint8_t car, ui
                 set_race(!f1990::is_qualifying_group(group), f1990::is_qualifying_group(group)
                                                                  ? "1990 qualifying"
                                                                  : "1990 practice or race");
-        } else if (career) {
+        } else if (career && !f1990::box_list_selected()) {
             set_race(false, "not a 1990 career");
         }
     }
@@ -108,11 +110,14 @@ SWOFTY_WRAP(Game_Rnd_FillVehicleUpgrades, void, void *component, uint8_t car, ui
 SWOFTY_WRAP(Sess_TyreAllocation_OnSessionStart, void, void *component)
 {
     orig(component);
-    if (!quali_engine_1990 || !component || swofty::career::entity())
+    if (!quali_engine_1990 || !component)
+        return;
+    void *career = swofty::career::entity();
+    if (career && f1990::is_1990_career(career))
         return;
     void *session = f1990::box::session_of(component);
     uint32_t id = session ? at<uint32_t>(session, 0x08) : 0;
-    bool box = session && f1990::box::lineup(component).all_1990();
+    bool box = session && f1990::box_list_selected();
     bool race = box && !f1990::box::qualifying(id) && id != f1990::box::kTimeTrial;
     set_race(race, race ? "F1 1990 box practice or race"
                    : box ? "F1 1990 box qualifying or Time Trial"
