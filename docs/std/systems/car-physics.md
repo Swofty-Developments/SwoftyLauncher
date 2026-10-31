@@ -366,3 +366,189 @@ car.parts.register                     Car_FrontWing_Init
 `engine.power_scale`, `engine.limiter_offset_rpm`, `car.upgrades.replayed` and `car.setup.applied` rest on verified rows.
 
 Credit: the front wing damage, suspension damage, fuel ECU and ERS layouts were cross-checked against findings shared by Will (william09leo), the author of Heavier Damage.
+
+## Handling records
+
+::: warning Experimental
+Applying `vehicle.handling` records at build is experimental (launcher 1.6.13). The records, the typed sections and the launcher's build step can change before they are stable.
+:::
+
+The launcher applies the `vehicle.handling` records in an addon's data files to the handling files the build ships. The change is in the file before the game starts, so every car built from it has it, in every session, with no code running in game. A GearBox change, a removed ERS and a raised suspension in one file:
+
+```json
+{
+  "vehicle.handling": {
+    "ferrari_1990": {
+      "vtf": { "stock": "2025_asset_groups/f1_2026_vehicle_package/teams/ferrari/wep/ferrari.erp" },
+
+      "gearbox": {
+        "final_drive_ratio": 3.9,
+        "ratios": [3.0, 2.2, 1.7, 1.3, 1.0, 0.8],
+        "up_speed_multiple": [0.8, 0.9, 0.95, 0.96, 0.96],
+        "down_speed_multiple": [0.6, 0.7, 0.8, 0.85, 0.9]
+      },
+
+      "ers": null,
+
+      "suspension": {
+        "front": { "rest_length": 0.083, "min_height": 0.01, "bump_stop_height": 0.035 },
+        "rear":  { "rest_length": 0.2,   "min_height": 0.01, "bump_stop_height": 0.045 }
+      },
+      "edits": [
+        { "path": "suspension.front.anti_roll_constant", "op": "scale", "value": 0.85 },
+        { "path": "suspension.rear.anti_roll_constant",  "op": "scale", "value": 1.45 },
+        { "path": "chassis.mass", "op": "set", "value": 620 }
+      ],
+
+      "chassis": { "ffb_scale": 1.3, "tyre_physics_group": "F1_1990" },
+      "f1_aero": { "drs": { "hardware": false }, "slipstream": { "drag": 0.65, "front_wing": 0.6 } },
+      "turbo": { "mode": "off" }
+    }
+  }
+}
+```
+
+```text
+handling swofty.f1-1990/ferrari_1990 -> ferrari.vtf: 112 change(s)
+handling ferrari.vtf: GearBox: 6 gears, ratios past the top gear 0, 4 shift-speed multiple(s) past it removed
+handling ferrari.vtf: EnergyRecoverySystem: section removed, 3 part(s) dropped from the radUpgrade blocks
+handling ferrari.vtf: SuspensionSystem/RestLength: 0.1 -> 0.2
+handling ferrari.vtf: Chassis/Mass: 771 -> 620
+```
+
+The build logs each change per handling file in the build log. A key or section the file doesn't have is a warning on the build and nothing else.
+
+### Which file a record changes
+
+The record's `vtf` names the archive. Every VTF in it is changed, or only the ones `vtf.resources` lists.
+
+```json
+{ "vtf": { "stock": "2025_asset_groups/f1_2026_vehicle_package/teams/ferrari/wep/ferrari.erp" } }
+{ "vtf": "cars/handling/ferrari_handling.erp" }
+{ "vtf": { "erp": "cars/handling/ferrari_handling.erp", "resources": ["ferrari.vtf"] } }
+```
+
+- `stock`: the game's archive. The build ships a changed copy.
+- A path in your addon: the archive your `file.put` op puts in the game folder. The build changes the copy it puts.
+- A record that names no `vtf` changes nothing and the build warns.
+
+Layers apply in load order as a merge patch: `"extends"` on your own records, a key with a `/` for a layer on another addon's record, and `"$select"` entries with `ids`, `where` and `when`. `when` reads the addon's options at build, so an option changes the file at the next Play. `tag` and `in` entries are skipped at build. Layers written in native code run in game, after the build, and don't reach the file.
+
+A vehicle record with a `tyre_group` and a `handling` sets `chassis.tyre_physics_group` on that handling record when the record doesn't set it.
+
+### Typed sections
+
+Each field maps to the VTF element of the same name in snake_case: `front_coeff_lift_multiplier` is `FrontCoeffLiftMultiplier`. The fields whose element is named differently:
+
+```text
+gearbox.final_drive_ratio       GearBox/FinalDriveRatio
+gearbox.ratios                  GearRatio1st .. 9th
+gearbox.up_speed_multiple       GearUpSpeedMultiple1st ..
+gearbox.down_speed_multiple     GearDnSpeedMultiple2nd ..
+turbo.mode                      Engine/TurboMode (off, full)
+turbo.max_boost                 Turbo/MaxBoost
+differential.drive_type         Differential/DriveType (rwd, fwd, awd = 4WD)
+suspension.front.rest_x         SuspensionSystem/Suspension name=Front/LocalRestPositionX
+suspension.front.tyre_radius    SuspensionSystem/Tyre name=Front/TyreRadius
+suspension.front.grip_multiplier   SuspensionSystem/Tyre name=Front/GripMultiplier
+suspension.front_tyre.<key>     any key of the Tyre element, front_brake.<key> of the Brake element
+f1_aero.slipstream.drag         F1Aero/m_aeroSlipStreamAirDensityScaleDrag
+f1_aero.slipstream.car_width    F1Aero/m_aeroSlipStreamCarWidth
+f1_aero.drs.angle               F1Aero/DRSRotationAngleRadians
+ers.max_deploy_power            EnergyRecoverySystem/Common/MaxDeployPower
+tuning.chassis_com_z            F1Tuning/ChassisCOMZMin and ChassisCOMZMax
+```
+
+A section holds any other key of its VTF section too: `engine.wear_ice_rate`, `fuel_tank.fuel_bsfc_min`, `steering.max_steering_lock`. A curve is an array of `[x, y]` pairs and replaces the spline's vertices:
+
+```json
+{ "engine": { "limiter_rotation_rate": 1180, "revs_power_spline": [[0, 0], [314.2, 34562], [1151.9, 415319], [1570.8, 285922]] } }
+```
+
+`tuning` fields are `Range` pairs, `{ "min": 0.1, "max": 1.0 }`. `differential_on_throttle_multiple_min` and `brake_bias_max` from 1.6.0 still work.
+
+### Gear count
+
+`gearbox.ratios.size()` is the gear count. The build writes the ratios, writes 0 for the gears past the top one and removes the shift-speed multiples past it, the layout of the EA F2 car. `up_speed_multiple` and `down_speed_multiple` hold one value per shift: up for gears 1 to n-1, down for gears 2 to n.
+
+```json
+{ "gearbox": { "ratios": [3.1, 2.3, 1.8, 1.4, 1.1, 0.9] } }
+```
+
+### Removing a section
+
+`"ers": null` removes the EnergyRecoverySystem section and the ERS parts of every radUpgrade block. The blocks stay, empty. In a layer, `ers` is the one field where `null` removes the section instead of removing the field from the record. `std::optional<Ers> ers` is `nullopt` in code for the same.
+
+`remove` takes any section name and drops its parts from the radUpgrade blocks the same way:
+
+```json
+{ "remove": ["turbo", "ers"] }
+```
+
+`f1_aero.drs.hardware: false` removes the DRS keys from F1Aero, sets the flap angle, open speed and the DRS wing factors to the safety car's values and empties `radUpgradeDRS`.
+
+### Set, scale and add
+
+`edits` run after the typed sections. `path` is `section.key`, or `section.front.key` for an axle. `op` is `set`, `scale` or `add`:
+
+```json
+{ "edits": [
+  { "path": "fuel_tank.fuel_bsfc_min", "op": "scale", "value": 0.9 },
+  { "path": "suspension.rear.rest_length", "op": "add", "value": 0.03 },
+  { "path": "brake_ecu.brake_front", "op": "scale", "value": 0.74 }
+] }
+```
+
+`rad_upgrades` records change the radUpgrade blocks the same way: `{ "name": "radUpgradeEngine", "changes": [{ "section": "fuel_tank", "key": "fuel_bsfc_min", "op": "*", "value": 0.9 }] }`.
+
+### The centre of mass
+
+The centre of mass is at `-com_z`. The game's static axle loads put `(-com_z - rear_z) / wheelbase` of the weight on the front axle, so the stock 2026 `com_z` of +0.171 on axles at +1.7 and -1.7 m is 45 % on the front. `cars::front_weight(handling)` reads it from the record:
+
+```cpp
+cars::Handling h;
+h.suspension.front.rest_z = 1.7f;
+h.suspension.rear.rest_z = -1.7f;
+h.chassis.com_z = 0.171f;
+float front = cars::front_weight(h);      // 0.4497
+```
+
+For 41 % on the front axle, `-com_z = 0.41 * wheelbase + rear_z`, so on those axles `com_z = -(0.41 * 3.4 - 1.7) = 0.306`.
+
+### Vehicles
+
+A vehicle record sets three more things:
+
+```json
+{
+  "vehicle": {
+    "ferrari_1990": {
+      "donor": "game/ferrari_2025",
+      "handling": "swofty.f1-1990/ferrari_1990",
+      "drs_capable": false,
+      "engine": "game/cosworth_f1_v8",
+      "tyre_group": "F1_1990"
+    }
+  }
+}
+```
+
+- `drs_capable` is written into the vehicle row at boot. Absent keeps the donor's.
+- `engine` is the vehicle row's engine, an `entrants.engines` label. A `power::Supplier` record (`power.supplier`) can name its donor and limiter; the core writes no engine row from it yet, so rev lights stay the donor's.
+- `tyre_group` is the Chassis `TyrePhysicsGroup` of the car's handling file, one group per team. The group's compounds are the tyre files' work.
+
+### Tyres
+
+`swofty/systems/tyres.hpp` holds the first slice, as records the core stores and applies nothing from: `tyre.physical` (a compound with its `group`, `code`, class and grip factors), `tyre.visual`, `tyre.class`, `tyre.allocation` and `tyre.rules`. What reaches the game today is the group above.
+
+```cpp
+tyres::physical.add("f1_1990_soft", tyres::Physical{ .group = "F1_1990", .code = "c5", .race_grip = 0.96f });
+```
+
+### What isn't applied
+
+- Native-code layers on `vehicle.handling` reach the game after the build.
+- Fields the 2026 stock file has no element for: `fuel_tank.fuel_mass`, `ers.exhaust_power_coefficient`, `ers.overtake_power_efficiency`, `turbo.mode: lag_spoof`. The build warns.
+- `ers.modes`, `damage_scale`, `class` and the radUpgrade splines.
+- The ConvexHull vertices.
+- Archives written by `erp.*` ops. Put the archive with `file.put`.

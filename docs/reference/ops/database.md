@@ -68,7 +68,7 @@ applying yourname.my-addon: rules.stop_go_penalty.penalty_duraton: no such key
 - Write every value as a string, whatever the field's type. A bool is `True` or `False`. A list joins its entries with commas and no spaces: `"0,-0.6,0"`.
 - `value_from` instead of `value` copies the value of another database path.
 - `"create": true` with a `"type"` tag adds the field when the row lacks it.
-- A `select` that matches no row fails the build. So does a missing field, without `create`.
+- A `select` that matches no row waits for a later addon to add the row ([Applying changes](#applying-changes)), and fails the build if none does. A missing field, without `create`, fails the build.
 - `datasets` is accepted but not built: a `set` with it fails.
 
 ```text
@@ -530,9 +530,19 @@ Changing a `db` option marks the profile for a rebuild. The next launch, or `swo
 Track activation runs first, then operations run in addon load order. [DB Editor](/using/db-editor) packages are addons and run in the same order; a package change that no longer applies is skipped with a warning instead of failing the build:
 
 ```text
-warning: My DB Edits: change skipped: entrants.teams.team[_metadata_=williams_26]: no row matches
+warning: My DB Edits: change skipped: entrants.teams.team[_metadata_=williams_26]: no row matches, even after every addon's changes
 ```
 
-An addon whose track the build leaves out has its failing database ops skipped the same way. A later change to a field replaces the earlier value, and the build prints the conflict ([Order and conflicts](/reference/data/operations#order-and-conflicts)). With the in-game loader, the changed records reach the game through `swofty/assets.json` ([Build route and runtime route](/reference/data/operations#build-route-and-runtime-route)).
+An addon whose track the build leaves out has its failing database ops skipped the same way.
+
+An op whose selector matches no row waits, with the ops after it in its file that fail. It applies right after the first later addon whose ops add records, once its row exists, and the addons after that still override it. A Team Simplified Grid Editor edit of a grid Classic Seasons adds applies this way, though Team Simplified loads first, and [`swofty conflicts`](/reference/cli#swofty-conflicts) lists the edit as the winner over Classic Seasons on the fields it sets.
+
+An op still waiting after every addon fails the build. A DB Editor package's op, or one of an addon whose track the build leaves out, is skipped with the warning above instead:
+
+```text
+applying teamsimplified.mods (grid-editor): entrants.entrant_lists.entrant_list[_metadata_=cs_f1_2016]: no row matches, even after every addon's changes
+```
+
+A later change to a field replaces the earlier value, and the build prints the conflict ([Order and conflicts](/reference/data/operations#order-and-conflicts)). With the in-game loader, the changed records reach the game through `swofty/assets.json` ([Build route and runtime route](/reference/data/operations#build-route-and-runtime-route)).
 
 See [Game database (GVDB)](/reference/gamedb) for the file format, how the game reads it and the table catalogue. [Modding recipes](/reference/gamedb/recipes) covers adding rows, grid size and tracks.

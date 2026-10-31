@@ -24,6 +24,7 @@
 #include <swofty/systems/sounds.hpp>
 #include <swofty/systems/spectator.hpp>
 #include <swofty/systems/teams.hpp>
+#include <swofty/systems/tyres.hpp>
 #include <swofty/systems/wearables.hpp>
 #include <swofty/systems/tracks.hpp>
 
@@ -471,6 +472,30 @@ static void schemas()
     std::string v = cars::vehicles.schema();
     CHECK(v.find("\"x-applies\":\"boot\"") != std::string::npos && v.find("\"enum\":[\"f1\",\"f1_26\"") != std::string::npos);
     CHECK(cars::handling.schema().find("\"class\":") != std::string::npos);
+    std::string hs = cars::handling.schema();
+    CHECK(hs.find("\"x-version\":\"1.1\"") != std::string::npos && v.find("\"x-version\":\"1.1\"") != std::string::npos);
+    CHECK(hs.find("\"ratios\":{\"type\":\"array\"") != std::string::npos);
+    CHECK(hs.find("\"ers\":{\"type\":[\"object\",\"null\"]") != std::string::npos);
+    CHECK(hs.find("\"ffb_scale\"") != std::string::npos && hs.find("\"tyre_physics_group\"") != std::string::npos);
+    CHECK(hs.find("\"slipstream\"") != std::string::npos && hs.find("\"hardware\"") != std::string::npos);
+    CHECK(hs.find("\"mode\":{\"type\":\"string\",\"enum\":[\"off\",\"lag_spoof\",\"full\"]") != std::string::npos);
+    CHECK(hs.find("\"chassis_com_z\":{\"type\":\"object\"") != std::string::npos);
+    CHECK(v.find("\"drs_capable\":{\"type\":[\"boolean\",\"null\"]") != std::string::npos);
+    CHECK(v.find("\"x-ref\":\"power.supplier\"") != std::string::npos && v.find("\"tyre_group\"") != std::string::npos);
+    {
+        cars::Handling h;
+        h.suspension.front.rest_z = 1.7f;
+        h.suspension.rear.rest_z = -1.7f;
+        h.chassis.com_z = 0.171f;
+        CHECK(std::abs(cars::front_weight(h) - 0.4497f) < 0.001f);
+        h.ers.reset();
+        CHECK(to_json(h).find("\"ers\":null") != std::string::npos);
+        cars::Handling back;
+        CHECK(from_json(to_json(h), back) && !back.ers.has_value());
+        h.gearbox.ratios = {3.0f, 2.0f, 1.0f};
+        CHECK(to_json(h).find("\"ratios\":[3,2,1]") != std::string::npos);
+    }
+    CHECK(tyres::physical.name() == std::string("tyre.physical") && power::suppliers.name() == std::string("power.supplier"));
     CHECK(content::packages.schema().find("\"x-key\":[\"key\"]") != std::string::npos);
     CHECK(test::things.schema().find("\"x-version\":\"1.2\"") != std::string::npos);
     CHECK(Registry<json::Value>("x.y").schema().empty());
