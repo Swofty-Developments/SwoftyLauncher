@@ -159,6 +159,7 @@ struct Narrowed {
     void *lists[LIST_SLOTS];
     void *kept_lists[LIST_SLOTS];
     bool time_trial;
+    int32_t max_was, max_set;
 };
 
 std::mutex lock;
@@ -278,6 +279,9 @@ void put_back_drs()
 
 void put_back_narrowed(Narrowed &n)
 {
+    if (n.max_set && at<int32_t>(n.setup, ENTRANT_SETUP_MAX_ENTRANTS) == n.max_set)
+        ref<int32_t>(n.setup, ENTRANT_SETUP_MAX_ENTRANTS) = n.max_was;
+    n.max_set = 0;
     if (at<int64_t>(n.setup, LIST_COUNT) != n.kept || memcmp(n.setup + LISTS, n.kept_lists, size_t(n.kept) * sizeof(void *)))
         return;
     memcpy(n.setup + LISTS, n.lists, size_t(n.count) * sizeof(void *));
@@ -312,6 +316,8 @@ void restore()
     put_back_drs();
 }
 
+logic::ListCars list_cars(const void *list);
+
 void narrow(void *mode, const char *list)
 {
     restore_lists();
@@ -333,6 +339,14 @@ void narrow(void *mode, const char *list)
         n.count = count;
         n.kept = 1;
         n.time_trial = false;
+        n.max_was = n.max_set = 0;
+        int32_t limit = at<int32_t>(setup, ENTRANT_SETUP_MAX_ENTRANTS);
+        int64_t cars = list_cars(hit).cars;
+        if (limit > 0 && cars > limit && cars <= INT32_MAX) {
+            n.max_was = limit;
+            n.max_set = int32_t(cars);
+            ref<int32_t>(setup, ENTRANT_SETUP_MAX_ENTRANTS) = n.max_set;
+        }
         n.kept_lists[0] = hit;
         memcpy(n.lists, lists, size_t(count) * sizeof(void *));
         lists[0] = hit;
@@ -551,6 +565,7 @@ bool keep_time_trial_lists(void *mode)
         n.count = int64_t(info.size());
         n.kept = int64_t(keep.size());
         n.time_trial = true;
+        n.max_was = n.max_set = 0;
         memcpy(n.lists, ptrs.data(), info.size() * sizeof(void *));
         for (size_t i = 0; i < keep.size(); ++i)
             n.kept_lists[i] = ptrs[keep[i]];
@@ -748,6 +763,7 @@ void time_trial_budget(void *mode, uintptr_t setup)
                 n.count = at<int64_t>(slot.setup, LIST_COUNT);
                 memcpy(n.lists, slot.setup + LISTS, size_t(n.count) * sizeof(void *));
                 n.time_trial = true;
+                n.max_was = n.max_set = 0;
                 n.kept = n.count;
                 memcpy(n.kept_lists, n.lists, sizeof(n.lists));
             }
