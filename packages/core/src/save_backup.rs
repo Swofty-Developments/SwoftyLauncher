@@ -15,7 +15,7 @@ pub const DIR: &str = "save-backups";
 pub const KEEP: usize = 10;
 pub const PREFIX: &str = "savegame@profile#";
 pub const MANIFEST: &str = "manifest.json";
-const NOTICE: &str = "state/save-notice.json";
+pub const NOTICE: &str = "state/save-notice.json";
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SavedFile {
@@ -99,6 +99,28 @@ pub fn now_stamp() -> String {
         .map(|d| d.as_secs() as i64)
         .unwrap_or(0);
     stamp(secs)
+}
+
+/// The seconds a [`stamp`] names.
+pub fn parse_stamp(s: &str) -> Option<i64> {
+    let (date, time) = s.get(..15)?.split_once('-')?;
+    if date.len() != 8 || time.len() != 6 || !date.chars().chain(time.chars()).all(|c| c.is_ascii_digit()) {
+        return None;
+    }
+    let n = |r: std::ops::Range<usize>, of: &str| of[r].parse::<i64>().ok();
+    let (y, m, d) = (n(0..4, date)?, n(4..6, date)?, n(6..8, date)?);
+    let (hh, mm, ss) = (n(0..2, time)?, n(2..4, time)?, n(4..6, time)?);
+    if !(1..=12).contains(&m) || !(1..=31).contains(&d) || hh > 23 || mm > 59 || ss > 60 {
+        return None;
+    }
+    let y = y - i64::from(m <= 2);
+    let era = y.div_euclid(400);
+    let yoe = y - era * 400;
+    let mp = (m + 9) % 12;
+    let doy = (153 * mp + 2) / 5 + d - 1;
+    let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+    let days = era * 146_097 + doe - 719_468;
+    Some(days * 86_400 + hh * 3600 + mm * 60 + ss)
 }
 
 pub fn backups_dir(root: &Path) -> PathBuf {
@@ -400,6 +422,12 @@ mod tests {
     fn stamps_in_utc() {
         assert_eq!(stamp(0), "19700101-000000");
         assert_eq!(stamp(1_793_062_123), "20261027-004843");
+        for secs in [0, 951_782_400, 1_709_164_799, 1_793_062_123, 4_102_444_800] {
+            assert_eq!(parse_stamp(&stamp(secs)), Some(secs), "{secs}");
+        }
+        assert_eq!(parse_stamp("20261027-004843-default"), Some(1_793_062_123));
+        assert_eq!(parse_stamp("2026102-004843"), None);
+        assert_eq!(parse_stamp("20261327-004843"), None);
     }
 
     #[test]
