@@ -452,16 +452,21 @@ sides, a consistent block left alone by the walk, the walk stopping at a wild li
 ### Heap write watch (`heap_watch`)
 
 Option `heap_watch` (default off) in `f1_1990_heapcheck.dll`. Loading with it on arms hardware write breakpoints
-(DR0-DR3, 8 bytes each) on four heap addresses in every thread of the process and re-arms threads created later (a
-worker thread rescans every 250 ms). The default addresses are the damaged header of the 0x5b0-byte block seen in
-sessions 20261030-145707 and 20261031-044641 (0x2FD8487A0, its links), the two words in front of it (0x2FD848798,
-0x2FD848760) and the header of its older list neighbour (0x2FD806CF0). `F1_1990_HEAP_WATCH=addr,addr,...` (hex, up to
-four, rounded down to 8) in the game's environment replaces them. A vectored exception handler copies each hit into a
-lock-free ring (thread, rip, rax rcx rdx rbx rsi rdi r8 r9, 64 words of stack, the 16 code bytes before rip, the
-watched values); the worker logs it. Writes by the heap's own code (exe+0x3960000 to exe+0x396c000) get one line, the
-first 60; any other writer gets a full line, the first 100. Past 50000 hits the breakpoints are cleared. With no hit
-nothing runs besides the 50 ms worker. Wine reports DR6 as 0, so the slot that fired is the one marked `*` (its value
-changed).
+(DR0-DR3, 8 bytes each) on four heap addresses. The threads that exist at load are armed once, one by one, from a
+worker thread (suspend, set, read back, resume). Every thread created later arms itself from `DllMain`
+(`DLL_THREAD_ATTACH`) by setting the debug registers on its own context; nothing polls and no thread is suspended
+after load. The default addresses are the damaged header of the 0x5b0-byte block seen in sessions 20261030-145707 and
+20261031-044641 (0x2FD8487A0, its links), the two words in front of it (0x2FD848798, 0x2FD848760) and the header of
+its older list neighbour (0x2FD806CF0). `F1_1990_HEAP_WATCH=addr,addr,...` (hex, up to four, rounded down to 8) in
+the game's environment replaces them and opens the allocation gate.
+
+A vectored exception handler runs on each trap. It re-reads the four words and ignores the hit when none changed
+(a write of the same value). Until the header at the first address reads size 0x5c0 and requested 0x5b0 (the block
+has been allocated for the first time) every hit is ignored. A real hit is copied into a lock-free ring (thread, rip,
+rax rcx rdx rbx rsi rdi r8 r9, 64 words of stack, the 16 code bytes before rip, the watched values) and the worker
+logs it. Writes by the heap's own code (exe+0x3960000 to exe+0x396c000) get one line, at most 3 a second and 20 in
+all; any other writer gets a full line, at most 5 a second and 40 in all. Past 50000 hits new threads stop arming. The
+trap marks the slot that changed with `*`.
 
 Lines:
 - `[f1-1990] heap watch: on (write breakpoints on ... in every thread)`, then `armed N thread(s), M refused; write
@@ -472,9 +477,11 @@ Lines:
 - `heap watch: +T ms thread N heap code exe+0x... wrote; <addr>=<value> ...` is the heap's own link, unlink and free
   tree writes.
 
-Proton (proton-cachyos 10.0) honours the registers with kernel.yama.ptrace_scope 1: `test/heap_watch_wine.cpp` (build
-with the DLL flags, run with `wine64`) arms an array in two threads, one created after the arming, and logs all six
-writes. The pure parts (DR7 bits, address list, hit ring, stack filter) are tested by `test/heap_watch_test.cpp`.
+Proton (proton-cachyos 10.0) honours debug registers set on a thread's own context with kernel.yama.ptrace_scope 1.
+`test/heap_watch_wine.cpp` (build with the DLL flags, run with `wine64`) creates 4000 short threads that call
+`on_thread_attach`, unarmed and armed: 157 us and 182 us per thread (+25 us, +100 ms over 4000 threads). Arming 41
+existing threads takes under 2 ms. Writes of the same value and writes from threads armed late are handled as above.
+The pure parts (DR7 bits, address list, hit ring, stack filter) are tested by `test/heap_watch_test.cpp`.
 
 ## F1 1990 box (`f1_1990_box.dll`)
 

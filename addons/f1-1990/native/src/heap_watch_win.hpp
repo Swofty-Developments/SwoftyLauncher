@@ -14,9 +14,11 @@
 namespace f1990::watch {
 
 inline constexpr uint32_t kMaxHits = 50000;
-inline constexpr int kLogHeapHits = 60;
-inline constexpr int kLogOtherHits = 100;
-inline constexpr size_t kMaxThreads = 8192;
+inline constexpr int kLogHeapHits = 20;
+inline constexpr int kLogOtherHits = 40;
+inline constexpr int kHeapPerSecond = 3;
+inline constexpr int kOtherPerSecond = 5;
+inline constexpr uint64_t kExpectDefault = 0x05b005c0;
 
 struct Watch {
     uint64_t addr[kSlots]{};
@@ -26,12 +28,15 @@ struct Watch {
     std::atomic<bool> live{false};
     std::atomic<bool> trap_seen{false};
     std::atomic<bool> stop{false};
-    std::atomic<uint32_t> hits{0};
-    uint32_t done[kMaxThreads]{};
-    size_t done_n = 0;
-    int armed = 0, failed = 0;
+    std::atomic<bool> enabled{false};
+    std::atomic<bool> allocated{false};
+    std::atomic<uint32_t> hits{0}, ignored{0};
+    std::atomic<int> armed{0}, failed{0};
+    uint64_t expect = 0;
     int heap_logged = 0, other_logged = 0;
-    uint32_t heap_total = 0, other_total = 0;
+    uint32_t heap_total = 0, other_total = 0, limited = 0;
+    uint64_t second = 0;
+    int heap_in_second = 0, other_in_second = 0;
 };
 
 inline Watch g_watch;
@@ -53,22 +58,32 @@ inline LONG CALLBACK on_trap(PEXCEPTION_POINTERS p)
     if (c->EFlags & 0x100)
         return EXCEPTION_CONTINUE_SEARCH;
     if (g_watch.live.load(std::memory_order_relaxed)) {
-        if (g_watch.hits.fetch_add(1) >= kMaxHits)
+        uint64_t now[kSlots] = {};
+        for (int i = 0; i < g_watch.n; i++)
+            if (!read_word(g_watch.addr[i], now[i]))
+                now[i] = g_watch.shadow[i];
+        uint32_t changed = changed_mask(g_watch.shadow, now, g_watch.n);
+        std::memcpy(g_watch.shadow, now, sizeof now);
+        if (!g_watch.allocated.load(std::memory_order_relaxed)) {
+            uint64_t tag = 0;
+            if (!g_watch.expect || (read_word(g_watch.addr[0] + 8, tag) && tag == g_watch.expect))
+                g_watch.allocated.store(true);
+            else
+                changed = 0;
+        }
+        if (!changed)
+            g_watch.ignored.fetch_add(1, std::memory_order_relaxed);
+        else if (g_watch.hits.fetch_add(1) >= kMaxHits)
             g_watch.stop.store(true);
         else if (Hit *h = g_ring.begin()) {
-            uint64_t now[kSlots] = {};
-            for (int i = 0; i < g_watch.n; i++)
-                if (!read_word(g_watch.addr[i], now[i]))
-                    now[i] = g_watch.shadow[i];
             h->tid = GetCurrentThreadId();
             h->tick = GetTickCount64();
             h->rip = c->Rip;
             h->rsp = c->Rsp;
             h->dr6 = c->Dr6;
             h->armed = uint32_t(g_watch.n);
-            h->changed = changed_mask(g_watch.shadow, now, g_watch.n);
+            h->changed = changed;
             std::memcpy(h->value, now, sizeof now);
-            std::memcpy(g_watch.shadow, now, sizeof now);
             h->reg[0] = c->Rax;
             h->reg[1] = c->Rcx;
             h->reg[2] = c->Rdx;
@@ -101,6 +116,42 @@ inline LONG CALLBACK on_trap(PEXCEPTION_POINTERS p)
     return EXCEPTION_CONTINUE_EXECUTION;
 }
 
+inline bool arm_context(HANDLE t, CONTEXT &c, bool on)
+{
+    c.ContextFlags = CONTEXT_DEBUG_REGISTERS;
+    if (!GetThreadContext(t, &c))
+        return false;
+    c.Dr0 = on && g_watch.n > 0 ? g_watch.addr[0] : 0;
+    c.Dr1 = on && g_watch.n > 1 ? g_watch.addr[1] : 0;
+    c.Dr2 = on && g_watch.n > 2 ? g_watch.addr[2] : 0;
+    c.Dr3 = on && g_watch.n > 3 ? g_watch.addr[3] : 0;
+    c.Dr6 = 0;
+    c.Dr7 = on ? dr7(g_watch.n) : 0;
+    if (!SetThreadContext(t, &c))
+        return false;
+    CONTEXT r{};
+    r.ContextFlags = CONTEXT_DEBUG_REGISTERS;
+    return GetThreadContext(t, &r) && (r.Dr7 & 0xff) == (c.Dr7 & 0xff) && r.Dr0 == c.Dr0;
+}
+
+inline void count_arm(bool ok)
+{
+    if (ok) {
+        g_watch.armed.fetch_add(1);
+        g_watch.trap_seen.store(true);
+    } else if (g_watch.failed.fetch_add(1) + 1 >= 8 && g_watch.armed.load() == 0) {
+        g_watch.enabled.store(false);
+    }
+}
+
+inline void on_thread_attach()
+{
+    if (!g_watch.enabled.load(std::memory_order_relaxed))
+        return;
+    CONTEXT c{};
+    count_arm(arm_context(GetCurrentThread(), c, true));
+}
+
 inline bool set_debug_registers(DWORD tid, bool on)
 {
     HANDLE t = OpenThread(THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_SUSPEND_RESUME, FALSE, tid);
@@ -109,35 +160,14 @@ inline bool set_debug_registers(DWORD tid, bool on)
     bool ok = false;
     if (SuspendThread(t) != DWORD(-1)) {
         CONTEXT c{};
-        c.ContextFlags = CONTEXT_DEBUG_REGISTERS;
-        if (GetThreadContext(t, &c)) {
-            c.Dr0 = on && g_watch.n > 0 ? g_watch.addr[0] : 0;
-            c.Dr1 = on && g_watch.n > 1 ? g_watch.addr[1] : 0;
-            c.Dr2 = on && g_watch.n > 2 ? g_watch.addr[2] : 0;
-            c.Dr3 = on && g_watch.n > 3 ? g_watch.addr[3] : 0;
-            c.Dr6 = 0;
-            c.Dr7 = on ? dr7(g_watch.n) : 0;
-            if (SetThreadContext(t, &c)) {
-                CONTEXT r{};
-                r.ContextFlags = CONTEXT_DEBUG_REGISTERS;
-                ok = GetThreadContext(t, &r) && (r.Dr7 & 0xff) == (c.Dr7 & 0xff) && r.Dr0 == c.Dr0;
-            }
-        }
+        ok = arm_context(t, c, on);
         ResumeThread(t);
     }
     CloseHandle(t);
     return ok;
 }
 
-inline bool seen(uint32_t tid)
-{
-    for (size_t i = 0; i < g_watch.done_n; i++)
-        if (g_watch.done[i] == tid)
-            return true;
-    return false;
-}
-
-inline void each_thread(bool on, bool only_new)
+inline void each_thread(bool on)
 {
     HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
     if (snap == INVALID_HANDLE_VALUE)
@@ -148,19 +178,9 @@ inline void each_thread(bool on, bool only_new)
     for (BOOL more = Thread32First(snap, &e); more; more = Thread32Next(snap, &e)) {
         if (e.th32OwnerProcessID != pid || e.th32ThreadID == self)
             continue;
-        if (only_new && seen(e.th32ThreadID))
-            continue;
-        if (only_new && g_watch.done_n < kMaxThreads)
-            g_watch.done[g_watch.done_n++] = e.th32ThreadID;
         bool ok = set_debug_registers(e.th32ThreadID, on);
-        if (!on)
-            continue;
-        if (ok) {
-            g_watch.armed++;
-            g_watch.trap_seen.store(true);
-        } else {
-            g_watch.failed++;
-        }
+        if (on)
+            count_arm(ok);
     }
     CloseHandle(snap);
 }
@@ -169,16 +189,27 @@ inline void log_hit(const Hit &h)
 {
     auto img = swofty::mem::detail::image();
     bool heap_code = in_allocator(h.rip, img.lo);
+    uint64_t second = h.tick / 1000;
+    if (second != g_watch.second) {
+        g_watch.second = second;
+        g_watch.heap_in_second = g_watch.other_in_second = 0;
+    }
     if (heap_code) {
         g_watch.heap_total++;
-        if (g_watch.heap_logged >= kLogHeapHits)
+        if (g_watch.heap_logged >= kLogHeapHits || g_watch.heap_in_second >= kHeapPerSecond) {
+            g_watch.limited++;
             return;
+        }
         g_watch.heap_logged++;
+        g_watch.heap_in_second++;
     } else {
         g_watch.other_total++;
-        if (g_watch.other_logged >= kLogOtherHits)
+        if (g_watch.other_logged >= kLogOtherHits || g_watch.other_in_second >= kOtherPerSecond) {
+            g_watch.limited++;
             return;
+        }
         g_watch.other_logged++;
+        g_watch.other_in_second++;
     }
     char where[32], values[kSlots * 40], stack[16 * 24], code[3 * 16 + 4];
     exe_or_raw(where, sizeof where, h.rip, img.lo, img.hi);
@@ -218,38 +249,34 @@ inline void drain()
 
 inline DWORD WINAPI watch_worker(LPVOID)
 {
+    each_thread(true);
+    if (g_watch.armed.load() == 0) {
+        g_watch.live.store(false);
+        g_watch.enabled.store(false);
+        swofty::log("[f1-1990] heap watch: debug registers were not honoured in %d thread(s); the watch is off",
+                    g_watch.failed.load());
+        return 0;
+    }
+    swofty::log("[f1-1990] heap watch: armed %d existing thread(s), %d refused; later threads arm themselves", g_watch.armed.load(),
+                g_watch.failed.load());
     uint32_t pass = 0;
-    bool reported = false;
     for (;;) {
         drain();
-        if (pass % 5 == 0) {
-            each_thread(true, true);
-            if (g_watch.armed == 0 && g_watch.failed >= 3) {
-                g_watch.live.store(false);
-                swofty::log("[f1-1990] heap watch: debug registers were not honoured in %d thread(s); the watch is off",
-                            g_watch.failed);
-                return 0;
-            }
-            if (!reported && g_watch.armed > 0) {
-                reported = true;
-                swofty::log("[f1-1990] heap watch: armed %d thread(s), %d refused; write breakpoints on %d address(es)",
-                            g_watch.armed, g_watch.failed, g_watch.n);
-            }
-        }
         if (g_watch.stop.load()) {
             g_watch.live.store(false);
-            each_thread(false, false);
+            g_watch.enabled.store(false);
             drain();
-            swofty::log("[f1-1990] heap watch: %u hits, the breakpoints are cleared; heap code %u, other %u", g_watch.hits.load(),
+            swofty::log("[f1-1990] heap watch: %u hits, the watch is off for new threads; heap code %u, other %u", g_watch.hits.load(),
                         g_watch.heap_total, g_watch.other_total);
             return 0;
         }
-        if (pass % 1200 == 1199)
-            swofty::log("[f1-1990] heap watch: %u hits so far, heap code %u, other %u, %d thread(s) armed (the first %d and %d "
-                        "are logged)",
-                        g_watch.hits.load(), g_watch.heap_total, g_watch.other_total, g_watch.armed, kLogHeapHits, kLogOtherHits);
+        if (pass % 300 == 299 && (g_watch.hits.load() || g_watch.limited))
+            swofty::log("[f1-1990] heap watch: %u hits so far, heap code %u, other %u, %u not logged, %u unchanged writes ignored, "
+                        "%d thread(s) armed",
+                        g_watch.hits.load(), g_watch.heap_total, g_watch.other_total, g_watch.limited, g_watch.ignored.load(),
+                        g_watch.armed.load());
         pass++;
-        Sleep(50);
+        Sleep(200);
     }
 }
 
@@ -264,7 +291,9 @@ inline void start_watch()
     for (int i = 0; i < g_watch.n; i++)
         read_word(g_watch.addr[i], g_watch.shadow[i]);
     g_watch.start = GetTickCount64();
+    g_watch.expect = std::getenv("F1_1990_HEAP_WATCH") ? 0 : kExpectDefault;
     g_watch.live.store(true);
+    g_watch.enabled.store(true);
     AddVectoredExceptionHandler(1, on_trap);
     if (HANDLE t = CreateThread(nullptr, 0, watch_worker, nullptr, 0, nullptr))
         CloseHandle(t);

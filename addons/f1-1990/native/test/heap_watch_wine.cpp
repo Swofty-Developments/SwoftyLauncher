@@ -43,7 +43,9 @@ alignas(64) volatile uint64_t g_block[16];
 
 static DWORD WINAPI writer(LPVOID arg)
 {
+    f1990::watch::on_thread_attach();
     Sleep(DWORD(reinterpret_cast<uintptr_t>(arg)));
+    g_block[2] = 0x1111;
     g_block[2] = 0x1111;
     g_block[1] = 0;
     Sleep(50);
@@ -52,20 +54,56 @@ static DWORD WINAPI writer(LPVOID arg)
     return 0;
 }
 
+static DWORD WINAPI idle(LPVOID)
+{
+    f1990::watch::on_thread_attach();
+    return 0;
+}
+
+static double churn(int total, int batch)
+{
+    LARGE_INTEGER f, a, b;
+    QueryPerformanceFrequency(&f);
+    QueryPerformanceCounter(&a);
+    for (int done = 0; done < total; done += batch) {
+        HANDLE h[256];
+        for (int i = 0; i < batch; i++)
+            h[i] = CreateThread(nullptr, 0, idle, nullptr, 0, nullptr);
+        WaitForMultipleObjects(DWORD(batch), h, TRUE, INFINITE);
+        for (int i = 0; i < batch; i++)
+            CloseHandle(h[i]);
+    }
+    QueryPerformanceCounter(&b);
+    return double(b.QuadPart - a.QuadPart) * 1000.0 / double(f.QuadPart);
+}
+
 int main()
 {
+    constexpr int kThreads = 4000;
+    double base = churn(kThreads, 50);
+    std::printf("%d threads unarmed: %.0f ms (%.1f us each)\n", kThreads, base, base * 1000 / kThreads);
     char env[128];
     std::snprintf(env, sizeof env, "F1_1990_HEAP_WATCH=%llx,%llx,%llx", (unsigned long long)&g_block[1],
                   (unsigned long long)&g_block[2], (unsigned long long)&g_block[3]);
     _putenv(env);
-    HANDLE early = CreateThread(nullptr, 0, writer, reinterpret_cast<LPVOID>(1500), 0, nullptr);
+    HANDLE existing[40];
+    for (auto &t : existing)
+        t = CreateThread(nullptr, 0, writer, reinterpret_cast<LPVOID>(1500), 0, nullptr);
     Sleep(100);
+    LARGE_INTEGER f, a, b;
+    QueryPerformanceFrequency(&f);
+    QueryPerformanceCounter(&a);
     f1990::watch::start_watch();
-    Sleep(1000);
-    HANDLE late = CreateThread(nullptr, 0, writer, reinterpret_cast<LPVOID>(1000), 0, nullptr);
-    WaitForSingleObject(early, 5000);
+    Sleep(300);
+    QueryPerformanceCounter(&b);
+    std::printf("start + arming 41 existing threads: %.0f ms (incl. 300 ms sleep)\n", double(b.QuadPart - a.QuadPart) * 1000.0 / double(f.QuadPart));
+    double armed = churn(kThreads, 50);
+    std::printf("%d threads armed: %.0f ms (%.1f us each)\n", kThreads, armed, armed * 1000 / kThreads);
+    HANDLE late = CreateThread(nullptr, 0, writer, reinterpret_cast<LPVOID>(300), 0, nullptr);
     WaitForSingleObject(late, 5000);
+    WaitForMultipleObjects(40, existing, TRUE, 5000);
     Sleep(500);
-    std::printf("hits %u armed %d failed %d heap %u other %u\n", f1990::watch::g_watch.hits.load(), f1990::watch::g_watch.armed,
-                f1990::watch::g_watch.failed, f1990::watch::g_watch.heap_total, f1990::watch::g_watch.other_total);
+    std::printf("hits %u ignored %u armed %d failed %d heap %u other %u\n", f1990::watch::g_watch.hits.load(),
+                f1990::watch::g_watch.ignored.load(), f1990::watch::g_watch.armed.load(), f1990::watch::g_watch.failed.load(),
+                f1990::watch::g_watch.heap_total, f1990::watch::g_watch.other_total);
 }
