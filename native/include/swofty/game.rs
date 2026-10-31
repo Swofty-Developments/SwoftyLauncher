@@ -15468,6 +15468,11 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Sess_AiRecords_NameHash: Binding = Binding {
+        id: "site_Sess_AiRecords_NameHash",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Sess_AiVehicleRegisterCall: Binding = Binding {
         id: "site_Sess_AiVehicleRegisterCall",
         kind: "call",

@@ -680,6 +680,7 @@ inline constexpr data<"g_Sess_TyreRulesSessionType", uint32_t> g_Sess_TyreRulesS
 inline constexpr data<"g_Sess_VehicleCount", uint32_t> g_Sess_VehicleCount{}; // L2 experimental
 inline constexpr data<"g_Sess_VehicleTable", void *[]> g_Sess_VehicleTable{}; // L2 experimental
 inline constexpr data<"k_Sess_TyreComponentType", void *> k_Sess_TyreComponentType{}; // L2 experimental
+inline constexpr site<"site_Sess_AiRecords_NameHash"> site_Sess_AiRecords_NameHash{}; // L2 experimental
 inline constexpr call<"site_Sess_AiVehicleRegisterCall"> site_Sess_AiVehicleRegisterCall{}; // L2 experimental
 inline constexpr call<"site_Sess_ControllerSystem_ApplyRecordCall"> site_Sess_ControllerSystem_ApplyRecordCall{}; // L2 experimental
 inline constexpr call<"site_Sess_InGamePlayerFinishedAiCall"> site_Sess_InGamePlayerFinishedAiCall{}; // L2 experimental
