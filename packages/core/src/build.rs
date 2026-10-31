@@ -3018,6 +3018,99 @@ mod tests {
         std::fs::remove_dir_all(&root).ok();
     }
 
+    struct Grid(AddonManifest);
+
+    impl Addon for Grid {
+        fn manifest(&self) -> &AddonManifest {
+            &self.0
+        }
+
+        fn build(&self, cx: &BuildCx) -> swofty_addon::Result<AssetBatch> {
+            let op: AssetOp = serde_json::from_value(serde_json::json!({
+                "op": "db.set", "select": "t.list[_metadata_=cs_f1_2016]", "field": "name", "value": "edited"
+            }))
+            .map_err(|e| swofty_addon::Error::Other(e.to_string()))?;
+            Ok(AssetBatch {
+                ops: vec![Op {
+                    op,
+                    origin: Origin {
+                        addon: cx.cx.addon.into(),
+                        item: Some("grid-editor".into()),
+                    },
+                }],
+                ..AssetBatch::default()
+            })
+        }
+    }
+
+    #[test]
+    fn an_editor_op_on_a_row_a_later_addon_adds_applies() {
+        use swofty_formats::gvdb::Record;
+        if loader_dir().is_some() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("swofty-build-late-row-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        let records = vec![
+            Record::new("t._list_instancecount_", 0, "1"),
+            Record::new("t.list_0._metadata_", 4, "f1"),
+            Record::new("t.list_0.name", 4, "stock"),
+        ];
+        std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir,
+            user_reg: None,
+        };
+        let manifest = AddonManifest::parse(
+            r#"{ "schema_version": 1, "id": "t.grid", "name": "Grid", "version": "1.0.0", "author": "t",
+                 "compat": { "game": "f1_25" } }"#,
+        )
+        .unwrap();
+        let store = Store::new(root.join("data")).with_builtins(vec![Builtin {
+            addon: Arc::new(Grid(manifest)),
+            locked: false,
+            default_on: true,
+        }]);
+        let src = root.join("src");
+        std::fs::create_dir_all(&src).unwrap();
+        std::fs::write(
+            src.join("swofty.json"),
+            r#"{ "schema_version": 1, "id": "t.seasons", "name": "Seasons", "version": "1.0.0", "author": "t",
+                 "compat": { "game": "f1_25" }, "operations": { "database": ["db.json"] } }"#,
+        )
+        .unwrap();
+        std::fs::write(
+            src.join("db.json"),
+            r#"{ "schema_version": 1, "fields": { "t.list": ["_metadata_", "name"] }, "ops": [
+                 { "op": "add-row", "table": "t", "from": "t.list[_metadata_=f1]", "set": { "_metadata_": "cs_f1_2016", "name": "seasons" } } ] }"#,
+        )
+        .unwrap();
+        store.install_addon(&src).unwrap();
+        store
+            .update_profile("default", |p| p.set_enabled("t.seasons", true))
+            .unwrap();
+
+        let built = build(&store, "default", &game).unwrap();
+        assert_eq!(built.order, [CORE_ID, "t.grid", "t.seasons"]);
+        let out = Gvdb::parse(&std::fs::read(&built.plan.data[GVDB]).unwrap()).unwrap();
+        assert_eq!(out.get_text("t.list_1._metadata_").as_deref(), Some("cs_f1_2016"));
+        assert_eq!(out.get_text("t.list_1.name").as_deref(), Some("edited"));
+
+        store
+            .update_profile("default", |p| p.set_enabled("t.seasons", false))
+            .unwrap();
+        let e = build(&store, "default", &game).unwrap_err().to_string();
+        assert!(
+            e.contains("applying t.grid (grid-editor): t.list[_metadata_=cs_f1_2016]: no row matches, even after every addon's changes"),
+            "{e}"
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
     #[test]
     fn runs_the_build_hooks_of_builtin_addons() {
         if loader_dir().is_some() {

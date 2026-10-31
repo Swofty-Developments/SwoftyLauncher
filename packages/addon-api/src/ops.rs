@@ -835,6 +835,13 @@ fn select_row(db: &Db, table: &Base, row: &str, field: &str, want: &str) -> std:
     }
 }
 
+const NO_ROW: &str = "no row matches";
+
+/// Whether `e` is a selector that matched no row, which a row added later can fix.
+pub fn no_row(e: &Error) -> bool {
+    matches!(e, Error::Resolve(m) if m.contains(&format!(": {NO_ROW}")))
+}
+
 fn resolve_path(db: &Db, path: &str) -> Result<Base> {
     if !path.contains('[') {
         return parse_base(path);
@@ -863,7 +870,7 @@ fn resolve_path(db: &Db, path: &str) -> Result<Base> {
                     Err(n) => {
                         let upto = &path[..path.len() - tail.map_or(0, |t| t.len() + 1)];
                         let what = match n {
-                            0 => "no row matches".to_owned(),
+                            0 => NO_ROW.to_owned(),
                             n => format!("{n} rows match"),
                         };
                         let scope = match (nested, row) {
