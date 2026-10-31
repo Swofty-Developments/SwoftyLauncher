@@ -119,6 +119,7 @@ pub struct Shell {
     pub(crate) crash_view: Option<CrashView>,
     pub(crate) crash_open: bool,
     pub(crate) dismissed: Option<PathBuf>,
+    pub(crate) steam_saves_once: bool,
     pub(crate) launch: Option<Launch>,
     pub(crate) notice: Option<String>,
     pub(crate) blocked: Option<Blocked>,
@@ -507,6 +508,7 @@ impl Shell {
             crash_view: None,
             crash_open: false,
             dismissed: None,
+            steam_saves_once: false,
             launch: None,
             notice: None,
             blocked: None,
@@ -917,6 +919,7 @@ impl Shell {
             &install,
             self.launch_mode(),
             self.mp_allowed(),
+            std::mem::take(&mut self.steam_saves_once),
         ) {
             Ok(l) => self.launch = Some(l),
             Err(e) => {
@@ -1025,6 +1028,50 @@ impl Shell {
                 cx,
             );
         }
+    }
+
+    pub(crate) fn saves_refused(&self) -> Option<&SessionRecord> {
+        self.session.as_ref().filter(|s| {
+            s.exit_code == Some(swofty_core::launcher_saves::EXIT)
+                && self.dismissed.as_ref() != Some(&s.dir)
+                && s.ended.is_some_and(|e| game::now_secs() - e < 1800.0)
+        })
+    }
+
+    pub(crate) fn play_with_steam_saves(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.steam_saves_once = true;
+        self.play(window, cx);
+        if self.launch.is_none() {
+            self.steam_saves_once = false;
+        }
+    }
+
+    pub(crate) fn set_launcher_saves(&mut self, on: bool, window: &mut Window, cx: &mut Context<Self>) {
+        let name = self.library.profile.name.clone();
+        match self.store.update_profile(&name, |p| {
+            p.launcher_saves = on;
+            Ok(())
+        }) {
+            Ok(()) => {
+                crate::app_log::note(&format!(
+                    "saves: profile {name} now plays on {}",
+                    if on { "its launcher saves" } else { "Steam's saves" }
+                ));
+                self.library.profile.launcher_saves = on;
+                window.push_notification(
+                    Notification::info(match on {
+                        true => format!("{name} plays on its own launcher saves."),
+                        false => format!("{name} plays on your Steam saves."),
+                    }),
+                    cx,
+                );
+            }
+            Err(e) => {
+                crate::app_log::action("save profile").failed(&e);
+                window.push_notification(Notification::error(e.to_string()), cx);
+            }
+        }
+        cx.notify();
     }
 
     pub(crate) fn launch_mode(&self) -> LaunchMode {

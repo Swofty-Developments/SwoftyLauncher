@@ -1508,7 +1508,7 @@ mod tests {
         };
         write_addon(&Store::new(&root).addons_dir().join("a.user"), "a.user");
         let plain = Store::new(&root).with_builtins(vec![tuned()]);
-        let expected = SessionSettings::build(
+        let mut expected = SessionSettings::build(
             &plain.profile(DEFAULT_PROFILE).unwrap(),
             &plain.addons().unwrap(),
             Some(crate::paths::game_folder_view(
@@ -1516,6 +1516,13 @@ mod tests {
             )),
         )
         .unwrap();
+        expected.launcher_saves = Some(settings::SessionSaves {
+            profile: DEFAULT_PROFILE.into(),
+            remote: crate::paths::game_folder_view(&crate::launcher_saves::remote_dir(
+                &plain.root,
+                DEFAULT_PROFILE,
+            )),
+        });
         let plain_json = serde_json::to_vec(&plain.session_settings(DEFAULT_PROFILE).unwrap()).unwrap();
         assert_eq!(plain_json, serde_json::to_vec(&expected).unwrap());
 

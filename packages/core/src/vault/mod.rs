@@ -359,6 +359,16 @@ impl Notice {
     }
 
     pub fn text(&self) -> String {
+        if self.source.starts_with("launcher-") {
+            return format!(
+                "{}: {}. If a career is missing, restore it with `swofty saves restore {} --source {}` while F1 25 is \
+                 closed",
+                self.headline(),
+                self.snapshot,
+                self.snapshot,
+                self.source
+            );
+        }
         format!(
             "{}: {}. If a career is missing, restore it with `swofty saves restore {}` while F1 25 and {} are \
              closed",

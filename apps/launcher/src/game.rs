@@ -289,6 +289,7 @@ impl Launch {
         install: &Install,
         mode: LaunchMode,
         netplay: bool,
+        steam_saves_once: bool,
     ) -> Result<Self, String> {
         let cli = cli_path(store).ok_or_else(|| app_control::missing(&expected_cli(store)))?;
         let at = now_secs();
@@ -307,6 +308,9 @@ impl Launch {
             .arg("--apply");
         if mode.is_vr() {
             c.arg("--vr");
+        }
+        if steam_saves_once {
+            c.arg("--steam-saves-once");
         }
         c.arg("--game").arg(&install.dir);
         if netplay {

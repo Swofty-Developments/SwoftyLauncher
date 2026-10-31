@@ -166,8 +166,10 @@ These commands come from the built-in Team Simplified addon. Use them to manage 
 | `swofty saves backup` | Snapshot the profile save now and pin it |
 | `swofty saves restore <snapshot> [--source <s>]` | Copy a snapshot back over the profile save. It refuses while F1 25 runs, and while Steam (or the EA app, for an EA app save) runs, and snapshots the current save first |
 | `swofty saves cap [<MB>]` | Show or set the vault's size cap (500 MB by default) |
+| `swofty saves import [--from steam \| --from-profile <p>] [--profile <p>]` | Copy the Steam save, or another profile's launcher saves, into a profile's [launcher saves](/reference/saves#launcher-saves). It refuses while F1 25 runs and keeps what the store held in the vault first |
+| `swofty saves export --to steam [--profile <p>]` | Copy a profile's launcher saves over the Steam save. It refuses while F1 25 or Steam runs and keeps the Steam save in the vault first |
 
-`swofty run` snapshots the profile save before the session and again after the game has closed and the session's game files are rolled back. [Career vault](/reference/saves) has the folder layout, the snapshot format and the notices.
+`swofty run --steam-saves-once` plays one session on the Steam save though the profile uses launcher saves. `swofty run` snapshots the profile save (the profile's launcher saves, or the Steam save) before the session and again after the game has closed and the session's game files are rolled back. [Career vault](/reference/saves) has the folder layout, the snapshot format and the notices.
 
 After a restore, Steam may ask which copy to keep the next time F1 25 starts; keep the local files.
 

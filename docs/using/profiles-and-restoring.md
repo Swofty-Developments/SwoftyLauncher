@@ -52,6 +52,10 @@ The launcher won't put files from an old game build back over a newer one. If yo
 
 Your [data folder](/guide/installation#where-your-files-are-stored) holds the original files needed to undo changes, so keep it until restoration is complete.
 
+## Launcher saves
+
+Each profile plays on its own copy of the profile save, kept in your data folder. Steam's save stays as it is, so starting F1 25 from Steam shows your normal careers. The first time the launcher starts after updating to 1.6.13, it copies your current Steam save into every profile; after that the two saves are independent, and launcher saves don't sync between PCs. **Use launcher saves** in the menu beside Play turns it off for a profile, and **Play once with your Steam saves** runs a single session on the Steam save. `swofty saves import` and `swofty saves export --to steam` copy between them. [Launcher saves](/reference/saves#launcher-saves) has the folders and the details.
+
 ## Restoring a profile save
 
 The launcher keeps copies of your profile save in the [career vault](/reference/saves): at launcher start, before and after every Play, and when F1 25 was started from Steam or the EA app. When the save changed outside the launcher and got smaller, or got smaller in a session without an addon that affects saves, the Addons page offers **Restore**. `swofty saves list` lists every copy and `swofty saves restore <snapshot>` puts one back.
