@@ -59,6 +59,16 @@
       "binds": "native"
     },
     {
+      "id": "physics_log_1990", "type": "toggle", "label": "Car physics log", "default": true,
+      "description": "Logs each handling VTF the game loads (1990 marker, gear ratio keys) and every car it builds with its handling asset, equal performance flag and gear ratios. Works in every mode.",
+      "binds": "native"
+    },
+    {
+      "id": "own_handling_1990", "type": "toggle", "label": "Own handling in equal performance", "default": true,
+      "description": "Cars built from a 1990 handling file keep that handling in equal performance modes such as Time Trial, instead of taking the stock base car's sections.",
+      "binds": "native"
+    },
+    {
       "id": "heap_watch", "type": "toggle", "label": "Heap write watch", "default": false,
       "description": "Debugging only: arms hardware write breakpoints on the game heap blocks that were damaged in earlier sessions and logs every writer with its stack. Works in every mode.",
       "binds": "native"
@@ -245,7 +255,8 @@
       { "dll": "native/f1_1990_qualilaps.dll" },
       { "dll": "native/f1_1990_pitphases.dll", "files": ["data/pit-phases.json"] },
       { "dll": "native/f1_1990_audiofix.dll" }, { "dll": "native/f1_1990_heapcheck.dll" },
-      { "dll": "native/f1_1990_box.dll" }
+      { "dll": "native/f1_1990_box.dll" },
+      { "dll": "native/f1_1990_physics.dll" }
     ],
     "files": [
       { "source": "files/audio/v12_1990.bdl", "target": "audio/2025/bundles/v12_1990.bdl" },

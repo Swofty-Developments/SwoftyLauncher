@@ -16,7 +16,7 @@ Log lines (swofty log): `[f1-1990] GRID best-of (<why>)` once per pass, then one
 
 ## Build
 
-`./build.sh` builds the 24 DLLs with zig against the game headers in `native/include` and the SDK in `packages/sdk/include`. `f1_1990_parts.dll` binds `site_Sess_PuPanel_SlotHolder`, which has no `agree` verify row yet, so the core's `bindings.json` doesn't list it and the core drops that DLL; it loads with a loader whose `swofty/addons/core/bindings.json` adds the entry. `f1_1990_pitphases.dll` binds `Sess_PitStopUpdateJob_Update` and `g_Ne_NameTable`. `f1_1990_audiofix.dll` binds `Snd_Request_JobWorker`, `g_Snd_JobWorkerOverflow` and `g_Snd_JobWorkerLock`. `f1_1990_heapcheck.dll` binds `Ne_Heap_DeallocateNonSmall`.
+`./build.sh` builds the 25 DLLs with zig against the game headers in `native/include` and the SDK in `packages/sdk/include`. `f1_1990_parts.dll` binds `site_Sess_PuPanel_SlotHolder`, which has no `agree` verify row yet, so the core's `bindings.json` doesn't list it and the core drops that DLL; it loads with a loader whose `swofty/addons/core/bindings.json` adds the entry. `f1_1990_pitphases.dll` binds `Sess_PitStopUpdateJob_Update` and `g_Ne_NameTable`. `f1_1990_audiofix.dll` binds `Snd_Request_JobWorker`, `g_Snd_JobWorkerOverflow` and `g_Snd_JobWorkerLock`. `f1_1990_heapcheck.dll` binds `Ne_Heap_DeallocateNonSmall`.
 
 `test/run.sh` runs the ranking unit tests on the host.
 
@@ -486,3 +486,7 @@ The pure parts (DR7 bits, address list, hit ring, stack filter) are tested by `t
 ## F1 1990 box (`f1_1990_box.dll`)
 
 Registers the F1 1990 box (`swofty::era::add_box`: entrant list `f1_1990_gp`, Time Trial list `f1_1990_tt`, title `lng_f1990_box`, image `#overrides.home_screen.tiles_solo_6x6[f1]`, order 1990) from its init check. Line: `[f1-1990] box: F1 1990 box registered (Grand Prix f1_1990_gp, Time Trial f1_1990_tt)`, or `refused`, or `this core has no era picker boxes`. The data side is `db/box.json` (README, Grand Prix and Time Trial box).
+
+## Car physics log (`f1_1990_physics.dll`)
+
+A separate DLL; options `physics_log_1990` (default on) and `own_handling_1990` (default on), active in every mode. A `Car_Load_Vtf` wrap searches the bytes of each handling VTF the game loads for the `F1_1990` tyre group marker and counts its `GearRatioNth` keys; the line is `[f1-1990] physics: handling VTF loaded: asset <ptr>, <bytes> bytes, 1990 marker found, <n> of 9 GearRatioNth keys`. A `Car_Assets_CreateSystemForPerformanceMode` wrap logs every system build or rebuild of a car (`[f1-1990] physics: car <id> build: asset <ptr> (1990), equal-performance flag <0|1>, base asset <ptr>, <n> gears, final drive <x>, ratios <r1> ... <r9>`), and `site_Car_LiveCarBuilt` logs the finished car (`car <id> built: asset, flag, handling version, gears`). Each log stops after 400 lines. A car in equal-performance mode (`CarLive` +0x12c) takes every VTF section from the base asset (`[asset+0x48]+0x28`); with `own_handling_1990` on, the wrap clears that flag for a car whose asset is a 1990 handling file and has a base asset, and the car builds from its own sections. `src/car_physics.hpp` is tested by `test/car_physics_test.cpp`.
