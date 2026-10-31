@@ -168,7 +168,7 @@ events::on<cars::events::Reset>().after([apply](cars::events::Reset &r, const ev
 
 `Reset::upgrade` is always false from the core: the R&D upgrade replay doesn't go through this reset.
 
-Still to come: the part accessors (`car.engine()`, `car.ers()`, `car.f1_aero()` and the rest), the car's vehicle, team and driver, and the other values the game derives (engine power and torque, mass and inertia). Until then the part accessors hold your values in the addon and the core applies nothing from them.
+Still to come: the car's vehicle, team and driver, and the other values the game derives (engine power and torque, mass and inertia).
 
 ## R&D upgrades
 

@@ -2,7 +2,6 @@
 #pragma once
 #include <array>
 #include <atomic>
-#include <map>
 #include <optional>
 #include <swofty/events.hpp>
 #include <swofty/registry.hpp>
@@ -19,8 +18,8 @@
 // live::available() is false and live::cars() is empty. A live::Car is a trivially copyable handle (the
 // car's index and the game's car), so event payloads carry it as is. control() reads the car's controller
 // mode and flags fresh from the core (nothing while the game rebuilds its controller sets, or on a core
-// without session operations). The part accessors (engine() .. suspension_damage()) are addon-side values
-// the core doesn't apply yet.
+// without session operations). cars::live is experimental: nothing in it has run in game yet, and the final
+// drive and gear ratio fields depend on the gearbox's use_setup_ratios byte (+0x540), not yet read at runtime.
 
 namespace swofty::cars {
 
@@ -278,19 +277,6 @@ enum class Field : uint32_t {
     gear_ratio_9 = SWOFTY_CAR_GEAR_RATIO_1 + 8,
 };
 
-struct AeroScales {
-    float lift_scale = 1, drag_scale = 1;
-};
-
-struct Shadow {
-    Engine engine;
-    FuelTank fuel_tank;
-    Ers ers;
-    AeroScales f1_aero;
-    WingDamage wing_damage;
-    SuspensionDamage suspension_damage;
-};
-
 }
 
 }
@@ -376,13 +362,6 @@ public:
         return r == Result::ok ? set(f, v * factor) : r;
     }
 
-    Engine &engine() const { return shadow().engine; }
-    FuelTank &fuel_tank() const { return shadow().fuel_tank; }
-    Ers &ers() const { return shadow().ers; }
-    AeroScales &f1_aero() const { return shadow().f1_aero; }
-    WingDamage &wing_damage() const { return shadow().wing_damage; }
-    SuspensionDamage &suspension_damage() const { return shadow().suspension_damage; }
-
 private:
     Result read(Field f, float &v) const
     {
@@ -390,11 +369,6 @@ private:
         if (!t || !t->get)
             return Result::unavailable;
         return swofty::detail::result(t->get(index_, handle_, static_cast<uint32_t>(f), &v));
-    }
-    Shadow &shadow() const
-    {
-        static std::map<uint32_t, Shadow> all;
-        return all[index_];
     }
     uint32_t index_ = 0;
     void *handle_ = nullptr;
