@@ -821,7 +821,12 @@ impl Shell {
         if matches!(self.page, Page::Section(i) if i >= self.library.sections.len()) {
             self.page = Page::Addons;
         }
-        self.refresh_saves();
+        if self.page == Page::Careers {
+            self.refresh_saves();
+        } else {
+            let root = self.store.root.clone();
+            self.saves.refresh_banner(&root, &self.library.profile.name);
+        }
         self.refresh_views(cx);
         self.db_profile_changed(cx);
         self.sync_catalog_updates();
