@@ -35,6 +35,8 @@ struct SlotRead {
     uint64_t date = 0;
 };
 
+inline bool career_slot(const SlotRead &s) { return s.details && !(s.flags & FLAG_HIDDEN) && s.date != 0; }
+
 struct ListContext {
     std::string session, current;
     int64_t now_ms = 0;
@@ -280,10 +282,20 @@ public:
         for (const SlotRead &s : now) {
             std::string key = slot_key(s.id, s.guid);
             Value *rec = find_by_tail(key);
+            if (!career_slot(s)) {
+                if (!rec)
+                    continue;
+                if (str(*rec, "source") == "slots") {
+                    careers_.erase(careers_.begin() + (rec - careers_.data()));
+                    out.changed = true;
+                } else
+                    seen.insert(std::string(str(*rec, "career")));
+                continue;
+            }
             if (!rec) {
                 if (careers_.size() >= MAX_CAREERS)
                     continue;
-                std::string kind = s.details && (s.flags & FLAG_MY_TEAM) ? "my_team" : "driver_career";
+                std::string kind = s.flags & FLAG_MY_TEAM ? "my_team" : "driver_career";
                 rec = &touch(kind + ":" + key);
                 (*rec)["source"] = Value("slots");
                 out.added.push_back(std::string(str(*rec, "career")));
@@ -302,8 +314,6 @@ public:
             (*rec)["listed_session"] = Value(ctx.session);
             (*rec)["listed_at"] = Value(ctx.now_ms);
             (*rec)["slot"] = Value(key);
-            if (!s.details)
-                continue;
             if (str(*rec, "mode").empty())
                 (*rec)["mode"] = Value(std::string(s.flags & FLAG_MY_TEAM ? "my_team" : "driver_career"));
             bool same = id == ctx.current;
