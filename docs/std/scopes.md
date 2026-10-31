@@ -15,7 +15,7 @@ Tails' "what if" addon uses all three scopes on Progressive Career's 2017 season
 - **profile:** the grid the player edited on the addon's launcher page, saved in this launcher profile's storage;
 - **career:** a swap made by the in-game editor, saved with the career that's loaded.
 
-A scope is the last argument of `layer`. It defaults to `Scope::global`.
+A scope is the last argument of `layer`. It defaults to `Scope::automatic`: global for an addon without a career mode, and limited to the addon's own careers for an addon that owns one ([Career scope](/std/systems/career#career-scope)). `Scope::global` applies everywhere.
 
 <template #example>
 <Example root="tails.whatif-history" code-file="native/src/whatif.cpp" data-file="registry/layers.json" files="swofty.json, registry.json, native/whatif.dll, bin/whatif.exe">
@@ -108,7 +108,7 @@ A global layer added later, at run time, lasts until the addon clears it or the 
 
 ```cpp
 career::seasons.layer(y2017, give_alonso_the_mercedes);   // from SWOFTY_ON_LOAD or later: this session
-career::seasons.clear_layer(y2017);                         // Scope::global by default
+career::seasons.clear_layer(y2017);                         // Scope::automatic by default
 ```
 
 ## Profile
