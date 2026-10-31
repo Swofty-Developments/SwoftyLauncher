@@ -379,6 +379,25 @@ jobs:
           chmod +x "$RUNNER_TEMP/bin/taskset"
           echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
 
+      # The native tests run side by side, and the stock xvfb-run -a can give two calls started together the
+      # same display. This one takes the next display number from a counter under a lock.
+      - name: Give every xvfb-run its own display
+        run: |
+          cat > "$RUNNER_TEMP/bin/xvfb-run" <<'EOF'
+          #!/bin/bash
+          while [ "${1:-}" = -a ] || [ "${1:-}" = --auto-servernum ]; do shift; done
+          n=$(flock "$RUNNER_TEMP/xvfb.lock" bash -c 'f=$RUNNER_TEMP/xvfb.next; n=$(cat "$f" 2>/dev/null || echo 100); echo $((n + 1)) > "$f"; echo "$n"')
+          Xvfb ":$n" -screen 0 1280x1024x24 -nolisten tcp >/dev/null 2>&1 &
+          x=$!
+          for _ in $(seq 200); do [ -S "/tmp/.X11-unix/X$n" ] && break; sleep 0.05; done
+          DISPLAY=":$n" "$@"
+          rc=$?
+          kill "$x" 2>/dev/null
+          wait "$x" 2>/dev/null
+          exit $rc
+          EOF
+          chmod +x "$RUNNER_TEMP/bin/xvfb-run"
+
       # The scripts below keep their own Zig cache under native/build, which the restore step covers.
       # The tool cache installs Zig at the same path every run; the MinGW and libc++ objects are keyed
       # on compiler arguments that include that path, so the default random temp folder missed them all.
@@ -406,11 +425,6 @@ jobs:
       - name: Build version.dll, swofty_core.dll and the bundled addons
         run: native/build.sh
 
-      # Builds every templates/std addon with its native/build.sh and validates its registry data files;
-      # nothing to do until the folder has addons.
-      - name: Standard library templates
-        run: python3 tools/std/templates.py
-
       - name: Bundled addon packages
         run: |
           python3 - <<'EOF'
@@ -428,113 +442,6 @@ jobs:
               print(p, names)
           EOF
 
-      - name: Events dispatcher unit test
-        run: native/test/run_events_test.sh
-      - name: Hook points, events and services host test
-        run: native/test/run_hooks_test.sh
-      - name: Game hook points host test
-        run: native/test/run_game_points_test.sh
-      - name: Session control, AI controller and spectator points host test
-        run: native/test/run_session_points_test.sh
-      - name: Live car operations host test
-        run: native/test/run_car_live_test.sh
-      - name: Hook points review test
-        run: native/test/run_w5_review_test.sh
-      - name: swofty::json unit test
-        run: native/test/run_json_test.sh
-      - name: Schema check unit and agreement test
-        run: native/test/run_schema_test.sh
-      - name: Standard library 1.6 headers compile test
-        run: native/test/run_sdk_headers_test.sh
-      - name: Registry core (shared corpus, Python reference, random stacks, read benchmark)
-        run: native/test/run_registry_test.sh
-      - name: Career snapshots (swofty_registry entry, freezes, budgets, migration, fixtures)
-        run: native/test/run_snapshots_test.sh
-      - name: Career operations planner and SDK calls host test
-        run: native/test/run_career_ops_test.sh
-      - name: Live apply paths (scheduler, put-back, context, budgets, sizing, stat ids, reports)
-        run: native/test/run_apply_test.sh
-      - name: Box track lists (fit rules, calendar and More tracks, per-box entries, fuel plan, guard decision)
-        run: native/test/run_track_lists_test.sh
-      - name: Content registries (row engine, Classic Seasons lowering, variants, stat-id pools)
-        run: native/test/run_content_test.sh
-      - name: Track registries (seeds, record lowering, parity with the launcher's track activation)
-        run: native/test/run_tracks_test.sh
-      - name: Progressive registration test
-        env:
-          ZIG_GLOBAL_CACHE_DIR: ${{ github.workspace }}/native/build/zig-cache
-          ZIG_LOCAL_CACHE_DIR: ${{ github.workspace }}/native/build/zig-cache
-        run: addons/progressive/native/test/register/run.sh
-      - name: Progressive effective records test
-        env:
-          ZIG_GLOBAL_CACHE_DIR: ${{ github.workspace }}/native/build/zig-cache
-          ZIG_LOCAL_CACHE_DIR: ${{ github.workspace }}/native/build/zig-cache
-        run: addons/progressive/native/test/records/run.sh
-      - name: Overlay draw-list unit test
-        run: native/test/run_hud_test.sh
-      - name: Shader look unit test
-        run: native/test/run_grade_test.sh
-      - name: ERS new-lap site unit test
-        run: native/test/run_ers_newlap_test.sh
-      - name: Tyre slot guard unit test
-        run: native/test/run_tyre_slots_test.sh
-      - name: Pit slot guard unit test
-        run: native/test/run_pit_slots_test.sh
-      - name: Audio job queue fix unit test
-        run: native/test/run_audio_queue_test.sh
-      - name: Pattern scan and scan cache unit test
-        run: native/test/run_scan_test.sh
-      - name: Telemetry feed unit test
-        env:
-          ZIG_GLOBAL_CACHE_DIR: ${{ github.workspace }}/native/build/zig-cache
-          ZIG_LOCAL_CACHE_DIR: ${{ github.workspace }}/native/build/zig-cache
-        run: |
-          zig c++ -target x86_64-linux-musl -std=c++23 -O2 -I packages/sdk/include native/test/telemetry_feed_test.cpp -o telemetry_feed_test
-          ./telemetry_feed_test
-      - name: Career Mode Editor race number unit test
-        env:
-          ZIG_GLOBAL_CACHE_DIR: ${{ github.workspace }}/native/build/zig-cache
-          ZIG_LOCAL_CACHE_DIR: ${{ github.workspace }}/native/build/zig-cache
-        run: |
-          zig c++ -target x86_64-linux-musl -std=c++23 -O2 -I addons/career-editor/native/src addons/career-editor/native/test/race_numbers_test.cpp addons/career-editor/native/src/race_numbers.cpp -o race_numbers_test
-          ./race_numbers_test
-      - name: Career Mode Editor weather plan unit test
-        env:
-          ZIG_GLOBAL_CACHE_DIR: ${{ github.workspace }}/native/build/zig-cache
-          ZIG_LOCAL_CACHE_DIR: ${{ github.workspace }}/native/build/zig-cache
-        run: |
-          zig c++ -target x86_64-linux-musl -std=c++23 -O2 -I addons/career-editor/native/src addons/career-editor/native/test/weather_plan_test.cpp addons/career-editor/native/src/weather_plan.cpp -o weather_plan_test
-          ./weather_plan_test
-      - name: Career Mode Editor line-up unit test
-        env:
-          ZIG_GLOBAL_CACHE_DIR: ${{ github.workspace }}/native/build/zig-cache
-          ZIG_LOCAL_CACHE_DIR: ${{ github.workspace }}/native/build/zig-cache
-        run: |
-          zig c++ -target x86_64-linux-musl -std=c++23 -O2 -I addons/career-editor/native/src addons/career-editor/native/test/lineup_test.cpp addons/career-editor/native/src/lineup.cpp -o lineup_test
-          ./lineup_test
-      - name: Career Mode Editor rating search unit test
-        env:
-          ZIG_GLOBAL_CACHE_DIR: ${{ github.workspace }}/native/build/zig-cache
-          ZIG_LOCAL_CACHE_DIR: ${{ github.workspace }}/native/build/zig-cache
-        run: |
-          zig c++ -target x86_64-linux-musl -std=c++23 -O2 -I addons/career-editor/native/src addons/career-editor/native/test/rating_solve_test.cpp addons/career-editor/native/src/rating_solve.cpp -o rating_solve_test
-          ./rating_solve_test
-      - name: Career Mode Editor calendar rules unit test
-        env:
-          ZIG_GLOBAL_CACHE_DIR: ${{ github.workspace }}/native/build/zig-cache
-          ZIG_LOCAL_CACHE_DIR: ${{ github.workspace }}/native/build/zig-cache
-        run: |
-          zig c++ -target x86_64-linux-musl -std=c++23 -O2 -I addons/career-editor/native/src addons/career-editor/native/test/calendar_rules_test.cpp addons/career-editor/native/src/calendar_rules.cpp -o calendar_rules_test
-          ./calendar_rules_test
-      - name: Any Team Transfers unit test and build
-        env:
-          ZIG_GLOBAL_CACHE_DIR: ${{ github.workspace }}/native/build/zig-cache
-          ZIG_LOCAL_CACHE_DIR: ${{ github.workspace }}/native/build/zig-cache
-          AT_TEST_DIR: ${{ runner.temp }}/any-team-test
-        run: |
-          addons/any-team-transfers/native/test/run.sh
-          addons/any-team-transfers/native/build.sh
-
       - name: Wine and Xvfb
         timeout-minutes: 10
         run: |
@@ -542,51 +449,12 @@ jobs:
           cat "$RUNNER_TEMP/wine-install.log"
           exit "$(cat "$RUNNER_TEMP/wine-install.status")"
 
-      - name: RE-Optimization unit and Wine hook tests
-        run: addons/re-optimization/native/test/run.sh
+      # Every host and Wine test, the templates build and the Any Team Transfers build, side by side; each
+      # test's output is in its own group in the log, and the step fails on any failing test.
+      - name: Native tests
+        run: native/test/run_ci_tests.sh
 
-      # A synthetic F1_25.exe carries the signatures; no game files are used.
-      - name: Wine test
-        run: native/test/run_wine_test.sh
-
-      # The 1.6 handler guard, built as build.sh builds it, against faults and SDK handlers that throw.
-      - name: Handler guard Wine test
-        run: native/test/run_guard_test.sh
-      - name: Overlay toolkit Wine test
-        run: native/test/run_toolkit_test.sh
-
-      # Without work/exe/F1_25.exe it runs the synthetic packed image only.
-      - name: Binding resolver Wine test
-        run: native/test/run_bind_test.sh
-
-      - name: Runtime assets Wine test
-        run: native/test/run_runtime_assets_test.sh
-
-      - name: String override Wine test
-        run: native/test/run_lang_override_test.sh
-
-      - name: Career UI Wine test
-        run: native/test/run_career_ui_test.sh
-
-      - name: Save sandbox host and Wine test
-        run: native/test/run_save_sandbox_test.sh
-
-      - name: Career list Wine test
-        run: native/test/run_career_list_test.sh
-
-      - name: Loader log fallback Wine test
-        run: native/test/run_log_fallback_test.sh
-
-      - name: Socket trace Wine test
-        run: native/test/run_net_trace_test.sh
-
-      - name: Socket hooks Wine test
-        run: native/test/run_netplay_test.sh
-
-      - name: Test agent Wine test
-        run: native/test/run_testagent_test.sh
-
-      # Saved after the Wine tests, which compile their fixtures into the same cache.
+      # Saved after the tests, which compile their fixtures into the same cache.
       - name: Save the Zig cache
         if: github.ref == 'refs/heads/main' && steps.zig-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6
