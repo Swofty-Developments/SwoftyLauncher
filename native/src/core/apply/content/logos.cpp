@@ -4,6 +4,7 @@
 #include "../../runtime.hpp"
 #include "logo_build.hpp"
 #include "logo_cache.hpp"
+#include "par.hpp"
 #include "png_straight.hpp"
 
 #include <swofty/mixin.hpp>
@@ -198,15 +199,23 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
             manifest_name = "logos_" + id + ".manifest";
         }
         std::string out_manifest;
-        for (auto &[rel, changes] : res.changes) {
-            auto src = env.open(rel);
+        struct Job {
+            const std::string *rel;
+            const erpfile::Changes *changes;
+            std::string file, why;
+            bool ok = false;
+        };
+        std::vector<Job> jobs;
+        for (auto &[rel, changes] : res.changes)
+            jobs.push_back({&rel, &changes, "logos_" + id + "_" + flat(rel), {}, false});
+        par::each(jobs.size(), [&](size_t i) {
+            Job &job = jobs[i];
+            auto src = env.open(*job.rel);
             erpfile::Archive arc;
-            std::string why;
-            std::string file = "logos_" + id + "_" + flat(rel);
-            std::wstring path = runtime::under_swofty(dir + file), tmp = path + L".tmp";
+            std::wstring path = runtime::under_swofty(dir + job.file), tmp = path + L".tmp";
             HANDLE out = CreateFileW(tmp.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-            bool ok = src && out != INVALID_HANDLE_VALUE && erpfile::open(*src, arc, why) &&
-                      erpfile::rewrite(*src, arc, changes, [&](const char *p, size_t n) {
+            bool ok = src && out != INVALID_HANDLE_VALUE && erpfile::open(*src, arc, job.why) &&
+                      erpfile::rewrite(*src, arc, *job.changes, [&](const char *p, size_t n) {
                           DWORD put = 0;
                           while (n) {
                               DWORD want = DWORD(std::min<size_t>(n, size_t(1) << 24));
@@ -216,17 +225,22 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
                               n -= put;
                           }
                           return true;
-                      }, why);
+                      }, job.why);
             if (out != INVALID_HANDLE_VALUE)
                 CloseHandle(out);
-            if (!ok || !MoveFileExW(tmp.c_str(), path.c_str(), MOVEFILE_REPLACE_EXISTING)) {
+            if (!ok || !MoveFileExW(tmp.c_str(), path.c_str(), MOVEFILE_REPLACE_EXISTING))
                 DeleteFileW(tmp.c_str());
-                report.lines.push_back("team.logo: " + rel + " could not be rewritten" + (why.empty() ? "" : ": " + why));
+            else
+                job.ok = true;
+        });
+        for (auto &job : jobs) {
+            if (!job.ok) {
+                report.lines.push_back("team.logo: " + *job.rel + " could not be rewritten" + (job.why.empty() ? "" : ": " + job.why));
                 report.refused++;
                 continue;
             }
-            routes.emplace_back(rel, file);
-            out_manifest += rel + "\t" + file + "\n";
+            routes.emplace_back(*job.rel, job.file);
+            out_manifest += *job.rel + "\t" + job.file + "\n";
         }
         if (routes.size() == res.changes.size() && !routes.empty())
             runtime::write_file(runtime::under_swofty(dir + manifest_name), out_manifest);

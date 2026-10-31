@@ -1,5 +1,7 @@
 #pragma once
 
+#include "par.hpp"
+
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -164,27 +166,53 @@ inline std::set<std::string> inputs_of(const Stamps &stamps)
 inline Keyed key_archives(uint64_t key, const std::vector<std::string> &files, const std::set<std::string> &inputs, const Env &env,
                           const Stamps &before)
 {
-    Keyed out;
-    for (auto &rel : files) {
+    struct Item {
+        const std::string *rel;
         Seen now;
-        if (!env.stat(rel, now.size, now.time))
+        bool input = false, rehash = false;
+    };
+    std::vector<Item> items;
+    for (auto &rel : files) {
+        Item it;
+        it.rel = &rel;
+        if (!env.stat(rel, it.now.size, it.now.time))
             continue;
-        if (!inputs.count(rel)) {
-            key = stamp(key, rel + "|" + std::to_string(now.size) + "|s");
-            continue;
+        it.input = inputs.count(rel) != 0;
+        if (it.input) {
+            auto was = before.find(rel);
+            if (was != before.end() && was->second.hashed && was->second.size == it.now.size && was->second.time == it.now.time)
+                it.now = was->second;
+            else
+                it.rehash = true;
         }
-        auto was = before.find(rel);
-        if (was != before.end() && was->second.hashed && was->second.size == now.size && was->second.time == now.time) {
-            now = was->second;
-        } else if (env.hash(rel, now.hash)) {
-            now.hashed = true;
+        items.push_back(it);
+    }
+    std::vector<size_t> todo;
+    for (size_t i = 0; i < items.size(); i++)
+        if (items[i].rehash)
+            todo.push_back(i);
+    std::vector<char> done(todo.size(), 0);
+    par::each(todo.size(), [&](size_t k) {
+        Item &it = items[todo[k]];
+        done[k] = env.hash(*it.rel, it.now.hash) ? 1 : 0;
+    });
+    Keyed out;
+    for (size_t k = 0; k < todo.size(); k++)
+        if (done[k]) {
+            items[todo[k]].now.hashed = true;
             out.hashed++;
-            out.hashed_bytes += now.size;
+            out.hashed_bytes += items[todo[k]].now.size;
+        }
+    for (auto &it : items) {
+        const std::string &rel = *it.rel;
+        if (!it.input) {
+            key = stamp(key, rel + "|" + std::to_string(it.now.size) + "|s");
+            continue;
         }
         char hex[17];
-        std::snprintf(hex, sizeof hex, "%016llx", static_cast<unsigned long long>(now.hash));
-        key = stamp(key, rel + "|" + std::to_string(now.size) + "|" + (now.hashed ? std::string("h") + hex : "t" + std::to_string(now.time)));
-        out.stamps[rel] = now;
+        std::snprintf(hex, sizeof hex, "%016llx", static_cast<unsigned long long>(it.now.hash));
+        key = stamp(key, rel + "|" + std::to_string(it.now.size) + "|" + (it.now.hashed ? std::string("h") + hex : "t" + std::to_string(it.now.time)));
+        out.stamps[rel] = it.now;
     }
     out.key = key;
     return out;

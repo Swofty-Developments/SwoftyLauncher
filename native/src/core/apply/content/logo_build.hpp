@@ -2,6 +2,7 @@
 
 #include "erp_file.hpp"
 #include "logo_array.hpp"
+#include "par.hpp"
 #include "uidb.hpp"
 
 #include <functional>
@@ -63,15 +64,20 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
         Archive arc;
     };
     std::map<std::string, Open> opened;
+    std::set<std::string> failed;
     std::string why;
     auto get = [&](const std::string &rel) -> Open * {
         auto it = opened.find(rel);
         if (it != opened.end())
             return &it->second;
+        if (failed.count(rel))
+            return nullptr;
         auto src = env.open(rel);
         Open o;
-        if (!src || !erpfile::open(*src, o.arc, why))
+        if (!src || !erpfile::open(*src, o.arc, why)) {
+            failed.insert(rel);
             return nullptr;
+        }
         o.src = src;
         return &opened.emplace(rel, std::move(o)).first->second;
     };
@@ -92,6 +98,28 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
         return false;
     }
     std::vector<std::string> files = env.list();
+    {
+        std::vector<std::string> need;
+        for (auto &rel : files)
+            if (!opened.count(rel) && !failed.count(rel))
+                need.push_back(rel);
+        std::vector<std::optional<Open>> got(need.size());
+        par::each(need.size(), [&](size_t i) {
+            auto src = env.open(need[i]);
+            std::string w;
+            Open o;
+            if (src && erpfile::open(*src, o.arc, w)) {
+                o.src = src;
+                got[i] = std::move(o);
+            }
+        });
+        for (size_t i = 0; i < need.size(); i++) {
+            if (got[i])
+                opened.emplace(need[i], std::move(*got[i]));
+            else
+                failed.insert(need[i]);
+        }
+    }
     std::map<std::string, std::vector<const Want *>> by_array;
     for (auto &w : wants)
         by_array[w.array].push_back(&w);

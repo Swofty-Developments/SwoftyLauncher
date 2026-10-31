@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <map>
+#include <mutex>
 #include <set>
 #include <string>
 #include <vector>
@@ -88,8 +89,80 @@ static Boot built(Disk &disk, const std::string &stamps, std::set<std::string> r
     return {k.key, k.hashed, lc::text(k.stamps)};
 }
 
+static lc::Keyed reference_key(uint64_t key, const std::vector<std::string> &files, const std::set<std::string> &inputs, const lc::Env &env,
+                               const lc::Stamps &before)
+{
+    lc::Keyed out;
+    for (auto &rel : files) {
+        lc::Seen now;
+        if (!env.stat(rel, now.size, now.time))
+            continue;
+        if (!inputs.count(rel)) {
+            key = lc::stamp(key, rel + "|" + std::to_string(now.size) + "|s");
+            continue;
+        }
+        auto was = before.find(rel);
+        if (was != before.end() && was->second.hashed && was->second.size == now.size && was->second.time == now.time) {
+            now = was->second;
+        } else if (env.hash(rel, now.hash)) {
+            now.hashed = true;
+            out.hashed++;
+            out.hashed_bytes += now.size;
+        }
+        char hex[17];
+        std::snprintf(hex, sizeof hex, "%016llx", static_cast<unsigned long long>(now.hash));
+        key = lc::stamp(key, rel + "|" + std::to_string(now.size) + "|" + (now.hashed ? std::string("h") + hex : "t" + std::to_string(now.time)));
+        out.stamps[rel] = now;
+    }
+    out.key = key;
+    return out;
+}
+
+static void many_files()
+{
+    std::mutex lock;
+    std::map<std::string, std::pair<std::string, uint64_t>> files;
+    std::vector<std::string> names;
+    std::set<std::string> inputs;
+    for (int i = 0; i < 600; i++) {
+        std::string rel = "ui/a" + std::to_string(i) + ".erp";
+        files[rel] = {std::string(size_t(100 + i * 37), char('a' + i % 26)), uint64_t(1000 + i)};
+        names.push_back(rel);
+        if (i % 3 == 0)
+            inputs.insert(rel);
+    }
+    names.push_back("ui/missing.erp");
+    inputs.insert("ui/missing.erp");
+    inputs.insert(names[1]);
+    lc::Env env{
+        [&](const std::string &rel, uint64_t &size, uint64_t &time) {
+            auto f = files.find(rel);
+            if (f == files.end())
+                return false;
+            size = f->second.first.size();
+            time = f->second.second;
+            return true;
+        },
+        [&](const std::string &rel, uint64_t &hash) {
+            if (rel == names[3])
+                return false;
+            std::lock_guard<std::mutex> g(lock);
+            hash = hash_of(files.at(rel).first, 4096);
+            return true;
+        },
+    };
+    lc::Stamps none;
+    lc::Keyed want = reference_key(7, names, inputs, env, none), got = lc::key_archives(7, names, inputs, env, none);
+    check(got.key == want.key && got.hashed == want.hashed && got.hashed_bytes == want.hashed_bytes && lc::text(got.stamps) == lc::text(want.stamps),
+          "hashing the inputs on several threads gives the sequential key and stamps");
+    lc::Keyed again = lc::key_archives(7, names, inputs, env, got.stamps), again_want = reference_key(7, names, inputs, env, want.stamps);
+    check(again.key == again_want.key && again.hashed == again_want.hashed && lc::text(again.stamps) == lc::text(again_want.stamps),
+          "stamps taken on several threads are reused like the sequential ones");
+}
+
 int main()
 {
+    many_files();
     std::string data(100000, '\0');
     for (size_t i = 0; i < data.size(); i++)
         data[i] = char((i * 2654435761u) >> 13);
