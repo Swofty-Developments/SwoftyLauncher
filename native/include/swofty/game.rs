@@ -13197,6 +13197,46 @@ pub mod bindings {
         kind: "call",
         status: Status::Experimental,
     };
+    pub const site_Sess_PitEvalListNext: Binding = Binding {
+        id: "site_Sess_PitEvalListNext",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitEvalListSlot: Binding = Binding {
+        id: "site_Sess_PitEvalListSlot",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitEvalOwnSlot: Binding = Binding {
+        id: "site_Sess_PitEvalOwnSlot",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitEvalReturnFalse: Binding = Binding {
+        id: "site_Sess_PitEvalReturnFalse",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitRankEpilogue: Binding = Binding {
+        id: "site_Sess_PitRankEpilogue",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitRankListNext: Binding = Binding {
+        id: "site_Sess_PitRankListNext",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitRankListSlot: Binding = Binding {
+        id: "site_Sess_PitRankListSlot",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitRankOwnSlot: Binding = Binding {
+        id: "site_Sess_PitRankOwnSlot",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Sess_PuPanel_SlotHolder: Binding = Binding {
         id: "site_Sess_PuPanel_SlotHolder",
         kind: "site",
