@@ -330,3 +330,78 @@ fn the_ea_store_follows_the_ea_layout_and_stays_off() {
     let e = export(&data, "default", &ea, closed(), NOW).unwrap_err();
     assert!(e.to_string().contains("not available on the EA copy yet"), "{e}");
 }
+
+#[test]
+fn a_profile_save_copies_over_another_after_the_vault_keeps_the_target() {
+    let r = root("copy-to");
+    let data = r.join("data");
+    let from = steam(&r);
+    seed(&data, "default", &from, Reason::Imported, NOW).unwrap();
+    seed(&data, "progressive", &from, Reason::Imported, NOW).unwrap();
+    let default = location(&data, "default");
+    std::fs::write(default.dir.join(DATA), [9u8; 900]).unwrap();
+    let target = location(&data, "progressive");
+    std::fs::write(target.dir.join(DATA), [5u8; 900]).unwrap();
+    let (files, _, snapshot) = copy_to(&data, &default, "progressive", closed(), NOW + 5).unwrap();
+    assert_eq!(files, 2);
+    assert_eq!(std::fs::read(target.dir.join(DATA)).unwrap(), vec![9u8; 900]);
+    let list = Vault::of(&data, &target).unwrap().list().unwrap();
+    assert!(
+        list.iter()
+            .any(|s| s.reason == Reason::BeforeRestore && !s.pinned.is_empty())
+    );
+    let kept = list.iter().find(|s| Some(&s.id) == snapshot.as_ref()).unwrap();
+    assert_eq!(kept.reason, Reason::ImportedProfile);
+    assert_eq!(std::fs::read(default.dir.join(DATA)).unwrap(), vec![9u8; 900]);
+}
+
+#[test]
+fn copying_the_steam_save_in_is_an_import_and_copying_onto_itself_is_refused() {
+    let r = root("copy-steam");
+    let data = r.join("data");
+    let from = steam(&r);
+    let (_, _, snapshot) = copy_to(&data, &from, "default", closed(), NOW).unwrap();
+    let list = Vault::of(&data, &location(&data, "default"))
+        .unwrap()
+        .list()
+        .unwrap();
+    assert_eq!(
+        list.iter()
+            .find(|s| Some(&s.id) == snapshot.as_ref())
+            .unwrap()
+            .reason,
+        Reason::Imported
+    );
+    let own = location(&data, "default");
+    let e = copy_to(&data, &own, "default", closed(), NOW + 1).unwrap_err();
+    assert!(e.to_string().contains("the save comes from"), "{e}");
+    let running = Running {
+        game: true,
+        ..Running::default()
+    };
+    assert!(copy_to(&data, &from, "default", running, NOW + 2).is_err());
+}
+
+#[test]
+fn the_first_start_notice_is_due_once() {
+    let r = root("notice");
+    let data = r.join("data");
+    let from = steam(&r);
+    assert!(!notice_due(&data));
+    first_start_import_from(&data, &profiles(), || Some(from.clone()), closed(), NOW);
+    assert!(notice_due(&data));
+    mark_seen(&data).unwrap();
+    assert!(!notice_due(&data));
+    assert!(marker(&data).unwrap().seen);
+    first_start_import_from(&data, &profiles(), || Some(from.clone()), closed(), NOW + 9);
+    assert!(!notice_due(&data));
+}
+
+#[test]
+fn no_notice_when_nothing_was_copied() {
+    let r = root("notice-empty");
+    let data = r.join("data");
+    first_start_import_from(&data, &profiles(), || None, closed(), NOW);
+    assert!(marker(&data).is_some());
+    assert!(!notice_due(&data));
+}

@@ -637,7 +637,11 @@ impl Shell {
         let was_live = self.launch.is_some();
         self.requests = probe.requests;
         let root = self.store.root.clone();
-        self.saves.refresh_banner(&root);
+        self.saves.refresh_banner(&root, &self.library.profile.name);
+        self.saves.game_running = !probe.processes.is_empty();
+        if self.saves.take_notice(&root) {
+            self.show_saves_notice(window, cx);
+        }
         if let Some(n) = probe.recovered.filter(|n| n.at > self.recovered_seen) {
             self.recovered_seen = n.at;
             let mut text: Vec<String> = n.lines.iter().take(4).cloned().collect();
