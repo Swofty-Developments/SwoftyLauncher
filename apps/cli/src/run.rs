@@ -140,6 +140,7 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
     }
     match crate::ea::store_start(Source::detect(&game), args.direct) {
         crate::ea::StoreStart::EaApp => {
+            crate::ea::check_recorded(&game)?;
             if args.apply {
                 crate::ea::dll_setting(store, &g, args.no_start_store)?;
             }

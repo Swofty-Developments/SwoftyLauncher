@@ -1,31 +1,52 @@
-use std::collections::{BTreeMap, BTreeSet};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
+use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
 use gpui_kit::component::notification::Notification;
-use gpui_kit::component::{Icon, Sizable, WindowExt, h_flex, v_flex};
+use gpui_kit::component::tooltip::Tooltip;
+use gpui_kit::component::{Disableable, Icon, Sizable, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::vault::careers::{Brief, Diff, Row, Status};
-use swofty_core::vault::cloud;
-use swofty_core::vault::{self, Location, Notice, Snapshot, Vault};
+use swofty_core::install::Game;
+use swofty_core::launcher_saves;
+use swofty_core::profile::VANILLA;
+use swofty_core::store::Store;
+use swofty_core::vault::career_names;
+use swofty_core::vault::careers::{self, Brief, Diff, Listed, Row, State as CareerState};
+use swofty_core::vault::restore::Running;
+use swofty_core::vault::{self, Location, Notice, Reason, Snapshot, Vault};
 
 use crate::addons::ago;
 use crate::library::plural;
-use crate::pages::{GUTTER, label, tag};
+use crate::pages::{GUTTER, label};
 use crate::shell::{Page, Prompt, Shell};
 use crate::theme::{Palette, ScrollArea};
+
+const MODE_W: f32 = 124.;
+const PLAYED_W: f32 = 104.;
+const CHIP_W: f32 = 112.;
+const WHEN_W: f32 = 104.;
+const SIZE_W: f32 = 64.;
+const ACTIONS_W: f32 = 164.;
+const PIN_W: f32 = 18.;
+
+pub(crate) const NOTICE_TITLE: &str = "Your careers have their own saves now";
+pub(crate) const NOTICE_BODY: &str = "Each profile now has its own save, starting from a copy of your Steam save. Playing from Steam still uses your Steam save, and Vanilla plays on it too.";
+const LISTED_LATER: &str = "careers listed after you play this profile once";
 
 #[derive(Default)]
 pub(crate) struct SavesPage {
     pub view: Option<SavesView>,
     pub confirm: Option<String>,
     pub banner: Option<Banner>,
+    pub game_running: bool,
+    notice_done: bool,
 }
 
 pub(crate) enum Banner {
     Dropped {
+        profile: String,
         source: String,
         snapshot: String,
         kept_at: i64,
@@ -40,42 +61,101 @@ struct Version {
     diff: Option<Diff>,
 }
 
-pub(crate) struct SavesView {
-    source: String,
-    layout: vault::Layout,
-    dir: PathBuf,
-    versions: Vec<Version>,
-    careers: Vec<Row>,
-    usage: u64,
-    cap: u64,
-    cloud: Option<cloud::Status>,
-    steam_running: bool,
-    on: BTreeSet<String>,
-    names: BTreeMap<String, String>,
+struct Entry {
+    l: Listed,
+    place: Option<String>,
 }
 
-fn source_of(root: &std::path::Path) -> Option<String> {
-    if let Some(l) = Location::active(root) {
-        return Some(l.source);
+impl Entry {
+    fn mode(&self) -> String {
+        self.l.mode_label()
     }
-    match Vault::sources(root).as_slice() {
-        [only] => Some(only.clone()),
-        _ => None,
+}
+
+struct Imported {
+    title: String,
+    at: Option<i64>,
+}
+
+pub(crate) struct SavesView {
+    profile: String,
+    loc: Option<Location>,
+    entries: Vec<Entry>,
+    imported: Option<Imported>,
+    has_save: bool,
+    others: Vec<String>,
+    versions: Vec<Version>,
+    dir: PathBuf,
+    usage: u64,
+    cap: u64,
+    steam: Option<Location>,
+    steam_running: bool,
+}
+
+impl SavesView {
+    fn vanilla(&self) -> bool {
+        self.profile == VANILLA
+    }
+
+    fn layout(&self) -> vault::Layout {
+        self.loc
+            .as_ref()
+            .map(|l| l.layout)
+            .or_else(|| self.versions.first().map(|v| v.snap.layout))
+            .unwrap_or(vault::Layout::Launcher)
     }
 }
 
 impl SavesPage {
-    pub(crate) fn banner_for(root: &std::path::Path) -> Option<Banner> {
-        banner_from(root, source_of(root)?)
+    pub(crate) fn banner_for(root: &Path, profile: &str) -> Option<Banner> {
+        banner_from(root, source_of_profile(root, profile)?, profile.to_owned())
+    }
+
+    pub(crate) fn refresh_banner(&mut self, root: &Path, profile: &str) {
+        self.banner = Self::banner_for(root, profile);
+    }
+
+    pub(crate) fn take_notice(&mut self, root: &Path) -> bool {
+        if self.notice_done || launcher_saves::marker(root).is_none() {
+            return false;
+        }
+        self.notice_done = true;
+        let due = launcher_saves::notice_due(root);
+        if due && let Err(e) = launcher_saves::mark_seen(root) {
+            crate::app_log::action("record the saves notice").failed(&e);
+        }
+        due
     }
 }
 
-fn banner_from(root: &std::path::Path, source: String) -> Option<Banner> {
+pub(crate) fn source_of_profile(root: &Path, profile: &str) -> Option<String> {
+    match profile == VANILLA {
+        true => Location::active(root).map(|l| l.source),
+        false => Some(Location::launcher(root, profile).source),
+    }
+}
+
+fn profile_of_source(source: &str) -> String {
+    match source.strip_prefix("launcher-") {
+        Some(p) => p.to_owned(),
+        None => VANILLA.to_owned(),
+    }
+}
+
+fn whose(profile: &str) -> String {
+    match profile == VANILLA {
+        true => "your Steam save".to_owned(),
+        false => format!("profile {profile}'s save"),
+    }
+}
+
+fn banner_from(root: &Path, source: String, profile: String) -> Option<Banner> {
     let v = Vault::open(root, &source).ok()?;
     let table = v.careers();
     let shown = table.drop_to_show();
     if let Some(newest) = shown.iter().max_by_key(|r| r.last_seen_at) {
         return Some(Banner::Dropped {
+            profile,
             source,
             snapshot: newest.last_seen.clone(),
             kept_at: newest.last_seen_at,
@@ -83,12 +163,6 @@ fn banner_from(root: &std::path::Path, source: String) -> Option<Banner> {
         });
     }
     Notice::read(root).map(Banner::Hint)
-}
-
-impl SavesPage {
-    pub(crate) fn refresh_banner(&mut self, root: &std::path::Path) {
-        self.banner = Self::banner_for(root);
-    }
 }
 
 fn row_name(r: &Row) -> String {
@@ -103,31 +177,8 @@ fn mb(bytes: u64) -> String {
     format!("{:.1} MB", bytes as f64 / (1024.0 * 1024.0))
 }
 
-pub(crate) fn mode_name(mode: Option<&str>) -> String {
-    match mode.unwrap_or("") {
-        "" => "Career".to_owned(),
-        "driver" | "driver-career" => "Driver Career".to_owned(),
-        "myteam" | "my-team" => "My Team".to_owned(),
-        "progressive" => "Progressive".to_owned(),
-        "classic" | "classic-career" => "Classic Career".to_owned(),
-        "1990" | "f1-1990" => "1990".to_owned(),
-        other => {
-            let mut c = other.chars();
-            match c.next() {
-                Some(f) => f.to_uppercase().chain(c).collect(),
-                None => String::new(),
-            }
-        }
-    }
-}
-
-fn cloud_line(s: cloud::Status, steam_running: bool) -> String {
-    match (s, steam_running) {
-        (cloud::Status::Synced, _) => "synced".to_owned(),
-        (cloud::Status::Waiting, true) => "waiting to upload, Steam is running".to_owned(),
-        (cloud::Status::Waiting, false) => "waiting to upload, Steam uploads it when it starts".to_owned(),
-        (s, _) => s.text().to_owned(),
-    }
+fn mb_whole(bytes: u64) -> String {
+    format!("{} MB", (bytes as f64 / (1024.0 * 1024.0)).round() as u64)
 }
 
 fn list(items: &[Brief]) -> String {
@@ -141,79 +192,163 @@ fn list(items: &[Brief]) -> String {
         .join(", ")
 }
 
-impl SavesView {
-    pub(crate) fn career_count(&self) -> usize {
-        self.careers
-            .iter()
-            .filter(|r| r.status == Status::Present)
-            .count()
+fn version_label(s: &Snapshot) -> &'static str {
+    match s.pinned.iter().any(|p| p == "before-restore") {
+        true => "Before restore",
+        false => reason_label(s.reason),
+    }
+}
+
+fn reason_label(r: Reason) -> &'static str {
+    match r {
+        Reason::BeforeSession => "Before Play",
+        Reason::AfterSession => "After Play",
+        Reason::Imported => "Imported from Steam",
+        Reason::ImportedProfile => "Copied from another profile",
+        Reason::LauncherStart => "Launcher start",
+        Reason::ChangedOutside => "Changed outside the launcher",
+        Reason::ForeignLaunch => "F1 25 started outside the launcher",
+        Reason::ForeignExit => "F1 25 closed outside the launcher",
+        Reason::BeforeRestore => "Before restore",
+        Reason::Restored => "Restored",
+        Reason::Migrated => "Old backup",
+        Reason::Manual => "Backup",
+        Reason::Other => "Saved",
+    }
+}
+
+fn careers_held(held: &[String]) -> String {
+    plural(held.len(), "career", "careers")
+}
+
+fn imported_from(snaps: &[Snapshot]) -> Imported {
+    let found = snaps
+        .iter()
+        .find(|s| matches!(s.reason, Reason::Imported | Reason::ImportedProfile));
+    let title = match found {
+        Some(s) if s.reason == Reason::ImportedProfile => {
+            let from = s
+                .note
+                .as_deref()
+                .and_then(|n| n.strip_prefix("copied from "))
+                .and_then(|d| Path::new(d).parent())
+                .and_then(|d| d.file_name())
+                .map(|n| n.to_string_lossy().into_owned());
+            match from {
+                Some(f) => format!("Copied from {f}"),
+                None => "Copied from another profile".to_owned(),
+            }
+        }
+        _ => "Imported Steam save".to_owned(),
+    };
+    Imported {
+        title,
+        at: found.map(|s| s.at),
+    }
+}
+
+fn card_careers(root: &Path, store: &Store, game: Option<&Game>, profile: &str) -> Vec<Entry> {
+    let listing = match game {
+        Some(g) => career_names::read_named_listing(root, store, g, Some(profile)),
+        None => careers::read_listing(root, Some(profile)),
+    };
+    listing
+        .into_iter()
+        .filter(|l| !l.hidden)
+        .filter(|l| l.profile.as_deref().is_none_or(|p| p == profile))
+        .map(|l| Entry {
+            place: season_round(&l),
+            l,
+        })
+        .collect()
+}
+
+fn season_round(l: &Listed) -> Option<String> {
+    match (l.season_no, l.weekend) {
+        (Some(s), Some(w)) => Some(format!("Season {s} · Round {}", w + 1)),
+        (Some(s), None) => Some(format!("Season {s}")),
+        _ => None,
+    }
+}
+
+fn short_block(layout: vault::Layout, r: Running) -> Option<&'static str> {
+    match (r.game, layout, r.steam) {
+        (true, _, _) => Some("Close F1 25 first"),
+        (false, vault::Layout::Steam, true) => Some("Close Steam first"),
+        _ => None,
     }
 }
 
 impl Shell {
     pub(crate) fn refresh_saves(&mut self) {
         let root = self.store.root.clone();
-        self.saves.refresh_banner(&root);
-        let Some(source) = source_of(&root) else {
-            self.saves.view = None;
-            return;
+        let name = self.library.profile.name.clone();
+        self.saves.refresh_banner(&root, &name);
+        let running = Running::now();
+        self.saves.game_running = running.game;
+        let active_loc = Location::active(&root);
+        let vanilla = name == VANILLA;
+        let loc = match vanilla {
+            true => active_loc.clone(),
+            false => Some(Location::launcher(&root, &name)),
         };
-        let Ok(v) = Vault::open(&root, &source) else {
-            self.saves.view = None;
-            return;
+        let vault = loc.as_ref().and_then(|l| Vault::of(&root, l).ok());
+        let game = crate::sections::game(&self.store, self.install.as_ref());
+        let entries = card_careers(&root, &self.store, game.as_ref(), &name);
+        let snaps = vault.as_ref().and_then(|v| v.list().ok()).unwrap_or_default();
+        let has_save = loc.as_ref().is_some_and(launcher_saves::has_files);
+        let imported = (has_save && entries.is_empty()).then(|| match vanilla {
+            true => Imported {
+                title: "Your Steam save".to_owned(),
+                at: None,
+            },
+            false => imported_from(&snaps),
+        });
+        let (versions, dir, usage, cap) = match vault {
+            Some(v) => {
+                let now = swofty_core::stdlib::careers::read(&swofty_core::stdlib::careers::data_path(&root));
+                let versions = snaps
+                    .into_iter()
+                    .map(|snap| {
+                        let index = v.index_of(&snap);
+                        let held = index.as_ref().map(|i| {
+                            vault::careers::in_save(i)
+                                .map(|c| match c.label.is_empty() {
+                                    true => c.career.clone(),
+                                    false => c.label.clone(),
+                                })
+                                .collect()
+                        });
+                        let diff = index
+                            .filter(|_| !now.is_empty())
+                            .map(|i| vault::careers::diff(&now, &i));
+                        Version { snap, held, diff }
+                    })
+                    .collect();
+                (versions, v.dir.clone(), v.usage(), v.policy.cap_bytes)
+            }
+            None => (Vec::new(), root.clone(), 0, 0),
         };
-        let active = Location::active(&root).filter(|l| l.source == source);
-        let versions: Vec<Version> = v
-            .list()
+        let others = self
+            .store
+            .profile_names()
             .unwrap_or_default()
             .into_iter()
-            .map(|snap| {
-                let held = v.index_of(&snap).map(|i| {
-                    vault::careers::in_save(&i)
-                        .map(|c| match c.label.is_empty() {
-                            true => c.career.clone(),
-                            false => c.label.clone(),
-                        })
-                        .collect()
-                });
-                let diff = v.preview(&snap);
-                Version { snap, held, diff }
-            })
-            .collect();
-        let layout = match (&active, versions.first()) {
-            (Some(l), _) => l.layout,
-            (None, Some(s)) => s.snap.layout,
-            (None, None) => return self.saves.view = None,
-        };
-        let installed = self.store.addons().unwrap_or_default();
-        let on: BTreeSet<String> = match self
-            .store
-            .profile(&self.library.profile.name)
-            .ok()
-            .and_then(|p| swofty_core::resolver::resolve(&p, &installed).ok())
-        {
-            Some(plan) => plan.order.into_iter().collect(),
-            None => self.library.profile.enabled().map(str::to_owned).collect(),
-        };
-        let names = installed
-            .iter()
-            .map(|(id, m)| (id.clone(), m.name.clone()))
+            .filter(|n| n != VANILLA && *n != name)
             .collect();
         self.saves.view = Some(SavesView {
-            source,
-            layout,
-            dir: v.dir.clone(),
-            cloud: active
-                .as_ref()
-                .and_then(|l| vault::save_status(l).ok())
-                .map(|s| s.cloud),
+            steam: active_loc.filter(|l| l.layout == vault::Layout::Steam),
+            profile: name,
+            loc,
+            entries,
+            imported,
+            has_save,
+            others,
             versions,
-            careers: v.careers().careers,
-            usage: v.usage(),
-            cap: v.policy.cap_bytes,
-            steam_running: vault::restore::Running::now().steam,
-            on,
-            names,
+            dir,
+            usage,
+            cap,
+            steam_running: running.steam,
         });
     }
 
@@ -222,22 +357,149 @@ impl Shell {
         self.open_page(Page::Careers, cx);
     }
 
+    pub(crate) fn show_saves_notice(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let shell = cx.entity().downgrade();
+        window.open_alert_dialog(cx, move |alert, _, _| {
+            let shell = shell.clone();
+            alert
+                .width(px(480.))
+                .title(NOTICE_TITLE)
+                .description(NOTICE_BODY)
+                .ok_text("Show me")
+                .cancel_text("OK")
+                .show_cancel(true)
+                .on_ok(move |_, _, cx| {
+                    shell.update(cx, |s, cx| s.open_saves(None, cx)).ok();
+                    true
+                })
+        });
+    }
+
+    fn ask_copy(
+        &mut self,
+        from: Location,
+        from_name: String,
+        to: String,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let shell = cx.entity().downgrade();
+        let text = format!(
+            "{} replaces the save of {to}. Its current save is kept as a version.",
+            match from_name == VANILLA {
+                true => "Your Steam save".to_owned(),
+                false => from_name.clone(),
+            }
+        );
+        let steam = from_name == VANILLA;
+        let title = match steam {
+            true => format!("Import from Steam into {to}?"),
+            false => format!("Copy careers to {to}?"),
+        };
+        window.open_alert_dialog(cx, move |alert, _, _| {
+            let (shell, from, to, from_name) = (shell.clone(), from.clone(), to.clone(), from_name.clone());
+            alert
+                .width(px(480.))
+                .title(title.clone())
+                .description(text.clone())
+                .ok_text(if steam { "Import" } else { "Copy" })
+                .show_cancel(true)
+                .on_ok(move |_, window, cx| {
+                    shell
+                        .update(cx, |s, cx| s.copy_save(&from, &from_name, &to, window, cx))
+                        .ok();
+                    true
+                })
+        });
+    }
+
+    fn copy_save(
+        &mut self,
+        from: &Location,
+        from_name: &str,
+        to: &str,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let root = self.store.root.clone();
+        let done = launcher_saves::copy_to(&root, from, to, Running::now(), vault::now());
+        let note = match done {
+            Ok((files, bytes, _)) => {
+                crate::app_log::note(&format!(
+                    "saves: copied {files} file(s), {bytes} bytes, from {from_name} into the launcher saves of profile {to}"
+                ));
+                Notification::success(format!("Copied the save of {from_name} to {to}."))
+            }
+            Err(e) => {
+                crate::app_log::action("copy a save").failed(&e);
+                Notification::warning(format!("The save was not copied: {e}"))
+            }
+        };
+        window.push_notification(note, cx);
+        self.refresh_saves();
+        cx.notify();
+    }
+
+    fn ask_export(&mut self, profile: String, window: &mut Window, cx: &mut Context<Self>) {
+        let shell = cx.entity().downgrade();
+        let text =
+            format!("The save of {profile} replaces your Steam save. Your Steam save is kept as a version.");
+        let title = format!("Export {profile} to Steam?");
+        window.open_alert_dialog(cx, move |alert, _, _| {
+            let (shell, profile) = (shell.clone(), profile.clone());
+            alert
+                .width(px(480.))
+                .title(title.clone())
+                .description(text.clone())
+                .ok_text("Export")
+                .show_cancel(true)
+                .on_ok(move |_, window, cx| {
+                    shell.update(cx, |s, cx| s.export_save(&profile, window, cx)).ok();
+                    true
+                })
+        });
+    }
+
+    fn export_save(&mut self, profile: &str, window: &mut Window, cx: &mut Context<Self>) {
+        let root = self.store.root.clone();
+        let done = match Location::active(&root).filter(|l| l.layout == vault::Layout::Steam) {
+            Some(steam) => launcher_saves::export(&root, profile, &steam, Running::now(), vault::now())
+                .map_err(|e| e.to_string()),
+            None => Err("no Steam save folder of F1 25 found".to_owned()),
+        };
+        let note = match done {
+            Ok(r) => {
+                crate::app_log::note(&r.log_line());
+                Notification::success(format!("Exported the save of {profile} to Steam."))
+            }
+            Err(e) => {
+                crate::app_log::action("export a save").failed(&e);
+                Notification::warning(format!("The save was not exported: {e}"))
+            }
+        };
+        window.push_notification(note, cx);
+        self.refresh_saves();
+        cx.notify();
+    }
+
     pub(crate) fn saves_banner(&self, on_page: bool, p: Palette, cx: &mut Context<Self>) -> Option<Div> {
         let banner = self.saves.banner.as_ref()?;
-        let (text, source, snapshot, kept_at) = match banner {
+        let (text, profile, source, snapshot, kept_at) = match banner {
             Banner::Dropped {
+                profile,
                 source,
                 snapshot,
                 kept_at,
                 names,
             } => (
                 format!(
-                    "{} missing from F1 25's save: {}. {} last in the save on {}. Restoring that version brings {} back; the \
+                    "{} missing from {}: {}. {} last in the save on {}. Restoring that version brings {} back; the \
                      restore shows what else changes first.",
                     match names.len() {
                         1 => "1 career is".to_owned(),
                         n => format!("{n} careers are"),
                     },
+                    whose(profile),
                     names.join("; "),
                     match names.len() {
                         1 => "It was",
@@ -249,15 +511,24 @@ impl Shell {
                         _ => "them",
                     }
                 ),
+                profile.clone(),
                 source.clone(),
                 snapshot.clone(),
                 *kept_at,
             ),
-            Banner::Hint(n) => (n.headline(), n.source.clone(), n.snapshot.clone(), n.kept_at),
+            Banner::Hint(n) => (
+                n.headline(),
+                profile_of_source(&n.source),
+                n.source.clone(),
+                n.snapshot.clone(),
+                n.kept_at,
+            ),
         };
         let hint = matches!(banner, Banner::Hint(_));
         let review = snapshot.clone();
-        let _ = (source, kept_at);
+        let _ = kept_at;
+        let _ = profile;
+        let dismiss_source = source;
         Some(
             h_flex()
                 .px(px(GUTTER))
@@ -295,9 +566,7 @@ impl Shell {
                             if hint {
                                 Notice::clear(&root);
                             }
-                            if let Some(s) = source_of(&root)
-                                && let Ok(v) = Vault::open(&root, &s)
-                            {
+                            if let Ok(v) = Vault::open(&root, &dismiss_source) {
                                 v.dismiss_drop().ok();
                             }
                             this.refresh_saves();
@@ -315,10 +584,14 @@ impl Shell {
         cx: &mut Context<Self>,
     ) {
         let root = self.store.root.clone();
+        let when = Vault::open(&root, source)
+            .and_then(|v| v.find(name))
+            .ok()
+            .map(|s| s.at);
         let restored = Vault::open(&root, source).and_then(|v| {
             let snap = v.find(name)?;
-            let loc = Location::active(&root)
-                .filter(|l| l.source == source)
+            let loc = Location::of_source(&root, source)
+                .or_else(|| Location::active(&root).filter(|l| l.source == source))
                 .unwrap_or(Location {
                     source: snap.source.clone(),
                     layout: snap.layout,
@@ -330,9 +603,13 @@ impl Shell {
             Ok(r) => {
                 crate::app_log::note(&r.log_line());
                 self.saves.confirm = None;
-                Notification::success(match &r.before {
-                    Some(b) => format!("Restored the save from {name}. The save it replaced is version {b}."),
-                    None => format!("Restored the save from {name}."),
+                Notification::success(match (when, &r.before) {
+                    (Some(at), Some(_)) => format!(
+                        "Restored your save from {}. The save it replaced is kept as a version.",
+                        ago(at as f64)
+                    ),
+                    (Some(at), None) => format!("Restored your save from {}.", ago(at as f64)),
+                    (None, _) => "Restored your save.".to_owned(),
                 })
             }
             Err(e) => {
@@ -390,374 +667,12 @@ impl Shell {
         );
     }
 
-    pub(crate) fn careers_page(&mut self, p: Palette, wide: bool, cx: &mut Context<Self>) -> AnyElement {
-        let subtitle =
-            "Versions of F1 25's save, and the careers in them. Every Play keeps one you can go back to."
-                .into();
-        let banner = self.saves_banner(true, p, cx);
-        let body = match self.saves.view.as_ref() {
-            None => v_flex()
-                .gap(px(6.))
-                .py(px(40.))
-                .items_center()
-                .text_color(p.text_muted)
-                .text_size(px(13.))
-                .child(Icon::new(IconName::Save).size(px(20.)))
-                .child("No F1 25 save found yet.")
-                .child("Versions appear here after the launcher has seen a profile save.")
-                .into_any_element(),
-            Some(view) => self.saves_body(view, wide, p, cx),
-        };
-        v_flex()
-            .size_full()
-            .child(self.header(Page::Careers.label(), subtitle, div(), p))
-            .children(banner)
-            .child(
-                div()
-                    .flex_1()
-                    .min_h_0()
-                    .scroll_y("career-saves")
-                    .px(px(GUTTER))
-                    .pt(px(4.))
-                    .pb(px(24.))
-                    .child(body),
-            )
-            .into_any_element()
-    }
-
-    fn saves_body(&self, view: &SavesView, wide: bool, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        let heading = |t: &'static str, sub: String| {
-            v_flex()
-                .gap(px(2.))
-                .pt(px(18.))
-                .pb(px(10.))
-                .child(
-                    div()
-                        .text_size(px(15.))
-                        .font_weight(FontWeight::SEMIBOLD)
-                        .child(t),
-                )
-                .child(div().text_size(px(13.)).text_color(p.text_muted).child(sub))
-        };
-        let shown: Vec<&Row> = view.careers.iter().collect();
-        let careers: AnyElement = match shown.is_empty() {
-            true => div()
-                .p(px(16.))
-                .rounded(px(6.))
-                .border_1()
-                .border_dashed()
-                .border_color(p.border)
-                .text_size(px(13.))
-                .text_color(p.text_muted)
-                .child("No careers yet. They show up after a launcher session that loaded a career.")
-                .into_any_element(),
-            false => div()
-                .grid()
-                .grid_cols(if wide { 3 } else { 2 })
-                .gap(px(12.))
-                .children(shown.iter().map(|r| self.career_card(r, view, p)))
-                .into_any_element(),
-        };
-        let versions: Vec<AnyElement> = view
-            .versions
-            .iter()
-            .map(|v| self.version_row(v, view, p, cx))
-            .collect();
-        v_flex()
-            .child(self.storage_line(view, p, cx))
-            .child(heading(
-                "Careers",
-                format!(
-                    "{} the launcher has seen in your save.",
-                    plural(view.careers.len(), "career", "careers")
-                ),
-            ))
-            .child(careers)
-            .child(heading(
-                "Versions",
-                format!(
-                    "{} kept, newest first. Restore puts the whole profile save back.",
-                    plural(view.versions.len(), "version", "versions")
-                ),
-            ))
-            .child(v_flex().gap(px(8.)).children(versions))
-            .into_any_element()
-    }
-
-    fn storage_line(&self, view: &SavesView, p: Palette, cx: &mut Context<Self>) -> Div {
-        let dir = view.dir.clone();
-        let cloud = match (view.cloud, view.layout) {
-            (_, vault::Layout::Ea) => "The EA app copy has no Steam Cloud.".to_owned(),
-            (Some(s), _) => {
-                let mut t = format!("Steam Cloud: {}", cloud_line(s, view.steam_running));
-                if view.steam_running {
-                    t.push_str(". Close Steam to restore now.");
-                }
-                t
-            }
-            (None, _) => "Steam Cloud: unknown".to_owned(),
-        };
-        v_flex()
-            .gap(px(6.))
-            .p(px(12.))
-            .rounded(px(6.))
-            .border_1()
-            .border_color(p.border)
-            .child(
-                h_flex()
-                    .gap(px(8.))
-                    .items_center()
-                    .text_size(px(13.))
-                    .child(Icon::new(IconName::Save).size(px(14.)).text_color(p.text_muted))
-                    .child(div().flex_1().min_w_0().child(format!(
-                        "Vault: {}, {} of {}.",
-                        plural(view.versions.len(), "version", "versions"),
-                        mb(view.usage),
-                        mb(view.cap)
-                    )))
-                    .child(
-                        Button::new("saves-storage-change")
-                            .ghost()
-                            .small()
-                            .label("Change")
-                            .on_click(cx.listener(|this, _, window, cx| this.cap_prompt(window, cx))),
-                    )
-                    .child(
-                        Button::new("saves-storage-open")
-                            .ghost()
-                            .small()
-                            .icon(IconName::FolderOpen)
-                            .label("Open folder")
-                            .on_click(cx.listener(move |_, _, _, cx| crate::reveal::show(&dir, cx))),
-                    ),
-            )
-            .child(
-                h_flex()
-                    .gap(px(8.))
-                    .items_center()
-                    .text_size(px(13.))
-                    .text_color(p.text_muted)
-                    .child(Icon::new(IconName::Cloud).size(px(14.)))
-                    .child(cloud),
-            )
-    }
-
-    fn career_card(&self, r: &Row, view: &SavesView, p: Palette) -> AnyElement {
-        let (chip, tone) = match &r.status {
-            Status::Present => ("In your save".to_owned(), p.success),
-            Status::MissingSince(s) => (
-                format!(
-                    "Missing since {}",
-                    vault::human(
-                        view.versions
-                            .iter()
-                            .find(|v| &v.snap.id == s)
-                            .map_or(r.found_at.unwrap_or(r.last_seen_at), |v| v.snap.at)
-                    )
-                ),
-                p.warning,
-            ),
-            Status::DeletedInGame => ("Deleted in game".to_owned(), p.text_placeholder),
-            Status::Archived => ("Archived".to_owned(), p.text_placeholder),
-        };
-        let who = [r.driver.as_deref(), r.team.as_deref()]
-            .into_iter()
-            .flatten()
-            .collect::<Vec<_>>()
-            .join(" · ");
-        let needs: Vec<AnyElement> = r
-            .needs()
-            .map(|id| {
-                let off = !view.on.contains(id);
-                let name = view.names.get(id).cloned().unwrap_or_else(|| id.to_owned());
-                tag(
-                    match off {
-                        true => format!("{name} is off"),
-                        false => name,
-                    },
-                    p,
-                )
-                .when(off, |t| t.text_color(p.error).border_color(p.error))
-                .into_any_element()
-            })
-            .collect();
-        v_flex()
-            .gap(px(10.))
-            .p(px(14.))
-            .rounded(px(6.))
-            .border_1()
-            .border_color(match r.status.is_missing() {
-                true => p.warning,
-                false => p.border,
-            })
-            .child(
-                h_flex()
-                    .gap(px(8.))
-                    .items_center()
-                    .child(tag(mode_name(r.mode.as_deref()), p))
-                    .child(div().flex_1())
-                    .child(div().text_size(px(12.)).text_color(tone).child(chip)),
-            )
-            .child(
-                v_flex()
-                    .gap(px(2.))
-                    .child(
-                        div()
-                            .text_size(px(14.))
-                            .font_weight(FontWeight::SEMIBOLD)
-                            .truncate()
-                            .child(r.name().to_owned()),
-                    )
-                    .when(!who.is_empty(), |d| {
-                        d.child(div().text_size(px(13.)).text_color(p.text_muted).child(who))
-                    })
-                    .when_some(r.place(), |d, place| {
-                        d.child(div().text_size(px(13.)).text_color(p.text_muted).child(place))
-                    })
-                    .when_some(r.last_played, |d, at| {
-                        d.child(
-                            div()
-                                .text_size(px(12.))
-                                .text_color(p.text_placeholder)
-                                .child(format!("Last played {}", ago(at as f64))),
-                        )
-                    }),
-            )
-            .when(!needs.is_empty(), |d| {
-                d.child(
-                    v_flex()
-                        .gap(px(4.))
-                        .child(label("NEEDS", p))
-                        .child(h_flex().gap(px(4.)).flex_wrap().children(needs)),
-                )
-            })
-            .into_any_element()
-    }
-
-    fn version_row(&self, v: &Version, view: &SavesView, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        let s = &v.snap;
-        let id = s.id.clone();
-        let pinned = !s.pinned.is_empty();
-        let own_pin = s.pinned.iter().any(|x| x == "pinned");
-        let confirming = self.saves.confirm.as_deref() == Some(s.id.as_str());
-        let held = match &v.held {
-            Some(h) if h.is_empty() => "No careers".to_owned(),
-            Some(h) => {
-                let shown = h.iter().take(3).cloned().collect::<Vec<_>>().join(", ");
-                match h.len() > 3 {
-                    true => format!("{} careers: {shown} and {} more", h.len(), h.len() - 3),
-                    false => format!("{}: {shown}", plural(h.len(), "career", "careers")),
-                }
-            }
-            None => "Careers not known for this version".to_owned(),
-        };
-        let cloud_text = match s.layout {
-            vault::Layout::Ea | vault::Layout::Launcher | vault::Layout::LauncherEa => {
-                "local only".to_owned()
-            }
-            vault::Layout::Steam => s.cloud().text().to_owned(),
-        };
-        let (restore_id, source) = (id.clone(), view.source.clone());
-        let (pin_id, pin_source) = (id.clone(), view.source.clone());
-        let ask_id = id.clone();
-        v_flex()
-            .gap(px(10.))
-            .p(px(12.))
-            .rounded(px(6.))
-            .border_1()
-            .border_color(match confirming {
-                true => p.accent,
-                false => p.border,
-            })
-            .child(
-                h_flex()
-                    .gap(px(10.))
-                    .items_center()
-                    .child(
-                        v_flex()
-                            .flex_1()
-                            .min_w_0()
-                            .gap(px(2.))
-                            .child(
-                                h_flex()
-                                    .gap(px(8.))
-                                    .items_center()
-                                    .child(
-                                        div()
-                                            .text_size(px(14.))
-                                            .font_weight(FontWeight::SEMIBOLD)
-                                            .child(capital(s.reason.text())),
-                                    )
-                                    .child(
-                                        div()
-                                            .text_size(px(12.))
-                                            .text_color(p.text_placeholder)
-                                            .child(format!("{} · {}", ago(s.at as f64), vault::human(s.at))),
-                                    )
-                                    .when(pinned, |d| {
-                                        d.child(Icon::new(IconName::Star).size(px(13.)).text_color(p.accent))
-                                    }),
-                            )
-                            .child(
-                                div()
-                                    .text_size(px(13.))
-                                    .text_color(p.text_muted)
-                                    .truncate()
-                                    .child(format!(
-                                        "{} · {} · {} · Steam Cloud {}",
-                                        match &s.profile {
-                                            Some(pr) => format!("profile {pr}"),
-                                            None => "no profile".to_owned(),
-                                        },
-                                        held,
-                                        mb(s.total()),
-                                        cloud_text
-                                    )),
-                            ),
-                    )
-                    .child(
-                        Button::new(SharedString::from(format!("pin-{id}")))
-                            .ghost()
-                            .small()
-                            .icon(IconName::Star)
-                            .label(if own_pin { "Unpin" } else { "Pin" })
-                            .tooltip(if own_pin {
-                                "Let retention remove this version again"
-                            } else {
-                                "Keep this version; retention never removes it"
-                            })
-                            .on_click(cx.listener(move |this, _, _, cx| {
-                                this.pin_version(&pin_source, &pin_id, own_pin, cx)
-                            })),
-                    )
-                    .child(
-                        Button::new(SharedString::from(format!("restore-{id}")))
-                            .outline()
-                            .small()
-                            .icon(IconName::Undo2)
-                            .label("Restore this save")
-                            .on_click(cx.listener(move |this, _, _, cx| {
-                                this.saves.confirm =
-                                    match this.saves.confirm.as_deref() == Some(ask_id.as_str()) {
-                                        true => None,
-                                        false => Some(ask_id.clone()),
-                                    };
-                                cx.notify();
-                            })),
-                    ),
-            )
-            .when(confirming, |d| {
-                d.child(self.restore_panel(v, view, restore_id, source, p, cx))
-            })
-            .into_any_element()
-    }
-
     fn restore_panel(
         &self,
         v: &Version,
-        view: &SavesView,
-        id: String,
-        source: String,
+        layout: vault::Layout,
+        blocker: Option<String>,
+        (id, source): (String, String),
         p: Palette,
         cx: &mut Context<Self>,
     ) -> Div {
@@ -804,23 +719,17 @@ impl Shell {
             None => lines.push(line(
                 "Careers",
                 p.text_placeholder,
-                "This version, or the save as it is, has no career list, so the launcher can't say which careers change."
-                    .into(),
+                "No career list to compare.".into(),
             )),
         }
         lines.push(line(
             "Also",
             p.text_placeholder,
-            format!(
-                "Settings, setups and everything else in the profile save go back to {when}. The save as it is now is kept as a version first."
-            ),
+            format!("Settings and setups go back to {when}. The save as it is now is kept as a version."),
         ));
-        let close = match view.layout {
-            vault::Layout::Steam => {
-                "Exit Steam completely (Steam menu > Exit) and close F1 25 before you restore. Starting Steam afterwards uploads the restored save."
-            }
-            vault::Layout::Ea => "Close the EA app and F1 25 before you restore.",
-            vault::Layout::Launcher | vault::Layout::LauncherEa => "Close F1 25 before you restore.",
+        let close = match layout {
+            vault::Layout::Steam => Some("Steam uploads the restored save when it starts."),
+            _ => None,
         };
         v_flex()
             .gap(px(8.))
@@ -830,12 +739,7 @@ impl Shell {
             .border_1()
             .border_color(p.border_variant)
             .children(lines)
-            .child(
-                div()
-                    .text_size(px(12.))
-                    .text_color(p.text_placeholder)
-                    .child(close),
-            )
+            .children(close.map(|c| div().text_size(px(12.)).text_color(p.text_placeholder).child(c)))
             .child(
                 h_flex()
                     .gap(px(8.))
@@ -843,7 +747,8 @@ impl Shell {
                         Button::new("restore-confirm")
                             .primary()
                             .small()
-                            .label("Restore this save")
+                            .label("Restore")
+                            .disabled(blocker.is_some())
                             .on_click(cx.listener(move |this, _, window, cx| {
                                 this.restore_version(&source, &id, window, cx)
                             })),
@@ -860,13 +765,467 @@ impl Shell {
                     ),
             )
     }
-}
 
-fn capital(s: &str) -> String {
-    let mut c = s.chars();
-    match c.next() {
-        Some(f) => f.to_uppercase().chain(c).collect(),
-        None => String::new(),
+    pub(crate) fn careers_page(&mut self, p: Palette, _wide: bool, cx: &mut Context<Self>) -> AnyElement {
+        let banner = self.saves_banner(true, p, cx);
+        let Some(view) = self.saves.view.as_ref() else {
+            return v_flex()
+                .size_full()
+                .child(self.header("Saves", String::new(), div(), p))
+                .children(banner)
+                .child(
+                    div()
+                        .px(px(GUTTER))
+                        .text_size(px(13.))
+                        .text_color(p.text_muted)
+                        .child("No F1 25 save found yet."),
+                )
+                .into_any_element();
+        };
+        let title = match view.vanilla() {
+            true => "Vanilla saves".to_owned(),
+            false => format!("{} saves", view.profile),
+        };
+        let subtitle = match view.vanilla() {
+            true => "Plays on your Steam save".to_owned(),
+            false => "This profile's own save".to_owned(),
+        };
+        let actions = self.saves_actions(view, cx);
+        let careers = self.careers_block(view, p, cx);
+        let versions = self.versions_block(view, p, cx);
+        let footer = self.storage_line(view, p, cx);
+        v_flex()
+            .size_full()
+            .child(self.header(title, subtitle, actions, p))
+            .children(banner)
+            .child(
+                div()
+                    .flex_1()
+                    .min_h_0()
+                    .scroll_y("career-saves")
+                    .px(px(GUTTER))
+                    .pt(px(4.))
+                    .pb(px(16.))
+                    .child(v_flex().gap(px(22.)).child(careers).child(versions)),
+            )
+            .child(footer)
+            .into_any_element()
+    }
+
+    fn saves_actions(&self, view: &SavesView, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let game = self.saves.game_running;
+        let steam = view.steam.clone();
+        let name = view.profile.clone();
+        let vanilla = view.vanilla();
+        let why_import = match () {
+            _ if vanilla => Some("Vanilla uses the Steam save"),
+            _ if steam.is_none() => Some("No Steam save found"),
+            _ if game => Some("Close F1 25 first"),
+            _ => None,
+        };
+        let why_export = match () {
+            _ if vanilla => Some("Vanilla uses the Steam save"),
+            _ if steam.is_none() => Some("No Steam save found"),
+            _ if !view.has_save => Some("Nothing to export yet"),
+            _ if game => Some("Close F1 25 first"),
+            _ if view.steam_running => Some("Close Steam first"),
+            _ => None,
+        };
+        let why_copy = match () {
+            _ if view.others.is_empty() => Some("No other profiles"),
+            _ if !view.has_save => Some("Nothing to copy yet"),
+            _ if game => Some("Close F1 25 first"),
+            _ => None,
+        };
+        let (from, from_name) = (view.loc.clone(), name.clone());
+        let others = view.others.clone();
+        let shell = cx.entity().downgrade();
+        let copy = Button::new("saves-copy")
+            .outline()
+            .small()
+            .icon(IconName::Copy)
+            .label("Copy careers to…")
+            .dropdown_caret(true)
+            .disabled(why_copy.is_some())
+            .when_some(why_copy, |b, t| b.tooltip(t))
+            .dropdown_menu_with_anchor(Anchor::TopRight, move |mut menu, _, _| {
+                for target in &others {
+                    let (shell, from, from_name, to) =
+                        (shell.clone(), from.clone(), from_name.clone(), target.clone());
+                    menu = menu.item(PopupMenuItem::new(target.clone()).on_click(move |_, window, cx| {
+                        let Some(from) = from.clone() else { return };
+                        let (from_name, to) = (from_name.clone(), to.clone());
+                        shell
+                            .update(cx, |s, cx| s.ask_copy(from, from_name, to, window, cx))
+                            .ok();
+                    }));
+                }
+                menu
+            });
+        let import_name = name.clone();
+        let import = Button::new("saves-import")
+            .outline()
+            .small()
+            .icon(IconName::Download)
+            .label("Import from Steam")
+            .disabled(why_import.is_some())
+            .when_some(why_import, |b, t| b.tooltip(t))
+            .on_click(cx.listener(move |this, _, window, cx| {
+                if let Some(steam) = steam.clone() {
+                    this.ask_copy(steam, VANILLA.to_owned(), import_name.clone(), window, cx);
+                }
+            }));
+        let export = Button::new("saves-export")
+            .outline()
+            .small()
+            .icon(IconName::Upload)
+            .label("Export to Steam")
+            .disabled(why_export.is_some())
+            .when_some(why_export, |b, t| b.tooltip(t))
+            .on_click(cx.listener(move |this, _, window, cx| this.ask_export(name.clone(), window, cx)));
+        h_flex()
+            .gap(px(8.))
+            .flex_shrink_0()
+            .child(copy)
+            .child(import)
+            .child(export)
+    }
+
+    fn careers_block(&self, view: &SavesView, p: Palette, _cx: &mut Context<Self>) -> Div {
+        let rows: Vec<AnyElement> = match (&view.imported, view.entries.is_empty()) {
+            (Some(i), true) => vec![self.imported_row(i, p)],
+            (None, true) => vec![
+                div()
+                    .px(px(12.))
+                    .py(px(14.))
+                    .text_size(px(13.))
+                    .text_color(p.text_muted)
+                    .child("No careers yet. They appear after you play this profile.")
+                    .into_any_element(),
+            ],
+            _ => view.entries.iter().map(|e| self.career_row(e, p)).collect(),
+        };
+        v_flex()
+            .gap(px(8.))
+            .child(label("CAREERS", p))
+            .child(self.rows_box(rows, p))
+    }
+
+    fn rows_box(&self, rows: Vec<AnyElement>, p: Palette) -> Div {
+        v_flex()
+            .rounded(px(8.))
+            .border_1()
+            .border_color(p.border)
+            .overflow_hidden()
+            .children(rows.into_iter().enumerate().map(|(i, r)| {
+                div()
+                    .w_full()
+                    .when(i > 0, |d| d.border_t_1().border_color(p.border_variant))
+                    .child(r)
+            }))
+    }
+
+    fn imported_row(&self, i: &Imported, p: Palette) -> AnyElement {
+        h_flex()
+            .min_h(px(52.))
+            .px(px(12.))
+            .py(px(8.))
+            .gap(px(10.))
+            .items_center()
+            .child(
+                div().w(px(MODE_W)).flex_shrink_0().child(
+                    h_flex()
+                        .gap(px(6.))
+                        .items_center()
+                        .text_size(px(13.))
+                        .text_color(p.text_muted)
+                        .child(Icon::new(IconName::Save).size(px(15.)))
+                        .child("Saved game"),
+                ),
+            )
+            .child(
+                v_flex()
+                    .flex_1()
+                    .min_w_0()
+                    .gap(px(2.))
+                    .child(
+                        div()
+                            .truncate()
+                            .text_size(px(14.))
+                            .font_weight(FontWeight::MEDIUM)
+                            .child(i.title.clone()),
+                    )
+                    .child(
+                        div()
+                            .truncate()
+                            .text_size(px(12.))
+                            .text_color(p.text_placeholder)
+                            .child(LISTED_LATER),
+                    ),
+            )
+            .child(
+                div()
+                    .w(px(PLAYED_W + CHIP_W))
+                    .flex_shrink_0()
+                    .truncate()
+                    .text_right()
+                    .text_size(px(12.))
+                    .text_color(p.text_placeholder)
+                    .children(i.at.map(|at| format!("imported {}", ago(at as f64)))),
+            )
+            .into_any_element()
+    }
+
+    fn career_row(&self, e: &Entry, p: Palette) -> AnyElement {
+        let chip = match e.l.state {
+            CareerState::Present => None,
+            CareerState::Missing => Some(("Missing", p.warning)),
+            CareerState::DeletedInGame => Some(("Deleted in game", p.text_placeholder)),
+        };
+        let dim = chip.is_some();
+        h_flex()
+            .min_h(px(52.))
+            .px(px(12.))
+            .py(px(8.))
+            .gap(px(10.))
+            .items_center()
+            .child(
+                div()
+                    .w(px(MODE_W))
+                    .flex_shrink_0()
+                    .truncate()
+                    .text_size(px(13.))
+                    .text_color(p.text_muted)
+                    .child(e.mode()),
+            )
+            .child(
+                v_flex()
+                    .flex_1()
+                    .min_w_0()
+                    .gap(px(2.))
+                    .child(
+                        div()
+                            .truncate()
+                            .text_size(px(14.))
+                            .font_weight(FontWeight::MEDIUM)
+                            .when(dim, |d| d.text_color(p.text_muted))
+                            .child(e.l.title()),
+                    )
+                    .children(e.place.clone().map(|pl| {
+                        div()
+                            .truncate()
+                            .text_size(px(12.))
+                            .text_color(p.text_placeholder)
+                            .child(pl)
+                    })),
+            )
+            .child(
+                div()
+                    .w(px(PLAYED_W))
+                    .flex_shrink_0()
+                    .truncate()
+                    .text_right()
+                    .text_size(px(12.))
+                    .text_color(p.text_placeholder)
+                    .children(e.l.last_played.map(|at| ago(at as f64))),
+            )
+            .child(
+                h_flex()
+                    .w(px(CHIP_W))
+                    .flex_shrink_0()
+                    .justify_end()
+                    .children(chip.map(|(t, c)| {
+                        div()
+                            .px(px(6.))
+                            .h(px(20.))
+                            .flex()
+                            .items_center()
+                            .rounded(px(4.))
+                            .border_1()
+                            .border_color(c)
+                            .text_size(px(11.))
+                            .text_color(c)
+                            .whitespace_nowrap()
+                            .child(t)
+                    })),
+            )
+            .into_any_element()
+    }
+
+    fn versions_block(&self, view: &SavesView, p: Palette, cx: &mut Context<Self>) -> Div {
+        let rows: Vec<AnyElement> = match view.versions.is_empty() {
+            true => vec![
+                div()
+                    .px(px(12.))
+                    .py(px(14.))
+                    .text_size(px(13.))
+                    .text_color(p.text_muted)
+                    .child("No versions yet.")
+                    .into_any_element(),
+            ],
+            false => view
+                .versions
+                .iter()
+                .map(|v| self.version_row(v, view, p, cx))
+                .collect(),
+        };
+        v_flex()
+            .gap(px(8.))
+            .child(label("VERSIONS", p))
+            .child(self.rows_box(rows, p))
+    }
+
+    fn version_row(&self, v: &Version, view: &SavesView, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+        let s = &v.snap;
+        let id = s.id.clone();
+        let pinned = !s.pinned.is_empty();
+        let own_pin = s.pinned.iter().any(|x| x == "pinned");
+        let confirming = self.saves.confirm.as_deref() == Some(s.id.as_str());
+        let layout = view.layout();
+        let running = Running {
+            game: self.saves.game_running,
+            steam: view.steam_running,
+            ea_app: false,
+        };
+        let blocker = vault::restore::blocker(layout, running);
+        let why = short_block(layout, running);
+        let source = s.source.clone();
+        let (restore_id, restore_source) = (id.clone(), source.clone());
+        let (pin_id, pin_source) = (id.clone(), source);
+        let ask_id = id.clone();
+        let full = vault::human(s.at);
+        let held = v.held.as_ref().map(|h| careers_held(h));
+        v_flex()
+            .w_full()
+            .child(
+                h_flex()
+                    .h(px(44.))
+                    .px(px(12.))
+                    .gap(px(10.))
+                    .items_center()
+                    .child(div().w(px(PIN_W)).flex_shrink_0().when(pinned, |d| {
+                        d.child(Icon::new(IconName::Star).size(px(13.)).text_color(p.accent))
+                    }))
+                    .child(
+                        v_flex()
+                            .flex_1()
+                            .min_w_0()
+                            .child(
+                                div()
+                                    .truncate()
+                                    .text_size(px(14.))
+                                    .font_weight(FontWeight::MEDIUM)
+                                    .child(version_label(s)),
+                            )
+                            .children(held.map(|h| {
+                                div()
+                                    .truncate()
+                                    .text_size(px(12.))
+                                    .text_color(p.text_placeholder)
+                                    .child(h)
+                            })),
+                    )
+                    .child(
+                        div()
+                            .id(SharedString::from(format!("when-{id}")))
+                            .w(px(WHEN_W))
+                            .flex_shrink_0()
+                            .truncate()
+                            .text_size(px(13.))
+                            .text_color(p.text_muted)
+                            .child(ago(s.at as f64))
+                            .tooltip(move |window, cx| Tooltip::new(full.clone()).build(window, cx)),
+                    )
+                    .child(
+                        div()
+                            .w(px(SIZE_W))
+                            .flex_shrink_0()
+                            .text_right()
+                            .text_size(px(13.))
+                            .text_color(p.text_muted)
+                            .child(mb(s.total())),
+                    )
+                    .child(
+                        h_flex()
+                            .w(px(ACTIONS_W))
+                            .flex_shrink_0()
+                            .gap(px(4.))
+                            .justify_end()
+                            .child(
+                                Button::new(SharedString::from(format!("pin-{id}")))
+                                    .ghost()
+                                    .small()
+                                    .icon(IconName::Star)
+                                    .label(if own_pin { "Unpin" } else { "Pin" })
+                                    .on_click(cx.listener(move |this, _, _, cx| {
+                                        this.pin_version(&pin_source, &pin_id, own_pin, cx)
+                                    })),
+                            )
+                            .child(
+                                Button::new(SharedString::from(format!("restore-{id}")))
+                                    .outline()
+                                    .small()
+                                    .icon(IconName::Undo2)
+                                    .label("Restore")
+                                    .disabled(why.is_some())
+                                    .when_some(why, |b, t| b.tooltip(t))
+                                    .on_click(cx.listener(move |this, _, _, cx| {
+                                        this.saves.confirm =
+                                            match this.saves.confirm.as_deref() == Some(ask_id.as_str()) {
+                                                true => None,
+                                                false => Some(ask_id.clone()),
+                                            };
+                                        cx.notify();
+                                    })),
+                            ),
+                    ),
+            )
+            .when(confirming, |d| {
+                d.child(div().px(px(12.)).pb(px(12.)).child(self.restore_panel(
+                    v,
+                    layout,
+                    blocker,
+                    (restore_id, restore_source),
+                    p,
+                    cx,
+                )))
+            })
+            .into_any_element()
+    }
+
+    fn storage_line(&self, view: &SavesView, p: Palette, cx: &mut Context<Self>) -> Div {
+        let dir = view.dir.clone();
+        h_flex()
+            .px(px(GUTTER))
+            .py(px(8.))
+            .gap(px(4.))
+            .flex_shrink_0()
+            .items_center()
+            .border_t_1()
+            .border_color(p.border_variant)
+            .text_size(px(13.))
+            .text_color(p.text_muted)
+            .child(format!(
+                "Versions use {} of {}",
+                mb(view.usage),
+                mb_whole(view.cap)
+            ))
+            .child("·")
+            .child(
+                Button::new("saves-storage-change")
+                    .ghost()
+                    .small()
+                    .label("Change")
+                    .on_click(cx.listener(|this, _, window, cx| this.cap_prompt(window, cx))),
+            )
+            .child("·")
+            .child(
+                Button::new("saves-storage-open")
+                    .ghost()
+                    .small()
+                    .label("Open folder")
+                    .on_click(cx.listener(move |_, _, _, cx| crate::reveal::show(&dir, cx))),
+            )
     }
 }
 
@@ -875,9 +1234,11 @@ mod tests {
     use std::path::PathBuf;
 
     use swofty_core::vault::careers::{Brief, Row, Status};
-    use swofty_core::vault::{self, Vault, cloud};
+    use swofty_core::vault::{self, Vault};
 
-    use super::{Banner, banner_from, cloud_line, list, mode_name};
+    use swofty_core::launcher_saves::{self, Marker};
+
+    use super::{Banner, SavesPage, banner_from, list, reason_label, whose};
 
     fn row(id: &str, status: Status, at: i64) -> Row {
         Row {
@@ -920,13 +1281,15 @@ mod tests {
             ],
         };
         table.write(&d.join("career-vault/steam-1")).unwrap();
-        match banner_from(&d, "steam-1".into()) {
+        match banner_from(&d, "steam-1".into(), "vanilla".into()) {
             Some(Banner::Dropped {
                 snapshot,
                 names,
                 kept_at,
+                profile,
                 ..
             }) => {
+                assert_eq!(profile, "vanilla");
                 assert_eq!(snapshot, "snap-20");
                 assert_eq!(kept_at, 20);
                 assert_eq!(
@@ -937,30 +1300,38 @@ mod tests {
             _ => panic!("expected a drop banner"),
         }
         Vault::open(&d, "steam-1").unwrap().dismiss_drop().unwrap();
-        assert!(banner_from(&d, "steam-1".into()).is_none());
+        assert!(banner_from(&d, "steam-1".into(), "vanilla".into()).is_none());
     }
 
     #[test]
     fn no_careers_and_no_notice_means_no_banner() {
         let d = data("none");
-        assert!(banner_from(&d, "steam-1".into()).is_none());
+        assert!(banner_from(&d, "steam-1".into(), "vanilla".into()).is_none());
     }
 
     #[test]
     fn mode_names_read_like_the_game() {
-        assert_eq!(mode_name(Some("myteam")), "My Team");
-        assert_eq!(mode_name(Some("progressive")), "Progressive");
-        assert_eq!(mode_name(Some("sprint")), "Sprint");
-        assert_eq!(mode_name(None), "Career");
+        use swofty_core::vault::careers::mode_label;
+        assert_eq!(mode_label(Some("driver_career")), "Driver Career");
+        assert_eq!(mode_label(Some("my_team")), "My Team");
+        assert_eq!(mode_label(Some("progressive")), "Progressive");
+        assert_eq!(mode_label(Some("sprint_cup")), "Sprint Cup");
+        assert_eq!(mode_label(None), "Career");
     }
 
     #[test]
-    fn a_waiting_save_says_when_steam_uploads_it() {
-        assert_eq!(
-            cloud_line(cloud::Status::Waiting, false),
-            "waiting to upload, Steam uploads it when it starts"
+    fn versions_and_places_read_short() {
+        use super::{careers_held, season_round};
+        use swofty_core::vault::careers::listing;
+        assert_eq!(careers_held(&vec![String::new(); 10]), "10 careers");
+        let l = listing(
+            &swofty_core::stdlib::careers::parse(
+                r#"{"careers":[{"career":"f1_career_2026","slot":"0","slot_season":1,"slot_weekend":2}]}"#,
+            ),
+            None,
         );
-        assert_eq!(cloud_line(cloud::Status::Synced, true), "synced");
+        assert_eq!(season_round(&l[0]).as_deref(), Some("Season 1 · Round 3"));
+        assert_eq!(l[0].title(), "Driver Career · 2026 season");
     }
 
     #[test]
@@ -974,5 +1345,98 @@ mod tests {
             list(&[b("A", Some("season 2016, round 7")), b("B", None)]),
             "A (season 2016, round 7), B"
         );
+    }
+
+    fn marker(profiles: &[&str], seen: bool) -> Marker {
+        Marker {
+            at: 1,
+            launcher: "1.7.0".into(),
+            profiles: profiles.iter().map(|p| p.to_string()).collect(),
+            note: String::new(),
+            seen,
+        }
+    }
+
+    #[test]
+    fn the_first_start_notice_shows_once_and_is_remembered() {
+        let d = data("notice");
+        let mut page = SavesPage::default();
+        assert!(!page.take_notice(&d));
+        swofty_core::write_json(&launcher_saves::marker_path(&d), &marker(&["default"], false)).unwrap();
+        assert!(page.take_notice(&d));
+        assert!(!page.take_notice(&d));
+        assert!(launcher_saves::marker(&d).unwrap().seen);
+        assert!(!SavesPage::default().take_notice(&d));
+    }
+
+    #[test]
+    fn no_notice_when_the_import_copied_nothing_or_was_seen() {
+        let d = data("notice-none");
+        swofty_core::write_json(&launcher_saves::marker_path(&d), &marker(&[], false)).unwrap();
+        assert!(!SavesPage::default().take_notice(&d));
+        swofty_core::write_json(&launcher_saves::marker_path(&d), &marker(&["default"], true)).unwrap();
+        assert!(!SavesPage::default().take_notice(&d));
+    }
+
+    #[test]
+    fn versions_read_in_plain_words() {
+        use swofty_core::vault::Reason;
+        assert_eq!(reason_label(Reason::BeforeSession), "Before Play");
+        assert_eq!(reason_label(Reason::Migrated), "Old backup");
+        assert_eq!(reason_label(Reason::Imported), "Imported from Steam");
+        assert_eq!(whose("vanilla"), "your Steam save");
+        assert_eq!(whose("default"), "profile default's save");
+    }
+
+    #[test]
+    fn an_imported_save_with_no_listing_gets_a_titled_placeholder() {
+        use swofty_core::vault::{Meta, Reason, Taken};
+        let d = data("imported");
+        let loc = swofty_core::vault::Location::launcher(&d, "default");
+        std::fs::create_dir_all(&loc.dir).unwrap();
+        std::fs::write(loc.dir.join("savegame@profile#NXDSMWW.BWW"), [1u8; 64]).unwrap();
+        std::fs::write(loc.dir.join("savegame@profile#QKRHMYXE"), [2u8; 16]).unwrap();
+        let v = Vault::of(&d, &loc).unwrap();
+        let note = format!("copied from {}", d.join("saves/progressive/remote").display());
+        let Taken::New(_) = v
+            .snapshot(&loc, Meta::new(Reason::ImportedProfile).note(note), 700)
+            .unwrap()
+        else {
+            panic!()
+        };
+        let i = super::imported_from(&v.list().unwrap());
+        assert_eq!(i.title, "Copied from progressive");
+        assert_eq!(i.at, Some(700));
+        assert_eq!(super::imported_from(&[]).title, "Imported Steam save");
+    }
+
+    #[test]
+    fn the_fixed_columns_leave_room_at_the_narrowest_window() {
+        let content = 960. - 220. - 2. * 28.;
+        let career_fixed = super::MODE_W + super::PLAYED_W + super::CHIP_W + 3. * 10. + 24.;
+        let version_fixed = super::PIN_W + super::WHEN_W + super::SIZE_W + super::ACTIONS_W + 4. * 10. + 24.;
+        assert!(content - career_fixed >= 150., "{}", content - career_fixed);
+        assert!(content - version_fixed >= 150., "{}", content - version_fixed);
+    }
+
+    #[test]
+    fn restore_waits_for_what_is_running() {
+        use super::short_block;
+        use swofty_core::vault::Layout;
+        let run = |game, steam| swofty_core::vault::restore::Running {
+            game,
+            steam,
+            ea_app: false,
+        };
+        assert_eq!(
+            short_block(Layout::Launcher, run(true, false)),
+            Some("Close F1 25 first")
+        );
+        assert_eq!(short_block(Layout::Launcher, run(false, true)), None);
+        assert_eq!(
+            short_block(Layout::Steam, run(false, true)),
+            Some("Close Steam first")
+        );
+        assert_eq!(short_block(Layout::Steam, run(false, false)), None);
     }
 }

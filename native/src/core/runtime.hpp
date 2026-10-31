@@ -157,10 +157,13 @@ void save_splice_commit();
 const std::string &settings_json_text();
 std::string build_distribution();
 // Career saves (career_saves.cpp): the career index and per-career addon data.
+namespace career_saves {
+struct SlotRead;
+}
 void career_saves_start();
 void career_saves_saving();
 void career_saves_saved();
-void career_saves_found(const std::set<std::string> &keys);
+void career_saves_listed(const std::vector<career_saves::SlotRead> &slots, bool complete, bool at_load);
 // Save sandbox (save_sandbox.cpp): under `swofty test` with a run token, or with the launcher's saves.
 std::vector<CoreMixins> save_sandbox_mixins();
 void save_sandbox_commit();
@@ -219,6 +222,8 @@ std::vector<CoreMixins> netplay_icons_mixins();
 void netplay_icons_commit();
 uint8_t *team_record_of(uint16_t stat);
 void team_record_inserted(std::function<void(uint16_t, uint8_t *)> fn);
+std::vector<CoreMixins> leaderboard_guard_mixins();
+void leaderboard_guard_commit();
 void hud_setup();
 void focus_setup();
 void hud_fatal();

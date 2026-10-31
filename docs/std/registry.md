@@ -142,9 +142,9 @@ public:
     void protect(Ref<T> own_record, std::vector<std::string_view> fields);   // fields other addons' selectors skip
 
     // change (anyone's records)
-    LayerHandle<T> layer(Ref<T> target, Edit<T> edit, Scope scope = Scope::global);
-    LayerHandle<T> layer(Select<T> which, Edit<T> edit, Scope scope = Scope::global);   // every match, now and later
-    void clear_layer(Ref<T> target, Scope scope = Scope::global);    // drop this addon's layer
+    LayerHandle<T> layer(Ref<T> target, Edit<T> edit, Scope scope = Scope::automatic);
+    LayerHandle<T> layer(Select<T> which, Edit<T> edit, Scope scope = Scope::automatic);   // every match, now and later
+    void clear_layer(Ref<T> target, Scope scope = Scope::automatic);    // drop this addon's layer
 
     // tags
     Tag<T> tag(std::string_view id) const;                           // "c/f1_cars"

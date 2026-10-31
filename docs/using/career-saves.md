@@ -1,58 +1,71 @@
 ---
-title: Career saves
-description: The Career saves page lists the careers in F1 25's save and the versions of the save the launcher keeps, and restores a version with a list of what you get back and lose.
+title: Saves
+description: The Saves page under Profiles shows the active profile's save, its careers and versions, copies saves between profiles and to and from Steam, and restores a version.
 ---
 
-# Career saves
+# Saves
 
-The **Career saves** page in the sidebar, next to **Profiles**, shows the careers the launcher has seen in your save and the versions of the profile save it keeps in the [career vault](/reference/saves).
-
-## Careers
-
-Each career is a card with its mode (Driver Career, My Team, Progressive and so on), driver, team, season and round, when you last played it, and the addons it needs. An addon the career needs that is off in the selected profile shows red:
+**Saves** is a page under **Profiles** in the sidebar. It shows the save of the active profile; switch profiles with the picker at the bottom left to see another profile's save. Vanilla plays on your Steam save.
 
 ```text
-Progressive            In your save
-Progressive 2016, Verstappen, Red Bull
-season 2016, round 7
-Last played 3 hours ago
-NEEDS  [Progressive Career is off]
+progressive saves                         [Copy careers to…] [Import from Steam] [Export to Steam]
+This profile's own save
+
+CAREERS
+Driver Career   Oscar PIASTRI, McLaren                                     3 hours ago
+                Season 2, round 4
+My Team         Racing Bulls                                    Deleted in game
+
+VERSIONS
+After Play            3 hours ago      0.9 MB                          [Pin] [Restore]
+Before Play           3 hours ago      0.9 MB                          [Pin] [Restore]
+Imported from Steam   2 days ago       0.9 MB                          [Pin] [Restore]
+
+Versions use 2.7 MB of 500 MB · Change · Open folder
 ```
 
-The chip on a card is one of:
-
-- **In your save**
-- **Missing since `<time>`**: the career was in the save one launcher session and not in the next
-- **Deleted in game**: the game removed it while the launcher watched
-- **Archived**
-
-The launcher learns careers from the career index F1 25 writes in a launcher session. Before the first session after the update there are no cards, and the launcher doesn't say any career is missing.
+- **Copy careers to…** copies this profile's whole save over another profile's save. A confirm names both and the target's current save is kept as a version.
+- **Import from Steam** copies your Steam save over this profile's save, with the same confirm and kept version.
+- **Export to Steam** copies this profile's save over your Steam save. It needs Steam and F1 25 closed.
+- A disabled action says why on hover.
+- A save that was imported or copied in, with no careers listed yet, shows one row: `Imported Steam save · careers listed after you play this profile once`.
+- A career has a chip only when it is **Missing** or **Deleted in game**.
 
 ## Versions
 
-Each version shows why it was taken (launcher start, before Play, after Play, F1 25 started outside the launcher, before a restore), the profile, the careers in it, its size and its Steam Cloud status.
+Each version is one line: why it was kept (Before Play, After Play, Imported from Steam, Copied from another profile, Launcher start, Changed outside the launcher, Before restore, Restored, Old backup), how long ago (hover for the date), its size, **Pin** and **Restore**.
 
-**Pin** keeps a version; retention never removes it. **Unpin** lets retention have it again. The launcher also keeps the newest version that still held a career later found missing.
+A restore keeps the save it replaced as **Before restore**, and the careers list shows the restored version's careers until your next Play.
 
-**Restore this save** opens a panel before anything changes:
+**Pin** keeps a version; retention never removes it. **Unpin** lets retention have it again.
+
+**Restore** opens a panel before anything changes:
 
 ```text
 You get back   Progressive 2016, Verstappen, Red Bull (season 2016, round 7)
-You lose       Classic 2020 (not in that version); progress in My Team: season 2, round 9 goes back to season 2, round 4
-Also           Settings, setups and everything else in the profile save go back to 2026-10-30 22:15 UTC. The save as it is now is kept as a version first.
+You lose       Classic 2020 (not in that version)
+Also           Settings and setups go back to 2026-10-30 22:15 UTC. The save as it is now is kept as a version.
 ```
 
-The panel compares the career index stored with that version with the index of the save as it is. A restore waits until F1 25 and Steam are closed, as in [Restoring a profile save](/using/profiles-and-restoring#restoring-a-profile-save).
+Restore waits until F1 25 is closed, and for the Vanilla save until Steam is closed too, as in [Restoring a profile save](/using/profiles-and-restoring#restoring-a-profile-save).
+
+## The first time
+
+The first launcher start of 1.7.0 copies your Steam save into every profile's save and opens one dialog:
+
+```text
+Your careers have their own saves now
+Each profile now has its own save, starting from a copy of your Steam save. Playing from Steam still uses your Steam save, and Vanilla plays on it too.
+[Show me]  [OK]
+```
+
+**Show me** opens Saves. The dialog is recorded as seen in `saves/imported.json` (`"seen": true`) and never shows again.
 
 ## When careers go missing
 
-A banner at the top of the page, and on the **Addons** page, names the missing careers and the time they were last in the save. **Review the restore** opens the panel for that version. **Dismiss** hides the banner until the next career goes missing.
+A banner at the top of the page, and on the **Addons** page, names the missing careers, the profile whose save they went missing from, and the time they were last in the save. **Review the restore** opens that profile's versions with the panel for that version. **Dismiss** hides the banner until the next career goes missing.
 
 When the launcher has no career index to compare, a save that changed outside a launcher session and got smaller shows the older notice, worded as a change in the save, never as lost careers.
-
-## Storage
-
-The line at the top of the page reads `Vault: 41 versions, 63.0 MB of 500.0 MB.` **Change** sets the size limit; **Open folder** opens the vault. The Steam Cloud row reads `synced`, `waiting to upload` or `unknown`, and says when Steam is running and has to be closed to restore.
 
 ## From a terminal
 

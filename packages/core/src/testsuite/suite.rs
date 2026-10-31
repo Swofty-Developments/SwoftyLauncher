@@ -159,6 +159,7 @@ pub struct Step {
 pub enum Wait {
     Event(String),
     Log(String),
+    Ms(u64),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -759,19 +760,34 @@ fn step(at: &At, v: &Value) -> Result<Step, Error> {
     let host = match action {
         "wait" => {
             let w = here.object(value)?;
-            here.keys(w, &["event", "log", "screen"])?;
-            match (w.get("event"), w.get("log"), w.get("screen")) {
-                (Some(e), None, None) => Some(Wait::Event(here.at("event").str(e)?.to_owned())),
-                (None, Some(l), None) => {
+            here.keys(w, &["event", "log", "screen", "ms", "settle_ms"])?;
+            if w.contains_key("settle_ms") {
+                if !w.contains_key("screen") {
+                    return Err(here.at("settle_ms").err("settle_ms goes with \"screen\""));
+                }
+                here.at("settle_ms").uint(&w["settle_ms"])?;
+            }
+            match (w.get("event"), w.get("log"), w.get("screen"), w.get("ms")) {
+                (Some(e), None, None, None) => Some(Wait::Event(here.at("event").str(e)?.to_owned())),
+                (None, None, None, Some(n)) => {
+                    let ms = here.at("ms").uint(n)?;
+                    if ms > 3_600_000 {
+                        return Err(here.at("ms").err("expected at most 3600000 (an hour)"));
+                    }
+                    Some(Wait::Ms(ms))
+                }
+                (None, Some(l), None, None) => {
                     let pattern = here.at("log").str(l)?;
                     here.at("log").regex(pattern)?;
                     Some(Wait::Log(pattern.to_owned()))
                 }
-                (None, None, Some(n)) => {
+                (None, None, Some(n), None) => {
                     here.at("screen").str(n)?;
                     None
                 }
-                _ => return Err(here.err("wait for one of \"event\", \"log\" or \"screen\"")),
+                _ => {
+                    return Err(here.err("wait for one of \"event\", \"log\", \"screen\" or \"ms\""));
+                }
             }
         }
         "route" | "skip" | "save" | "capture" | "read" | "tile" => {
@@ -798,6 +814,27 @@ fn step(at: &At, v: &Value) -> Result<Step, Error> {
             }
             for key in ["every_ms", "for_s"] {
                 if let Some(n) = s.get(key) {
+                    here.at(key).uint(n)?;
+                }
+            }
+            None
+        }
+        "pad" => {
+            let p = here.object(value)?;
+            here.keys(
+                p,
+                &[
+                    "press",
+                    "then",
+                    "ms",
+                    "release",
+                    "settle_ms",
+                    "retry",
+                    "retry_after_ms",
+                ],
+            )?;
+            for key in ["ms", "settle_ms", "retry", "retry_after_ms"] {
+                if let Some(n) = p.get(key) {
                     here.at(key).uint(n)?;
                 }
             }

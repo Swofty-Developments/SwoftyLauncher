@@ -84,6 +84,8 @@ struct FakeGame : ta::Game {
     bool home_ready() override { return home; }
     uint64_t built = 0;
     uint64_t tile_screens() override { return built; }
+    uint64_t screens = 0;
+    uint64_t screen_changes() override { return screens; }
     ta::Outcome tile_select(const std::string &id) override
     {
         if (tile_ids.empty())
@@ -317,6 +319,68 @@ static ta::Runner &fast(ta::Runner &r)
     t.title = 400, t.route = 300, t.tile = 300, t.card = 300, t.team_hq = 600, t.advance = 300, t.hub = 600, t.session = 300;
     t.retry = 50, t.title_pad_after = 100, t.pad_hold = 20, t.pad_gap = 30, t.notice_after = 100, t.route_settle = 200;
     return r;
+}
+
+static void pad_timing()
+{
+    {
+        FakeGame g;
+        ta::Runner r(g);
+        uint64_t now = 1000;
+        g.screens = 1;
+        std::vector<std::string> out;
+        r.tick(now, out);
+        submit(r, "{\"seq\":1,\"cmd\":\"pad\",\"args\":{\"press\":\"a\",\"ms\":30,\"settle_ms\":500}}");
+        auto o = run(r, now, 20);
+        expect(g.pads.empty() && answered(o) == 0, "a pad press waits while the screen has just changed");
+        o = run(r, now, 40);
+        expect(!g.pads.empty() && g.pads[0].buttons == 0x1000, "the press fires once the screen has settled");
+        expect(answered(o) == 1 && has(o[0], "\"status\":\"ok\""), "the press then finishes");
+        g.pads.clear();
+        g.screens = 2;
+        submit(r, "{\"seq\":2,\"cmd\":\"pad\",\"args\":{\"press\":\"a\",\"ms\":30,\"settle_ms\":500}}");
+        run(r, now, 20);
+        g.screens = 3;
+        run(r, now, 20);
+        expect(g.pads.empty(), "a screen that changes again restarts the settle time");
+        run(r, now, 80);
+    }
+    {
+        FakeGame g;
+        ta::Runner r(g);
+        uint64_t now = 1000;
+        g.screens = 1;
+        submit(r, "{\"seq\":1,\"cmd\":\"pad\",\"args\":{\"press\":\"a\",\"ms\":30,\"settle_ms\":0,\"retry\":2,\"retry_after_ms\":200}}");
+        auto o = run(r, now, 100);
+        expect(g.a_presses == 3 && answered(o) == 1 && has(o[0], "\"status\":\"error\"") && has(o[0], "did not change after 3"),
+               "a pad that never changes the screen presses again twice, then fails");
+    }
+    {
+        FakeGame g;
+        ta::Runner r(g);
+        uint64_t now = 1000;
+        g.screens = 1;
+        submit(r, "{\"seq\":1,\"cmd\":\"pad\",\"args\":{\"press\":\"a\",\"ms\":30,\"settle_ms\":0,\"retry\":3,\"retry_after_ms\":200}}");
+        auto o = run(r, now, 30);
+        g.screens = 2;
+        o = run(r, now, 30);
+        expect(g.a_presses == 2 && answered(o) == 1 && has(o[0], "\"screen_changed\":true"),
+               "a pad that changes the screen after one retry stops there");
+    }
+    {
+        FakeGame g;
+        ta::Runner r(g);
+        uint64_t now = 1000;
+        g.screens = 1;
+        std::vector<std::string> out;
+        r.tick(now, out);
+        submit(r, "{\"seq\":1,\"cmd\":\"at\",\"args\":{\"phase\":\"track_select\",\"settle_ms\":300}}");
+        g.screen = "|track_select||";
+        auto o = run(r, now, 10);
+        expect(answered(o) == 0, "a screen wait with settle_ms waits for the screen to hold still");
+        o = run(r, now, 40);
+        expect(answered(o) == 1 && has(o[0], "\"status\":\"ok\""), "then it answers");
+    }
 }
 
 static void career()
@@ -826,6 +890,7 @@ int main()
 {
     setvbuf(stdout, nullptr, _IONBF, 0);
     career();
+    pad_timing();
     home_and_tiles();
     route_settles();
     session_args();

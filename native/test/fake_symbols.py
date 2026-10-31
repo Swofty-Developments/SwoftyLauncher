@@ -11,7 +11,8 @@ want = {b'fake_crash': 'Fake_Crash_Here', b'fake_heap_free': 'Fake_Heap_Free',
         b'fake_acclim_refresh': 'Game_PracticeTrackAcclimatisation_RefreshState',
         b'fake_acclim_flag': 'Game_PracticeTrackAcclimatisation_FlagCurrentTarget',
         b'fake_powertrain_ers': 'Car_Powertrain_Step',
-        b'fake_standings_weekend': 'Career_Standings_BuildWeekendNode'}
+        b'fake_standings_weekend': 'Career_Standings_BuildWeekendNode',
+        b'fake_lb_select': 'Game_TimeTrialLeaderboard_SelectBoard'}
 rows = []
 for i in range(count):
     name = d[off(struct.unpack_from('<I', d, off(names) + 4 * i)[0]):].split(b'\0')[0]

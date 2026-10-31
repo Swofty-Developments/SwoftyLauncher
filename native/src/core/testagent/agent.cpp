@@ -196,6 +196,7 @@ std::mutex ran_lock;
 std::vector<std::string> ran_routes;
 
 std::atomic<uint64_t> screens_built{0};
+std::atomic<uint64_t> screen_seq{0};
 
 void set_screen(void *vm, size_t list_at)
 {
@@ -876,6 +877,7 @@ struct InGame : ta::Game {
     bool home_ready() override { return live_home() != nullptr; }
 
     uint64_t tile_screens() override { return screens_built.load(); }
+    uint64_t screen_changes() override { return screen_seq.load(); }
 
     ta::Outcome tile_select(const std::string &id) override;
     ta::Outcome career_content() override;
@@ -1832,8 +1834,10 @@ void testagent_screen(const char *name)
     if (!armed.load() || !name || !std::strncmp(name, "render_", 7))
         return;
     std::lock_guard<std::mutex> g(phase_lock);
-    if (screen_name != name)
+    if (screen_name != name) {
         swofty::log("[test] screen %.64s", name);
+        ++screen_seq;
+    }
     screen_name = name;
 }
 

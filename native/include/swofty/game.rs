@@ -1709,9 +1709,33 @@ const _: () = assert!(core::mem::offset_of!(SaveDataContainer, retained_count) =
 pub struct SaveSlotInfo {
     pub slot_id: u64,
     pub slot_guid: u64,
+    _pad_0x10: [u8; 0x10],
+    pub name: *mut c_char,
+    _pad_0x28: [u8; 0x80],
+    pub game_setup_mode: u8,
+    _pad_0xa9: [u8; 0x3],
+    pub info_season: u32,
+    pub info_weekend: u32,
+    _pad_0xb4: [u8; 0xa],
+    pub info_team: u16,
+    pub info_driver: u16,
+    pub info_vehicle: u16,
+    _pad_0xc4: [u8; 0x4],
+    pub info_date: u64,
+    _pad_0xd0: [u8; 0xa1],
+    pub type_flags: u8,
 }
 const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, slot_id) == 0x0);
 const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, slot_guid) == 0x8);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, name) == 0x20);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, game_setup_mode) == 0xa8);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, info_season) == 0xac);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, info_weekend) == 0xb0);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, info_team) == 0xbe);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, info_driver) == 0xc0);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, info_vehicle) == 0xc2);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, info_date) == 0xc8);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, type_flags) == 0x171);
 
 #[repr(C)]
 pub struct SaveSlotManager {
@@ -2352,6 +2376,7 @@ pub type Car_Create_DetachablePart_t = unsafe extern "C" fn(
     params: *mut i32,
     k: f32,
 ) -> *mut c_void;
+pub type Car_DetachablePart_Update_t = unsafe extern "C" fn(part: *mut c_void, dt: f32) -> bool;
 pub type Car_FrontWing_Init_t = unsafe extern "C" fn(front_wing: *mut c_void, reset: c_char);
 pub type Car_Register_DetachablePart_Thunk_t = unsafe extern "C" fn(
     front_wing: *mut c_void,
@@ -2568,6 +2593,8 @@ pub type Game_EntrantsUi_OnCharacterListLoaded_t =
     unsafe extern "C" fn(ctx: *mut c_void, message: *const c_void) -> i64;
 pub type Game_F1WorldActivityContainer_SelectEntrantList_t =
     unsafe extern "C" fn(container: *mut c_void, entrant_list: *const c_char);
+pub type Game_Game_SetCurrentGameMode_t =
+    unsafe extern "C" fn(mode_context: *mut c_void, mode: *mut c_void) -> u64;
 pub type Game_Get_ModelNodeId_t = unsafe extern "C" fn(name: *const c_char) -> u32;
 pub type Game_Handle_GarageCrewEvent_Thunk_t =
     unsafe extern "C" fn(cars: *mut *mut c_void, event: *mut c_void) -> u64;
@@ -2602,6 +2629,8 @@ pub type Game_Place_Vehicle_t = unsafe extern "C" fn(
     dt: f32,
     flags: u32,
 );
+pub type Game_PlayerSetSubsystem_HandleUpdatePresenceNameMessage_t =
+    unsafe extern "C" fn(player_set: *mut c_void, msg: *mut c_void);
 pub type Game_PracticeTrackAcclimatisation_RefreshState_t = unsafe extern "C" fn(self_: *mut c_void);
 pub type Game_Predict_StrategyWetness_t =
     unsafe extern "C" fn(self_: *mut c_void, window3: *const f32) -> f32;
@@ -2624,6 +2653,14 @@ pub type Game_SaveData_SerialiseContainer_t = unsafe extern "C" fn(
     result: *mut c_int,
     bag: *mut c_void,
     groups: u64,
+) -> *mut c_int;
+pub type Game_SaveData_SerialiseContainer_2_t = unsafe extern "C" fn(
+    self_: *mut SaveDataContainer,
+    result: *mut c_int,
+    stream: *mut c_void,
+    a4: *mut c_void,
+    groups: u64,
+    a6: *mut c_void,
 ) -> *mut c_int;
 pub type Game_SaveData_WriteBag_t = unsafe extern "C" fn(codec: *mut NeBagCodec, bag: *mut c_void) -> c_int;
 pub type Game_SaveMgr_RequestProfileSave_Thunk_t =
@@ -2707,6 +2744,7 @@ pub type Ne_SaveSystem2Win_Mount_t = unsafe extern "C" fn(
 ) -> u32;
 pub type Ne_SaveSystem2Win_Start_t = unsafe extern "C" fn(device: *mut c_void) -> u64;
 pub type Ne_SaveSystem_InitDevice_t = unsafe extern "C" fn(save_system: *mut c_void) -> c_int;
+pub type Ne_Set_FixedString_t = unsafe extern "C" fn(dst: *mut c_void, src: *const c_char);
 pub type Ne_StringTable_Lookup_t = unsafe extern "C" fn(table: *mut c_void, hash: u64) -> *const c_char;
 pub type Ne_TempPool_Alloc_t = unsafe extern "C" fn(pool: *mut c_void, size: u64, align: u64) -> *mut c_void;
 pub type Sess_Apply_ContentAvailability_t =
@@ -2750,6 +2788,8 @@ pub type Sess_PreRace_Update_t =
     unsafe extern "C" fn(state: *mut c_void, route: *mut u32, dt: f64) -> *mut u32;
 pub type Sess_PuPanel_FillComponent_t =
     unsafe extern "C" fn(vm: *mut c_void, a2: u64, slot: u32, a4: u8, a5: u8, entry: *mut c_void);
+pub type Sess_RaceStrategy_UpdateVehicle_t =
+    unsafe extern "C" fn(proc: *mut c_void, race_session_data: *mut c_void);
 pub type Sess_Record_GroupTimes_t =
     unsafe extern "C" fn(weekend: *mut c_void, group: u8, entries: *mut c_void);
 pub type Sess_RedFlagRaceStrategy_Enter_t = unsafe extern "C" fn(state: *mut c_void) -> u64;
@@ -2873,6 +2913,16 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Asset_Load_MaterialList: Binding = Binding {
+        id: "Asset_Load_MaterialList",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Asset_Load_ParticleResourcePack: Binding = Binding {
+        id: "Asset_Load_ParticleResourcePack",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Asset_Map_EaidToGroupA: Binding = Binding {
         id: "Asset_Map_EaidToGroupA",
         kind: "func",
@@ -2938,6 +2988,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Car_DetachablePart_Update: Binding = Binding {
+        id: "Car_DetachablePart_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Car_Engine_ComputeDerived_Thunk: Binding = Binding {
         id: "Car_Engine_ComputeDerived_Thunk",
         kind: "func",
@@ -2970,6 +3025,11 @@ pub mod bindings {
     };
     pub const Car_Physics_PostVehicleUpdate: Binding = Binding {
         id: "Car_Physics_PostVehicleUpdate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Powertrain_Step: Binding = Binding {
+        id: "Car_Powertrain_Step",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3030,6 +3090,11 @@ pub mod bindings {
     };
     pub const Car_Tuning_SetChassisZCom: Binding = Binding {
         id: "Car_Tuning_SetChassisZCom",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Tuning_SetEngineBrakingAndRadiator: Binding = Binding {
+        id: "Car_Tuning_SetEngineBrakingAndRadiator",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3095,6 +3160,16 @@ pub mod bindings {
     };
     pub const Car_Write_Differential: Binding = Binding {
         id: "Car_Write_Differential",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Write_EnergyRecovery: Binding = Binding {
+        id: "Car_Write_EnergyRecovery",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Write_Engine: Binding = Binding {
+        id: "Car_Write_Engine",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3642,6 +3717,11 @@ pub mod bindings {
         id: "FeTile_ItemBase_Populate",
         kind: "func",
         status: Status::Stable,
+    };
+    pub const FeTile_ItemBase_Slot78_Thunk: Binding = Binding {
+        id: "FeTile_ItemBase_Slot78_Thunk",
+        kind: "func",
+        status: Status::Experimental,
     };
     pub const FeTile_ItemGeneric_Populate: Binding = Binding {
         id: "FeTile_ItemGeneric_Populate",
@@ -5658,6 +5738,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_Game_SetCurrentGameMode: Binding = Binding {
+        id: "Game_Game_SetCurrentGameMode",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_GarageCrewInstance_PlayOverlaySequence: Binding = Binding {
         id: "Game_GarageCrewInstance_PlayOverlaySequence",
         kind: "func",
@@ -6243,6 +6328,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_NetworkSubsystem_ChangeMPMode: Binding = Binding {
+        id: "Game_NetworkSubsystem_ChangeMPMode",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_NetworkSubsystem_SelectTitleConfig: Binding = Binding {
         id: "Game_NetworkSubsystem_SelectTitleConfig",
         kind: "func",
@@ -6540,6 +6630,16 @@ pub mod bindings {
     };
     pub const Game_PlayerManager_HandleControllerUnplugged: Binding = Binding {
         id: "Game_PlayerManager_HandleControllerUnplugged",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PlayerSetSubsystem_CreateHumanPlayers: Binding = Binding {
+        id: "Game_PlayerSetSubsystem_CreateHumanPlayers",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PlayerSetSubsystem_HandleUpdatePresenceNameMessage: Binding = Binding {
+        id: "Game_PlayerSetSubsystem_HandleUpdatePresenceNameMessage",
         kind: "func",
         status: Status::Experimental,
     };
@@ -6920,6 +7020,11 @@ pub mod bindings {
     };
     pub const Game_SaveData_SerialiseContainer: Binding = Binding {
         id: "Game_SaveData_SerialiseContainer",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SaveData_SerialiseContainer_2: Binding = Binding {
+        id: "Game_SaveData_SerialiseContainer_2",
         kind: "func",
         status: Status::Experimental,
     };
@@ -7528,6 +7633,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_UIThumbnailSystem_FindDriverCustomisationWill: Binding = Binding {
+        id: "Game_UIThumbnailSystem_FindDriverCustomisationWill",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_UiMessageScreen_Destructor: Binding = Binding {
         id: "Game_UiMessageScreen_Destructor",
         kind: "func",
@@ -7698,6 +7808,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Gdb_FindMetadata: Binding = Binding {
+        id: "Gdb_FindMetadata",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Gdb_HashMap_Rehash: Binding = Binding {
         id: "Gdb_HashMap_Rehash",
         kind: "func",
@@ -7763,6 +7878,16 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_AnimLayer_ApplyChannels: Binding = Binding {
+        id: "Ne_AnimLayer_ApplyChannels",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_AnimSetResourceFactory_CreateResource: Binding = Binding {
+        id: "Ne_AnimSetResourceFactory_CreateResource",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Application2_OnFocusChanged: Binding = Binding {
         id: "Ne_Application2_OnFocusChanged",
         kind: "func",
@@ -7795,6 +7920,16 @@ pub mod bindings {
     };
     pub const Ne_AsyncJob_StopAndNotify: Binding = Binding {
         id: "Ne_AsyncJob_StopAndNotify",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_AudioIo_OpenFileRequest: Binding = Binding {
+        id: "Ne_AudioIo_OpenFileRequest",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_BindingTable_AddOrUpdate: Binding = Binding {
+        id: "Ne_BindingTable_AddOrUpdate",
         kind: "func",
         status: Status::Experimental,
     };
@@ -7843,6 +7978,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_ByteVector_InsertUnique: Binding = Binding {
+        id: "Ne_ByteVector_InsertUnique",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_CloudGenerator_Destroy: Binding = Binding {
         id: "Ne_CloudGenerator_Destroy",
         kind: "func",
@@ -7870,6 +8010,11 @@ pub mod bindings {
     };
     pub const Ne_ConfigValue_ReadInt: Binding = Binding {
         id: "Ne_ConfigValue_ReadInt",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Config_GetFloatOrDefault: Binding = Binding {
+        id: "Ne_Config_GetFloatOrDefault",
         kind: "func",
         status: Status::Experimental,
     };
@@ -7903,8 +8048,23 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_CrowdPluginProxy_Update: Binding = Binding {
+        id: "Ne_CrowdPluginProxy_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_CrowdPlugin_FindZoneIndex: Binding = Binding {
+        id: "Ne_CrowdPlugin_FindZoneIndex",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_CrowdPlugin_LoadXml: Binding = Binding {
         id: "Ne_CrowdPlugin_LoadXml",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_CrowdZoneInstance_Initialise: Binding = Binding {
+        id: "Ne_CrowdZoneInstance_Initialise",
         kind: "func",
         status: Status::Experimental,
     };
@@ -7943,6 +8103,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Crt_Cosf: Binding = Binding {
+        id: "Ne_Crt_Cosf",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Crt_Exp2f: Binding = Binding {
         id: "Ne_Crt_Exp2f",
         kind: "func",
@@ -7965,6 +8130,11 @@ pub mod bindings {
     };
     pub const Ne_Crt_InvalidParameterNoReturn: Binding = Binding {
         id: "Ne_Crt_InvalidParameterNoReturn",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_Localtime64: Binding = Binding {
+        id: "Ne_Crt_Localtime64",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8023,6 +8193,21 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Crt_ThrowOverflow_A: Binding = Binding {
+        id: "Ne_Crt_ThrowOverflow_A",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_ThrowOverflow_B: Binding = Binding {
+        id: "Ne_Crt_ThrowOverflow_B",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_ThrowOverflow_C: Binding = Binding {
+        id: "Ne_Crt_ThrowOverflow_C",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Crt_Time64: Binding = Binding {
         id: "Ne_Crt_Time64",
         kind: "func",
@@ -8030,6 +8215,11 @@ pub mod bindings {
     };
     pub const Ne_Crt_ToLower: Binding = Binding {
         id: "Ne_Crt_ToLower",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_TrigDouble: Binding = Binding {
+        id: "Ne_Crt_TrigDouble",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8050,6 +8240,11 @@ pub mod bindings {
     };
     pub const Ne_CustomisationDecalsSetPlugin_CloseConnection: Binding = Binding {
         id: "Ne_CustomisationDecalsSetPlugin_CloseConnection",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_CutsceneScriptResourceFactory_CreateResource: Binding = Binding {
+        id: "Ne_CutsceneScriptResourceFactory_CreateResource",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8093,6 +8288,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Delegate_InvokeAll: Binding = Binding {
+        id: "Ne_Delegate_InvokeAll",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Detach_ChildNode: Binding = Binding {
         id: "Ne_Detach_ChildNode",
         kind: "func",
@@ -8100,6 +8300,11 @@ pub mod bindings {
     };
     pub const Ne_EadpErrorsDataService_UninstallExceptionHandler: Binding = Binding {
         id: "Ne_EadpErrorsDataService_UninstallExceptionHandler",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_EadpErrorsDataService_UploadAttachment_OnComplete: Binding = Binding {
+        id: "Ne_EadpErrorsDataService_UploadAttachment_OnComplete",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8188,6 +8393,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Gfx2Renderer_RenderFrame: Binding = Binding {
+        id: "Ne_Gfx2Renderer_RenderFrame",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Gfx2TextureManager_SetInRaceOff: Binding = Binding {
         id: "Ne_Gfx2TextureManager_SetInRaceOff",
         kind: "func",
@@ -8198,8 +8408,23 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_GlobalHandle_Release: Binding = Binding {
+        id: "Ne_GlobalHandle_Release",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_HashMap_EmplaceNode: Binding = Binding {
+        id: "Ne_HashMap_EmplaceNode",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_HashMap_Rehash: Binding = Binding {
         id: "Ne_HashMap_Rehash",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Hash_Md5U64: Binding = Binding {
+        id: "Ne_Hash_Md5U64",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8293,6 +8518,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Input_IsActionDownAnyDevice: Binding = Binding {
+        id: "Ne_Input_IsActionDownAnyDevice",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Input_IsActionEnabled: Binding = Binding {
         id: "Ne_Input_IsActionEnabled",
         kind: "func",
@@ -8310,6 +8540,11 @@ pub mod bindings {
     };
     pub const Ne_JobSignal_WaitWithTimeout: Binding = Binding {
         id: "Ne_JobSignal_WaitWithTimeout",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_JobSystem_CreateJobGroup: Binding = Binding {
+        id: "Ne_JobSystem_CreateJobGroup",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8363,6 +8598,16 @@ pub mod bindings {
         kind: "func",
         status: Status::Stable,
     };
+    pub const Ne_Math_BasisFromNormal: Binding = Binding {
+        id: "Ne_Math_BasisFromNormal",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Math_ObbOverlapTest: Binding = Binding {
+        id: "Ne_Math_ObbOverlapTest",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_MessageQueue_Alloc: Binding = Binding {
         id: "Ne_MessageQueue_Alloc",
         kind: "func",
@@ -8393,8 +8638,18 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_ModelInstance_SetNodeMatrices: Binding = Binding {
+        id: "Ne_ModelInstance_SetNodeMatrices",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_ModelNodeBinding_Clear: Binding = Binding {
         id: "Ne_ModelNodeBinding_Clear",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_ModelNodeBinding_Init: Binding = Binding {
+        id: "Ne_ModelNodeBinding_Init",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8405,6 +8660,16 @@ pub mod bindings {
     };
     pub const Ne_ModuleSystem_CheckPlatform: Binding = Binding {
         id: "Ne_ModuleSystem_CheckPlatform",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_ModuleSystem_Destroy: Binding = Binding {
+        id: "Ne_ModuleSystem_Destroy",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_ModuleSystem_StartModules: Binding = Binding {
+        id: "Ne_ModuleSystem_StartModules",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8513,6 +8778,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_NetReliableAsyncSocket_DeletingDtor: Binding = Binding {
+        id: "Ne_NetReliableAsyncSocket_DeletingDtor",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_NetReliableAsyncSocket_DisconnectAll: Binding = Binding {
         id: "Ne_NetReliableAsyncSocket_DisconnectAll",
         kind: "func",
@@ -8563,6 +8833,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_NetSessionF1OS_Reset: Binding = Binding {
+        id: "Ne_NetSessionF1OS_Reset",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_NetSessionF1OS_SetCrossplay: Binding = Binding {
         id: "Ne_NetSessionF1OS_SetCrossplay",
         kind: "func",
@@ -8600,6 +8875,11 @@ pub mod bindings {
     };
     pub const Ne_NetSessionLAN_OnCreateMigratedSessionFinished: Binding = Binding {
         id: "Ne_NetSessionLAN_OnCreateMigratedSessionFinished",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_NetSessionSearcherF1OS_OnSessionBrowserResults: Binding = Binding {
+        id: "Ne_NetSessionSearcherF1OS_OnSessionBrowserResults",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8808,6 +9088,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_NetTransportPlayFab_HandlePartyStateChange: Binding = Binding {
+        id: "Ne_NetTransportPlayFab_HandlePartyStateChange",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_NetTransportPlayFab_MigrateConnections: Binding = Binding {
         id: "Ne_NetTransportPlayFab_MigrateConnections",
         kind: "func",
@@ -8873,6 +9158,26 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_OSOperationQueue_StartPendingOperation: Binding = Binding {
+        id: "Ne_OSOperationQueue_StartPendingOperation",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_OptionalVector56_CopyAssign: Binding = Binding {
+        id: "Ne_OptionalVector56_CopyAssign",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_ParameterStudio_ReserveInstancePools: Binding = Binding {
+        id: "Ne_ParameterStudio_ReserveInstancePools",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Parse_BoolCString: Binding = Binding {
+        id: "Ne_Parse_BoolCString",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Parse_BoolValue: Binding = Binding {
         id: "Ne_Parse_BoolValue",
         kind: "func",
@@ -8888,6 +9193,16 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_PhysBody_SetAngularVelocity: Binding = Binding {
+        id: "Ne_PhysBody_SetAngularVelocity",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysBody_SetLinearVelocity: Binding = Binding {
+        id: "Ne_PhysBody_SetLinearVelocity",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_PhysBody_SetTransform: Binding = Binding {
         id: "Ne_PhysBody_SetTransform",
         kind: "func",
@@ -8898,8 +9213,18 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_PhysShape_CreateConvex: Binding = Binding {
+        id: "Ne_PhysShape_CreateConvex",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_PhysWorld_CommitBody: Binding = Binding {
         id: "Ne_PhysWorld_CommitBody",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_PhysWorld_QueryAabbAnyHit: Binding = Binding {
+        id: "Ne_PhysWorld_QueryAabbAnyHit",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8988,8 +9313,18 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_PostProcessXGenerator_Copy_Render: Binding = Binding {
+        id: "Ne_PostProcessXGenerator_Copy_Render",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Post_BusMessage: Binding = Binding {
         id: "Ne_Post_BusMessage",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Post_BusMessageQueued_FlashbackUsed: Binding = Binding {
+        id: "Ne_Post_BusMessageQueued_FlashbackUsed",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9048,6 +9383,21 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_RenderViewParams_InitDefaults: Binding = Binding {
+        id: "Ne_RenderViewParams_InitDefaults",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_ReplayBuffer_GetOldestValidPosition: Binding = Binding {
+        id: "Ne_ReplayBuffer_GetOldestValidPosition",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_ReplayRecordable_ReadFrom: Binding = Binding {
+        id: "Ne_ReplayRecordable_ReadFrom",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_ReplaySystem_ForceReset: Binding = Binding {
         id: "Ne_ReplaySystem_ForceReset",
         kind: "func",
@@ -9075,6 +9425,11 @@ pub mod bindings {
     };
     pub const Ne_RobinHoodMap_ClearDestroy: Binding = Binding {
         id: "Ne_RobinHoodMap_ClearDestroy",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_RobinHoodMap_Rehash_A: Binding = Binding {
+        id: "Ne_RobinHoodMap_Rehash_A",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9193,6 +9548,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_SaveSystem2Win_ProcessSerialiserActions: Binding = Binding {
+        id: "Ne_SaveSystem2Win_ProcessSerialiserActions",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_SaveSystem2Win_RenameDirectory: Binding = Binding {
         id: "Ne_SaveSystem2Win_RenameDirectory",
         kind: "func",
@@ -9288,6 +9648,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_SceneNode_SetTransform: Binding = Binding {
+        id: "Ne_SceneNode_SetTransform",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Schema_ParseFieldsA: Binding = Binding {
         id: "Ne_Schema_ParseFieldsA",
         kind: "func",
@@ -9325,6 +9690,16 @@ pub mod bindings {
     };
     pub const Ne_SequenceResource_CreateResource: Binding = Binding {
         id: "Ne_SequenceResource_CreateResource",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Sequence_Deserialize: Binding = Binding {
+        id: "Ne_Sequence_Deserialize",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Set_FixedString: Binding = Binding {
+        id: "Ne_Set_FixedString",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9393,6 +9768,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Std_ThrowStdException: Binding = Binding {
+        id: "Ne_Std_ThrowStdException",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Std_ThrowVectorTooLong: Binding = Binding {
         id: "Ne_Std_ThrowVectorTooLong",
         kind: "func",
@@ -9423,6 +9803,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_StringPool_InternByHash: Binding = Binding {
+        id: "Ne_StringPool_InternByHash",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_StringPool_LogMemoryStats: Binding = Binding {
         id: "Ne_StringPool_LogMemoryStats",
         kind: "func",
@@ -9440,6 +9825,11 @@ pub mod bindings {
     };
     pub const Ne_String_Reserve: Binding = Binding {
         id: "Ne_String_Reserve",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Sync_WaitObject: Binding = Binding {
+        id: "Ne_Sync_WaitObject",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9465,6 +9855,11 @@ pub mod bindings {
     };
     pub const Ne_Thread_Destroy: Binding = Binding {
         id: "Ne_Thread_Destroy",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Thread_SetPriority: Binding = Binding {
+        id: "Ne_Thread_SetPriority",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9523,6 +9918,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_UIElementBase_HandleCommunicationMessage: Binding = Binding {
+        id: "Ne_UIElementBase_HandleCommunicationMessage",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_UIFlow_AssetGroupPreUnloaded: Binding = Binding {
         id: "Ne_UIFlow_AssetGroupPreUnloaded",
         kind: "func",
@@ -9563,6 +9963,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_UINodeBase_OnVMSetDataContext: Binding = Binding {
+        id: "Ne_UINodeBase_OnVMSetDataContext",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_UINodeBase_ParentVisible: Binding = Binding {
         id: "Ne_UINodeBase_ParentVisible",
         kind: "func",
@@ -9590,6 +9995,11 @@ pub mod bindings {
     };
     pub const Ne_UITextElement_UpdateDocument: Binding = Binding {
         id: "Ne_UITextElement_UpdateDocument",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_UIVideo_SendSamplerMessage: Binding = Binding {
+        id: "Ne_UIVideo_SendSamplerMessage",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9753,6 +10163,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_WindowWin_BuildResolutionOptions: Binding = Binding {
+        id: "Ne_WindowWin_BuildResolutionOptions",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_WindowWin_MonitorEnumProc: Binding = Binding {
         id: "Ne_WindowWin_MonitorEnumProc",
         kind: "func",
@@ -9795,6 +10210,11 @@ pub mod bindings {
     };
     pub const Ne_WindowWin_WinProc: Binding = Binding {
         id: "Ne_WindowWin_WinProc",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_WorkQueue_PushAndSignal: Binding = Binding {
+        id: "Ne_WorkQueue_PushAndSignal",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9958,6 +10378,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_Apply_DecidedPenalties: Binding = Binding {
+        id: "Sess_Apply_DecidedPenalties",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_Assign_GarageSlotsByTeamOrder: Binding = Binding {
         id: "Sess_Assign_GarageSlotsByTeamOrder",
         kind: "func",
@@ -9975,6 +10400,11 @@ pub mod bindings {
     };
     pub const Sess_Build_GroupResult: Binding = Binding {
         id: "Sess_Build_GroupResult",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_Build_SafetyCarLogicGraph: Binding = Binding {
+        id: "Sess_Build_SafetyCarLogicGraph",
         kind: "func",
         status: Status::Experimental,
     };
@@ -10193,6 +10623,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_FormationLapLogic_Construct: Binding = Binding {
+        id: "Sess_FormationLapLogic_Construct",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_FormationLapLogic_IsActiveOtherType: Binding = Binding {
         id: "Sess_FormationLapLogic_IsActiveOtherType",
         kind: "func",
@@ -10210,6 +10645,26 @@ pub mod bindings {
     };
     pub const Sess_FormationLapLogic_Reset: Binding = Binding {
         id: "Sess_FormationLapLogic_Reset",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_FormationLapLogic_SubscribePhotoModeDisabled: Binding = Binding {
+        id: "Sess_FormationLapLogic_SubscribePhotoModeDisabled",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_FormationLapLogic_SubscribePhotoModeEnabled: Binding = Binding {
+        id: "Sess_FormationLapLogic_SubscribePhotoModeEnabled",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_FormationLapLogic_SubscribeSafetyCarDeployment: Binding = Binding {
+        id: "Sess_FormationLapLogic_SubscribeSafetyCarDeployment",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_FormationLapLogic_Update: Binding = Binding {
+        id: "Sess_FormationLapLogic_Update",
         kind: "func",
         status: Status::Experimental,
     };
@@ -10373,6 +10828,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_LapRecord_Construct: Binding = Binding {
+        id: "Sess_LapRecord_Construct",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_LapRecords_SortByTime: Binding = Binding {
         id: "Sess_LapRecords_SortByTime",
         kind: "func",
@@ -10385,6 +10845,11 @@ pub mod bindings {
     };
     pub const Sess_LapTimes_BuildSectorComparison: Binding = Binding {
         id: "Sess_LapTimes_BuildSectorComparison",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_LapTimes_CheckPersonalBestSector: Binding = Binding {
+        id: "Sess_LapTimes_CheckPersonalBestSector",
         kind: "func",
         status: Status::Experimental,
     };
@@ -10433,8 +10898,18 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_Load_RuleSettingsProfiles: Binding = Binding {
+        id: "Sess_Load_RuleSettingsProfiles",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_Load_Teams: Binding = Binding {
         id: "Sess_Load_Teams",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_Load_TrackDatabase: Binding = Binding {
+        id: "Sess_Load_TrackDatabase",
         kind: "func",
         status: Status::Experimental,
     };
@@ -10628,6 +11103,16 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_Misconduct_RegisterReporter: Binding = Binding {
+        id: "Sess_Misconduct_RegisterReporter",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_Misconduct_RemoveWatchedIncident: Binding = Binding {
+        id: "Sess_Misconduct_RemoveWatchedIncident",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_MultipleWarningsPenalty_ReceiveData: Binding = Binding {
         id: "Sess_MultipleWarningsPenalty_ReceiveData",
         kind: "func",
@@ -10673,8 +11158,18 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_Parse_CarStateTransform: Binding = Binding {
+        id: "Sess_Parse_CarStateTransform",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_Parse_EntrantTemplateRef: Binding = Binding {
         id: "Sess_Parse_EntrantTemplateRef",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_Parse_PlayerDescription: Binding = Binding {
+        id: "Sess_Parse_PlayerDescription",
         kind: "func",
         status: Status::Experimental,
     };
@@ -10793,6 +11288,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_Progress_ComputeTimeGap: Binding = Binding {
+        id: "Sess_Progress_ComputeTimeGap",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_Progress_SyncResultRecord: Binding = Binding {
         id: "Sess_Progress_SyncResultRecord",
         kind: "func",
@@ -10828,6 +11328,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_RaceRuleset_GetTimeRemaining: Binding = Binding {
+        id: "Sess_RaceRuleset_GetTimeRemaining",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_RaceRuleset_OnLapCompleted: Binding = Binding {
         id: "Sess_RaceRuleset_OnLapCompleted",
         kind: "func",
@@ -10843,13 +11348,78 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_RaceState_VehicleHasNamedEntry: Binding = Binding {
+        id: "Sess_RaceState_VehicleHasNamedEntry",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_RaceStrategy_BuildPitPlan: Binding = Binding {
         id: "Sess_RaceStrategy_BuildPitPlan",
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_RaceStrategy_BuildRedFlagStints: Binding = Binding {
+        id: "Sess_RaceStrategy_BuildRedFlagStints",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_RaceStrategy_CopyPlanStints: Binding = Binding {
+        id: "Sess_RaceStrategy_CopyPlanStints",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_RaceStrategy_EvaluateStintTyre: Binding = Binding {
+        id: "Sess_RaceStrategy_EvaluateStintTyre",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_RaceStrategy_FinalisePlan: Binding = Binding {
+        id: "Sess_RaceStrategy_FinalisePlan",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_RaceStrategy_GetCurrentTyreSet: Binding = Binding {
+        id: "Sess_RaceStrategy_GetCurrentTyreSet",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_RaceStrategy_Initialise: Binding = Binding {
         id: "Sess_RaceStrategy_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_RaceStrategy_IsPlanValid: Binding = Binding {
+        id: "Sess_RaceStrategy_IsPlanValid",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_RaceStrategy_SetPlanType: Binding = Binding {
+        id: "Sess_RaceStrategy_SetPlanType",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_RaceStrategy_SortCandidatesA: Binding = Binding {
+        id: "Sess_RaceStrategy_SortCandidatesA",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_RaceStrategy_SortCandidatesB: Binding = Binding {
+        id: "Sess_RaceStrategy_SortCandidatesB",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_RaceStrategy_SortCandidatesC: Binding = Binding {
+        id: "Sess_RaceStrategy_SortCandidatesC",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_RaceStrategy_UpdateVehicle: Binding = Binding {
+        id: "Sess_RaceStrategy_UpdateVehicle",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_Race_ComputeUnlapLapState: Binding = Binding {
+        id: "Sess_Race_ComputeUnlapLapState",
         kind: "func",
         status: Status::Experimental,
     };
@@ -10898,6 +11468,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_RedFlagSimulate_Enter: Binding = Binding {
+        id: "Sess_RedFlagSimulate_Enter",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_RedFlagSimulate_ResetEntries: Binding = Binding {
         id: "Sess_RedFlagSimulate_ResetEntries",
         kind: "func",
@@ -10918,6 +11493,16 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_RedFlagSystem_PerformRepairs: Binding = Binding {
+        id: "Sess_RedFlagSystem_PerformRepairs",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_RedFlagSystem_PrepareRestart: Binding = Binding {
+        id: "Sess_RedFlagSystem_PrepareRestart",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_RedFlagSystem_ResetCarStatus: Binding = Binding {
         id: "Sess_RedFlagSystem_ResetCarStatus",
         kind: "func",
@@ -10930,6 +11515,11 @@ pub mod bindings {
     };
     pub const Sess_RedFlagSystem_SnapshotDamage: Binding = Binding {
         id: "Sess_RedFlagSystem_SnapshotDamage",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_RedFlagToRestart_Enter: Binding = Binding {
+        id: "Sess_RedFlagToRestart_Enter",
         kind: "func",
         status: Status::Experimental,
     };
@@ -10948,6 +11538,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_RedFlag_ResetVehicleTyreState: Binding = Binding {
+        id: "Sess_RedFlag_ResetVehicleTyreState",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_RedFlag_SimulateUnlapLaps: Binding = Binding {
         id: "Sess_RedFlag_SimulateUnlapLaps",
         kind: "func",
@@ -10963,6 +11558,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_Registry_GetFormationLapLogic: Binding = Binding {
+        id: "Sess_Registry_GetFormationLapLogic",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_ResetReplay_OnStateEnter: Binding = Binding {
         id: "Sess_ResetReplay_OnStateEnter",
         kind: "func",
@@ -10975,6 +11575,11 @@ pub mod bindings {
     };
     pub const Sess_Reset_OnTrackRuntimeState: Binding = Binding {
         id: "Sess_Reset_OnTrackRuntimeState",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_ResolveEntityHandle: Binding = Binding {
+        id: "Sess_ResolveEntityHandle",
         kind: "func",
         status: Status::Experimental,
     };
@@ -11068,6 +11673,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_Rules_ApplyBlackFlag: Binding = Binding {
+        id: "Sess_Rules_ApplyBlackFlag",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_Rules_ApplyPostSessionPenalties: Binding = Binding {
         id: "Sess_Rules_ApplyPostSessionPenalties",
         kind: "func",
@@ -11125,6 +11735,11 @@ pub mod bindings {
     };
     pub const Sess_Rules_QueueInfringementEvent: Binding = Binding {
         id: "Sess_Rules_QueueInfringementEvent",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_Rules_ReadBlueFlagRules: Binding = Binding {
+        id: "Sess_Rules_ReadBlueFlagRules",
         kind: "func",
         status: Status::Experimental,
     };
@@ -11238,6 +11853,16 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_SafetyCarTether_ApplyAssistOverrides: Binding = Binding {
+        id: "Sess_SafetyCarTether_ApplyAssistOverrides",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_SafetyCarTether_IsVehicleAttached: Binding = Binding {
+        id: "Sess_SafetyCarTether_IsVehicleAttached",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_SafetyCarTether_UpdateProgress: Binding = Binding {
         id: "Sess_SafetyCarTether_UpdateProgress",
         kind: "func",
@@ -11250,6 +11875,16 @@ pub mod bindings {
     };
     pub const Sess_SafetyCarTether_UpdateVehicle: Binding = Binding {
         id: "Sess_SafetyCarTether_UpdateVehicle",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_SafetyCar_BuildGroupedCarList: Binding = Binding {
+        id: "Sess_SafetyCar_BuildGroupedCarList",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_SafetyCar_CanVehicleRejoin: Binding = Binding {
+        id: "Sess_SafetyCar_CanVehicleRejoin",
         kind: "func",
         status: Status::Experimental,
     };
@@ -11275,6 +11910,11 @@ pub mod bindings {
     };
     pub const Sess_SafetyCar_OnLapChanged: Binding = Binding {
         id: "Sess_SafetyCar_OnLapChanged",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_SafetyCar_ReadDeploymentFrequency: Binding = Binding {
+        id: "Sess_SafetyCar_ReadDeploymentFrequency",
         kind: "func",
         status: Status::Experimental,
     };
@@ -11328,6 +11968,16 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_ScDebris_SumPartVolumes_B: Binding = Binding {
+        id: "Sess_ScDebris_SumPartVolumes_B",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_ScRedFlagDeploy_Update: Binding = Binding {
+        id: "Sess_ScRedFlagDeploy_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_ScState_Deploy_Enter: Binding = Binding {
         id: "Sess_ScState_Deploy_Enter",
         kind: "func",
@@ -11365,6 +12015,16 @@ pub mod bindings {
     };
     pub const Sess_ScState_VscEnding_Exit: Binding = Binding {
         id: "Sess_ScState_VscEnding_Exit",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_ScState_Vsc_Enter: Binding = Binding {
+        id: "Sess_ScState_Vsc_Enter",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_ScStoppedCar_MapEmplace: Binding = Binding {
+        id: "Sess_ScStoppedCar_MapEmplace",
         kind: "func",
         status: Status::Experimental,
     };
@@ -11410,6 +12070,11 @@ pub mod bindings {
     };
     pub const Sess_Setup_VehicleComponents: Binding = Binding {
         id: "Sess_Setup_VehicleComponents",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_SortAssignGarages_Thunk: Binding = Binding {
+        id: "Sess_SortAssignGarages_Thunk",
         kind: "func",
         status: Status::Experimental,
     };
@@ -11528,6 +12193,16 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_Strategy_TyreClassTimeLoss: Binding = Binding {
+        id: "Sess_Strategy_TyreClassTimeLoss",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_Strategy_UpdateTeammatePairs: Binding = Binding {
+        id: "Sess_Strategy_UpdateTeammatePairs",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_TimeOfDayOwner_EvalRainIntensity: Binding = Binding {
         id: "Sess_TimeOfDayOwner_EvalRainIntensity",
         kind: "func",
@@ -11545,6 +12220,11 @@ pub mod bindings {
     };
     pub const Sess_TodStitch_MergeInstanceSingle: Binding = Binding {
         id: "Sess_TodStitch_MergeInstanceSingle",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_TodStitch_MergeInstancesMulti: Binding = Binding {
+        id: "Sess_TodStitch_MergeInstancesMulti",
         kind: "func",
         status: Status::Experimental,
     };
@@ -11623,8 +12303,18 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_VehicleProgress_IsPastLapFraction: Binding = Binding {
+        id: "Sess_VehicleProgress_IsPastLapFraction",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_ViewReplay_EnterPhotoMode: Binding = Binding {
         id: "Sess_ViewReplay_EnterPhotoMode",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_VirtualLapsRuleset_FinaliseResults: Binding = Binding {
+        id: "Sess_VirtualLapsRuleset_FinaliseResults",
         kind: "func",
         status: Status::Experimental,
     };
@@ -11678,6 +12368,16 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_Weather_CheckTrackWorldComponents: Binding = Binding {
+        id: "Sess_Weather_CheckTrackWorldComponents",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_Weather_GetQualiSegmentStartOffset: Binding = Binding {
+        id: "Sess_Weather_GetQualiSegmentStartOffset",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_Weather_PickRandomType: Binding = Binding {
         id: "Sess_Weather_PickRandomType",
         kind: "func",
@@ -11695,6 +12395,11 @@ pub mod bindings {
     };
     pub const Sess_Weekend_Start: Binding = Binding {
         id: "Sess_Weekend_Start",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_WinnerSequence_Enter: Binding = Binding {
+        id: "Sess_WinnerSequence_Enter",
         kind: "func",
         status: Status::Experimental,
     };
@@ -11882,6 +12587,21 @@ pub mod bindings {
         id: "g_Ne_StringTable",
         kind: "data",
         status: Status::Stable,
+    };
+    pub const g_Sess_InfringementTypeNames: Binding = Binding {
+        id: "g_Sess_InfringementTypeNames",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const g_Sess_RedFlagCarStatusNames: Binding = Binding {
+        id: "g_Sess_RedFlagCarStatusNames",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const g_Sess_ResultStatusNames: Binding = Binding {
+        id: "g_Sess_ResultStatusNames",
+        kind: "data",
+        status: Status::Experimental,
     };
     pub const g_Sess_TyreRulesActive: Binding = Binding {
         id: "g_Sess_TyreRulesActive",
@@ -13043,6 +13763,16 @@ pub mod bindings {
         kind: "call",
         status: Status::Experimental,
     };
+    pub const site_Game_TimeTrialLeaderboard_BoardRead: Binding = Binding {
+        id: "site_Game_TimeTrialLeaderboard_BoardRead",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_TimeTrialLeaderboard_BoardsDone: Binding = Binding {
+        id: "site_Game_TimeTrialLeaderboard_BoardsDone",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Gdb_DeptCountStore: Binding = Binding {
         id: "site_Gdb_DeptCountStore",
         kind: "site",
@@ -13308,6 +14038,11 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Sess_WheelMapInsertCall: Binding = Binding {
+        id: "site_Sess_WheelMapInsertCall",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Team_LoadInsertCall: Binding = Binding {
         id: "site_Team_LoadInsertCall",
         kind: "call",
@@ -13458,8 +14193,198 @@ pub mod bindings {
         kind: "vtable",
         status: Status::Experimental,
     };
+    pub const vt_Sess_CareerHubLocation: Binding = Binding {
+        id: "vt_Sess_CareerHubLocation",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_ContractNegotiations: Binding = Binding {
+        id: "vt_Sess_ContractNegotiations",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_CutsceneLocation: Binding = Binding {
+        id: "vt_Sess_CutsceneLocation",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_CutsceneLocationLoad: Binding = Binding {
+        id: "vt_Sess_CutsceneLocationLoad",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_CutsceneLocationUnload: Binding = Binding {
+        id: "vt_Sess_CutsceneLocationUnload",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_DelayOnLoadingScreen: Binding = Binding {
+        id: "vt_Sess_DelayOnLoadingScreen",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_DriverCareerContractNegotiations: Binding = Binding {
+        id: "vt_Sess_DriverCareerContractNegotiations",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_DriverCareerContractNegotiationsIntro: Binding = Binding {
+        id: "vt_Sess_DriverCareerContractNegotiationsIntro",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_DriverCareerContractNegotiationsOutro: Binding = Binding {
+        id: "vt_Sess_DriverCareerContractNegotiationsOutro",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_DriverCareerContractNegotiationsTeamSelect: Binding = Binding {
+        id: "vt_Sess_DriverCareerContractNegotiationsTeamSelect",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_DriverHQIntro: Binding = Binding {
+        id: "vt_Sess_DriverHQIntro",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_EndOfSeasonCutscene: Binding = Binding {
+        id: "vt_Sess_EndOfSeasonCutscene",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_F1CGIntro: Binding = Binding {
+        id: "vt_Sess_F1CGIntro",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_F1CGOutro: Binding = Binding {
+        id: "vt_Sess_F1CGOutro",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_F1CGUpdate: Binding = Binding {
+        id: "vt_Sess_F1CGUpdate",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_Frontend: Binding = Binding {
+        id: "vt_Sess_Frontend",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_FrontendWorld: Binding = Binding {
+        id: "vt_Sess_FrontendWorld",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_GetEventToken: Binding = Binding {
+        id: "vt_Sess_GetEventToken",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_InGamePlaying: Binding = Binding {
+        id: "vt_Sess_InGamePlaying",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_Intro: Binding = Binding {
+        id: "vt_Sess_Intro",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_Launch: Binding = Binding {
+        id: "vt_Sess_Launch",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_LoadSession: Binding = Binding {
+        id: "vt_Sess_LoadSession",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_LocationLoad: Binding = Binding {
+        id: "vt_Sess_LocationLoad",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_LocationUnload: Binding = Binding {
+        id: "vt_Sess_LocationUnload",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_OSQSyncReady: Binding = Binding {
+        id: "vt_Sess_OSQSyncReady",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_OnlineConnect: Binding = Binding {
+        id: "vt_Sess_OnlineConnect",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_OnlineFrontend: Binding = Binding {
+        id: "vt_Sess_OnlineFrontend",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_OnlineLobby: Binding = Binding {
+        id: "vt_Sess_OnlineLobby",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_Persistent: Binding = Binding {
+        id: "vt_Sess_Persistent",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_PlayCutScene: Binding = Binding {
+        id: "vt_Sess_PlayCutScene",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_PostLoadDataSync: Binding = Binding {
+        id: "vt_Sess_PostLoadDataSync",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_PreRace: Binding = Binding {
+        id: "vt_Sess_PreRace",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_PressInterview: Binding = Binding {
+        id: "vt_Sess_PressInterview",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_PressInterviewBase: Binding = Binding {
+        id: "vt_Sess_PressInterviewBase",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_QualifyingSyncReady: Binding = Binding {
+        id: "vt_Sess_QualifyingSyncReady",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
     pub const vt_Sess_RaceRuleset: Binding = Binding {
         id: "vt_Sess_RaceRuleset",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_ReadyMonitor: Binding = Binding {
+        id: "vt_Sess_ReadyMonitor",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_RedFlagSystem: Binding = Binding {
+        id: "vt_Sess_RedFlagSystem",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_ReplaySessionLoaded: Binding = Binding {
+        id: "vt_Sess_ReplaySessionLoaded",
         kind: "vtable",
         status: Status::Experimental,
     };
@@ -13483,6 +14408,11 @@ pub mod bindings {
         kind: "vtable",
         status: Status::Experimental,
     };
+    pub const vt_Sess_ScForceReturn: Binding = Binding {
+        id: "vt_Sess_ScForceReturn",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
     pub const vt_Sess_ScRaceLapsRemaining: Binding = Binding {
         id: "vt_Sess_ScRaceLapsRemaining",
         kind: "vtable",
@@ -13495,6 +14425,111 @@ pub mod bindings {
     };
     pub const vt_Sess_ScTriggerVsc: Binding = Binding {
         id: "vt_Sess_ScTriggerVsc",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_SecretMeeting: Binding = Binding {
+        id: "vt_Sess_SecretMeeting",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_SecretMeetingOutro: Binding = Binding {
+        id: "vt_Sess_SecretMeetingOutro",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_Session: Binding = Binding {
+        id: "vt_Sess_Session",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_SessionBaseState: Binding = Binding {
+        id: "vt_Sess_SessionBaseState",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_SessionTransition: Binding = Binding {
+        id: "vt_Sess_SessionTransition",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_SillySeasonCutscene: Binding = Binding {
+        id: "vt_Sess_SillySeasonCutscene",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_SmokeTestSkipFEPreLaunchHold: Binding = Binding {
+        id: "vt_Sess_SmokeTestSkipFEPreLaunchHold",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_SpectatorReadyMonitor: Binding = Binding {
+        id: "vt_Sess_SpectatorReadyMonitor",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_StartLoadingFlow: Binding = Binding {
+        id: "vt_Sess_StartLoadingFlow",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_StoryHub: Binding = Binding {
+        id: "vt_Sess_StoryHub",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_StoryHubDepartmentEvents: Binding = Binding {
+        id: "vt_Sess_StoryHubDepartmentEvents",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_StoryHubDepartmentEventsBase: Binding = Binding {
+        id: "vt_Sess_StoryHubDepartmentEventsBase",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_StoryHubDepartmentEventsIntro: Binding = Binding {
+        id: "vt_Sess_StoryHubDepartmentEventsIntro",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_StoryHubDepartmentEventsOutro: Binding = Binding {
+        id: "vt_Sess_StoryHubDepartmentEventsOutro",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_SynchroniseCloseDocument: Binding = Binding {
+        id: "vt_Sess_SynchroniseCloseDocument",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_TeamHQ: Binding = Binding {
+        id: "vt_Sess_TeamHQ",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_TeamHQToSession: Binding = Binding {
+        id: "vt_Sess_TeamHQToSession",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_TeamHQUpdate: Binding = Binding {
+        id: "vt_Sess_TeamHQUpdate",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_TyreAllocation: Binding = Binding {
+        id: "vt_Sess_TyreAllocation",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_UnloadRewardSequence: Binding = Binding {
+        id: "vt_Sess_UnloadRewardSequence",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_Video: Binding = Binding {
+        id: "vt_Sess_Video",
         kind: "vtable",
         status: Status::Experimental,
     };

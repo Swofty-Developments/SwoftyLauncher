@@ -138,6 +138,16 @@ In a `benchmark` race the AI drives every car, including the player's. For a tes
 
 That is Play, Time Trial, the first season, the first team, the first track, then Go to Track and Flying Lap in the garage, with the AI driving the player's car. Pause and Return to Garage are `start`, `down`, `down`, `a`.
 
+A `pad` press waits until the screen has held still for 1.2 s, so it lands once the screen takes input. A `wait` for a screen does the same for 1 s. Both take a `settle_ms` to change that, `wait` takes `ms` to sleep, and `pad` takes `retry` to press again when the screen did not change:
+
+```json
+{ "wait": { "ms": 3000 } }
+{ "wait": { "screen": "track_select", "settle_ms": 1500 }, "timeout_s": 60 }
+{ "pad": { "press": "a", "ms": 700, "settle_ms": 2000, "retry": 3, "retry_after_ms": 4000 } }
+```
+
+With `retry`, the step passes once the screen's name changes, presses again after `retry_after_ms` while it has not, and fails after the last press.
+
 `skip` and `advance` use the game's own simulate and calendar code, so a test can get from the first race of a season to the season break in seconds. `read` and `set` use the same names as `cars::live` and the system pages.
 
 ## Checks

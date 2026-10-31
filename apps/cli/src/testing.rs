@@ -1545,6 +1545,19 @@ impl Harness<'_> {
                 .timeout_s
                 .map_or(self.times.step, Duration::from_secs)
                 .min(test_limit.saturating_sub(started.elapsed()));
+            if let Some(suite::Wait::Ms(n)) = s.host {
+                let t0 = Instant::now();
+                let span = Duration::from_millis(n).min(test_limit.saturating_sub(started.elapsed()));
+                while t0.elapsed() < span && !run.finished() {
+                    std::thread::sleep(self.times.poll.min(span - t0.elapsed()));
+                }
+                r.steps.push(StepReport {
+                    step: s.text.clone(),
+                    status: "ok".to_owned(),
+                    ms: Some(ms(t0)),
+                });
+                continue;
+            }
             let by_agent =
                 s.host.is_none() || matches!(s.host, Some(suite::Wait::Event(_))) && agent.is_some();
             if by_agent {

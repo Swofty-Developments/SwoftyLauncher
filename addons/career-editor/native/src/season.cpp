@@ -345,6 +345,20 @@ int race_weekends(uint32_t season_index)
     return best > 0 ? best : -1;
 }
 
+// When this season's own record is empty (the daily tick that fills it never ran, so the clock can't
+// move), the nearest other season of the ScheduleComponent that has one: the same season length, so the
+// same count. Previous seasons first, then later ones. -1 when none can be read.
+int race_weekends_estimate(uint32_t season_index)
+{
+    for (uint32_t i = season_index; i-- > 0;)
+        if (int n = race_weekends(i); n > 0)
+            return n;
+    for (uint32_t i = season_index + 1; i < kMaxSeasons; ++i)
+        if (int n = race_weekends(i); n > 0)
+            return n;
+    return -1;
+}
+
 std::string track_of(const std::string &weekend)
 {
     std::string t = weekend;
@@ -1130,6 +1144,12 @@ void section_calendar(ce::Writer &w)
         w.integer(stops);
     else
         w.null();
+    w.key("race_weekends_estimate");
+    int estimate = stops > 0 ? -1 : race_weekends_estimate(wh.index);
+    if (estimate > 0)
+        w.integer(estimate);
+    else
+        w.null();
     w.key("round_count_ok");
     if (stops > 0)
         w.boolean(static_cast<size_t>(stops) == rs.size());
@@ -1636,6 +1656,8 @@ ce::OpResult op_calendar_repair(const ce::Json &args)
     if (const char *e = cal_ctx(c))
         return fail(e);
     int stops = race_weekends(c.wh.index);
+    if (stops < 1)
+        stops = race_weekends_estimate(c.wh.index);
     std::vector<ce::cal::RoundState> states;
     for (auto &r : c.rs) {
         ce::cal::RoundState st;

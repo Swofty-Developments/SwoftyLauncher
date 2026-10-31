@@ -942,7 +942,10 @@ mod mailbox {
         assert_eq!(cmds[0], c("home", Value::Null));
         assert_eq!(cmds[3], c("tile", json!({"tile":"time_trial"})));
         assert_eq!(cmds[4], c("tile", json!({"tile":"career_dlc_content"})));
-        assert_eq!(cmds[5], c("at", json!({"phase":"time_trial_select"})));
+        assert_eq!(
+            cmds[5],
+            c("at", json!({"phase":"time_trial_select","settle_ms":1000}))
+        );
         assert!(t.steps[5].host.is_none(), "a screen wait is the agent's");
         let bad = one_test(r#"{"id":"tt","env":{"kind":"boot"},"steps":[{"tile":"x","axis":"down"}]}"#);
         assert!(bad.is_err(), "tile takes no other keys");
@@ -1450,4 +1453,52 @@ fn session_shell_words_become_the_agent_command() {
             .contains("not a session key")
     );
     assert!(super::agent::COMMANDS_V1.contains(&"session.start"));
+}
+
+#[test]
+fn wait_ms_and_pad_timing_keys_parse() {
+    let t = one_test(
+        r#"{"id":"a","env":{"kind":"route","routes":["f1_world"]},"steps":[
+            {"wait":{"ms":2500}},
+            {"wait":{"screen":"track_select","settle_ms":1500}},
+            {"pad":{"press":"a","ms":250,"settle_ms":900,"retry":3,"retry_after_ms":2500}}]}"#,
+    )
+    .unwrap();
+    assert_eq!(t.steps[0].host, Some(Wait::Ms(2500)));
+    assert_eq!(t.steps[1].host, None);
+    let cmds = crate::testsuite::agent::step_commands(&t.steps[1]).unwrap();
+    assert_eq!(cmds[0].0, "at");
+    assert_eq!(cmds[0].1["settle_ms"], 1500);
+    let cmds = crate::testsuite::agent::step_commands(&t.steps[2]).unwrap();
+    assert_eq!(cmds[0].1["retry"], 3);
+    let cmds = crate::testsuite::agent::step_commands(
+        &one_test(r#"{"id":"a","env":{"kind":"boot"},"steps":[{"wait":{"screen":"x"}}]}"#)
+            .unwrap()
+            .steps[0],
+    )
+    .unwrap();
+    assert_eq!(
+        cmds[0].1["settle_ms"], 1000,
+        "a screen wait settles for a second by default"
+    );
+}
+
+#[test]
+fn bad_wait_ms_and_pad_keys_are_errors() {
+    for step in [
+        r#"{"wait":{"ms":-1}}"#,
+        r#"{"wait":{"ms":5000000}}"#,
+        r#"{"wait":{"ms":10,"event":"x"}}"#,
+        r#"{"wait":{"event":"x","settle_ms":10}}"#,
+        r#"{"pad":{"press":"a","retries":2}}"#,
+        r#"{"pad":{"press":"a","retry":"x"}}"#,
+    ] {
+        assert!(
+            one_test(&format!(
+                r#"{{"id":"a","env":{{"kind":"boot"}},"steps":[{step}]}}"#
+            ))
+            .is_err(),
+            "{step}"
+        );
+    }
 }

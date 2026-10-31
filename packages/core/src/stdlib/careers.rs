@@ -117,6 +117,20 @@ pub fn sync(data: &Path, game: Option<&Path>, stamp: Option<&str>) -> crate::Res
     Ok(kept)
 }
 
+/// A restore puts a snapshot's careers back as the profile's list: the careers of `profile` (and the
+/// ones with no profile yet) in the index are replaced by those of `restored`, with their own details
+/// and last-played times, until the core lists the profile's careers again at the next Play. Other
+/// profiles' careers stay.
+pub fn replace_profile(data: &Path, profile: &str, restored: &[Career]) -> crate::Result<()> {
+    let mine = |c: &Career| c.profile.as_deref().is_none_or(|p| p == profile);
+    let mut list: Vec<Career> = read(&data_path(data)).into_iter().filter(|c| !mine(c)).collect();
+    list.extend(restored.iter().filter(|c| mine(c)).cloned());
+    crate::write_json_shared(
+        &data_path(data),
+        &serde_json::json!({ "version": 1, "careers": list }),
+    )
+}
+
 /// Where the launcher keeps the core's stat-id store: the one store of the install.
 pub fn kept_ids(data: &Path) -> PathBuf {
     super::reports::path(data, super::reports::IDS)

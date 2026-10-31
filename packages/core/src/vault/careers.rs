@@ -139,6 +139,204 @@ pub fn in_save(index: &[Career]) -> impl Iterator<Item = &Career> {
         .filter(|c| !matches!(c.status(), "missing" | "deleted"))
 }
 
+/// Where a career stands against the game's own list of save slots.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum State {
+    Present,
+    /// The profile load did not list the slot and the core cannot say why.
+    Missing,
+    /// The game listed the slot earlier in the same session and no longer does.
+    DeletedInGame,
+}
+
+impl State {
+    pub fn parse(status: &str) -> Self {
+        match status {
+            "missing" => Self::Missing,
+            "deleted" => Self::DeletedInGame,
+            _ => Self::Present,
+        }
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Present => "in the game",
+            Self::Missing => "missing from the game",
+            Self::DeletedInGame => "deleted in game",
+        }
+    }
+}
+
+/// One career of a profile as the Career saves page lists it: the core's career index record
+/// with the game's slot details (`SaveSlotInfo`, what the Resume Career screen reads).
+#[derive(Debug, Clone, PartialEq)]
+pub struct Listed {
+    pub career: String,
+    pub state: State,
+    pub mode: Option<String>,
+    pub label: String,
+    pub driver: Option<String>,
+    pub team: Option<String>,
+    /// The raw `info_driver` and `info_team` values of the slot, which the core could read
+    /// without a name for them.
+    pub driver_id: Option<i64>,
+    pub team_id: Option<i64>,
+    /// The season number the game shows, and the round index of the last save.
+    pub season_no: Option<i64>,
+    pub weekend: Option<i64>,
+    /// Unix seconds: the slot's `info_date`, else the core's last save of the career.
+    pub last_played: Option<i64>,
+    pub slot_name: Option<String>,
+    /// The game keeps the slot out of its Resume Career list.
+    pub hidden: bool,
+    pub profile: Option<String>,
+}
+
+impl Listed {
+    /// The game's "none" value for a driver or team id.
+    pub const NONE_ID: i64 = 0x3fff;
+
+    fn no_entrants(&self) -> bool {
+        let none = |id: Option<i64>| id.is_none_or(|i| i & Self::NONE_ID == Self::NONE_ID);
+        self.driver.is_none()
+            && self.team.is_none()
+            && (self.driver_id.is_some() || self.team_id.is_some())
+            && none(self.driver_id)
+            && none(self.team_id)
+    }
+
+    pub fn mode_label(&self) -> String {
+        match self.mode.as_deref().filter(|m| !m.is_empty()) {
+            Some(m) => mode_label(Some(m)),
+            None if self.career.contains("my_team") => "My Team".to_owned(),
+            None => "Driver Career".to_owned(),
+        }
+    }
+
+    pub fn title(&self) -> String {
+        let who = [self.driver.as_deref(), self.team.as_deref()]
+            .into_iter()
+            .flatten()
+            .collect::<Vec<_>>();
+        if !who.is_empty() {
+            return who.join(", ");
+        }
+        if self.no_entrants() {
+            return "New career".to_owned();
+        }
+        if let Some(n) = self
+            .slot_name
+            .as_deref()
+            .filter(|n| !n.is_empty() && !n.contains(['_', ':']))
+        {
+            return n.to_owned();
+        }
+        let season = year_in(&self.label)
+            .or_else(|| year_in(&self.career))
+            .map(|y| format!("{y} season"))
+            .or_else(|| self.season_no.map(|s| format!("season {s}")));
+        match season {
+            Some(s) => format!("{} · {s}", self.mode_label()),
+            None => self.mode_label(),
+        }
+    }
+
+    pub fn place(&self) -> Option<String> {
+        self.season_no.map(|s| format!("season {s}"))
+    }
+}
+
+fn year_in(text: &str) -> Option<u32> {
+    text.split(|c: char| !c.is_ascii_digit())
+        .filter(|t| t.len() == 4)
+        .filter_map(|t| t.parse::<u32>().ok())
+        .find(|y| (1950..=2100).contains(y))
+}
+
+/// The name the game's mode key goes by: `driver_career` is Driver Career, `my_team` is My Team.
+pub fn mode_label(mode: Option<&str>) -> String {
+    let raw = mode.unwrap_or("").trim();
+    let key: String = raw
+        .chars()
+        .filter(|c| c.is_ascii_alphanumeric())
+        .collect::<String>()
+        .to_lowercase();
+    match key.as_str() {
+        "" => "Career".to_owned(),
+        "driver" | "drivercareer" => "Driver Career".to_owned(),
+        "myteam" => "My Team".to_owned(),
+        "classic" | "classiccareer" => "Classic Career".to_owned(),
+        "progressive" => "Progressive".to_owned(),
+        "1990" | "f11990" => "1990".to_owned(),
+        _ => raw
+            .split(['_', '-', ' '])
+            .filter(|w| !w.is_empty())
+            .map(|w| {
+                let mut c = w.chars();
+                c.next()
+                    .map(|f| f.to_uppercase().chain(c).collect::<String>())
+                    .unwrap_or_default()
+            })
+            .collect::<Vec<_>>()
+            .join(" "),
+    }
+}
+
+fn listed(c: &Career) -> Listed {
+    Listed {
+        career: c.career.clone(),
+        state: State::parse(c.status()),
+        mode: text(c, "mode"),
+        label: c.label.clone(),
+        driver: text(c, "driver"),
+        team: text(c, "team"),
+        driver_id: number(c, "driver_raw"),
+        team_id: number(c, "team_raw"),
+        season_no: number(c, "slot_season"),
+        weekend: number(c, "slot_weekend"),
+        last_played: number(c, "last_played").or(number(c, "last_saved").map(|ms| ms / 1000)),
+        slot_name: text(c, "slot_name"),
+        hidden: c.extra.get("hidden").and_then(|v| v.as_bool()).unwrap_or(false),
+        profile: c.profile.clone(),
+    }
+}
+
+/// Every career the core's index holds for `profile` (and the ones with no profile yet), with its
+/// state: the ones in the game's save slots first, the newest played first. Only careers with a save
+/// slot are listed: a record a career load made before the career had a slot is not a career in the save.
+pub fn listing(index: &[Career], profile: Option<&str>) -> Vec<Listed> {
+    let mut out: Vec<Listed> = index
+        .iter()
+        .filter(|c| {
+            c.extra
+                .get("slot")
+                .and_then(|v| v.as_str())
+                .is_some_and(|s| !s.is_empty())
+        })
+        .filter(|c| match (profile, c.profile.as_deref()) {
+            (Some(p), Some(q)) => p == q,
+            _ => true,
+        })
+        .map(listed)
+        .collect();
+    out.sort_by(|a, b| {
+        (a.state, std::cmp::Reverse(a.last_played), &a.career).cmp(&(
+            b.state,
+            std::cmp::Reverse(b.last_played),
+            &b.career,
+        ))
+    });
+    out
+}
+
+/// `listing` over the index file in the launcher's data folder.
+pub fn read_listing(data: &std::path::Path, profile: Option<&str>) -> Vec<Listed> {
+    listing(
+        &crate::stdlib::careers::read(&crate::stdlib::careers::data_path(data)),
+        profile,
+    )
+}
+
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct Careers {
     #[serde(default = "one")]
@@ -346,4 +544,95 @@ pub fn diff(now: &[Career], version: &[Career]) -> Diff {
         }
     }
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::stdlib::careers::parse;
+
+    fn index() -> Vec<Career> {
+        parse(
+            r#"{"version":1,"careers":[
+            {"career":"driver_career:a1","profile":"p","slot":"a1","status":"present","mode":"driver_career","driver":"Oscar PIASTRI","team":"McLaren","driver_raw":5,"team_raw":7,"slot_season":3,"slot_weekend":4,"last_played":1761600000,"slot_name":"Slot 1"},
+            {"career":"driver_career:b2","profile":"p","slot":"b2","status":"deleted","last_played":1761700000},
+            {"career":"my_team:c3","slot":"c3","status":"missing","hidden":true,"last_saved":1761800000000},
+            {"career":"driver_career:d4","profile":"q","slot":"d4","status":"present"},
+            {"career":"driver_career:e5","profile":"p","slot":"e5","last_played":1761900000},
+            {"career":"dc-00320000","profile":"p","label":"f1_career_2026","content":"f1_career_2026","mode":"driver_career","status":"missing","last_saved":1761950000000}
+            ]}"#,
+        )
+    }
+
+    #[test]
+    fn lists_every_career_of_the_profile_with_its_state() {
+        let l = listing(&index(), Some("p"));
+        let ids: Vec<_> = l.iter().map(|c| c.career.as_str()).collect();
+        assert_eq!(
+            ids,
+            [
+                "driver_career:e5",
+                "driver_career:a1",
+                "my_team:c3",
+                "driver_career:b2"
+            ]
+        );
+        let by = |id: &str| l.iter().find(|c| c.career == id).unwrap();
+        assert_eq!(by("driver_career:a1").state, State::Present);
+        assert_eq!(by("my_team:c3").state, State::Missing);
+        assert_eq!(by("driver_career:b2").state, State::DeletedInGame);
+        assert_eq!(by("driver_career:e5").state, State::Present);
+    }
+
+    #[test]
+    fn a_career_record_with_no_save_slot_is_not_listed() {
+        assert!(
+            !listing(&index(), Some("p"))
+                .iter()
+                .any(|c| c.career == "dc-00320000")
+        );
+    }
+
+    #[test]
+    fn a_career_with_no_profile_yet_is_in_every_profiles_list() {
+        let l = listing(&index(), Some("q"));
+        assert!(l.iter().any(|c| c.career == "my_team:c3"));
+        assert!(l.iter().any(|c| c.career == "driver_career:d4"));
+        assert!(!l.iter().any(|c| c.career == "driver_career:a1"));
+        assert_eq!(listing(&index(), None).len(), 5);
+    }
+
+    #[test]
+    fn reads_the_slot_details() {
+        let l = listing(&index(), Some("p"));
+        let a = l.iter().find(|c| c.career == "driver_career:a1").unwrap();
+        assert_eq!(a.title(), "Oscar PIASTRI, McLaren");
+        assert_eq!(a.place().as_deref(), Some("season 3"));
+        assert_eq!(a.last_played, Some(1_761_600_000));
+        assert_eq!((a.driver_id, a.team_id, a.weekend), (Some(5), Some(7), Some(4)));
+        let c = l.iter().find(|c| c.career == "my_team:c3").unwrap();
+        assert!(c.hidden);
+        assert_eq!(c.last_played, Some(1_761_800_000));
+        assert_eq!(c.title(), "My Team");
+        let b = l.iter().find(|c| c.career == "driver_career:b2").unwrap();
+        assert_eq!(b.title(), "Driver Career");
+        assert!(!b.hidden);
+    }
+
+    #[test]
+    fn reads_the_index_file_in_the_data_folder() {
+        let dir = std::env::temp_dir().join(format!("careers-listing-{}", std::process::id()));
+        let file = crate::stdlib::careers::data_path(&dir);
+        std::fs::create_dir_all(file.parent().unwrap()).unwrap();
+        std::fs::write(
+            &file,
+            r#"{"careers":[{"career":"x:1","slot":"1","status":"deleted"}]}"#,
+        )
+        .unwrap();
+        let l = read_listing(&dir, None);
+        std::fs::remove_dir_all(&dir).ok();
+        assert_eq!(l.len(), 1);
+        assert_eq!(l[0].state, State::DeletedInGame);
+        assert!(read_listing(&dir, None).is_empty());
+    }
 }
