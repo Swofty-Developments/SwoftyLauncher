@@ -2,7 +2,8 @@
 # Runs CI's native tests side by side, NATIVE_TEST_JOBS at a time (default: one per core). A line reports each
 # test as it ends; then each test's output follows in a log group, in the order below, longest first.
 # The Wine tests need Wine and an xvfb-run that gives every call its own display, as ci.yml sets up; the
-# stock xvfb-run -a can hand two calls started together the same one.
+# stock xvfb-run -a can hand two calls started together the same one. Tests given the same lock name run
+# one at a time.
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 ROOT=$PWD
@@ -11,13 +12,17 @@ export AT_TEST_DIR=${RUNNER_TEMP:-/tmp}/any-team-test
 
 NAMES=()
 CMDS=()
-t() { NAMES+=("$1"); CMDS+=("$2"); }
+LOCKS=()
+t() { NAMES+=("$1"); CMDS+=("$2"); LOCKS+=("${3:-}"); }
 
 zig_test() { echo "zig c++ -target x86_64-linux-musl -std=c++23 -O2 $1 -o $2 && ./$2"; }
 cme=addons/career-editor/native
 
+# Both bind 127.0.0.1:21414, the game's LAN port. The Wine test skips its case when the port is taken; the
+# socket hooks test fails, so it goes first.
+t "Socket hooks Wine test" native/test/run_netplay_test.sh port-21414
 # A synthetic F1_25.exe carries the signatures; no game files are used.
-t "Wine test" native/test/run_wine_test.sh
+t "Wine test" native/test/run_wine_test.sh port-21414
 t "Registry core (shared corpus, Python reference, random stacks, read benchmark)" native/test/run_registry_test.sh
 t "Standard library 1.6 headers compile test" native/test/run_sdk_headers_test.sh
 t "Schema check unit and agreement test" native/test/run_schema_test.sh
@@ -41,7 +46,6 @@ t "Runtime assets Wine test" native/test/run_runtime_assets_test.sh
 t "Box track lists (fit rules, calendar and More tracks, per-box entries, fuel plan, guard decision)" native/test/run_track_lists_test.sh
 t "Career snapshots (swofty_registry entry, freezes, budgets, migration, fixtures)" native/test/run_snapshots_test.sh
 t "Socket trace Wine test" native/test/run_net_trace_test.sh
-t "Socket hooks Wine test" native/test/run_netplay_test.sh
 t "Career UI Wine test" native/test/run_career_ui_test.sh
 t "Loader log fallback Wine test" native/test/run_log_fallback_test.sh
 t "String override Wine test" native/test/run_lang_override_test.sh
@@ -77,7 +81,11 @@ for i in "${!CMDS[@]}"; do
     done
     (
         start=$SECONDS
-        bash -c "${CMDS[$i]}" >"$LOGS/$i.log" 2>&1
+        if [ -n "${LOCKS[$i]}" ]; then
+            flock "$LOGS/${LOCKS[$i]}.lock" bash -c "${CMDS[$i]}"
+        else
+            bash -c "${CMDS[$i]}"
+        fi >"$LOGS/$i.log" 2>&1
         rc=$?
         echo "$rc $((SECONDS - start))" >"$LOGS/$i.rc"
         echo "$([ $rc = 0 ] && echo "ok  " || echo FAIL) $((SECONDS - start))s ${NAMES[$i]}"
