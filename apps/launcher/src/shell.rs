@@ -558,7 +558,7 @@ impl Shell {
             live_n: 0,
             highlight: None,
             addons: crate::addons::AddonsPage::new(window, cx),
-            saves: crate::career_saves::SavesPage::default(),
+            saves: crate::career_saves::SavesPage::new(window, cx),
             db: crate::db::Db::new(cx),
             news,
             news_scroll: Default::default(),

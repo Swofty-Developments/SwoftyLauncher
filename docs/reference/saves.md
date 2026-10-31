@@ -80,7 +80,7 @@ exported the launcher saves of profile default into /home/you/.local/share/Steam
 start Steam to upload the exported save; if it asks which copy to keep, keep the local files (this computer)
 ```
 
-The **Career saves** page does the same from its profile cards: **Import from Steam**, **Copy careers to…** (another profile's save, or the Steam save from the Vanilla card) and **Export to Steam**. A copy is `launcher_saves::copy_to(data, &from, "progressive", running, now)`; it takes a Steam save or another profile's store as `from`.
+The **Career saves** page does the same from its header and details panel: **Import from Steam**, **Export to Steam**, and **Copy careers to…** (another profile's save, or the Steam save from the Vanilla profile). A copy is `launcher_saves::copy_to(data, &from, "progressive", running, now)`; it takes a Steam save or another profile's store as `from`.
 
 Both need F1 25 closed. Export also needs Steam closed. An import keeps what the store held in the vault first, as a `before a restore` snapshot pinned `before-import`. Export goes through the vault's restore, so it snapshots the launcher store, snapshots the Steam save as `before-restore`, checks every file's SHA-256, and never touches `remotecache.vdf`. Only the profile save's files are copied; highlights and ghosts stay where they are. The profile argument defaults to the active profile.
 

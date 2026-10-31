@@ -7,34 +7,33 @@ description: The Career saves page shows each profile's save, the careers in it 
 
 The **Career saves** page in the sidebar, next to **Profiles**, shows each profile's save, the careers in it and the versions of it the launcher keeps in the [career vault](/reference/saves). Each profile has its own save. Vanilla plays on your Steam save.
 
-## Profiles
+## The page
 
-Each profile is a card, the active one first:
+It is laid out like the **Addons** page. The header has **Import from Steam** and **Export to Steam** for the profile you are looking at (the active profile when none is picked). Import and export are disabled, with the reason in the tooltip, for Vanilla, while F1 25 runs, and for export while Steam runs.
 
 ```text
-progressive   [Active]                                          Last played 3 hours ago
-Progressive   Progressive 2016 · Verstappen · Red Bull · season 2016, round 7 · played 3 hours ago
-[Copy careers to…]  [Import from Steam]  [Export to Steam]                      [Versions]
-
-vanilla   [Steam save]                                          Last played 2 days ago
-Driver Career   Classic 2020 · Hamilton · Mercedes · season 1, round 4 · played 2 days ago
-Plays on your Steam save. Careers here show after you play a profile that started from it.
-Steam Cloud: synced
-[Copy careers to…]                                                               [Versions]
+Filters                 CAREERS IN PROGRESSIVE                                  Progressive
+PROFILE                 Progressive   Verstappen / Red Bull   season 2016       Last played 3 hours ago
+ All profiles      4    Driver Career  Hamilton / Mercedes     season 1  Missing Save size   0.9 MB
+ Vanilla · Steam   1
+ progressive       2    ...                                                     [Copy careers to…]
+STATUS                                                                          VERSIONS
+ In your save      3                                                            Versions use 2.7 MB of 500 MB
+ Missing           1
+ Deleted in game   0
+MODE
+ Progressive       2
 ```
 
-A profile with no careers known yet reads `Careers show here after you play this profile`. The launcher learns careers from the career index F1 25 writes in a launcher session, and never says a career is missing before it has seen one.
-
-- **Copy careers to…** lists the other profiles. Choosing one asks first, naming both profiles, and copies this profile's save over the target's. The target's current save is kept as a version first.
-- **Import from Steam** copies your Steam save over this profile's save, with the same confirm and the same kept version.
-- **Export to Steam** copies this profile's save over your Steam save, after a confirm, and keeps the Steam save as a version first. It needs Steam and F1 25 closed.
-- **Versions** shows that profile's versions below the cards.
-
-Copy and import need F1 25 closed. A button that has to wait is disabled and the card says what to close.
+- **Profile**, **Status** and **Mode** filter the list, and the search box matches a career's name, driver, team, mode and profile.
+- Each row is one career: mode, driver and team, season, the profile it is in, when it was last played, the addons it needs (red when off in that profile) and a status chip when it isn't in your save.
+- Picking a career opens its details on the right, below the row on a narrow window. **Copy to profile…** copies the whole save of that profile over another profile's save, after a confirm that names both and keeps the target's current save as a version first.
+- Picking a profile in the filter with no career selected shows that profile: when it was last played (from its sessions), the size of its save, **Copy careers to…** and its versions. A profile that was never played from this launcher reads `No careers listed yet. They appear the first time you play this profile.`
+- The Vanilla profile plays on your Steam save. Its details show the Steam Cloud status when it is known.
 
 ## Versions
 
-The versions of the selected profile are a timeline, newest first, each with the reason it was kept, its date and time, the careers in it when known, and its size:
+The details panel lists the versions of the profile it shows as a timeline, newest first, each with the reason it was kept, its date and time, the careers in it when known, and its size:
 
 ```text
 After Play                     3 hours ago · 2026-10-31 21:40 UTC
@@ -56,11 +55,11 @@ You lose       Classic 2020 (not in that version); progress in My Team: season 2
 Also           Settings, setups and everything else in the profile save go back to 2026-10-30 22:15 UTC. The save as it is now is kept as a version first.
 ```
 
-The panel compares the career index stored with that version with the index of the save as it is. A restore waits until F1 25 is closed, and for the Vanilla save until Steam is closed too, as in [Restoring a profile save](/using/profiles-and-restoring#restoring-a-profile-save). While F1 25 runs the button reads `Close F1 25 to restore` and is disabled.
+The panel compares the career index stored with that version with the index of the save as it is. A restore waits until F1 25 is closed, and for the Vanilla save until Steam is closed too, as in [Restoring a profile save](/using/profiles-and-restoring#restoring-a-profile-save). While F1 25 runs the button is disabled and the panel says what to close.
 
 ## Storage
 
-Under the versions: `Versions use 2.7 MB of 500 MB`. **Change** sets the size limit; **Open folder** opens that profile's vault. The Vanilla card shows `Steam Cloud: synced`, `waiting to upload` or `local only` when the launcher knows it.
+Above the versions: `Versions use 2.7 MB of 500 MB`. **Change** sets the size limit; **Open folder** opens that profile's vault.
 
 ## The first time
 

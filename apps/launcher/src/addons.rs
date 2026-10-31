@@ -26,8 +26,8 @@ use crate::theme::{Palette, SCROLLBAR_GAP, ScrollArea, palette};
 
 const FADE: Duration = Duration::from_secs(4);
 pub(crate) const FILTERS_W: f32 = 226.;
-const DETAIL_W: f32 = 380.;
-const SPLIT_AT: f32 = 1000.;
+pub(crate) const DETAIL_W: f32 = 380.;
+pub(crate) const SPLIT_AT: f32 = 1000.;
 const ITEMS_SHOWN: usize = 10;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
