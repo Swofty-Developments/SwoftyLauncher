@@ -35,6 +35,12 @@
 // Ne_SaveSystem2Win_Mount, which every save load and save passes before any file is read, quits the
 // game if the sandbox has not armed by then.
 //
+// The EA copy (EA_BACKEND, off until its rows are verified) has no Steam storage: its save device opens
+// <title folder>\<save>\<file> in place, and the title folder is a wide string held inline in the save system
+// (device+0x18, buffer size at +0x68, string at +0x78). The core wraps Start, checks the vtable, the slot and that
+// layout, then overwrites that string with saves/<profile>/ea, whose profile folder holds the save. Mount quits
+// the game if this has not run, as on Steam.
+//
 // Fail closed: in test mode, any failure (a binding that does not resolve, a hook that does not
 // install, a device or interface that is not the expected one, an unusable run folder) logs why and
 // ends the process before the title screen can load a save. Outside test mode nothing here runs.
@@ -64,7 +70,7 @@ Backend backend = Backend::steam_remote;
 bool offered = false, settled = false, read_once = false, test_on = false, launcher_on = false;
 ss::Run run_info;
 std::wstring run_dir, saves_dir, remote_w, status_w;
-std::string run_id, remote_a;
+std::string run_id, remote_a, remote_a_unix;
 std::mutex lock;
 std::unique_ptr<ss::RemoteDir> remote;
 std::atomic<bool> armed{false};
@@ -399,13 +405,64 @@ void arm_steam_remote(void *device)
     status("armed", "");
 }
 
+bool make_dir(const std::wstring &p);
+
+ss::EaDevice read_ea_device(void *device)
+{
+    ss::EaDevice d;
+    auto at = reinterpret_cast<uintptr_t>(device);
+    d.start = start_addr;
+    d.readable = at && mem::read(at, d.vtable) && mem::readable(d.vtable, 0x10) && mem::read(d.vtable + 8, d.start_slot);
+    uintptr_t config = 0;
+    if (!d.readable || !mem::read(at + ss::EA_DEVICE_CONFIG, config) || !config ||
+        !mem::readable(config, ss::EA_CONFIG_INLINE + 2 * ss::EA_TITLE_CAP))
+        return d.readable = false, d;
+    mem::read(config + ss::EA_CONFIG_CAP, d.cap);
+    mem::read(config + ss::EA_CONFIG_PTR, d.ptr);
+    d.inline_at = config + ss::EA_CONFIG_INLINE;
+    if (d.ptr == d.inline_at) {
+        const wchar_t *w = reinterpret_cast<const wchar_t *>(d.inline_at);
+        size_t n = 0;
+        while (n < ss::EA_TITLE_CAP && w[n])
+            n++;
+        d.title.assign(w, n == ss::EA_TITLE_CAP ? 0 : n);
+    }
+    return d;
+}
+
+void arm_ea_local(void *device)
+{
+    ss::EaDevice d = read_ea_device(device);
+    std::string why = ss::check_ea_device(d, mem::detail::image().lo + (ss::EA_VTABLE - 0x140000000));
+    if (!why.empty())
+        fail_closed(why);
+    std::string title_a = ss::ea_title_dir(remote_a_unix, run_id);
+    if (title_a.empty())
+        fail_closed("the launcher saves folder " + remote_a_unix + " has no EA title folder that fits the save device");
+    std::wstring title = dos_path(title_a);
+    if (title.size() >= ss::EA_TITLE_CAP)
+        fail_closed("the EA title folder " + title_a + " does not fit the save device's 260 character buffer");
+    if (!make_dir(title + L"\\profile"))
+        fail_closed("the EA title folder " + title_a + " could not be created");
+    auto *buf = reinterpret_cast<wchar_t *>(d.inline_at);
+    std::wstring before = d.title;
+    memcpy(buf, title.c_str(), (title.size() + 1) * sizeof(wchar_t));
+    if (std::wstring(buf) != title)
+        fail_closed("the save device's title folder did not take the launcher's folder");
+    armed = true;
+    swofty::log("[saves] launcher saves armed (profile %s): the EA save device's title folder %s is replaced by %s; "
+                "saves are read and written there; the EA copy's own savegame folder is not opened",
+                run_id.c_str(), runtime::narrow(before).c_str(), title_a.c_str());
+    status("armed", "");
+}
+
 void arm(void *device)
 {
     switch (backend) {
     case Backend::steam_remote:
         return arm_steam_remote(device);
     case Backend::ea_local:
-        fail_closed("the EA copy's storage backend is not built into this core");
+        return arm_ea_local(device);
     }
 }
 
@@ -466,9 +523,11 @@ void read_launcher()
     backend = runtime::build_distribution() == "ea" ? Backend::ea_local : Backend::steam_remote;
     remote_w = dos_path(l.remote);
     remote_a = runtime::narrow(remote_w);
-    if (!make_dir(remote_w))
+    remote_a_unix = remote_a;
+    if (backend == Backend::steam_remote && !make_dir(remote_w))
         fail_closed("the launcher saves folder " + remote_a + " could not be created");
-    build_proxy();
+    if (backend == Backend::steam_remote)
+        build_proxy();
     swofty::log("[saves] launcher saves are on for profile %s: the game's profile save is served from %s", l.profile.c_str(),
                 remote_a.c_str());
 }
@@ -567,14 +626,17 @@ std::vector<CoreMixins> save_sandbox_mixins()
     if (!code_ready())
         fail_closed("this build's game code still reads encrypted when the core commits; the sandbox installs only "
                     "where the save device's start can be hooked before it runs (the Steam build)");
+    const bool ea = backend == Backend::ea_local;
     for (const char *id : {START, MOUNT, UPLOAD})
-        if (!swofty::api->resolve(id))
+        if (!(ea && id == UPLOAD) && !swofty::api->resolve(id))
             fail_closed(std::string(id) + " does not resolve on this build (no verified binding for it in bindings.json)");
     start_addr = swofty::api->resolve(START);
-    out.push_back({MIXIN,
-                   {{START, SWOFTY_MIXIN_WRAP, 1000, (void *)&start_entry, (void **)&start_orig},
-                    {MOUNT, SWOFTY_MIXIN_WRAP, 1000, (void *)&mount_entry, (void **)&mount_orig},
-                    {UPLOAD, SWOFTY_MIXIN_WRAP, 1000, (void *)&upload_entry, (void **)&upload_orig}}});
+    CoreMixins m{MIXIN,
+                 {{START, SWOFTY_MIXIN_WRAP, 1000, (void *)&start_entry, (void **)&start_orig},
+                  {MOUNT, SWOFTY_MIXIN_WRAP, 1000, (void *)&mount_entry, (void **)&mount_orig}}};
+    if (!ea)
+        m.mixins.push_back({UPLOAD, SWOFTY_MIXIN_WRAP, 1000, (void *)&upload_entry, (void **)&upload_orig});
+    out.push_back(std::move(m));
     return out;
 }
 
@@ -583,12 +645,12 @@ void save_sandbox_commit()
     if (!offered || settled || mode != Mode::on)
         return;
     settled = true;
+    const bool ea = backend == Backend::ea_local;
+    const std::string wraps = ea ? std::string(START) + " and " + MOUNT : std::string(START) + ", " + MOUNT + " and " + UPLOAD;
     if (!core_mixins_active(MIXIN))
-        fail_closed(std::string("the wraps of ") + START + ", " + MOUNT + " and " + UPLOAD +
-                    " did not install (see the [core] lines above)");
-    swofty::log("[saves] %s hooked: %s, %s and %s are wrapped; the sandbox arms when the game starts its "
-                "save device",
-                launcher_on ? "launcher saves" : "test sandbox", START, MOUNT, UPLOAD);
+        fail_closed("the wraps of " + wraps + " did not install (see the [core] lines above)");
+    swofty::log("[saves] %s hooked: %s are wrapped; the sandbox arms when the game starts its save device",
+                launcher_on ? "launcher saves" : "test sandbox", wraps.c_str());
 }
 
 }

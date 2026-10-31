@@ -329,6 +329,76 @@ inline bool valid_name(std::string_view n)
     return n.find("..") == std::string_view::npos;
 }
 
+
+// The EA copy's save device (vtable 0x145b6dbf0) has no Steam helper: it opens <title dir>\\<save>\\<file> in place.
+// Its title dir is the wide string at save system+0xc0 (device+0x18 = save system+0x50, so config+0x70), an
+// inline buffer of config+0x68 characters whose storage sits at config+0x78.
+constexpr uintptr_t EA_VTABLE = 0x145b6dbf0;
+constexpr size_t EA_DEVICE_CONFIG = 0x18;
+constexpr size_t EA_CONFIG_CAP = 0x68;
+constexpr size_t EA_CONFIG_PTR = 0x70;
+constexpr size_t EA_CONFIG_INLINE = 0x78;
+constexpr size_t EA_TITLE_CAP = 0x104;
+constexpr const char *EA_TITLE_TAIL = "savegame\\ea";
+constexpr const char *EA_DIR_NAME = "ea";
+
+struct EaDevice {
+    bool readable = false;
+    uintptr_t vtable = 0, start_slot = 0, start = 0;
+    uint64_t cap = 0;
+    uintptr_t ptr = 0, inline_at = 0;
+    std::wstring title;
+};
+
+inline bool ends_with_nocase(const std::wstring &s, std::wstring_view tail)
+{
+    if (s.size() < tail.size())
+        return false;
+    for (size_t i = 0; i < tail.size(); i++) {
+        wchar_t a = s[s.size() - tail.size() + i], b = tail[i];
+        if (a >= L'A' && a <= L'Z')
+            a += 32;
+        if (b >= L'A' && b <= L'Z')
+            b += 32;
+        if (a != b)
+            return false;
+    }
+    return true;
+}
+
+inline std::string check_ea_device(const EaDevice &d, uintptr_t expected_vtable)
+{
+    if (!d.readable)
+        return "the EA save device is not readable";
+    if (!d.start || d.start_slot != d.start)
+        return "the save device's vtable slot +0x08 is not Ne_SaveSystem2Win_Start: not the NeSaveSystem2Win device";
+    if (expected_vtable && d.vtable != expected_vtable)
+        return "the save device's vtable is not the EA build's NeSaveSystem2Win";
+    if (d.cap != EA_TITLE_CAP)
+        return "the save device's title folder buffer is not 260 characters: not the layout the EA backend was written for";
+    if (!d.ptr || d.ptr != d.inline_at)
+        return "the save device's title folder is not held inline in its save system";
+    if (!ends_with_nocase(d.title, L"\\savegame\\ea"))
+        return "the save device's title folder does not end in savegame\\ea: it is not the EA copy's save folder";
+    return {};
+}
+
+// The title folder the EA device is pointed at for a store `.../saves/<profile>/remote`: its sibling `ea`, whose
+// `profile` folder is the profile save. Anything else is refused.
+inline std::string ea_title_dir(std::string_view remote, std::string_view profile)
+{
+    if (!store_path_ok(remote, profile))
+        return {};
+    std::string p(remote);
+    while (!p.empty() && (p.back() == '\\' || p.back() == '/'))
+        p.pop_back();
+    size_t cut = p.find_last_of("\\/");
+    if (cut == std::string::npos)
+        return {};
+    std::string out = p.substr(0, cut + 1) + EA_DIR_NAME;
+    return out.size() < EA_TITLE_CAP ? out : std::string();
+}
+
 // What the core reads from the save device at Ne_SaveSystem2Win_Start, before it changes anything.
 struct Device {
     bool readable = false;

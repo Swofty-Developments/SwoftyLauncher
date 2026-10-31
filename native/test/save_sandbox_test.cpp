@@ -241,6 +241,53 @@ static void launcher_store(const fs::path &tmp)
     fs::remove_all(tmp / "saves");
 }
 
+
+static void ea_backend(const fs::path &tmp)
+{
+    ss::EaDevice d;
+    d.readable = true;
+    d.vtable = 0x1000;
+    d.start = d.start_slot = 0x2000;
+    d.cap = 0x104;
+    d.inline_at = d.ptr = 0x5000;
+    d.title = L"C:\\users\\steamuser\\AppData\\Local\\F1 25\\savegame\\ea";
+    expect(ss::check_ea_device(d, 0x1000).empty(), "ea device: the expected layout passes");
+    auto bad = [&](auto edit, const char *what) {
+        ss::EaDevice e = d;
+        edit(e);
+        expect(!ss::check_ea_device(e, 0x1000).empty(), what);
+    };
+    bad([](ss::EaDevice &e) { e.readable = false; }, "ea device: unreadable fails closed");
+    bad([](ss::EaDevice &e) { e.start_slot = 0x3000; }, "ea device: a vtable slot that is not Start fails closed");
+    bad([](ss::EaDevice &e) { e.vtable = 0x1008; }, "ea device: another vtable fails closed");
+    bad([](ss::EaDevice &e) { e.cap = 0x80; }, "ea device: another buffer size fails closed");
+    bad([](ss::EaDevice &e) { e.ptr = 0x9000; }, "ea device: a title folder held outside the save system fails closed");
+    bad([](ss::EaDevice &e) { e.title = L"C:\\users\\x\\savegame"; }, "ea device: a title folder that is not savegame\\ea fails closed");
+    bad([](ss::EaDevice &e) { e.title.clear(); }, "ea device: an unterminated or empty title folder fails closed");
+    d.title = L"C:\\USERS\\X\\SAVEGAME\\EA";
+    expect(ss::check_ea_device(d, 0x1000).empty(), "ea device: the folder match ignores case");
+
+    expect(ss::ea_title_dir("Z:\\home\\u\\saves\\default\\remote", "default") == "Z:\\home\\u\\saves\\default\\ea",
+           "ea title: the store's sibling ea folder");
+    expect(ss::ea_title_dir("Z:\\home\\u\\saves\\default\\remote\\", "default") == "Z:\\home\\u\\saves\\default\\ea",
+           "ea title: a trailing separator is dropped");
+    expect(ss::ea_title_dir("Z:\\home\\u\\saves\\other\\remote", "default").empty(), "ea title: another profile's store is refused");
+    expect(ss::ea_title_dir("Z:\\home\\u\\..\\saves\\default\\remote", "default").empty(), "ea title: a parent step is refused");
+    expect(ss::ea_title_dir("Z:\\" + std::string(300, 'a') + "\\saves\\default\\remote", "default").empty(),
+           "ea title: a folder longer than the device's buffer is refused");
+    expect(ss::select_mode(false, ss::parse_launcher("{\"launcher_saves\":{\"profile\":\"default\",\"remote\":\"Z:\\\\h\\\\saves\\\\default\\\\remote\"}}"),
+                           false, "ea", true).mode == ss::Mode::launcher,
+           "mode: the EA copy runs launcher saves once its backend is on");
+    expect(ss::select_mode(false, ss::parse_launcher("{\"launcher_saves\":{\"profile\":\"default\",\"remote\":\"Z:\\\\h\\\\saves\\\\default\\\\remote\"}}"),
+                           false, "ea", false).mode == ss::Mode::off,
+           "mode: with the EA backend off the EA copy keeps its own saves");
+
+    fs::path title = tmp / "saves" / "default" / "ea";
+    fs::create_directories(title / "profile");
+    expect(fs::is_directory(title / "profile"), "ea store: the title folder holds profile/ for the device to mount in place");
+    fs::remove_all(tmp / "saves");
+}
+
 int main(int argc, char **argv)
 {
     fs::path tmp = argc > 1 ? fs::path(argv[1]) : fs::temp_directory_path() / "save_sandbox_test";
@@ -251,6 +298,7 @@ int main(int argc, char **argv)
     folder(tmp);
     launcher();
     launcher_store(tmp);
+    ea_backend(tmp);
     printf("%s (%d failure(s))\n", fails ? "SOME FAILED" : "ALL PASSED", fails);
     return fails ? 1 : 0;
 }
