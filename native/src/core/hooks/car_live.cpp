@@ -241,7 +241,7 @@ void apply_profiles(uint32_t index)
             swofty::log("[cars] car.profile layer refused: %s (the field is off or unknown)", why.c_str());
     for (const auto &e : entries)
         if (e.profile.fuel_modes && g_logged.insert("fuel:" + e.id).second)
-            swofty::log("[cars] car.profile %s: fuel_modes off: needs Car_FuelEcu_SetMode_Thunk", e.id.c_str());
+            swofty::log("[cars] car.profile %s: fuel_modes off: the fuel mode call is not bound", e.id.c_str());
     if (report.matched && g_logged.insert("applied:" + std::to_string(index) + session_type()).second)
         swofty::log("[cars] car %u: %zu car.profile layer(s) from %zu profile(s) in a %s session", index, report.layers,
                     report.matched, session_type().c_str());
@@ -333,7 +333,7 @@ void setup()
                 swofty::log("[cars] %s off: needs %s", f.name, f.needs);
         swofty::log("[session] session.pit_stop stationary time and tyre change off: needs PitStopInstance.car");
         swofty::log("[cars] refit_tyres off: needs Car_Tyre_SetWearFactor, CarChassis.tyre_physics_group and the car to tyre component path");
-        swofty::log("[cars] set_fuel_mode is not offered: needs Car_FuelEcu_SetMode_Thunk at L2 with an agree row");
+        swofty::log("[cars] set_fuel_mode is not offered: the fuel mode call is not bound");
     }
     Ops::bind(std::move(e));
     const SwoftyEvents *ev = runtime::events_table();

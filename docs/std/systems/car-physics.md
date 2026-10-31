@@ -163,9 +163,9 @@ aero.drag_scale                        0 .. 10, multiplies the body drag
 engine.power_scale                     0 .. 4, the engine drive torque, written to no game data
 engine.limiter_offset_rpm              negative: the torque is cut that many rpm under the limiter
 ai.grip_scale                          0 .. 4, the AI's table grip input, dry weather only
-tyres.front.grip_scale                 the axle's GripMultiplier
+tyres.front.grip_scale                 off: the tyre solver never reads GripMultiplier
 tyres.rear.grip_scale
-chassis.ballast_kg                     -300 .. 600, added to the VTF mass, then the chassis reset
+chassis.ballast_kg                     -300 .. 600, added to the VTF mass, then the chassis reset (fuel mass drops out until the next fuel update)
 brakes.bias                            0 .. 1, rewritten when a setup is applied
 brakes.pressure                        0 .. 4
 suspension.front.camber  .toe  .anti_roll  .ride_height_offset
@@ -367,21 +367,27 @@ For how the AI drives, see [AI](/std/systems/ai).
 
 The parts, their fields and how they're stored are mapped from the game's code and checked independently. An in-game trace confirmed that cars are built once at session load and torn down when it ends, that the game rebuilds every car twice while a session loads and rebuilds one car when control of it changes, and the live values of engine speed, fuel, ERS, tyre wear, mass and the aero coefficients. Still to confirm in game: DRS, the fuel-mix and setup controls, career R&D upgrades, and how a car's index matches its participant. The `cars::live` fields are mapped from the game's code and checked on fake cars in the core's host test; none of them is tested in game yet. Their offsets are those of the game build the bindings document was made for: on any other build, a game patch included, the core's `same_build()` check turns `cars::live` off until the KB is re-derived for that build.
 
-These stay off until the game code they rest on has an independent verification, and the core logs `<field> off: needs <row>` for each:
+These fields are on; each rests on a verified row:
 
 ```text
-ai.grip_scale                          site_Ai_TableGripInput
-aero.lift_scale, aero.drag_scale       CarF1Aero.lift_scale, CarF1Aero.drag_scale
-brakes.bias, brakes.pressure           CarBrakeEcu.brake_bias, CarBrakeEcu.brake_pressure
-tyres.*.grip_scale                     CarSuspTyreType.grip_multiplier
-suspension.*                           CarSuspAxle.setup_camber, setup_toe, setup_anti_roll, ride_height_offset
-chassis.ballast_kg                     Car_Tuning_SetChassisZCom
-refit_tyres                            Car_Tyre_SetWearFactor, CarChassis.tyre_physics_group
-fuel modes                             Car_FuelEcu_SetMode_Thunk
-car.parts.register                     Car_FrontWing_Init
+engine.power_scale, engine.limiter_offset_rpm, ai.grip_scale
+aero.lift_scale, aero.drag_scale
+brakes.bias, brakes.pressure
+suspension.front/rear.camber, toe, anti_roll, ride_height_offset
+chassis.ballast_kg
+car.parts.register, car.upgrades.replayed, car.setup.applied
 ```
 
-`engine.power_scale`, `engine.limiter_offset_rpm`, `car.upgrades.replayed` and `car.setup.applied` rest on verified rows.
+A ballast change rebuilds the car's mass without the fuel; the fuel mass comes back at the next fuel update.
+
+These stay off:
+
+```text
+tyres.*.grip_scale     the tyre solver (Car_Suspension_SolveWheels) never reads CarSuspTyreType.grip_multiplier;
+                       only the AI snapshot (0x1405ee660) and force feedback do, so a write changes neither the car's grip nor the lap time
+refit_tyres            returns unavailable until a car-to-tyre-component lookup is bound
+fuel modes             Car_FuelEcu_SetMode_Thunk is verified, but no call is bound yet
+```
 
 Credit: the front wing damage, suspension damage, fuel ECU and ERS layouts were cross-checked against findings shared by Will (william09leo), the author of Heavier Damage.
 
