@@ -621,6 +621,14 @@ inline constexpr call<"site_Sess_AiVehicleRegisterCall"> site_Sess_AiVehicleRegi
 inline constexpr call<"site_Sess_ControllerSystem_ApplyRecordCall"> site_Sess_ControllerSystem_ApplyRecordCall{}; // L2 experimental
 inline constexpr call<"site_Sess_InGamePlayerFinishedAiCall"> site_Sess_InGamePlayerFinishedAiCall{}; // L2 experimental
 inline constexpr call<"site_Sess_InGameSessionCompleteAiCall"> site_Sess_InGameSessionCompleteAiCall{}; // L2 experimental
+inline constexpr site<"site_Sess_PitEvalListNext"> site_Sess_PitEvalListNext{}; // L2 experimental
+inline constexpr site<"site_Sess_PitEvalListSlot"> site_Sess_PitEvalListSlot{}; // L2 experimental
+inline constexpr site<"site_Sess_PitEvalOwnSlot"> site_Sess_PitEvalOwnSlot{}; // L2 experimental
+inline constexpr site<"site_Sess_PitEvalReturnFalse"> site_Sess_PitEvalReturnFalse{}; // L2 experimental
+inline constexpr site<"site_Sess_PitRankEpilogue"> site_Sess_PitRankEpilogue{}; // L2 experimental
+inline constexpr site<"site_Sess_PitRankListNext"> site_Sess_PitRankListNext{}; // L2 experimental
+inline constexpr site<"site_Sess_PitRankListSlot"> site_Sess_PitRankListSlot{}; // L2 experimental
+inline constexpr site<"site_Sess_PitRankOwnSlot"> site_Sess_PitRankOwnSlot{}; // L2 experimental
 inline constexpr site<"site_Sess_PuPanel_SlotHolder"> site_Sess_PuPanel_SlotHolder{}; // L2 experimental
 inline constexpr site<"site_Sess_TyreVisSlotLookup"> site_Sess_TyreVisSlotLookup{}; // L2 experimental
 inline constexpr site<"site_Sess_TyreVisTailCall"> site_Sess_TyreVisTailCall{}; // L2 experimental

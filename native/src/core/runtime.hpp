@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cstring>
 #include <functional>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -145,10 +146,17 @@ void era_session_trace(const char *state, int to);
 void era_session_unloaded(const char *state, int to);
 std::vector<CoreMixins> tt_guard_mixins();
 void tt_guard_commit();
+std::vector<CoreMixins> career_alias_mixins();
+void career_alias_commit();
 std::vector<CoreMixins> car_category_mixins();
 void car_category_commit();
 std::vector<CoreMixins> save_splice_mixins();
 void save_splice_commit();
+// Career saves (career_saves.cpp): the career index and per-career addon data.
+void career_saves_start();
+void career_saves_saving();
+void career_saves_saved();
+void career_saves_found(const std::set<std::string> &keys);
 // Test save sandbox (save_sandbox.cpp): only under `swofty test` with a run token.
 std::vector<CoreMixins> save_sandbox_mixins();
 void save_sandbox_commit();
@@ -191,7 +199,9 @@ void standings_guard_commit();
 std::vector<CoreMixins> tyre_slots_mixins();
 void tyre_slots_commit();
 std::vector<CoreMixins> garage_crew_mixins();
+std::vector<CoreMixins> pit_slots_mixins();
 void garage_crew_commit();
+void pit_slots_commit();
 std::vector<CoreMixins> track_acclim_mixins();
 void track_acclim_commit();
 std::vector<CoreMixins> audio_queue_mixins();

@@ -831,6 +831,141 @@ Any other order crashes the career. Every operation runs on the flow thread.
              mclaren_26(484) seat 1 -> mercedes_26(476) seat 1; release lewis_hamilton(5) released
 ```
 
+## Saves
+
+Saves are experimental, since 1.6.13. The core keeps an index of the careers it has loaded, and each addon's own data for each career, in the launcher's data folder. Careers are listed there with the addons they need, so the launcher can warn before Play and tell the career vault which careers an addon toggle would drop.
+
+```cpp
+#include <swofty/systems/career.hpp>
+
+namespace saves = swofty::career::saves;
+
+static void remember(const swofty::events::Context &)
+{
+    auto mine = saves::data("swofty.progressive");           // this addon's data for any career
+    auto here = saves::current();                            // "f1_career_progressive:7731"
+
+    saves::need("mod.sochi", "^1.1.0", "calendar round 4");  // the loaded career needs this addon
+    saves::describe({.driver = "Max Verstappen", .team = "Red Bull", .season = 2016, .round = 7});
+
+    mine.set(here, swofty::json::parse(R"({"follow":"max","years":[2016,2017]})"), 2);   // version 2
+    if (auto stored = mine.get(here); stored && stored->version < 2)
+        migrate(stored->value);                              // the addon migrates its own versions
+}
+
+swofty::events::on<career::events::Saving>().before(
+    [](auto &, const swofty::events::Context &c) { remember(c); });
+swofty::events::on<career::events::Missing>().after(
+    [](const auto &, const swofty::events::Context &) {
+        for (auto &gone : saves::missing())
+            log("career %s is in the index and not in the save", gone.career.c_str());
+    });
+```
+
+### The index
+
+`$DATA/careers/index.json` is the career index of [dependencies](/std/dependencies#careers-remember-what-they-were-made-with), with the fields the core writes beside the dependency record. A field the launcher or an older core wrote stays as it was.
+
+```json
+{
+  "version": 1,
+  "careers": [
+    {
+      "career": "f1_career_progressive:7731",
+      "mode": "driver_career",
+      "content": "f1_career_progressive",
+      "content_record": "swofty.progressive/f1_career_progressive",
+      "driver": "Max Verstappen",
+      "team": "Red Bull",
+      "season": 2016,
+      "round": 7,
+      "label": "f1_career_progressive: Max Verstappen, Red Bull, 2016",
+      "last_saved": 1793443200000,
+      "status": "present",
+      "addons": [
+        { "id": "swofty.progressive", "why": "career content f1_career_progressive" },
+        { "id": "mod.sochi", "need": "^1.1.0", "why": "calendar round 4" }
+      ]
+    }
+  ]
+}
+```
+
+- **`career`:** the career's id, `<mode>:<slot guid>` (see [When a season starts](#when-a-season-starts)).
+- **`mode` and `content`:** the mode kind and the data group the career loaded with. `content_record` is the `career.content` record that owns the group.
+- **`driver`, `team`, `season`, `round`:** what the core knows when it writes the record, which is the career's year and round once the hub has run. `saves::describe` sets them from an addon that knows better, and a described value stays for the session. A field nobody knows is left out.
+- **`last_saved`:** milliseconds since 1970 at the last `career.saved` of the session in which the career was loaded.
+- **`status`:** `present`, or `missing` after a profile load did not find the career.
+- **`addons`:** the owner of the career's data group, the `needs` of its content record and every `saves::need` call. The launcher reads this list; a version range is optional.
+- **When it is written:** at `career.loaded`, before each profile save and after it. Careers the session did not load keep their records.
+
+### Per-career addon data
+
+`saves::data(addon)` is an addon's own JSON for a career, in `$DATA/careers/data/<career>/<addon>.json`. The file holds the addon's version number and the value:
+
+```json
+{ "version": 2, "data": { "follow": "max", "years": [2016, 2017] } }
+```
+
+- **Versions are the addon's.** `set(career, value, version)` stores the number and `get` returns it with the value. The core never migrates.
+- **A career the index does not know** is refused (`Result::refused`), so data never outlives a career's record by being written first.
+- **Size:** 8 MB a file. The vault moves the `careers` folder with the save it belongs to.
+- **Progressive's `careers.json` and the Career Mode Editor's edits** can move into this store. They keep their own files until their addons change.
+
+### Events
+
+| Event | Kind | Fires |
+| --- | --- | --- |
+| `career.saving` | modify | before the profile's save containers are written (`site_Game_SaveData_ContainersCount`); a handler sets the loaded career's data |
+| `career.saved` | notify | after the containers block was written with no error (`site_Game_SaveData_ContainersDone`) |
+| `career.missing` | notify | after a profile load, a career the index knew has no slot in any mode (see below) |
+
+`career.saving` and `career.saved` fire only while the save splice is armed, on the thread that writes the profile. A handler stays short and uses no game calls. Both carry no payload: `saves::current()` names the career.
+
+`career.missing` fires at the end of a good profile load, on the loading thread, when a career of the index has no slot in the `SaveSlotManager` of any mode after `Game_SaveSlotManager_Deserialise`. The core marks those careers missing in the index and `saves::missing()` lists them. A career is matched by its slot guid, or its slot id when the slot has no guid.
+
+### Requirements
+
+A career content declares the addons its careers need beyond its own:
+
+```json
+// registry/career.json
+{
+  "career.content": {
+    "f1_career_progressive": {
+      "data_group": "f1_career_progressive",
+      "needs": [
+        { "id": "mod.sochi", "range": "^1.1.0", "why": "calendar round 4" },
+        { "id": "swofty.rnd-tyres-thermal", "why": "the Tyres R&D department" }
+      ]
+    }
+  }
+}
+```
+
+Before Play, the launcher checks every career in the index against the profile's addons. A career whose needed addon is off, missing or the wrong version adds one line to the Play log and a warning to the notice that already shows before Play:
+
+```text
+2 careers won't load in this profile: Progressive: Max Verstappen, 2016 needs Sochi Autodrom (mod.sochi), which is off; Driver Career: Lando Norris needs R&D: Tyres & Thermal Management (swofty.rnd-tyres-thermal), which is off
+```
+
+The same list tells the vault which careers an addon would drop: turning an addon off names every career whose `addons` lists it.
+
+### In tests
+
+`swofty/fake_saves.hpp` stands in for the core's table, so an addon's tests call `career::saves` without the game:
+
+```cpp
+swofty::fake::Saves saves;
+saves.install();
+saves.load("f1_career_progressive:7731", "driver_career", "f1_career_progressive");
+remember(ctx);                                    // the addon's career.saving handler
+auto stored = career::saves::data("swofty.progressive").get_current();
+saves.drop("f1_career_progressive:7731");        // the next missing() lists it
+```
+
+The template `templates/std/career-saves` is such an addon with its tests.
+
 ## Readiness and limits
 
 - **The most ready system:** 59 career and 46 game functions at L2, saves at L3. Ready: contracts, line-ups, standings, resource points, upgrade start, cancel and cost, the calendar, activities, the wizard step, save containers.
@@ -839,6 +974,7 @@ Any other order crashes the career. Every operation runs on the flow thread.
 - **The save heap** is 3 MB. The core keeps career snapshots outside it, in the `swofty_registry` entry, with a budget per registry and per career.
 - **R&D:** four departments drawn natively; upgrade types are a table of 19 and a `std::bitset<19>` (ids of 19 and up throw without native code).
 - **The 10-season career limit** is calendar data (`_season_instancecount_`), not code. Career days are 16-bit (about 200 seasons). Stock retirement schedules end in December 2035.
+- **Career saves** (since 1.6.13) are experimental: `career.saving` and `career.saved` run on the profile-writing thread, and `career.missing` on the profile-loading thread.
 - **Saves keep the season list.** Rounds of a season that hasn't started can be replaced, added or removed. The upgrade loader drops instances it doesn't know.
 - **Hashed per-team career tables** can't gain rows. **Eight tables** are partitioned by data group.
 - **My Team** freezes when the upgrade availability is refreshed over and over. **Follow-career scene paths** crashed new Progressive careers (#411).

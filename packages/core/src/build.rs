@@ -721,6 +721,12 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     built
         .lines
         .extend(deps.notes.iter().map(|n| format!("registry: {n}")));
+    if !p.is_vanilla() {
+        let careers = crate::stdlib::careers::read(&crate::stdlib::careers::data_path(&store.root));
+        if let Some(line) = crate::stdlib::careers::play_line(&careers, &resolved.order, &addons) {
+            built.warnings.push(line);
+        }
+    }
     built.report = Report {
         profile: profile.into(),
         built_at: crate::conflicts::now(),
@@ -1215,6 +1221,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     let mut stock_removals = BTreeMap::new();
     let mut kept_lists = BTreeMap::new();
     let mut udp_ids = crate::udp_ids::UdpIds::default();
+    let mut id_aliases = crate::row_ids::IdAliases::default();
     if !maps.is_empty() || planner.has_db() || room_asked.is_some() {
         let shipped = std::fs::read(&db_src).map_err(io_err(&db_src))?;
         let mut db = Gvdb::parse(&shipped)?;
@@ -1269,6 +1276,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         planner.keep_row_ids(row_ids);
         let added = planner.apply_db_report(&mut db, &stock, &tracked, &mut db_report)?;
         if let Some(ids) = planner.take_row_ids() {
+            id_aliases = ids.id_aliases();
             built.lines.extend(ids.summary());
             if !checking {
                 ids.save(&store.root)?;
@@ -1928,6 +1936,18 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                     "udp: telemetry reports {} added team id(s) and {} added driver id(s) under stock ids",
                     udp_ids.teams.len(),
                     udp_ids.drivers.len()
+                ));
+            }
+            if !id_aliases.is_empty() {
+                let rel = format!("{LOADER_DIR}/{}", crate::row_ids::ALIASES_FILE);
+                let src = built.overlay.join(crate::row_ids::ALIASES_FILE);
+                std::fs::create_dir_all(&built.overlay).map_err(io_err(&built.overlay))?;
+                id_aliases.write(&src)?;
+                built.plan.loader.insert(rel, src);
+                let n: usize = id_aliases.tables.values().map(|t| t.len()).sum();
+                built.lines.push(format!(
+                    "database: {LOADER_DIR}/{} maps {n} earlier row id(s) to the ids the rows have now, so saves made under the earlier ids load",
+                    crate::row_ids::ALIASES_FILE
                 ));
             }
             if let Some(placed) = &std_index {

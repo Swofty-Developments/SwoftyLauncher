@@ -38,6 +38,40 @@ const REGISTRY_TABLES: &[(&str, &str)] = &[
     ("driver.head", "entrants.animation.driver_heads.driver_head"),
 ];
 
+/// The tables saves hold ids of, and the name `swofty/id_aliases.json` gives each.
+const ALIAS_TABLES: &[(&str, &str)] = &[
+    ("entrants.teams.team", "teams"),
+    ("entrants.vehicles.vehicle", "vehicles"),
+    ("entrants.drivers.driver", "drivers"),
+];
+
+pub const ALIASES_FILE: &str = "id_aliases.json";
+
+/// `swofty/id_aliases.json`: for each of `teams`, `vehicles` and `drivers`, the ids added rows had
+/// before (1.6.10 and 1.6.11 hashed ids, ids before 1.6.10) mapped to the id they have now. The core
+/// reads it at StateLoadSession to load a save made under the earlier ids.
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct IdAliases {
+    #[serde(default)]
+    pub version: u32,
+    #[serde(default)]
+    pub tables: BTreeMap<String, BTreeMap<i64, i64>>,
+}
+
+impl IdAliases {
+    pub fn is_empty(&self) -> bool {
+        self.tables.values().all(BTreeMap::is_empty)
+    }
+
+    pub fn write(&self, path: &Path) -> Result<()> {
+        let file = IdAliases {
+            version: VERSION,
+            tables: self.tables.clone(),
+        };
+        crate::write_json(path, &file)
+    }
+}
+
 #[derive(Debug, Default, Serialize, Deserialize)]
 struct File {
     #[serde(default)]
@@ -50,6 +84,9 @@ struct File {
     /// The ids 1.6.10 and 1.6.11 gave from the rows' keys were put back once (see [`Store::recover`]).
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     recovered: bool,
+    /// Every id a key's row had before the one it keeps, so saves made under those ids still load.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    aliases: BTreeMap<String, BTreeSet<i64>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -263,6 +300,7 @@ pub struct Store {
     from: HashMap<String, IdFrom>,
     seeded: BTreeSet<String>,
     recovered: bool,
+    aliases: BTreeMap<String, BTreeSet<i64>>,
     existed: bool,
     by_id: HashMap<String, BTreeMap<i64, String>>,
     pinned: HashMap<String, HashSet<i64>>,
@@ -298,6 +336,7 @@ impl Store {
                 store.read_only = f.version > VERSION;
                 store.seeded = f.seeded;
                 store.recovered = f.recovered;
+                store.aliases = f.aliases;
                 store.existed = true;
                 for (key, e) in f.rows {
                     store.from.insert(key.clone(), e.from);
@@ -347,12 +386,58 @@ impl Store {
     fn put(&mut self, key: &str, id: i64, from: IdFrom) {
         match self.rows.get(key) {
             Some(&kept) if kept == id => return,
-            Some(_) => self.moved += 1,
+            Some(&kept) => {
+                self.moved += 1;
+                self.alias(key, kept);
+            }
             None => self.added += 1,
         }
         self.insert(key.to_owned(), id);
         self.from.insert(key.to_owned(), from);
         self.changed = true;
+    }
+
+    fn alias(&mut self, key: &str, old: i64) {
+        if self.aliases.entry(key.to_owned()).or_default().insert(old) {
+            self.changed = true;
+        }
+    }
+
+    /// The ids rows had before the ones they keep, by the tables saves hold them of; see [`IdAliases`].
+    pub fn id_aliases(&self) -> IdAliases {
+        let mut out = IdAliases::default();
+        let mut seen: HashMap<(&str, i64), Option<i64>> = HashMap::new();
+        for (key, olds) in &self.aliases {
+            let Some(&now) = self.rows.get(key) else {
+                continue;
+            };
+            let table = key.split('/').nth(1).unwrap_or_default();
+            for &old in olds {
+                if old == now || self.by_id.get(table).is_some_and(|ids| ids.contains_key(&old)) {
+                    continue;
+                }
+                match seen.entry((table, old)) {
+                    std::collections::hash_map::Entry::Vacant(v) => {
+                        v.insert(Some(now));
+                    }
+                    std::collections::hash_map::Entry::Occupied(mut o) => {
+                        if o.get() != &Some(now) {
+                            o.insert(None);
+                        }
+                    }
+                }
+            }
+        }
+        for ((table, old), now) in seen {
+            let (Some(now), Some(name)) = (
+                now,
+                ALIAS_TABLES.iter().find(|(t, _)| *t == table).map(|(_, n)| *n),
+            ) else {
+                continue;
+            };
+            out.tables.entry(name.to_owned()).or_default().insert(old, now);
+        }
+        out
     }
 
     /// Reads, for each table the `add-row` ops in `files` add rows to, how many rows `db` holds from
@@ -442,6 +527,7 @@ impl Store {
             rows,
             seeded: self.seeded.clone(),
             recovered: self.recovered,
+            aliases: self.aliases.clone(),
         };
         crate::write_json(&path(data), &file)
     }

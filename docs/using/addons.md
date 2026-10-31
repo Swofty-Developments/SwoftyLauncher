@@ -105,6 +105,10 @@ A profile saved by a newer launcher keeps the settings this launcher doesn't kno
 
 Every other addon, including [Swofty's own](/using/swofty-addons), comes from the [Addon Browser](/using/addon-browser).
 
+## Careers that need an addon
+
+An addon can own a career mode, such as Progressive Career. A session without that addon can drop its careers from F1 25's save. When the launcher finds careers missing from the save, a banner on the **Addons** page names them and opens the [Career saves](/using/career-saves) page, where **Restore this save** puts back the version that still held them.
+
 ## From a terminal
 
 | Command | Does |
@@ -125,5 +129,6 @@ Add `--profile <name>` to work on a profile other than the active one. For an ad
 
 - [Simplified Importer](/using/mods): turn a mod into an addon.
 - [DB Editor](/using/db-editor): change the game database and save it as an addon.
+- [Career saves](/using/career-saves): the careers in your save, and the versions the launcher keeps.
 - [Profiles](/using/profiles): keep different sets of addons apart.
 - To make an addon, see [Addons](/reference/addons/) in the developer docs.

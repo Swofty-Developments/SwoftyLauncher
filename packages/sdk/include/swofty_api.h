@@ -866,6 +866,35 @@ typedef struct SwoftyCareerOps {
     int (*set_look)(const char *driver_ref, const char *look_ref);
 } SwoftyCareerOps;
 
+/* Career saves (standard library 1.6.13, experimental), from the core export SwoftyCoreCareerSaves; not a
+   SwoftyApi field. Table version 1. The core keeps a career index in the launcher's data folder
+   ($DATA/careers/index.json, written at each profile load, career.loaded and profile save) and, beside it,
+   one data file per career and addon ($DATA/careers/data/<career>/<addon>.json). index: the career index as
+   JSON, {"version": 1, "careers": [{"career", "mode", "content", "team", "driver", "season", "round",
+   "last_saved", "addons": [{"id", "need", "why"}], "status"}]}, written to json (SWOFTY_TOO_SMALL: *len holds
+   the size needed). current: the loaded career's id, SWOFTY_ASSET_LATE with no career loaded. describe: a JSON
+   request {"driver", "team", "season", "round", "label"} (every key optional) naming the loaded career for the
+   index. need: the loaded career needs the addon (a version range, may be empty) for the reason; the index
+   lists it and the launcher warns before Play when the addon is off. data_get/data_set/data_remove: an addon's
+   own JSON for a career, versioned by the addon (the version is stored and handed back; the addon migrates).
+   data_set is refused (SWOFTY_REFUSED) for a career the index does not know; data_get on a career with no data
+   reports SWOFTY_ASSET_INVALID. missing: the careers the index knew that the last profile load did not find,
+   as the index's career records. Calls from any thread. */
+#define SWOFTY_CAREER_SAVES_VERSION 1
+
+typedef struct SwoftyCareerSaves {
+    uint32_t version;
+    int (*available)(void);
+    int (*index)(char *json, size_t cap, size_t *len);
+    int (*current)(char *id, size_t cap, size_t *len);
+    int (*describe)(SwoftyText request_json);
+    int (*need)(const char *addon, const char *range, const char *why);
+    int (*data_get)(const char *career, const char *addon, char *json, size_t cap, size_t *len, uint32_t *version);
+    int (*data_set)(const char *career, const char *addon, uint32_t version, SwoftyText json);
+    int (*data_remove)(const char *career, const char *addon);
+    int (*missing)(char *json, size_t cap, size_t *len);
+} SwoftyCareerSaves;
+
 /* Session operations (standard library 1.6), from the core export SwoftyCoreSessionOps; not a SwoftyApi
    field. Table version 1. Every call runs on the game's flow thread and reports SWOFTY_ASSET_UNAVAILABLE
    when a game function it needs does not resolve on the running build. control: the mode (0 human, 1 AI)
@@ -1028,6 +1057,7 @@ typedef const SwoftyRegistry *(*SwoftyCoreRegistryFn)(void);
 typedef const SwoftyHooks *(*SwoftyCoreHooksFn)(void);
 typedef const SwoftyServices *(*SwoftyCoreServicesFn)(void);
 typedef const SwoftyCareerOps *(*SwoftyCoreCareerOpsFn)(void);
+typedef const SwoftyCareerSaves *(*SwoftyCoreCareerSavesFn)(void);
 typedef const SwoftySessionOps *(*SwoftyCoreSessionOpsFn)(void);
 typedef const SwoftyCarOps *(*SwoftyCoreCarOpsFn)(void);
 
@@ -1046,6 +1076,7 @@ SWOFTY_EXPORT const SwoftyRegistry *SwoftyCoreRegistry(void);
 SWOFTY_EXPORT const SwoftyHooks *SwoftyCoreHooks(void);
 SWOFTY_EXPORT const SwoftyServices *SwoftyCoreServices(void);
 SWOFTY_EXPORT const SwoftyCareerOps *SwoftyCoreCareerOps(void);
+SWOFTY_EXPORT const SwoftyCareerSaves *SwoftyCoreCareerSaves(void);
 SWOFTY_EXPORT const SwoftySessionOps *SwoftyCoreSessionOps(void);
 SWOFTY_EXPORT const SwoftyCarOps *SwoftyCoreCarOps(void);
 

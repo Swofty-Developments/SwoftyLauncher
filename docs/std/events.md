@@ -125,7 +125,9 @@ game
 │  ├─ career.moves.finalised       notify    the line-up changes for the new season are final
 │  ├─ career.season.end            notify
 │  ├─ career.season.break          notify    the next season's calendar is built here
-│  ├─ career.saving                modify    the last moment to write a career layer into this save
+│  ├─ career.saving                modify    the last moment to write a career layer into this save (also: set the career's addon data, saves)
+│  ├─ career.saved                 notify    the profile's save containers were written (since 1.6.13)
+│  ├─ career.missing               notify    a career the index knew is not in the save (since 1.6.13)
 │  └─ career.unloaded              notify
 │
 ├─ weekend
