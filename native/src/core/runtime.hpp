@@ -184,6 +184,8 @@ std::vector<CoreMixins> ers_newlap_mixins();
 void ers_newlap_commit();
 std::vector<CoreMixins> ers_mode_mixins();
 void ers_mode_commit();
+std::vector<CoreMixins> tyre_slots_mixins();
+void tyre_slots_commit();
 std::vector<CoreMixins> track_acclim_mixins();
 void track_acclim_commit();
 std::vector<CoreMixins> audio_queue_mixins();
