@@ -3,7 +3,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, ci/ec2-spot-runners]
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
