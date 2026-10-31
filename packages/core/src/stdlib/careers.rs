@@ -117,6 +117,20 @@ pub fn sync(data: &Path, game: Option<&Path>, stamp: Option<&str>) -> crate::Res
     Ok(kept)
 }
 
+/// A restore puts a snapshot's careers back as the profile's list: the careers of `profile` (and the
+/// ones with no profile yet) in the index are replaced by those of `restored`, with their own details
+/// and last-played times, until the core lists the profile's careers again at the next Play. Other
+/// profiles' careers stay.
+pub fn replace_profile(data: &Path, profile: &str, restored: &[Career]) -> crate::Result<()> {
+    let mine = |c: &Career| c.profile.as_deref().is_none_or(|p| p == profile);
+    let mut list: Vec<Career> = read(&data_path(data)).into_iter().filter(|c| !mine(c)).collect();
+    list.extend(restored.iter().filter(|c| mine(c)).cloned());
+    crate::write_json_shared(
+        &data_path(data),
+        &serde_json::json!({ "version": 1, "careers": list }),
+    )
+}
+
 /// Where the launcher keeps the core's stat-id store: the one store of the install.
 pub fn kept_ids(data: &Path) -> PathBuf {
     super::reports::path(data, super::reports::IDS)
@@ -182,6 +196,77 @@ pub fn missing(c: &Career, order: &[String], installed: &BTreeMap<String, AddonM
         }
     }
     out
+}
+
+/// The careers in `list` that list `addon` among the addons they need and are still in the save:
+/// the careers turning `addon` off would stop from loading.
+pub fn needing<'a>(list: &'a [Career], addon: &str) -> Vec<&'a Career> {
+    list.iter()
+        .filter(|c| c.status() != "missing")
+        .filter(|c| c.addons.iter().any(|a| a.id == addon))
+        .collect()
+}
+
+/// The one Play line for the careers that won't load in profile `order`: how many, and the first
+/// few with the addon each needs. `None` when every career loads.
+pub fn play_line(
+    list: &[Career],
+    order: &[String],
+    installed: &BTreeMap<String, AddonManifest>,
+) -> Option<String> {
+    let short: Vec<(&Career, Vec<String>)> = list
+        .iter()
+        .filter(|c| c.status() != "missing")
+        .map(|c| (c, missing(c, order, installed)))
+        .filter(|(_, m)| !m.is_empty())
+        .collect();
+    if short.is_empty() {
+        return None;
+    }
+    let shown = short
+        .iter()
+        .take(3)
+        .map(|(c, m)| {
+            let name = if c.label.is_empty() {
+                c.career.as_str()
+            } else {
+                c.label.as_str()
+            };
+            format!("{name} {}", m[0])
+        })
+        .collect::<Vec<_>>()
+        .join("; ");
+    let more = short.len().saturating_sub(3);
+    let more = if more > 0 {
+        format!("; {more} more")
+    } else {
+        String::new()
+    };
+    Some(format!(
+        "{} won't load in this profile: {shown}{more}",
+        match short.len() {
+            1 => "1 career".to_owned(),
+            n => format!("{n} careers"),
+        }
+    ))
+}
+
+impl Career {
+    /// `present` unless the core marked the career missing from the last profile load.
+    pub fn status(&self) -> &str {
+        self.extra
+            .get("status")
+            .and_then(Value::as_str)
+            .unwrap_or("present")
+    }
+
+    /// The text field the core wrote beside the dependency record, such as `mode` or `driver`.
+    pub fn field(&self, name: &str) -> Option<&str> {
+        self.extra
+            .get(name)
+            .and_then(Value::as_str)
+            .filter(|v| !v.is_empty())
+    }
 }
 
 #[cfg(test)]
@@ -253,6 +338,48 @@ mod tests {
                 "needs swofty.progressive, which isn't installed",
                 "needs mod.sochi, which isn't installed"
             ]
+        );
+    }
+
+    #[test]
+    fn says_which_careers_an_addon_would_drop_and_one_play_line() {
+        let record = |id: &str, status: &str, addon: &str| {
+            format!(
+                r#"{{"career":"{id}","label":"L {id}","status":"{status}","mode":"driver_career","addons":[{{"id":"{addon}"}}]}}"#
+            )
+        };
+        let list = parse(&format!(
+            "[{}, {}, {}]",
+            record("a", "present", "x.one"),
+            record("b", "missing", "x.one"),
+            record("c", "present", "x.two")
+        ));
+        let names = |v: Vec<&Career>| v.iter().map(|c| c.career.clone()).collect::<Vec<_>>();
+        assert_eq!(names(needing(&list, "x.one")), ["a"]);
+        assert_eq!(names(needing(&list, "x.two")), ["c"]);
+        assert!(needing(&list, "x.none").is_empty());
+        assert_eq!(list[0].field("mode"), Some("driver_career"));
+        assert_eq!(list[0].field("driver"), None);
+        assert_eq!(list[1].status(), "missing");
+        let installed: BTreeMap<String, AddonManifest> = [
+            ("x.one", manifest("x.one", "1.0.0")),
+            ("x.two", manifest("x.two", "1.0.0")),
+        ]
+        .into_iter()
+        .map(|(k, v)| (k.to_owned(), v))
+        .collect();
+        let both: Vec<String> = vec!["x.one".into(), "x.two".into()];
+        assert_eq!(play_line(&list, &both, &installed), None);
+        let one: Vec<String> = vec!["x.one".into()];
+        assert_eq!(
+            play_line(&list, &one, &installed).as_deref(),
+            Some("1 career won't load in this profile: L c needs N x.two (x.two), which is off")
+        );
+        assert_eq!(
+            play_line(&list, &[], &installed).as_deref(),
+            Some(
+                "2 careers won't load in this profile: L a needs N x.one (x.one), which is off; L c needs N x.two (x.two), which is off"
+            )
         );
     }
 

@@ -78,14 +78,43 @@ static_assert(offsetof(GameModeContext, championship_holder) == 0x88);
 struct SaveSlotInfo {
     uint64_t slot_id; // L2 experimental
     uint64_t slot_guid; // L2 experimental
+    uint8_t _pad_0x10[0x10];
+    char *name; // L2 experimental
+    uint8_t _pad_0x28[0x80];
+    uint8_t game_setup_mode; // L2 experimental
+    uint8_t _pad_0xa9[0x3];
+    uint32_t info_season; // L2 experimental
+    uint32_t info_weekend; // L2 experimental
+    uint8_t _pad_0xb4[0xa];
+    uint16_t info_team; // L2 experimental
+    uint16_t info_driver; // L2 experimental
+    uint16_t info_vehicle; // L2 experimental
+    uint8_t _pad_0xc4[0x4];
+    uint64_t info_date; // L2 experimental
+    uint8_t _pad_0xd0[0xa1];
+    uint8_t type_flags; // L2 experimental
 };
 static_assert(offsetof(SaveSlotInfo, slot_id) == 0x0);
 static_assert(offsetof(SaveSlotInfo, slot_guid) == 0x8);
+static_assert(offsetof(SaveSlotInfo, name) == 0x20);
+static_assert(offsetof(SaveSlotInfo, game_setup_mode) == 0xa8);
+static_assert(offsetof(SaveSlotInfo, info_season) == 0xac);
+static_assert(offsetof(SaveSlotInfo, info_weekend) == 0xb0);
+static_assert(offsetof(SaveSlotInfo, info_team) == 0xbe);
+static_assert(offsetof(SaveSlotInfo, info_driver) == 0xc0);
+static_assert(offsetof(SaveSlotInfo, info_vehicle) == 0xc2);
+static_assert(offsetof(SaveSlotInfo, info_date) == 0xc8);
+static_assert(offsetof(SaveSlotInfo, type_flags) == 0x171);
 
 struct SaveSlotManager {
-    uint8_t _pad_0x0[0x280];
+    uint8_t _pad_0x0[0x268];
+    SaveSlotInfo **slots_begin; // L2 experimental
+    SaveSlotInfo **slots_end; // L2 experimental
+    uint8_t _pad_0x278[0x8];
     SaveSlotInfo *current; // L2 experimental
 };
+static_assert(offsetof(SaveSlotManager, slots_begin) == 0x268);
+static_assert(offsetof(SaveSlotManager, slots_end) == 0x270);
 static_assert(offsetof(SaveSlotManager, current) == 0x280);
 
 struct ScheduleComponent {
@@ -872,6 +901,8 @@ using Game_SaveData_WriteBag_t = int(NeBagCodec *codec, void *bag);
 inline constexpr fn<"Game_SaveData_WriteBag", Game_SaveData_WriteBag_t> Game_SaveData_WriteBag{}; // L3 stable
 using Game_SaveMgr_RequestProfileSave_Thunk_t = bool(void *save_mgr, void *callback, uint8_t a3, uint8_t a4);
 inline constexpr fn<"Game_SaveMgr_RequestProfileSave_Thunk", Game_SaveMgr_RequestProfileSave_Thunk_t> Game_SaveMgr_RequestProfileSave_Thunk{}; // L2 experimental
+using Game_SaveSlotManager_Deserialise_t = int(void *iface, void *bag, void *ctx);
+inline constexpr fn<"Game_SaveSlotManager_Deserialise", Game_SaveSlotManager_Deserialise_t> Game_SaveSlotManager_Deserialise{}; // L2 experimental
 using Game_SaveSlotManager_SelectSlot_t = int(void *manager, uint64_t slot_id, bool force, uint32_t a4);
 inline constexpr fn<"Game_SaveSlotManager_SelectSlot", Game_SaveSlotManager_SelectSlot_t> Game_SaveSlotManager_SelectSlot{}; // L2 experimental
 inline constexpr address<"Game_SceneManagerSpawn_MergeScene"> Game_SceneManagerSpawn_MergeScene{}; // L2 experimental

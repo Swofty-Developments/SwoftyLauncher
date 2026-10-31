@@ -68,11 +68,6 @@ pub struct CarErsMode {
 }
 
 #[repr(C)]
-pub struct CarF1Aero {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
 pub struct CarF1Plank {
     _opaque: [u8; 0],
 }
@@ -94,11 +89,6 @@ pub struct CarSetupValues {
 
 #[repr(C)]
 pub struct CarSpline {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct CarSuspAxle {
     _opaque: [u8; 0],
 }
 
@@ -367,9 +357,12 @@ const _: () = assert!(core::mem::offset_of!(CarBrakeEcu, brake_pressure) == 0x21
 
 #[repr(C)]
 pub struct CarChassis {
-    _pad_0x0: [u8; 0x150],
+    _pad_0x0: [u8; 0x118],
+    pub tyre_physics_group: [u8; 40],
+    _pad_0x140: [u8; 0x10],
     pub mass: f32,
 }
+const _: () = assert!(core::mem::offset_of!(CarChassis, tyre_physics_group) == 0x118);
 const _: () = assert!(core::mem::offset_of!(CarChassis, mass) == 0x150);
 
 #[repr(C)]
@@ -461,6 +454,15 @@ const _: () = assert!(core::mem::offset_of!(CarEngine, max_torque) == 0x2518);
 const _: () = assert!(core::mem::offset_of!(CarEngine, limiter_rotation_rate) == 0x2528);
 const _: () = assert!(core::mem::offset_of!(CarEngine, rotation_rate) == 0x2538);
 const _: () = assert!(core::mem::offset_of!(CarEngine, throttle) == 0x2574);
+
+#[repr(C)]
+pub struct CarF1Aero {
+    _pad_0x0: [u8; 0x19a0],
+    pub drag_scale: f32,
+    pub lift_scale: f32,
+}
+const _: () = assert!(core::mem::offset_of!(CarF1Aero, drag_scale) == 0x19a0);
+const _: () = assert!(core::mem::offset_of!(CarF1Aero, lift_scale) == 0x19a4);
 
 #[repr(C)]
 pub struct CarFuelEcu {
@@ -625,6 +627,21 @@ pub struct CarSteering {
 }
 const _: () = assert!(core::mem::offset_of!(CarSteering, car) == 0x8);
 const _: () = assert!(core::mem::offset_of!(CarSteering, max_steering_lock) == 0x28);
+
+#[repr(C)]
+pub struct CarSuspAxle {
+    _pad_0x0: [u8; 0x15e4],
+    pub ride_height_offset: f32,
+    _pad_0x15e8: [u8; 0x68],
+    pub setup_camber: f32,
+    pub setup_toe: f32,
+    _pad_0x1658: [u8; 0xc],
+    pub setup_anti_roll: f32,
+}
+const _: () = assert!(core::mem::offset_of!(CarSuspAxle, ride_height_offset) == 0x15e4);
+const _: () = assert!(core::mem::offset_of!(CarSuspAxle, setup_camber) == 0x1650);
+const _: () = assert!(core::mem::offset_of!(CarSuspAxle, setup_toe) == 0x1654);
+const _: () = assert!(core::mem::offset_of!(CarSuspAxle, setup_anti_roll) == 0x1664);
 
 #[repr(C)]
 pub struct CarTurbo {
@@ -1692,15 +1709,44 @@ const _: () = assert!(core::mem::offset_of!(SaveDataContainer, retained_count) =
 pub struct SaveSlotInfo {
     pub slot_id: u64,
     pub slot_guid: u64,
+    _pad_0x10: [u8; 0x10],
+    pub name: *mut c_char,
+    _pad_0x28: [u8; 0x80],
+    pub game_setup_mode: u8,
+    _pad_0xa9: [u8; 0x3],
+    pub info_season: u32,
+    pub info_weekend: u32,
+    _pad_0xb4: [u8; 0xa],
+    pub info_team: u16,
+    pub info_driver: u16,
+    pub info_vehicle: u16,
+    _pad_0xc4: [u8; 0x4],
+    pub info_date: u64,
+    _pad_0xd0: [u8; 0xa1],
+    pub type_flags: u8,
 }
 const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, slot_id) == 0x0);
 const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, slot_guid) == 0x8);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, name) == 0x20);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, game_setup_mode) == 0xa8);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, info_season) == 0xac);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, info_weekend) == 0xb0);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, info_team) == 0xbe);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, info_driver) == 0xc0);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, info_vehicle) == 0xc2);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, info_date) == 0xc8);
+const _: () = assert!(core::mem::offset_of!(SaveSlotInfo, type_flags) == 0x171);
 
 #[repr(C)]
 pub struct SaveSlotManager {
-    _pad_0x0: [u8; 0x280],
+    _pad_0x0: [u8; 0x268],
+    pub slots_begin: *mut *mut SaveSlotInfo,
+    pub slots_end: *mut *mut SaveSlotInfo,
+    _pad_0x278: [u8; 0x8],
     pub current: *mut SaveSlotInfo,
 }
+const _: () = assert!(core::mem::offset_of!(SaveSlotManager, slots_begin) == 0x268);
+const _: () = assert!(core::mem::offset_of!(SaveSlotManager, slots_end) == 0x270);
 const _: () = assert!(core::mem::offset_of!(SaveSlotManager, current) == 0x280);
 
 #[repr(C)]
@@ -2456,6 +2502,8 @@ pub type Career_Start_UpgradeResearch_t = unsafe extern "C" fn(
     store_duration: u8,
 );
 pub type Career_Teardown_Weekend_t = unsafe extern "C" fn(weekend: *mut c_void);
+pub type Ent_Deserialise_EntrantVector_t =
+    unsafe extern "C" fn(vector_object: *mut c_void, bag: *mut c_void) -> c_int;
 pub type FeHome_Add_CareerTile_t = unsafe extern "C" fn(list: *mut TileList, index: u8);
 pub type FeHome_Handle_Command_t =
     unsafe extern "C" fn(vm: *mut FEHomeViewModel, cmd: *mut *mut NeStr) -> u64;
@@ -2604,6 +2652,8 @@ pub type Game_SaveData_SerialiseContainer_t = unsafe extern "C" fn(
 pub type Game_SaveData_WriteBag_t = unsafe extern "C" fn(codec: *mut NeBagCodec, bag: *mut c_void) -> c_int;
 pub type Game_SaveMgr_RequestProfileSave_Thunk_t =
     unsafe extern "C" fn(save_mgr: *mut c_void, callback: *mut c_void, a3: u8, a4: u8) -> bool;
+pub type Game_SaveSlotManager_Deserialise_t =
+    unsafe extern "C" fn(iface: *mut c_void, bag: *mut c_void, ctx: *mut c_void) -> c_int;
 pub type Game_SaveSlotManager_SelectSlot_t =
     unsafe extern "C" fn(manager: *mut c_void, slot_id: u64, force: bool, a4: u32) -> c_int;
 pub type Game_SceneManagerSpawn_SpawnScene_t = unsafe extern "C" fn(
@@ -2924,6 +2974,11 @@ pub mod bindings {
     };
     pub const Car_FrontWing_OnCollision: Binding = Binding {
         id: "Car_FrontWing_OnCollision",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_FuelEcu_SetMode_Thunk: Binding = Binding {
+        id: "Car_FuelEcu_SetMode_Thunk",
         kind: "func",
         status: Status::Experimental,
     };
@@ -3549,6 +3604,11 @@ pub mod bindings {
     };
     pub const Career_WizardTitleSliceVM_OnDeactivate: Binding = Binding {
         id: "Career_WizardTitleSliceVM_OnDeactivate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ent_Deserialise_EntrantVector: Binding = Binding {
+        id: "Ent_Deserialise_EntrantVector",
         kind: "func",
         status: Status::Experimental,
     };
@@ -6894,6 +6954,11 @@ pub mod bindings {
     };
     pub const Game_SaveMgr_RequestProfileSave_Thunk: Binding = Binding {
         id: "Game_SaveMgr_RequestProfileSave_Thunk",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_SaveSlotManager_Deserialise: Binding = Binding {
+        id: "Game_SaveSlotManager_Deserialise",
         kind: "func",
         status: Status::Experimental,
     };
@@ -12092,6 +12157,11 @@ pub mod bindings {
         kind: "data",
         status: Status::Experimental,
     };
+    pub const site_Ai_TableGripInput: Binding = Binding {
+        id: "site_Ai_TableGripInput",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Car_AeroStoreRearDownforce: Binding = Binding {
         id: "site_Car_AeroStoreRearDownforce",
         kind: "site",
@@ -13195,6 +13265,46 @@ pub mod bindings {
     pub const site_Sess_InGameSessionCompleteAiCall: Binding = Binding {
         id: "site_Sess_InGameSessionCompleteAiCall",
         kind: "call",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitEvalListNext: Binding = Binding {
+        id: "site_Sess_PitEvalListNext",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitEvalListSlot: Binding = Binding {
+        id: "site_Sess_PitEvalListSlot",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitEvalOwnSlot: Binding = Binding {
+        id: "site_Sess_PitEvalOwnSlot",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitEvalReturnFalse: Binding = Binding {
+        id: "site_Sess_PitEvalReturnFalse",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitRankEpilogue: Binding = Binding {
+        id: "site_Sess_PitRankEpilogue",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitRankListNext: Binding = Binding {
+        id: "site_Sess_PitRankListNext",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitRankListSlot: Binding = Binding {
+        id: "site_Sess_PitRankListSlot",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitRankOwnSlot: Binding = Binding {
+        id: "site_Sess_PitRankOwnSlot",
+        kind: "site",
         status: Status::Experimental,
     };
     pub const site_Sess_PuPanel_SlotHolder: Binding = Binding {

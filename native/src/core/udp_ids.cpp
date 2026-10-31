@@ -34,6 +34,8 @@ ids::Map map;
 std::atomic<bool> armed;
 std::atomic<bool> said;
 std::atomic<int> seen_formats;
+std::atomic<uint64_t> odd_sizes[4];
+std::atomic<bool> trial_said;
 
 bool lan_traffic(const sockaddr *to, int tolen)
 {
@@ -58,18 +60,56 @@ void first(int format, int id, const std::vector<ids::Change> &changes)
     SetLastError(err);
 }
 
+void odd(const ids::Layout *l, int len)
+{
+    int slot = l->format - 2024;
+    if (slot < 0 || slot > 2 || l->id > 63)
+        return;
+    uint64_t bit = uint64_t(1) << l->id;
+    if (odd_sizes[slot].fetch_or(bit) & bit)
+        return;
+    DWORD err = GetLastError();
+    swofty::log("[udp] format %d packet %d is %d bytes, not the %d the id rewrite expects; left alone", l->format, l->id,
+                len, int(l->size));
+    SetLastError(err);
+}
+
+void trial(const ids::Layout *l, const uint8_t *p, bool changed)
+{
+    if (l->id != 14 || trial_said.exchange(true))
+        return;
+    DWORD err = GetLastError();
+    std::string teams;
+    for (size_t i = 0; i < l->max_entries; i++) {
+        const uint8_t *at = p + ids::HEADER + i * l->stride + l->team;
+        teams += (i ? ", " : "") + std::to_string(l->wide ? at[0] | at[1] << 8 : at[0]);
+    }
+    swofty::log("[udp] first time trial packet: format %d, team ids %s, %s", l->format, teams.c_str(),
+                changed ? "rewritten" : "not rewritten");
+    SetLastError(err);
+}
+
 int WSAAPI h_sendto(SOCKET s, const char *buf, int len, int flags, const sockaddr *to, int tolen)
 {
     auto real = reinterpret_cast<SendToFn>(orig_sendto);
     if (!armed.load(std::memory_order_relaxed) || !buf || len < int(ids::HEADER) + 1 || len > int(ids::MAX_PACKET) ||
-        !ids::identify(reinterpret_cast<const uint8_t *>(buf), size_t(len)) || lan_traffic(to, tolen))
+        lan_traffic(to, tolen))
         return real(s, buf, len, flags, to, tolen);
+    if (!ids::identify(reinterpret_cast<const uint8_t *>(buf), size_t(len))) {
+        if (const ids::Layout *l = ids::misfit(reinterpret_cast<const uint8_t *>(buf), size_t(len)))
+            odd(l, len);
+        return real(s, buf, len, flags, to, tolen);
+    }
     uint8_t copy[ids::MAX_PACKET];
     memcpy(copy, buf, size_t(len));
     std::vector<ids::Change> changes;
     int format = 0, id = 0;
-    if (!ids::rewrite(map, copy, size_t(len), &changes, &format, &id))
+    const ids::Layout *l = ids::identify(copy, size_t(len));
+    if (!ids::rewrite(map, copy, size_t(len), &changes, &format, &id)) {
+        trial(l, reinterpret_cast<const uint8_t *>(buf), false);
         return real(s, buf, len, flags, to, tolen);
+    }
+    trial(l, reinterpret_cast<const uint8_t *>(buf), true);
     first(format, id, changes);
     return real(s, reinterpret_cast<const char *>(copy), len, flags, to, tolen);
 }
