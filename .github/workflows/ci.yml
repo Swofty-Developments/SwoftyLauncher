@@ -203,9 +203,9 @@ jobs:
         run: cargo clippy --workspace --all-targets -- -D warnings
 
       # --workspace takes in the launcher's and the installer's tests too. The real-file round trips skip
-      # without F1_25_DIR; CI has no game files.
+      # without F1_25_DIR; CI has no game files. --no-fail-fast reports every failing test binary in one run.
       - name: Test
-        run: cargo test --workspace
+        run: cargo test --workspace --no-fail-fast
 
   swofty-ui:
     name: Swofty UI (${{ matrix.os }})
