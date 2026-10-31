@@ -220,6 +220,21 @@ static void unavailable_without_core()
     CHECK(career::set_seat(7, 1, Ref<drivers::Identity>("game/pierre_gasly")) == career::Result::unavailable);
     CHECK(cars::reset_upgrades(0) == Result::unavailable);
     CHECK(!cars::live::available() && cars::live::cars().empty());
+    CHECK(!cars::live::field("aero.lift_scale") && !cars::live::Car(0).get("aero.lift_scale") &&
+          cars::live::Car(0).set("aero.lift_scale", 0.5f) == Result::invalid);
+    {
+        auto layer = cars::live::Layer::scale(cars::live::Cars::all(), "engine.power_scale", 0.9725f, 5);
+        CHECK(!layer.ok() && layer.result() == Result::unavailable);
+    }
+    cars::Profile profile;
+    profile.power_scale = 0.9725f;
+    profile.limiter_offset_rpm = -300;
+    profile.ai_grip_scale = 0.87f;
+    profile.when = {events::SessionType::practice, events::SessionType::race};
+    cars::Profile round;
+    CHECK(from_json(to_json(profile), round) && round.power_scale == 0.9725f && round.limiter_offset_rpm == -300 &&
+          round.ai_grip_scale == 0.87f && round.when.size() == 2 && !round.fuel_modes);
+    CHECK(std::string(cars::profiles.name()) == "car.profile" && !cars::profiles.schema().empty());
     CHECK(detail::run_register(nullptr) == 1);
 }
 

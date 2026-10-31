@@ -20,10 +20,11 @@ struct Rules {
     Ref<power::DrsRule> drs;
     Ref<tyres::Class> tyre_class;
     Ref<RulesProfile> rules_profile;
+    Ref<cars::Profile> car_profile;
     bool refuelling = false;
     std::optional<float> race_fuel_kg;
 };
-SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, refuelling, race_fuel_kg)
+SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, car_profile, refuelling, race_fuel_kg)
 
 inline Result set_control(cars::live::Car car, Control mode)
 {

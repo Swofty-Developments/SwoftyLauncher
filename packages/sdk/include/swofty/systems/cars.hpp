@@ -20,6 +20,9 @@
 // mode and flags fresh from the core (nothing while the game rebuilds its controller sets, or on a core
 // without session operations). cars::live is experimental: nothing in it has run in game yet, and the final
 // drive and gear ratio fields depend on the gearbox's use_setup_ratios byte (+0x540), not yet read at runtime.
+// Version 2 of the car operations adds field paths (Car::get/set/scale with a string), live::Layer (a layer the
+// core keeps and applies again after every build, reset, upgrade replay and setup apply) and the car.profile
+// registry; a field whose KB row has no independent verify row answers Result::unavailable.
 
 namespace swofty::cars {
 
@@ -228,6 +231,27 @@ SWOFTY_RECORD(Handling, from, vtf, cls, damage_scale, chassis, f1_aero, core_aer
               tyre_damage, body_damage, tyres, engine, gearbox, fuel_tank, fuel_ecu, brake_ecu, steering, differential,
               suspension, tuning, assists, turbo, ers, plank, rad_upgrades)
 
+struct CarSelect {
+    std::vector<uint32_t> indices;
+    std::vector<std::string> vehicle_package, vehicle, team;
+};
+SWOFTY_RECORD(CarSelect, indices, vehicle_package, vehicle, team)
+
+struct Profile {
+    static constexpr Version version{1, 0};
+    json::Value within;
+    std::vector<events::SessionType> when;
+    CarSelect cars;
+    bool ai_only = false, player_only = false;
+    int priority = 0;
+    float power_scale = 1, limiter_offset_rpm = 0, lift_scale = 1, drag_scale = 1;
+    float grip_scale = 1, ai_grip_scale = 1;
+    std::optional<uint32_t> fuel_modes;
+    json::Value extra;
+};
+SWOFTY_RECORD(Profile, within, when, cars, ai_only, player_only, priority, power_scale, limiter_offset_rpm, lift_scale,
+              drag_scale, grip_scale, ai_grip_scale, fuel_modes)
+
 struct Part {
     std::string node;
     float detach_at = 0;
@@ -238,6 +262,7 @@ SWOFTY_RECORD(Part, node, detach_at, debris)
 inline Registry<Vehicle> vehicles{"vehicle", {.applies = Applies::boot}};
 inline Registry<Package> packages{"vehicle.package", {.applies = Applies::boot}};
 inline Registry<Handling> handling{"vehicle.handling", {.applies = Applies::session}};
+inline Registry<Profile> profiles{"car.profile", {.applies = Applies::read, .snapshot = true}};
 
 inline Result reset_upgrades(int) { return Result::unavailable; }
 
@@ -275,6 +300,24 @@ enum class Field : uint32_t {
     gear_ratio_7 = SWOFTY_CAR_GEAR_RATIO_1 + 6,
     gear_ratio_8 = SWOFTY_CAR_GEAR_RATIO_1 + 7,
     gear_ratio_9 = SWOFTY_CAR_GEAR_RATIO_1 + 8,
+    aero_lift_scale = SWOFTY_CAR_AERO_LIFT_SCALE,              // F1Aero/lift_scale, multiplies the body lift; an R&D replay resets it to 1
+    aero_drag_scale = SWOFTY_CAR_AERO_DRAG_SCALE,              // F1Aero/drag_scale, multiplies the body drag
+    engine_power_scale = SWOFTY_CAR_ENGINE_POWER_SCALE,        // the core's handler on the engine drive torque; writes no game data
+    engine_limiter_offset_rpm = SWOFTY_CAR_ENGINE_LIMITER_OFFSET_RPM, // negative: the torque is cut that many rpm under the limiter
+    ai_grip_scale = SWOFTY_CAR_AI_GRIP_SCALE,                  // the AI's table grip input, dry weather only
+    tyres_front_grip_scale = SWOFTY_CAR_TYRES_FRONT_GRIP_SCALE, // Suspension Tyre Front/GripMultiplier
+    tyres_rear_grip_scale = SWOFTY_CAR_TYRES_REAR_GRIP_SCALE,
+    chassis_ballast_kg = SWOFTY_CAR_CHASSIS_BALLAST_KG,        // kilograms added to the VTF mass, then the chassis reset
+    brakes_bias = SWOFTY_CAR_BRAKES_BIAS,                      // BrakeECU bias, 0 .. 1
+    brakes_pressure = SWOFTY_CAR_BRAKES_PRESSURE,
+    susp_front_camber = SWOFTY_CAR_SUSP_FRONT_CAMBER,          // the axle's setup camber, toe, anti-roll bar and ride height offset
+    susp_front_toe = SWOFTY_CAR_SUSP_FRONT_TOE,
+    susp_front_anti_roll = SWOFTY_CAR_SUSP_FRONT_ANTI_ROLL,
+    susp_front_ride_height_offset = SWOFTY_CAR_SUSP_FRONT_RIDE_HEIGHT_OFFSET,
+    susp_rear_camber = SWOFTY_CAR_SUSP_REAR_CAMBER,
+    susp_rear_toe = SWOFTY_CAR_SUSP_REAR_TOE,
+    susp_rear_anti_roll = SWOFTY_CAR_SUSP_REAR_ANTI_ROLL,
+    susp_rear_ride_height_offset = SWOFTY_CAR_SUSP_REAR_RIDE_HEIGHT_OFFSET,
 };
 
 }
@@ -317,9 +360,26 @@ inline const SwoftyCarOps *live_car_ops()
     return t && t->available && t->available() ? t : nullptr;
 }
 
+inline const SwoftyCarOps *live_car_ops_v2()
+{
+    auto t = live_car_ops();
+    return t && t->version >= 2 && t->field && t->layer && t->unlayer ? t : nullptr;
+}
+
 }
 
 namespace swofty::cars::live {
+
+class Car;
+
+inline std::optional<Field> field(std::string_view path)
+{
+    auto t = swofty::detail::live_car_ops_v2();
+    uint32_t id = 0;
+    if (!t || t->field(std::string(path).c_str(), &id) != SWOFTY_ASSET_OK)
+        return std::nullopt;
+    return static_cast<Field>(id);
+}
 
 class Car {
 public:
@@ -362,6 +422,22 @@ public:
         return r == Result::ok ? set(f, v * factor) : r;
     }
 
+    std::optional<float> get(std::string_view path) const
+    {
+        auto f = field(path);
+        return f ? get(*f) : std::nullopt;
+    }
+    Result set(std::string_view path, float value) const
+    {
+        auto f = field(path);
+        return f ? set(*f, value) : Result::invalid;
+    }
+    Result scale(std::string_view path, float factor) const
+    {
+        auto f = field(path);
+        return f ? scale(*f, factor) : Result::invalid;
+    }
+
 private:
     Result read(Field f, float &v) const
     {
@@ -389,6 +465,118 @@ inline std::vector<Car> cars()
             out.emplace_back(i, h);
     }
     return out;
+}
+
+
+enum class Op : uint32_t { set = SWOFTY_CAR_OP_SET, scale = SWOFTY_CAR_OP_SCALE, add = SWOFTY_CAR_OP_ADD };
+
+// Which cars a layer reaches: every car (also the ones built later), or the cars that are on track when the
+// selector is made.
+class Cars {
+public:
+    static Cars all() { return Cars(true, {}); }
+    static Cars car(const Car &c) { return Cars(false, {c.index()}); }
+    static Cars ai();
+    static Cars player();
+    bool every() const { return all_; }
+    const std::vector<uint32_t> &indices() const { return indices_; }
+
+private:
+    Cars(bool all, std::vector<uint32_t> indices) : all_(all), indices_(std::move(indices)) {}
+    bool all_ = false;
+    std::vector<uint32_t> indices_;
+};
+
+// A layer the core keeps and applies again after every car.built, car.reset, R&D upgrade replay and setup apply.
+// It is removed when the Layer is destroyed. Layers of one field compose by priority (lower first), then by the
+// order they were made. Experimental.
+class Layer {
+public:
+    Layer() = default;
+    Layer(const Layer &) = delete;
+    Layer &operator=(const Layer &) = delete;
+    Layer(Layer &&o) noexcept : tokens_(std::move(o.tokens_)) { o.tokens_.clear(); }
+    Layer &operator=(Layer &&o) noexcept
+    {
+        if (this != &o) {
+            release();
+            tokens_ = std::move(o.tokens_);
+            o.tokens_.clear();
+        }
+        return *this;
+    }
+    ~Layer() { release(); }
+
+    static Layer set(const Cars &cars, std::string_view path, float value, int priority = 0)
+    {
+        return make(cars, path, Op::set, value, priority);
+    }
+    static Layer scale(const Cars &cars, std::string_view path, float factor, int priority = 0)
+    {
+        return make(cars, path, Op::scale, factor, priority);
+    }
+    static Layer add(const Cars &cars, std::string_view path, float delta, int priority = 0)
+    {
+        return make(cars, path, Op::add, delta, priority);
+    }
+
+    Result result() const { return result_; }
+    bool ok() const { return result_ == Result::ok && !tokens_.empty(); }
+
+    void release()
+    {
+        auto t = swofty::detail::live_car_ops_v2();
+        if (t)
+            for (uint32_t token : tokens_)
+                t->unlayer(token);
+        tokens_.clear();
+    }
+
+private:
+    static Layer make(const Cars &cars, std::string_view path, Op op, float value, int priority)
+    {
+        Layer l;
+        auto t = swofty::detail::live_car_ops_v2();
+        auto f = field(path);
+        if (!t || !f) {
+            l.result_ = t ? Result::invalid : Result::unavailable;
+            return l;
+        }
+        std::vector<uint32_t> targets = cars.every() ? std::vector<uint32_t>{SWOFTY_CAR_ALL} : cars.indices();
+        for (uint32_t index : targets) {
+            uint32_t token = 0;
+            Result r = swofty::detail::result(t->layer("addon", index, static_cast<uint32_t>(*f),
+                                                       static_cast<uint32_t>(op), value, priority, &token));
+            if (r != Result::ok) {
+                l.result_ = r;
+                l.release();
+                return l;
+            }
+            l.tokens_.push_back(token);
+        }
+        l.result_ = Result::ok;
+        return l;
+    }
+    std::vector<uint32_t> tokens_;
+    Result result_ = Result::unavailable;
+};
+
+inline Cars Cars::ai()
+{
+    std::vector<uint32_t> out;
+    for (const Car &c : cars())
+        if (c.is_ai())
+            out.push_back(c.index());
+    return Cars(false, std::move(out));
+}
+
+inline Cars Cars::player()
+{
+    std::vector<uint32_t> out;
+    for (const Car &c : cars())
+        if (!c.is_ai())
+            out.push_back(c.index());
+    return Cars(false, std::move(out));
 }
 
 }
@@ -436,6 +624,21 @@ struct Reset {
     uint32_t size, payload_version;
     live::Car car;
     bool upgrade;
+};
+
+struct UpgradesReplayed {
+    static constexpr const char *point = "car.upgrades.replayed";
+    static constexpr uint32_t version = 1;
+    uint32_t size, payload_version;
+    live::Car car;
+    float progress;
+};
+
+struct SetupApplied {
+    static constexpr const char *point = "car.setup.applied";
+    static constexpr uint32_t version = 1;
+    uint32_t size, payload_version;
+    live::Car car;
 };
 
 struct ControllersRebuilt {
