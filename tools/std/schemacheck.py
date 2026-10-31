@@ -518,6 +518,14 @@ class Comparer:
         self.k_generic("x-shared", o, n, path)
 
     def k_x_data_group(self, o, n, path):
+        if (
+            "x-data-group" not in o
+            and n.get("x-data-group") is True
+            and "data_group" in n.get("properties", {})
+            and "data_group" not in o.get("properties", {})
+            and "data_group" not in n.get("required", [])
+        ):
+            return
         self.k_generic("x-data-group", o, n, path)
 
     def k_x_snapshot(self, o, n, path):

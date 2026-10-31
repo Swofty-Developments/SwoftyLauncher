@@ -116,7 +116,7 @@ struct Round {
 SWOFTY_RECORD(Round, round, race, venue, date)
 
 struct Calendar {
-    static constexpr Version version{1, 0};
+    static constexpr Version version{1, 1};
     std::string data_group;
     Keyed<Round, &Round::round> rounds;
     int seasons = 10;
