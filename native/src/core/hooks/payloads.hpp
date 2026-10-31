@@ -50,6 +50,21 @@ bool vtf_read(Fire &&fire, const swofty::cars::live::Car &car, const char *secti
     return ok;
 }
 
+template <class Fire> bool upgrades_replayed(Fire &&fire, const swofty::cars::live::Car &car, float progress)
+{
+    swofty::cars::events::UpgradesReplayed e{};
+    e.car = car;
+    e.progress = progress;
+    return fire(e);
+}
+
+template <class Fire> bool setup_applied(Fire &&fire, const swofty::cars::live::Car &car)
+{
+    swofty::cars::events::SetupApplied e{};
+    e.car = car;
+    return fire(e);
+}
+
 template <class Fire> bool built(Fire &&fire, const swofty::cars::live::Car &car)
 {
     swofty::cars::events::Built e{};

@@ -49,6 +49,8 @@ static_assert(declared<ca::UpgradesFit>(SWOFTY_POINT_MODIFY));
 static_assert(declared<ca::VtfRead>(SWOFTY_POINT_MODIFY));
 static_assert(declared<ca::Built>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<ca::Reset>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<ca::UpgradesReplayed>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<ca::SetupApplied>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<ca::PartsRegister>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<ca::ControllersRebuilt>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::ai::events::ControllerUpdate>(SWOFTY_POINT_CANCEL));
@@ -87,6 +89,8 @@ bool car_upgrades_fit(ca::UpgradesFit &payload) { return fire(payload); }
 bool car_vtf_read(ca::VtfRead &payload) { return fire(payload); }
 bool car_built(ca::Built &payload) { return fire(payload); }
 bool car_reset(ca::Reset &payload) { return fire(payload); }
+bool car_upgrades_replayed(ca::UpgradesReplayed &payload) { return fire(payload); }
+bool car_setup_applied(ca::SetupApplied &payload) { return fire(payload); }
 bool car_parts_register(ca::PartsRegister &payload) { return fire(payload); }
 bool audio_bundle_resolve(so::BundleResolve &payload) { return fire(payload); }
 
@@ -104,6 +108,11 @@ bool car_vtf_read(const swofty::cars::live::Car &car, const char *section, const
 
 bool car_built(const swofty::cars::live::Car &car) { return payloads::built(fire_core, car); }
 bool car_reset(const swofty::cars::live::Car &car, bool upgrade) { return payloads::reset(fire_core, car, upgrade); }
+bool car_upgrades_replayed(const swofty::cars::live::Car &car, float progress)
+{
+    return payloads::upgrades_replayed(fire_core, car, progress);
+}
+bool car_setup_applied(const swofty::cars::live::Car &car) { return payloads::setup_applied(fire_core, car); }
 
 bool car_parts_register(int32_t car, const char *vehicle, void *front_wing, const payloads::PartSink &add)
 {
