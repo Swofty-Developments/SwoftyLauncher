@@ -135162,6 +135162,62 @@
    "used_by": [
     "native/src/core/leaderboard_guard.cpp"
    ]
+  },
+  {
+   "id": "game.pit_lane_box_slot_read",
+   "section": ".xtls",
+   "pattern": "41 89 FE 4E 8B 84 F3 F8 07 00 00 4D 85 C0",
+   "match": "0x1434c3653",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1434c3653",
+   "kind": "mid",
+   "expect": "41 89 FE 4E 8B 84 F3 F8 07 00 00",
+   "names": [
+    "site_Game_PitLane_BoxSlotRead"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "pitlane",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/pit_box.cpp"
+   ],
+   "func_start": "0x1434c3520"
+  },
+  {
+   "id": "game.pit_lane_box_pose_false",
+   "section": ".xtls",
+   "pattern": "4C 89 66 20 EB 0A C4 C1 78 29 36 48 83 46 18 10 C6 06 00 48 89 F1 E8 ?? ?? ?? ?? 83 FF 02 0F 95 C0",
+   "match": "0x1434c41e7",
+   "anchor": "0x1b",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1434c4202",
+   "kind": "mid",
+   "expect": "83 FF 02 0F 95 C0",
+   "names": [
+    "site_Game_PitLane_BoxPoseFalse"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "pitlane",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/pit_box.cpp"
+   ],
+   "func_start": "0x1434c3520"
   }
  ]
 }
