@@ -94,6 +94,8 @@ std::vector<CareerRow> rows_for(const std::vector<std::array<std::string, 2>> &s
     std::vector<int> seated;
     for (int i = 0; i < season::kSlots; ++i)
         for (int k = 0; k < 2; ++k) {
+            if (std::find(seated.begin(), seated.end(), stat(seats[i][k])) != seated.end())
+                continue;
             CareerRow r;
             r.driver = st(seats[i][k]);
             r.team = g_data.slots[i].team_stat;

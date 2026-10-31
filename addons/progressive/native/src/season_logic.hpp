@@ -1041,6 +1041,53 @@ inline Plan plan(const Data &d, int year, const std::vector<CareerRow> &rows, co
     for (int k : p.extras)
         if (std::find(seated.begin(), seated.end(), rows[k].driver) == seated.end())
             p.releases.push_back(rows[k].driver);
+    auto cars_in = [&](int slot) {
+        int n = 0;
+        auto leaves = [&](uint32_t dr) {
+            for (auto &m : p.moves)
+                if (m.driver == dr)
+                    return true;
+            return count[dr] == 1 && std::find(p.releases.begin(), p.releases.end(), dr) != p.releases.end();
+        };
+        for (int k = 0; k < lineup::kSeats; ++k)
+            if (p.holder[slot][k] >= 0 && !leaves(rows[p.holder[slot][k]].driver))
+                ++n;
+        for (int k : p.extras)
+            if (slot_of_team(d, rows[k].team) == slot && !leaves(rows[k].driver))
+                ++n;
+        for (auto &m : p.moves)
+            if (m.to.slot == slot)
+                ++n;
+        return n;
+    };
+    for (int i = 0; i < kSlots; ++i)
+        while (!p.closed[i] && cars_in(i) > lineup::kSeats) {
+            auto drop_at = p.moves.end();
+            for (auto it = p.moves.begin(); it != p.moves.end(); ++it) {
+                int h = p.holder[it->to.slot][it->to.index];
+                if (it->to.slot == i && it->driver != p.player && h >= 0 &&
+                    (count[rows[h].driver] > 1 ||
+                     std::find(p.releases.begin(), p.releases.end(), rows[h].driver) == p.releases.end()) &&
+                    std::none_of(p.moves.begin(), p.moves.end(), [&](const Move &m) { return m.driver == rows[h].driver; }))
+                    drop_at = it;
+            }
+            if (drop_at == p.moves.end()) {
+                p.notes.push_back("slot " + std::to_string(i + 1) + " (" + d.slots[i].team + ") would hold more than " +
+                                  std::to_string(lineup::kSeats) + " cars after the apply and no move into it can be dropped");
+                break;
+            }
+            Move gone = *drop_at;
+            p.moves.erase(drop_at);
+            uint32_t keep = rows[p.holder[gone.to.slot][gone.to.index]].driver;
+            p.notes.push_back("slot " + std::to_string(i + 1) + " (" + d.slots[i].team + ") would hold a third car: driver " +
+                              std::to_string(gone.driver) + " is not moved in and driver " + std::to_string(keep) +
+                              " keeps seat " + std::to_string(gone.to.index + 1));
+            p.target[gone.to.slot][gone.to.index] = keep;
+            seated.erase(std::remove(seated.begin(), seated.end(), gone.driver), seated.end());
+            seated.push_back(keep);
+            if (gone.from.slot >= 0 && count[gone.driver] == 1)
+                p.releases.push_back(gone.driver);
+        }
     p.repositions.erase(std::remove_if(p.repositions.begin(), p.repositions.end(),
                                        [&](const Move &m) {
                                            for (auto &mv : p.moves)
