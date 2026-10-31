@@ -9,9 +9,12 @@ has none, so its model drag is scaled by the 2026 car's model drag over its open
 closed-wing drag over its model drag, at the variation's wing angles (closed_wing_drag). vp_times, tyre_wear and fuel_burn_granular
 are simulated with those tables on the track's stock line and brake line settings. The car has no ERS, so every ERS
 mode row is the no-ERS row, ers_use_granular is zero everywhere and ers_boost_data carries no ERS use. vp_chars and
-brakelinesettings stay the template's. The tables are the race trim: the race tyre (the compound file's first dry code,
-SOF) and the race engine, RACE_POWER of the handling file's power and a limiter RACE_LIMITER_RPM lower, as the 1990
-native code (quali_engine.cpp) runs it outside qualifying.
+brakelinesettings stay the template's. The tables are the qualifying trim: the qualifier (code USO of the car's
+TyrePhysicsGroup) and the handling file's engine, the qualifying engine. Outside 1990 qualifying the native code
+(ai_quali.cpp) scales the AI's grip input to every dry table by AI_RACE_GRIP, and (quali_engine.cpp) runs the
+race engine. AI_RACE_GRIP (0.87) is lower than the tyres' grip ratio (0.92): the tables' grip rows follow EA's 2026
+rows, which lose less pace per unit of grip than the car model. lap1990_race is the flying lap on these tables with
+that table grip and the brake line modifiers at grip 1.0, as in the game.
 
 Outputs (relative to the car pack folder `carpack/`): erp/ai/<track>/<folder>.erp, erp/ai/index.json, erp/ai/laps.json,
 erp/ai/checks.json, assets/ai.json, and a copy of laps.json at addons/f1-1990/data/ai-laps-1990.json.
@@ -41,8 +44,7 @@ PLAIN_VP_PACKAGE = 'f2_2026_vehicle_package'
 SANITY_RADII = (50.0, 150.0, 300.0)
 SANITY_TRACK = 'melbourne'
 SANITY_FOLDERS = ('mclaren', 'haas')
-RACE_POWER = 0.9725
-RACE_LIMITER_RPM = 300.0
+AI_RACE_GRIP = 0.87
 
 
 def calendar_tracks():
@@ -140,19 +142,15 @@ def closed_wing_drag(game, cfg, cfg26, folder, variation):
     return round(model26 / game26 * game90 / model90, 4)
 
 
-def race_engine(cfg):
-    import math
-    out = cfg.with_overrides(power=RACE_POWER)
-    out.limiter = cfg.limiter - RACE_LIMITER_RPM * 2 * math.pi / 60
-    return out
-
-
 def car_config(game, handling_dir, folder, car_pack_compounds=None):
     from swofty_ai import carmodel
     data, _ = handling_vtf(handling_dir, folder)
     comp, _ = compounds_1990(game, car_pack_compounds)
     cfg = carmodel.CarConfig.from_vtf(data, comp, SOURCE, folder)
     cfg.package = TARGET
+    if cfg.tyre_front and cfg.tyre_rear:
+        cfg.tyre_front = carmodel._tyre(comp, cfg.tyre_front['name'][:-4] + 'USOF') or cfg.tyre_front
+        cfg.tyre_rear = carmodel._tyre(comp, cfg.tyre_rear['name'][:-4] + 'USOR') or cfg.tyre_rear
     if cfg.has_ers:
         raise SystemExit(f'{folder}: the handling file has an ERS (MaxDeployPower set); expected the no-ERS 1990 car')
     if not cfg.tyre_front or not cfg.tyre_rear:
@@ -230,6 +228,18 @@ def no_ers_boost(blob, k_time, k_fuel):
     return t.to_bytes()
 
 
+def race_lap(spl, tables, settings):
+    from swofty_ai import laps, sim
+    route = spl.route('track')
+    pts = laps._positions(spl, route)
+    lines = laps.section(settings, False)
+    mod = None
+    if lines is not None:
+        gate_s, length = sim.stations_of(pts)
+        mod, _, _ = laps.modifiers(spl, route, gate_s, length, True, lines, 1.0, laps.mass_bias_of(tables, None))
+    return float(sim.simulate(pts, tables, wet=False, corner_mod=mod, grip=AI_RACE_GRIP).lap_time)
+
+
 def _sets_of(blob):
     from swofty_ai import cartables
     return cartables.Table(blob).sets
@@ -250,7 +260,7 @@ def job(args):
     cfg = car_config(game, handling_dir, folder, car_pack_compounds)
     cfg26 = carmodel.CarConfig.from_game(game, SOURCE, folder)
     drag_k = closed_wing_drag(game, cfg, cfg26, folder, variation)
-    cfg = race_engine(cfg.with_overrides(drag=drag_k))
+    cfg = cfg.with_overrides(drag=drag_k)
     tpl_sets = {x: _sets_of(templates[x]) for x in TABLE_EXTS}
     axes = template_axes(cfg, tpl_sets)
     rows = carmodel.build_tables(cfg, variation, axes, full=True)
@@ -279,6 +289,7 @@ def job(args):
         return mod
 
     lap90 = laps.flying(spl, t90, settings, grip=1.0)
+    lap90_race = race_lap(spl, t90, settings)
     lap26 = laps.flying(spl, t26, settings, grip=1.0)
     lap90_raw = laps.flying(spl, raw90, settings, grip=1.0)['lapTime']
     lap26_model = laps.flying(spl, m26, settings, grip=1.0)['lapTime']
@@ -332,6 +343,7 @@ def job(args):
         sanity = {'1990': table_sanity(t90), '2026': table_sanity(t26), '1990_uncorrected': table_sanity(raw90),
                   '2026_model': table_sanity(m26)}
     return {'track': track, 'folder': folder, 'variation': variation, 'lap1990': lap90['lapTime'],
+            'lap1990_race': lap90_race,
             'lap2026': lap26['lapTime'], 'lap1990_uncorrected': lap90_raw, 'lap2026_model': lap26_model,
             'copd_shift': copd_shift, 'lap1990_no_mods': plain90, 'lap2026_no_mods': plain26,
             'vmax1990': lap90['vmax'] * 3.6, 'vmax2026': lap26['vmax'] * 3.6, 'length': lap90['length'],
@@ -516,7 +528,9 @@ def laps_doc(results, tracks, folders):
     doc = {'description': 'Simulated flying laps (s) on the stock AI line with the stock brake line settings: grip 1.0, '
                           "the tables' middle mass, difficulty 1.0, standard fuel map, medium ERS (the 1990 car has "
                           'none). lap1990: the generated 1990 tables (handling removed_2026_1990). lap2026: the stock '
-                          'tables of the same folder at that track. ratio = lap1990 / lap2026. model_ratio: both cars '
+                          'tables of the same folder at that track. lap1990_race: the 1990 tables at grip '
+                          'AI_RACE_GRIP (0.87, the race tyre), the modifiers at 1.0. ratio = lap1990 / lap2026. '
+                          'model_ratio: both cars '
                           'from the car model (1990 before the copd correction against the 2026 car), for comparison.',
            'handling': 'removed_2026_1990', 'tracks': {}}
     for t in tracks:
@@ -528,7 +542,8 @@ def laps_doc(results, tracks, folders):
         fastest = min(cars.items(), key=lambda kv: kv[1]['lap1990'])
         first = next(iter(cars.values()))
         doc['tracks'][t] = {
-            'cars': {f: {'lap1990': round(c['lap1990'], 3), 'lap2026': round(c['lap2026'], 3),
+            'cars': {f: {'lap1990': round(c['lap1990'], 3), 'lap1990_race': round(c.get('lap1990_race', 0.0), 3),
+                         'lap2026': round(c['lap2026'], 3),
                          'ratio': round(c['lap1990'] / c['lap2026'], 5),
                          'model_ratio': round(c['lap1990_uncorrected'] / c['lap2026_model'], 5)}
                      for f, c in cars.items()},

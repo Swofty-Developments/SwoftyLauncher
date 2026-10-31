@@ -1,23 +1,25 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 //
-// F1 1990 - the AI's qualifying pace. Its own DLL, so a binding the core can't resolve drops only this.
+// F1 1990 - the AI's tyre pace. Its own DLL, so a binding the core can't resolve drops only this.
 //
-// The 1990 AI tables are built in race trim (race tyre, race engine). The AI's grip input (vehicle
-// state +0x24, from Car_Tyre_ComputeGripMultiplier) carries wear, temperature and the handling
-// file's GripMultiplier but not the compound's Peak, so the AI on qualifiers would corner at race
-// tyre speeds. In 1990 qualifying (the session group at each car's upgrade fill is 1 or 2, in a
-// career whose data group is f1_career_1990) Ai_Eval_CurvatureModifier, the AI's corner radius
-// factor, returns its value times kRadiusScale. 0x14068fd10 reads the corner speed from the .copd
-// row at that radius, so the scale is the qualifier/race tyre grip ratio (Goodyear 0.97/0.895,
-// Pirelli 0.99/0.91): at a grip-limited radius the speed is the qualifier's, about 4 % up. Off in
-// every other session, in other careers, and when a career loads or unloads. Braking (.brpd) and
-// traction (.acpd) lookups do not see it. The power gap comes from the cars' own engines
-// (f1_1990_quali.dll). Option quali_engine_1990 covers it.
+// The 1990 AI tables are built in qualifying trim (the qualifier, the qualifying engine). The AI's
+// grip input (vehicle state +0x24, from Car_Tyre_ComputeGripMultiplier) carries wear, temperature
+// and the handling file's GripMultiplier but not the compound's Peak, so on race tyres the AI would
+// still read the qualifier rows. 0x14063e370 loads that grip once per car per update and hands it to
+// the coordinate builders of all six tables (acpd, brpd, copd, crpd and two more); at
+// site_Ai_TableGripInput it is in xmm1. Outside 1990 qualifying (the session group at each car's
+// upgrade fill is known and not 1 or 2, in a career whose data group is f1_career_1990) the dry grip
+// (weather byte cl 0, the tables' first weather row) is scaled by kRaceGrip, so cornering, braking and
+// traction read the rows that match the race tyre (0.895/0.97 Goodyear, 0.91/0.99 Pirelli of the
+// qualifier's grip; the tables' grip rows follow EA's 2026 rows, which lose less pace per unit of grip
+// than the car, so the factor is 0.87 rather than 0.92). Off in 1990 qualifying, in other careers and
+// modes, and when a career loads or unloads. Option quali_engine_1990 covers it.
 //
-// F1 1990 box (Grand Prix, no career loaded): at each session start (Sess_TyreAllocation_OnSessionStart),
-// when every entrant of the session's line-up drives a 1990 car, the scale is on in qualifying (session ids
-// 5 to 14) and off in every other session. Every other session start without a career, and every session
-// end without one, turns it off.
+// F1 1990 box (Grand Prix and Time Trial, no career loaded): at each session start
+// (Sess_TyreAllocation_OnSessionStart), when every entrant of the session's line-up drives a 1990 car,
+// the race grip is on in practice and the race and off in qualifying (session ids 5 to 14) and Time
+// Trial (qualifier trim). Every other session start without a career, and every session end without
+// one, turns it off.
 
 #include <atomic>
 
@@ -32,9 +34,7 @@
 #include "rnd_progress.hpp"
 
 namespace swofty::game {
-using Ai_Eval_CurvatureModifier_1990_t = float(float grip, float mass_bias, void *settings, bool flag, void *line_a,
-                                               float dist_a, void *line_b, float dist_b);
-inline constexpr fn<"Ai_Eval_CurvatureModifier", Ai_Eval_CurvatureModifier_1990_t> Ai_Eval_CurvatureModifier_1990{};
+inline constexpr site<"site_Ai_TableGripInput"> site_Ai_TableGripInput_1990{};
 }
 
 SWOFTY_SETTING(bool, quali_engine_1990, true);
@@ -43,35 +43,35 @@ namespace {
 
 using f1990::at;
 
-constexpr float kRadiusScale = 1.085f;
+constexpr float kRaceGrip = 0.87f;
 constexpr size_t kWeekendVt = 0x98 / 8;
 
-std::atomic<bool> g_quali{false};
-std::atomic<uint32_t> g_calls;
+std::atomic<bool> g_race{false};
+std::atomic<uint32_t> g_calls, g_wet;
 
-void set_quali(bool on, const char *why)
+void set_race(bool on, const char *why)
 {
-    if (g_quali.exchange(on) != on)
-        swofty::log("[f1-1990] ai quali: %s (%s): AI corner radius x%.3f", on ? "on" : "off", why,
-                    double(on ? kRadiusScale : 1.f));
+    if (g_race.exchange(on) != on)
+        swofty::log("[f1-1990] ai tyres: %s (%s): AI table grip x%.3f", on ? "race tyres" : "qualifiers or stock", why,
+                    double(on ? kRaceGrip : 1.f));
 }
 
 void on_career(const SwoftyEvent *, void *)
 {
-    set_quali(false, "career loaded or unloaded");
+    set_race(false, "career loaded or unloaded");
 }
 
 void on_session_end(const SwoftyEvent *, void *)
 {
     if (!swofty::career::entity())
-        set_quali(false, "session ended outside a career");
+        set_race(false, "session ended outside a career");
 }
 
 void subscribe(const char *event, SwoftyEventFn fn = on_career)
 {
     uint32_t token = 0;
     if (swofty::events::subscribe(event, fn, nullptr, &token) != swofty::events::Result::ok)
-        swofty::log("[f1-1990] ai quali: subscribe %s failed", event);
+        swofty::log("[f1-1990] ai tyres: subscribe %s failed", event);
 }
 
 int current_group(void *component)
@@ -95,11 +95,11 @@ SWOFTY_WRAP(Game_Rnd_FillVehicleUpgrades, void, void *component, uint8_t car, ui
         if (career && f1990::is_1990_career(career)) {
             int group = current_group(component);
             if (group >= 0)
-                set_quali(f1990::is_qualifying_group(group), f1990::is_qualifying_group(group)
+                set_race(!f1990::is_qualifying_group(group), f1990::is_qualifying_group(group)
                                                                  ? "1990 qualifying"
                                                                  : "1990 practice or race");
         } else if (career) {
-            set_quali(false, "not a 1990 career");
+            set_race(false, "not a 1990 career");
         }
     }
     orig(component, car, a3, a4);
@@ -113,21 +113,26 @@ SWOFTY_WRAP(Sess_TyreAllocation_OnSessionStart, void, void *component)
     void *session = f1990::box::session_of(component);
     uint32_t id = session ? at<uint32_t>(session, 0x08) : 0;
     bool box = session && f1990::box::lineup(component).all_1990();
-    bool quali = box && f1990::box::qualifying(id);
-    set_quali(quali, quali ? "F1 1990 box qualifying" : box ? "F1 1990 box practice, race or Time Trial"
-                                                            : "not the F1 1990 box");
+    bool race = box && !f1990::box::qualifying(id) && id != f1990::box::kTimeTrial;
+    set_race(race, race ? "F1 1990 box practice or race"
+                   : box ? "F1 1990 box qualifying or Time Trial"
+                         : "not the F1 1990 box");
 }
 
-SWOFTY_WRAP(Ai_Eval_CurvatureModifier_1990, float, float grip, float mass_bias, void *settings, bool flag, void *line_a,
-            float dist_a, void *line_b, float dist_b)
+SWOFTY_SITE(site_Ai_TableGripInput_1990, swofty::Context &c)
 {
-    float m = orig(grip, mass_bias, settings, flag, line_a, dist_a, line_b, dist_b);
-    if (!g_quali.load(std::memory_order_relaxed))
-        return m;
+    if (!g_race.load(std::memory_order_relaxed))
+        return;
+    uint8_t weather = uint8_t(c.rcx);
+    if (weather != 0) {
+        if (g_wet.fetch_add(1, std::memory_order_relaxed) == 0)
+            swofty::log("[f1-1990] ai tyres: weather byte %u: table grip left as it is", unsigned(weather));
+        return;
+    }
+    float grip = c.xmm1.f32[0];
+    c.xmm1.f32[0] = grip * kRaceGrip;
     if (g_calls.fetch_add(1, std::memory_order_relaxed) == 0)
-        swofty::log("[f1-1990] ai quali: first scaled corner: radius factor %.3f -> %.3f", double(m),
-                    double(m * kRadiusScale));
-    return m * kRadiusScale;
+        swofty::log("[f1-1990] ai tyres: first scaled table grip %.3f -> %.3f", double(grip), double(grip * kRaceGrip));
 }
 
 SWOFTY_ON_LOAD

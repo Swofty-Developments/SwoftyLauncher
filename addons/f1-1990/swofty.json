@@ -35,7 +35,7 @@
     },
     {
       "id": "quali_engine_1990", "type": "toggle", "label": "1990 qualifying and race engines", "default": true,
-      "description": "1990 careers: qualifying runs the qualifying engine and its R&D lines and the AI at qualifier pace; practice and the race run the race engine, 2.75 % less power and a limit 300 rpm lower.",
+      "description": "1990 careers: qualifying runs the qualifying engine, its R&D lines and the AI on qualifiers; practice and the race run the race engine, 2.75 % less power and a limit 300 rpm lower, and the AI on race tyres.",
       "binds": "native"
     },
     {
