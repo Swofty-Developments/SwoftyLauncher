@@ -4,6 +4,12 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 Start-Transcript C:\swofty-bake.log
 
+# Defender as the hosted image sets it (runner-images Configure-WindowsDefender.ps1): no real-time scanning of
+# the build, with both drives excluded.
+Set-MpPreference -DisableRealtimeMonitoring $true -DisableBehaviorMonitoring $true -DisableIOAVProtection $true `
+  -DisableScriptScanning $true -DisableArchiveScanning $true -ScanAvgCPULoadFactor 5
+Add-MpPreference -ExclusionPath 'C:\', 'D:\'
+
 New-ItemProperty HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem -Name LongPathsEnabled -Value 1 -PropertyType DWORD -Force
 
 function Get-Asset($repo, $pattern) {
