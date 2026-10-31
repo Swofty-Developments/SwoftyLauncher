@@ -12,12 +12,13 @@ use serde_json::Value;
 use swofty_formats::gvdb::{Gvdb, instance_count_path};
 use swofty_formats::hash::fnv1a64;
 
-use crate::ops::{
-    Claimed, DbOp, DbOps, IdFrom, RowIds, StatIdMode, add_row_name, explicit_stat_ids, hash_pool, hash_probe,
-    ordinal, row_shape, stat_id_ceiling, stat_id_field, stat_id_unusable,
-};
+use crate::ops::{Claimed, DbOp, DbOps, IdFrom, RowIds, add_row_name, row_shape, stat_id_field};
 use crate::stdlib::reports;
 use crate::{Loaded, Result, io_err};
+
+mod recover;
+
+pub use recover::Recovery;
 
 pub const FILE: &str = "row-ids.json";
 const LOCK: &str = "row-ids.lock";
@@ -46,10 +47,10 @@ struct File {
     /// The profiles whose last build before the store seeded it.
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     seeded: BTreeSet<String>,
+    /// The ids 1.6.10 and 1.6.11 gave from the rows' keys were put back once (see [`Store::recover`]).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    recovered: bool,
 }
-
-// A row key the build plans an id for, its label, and which row with that label of its addon it is.
-type Planned = (String, String, usize);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct Entry {
@@ -107,15 +108,43 @@ pub fn lock(data: &Path) -> Result<std::fs::File> {
     Ok(file)
 }
 
-/// The database file `rel` of the profile's last build in `overlays`, other than the build `current`;
-/// for a profile with none, the newest of every profile's builds beside it.
-pub fn last_build(overlays: &Path, current: &str, rel: &str) -> Option<PathBuf> {
+/// What a build left of its database: its overlay's database file `rel`, when the build wrote one, and
+/// its `swofty/assets.json`, whose database edits the core applies in game when the build routes the
+/// addons' rows there (the overlay's file then holds the tracks' rows at most, or is not written).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LastBuild {
+    pub db: Option<PathBuf>,
+    pub edits: Option<PathBuf>,
+}
+
+/// The profile's last build in `overlays`, other than the build `current`; for a profile with none,
+/// the newest of every profile's builds beside it.
+pub fn last_build(overlays: &Path, current: &str, rel: &str) -> Option<LastBuild> {
+    let of = |d: PathBuf| {
+        let file = |p: PathBuf| {
+            let at = std::fs::metadata(&p)
+                .ok()
+                .filter(|m| m.is_file())?
+                .modified()
+                .ok()?;
+            Some((at, p))
+        };
+        let db = file(d.join(rel));
+        let edits = file(d.join(crate::runtime::ASSETS_FILE));
+        let at = db.iter().chain(&edits).map(|(at, _)| *at).max()?;
+        Some((
+            at,
+            LastBuild {
+                db: db.map(|(_, p)| p),
+                edits: edits.map(|(_, p)| p),
+            },
+        ))
+    };
     let newest = |dirs: Vec<PathBuf>| {
         dirs.into_iter()
-            .map(|d| d.join(rel))
-            .filter_map(|p| Some((std::fs::metadata(&p).ok()?.modified().ok()?, p)))
-            .max()
-            .map(|(_, p)| p)
+            .filter_map(of)
+            .max_by_key(|(at, _)| *at)
+            .map(|(_, b)| b)
     };
     let subdirs = |dir: &Path| -> Vec<PathBuf> {
         std::fs::read_dir(dir)
@@ -138,35 +167,85 @@ pub fn last_build(overlays: &Path, current: &str, rel: &str) -> Option<PathBuf> 
     })
 }
 
+#[derive(Deserialize)]
+struct Assets {
+    #[serde(default)]
+    db_edits: Vec<Edit>,
+}
+
+#[derive(Deserialize)]
+struct Edit {
+    hash: String,
+    value: String,
+}
+
+// The last build's database as the game loads it: the overlay's file, with the build's runtime edits over it.
+struct LastDb {
+    db: Option<(Gvdb, HashMap<u64, usize>)>,
+    edits: HashMap<u64, String>,
+}
+
+impl LastDb {
+    fn read(last: &LastBuild) -> Option<Self> {
+        let db = last
+            .db
+            .as_ref()
+            .and_then(|p| Gvdb::parse(&std::fs::read(p).ok()?).ok())
+            .map(|db| {
+                let index = db.records.iter().enumerate().map(|(i, r)| (r.key, i)).collect();
+                (db, index)
+            });
+        let edits: HashMap<u64, String> = last
+            .edits
+            .as_ref()
+            .and_then(|p| serde_json::from_slice::<Assets>(&std::fs::read(p).ok()?).ok())
+            .map(|a| {
+                a.db_edits
+                    .into_iter()
+                    .filter_map(|e| Some((u64::from_str_radix(&e.hash, 16).ok()?, e.value)))
+                    .collect()
+            })
+            .unwrap_or_default();
+        (db.is_some() || !edits.is_empty()).then_some(Self { db, edits })
+    }
+
+    fn text(&self, path: &str) -> Option<String> {
+        let key = fnv1a64(path);
+        if let Some(v) = self.edits.get(&key) {
+            return Some(v.clone());
+        }
+        let (db, index) = self.db.as_ref()?;
+        index.get(&key).map(|&i| db.records[i].text().into_owned())
+    }
+}
+
 #[derive(Default)]
 struct Seed {
-    path: Option<PathBuf>,
-    db: Option<Option<(Gvdb, HashMap<u64, usize>)>>,
+    last: Option<LastBuild>,
+    db: Option<Option<LastDb>>,
+    stock_rows: HashMap<String, usize>,
     tables: HashMap<String, HashMap<String, Vec<i64>>>,
 }
 
 impl Seed {
-    // The id of the `nth` row labelled `label` in the last build's `table` rows named `row`.
+    // The id of the `nth` row labelled `label` that the last build added to `table`'s rows named `row`.
     fn id(&mut self, table: &str, row: &str, label: &str, nth: usize) -> Option<i64> {
-        let path = self.path.as_ref()?;
-        let (db, index) = self
-            .db
-            .get_or_insert_with(|| {
-                let db = Gvdb::parse(&std::fs::read(path).ok()?).ok()?;
-                let index = db.records.iter().enumerate().map(|(i, r)| (r.key, i)).collect();
-                Some((db, index))
-            })
-            .as_ref()?;
-        let rows = self.tables.entry(format!("{table}.{row}")).or_insert_with(|| {
-            let text = |p: &str| index.get(&fnv1a64(p)).map(|&i| db.records[i].text().into_owned());
+        let last = self.last.as_ref()?;
+        let db = self.db.get_or_insert_with(|| LastDb::read(last)).as_ref()?;
+        let name = format!("{table}.{row}");
+        let skip = self.stock_rows.get(&name).copied().unwrap_or(0);
+        let rows = self.tables.entry(name).or_insert_with(|| {
             let field = stat_id_field(table, row);
-            let n = text(&instance_count_path(table, row))
+            let n = db
+                .text(&instance_count_path(table, row))
                 .and_then(|v| v.trim().parse::<usize>().ok())
                 .unwrap_or(0);
             let mut out: HashMap<String, Vec<i64>> = HashMap::new();
-            for i in 0..n {
-                let label = text(&format!("{table}.{row}_{i}._metadata_"));
-                let id = text(&format!("{table}.{row}_{i}.{field}")).and_then(|v| v.trim().parse().ok());
+            for i in skip..n {
+                let label = db.text(&format!("{table}.{row}_{i}._metadata_"));
+                let id = db
+                    .text(&format!("{table}.{row}_{i}.{field}"))
+                    .and_then(|v| v.trim().parse().ok());
                 if let (Some(label), Some(id)) = (label, id) {
                     out.entry(label).or_default().push(id);
                 }
@@ -182,9 +261,9 @@ impl Seed {
 pub struct Store {
     rows: BTreeMap<String, i64>,
     from: HashMap<String, IdFrom>,
-    planned: HashMap<String, i64>,
-    adds: HashMap<String, usize>,
     seeded: BTreeSet<String>,
+    recovered: bool,
+    existed: bool,
     by_id: HashMap<String, BTreeMap<i64, String>>,
     pinned: HashMap<String, HashSet<i64>>,
     seed: Seed,
@@ -209,7 +288,7 @@ impl Store {
         data: &Path,
         game: Option<&Path>,
         profile: &str,
-        last: Option<PathBuf>,
+        last: Option<LastBuild>,
     ) -> (Self, Vec<String>) {
         let mut warnings = Vec::new();
         let mut store = Self::default();
@@ -218,6 +297,8 @@ impl Store {
             Ok(Loaded::Found(f)) => {
                 store.read_only = f.version > VERSION;
                 store.seeded = f.seeded;
+                store.recovered = f.recovered;
+                store.existed = true;
                 for (key, e) in f.rows {
                     store.from.insert(key.clone(), e.from);
                     store.insert(key, e.id);
@@ -242,7 +323,7 @@ impl Store {
             store.pinned = registry_ids(&ids);
         }
         if store.seeded.insert(profile.to_owned()) {
-            store.seed.path = last;
+            store.seed.last = last;
             store.changed = true;
         }
         (store, warnings)
@@ -274,10 +355,9 @@ impl Store {
         self.changed = true;
     }
 
-    /// Plans the hashed ids of the rows the `add-row` ops in `files` add to `db` (rows with no
-    /// kept or seeded id and a label in `set`): each row key in turn, lowest first, takes the
-    /// first id from its hash that no row of `db`, explicit `stat_id`, kept id, seed or
-    /// registry id holds. `stock` and `tracks` are the keys of the stock rows and the rows tracks added.
+    /// Reads, for each table the `add-row` ops in `files` add rows to, how many rows `db` holds from
+    /// the stock database (`stock` holds its keys), so the seed matches only the rows the last build
+    /// added. `tracks` holds the keys of the rows the tracks added.
     pub fn plan<'a>(
         &mut self,
         db: &Gvdb,
@@ -285,102 +365,31 @@ impl Store {
         tracks: &HashSet<u64>,
         files: impl IntoIterator<Item = (&'a str, &'a DbOps)>,
     ) {
-        self.planned.clear();
-        self.adds.clear();
-        let mut keys: BTreeMap<(String, String), Vec<Planned>> = BTreeMap::new();
-        let mut explicit: HashMap<String, HashSet<i64>> = HashMap::new();
-        for (addon, ops) in files {
-            for (table, id) in explicit_stat_ids(ops) {
-                explicit.entry(table).or_default().insert(id);
-            }
-            let mut seen: HashMap<String, usize> = HashMap::new();
+        let _ = tracks;
+        let mut tables: BTreeSet<(String, String)> = BTreeSet::new();
+        for (_, ops) in files {
             for op in &ops.ops {
-                let DbOp::AddRow {
-                    table,
-                    from,
-                    set,
-                    stat_id,
-                    ..
-                } = op
-                else {
+                let DbOp::AddRow { table, from, .. } = op else {
                     continue;
                 };
                 if table.contains(['[', '{']) || row_shape(table).contains("_N") {
                     continue;
                 }
-                let Some(row) = add_row_name(table, from) else {
-                    continue;
-                };
-                *self.adds.entry(format!("{table}.{row}")).or_default() += 1;
-                let Some(label) = set.get("_metadata_") else {
-                    continue;
-                };
-                if set.contains_key(stat_id_field(table, row)) || *stat_id == Some(StatIdMode::Keep) {
-                    continue;
+                if let Some(row) = add_row_name(table, from) {
+                    tables.insert((table.clone(), row.to_owned()));
                 }
-                let base = format!("{addon}/{table}.{row}/{label}");
-                let nth = seen.entry(base.clone()).or_default();
-                let key = match *nth {
-                    0 => base,
-                    n => format!("{base}#{}", n + 1),
-                };
-                keys.entry((table.clone(), row.to_owned()))
-                    .or_default()
-                    .push((key, label.clone(), *nth));
-                *nth += 1;
             }
-        }
-        if keys.is_empty() {
-            return;
         }
         let index: HashMap<u64, usize> = db.records.iter().enumerate().map(|(i, r)| (r.key, i)).collect();
-        let text = |key: u64| index.get(&key).map(|&i| db.records[i].text().into_owned());
-        for ((table, row), mut list) in keys {
-            let name = format!("{table}.{row}");
-            let field = stat_id_field(&table, &row);
-            let count = text(fnv1a64(instance_count_path(&table, &row)))
-                .and_then(|v| v.trim().parse::<usize>().ok())
+        for (table, row) in tables {
+            let count = index
+                .get(&fnv1a64(instance_count_path(&table, &row)))
+                .and_then(|&i| db.records[i].text().trim().parse::<usize>().ok())
                 .unwrap_or(0);
-            let mut fixed = explicit.remove(&name).unwrap_or_default();
-            let mut top = -1;
-            for i in 0..count {
-                let key = fnv1a64(format!("{table}.{row}_{i}.{field}"));
-                let Some(id) = text(key).and_then(|v| v.trim().parse::<i64>().ok()) else {
-                    continue;
-                };
-                fixed.insert(id);
-                if stock.contains(&key) || tracks.contains(&key) {
-                    top = top.max(id);
-                }
-            }
-            fixed.extend(self.by_id.get(&name).into_iter().flat_map(|ids| ids.keys()));
-            fixed.extend(self.pinned.get(&name).into_iter().flatten());
-            list.sort();
-            let mut new = Vec::new();
-            for (key, label, nth) in list {
-                if self.rows.contains_key(&key) {
-                    continue;
-                }
-                match self.seed.id(&table, &row, &label, nth) {
-                    Some(id) => {
-                        fixed.insert(id);
-                    }
-                    None => new.push(key),
-                }
-            }
-            let adds = self.adds.get(&name).copied().unwrap_or(0);
-            let pool = hash_pool(stat_id_ceiling(&table, &row), top, adds);
-            if ordinal(pool) {
-                continue;
-            }
-            for key in new {
-                if let Some(id) = hash_probe(&key, pool)
-                    .find(|id| !fixed.contains(id) && !stat_id_unusable(&table, &row, *id))
-                {
-                    fixed.insert(id);
-                    self.planned.insert(key, id);
-                }
-            }
+            let stock_rows = (0..count)
+                .take_while(|i| stock.contains(&fnv1a64(format!("{table}.{row}_{i}._metadata_"))))
+                .count();
+            self.seed.stock_rows.insert(format!("{table}.{row}"), stock_rows);
         }
     }
 
@@ -432,6 +441,7 @@ impl Store {
             version: VERSION,
             rows,
             seeded: self.seeded.clone(),
+            recovered: self.recovered,
         };
         crate::write_json(&path(data), &file)
     }
@@ -488,13 +498,7 @@ impl RowIds for Scoped<'_> {
             Some(_) => None,
             None => s.seed.id(table, row, label, nth),
         };
-        let hashed = s.planned.get(&key).copied();
-        Claimed {
-            key,
-            kept,
-            seed,
-            hashed,
-        }
+        Claimed { key, kept, seed }
     }
 
     fn taken(&self, table: &str, row: &str, key: &str, id: i64) -> bool {
@@ -505,11 +509,6 @@ impl RowIds for Scoped<'_> {
             .and_then(|ids| ids.get(&id))
             .is_some_and(|k| k != key)
             || s.pinned.get(&table).is_some_and(|ids| ids.contains(&id))
-    }
-
-    fn adds(&self, table: &str, row: &str) -> usize {
-        let s = self.store.borrow();
-        s.adds.get(&format!("{table}.{row}")).copied().unwrap_or(0)
     }
 
     fn keep(&self, _: &str, _: &str, key: &str, id: i64, from: IdFrom) {
@@ -546,7 +545,7 @@ impl RowIds for Scoped<'_> {
 mod tests {
     use super::*;
     use crate::asset::{Features, Op, Origin};
-    use crate::ops::DbReport;
+    use crate::ops::{DbReport, stat_id_ceiling};
     use crate::planner::Planner;
     use std::collections::BTreeSet;
     use swofty_formats::gvdb::Record;
@@ -564,10 +563,10 @@ mod tests {
         }
     }
 
-    struct Built {
-        ids: BTreeMap<String, i64>,
-        store: Store,
-        lines: Vec<String>,
+    pub(super) struct Built {
+        pub(super) ids: BTreeMap<String, i64>,
+        pub(super) store: Store,
+        pub(super) lines: Vec<String>,
     }
 
     fn try_build(
@@ -579,7 +578,7 @@ mod tests {
         try_build_on(db(table, stock), table, addons, store)
     }
 
-    fn try_build_on(
+    pub(super) fn try_build_on(
         mut gvdb: Gvdb,
         (table, row): (&str, &str),
         addons: &[(&str, &[&str])],
@@ -650,70 +649,92 @@ mod tests {
         format!("{addon}/{table}.{row}/{label}")
     }
 
-    // The ids hashing gives `rows` of `table` over stock rows up to `stock`, lowest key first, past `fixed`.
-    fn hashed(
-        table: (&str, &str),
-        stock: i64,
-        rows: &[(&str, &str)],
-        fixed: &[i64],
-    ) -> BTreeMap<String, i64> {
-        let pool = hash_pool(stat_id_ceiling(table.0, table.1), stock, rows.len());
-        let mut fixed: HashSet<i64> = fixed.iter().copied().chain([stock]).collect();
-        let mut keys: Vec<(String, &str)> = rows.iter().map(|(a, l)| (key(a, table, l), *l)).collect();
-        keys.sort();
-        keys.into_iter()
-            .map(|(k, label)| {
-                let id = hash_probe(&k, pool).find(|id| !fixed.contains(id)).unwrap();
-                fixed.insert(id);
-                (label.to_owned(), id)
-            })
-            .collect()
-    }
+    pub(super) const TEAMS: (&str, &str) = ("entrants.teams", "team");
 
     #[test]
-    fn new_ids_come_from_the_row_key_whatever_the_order() {
-        let rows = [("a", "a1"), ("a", "a2"), ("b", "b1")];
-        let want = hashed(VEHICLES, 10, &rows, &[]);
+    fn new_ids_are_the_next_free_ids_in_load_order_as_builds_before_1_6_10_gave_them() {
         let first = build(
             VEHICLES,
             10,
             &[("a", &["a1", "a2"]), ("b", &["b1"])],
             Store::default(),
         );
-        assert_eq!(first.ids, want);
+        assert_eq!(
+            first.ids,
+            BTreeMap::from([("a1".into(), 11), ("a2".into(), 12), ("b1".into(), 13)])
+        );
         assert!(
-            first.lines.iter().any(|l| l.ends_with(&format!(
-                ": stat_id {} (the source's is 10; from the row's key)",
-                want["b1"]
-            ))),
+            first
+                .lines
+                .iter()
+                .any(|l| l.ends_with(": stat_id 13 (the source's is 10)")),
             "{:?}",
             first.lines
         );
-        let other = build(
+        assert_eq!(first.store.from[&key("b", VEHICLES, "b1")], IdFrom::Next);
+        let again = build(
             VEHICLES,
             10,
-            &[("b", &["b1"]), ("a", &["a1", "a2"])],
+            &[("a", &["a1", "a2"]), ("b", &["b1"])],
             Store::default(),
         );
-        assert_eq!(other.ids, want);
+        assert_eq!(
+            again.ids, first.ids,
+            "identical setups built fresh get identical ids"
+        );
     }
 
+    // minik8824 (1565755736410161313): a fresh data folder at 1.6.11 hashed every id, and his save from before
+    // 1.6.10 held Classic Seasons 2019's teams at 550-559, the ids those builds gave them in load order.
     #[test]
-    fn a_small_addon_lands_in_a_window_twice_the_rows_it_adds() {
-        let built = build(VEHICLES, 10, &[("a", &["a1", "a2", "a3"])], Store::default());
-        assert!(
-            built.ids.values().all(|id| (11..11 + 32).contains(id)),
-            "{:?}",
-            built.ids
+    fn a_fresh_install_gives_a_save_from_before_1_6_10_its_sequential_ids_back() {
+        let years: [(&str, &str); 5] = [
+            ("swofty.classic-seasons-2017", "cs17"),
+            ("swofty.classic-seasons-2018", "cs18"),
+            ("swofty.classic-seasons-2020", "cs20"),
+            ("swofty.classic-seasons-2021", "cs21"),
+            ("swofty.classic-seasons-2019", "cs19"),
+        ];
+        let teams = [
+            "mercedes",
+            "ferrari",
+            "redbull",
+            "renault",
+            "haas",
+            "mclaren",
+            "racingpoint",
+            "alfaromeo",
+            "tororosso",
+            "williams",
+        ];
+        let labels: Vec<Vec<String>> = years
+            .iter()
+            .map(|(_, y)| teams.iter().map(|t| format!("{y}_{t}")).collect())
+            .collect();
+        let refs: Vec<Vec<&str>> = labels
+            .iter()
+            .map(|l| l.iter().map(String::as_str).collect())
+            .collect();
+        let set: Vec<(&str, &[&str])> = years
+            .iter()
+            .zip(&refs)
+            .map(|((a, _), l)| (*a, l.as_slice()))
+            .collect();
+        let fresh = try_build_on(table_to(TEAMS, 509), TEAMS, &set, Store::default()).unwrap();
+        let cs19: Vec<i64> = labels[4].iter().map(|l| fresh.ids[l]).collect();
+        assert_eq!(cs19, (550..560).collect::<Vec<_>>());
+        assert_eq!(fresh.ids["cs17_mercedes"], 510);
+        let cs16: Vec<String> = teams.iter().map(|t| format!("cs16_{t}")).collect();
+        let cs16: Vec<&str> = cs16.iter().map(String::as_str).collect();
+        let mut more: Vec<(&str, &[&str])> = vec![("swofty.classic-seasons-2016", cs16.as_slice())];
+        more.extend(set.iter().copied());
+        let later = try_build_on(table_to(TEAMS, 509), TEAMS, &more, fresh.store).unwrap();
+        let cs19_later: Vec<i64> = labels[4].iter().map(|l| later.ids[l]).collect();
+        assert_eq!(
+            cs19_later, cs19,
+            "a year added in front later leaves the kept ids where they are"
         );
-        assert_eq!(hash_pool(None, 10, 3), (11, 32, None));
-        assert_eq!(hash_pool(None, 10, 20), (11, 64, None));
-        assert_eq!(hash_pool(None, 10, 32), (11, 64, None));
-        assert_eq!(hash_pool(None, 10, 33), (11, 128, None));
-        let packages = stat_id_ceiling(PACKAGES.0, PACKAGES.1);
-        assert_eq!(hash_pool(packages, 250, 3), (251, 4, Some(254)));
-        assert_eq!(hash_pool(packages, 60, 50), (61, 128, Some(254)));
-        assert_eq!(hash_pool(packages, 200, 50), (201, 54, Some(254)));
+        assert_eq!(later.ids["cs16_mercedes"], 560);
     }
 
     #[test]
@@ -738,33 +759,6 @@ mod tests {
     }
 
     #[test]
-    fn identical_addon_sets_built_from_different_histories_get_the_same_ids() {
-        let set: &[(&str, &[&str])] = &[("a", &["a1"]), ("b", &["b1", "b2"])];
-        let one = build(VEHICLES, 10, &[("a", &["a1"])], Store::default());
-        let one = build(VEHICLES, 10, set, one.store);
-        let two = build(VEHICLES, 10, &[("b", &["b2", "b1"])], Store::default());
-        let two = build(
-            VEHICLES,
-            10,
-            &[("x", &["x1", "x2"]), ("b", &["b1", "b2"])],
-            two.store,
-        );
-        let two = build(VEHICLES, 10, set, two.store);
-        let three = build(
-            VEHICLES,
-            10,
-            &[("b", &["b1", "b2"]), ("a", &["a1"])],
-            Store::default(),
-        );
-        assert_eq!(one.ids, two.ids);
-        assert_eq!(one.ids, three.ids);
-        assert_eq!(
-            one.ids,
-            hashed(VEHICLES, 10, &[("a", "a1"), ("b", "b1"), ("b", "b2")], &[])
-        );
-    }
-
-    #[test]
     fn an_update_that_adds_a_row_keeps_the_old_ids_and_gives_the_new_row_a_fresh_one() {
         let first = build(
             VEHICLES,
@@ -781,11 +775,7 @@ mod tests {
         for label in ["a1", "a2", "b1"] {
             assert_eq!(updated.ids[label], first.ids[label]);
         }
-        let old: Vec<i64> = first.ids.values().copied().collect();
-        assert_eq!(
-            updated.ids["a0"],
-            hashed(VEHICLES, 10, &[("a", "a0")], &old)["a0"]
-        );
+        assert_eq!(updated.ids["a0"], 14);
         assert_eq!(
             updated.store.summary().as_deref(),
             Some("database: row-ids.json keeps 4 added-row id(s) (1 new)")
@@ -821,7 +811,7 @@ mod tests {
             saved["rows"]["b/entrants.vehicles.vehicle/b1"]["id"],
             one.ids["b1"]
         );
-        assert_eq!(saved["rows"]["b/entrants.vehicles.vehicle/b1"]["from"], "hashed");
+        assert_eq!(saved["rows"]["b/entrants.vehicles.vehicle/b1"]["from"], "next");
         let (store, _) = Store::load(&data, None, "two", None);
         let two = build(VEHICLES, 10, &[("b", &["b1"])], store);
         assert_eq!(two.ids["b1"], one.ids["b1"]);
@@ -831,7 +821,7 @@ mod tests {
     #[test]
     fn ids_the_core_registry_holds_are_passed_over() {
         let data = data_dir("registry");
-        let slot = hashed(VEHICLES, 10, &[("a", "a1")], &[])["a1"];
+        let slot = 11;
         put(
             &reports::path(&data, reports::IDS),
             &format!(
@@ -841,17 +831,16 @@ mod tests {
         );
         let (store, _) = Store::load(&data, None, "p", None);
         let first = build(VEHICLES, 10, &[("a", &["a1"])], store);
-        let want = hashed(VEHICLES, 10, &[("a", "a1")], &[slot, 12, 13])["a1"];
-        assert_ne!(want, slot);
+        let want = 14;
         assert_eq!(first.ids["a1"], want);
         let mut kept = Store::default();
-        kept.put(&key("a", VEHICLES, "a1"), 13, IdFrom::Hashed);
+        kept.put(&key("a", VEHICLES, "a1"), 13, IdFrom::Next);
         kept.pinned = Store::load(&data, None, "p", None).0.pinned;
         let moved = build(VEHICLES, 10, &[("a", &["a1"])], kept);
         assert_eq!(moved.ids["a1"], want);
         assert!(
             moved.lines.iter().any(|l| l.ends_with(&format!(
-                "stat_id {want} (the source's is 10; 13, kept for it, is kept for another row or held by a record of the core's registry; from the row's key)"
+                "stat_id {want} (the source's is 10; 13, kept for it, is kept for another row or held by a record of the core's registry)"
             ))),
             "{:?}",
             moved.lines
@@ -934,7 +923,10 @@ mod tests {
         std::fs::write(overlays.join("old").join(rel), last.to_bytes()).unwrap();
         assert_eq!(
             last_build(&overlays, "new", rel),
-            Some(overlays.join("old").join(rel))
+            Some(LastBuild {
+                db: Some(overlays.join("old").join(rel)),
+                edits: None
+            })
         );
         assert_eq!(last_build(&overlays, "old", rel), None);
         let (store, _) = Store::load(&data, None, "p", last_build(&overlays, "new", rel));
@@ -944,10 +936,9 @@ mod tests {
             &[("b", &["b1"]), ("a", &["a1"]), ("c", &["c1"])],
             store,
         );
-        let c1 = hashed(VEHICLES, 10, &[("c", "c1")], &[40, 41])["c1"];
         assert_eq!(
             first.ids,
-            BTreeMap::from([("a1".into(), 40), ("b1".into(), 41), ("c1".into(), c1)])
+            BTreeMap::from([("a1".into(), 40), ("b1".into(), 41), ("c1".into(), 42)])
         );
         assert!(
             first
@@ -960,8 +951,8 @@ mod tests {
         assert_eq!(first.store.from[&key("a", VEHICLES, "a1")], IdFrom::Seeded);
         first.store.save(&data).unwrap();
         let seed = |profile: &str| Store::load(&data, None, profile, last_build(&overlays, "new", rel)).0;
-        assert_eq!(seed("p").seed.path, None);
-        assert!(seed("q").seed.path.is_some());
+        assert_eq!(seed("p").seed.last, None);
+        assert!(seed("q").seed.last.is_some());
         let kept = kept_rows(&data, "a").unwrap();
         assert_eq!(
             kept,
@@ -996,7 +987,7 @@ mod tests {
     const ENTRANT_MODES: (&str, &str) = ("entrants.entrant_setup_modes", "entrant_setup_mode");
 
     // A table of stock rows holding the ids 0 to `top`.
-    fn table_to((table, row): (&str, &str), top: i64) -> Gvdb {
+    pub(super) fn table_to((table, row): (&str, &str), top: i64) -> Gvdb {
         let field = stat_id_field(table, row);
         let mut records = vec![Record::new(
             &format!("{table}._{row}_instancecount_"),
@@ -1092,7 +1083,10 @@ mod tests {
         std::fs::write(overlay.join("ig10/older").join(rel), old.to_bytes()).unwrap();
         std::fs::create_dir_all(overlay.join("fresh")).unwrap();
         let last = last_build(&overlay.join("fresh"), "new", rel);
-        assert_eq!(last, Some(overlay.join("ig10/older").join(rel)));
+        assert_eq!(
+            last.as_ref().and_then(|l| l.db.clone()),
+            Some(overlay.join("ig10/older").join(rel))
+        );
         let (store, _) = Store::load(&data, None, "fresh", last);
         let built = try_build_on(
             table_to(MODES, 20),

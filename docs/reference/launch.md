@@ -27,7 +27,7 @@ The launcher doesn't start Steam for a game folder outside a Steam library, or i
 
 | | Running and signed in | Started with |
 |---|---|---|
-| Windows | `HKCU\Software\Valve\Steam\ActiveProcess`: `pid` is a running `steam.exe` and `ActiveUser` isn't 0 | `SteamExe` or `SteamPath` from `HKCU\Software\Valve\Steam`, with `-silent`; otherwise `steam://open/main` |
+| Windows | `HKCU\Software\Valve\Steam\ActiveProcess`: `pid` is a running `steam.exe` and `ActiveUser` isn't 0. When `ActiveUser` stays 0, it's signed in once the newest `Timestamp` in `config/loginusers.vdf` is after that `steam.exe` started and at least 20 seconds old | `SteamExe` or `SteamPath` from `HKCU\Software\Valve\Steam`, with `-silent`; otherwise `steam://open/main` |
 | Linux | `~/.steam/steam.pid` or `registry.vdf` names a running `steam` process. It's signed in when `ActiveUser` in `registry.vdf` isn't 0, or when `config/loginusers.vdf` changed after Steam started | `steam -silent` |
 | Flatpak Steam | The same files under `~/.var/app/com.valvesoftware.Steam/` | `flatpak run com.valvesoftware.Steam -silent` |
 
