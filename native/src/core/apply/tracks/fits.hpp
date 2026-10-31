@@ -44,6 +44,8 @@ struct BoxInfo {
     std::string setup_mode = "swofty_f1";
     std::string season;
     int teams = -1, cars = -1;
+    bool derived = false;
+    std::string unread;
     std::vector<Car> ai;
 };
 
@@ -142,13 +144,22 @@ inline Fit fits(const BoxInfo &box, const BaseTrack &track, Mode mode, const Fac
     if (!here && !lacking.empty())
         return fail(f, Rule::world, 0, 0, lacking,
                     "its files hold no " + lacking + " world, which the box's " + box.setup_mode + " layer loads");
-    if (box.teams < 0)
+    int teams = box.teams, cars = box.cars;
+    std::string assumed;
+    if (box.derived && facts->grid_size > 0) {
+        if (teams < 0) {
+            teams = (facts->grid_size + 1) / 2;
+            assumed = " (assumed: the box's teams can't be read" + (box.unread.empty() ? std::string() : ": " + box.unread) + ")";
+        }
+        if (cars < 0)
+            cars = facts->grid_size;
+    }
+    if (teams < 0)
         f.no_facts.push_back("the box's teams");
-    else if (garages >= 0 && garages < box.teams)
-        return fail(f, Rule::garages, garages, box.teams, {},
+    else if (garages >= 0 && garages < teams)
+        return fail(f, Rule::garages, garages, teams, {},
                     "its " + box.setup_mode + " world has " + std::to_string(garages) + " garages; the box has " +
-                        std::to_string(box.teams) + " teams");
-    int cars = box.cars;
+                        std::to_string(teams) + " teams" + assumed);
     if (cars >= 0 && facts->grid_size > 0)
         cars = std::min(cars, facts->grid_size);
     if (cars < 0)
@@ -449,16 +460,25 @@ inline BoxInfo box_from_list(const std::string &list, const ListDb &db)
     BoxInfo b;
     b.package = "game/" + list;
     b.entrant_list = list;
+    b.derived = true;
     std::string mode = list_setup_mode(db, list);
-    if (mode.empty())
+    if (!mode.empty())
+        b.setup_mode = mode;
+    else
+        b.unread = "no setup mode offers the list";
+    auto row = list_row(db, list);
+    if (!row) {
+        b.unread += std::string(b.unread.empty() ? "" : "; ") + "no entrant list row labelled " + list;
         return b;
-    b.setup_mode = mode;
-    if (auto row = list_row(db, list))
+    }
+    if (!mode.empty())
         b.season = db_text(db.text, *row + ".season");
     std::vector<std::string> seen, teams;
     int cars = 0;
-    if (!walk_list(db, list, 0, seen, teams, cars))
+    if (!walk_list(db, list, 0, seen, teams, cars)) {
+        b.unread += std::string(b.unread.empty() ? "" : "; ") + "an entrant count or reference of " + list + " can't be read";
         return b;
+    }
     b.teams = int(teams.size());
     b.cars = cars;
     return b;
