@@ -949,14 +949,14 @@ def db_ops():
                         '_metadata_': c.vehicle, 'asset_filename': c.folder, 'engine': engine_label(c),
                         'vehicle_package': C.PACKAGE, 'hud_dial': '{{hud_dial}}', 'drs_capable': 'False',
                         'display_name': f'lng_f1990_team_{c.team}', 'chassis_name': chassis_key(c),
-                        'engine_name_override': engine_key(c), 'equal_performance_vehicle': '',
+                        'engine_name_override': engine_key(c), 'equal_performance_vehicle': c.vehicle,
                         'performance_tier': str(c.tier)})})
     for c in C.CARS:
         ops.append({'op': 'add-row', 'table': 'entrants.vehicles',
                     'from': f'entrants.vehicles.vehicle[_metadata_={c.vehicle}]',
                     'set': pinned('entrants.vehicles', {
                         '_metadata_': c.vehicle_b, 'vehicle_package': C.PACKAGE_B, 'engine': engine_label(c),
-                        'available': 'True'})})
+                        'equal_performance_vehicle': c.vehicle_b, 'available': 'True'})})
     return {'schema_version': 1,
             'fields': {'entrants.vehicles.vehicle_packages.vehicle_package': PACKAGE_FIELDS,
                        'entrants.vehicles.vehicle': vehicle_fields, f'{ENGINE_TABLE}.Engine': ENGINE_FIELDS},

@@ -529,7 +529,7 @@
     "display_name": "lng_f1990_team_mclaren",
     "chassis_name": "lng_f1990_chassis_mclaren",
     "engine_name_override": "lng_f1990_engine_mclaren",
-    "equal_performance_vehicle": "",
+    "equal_performance_vehicle": "mclaren_1990",
     "performance_tier": "0",
     "stat_id": "509"
    }
@@ -548,7 +548,7 @@
     "display_name": "lng_f1990_team_ferrari",
     "chassis_name": "lng_f1990_chassis_ferrari",
     "engine_name_override": "lng_f1990_engine_ferrari",
-    "equal_performance_vehicle": "",
+    "equal_performance_vehicle": "ferrari_1990",
     "performance_tier": "0",
     "stat_id": "510"
    }
@@ -567,7 +567,7 @@
     "display_name": "lng_f1990_team_williams",
     "chassis_name": "lng_f1990_chassis_williams",
     "engine_name_override": "lng_f1990_engine_williams",
-    "equal_performance_vehicle": "",
+    "equal_performance_vehicle": "williams_1990",
     "performance_tier": "0",
     "stat_id": "511"
    }
@@ -586,7 +586,7 @@
     "display_name": "lng_f1990_team_benetton",
     "chassis_name": "lng_f1990_chassis_benetton",
     "engine_name_override": "lng_f1990_engine_benetton",
-    "equal_performance_vehicle": "",
+    "equal_performance_vehicle": "benetton_1990",
     "performance_tier": "0",
     "stat_id": "512"
    }
@@ -605,7 +605,7 @@
     "display_name": "lng_f1990_team_tyrrell",
     "chassis_name": "lng_f1990_chassis_tyrrell",
     "engine_name_override": "lng_f1990_engine_tyrrell",
-    "equal_performance_vehicle": "",
+    "equal_performance_vehicle": "tyrrell_1990",
     "performance_tier": "1",
     "stat_id": "513"
    }
@@ -624,7 +624,7 @@
     "display_name": "lng_f1990_team_lotus",
     "chassis_name": "lng_f1990_chassis_lotus",
     "engine_name_override": "lng_f1990_engine_lotus",
-    "equal_performance_vehicle": "",
+    "equal_performance_vehicle": "lotus_1990",
     "performance_tier": "1",
     "stat_id": "514"
    }
@@ -643,7 +643,7 @@
     "display_name": "lng_f1990_team_march",
     "chassis_name": "lng_f1990_chassis_march",
     "engine_name_override": "lng_f1990_engine_march",
-    "equal_performance_vehicle": "",
+    "equal_performance_vehicle": "leytonhouse_1990",
     "performance_tier": "1",
     "stat_id": "515"
    }
@@ -662,7 +662,7 @@
     "display_name": "lng_f1990_team_larrousse",
     "chassis_name": "lng_f1990_chassis_larrousse",
     "engine_name_override": "lng_f1990_engine_larrousse",
-    "equal_performance_vehicle": "",
+    "equal_performance_vehicle": "larrousse_1990",
     "performance_tier": "2",
     "stat_id": "516"
    }
@@ -681,7 +681,7 @@
     "display_name": "lng_f1990_team_ligier_prost",
     "chassis_name": "lng_f1990_chassis_ligier_prost",
     "engine_name_override": "lng_f1990_engine_ligier_prost",
-    "equal_performance_vehicle": "",
+    "equal_performance_vehicle": "ligier_1990",
     "performance_tier": "2",
     "stat_id": "517"
    }
@@ -700,7 +700,7 @@
     "display_name": "lng_f1990_team_minardi",
     "chassis_name": "lng_f1990_chassis_minardi",
     "engine_name_override": "lng_f1990_engine_minardi",
-    "equal_performance_vehicle": "",
+    "equal_performance_vehicle": "minardi_1990",
     "performance_tier": "1",
     "stat_id": "518"
    }
@@ -719,7 +719,7 @@
     "display_name": "lng_f1990_team_brabham",
     "chassis_name": "lng_f1990_chassis_brabham",
     "engine_name_override": "lng_f1990_engine_brabham",
-    "equal_performance_vehicle": "",
+    "equal_performance_vehicle": "brabham_1990",
     "performance_tier": "1",
     "stat_id": "519"
    }
@@ -738,7 +738,7 @@
     "display_name": "lng_f1990_team_dallara",
     "chassis_name": "lng_f1990_chassis_dallara",
     "engine_name_override": "lng_f1990_engine_dallara",
-    "equal_performance_vehicle": "",
+    "equal_performance_vehicle": "dallara_1990",
     "performance_tier": "1",
     "stat_id": "520"
    }
@@ -757,7 +757,7 @@
     "display_name": "lng_f1990_team_arrows",
     "chassis_name": "lng_f1990_chassis_arrows",
     "engine_name_override": "lng_f1990_engine_arrows",
-    "equal_performance_vehicle": "",
+    "equal_performance_vehicle": "arrows_1990",
     "performance_tier": "1",
     "stat_id": "521"
    }
@@ -770,6 +770,7 @@
     "_metadata_": "mclaren_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_honda",
+    "equal_performance_vehicle": "mclaren_1990b",
     "available": "True",
     "stat_id": "522"
    }
@@ -782,6 +783,7 @@
     "_metadata_": "ferrari_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_ferrari",
+    "equal_performance_vehicle": "ferrari_1990b",
     "available": "True",
     "stat_id": "523"
    }
@@ -794,6 +796,7 @@
     "_metadata_": "williams_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_renault",
+    "equal_performance_vehicle": "williams_1990b",
     "available": "True",
     "stat_id": "524"
    }
@@ -806,6 +809,7 @@
     "_metadata_": "benetton_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_ford_hb",
+    "equal_performance_vehicle": "benetton_1990b",
     "available": "True",
     "stat_id": "525"
    }
@@ -818,6 +822,7 @@
     "_metadata_": "tyrrell_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_ford_dfr",
+    "equal_performance_vehicle": "tyrrell_1990b",
     "available": "True",
     "stat_id": "526"
    }
@@ -830,6 +835,7 @@
     "_metadata_": "lotus_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_lamborghini",
+    "equal_performance_vehicle": "lotus_1990b",
     "available": "True",
     "stat_id": "527"
    }
@@ -842,6 +848,7 @@
     "_metadata_": "leytonhouse_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_judd",
+    "equal_performance_vehicle": "leytonhouse_1990b",
     "available": "True",
     "stat_id": "528"
    }
@@ -854,6 +861,7 @@
     "_metadata_": "larrousse_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_lamborghini",
+    "equal_performance_vehicle": "larrousse_1990b",
     "available": "True",
     "stat_id": "529"
    }
@@ -866,6 +874,7 @@
     "_metadata_": "ligier_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_ford_dfr",
+    "equal_performance_vehicle": "ligier_1990b",
     "available": "True",
     "stat_id": "530"
    }
@@ -878,6 +887,7 @@
     "_metadata_": "minardi_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_ford_dfr",
+    "equal_performance_vehicle": "minardi_1990b",
     "available": "True",
     "stat_id": "531"
    }
@@ -890,6 +900,7 @@
     "_metadata_": "brabham_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_judd",
+    "equal_performance_vehicle": "brabham_1990b",
     "available": "True",
     "stat_id": "532"
    }
@@ -902,6 +913,7 @@
     "_metadata_": "dallara_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_ford_dfr",
+    "equal_performance_vehicle": "dallara_1990b",
     "available": "True",
     "stat_id": "533"
    }
@@ -914,6 +926,7 @@
     "_metadata_": "arrows_1990b",
     "vehicle_package": "f1_1990b",
     "engine": "f1990_engine_ford_dfr",
+    "equal_performance_vehicle": "arrows_1990b",
     "available": "True",
     "stat_id": "534"
    }
