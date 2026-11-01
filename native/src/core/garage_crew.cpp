@@ -1,3 +1,4 @@
+#include "garage_crew_logic.hpp"
 #include "runtime.hpp"
 
 #include <windows.h>
@@ -23,20 +24,22 @@
 // At the site (rcx = vector begin, r13 = vector end, ebp = garage id) the guard keeps the first two entries whose slot
 // is below 2 and lowers r13 over the rest. The extra car still races; its garage crew is not spawned.
 //
+// The crew instance of a garage is built from the team's crew template, found through the session's team tables
+// ([[module + 0x48] + 0x2c8 + kind * 0x10], row team * 0x10 + 8, the record's kind at +0x58 and team at +0x5a); the
+// function reads [template + 0x560] with no null test, so a car whose team has no template faults the session load
+// at SpawnGarageCrew+0xce0. The guard drops those entries from the vector as well; the module is at [rsp + 0xc0].
+//
 // SWOFTY_GARAGE_CREW_GUARD=0 turns it off.
 
 namespace {
 
 namespace mem = swofty::mem;
+namespace gc = runtime::garage_crew;
 
 constexpr const char *MIXIN = "swofty_core.dll (garage crew guard)";
 constexpr const char *SITE = "site_Game_GarageCrew_SpawnVector";
-constexpr size_t ENTRY_SIZE = 0x10;
-constexpr size_t ENTRY_SLOT = 0x8;
 constexpr size_t MAX_ENTRIES = 256;
-constexpr uint32_t CREW_SLOTS = 2;
 constexpr size_t REC_DRIVER = 0x52;
-constexpr size_t REC_TEAM = 0x5a;
 constexpr size_t REC_CAR_NUMBER = 0x83;
 constexpr int LOG_FIRST = 8;
 
@@ -44,13 +47,26 @@ bool offered = false, settled = false, wanted = false;
 std::atomic<int> dropped{0};
 std::vector<uint32_t> seen;
 
-void log_dropped(uint32_t garage, uintptr_t record, uint32_t slot)
+struct Log {
+    uint32_t garage;
+};
+
+bool read_memory(uint64_t address, void *out, size_t n, void *)
 {
+    if (!runtime::readable(reinterpret_cast<const void *>(address), n))
+        return false;
+    std::memcpy(out, reinterpret_cast<const void *>(address), n);
+    return true;
+}
+
+void log_dropped(void *ctx, uint64_t record, uint32_t slot, gc::Drop why)
+{
+    uint32_t garage = static_cast<Log *>(ctx)->garage;
     uint16_t driver = 0xffff, team = 0xffff;
     uint8_t number = 0;
     if (record) {
         mem::read(record + REC_DRIVER, driver);
-        mem::read(record + REC_TEAM, team);
+        mem::read(record + gc::REC_TEAM, team);
         mem::read(record + REC_CAR_NUMBER, number);
     }
     uint32_t key = uint32_t(driver) << 16 | team;
@@ -61,40 +77,33 @@ void log_dropped(uint32_t garage, uintptr_t record, uint32_t slot)
     int n = ++dropped;
     if (n > LOG_FIRST)
         return;
-    swofty::log("[garage] garage %u: team %u car #%u (driver %u) is the %s car of its garage; its crew is not spawned, "
-                "the car still races%s",
-                unsigned(garage), unsigned(team), unsigned(number), unsigned(driver), slot == 2 ? "third" : "extra",
-                n == LOG_FIRST ? " (further drops are not logged)" : "");
+    const char *tail = n == LOG_FIRST ? " (further drops are not logged)" : "";
+    if (why == gc::Drop::no_template)
+        swofty::log("[garage] garage %u: team %u car #%u (driver %u) has no crew template in the session; its crew is "
+                    "not spawned, the car still races%s",
+                    unsigned(garage), unsigned(team), unsigned(number), unsigned(driver), tail);
+    else
+        swofty::log("[garage] garage %u: team %u car #%u (driver %u) is the %s car of its garage; its crew is not "
+                    "spawned, the car still races%s",
+                    unsigned(garage), unsigned(team), unsigned(number), unsigned(driver),
+                    slot == 2 ? "third" : "extra", tail);
 }
 
 void spawn_vector(SwoftyContext *c)
 {
     uintptr_t begin = c->rcx, end = c->r13;
-    if (!begin || end <= begin || (end - begin) % ENTRY_SIZE)
+    if (!begin || end <= begin || (end - begin) % gc::ENTRY_SIZE)
         return;
-    size_t n = (end - begin) / ENTRY_SIZE;
+    size_t n = (end - begin) / gc::ENTRY_SIZE;
     if (n > MAX_ENTRIES)
         return;
-    uint8_t *e = reinterpret_cast<uint8_t *>(begin);
-    size_t kept = 0;
-    bool changed = false;
-    for (size_t i = 0; i < n; i++) {
-        uint8_t *src = e + i * ENTRY_SIZE;
-        uint32_t slot = 0;
-        std::memcpy(&slot, src + ENTRY_SLOT, sizeof slot);
-        if (slot >= CREW_SLOTS || kept >= CREW_SLOTS) {
-            uintptr_t record = 0;
-            std::memcpy(&record, src, sizeof record);
-            log_dropped(uint32_t(c->rbp), record, slot);
-            changed = true;
-            continue;
-        }
-        if (kept != i)
-            std::memcpy(e + kept * ENTRY_SIZE, src, ENTRY_SIZE);
-        kept++;
-    }
-    if (changed)
-        c->r13 = begin + kept * ENTRY_SIZE;
+    uint64_t session = 0;
+    bool known = gc::session_of(c->rsp, read_memory, nullptr, &session);
+    Log log{uint32_t(c->rbp)};
+    size_t kept = gc::compact(reinterpret_cast<uint8_t *>(begin), n, session, known, read_memory, nullptr, log_dropped,
+                              &log);
+    if (kept != n)
+        c->r13 = begin + kept * gc::ENTRY_SIZE;
 }
 
 }

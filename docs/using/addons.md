@@ -72,7 +72,7 @@ An addon loads after every addon it requires, whatever their places in the list.
 Classic Career         Needs Classic Seasons (shared) above it     [Move Classic Seasons (shared) above] [Order for me]
 Progressive Career     Needs F1 2019, which is off                 [Turn F1 2019 on]
 Classic Career         Needs F1 2020, which isn't installed        [Install F1 2020]
-Simplified for Swofty  Changes rows that Classic Seasons adds, so it needs Classic Seasons above it
+More Driver Models     Changes rows that Classic Seasons adds, so it needs Classic Seasons above it
 Supercars              Supercars adds teams to every session (with Pedro's Mugello)
 ```
 
@@ -80,6 +80,7 @@ Supercars              Supercars adds teams to every session (with Pedro's Mugel
 - **Needs X, which is off** and **Needs X, which isn't installed** stop Play. **Turn X on** and **Install X** fix them. A version outside the required range says which version is installed and opens the Addon Browser.
 - **Can't be on with X** is a declared conflict. **Turn X off** fixes it.
 - **Changes rows that X adds** comes from the profile's last build: the addon's database changes waited for rows X adds. Check conflicts after moving addons to see it clear.
+- Addons in Built In, such as Simplified for Swofty, don't move, so they get no **Needs X above it** or **Changes rows that X adds** box and **Order for me** leaves them in place. The build still loads them after every addon they require or load after.
 - **Your career K needs X, which is off** shows on X's row when a saved career lists X among the addons it needs. It also shows when X is not installed or outside the range the career needs.
 - An amber **loads below it and replaces N of its changes** is a conflict from the last check. **Move X above** makes the row win instead.
 - An amber clash is a known bad pairing, such as Supercars with a community track. The list is in `packages/core/src/order_clashes.json`.

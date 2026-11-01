@@ -18,8 +18,8 @@
 // setup mode loads at the track: the facts' layers whose setup_modes hold it (the launcher scans the database the
 // game reads, runtime database edits included, so Classic Seasons' swofty_f1 layer is there), narrowed to the
 // box's game season when a layer names it; several worlds: the smallest room among them. Rules, in this order: Time Trial support (stock tracks and tracks made for
-// 1.5 run it, D5; a record track when its record says so; none whose facts say time_trial false), garages for every
-// team, grid slots for the box's cars clamped to the install's grid size, an AI folder for every car and the track's
+// 1.5 run it, D5; a record track when its record says so; none whose facts say time_trial false), grid slots for
+// the box's cars clamped to the install's grid size, an AI folder for every car and the track's
 // ai_track_difficulties for its package. Before those, the world rule: a track whose files hold none of the box's
 // worlds while other tracks hold one is left out (the game loads a world the track hasn't got). A rule without facts
 // passes and names what it lacked in no_facts. A box with no content.package record (an addon's era box) is made
@@ -44,10 +44,12 @@ struct BoxInfo {
     std::string setup_mode = "swofty_f1";
     std::string season;
     int teams = -1, cars = -1;
+    bool derived = false;
+    std::string unread;
     std::vector<Car> ai;
 };
 
-enum class Rule { none, time_trial, world, garages, grid, ai, difficulties, offered };
+enum class Rule { none, time_trial, world, grid, ai, difficulties, offered };
 
 struct Fit {
     bool ok = true;
@@ -120,7 +122,7 @@ inline Fit fits(const BoxInfo &box, const BaseTrack &track, Mode mode, const Fac
         return f;
     }
     std::vector<std::string> worlds = worlds_for(*facts, box);
-    int garages = -1, grid = -1;
+    int grid = -1;
     size_t here = 0;
     std::string lacking;
     if (worlds.empty())
@@ -134,21 +136,15 @@ inline Fit fits(const BoxInfo &box, const BaseTrack &track, Mode mode, const Fac
             continue;
         }
         ++here;
-        if (it->second.garages >= 0 && (garages < 0 || it->second.garages < garages))
-            garages = it->second.garages;
         if (it->second.grid >= 0 && (grid < 0 || it->second.grid < grid))
             grid = it->second.grid;
     }
     if (!here && !lacking.empty())
         return fail(f, Rule::world, 0, 0, lacking,
                     "its files hold no " + lacking + " world, which the box's " + box.setup_mode + " layer loads");
-    if (box.teams < 0)
-        f.no_facts.push_back("the box's teams");
-    else if (garages >= 0 && garages < box.teams)
-        return fail(f, Rule::garages, garages, box.teams, {},
-                    "its " + box.setup_mode + " world has " + std::to_string(garages) + " garages; the box has " +
-                        std::to_string(box.teams) + " teams");
     int cars = box.cars;
+    if (box.derived && facts->grid_size > 0 && cars < 0)
+        cars = facts->grid_size;
     if (cars >= 0 && facts->grid_size > 0)
         cars = std::min(cars, facts->grid_size);
     if (cars < 0)
@@ -200,9 +196,6 @@ inline Decision decide(const BaseTrack *track, const BoxInfo &box, Mode mode, co
     switch (fit.rule) {
     case Rule::world:
         d.body = "It has no " + fit.what + " world, the one " + boxname + " loads.";
-        break;
-    case Rule::garages:
-        d.body = "Its garages hold " + std::to_string(fit.have) + " teams. " + boxname + " has " + std::to_string(fit.need) + ".";
         break;
     case Rule::grid:
         d.body = "Its grid holds " + std::to_string(fit.have) + " cars. " + boxname + " runs " + std::to_string(fit.need) + ".";
@@ -449,16 +442,25 @@ inline BoxInfo box_from_list(const std::string &list, const ListDb &db)
     BoxInfo b;
     b.package = "game/" + list;
     b.entrant_list = list;
+    b.derived = true;
     std::string mode = list_setup_mode(db, list);
-    if (mode.empty())
+    if (!mode.empty())
+        b.setup_mode = mode;
+    else
+        b.unread = "no setup mode offers the list";
+    auto row = list_row(db, list);
+    if (!row) {
+        b.unread += std::string(b.unread.empty() ? "" : "; ") + "no entrant list row labelled " + list;
         return b;
-    b.setup_mode = mode;
-    if (auto row = list_row(db, list))
+    }
+    if (!mode.empty())
         b.season = db_text(db.text, *row + ".season");
     std::vector<std::string> seen, teams;
     int cars = 0;
-    if (!walk_list(db, list, 0, seen, teams, cars))
+    if (!walk_list(db, list, 0, seen, teams, cars)) {
+        b.unread += std::string(b.unread.empty() ? "" : "; ") + "an entrant count or reference of " + list + " can't be read";
         return b;
+    }
     b.teams = int(teams.size());
     b.cars = cars;
     return b;

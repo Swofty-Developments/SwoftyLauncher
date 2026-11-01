@@ -53,7 +53,6 @@ namespace ce::comp {
 namespace {
 
 constexpr uint32_t kHumanFlag = 0x10000000u;
-constexpr size_t kMaxEntrants = 128;
 
 struct Entry {
     const char *name;

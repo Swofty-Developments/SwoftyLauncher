@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # Bakes one runner image: ./bake.sh linux-2604 | linux-2204 | windows
-# launch.sh picks the newest image tagged swofty-ci-image=<kind>; this keeps the two newest of each kind.
+# It bakes in the home region (the first line of regions), keeps the two newest of the kind there and copies
+# the new one to the other regions (copy.sh); launch.sh picks the newest image tagged swofty-ci-image=<kind>.
 set -euo pipefail
 
 KIND=$1
-REGION=${REGION:-ap-south-2}
 HERE=$(cd "$(dirname "$0")" && pwd)
+REGION=$(head -1 "$HERE/regions")
 SG=$(aws ec2 describe-security-groups --region "$REGION" --filters Name=group-name,Values=swofty-ci-runners --query 'SecurityGroups[0].GroupId' --output text)
 
 case $KIND in
@@ -64,3 +65,4 @@ for OLD in $(aws ec2 describe-images --region "$REGION" --owners self --filters 
   echo "removed $OLD"
 done
 echo "done: $IMAGE"
+"$HERE/copy.sh" "$KIND"

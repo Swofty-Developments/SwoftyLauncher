@@ -91,9 +91,38 @@ bool hash_file(const std::string &rel, uint64_t &hash)
 
 std::string flat(const std::string &rel)
 {
-    std::string s = rel.substr(std::string(logo_build::UI_FOLDER).size());
+    std::string folder = logo_build::UI_FOLDER;
+    std::string s = rel.compare(0, folder.size(), folder) == 0 ? rel.substr(folder.size()) : rel;
     std::replace(s.begin(), s.end(), '/', '_');
     return s;
+}
+
+std::map<std::string, std::vector<std::string>> overlay_archives()
+{
+    std::map<std::string, std::vector<std::string>> out;
+    std::string root = runtime::narrow(runtime::game_root()), sw = runtime::narrow(runtime::swofty_root());
+    if (runtime::lower(sw).rfind(runtime::lower(root), 0) != 0)
+        return out;
+    std::string base = sw.substr(root.size());
+    std::replace(base.begin(), base.end(), '\\', '/');
+    while (!base.empty() && base.front() == '/')
+        base.erase(base.begin());
+    if (!base.empty() && base.back() != '/')
+        base += '/';
+    for (auto &j : runtime::config()["resource_erps"].a) {
+        std::string file = j["file"].str();
+        if (file.empty())
+            continue;
+        std::replace(file.begin(), file.end(), '\\', '/');
+        std::string rel = base + file;
+        for (auto &x : j["erps"].a)
+            if (x.type == json::Value::Str) {
+                auto &list = out[runtime::lower(x.s)];
+                if (std::find(list.begin(), list.end(), rel) == list.end())
+                    list.push_back(rel);
+            }
+    }
+    return out;
 }
 
 }
@@ -128,6 +157,13 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         return;
     std::vector<std::string> files;
     list_erps(game_file(logo_build::UI_FOLDER), logo_build::UI_FOLDER, files, 0);
+    auto overlays = overlay_archives();
+    std::vector<std::string> keyed_files = files;
+    for (auto &rel : files) {
+        auto it = overlays.find(runtime::lower(rel));
+        if (it != overlays.end())
+            keyed_files.insert(keyed_files.end(), it->second.begin(), it->second.end());
+    }
     std::string dir = "addons/" + std::string(CACHE_ADDON) + "/";
     std::wstring dirw = runtime::under_swofty("addons");
     CreateDirectoryW(dirw.c_str(), nullptr);
@@ -138,7 +174,7 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     logo_cache::Env stamp_env{stat_file, hash_file};
     auto key_inputs = [&](const std::set<std::string> &inputs, const logo_cache::Stamps &before) {
         DWORD t0 = GetTickCount();
-        logo_cache::Keyed k = logo_cache::key_archives(key, files, inputs, stamp_env, before);
+        logo_cache::Keyed k = logo_cache::key_archives(key, keyed_files, inputs, stamp_env, before);
         if (k.hashed)
             report.lines.push_back("team.logo: " + std::to_string(k.hashed) + " input archive(s) (" + std::to_string(k.hashed_bytes >> 20) +
                                    " MB) hashed in " + std::to_string(GetTickCount() - t0) + " ms");
@@ -169,6 +205,10 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         DWORD t0 = GetTickCount();
         logo_build::Env env;
         env.list = [&] { return files; };
+        env.overlays = [&](const std::string &rel) {
+            auto it = overlays.find(runtime::lower(rel));
+            return it == overlays.end() ? std::vector<std::string>{} : it->second;
+        };
         env.open = [&](const std::string &rel) -> std::shared_ptr<erpfile::Source> {
             auto fs = std::make_shared<FileSource>();
             fs->h = CreateFileW(game_file(rel).c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);

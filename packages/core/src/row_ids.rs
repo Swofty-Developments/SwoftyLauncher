@@ -47,6 +47,10 @@ const ALIAS_TABLES: &[(&str, &str)] = &[
 
 pub const ALIASES_FILE: &str = "id_aliases.json";
 
+/// The environment variable the launcher sets for `swofty run` to the file of the host's ids for a room
+/// launch ([`Overrides`]).
+pub const ENV: &str = "SWOFTY_ROOM_ROW_IDS";
+
 /// `swofty/id_aliases.json`: for each of `teams`, `vehicles` and `drivers`, the ids added rows had
 /// before (1.6.10 and 1.6.11 hashed ids, ids before 1.6.10) mapped to the id they have now. The core
 /// reads it at StateLoadSession to load a save made under the earlier ids.
@@ -70,6 +74,66 @@ impl IdAliases {
         };
         crate::write_json(path, &file)
     }
+}
+
+/// The ids a room's host gave the addons' rows, by addon and then `<table>.<row>/<label>`: a joiner
+/// builds one session with them, in place of the ids its own `row-ids.json` keeps, so both copies'
+/// fingerprints match. They are never written to `row-ids.json` (see [`Store::lend`]) and they are part
+/// of the build's cache key.
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Overrides {
+    pub rows: BTreeMap<String, BTreeMap<String, i64>>,
+}
+
+impl Overrides {
+    pub fn is_empty(&self) -> bool {
+        self.rows.values().all(BTreeMap::is_empty)
+    }
+
+    /// The overrides for the addons in `order`, as `<addon>/<table>.<row>/<label>` keys.
+    fn keys(&self, order: &[String]) -> BTreeMap<String, i64> {
+        order
+            .iter()
+            .filter_map(|addon| Some((addon, self.rows.get(addon)?)))
+            .flat_map(|(addon, rows)| rows.iter().map(move |(row, id)| (format!("{addon}/{row}"), *id)))
+            .collect()
+    }
+
+    /// What goes into the build's cache key for the addons in `order`; empty when none apply.
+    pub fn stamp(&self, order: &[String]) -> Option<String> {
+        let keys = self.keys(order);
+        (!keys.is_empty()).then(|| {
+            format!(
+                "room row ids {};",
+                serde_json::to_string(&keys).expect("serialisable")
+            )
+        })
+    }
+
+    pub fn read(path: &Path) -> Result<Self> {
+        match crate::load_json::<Overrides>(path)? {
+            Loaded::Found(o) => Ok(o),
+            Loaded::Missing | Loaded::Damaged(_) => Ok(Self::default()),
+        }
+    }
+
+    pub fn write(&self, path: &Path) -> Result<()> {
+        crate::write_json(path, self)
+    }
+}
+
+static LENT: std::sync::Mutex<Option<Overrides>> = std::sync::Mutex::new(None);
+
+/// Makes this process's builds use `overrides` (a room launch's), or none. The `swofty run` that starts
+/// the game for a room calls it once; no other process does.
+pub fn lend(overrides: Option<Overrides>) {
+    *LENT.lock().unwrap_or_else(std::sync::PoisonError::into_inner) = overrides.filter(|o| !o.is_empty());
+}
+
+pub fn lent() -> Option<Overrides> {
+    LENT.lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+        .clone()
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -303,7 +367,7 @@ pub struct Store {
     aliases: BTreeMap<String, BTreeSet<i64>>,
     existed: bool,
     by_id: HashMap<String, BTreeMap<i64, String>>,
-    pinned: HashMap<String, HashSet<i64>>,
+    pinned: HashMap<String, HashMap<i64, String>>,
     seed: Seed,
     claimed: HashSet<String>,
     building: HashSet<String>,
@@ -312,10 +376,21 @@ pub struct Store {
     reused: usize,
     changed: bool,
     read_only: bool,
+    lent: BTreeMap<String, i64>,
+    lent_build: HashSet<String>,
 }
 
 fn addon_of(key: &str) -> &str {
     key.split('/').next().unwrap_or(key)
+}
+
+fn table_of(key: &str) -> &str {
+    key.split('/').nth(1).unwrap_or_default()
+}
+
+fn row_name(key: &str) -> String {
+    let (addon, rest) = key.split_once('/').unwrap_or(("", key));
+    format!("{rest} of {addon}")
 }
 
 impl Store {
@@ -403,12 +478,86 @@ impl Store {
         }
     }
 
+    /// Gives the rows of `overrides` for the addons in `order` the host's ids for this build only: the store is
+    /// not written afterwards, and the aliases leave these rows out. An id another row of the build keeps
+    /// (one in `order`, not itself overridden) or a registry record of an addon in `order` holds is
+    /// refused, naming both rows. A registry record of an addon outside the build doesn't register this
+    /// session, so its id is lent.
+    pub fn lend(&mut self, overrides: &Overrides, order: &[String]) -> std::result::Result<usize, String> {
+        let wanted = overrides.keys(order);
+        self.lent_build = order.iter().cloned().collect();
+        for key in wanted.keys() {
+            if let Some(old) = self.rows.remove(key)
+                && let Some(ids) = self.by_id.get_mut(table_of(key))
+                && ids.get(&old).is_some_and(|k| k == key)
+            {
+                ids.remove(&old);
+            }
+        }
+        let mut given: HashMap<(&str, i64), &str> = HashMap::new();
+        for (key, &id) in &wanted {
+            let table = table_of(key);
+            if let Some(&other) = given.get(&(table, id)) {
+                return Err(format!(
+                    "the host's stat id {id} is given to both {} and {}",
+                    row_name(other),
+                    row_name(key)
+                ));
+            }
+            given.insert((table, id), key);
+            if let Some(other) = self.by_id.get(table).and_then(|ids| ids.get(&id))
+                && order.iter().any(|a| a == addon_of(other))
+            {
+                return Err(format!(
+                    "the host's stat id {id} for {} is the one your {} uses",
+                    row_name(key),
+                    row_name(other)
+                ));
+            }
+            if let Some(record) = self.pinned.get(table).and_then(|ids| ids.get(&id))
+                && self.pin_holds(record)
+            {
+                return Err(format!(
+                    "the host's stat id {id} for {} is held by the game's registry record {record} here",
+                    row_name(key)
+                ));
+            }
+        }
+        for (key, &id) in &wanted {
+            self.insert(key.clone(), id);
+            self.from.insert(key.clone(), IdFrom::Seeded);
+        }
+        self.lent = wanted;
+        self.read_only = true;
+        Ok(self.lent.len())
+    }
+
+    /// Whether a registry record keeps its id from this build. While a host's ids are lent, a record of an
+    /// addon outside the lent build doesn't register this session, so its id is free.
+    fn pin_holds(&self, record: &str) -> bool {
+        self.lent_build.is_empty() || !record.contains('/') || self.lent_build.contains(addon_of(record))
+    }
+
+    /// The first lent row the build gave another id than the host's, as the message that refuses the build.
+    pub fn lent_missed(&self) -> Option<String> {
+        self.lent.iter().find_map(|(key, &id)| {
+            let got = self.rows.get(key).copied();
+            (got != Some(id)).then(|| {
+                format!(
+                    "the host's stat id {id} for {} can't be used here: the build gave it {}",
+                    row_name(key),
+                    got.map_or("none".to_owned(), |g| g.to_string())
+                )
+            })
+        })
+    }
+
     /// The ids rows had before the ones they keep, by the tables saves hold them of; see [`IdAliases`].
     pub fn id_aliases(&self) -> IdAliases {
         let mut out = IdAliases::default();
         let mut seen: HashMap<(&str, i64), Option<i64>> = HashMap::new();
         for (key, olds) in &self.aliases {
-            let Some(&now) = self.rows.get(key) else {
+            let Some(&now) = self.rows.get(key).filter(|_| !self.lent.contains_key(key)) else {
                 continue;
             };
             let table = key.split('/').nth(1).unwrap_or_default();
@@ -534,21 +683,25 @@ impl Store {
 }
 
 // The ids `ids.json` holds and its careers use, by the table whose rows they are ids of.
-fn registry_ids(doc: &Value) -> HashMap<String, HashSet<i64>> {
-    let mut out: HashMap<String, HashSet<i64>> = HashMap::new();
+fn registry_ids(doc: &Value) -> HashMap<String, HashMap<i64, String>> {
+    let mut out: HashMap<String, HashMap<i64, String>> = HashMap::new();
     for (registry, table) in REGISTRY_TABLES {
         let ids = out.entry((*table).to_owned()).or_default();
         if let Some(records) = doc["ids"][*registry].as_object() {
-            ids.extend(
-                records
-                    .values()
-                    .filter_map(|e| e.as_i64().or_else(|| e["id"].as_i64())),
-            );
+            ids.extend(records.iter().filter_map(|(record, e)| {
+                e.as_i64()
+                    .or_else(|| e["id"].as_i64())
+                    .map(|id| (id, record.clone()))
+            }));
         }
         if let Some(careers) = doc["careers"].as_object() {
             for career in careers.values() {
                 if let Some(records) = career[*registry].as_object() {
-                    ids.extend(records.values().filter_map(Value::as_i64));
+                    ids.extend(
+                        records
+                            .iter()
+                            .filter_map(|(record, e)| e.as_i64().map(|id| (id, record.clone()))),
+                    );
                 }
             }
         }
@@ -594,7 +747,10 @@ impl RowIds for Scoped<'_> {
             .get(&table)
             .and_then(|ids| ids.get(&id))
             .is_some_and(|k| k != key)
-            || s.pinned.get(&table).is_some_and(|ids| ids.contains(&id))
+            || s.pinned
+                .get(&table)
+                .and_then(|ids| ids.get(&id))
+                .is_some_and(|record| s.pin_holds(record))
     }
 
     fn keep(&self, _: &str, _: &str, key: &str, id: i64, from: IdFrom) {
@@ -615,7 +771,9 @@ impl RowIds for Scoped<'_> {
             s.by_id
                 .get(&table)?
                 .iter()
-                .filter(|(id, k)| !s.building.contains(addon_of(k)) && pinned.is_none_or(|p| !p.contains(id)))
+                .filter(|(id, k)| {
+                    !s.building.contains(addon_of(k)) && pinned.is_none_or(|p| !p.contains_key(id))
+                })
                 .map(|(id, k)| (*id, k.clone()))
                 .collect()
         };
@@ -1193,6 +1351,188 @@ mod tests {
         assert_eq!(
             built.store.from[&key("bydanix", MODES, "bdx_2012_mode")],
             IdFrom::Seeded
+        );
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    fn host_ids(rows: &[(&str, &str, i64)]) -> Overrides {
+        let mut o = Overrides::default();
+        for (addon, label, id) in rows {
+            o.rows
+                .entry((*addon).to_owned())
+                .or_default()
+                .insert(format!("{}.{}/{label}", VEHICLES.0, VEHICLES.1), *id);
+        }
+        o
+    }
+
+    fn order(addons: &[&str]) -> Vec<String> {
+        addons.iter().map(|a| (*a).to_owned()).collect()
+    }
+
+    fn players_store(name: &str) -> (PathBuf, Built) {
+        let data = data_dir(name);
+        let first = build(
+            VEHICLES,
+            10,
+            &[("a", &["a1", "a2"]), ("b", &["b1"])],
+            Store::default(),
+        );
+        first.store.save(&data).unwrap();
+        (data, first)
+    }
+
+    #[test]
+    fn the_hosts_ids_are_used_for_one_build_and_never_written() {
+        let (data, own) = players_store("lend-apply");
+        assert_eq!(
+            own.ids,
+            BTreeMap::from([("a1".into(), 11), ("a2".into(), 12), ("b1".into(), 13)])
+        );
+        let before = std::fs::read(path(&data)).unwrap();
+        let (mut store, _) = Store::load(&data, None, "default", None);
+        let host = host_ids(&[("a", "a1", 21), ("a", "a2", 22), ("b", "b1", 23)]);
+        assert_eq!(store.lend(&host, &order(&["a", "b"])), Ok(3));
+        let lent = build(VEHICLES, 10, &[("a", &["a1", "a2"]), ("b", &["b1"])], store);
+        assert_eq!(
+            lent.ids,
+            BTreeMap::from([("a1".into(), 21), ("a2".into(), 22), ("b1".into(), 23)])
+        );
+        assert_eq!(lent.store.lent_missed(), None);
+        lent.store.save(&data).unwrap();
+        assert_eq!(
+            std::fs::read(path(&data)).unwrap(),
+            before,
+            "row-ids.json is as the player's own build left it"
+        );
+        let (own_again, _) = Store::load(&data, None, "default", None);
+        let again = build(VEHICLES, 10, &[("a", &["a1", "a2"]), ("b", &["b1"])], own_again);
+        assert_eq!(
+            again.ids, own.ids,
+            "the next normal build has the player's own ids"
+        );
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn two_addons_that_swap_ids_with_the_host_are_not_a_collision() {
+        let (data, _) = players_store("lend-swap");
+        let (mut store, _) = Store::load(&data, None, "default", None);
+        let host = host_ids(&[("a", "a1", 13), ("b", "b1", 11)]);
+        assert_eq!(store.lend(&host, &order(&["a", "b"])), Ok(2));
+        let lent = build(VEHICLES, 10, &[("a", &["a1", "a2"]), ("b", &["b1"])], store);
+        assert_eq!(lent.ids["a1"], 13);
+        assert_eq!(lent.ids["b1"], 11);
+        assert_eq!(lent.store.lent_missed(), None);
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn an_id_another_row_of_the_build_uses_is_refused_and_one_of_an_addon_left_out_is_not() {
+        let (data, _) = players_store("lend-collide");
+        let (mut store, _) = Store::load(&data, None, "default", None);
+        let host = host_ids(&[("a", "a1", 13)]);
+        let err = store.lend(&host, &order(&["a", "b"])).unwrap_err();
+        assert!(
+            err.contains("stat id 13") && err.contains("a1") && err.contains("b1 of b"),
+            "{err}"
+        );
+        let (mut store, _) = Store::load(&data, None, "default", None);
+        assert_eq!(store.lend(&host, &order(&["a"])), Ok(1));
+        let lent = build(VEHICLES, 10, &[("a", &["a1", "a2"])], store);
+        assert_eq!(lent.ids["a1"], 13);
+        assert_eq!(lent.store.lent_missed(), None);
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn a_host_id_the_game_registry_holds_is_refused() {
+        let data = data_dir("lend-pinned");
+        let (mut store, _) = Store::load(&data, None, "default", None);
+        store.pinned.insert(
+            "entrants.vehicles.vehicle".into(),
+            HashMap::from([(40, "a/a_record".to_owned())]),
+        );
+        let err = store
+            .lend(&host_ids(&[("a", "a1", 40)]), &order(&["a"]))
+            .unwrap_err();
+        assert!(err.contains("registry record a/a_record"), "{err}");
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn a_lent_id_an_outside_addon_pins_is_the_one_the_build_gives() {
+        let data = data_dir("lend-pinned-build");
+        let (mut store, _) = Store::load(&data, None, "default", None);
+        store.pinned.insert(
+            "entrants.vehicles.vehicle".into(),
+            HashMap::from([(13, "z.indycar/z_record".to_owned())]),
+        );
+        assert_eq!(store.lend(&host_ids(&[("a", "a1", 13)]), &order(&["a"])), Ok(1));
+        let lent = build(VEHICLES, 10, &[("a", &["a1", "a2"])], store);
+        assert_eq!(lent.ids["a1"], 13);
+        assert_eq!(lent.store.lent_missed(), None);
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn a_host_id_held_by_a_registry_record_of_an_addon_outside_the_build_is_lent() {
+        let data = data_dir("lend-pinned-off");
+        let (mut store, _) = Store::load(&data, None, "default", None);
+        store.pinned.insert(
+            "entrants.vehicles.vehicle".into(),
+            HashMap::from([(40, "z.indycar/z_record".to_owned())]),
+        );
+        assert_eq!(store.lend(&host_ids(&[("a", "a1", 40)]), &order(&["a"])), Ok(1));
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn the_cache_key_names_only_the_overrides_of_addons_in_the_build() {
+        let host = host_ids(&[("a", "a1", 21), ("z", "z1", 5)]);
+        let with = host.stamp(&order(&["a", "b"])).unwrap();
+        assert!(
+            with.contains("a/entrants.vehicles.vehicle/a1") && !with.contains("z1"),
+            "{with}"
+        );
+        assert_ne!(
+            Some(with),
+            host_ids(&[("a", "a1", 22)]).stamp(&order(&["a", "b"]))
+        );
+        assert_eq!(host.stamp(&order(&["b"])), None);
+        assert_eq!(Overrides::default().stamp(&order(&["a"])), None);
+    }
+
+    #[test]
+    fn a_lent_row_leaves_the_id_aliases_alone() {
+        let (data, _) = players_store("lend-aliases");
+        let (mut store, _) = Store::load(&data, None, "default", None);
+        let key = key("a", VEHICLES, "a1");
+        store.aliases.insert(key.clone(), BTreeSet::from([5]));
+        assert!(
+            store
+                .id_aliases()
+                .tables
+                .get("vehicles")
+                .is_some_and(|t| t.get(&5) == Some(&11))
+        );
+        store
+            .lend(&host_ids(&[("a", "a1", 21)]), &order(&["a", "b"]))
+            .unwrap();
+        assert!(store.id_aliases().is_empty(), "{:?}", store.id_aliases());
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn overrides_round_trip_through_their_file() {
+        let data = data_dir("lend-file");
+        let file = data.join("room.json");
+        let host = host_ids(&[("a", "a1", 21)]);
+        host.write(&file).unwrap();
+        assert_eq!(Overrides::read(&file).unwrap(), host);
+        assert_eq!(
+            Overrides::read(&data.join("none.json")).unwrap(),
+            Overrides::default()
         );
         std::fs::remove_dir_all(&data).ok();
     }

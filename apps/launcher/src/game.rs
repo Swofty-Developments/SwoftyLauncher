@@ -12,7 +12,7 @@ use swofty_core::crash::{LogScan, StartFailure, Symbols, fatal_name};
 use swofty_core::ea_app;
 use swofty_core::install::{Game, Source};
 use swofty_core::launch;
-use swofty_core::multiplayer::bridge::{ARMED, armed_env};
+use swofty_core::multiplayer::bridge::armed_env;
 use swofty_core::process::{GameProcess, game_processes};
 use swofty_core::quarantine;
 use swofty_core::recovery::{self, Blocked, Notice, Scope, SessionLock};
@@ -135,16 +135,56 @@ fn import_first_start(store: &Store) {
 static IMPORT_RETRY: AtomicI64 = AtomicI64::new(0);
 const IMPORT_RETRY_SECS: i64 = 30;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct RetryGate {
+    game_running: bool,
+    pending: bool,
+    launch_in_progress: bool,
+    steam_usable: bool,
+    ea_copy: bool,
+    now: i64,
+    last: i64,
+}
+
+fn should_retry_import(g: RetryGate) -> bool {
+    !g.game_running
+        && g.pending
+        && !g.launch_in_progress
+        && !g.ea_copy
+        && g.steam_usable
+        && g.now - g.last >= IMPORT_RETRY_SECS
+}
+
+fn launch_in_progress(store: &Store) -> bool {
+    Busy::live(&store.root).is_some()
+        || SessionLock::held_elsewhere(&store.root)
+        || std::fs::read_to_string(store.root.join(steam_client::STAGE_FILE))
+            .is_ok_and(|s| !s.trim().is_empty())
+}
+
 /// While the first-start import has found no Steam save, try again once Steam is signed in.
 fn retry_import(store: &Store, processes: &[GameProcess]) {
     if !processes.is_empty()
         || !swofty_core::launcher_saves::import_pending(&store.root)
-        || !swofty_core::steam_client::status().state.usable()
+        || launch_in_progress(store)
     {
         return;
     }
     let now = vault::now();
-    if now - IMPORT_RETRY.load(Ordering::Relaxed) < IMPORT_RETRY_SECS {
+    let last = IMPORT_RETRY.load(Ordering::Relaxed);
+    if now - last < IMPORT_RETRY_SECS {
+        return;
+    }
+    let gate = RetryGate {
+        game_running: false,
+        pending: true,
+        launch_in_progress: false,
+        steam_usable: swofty_core::steam_client::status().state.usable(),
+        ea_copy: copies::find_active(&store.config()).is_some_and(|c| c.source == Source::EaApp),
+        now,
+        last,
+    };
+    if !should_retry_import(gate) {
         return;
     }
     IMPORT_RETRY.store(now, Ordering::Relaxed);
@@ -312,8 +352,11 @@ fn install(copy: &GameCopy, recorded: &[PathBuf]) -> Install {
     }
 }
 
+pub const DIRECT_START_FILE: &str = "swofty/direct_start.json";
+
 pub struct Launch {
     child: Child,
+    direct_start: Option<PathBuf>,
     pub since: Instant,
     pub at: f64,
     pub log: PathBuf,
@@ -322,12 +365,15 @@ pub struct Launch {
 }
 
 impl Launch {
+    #[allow(clippy::too_many_arguments)]
     pub fn start(
         store: &Store,
         profile: &str,
         install: &Install,
         mode: LaunchMode,
-        netplay: bool,
+        netplay: Option<&str>,
+        row_ids: Option<&Path>,
+        direct_start: Option<&str>,
         steam_saves_once: bool,
     ) -> Result<Self, String> {
         let cli = cli_path(store).ok_or_else(|| app_control::missing(&expected_cli(store)))?;
@@ -352,9 +398,23 @@ impl Launch {
             c.arg("--steam-saves-once");
         }
         c.arg("--game").arg(&install.dir);
-        if netplay {
-            c.envs(armed_env(ARMED));
+        if let Some(armed) = netplay {
+            c.envs(armed_env(armed));
         }
+        if let Some(file) = row_ids {
+            c.env(swofty_core::row_ids::ENV, file);
+        }
+        let request_file = install.dir.join(DIRECT_START_FILE);
+        std::fs::remove_file(&request_file).ok();
+        let direct_start = match direct_start {
+            Some(request) => {
+                std::fs::create_dir_all(install.dir.join("swofty"))
+                    .and_then(|()| std::fs::write(&request_file, request))
+                    .map_err(|e| format!("{}: {e}", request_file.display()))?;
+                Some(request_file)
+            }
+            None => None,
+        };
         #[cfg(windows)]
         std::os::windows::process::CommandExt::creation_flags(&mut c, 0x0800_0000);
         let child = c
@@ -365,6 +425,7 @@ impl Launch {
             .map_err(|e| not_started(store, &log, &cli, &e))?;
         Ok(Self {
             child,
+            direct_start,
             since: Instant::now(),
             at,
             log,
@@ -380,6 +441,14 @@ impl Launch {
     pub fn failure(&self) -> String {
         failure_line(&std::fs::read_to_string(&self.log).unwrap_or_default())
             .unwrap_or_else(|| "the launch exited before the game started".into())
+    }
+}
+
+impl Drop for Launch {
+    fn drop(&mut self) {
+        if let Some(file) = &self.direct_start {
+            std::fs::remove_file(file).ok();
+        }
     }
 }
 
@@ -507,7 +576,69 @@ mod tests {
     use swofty_core::launch;
     use swofty_core::store::Store;
 
-    use super::{cause_first, failure_line, not_started};
+    use super::{IMPORT_RETRY_SECS, RetryGate, cause_first, failure_line, not_started, should_retry_import};
+
+    fn idle_steam() -> RetryGate {
+        RetryGate {
+            game_running: false,
+            pending: true,
+            launch_in_progress: false,
+            steam_usable: true,
+            ea_copy: false,
+            now: 1000,
+            last: 0,
+        }
+    }
+
+    #[test]
+    fn a_steam_copy_with_nothing_running_retries_the_import() {
+        assert!(should_retry_import(idle_steam()));
+    }
+
+    #[test]
+    fn an_ea_copy_never_retries_the_import() {
+        assert!(!should_retry_import(RetryGate {
+            ea_copy: true,
+            ..idle_steam()
+        }));
+    }
+
+    #[test]
+    fn a_launch_in_progress_never_retries_the_import() {
+        assert!(!should_retry_import(RetryGate {
+            launch_in_progress: true,
+            ..idle_steam()
+        }));
+        assert!(!should_retry_import(RetryGate {
+            game_running: true,
+            ..idle_steam()
+        }));
+    }
+
+    #[test]
+    fn the_import_retry_needs_a_usable_steam_and_a_pending_import() {
+        assert!(!should_retry_import(RetryGate {
+            steam_usable: false,
+            ..idle_steam()
+        }));
+        assert!(!should_retry_import(RetryGate {
+            pending: false,
+            ..idle_steam()
+        }));
+    }
+
+    #[test]
+    fn the_import_retries_are_spaced() {
+        let g = idle_steam();
+        assert!(!should_retry_import(RetryGate {
+            last: g.now - IMPORT_RETRY_SECS + 1,
+            ..g
+        }));
+        assert!(should_retry_import(RetryGate {
+            last: g.now - IMPORT_RETRY_SECS,
+            ..g
+        }));
+    }
 
     #[test]
     fn a_cli_that_does_not_start_says_so_in_the_launch_log() {

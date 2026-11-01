@@ -122,6 +122,8 @@ bool g_data_ok = false;
 int g_failures = 0;
 std::atomic<bool> g_rnd_changed{false};
 std::string g_names_for;
+bool g_names_pending = false;
+swofty::career::State g_names_pending_state{};
 int g_names_year = 0;
 
 bool data()
@@ -1912,7 +1914,13 @@ void season_loaded(const swofty::career::State &state)
         swofty::hub::hide_rnd(false);
         return;
     }
-    names::load();
+    names::refresh();
+    if (!names::loaded()) {
+        g_names_pending_state = state;
+        g_names_pending = true;
+        return;
+    }
+    g_names_pending = false;
     uintptr_t e = entity();
     SeasonInfo s;
     std::vector<Row> rows;
@@ -1969,6 +1977,13 @@ void rnd_frame(double, void *)
 {
     if (g_rnd_changed.exchange(false))
         rnd_option_changed();
+    static unsigned frame = 0;
+    if (!names::loaded() && (frame++ % 60) == 0)
+        names::load();
+    if (g_names_pending && names::loaded()) {
+        g_names_pending = false;
+        season_loaded(g_names_pending_state);
+    }
 }
 
 void wizard_abandoned(const char *why)
@@ -1990,6 +2005,7 @@ void wizard_left(const char *group)
 
 void season_unloaded()
 {
+    g_names_pending = false;
     if (!g_current.empty())
         publish(false, "");
     swofty::hub::hide_rnd(false);
@@ -2377,7 +2393,7 @@ int season_slot(uintptr_t season, bool &started)
 
 bool start_order(uintptr_t season, NeOptionalVec &drivers, NeOptionalVec &teams, std::string &why)
 {
-    if (!progressive_career() || !data() || !names::load()) {
+    if (!progressive_career() || !data() || !names::load_wait()) {
         why = "not a Progressive career";
         return false;
     }

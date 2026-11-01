@@ -85,6 +85,10 @@ export ZIG_GLOBAL_CACHE_DIR=$OUT/zig-cache ZIG_LOCAL_CACHE_DIR=$OUT/zig-cache
     -o "$OUT/fuel_logic_test" fuel_logic_test.cpp
 "$OUT/fuel_logic_test"
 
+"${ZIG[@]}" c++ -target x86_64-linux-musl -std=c++23 -O1 -Wall -Wextra -Wno-nullability-completeness -I../src \
+    -o "$OUT/names_logic_test" names_logic_test.cpp
+"$OUT/names_logic_test"
+
 register/run.sh
 
 PG_TEST_DIR=$OUT records/run.sh

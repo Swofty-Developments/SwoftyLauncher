@@ -64,8 +64,10 @@ t "ERS new-lap site unit test" native/test/run_ers_newlap_test.sh
 t "Tyre slot guard unit test" native/test/run_tyre_slots_test.sh
 t "Pit slot guard unit test" native/test/run_pit_slots_test.sh
 t "Pit box guard unit test" native/test/run_pit_box_test.sh
+t "Direct start unit test" native/test/run_direct_start_test.sh
 t "Thrustmaster LCD guard unit test" native/test/run_thrustmaster_lcd_test.sh
 t "Garage setup guard unit test" native/test/run_garage_setup_test.sh
+t "Garage crew guard unit test" native/test/run_garage_crew_test.sh
 t "Session enter guard unit test" native/test/run_session_enter_test.sh
 t "Audio job queue fix unit test" native/test/run_audio_queue_test.sh
 t "Boot watchdog grace unit test" native/test/run_watchdog_grace_test.sh
@@ -74,6 +76,7 @@ t "Telemetry feed unit test" "$(zig_test "-I packages/sdk/include native/test/te
 t "Career Mode Editor race number unit test" "$(zig_test "-I $cme/src $cme/test/race_numbers_test.cpp $cme/src/race_numbers.cpp" race_numbers_test)"
 t "Career Mode Editor weather plan unit test" "$(zig_test "-I $cme/src $cme/test/weather_plan_test.cpp $cme/src/weather_plan.cpp" weather_plan_test)"
 t "Career Mode Editor line-up unit test" "$(zig_test "-I $cme/src $cme/test/lineup_test.cpp $cme/src/lineup.cpp" lineup_test)"
+t "Career Mode Editor entrant bound unit test" "$(zig_test "-I $cme/src $cme/test/entrants_cap_test.cpp" entrants_cap_test)"
 t "Career Mode Editor rating search unit test" "$(zig_test "-I $cme/src $cme/test/rating_solve_test.cpp $cme/src/rating_solve.cpp" rating_solve_test)"
 t "Career Mode Editor calendar rules unit test" "$(zig_test "-I $cme/src $cme/test/calendar_rules_test.cpp $cme/src/calendar_rules.cpp" calendar_rules_test)"
 

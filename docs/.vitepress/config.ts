@@ -164,6 +164,12 @@ export default defineConfigWithTheme<DocsThemeConfig>({
           {
             text: "Releases",
             items: [
+              { text: "1.7.9", link: "/releases/1.7.9" },
+              { text: "1.7.8", link: "/releases/1.7.8" },
+              { text: "1.7.7", link: "/releases/1.7.7" },
+              { text: "1.7.6", link: "/releases/1.7.6" },
+              { text: "1.7.5", link: "/releases/1.7.5" },
+              { text: "1.7.4", link: "/releases/1.7.4" },
               { text: "1.7.3", link: "/releases/1.7.3" },
               { text: "1.7.2", link: "/releases/1.7.2" },
               { text: "1.7.1", link: "/releases/1.7.1" },
@@ -390,6 +396,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
               { text: "Car physics and handling", link: "/std/systems/car-physics", icon: "file" },
               { text: "Liveries", link: "/std/systems/liveries", icon: "file" },
               { text: "Teams", link: "/std/systems/teams", icon: "file" },
+              { text: "Garage art", link: "/std/systems/garage", icon: "file" },
               { text: "Drivers", link: "/std/systems/drivers", icon: "file" },
               { text: "Helmets, suits and gloves", link: "/std/systems/wearables", icon: "file" },
               { text: "Sounds", link: "/std/systems/sounds", icon: "file" },

@@ -571,6 +571,17 @@ pub enum MismatchKind {
 }
 
 impl Mismatch {
+    /// An addon whose copies differ only in the stat ids their rows got, or in this side's game not being
+    /// built with it yet: a build with the host's ids ([`row_id_overrides`]) cures it.
+    pub fn cured_by_build(&self) -> bool {
+        matches!(self.kind, MismatchKind::SourceDiffers { .. })
+            && !self.differences.is_empty()
+            && self
+                .differences
+                .iter()
+                .all(|d| d.starts_with("row ") || d.starts_with("your game wasn't built with it"))
+    }
+
     pub fn line(&self) -> String {
         let value = |v: &Option<Value>| v.as_ref().map_or_else(|| "unset".to_owned(), Value::to_string);
         let text = match &self.kind {
@@ -737,6 +748,30 @@ fn owned(on: Option<bool>) -> &'static str {
         Some(false) => "not owned",
         None => "unknown",
     }
+}
+
+/// The host's stat ids, for each addon `local` and `host` both have whose added rows got other ids on
+/// `local`: what a joiner builds one session with to match the host.
+pub fn row_id_overrides(local: &Fingerprint, host: &Fingerprint) -> crate::row_ids::Overrides {
+    let mut out = crate::row_ids::Overrides::default();
+    for h in &host.addons {
+        let Some(ids) = h
+            .detail
+            .as_ref()
+            .map(|d| &d.row_ids)
+            .filter(|ids| !ids.is_empty())
+        else {
+            continue;
+        };
+        let Some(l) = local.addons.iter().find(|a| a.id == h.id) else {
+            continue;
+        };
+        let mine = l.detail.as_ref().map(|d| &d.row_ids);
+        if mine != Some(ids) {
+            out.rows.insert(h.id.clone(), ids.clone());
+        }
+    }
+    out
 }
 
 /// What `local` must change to match `host`, the game build and DLC first, then addons,
@@ -1393,6 +1428,45 @@ mod tests {
             found[0].differences,
             ["row entrants.vehicles.vehicle/car_b has stat id 513 here and 600 in the other copy"]
         );
+    }
+
+    #[test]
+    fn building_with_the_hosts_ids_makes_the_fingerprints_match() {
+        let store = Store::new(std::env::temp_dir().join(format!("swofty-fp-lent-{}", std::process::id())));
+        let mut hashes = Hashes::open(store.root.join(HASHES_FILE));
+        let output = |a: i64, b: i64| Output {
+            made: "m".into(),
+            row_ids: BTreeMap::from([
+                ("entrants.vehicles.vehicle/car_a".to_owned(), a),
+                ("entrants.vehicles.vehicle/car_b".to_owned(), b),
+            ]),
+            ..Output::default()
+        };
+        let mut print_of = |o: Output| {
+            let (digest, detail) = o.digest(&store, "t.cars", &mut hashes).unwrap();
+            let mut a = detailed("t.cars", "aa", &[("Database", "d1")], &[]);
+            a.source = Source::Built(digest);
+            a.detail = Some(Detail {
+                row_ids: detail.row_ids,
+                ..a.detail.unwrap()
+            });
+            a
+        };
+        let host = with(vec![print_of(output(512, 513))]);
+        let local = with(vec![print_of(output(513, 512))]);
+        assert_ne!(local.digest, host.digest);
+        let found = compare(&local, &host, &[]);
+        assert_eq!(found.len(), 1, "{found:?}");
+        assert!(found[0].cured_by_build(), "{found:?}");
+        let ids = row_id_overrides(&local, &host);
+        assert_eq!(ids.rows["t.cars"]["entrants.vehicles.vehicle/car_a"], 512);
+        let lent = with(vec![print_of(Output {
+            row_ids: ids.rows["t.cars"].clone(),
+            ..output(0, 0)
+        })]);
+        assert_eq!(lent.digest, host.digest);
+        assert!(compare(&lent, &host, &[]).is_empty());
+        assert!(row_id_overrides(&lent, &host).is_empty());
     }
 
     fn with(addons: Vec<AddonPrint>) -> Fingerprint {

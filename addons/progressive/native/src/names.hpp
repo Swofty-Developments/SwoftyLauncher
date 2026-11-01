@@ -11,18 +11,21 @@
 //                          preloaded_driver_customisation_properties_M, the look (helmet, suit,
 //                          gloves); stat_id << 16 as the career setup packs it (Career Mode Editor
 //                          entrant_look, in game since 0.3.4)
-// Read once through swofty/db.hpp after the database has loaded; the gamedb is frozen after boot.
+// Built once per game database (names_logic.hpp) on a background thread through swofty/db.hpp;
+// load() never waits: it starts the build and answers false until the snapshot is published,
+// load_wait() joins it, refresh() rebuilds when the database fingerprint changed.
 
 #pragma once
 #include <cstdint>
 #include <string>
-#include <unordered_map>
 
 namespace pg::names {
 
 enum class Kind { driver, team, vehicle, look };
 
 bool load();
+bool load_wait();
+void refresh();
 bool loaded();
 const char *kind_name(Kind k);
 std::string label(Kind k, uint32_t stat);

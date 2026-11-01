@@ -1885,6 +1885,12 @@ void note(const char *kind, const char *a, const char *b)
 
 namespace runtime {
 
+std::string code_where(uintptr_t a)
+{
+    return where(a);
+}
+
+
 void crash_blame(const char *text)
 {
     snprintf(blame_text, sizeof blame_text, "%s", text ? text : "");
