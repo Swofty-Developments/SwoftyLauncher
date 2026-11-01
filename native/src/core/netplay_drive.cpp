@@ -297,8 +297,9 @@ void skip_tick()
         if (skip_held)
             runtime::pad::release();
         skip_held = false;
-        runtime::pad::claim(false);
-        swofty::log("[netplay] room launch: stopped pressing the notice after %d press(es) (%s)", title_skip.presses(),
+        // The game binds the player to the virtual pad at the title; letting go of the last claim unplugs it and the
+        // game stops on CONTROLLER DISCONNECTED, so the claim stays held, idle, for the rest of the run.
+        swofty::log("[netplay] room launch: stopped pressing the notice after %d press(es) (%s); the virtual pad stays plugged in", title_skip.presses(),
                     activity_screen.load() ? "the activity screen is up" : home_screen.load() ? "the main menu is up" : "the lobby or the time limit");
     }
 }
