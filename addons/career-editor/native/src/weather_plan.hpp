@@ -53,6 +53,7 @@ struct TypeRange {
     float min = 0, max = 0;
 };
 
+bool timed_session(const std::string &key);
 int state_of(const std::string &s);
 bool is_int(const Json &v, double lo, double hi);
 bool is_num(const Json &v, double lo, double hi);
@@ -60,6 +61,10 @@ bool at_zero(const SessionPlan &p, double at);
 int plan_states(const SessionPlan &p);
 bool parse_session(const Json &v, const char *key, SessionPlan &p, std::string &err);
 Build make_build(const SessionPlan &p, float len, int game_first);
+
+// "" when every hold, transition and intensity is finite and in range and the states fit the session;
+// otherwise what is wrong. The write site refuses a build that fails this instead of handing it to the game.
+std::string validate_build(const Build &b, float len);
 
 // Moves each planned intensity into its type's range, or back to the builder's draw when that range is not
 // a usable 0..1 interval. Returns one line per changed state.

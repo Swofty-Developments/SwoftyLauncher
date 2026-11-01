@@ -3531,13 +3531,13 @@ fn submit(app: &mut App, host: &mut Host, live: &Live, form: &str, ev: &Value) -
             let laps = int(&v["laps"]).unwrap_or(0);
             let mut timeline = Vec::new();
             for n in 1..=3 {
-                timeline.extend(weather_point(v, n, laps)?);
+                timeline.extend(weather_point(v, n, laps, &key)?);
             }
             if timeline.is_empty() {
                 return Err("Add at least one weather change.".into());
             }
             let mut session = json!({ "timeline": timeline });
-            if laps > 0 {
+            if laps > 0 && !weather_timed(&key) {
                 session["laps"] = json!(laps);
             }
             if let Some(s) = v["start"].as_str().filter(|s| !s.is_empty()) {
@@ -3888,12 +3888,26 @@ fn submit(app: &mut App, host: &mut Host, live: &Live, form: &str, ev: &Value) -
     }
 }
 
-fn weather_point(v: &Value, n: usize, laps: i64) -> Result<Option<Value>, String> {
+fn weather_timed(key: &str) -> bool {
+    matches!(key, "p1" | "p2" | "p3" | "q" | "ss")
+}
+
+fn weather_point(v: &Value, n: usize, laps: i64, key: &str) -> Result<Option<Value>, String> {
     let kind = v[format!("p{n}_kind")].as_str().unwrap_or("off");
     if kind == "off" {
         return Ok(None);
     }
     let at = v[format!("p{n}_at")].as_f64().unwrap_or(0.0);
+    if kind == "lap" && weather_timed(key) {
+        return Err(format!(
+            "Change {n} is \"At lap\" but this session is timed and has no laps. Pick \"At minute\" or \"At %\"."
+        ));
+    }
+    if (kind == "percent" && at >= 100.0) || (kind == "minute" && at > 240.0) {
+        return Err(format!(
+            "Change {n} is at the end of the session or past it (When is {at}). Pick a point inside the session."
+        ));
+    }
     if kind == "lap" && laps <= 0 {
         return Err(format!(
             "Change {n} is \"At lap\" but Race laps is 0. Set the race laps, or pick \"At minute\" or \"At %\"."
@@ -3948,16 +3962,16 @@ mod weather_form_tests {
         let v = json!({ "p1_kind": "percent", "p1_at": 33, "p1_state": "light_rain", "p1_int": 0,
                         "p2_kind": "lap", "p2_at": 20, "p2_state": "heavy_rain", "p2_int": 85, "p3_kind": "off" });
         assert_eq!(
-            weather_point(&v, 1, 0).unwrap(),
+            weather_point(&v, 1, 0, "r").unwrap(),
             Some(json!({ "state": "light_rain", "at_fraction": 0.33 }))
         );
         assert_eq!(
-            weather_point(&v, 2, 53).unwrap(),
+            weather_point(&v, 2, 53, "r").unwrap(),
             Some(json!({ "state": "heavy_rain", "intensity": 0.85, "at_lap": 20 }))
         );
-        assert!(weather_point(&v, 2, 0).is_err());
-        assert!(weather_point(&v, 2, 10).is_err());
-        assert_eq!(weather_point(&v, 3, 53).unwrap(), None);
+        assert!(weather_point(&v, 2, 0, "r").is_err());
+        assert!(weather_point(&v, 2, 10, "r").is_err());
+        assert_eq!(weather_point(&v, 3, 53, "r").unwrap(), None);
     }
 }
 
@@ -3968,7 +3982,7 @@ mod weather_form_refusal_tests {
     #[test]
     fn a_lap_change_without_race_laps_is_refused_with_a_message() {
         let v = json!({ "p1_kind": "lap", "p1_at": 15, "p1_state": "light_rain", "p1_int": 50 });
-        let e = weather_point(&v, 1, 0).unwrap_err();
+        let e = weather_point(&v, 1, 0, "r").unwrap_err();
         assert!(e.contains("Race laps is 0"), "{e}");
     }
 
@@ -3977,12 +3991,34 @@ mod weather_form_refusal_tests {
         for kind in ["minute", "percent", "lap"] {
             for at in [0.0, -2.0] {
                 let v = json!({ "p1_kind": kind, "p1_at": at, "p1_state": "clear" });
-                let e = weather_point(&v, 1, 53).unwrap_err();
+                let e = weather_point(&v, 1, 53, "r").unwrap_err();
                 assert!(e.contains("after the start"), "{kind} {at}: {e}");
             }
         }
         let v = json!({ "p1_kind": "minute", "p1_at": 5, "p1_state": "clear" });
-        assert!(weather_point(&v, 1, 0).is_ok());
+        assert!(weather_point(&v, 1, 0, "r").is_ok());
+    }
+
+    #[test]
+    fn a_lap_change_in_a_timed_session_is_refused() {
+        let v = json!({ "p1_kind": "lap", "p1_at": 5, "p1_state": "clear" });
+        for key in ["p1", "p2", "p3", "q", "ss"] {
+            let e = weather_point(&v, 1, 20, key).unwrap_err();
+            assert!(e.contains("timed"), "{key}: {e}");
+        }
+        assert!(weather_point(&v, 1, 20, "r").is_ok());
+        let m = json!({ "p1_kind": "percent", "p1_at": 40, "p1_state": "clear" });
+        assert!(weather_point(&m, 1, 20, "q").is_ok());
+    }
+
+    #[test]
+    fn a_change_at_or_past_the_end_is_refused() {
+        for (kind, at) in [("percent", 100.0), ("percent", 150.0), ("minute", 241.0)] {
+            let v = json!({ "p1_kind": kind, "p1_at": at, "p1_state": "clear" });
+            assert!(weather_point(&v, 1, 20, "r").is_err(), "{kind} {at}");
+        }
+        let v = json!({ "p1_kind": "percent", "p1_at": 99, "p1_state": "clear" });
+        assert!(weather_point(&v, 1, 20, "r").is_ok());
     }
 
     #[test]
