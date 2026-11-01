@@ -974,8 +974,10 @@ ce::OpResult op_plan_set(const ce::Json &args)
             continue;
         }
         SessionPlan sp;
-        if (!parse_session(v, k.c_str(), sp, e))
+        if (!parse_session(v, k.c_str(), sp, e)) {
+            ce::log("weather: refused plan: %s", e.c_str());
             return err("bad_args", e);
+        }
         next.has[s] = true;
         next.s[s] = sp;
     }
