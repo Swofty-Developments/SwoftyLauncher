@@ -160645,21 +160645,21 @@
    "section": ".xtls",
    "pattern": "4D 85 E4 0F 84 ?? ?? ?? ?? 48 8B 8C 24 A0 00 00 00",
    "match": "0x1403c787b",
-   "anchor": "0x9",
+   "anchor": "0x0",
    "resolve": {
     "kind": "addr"
    },
-   "target": "0x1403c7884",
+   "target": "0x1403c787b",
    "kind": "mid",
-   "expect": "48 8B 8C 24 A0 00 00 00",
+   "expect": "4D 85 E4",
    "names": [
     "site_Game_PitStops_CrewTemplateSkip"
    ],
    "verified": [
     {
      "build": "d873a1c8d2044cef",
-     "date": "2026-11-01",
-     "by": "crewpit",
+     "date": "2026-11-02",
+     "by": "re-career-teams",
      "how": "static"
     }
    ],
