@@ -1610,9 +1610,9 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
     };
     // The next id above the table's highest, or the lowest free one when that passes the ceiling.
     // A moved id, and any id under the ceiling, passes over the ids later addons set on their rows.
-    let next = |moving: bool| -> Result<(i64, Option<String>)> {
+    let next = || -> Result<(i64, Option<String>)> {
         let mut top = db.stat_ids(names, &path, row, n).max.map_or(0, |m| m + 1);
-        while (moving && later(top)) || stat_id_unusable(&path, row, top) {
+        while later(top) || stat_id_unusable(&path, row, top) {
             top += 1;
         }
         match ceiling {
@@ -1638,9 +1638,9 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
     // its label, else the next free id above the table's rows in load order as builds before 1.6.10 gave
     // it (so a fresh install gives a save from then its ids back); a full table takes back an id kept for
     // an addon the build leaves out.
-    let give = |moving: bool| -> Result<(i64, Option<String>)> {
+    let give = || -> Result<(i64, Option<String>)> {
         let Some((k, label)) = kept.zip(label.as_deref()) else {
-            return next(moving);
+            return next();
         };
         let claimed = k.claim(&path, row, label);
         let key = claimed.key.as_str();
@@ -1659,10 +1659,13 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
             ))
         };
         let blocked = |id: i64| -> Option<String> {
-            unfit(id).or_else(|| {
-                k.taken(&path, row, key, id)
-                    .then(|| "is kept for another row or held by a record of the core's registry".to_owned())
-            })
+            unfit(id)
+                .or_else(|| later(id).then(|| "is set by a later addon".to_owned()))
+                .or_else(|| {
+                    k.taken(&path, row, key, id).then(|| {
+                        "is kept for another row or held by a record of the core's registry".to_owned()
+                    })
+                })
         };
         let mut notes = Vec::new();
         let mut from = IdFrom::Next;
@@ -1683,7 +1686,7 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
         }
         let top = db.stat_ids(names, &path, row, n).max.map_or(0, |m| m + 1);
         let picked = (top..=ceiling.map_or(i64::MAX, |c| c.max))
-            .find(|id| blocked(*id).is_none() && !(moving && later(*id)))
+            .find(|id| blocked(*id).is_none())
             .or_else(|| {
                 ceiling.and_then(|c| {
                     free_stat_id(db, names, &path, row, n, c, &|id| {
@@ -1720,7 +1723,7 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
     };
     if fresh && let Some(i) = rows.iter().position(|r| r.key == stat_key) {
         let old = String::from_utf8_lossy(&rows[i].value).into_owned();
-        let (next, passed) = give(false)?;
+        let (next, passed) = give()?;
         rows[i].value = next.to_string().into_bytes();
         cx.report.lines.push(match passed {
             Some(why) => format!("{what}: stat_id {next} (the source's is {old}; {why})"),
@@ -1752,7 +1755,7 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
     if let Some((old, holder, holder_label, why)) = moved
         && let Some(r) = rows.iter_mut().find(|r| r.key == id_key)
     {
-        let (new, note) = give(true)?;
+        let (new, note) = give()?;
         r.value = new.to_string().into_bytes();
         let label = set.get("_metadata_").cloned();
         cx.report.lines.push(match note {
@@ -2614,6 +2617,80 @@ mod tests {
             names: catalogue(&[]),
             stock: db.records.iter().map(|r| r.key).collect(),
         }
+    }
+
+    struct Reserved {
+        inner: Stocked,
+        ids: Vec<(String, i64)>,
+    }
+
+    impl FieldNames for Reserved {
+        fn fields(&self, table: &str, row: &str) -> Option<Vec<String>> {
+            self.inner.fields(table, row)
+        }
+
+        fn row_keys(&self, shape: &str) -> Option<&[String]> {
+            self.inner.row_keys(shape)
+        }
+
+        fn stock(&self, key: u64) -> bool {
+            self.inner.stock(key)
+        }
+
+        fn reserved(&self, table: &str, row: &str, id: i64) -> bool {
+            self.ids.contains(&(format!("{table}.{row}"), id))
+        }
+    }
+
+    #[test]
+    fn a_free_stat_id_skips_the_id_a_later_addon_pins() {
+        let mut db = modes(["3", "7"]);
+        let names = Reserved {
+            inner: stocked(&db),
+            ids: vec![("modes.mode".to_owned(), 8)],
+        };
+        let mut report = DbReport::default();
+        apply_db_ops_report(&mut db, &add_labelled("early", "", ""), &names, &mut report).unwrap();
+        assert_eq!(db.get_text("modes.mode_2.stat_id").as_deref(), Some("9"));
+        let mut report = DbReport::default();
+        apply_db_ops_report(
+            &mut db,
+            &add_labelled("late", r#","stat_id":"8""#, ""),
+            &names,
+            &mut report,
+        )
+        .unwrap();
+        assert_eq!(db.get_text("modes.mode_3.stat_id").as_deref(), Some("8"));
+        assert!(report.moved_stat_ids.is_empty(), "{:?}", report.moved_stat_ids);
+    }
+
+    #[test]
+    fn two_pins_on_the_same_stat_id_still_conflict() {
+        let mut db = modes(["3", "7"]);
+        let names = Reserved {
+            inner: stocked(&db),
+            ids: vec![("modes.mode".to_owned(), 40)],
+        };
+        let mut report = DbReport::default();
+        apply_db_ops_report(
+            &mut db,
+            &add_labelled("a", r#","stat_id":"40""#, ""),
+            &names,
+            &mut report,
+        )
+        .unwrap();
+        let mut report = DbReport::default();
+        apply_db_ops_report(
+            &mut db,
+            &add_labelled("b", r#","stat_id":"40""#, ""),
+            &names,
+            &mut report,
+        )
+        .unwrap();
+        assert_eq!(db.get_text("modes.mode_2.stat_id").as_deref(), Some("40"));
+        assert_ne!(db.get_text("modes.mode_3.stat_id").as_deref(), Some("40"));
+        assert_eq!(report.moved_stat_ids.len(), 1);
+        assert_eq!(report.moved_stat_ids[0].old, 40);
     }
 
     fn add_labelled(label: &str, stat_id: &str, then: &str) -> DbOps {
