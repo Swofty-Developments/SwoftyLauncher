@@ -1509,6 +1509,52 @@ fn career_content_off(e: &Evidence) -> Diagnosis {
     }
 }
 
+/// The core's `[hwsettings]` line about the player's hardware_settings_config.xml, from the loader.log.
+fn hardware_settings_line(loader: &str) -> Option<&str> {
+    loader
+        .lines()
+        .find_map(|l| l.find("[hwsettings] ").map(|at| &l[at..]))
+}
+
+/// Whether the game aborted in its startup sequence, right after reading its hardware settings file, before
+/// any window, with the core's line saying that file is a OneDrive file or cloud-only.
+fn hardware_settings_crash(e: &Evidence, f: &Fatal) -> bool {
+    let at_abort = f
+        .frames
+        .iter()
+        .any(|l| l.contains("Game_Startup_InitSequence+0x291"));
+    let line = hardware_settings_line(&e.loader);
+    at_abort
+        && e.loader.contains("before the game's window")
+        && line.is_some_and(|l| l.contains("cloud-only=yes") || l.contains("onedrive=yes"))
+}
+
+fn hardware_settings(e: &Evidence) -> Diagnosis {
+    let cloud = hardware_settings_line(&e.loader).is_some_and(|l| l.contains("cloud-only=yes"));
+    let what = if cloud {
+        "F1 25 closed while it started up because it could not read its graphics settings file, \
+         hardware_settings_config.xml in Documents\\My Games\\F1 25\\hardwaresettings. OneDrive has that file in \
+         the cloud only, not on your PC, and the game can't download it."
+    } else {
+        "F1 25 closed while it started up because it could not read its graphics settings file, \
+         hardware_settings_config.xml in Documents\\My Games\\F1 25\\hardwaresettings. Your Documents folder \
+         is in OneDrive, which can leave that file unreadable while it syncs or after it is moved to the cloud."
+    };
+    Diagnosis {
+        id: "hardware_settings_unreadable",
+        title: "F1 25 couldn't read its graphics settings file".to_owned(),
+        what: what.to_owned(),
+        steps: vec![
+            "In File Explorer, right-click Documents\\My Games\\F1 25\\hardwaresettings, choose \"Always keep on this device\", and wait for OneDrive to finish syncing, then press Play again."
+                .to_owned(),
+            "If it still closes, quit OneDrive, rename hardware_settings_config.xml in that folder to hardware_settings_config.xml.bak (F1 25 makes a new one, with its graphics settings back at their defaults), and press Play again."
+                .to_owned(),
+            "If it still closes, move your Documents folder out of OneDrive: OneDrive settings, Sync and backup, Manage backup, turn Documents off."
+                .to_owned(),
+        ],
+    }
+}
+
 fn pitlane(e: &Evidence) -> Diagnosis {
     let addon = e
         .names
@@ -1626,6 +1672,9 @@ fn matched(e: &Evidence) -> Option<Diagnosis> {
     }
     if pitlane_crash(e, &f) {
         return Some(pitlane(e));
+    }
+    if hardware_settings_crash(e, &f) {
+        return Some(hardware_settings(e));
     }
     if entrant_list_crash(e, &f) {
         return Some(missing_entrant_list(e));
@@ -1812,6 +1861,63 @@ mod tests {
             game_files: files.iter().map(|f| (*f).to_owned()).collect(),
             ..Default::default()
         }
+    }
+
+    const INIT_ABORT: &str = "\
+2026-11-01 15:30:27.529 [21084] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 21084, 5 s after load, at F1_25.exe+0x39182a4 .xtls Ne_FatalAbort+0x4
+2026-11-01 15:30:27.529 [21084] [crash]   writing 0x1
+2026-11-01 15:30:27.529 [21084] [crash]   stack:
+2026-11-01 15:30:27.529 [21084] [crash]   #0  F1_25.exe+0x39182a4 .xtls Ne_FatalAbort+0x4
+2026-11-01 15:30:27.529 [21084] [crash]   #1  F1_25.exe+0x43c07f1 .xtls Game_Startup_InitSequence+0x291
+2026-11-01 15:30:27.529 [21084] [crash]   #2  F1_25.exe+0x43e0af1 .xtls fn base+0x43e0ad0+0x21
+2026-11-01 15:30:27.958 [21084] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+0x39182a4 .xtls Ne_FatalAbort+0x4 reached the top-level filter; passing it to the game's filter
+2026-11-01 15:30:29.407 [21084] [crash] TerminateProcess(4294967295) on thread 21084, 6 s after load, before the game's window; caller stack:
+";
+
+    fn init_abort(line: &str) -> Evidence {
+        ev(
+            &format!("2026-11-01 15:30:22.500 [21084] {line}\n{INIT_ABORT}"),
+            &[],
+        )
+    }
+
+    #[test]
+    fn a_startup_abort_on_a_cloud_only_settings_file_is_named() {
+        let d = diagnose(&init_abort(
+            "[hwsettings] C:\\Users\\m\\OneDrive\\Dokumente\\My Games\\F1 25\\hardwaresettings\\hardware_settings_config.xml: onedrive=yes exists=yes size=5120 attributes=0x00400020 cloud-only=yes (recall_on_data_access) read test: skipped",
+        ))
+        .expect("a diagnosis");
+        assert_eq!(d.id, "hardware_settings_unreadable");
+        assert!(d.what.contains("in the cloud only"));
+        assert_eq!(d.steps.len(), 3);
+    }
+
+    #[test]
+    fn a_startup_abort_with_documents_in_onedrive_is_named_softly() {
+        let d = diagnose(&init_abort(
+            "[hwsettings] C:\\Users\\m\\OneDrive\\Documents\\x.xml: onedrive=yes exists=yes size=5120 attributes=0x00000020 cloud-only=no read test: ok (4096 bytes)",
+        ))
+        .expect("a diagnosis");
+        assert_eq!(d.id, "hardware_settings_unreadable");
+        assert!(d.what.contains("is in OneDrive"));
+    }
+
+    #[test]
+    fn a_startup_abort_with_local_documents_is_not_this_rule() {
+        let d = diagnose(&init_abort(
+            "[hwsettings] C:\\Users\\v\\Documents\\x.xml: onedrive=no exists=yes size=5120 attributes=0x00000020 cloud-only=no read test: ok (4096 bytes)",
+        ));
+        assert!(d.is_none_or(|d| d.id != "hardware_settings_unreadable"));
+        let silent = ev(INIT_ABORT, &[]);
+        assert!(diagnose(&silent).is_none_or(|d| d.id != "hardware_settings_unreadable"));
+    }
+
+    #[test]
+    fn another_abort_with_a_cloud_file_is_not_this_rule() {
+        let other = init_abort("[hwsettings] p: onedrive=yes exists=yes size=1 attributes=0x00400020 cloud-only=yes (recall_on_data_access)")
+            .loader
+            .replace("InitSequence+0x291", "InitSequence+0x148");
+        assert!(diagnose(&ev(&other, &[])).is_none_or(|d| d.id != "hardware_settings_unreadable"));
     }
 
     #[test]
