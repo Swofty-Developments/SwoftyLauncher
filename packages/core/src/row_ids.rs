@@ -377,6 +377,7 @@ pub struct Store {
     changed: bool,
     read_only: bool,
     lent: BTreeMap<String, i64>,
+    lent_build: HashSet<String>,
 }
 
 fn addon_of(key: &str) -> &str {
@@ -484,6 +485,7 @@ impl Store {
     /// session, so its id is lent.
     pub fn lend(&mut self, overrides: &Overrides, order: &[String]) -> std::result::Result<usize, String> {
         let wanted = overrides.keys(order);
+        self.lent_build = order.iter().cloned().collect();
         for key in wanted.keys() {
             if let Some(old) = self.rows.remove(key)
                 && let Some(ids) = self.by_id.get_mut(table_of(key))
@@ -513,7 +515,7 @@ impl Store {
                 ));
             }
             if let Some(record) = self.pinned.get(table).and_then(|ids| ids.get(&id))
-                && (!record.contains('/') || order.iter().any(|a| a == addon_of(record)))
+                && self.pin_holds(record)
             {
                 return Err(format!(
                     "the host's stat id {id} for {} is held by the game's registry record {record} here",
@@ -528,6 +530,12 @@ impl Store {
         self.lent = wanted;
         self.read_only = true;
         Ok(self.lent.len())
+    }
+
+    /// Whether a registry record keeps its id from this build. While a host's ids are lent, a record of an
+    /// addon outside the lent build doesn't register this session, so its id is free.
+    fn pin_holds(&self, record: &str) -> bool {
+        self.lent_build.is_empty() || !record.contains('/') || self.lent_build.contains(addon_of(record))
     }
 
     /// The first lent row the build gave another id than the host's, as the message that refuses the build.
@@ -739,7 +747,10 @@ impl RowIds for Scoped<'_> {
             .get(&table)
             .and_then(|ids| ids.get(&id))
             .is_some_and(|k| k != key)
-            || s.pinned.get(&table).is_some_and(|ids| ids.contains_key(&id))
+            || s.pinned
+                .get(&table)
+                .and_then(|ids| ids.get(&id))
+                .is_some_and(|record| s.pin_holds(record))
     }
 
     fn keep(&self, _: &str, _: &str, key: &str, id: i64, from: IdFrom) {
@@ -1446,6 +1457,21 @@ mod tests {
             .lend(&host_ids(&[("a", "a1", 40)]), &order(&["a"]))
             .unwrap_err();
         assert!(err.contains("registry record a/a_record"), "{err}");
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn a_lent_id_an_outside_addon_pins_is_the_one_the_build_gives() {
+        let data = data_dir("lend-pinned-build");
+        let (mut store, _) = Store::load(&data, None, "default", None);
+        store.pinned.insert(
+            "entrants.vehicles.vehicle".into(),
+            HashMap::from([(13, "z.indycar/z_record".to_owned())]),
+        );
+        assert_eq!(store.lend(&host_ids(&[("a", "a1", 13)]), &order(&["a"])), Ok(1));
+        let lent = build(VEHICLES, 10, &[("a", &["a1", "a2"])], store);
+        assert_eq!(lent.ids["a1"], 13);
+        assert_eq!(lent.store.lent_missed(), None);
         std::fs::remove_dir_all(&data).ok();
     }
 
