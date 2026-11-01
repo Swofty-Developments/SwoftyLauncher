@@ -179,29 +179,46 @@ impl Location {
     /// The Steam save folder for the Steam install that holds the game in
     /// `game`, else the first one found.
     pub fn steam_for(game: &Path) -> Option<Self> {
-        Self::steam_from(game, &crate::steam::steam_roots())
+        Self::steam_search(Some(game)).0
     }
 
-    pub fn steam_from(game: &Path, roots: &[PathBuf]) -> Option<Self> {
-        crate::steam::root_of_game_in(game, roots)
-            .and_then(|root| crate::steam::save_dir(&root))
-            .or_else(|| {
-                crate::steam::find_game()
-                    .filter(|g| crate::copies::same_dir(&g.dir, game))
-                    .and_then(|g| crate::steam::save_dir(&g.steam_root))
-            })
-            .or_else(crate::steam::find_save_dir)
-            .and_then(|d| Self::steam(&d))
+    /// [`Self::steam_for`] with a line for every folder looked at and why it was rejected.
+    pub fn steam_search(game: Option<&Path>) -> (Option<Self>, Vec<String>) {
+        Self::from_search(crate::steam::search_save(game))
+    }
+
+    pub fn steam_from(game: &Path, roots: &[PathBuf]) -> (Option<Self>, Vec<String>) {
+        Self::from_search(crate::steam::search_save_in(Some(game), roots, &[], None))
+    }
+
+    fn from_search(found: crate::steam::SaveSearch) -> (Option<Self>, Vec<String>) {
+        let mut tried = found.tried;
+        let loc = found.dir.and_then(|d| match Self::steam(&d) {
+            Some(l) => Some(l),
+            None => {
+                tried.push(format!(
+                    "{}: not a userdata/<id>/<app>/remote folder",
+                    d.display()
+                ));
+                None
+            }
+        });
+        (loc, tried)
     }
 
     /// The save of the copy Play uses.
     pub fn active(data: &Path) -> Option<Self> {
+        Self::active_search(data).0
+    }
+
+    /// [`Self::active`] with the folders a Steam copy's lookup tried.
+    pub fn active_search(data: &Path) -> (Option<Self>, Vec<String>) {
         let config = crate::store::Store::new(data.to_path_buf()).config();
         let copies = crate::copies::discover(&config);
         let Some(copy) = crate::copies::active(&copies, &config) else {
-            return crate::steam::find_save_dir().and_then(|d| Self::steam(&d));
+            return Self::steam_search(None);
         };
-        match copy.source {
+        let loc = match copy.source {
             Source::EaApp => match cfg!(windows) {
                 true => Self::ea_windows(),
                 false => config
@@ -213,8 +230,9 @@ impl Location {
                     .and_then(Path::parent)
                     .and_then(Self::ea_in_prefix),
             },
-            _ => Self::steam_for(&copy.dir),
-        }
+            _ => return Self::steam_search(Some(&copy.dir)),
+        };
+        (loc, Vec::new())
     }
 
     /// Steam's record of what it last synced, beside `remote/`.

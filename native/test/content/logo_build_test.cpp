@@ -271,6 +271,88 @@ int main(int argc, char **argv)
     }
 
     {
+        fs::path ov = out / "desync";
+        fs::create_directories(ov / "ov");
+        std::string array = "teams.driver_select_team_logos";
+        std::string image = std::string(lb::ARRAY_URI) + array + ".texarray.image";
+        std::vector<lb::Want> grow_names(2);
+        for (int i = 0; i < 2; i++) {
+            grow_names[i].array = array;
+            grow_names[i].key = "ghost" + std::to_string(i);
+            grow_names[i].donor = "b";
+        }
+        lb::Result names_only;
+        lb::build(env, grow_names, names_only);
+        auto db_src = open_file(game / lb::DATABASES);
+        ef::Archive db_arc;
+        ef::open(*db_src, db_arc, why);
+        std::string dbtext = rewrite_to_string(*db_src, db_arc, names_only.changes[lb::DATABASES], why);
+        std::ofstream(ov / "ov/databases.erp", std::ios::binary) << dbtext;
+        lb::Env desync;
+        desync.list = [&] { return list; };
+        desync.open = [&](const std::string &rel) { return rel.rfind("ov/", 0) == 0 ? open_file(ov / rel) : open_file(game / rel); };
+        desync.overlays = [&](const std::string &rel) {
+            return rel == lb::DATABASES ? std::vector<std::string>{"ov/databases.erp"} : std::vector<std::string>{};
+        };
+        auto names_of = [&](const std::string &db_bytes) {
+            content::uidb::Pkg q;
+            q.read(db_bytes);
+            auto *n = q.find(lb::list_path(array));
+            return n ? n->list.size() : size_t(0);
+        };
+        auto stock_names = [&] {
+            auto s2 = open_file(game / lb::DATABASES);
+            ef::Archive a;
+            std::string b;
+            ef::open(*s2, a, why);
+            ef::fragment(*s2, a, a.find(lb::OVERRIDES)->frags[0], b, why);
+            return names_of(b);
+        }();
+        std::vector<lb::Want> fresh(1);
+        fresh[0].array = array;
+        fresh[0].key = "fresh";
+        fresh[0].donor = "b";
+        lb::Result rd;
+        bool ok = lb::build(desync, fresh, rd);
+        check(ok && rd.built == 1 && rd.refused == 0, "an array shorter than its key list gets the new slice instead of a refusal");
+        bool said = std::any_of(rd.lines.begin(), rd.lines.end(), [](const std::string &l) {
+            return l.find("lists ") != std::string::npos && l.find("another addon replaced the whole array") != std::string::npos &&
+                   l.find("ghost0") != std::string::npos;
+        });
+        check(said, "the padding names the first key that has no image");
+        uint32_t count = 0;
+        for (auto &[rel, changes] : rd.changes) {
+            auto it = changes.find(image);
+            if (it != changes.end())
+                count = content::logo_array::le32(*it->second[0], content::logo_array::HEAD_COUNT);
+        }
+        size_t names_after = 0;
+        for (auto &[rel, changes] : rd.changes) {
+            auto it = changes.find(lb::OVERRIDES);
+            if (it != changes.end())
+                names_after = names_of(*it->second[0]);
+        }
+        check(count && names_after == count && names_after == stock_names + 3,
+              "the new key sits at its own slice: " + std::to_string(names_after) + " keys, " + std::to_string(count) + " slices, stock " +
+                  std::to_string(stock_names));
+
+        lb::Result nope;
+        std::vector<lb::Want> gone(3);
+        for (auto &g : gone) {
+            g.array = "teams.nothing";
+            g.donor = "b";
+        }
+        gone[0].key = "x0";
+        gone[1].key = "x1";
+        gone[2].key = "x2";
+        lb::build(env, gone, nope);
+        check(nope.refused == 3 && std::count_if(nope.lines.begin(), nope.lines.end(), [](const std::string &l) {
+                  return l == "team.logo: 3 slot(s) refused: overrides.uidb has no list teams.nothing (first teams.nothing/x0)";
+              }) == 1,
+              "refusals for one reason log one line with the count and the first key");
+    }
+
+    {
         auto bad = wants;
         bad[0].width = 32;
         lb::Result r2;

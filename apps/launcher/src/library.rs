@@ -257,10 +257,17 @@ pub struct Library {
     /// come last.
     pub entries: Vec<Entry>,
     pub loaded: Instant,
+    unsaved_order: bool,
 }
 
 impl Library {
     pub fn load(store: &Store) -> Self {
+        let mut library = Self::read(store);
+        library.save_order(store);
+        library
+    }
+
+    pub fn read(store: &Store) -> Self {
         let mut error = None;
         let mut note = |e: swofty_core::Error| error = Some(e.to_string());
         let profile = store.profile(&store.active_profile()).unwrap_or_else(|e| {
@@ -312,15 +319,7 @@ impl Library {
                 .cloned()
                 .unwrap_or_else(|| folders.place(id, false, None))
         };
-        if swofty_core::folders::arrange(&mut profile.clone(), place_of) {
-            match store.update_profile(&profile.name, |p| {
-                swofty_core::folders::arrange(p, place_of);
-                Ok(p.clone())
-            }) {
-                Ok(p) => profile = p,
-                Err(e) => note(e),
-            }
-        }
+        let unsaved_order = swofty_core::folders::arrange(&mut profile, place_of);
         let listed: std::collections::HashSet<&str> = profile.addons.iter().map(|a| a.id.as_str()).collect();
         let order = profile.addons.iter().map(|a| a.id.clone()).chain(
             addons
@@ -377,6 +376,21 @@ impl Library {
             folders,
             entries,
             loaded: Instant::now(),
+            unsaved_order,
+        }
+    }
+
+    pub fn save_order(&mut self, store: &Store) {
+        if !std::mem::take(&mut self.unsaved_order) {
+            return;
+        }
+        let place_of = |id: &str| self.place(id);
+        match store.update_profile(&self.profile.name, |p| {
+            swofty_core::folders::arrange(p, place_of);
+            Ok(p.clone())
+        }) {
+            Ok(p) => self.profile = p,
+            Err(e) => self.error = Some(e.to_string()),
         }
     }
 
