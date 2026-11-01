@@ -1654,6 +1654,12 @@ static void log_build(void)
    loading, no locks. Any failure is ignored. */
 static void write_start_marker(void)
 {
+    wchar_t self_exe[MAX_PATH];
+    if (!GetModuleFileNameW(NULL, self_exe, MAX_PATH))
+        return;
+    wchar_t *exe_slash = wcsrchr(self_exe, L'\\');
+    if (_wcsicmp(exe_slash ? exe_slash + 1 : self_exe, HOST_EXE) != 0)
+        return;
     wchar_t path[MAX_PATH];
     DWORD n = swofty_data_folder(path, MAX_PATH - 32);
     if (!n)
