@@ -4,6 +4,8 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 
+#include "exec_plan.hpp"
+
 #include <string>
 
 // The core's one set of D3D12 / DXGI hooks. Features subscribe instead of hooking the same entry points
@@ -22,7 +24,9 @@ struct Swapchain {
 using PresentFn = void (*)(IDXGISwapChain3 *sc, const Swapchain *known, void *caller);
 using PresentedFn = void (*)(IDXGISwapChain3 *sc, HRESULT hr);
 using ResizeFn = void (*)(IDXGISwapChain3 *sc);
-using ExecFn = bool (*)(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists);
+using ExecPlan = BasicExecPlan<ID3D12CommandQueue>;
+// Appends the steps it wants run around the game's lists of one ExecuteCommandLists call to the plan.
+using ExecFn = void (*)(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, ExecPlan &plan);
 using BarrierFn = bool (*)(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers);
 using SetNameFn = void (*)(ID3D12Object *object, LPCWSTR name);
 using ResetFn = void (*)(ID3D12GraphicsCommandList *list);

@@ -1,6 +1,7 @@
 #include "d3d12_hooks.hpp"
 
 #include "hud_guard.hpp"
+#include "perf.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mixin.hpp>
@@ -285,10 +286,13 @@ HRESULT STDMETHODCALLTYPE color_space_hook(IDXGISwapChain3 *sc, DXGI_COLOR_SPACE
 
 void STDMETHODCALLTYPE exec_hook(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists)
 {
+    ExecPlan plan;
     for (int i = 0, k = execs.n.load(); i < k; i++)
-        if (execs.fns[i](q, n, lists))
-            return;
-    h_exec.call<void>(q, n, lists);
+        execs.fns[i](q, n, lists, plan);
+    run_plan(plan, q, n, lists, [](ID3D12CommandQueue *queue, UINT count, ID3D12CommandList *const *first) {
+        perf::Pause game;
+        h_exec.call<void>(queue, count, first);
+    });
 }
 
 void STDMETHODCALLTYPE barrier_hook(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *b)
