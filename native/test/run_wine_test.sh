@@ -345,9 +345,12 @@ EOF
         once "standings: a round whose track is off is skipped and logged once" '\[career\] standings: round 7 has no track data \(track 200 is off\); skipped'
         once "standings: a round whose weekend can't be read is skipped and logged once" '\[career\] standings: round 10 has no track data; skipped'
         once "weekends: a round whose track has no record is skipped and logged once" '\[career\] weekends: track 1 has no track data; the round shows no track'
-        once "garage crew: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(garage crew guard\)': 1 mixin"
+        once "garage crew: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(garage crew guard\)': 3 mixin"
         once "garage crew: the guard is armed" '\[garage\] crew guard armed'
         count "garage crew: each car dropped from a garage's crew vector is logged once" 4 '\[garage\] garage [5-7]: team 1[2-4] car #4[0-9] \(driver 3[0-9][0-9]\) is the (third|extra) car of its garage'
+        once "pit crew: a garage whose car has no crew template skips its setup and is logged once" '\[garage\] garage 10: team 14 car #44 has no pit stops crew template; its pit stops crew is not set up, the car still races'
+        once "pit crew: a garage with no cars is logged once" '\[garage\] garage 11 has no cars with a crew template; its pit stops crew is not set up'
+        once "garage scene: a missing scene is logged once" '\[garage\] the garage crew scene is missing for this track \(garage crew scene 0x0, vehicle scene 0x1111, equipment scene 0x2222\); no garage crew is shown'
         count "ers: each participant without a vehicle is skipped and logged" 4 '\[ers\] vehicle_newlap for vehicle (9|24): participant [01] of 4 has no vehicle'
         once "leaderboard: the time trial leaderboard guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(time trial leaderboard guard\)': 1 mixin"
         once "leaderboard: the time trial leaderboard guard is armed" '\[leaderboard\] time trial leaderboard guard armed'
