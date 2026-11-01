@@ -279,7 +279,7 @@ TrackVideo_N
 
 <Split>
 
-[Each box's track list](/std/systems/tracks#a-track-is-in-every-year) offers Hockenheim wherever it fits: enough garages for the box's teams, room for its grid, AI data for its cars, and Time Trial support where the box has Time Trial. A box where it doesn't fit leaves it out. To hide it from a box where it fits but you don't want it, set `offered` to false.
+[Each box's track list](/std/systems/tracks#a-track-is-in-every-year) offers Hockenheim wherever it fits: room for its grid, AI data for its cars, and Time Trial support where the box has Time Trial. A box where it doesn't fit leaves it out. To hide it from a box where it fits but you don't want it, set `offered` to false.
 
 <template #example>
 <Example root="mod.hockenheim" code-file="native/src/track.cpp" data-file="registry/layers.json" files="swofty.json, registry.json, registry/track.json, track/hockenheim.erp">
@@ -316,7 +316,6 @@ tracks::per_package.layer(
 
 Test each box you care about:
 
-- **Team count:** the selected world has a garage for every team.
 - **Grid size:** it has enough grid slots and pit boxes for the session.
 - **AI data:** every participating car resolves suitable baked data.
 - **Time Trial:** entering, driving and finishing the session work.
