@@ -79,6 +79,29 @@ impl Archive {
     }
 }
 
+const VIEW_COUNT: usize = 0x14;
+
+pub(crate) fn view_slices(view: &Resource) -> Result<Option<u32>> {
+    let Some(frag) = view.fragments.first() else {
+        return Ok(None);
+    };
+    let data = frag.data()?;
+    Ok(data
+        .get(VIEW_COUNT..VIEW_COUNT + 4)
+        .map(|b| u32::from_le_bytes(b.try_into().expect("4 bytes"))))
+}
+
+// The slice count a texture array view says and the one its image has, when they differ
+// and the view doesn't say 0 (the stock single-slice convention).
+pub(crate) fn view_mismatch(view: &Resource, image: &Resource) -> Result<Option<(u32, usize)>> {
+    let Some(array) = Array::read_slices(image) else {
+        return Ok(None);
+    };
+    Ok(view_slices(view)?
+        .filter(|&said| said != 0 && said as usize != array.count)
+        .map(|said| (said, array.count)))
+}
+
 pub struct ErpBuild<'a> {
     original: &'a dyn Fn(&str) -> PathBuf,
     erps: BTreeMap<String, Archive>,
@@ -963,7 +986,6 @@ impl<'a> ErpBuild<'a> {
     }
 
     pub fn cohere_arrays(&mut self) -> Result<Vec<String>> {
-        const VIEW_COUNT: usize = 0x14;
         let mut lines = Vec::new();
         let rels: Vec<String> = self.erps.keys().cloned().collect();
         for rel in rels {
@@ -990,10 +1012,10 @@ impl<'a> ErpBuild<'a> {
                 let Some(img) = self.current(&rel, &image)? else {
                     continue;
                 };
-                let Some(array) = Array::read_slices(&img) else {
+                let Some(mut v) = self.current(&rel, &view)? else {
                     continue;
                 };
-                let Some(mut v) = self.current(&rel, &view)? else {
+                let Some((said, count)) = view_mismatch(&v, &img)? else {
                     continue;
                 };
                 let Some(mut data) = v.fragments.first().map(|f| f.data()).transpose()? else {
@@ -1002,11 +1024,7 @@ impl<'a> ErpBuild<'a> {
                 let Some(at) = data.get_mut(VIEW_COUNT..VIEW_COUNT + 4) else {
                     continue;
                 };
-                let said = u32::from_le_bytes((&*at).try_into().expect("4 bytes"));
-                if said == 0 || said as usize == array.count {
-                    continue;
-                }
-                at.copy_from_slice(&(array.count as u32).to_le_bytes());
+                at.copy_from_slice(&(count as u32).to_le_bytes());
                 v.set_fragment(0, &data)
                     .map_err(|e| fail(format!("{rel}: {e}")))?;
                 self.place(&rel, v, true)?;
@@ -1014,8 +1032,7 @@ impl<'a> ErpBuild<'a> {
                     self.writers.insert((rel.clone(), view.clone()), origin);
                 }
                 lines.push(format!(
-                    "texture array {view}: view said {said} slices, image has {}; fixed",
-                    array.count
+                    "texture array {view}: view said {said} slices, image has {count}; fixed"
                 ));
             }
         }
@@ -1563,6 +1580,26 @@ mod tests {
             "Sepang would crash F1 25: its x.trackspacespline and 1 more file(s) don't match the size headers the \
              game reads with them, and the launcher can't read the files to fix the headers. Fix."
         );
+    }
+
+    #[test]
+    fn a_ready_overlay_whose_view_disagrees_with_the_stock_image_goes_in_resource_by_resource() {
+        let root = texture_game("cohere-overlay");
+        let (game, addon) = (root.join("game"), root.join("addon"));
+        std::fs::create_dir_all(&addon).unwrap();
+        std::fs::write(
+            game.join(UI),
+            texture_erp(vec![array(2, &[[1; 4]; 6]), view_res(6)]),
+        )
+        .unwrap();
+        let original = |rel: &str| game.join(rel);
+        for (count, fits) in [(16, false), (6, true), (0, true)] {
+            let path = addon.join(format!("v{count}.erp"));
+            std::fs::write(&path, texture_erp(vec![view_res(count)])).unwrap();
+            let got = crate::runtime::overlay_fits(&path, &[UI.into()], &original).unwrap();
+            assert_eq!(got.is_ok(), fits, "{count}: {got:?}");
+        }
+        std::fs::remove_dir_all(&root).ok();
     }
 
     #[test]
