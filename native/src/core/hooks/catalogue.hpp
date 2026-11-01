@@ -95,8 +95,8 @@ inline constexpr Event EVENTS[] = {
     {"session.grid.group_result", C, SHELL, 1, false, Fired::no, nullptr},
     {"session.results.finalise", N, SHELL, 1, false, Fired::no, SWOFTY_EVENT_RESULTS},
     {"session.podium", N, SHELL, 1, false, Fired::no, nullptr},
-    {"session.end", N, SHELL, 1, false, Fired::no, SWOFTY_EVENT_SESSION_END},
-    {"session.unload", N, SHELL, 1, false, Fired::no, nullptr},
+    {"session.end", N, SHELL, 1, false, Fired::yes, SWOFTY_EVENT_SESSION_END},
+    {"session.unload", N, SHELL, 1, false, Fired::yes, SWOFTY_EVENT_SESSION_UNLOAD},
 
     {"car.upgrades.fit", M, "swofty::cars::events::UpgradesFit", 1, false, Fired::no, nullptr},
     {"car.vtf.read", M, "swofty::cars::events::VtfRead", 1, true, Fired::no, nullptr},

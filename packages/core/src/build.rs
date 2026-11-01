@@ -1480,6 +1480,12 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 built.warnings.push(t.line(by));
             }
         }
+        for c in crate::dbedit::calendar::cut_rounds(&db) {
+            let by = planner
+                .record_writer(c.key)
+                .map_or("database", |id| addons.get(id).map_or(id, |m| m.name.as_str()));
+            built.warnings.push(c.line(by));
+        }
         for u in crate::heads::keep_wearable(&mut db, &shipped_db) {
             let by = planner
                 .record_writer(u.key)
@@ -1888,11 +1894,10 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             }
         }
         if !ers_maps.is_empty() {
-            let edited =
-                erps.edit_written(|rel, r| match rel.starts_with(ers::TEAMS) && r.kind() == "VTF" {
-                    true => ers::edit_vtf(r, &ers_maps),
-                    false => Ok(None),
-                })?;
+            let edited = erps.edit_written(|rel, r| match ers::in_teams(rel) && r.kind() == "VTF" {
+                true => ers::edit_vtf(r, &ers_maps),
+                false => Ok(None),
+            })?;
             if edited > 0 {
                 built.lines.push(format!(
                     "ers: {edited} handling file(s) other addons change get the tracks' settings too"
@@ -1927,6 +1932,13 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         }
         for w in erps.check_ui(&name)? {
             built.warnings.push(format!("ui: {w}"));
+        }
+        for (severity, w) in erps.check_textures(&name) {
+            let kind = match severity {
+                crate::texcheck::Severity::Invalid => "texture the game's renderer may reject",
+                _ => "texture",
+            };
+            built.warnings.push(format!("{kind}: {w}"));
         }
         let stats = erps.repair_stats();
         let by_origin = |list: &[(String, String)]| {
@@ -1997,9 +2009,14 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             resized
         };
         built.warnings.extend(stock_holders(&game.dir, &resized));
+        let in_plan: BTreeSet<String> = built.plan.data.keys().map(|r| r.to_ascii_lowercase()).collect();
+        let staged_l: BTreeSet<String> = staged.keys().map(|r| r.to_ascii_lowercase()).collect();
         built_over = puts
             .keys()
-            .filter(|rel| built.plan.data.contains_key(*rel) && !staged.contains_key(*rel))
+            .filter(|rel| {
+                let l = rel.to_ascii_lowercase();
+                in_plan.contains(&l) && !staged_l.contains(&l)
+            })
             .cloned()
             .collect();
     }
@@ -2547,7 +2564,7 @@ fn record_merge(built: &mut Built, planner: &mut Planner, origin: &Origin, m: Sl
 /// Whether the overlay archive at `path` holds a car handling file for one of
 /// the 2026 team archives in `targets`.
 fn carries_handling(path: &Path, targets: &[String]) -> Result<bool> {
-    if !targets.iter().any(|t| t.starts_with(ers::TEAMS)) {
+    if !targets.iter().any(|t| ers::in_teams(t)) {
         return Ok(false);
     }
     let file = swofty_formats::erp::ErpFile::open(path)?;
@@ -2725,9 +2742,23 @@ fn put_files(
     car_maps: (&[ErsMap], &[HandlingMap]),
 ) -> Result<()> {
     let (ers_maps, handling_maps) = car_maps;
-    let mips = mipmaps.len();
-    let mut put: BTreeMap<String, (PathBuf, Option<Origin>)> =
-        mipmaps.into_iter().map(|(rel, src)| (rel, (src, None))).collect();
+    let baseline = Baseline::load_or_new(&store.root, &game.identity).ok();
+    let mut spelling: BTreeMap<String, String> = BTreeMap::new();
+    for rel in built.plan.data.keys().chain(built.plan.added.keys()) {
+        spelling.insert(rel.to_ascii_lowercase(), rel.clone());
+    }
+    if let Some(b) = &baseline {
+        for rel in b.files.keys() {
+            spelling.insert(rel.to_ascii_lowercase(), rel.clone());
+        }
+    }
+    let mut put: BTreeMap<String, (String, PathBuf, Option<Origin>)> = BTreeMap::new();
+    for (rel, src) in mipmaps {
+        let key = rel.to_ascii_lowercase();
+        let real = spelling.entry(key.clone()).or_insert(rel).clone();
+        put.insert(key, (real, src, None));
+    }
+    let mips = put.len();
     for op in ops {
         let AssetOp::File(FileOp::Put { source, target }) = op.op else {
             continue;
@@ -2738,21 +2769,32 @@ fn put_files(
             )));
         }
         let src = source.resolve(&source_dir(store, &op.origin.addon, source.root))?;
-        put.insert(target, (src, Some(op.origin)));
+        let key = target.to_ascii_lowercase();
+        let real = spelling.entry(key.clone()).or_insert(target).clone();
+        if let Some((_, _, Some(first))) = put.get(&key)
+            && *first != op.origin
+        {
+            built.lines.push(format!(
+                "files: {real} is put by both {first} and {}; {} wins",
+                op.origin, op.origin
+            ));
+        }
+        put.insert(key, (real, src, Some(op.origin)));
     }
     if put.is_empty() {
         return Ok(());
     }
-    let baseline = Baseline::load_or_new(&store.root, &game.identity).ok();
+    let over: BTreeSet<String> = built_over.iter().map(|r| r.to_ascii_lowercase()).collect();
     let stock = |rel: &str| {
         baseline.as_ref().is_some_and(|b| b.files.contains_key(rel))
             || (game.dir.join(rel).is_file() && !left_over(store, game, rel))
     };
     let (mut replaced, mut added, mut handling) = (0, 0, 0);
     let addon_dir = |id: &str| store.addons_dir().join(id);
-    for (rel, (mut src, origin)) in put {
+    for (_, (rel, mut src, origin)) in put {
+        let lower = rel.to_ascii_lowercase();
         let group = handling::for_source(handling_maps, &addon_dir, &src);
-        if !group.is_empty() && !built_over.contains(&rel) {
+        if !group.is_empty() && !over.contains(&lower) {
             let out = built.overlay.join("handling").join(&rel);
             let mut lines = Vec::new();
             if handling::edit_archive(&src, &group, &out, &mut lines)? > 0 {
@@ -2761,7 +2803,7 @@ fn put_files(
             built.lines.extend(lines);
         }
         let car = !ers_maps.is_empty() && ers::is_car_archive(&rel);
-        if car && !built_over.contains(&rel) {
+        if car && !over.contains(&lower) {
             let out = built.overlay.join("ers").join(&rel);
             let n = ers::edit_archive(&src, ers_maps, &out)?;
             if n > 0 {
@@ -2775,7 +2817,7 @@ fn put_files(
         } else {
             added += 1;
         }
-        if built_over.contains(&rel) {
+        if over.contains(&lower) {
             if !is_stock && let Some(archive) = built.plan.data.remove(&rel) {
                 built.plan.added.insert(rel, archive);
             }
@@ -5280,6 +5322,218 @@ mod tests {
         assert_eq!(out.get_text(list).as_deref(), Some("melbourne,testring"));
         assert_eq!(out.get_text("tracks._Track_instancecount_").as_deref(), Some("2"));
         assert_eq!(out.get_text("stock.key_0").as_deref(), Some("7"));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn put_targets_take_the_games_spelling_and_the_ers_pass_builds_on_the_addons_file() {
+        use swofty_formats::bxml::{Document, Element, Kind};
+        use swofty_formats::erp::{Erp, ErpFile, Fragment, HEADER_LEN, MAGIC, Resource, STORED};
+        use swofty_formats::gvdb::Record;
+        if loader_dir().is_some() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("swofty-build-putcase-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        let slot = dir.join(slot_file(SLOTS[0]));
+        std::fs::create_dir_all(slot.parent().unwrap()).unwrap();
+        std::fs::write(&slot, archive(&["eaid://ui_package/slot.uil"], 0)).unwrap();
+        let res = "tracks.track_resource.TrackResource_0";
+        let set = "track_data.game_setup.TrackDataSet_0";
+        let records = vec![
+            Record::new("tracks._Track_instancecount_", 0, "1"),
+            Record::new("tracks.Track_0._metadata_", 2, "melbourne"),
+            Record::new("tracks.Track_0.statId", 0, "5"),
+            Record::new("tracks.Track_0.track_resource", 2, "2019"),
+            Record::new("tracks.track_resource._TrackResource_instancecount_", 0, "1"),
+            Record::new(&format!("{res}._metadata_"), 2, "2019"),
+            Record::new(&format!("{res}.iblAssetGroupsRoot"), 2, "probes/"),
+            Record::new(&format!("{res}.iblKey"), 2, "key_2019.assetgroup"),
+            Record::new("track_data.game_setup._TrackDataSet_instancecount_", 0, "1"),
+            Record::new(&format!("{set}._metadata_"), 2, "f1"),
+            Record::new(&format!("{set}._TrackData_instancecount_"), 0, "1"),
+            Record::new(&format!("{set}.TrackData_0._metadata_"), 2, "melbourne"),
+            Record::new(&format!("{set}.TrackData_0.track"), 2, "melbourne"),
+        ];
+        std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+        let el = |name: &str, attrs: &[(&str, &str)], children: Vec<Element>| Element {
+            kind: Kind::Element,
+            pad: 0,
+            name: name.as_bytes().to_vec(),
+            attrs: attrs
+                .iter()
+                .map(|(k, v)| (k.as_bytes().to_vec(), v.as_bytes().to_vec()))
+                .collect(),
+            children,
+            end_pad: 0,
+        };
+        let uri = "eaid://f1_2026_vehicle_package/teams/mclaren/handling/mclaren.vtf";
+        let handling = |deploy: &str| {
+            let doc = Document {
+                root: el(
+                    "VTF",
+                    &[],
+                    vec![el(
+                        "EnergyRecoverySystem",
+                        &[("numTrackSettingsTypes", "1")],
+                        vec![el(
+                            "TrackSettings",
+                            &[("name", "0")],
+                            vec![
+                                el("Track", &[("value", "melbourne")], Vec::new()),
+                                el("MediumDeployFactor", &[("value", deploy)], Vec::new()),
+                                el("OverrideDetectionLapProgress", &[("value", "0.8")], Vec::new()),
+                                el("OverrideActivationLapProgress", &[("value", "0.85")], Vec::new()),
+                            ],
+                        )],
+                    )],
+                ),
+                tail: Vec::new(),
+            };
+            let data = doc.to_bytes();
+            let mut header = [0u8; HEADER_LEN];
+            header[..4].copy_from_slice(MAGIC);
+            header[4..8].copy_from_slice(&3u32.to_le_bytes());
+            Erp {
+                header,
+                version: 3,
+                resources: vec![Resource {
+                    name: uri.into(),
+                    kind: swofty_formats::erp::kind("VTF").unwrap(),
+                    unk: vec![0; 4],
+                    fragments: vec![Fragment {
+                        name: *b"temp",
+                        offset: 0,
+                        size: data.len() as u64,
+                        flags: 0x10,
+                        compression: STORED,
+                        packed: data.len() as u64,
+                        raw: data,
+                    }],
+                    hash: [0; 16],
+                }],
+            }
+            .to_bytes()
+        };
+        let team = "2025_asset_groups/f1_2026_vehicle_package/teams/mclaren/wep/mclaren.erp";
+        std::fs::create_dir_all(dir.join(team).parent().unwrap()).unwrap();
+        std::fs::write(dir.join(team), handling("0.8")).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir: dir.clone(),
+            user_reg: None,
+        };
+        let store = Store::new(root.join("data"));
+        let install = |id: &str, ops: &str, files: &[(&str, Vec<u8>)]| {
+            let src = root.join("src").join(id);
+            std::fs::create_dir_all(src.join("track")).unwrap();
+            std::fs::write(
+                src.join("swofty.json"),
+                format!(
+                    r#"{{ "schema_version": 1, "id": "{id}", "name": "{id}", "version": "1.0.0", "author": "t",
+                         "compat": {{ "game": "f1_25" }}, "operations": {{ "assets": ["ops.json"] }} }}"#
+                ),
+            )
+            .unwrap();
+            std::fs::write(
+                src.join("ops.json"),
+                format!(r#"{{ "schema_version": 1, "ops": [{ops}] }}"#),
+            )
+            .unwrap();
+            for (rel, data) in files {
+                std::fs::write(src.join(rel), data).unwrap();
+            }
+            store.install_addon(&src).unwrap();
+            store
+                .update_profile("default", |p| p.set_enabled(id, true))
+                .unwrap();
+        };
+        let world = "eaid://environment_package/tracks/testring/wep/testring_common.wep";
+        install(
+            "mod.testring",
+            r#"{"op":"track.add","source":"track"}"#,
+            &[
+                (
+                    "track/manifest.json",
+                    br#"{ "track_code": "testring", "track_name": "Test Ring", "erp": "testring.erp",
+                         "activation": { "copy_from_track": "melbourne", "copy_slot": "melbourne" },
+                         "ers": { "OverrideDetectionLapProgress": 0.91, "OverrideActivationLapProgress": 0.95 } }"#
+                        .to_vec(),
+                ),
+                ("track/testring.erp", archive_of("WEP", &[world], 0)),
+            ],
+        );
+        let upper = "2025_asset_groups/F1_2026_vehicle_package/teams/mclaren/wep/mclaren.erp";
+        install(
+            "t.upper",
+            &format!(r#"{{"op":"file.put","source":"u.erp","target":"{upper}"}}"#),
+            &[("u.erp", handling("0.7"))],
+        );
+        let value = |archive: &Path, track: &str, key: &str| {
+            let file = ErpFile::open(archive).unwrap();
+            let r = file.erp.resources.iter().find(|r| r.name == uri).unwrap();
+            let doc = Document::parse(&file.load(r).unwrap().fragments[0].data().unwrap()).unwrap();
+            doc.root
+                .child(b"EnergyRecoverySystem")
+                .unwrap()
+                .children
+                .iter()
+                .find(|c| c.child(b"Track").and_then(|t| t.attr(b"value")) == Some(track.as_bytes()))
+                .and_then(|c| c.child(key.as_bytes()))
+                .and_then(|f| f.attr(b"value"))
+                .map(|v| String::from_utf8_lossy(v).into_owned())
+        };
+        let same = |plan: &Plan| {
+            plan.data
+                .keys()
+                .chain(plan.added.keys())
+                .filter(|k| k.eq_ignore_ascii_case(team))
+                .cloned()
+                .collect::<Vec<_>>()
+        };
+
+        let built = build(&store, "default", &game).unwrap();
+        assert_eq!(same(&built.plan), [team.to_owned()]);
+        let car = &built.plan.data[team];
+        assert_eq!(
+            value(car, "melbourne", "MediumDeployFactor").as_deref(),
+            Some("0.7")
+        );
+        assert_eq!(
+            value(car, "testring", "MediumDeployFactor").as_deref(),
+            Some("0.7")
+        );
+        assert_eq!(
+            value(car, "testring", "OverrideDetectionLapProgress").as_deref(),
+            Some("0.91")
+        );
+
+        let other = "2025_asset_groups/f1_2026_vehicle_package/teams/mclaren/wep/MCLAREN.erp";
+        install(
+            "t.other",
+            &format!(r#"{{"op":"file.put","source":"o.erp","target":"{other}"}}"#),
+            &[("o.erp", handling("0.4"))],
+        );
+        install(
+            "t.fresh",
+            r#"{"op":"file.put","source":"f.bin","target":"Mixed_Case/New_File.bin"}"#,
+            &[("f.bin", b"new".to_vec())],
+        );
+        let built = build(&store, "default", &game).unwrap();
+        assert_eq!(same(&built.plan), [team.to_owned()]);
+        assert!(
+            built
+                .lines
+                .iter()
+                .any(|l| l.starts_with(&format!("files: {team} is put by both"))),
+            "{:?}",
+            built.lines
+        );
+        assert!(built.plan.added.contains_key("Mixed_Case/New_File.bin"));
+        assert!(!built.plan.added.contains_key("mixed_case/new_file.bin"));
         std::fs::remove_dir_all(&root).ok();
     }
 

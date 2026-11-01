@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
-use std::sync::atomic::{AtomicI64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicI64, Ordering};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use swofty_core::app_control::{self, Block};
@@ -86,6 +86,9 @@ pub struct Probe {
     pub blocked_at: Option<f64>,
     pub launch_failed: Option<launch::Failure>,
     pub busy: Option<Busy>,
+    pub(crate) banner_profile: String,
+    pub(crate) banner: Option<Option<crate::career_saves::Banner>>,
+    pub(crate) saves_marker: bool,
 }
 
 static VAULT_WATCH: std::sync::LazyLock<std::sync::Mutex<vault::watch::Watch>> =
@@ -124,10 +127,28 @@ pub fn vault_at_start(store: &Store) {
     import_first_start(store);
 }
 
+static IMPORT_MISS_LOGGED: AtomicBool = AtomicBool::new(false);
+
 fn import_first_start(store: &Store) {
     let profiles = store.profile_names().unwrap_or_default();
     let running = vault::restore::Running::now();
-    for l in swofty_core::launcher_saves::first_start_import(&store.root, &profiles, running, vault::now()) {
+    let log_miss = !IMPORT_MISS_LOGGED.swap(true, Ordering::Relaxed);
+    log_import(store, &profiles, running, log_miss);
+}
+
+pub(crate) fn import_now(store: &Store) {
+    let profiles = store.profile_names().unwrap_or_default();
+    log_import(store, &profiles, vault::restore::Running::now(), true);
+}
+
+fn log_import(store: &Store, profiles: &[String], running: vault::restore::Running, log_miss: bool) {
+    for l in swofty_core::launcher_saves::first_start_import(
+        &store.root,
+        profiles,
+        running,
+        vault::now(),
+        log_miss,
+    ) {
         crate::app_log::note(&l);
     }
 }
@@ -194,7 +215,13 @@ fn retry_import(store: &Store, processes: &[GameProcess]) {
     import_first_start(store);
 }
 
-pub fn probe(store: &Store, rediscover: bool, seen: Option<SystemTime>) -> Probe {
+pub fn probe(
+    store: &Store,
+    rediscover: bool,
+    seen: Option<SystemTime>,
+    profile: &str,
+    banner_due: bool,
+) -> Probe {
     let processes = game_processes();
     watch_vault(store, &processes);
     retry_import(store, &processes);
@@ -212,6 +239,9 @@ pub fn probe(store: &Store, rediscover: bool, seen: Option<SystemTime>) -> Probe
         blocked_at: blocked_at(&store.root),
         launch_failed: launch::Failure::read(&store.root),
         busy: build_state(store),
+        banner_profile: profile.to_owned(),
+        banner: banner_due.then(|| crate::career_saves::SavesPage::banner_for(&store.root, profile)),
+        saves_marker: swofty_core::launcher_saves::marker(&store.root).is_some(),
         launch_stage: std::fs::read_to_string(store.root.join(steam_client::STAGE_FILE))
             .ok()
             .map(|s| s.trim().to_owned())

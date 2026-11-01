@@ -78,8 +78,9 @@ pub fn has_files(loc: &Location) -> bool {
 }
 
 /// The save the launcher copies in: the active copy's own, when launcher saves work with that copy.
-pub fn steam_source(data: &Path) -> Option<Location> {
-    Location::active(data).filter(|l| supported(l.layout))
+pub fn steam_source(data: &Path) -> (Option<Location>, Vec<String>) {
+    let (loc, tried) = Location::active_search(data);
+    (loc.filter(|l| supported(l.layout)), tried)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -251,22 +252,43 @@ pub fn mark_seen(data: &Path) -> Result<()> {
 /// empty store, snapshot each in the vault, and record that it ran so it never repeats on its own. A
 /// running game defers it to the next start, and a start that finds no Steam save to read records
 /// nothing, so the next start tries again; the Steam save is only read.
-pub fn first_start_import(data: &Path, profiles: &[String], running: Running, now: i64) -> Vec<String> {
+pub fn first_start_import(
+    data: &Path,
+    profiles: &[String],
+    running: Running,
+    now: i64,
+    log_miss: bool,
+) -> Vec<String> {
     let config = crate::store::Store::new(data.to_path_buf()).config();
     if crate::copies::find_active(&config).is_some_and(|c| c.source == crate::install::Source::EaApp) {
         return vec![
             "saves: the import into the launcher saves is only for Steam copies; the active copy is from the EA app, so nothing is imported and it is not retried".into(),
         ];
     }
-    first_start_import_from(data, profiles, || steam_source(data), running, now)
+    first_start_import_from(data, profiles, || steam_source(data), running, now, log_miss)
+}
+
+/// Whether profile `profile` has to play on Steam's saves for now: the first-start import has not found
+/// a Steam save yet and the profile's launcher save is empty, so redirecting the game to it would start
+/// a new profile beside a Steam save the launcher could not find. EA app copies have no Steam save.
+pub fn steam_save_pending(data: &Path, profile: &str) -> bool {
+    if !import_pending(data) || profile == crate::profile::VANILLA {
+        return false;
+    }
+    let config = crate::store::Store::new(data.to_path_buf()).config();
+    if crate::copies::find_active(&config).is_some_and(|c| c.source == crate::install::Source::EaApp) {
+        return false;
+    }
+    !has_files(&Location::launcher(data, profile))
 }
 
 pub fn first_start_import_from(
     data: &Path,
     profiles: &[String],
-    source: impl FnOnce() -> Option<Location>,
+    source: impl FnOnce() -> (Option<Location>, Vec<String>),
     running: Running,
     now: i64,
+    log_miss: bool,
 ) -> Vec<String> {
     if marker_path(data).exists() {
         return Vec::new();
@@ -278,12 +300,18 @@ pub fn first_start_import_from(
     let mut done = Vec::new();
     let note;
     let mut found = false;
-    match source() {
+    let (from, tried) = source();
+    match from {
         None => {
             note = "no Steam save of the active copy".to_owned();
             out.push(format!(
-                "saves: no Steam save found to import into the launcher saves ({note}); profiles start with empty launcher saves, and the import is tried again at the next start"
+                "saves: no Steam save found to import into the launcher saves ({note}); these profiles play on Steam's saves until an import finds one, and the import is tried again quietly"
             ));
+            out.extend(
+                tried
+                    .iter()
+                    .map(|t| format!("saves: looked for the Steam save: {t}")),
+            );
         }
         Some(from) => {
             note = format!("imported from {}", from.dir.display());
@@ -311,7 +339,10 @@ pub fn first_start_import_from(
         }
     }
     if !found {
-        return out;
+        return match log_miss {
+            true => out,
+            false => Vec::new(),
+        };
     }
     let m = Marker {
         at: now,

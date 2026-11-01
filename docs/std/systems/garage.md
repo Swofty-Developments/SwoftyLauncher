@@ -120,6 +120,7 @@ python3 tools/garage_textures.py "shader_package_2025/pack.erp" garage/renault_2
 
 ## What is known
 
+- **Off by default:** the core leaves `team.garage` records unapplied and logs one line saying so. Stock garage and pit lane textures are streamed (a 40 byte header, the resident low mips and a streaming descriptor naming a `.tif.2025.mipmaps` file), and the archive's are not, so a stock copy of the same name streaming into the archive's resource wrote to a null buffer in the stream copy (`Ne_Crt_Memcpy`, 1.7.8 and 1.7.9 reports). `SWOFTY_GARAGE_ART=1` applies the records again.
 - **Built and tested:** the archive builder (names, headers, views, mip chains, the cache key) and the lowering to the cars' asset groups run in the host tests.
 - **Not run in game:** whether the archive loads before the track's own copy. The resource map keeps the first copy that is loaded (`re/db/subsystems/assets.md`). The sizes and times in the log above are examples of its format.
 - **Groups the core cannot extend:** a car group of the stock manifest. Only groups an addon declares, as Classic Seasons' cars do, take the archive.

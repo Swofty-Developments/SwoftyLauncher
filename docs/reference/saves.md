@@ -64,6 +64,8 @@ swofty-launcher: saves: copied the Steam save (2 file(s), 961752 bytes, ...) int
 
 The launcher shows one dialog about the import when `profiles` isn't empty and `seen` is `false`, then writes `"seen": true`. `launcher_saves::notice_due` and `launcher_saves::mark_seen` are the two calls.
 
+The Steam save is found under the Steam install's `userdata`, not the game's library: a library on another drive holds `steamapps/common` and no `userdata`. The Steam folder comes from the library's owner in `libraryfolders.vdf`, the default folders, the registry (`SteamPath`, `SteamExe`, `InstallPath`), a running steam.exe, and last the usual Steam folders on every drive. The account is `ActiveUser`, then the `MostRecent` account in `loginusers.vdf`, then the others, and a folder with save files wins over an empty one. When no Steam save is found, the launcher logs every folder it tried and why it was rejected once per start, retries quietly, and profiles play on Steam's saves until an import finds one. The Saves page says so and offers `Play with your Steam saves`, `Import from Steam` and a folder picker.
+
 When F1 25 is running at that start, the launcher logs that the import waits and tries again at the next start. A profile created later, or one whose store is empty at Play, gets the same copy at its first Play. The Steam save is only read.
 
 ### Import and export
@@ -127,10 +129,24 @@ The session sets `SWOFTY_LAUNCHER_SAVES=off` for the game. To stay on Steam's sa
 The core's launcher saves serve Steam's remote storage only. The EA app copy keeps its own saves, and the loader log says so:
 
 ```text
-[saves] launcher saves are off: launcher saves are not available on the EA copy yet; this session uses the EA copy's own saves
+[saves] launcher saves are off for profile main: the game reads Steam's saves natively (launcher saves are not available on the EA copy yet; this session uses the EA copy's own saves)
 ```
 
 The launcher's store keeps a second layout for the EA app copy, `$DATA/saves/<profile>/ea/profile/`, that stays off until the core can serve it.
+
+## Save diagnostics
+
+Every session logs where the game's saves come from, also with launcher saves off. Every profile load logs the source, the save file and each career slot the game read:
+
+```text
+[saves] launcher saves are off for profile main: the game reads Steam's saves natively
+[saves] profile load 1: read from Steam native; save file not observed (Steam reads it natively)
+[saves] profile load 1: manager 0 (vtable +0x5a1c3e0): 2 slot(s)
+[saves] profile load 1: manager 0 slot 0: gm_driver_career id=3 key=0000000000abcdef career=dc-000b0000 flags=0x00 setup=2 season=3 weekend=5 date=1761912000 name="Run"
+[saves] profile load 1: container swofty_registry: 912 bytes (no loaded game mode claims it)
+```
+
+Send Logs lists these lines in the `Saves` section of summary.txt.
 
 ## Career vault
 

@@ -1298,6 +1298,7 @@ inline constexpr site<"site_Career_VehicleFillOrderEnd"> site_Career_VehicleFill
 inline constexpr site<"site_Career_VehicleFillOrderStart"> site_Career_VehicleFillOrderStart{}; // L2 experimental
 inline constexpr site<"site_Career_WeekendObjectiveNext"> site_Career_WeekendObjectiveNext{}; // L2 experimental
 inline constexpr site<"site_Career_WeekendObjectiveType"> site_Career_WeekendObjectiveType{}; // L2 experimental
+inline constexpr site<"site_Career_WeekendsTrackRecordLoad"> site_Career_WeekendsTrackRecordLoad{}; // L2 experimental
 inline constexpr vtable<"vt_Career_BankTransactionMessage", 2> vt_Career_BankTransactionMessage{}; // L2 experimental
 inline constexpr vtable<"vt_Career_Championship", 12> vt_Career_Championship{}; // L2 experimental
 inline constexpr vtable<"vt_Career_FacilityNode", 11> vt_Career_FacilityNode{}; // L2 experimental
