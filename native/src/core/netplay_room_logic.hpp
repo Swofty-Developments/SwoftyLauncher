@@ -475,7 +475,7 @@ inline ContainerFacts container_facts(const Memory &m, uint64_t container)
 enum class UiStep { idle, state, container, settle, sent, failed };
 enum class UiDo { nothing, write_state, send_open };
 
-constexpr uint64_t UI_STATE_GRACE_MS = 3000, UI_STATE_MS = 90000, UI_CONTAINER_MS = 180000, UI_SETTLE_MS = 20000,
+constexpr uint64_t UI_STATE_GRACE_MS = 3000, UI_STATE_MS = 90000, UI_CONTAINER_MS = 180000, UI_SETTLE_MS = 3000,
                    UI_SETTLE_MIN_MS = 600;
 
 struct UiFacts {

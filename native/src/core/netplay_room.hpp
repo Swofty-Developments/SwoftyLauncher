@@ -50,6 +50,8 @@ bool provide_context(void *registry, void *context);
 void set_category(const Category &category);
 Status status();
 std::string last_error();
+enum class CoverSignal { waiting, shown, failed };
+CoverSignal cover_signal();
 void tick();
 
 }

@@ -740,6 +740,18 @@ void tick()
         finish(Phase::failed, run.error);
 }
 
+CoverSignal cover_signal()
+{
+    std::unique_lock<std::mutex> g(lock, std::try_to_lock);
+    if (!g.owns_lock())
+        return CoverSignal::waiting;
+    if (state.phase == Phase::failed || (host_ui && host_ui_run.failed()))
+        return CoverSignal::failed;
+    if (host_ui)
+        return host_ui_run.sent() ? CoverSignal::shown : CoverSignal::waiting;
+    return state.phase == Phase::done ? CoverSignal::shown : CoverSignal::waiting;
+}
+
 }
 
 namespace runtime {
