@@ -241,6 +241,21 @@ impl Collector {
         }
     }
 
+    fn ea_diagnostics(&mut self) {
+        if !cfg!(windows) {
+            return;
+        }
+        let mut taken = Vec::new();
+        for log in crate::ea_diag::newest_logs(&crate::ea_diag::log_dirs(), crate::ea_diag::LOG_FILES) {
+            let name = crate::ea_diag::log_entry_name(&log, &mut taken);
+            self.file_capped(format!("ea-app/{name}"), &log, None, crate::ea_diag::LOG_TAIL);
+        }
+        match crate::ea_diag::application_events() {
+            Ok(text) => self.push("windows/application-events.txt".into(), text.into_bytes(), None),
+            Err(e) => self.skipped.push(format!("windows/application-events.txt: {e}")),
+        }
+    }
+
     fn file(&mut self, path: String, from: &Path, redact: Option<fn(&str) -> String>) {
         self.file_capped(path, from, redact, self.limits.file);
     }
@@ -421,6 +436,7 @@ impl Bundle {
                 Some(crate::multiplayer::diag::scrub as fn(&str) -> String),
             );
         }
+        c.ea_diagnostics();
         let not_stock = store.root.join("state/not-stock.json");
         if not_stock.is_file() {
             c.file("state/not-stock.json".into(), &not_stock, None);
