@@ -116,6 +116,18 @@ void step(const char *what, float fraction, float ceiling)
     progress.step(what, fraction, GetTickCount64(), ceiling);
 }
 
+Snapshot snapshot()
+{
+    Snapshot out;
+    if (!armed.load())
+        return out;
+    std::lock_guard<std::mutex> g(lock);
+    out.active = true;
+    out.label = progress.label();
+    out.percent = progress.target_percent();
+    return out;
+}
+
 void set_subtitle(const char *text)
 {
     if (!text || !*text)

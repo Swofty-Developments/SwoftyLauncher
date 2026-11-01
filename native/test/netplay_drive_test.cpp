@@ -94,6 +94,19 @@ int main()
                R"({"screen":"main_menu","in_session":false,"role":"none","armed":false,"configured":false,"self":0,"base":0})",
            "status JSON on the main menu");
 
+    auto loading = main_menu();
+    loading.frontend = false;
+    loading.cover_step = "Joining the lobby";
+    loading.cover_percent = 93;
+    expect(drive::status_json(loading) ==
+               R"({"screen":"other","in_session":false,"role":"none","armed":true,"configured":true,"self":2,"base":40000,"cover":{"step":"Joining the lobby","percent":93}})",
+           "status JSON carries the cover's step and percent while the room cover is up");
+    loading.room_failed = "no registry holds the join request owner";
+    expect(drive::status_json(loading).find(R"("room_failed":"no registry holds the join request owner")") != std::string::npos,
+           "status JSON carries the game's own room start failure");
+    loading.cover_percent = -1;
+    expect(drive::status_json(loading).find("cover") == std::string::npos, "no cover, no cover field");
+
     auto conf = drive::parse(R"({"seq":20,"op":"configure","args":{"self":3,"base":40000}})");
     expect(conf.error.empty() && conf.op == drive::Op::configure && conf.self == 3 && conf.base == 40000,
            "configure parses");
