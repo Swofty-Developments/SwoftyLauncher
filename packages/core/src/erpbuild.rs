@@ -956,6 +956,66 @@ impl<'a> ErpBuild<'a> {
         Ok(merge)
     }
 
+    pub fn cohere_arrays(&mut self) -> Result<Vec<String>> {
+        const VIEW_COUNT: usize = 0x14;
+        let mut lines = Vec::new();
+        let rels: Vec<String> = self.erps.keys().cloned().collect();
+        for rel in rels {
+            let mut images: Vec<String> = self.erps[&rel]
+                .slots
+                .iter()
+                .filter_map(|s| match s {
+                    Slot::Owned(r) => Some(r.name.as_str()),
+                    Slot::Stock(_) => None,
+                })
+                .filter_map(|n| match n.strip_suffix(".image") {
+                    Some(v) if v.ends_with(".texarray") => Some(n.to_owned()),
+                    _ if n.ends_with(".texarray") => Some(format!("{n}.image")),
+                    _ => None,
+                })
+                .collect();
+            images.sort();
+            images.dedup();
+            for image in images {
+                let view = image
+                    .strip_suffix(".image")
+                    .expect("built with the suffix")
+                    .to_owned();
+                let Some(img) = self.current(&rel, &image)? else {
+                    continue;
+                };
+                let Some(array) = Array::read_slices(&img) else {
+                    continue;
+                };
+                let Some(mut v) = self.current(&rel, &view)? else {
+                    continue;
+                };
+                let Some(mut data) = v.fragments.first().map(|f| f.data()).transpose()? else {
+                    continue;
+                };
+                let Some(at) = data.get_mut(VIEW_COUNT..VIEW_COUNT + 4) else {
+                    continue;
+                };
+                let said = u32::from_le_bytes((&*at).try_into().expect("4 bytes"));
+                if said as usize == array.count {
+                    continue;
+                }
+                at.copy_from_slice(&(array.count as u32).to_le_bytes());
+                v.set_fragment(0, &data)
+                    .map_err(|e| fail(format!("{rel}: {e}")))?;
+                self.place(&rel, v, true)?;
+                if let Some(origin) = self.writers.get(&(rel.clone(), image.clone())).cloned() {
+                    self.writers.insert((rel.clone(), view.clone()), origin);
+                }
+                lines.push(format!(
+                    "texture array {view}: view said {said} slices, image has {}; fixed",
+                    array.count
+                ));
+            }
+        }
+        Ok(lines)
+    }
+
     pub fn take_merges(&mut self) -> Vec<SliceMerge> {
         std::mem::take(&mut self.merges)
     }
@@ -2708,6 +2768,98 @@ mod tests {
             b.apply_for(&missing, "a", &|s: &Source| Ok(s.resolve(&addon)?))
                 .is_err()
         );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    fn view_res(count: u32) -> Resource {
+        let mut v = vec![0u8; 128];
+        v[0x14..0x18].copy_from_slice(&count.to_le_bytes());
+        let mut r = Resource {
+            name: LOGOS.strip_suffix(".image").unwrap().into(),
+            kind: erp::kind("GfxSurfaceRes").unwrap(),
+            unk: vec![0; 4],
+            fragments: vec![Fragment {
+                name: *b"temp",
+                offset: 0,
+                size: v.len() as u64,
+                flags: 0x10,
+                compression: STORED,
+                packed: v.len() as u64,
+                raw: v,
+            }],
+            hash: [0; 16],
+        };
+        r.hash = r.content_hash().unwrap();
+        r
+    }
+
+    fn view_count(r: &Resource) -> u32 {
+        u32::from_le_bytes(r.fragments[0].data().unwrap()[0x14..0x18].try_into().unwrap())
+    }
+
+    type Coherence = (PathBuf, Vec<String>, Vec<(String, u32, String)>, Vec<String>);
+
+    fn coherence_build(name: &str, adds: &[(&str, Resource)]) -> Coherence {
+        let root = texture_game(name);
+        let (game, addon) = (root.join("game"), root.join("addon"));
+        let view = LOGOS.strip_suffix(".image").unwrap();
+        std::fs::create_dir_all(&addon).unwrap();
+        let stock = game.join(UI);
+        std::fs::write(&stock, texture_erp(vec![array(2, &[[0; 4]; 4]), view_res(4)])).unwrap();
+        let original = |rel: &str| game.join(rel);
+        let mut b = ErpBuild::new(&original);
+        for (origin, res) in adds {
+            let file = format!("{origin}-{}.erp", res.name.len());
+            std::fs::write(addon.join(&file), texture_erp(vec![res.clone()])).unwrap();
+            let op = ErpOp::PutResource {
+                erp: UI.into(),
+                resource: res.name.clone(),
+                source: Source::addon(&file),
+                rename: None,
+            };
+            b.apply_for(&op, origin, &|s: &Source| Ok(s.resolve(&addon)?))
+                .unwrap();
+        }
+        let lines = b.cohere_arrays().unwrap();
+        let counts = b
+            .resources()
+            .filter(|(_, r, _, _)| r.name == view)
+            .map(|(_, r, _, o)| (r.name.clone(), view_count(r), o.to_owned()))
+            .collect();
+        let origins = b.origins().to_vec();
+        (root, lines, counts, origins)
+    }
+
+    #[test]
+    fn a_view_from_another_addon_follows_the_image_slice_count() {
+        let (root, lines, views, origins) = coherence_build(
+            "cohere-split",
+            &[("cs", view_res(16)), ("names", array(2, &[[1; 4]; 6]))],
+        );
+        let view = LOGOS.strip_suffix(".image").unwrap();
+        assert_eq!(
+            lines,
+            [format!(
+                "texture array {view}: view said 16 slices, image has 6; fixed"
+            )]
+        );
+        assert_eq!(views, [(view.to_owned(), 6, "names".to_owned())]);
+        assert_eq!(origins, ["cs", "names"]);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_stock_view_follows_an_addon_image_and_a_coherent_array_is_untouched() {
+        let (root, lines, views, _) = coherence_build("cohere-stock", &[("names", array(2, &[[1; 4]; 6]))]);
+        assert_eq!(lines.len(), 1);
+        assert_eq!(views[0].1, 6);
+        std::fs::remove_dir_all(&root).ok();
+        let (root, lines, views, _) = coherence_build(
+            "cohere-ok",
+            &[("cs", array(2, &[[1; 4]; 6])), ("cs", view_res(6))],
+        );
+        assert!(lines.is_empty());
+        assert_eq!(views[0].1, 6);
         std::fs::remove_dir_all(&root).ok();
     }
 
