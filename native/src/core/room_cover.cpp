@@ -31,7 +31,6 @@ constexpr uint32_t FAINT = 0x737988ffu;
 constexpr uint32_t ACCENT = 0x8b7fd6ffu;
 constexpr uint32_t ACCENT_HI = 0xa196e6ffu;
 constexpr uint32_t TRACK = 0x272b35ffu;
-constexpr float PI2 = 6.2831853f;
 
 uint32_t with_alpha(uint32_t rgba, float k)
 {
@@ -62,13 +61,6 @@ void draw(hud::Frame &f, uint64_t now, float alpha)
     float W = f.width, H = f.height, u = H / 1080.0f, cx = W * 0.5f;
     hud::rect_gradient(f, 0, 0, W, H, 0, BG_TOP, BG_BOTTOM, 0);
 
-    float pulse = 0.5f + 0.5f * std::sin(float(now % 2400) / 2400.0f * PI2);
-    float gy = H * 0.42f;
-    for (int i = 0; i < 6; i++) {
-        float r = (520.0f - 70.0f * float(i)) * u;
-        hud::circle(f, cx, gy, r, with_alpha(ACCENT, (0.012f + 0.004f * pulse) * float(i + 1) / 6.0f * 3.0f));
-    }
-
     hud::TextStyle word = style(112 * u, TEXT, 0.16f);
     std::string name = "SWOFTY";
     float ww = text_width(word, name);
@@ -97,10 +89,7 @@ void draw(hud::Frame &f, uint64_t now, float alpha)
     hud::TextStyle pctst = style(24 * u, TEXT, 0.04f);
     std::string pt = std::to_string(pct) + "%";
     float ly = by - 24 * u - 34 * u;
-    float dot = 6 * u, dx = bx + dot;
-    hud::circle(f, dx, ly + 15 * u, dot * (1.7f + 0.6f * pulse), with_alpha(ACCENT, 0.18f + 0.12f * pulse));
-    hud::circle(f, dx, ly + 15 * u, dot, ACCENT_HI);
-    hud::text(f, bx + dot * 2 + 14 * u, ly, status, progress.label());
+    hud::text(f, bx, ly, status, progress.label());
     float pw = text_width(pctst, pt);
     hud::text(f, bx + bw - pw, ly, pctst, pt);
 
