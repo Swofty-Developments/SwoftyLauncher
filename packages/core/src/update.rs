@@ -713,8 +713,23 @@ pub fn apply(new: &Path, root: &Path, backup: &Path) -> Result<()> {
         ),
         None => {
             eprintln!(
-                "swofty: no {INSTALL_MANIFEST} from the previous install; leaving addons/ alone and sweeping only loader/ and dxc/"
+                "swofty: no {INSTALL_MANIFEST} from the previous install; sweeping only loader/, dxc/ and the bundled addons the new package holds"
             );
+            let bundled: std::collections::BTreeSet<&str> = files
+                .keys()
+                .filter_map(|rel| rel.strip_prefix("addons/")?.split_once('/').map(|(id, _)| id))
+                .collect();
+            for id in bundled {
+                let dir = root.join("addons").join(id);
+                if dir.is_dir() {
+                    stale.extend(
+                        crate::builtin::loader_files(&dir)?
+                            .into_keys()
+                            .map(|rel| format!("addons/{id}/{rel}"))
+                            .filter(|rel| !files.contains_key(rel)),
+                    );
+                }
+            }
             for sub in ["loader", crate::postfx::DXC_DIR] {
                 let dir = root.join(sub);
                 if dir.is_dir() {
@@ -1118,6 +1133,27 @@ mod tests {
         assert_eq!(read(&root.join("addons").join("mine").join("addon.json")), "{}");
         assert_eq!(read(&root.join("addons").join("other.swoftyaddon")), "user");
         assert!(!root.join("loader").join("stale.dll").exists());
+        assert_eq!(read(&root.join("saves").join("p").join("career.sav")), "career");
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn without_a_manifest_only_bundled_addon_folders_are_swept() {
+        let dir = temp("no-manifest");
+        let (root, new) = (dir.join("install"), dir.join("new"));
+        release_tree(&root, "v1");
+        write(&root.join("addons").join("core").join("addon.json"), "v1");
+        write(&root.join("addons").join("core").join("removed.txt"), "stale");
+        write(&root.join("addons").join("mine").join("addon.json"), "user");
+        write(&root.join("addons").join("mine").join("extra.txt"), "user");
+        write(&root.join("saves").join("p").join("career.sav"), "career");
+        release_tree(&new, "v2");
+        write(&new.join("addons").join("core").join("addon.json"), "v2");
+        apply(&new, &root, &dir.join("old")).unwrap();
+        assert_eq!(read(&root.join("addons").join("core").join("addon.json")), "v2");
+        assert!(!root.join("addons").join("core").join("removed.txt").exists());
+        assert_eq!(read(&root.join("addons").join("mine").join("addon.json")), "user");
+        assert_eq!(read(&root.join("addons").join("mine").join("extra.txt")), "user");
         assert_eq!(read(&root.join("saves").join("p").join("career.sav")), "career");
         std::fs::remove_dir_all(&dir).ok();
     }
