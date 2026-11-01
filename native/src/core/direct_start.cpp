@@ -112,22 +112,107 @@ void note_phase()
         swofty::log("[direct] %s start: %s", driver.target.name.c_str(), ds::phase_name(driver.phase));
 }
 
+constexpr size_t STATE_STATUS = 0xb8, STATE_CHILDREN = 0xc0, STATE_LINKS = 0xaf0, STATE_LINK_COUNT = 0xb30,
+                 STATE_PARENT = 0xc10;
+constexpr uint32_t STATE_APP = 0xe11edb87;
+
+uint8_t *flow_root = nullptr;
+uint32_t seen_states[64], seen_links[64];
+size_t seen_count = 0;
+uint64_t chain_at = 0;
+std::string chain_last;
+
+std::string rva(const void *p)
+{
+    return runtime::code_where(reinterpret_cast<uintptr_t>(p));
+}
+
+void describe_state(uint8_t *state, uint32_t hash, uint32_t link)
+{
+    for (size_t i = 0; i < seen_count; i++)
+        if (seen_states[i] == hash) {
+            if (seen_links[i] != link) {
+                swofty::log("[direct] state %08x returns link %08x (was %08x)", hash, link, seen_links[i]);
+                seen_links[i] = link;
+            }
+            return;
+        }
+    if (seen_count < 64) {
+        seen_states[seen_count] = hash;
+        seen_links[seen_count++] = link;
+    }
+    auto **vt = *reinterpret_cast<void ***>(state);
+    std::string links;
+    uint32_t n = *reinterpret_cast<uint32_t *>(state + STATE_LINK_COUNT);
+    for (uint32_t i = 0; i < n && i < 16; i++) {
+        char b[16];
+        snprintf(b, sizeof b, " %08x>%08x", reinterpret_cast<uint32_t *>(state + STATE_LINKS)[i],
+                 *reinterpret_cast<uint32_t *>(state + 0xf0 + size_t(i) * 0xa0 + 0x98));
+        links += b;
+    }
+    std::string kids;
+    auto *cv = *reinterpret_cast<uint8_t **>(state + STATE_CHILDREN);
+    if (cv && runtime::readable(cv, 0x18))
+        for (auto **p = *reinterpret_cast<uint8_t ***>(cv + 8), **e = *reinterpret_cast<uint8_t ***>(cv + 0x10);
+             p && p < e && kids.size() < 400; ++p)
+            if (*p && runtime::readable(*p, STATE_HASH + 4)) {
+                char b[12];
+                snprintf(b, sizeof b, " %08x", *reinterpret_cast<uint32_t *>(*p + STATE_HASH));
+                kids += b;
+            }
+    auto *parent = *reinterpret_cast<uint8_t **>(state + STATE_PARENT);
+    uint32_t ph = parent && runtime::readable(parent, STATE_HASH + 4) ? *reinterpret_cast<uint32_t *>(parent + STATE_HASH) : 0;
+    swofty::log("[direct] flow node %08x (%p, parent %08x): vt %s enter %s update %s exit %s; link now %08x; links%s; "
+                "children%s",
+                hash, state, ph, rva(vt).c_str(), rva(vt[8]).c_str(), rva(vt[9]).c_str(), rva(vt[10]).c_str(), link,
+                links.c_str(), kids.c_str());
+}
+
+void log_chain()
+{
+    if (!flow_root)
+        return;
+    std::string chain;
+    uint8_t *s = flow_root;
+    for (int depth = 0; s && depth < 24 && runtime::readable(s, STATE_PARENT + 8); depth++) {
+        char b[32];
+        snprintf(b, sizeof b, "%s%08x:%u", depth ? " > " : "", *reinterpret_cast<uint32_t *>(s + STATE_HASH),
+                 unsigned(*reinterpret_cast<uint8_t *>(s + STATE_STATUS)));
+        chain += b;
+        s = *reinterpret_cast<uint8_t **>(s + STATE_CHILD);
+    }
+    if (chain == chain_last)
+        return;
+    chain_last = chain;
+    swofty::log("[direct] flow chain: %s", chain.c_str());
+}
+
 void link_mid(safetyhook::Context &c)
 {
     if (!armed.load())
         return;
     auto *state = reinterpret_cast<uint8_t *>(c.rdi);
-    if (!state || !runtime::readable(state, STATE_CHILD + 8))
+    if (!state || !runtime::readable(state, STATE_PARENT + 8))
         return;
     auto *slot = reinterpret_cast<uint32_t *>(c.rsp + LINK_SLOT);
     uint32_t hash = *reinterpret_cast<uint32_t *>(state + STATE_HASH);
     bool child = *reinterpret_cast<void **>(state + STATE_CHILD) != nullptr;
     std::lock_guard<std::mutex> g(lock);
+    if (hash == STATE_APP)
+        flow_root = state;
     uint32_t link = *slot, out = driver.on_update(hash, link, child);
     if (out != link) {
         *slot = out;
         if (out != ds::LINK_STAY)
             swofty::log("[direct] state %08x: link %08x replaced by %08x", hash, link, out);
+    }
+    if (driver.phase == ds::Phase::left) {
+        describe_state(state, hash, out);
+        uint64_t now = GetTickCount64();
+        if (now - chain_at >= 1000) {
+            chain_at = now;
+            log_chain();
+        }
     }
     note_phase();
 }
