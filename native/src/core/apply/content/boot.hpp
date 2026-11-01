@@ -208,6 +208,7 @@ inline std::string row_label(const Lookup &lookup, std::string_view reg, const s
 inline std::vector<Pin> stat_records(registry::Store &st)
 {
     std::vector<Pin> out;
+    std::set<std::string> boards;
     std::map<std::string, Value> keep;
     Lookup lookup = own_lookup(st, keep);
     for (const char *reg : {"vehicle.package", "vehicle", "livery", "helmet", "suit", "gloves", "driver.head", "driver.look",
@@ -226,6 +227,10 @@ inline std::vector<Pin> stat_records(registry::Store &st)
                 out.push_back({SCENARIO_IDS, id, db["scenario_stat_id"].as_int(), label});
             else if (!label.empty())
                 out.push_back({SCENARIO_IDS, id, -1, label});
+            if (auto board = board_of(id, *rec); board && !board->stock && !boards.count(board->label)) {
+                boards.insert(board->label);
+                out.push_back({LEADERBOARD_IDS, board->label, -1, board->label});
+            }
         }
     return out;
 }

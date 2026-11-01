@@ -185,9 +185,9 @@ inline std::vector<size_t> time_trial_keep(const std::vector<ListCars> &lists)
 // matches the selected list's, and pushes one entrant per distinct vehicle ref (EntrantRecord +0x5c) of them,
 // plus 4 entries of its own. A stock F1 2025 Time Trial draws 11 cars (f1_custom_team, leaderboard f1) and
 // spawns 15 vehicles. A list an addon copies from f1_2025 keeps leaderboard f1, so F1 2012 Season's
-// bdx_s5_2012 (12 vehicles) made it 27, past the 26-slot vehicle table. Classic Seasons' lists use leaderboard
-// classic. A stock press in Time Trial narrows swofty_f1 whenever one of its lists is oversized, to no list at
-// all when none fits; at each Time Trial load the core also counts the distinct cars of every list of the
+// bdx_s5_2012 (12 vehicles) made it 27, past the 26-slot vehicle table. A package's list has a descriptor of its
+// own since 1.7.11 (content.package leaderboard), so only the lists that share one count together. A stock press in Time Trial narrows swofty_f1 whenever one of
+// its lists is oversized, to no list at all when none fits; at each Time Trial load the core also counts the distinct cars of every list of the
 // selected list's leaderboard and drops whole lists, addon lists first, until they fit 22 (26 less the 4).
 inline bool time_trial_narrows(const std::vector<ListCars> &lists, const std::vector<size_t> &keep)
 {
@@ -333,13 +333,16 @@ inline size_t distinct_cars(const std::vector<uint32_t> &refs)
     return d.size();
 }
 
-// Leaderboard descriptor stat ids of the stock leaderboards.leaderboard_descriptor rows, for the log only.
+// Leaderboard descriptor stat ids of the stock leaderboards.leaderboard_descriptor rows, for the log only; an id past
+// the stock rows is a descriptor an addon's package or database operations added.
 inline std::string leaderboard_text(unsigned id)
 {
     static constexpr const char *STOCK[] = {"f1", "classic", "f1_26", "f2", nullptr, "f2_26"};
     std::string out = std::to_string(id);
     if (id < std::size(STOCK) && STOCK[id])
         out += std::string(", ") + STOCK[id];
+    else if (id >= std::size(STOCK))
+        out += ", added";
     return out;
 }
 

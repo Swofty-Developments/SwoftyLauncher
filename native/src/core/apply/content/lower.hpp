@@ -36,6 +36,10 @@ using StatIds = std::function<int64_t(const std::string &registry, const std::st
 using Read = std::function<std::optional<std::string>(const std::string &path)>;
 
 inline constexpr const char *SCENARIO_IDS = "content.package.scenario";
+inline constexpr const char *LEADERBOARD_IDS = "content.package.leaderboard";
+inline constexpr const char *LEADERBOARD_TABLE = "leaderboards";
+inline constexpr const char *LEADERBOARD_ROWS = "leaderboards.leaderboard_descriptor";
+inline constexpr const char *LEADERBOARD_SOURCE = "classic";
 
 struct Redirect {
     std::string path, file, addon, id;
@@ -132,7 +136,7 @@ inline std::size_t row_keys(const std::string &table)
         {"entrants.vehicles.vehicle_packages", 30}, {"car_setup.presets", 421},
         {"entrants.entrant_lists.entrants", 12},    {"entrants.standings", 23},
         {"entrants.entrant_lists", 190},            {"game_setup.scenarios", 7},
-        {"drs.drs_allowed_lap", 8},
+        {"drs.drs_allowed_lap", 8},                 {"leaderboards", 3},
         {"options_system.options.multiplayer.options_folder_2.option[_metadata_=category]", 8}};
     auto it = sizes.find(table);
     return it == sizes.end() ? 16 : it->second;
@@ -433,6 +437,39 @@ inline std::optional<std::size_t> child_rows(const Read &read, const std::string
     return static_cast<std::size_t>(v);
 }
 
+struct Board {
+    std::string label;
+    bool stock = false;
+};
+
+inline std::string board_word(std::string_view s)
+{
+    std::string out;
+    for (char c : s)
+        out += (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') ? c : (c >= 'A' && c <= 'Z') ? char(c + 32) : '_';
+    return out;
+}
+
+// The Time Trial leaderboard a package's entrant list points at: its own descriptor row by default ("box"), one shared
+// by the addon's packages ("addon" or "group:<name>"), or a row the game ships ("stock:<label>"). None when the
+// package's database block sets the list's leaderboard itself.
+inline std::optional<Board> board_of(const std::string &id, const Value &rec)
+{
+    const Value &set = rec["database"]["entrant_list_set"];
+    if (set.is_object() && set["leaderboard"].is_string())
+        return std::nullopt;
+    std::string mode = rec["leaderboard"].is_string() ? std::string(rec["leaderboard"].as_string()) : "box";
+    std::string addon = board_word(addon_of(id));
+    if (mode.rfind("stock:", 0) == 0 && mode.size() > 6)
+        return Board{mode.substr(6), true};
+    if (mode == "addon")
+        return Board{"swofty_addon_" + addon, false};
+    if (mode.rfind("group:", 0) == 0 && mode.size() > 6)
+        return Board{"swofty_group_" + addon + "_" + board_word(mode.substr(6)), false};
+    std::string list = rec["entrant_list"].is_string() ? std::string(rec["entrant_list"].as_string()) : key_of(id);
+    return Board{"swofty_" + board_word(list), false};
+}
+
 inline void lower_package(const std::string &id, const Value &rec, const Lookup &lookup, Plan &plan,
                           const StatIds &stat = {}, const PersonMap *wear = nullptr, const Read &read = {})
 {
@@ -505,6 +542,20 @@ inline void lower_package(const std::string &id, const Value &rec, const Lookup 
     if (db["entrant_list_set"].is_object())
         for (auto &[field, value] : *db["entrant_list_set"].if_object())
             row[field] = value;
+    std::optional<int64_t> board_id;
+    std::optional<Board> board = board_of(id, rec);
+    if (board) {
+        row["leaderboard"] = board->label;
+        std::string at = std::string(LEADERBOARD_ROWS) + "[_metadata_=" + board->label + "]";
+        if (!board->stock && !(read && read(at + ".stat_id"))) {
+            Value descriptor = Value::object({{"_metadata_", board->label}});
+            board_id = stat_of(stat, LEADERBOARD_IDS, board->label, -1);
+            if (board_id)
+                descriptor["stat_id"] = std::to_string(*board_id);
+            push_row(plan, LEADERBOARD_TABLE, std::string(LEADERBOARD_ROWS) + "[_metadata_=" + LEADERBOARD_SOURCE + "]",
+                     std::move(descriptor));
+        }
+    }
     auto list_id = stat_of(stat, "content.package", id, pin_of(rec));
     if (list_id)
         row["stat_id"] = std::to_string(*list_id);
@@ -577,6 +628,8 @@ inline void lower_package(const std::string &id, const Value &rec, const Lookup 
     plan.lines.push_back("content.package " + id + ": entrant list " + list + ", " + std::to_string(seats) +
                          " entrants in " + mode +
                          (list_id ? ", stat id " + std::to_string(*list_id) : std::string()) +
+                         (board ? ", leaderboard " + board->label + (board_id ? " (stat id " + std::to_string(*board_id) + ")" : std::string())
+                                : std::string()) +
                          (scenario_id ? ", scenario stat id " + std::to_string(*scenario_id) : std::string()));
 }
 
@@ -638,6 +691,7 @@ inline constexpr PoolSpec POOLS[] = {
     {"vehicle.package", "entrants.vehicles.vehicle_packages", "vehicle_package", "stat_id", 254},
     {"content.package", "entrants.entrant_lists", "entrant_list", "stat_id", 255},
     {SCENARIO_IDS, "game_setup.scenarios", "scenario", "statId", 254},
+    {LEADERBOARD_IDS, LEADERBOARD_TABLE, "leaderboard_descriptor", "stat_id", 255},
     {"team.identity", "entrants.teams", "team", "stat_id", 1023},
 };
 

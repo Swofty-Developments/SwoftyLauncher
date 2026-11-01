@@ -214,6 +214,143 @@ static void stock_package_rows(Db &db)
     db.put("content_sets._content_set_instancecount_", 0, "1");
     row("content_sets.content_set_0", {{"_metadata_", "2025"}});
     db.put("content_sets.content_set_0.available_entrant_lists_0.entrant_lists", 13, "f1_2025");
+    db.put("leaderboards._leaderboard_descriptor_instancecount_", 0, "5");
+    const char *boards[5][3] = {{"f1", "0", "f1"}, {"classic", "1", "classic"}, {"f2", "3", "f2"}, {"f1_26", "2", "f1"}, {"f2_26", "5", "f2"}};
+    for (int i = 0; i < 5; i++) {
+        std::string at = "leaderboards.leaderboard_descriptor_" + std::to_string(i);
+        row(at, {{"_metadata_", boards[i][0]}, {"default_ghost_folder", boards[i][2]}});
+        db.put(at + ".stat_id", 0, boards[i][1]);
+    }
+}
+
+static void leaderboard_tests(const std::string &regs)
+{
+    registry::reset_store();
+    auto &st = registry::store();
+    st.set_order({"mod.lb"});
+    st.set_validator(&registry::schema_validator());
+    const SwoftyRegistry *t = registry::table();
+    for (const char *name : {"engine_sound", "vehicle.package", "vehicle", "livery", "content.package", "era.box"}) {
+        std::string schema = slurp(regs + "/" + name + (std::string_view(name) == "content.package" ? "/1.2.json" : "/1.0.json"));
+        t->declare(name, SwoftyText{schema.data(), schema.size()});
+    }
+    auto package = [](const char *list, const char *board) {
+        std::string leaderboard = board ? std::string(R"("leaderboard": ")") + board + R"(", )" : std::string();
+        return std::string(R"({ "title": "lng_x", "entrant_list": ")") + list + R"(", "season": 2017, "stat_id": "auto", )" +
+               leaderboard + R"("teams": [ { "key": "mercedes", "vehicle": null,
+                 "drivers": [ { "driver": "game/lewis_hamilton", "number": 44, "look": null } ] } ],
+                 "database": { "entrant_list": ")" + list + R"(", "scenario_stat_id": null, "content_sets": ["2025"],
+                 "looks": { "mercedes/lewis_hamilton": "x" } } })";
+    };
+    std::string json = "{ \"content.package\": {\n";
+    const std::pair<const char *, const char *> pkgs[] = {{"lb_one", nullptr},     {"lb_two", "box"},       {"lb_three", "addon"},
+                                                         {"lb_four", "addon"},    {"lb_five", "stock:classic"}, {"lb_six", "group:eight"},
+                                                         {"lb_seven", "group:eight"}};
+    for (std::size_t i = 0; i < std::size(pkgs); i++)
+        json += std::string(i ? ",\n" : "") + "\"p" + std::to_string(i) + "\": " + package(pkgs[i].first, pkgs[i].second);
+    json += "} }";
+    check(registry::load_data_file("mod.lb", "registry/content.json", json) == SWOFTY_ASSET_OK, "the leaderboard packages register");
+    st.end_register();
+
+    struct Run {
+        std::map<std::string, std::string> writes;
+        std::vector<std::string> lines;
+        std::string ids;
+        int refused = 0;
+    };
+    auto run = [&](const std::string &kept) {
+        Db db;
+        stock_package_rows(db);
+        Run out;
+        apply::ids::Store ids;
+        if (!kept.empty())
+            ids.load(kept);
+        auto text = [&](const std::string &path) -> std::optional<std::string> {
+            auto r = db.base()(content::gvdb::fnv64(path));
+            return r ? std::optional<std::string>(r->text) : std::nullopt;
+        };
+        std::map<std::string, content::PoolScan> scans;
+        for (auto &scan : content::scan_all_pools(text)) {
+            ids.define_pool(scan.registry, {{{scan.lo, scan.hi}}});
+            scans[scan.registry] = scan;
+        }
+        content::settle_ids(ids, st, scans, "test");
+        content::StatIds stat = [&](const std::string &reg, const std::string &id, int64_t pin) -> int64_t {
+            return pin >= 0 ? ids.pin(reg, id, pin, "test").id : ids.allocate(reg, id, "test").id;
+        };
+        content::Expansion x(db.base());
+        content::expand(st, x, stat);
+        for (auto &[k, n] : x.refused)
+            out.refused += n;
+        for (auto &w : x.engine.writes())
+            out.writes[w.path] = w.text;
+        out.lines = x.lines["content.package"];
+        out.ids = ids.dump();
+        return out;
+    };
+    auto row_of = [](const Run &r, const std::string &table, const std::string &row, const std::string &label) {
+        for (int i = 0; i < 40; i++) {
+            std::string at = table + "." + row + "_" + std::to_string(i);
+            auto it = r.writes.find(at + "._metadata_");
+            if (it != r.writes.end() && it->second == label)
+                return at;
+        }
+        return std::string();
+    };
+    auto board_of_list = [&](const Run &r, const char *list) {
+        auto at = row_of(r, "entrants.entrant_lists", "entrant_list", list);
+        auto it = r.writes.find(at + ".leaderboard");
+        return it == r.writes.end() ? std::string("none") : it->second;
+    };
+    auto count_boards = [&](const Run &r) {
+        int n = 0;
+        for (int i = 5; i < 40; i++)
+            n += r.writes.count("leaderboards.leaderboard_descriptor_" + std::to_string(i) + "._metadata_");
+        return n;
+    };
+    Run first = run({});
+    check(first.refused == 0, "every package applies");
+    for (auto &l : first.lines)
+        std::printf("      %s\n", l.c_str());
+    std::string one = row_of(first, "leaderboards", "leaderboard_descriptor", "swofty_lb_one");
+    check(!one.empty() && first.writes[one + ".default_ghost_folder"] == "classic",
+          "a package gets a descriptor of its own, copied from classic with its ghost folder");
+    check(board_of_list(first, "lb_one") == "swofty_lb_one" && board_of_list(first, "lb_two") == "swofty_lb_two",
+          "its entrant list points at that label, by default and with \"box\"");
+    std::string two = row_of(first, "leaderboards", "leaderboard_descriptor", "swofty_lb_two");
+    check(!two.empty() && first.writes[one + ".stat_id"] != first.writes[two + ".stat_id"] &&
+              std::stoi(first.writes[one + ".stat_id"]) > 5 && std::stoi(first.writes[two + ".stat_id"]) > 5,
+          "each box's id is its own, above the stock rows");
+    check(board_of_list(first, "lb_three") == "swofty_addon_mod_lb" && board_of_list(first, "lb_four") == "swofty_addon_mod_lb" &&
+              !row_of(first, "leaderboards", "leaderboard_descriptor", "swofty_addon_mod_lb").empty(),
+          "\"addon\" shares one descriptor across the addon's packages");
+    check(board_of_list(first, "lb_six") == "swofty_group_mod_lb_eight" && board_of_list(first, "lb_seven") == "swofty_group_mod_lb_eight",
+          "\"group:<name>\" shares one among the packages that name it");
+    check(board_of_list(first, "lb_five") == "classic" && row_of(first, "leaderboards", "leaderboard_descriptor", "classic").empty(),
+          "\"stock:classic\" keeps the game's descriptor and adds no row");
+    check(count_boards(first) == 4 && first.writes["leaderboards._leaderboard_descriptor_instancecount_"] == "9",
+          "one row per box, per addon group and per named group: 4 rows added, the count is 9");
+    std::set<std::string> ids;
+    for (int i = 5; i < 9; i++)
+        ids.insert(first.writes["leaderboards.leaderboard_descriptor_" + std::to_string(i) + ".stat_id"]);
+    check(ids.size() == 4 && ids.count("") == 0, "no two added descriptors share an id");
+
+    Run second = run(first.ids);
+    check(second.writes == first.writes && second.ids == first.ids,
+          "a second build from the kept ids writes the same rows, labels and ids");
+
+    Db full;
+    stock_package_rows(full);
+    full.put("leaderboards._leaderboard_descriptor_instancecount_", 0, "5");
+    auto text = [&](const std::string &path) -> std::optional<std::string> {
+        auto r = full.base()(content::gvdb::fnv64(path));
+        return r ? std::optional<std::string>(r->text) : std::nullopt;
+    };
+    bool capped = false;
+    for (auto &scan : content::scan_all_pools(text))
+        if (scan.registry == content::LEADERBOARD_IDS)
+            capped = scan.lo == 6 && scan.hi == 255;
+    check(capped, "descriptor ids run from the table's highest plus one up to 255, the byte the game reads");
 }
 
 static void variant_tests(const std::string &regs)
@@ -1767,6 +1904,8 @@ int main(int argc, char **argv)
     garage_tests();
     if (argc > 1)
         variant_tests(argv[1]);
+    if (argc > 1)
+        leaderboard_tests(argv[1]);
     if (argc > 1)
         team_tests(argv[1]);
     if (argc > 1)
