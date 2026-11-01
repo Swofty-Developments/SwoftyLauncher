@@ -393,6 +393,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
               { text: "Car physics and handling", link: "/std/systems/car-physics", icon: "file" },
               { text: "Liveries", link: "/std/systems/liveries", icon: "file" },
               { text: "Teams", link: "/std/systems/teams", icon: "file" },
+              { text: "Garage art", link: "/std/systems/garage", icon: "file" },
               { text: "Drivers", link: "/std/systems/drivers", icon: "file" },
               { text: "Helmets, suits and gloves", link: "/std/systems/wearables", icon: "file" },
               { text: "Sounds", link: "/std/systems/sounds", icon: "file" },

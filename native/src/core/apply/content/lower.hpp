@@ -51,6 +51,12 @@ struct Folder {
     std::string game_dir, file, addon, id;
 };
 
+struct GarageArt {
+    std::string id, addon, package, team, folder, root, game_path;
+    bool srgb = true;
+    std::vector<std::string> vehicles, groups;
+};
+
 struct Owned {
     std::string label, id;
     bool owned = true;
@@ -78,6 +84,7 @@ struct Plan {
     std::vector<Folder> folders;
     std::vector<Owned> owned;
     std::vector<LogoImage> logos;
+    std::vector<GarageArt> garages;
     std::vector<std::pair<std::string, std::string>> texts;
     std::vector<std::string> lines;
     std::size_t keys = 0;
