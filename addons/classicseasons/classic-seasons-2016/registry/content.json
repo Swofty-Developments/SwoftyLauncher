@@ -695,7 +695,6 @@
     "scenario_stat_id": 15,
     "entrant_list_from": "f1_2026",
     "entrant_list_set": {
-     "leaderboard": "classic",
      "previous_season_driver_standings": "",
      "season": "season_2025",
      "ui_path": "f1_2023"

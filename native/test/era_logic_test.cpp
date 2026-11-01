@@ -617,6 +617,15 @@ int main()
         auto two = era::time_trial_budget({custom, a, bb});
         expect(two.dropped == std::vector<size_t>{2} && two.cars == 21,
                "two kept boxes of f1_2025's leaderboard (15 + 10 + 10): the first fits (25 vehicles), the second is left out");
+        {
+            era::TtList own{"swofty_cs_2016_list", true, true, refs(2000, 22)};
+            auto alone = era::time_trial_budget({own});
+            expect(alone.dropped.empty() && alone.cars == 22 && alone.cars + era::TT_OWN_ENTRIES == 26,
+                   "a box on a leaderboard of its own keeps its 22 cars: 26 vehicles, the full table");
+            expect(era::leaderboard_text(6) == "6, added" && era::leaderboard_text(1) == "1, classic" &&
+                       era::leaderboard_text(4) == "4",
+                   "the log names a descriptor an addon added, and the stock ones");
+        }
         era::TtList wide{"ex_23", false, true, refs(900, 12)};
         wide.refs.resize(23, wide.refs.back());
         expect(era::distinct_cars(wide.refs) == 12 && era::time_trial_budget({custom, wide}).dropped == std::vector<size_t>{1},
@@ -743,8 +752,8 @@ int main()
             early.previous = 25;
             expect(!era::budget_mismatch(early).empty(), "from Exiting on, any count is compared, changed or not");
             expect(era::leaderboard_text(0) == "0, f1" && era::leaderboard_text(1) == "1, classic" &&
-                       era::leaderboard_text(4) == "4" && era::leaderboard_text(40) == "40",
-                   "stock leaderboard ids print with their names (f1 is 0); others print as the id");
+                       era::leaderboard_text(4) == "4" && era::leaderboard_text(40) == "40, added",
+                   "stock leaderboard ids print with their names (f1 is 0); ids past them print as added");
         }
         expect(era::vehicle_flags(era::TAKES_LIST, 0) == era::TAKES_LIST &&
                    era::vehicle_flags(0, era::TAKES_POOL_A) == era::TAKES_POOL_A && era::vehicle_flags(0, 0) == 0,

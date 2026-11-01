@@ -42,6 +42,7 @@ struct Package {                                   // a GP/TT season build: an e
     Keyed<Team, &Team::key> teams;                 // the grid, matched by key: p.teams.at("ferrari")
     sessions::Rules rules;                         // the box's points, DRS, tyre classes and rules, applied at session load
     std::string setup_mode = "swofty_f1";          // shared by every box; your own only for a different shape at boot
+    std::string leaderboard = "box";               // since 1.2: the list's Time Trial leaderboard (see Leaderboards)
     StatId stat_id = StatId::automatic;            // the entrant list's id
 };
 
@@ -475,7 +476,7 @@ swofty::era::add_box({
   - A press on a stock box in Time Trial leaves `swofty_f1` offering only its lists of at most 23 cars until the next press, and no list at all when none of them fits. A list whose car count can't be read stays offered.
   - When a Time Trial session loads, the core logs the list the game resolved. When that list, or the first list of its entrant setup mode, holds more than 23 cars, the core loads a list of at most 23 cars from the same entrant setup mode instead. It tries the box pressed first, then that box's Time Trial list, then the first list that fits.
   - The session's entrant setup mode draws at most 23 cars (`max_entrants` above 23, or unset, is held at 23) until the session ends. With no list that fits, this keeps the session at 23 cars of the list.
-  - A Time Trial takes more than its own list: one car for each distinct vehicle of every list on the selected list's leaderboard, in every setup mode the Time Trial offers, plus 4 entries of its own, in a table of 26. The stock F1 2025 box draws 11 cars and spawns 15 vehicles. A list copied from `f1_2025` keeps its leaderboard (`f1`), so F1 2012 Season's 12 cars made it 27; Classic Seasons' lists use leaderboard `classic`. Each Time Trial load counts those cars the way the game takes them: in the setup modes the Time Trial's override rows swap in (F1 2025's `f1` becomes `f1_custom_team`), each list only where its setup mode takes list cars, and the entrants system's own cars when the mode takes those. It leaves whole lists out, stock lists kept before addon lists, until at most 22 remain. The selected list always stays. A restart keeps the cut, and the held `max_entrants` and list swap; they come back at StateUnloadSession Exiting. With the core's 16 restore slots full, a cut is skipped and logged. Each session trace line in a Time Trial shows the budget's expected vehicles, and a separate line names any step where the fill made a different number. Before the fill (StateLoadSession Entering and Updating) a count is compared only when it changed since the step before, since the previous session's participants are still there.
+  - A Time Trial takes more than its own list: one car for each distinct vehicle of every list on the selected list's leaderboard, in every setup mode the Time Trial offers, plus 4 entries of its own, in a table of 26. The stock F1 2025 box draws 11 cars and spawns 15 vehicles. A list copied from `f1_2025` kept its leaderboard (`f1`) before 1.7.11, so F1 2012 Season's 12 cars made it 27. Every package's list has a leaderboard of its own since 1.7.11 ([Leaderboards](#leaderboards)). Each Time Trial load counts those cars the way the game takes them: in the setup modes the Time Trial's override rows swap in (F1 2025's `f1` becomes `f1_custom_team`), each list only where its setup mode takes list cars, and the entrants system's own cars when the mode takes those. It leaves whole lists out, stock lists kept before addon lists, until at most 22 remain. The selected list always stays. A restart keeps the cut, and the held `max_entrants` and list swap; they come back at StateUnloadSession Exiting. With the core's 16 restore slots full, a cut is skipped and logged. Each session trace line in a Time Trial shows the budget's expected vehicles, and a separate line names any step where the fill made a different number. Before the fill (StateLoadSession Entering and Updating) a count is compared only when it changed since the step before, since the previous session's participants are still there.
   - Each session load logs a `session trace` line at StateLoadSession Entering, Updating and Exiting, at StateSession Entering and at the session's vehicle setup: the entrants with their team ids, the list, the setup mode, the session participants and the vehicles.
   - Everything the guard changed is put back when the session unloads (StateUnloadSession Exiting) or a box is pressed.
 - A core before launcher 1.6.2 ignores `time_trial` and has no guard.
@@ -494,6 +495,51 @@ swofty::era::add_box({
 [era]      the Time Trial session's list ex_2012 (setup mode ex_2012_mode) holds 24 cars; Time Trial holds at most 23 (the game adds 3 cars of its own to a table of 26); its entrant setup mode offers no list of at most 23 cars; the session draws at most 23 cars (max_entrants 24 -> 23 until the session ends)
 [tyres]    slot guard (set visibility): vehicle 3's fitted option 0 has no usable slot in its class's table (count 1, options 4); slot 1 added with the compounds of option 4's slot
 ```
+
+## Leaderboards
+
+A Time Trial keeps one record per track and weather for each **leaderboard descriptor**, a row of `leaderboards.leaderboard_descriptor` that an entrant list names in its `leaderboard` field. Every list that names the same descriptor shares its cars and its times, and a Time Trial draws the cars of all of them. The game ships `f1`, `f1_26`, `f2`, `f2_26` and `classic`.
+
+Each package gets a descriptor of its own. The core adds one row per package, a copy of `classic` named `swofty_<entrant_list>`, gives it the next free id above the stock ones (kept between builds), and sets the package's list to it:
+
+```json
+// registry/content.json
+{
+  "content.package": {
+    "f1_2012": { "title": { "literal": "F1 2012" }, "entrant_list": "ex_f1_2012", "season": 2012, "teams": [ ... ] },
+    "f1_2013": { "title": { "literal": "F1 2013" }, "entrant_list": "ex_f1_2013", "season": 2013, "teams": [ ... ],
+                 "leaderboard": "stock:classic" },
+    "f1_2014": { "title": { "literal": "F1 2014" }, "entrant_list": "ex_f1_2014", "season": 2014, "teams": [ ... ],
+                 "leaderboard": "group:v8" },
+    "f1_2015": { "title": { "literal": "F1 2015" }, "entrant_list": "ex_f1_2015", "season": 2015, "teams": [ ... ],
+                 "leaderboard": "group:v8" }
+  }
+}
+```
+
+The build adds two rows to `leaderboards.leaderboard_descriptor` (stock `f1` is 0, `classic` 1, `f1_26` 2, `f2` 3, `f2_26` 5), `swofty_ex_f1_2012` with `stat_id` 6 and `swofty_group_mod_example_v8` with `stat_id` 7, and the core logs each package's list:
+
+```text
+[content] content.package mod.example/f1_2012: entrant list ex_f1_2012, 20 entrants in swofty_f1, stat id 112, leaderboard swofty_ex_f1_2012 (stat id 6), scenario stat id 21
+[content] content.package mod.example/f1_2013: entrant list ex_f1_2013, 20 entrants in swofty_f1, stat id 113, leaderboard classic, scenario stat id 22
+[content] content.package mod.example/f1_2014: entrant list ex_f1_2014, 20 entrants in swofty_f1, stat id 114, leaderboard swofty_group_mod_example_v8 (stat id 7), scenario stat id 23
+[content] content.package mod.example/f1_2015: entrant list ex_f1_2015, 20 entrants in swofty_f1, stat id 115, leaderboard swofty_group_mod_example_v8, scenario stat id 24
+```
+
+`leaderboard` takes one of:
+
+- `"box"` (default): the package's own descriptor, `swofty_<entrant_list>`.
+- `"addon"`: one descriptor, `swofty_addon_<addon>`, for every package of the addon that says `"addon"`.
+- `"group:<name>"`: one descriptor, `swofty_group_<addon>_<name>`, for the addon's packages that name the group.
+- `"stock:<label>"`: the game's descriptor with that label; no row is added.
+
+Boxes that share a descriptor share one Time Trial record per track and the cars count together against the table's 22 free vehicle slots, so share only when the lists have cars in common. A box that selects a [Time Trial list](#time-trial) of another package takes that package's descriptor.
+
+- **The id.** A descriptor's id is its row's `stat_id`, a byte, so the pool is 6 to 255. The core keeps the id of each label in `ids.json`, and a label keeps its id when other addons come and go, so a record saved under `LBV<id>` stays on its box.
+- **The 22-car check.** The core counts the cars of every list on the selected list's descriptor. A list alone on its descriptor draws only its own cars, and the log names the id: `the Time Trial session's list ex_f1_2012 (leaderboard 6, added) draws 20 cars from 1 list(s) of its leaderboard`.
+- **Your own rows.** A package whose `database.entrant_list_set` sets `leaderboard` keeps that label and the core adds no row. Database operations that add a descriptor use `add-row` into the `leaderboards` table from `classic` with a `_metadata_`; the id stops at 255 like the other byte-sized tables ([Stat ids](/reference/ops/database#kept-ids)).
+- **Older cores.** A core before 1.7.11 ignores `leaderboard`, and the list keeps the leaderboard of the list it was copied from. Declare `content.package` 1.2 when the box depends on it.
+- **Saved times.** A box's personal bests are stored under its descriptor's board name. Whether the game keeps offline bests per descriptor is not yet confirmed in game.
 
 ## Career seasons race in boxes
 

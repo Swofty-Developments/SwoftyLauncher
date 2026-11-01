@@ -1150,6 +1150,10 @@ game_setup_mode
 race_class
 statId
 use_custom_vehicle_spec
+@leaderboards.leaderboard_descriptor_N
+_metadata_
+default_ghost_folder
+stat_id
 @options_system.options.multiplayer.options_folder_N.option_N.value_N
 _metadata_
 confirmation_dialogue

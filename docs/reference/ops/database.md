@@ -289,12 +289,13 @@ The game keeps the id of some tables in one byte, and of game setup modes and se
 | `entrants.animation.driver_animation_sets.driver_animation_set_N` | 254 |
 | `entrants.entrant_lists.entrant_list_N` | 255 |
 | `entrants.nationality.nationality_N` | 255 |
+| `leaderboards.leaderboard_descriptor_N` | 255 |
 | `game_setup.scenarios.scenario_N` (`statId`) | 254 |
 | `game_setup.game_setup_modes.game_setup_mode_N` | 31 |
 | `game_setup.seasons.season_N` (`statId`) | 31 |
 | `entrants.entrant_setup_modes.entrant_setup_mode_N` | 31 |
 
-A game setup mode or season id above 31 stops the game at boot. A driver id is 16 bits in memory and 14 in saves and net messages, so 16382 is the highest; a copy takes 208 to 253 first, then 256 upward.
+A leaderboard descriptor's id is the byte that names the Time Trial board (`LBV<id><track><D|W>`) and splits the cars and times of the lists that point at it ([Leaderboards](/std/content#leaderboards)). A game setup mode or season id above 31 stops the game at boot. A driver id is 16 bits in memory and 14 in saves and net messages, so 16382 is the highest; a copy takes 208 to 253 first, then 256 upward.
 
 When the next id above the table's highest would pass it, the copy gets the lowest id above the stock rows' highest that no row holds, and a driver the lowest free id from 208. The build prints it:
 
