@@ -481,6 +481,8 @@ Mugello can't run in game/bdx_s5_2012
 [tracks] guard: mod.mugello/mugello in game/bdx_s5_2012 (grand_prix): refused (its files hold no 2012 world, which the box's bdx_2012_mode layer loads)
 ```
 
+When the entrant list's counts can't be read, the box logs `not fully read (<why>)` and the garage and grid rules assume half the grid size as teams and the grid size as cars, so a track with fewer garages is refused instead of passing with no facts.
+
 ## A box's own track data
 
 <Split>

@@ -278,8 +278,8 @@ int main()
     trk::BoxInfo bref = trk::box_from_list("ref_box", ldb);
     expect(bref.teams == 3 && bref.cars == 6, "entrant_list_references are walked first and their entrants counted");
     trk::BoxInfo none_box = trk::box_from_list("f1_2026", ldb);
-    expect(none_box.setup_mode == "swofty_f1" && none_box.teams == -1 && none_box.cars == -1,
-           "a list no setup mode offers keeps the default mode and unknown counts");
+    expect(none_box.setup_mode == "swofty_f1" && none_box.teams == 2 && none_box.cars == 4 && !none_box.unread.empty(),
+           "a list no setup mode offers keeps the default mode and says so; its counts are still read");
     texts.erase("entrants.entrant_lists.entrant_list_3.entrant_list_references");
     texts["entrants.entrant_lists.entrant_list_3.entrant_list_references"] = "gone";
     expect(trk::box_from_list("ref_box", ldb).teams == -1, "a reference to a list that isn't there leaves the counts unknown");
@@ -298,6 +298,21 @@ int main()
     expect(!f.ok && f.rule == trk::Rule::garages &&
                f.reason == "its bdx_2012_mode world has 10 garages; the box has 12 teams",
            "the 12-team 2012 box and a 10-garage 2012 world: the garages rule refuses it");
+
+    texts["entrants.entrant_setup_modes.entrant_setup_mode_2.entrant_lists"] = "cs_f1_2016";
+    trk::BoxInfo n33y = trk::box_from_list("bdx_s5_2012", ldb);
+    expect(n33y.setup_mode == "swofty_f1" && n33y.teams == 12 && n33y.cars == 24 && n33y.derived,
+           "a box only the host's entrant setup mode offers (the n33y 2012 box): counts still read");
+    f = trk::fits(n33y, *base.by_code("okayama"), trk::Mode::grand_prix, &mugello);
+    expect(!f.ok && f.rule == trk::Rule::garages && f.have == 11 && f.need == 12,
+           "n33y: 12 teams, a community track with 11 garages: refused instead of fits (no facts)");
+    texts["entrants.entrant_lists.entrant_list_1.season"] = "season_2025";
+    ints.erase("entrants.entrant_lists.entrant_list_1._entrant_instancecount_");
+    trk::BoxInfo unread = trk::box_from_list("bdx_s5_2012", ldb);
+    expect(unread.teams == -1 && unread.cars == -1 && !unread.unread.empty(), "an unreadable count is reported");
+    f = trk::fits(unread, *base.by_code("okayama"), trk::Mode::grand_prix, &mugello);
+    expect(!f.ok && f.rule == trk::Rule::garages && f.need == 12 && f.reason.find("assumed") != std::string::npos,
+           "unreadable counts on a list-derived box: the garage rule assumes half the grid's cars and refuses");
     f = trk::fits(b2012, *base.by_code("okayama"), trk::Mode::grand_prix, &mugello);
     expect(!f.ok && f.rule == trk::Rule::world &&
                f.reason == "its files hold no 2012 world, which the box's bdx_2012_mode layer loads",
