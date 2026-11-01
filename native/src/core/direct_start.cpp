@@ -123,6 +123,38 @@ constexpr size_t LOAD_SYNC = 0xcd0;
 constexpr uint64_t LOAD_EXIT_WAIT_MS = 500;
 
 void choose_session(void *modes, const char *when);
+template <class T> bool rd(const void *p, size_t off, T &out);
+
+// The loading screen's activation (Game_LoadingScreenVM_OnScreenActivated 0x141ca43e0) releases the fade reason
+// FrontEnd (bit 1) on the fade owner [[g_Game_Root]+0xa0]: mask +0x7b8, and with no reason left the fade in (state
+// +0x7bc = 3, +0x7cc = 0, curve +0x7c4). A direct start never shows that screen, so the session would stay black
+// under its HUD: once StateSession updates, the core releases FrontEnd itself.
+constexpr uintptr_t RVA_GAME_ROOT = 0x601db08;
+constexpr uint32_t FADE_FRONTEND = 1u << 1;
+bool fade_released = false;
+
+void release_frontend_fade()
+{
+    auto *root = *reinterpret_cast<uint8_t **>(swofty::api->module_base() + RVA_GAME_ROOT);
+    uint8_t *owner = nullptr;
+    if (!root || !rd(root, 0xa0, owner) || !owner || !runtime::readable(owner + 0x7b8, 0x18))
+        return;
+    auto &mask = *reinterpret_cast<uint32_t *>(owner + 0x7b8);
+    uint32_t was = mask, state = *reinterpret_cast<uint32_t *>(owner + 0x7bc);
+    fade_released = true;
+    if (!(was & FADE_FRONTEND)) {
+        swofty::log("[direct] fade owner %p: mask %08x, state %u; FrontEnd is not held", owner, was, state);
+        return;
+    }
+    mask = was & ~FADE_FRONTEND;
+    if (mask == 0) {
+        *reinterpret_cast<uint32_t *>(owner + 0x7bc) = 3;
+        owner[0x7cc] = 0;
+    }
+    *reinterpret_cast<uint32_t *>(owner + 0x7c4) = 0xd47eb226;
+    swofty::log("[direct] fade owner %p: mask %08x -> %08x (FrontEnd released), state %u -> %u", owner, was, mask, state,
+                *reinterpret_cast<uint32_t *>(owner + 0x7bc));
+}
 
 uint8_t *flow_root = nullptr;
 uint64_t load_exiting_at = 0;
@@ -239,8 +271,9 @@ void link_mid(safetyhook::Context &c)
     std::lock_guard<std::mutex> g(lock);
     if (hash == STATE_APP)
         flow_root = state;
-    if (hash == STATE_SESSION && *reinterpret_cast<uint8_t *>(state + STATE_STATUS) == 2)
-        session_frames.fetch_add(1);
+    if (hash == STATE_SESSION && *reinterpret_cast<uint8_t *>(state + STATE_STATUS) == 2 &&
+        session_frames.fetch_add(1) == 0 && driver.target.name == "session" && !fade_released)
+        release_frontend_fade();
     uint32_t link = *slot, out = driver.on_update(hash, link, child);
     if (out != link) {
         *slot = out;
@@ -834,6 +867,14 @@ ds::Setup new_grand_prix(std::string &why)
     seat_player(e, mgr);
     swofty::log("[direct] Grand Prix: new weekend: setup mode %s, list %s (%p), track %s (%p), rounds %p, %zu entrant(s)",
                 setup_name.c_str(), list_name.c_str(), list, track_name.c_str(), track, rounds, entrants);
+    if (uint8_t *wk = current_weekend(modes)) {
+        uint8_t id = track[1];
+        if (wk[WK_TRACK] != id) {
+            swofty::log("[direct] Grand Prix: the weekend's track stat id %u -> %u (%s)", unsigned(wk[WK_TRACK]),
+                        unsigned(id), track_name.c_str());
+            wk[WK_TRACK] = id;
+        }
+    }
     choose_session(modes, "built");
     return ds::Setup::done;
 }
