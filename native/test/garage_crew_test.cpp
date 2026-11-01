@@ -175,6 +175,11 @@ int main()
         expect(gc::SETUP_VECTOR_BEGIN == 0xa8, "the garage entry vector begin sits at rsp + 0xa8");
     }
     {
+        expect(gc::scene_missing(0), "a null garage crew scene is missing");
+        expect(gc::scene_missing(0xe0), "a scene below the user range is missing");
+        expect(!gc::scene_missing(TEMPLATE), "a scene in the user range is kept");
+    }
+    {
         gc::SetupSkips skips;
         expect(skips.first(3), "the first skip of a garage is logged");
         expect(!skips.first(3), "a garage is logged once");

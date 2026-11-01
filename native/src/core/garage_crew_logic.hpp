@@ -66,6 +66,11 @@ inline bool setup_template_missing(uint64_t tmpl)
     return !user_pointer(tmpl);
 }
 
+inline bool scene_missing(uint64_t scene)
+{
+    return !user_pointer(scene);
+}
+
 struct SetupSkips {
     uint32_t seen = 0;
 
