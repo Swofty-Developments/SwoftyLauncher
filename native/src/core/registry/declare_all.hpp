@@ -29,6 +29,7 @@ template <class Declare> std::size_t declare_system_registries(Declare &&declare
     one(teams::identities);
     one(teams::logos);
     one(teams::pit_times);
+    one(teams::garages);
     one(wearables::helmets);
     one(wearables::suits);
     one(wearables::gloves);

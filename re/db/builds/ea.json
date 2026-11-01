@@ -431,6 +431,10 @@
    "pattern": "E9 ?? ?? ?? ?? DF 6D C9 56 C8 E9 10 72 26",
    "note": "The bytes after the protector thunk's jmp are Steam-only filler. EA's thunk sits at 0x2cde7b0: the rel32 target of the mapped Steam callers, taken from the EA dump."
   },
+  "Sess_Flow_ParseXml": {
+   "pattern": "E9 ?? ?? ?? ?? CB BC BF 25 39 39 F4 E6 0F",
+   "note": "The bytes after the protector thunk's jmp are Steam-only filler. EA's thunk sits at 0x4416c40: the rel32 target of the mapped Steam caller at 0x15433f0e0, taken from the EA dump. Its jmp body matches the Steam body (flow reader setup, then the parser call)."
+  },
   "Game_F1os_F1CGTask_Update": {
    "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 03 00 00 C5 F8 29 B4 24 30 03 00 00 48 89 CE 48 81 C1 98 00 00 00 4C 8B",
    "note": "The function is at 0x2798ea0 in the EA dump. The base pattern differs there in rip-relative displacements and frame constants; the pattern is the EA body, extended until it matches once."

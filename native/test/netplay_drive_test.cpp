@@ -255,6 +255,113 @@ int main()
                std::string(drive::do_name(drive::Do::mode_switch)) == "switch to LAN mode",
            "each job step has a name for loader.log");
 
+    expect(drive::room_launch("armed;room") && drive::room_launch("room") && drive::room_launch("self=1;base=3;room"),
+           "a room launch is told by its token");
+    expect(!drive::room_launch("armed") && !drive::room_launch("self=1;base=30000;name=roomy") &&
+               !drive::room_launch(""),
+           "an armed game or a name with room in it is not a room launch");
+    {
+        namespace sess = runtime::netplay_session;
+        auto req = drive::parse_room_request(
+            R"({"target":"room","role":"join","host_ip":"10.77.0.1","self":3,"base":41000,"name":"Ana  Sm\u00f6ft"})");
+        expect(req.room && req.error.empty() && req.role == "join" && req.host_ip == "10.77.0.1",
+               "a room request reads its role and the host's address");
+        expect(req.configured && req.self == 3 && req.base == 41000 && req.name == "Ana Sm\xc3\xb6" "ft",
+               "a room request reads self, base and the name as the driver carries it");
+        sess::clear();
+        expect(!sess::configured() && sess::driver_name().empty(), "nothing is configured before the request is applied");
+        expect(drive::apply_room_config(req) && sess::configured(), "applying the request configures the room");
+        int self = 0, base = 0;
+        expect(sess::snapshot(self, base) && self == 3 && base == 41000, "the room holds the request's member and base");
+        expect(sess::driver_name() == "Ana Sm\xc3\xb6" "ft", "the request's name is the driver name once configured");
+        sess::clear();
+        auto bare = drive::parse_room_request(R"({"target":"room","role":"host","host_ip":"10.77.0.1"})");
+        expect(bare.room && bare.error.empty() && !bare.configured && !drive::apply_room_config(bare) && !sess::configured(),
+               "a request without self and base leaves the room to the mailbox");
+        auto nameless = drive::parse_room_request(R"({"target":"room","role":"host","host_ip":"x","self":1,"base":40000})");
+        expect(nameless.configured && nameless.name.empty(), "a request without a name keeps the game's own");
+        expect(!drive::parse_room_request(R"({"target":"session"})").room, "another target is not a room request");
+        expect(!drive::parse_room_request("").room && !drive::parse_room_request("[1]").room, "an empty or odd request is not one");
+        expect(!drive::parse_room_request(R"({"target":"room","role":"x","self":1,"base":40000})").error.empty(),
+               "an unknown role is an error");
+        auto bad = drive::parse_room_request(R"({"target":"room","role":"host","host_ip":"x","self":0,"base":40000})");
+        expect(bad.room && !bad.configured && !bad.error.empty() && !drive::apply_room_config(bad), "member 0 is refused");
+        expect(!drive::parse_room_request(R"({"target":"room","role":"host","self":1,"base":21400})").configured,
+               "a base whose members cover the game port is refused");
+        expect(!drive::parse_room_request(R"({"target":"room","role":"host","self":1,"base":"40000"})").error.empty(),
+               "a string base is refused");
+        expect(drive::room_notice("online_services_generic_exception_online_with_code") &&
+                   drive::room_notice("online_services_generic_exception_offline") && drive::room_notice("swofty_message"),
+               "the online services messages and the core's notice are the room launch's notices");
+        expect(!drive::room_notice("lan_game_dialog") && !drive::room_notice("") &&
+                   !drive::room_notice("error_online_services_generic_exception_"),
+               "no other popup is treated as the notice");
+    }
+    {
+        drive::TitleSkip skip;
+        drive::SkipFacts f;
+        skip.start(1000);
+        expect(!skip.tick(f, 1000 + 60000), "the title is the direct start's, so it gets no press here");
+        expect(skip.presses() == 0, "no title press is counted");
+        uint64_t t = 20000;
+        f.frontend = true;
+        expect(!skip.tick(f, t), "the front end without the notice takes no press");
+        f.transition = true;
+        expect(!skip.tick(f, t + 1), "the transition screen starts the notice clock");
+        expect(!skip.tick(f, t + drive::TitleSkip::NOTICE_MS), "the notice gets no press before NOTICE_MS");
+        expect(skip.tick(f, t + 1 + drive::TitleSkip::NOTICE_MS), "the notice gets a press after NOTICE_MS");
+        expect(!skip.tick(f, t + 1 + drive::TitleSkip::NOTICE_MS + drive::TitleSkip::HOLD_MS), "a press is released");
+        expect(skip.tick(f, t + 1 + drive::TitleSkip::NOTICE_MS + drive::TitleSkip::CYCLE_MS) && skip.presses() == 2,
+               "and pressed again");
+        f.home = true;
+        expect(!skip.tick(f, t + 9000) && skip.done(), "the home screen ends the skip");
+        f.home = false;
+        expect(!skip.tick(f, t + 11000), "an ended skip never presses again");
+    }
+    {
+        drive::TitleSkip skip;
+        drive::SkipFacts f;
+        skip.start(0);
+        f.lobby = true;
+        expect(!skip.tick(f, 5000) && skip.done(), "the lobby ends the skip");
+        drive::TitleSkip world;
+        drive::SkipFacts w;
+        world.start(0);
+        w.frontend = w.transition = true;
+        world.tick(w, 20000);
+        w.activity = true;
+        expect(!world.tick(w, 20000 + 1 + drive::TitleSkip::NOTICE_MS) && world.done() && world.presses() == 0,
+               "the activity screen ends the skip before any press, so no tab is picked by it");
+        drive::TitleSkip late;
+        late.start(0);
+        expect(!late.tick(drive::SkipFacts{}, drive::TitleSkip::GIVE_UP_MS) && late.done(), "the skip gives up");
+    }
+
+    {
+        drive::Command host = drive::parse(R"({"seq":1,"op":"host","args":{"category":"f1-2026"}})");
+        drive::Job j;
+        j.start_headless(host, 0);
+        drive::Facts f;
+        f.home = true;
+        expect(j.active() && j.tick(f, 10) == drive::Do::nothing && j.active(), "a headless job takes no screen step and waits");
+        expect(j.detail.find("without the front-end screens") != std::string::npos, "its detail says no screens");
+        f.lobby = true;
+        j.tick(f, 20);
+        expect(j.finished() && j.error.empty(), "the LAN lobby finishes a headless job");
+        drive::Job k;
+        k.start_headless(drive::parse(R"({"seq":2,"op":"join","args":{"ip":"10.77.0.1"}})"), 0);
+        drive::Facts g;
+        g.room_failed = true;
+        g.room_error = "the invite never reached the invite manager";
+        k.tick(g, 5);
+        expect(k.finished() && k.error == g.room_error, "the room's failure ends a headless job with its own message");
+        drive::Job m;
+        m.start_headless(host, 0);
+        m.popup("lan_join_via_ip_error", 3);
+        expect(m.finished() && m.error.find("lan_join_via_ip_error") != std::string::npos,
+               "an error popup still ends a headless job");
+    }
+
     printf("%s\n", fails ? "FAILED" : "all ok");
     return fails ? 1 : 0;
 }

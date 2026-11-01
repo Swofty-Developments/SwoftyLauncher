@@ -6948,6 +6948,7 @@
    "used_by": [
     "addons/career-editor/native/src/components.cpp",
     "native/src/core/career.cpp",
+    "native/src/core/netplay_room.cpp",
     "native/src/core/testagent/agent.cpp"
    ]
   },
@@ -28460,7 +28461,9 @@
      "how": "static"
     }
    ],
-   "used_by": []
+   "used_by": [
+    "native/src/core/netplay_room.cpp"
+   ]
   },
   {
    "id": "game.network_laptimes_serialise_network",
@@ -53676,7 +53679,9 @@
      "how": "static"
     }
    ],
-   "used_by": []
+   "used_by": [
+    "native/src/core/netplay_room.cpp"
+   ]
   },
   {
    "id": "career.game_session_ui_on_career_session_requested",
@@ -53916,7 +53921,9 @@
      "how": "static"
     }
    ],
-   "used_by": []
+   "used_by": [
+    "native/src/core/netplay_room.cpp"
+   ]
   },
   {
    "id": "game.network_subsystem_on_game_mode_selected",
@@ -59148,7 +59155,9 @@
      "how": "static"
     }
    ],
-   "used_by": []
+   "used_by": [
+    "native/src/core/netplay_room.cpp"
+   ]
   },
   {
    "id": "game.network_ui_on_view_profile_requested_by_player_description",
@@ -65714,7 +65723,7 @@
    "target": "0x143083570",
    "kind": "func_start",
    "names": [
-    "Game_NetworkSession_DeclareActivePresence"
+    "Game_Network_MOXSessionGeneric"
    ],
    "verified": [
     {
@@ -65724,7 +65733,9 @@
      "how": "static"
     }
    ],
-   "used_by": []
+   "used_by": [
+    "native/src/core/netplay_room.cpp"
+   ]
   },
   {
    "id": "game.network_session_join_result_code",
@@ -160363,6 +160374,216 @@
    ],
    "used_by": [
     "native/src/core/session_enter.cpp"
+   ]
+  },
+  {
+   "id": "session.frontend_world_update",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 55 53 48 83 EC 30 48 89 D6 48 89 CF 8B 0D ?? ?? ?? ?? 85 C9 74 0D 8D 51 01",
+   "match": "0x1436d6f50",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1436d6f50",
+   "kind": "func_start",
+   "names": [
+    "Sess_StateFrontendWorld_OnStateUpdate"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "std16-direct",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.join_request_owner_key",
+   "section": ".xtls",
+   "pattern": "48 8D 15 ?? ?? ?? ?? 48 89 F9 FF 50 28 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B 48 18",
+   "match": "0x14172c631",
+   "anchor": "0x3",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x0",
+    "len": 7
+   },
+   "target": "0x146cb8278",
+   "kind": "data",
+   "names": [
+    "g_Game_JoinRequestOwnerKey"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "room-headless",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/netplay_room.cpp"
+   ]
+  },
+  {
+   "id": "game.net_subsystem_key",
+   "section": ".xtls",
+   "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 48 89 D9 E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 43 18 48 3B 43 20 0F 84 ?? ?? ?? ?? 48 8B 40 08 48 89 86 50 01 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B 07 48 8D 15 ?? ?? ?? ?? 48 89 F9 FF 50 28 48 85 C0 0F 84",
+   "match": "0x14172c5ef",
+   "anchor": "0x3",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x0",
+    "len": 7
+   },
+   "target": "0x1460bed80",
+   "kind": "data",
+   "names": [
+    "g_Game_NetSubsystemKey"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "room-headless",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/netplay_room.cpp"
+   ]
+  },
+  {
+   "id": "game.service_map_find",
+   "section": ".xtls",
+   "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 48 89 D9 E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 43 18 48 3B 43 20 0F 84 ?? ?? ?? ?? 48 8B 40 08 48 89 86 50 01 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B 07 48 8D 15 ?? ?? ?? ?? 48 89 F9 FF 50 28 48 85 C0 0F 84",
+   "match": "0x14172c5ef",
+   "anchor": "0x15",
+   "resolve": {
+    "kind": "rel32",
+    "insn": "0x14",
+    "len": 5
+   },
+   "target": "0x14030ffd0",
+   "kind": "func_start",
+   "names": [],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "room-headless",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/netplay_room.cpp"
+   ]
+  },
+  {
+   "id": "game.game_modes_name_index",
+   "section": ".xtls",
+   "pattern": "E9 ?? ?? ?? ?? EF 7B F2 64 0F 84 ?? ?? ?? ?? 2B CA",
+   "match": "0x1409763b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1409763b0",
+   "kind": "func_start",
+   "names": [],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "room-headless",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/netplay_room.cpp"
+   ]
+  },
+  {
+   "id": "game.f1_world_container_add_tabs",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 F8 29 B4 24 E0 00 00 00 49 89 CF B1",
+   "match": "0x141a76130",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141a76130",
+   "kind": "func_start",
+   "names": [],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "room-headless",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/netplay_room.cpp"
+   ]
+  },
+  {
+   "id": "game.ne_inline_str_vtable",
+   "section": ".xtls",
+   "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 E8 ?? ?? ?? ?? 48 8B 4B 58 48 8B",
+   "match": "0x14172c8a3",
+   "anchor": "0x3",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x0",
+    "len": 7
+   },
+   "target": "0x145612ea8",
+   "kind": "data",
+   "names": [
+    "g_Ne_InlineStrVtable"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "room-headless",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/netplay_room.cpp"
+   ]
+  },
+  {
+   "id": "game.net_subsystem_vtable",
+   "section": ".xtls",
+   "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 06 48 8D 05 ?? ?? ?? ?? 48 89 46 20 48 8D 05 ?? ?? ?? ?? 48 89 46 28 C5 C8 57 F6",
+   "match": "0x1430cffee",
+   "anchor": "0x3",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x0",
+    "len": 7
+   },
+   "target": "0x145814050",
+   "kind": "data",
+   "names": [
+    "vt_Game_NetworkSubsystem"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "room-fix",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/netplay_room.cpp"
    ]
   }
  ]

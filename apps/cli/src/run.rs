@@ -155,6 +155,9 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
         profile: Some(profile.into()),
         apply: args.apply,
         netplay: std::env::var(NETPLAY_ENV).ok().filter(|v| !v.is_empty()),
+        row_ids: std::env::var_os(swofty_core::row_ids::ENV)
+            .filter(|v| !v.is_empty())
+            .map(PathBuf::from),
         steam_saves_once: args.steam_saves_once,
     };
     write_json(&store.root.join("state/launch.json"), &request)?;
@@ -411,6 +414,27 @@ fn wrapper(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Result<Exi
     // A wrapper Steam starts later on its own must not inherit an earlier launch's arming.
     if request.netplay.is_some() && !written_within(&launch_path, NETPLAY_REQUEST_LIFE) {
         request.netplay = None;
+    }
+    if request.row_ids.is_some() && !written_within(&launch_path, NETPLAY_REQUEST_LIFE) {
+        request.row_ids = None;
+    }
+    if let Some(file) = &request.row_ids {
+        match swofty_core::row_ids::Overrides::read(file) {
+            Ok(ids) => {
+                say(
+                    "info",
+                    &format!(
+                        "room launch: building with the host's stat ids for {} addon(s)",
+                        ids.rows.len()
+                    ),
+                );
+                swofty_core::row_ids::lend(Some(ids));
+            }
+            Err(e) => bail!(
+                "the host's stat ids for the room couldn't be read ({}): {e}",
+                file.display()
+            ),
+        }
     }
     let profile = request.profile.clone().unwrap_or_else(|| profile.to_owned());
     if let (Ok(p), Ok(installed)) = (store.profile(&profile), store.addons()) {

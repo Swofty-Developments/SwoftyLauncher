@@ -16,14 +16,12 @@ int main()
     expect((l.calendar == std::vector<std::string>{"game/melbourne", "game/bahrain", "game/shanghai", "test.bahrain24/sepang"}),
            "the calendar in round order, the record track at Sepang's round");
     expect(l.rounds == 6 && l.missing == std::vector<std::string>{"venue/sochi"}, "a round with no providing track is dropped");
-    expect((l.more == std::vector<std::string>{"game/melbourne_reverse", "mod.okayama/okayama"}),
-           "More tracks: every other fitting base track in base order");
-    expect(l.left_out.size() == 2 && l.left_out[0].track == "game/monaco" && l.left_out[1].track == "mod.miami24/igora_drive",
-           "Monaco (grid) and Igora Drive (garages) are left out");
+    expect((l.more == std::vector<std::string>{"game/melbourne_reverse", "mod.miami24/igora_drive", "mod.okayama/okayama"}),
+           "More tracks: every other fitting base track in base order, Igora Drive's 10 garages included");
+    expect(l.left_out.size() == 1 && l.left_out[0].track == "game/monaco", "Monaco (grid) is left out");
     expect(trk::list_line(box.package, trk::Mode::grand_prix, l) ==
                "[tracks] box swofty.classic-seasons-2016/f1_2016 (grand_prix): calendar 4 of 6 rounds (venue/sochi: no "
-               "track), more tracks 2; left out game/monaco (its swofty_f1 world has 20 grid slots; the box runs 22 cars), "
-               "mod.miami24/igora_drive (its swofty_f1 world has 10 garages; the box has 11 teams)",
+               "track), more tracks 3; left out game/monaco (its swofty_f1 world has 20 grid slots; the box runs 22 cars)",
            "the [tracks] box line");
 
     l = trk::build_list(base, &facts, box, trk::Mode::grand_prix,
@@ -47,12 +45,11 @@ int main()
     int no_tt = 0;
     for (auto &o : tt.left_out)
         no_tt += o.reason == "no Time Trial support";
-    expect(tt.calendar.empty() && no_tt == 1 && tt.more.size() == 5 && trk::listed(tt.more, "mod.okayama/okayama"),
+    expect(tt.calendar.empty() && no_tt == 1 && tt.more.size() == 6 && trk::listed(tt.more, "mod.okayama/okayama"),
            "a Time Trial box leaves out the record track without time_trial and keeps the tracks made for 1.5 (D5)");
     expect(trk::list_line("game/f1_2026", trk::Mode::time_trial, tt) ==
-               "[tracks] box game/f1_2026 (time_trial): 5 tracks; left out game/monaco (its swofty_f1 world has 20 grid "
-               "slots; the box runs 22 cars), test.bahrain24/sepang (no Time Trial support), mod.miami24/igora_drive (its "
-               "swofty_f1 world has 10 garages; the box has 11 teams)",
+               "[tracks] box game/f1_2026 (time_trial): 6 tracks; left out game/monaco (its swofty_f1 world has 20 grid "
+               "slots; the box runs 22 cars), test.bahrain24/sepang (no Time Trial support)",
            "the Time Trial line names each left-out track with its reason");
 
     trk::Entries e;
@@ -63,7 +60,7 @@ int main()
                l.left_out.front().reason == "not offered in this box",
            "offered = false leaves a calendar track out");
     expect((l.more == std::vector<std::string>{"mod.okayama/okayama", "game/shanghai", "game/melbourne_reverse",
-                                               "test.bahrain24/sepang"}),
+                                               "test.bahrain24/sepang", "mod.miami24/igora_drive"}),
            "order 1 puts a track first under More tracks; order 0 keeps the base order");
     e.by_track["mod.okayama/okayama"].order = 99;
     l = trk::build_list(base, &facts, box, trk::Mode::grand_prix, {}, e);
@@ -124,15 +121,13 @@ int main()
     b2012.teams = 12;
     b2012.cars = 24;
     trk::List l2012 = trk::build_list(base, &with2012, b2012, trk::Mode::grand_prix, {}, none);
-    bool okayama_out = false, igora_out = false;
-    for (auto &o : l2012.left_out) {
+    bool okayama_out = false;
+    for (auto &o : l2012.left_out)
         okayama_out = okayama_out || (o.track == "mod.okayama/okayama" &&
                                       o.reason == "its files hold no 2012 world, which the box's bdx_2012_mode layer loads");
-        igora_out = igora_out || (o.track == "mod.miami24/igora_drive" &&
-                                  o.reason == "its bdx_2012_mode world has 10 garages; the box has 12 teams");
-    }
-    expect(okayama_out && igora_out && l2012.more.front() == "game/melbourne",
-           "a 12-team era box made from its entrant list: a track without its world and a 10-garage world are left out");
+    expect(okayama_out && l2012.left_out.size() == 1 && trk::listed(l2012.more, "mod.miami24/igora_drive") &&
+               l2012.more.front() == "game/melbourne",
+           "a 12-team era box made from its entrant list: a track without its world is left out, a 10-garage world fits");
 
     printf("%s\n", fails ? "list_test: FAILED" : "list_test: all passed");
     return fails ? 1 : 0;

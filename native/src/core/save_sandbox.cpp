@@ -167,6 +167,7 @@ bool p_file_write(Proxy *, const char *name, const void *data, int32_t size)
 
 int32_t p_file_read(Proxy *, const char *name, void *data, int32_t size)
 {
+    runtime::direct_start_profile_read();
     std::lock_guard<std::mutex> g(lock);
     int32_t n = remote->read(named(name), data, size);
     note(ss::FileRead, (named(name) + " -> " + std::to_string(n) + " bytes").c_str());

@@ -33,6 +33,7 @@ use super::ws::{self, ConnectError};
 use crate::baseline::Identity;
 use crate::catalog::{self, Addon};
 use crate::profile::Profile;
+use crate::row_ids::Overrides;
 use crate::store::Store;
 
 /// The host's virtual IP, which every joiner's game joins.
@@ -52,6 +53,8 @@ const RELAY_BACKOFF: Duration = Duration::from_secs(5);
 const RELAY_BACKOFF_MAX: Duration = Duration::from_secs(60);
 const JOIN_SLOW: Duration = Duration::from_secs(30);
 const STATS_EVERY: Duration = Duration::from_secs(30);
+/// How long the launcher's build and the game's boot may take before the session asks again.
+const LAUNCH_WAIT: Duration = Duration::from_secs(600);
 
 static ACTIVE: Mutex<Option<std::sync::Weak<Inner>>> = Mutex::new(None);
 
@@ -239,7 +242,14 @@ pub struct Setup {
     pub game: Arc<dyn GameControl>,
     pub local: Local,
     pub relay: Relay,
+    /// The launcher can start F1 25 for the room: the session opens the room first, asks for the launch
+    /// ([`SessionState::launch`]) when the game isn't running, and waits for the game to come up.
+    pub room_launch: bool,
+    /// This player's fingerprint read afresh, for after the launcher's launch built the game.
+    pub refresh: Option<Refresh>,
 }
+
+pub type Refresh = Arc<dyn Fn() -> Option<Local> + Send + Sync>;
 
 impl Setup {
     /// A TURN-relayed session driving the game in `game_dir` through its mailbox.
@@ -250,6 +260,8 @@ impl Setup {
             game: Arc::new(Mailbox::new(game_dir)),
             local,
             relay: Relay::Turn,
+            room_launch: false,
+            refresh: None,
         }
     }
 }
@@ -334,6 +346,51 @@ pub struct MemberState {
     pub traffic: Option<MemberStats>,
 }
 
+/// What the session needs the launcher to do before it can go on: start F1 25 for the room. The
+/// launcher starts it with multiplayer armed (the room launch's [`super::bridge::ARMED_ROOM`]), the
+/// host's ids in `row_ids` for the build, then calls [`Session::launched`], or [`Session::launch_failed`].
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct LaunchAsk {
+    /// Changes with each ask, so the launcher acts once on each.
+    pub seq: u32,
+    /// The host's ids for this player's rows, when they differ from the player's own.
+    #[serde(skip)]
+    pub row_ids: Option<Overrides>,
+    /// How many addons' ids `row_ids` carries.
+    pub id_addons: usize,
+    /// The game is running but isn't what the room needs: the launcher closes it first, and asks the
+    /// player before it does.
+    pub restart: bool,
+    pub why: String,
+    /// This player's member number, the bridge's base port and the signed-in name the game is
+    /// started with, in its direct start request.
+    #[serde(skip)]
+    pub self_member: u8,
+    #[serde(skip)]
+    pub base: u16,
+    #[serde(skip)]
+    pub name: Option<String>,
+}
+
+impl LaunchAsk {
+    /// The direct start request the game reads at boot (`swofty/direct_start.json`): the room target,
+    /// this player's role and the host's address, and the room configuration the game applies before
+    /// anything else (`self`, `base` and, when there is one, `name`).
+    pub fn direct_start(&self, host: bool) -> String {
+        let mut request = json!({
+            "target": "room",
+            "role": if host { "host" } else { "join" },
+            "host_ip": HOST_IP.to_string(),
+            "self": self.self_member,
+            "base": self.base,
+        });
+        if let Some(name) = &self.name {
+            request["name"] = json!(name);
+        }
+        request.to_string()
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct SessionState {
     pub phase: Phase,
@@ -353,6 +410,7 @@ pub struct SessionState {
     pub bridge: Option<Stats>,
     pub game: Option<GameStatus>,
     pub last_error: Option<String>,
+    pub launch: Option<LaunchAsk>,
 }
 
 impl SessionState {
@@ -370,6 +428,7 @@ impl SessionState {
             bridge: None,
             game: None,
             last_error: None,
+            launch: None,
         }
     }
 }
@@ -484,6 +543,8 @@ enum Action {
     Retry,
     Reconnect,
     Local(Box<Local>),
+    Launched,
+    LaunchFailed(String),
 }
 
 struct Inner {
@@ -577,6 +638,18 @@ impl Session {
     /// comparison with the host's runs again, and a joiner that now matches goes on to join.
     pub fn update_local(&self, local: Local) {
         let _ = self.actions.send(Action::Local(Box::new(local)));
+    }
+
+    /// The launcher started F1 25 for the room as [`SessionState::launch`] asked: the session waits for the
+    /// game's main menu, then drives it into the lobby.
+    pub fn launched(&self) {
+        let _ = self.actions.send(Action::Launched);
+    }
+
+    /// The launcher couldn't start F1 25 for the room, or its build failed; `why` is shown, and
+    /// [`Session::retry`] asks again.
+    pub fn launch_failed(&self, why: &str) {
+        let _ = self.actions.send(Action::LaunchFailed(why.to_owned()));
     }
 
     /// The steps that would make this player match the host.
@@ -685,6 +758,10 @@ struct Worker {
     prints_saved: String,
     next_stats: Instant,
     game_port: Option<u16>,
+    launch_seq: u32,
+    launch: Option<LaunchAsk>,
+    launched: Option<Instant>,
+    refreshed: bool,
 }
 
 impl Worker {
@@ -732,6 +809,10 @@ impl Worker {
             prints_saved: String::new(),
             next_stats: now + STATS_EVERY,
             game_port: None,
+            launch_seq: 0,
+            launch: None,
+            launched: None,
+            refreshed: false,
         }
     }
 
@@ -811,7 +892,9 @@ impl Worker {
 
     fn advance(&mut self) -> Result<(), Halt> {
         if self.code.is_none() {
-            self.require_main_menu()?;
+            if !self.setup.room_launch {
+                self.require_main_menu()?;
+            }
             self.open_room()?;
         }
         if self.relay.is_none() {
@@ -825,9 +908,135 @@ impl Worker {
             if let Some(why) = &self.paused {
                 return Err(Halt::Game(why.clone()));
             }
-            self.drive_game()?;
+            self.ensure_game()?;
+            if self.setup.room_launch && self.launched.is_some() {
+                self.adopt_direct_start();
+            } else {
+                self.drive_game()?;
+            }
         }
         Ok(())
+    }
+
+    /// With the launcher able to start the game: asks it to when the game isn't answering, waits while it
+    /// starts, reads the fingerprint afresh once it is up, and, for a joiner whose running game has other
+    /// row ids than the host's, asks to restart it with the host's.
+    fn ensure_game(&mut self) -> Result<(), Halt> {
+        if !self.setup.room_launch || self.entering.is_some() {
+            return Ok(());
+        }
+        let status = match self.setup.game.status() {
+            Ok(status) => status,
+            Err(e) => {
+                self.game_status = None;
+                if let Some(since) = self.launched {
+                    if since.elapsed() < LAUNCH_WAIT {
+                        return Err(Halt::Game("F1 25 is starting".into()));
+                    }
+                    self.launched = None;
+                    self.refreshed = false;
+                    diag::line(format!("launch: the game never answered ({e}); asking again"));
+                }
+                return self.ask_launch(false, &e.to_string());
+            }
+        };
+        self.game_status = Some(status);
+        self.launch = None;
+        if self.launched.is_some() && !self.refreshed {
+            self.refreshed = true;
+            if let Some(local) = self.setup.refresh.as_ref().and_then(|f| f()) {
+                diag::line("launch: the game is up; this player's fingerprint read afresh");
+                self.update_local(local);
+            }
+        }
+        if self.hosting() || self.launched.is_some() {
+            return Ok(());
+        }
+        let Some(host) = self.lobby.as_ref().and_then(Lobby::host_member).cloned() else {
+            return Ok(());
+        };
+        if host.digest.is_none() || host.digest.as_deref() == Some(self.setup.local.digest().as_str()) {
+            return Ok(());
+        }
+        self.compare_with_host();
+        if !self.mismatches.is_empty() && self.mismatches.iter().all(Mismatch::cured_by_build) {
+            return self.ask_launch(true, "the game was built differently from the host's");
+        }
+        Ok(())
+    }
+
+    fn host_ids(&self) -> Result<Option<Overrides>, Halt> {
+        if self.hosting() {
+            return Ok(None);
+        }
+        let host = self.lobby.as_ref().and_then(Lobby::host_member).cloned();
+        let Some(host) = host else {
+            return Err(Halt::Step(
+                "waiting for the host".into(),
+                Duration::from_millis(200),
+            ));
+        };
+        if host.digest.is_none() {
+            return Err(Halt::Game("waiting for the host's addon list".into()));
+        }
+        if host.digest.as_deref() == Some(self.setup.local.digest().as_str()) {
+            return Ok(None);
+        }
+        let print = self
+            .lobby
+            .as_ref()
+            .and_then(|l| self.prints.get(&l.host))
+            .and_then(|blob| serde_json::from_value::<Fingerprint>(blob.clone()).ok())
+            .ok_or_else(|| Halt::Game("waiting for the host's addon list".into()))?;
+        let ids = fingerprint::row_id_overrides(&self.setup.local.fingerprint, &print);
+        Ok(Some(ids).filter(|o| !o.is_empty()))
+    }
+
+    fn adopt_direct_start(&mut self) {
+        diag::line("launch: the game was started with its room configuration; it hosts or joins by itself");
+        self.configured = true;
+        self.driven = Some(Instant::now());
+        self.seen_in_session = false;
+    }
+
+    fn ask_launch(&mut self, restart: bool, why: &str) -> Result<(), Halt> {
+        let row_ids = self.host_ids()?;
+        let self_member = self
+            .self_number()
+            .ok_or_else(|| Halt::Fail("the server gave this player no virtual IP".into()))?;
+        let base = self
+            .bridge
+            .as_ref()
+            .map(Bridge::base)
+            .ok_or_else(|| Halt::Step("starting the bridge".into(), Duration::from_millis(200)))?;
+        let name = self.driver_name();
+        let id_addons = row_ids.as_ref().map_or(0, |o| o.rows.len());
+        let same = self
+            .launch
+            .as_ref()
+            .is_some_and(|a| a.restart == restart && a.row_ids == row_ids);
+        if !same {
+            self.launch_seq += 1;
+            diag::line(format!(
+                "launch: asking the launcher to {} F1 25 for the room ({why}; host ids for {id_addons} addon(s))",
+                if restart { "restart" } else { "start" }
+            ));
+            self.launch = Some(LaunchAsk {
+                seq: self.launch_seq,
+                row_ids,
+                id_addons,
+                restart,
+                why: why.to_owned(),
+                self_member,
+                base,
+                name,
+            });
+        }
+        Err(Halt::Game(if restart {
+            "restart F1 25 into the room to use the host's ids".into()
+        } else {
+            "starting F1 25 for the room".into()
+        }))
     }
 
     fn require_main_menu(&mut self) -> Result<GameStatus, Halt> {
@@ -847,7 +1056,11 @@ impl Worker {
             ));
         }
         if status.screen != Screen::MainMenu {
-            return Err(Halt::Game("go to the game's main menu".into()));
+            return Err(Halt::Game(if self.launched.is_some() {
+                "waiting for F1 25's main menu".into()
+            } else {
+                "go to the game's main menu".into()
+            }));
         }
         Ok(status)
     }
@@ -1321,6 +1534,22 @@ impl Worker {
                     diag::line("relay: reconnect requested");
                     self.reconnect_relay();
                 }
+                Action::Launched => {
+                    diag::line("launch: the launcher started F1 25");
+                    self.launch = None;
+                    self.launched = Some(Instant::now());
+                    self.refreshed = false;
+                    self.paused = None;
+                    self.next_step = Instant::now();
+                }
+                Action::LaunchFailed(why) => {
+                    diag::line(format!("launch: failed: {why}"));
+                    self.launch = None;
+                    self.launched = None;
+                    self.paused = Some(format!(
+                        "F1 25 didn't start for the room: {why}; retry or leave the room"
+                    ));
+                }
                 Action::Local(local) => {
                     diag::line(format!(
                         "session: fresh fingerprint {}",
@@ -1676,6 +1905,7 @@ impl Worker {
             bridge: self.stats.clone(),
             game: self.game_status.clone(),
             last_error: self.last_error.clone(),
+            launch: self.launch.clone(),
         };
         let mut logged = self.logged.borrow_mut();
         if logged.as_ref() != Some(&state) {
@@ -2083,6 +2313,7 @@ mod tests {
         configure_fails: AtomicBool,
         cancelled: AtomicBool,
         host_attempts: std::sync::atomic::AtomicU32,
+        closed: AtomicBool,
     }
 
     impl FakeGame {
@@ -2109,6 +2340,7 @@ mod tests {
                 configure_fails: AtomicBool::new(false),
                 cancelled: AtomicBool::new(false),
                 host_attempts: std::sync::atomic::AtomicU32::new(0),
+                closed: AtomicBool::new(false),
             })
         }
 
@@ -2144,6 +2376,9 @@ mod tests {
 
     impl GameControl for FakeGame {
         fn status(&self) -> Result<GameStatus, game::Error> {
+            if self.closed.load(Ordering::Relaxed) {
+                return Err(game::Error::Timeout(Duration::from_secs(2)));
+            }
             Ok(lock(&self.status).clone())
         }
 
@@ -2243,7 +2478,37 @@ mod tests {
             game: game.clone(),
             local: Local::new(fingerprint, &categories, Vec::new()),
             relay: Relay::Direct("127.0.0.1:0".parse().unwrap()),
+            room_launch: false,
+            refresh: None,
         }
+    }
+
+    fn launching(mut setup: Setup, refresh: Option<Fingerprint>) -> Setup {
+        setup.room_launch = true;
+        setup.refresh = refresh.map(|f| -> Refresh {
+            let categories = BTreeMap::from([("okayama".to_owned(), "tracks".to_owned())]);
+            Arc::new(move || Some(Local::new(f.clone(), &categories, Vec::new())))
+        });
+        setup
+    }
+
+    fn built_print(digest: &str, ids: &[(&str, i64)]) -> Fingerprint {
+        let mut f = print(&[]);
+        let a = &mut f.addons[0];
+        a.source = Source::Built(digest.repeat(32));
+        a.detail = Some(fingerprint::Detail {
+            parts: BTreeMap::from([("Database".to_owned(), "d1".to_owned())]),
+            read_list: "r".into(),
+            read_count: 0,
+            reads: Vec::new(),
+            paths: Vec::new(),
+            row_ids: ids.iter().map(|(k, v)| ((*k).to_owned(), *v)).collect(),
+        });
+        Fingerprint::new(f.game_build.clone(), f.addons, BTreeMap::new(), None)
+    }
+
+    fn asked(s: &SessionState) -> bool {
+        s.launch.is_some()
     }
 
     fn server() -> FakeServer {
@@ -2600,6 +2865,183 @@ mod tests {
         host.retry();
         wait_until(&host, "the lobby after retry", in_lobby);
         assert_eq!(game.host_attempts.load(Ordering::Relaxed), 2);
+    }
+
+    #[test]
+    fn a_closed_game_is_started_for_the_room_then_driven_to_the_lobby() {
+        let server = server();
+        let game = FakeGame::new("launch-host");
+        game.closed.store(true, Ordering::Relaxed);
+        let host = create(
+            launching(setup(&server.url, "host-token", &game, print(&[])), None),
+            RoomSettings::default(),
+        );
+        let state = wait_until(&host, "the launch ask", asked);
+        let ask = state.launch.clone().unwrap();
+        assert!(!ask.restart && ask.row_ids.is_none(), "{ask:?}");
+        assert!(server.has_room(), "the room is open before the game is");
+        assert_eq!(
+            state.phase,
+            Phase::WaitingForGame("starting F1 25 for the room".into())
+        );
+        assert!(game.log().is_empty());
+        host.launched();
+        let state = wait_until(
+            &host,
+            "the starting wait",
+            |s| matches!(&s.phase, Phase::WaitingForGame(w) if w == "F1 25 is starting"),
+        );
+        assert!(state.launch.is_none());
+        let request: Value = serde_json::from_str(&ask.direct_start(true)).unwrap();
+        assert_eq!(
+            request,
+            json!({"target": "room", "role": "host", "host_ip": "10.77.0.1", "self": 1,
+                   "base": ask.base, "name": "Host"})
+        );
+        assert!(ask.base != 0);
+        game.closed.store(false, Ordering::Relaxed);
+        game.set_screen(Screen::Other);
+        wait_until(&host, "the lobby without a main menu", in_lobby);
+        assert!(
+            game.log().is_empty(),
+            "a game started with its room configuration is sent no commands: {:?}",
+            game.log()
+        );
+    }
+
+    #[test]
+    fn the_direct_start_request_names_the_room_configuration() {
+        let ask = |name: Option<&str>| LaunchAsk {
+            seq: 1,
+            row_ids: None,
+            id_addons: 0,
+            restart: false,
+            why: String::new(),
+            self_member: 3,
+            base: 41000,
+            name: name.map(str::to_owned),
+        };
+        let join: Value = serde_json::from_str(&ask(Some("Ana")).direct_start(false)).unwrap();
+        assert_eq!(
+            join,
+            json!({"target": "room", "role": "join", "host_ip": "10.77.0.1", "self": 3,
+                   "base": 41000, "name": "Ana"})
+        );
+        let nameless: Value = serde_json::from_str(&ask(None).direct_start(true)).unwrap();
+        assert_eq!(nameless["role"], "host");
+        assert!(nameless.get("name").is_none());
+    }
+
+    #[test]
+    fn a_joiner_asks_for_the_hosts_ids_and_matches_once_the_game_is_built_with_them() {
+        let server = server();
+        let (host_game, guest_game) = (FakeGame::new("launch-h"), FakeGame::new("launch-g"));
+        let host_print = built_print("aa", &[("t/x", 512), ("t/y", 513)]);
+        let host = create(
+            setup(&server.url, "host-token", &host_game, host_print.clone()),
+            RoomSettings::default(),
+        );
+        let code = wait_until(&host, "the host's lobby", in_lobby).room.unwrap().code;
+        guest_game.closed.store(true, Ordering::Relaxed);
+        let own = built_print("bb", &[("t/x", 513), ("t/y", 512)]);
+        let guest = join(
+            launching(
+                setup(&server.url, "guest-token", &guest_game, own),
+                Some(host_print.clone()),
+            ),
+            &code,
+        );
+        let state = wait_until(&guest, "the launch ask", asked);
+        let ask = state.launch.unwrap();
+        assert!(!ask.restart && ask.id_addons == 1, "{ask:?}");
+        assert_eq!(
+            ask.row_ids.unwrap().rows["okayama"],
+            BTreeMap::from([("t/x".to_owned(), 512), ("t/y".to_owned(), 513)])
+        );
+        guest.launched();
+        guest_game.closed.store(false, Ordering::Relaxed);
+        let state = wait_until(&guest, "the guest's lobby", in_lobby);
+        assert!(state.mismatches.is_empty(), "{:?}", state.mismatches);
+        assert!(guest_game.log().is_empty(), "{:?}", guest_game.log());
+        assert_eq!((ask.self_member, ask.name.as_deref()), (2, Some("Ana")));
+        assert_eq!(Some(ask.base), state.base);
+    }
+
+    #[test]
+    fn a_joiner_whose_fingerprint_already_matches_starts_the_game_without_ids() {
+        let server = server();
+        let (host_game, guest_game) = (FakeGame::new("launch-h2"), FakeGame::new("launch-g2"));
+        let same = built_print("aa", &[("t/x", 512)]);
+        let host = create(
+            setup(&server.url, "host-token", &host_game, same.clone()),
+            RoomSettings::default(),
+        );
+        let code = wait_until(&host, "the host's lobby", in_lobby).room.unwrap().code;
+        guest_game.closed.store(true, Ordering::Relaxed);
+        let guest = join(
+            launching(setup(&server.url, "guest-token", &guest_game, same), None),
+            &code,
+        );
+        let ask = wait_until(&guest, "the launch ask", asked).launch.unwrap();
+        assert!(ask.row_ids.is_none() && !ask.restart, "{ask:?}");
+    }
+
+    #[test]
+    fn a_running_game_with_the_wrong_ids_is_offered_a_restart_and_not_driven() {
+        let server = server();
+        let (host_game, guest_game) = (FakeGame::new("launch-h3"), FakeGame::new("launch-g3"));
+        let host = create(
+            setup(
+                &server.url,
+                "host-token",
+                &host_game,
+                built_print("aa", &[("t/x", 512)]),
+            ),
+            RoomSettings::default(),
+        );
+        let code = wait_until(&host, "the host's lobby", in_lobby).room.unwrap().code;
+        let guest = join(
+            launching(
+                setup(
+                    &server.url,
+                    "guest-token",
+                    &guest_game,
+                    built_print("bb", &[("t/x", 600)]),
+                ),
+                None,
+            ),
+            &code,
+        );
+        let state = wait_until(&guest, "the restart offer", asked);
+        let ask = state.launch.unwrap();
+        assert!(ask.restart && ask.id_addons == 1, "{ask:?}");
+        assert_eq!(ask.row_ids.unwrap().rows["okayama"]["t/x"], 512);
+        assert!(guest_game.log().is_empty());
+        leave(&guest);
+    }
+
+    #[test]
+    fn a_launch_that_failed_waits_for_a_retry_and_asks_again() {
+        let server = server();
+        let game = FakeGame::new("launch-fail");
+        game.closed.store(true, Ordering::Relaxed);
+        let host = create(
+            launching(setup(&server.url, "host-token", &game, print(&[])), None),
+            RoomSettings::default(),
+        );
+        let first = wait_until(&host, "the launch ask", asked).launch.unwrap();
+        host.launch_failed("the build refused the host's ids");
+        let state = wait_until(
+            &host,
+            "the failure",
+            |s| matches!(&s.phase, Phase::WaitingForGame(w) if w.contains("the build refused")),
+        );
+        assert!(state.launch.is_none());
+        host.retry();
+        let again = wait_until(&host, "the second ask", |s| {
+            s.launch.as_ref().is_some_and(|a| a.seq > first.seq)
+        });
+        assert!(again.launch.is_some());
     }
 
     #[test]
