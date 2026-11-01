@@ -55,7 +55,7 @@ constexpr wchar_t BACKBUFFER_NAME[] = L"BackBuffer";
 constexpr wchar_t HUDLESS_NAME[] = L"eaid://ego_package/hudless_backbuffer.image";
 constexpr wchar_t DEPTH_NAME[] = L"eaid://ego_package/gbuffer_depth_stencil.image";
 constexpr wchar_t UI_PREFIX[] = L"eaid://ui_package/";
-constexpr UINT FRAMES = 4, MAX_PASSES = 32, CONSTANTS = 40, BUDGET_FRAMES = 120, INPUTS = 8, TABLE = 2 + INPUTS + 1;
+constexpr UINT FRAMES = 8, MAX_PASSES = 32, CONSTANTS = 40, BUDGET_FRAMES = 120, INPUTS = 8, TABLE = 2 + INPUTS + 1;
 constexpr D3D12_RESOURCE_STATES HOME = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 constexpr D3D12_RESOURCE_STATES READ_STATES =
     D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
@@ -103,17 +103,19 @@ struct Toggle {
 };
 
 struct Mark {
-    bool tonemap = false, ui = false;
+    bool tonemap = false, ui = false, left_rt = false;
     int slot = -1;
-    ID3D12Resource *target = nullptr, *hudless = nullptr, *depth = nullptr;
+    ID3D12Resource *target = nullptr, *hudless = nullptr, *depth = nullptr, *ran_back = nullptr;
     D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_COMMON, hudless_state = D3D12_RESOURCE_STATE_COMMON,
                           depth_state = D3D12_RESOURCE_STATE_COMMON;
     std::vector<D3D12_RESOURCE_BARRIER> seen;
+    std::string order;
 };
 
 struct Slot {
     ID3D12CommandAllocator *alloc = nullptr;
     ID3D12GraphicsCommandList *list = nullptr;
+    ID3D12Fence *fence = nullptr;
     UINT64 fence_value = 0;
     bool pending = false;
     ULONGLONG armed_at = 0;
@@ -288,8 +290,37 @@ D3D12_RESOURCE_STATES depth_state;
 bool depth_logged;
 std::unordered_map<ID3D12Resource *, std::wstring> names;
 std::unordered_map<ID3D12GraphicsCommandList *, Mark> marks;
+unsigned order_left, burst_left, burst_at, burst_present;
+// Each back buffer's use for one frame: fresh from the barrier that makes it a render target until the
+// passes run on it, and the depth buffer as the picture's list left it.
+struct BackUse {
+    ID3D12Resource *back = nullptr;
+    bool fresh = false;
+    ID3D12Resource *depth = nullptr;
+    D3D12_RESOURCE_STATES depth_state = D3D12_RESOURCE_STATE_COMMON;
+    unsigned seen = 0;
+};
+BackUse back_uses[6];
+unsigned back_seen, hud_read_at;
+bool hud_read_seen;
+
+
+BackUse &back_use(ID3D12Resource *b)
+{
+    BackUse *oldest = &back_uses[0];
+    for (auto &u : back_uses) {
+        if (u.back == b)
+            return u;
+        if (u.seen < oldest->seen)
+            oldest = &u;
+    }
+    *oldest = BackUse{};
+    oldest->back = b;
+    oldest->seen = ++back_seen;
+    return *oldest;
+}
 bool diag_done, killed, broken, warned_busy, hudless_logged, saw_back, tonemap_named, state_armed;
-std::wstring off_file, trace_file;
+std::wstring off_file, trace_file, swofty_root_dir;
 
 ID3D12Device *device;
 ID3D12RootSignature *root;
@@ -315,7 +346,7 @@ std::vector<std::wstring> named_seen;
 
 struct Stats {
     unsigned presented = 0, in_list = 0, between = 0, without = 0, doubled = 0, ui_together = 0, unknown_state = 0,
-             busy = 0;
+             busy = 0, deferred = 0, dropped = 0;
 };
 Stats stats;
 unsigned stat_lines;
@@ -492,7 +523,8 @@ bool init(ID3D12Resource *res)
     if (FAILED(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence))))
         return false;
     for (auto &s : slots) {
-        if (FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&s.alloc))) ||
+        if (FAILED(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&s.fence))) ||
+            FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&s.alloc))) ||
             FAILED(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, s.alloc, nullptr, IID_PPV_ARGS(&s.list))))
             return false;
         s.list->Close();
@@ -532,14 +564,13 @@ void retire(std::vector<IUnknown *> objects)
 {
     std::erase(objects, nullptr);
     if (!objects.empty())
-        retired.push_back({std::move(objects), fence_next + FRAMES + 1});
+        retired.push_back({std::move(objects), UINT64(frame_count) + 2 * FRAMES});
 }
 
 void free_retired()
 {
-    UINT64 done = fence->GetCompletedValue();
     std::erase_if(retired, [&](Retired &r) {
-        if (done < r.after)
+        if (frame_count < r.after)
             return false;
         for (auto *o : r.objects)
             o->Release();
@@ -691,7 +722,7 @@ void write_ppm(const std::string &path, const uint8_t *src, UINT pitch, UINT w, 
 void land_capture()
 {
     if (!capture_pending || capture_slot < 0 || slots[capture_slot].pending ||
-        fence->GetCompletedValue() < capture_fence)
+        slots[capture_slot].fence->GetCompletedValue() < capture_fence)
         return;
     capture_pending = false;
     if (frame.view != DXGI_FORMAT_R8G8B8A8_UNORM && frame.view != DXGI_FORMAT_R10G10B10A2_UNORM)
@@ -775,7 +806,7 @@ int pick_slot()
         swofty::log("[postfx] a game list holding the passes was never submitted; its slot is reused");
         s.pending = false;
     }
-    if (s.pending || fence->GetCompletedValue() < s.fence_value) {
+    if (s.pending || s.fence->GetCompletedValue() < s.fence_value) {
         if (!warned_busy)
             swofty::log("[postfx] the GPU is %u frames behind; passes skip frames until it catches up", FRAMES);
         warned_busy = true;
@@ -898,7 +929,7 @@ bool record(const Where &w, int k)
     std::vector<int> live = live_passes(v);
     trace.live = unsigned(live.size());
     if (live.empty()) {
-        trace.why = "no pass runs in this view";
+        trace.why = "every pass is off or not for this view";
         return false;
     }
     d3d12hooks::ListState saved;
@@ -1117,8 +1148,7 @@ void run_between(ID3D12CommandQueue *q, ID3D12Resource *back, D3D12_RESOURCE_STA
     read_frequency(q);
     ID3D12CommandList *one[] = {s.list};
     d3d12hooks::exec_original(q, 1u, one);
-    s.fence_value = ++fence_next;
-    q->Signal(fence, s.fence_value);
+    q->Signal(s.fence, ++s.fence_value);
     s.pending = false;
     if (capture_slot == k)
         capture_fence = s.fence_value;
@@ -1202,6 +1232,13 @@ void on_setname(ID3D12Object *o, LPCWSTR name)
         watch(res, bits);
 }
 
+// While the game reads the finished picture for its HUD (on track), that read is the one place the
+// passes run; without such reads (menus) they run at the HUD-less step or between the game's lists.
+bool hud_reads()
+{
+    return hud_read_seen && frame_count - hud_read_at <= 30;
+}
+
 // Marks what each game list does with the watched resources. At the HUD-less step (the HUD-less copy
 // leaves UAV while this list has made the back buffer a render target) the passes are recorded into the
 // list, before the game's barrier, with every state as it was before this batch.
@@ -1221,7 +1258,7 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
     std::lock_guard<std::recursive_mutex> g(lock);
     auto it = marks.find(list);
     Mark *m = it == marks.end() ? nullptr : &it->second;
-    ID3D12Resource *hudless = nullptr;
+    ID3D12Resource *hudless = nullptr, *leaving = nullptr;
     D3D12_RESOURCE_STATES hudless_now{};
     bool moves_back = false;
     for (UINT i = 0; i < n; i++) {
@@ -1235,19 +1272,52 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
             hudless = b.Transition.pResource;
             hudless_now = b.Transition.StateBefore;
         }
+        if ((c & W_BACK) && b.Transition.StateBefore == D3D12_RESOURCE_STATE_RENDER_TARGET &&
+            (b.Transition.StateAfter & READ_STATES) && b.Flags == D3D12_RESOURCE_BARRIER_FLAG_NONE && !leaving)
+            leaving = b.Transition.pResource;
     }
-    if (hudless && !moves_back && m && m->target && m->state == D3D12_RESOURCE_STATE_RENDER_TARGET && m->slot < 0 &&
-        state_armed && !killed_now() && !passes.empty()) {
-        if (!device && !init(m->target)) {
-            broken = true;
-            return false;
+    // The game records a frame's lists in parallel, so the core cannot tell at one place whether another
+    // place of the same frame runs the passes too. On track the game reads the finished picture once
+    // per frame for its HUD, as the first back buffer barrier of the HUD's list (or the first one that
+    // leaves the render target in the list that drew it): the passes run there and nowhere else. In
+    // menus there is no such read; the passes run at the HUD-less step of the list that made the back
+    // buffer a render target, once per back buffer and frame.
+    if ((hudless || leaving) && state_armed && list->GetType() == D3D12_COMMAND_LIST_TYPE_DIRECT && !killed_now() &&
+        !passes.empty()) {
+        Where w{list, true, nullptr, D3D12_RESOURCE_STATE_RENDER_TARGET, hudless, hudless_now, nullptr,
+                D3D12_RESOURCE_STATE_COMMON, "in-list"};
+        if (leaving && (!m || !m->left_rt)) {
+            BackUse &u = back_use(leaving);
+            hud_read_seen = true;
+            hud_read_at = frame_count;
+            w.back = leaving;
+            w.hudless = m ? m->hudless : nullptr;
+            w.hudless_state = m ? m->hudless_state : D3D12_RESOURCE_STATE_COMMON;
+            w.depth = m && m->depth ? m->depth : u.depth;
+            w.depth_state = m && m->depth ? m->depth_state : u.depth_state;
+            w.path = "in-list (HUD read)";
+        } else if (hudless && !hud_reads() && !moves_back && m && m->target &&
+                   m->state == D3D12_RESOURCE_STATE_RENDER_TARGET && m->slot < 0 && back_use(m->target).fresh) {
+            w.back = m->target;
+            w.depth = m->depth;
+            w.depth_state = m->depth_state;
         }
-        int k = pick_slot();
-        Where w{list, true, m->target, D3D12_RESOURCE_STATE_RENDER_TARGET, hudless, hudless_now, m->depth,
-                m->depth_state, "in-list"};
-        if (k >= 0 && record(w, k)) {
-            m->slot = k;
-            stats.in_list++;
+        if (w.back) {
+            back_use(w.back).fresh = false;
+            if (!device && !init(w.back)) {
+                broken = true;
+                return false;
+            }
+            int k = pick_slot();
+            if (k >= 0 && record(w, k)) {
+                if (!m)
+                    m = &marks[list];
+                m->slot = k;
+                m->ran_back = w.back;
+                stats.in_list++;
+                if (order_left)
+                    m->order += " [PASSES]";
+            }
         }
     }
     for (UINT i = 0; i < n; i++) {
@@ -1271,25 +1341,55 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
         if (c & W_HUDLESS) {
             m->hudless = r;
             m->hudless_state = b.Transition.StateAfter;
+            if ((b.Transition.StateAfter & D3D12_RESOURCE_STATE_UNORDERED_ACCESS) && m->target &&
+                m->state == D3D12_RESOURCE_STATE_RENDER_TARGET) {
+                BackUse &u = back_use(m->target);
+                u.depth = m->depth;
+                u.depth_state = m->depth_state;
+            }
         }
         if (!diag_done && m->seen.size() < 96)
             m->seen.push_back(b);
+        if (order_left && m->order.size() < 3000) {
+            char step[48];
+            snprintf(step, sizeof step, " %s%s%s%s%s:%x>%x%s", tonemap ? "T" : "", back ? "B" : "", depth ? "D" : "",
+                     (c & W_HUDLESS) ? "H" : "", (c & W_UI) ? "U" : "", unsigned(b.Transition.StateBefore),
+                     unsigned(b.Transition.StateAfter), b.Flags ? "s" : "");
+            m->order += step;
+        }
         if (tonemap &&
             (b.Transition.StateBefore & (D3D12_RESOURCE_STATE_RENDER_TARGET | D3D12_RESOURCE_STATE_UNORDERED_ACCESS)) &&
             (b.Transition.StateAfter & READ_STATES))
             m->tonemap = true;
         if (back) {
+            if (b.Transition.StateBefore == D3D12_RESOURCE_STATE_RENDER_TARGET &&
+                (b.Transition.StateAfter & READ_STATES))
+                m->left_rt = true;
             m->target = r;
             m->state = b.Transition.StateAfter;
+            if (b.Transition.StateAfter == D3D12_RESOURCE_STATE_RENDER_TARGET &&
+                !(b.Transition.StateBefore & (READ_STATES | D3D12_RESOURCE_STATE_RENDER_TARGET)))
+                back_use(r).fresh = true;
         }
     }
     return false;
 }
 
+// A list reset before it was submitted throws its commands away, the core's passes with them: their
+// slot is free again and the frame's back buffer still waits for them.
 void on_reset(ID3D12GraphicsCommandList *list)
 {
     std::lock_guard<std::recursive_mutex> g(lock);
-    marks.erase(list);
+    auto it = marks.find(list);
+    if (it == marks.end())
+        return;
+    if (it->second.slot >= 0) {
+        slots[it->second.slot].pending = false;
+        if (it->second.ran_back)
+            back_use(it->second.ran_back).fresh = true;
+        stats.dropped++;
+    }
+    marks.erase(it);
 }
 
 // Submits the game's lists, the core's own list after a picture list that ended before the HUD, and a
@@ -1318,11 +1418,15 @@ bool on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists)
                 log_diag(reinterpret_cast<ID3D12GraphicsCommandList *>(lists[i]), m);
                 diag_done = true;
             }
-            if (m.tonemap && m.slot < 0 && split == n && !killed_now() && !passes.empty()) {
+            if (m.tonemap && m.slot < 0 && split == n && !hud_reads() && !killed_now() && !passes.empty()) {
                 if (m.ui) {
                     stats.ui_together++;
                     trace.why = "the picture and the HUD are in one list without a HUD-less step";
-                } else if (m.target && m.state == D3D12_RESOURCE_STATE_RENDER_TARGET) {
+                } else if (m.target && m.state == D3D12_RESOURCE_STATE_RENDER_TARGET && back_use(m.target).fresh) {
+                    // The picture is in the back buffer; when the list ends with the HUD-less step still
+                    // open, the rest of that step runs on another queue and leaves the back buffer alone.
+                    stats.deferred += m.hudless && (m.hudless_state & D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+                    back_use(m.target).fresh = false;
                     split = i;
                     res = m.target;
                     state = m.state;
@@ -1338,6 +1442,11 @@ bool on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists)
                     later_depth = m.depth;
                     later_depth_state = m.depth_state;
                 }
+            }
+            if (order_left && m.target && !m.order.empty()) {
+                order_left--;
+                swofty::log("[postfx] order: list %p of %u in this submission%s:%s%s", static_cast<void *>(lists[i]), n,
+                            m.tonemap ? " (picture)" : "", m.order.c_str(), split == i ? " [BETWEEN after this list]" : "");
             }
             marks.erase(it);
         }
@@ -1369,8 +1478,7 @@ bool on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists)
         read_frequency(q);
     for (UINT i = 0; i < signals; i++) {
         Slot &s = slots[signal[i]];
-        s.fence_value = ++fence_next;
-        q->Signal(fence, s.fence_value);
+        q->Signal(s.fence, ++s.fence_value);
         s.pending = false;
         if (capture_slot == signal[i])
             capture_fence = s.fence_value;
@@ -1468,6 +1576,23 @@ void check_trace_file(ULONGLONG now)
     if (now - trace_checked < 1000)
         return;
     trace_checked = now;
+    std::wstring order_file = swofty_root_dir + L"postfx.order";
+    if (GetFileAttributesW(order_file.c_str()) != INVALID_FILE_ATTRIBUTES) {
+        std::string text = runtime::read_file(order_file, 64);
+        DeleteFileW(order_file.c_str());
+        unsigned lists = unsigned(std::strtoul(text.c_str(), nullptr, 10));
+        order_left = lists ? lists : 200;
+        swofty::log("[postfx] logging the barrier order of the next %u list(s) that draw the picture", order_left);
+    }
+    std::wstring burst_file = swofty_root_dir + L"postfx.burst";
+    if (GetFileAttributesW(burst_file.c_str()) != INVALID_FILE_ATTRIBUTES && !burst_left) {
+        std::string text = runtime::read_file(burst_file, 64);
+        DeleteFileW(burst_file.c_str());
+        unsigned frames = unsigned(std::strtoul(text.c_str(), nullptr, 10));
+        burst_left = std::min(frames ? frames : 60u, 240u);
+        burst_present = 0;
+        swofty::log("[postfx] burst: reading back the next %u presented frame(s)", burst_left);
+    }
     if (GetFileAttributesW(trace_file.c_str()) == INVALID_FILE_ATTRIBUTES)
         return;
     std::string text = runtime::read_file(trace_file, 64);
@@ -1477,8 +1602,111 @@ void check_trace_file(ULONGLONG now)
     swofty::log("[postfx] tracing the next %u presented frame(s)", trace_left);
 }
 
+// SWOFTY_POSTFX_BURST diagnostics: the presented frame of the next frames, read back and summed into a
+// mean colour and saturation over a grid, one log line each, beside the trace's path for that frame.
+struct Burst {
+    ID3D12CommandAllocator *alloc = nullptr;
+    ID3D12GraphicsCommandList *list = nullptr;
+    ID3D12Resource *rb = nullptr;
+    UINT64 fence = 0;
+    unsigned present = 0;
+    const char *path = "";
+    bool pending = false;
+};
+std::vector<Burst> bursts;
+D3D12_PLACED_SUBRESOURCE_FOOTPRINT burst_fp;
+UINT burst_w, burst_h;
+DXGI_FORMAT burst_fmt;
+
+void burst_land()
+{
+    for (auto &b : bursts) {
+        if (!b.pending || fence->GetCompletedValue() < b.fence)
+            continue;
+        b.pending = false;
+        uint8_t *mapped = nullptr;
+        if (FAILED(b.rb->Map(0, nullptr, reinterpret_cast<void **>(&mapped))))
+            continue;
+        double r = 0, g = 0, bl = 0, sat = 0;
+        unsigned n = 0;
+        for (UINT y = burst_h / 8; y < burst_h * 7 / 10; y += burst_h / 40)
+            for (UINT x = burst_w / 10; x < burst_w * 9 / 10; x += burst_w / 64) {
+                uint32_t v;
+                memcpy(&v, mapped + burst_fp.Offset + size_t(y) * burst_fp.Footprint.RowPitch + size_t(x) * 4, 4);
+                double c[3];
+                if (burst_fmt == DXGI_FORMAT_R10G10B10A2_UNORM)
+                    c[0] = (v & 1023) / 1023.0, c[1] = ((v >> 10) & 1023) / 1023.0, c[2] = ((v >> 20) & 1023) / 1023.0;
+                else
+                    c[0] = (v & 255) / 255.0, c[1] = ((v >> 8) & 255) / 255.0, c[2] = ((v >> 16) & 255) / 255.0;
+                double mx = std::max(c[0], std::max(c[1], c[2])), mn = std::min(c[0], std::min(c[1], c[2]));
+                r += c[0], g += c[1], bl += c[2], sat += mx > 0 ? (mx - mn) / mx : 0;
+                n++;
+            }
+        D3D12_RANGE none{0, 0};
+        b.rb->Unmap(0, &none);
+        if (n)
+            swofty::log("[postfx] burst present=%u path=%s mean=%.4f,%.4f,%.4f sat=%.4f", b.present, b.path, r / n,
+                        g / n, bl / n, sat / n);
+    }
+}
+
+void burst_step(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known)
+{
+    if (!fence || !device)
+        return;
+    burst_land();
+    if (!burst_left || !known || !known->queue)
+        return;
+    ID3D12Resource *shown = nullptr;
+    if (FAILED(sc->GetBuffer(sc->GetCurrentBackBufferIndex(), IID_PPV_ARGS(&shown))) || !shown)
+        return;
+    D3D12_RESOURCE_DESC d = shown->GetDesc();
+    if (bursts.empty()) {
+        UINT rows = 0;
+        UINT64 row_bytes = 0, total = 0;
+        device->GetCopyableFootprints(&d, 0, 1, 0, &burst_fp, &rows, &row_bytes, &total);
+        burst_w = UINT(d.Width), burst_h = d.Height, burst_fmt = view_format(d.Format);
+        bursts.resize(burst_left);
+        for (auto &b : bursts)
+            if (FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&b.alloc))) ||
+                FAILED(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, b.alloc, nullptr,
+                                                 IID_PPV_ARGS(&b.list))) ||
+                !(b.rb = buffer(D3D12_HEAP_TYPE_READBACK, total, D3D12_RESOURCE_STATE_COPY_DEST))) {
+                swofty::log("[postfx] burst: could not make its readback buffers");
+                burst_left = 0;
+                shown->Release();
+                return;
+            } else
+                b.list->Close();
+    }
+    Burst &b = bursts[burst_at++ % bursts.size()];
+    if (b.pending || FAILED(b.alloc->Reset()) || FAILED(b.list->Reset(b.alloc, nullptr))) {
+        shown->Release();
+        return;
+    }
+    transition(b.list, shown, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_SOURCE);
+    D3D12_TEXTURE_COPY_LOCATION to{}, from{};
+    to.pResource = b.rb;
+    to.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+    to.PlacedFootprint = burst_fp;
+    from.pResource = shown;
+    from.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+    b.list->CopyTextureRegion(&to, 0, 0, 0, &from, nullptr);
+    transition(b.list, shown, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_PRESENT);
+    b.list->Close();
+    ID3D12CommandList *one[] = {b.list};
+    d3d12hooks::exec_original(known->queue, 1u, one);
+    b.fence = ++fence_next;
+    known->queue->Signal(fence, b.fence);
+    b.pending = true;
+    b.present = burst_present++;
+    b.path = trace.runs ? trace.path : "none";
+    burst_left--;
+    shown->Release();
+}
+
 // Present closes the frame: its trace line and counts, the toggle keys, and the live settings.
-void on_present(IDXGISwapChain3 *, const d3d12hooks::Swapchain *known, void *)
+void on_present(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
 {
     static const uint32_t probe = perf::probe("core", "postfx Present");
     perf::Scope p(probe);
@@ -1493,6 +1721,7 @@ void on_present(IDXGISwapChain3 *, const d3d12hooks::Swapchain *known, void *)
     stats.presented++;
     stats.without += trace.runs == 0;
     stats.doubled += trace.runs > 1;
+    burst_step(sc, known);
     log_trace();
     trace = Trace{};
     check_trace_file(now);
@@ -1504,10 +1733,12 @@ void on_present(IDXGISwapChain3 *, const d3d12hooks::Swapchain *known, void *)
     if (stat_lines < STAT_LINES && now >= stat_at) {
         if (stat_at && ran_total)
             swofty::log("[postfx] last 60 s: %u frame(s) presented; passes ran in the game's list on %u and between "
-                        "its lists on %u; %u without passes (%u with the picture and the HUD in one list, %u with list "
-                        "state from before the hooks, %u with the GPU behind); %u frame(s) ran them twice",
-                        stats.presented, stats.in_list, stats.between, stats.without, stats.ui_together,
-                        stats.unknown_state, stats.busy, stats.doubled);
+                        "its lists on %u (%u after a list that left its HUD-less step to another queue; %u recorded into "
+                        "lists the game reset unsubmitted); %u without passes "
+                        "(%u with the picture and the HUD in one list, %u with list state from before the hooks, %u "
+                        "with the GPU behind); %u frame(s) ran them twice",
+                        stats.presented, stats.in_list, stats.between, stats.deferred, stats.dropped, stats.without,
+                        stats.ui_together, stats.unknown_state, stats.busy, stats.doubled);
         stat_lines += stat_at != 0 && ran_total;
         stat_at = now + 60000;
         stats = Stats{};
@@ -1633,6 +1864,7 @@ void postfx_setup()
     }
     off_file = swofty_root() + L"postfx.off";
     trace_file = swofty_root() + L"postfx.trace";
+    swofty_root_dir = swofty_root();
     if (!load_passes()) {
         swofty::log("[postfx] the postfx feature is on, but assets.json names no usable pass");
         return;
@@ -1643,6 +1875,8 @@ void postfx_setup()
     }
     if (GetEnvironmentVariableA("SWOFTY_POSTFX_TRACE", v, sizeof v) && v[0])
         trace_left = unsigned(std::strtoul(v, nullptr, 10));
+    if (GetEnvironmentVariableA("SWOFTY_POSTFX_ORDER", v, sizeof v) && v[0])
+        order_left = unsigned(std::strtoul(v, nullptr, 10));
     refresh_live();
     d3d12hooks::on_setname(on_setname);
     d3d12hooks::on_barrier(on_barrier);
