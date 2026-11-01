@@ -167,6 +167,12 @@ const STAT_ID_CEILINGS: &[(&str, &str, StatIdCeiling)] = &[
         "season",
         StatIdCeiling { max: 31, from: None },
     ),
+    // The Time Trial leaderboard descriptor id is read as a byte (list +0xe0) and goes into the board name LBV<id><track><D|W>.
+    (
+        "leaderboards",
+        "leaderboard_descriptor",
+        StatIdCeiling { max: 255, from: None },
+    ),
     // Each game setup mode names its entrant setup mode; kept to the mode mask's range with it.
     (
         "entrants.entrant_setup_modes",
@@ -2786,6 +2792,47 @@ mod tests {
             "{:?}",
             report.lines
         );
+    }
+
+    #[test]
+    fn leaderboard_descriptor_ids_stay_in_the_byte_the_game_reads() {
+        const BOARDS: &str = "leaderboards";
+        assert_eq!(
+            stat_id_ceiling(BOARDS, "leaderboard_descriptor"),
+            Some(StatIdCeiling { max: 255, from: None })
+        );
+        let mut db = table(BOARDS, "leaderboard_descriptor", &[0, 1, 3, 2, 5]);
+        let stock: HashSet<u64> = db.records.iter().map(|r| r.key).collect();
+        let rows = [("swofty_a", None), ("swofty_b", None), ("swofty_c", Some(300))];
+        let mut report = DbReport::default();
+        apply_db_ops_report(
+            &mut db,
+            &add_rows(BOARDS, "leaderboard_descriptor", &rows),
+            &stock,
+            &mut report,
+        )
+        .unwrap();
+        assert_eq!(
+            ids(&db, BOARDS, "leaderboard_descriptor"),
+            [0, 1, 3, 2, 5, 6, 7, 8]
+        );
+        assert_eq!(
+            db.get_text("leaderboards.leaderboard_descriptor_5._metadata_")
+                .as_deref(),
+            Some("swofty_a")
+        );
+        let labels: Vec<String> = (0..260).map(|i| format!("box_{i}")).collect();
+        let many: Vec<(&str, Option<i64>)> = labels.iter().map(|l| (l.as_str(), None)).collect();
+        let mut full = table(BOARDS, "leaderboard_descriptor", &[0, 1, 3, 2, 5]);
+        let stock: HashSet<u64> = full.records.iter().map(|r| r.key).collect();
+        let err = apply_db_ops_report(
+            &mut full,
+            &add_rows(BOARDS, "leaderboard_descriptor", &many),
+            &stock,
+            &mut DbReport::default(),
+        )
+        .unwrap_err();
+        assert!(err.to_string().contains("has no free stat_id up to 255"), "{err}");
     }
 
     #[test]

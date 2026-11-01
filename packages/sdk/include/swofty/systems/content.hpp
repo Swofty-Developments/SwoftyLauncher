@@ -30,7 +30,7 @@ struct Team {
 SWOFTY_RECORD(Team, key, team, vehicle, engine_sound, livery, drivers)
 
 struct Package {
-    static constexpr Version version{1, 0};
+    static constexpr Version version{1, 2};
     Text title;
     std::string entrant_list;
     int season = 0;
@@ -38,10 +38,11 @@ struct Package {
     Keyed<Team, &Team::key> teams;
     sessions::Rules rules;
     std::string setup_mode = "swofty_f1";
+    std::string leaderboard = "box";
     StatId stat_id = StatId::automatic;
     json::Value extra;
 };
-SWOFTY_RECORD(Package, title, entrant_list, season, calendar, teams, rules, setup_mode, stat_id)
+SWOFTY_RECORD(Package, title, entrant_list, season, calendar, teams, rules, setup_mode, leaderboard, stat_id)
 
 struct TimeTrial {
     std::string entrant_list;
