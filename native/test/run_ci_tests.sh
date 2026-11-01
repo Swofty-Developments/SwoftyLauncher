@@ -61,6 +61,7 @@ t "Live car operations host test" native/test/run_car_live_test.sh
 t "Hook points review test" native/test/run_w5_review_test.sh
 t "Shader look unit test" native/test/run_grade_test.sh
 t "ERS new-lap site unit test" native/test/run_ers_newlap_test.sh
+t "Round track record guard unit test" native/test/run_track_record_test.sh
 t "Tyre slot guard unit test" native/test/run_tyre_slots_test.sh
 t "Pit slot guard unit test" native/test/run_pit_slots_test.sh
 t "Pit box guard unit test" native/test/run_pit_box_test.sh

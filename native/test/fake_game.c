@@ -1185,6 +1185,57 @@ static void test_pit_slots(int guard)
     expect(pit_rank(2, behind, 1) == 0, "pit slots: the rank evaluator answers no for a car without a slot of its own");
 }
 
+// Career_Weekends_BuildResultNodes's record read, copied byte for byte from the Steam build (0x14181b854..0x14181b866),
+// in a small frame that takes the TrackDataSystem items in rcx and the track id in rdx. The load is items[track*0x10+8]
+// then [record+0x2c0]; it returns that value, 0 for a record that is not there once core's guard has skipped the unchecked
+// read. Core's weekends guard resolves site_Career_WeekendsTrackRecordLoad here at +0x13.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_weekends_record\n"
+    ".def fake_weekends_record; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_weekends_record\n"
+    "fake_weekends_record:\n"
+    ".byte 0x57\n.seh_pushreg %rdi\n"
+    ".seh_endprologue\n"
+    ".byte 0x48,0x89,0xD7,0x48,0x89,0xC8,0x48,0x89,0xF9,0x48,0xC1,0xE1,0x04\n"
+    ".byte 0x48,0x8B,0x44,0x08,0x08,0x48,0x8B,0x80,0xC0,0x02,0x00,0x00,0x48,0x8D,0x48,0x08,0x48,0x85,0xC0\n"
+    ".byte 0x5F,0xC3\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_weekends_record\"\n"
+    ".text\n");
+uint64_t fake_weekends_record(void *items, uint64_t track);
+
+static uint8_t weekends_record[0x2c8];
+static uint64_t weekends_items[8 * 2];
+
+static void weekends_setup(void)
+{
+    *(uint64_t *)(weekends_record + 0x2c0) = 0x2c0c0de;
+    weekends_items[3 * 2 + 1] = (uint64_t)weekends_record;
+}
+
+static void test_weekends(void)
+{
+    weekends_setup();
+    uint64_t r = fake_weekends_record(weekends_items, 3);
+    expect(r == 0x2c0c0de, "weekends: a round with track data reads its record as the game does");
+    r = fake_weekends_record(weekends_items, 1);
+    uint64_t again = fake_weekends_record(weekends_items, 1);
+    expect(r == 0 && again == 0, "weekends: a round whose track has no record reads as empty");
+}
+
+static void crash_weekends(void)
+{
+    SetErrorMode(SEM_NOGPFAULTERRORBOX);
+    weekends_setup();
+    printf("      weekends: reading a round whose track has no record\n");
+    fflush(stdout);
+    uint64_t r = fake_weekends_record(weekends_items, 1);
+    printf("      weekends: the round returned %llu\n", (unsigned long long)r);
+    fflush(stdout);
+}
+
 static void test_settings(int on, uint64_t chain)
 {
     HMODULE t = GetModuleHandleW(L"t_settings.dll");
@@ -1854,6 +1905,7 @@ int main(int argc, char **argv)
         test_ers_newlap();
         test_ers_mode();
         test_standings();
+        test_weekends();
         test_garage_crew(1);
         test_pit_slots(1);
         test_leaderboard_guard();
@@ -1893,6 +1945,8 @@ int main(int argc, char **argv)
         crash_ers_mode();
     if (argc > 1 && !strcmp(argv[1], "standings"))
         crash_standings();
+    if (argc > 1 && !strcmp(argv[1], "weekends"))
+        crash_weekends();
     if (argc > 1 && !strcmp(argv[1], "garage_crew")) {
         const char *off = getenv("SWOFTY_GARAGE_CREW_GUARD");
         test_garage_crew(!(off && *off));

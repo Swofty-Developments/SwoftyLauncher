@@ -15118,6 +15118,11 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Career_WeekendsTrackRecordLoad: Binding = Binding {
+        id: "site_Career_WeekendsTrackRecordLoad",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_FeFlow_SetStateStatus: Binding = Binding {
         id: "site_FeFlow_SetStateStatus",
         kind: "site",
