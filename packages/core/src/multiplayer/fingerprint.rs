@@ -571,6 +571,19 @@ pub enum MismatchKind {
 }
 
 impl Mismatch {
+    /// The addon this is about, when it is about one.
+    pub fn name(&self) -> Option<&str> {
+        match &self.kind {
+            MismatchKind::MissingAddon { name, .. }
+            | MismatchKind::ExtraAddon { name, .. }
+            | MismatchKind::VersionDiffers { name, .. }
+            | MismatchKind::SourceDiffers { name, .. }
+            | MismatchKind::InputsDiffer { name, .. } => Some(name),
+            MismatchKind::OptionDiffers { addon, .. } => Some(addon),
+            _ => None,
+        }
+    }
+
     /// An addon whose copies differ only in the stat ids their rows got, or in this side's game not being
     /// built with it yet: a build with the host's ids ([`row_id_overrides`]) cures it.
     pub fn cured_by_build(&self) -> bool {
@@ -640,6 +653,17 @@ impl Mismatch {
             text
         }
     }
+}
+
+/// The mismatches a room launch will not resolve by itself: with `will_build`, the ones a build with the
+/// host's ids cures (an addon this player's game isn't built with yet, or only different stat ids) are
+/// left out, since starting F1 25 for the room builds it.
+pub fn unresolved_by_launch(mismatches: &[Mismatch], will_build: bool) -> Vec<Mismatch> {
+    mismatches
+        .iter()
+        .filter(|m| !(will_build && m.cured_by_build()))
+        .cloned()
+        .collect()
 }
 
 /// Files named before the rest are counted.
@@ -1428,6 +1452,40 @@ mod tests {
             found[0].differences,
             ["row entrants.vehicles.vehicle/car_b has stat id 513 here and 600 in the other copy"]
         );
+    }
+
+    #[test]
+    fn a_room_launch_hides_only_what_its_build_cures() {
+        let source = |differences: &[&str]| Mismatch {
+            kind: MismatchKind::SourceDiffers {
+                id: "a.b".into(),
+                name: "A".into(),
+                version: Version::new(1, 0, 0),
+                local: Source::Content("x".into()),
+                host: Source::Built("y".into()),
+                registry: None,
+            },
+            fixable: false,
+            differences: differences.iter().map(|d| (*d).to_owned()).collect(),
+        };
+        let unbuilt =
+            source(&["your game wasn't built with it, so its files count instead; start F1 25 again"]);
+        let ids = source(&["row t.r/x has stat id 269 here and 297 in the other copy"]);
+        let files = source(&["it reads other files: 0 here, 2 at the host"]);
+        let missing = Mismatch {
+            kind: MismatchKind::MissingAddon {
+                id: "c.d".into(),
+                name: "C".into(),
+                version: Version::new(1, 0, 0),
+                source: Source::Content("z".into()),
+                registry: None,
+            },
+            fixable: true,
+            differences: Vec::new(),
+        };
+        let all = vec![unbuilt, ids, files.clone(), missing.clone()];
+        assert_eq!(unresolved_by_launch(&all, true), vec![files, missing]);
+        assert_eq!(unresolved_by_launch(&all, false), all);
     }
 
     #[test]

@@ -26,6 +26,7 @@ use super::diag;
 use super::direct::DirectUdp;
 use super::fingerprint::{self, Fingerprint, Mismatch, MismatchKind};
 use super::game::{self, Category, Command, GameStatus, Screen};
+use super::progress::{self, MemberStage};
 use super::rooms::{Api, ApiError, Lobby, RoomKey, RoomSettings, User};
 use super::transport::Transport;
 use super::turn::TurnTransport;
@@ -342,6 +343,8 @@ pub struct MemberState {
     pub connected: bool,
     pub fingerprint: PrintMatch,
     pub relay: RelayStatus,
+    /// Where the member's game is, from the game itself; `None` before their launcher announces it.
+    pub stage: Option<MemberStage>,
     /// Game traffic with this member through the bridge.
     pub traffic: Option<MemberStats>,
 }
@@ -414,7 +417,7 @@ pub struct SessionState {
 }
 
 impl SessionState {
-    fn new(host: bool) -> Self {
+    pub(super) fn new(host: bool) -> Self {
         Self {
             phase: Phase::Connecting("starting".into()),
             host,
@@ -762,6 +765,8 @@ struct Worker {
     launch: Option<LaunchAsk>,
     launched: Option<Instant>,
     refreshed: bool,
+    stage_sent: Option<MemberStage>,
+    ready_sent: Option<(bool, Instant)>,
 }
 
 impl Worker {
@@ -813,6 +818,8 @@ impl Worker {
             launch: None,
             launched: None,
             refreshed: false,
+            stage_sent: None,
+            ready_sent: None,
         }
     }
 
@@ -858,7 +865,15 @@ impl Worker {
             Ok(()) => {
                 self.failures = 0;
                 let started = self.lobby.as_ref().is_some_and(Lobby::started);
-                self.phase = if started { Phase::Racing } else { Phase::InLobby };
+                let in_game_lobby =
+                    !self.setup.room_launch || self.game_status.as_ref().is_some_and(|g| g.in_session);
+                self.phase = if !in_game_lobby {
+                    Phase::WaitingForGame("loading F1 25 into the room's lobby".into())
+                } else if started {
+                    Phase::Racing
+                } else {
+                    Phase::InLobby
+                };
             }
             Err(Halt::Step(step, after)) => {
                 self.phase = Phase::Connecting(step);
@@ -949,18 +964,8 @@ impl Worker {
                 self.update_local(local);
             }
         }
-        if self.hosting() || self.launched.is_some() {
-            return Ok(());
-        }
-        let Some(host) = self.lobby.as_ref().and_then(Lobby::host_member).cloned() else {
-            return Ok(());
-        };
-        if host.digest.is_none() || host.digest.as_deref() == Some(self.setup.local.digest().as_str()) {
-            return Ok(());
-        }
-        self.compare_with_host();
-        if !self.mismatches.is_empty() && self.mismatches.iter().all(Mismatch::cured_by_build) {
-            return self.ask_launch(true, "the game was built differently from the host's");
+        if self.launched.is_none() {
+            return self.ask_launch(true, "F1 25 was already open; it starts again for the room");
         }
         Ok(())
     }
@@ -1033,7 +1038,7 @@ impl Worker {
             });
         }
         Err(Halt::Game(if restart {
-            "restart F1 25 into the room to use the host's ids".into()
+            "restart F1 25 for the room".into()
         } else {
             "starting F1 25 for the room".into()
         }))
@@ -1145,11 +1150,61 @@ impl Worker {
     }
 
     fn fingerprint_message(&self) -> Value {
+        let mut blob = self.setup.local.blob.clone();
+        if self.setup.room_launch
+            && let Some(doc) = blob.as_object_mut()
+        {
+            doc.insert("room_stage".into(), json!(self.own_stage().as_str()));
+        }
         json!({
             "type": "fingerprint",
             "digest": self.setup.local.digest(),
-            "blob": self.setup.local.blob,
+            "blob": blob,
         })
+    }
+
+    fn own_stage(&self) -> MemberStage {
+        progress::own_stage(self.game_status.as_ref())
+    }
+
+    fn ready_message(&self) -> Value {
+        json!({ "type": "ready", "ready": self.own_stage() == MemberStage::InLobby })
+    }
+
+    /// Tells the room where this player's game is: the stage in the fingerprint, the server's ready flag
+    /// once the game is in its lobby. Sent when the stage changes, and again when the server's flag for this
+    /// player disagrees (a reopened room clears it).
+    fn sync_stage(&mut self) {
+        if !self.setup.room_launch || self.socket.is_none() {
+            return;
+        }
+        let stage = self.own_stage();
+        let now = Instant::now();
+        if self.stage_sent != Some(stage) {
+            self.stage_sent = Some(stage);
+            diag::line(format!("stage: this player's game is {}", stage.as_str()));
+            self.announce(&self.fingerprint_message());
+            if let Some(socket) = &self.socket {
+                socket.send(&self.ready_message());
+            }
+            self.ready_sent = Some((stage == MemberStage::InLobby, now));
+            return;
+        }
+        let want = stage == MemberStage::InLobby;
+        let listed = self
+            .me
+            .as_ref()
+            .and_then(|me| self.lobby.as_ref()?.member(&me.id))
+            .map(|m| m.ready);
+        let stale = self
+            .ready_sent
+            .is_none_or(|(sent, at)| sent != want || now.duration_since(at) >= Duration::from_secs(5));
+        if listed.is_some_and(|l| l != want) && stale {
+            if let Some(socket) = &self.socket {
+                socket.send(&self.ready_message());
+            }
+            self.ready_sent = Some((want, now));
+        }
     }
 
     fn relay_message(&self) -> Option<Value> {
@@ -1211,6 +1266,9 @@ impl Worker {
         if let Some(socket) = &self.socket {
             let mut hello = vec![self.fingerprint_message().to_string()];
             hello.extend(self.relay_message().map(|r| r.to_string()));
+            if self.setup.room_launch {
+                hello.push(self.ready_message().to_string());
+            }
             socket.set_hello(hello);
             socket.send(msg);
         }
@@ -1642,7 +1700,7 @@ impl Worker {
             "closed" => {
                 let reason = msg.get("reason").and_then(Value::as_str).unwrap_or("");
                 let why = match reason {
-                    "host_left" => "the host closed the room",
+                    "host_left" => "the host left, so the room closed",
                     "host_gone" => "the host lost their connection",
                     "idle" => "the room closed after being idle",
                     "shutdown" => "the multiplayer server restarted",
@@ -1767,6 +1825,7 @@ impl Worker {
                 Err(e) => self.last_error = Some(format!("the game isn't answering: {e}")),
             }
         }
+        self.sync_stage();
     }
 
     /// Mint fresh credentials, allocate a new relay, give it the members, swap it in under the
@@ -1843,6 +1902,21 @@ impl Worker {
         }
     }
 
+    fn member_stage(&self, m: &super::rooms::LobbyMember, is_me: bool) -> Option<MemberStage> {
+        if !self.setup.room_launch {
+            return None;
+        }
+        if is_me {
+            return Some(self.own_stage());
+        }
+        let announced = self
+            .prints
+            .get(&m.id)
+            .and_then(|blob| blob.get("room_stage"))
+            .and_then(Value::as_str);
+        progress::member_stage(m.ready, announced)
+    }
+
     fn publish(&self) {
         let me = self.me.as_ref().map(|u| u.id.as_str());
         let lobby = self.lobby.as_ref();
@@ -1875,6 +1949,7 @@ impl Worker {
                             connected: m.connected,
                             fingerprint,
                             relay,
+                            stage: self.member_stage(m, is_me),
                             traffic: self.stats.as_ref().and_then(|s| s.members.get(&number).copied()),
                         })
                     })
@@ -1895,7 +1970,10 @@ impl Worker {
             }),
             self_member: self.self_number(),
             members,
-            mismatches: self.mismatches.clone(),
+            mismatches: fingerprint::unresolved_by_launch(
+                &self.mismatches,
+                self.setup.room_launch && self.launched.is_none(),
+            ),
             lobby_connected: self.lobby_connected,
             relay: self
                 .relay
@@ -2333,6 +2411,7 @@ mod tests {
                     configured: false,
                     self_member: 0,
                     base: 0,
+                    cover: None,
                 }),
                 log: Mutex::new(Vec::new()),
                 host_delay: Mutex::new(Duration::ZERO),
@@ -2350,6 +2429,12 @@ mod tests {
 
         fn set_screen(&self, screen: Screen) {
             lock(&self.status).screen = screen;
+        }
+
+        fn reach_lobby(&self) {
+            let mut status = lock(&self.status);
+            status.screen = Screen::LanLobby;
+            status.in_session = true;
         }
 
         fn refuse(&self, op: &str, why: &str) -> game::Error {
@@ -2901,7 +2986,15 @@ mod tests {
         assert!(ask.base != 0);
         game.closed.store(false, Ordering::Relaxed);
         game.set_screen(Screen::Other);
-        wait_until(&host, "the lobby without a main menu", in_lobby);
+        let loading = wait_until(
+            &host,
+            "the game loading",
+            |s| matches!(&s.phase, Phase::WaitingForGame(w) if w.contains("loading")),
+        );
+        assert_eq!(loading.members[0].stage, Some(MemberStage::Loading));
+        game.reach_lobby();
+        let state = wait_until(&host, "the lobby without a main menu", in_lobby);
+        assert_eq!(state.members[0].stage, Some(MemberStage::InLobby));
         assert!(
             game.log().is_empty(),
             "a game started with its room configuration is sent no commands: {:?}",
@@ -2960,6 +3053,12 @@ mod tests {
         );
         guest.launched();
         guest_game.closed.store(false, Ordering::Relaxed);
+        wait_until(
+            &guest,
+            "the guest loading",
+            |s| matches!(&s.phase, Phase::WaitingForGame(w) if w.contains("loading")),
+        );
+        guest_game.reach_lobby();
         let state = wait_until(&guest, "the guest's lobby", in_lobby);
         assert!(state.mismatches.is_empty(), "{:?}", state.mismatches);
         assert!(guest_game.log().is_empty(), "{:?}", guest_game.log());
@@ -3103,7 +3202,10 @@ mod tests {
         wait_until(&guest, "the guest's lobby", in_lobby);
         leave(&host);
         let state = wait_until(&guest, "the end", |s| s.phase.is_over());
-        assert_eq!(state.phase, Phase::Ended("the host closed the room".into()));
+        assert_eq!(
+            state.phase,
+            Phase::Ended("the host left, so the room closed".into())
+        );
         leave(&guest);
         let log = guest_game.log();
         assert_eq!(&log[log.len() - 2..], ["leave", "clear"]);
