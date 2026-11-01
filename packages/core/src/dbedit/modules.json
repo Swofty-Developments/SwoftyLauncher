@@ -3684,7 +3684,7 @@
    "group": "Tracks & Calendar",
    "title": "Calendar",
    "icon": "calendar-days",
-   "summary": "The events of each track list, in calendar order.",
+   "summary": "The events of each track list, and the date each round is ordered by.",
    "scope": {
     "title": "Track list",
     "rows": "schedule.track_lists.track_event_list",
@@ -3695,7 +3695,9 @@
     "field": "event_name"
    },
    "columns": [
-    "event_name"
+    "event_name",
+    "weekend_month",
+    "weekend_day"
    ],
    "fields": [
     {
@@ -3709,7 +3711,29 @@
        "template": "{activity}"
       }
      },
-     "help": "Reorder the calendar by swapping events between rounds."
+     "help": "The event this slot of the list runs. Careers order their rounds by each event's date, not by the slot, so swapping events between slots changes which events run but not the order they run in; change the dates to change the order."
+    },
+    {
+     "id": "weekend_month",
+     "label": "Weekend month",
+     "path": "track_data.game_setup.TrackDataSet[_metadata_={season}].TrackData[track={ref.event_name.activity}].TrackGeneralData_0.weekend_month",
+     "kind": "int",
+     "min": 1,
+     "max": 12,
+     "optional": true,
+     "section": "Date",
+     "help": "The month this event's weekend is dated, in the same season of Track settings. Careers order rounds by this date. Two rounds at the same event share it, and so does every other list of the season."
+    },
+    {
+     "id": "weekend_day",
+     "label": "Weekend day",
+     "path": "track_data.game_setup.TrackDataSet[_metadata_={season}].TrackData[track={ref.event_name.activity}].TrackGeneralData_0.weekend_day",
+     "kind": "int",
+     "min": 1,
+     "max": 31,
+     "optional": true,
+     "section": "Date",
+     "help": "The day of the month; see the month. Rounds on the same date keep the slot order. An event with no date in the season runs last."
     },
     {
      "id": "label",
@@ -3729,7 +3753,9 @@
     }
    ],
    "notes": [
-    "Lists sorted by date order their events by the weekend dates in Track settings.",
+    "A career orders its rounds by each event's weekend date, whatever the order of the list and whatever Sort by date says. Swapping events between slots changes which events run, not their order, unless their dates change.",
+    "The date is the weekend day and month of the event's weekend in the Track settings season of the list (F1_2026_full uses f1_2026), so a round keeps its place when its weekend is moved to another track. Edit it here or in Track settings; a new career picks it up.",
+    "Events count on Track lists lowers the list; slots past it are dropped, and the page and the build say which rounds.",
     "To race a round at another track, such as Sepang in the bahrain24 slot or a modded track, change its weekend's track in Race weekends."
    ]
   },
@@ -3773,7 +3799,7 @@
    ],
    "notes": [
     "A modded track, or the bahrain24 slot a track like Sepang fills, needs its track addon on in the profile.",
-    "A weekend at another track uses that track's Track settings, including the weekend date that lists sorted by date order by."
+    "A weekend at another track keeps its own date: calendars order rounds by the weekend day and month in Track settings under the weekend's name, not those of the track it now races at."
    ]
   },
   {
@@ -3796,13 +3822,14 @@
      "kind": "int",
      "min": 1,
      "max": 30,
-     "help": "The game reads this many events from the list. More events need new rows; without them, the build keeps the count at the rows the list has."
+     "help": "The game reads this many events from the list and drops the slots after them. Lowering it cuts rounds from the end; the Calendar page and the build name them. More events need new rows; without them, the build keeps the count at the rows the list has."
     },
     {
      "id": "sort_by_date",
      "label": "Sort by date",
      "path": "sort_by_date",
-     "kind": "bool"
+     "kind": "bool",
+     "help": "Careers order the rounds by date whichever way this is set."
     },
     {
      "id": "label",

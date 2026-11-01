@@ -1351,6 +1351,12 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 built.warnings.push(t.line(by));
             }
         }
+        for c in crate::dbedit::calendar::cut_rounds(&db) {
+            let by = planner
+                .record_writer(c.key)
+                .map_or("database", |id| addons.get(id).map_or(id, |m| m.name.as_str()));
+            built.warnings.push(c.line(by));
+        }
         for u in crate::heads::keep_wearable(&mut db, &shipped_db) {
             let by = planner
                 .record_writer(u.key)
