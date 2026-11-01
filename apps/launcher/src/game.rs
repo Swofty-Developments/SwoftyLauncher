@@ -365,6 +365,7 @@ pub struct Launch {
 }
 
 impl Launch {
+    #[allow(clippy::too_many_arguments)]
     pub fn start(
         store: &Store,
         profile: &str,
