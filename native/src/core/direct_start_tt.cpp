@@ -21,12 +21,12 @@
 // list. Its session settings (slot 0xd8, body 0x148731f80: session 18, ruleset 2) take the track from
 // 0x1407ddbf0, which reads the VM string game_mode_data.current_game_mode.track_info.current_track.track_file_name
 // and finds the record of that name (+0x78) in E's track system (E+0xf58, 16-byte entries at +0x28..+0x30, the
-// record at +8). Sess_TimeTrialMode_FillDescriptor (0x142936760) takes the player's team from the local player's
-// entrant selection, a static pair of 0xc0-byte records at 0x14604eac0 (guard 0x14604ec50): the packed team ref
-// at +0x68 with its engaged byte at +0x6c, which the team select writes (0x1407dfda0 shows the write) and the fill
-// reads at 0x142936c72 when no hot load is pending. Team refs pack a kind byte with a u16 index into
-// [[[E+0xf80]+0x58]+0x2c8+kind*0x10] (16-byte entries at +8, the team's name at entry+0x18); an entrant record
-// carries its team's ref at +0x58.
+// record at +8). Sess_TimeTrialMode_FillDescriptor (0x142936760) takes the player's car from the Time Trial
+// component's hot load holder (see tt_component), else from the local player's entrant selection (a static pair of
+// 0xc0-byte records at 0x14604eac0, guard 0x14604ec50, team ref +0x68 engaged +0x6c) and a per-team vehicle table
+// built for the screens' list. Team refs pack a kind byte with a u16 index into [[[E+0xf80]+0x58]+0x2c8+kind*0x10]
+// (16-byte entries at +8, the team's name at entry+0x18); an entrant record carries its team's ref at +0x58 and its
+// vehicle's at +0x5c. Once the garage is up the front end's main scene is despawned and the intro fade released.
 
 namespace runtime {
 std::vector<era::Box> era_boxes();
@@ -118,30 +118,28 @@ uint8_t *mode_named(void *modes, const char *want, std::vector<std::string> &nam
     return found;
 }
 
-// When the VM node does not hold the track (the node missing, or rewritten before the load), the Time Trial's track
-// getter is wrapped to answer the chosen record until the session is on screen.
+// The VM node is not writable through the core's path setter (current_game_mode is a link), so the Time Trial's track
+// getter is wrapped: while it still reads the track the profile left (stale), it answers the chosen record. A track
+// the player picks later in the session (a hot load rewrites the node) reads differently and passes through.
 safetyhook::InlineHook h_track;
-std::atomic<uint8_t *> forced_track{nullptr};
+std::atomic<uint8_t *> forced_track{nullptr}, stale_track{nullptr};
 std::atomic<bool> told_forced{false};
 
 uint8_t *track_detour(void *e)
 {
     uint8_t *r = h_track.call<uint8_t *>(e);
     uint8_t *want = forced_track.load();
-    if (!want)
+    if (!want || r == want || r != stale_track.load())
         return r;
-    if (runtime::direct_start_cover_signal() != 0) {
-        forced_track = nullptr;
-        return r;
-    }
-    if (r != want && !told_forced.exchange(true))
+    if (!told_forced.exchange(true))
         swofty::log("[direct] Time Trial: the track getter read %p; it answers the chosen track %p", r, want);
     return want;
 }
 
-bool force_track(uint8_t *rec)
+bool force_track(uint8_t *rec, uint8_t *stale)
 {
     forced_track = rec;
+    stale_track = stale;
     if (h_track)
         return true;
     auto h = safetyhook::InlineHook::create(rva<void>(RVA_CURRENT_TRACK), reinterpret_cast<void *>(track_detour));
@@ -316,7 +314,7 @@ Setup set_team(uint8_t *e, uint8_t *list, const std::string &want, std::string &
         refs.push_back(ref);
         vehicles.push_back(at<uint32_t>(r, RECORD_VEHICLE));
     }
-    int i = tt::pick_team(labels, want);
+    int i = want.empty() ? (labels.empty() ? -1 : 0) : tt::pick_team(labels, want);
     if (i < 0) {
         why = "the list has no team '" + want + "' (teams: " + tt::joined(labels) + ")";
         return Setup::failed;
@@ -405,7 +403,7 @@ Setup place(uint8_t *e, const json::Value &request, std::string &why)
         const char *reads = now && runtime::readable(now, TRACK_NAME + 8) ? c_name(at<const char *>(now, TRACK_NAME)) : nullptr;
         swofty::log("[direct] Time Trial: track %s (%p): the VM node %s, the getter reads %s", file, rec,
                     written ? "written" : "NOT written", reads ? reads : "nothing");
-        if (now != rec && !force_track(rec)) {
+        if (now != rec && !force_track(rec, now)) {
             why = std::string("the Time Trial's track could not be set to ") + file;
             return Setup::failed;
         }
@@ -432,16 +430,13 @@ Setup apply(uint8_t *e, const json::Value &request, std::string &why)
         st.placed = true;
     }
     std::string team = request["team"].str();
-    if (!team.empty()) {
-        if (!st.list) {
-            why = "no entrant list is selected to pick the team from";
-            return Setup::failed;
-        }
-        Setup s = set_team(e, st.list, team, why);
-        if (s != Setup::done)
-            return s;
+    if (!st.list) {
+        if (team.empty())
+            return Setup::done;
+        why = "no entrant list is selected to pick the team from";
+        return Setup::failed;
     }
-    return Setup::done;
+    return set_team(e, st.list, team, why);
 }
 
 }
@@ -510,7 +505,7 @@ Setup setup(const json::Value &request, std::string &why)
 
 namespace {
 
-std::atomic<bool> tt_armed{false}, splash_closed{false};
+std::atomic<bool> tt_armed{false}, garage_seen{false};
 
 // The Time Trial's intro states fade out for Broadcast (bit 2), BroadcastFull (bit 3) and CareerHub (bit 14)
 // (Sess_IntroVideo_OnStateEnter 0x142d6cfc0) and fade back in from the intro video's end (0x142d6db20) or the
@@ -597,7 +592,7 @@ void despawn_main_scene(const char *when)
 
 void on_screen(const char *name)
 {
-    if (!tt_armed.load() || !name || std::strcmp(name, "garage_cockpit") || splash_closed.exchange(true))
+    if (!tt_armed.load() || !name || std::strcmp(name, "garage_cockpit") || garage_seen.exchange(true))
         return;
     despawn_main_scene("as the garage opens");
     release_fade();
