@@ -275,6 +275,8 @@ void direct_start_register_room(DirectStartSetup setup);
 void direct_start_register_time_trial(DirectStartSetup setup);
 // Every screen the UI opens while a direct start is armed (ui.cpp's open hook), for the Time Trial's own steps.
 void direct_start_register_time_trial_screen(void (*screen)(const char *name));
+// The flow graph's root state (StateApp) once the flow has updated it, or null.
+void *direct_start_flow_root();
 std::string direct_start_request_text();
 // For the cover: 0 while a session target is on its way, 1 once its session is on screen, -1 when it failed.
 int direct_start_cover_signal();

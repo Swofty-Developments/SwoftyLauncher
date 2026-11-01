@@ -938,6 +938,11 @@ int direct_start_cover_signal()
     return at && GetTickCount64() - at >= SESSION_SCREEN_WAIT_MS ? 1 : 0;
 }
 
+void *direct_start_flow_root()
+{
+    return flow_root;
+}
+
 void direct_start_register_time_trial_screen(void (*screen)(const char *name))
 {
     time_trial_screen = screen;

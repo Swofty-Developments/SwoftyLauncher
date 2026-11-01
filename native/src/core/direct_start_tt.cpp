@@ -33,7 +33,6 @@ std::vector<era::Box> era_boxes();
 }
 
 bool ui_vm_set_path(const std::string &path, int type, const void *value);
-void *ui_vm_binding_manager();
 
 namespace runtime {
 std::string hook_error(const safetyhook::InlineHook::Error &e);
@@ -85,6 +84,8 @@ const char *holder_name(const uint8_t *obj, uintptr_t holder_off)
     auto *holder = at<const uint8_t *>(obj, holder_off);
     return holder && runtime::readable(holder, 0x18) ? c_name(at<const char *>(holder, 0x10)) : nullptr;
 }
+
+void despawn_main_scene(const char *when);
 
 struct State {
     tt::Step step = tt::Step::mode;
@@ -498,6 +499,7 @@ Setup setup(const json::Value &request, std::string &why)
     Setup s = apply(st.entity, request, why);
     if (s == Setup::done) {
         st.step = Step::done;
+        despawn_main_scene("at the setup");
         swofty::log("[direct] Time Trial: set up %llu ms after the mode was made current",
                     (unsigned long long)(GetTickCount64() - st.mode_set));
     }
@@ -508,74 +510,7 @@ Setup setup(const json::Value &request, std::string &why)
 
 namespace {
 
-// The boot's splash_transition screen (the press-start background with the loading lights) is closed by the front
-// end's first route, which a direct start never runs, so in a Time Trial (no broadcast intro covers it) it stays over
-// the garage. Its own route group has 'close' (TransitionScreen out, CloseScreen). Vm_Fire_Route (0x1442c0e20) takes
-// the router (the binding manager every view model holds at +0x28), a view model only for its binding key (+0x250),
-// and runs the route on the screen that key binds: the router's robin-hood map at +0x48 holds 16-byte entries
-// {u32 key, screen} from map+0xa0 up to its info bytes at map+0xa8; a screen's name is at +0x68 (+9 for the chars).
-const runtime::Sig SIG_FIRE_CALL{"Vm_Fire_Route", "48 8B 4E 28 48 89 F2 49 89 F8 45 31 C9 E8 ?? ?? ?? ?? E9 E4 00 00 00",
-                                 0x42c0e20, runtime::Sig::rel32, 13, 14, 5};
-constexpr uintptr_t ROUTER_MAP = 0x48, MAP_ENTRIES = 0xa0, MAP_INFO = 0xa8, SCREEN_NAME = 0x68, VM_KEY = 0x250;
-constexpr const char *SPLASH = "splash_transition";
-
-using Fire_t = void(void *router, void *vm, void **name, uint64_t a4);
-using MakeStr_t = void(void **out, const char *text, int a3, int a4);
-
 std::atomic<bool> tt_armed{false}, splash_closed{false};
-
-const char *screen_name(const uint8_t *screen)
-{
-    if (!screen || !runtime::readable(screen, SCREEN_NAME + 8))
-        return nullptr;
-    auto *s = at<const uint8_t *>(screen, SCREEN_NAME);
-    return s && runtime::readable(s, 10) ? c_name(s + 9) : nullptr;
-}
-
-bool close_screen(const char *want)
-{
-    auto *router = static_cast<uint8_t *>(ui_vm_binding_manager());
-    uintptr_t fire = runtime::find(SIG_FIRE_CALL, "Vm_Fire_Route", "direct");
-    uintptr_t make = swofty::api->resolve("Ne_Make_StrFromCStr");
-    if (!router || !fire || !make || !runtime::readable(router, ROUTER_MAP + 8)) {
-        swofty::log("[direct] Time Trial: no router, Vm_Fire_Route or Ne_Make_StrFromCStr to close %s", want);
-        return false;
-    }
-    auto *map = at<uint8_t *>(router, ROUTER_MAP);
-    if (!map || !runtime::readable(map, MAP_INFO + 8))
-        return false;
-    auto *entries = at<uint8_t *>(map, MAP_ENTRIES), *info = at<uint8_t *>(map, MAP_INFO);
-    if (!entries || info <= entries || size_t(info - entries) / 16 > 65536)
-        return false;
-    size_t slots = size_t(info - entries) / 16;
-    std::string seen;
-    uint32_t key = 0;
-    bool found = false;
-    for (size_t i = 0; i < slots; ++i) {
-        if (!runtime::readable(info + i, 1) || !info[i] || !runtime::readable(entries + i * 16, 16))
-            continue;
-        const char *name = screen_name(at<uint8_t *>(entries + i * 16, 8));
-        if (!name)
-            continue;
-        seen += (seen.empty() ? "" : " ") + std::string(name);
-        if (!found && !std::strcmp(name, want)) {
-            key = at<uint32_t>(entries + i * 16, 0);
-            found = true;
-        }
-    }
-    swofty::log("[direct] Time Trial: the router binds %s", seen.c_str());
-    if (!found)
-        return false;
-    alignas(16) static uint8_t vm[VM_KEY + 0x10];
-    std::memset(vm, 0, sizeof vm);
-    *reinterpret_cast<uint32_t *>(vm + VM_KEY) = key;
-    void *route = nullptr;
-    reinterpret_cast<MakeStr_t *>(make)(&route, "close", 0, 0);
-    reinterpret_cast<Fire_t *>(fire)(router, vm, &route, 0);
-    reinterpret_cast<MakeStr_t *>(make)(&route, nullptr, 0, 0);
-    swofty::log("[direct] Time Trial: fired %s's close route (binding %08x)", want, key);
-    return true;
-}
 
 // The Time Trial's intro states fade out for Broadcast (bit 2), BroadcastFull (bit 3) and CareerHub (bit 14)
 // (Sess_IntroVideo_OnStateEnter 0x142d6cfc0) and fade back in from the intro video's end (0x142d6db20) or the
@@ -606,11 +541,65 @@ void release_fade()
                 at<uint32_t>(owner, FADE_STATE));
 }
 
+// The front end's main scene (the menus' dark backdrop with red light streaks) is despawned by StateFrontend's
+// exit (Game_StateFrontend_OnStateExit 0x1436d3b00: Game_FrontendSceneManager_DespawnMainScene 0x1428d9a90 on
+// [state+0xd20] when [[state+0xd20]+0x40]+0x1048 or +0x1049 is set). A direct start never enters StateFrontend, so
+// the backdrop stays over a Time Trial's garage, which has no broadcast intro camera to take the view. The node
+// exists in the flow graph all the same (FrontendWorld's child 0x957880c6), so the core despawns the scene through
+// its manager.
+constexpr uint32_t STATE_FRONTEND = 0x957880c6;
+constexpr uintptr_t NODE_HASH = 0xb0, NODE_CHILDREN = 0xc0, FRONTEND_SCENES = 0xd20, SCENES_MAIN = 0x40,
+                    MAIN_SPAWNED = 0x1048, RVA_DESPAWN_MAIN_SCENE = 0x28d9a90;
+
+uint8_t *flow_node(uint32_t want)
+{
+    std::vector<uint8_t *> todo{static_cast<uint8_t *>(runtime::direct_start_flow_root())};
+    for (size_t i = 0; i < todo.size() && i < 1024; ++i) {
+        uint8_t *n = todo[i];
+        if (!n || !runtime::readable(n, NODE_CHILDREN + 8))
+            continue;
+        if (at<uint32_t>(n, NODE_HASH) == want)
+            return n;
+        auto *cv = at<uint8_t *>(n, NODE_CHILDREN);
+        if (!cv || !runtime::readable(cv, 0x18))
+            continue;
+        for (auto **p = at<uint8_t **>(cv, 8), **e = at<uint8_t **>(cv, 0x10); p && p < e && runtime::readable(p, 8); ++p)
+            todo.push_back(*p);
+    }
+    return nullptr;
+}
+
+bool main_scene(uint8_t *&mgr)
+{
+    uint8_t *node = flow_node(STATE_FRONTEND);
+    mgr = node && runtime::readable(node, FRONTEND_SCENES + 8) ? at<uint8_t *>(node, FRONTEND_SCENES) : nullptr;
+    auto *scenes = mgr && runtime::readable(mgr, SCENES_MAIN + 8) ? at<uint8_t *>(mgr, SCENES_MAIN) : nullptr;
+    return scenes && runtime::readable(scenes, MAIN_SPAWNED + 2) && (scenes[MAIN_SPAWNED] || scenes[MAIN_SPAWNED + 1]);
+}
+
+void despawn_main_scene(const char *when)
+{
+    uint8_t *mgr = nullptr;
+    bool spawned = main_scene(mgr);
+    if (!mgr) {
+        swofty::log("[direct] Time Trial: no StateFrontend node or front end scene manager %s", when);
+        return;
+    }
+    if (!spawned) {
+        swofty::log("[direct] Time Trial: the front end's main scene is not spawned %s (manager %p)", when, mgr);
+        return;
+    }
+    rva<void(void *)>(RVA_DESPAWN_MAIN_SCENE)(mgr);
+    uint8_t *again = nullptr;
+    swofty::log("[direct] Time Trial: despawned the front end's main scene %s (manager %p; still spawned: %s)", when, mgr,
+                main_scene(again) ? "yes" : "no");
+}
+
 void on_screen(const char *name)
 {
     if (!tt_armed.load() || !name || std::strcmp(name, "garage_cockpit") || splash_closed.exchange(true))
         return;
-    close_screen(SPLASH);
+    despawn_main_scene("as the garage opens");
     release_fade();
 }
 
