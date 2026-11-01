@@ -92,19 +92,19 @@ int main()
     }
     {
         hs::Choice c = hs::choose(save, nullptr, 32 * GiB);
-        CHECK(c.raised(save) && c.bytes == 200 * M && c.source == hs::Source::ram);
+        CHECK(c.raised(save) && c.bytes == 512 * M && c.source == hs::Source::ram);
         c = hs::choose(save, nullptr, 8 * GiB);
-        CHECK(c.bytes == 200 * M && c.source == hs::Source::ram);
-        CHECK(hs::choose(save, "", 32 * GiB).bytes == 200 * M);
+        CHECK(c.bytes == 320 * M && c.source == hs::Source::small_ram);
+        CHECK(hs::choose(save, "", 32 * GiB).bytes == 512 * M);
         for (const char *off : {"0", "off", "75", "64"}) {
             c = hs::choose(save, off, 32 * GiB);
             CHECK(!c.raised(save) && c.bytes == save.stock);
         }
         c = hs::choose(save, "300", 32 * GiB);
         CHECK(c.raised(save) && c.bytes == 300 * M && c.source == hs::Source::env);
-        CHECK(hs::choose(save, "9999", 32 * GiB).bytes == 512 * M);
+        CHECK(hs::choose(save, "9999", 32 * GiB).bytes == 1024 * M);
         c = hs::choose(save, "lots", 32 * GiB);
-        CHECK(c.bad_env && c.raised(save) && c.bytes == 200 * M);
+        CHECK(c.bad_env && c.raised(save) && c.bytes == 512 * M);
         CHECK(hs::choose(save, "12x", 32 * GiB).bad_env);
     }
     {
@@ -130,7 +130,7 @@ int main()
               "[audio] heap 'AUDIO_BUNDLE' (virtual 0, pagesize 2097152): size 45088768 -> 100663296 bytes (96 MiB, default)");
         c = hs::choose(save, nullptr, 32 * GiB);
         CHECK(hs::apply_line(save, {1, 0, 0}, "", save.stock, c) ==
-              "[saves] temp pool: heap SAVE_TEMP_ALLOC (virtual 1, expand 0%): size 78643200 -> 209715200 bytes (200 MiB, default)");
+              "[saves] temp pool: heap SAVE_TEMP_ALLOC (virtual 1, expand 0%): size 78643200 -> 536870912 bytes (512 MiB, default)");
         c = hs::choose(game, "600", 32 * GiB);
         CHECK(hs::apply_line(game, {1, 100, 0}, "GAME_DEFAULT", game.stock, c) ==
               "[heap] heap 'GAME_DEFAULT' (virtual 1, pagesize 0): size 408944640 -> 629145600 bytes (600 MiB, SWOFTY_GAME_HEAP_MB)");

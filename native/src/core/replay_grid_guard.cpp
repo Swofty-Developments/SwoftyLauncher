@@ -43,6 +43,9 @@ std::string hook_error(const safetyhook::MidHook::Error &e);
 // read (call [rax+0x28] / [rax+0x40] after 0x1445ceece). Both are found by byte scan; a remembered recordable whose
 // stored state is empty skips the apply and keeps its current state.
 //
+// A session of 24 cars or fewer, the size of My Team's stock grid, runs the game's code unchanged: the recorder there
+// writes CannedEventsSystem's state a few bytes past its holder, as it did before this guard.
+//
 // SWOFTY_REPLAY_GRID_GUARD=0 turns it off.
 
 namespace {
@@ -216,6 +219,8 @@ uintptr_t recordable_of_entry(SwoftyContext *c)
 void after_record(SwoftyContext *c)
 {
     namespace rg = runtime::replay_grid;
+    if (!rg::guards(rg::session_vehicles.load()))
+        return;
     uint64_t pos = slot(c, rg::STREAM_POS), base = slot(c, rg::STREAM_BASE);
     uint64_t cap = rg::capacity_of(slot(c, rg::HOLDER_CAPACITY));
     if (!rg::outgrew(pos, base, cap))

@@ -15,7 +15,7 @@
 //! after the start, and [`Bridge::replace_transport`] moves the relay to a new transport (a fresh
 //! TURN allocation) without touching the ports, so the game keeps its `BASE`.
 
-use std::collections::{BTreeMap, VecDeque};
+use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use std::io;
 use std::net::{Ipv4Addr, SocketAddr, UdpSocket};
 use std::path::Path;
@@ -58,8 +58,11 @@ pub const LARGE_PAYLOAD: usize = 1200;
 pub const ECHO_KEEP: usize = 64;
 
 const POLL: Duration = Duration::from_millis(100);
-const BASE_MIN: u16 = 30000;
-const BASE_MAX: u16 = 60000;
+const BASE_MIN: u16 = 20000;
+const BASE_MAX: u16 = 32768 - 255;
+/// The member numbers whose ports are held from the start: the launcher caps a room at 24
+/// players. A higher number is bound when it joins.
+const RESERVED_MEMBERS: u8 = 24;
 const BIND_ATTEMPTS: usize = 64;
 const BUF: usize = 65536;
 
@@ -241,6 +244,7 @@ struct Shared {
     self_member: u8,
     base: u16,
     sockets: RwLock<BTreeMap<u8, Arc<UdpSocket>>>,
+    reserved: Mutex<BTreeMap<u8, UdpSocket>>,
     configured_port: u16,
     game_port: AtomicU16,
     seen_port: AtomicU16,
@@ -308,7 +312,14 @@ impl Bridge {
     }
 
     fn bind(cfg: &BridgeConfig, remotes: &[u8], link: Option<Link>) -> io::Result<Bridge> {
-        let (base, sockets) = bind_ports(remotes, cfg.game_port)?;
+        let (base, mut sockets) = bind_ports(cfg.self_member, remotes, cfg.game_port)?;
+        let reserved: BTreeMap<u8, UdpSocket> = {
+            let spare: Vec<u8> = sockets.keys().copied().filter(|m| !remotes.contains(m)).collect();
+            spare
+                .into_iter()
+                .filter_map(|m| Some((m, sockets.remove(&m)?)))
+                .collect()
+        };
         for socket in sockets.values() {
             socket.set_read_timeout(Some(POLL))?;
         }
@@ -322,6 +333,7 @@ impl Bridge {
                 self_member: cfg.self_member,
                 base,
                 sockets: RwLock::new(sockets.into_iter().map(|(m, s)| (m, Arc::new(s))).collect()),
+                reserved: Mutex::new(reserved),
                 configured_port: cfg.game_port,
                 game_port: AtomicU16::new(cfg.game_port),
                 seen_port: AtomicU16::new(0),
@@ -361,7 +373,26 @@ impl Bridge {
         if member == self.shared.self_member || self.shared.sockets().contains_key(&member) {
             return Ok(false);
         }
-        let socket = UdpSocket::bind((Ipv4Addr::LOCALHOST, self.shared.base + u16::from(member)))?;
+        let held = self
+            .shared
+            .reserved
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .remove(&member);
+        let socket = match held {
+            Some(socket) => socket,
+            None => {
+                UdpSocket::bind((Ipv4Addr::LOCALHOST, self.shared.base + u16::from(member))).map_err(|e| {
+                    io::Error::new(
+                        e.kind(),
+                        format!(
+                            "loopback port {} for member {member} is taken: {e}",
+                            self.shared.base + u16::from(member)
+                        ),
+                    )
+                })?
+            }
+        };
         socket.set_read_timeout(Some(POLL))?;
         if let Some(link) = &self.shared.link {
             link.opener
@@ -692,16 +723,20 @@ fn inbound(shared: &Shared) {
     }
 }
 
-fn bind_ports(remotes: &[u8], game_port: u16) -> io::Result<(u16, BTreeMap<u8, UdpSocket>)> {
+fn bind_ports(self_member: u8, remotes: &[u8], game_port: u16) -> io::Result<(u16, BTreeMap<u8, UdpSocket>)> {
     let mut last = io::Error::new(io::ErrorKind::AddrInUse, "no free loopback port range");
     for _ in 0..BIND_ATTEMPTS {
         let base = BASE_MIN + (random_u64()? % u64::from(BASE_MAX - BASE_MIN)) as u16;
-        if remotes.iter().any(|&m| base + u16::from(m) == game_port) {
+        if (1..=254u16).any(|m| base + m == game_port) {
             continue;
         }
-        let bound: io::Result<BTreeMap<u8, UdpSocket>> = remotes
-            .iter()
-            .map(|&m| Ok((m, UdpSocket::bind((Ipv4Addr::LOCALHOST, base + u16::from(m)))?)))
+        let wanted: BTreeSet<u8> = (1..=RESERVED_MEMBERS)
+            .chain(remotes.iter().copied())
+            .filter(|&m| m != self_member)
+            .collect();
+        let bound: io::Result<BTreeMap<u8, UdpSocket>> = wanted
+            .into_iter()
+            .map(|m| Ok((m, UdpSocket::bind((Ipv4Addr::LOCALHOST, base + u16::from(m)))?)))
             .collect();
         match bound {
             Ok(sockets) => return Ok((base, sockets)),
@@ -868,6 +903,28 @@ mod tests {
             assert_eq!(p.transport.unknown_dropped(), 0);
         }
         lobby.into_iter().for_each(|p| p.bridge.stop());
+    }
+
+    #[test]
+    fn every_member_port_is_held_from_the_start() {
+        let game = fake_game();
+        let transport = Arc::new(DirectUdp::bind("127.0.0.1:0").unwrap());
+        let cfg = BridgeConfig {
+            self_member: 1,
+            members: vec![1],
+            key: KEY,
+            game_port: port(&game),
+        };
+        let bridge = Bridge::start(cfg, transport).unwrap();
+        for member in 2..=RESERVED_MEMBERS {
+            let taken = UdpSocket::bind((Ipv4Addr::LOCALHOST, bridge.base() + u16::from(member)));
+            assert!(taken.is_err(), "port of member {member} was free");
+        }
+        assert!(bridge.add_member(RESERVED_MEMBERS).unwrap());
+        assert_eq!(
+            bridge.port(RESERVED_MEMBERS),
+            Some(bridge.base() + u16::from(RESERVED_MEMBERS))
+        );
     }
 
     #[test]

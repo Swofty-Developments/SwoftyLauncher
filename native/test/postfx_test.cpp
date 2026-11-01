@@ -67,6 +67,27 @@ int main()
 
     CHECK(groups(1920, 8) == 240 && groups(1921, 8) == 241 && groups(5, 16) == 1 && groups(5, 0) == 0);
 
+    struct Res {
+        int refs = 1;
+        void AddRef() { refs++; }
+        void Release() { refs--; }
+    };
+    Res depth, rebuilt;
+    Res *back_use = nullptr, *slot = nullptr;
+    hold(back_use, &depth);
+    hold(back_use, &depth);
+    CHECK(back_use == &depth && depth.refs == 2);
+    depth.Release();
+    CHECK(depth.refs == 1);
+    hold(slot, back_use);
+    CHECK(depth.refs == 2);
+    hold(back_use, nullptr);
+    CHECK(back_use == nullptr && depth.refs == 1);
+    hold(slot, &rebuilt);
+    CHECK(slot == &rebuilt && depth.refs == 0 && rebuilt.refs == 2);
+    hold(slot, nullptr);
+    CHECK(rebuilt.refs == 1);
+
     if (failed)
         return 1;
     std::printf("postfx logic: all checks passed\n");
