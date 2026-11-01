@@ -994,6 +994,138 @@ static void test_garage_crew(int guard)
     expect(n == 0, "garage crew: a garage with no records runs the game's empty path");
 }
 
+// The per-garage tail of the pit stops module's setup (fn 0x1403c69e0), with the byte runs core's pit crew guard
+// resolves its sites from copied from the Steam build: the template read at 0x1403c6ee1 (mov rbx,[rsp+0x70] ...), and
+// the test r12,r12 / je ahead of the free of the garage's entry vector (0x1403c787b, the site the skip lands on). It takes the crew
+// template in rcx (the game's rdi), the entry vector begin in rdx (stored at [rsp+0xa8]), the garage id in r8 (the
+// game's r14) and a flag in r9 that the stand-in for Game_PitStops_SetupCrew sets, then reads [template + 0x560]
+// there. It returns 2 after the vector free and 1 when the vector is null, plus 0x100 when the loop registers the next
+// garage relies on hold what the game leaves there (r13 = rsp+0xc0, sil = the byte at [rsp+0x4b]).
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_pit_crew\n"
+    ".def fake_pit_crew; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_pit_crew\n"
+    "fake_pit_crew:\n"
+    "push %rbx\n.seh_pushreg %rbx\n"
+    "push %rsi\n.seh_pushreg %rsi\n"
+    "push %rdi\n.seh_pushreg %rdi\n"
+    "push %r12\n.seh_pushreg %r12\n"
+    "push %r13\n.seh_pushreg %r13\n"
+    "push %r14\n.seh_pushreg %r14\n"
+    "sub $0xb8,%rsp\n.seh_stackalloc 0xb8\n"
+    ".seh_endprologue\n"
+    "mov %rcx,%rdi\n"
+    "mov %rdx,0xa8(%rsp)\n"
+    "mov %r8,%r14\n"
+    "mov %r9,0xb0(%rsp)\n"
+    "lea 0x90(%rsp),%rax\n"
+    "mov %rax,0x70(%rsp)\n"
+    "movq $0,0x90(%rsp)\n"
+    "movq $0,0x98(%rsp)\n"
+    "movq $0,0xa0(%rsp)\n"
+    "movb $0x5a,0x4b(%rsp)\n"
+    ".byte 0x48,0x8B,0x5C,0x24,0x70,0x4C,0x8B,0x2B,0x48,0x8B,0x73,0x08\n"
+    "mov 0xb0(%rsp),%rax\n"
+    "movl $1,(%rax)\n"
+    "mov 0x560(%rdi),%rax\n"
+    "lea 0xc0(%rsp),%r13\n"
+    "movzbl 0x4b(%rsp),%esi\n"
+    "mov 0xa8(%rsp),%r12\n"
+    ".byte 0x4D,0x85,0xE4,0x0F,0x84\n.long 1f-(.+4)\n"
+    ".byte 0x48,0x8B,0x8C,0x24,0xA0,0x00,0x00,0x00\n"
+    "mov $2,%eax\n"
+    "jmp 2f\n"
+    "1: mov $1,%eax\n"
+    "2: lea 0xc0(%rsp),%rdx\n"
+    "cmp %rdx,%r13\n"
+    "jne 4f\n"
+    "cmp $0x5a,%sil\n"
+    "jne 4f\n"
+    "or $0x100,%eax\n"
+    "4: add $0xb8,%rsp\n"
+    "pop %r14\npop %r13\npop %r12\npop %rdi\npop %rsi\npop %rbx\n"
+    "ret\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_pit_crew\"\n"
+    ".text\n");
+uint64_t fake_pit_crew(void *tmpl, void *vec, uint64_t garage, uint32_t *ran);
+
+// The garage crew scene lookup of Game_GarageCrewModule_SpawnGarageCrew, copied byte for byte from the Steam build
+// (0x14038ba20..0x14038ba2a: the hoisted movzx esi,[rdi+0xe0] ahead of test rdi,rdi / je 0x14038baff). It takes the
+// scene in rcx (the game's rdi) and the module in rdx (the game's rbp) and returns 0x100 | the byte at scene + 0xe0,
+// or 0x50 on the game's null path, which sits 0xcf bytes after the je like the original.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_garage_scene\n"
+    ".def fake_garage_scene; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_garage_scene\n"
+    "fake_garage_scene:\n"
+    "push %rbp\n.seh_pushreg %rbp\n"
+    "push %rdi\n.seh_pushreg %rdi\n"
+    "push %rsi\n.seh_pushreg %rsi\n"
+    "sub $0x20,%rsp\n.seh_stackalloc 0x20\n"
+    ".seh_endprologue\n"
+    "mov %rdx,%rbp\n"
+    "mov %rcx,%rdi\n"
+    ".byte 0x0F,0xB6,0xB7,0xE0,0x00,0x00,0x00\n"
+    ".byte 0x48,0x85,0xFF,0x0F,0x84,0xCF,0x00,0x00,0x00\n"
+    "3: mov %esi,%eax\n"
+    "or $0x100,%eax\n"
+    "add $0x20,%rsp\n"
+    "pop %rsi\npop %rdi\npop %rbp\n"
+    "ret\n"
+    ".org 3b+0xcf,0xCC\n"
+    "mov $0x50,%eax\n"
+    "add $0x20,%rsp\n"
+    "pop %rsi\npop %rdi\npop %rbp\n"
+    "ret\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_garage_scene\"\n"
+    ".text\n");
+uint64_t fake_garage_scene(void *scene, void *module);
+
+static void test_pit_crew(int guard)
+{
+    static uint8_t tmpl[0x600], record[0x98];
+    static uint64_t vec[2];
+    uint32_t ran = 0;
+    record[0x5a] = 14;
+    record[0x83] = 44;
+    vec[0] = (uint64_t)(uintptr_t)record;
+    uint64_t r = fake_pit_crew(tmpl, vec, 9, &ran);
+    expect(ran == 1 && r == 0x102, "pit crew: a garage with a crew template runs its setup and frees its vector");
+    if (!guard) {
+        printf("      pit crew: guard off, the null template cases are not run\n");
+        return;
+    }
+    ran = 0;
+    r = fake_pit_crew(NULL, vec, 10, &ran);
+    expect(ran == 0 && r == 0x102, "pit crew: a garage whose cars have no crew template skips its setup, frees its vector and leaves the loop registers as the game does");
+    ran = 0;
+    r = fake_pit_crew(NULL, vec, 10, &ran);
+    expect(ran == 0 && r == 0x102, "pit crew: the same garage skipped again takes the same path");
+    ran = 0;
+    r = fake_pit_crew(NULL, NULL, 11, &ran);
+    expect(ran == 0 && r == 0x101, "pit crew: a garage with no entry vector skips its setup and takes the game's own null test instead of freeing");
+}
+
+static void test_garage_scene(int guard)
+{
+    static uint8_t scene[0x100], module[0x100];
+    scene[0xe0] = 7;
+    *(uint64_t *)(module + 0xd0) = 0x1111;
+    *(uint64_t *)(module + 0xe0) = 0x2222;
+    expect(fake_garage_scene(scene, module) == 0x107, "garage scene: a scene that exists takes the game's own path");
+    if (!guard) {
+        printf("      garage scene: guard off, the null scene case is not run\n");
+        return;
+    }
+    expect(fake_garage_scene(NULL, module) == 0x50, "garage scene: a missing scene takes the game's null path instead of faulting");
+}
+
 // Pit strategy evaluators, rebuilt around the byte runs core's pit slot guard resolves its sites from (copied from the
 // Steam build: 0x143691fbb, 0x143692014, 0x143692129..0x14369214c for Sess_PitStrategy_EvaluateAgainstPitList and
 // 0x143691d44, 0x143691d80..0x143691db8, 0x143691dc9 for Sess_PitStrategy_EvaluateByRank). fake_pit_eval takes the
@@ -2176,6 +2308,8 @@ int main(int argc, char **argv)
         test_fe_tiles();
         test_ai_corner();
         test_garage_crew(1);
+        test_pit_crew(1);
+        test_garage_scene(1);
         test_pit_slots(1);
         test_leaderboard_guard();
         test_track_acclim();
@@ -2225,6 +2359,8 @@ int main(int argc, char **argv)
     if (argc > 1 && !strcmp(argv[1], "garage_crew")) {
         const char *off = getenv("SWOFTY_GARAGE_CREW_GUARD");
         test_garage_crew(!(off && *off));
+        test_pit_crew(!(off && *off));
+        test_garage_scene(!(off && *off));
     }
     if (argc > 1 && !strcmp(argv[1], "pit_slots")) {
         const char *off = getenv("SWOFTY_PIT_SLOT_GUARD");
