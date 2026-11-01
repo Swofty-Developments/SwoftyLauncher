@@ -72,6 +72,7 @@ t "Garage setup guard unit test" native/test/run_garage_setup_test.sh
 t "Core site names exported (host-only)" native/test/run_core_sites_exported_test.sh
 t "Garage crew guard unit test" native/test/run_garage_crew_test.sh
 t "Leaderboard guard unit test" native/test/run_leaderboard_guard_test.sh
+t "Front-end tile list guard unit test" native/test/run_fe_tile_guard_test.sh
 t "Session enter guard unit test" native/test/run_session_enter_test.sh
 t "Audio job queue fix unit test" native/test/run_audio_queue_test.sh
 t "Boot watchdog grace unit test" native/test/run_watchdog_grace_test.sh
