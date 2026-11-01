@@ -114,15 +114,17 @@ subscribe to it instead of hooking the same entry points:
 | `on_present(fn)` | `fn(swapchain, known, caller)` before the original `Present`, one present at a time. `known` is the swapchain's creation record (queue, caller chain, frame generation, Streamline, colour space), or null for a swapchain created before `arm_swapchain` |
 | `on_presented(fn)` | `fn(swapchain, hr)` after the original `Present` |
 | `on_resize(fn)` | `fn(swapchain)` before `ResizeBuffers` and `ResizeBuffers1` |
-| `on_exec(fn)` / `on_barrier(fn)` | Observers in subscription order. One that returns `true` has made the call itself through `exec_original` / `barrier_original`, and the rest are skipped |
+| `on_exec(fn)` | `fn(queue, n, lists, plan)` before the original `ExecuteCommandLists`. `plan.after(i, step)` runs `step(queue)` after `lists[0..i]` and `plan.at_end(step)` after the last list; the game's lists are submitted in segments between the steps, steps after the same list in subscription order. With no steps the original is called once |
+| `on_barrier(fn)` | Observer in subscription order. One that returns `true` has made the call itself through `barrier_original`, and the rest are skipped |
 | `on_setname(fn)` | `fn(object, name)` before the original `SetName` |
 
 The overlay (`hud.cpp`) and shader packs (`grade.cpp`) subscribe to it.
 
 The overlay records each swapchain's creation queue and the modules on the creation call stack, and draws only on
-swapchains it saw created, on their creation queue, when no frame generation module created or
-presents them. A swapchain whose creation passed through Streamline's frame generation hook
-(`sl.dlss_g.dll`) is drawn on only while the game's hardware settings have `frame_gen mode="0"`. Submissions use a ring of three command lists behind one fence and never wait in
+swapchains it saw created, on their creation queue. A swapchain a frame generation module created or presents, or whose
+creation passed through Streamline's frame generation hook (`sl.dlss_g.dll`) while the game's hardware settings do not have
+`frame_gen mode="0"`, is not drawn on at `Present`: `Present` only builds the frame, and an `on_exec` step renders it into
+the game's `BackBuffer` resource after the list that moves it from `RENDER_TARGET` to `PRESENT`. Submissions use a ring of three command lists behind one fence and never wait in
 `Present`. A device removal stops the overlay for the rest of the session.
 
 Paint callbacks tessellate into one vertex list (`hud_drawlist.hpp`) split into batches that share a

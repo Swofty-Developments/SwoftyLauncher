@@ -10,6 +10,7 @@
 #include <d3d12.h>
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <cmath>
 #include <cstdio>
@@ -1525,11 +1526,11 @@ void on_reset(ID3D12GraphicsCommandList *list)
 
 // Submits the game's lists, the core's own list after a picture list that ended before the HUD, and a
 // fence signal after any list the passes were recorded into, so their slot is known done.
-bool on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists)
+void on_exec(ID3D12CommandQueue *, UINT n, ID3D12CommandList *const *lists, d3d12hooks::ExecPlan &plan)
 {
     static const uint32_t probe = perf::probe("core", "postfx ExecuteCommandLists");
     if (!lists || !n || broken)
-        return false;
+        return;
     perf::Scope p(probe);
     UINT split = n;
     ID3D12Resource *res = nullptr, *hudless = nullptr, *later_depth = nullptr;
@@ -1588,33 +1589,39 @@ bool on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists)
             depth_res = later_depth;
             depth_state = later_depth_state;
         }
-        return false;
+        return;
     }
-    {
-        perf::Pause game;
-        d3d12hooks::exec_original(q, split == n ? n : split + 1, lists);
-    }
-    std::lock_guard<std::recursive_mutex> g(lock);
-    if (split < n)
-        run_between(q, res, state, hudless, hudless_state);
-    if (later_depth) {
+    auto take_later_depth = [later_depth, later_depth_state](ID3D12CommandQueue *) {
+        if (!later_depth)
+            return;
+        std::lock_guard<std::recursive_mutex> g(lock);
         depth_res = later_depth;
         depth_state = later_depth_state;
+    };
+    if (split < n) {
+        plan.after(split, [res, state, hudless, hudless_state](ID3D12CommandQueue *queue) {
+            std::lock_guard<std::recursive_mutex> g(lock);
+            run_between(queue, res, state, hudless, hudless_state);
+        });
+        plan.after(split, take_later_depth);
+    } else {
+        plan.at_end(take_later_depth);
     }
-    if (split + 1 < n) {
-        perf::Pause game;
-        d3d12hooks::exec_original(q, n - split - 1, lists + split + 1);
+    if (signals) {
+        std::array<int, FRAMES> done{};
+        std::copy(signal, signal + signals, done.begin());
+        plan.at_end([done, signals](ID3D12CommandQueue *queue) {
+            std::lock_guard<std::recursive_mutex> g(lock);
+            read_frequency(queue);
+            for (UINT i = 0; i < signals; i++) {
+                Slot &s = slots[done[i]];
+                queue->Signal(s.fence, ++s.fence_value);
+                s.pending = false;
+                if (capture_slot == done[i])
+                    capture_fence = s.fence_value;
+            }
+        });
     }
-    if (signals)
-        read_frequency(q);
-    for (UINT i = 0; i < signals; i++) {
-        Slot &s = slots[signal[i]];
-        q->Signal(s.fence, ++s.fence_value);
-        s.pending = false;
-        if (capture_slot == signal[i])
-            capture_fence = s.fence_value;
-    }
-    return true;
 }
 
 // Frame generation from the game's hardware settings, read every two seconds; on while unknown.

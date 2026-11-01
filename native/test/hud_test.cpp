@@ -11,6 +11,7 @@
 #include "hud_image.hpp"
 #include "hud_input.hpp"
 #include "hud_png.hpp"
+#include "exec_plan.hpp"
 
 #include <array>
 #include <cstddef>
@@ -929,6 +930,122 @@ static void test_png(const char *out)
     }
 }
 
+static void test_fg_gate()
+{
+    using hud::guard::Gate;
+    CHECK(hud::guard::gate_for(false, false, true) == Gate::Direct, "no frame generation module draws at Present");
+    CHECK(hud::guard::gate_for(false, true, true) == Gate::Direct, "streamline with frame generation off draws at Present");
+    CHECK(hud::guard::gate_for(false, true, false) == Gate::FrameGenStreamline, "streamline with frame generation on is gated");
+    CHECK(hud::guard::gate_for(true, false, true) == Gate::FrameGenNamed, "a named frame generation module is gated");
+    CHECK(hud::guard::gate_for(true, true, true) == Gate::FrameGenNamed, "a named module wins over streamline");
+    CHECK(hud::guard::draws_at_present(Gate::Direct) && !hud::guard::draws_at_present(Gate::FrameGenNamed) &&
+              !hud::guard::draws_at_present(Gate::FrameGenStreamline),
+          "Present renders only for the direct gate");
+    CHECK(hud::guard::draws_before_present(Gate::FrameGenNamed, true) &&
+              hud::guard::draws_before_present(Gate::FrameGenStreamline, true),
+          "gated swapchains draw before Present when the device hooks armed");
+    CHECK(!hud::guard::draws_before_present(Gate::FrameGenNamed, false) && !hud::guard::draws_before_present(Gate::Direct, true),
+          "no device hooks or no gate means no exec-time draw");
+    for (int g = 0; g < 3; g++) {
+        auto gate = Gate(g);
+        CHECK(hud::guard::draws_at_present(gate) != hud::guard::draws_before_present(gate, true),
+              "a frame is drawn at Present or before it, never both");
+    }
+}
+
+static void test_fg_barriers()
+{
+    using namespace hud::guard;
+    CHECK(presents_back_buffer(STATE_RENDER_TARGET, STATE_PRESENT, 0), "render target to present/common counts");
+    CHECK(presents_back_buffer(STATE_RENDER_TARGET, STATE_PRESENT, 0x2), "an end-only split barrier counts");
+    CHECK(!presents_back_buffer(STATE_RENDER_TARGET, STATE_PRESENT, BARRIER_FLAG_BEGIN_ONLY), "a begin-only split does not");
+    CHECK(!presents_back_buffer(STATE_PRESENT, STATE_RENDER_TARGET, 0), "present to render target does not");
+    CHECK(!presents_back_buffer(STATE_RENDER_TARGET, 0x80, 0), "render target to a shader read does not");
+    CHECK(!presents_back_buffer(0x8, STATE_PRESENT, 0), "unordered access to present does not");
+    CHECK(state_after_draw(STATE_PRESENT) == STATE_PRESENT, "the overlay leaves the buffer in the state the game left it");
+    CHECK(renderable_format(27) == 28 && renderable_format(90) == 87 && renderable_format(23) == 24 &&
+              renderable_format(9) == 10,
+          "typeless back buffer formats get their typed view");
+    CHECK(renderable_format(24) == 24 && renderable_format(10) == 10 && renderable_format(87) == 87,
+          "typed formats stay as they are");
+    CHECK(output_for(renderable_format(23), 12, -1) == HDR10_PQ && output_for(renderable_format(9), COLOR_SPACE_UNSET, -1) == SCRGB,
+          "output mode follows the typed format and the recorded colour space");
+    CHECK(pending_fresh(1000, 1000) && pending_fresh(1250, 1000) && !pending_fresh(1251, 1000) && !pending_fresh(900, 1000),
+          "a pending frame is used for a quarter of a second");
+    CHECK(target_fits(1920, 1080, 1920, 1080) && !target_fits(1920, 1080, 1280, 720) && !target_fits(0, 0, 0, 0),
+          "the frame is drawn only into a buffer of its own size");
+}
+
+struct FakeQueue {};
+struct FakeList {};
+
+static void test_exec_plan()
+{
+    using Plan = d3d12hooks::BasicExecPlan<FakeQueue>;
+    FakeQueue q;
+    FakeList l[5];
+    FakeList *const lists[] = {&l[0], &l[1], &l[2], &l[3], &l[4]};
+    std::string log;
+    auto run = [&](FakeQueue *, unsigned count, FakeList *const *first) {
+        log += "[";
+        for (unsigned i = 0; i < count; i++)
+            log += char('0' + (first[i] - &l[0]));
+        log += "]";
+    };
+    auto mark = [&](const char *name) { return [&log, name](FakeQueue *) { log += name; }; };
+
+    Plan none;
+    run_plan(none, &q, 5u, lists, run);
+    CHECK(log == "[01234]" && none.steps.capacity() == 0, "no steps: one submission of every list, nothing allocated");
+
+    log.clear();
+    Plan split;
+    split.after(2, mark("a"));
+    run_plan(split, &q, 5u, lists, run);
+    CHECK(log == "[012]a[34]", "a step after list 2 splits the batch there");
+
+    log.clear();
+    Plan same;
+    same.after(1, mark("a"));
+    same.at_end(mark("e"));
+    same.after(1, mark("b"));
+    same.after(0, mark("z"));
+    run_plan(same, &q, 5u, lists, run);
+    CHECK(log == "[0]z[1]ab[234]e", "steps after one list run in subscription order, in list order, at_end last");
+
+    log.clear();
+    Plan last;
+    last.after(4, mark("a"));
+    last.at_end(mark("e"));
+    run_plan(last, &q, 5u, lists, run);
+    CHECK(log == "[01234]ae", "a step after the last list and the end steps share one submission");
+
+    log.clear();
+    Plan end_only;
+    end_only.at_end(mark("e"));
+    run_plan(end_only, &q, 3u, lists, run);
+    CHECK(log == "[012]e", "an end step runs after every list");
+
+    log.clear();
+    Plan beyond;
+    beyond.after(9, mark("a"));
+    run_plan(beyond, &q, 3u, lists, run);
+    CHECK(log == "[012]a", "an index past the batch means its end");
+
+    log.clear();
+    Plan first;
+    first.after(0, mark("a"));
+    first.after(0, mark("b"));
+    run_plan(first, &q, 1u, lists, run);
+    CHECK(log == "[0]ab", "a one-list batch with two steps");
+
+    log.clear();
+    Plan empty_batch;
+    empty_batch.at_end(mark("e"));
+    run_plan(empty_batch, &q, 0u, lists, run);
+    CHECK(log == "e", "an empty batch still runs its end steps");
+}
+
 int main(int argc, char **argv)
 {
     test_font();
@@ -950,6 +1067,9 @@ int main(int argc, char **argv)
     test_image_decode();
     test_guard();
     test_original_dispatch();
+    test_fg_gate();
+    test_fg_barriers();
+    test_exec_plan();
     test_png(argc > 1 ? argv[1] : nullptr);
     test_scene(argc > 2 ? argv[2] : nullptr);
     if (failures)
