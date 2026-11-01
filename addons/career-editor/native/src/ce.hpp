@@ -54,6 +54,11 @@ void register_op(const char *name, OpFn fn);
 void register_op_anytime(const char *name, OpFn fn);
 void register_section(const char *name, SectionFn fn);
 
+// Work a module does a slice at a time while the launcher page is open, one call per frame:
+// 0 nothing to do, 1 more to do, 2 finished (the sections render again).
+using IdleFn = int (*)();
+void register_idle(IdleFn fn);
+
 Mode mode();
 bool in_career();
 bool safe();
@@ -99,4 +104,5 @@ class GameCall {
 #define CE_OP(name, fn) static const bool CE_CAT(ce_op_, __LINE__) = (::ce::register_op(name, fn), true)
 #define CE_OP_ANYTIME(name, fn) \
     static const bool CE_CAT(ce_op_any_, __LINE__) = (::ce::register_op_anytime(name, fn), true)
+#define CE_IDLE(fn) static const bool CE_CAT(ce_idle_, __LINE__) = (::ce::register_idle(fn), true)
 #define CE_SECTION(name, fn) static const bool CE_CAT(ce_section_, __LINE__) = (::ce::register_section(name, fn), true)
