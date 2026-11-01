@@ -48,6 +48,7 @@
 #include <swofty/storage.hpp>
 
 #include "bridge.hpp"
+#include "section_schedule.hpp"
 
 namespace st = swofty::storage;
 
@@ -283,6 +284,7 @@ struct SectionEntry {
     bool rendered = false;
     uint64_t slow_logged = 0;
     bool big_logged = false;
+    sched::Slot slot;
 };
 
 std::vector<OpEntry> &op_table()
@@ -294,6 +296,12 @@ std::vector<OpEntry> &op_table()
 std::vector<SectionEntry> &section_table()
 {
     static std::vector<SectionEntry> v;
+    return v;
+}
+
+std::vector<IdleFn> &idle_table()
+{
+    static std::vector<IdleFn> v;
     return v;
 }
 
@@ -522,6 +530,11 @@ struct Bridge {
     bool sections_live = false;
     bool force_render = false;
     bool pass_active = false;
+    bool pass_rendered = false;
+    bool was_live = false;
+    bool was_viewer = false;
+    const char *last_phase = "";
+    sched::Clock sched_clock;
     size_t pass_index = 0;
     Clock::time_point next_section{};
     uint64_t viewer_at = 0;
@@ -1023,12 +1036,13 @@ void render_section(SectionEntry &s, uint64_t now)
     {
         if (!s.quarantined.empty())
             return;
-        g.sections_dirty = true;
         SectionCall call{s.fn, {}, {}};
+        Clock::time_point c0 = Clock::now();
         uint64_t t0 = now_ms();
         unsigned long code = 0;
         bool ok = guarded(run_section_body, &call, &code);
         uint64_t took = now_ms() - t0;
+        double cost_ms = std::chrono::duration<double, std::milli>(Clock::now() - c0).count();
         g.pass_ms += took;
         if (took >= g.pass_max) {
             g.pass_max = took;
@@ -1039,6 +1053,7 @@ void render_section(SectionEntry &s, uint64_t now)
             std::snprintf(b, sizeof b, "fault 0x%08lx while rendering", code);
             s.quarantined = b;
             s.rendered = false;
+            g.sections_dirty = true;
             log("section %s FAULTED (0x%08lx); it is switched off until the game restarts", s.name.c_str(), code);
             return;
         }
@@ -1047,6 +1062,8 @@ void render_section(SectionEntry &s, uint64_t now)
             log("section %s took %llu ms to render", s.name.c_str(), (unsigned long long)took);
         }
         Json v;
+        std::string before = std::move(s.text);
+        bool was_rendered = s.rendered;
         if (!call.error.empty()) {
             Writer w;
             w.begin_object();
@@ -1069,6 +1086,11 @@ void render_section(SectionEntry &s, uint64_t now)
             s.value = std::move(v);
         }
         s.rendered = true;
+        bool changed = !was_rendered || s.text != before;
+        if (changed)
+            g.sections_dirty = true;
+        sched::rendered(s.slot, g.sched_clock, double(now), cost_ms, changed);
+        g.pass_rendered = true;
         if (s.text.size() > 64 * 1024 && !s.big_logged) {
             s.big_logged = true;
             log("section %s is %zu KB; the snapshot is rewritten whole, so keep sections under 64 KB", s.name.c_str(),
@@ -1300,42 +1322,68 @@ void write_snapshot(uint64_t now)
     writer().post(std::move(out));
 }
 
+void invalidate_sections()
+{
+    for (auto &s : section_table())
+        sched::invalidate(s.slot);
+    g.sched_clock.global_ms = 0;
+}
+
 void snapshot(uint64_t now, bool force)
 {
-    g.sections_live = state::sections_ok();
+    bool live = state::sections_ok();
+    const char *phase = state::phase();
+    bool phase_changed = std::strcmp(phase, g.last_phase) != 0;
+    g.last_phase = phase;
+    g.sections_live = live;
+    if (phase_changed || (live && !g.was_live))
+        invalidate_sections();
+    g.was_live = live;
     if (!g.sections_live && !in_career())
         for (auto &s : section_table())
             if (s.rendered) {
                 s.rendered = false;
                 g.sections_dirty = true;
             }
-    if (!g.sections_live || !viewer_fresh()) {
+    bool viewer = g.sections_live && viewer_fresh();
+    if (viewer && !g.was_viewer)
+        invalidate_sections();
+    g.was_viewer = viewer;
+    if (!viewer) {
         write_snapshot(now);
         return;
     }
     if (force) {
         for (auto &s : section_table())
             render_section(s, now);
+        g.pass_rendered = false;
         finish_render();
         write_snapshot(now);
         return;
     }
     g.pass_active = true;
     g.pass_index = 0;
+    g.pass_rendered = false;
 }
 
 void continue_pass(uint64_t now)
 {
     auto &t = section_table();
-    if (Clock::now() < g.next_section)
-        return;
+    while (g.pass_index < t.size() && !t[g.pass_index].quarantined.empty())
+        ++g.pass_index;
+    while (g.pass_index < t.size() && !sched::may_render(t[g.pass_index].slot, g.sched_clock, double(now)))
+        ++g.pass_index;
     if (g.pass_index < t.size()) {
+        if (Clock::now() < g.next_section)
+            return;
         render_section(t[g.pass_index++], now);
         g.next_section = Clock::now() + kSectionGap;
     }
     if (g.pass_index >= t.size()) {
         g.pass_active = false;
-        finish_render();
+        if (g.pass_rendered)
+            finish_render();
+        g.pass_rendered = false;
         write_snapshot(now);
     }
 }
@@ -1381,6 +1429,11 @@ void perf_frame(Clock::time_point start, uint64_t now)
 }
 
 } // namespace
+
+void register_idle(IdleFn fn)
+{
+    idle_table().push_back(fn);
+}
 
 namespace bridge {
 
@@ -1467,6 +1520,10 @@ void frame()
         if (g.pass_active)
             continue_pass(now);
     }
+    if (g.was_viewer && g.sections_live)
+        for (IdleFn fn : idle_table())
+            if (fn() == 2)
+                invalidate_sections();
     if (perf) {
         perf_lap(PartSnapshot);
         perf_frame(start, now);
