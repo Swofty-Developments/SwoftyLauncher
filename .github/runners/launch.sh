@@ -5,7 +5,9 @@
 set -uo pipefail
 
 NAME=$1 KIND=$2 TYPES=$3 FALLBACK=$4
-REGION=${REGION:-ap-south-2}
+HERE=$(cd "$(dirname "$0")" && pwd)
+# Each region has its own spot vCPU limit; the first in the file is the cheapest and holds the token.
+mapfile -t REGIONS < "$HERE/regions"
 API=https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runners
 
 fallback() {
@@ -14,16 +16,9 @@ fallback() {
   exit 0
 }
 
-TOKEN=$(aws ssm get-parameter --region "$REGION" --name /swofty-ci/github-token --with-decryption \
+TOKEN=$(aws ssm get-parameter --region "${REGIONS[0]}" --name /swofty-ci/github-token --with-decryption \
   --query Parameter.Value --output text) || fallback "the GitHub token could not be read"
 [ "${GITHUB_ACTIONS:-}" = true ] && echo "::add-mask::$TOKEN"
-IMAGE=$(aws ec2 describe-images --region "$REGION" --owners self --filters "Name=tag:swofty-ci-image,Values=$KIND" Name=state,Values=available \
-  --query 'sort_by(Images,&CreationDate)[-1].ImageId' --output text)
-[ -n "$IMAGE" ] && [ "$IMAGE" != None ] || fallback "there is no $KIND image"
-SG=$(aws ec2 describe-security-groups --region "$REGION" --filters Name=group-name,Values=swofty-ci-runners \
-  --query 'SecurityGroups[0].GroupId' --output text)
-SUBNETS=$(aws ec2 describe-subnets --region "$REGION" --filters Name=default-for-az,Values=true --query 'Subnets[].SubnetId' --output text)
-
 # The label is the runner's name and its only custom label; nothing else can guess it to take the instance.
 LABEL=ec2-$KIND-$(cat /proc/sys/kernel/random/uuid)
 if [ "$KIND" = windows ]; then WORK='D:\a'; else WORK=/home/runner/work; fi
@@ -50,20 +45,34 @@ systemd-run --unit swofty-runner /opt/actions-runner/swofty-run.sh"
 fi
 
 TAGS="Tags=[{Key=Name,Value=swofty-ci-$KIND},{Key=swofty-ci,Value=runner},{Key=swofty-ci-run,Value=$GITHUB_RUN_ID},{Key=swofty-ci-runner,Value=$LABEL}]"
-for TYPE in ${TYPES//,/ }; do
-  for SUBNET in $(shuf -e $SUBNETS); do
-    if OUT=$(aws ec2 run-instances --region "$REGION" --image-id "$IMAGE" --instance-type "$TYPE" --subnet-id "$SUBNET" \
-        --security-group-ids "$SG" --instance-initiated-shutdown-behavior terminate \
-        --instance-market-options 'MarketType=spot,SpotOptions={SpotInstanceType=one-time,InstanceInterruptionBehavior=terminate}' \
-        --metadata-options HttpTokens=required,HttpEndpoint=enabled --block-device-mappings "$DISKS" \
-        --tag-specifications "ResourceType=instance,$TAGS" "ResourceType=volume,$TAGS" \
-        --user-data "$USERDATA" --query 'Instances[0].InstanceId' --output text 2>&1); then
-      echo "$NAME: $OUT ($TYPE, $SUBNET) runs $LABEL"
-      echo "$NAME=$LABEL" >> "$GITHUB_OUTPUT"
-      exit 0
-    fi
-    echo "$NAME: $TYPE in $SUBNET: $(grep -o 'An error occurred ([A-Za-z.]*)' <<< "$OUT" || echo "$OUT")"
+for REGION in "${REGIONS[@]}"; do
+  IMAGE=$(aws ec2 describe-images --region "$REGION" --owners self --filters "Name=tag:swofty-ci-image,Values=$KIND" Name=state,Values=available \
+    --query 'sort_by(Images,&CreationDate)[-1].ImageId' --output text)
+  if [ -z "$IMAGE" ] || [ "$IMAGE" = None ]; then
+    echo "$NAME: $REGION has no $KIND image"
+    continue
+  fi
+  SG=$(aws ec2 describe-security-groups --region "$REGION" --filters Name=group-name,Values=swofty-ci-runners \
+    --query 'SecurityGroups[0].GroupId' --output text)
+  SUBNETS=$(aws ec2 describe-subnets --region "$REGION" --filters Name=default-for-az,Values=true --query 'Subnets[].SubnetId' --output text)
+  for TYPE in ${TYPES//,/ }; do
+    for SUBNET in $(shuf -e $SUBNETS); do
+      if OUT=$(aws ec2 run-instances --region "$REGION" --image-id "$IMAGE" --instance-type "$TYPE" --subnet-id "$SUBNET" \
+          --security-group-ids "$SG" --instance-initiated-shutdown-behavior terminate \
+          --instance-market-options 'MarketType=spot,SpotOptions={SpotInstanceType=one-time,InstanceInterruptionBehavior=terminate}' \
+          --metadata-options HttpTokens=required,HttpEndpoint=enabled --block-device-mappings "$DISKS" \
+          --tag-specifications "ResourceType=instance,$TAGS" "ResourceType=volume,$TAGS" \
+          --user-data "$USERDATA" --query 'Instances[0].InstanceId' --output text 2>&1); then
+        echo "$NAME: $OUT ($REGION, $TYPE, $SUBNET) runs $LABEL"
+        echo "$NAME=$LABEL" >> "$GITHUB_OUTPUT"
+        exit 0
+      fi
+      ERROR=$(grep -o 'An error occurred ([A-Za-z.]*)' <<< "$OUT" || echo "$OUT")
+      echo "$NAME: $REGION $TYPE in $SUBNET: $ERROR"
+      # The spot vCPU limit covers every type and zone of the region.
+      [[ $ERROR == *MaxSpotInstanceCountExceeded* ]] && continue 3
+    done
   done
 done
 curl -fsS -X DELETE -H "Authorization: Bearer $TOKEN" "$API/$RUNNER_ID" || true
-fallback "no instance started ($TYPES)"
+fallback "no instance started in ${REGIONS[*]} ($TYPES)"
