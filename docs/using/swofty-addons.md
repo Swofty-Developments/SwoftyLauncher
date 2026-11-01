@@ -1,6 +1,6 @@
 ---
 title: Swofty's addons
-description: The addons Swofty publishes in the Addon Browser - F1 25 RE-Optimization, the Career Mode Editor, the Driver Manager, R&D Tyres & Thermal Management and Any Team Transfers - and how to install, update and remove them.
+description: The addons Swofty publishes in the Addon Browser - F1 25 RE-Optimization, the Career Mode Editor, the Driver Manager, R&D Tyres & Thermal Management, Any Team Transfers and the PolyphoniX Native shader - and how to install, update and remove them.
 ---
 
 # Swofty's addons
@@ -14,6 +14,7 @@ Swofty publishes these addons in the [Addon Browser](/using/addon-browser), next
 | [Driver Manager](/using/driver-manager) | `swofty.driver-manager` | Swofty |
 | R&D: Tyres & Thermal Management | `swofty.rnd-tyres-thermal` | Swofty |
 | [Any Team Transfers](#any-team-transfers) | `swofty.any-team-transfers` | Swofty |
+| [PolyphoniX Native](#polyphonix-native) | `swofty.polyphonix-native` | Mark Wazowski's look, rebuilt by Swofty |
 
 ## Install, update or remove one
 
@@ -117,3 +118,26 @@ In a Driver Career contract negotiation, every team makes you an offer, so Team 
 - Team Select opens when your contract ends and you start the contract event in Team HQ. The contract terms, the signing and the move at the end of the season are the game's own.
 - A Progressive Career that follows your driver's real career still signs only for his real team.
 - It needs Swofty Launcher 1.5.13 or later, on the Steam or EA build of F1 25. On a game build where the function it hooks has changed, offers stay stock and `swofty/loader.log` says why.
+
+## PolyphoniX Native
+
+PolyphoniX Native is a shader: the PolyphoniX Native look from Assetto Corsa's Custom Shaders Patch, by Mark Wazowski, rebuilt for F1 25. It brightens the midtones while white stays white, adds a touch of colour, sets a 6000 K white balance, and gives bright lights a soft glare with a six-point star.
+
+- It applies to the 3D picture before the HUD draws, so the HUD and the menus keep their own colours.
+- **B** turns it on and off in game, with a `SHADERS ON` / `SHADERS OFF` toast. **On/off key** picks another key, or **None**.
+- Every slider changes the picture straight away under **ADDON SETTINGS** in game.
+- It needs Swofty Launcher 1.7.12 or later.
+
+| Setting | Id | Default | Does |
+|---|---|---|---|
+| On/off key | `toggle_key` | `B` | The key that turns it on and off while F1 25 is in front |
+| Look strength | `strength` | 100 | From the game's own picture at 0 to the full look at 100 |
+| Brightness | `brightness` | 125 | Lifts the midtones; 100 leaves them as they are |
+| Saturation | `saturation` | 110 | From grey at 0 to the game's own colour at 100 |
+| White balance (K) | `white_balance` | 6000 | Lower is warmer; 6500 is neutral |
+| Contrast | `contrast` | 100 | Contrast around mid grey |
+| Bloom | `bloom` | 35 | The soft glow around bright lights and sky |
+| Star glare | `star` | 30 | The six-point star on the brightest highlights |
+| Glare threshold | `threshold` | 82 | How bright a pixel has to be to glow; lower glows more |
+
+Its source is [`addons/polyphonix-native`](https://github.com/Swofty-Developments/SwoftyLauncher/tree/main/addons/polyphonix-native), and it is built on [post-process passes](/reference/addons/postfx).
