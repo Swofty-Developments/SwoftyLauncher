@@ -10,6 +10,7 @@
 
 #include "direct_start_logic.hpp"
 #include "json.hpp"
+#include "testagent/agent_logic.hpp"
 #include "title_skip.hpp"
 
 // The direct start: the game goes from boot to its target with no title, no legal screens' waits and no
@@ -118,6 +119,8 @@ constexpr size_t STATE_STATUS = 0xb8, STATE_CHILDREN = 0xc0, STATE_LINKS = 0xaf0
 constexpr uint32_t STATE_APP = 0xe11edb87, STATE_SESSION = 0x1505f42a, STATE_LOAD_SESSION = 0x17e3cd0a;
 constexpr size_t LOAD_SYNC = 0xcd0;
 constexpr uint64_t LOAD_EXIT_WAIT_MS = 500;
+
+void choose_session(void *modes, const char *when);
 
 uint8_t *flow_root = nullptr;
 uint64_t load_exiting_at = 0;
@@ -248,6 +251,11 @@ void link_mid(safetyhook::Context &c)
             for (uint8_t *n = flow_root; n && runtime::readable(n, STATE_PARENT + 8);
                  n = *reinterpret_cast<uint8_t **>(n + STATE_CHILD))
                 if (*reinterpret_cast<uint32_t *>(n + STATE_HASH) == STATE_LOAD_SESSION) {
+                    static bool told = false;
+                    if (!told && driver.target.name == "session" && request["mode"].str() != "time_trial") {
+                        told = true;
+                        choose_session(modes_seen.load(), "load");
+                    }
                     load_exit(n);
                     break;
                 }
@@ -389,6 +397,85 @@ uint8_t *grand_prix_entity(void *modes)
     void *pred = reinterpret_cast<void *>(game.gp_predicate);
     uint8_t *gp = reinterpret_cast<ModeByPredicate_t *>(game.by_predicate)(modes, &pred);
     return gp && runtime::readable(gp, ENTITY_TRACKS + 8) ? gp : nullptr;
+}
+
+// The weekend the session load reads: the current mode's championship holder ([modes+0x88]) > its entity (+0x260)
+// > the current championship (+0x1058) > seasons[season_index] (+0x548, +0x560, 16-byte entries, season at +8) >
+// weekends[current_weekend] (+0x288, +0x2a0) (apply/moments.cpp reads the same chain for the session facts).
+constexpr size_t WK_SESSIONS = 0x220, WK_CURRENT = 0x238, WK_TRACK = 0x278, SESSION_STRIDE = 0xa0, SESSION_ID = 0x8;
+
+template <class T> bool rd(const void *p, size_t off, T &out)
+{
+    auto *a = static_cast<const uint8_t *>(p) + off;
+    if (!p || !runtime::readable(a, sizeof(T)))
+        return false;
+    out = *reinterpret_cast<const T *>(a);
+    return true;
+}
+
+uint8_t *current_weekend(void *modes)
+{
+    uint8_t *holder = nullptr, *entity = nullptr, *champ = nullptr, *sb = nullptr, *se = nullptr, *season = nullptr,
+            **wb = nullptr, **we = nullptr, *wk = nullptr;
+    uint32_t si = 0, wi = 0;
+    if (!rd(modes, 0x88, holder) || !rd(holder, 0x260, entity) || !rd(entity, 0x1058, champ) ||
+        !rd(champ, 0x548, sb) || !rd(champ, 0x550, se) || !rd(champ, 0x560, si) || se <= sb ||
+        si >= size_t(se - sb) / 16 || !rd(sb, size_t(si) * 16 + 8, season) || !rd(season, 0x288, wb) ||
+        !rd(season, 0x290, we) || !rd(season, 0x2a0, wi) || we <= wb || wi >= size_t(we - wb) ||
+        !rd(wb, size_t(wi) * 8, wk) || !runtime::readable(wk, 0x280))
+        return nullptr;
+    return wk;
+}
+
+std::string weekend_text(uint8_t *wk)
+{
+    auto *b = *reinterpret_cast<uint8_t **>(wk + WK_SESSIONS), *e = *reinterpret_cast<uint8_t **>(wk + WK_SESSIONS + 8);
+    uint32_t cur = *reinterpret_cast<uint32_t *>(wk + WK_CURRENT);
+    std::string ids;
+    for (auto *p = b; p && p < e && runtime::readable(p, SESSION_STRIDE); p += SESSION_STRIDE) {
+        uint32_t id = *reinterpret_cast<uint32_t *>(p + SESSION_ID);
+        ids += (ids.empty() ? "" : " ") + std::string(id < 19 ? testagent::SESSION_NAMES[id] : "?");
+    }
+    char head[96];
+    snprintf(head, sizeof head, "weekend %p, track stat id %u, current session %u of: ", wk,
+             unsigned(wk[WK_TRACK]), cur);
+    return head + ids;
+}
+
+// The requested session (the CLI's session=, a game session name or practice1..3, qualifying, race) made the
+// weekend's current one: its index when the weekend has it, else the current session's id rewritten.
+void choose_session(void *modes, const char *when)
+{
+    uint8_t *wk = current_weekend(modes);
+    if (!wk) {
+        swofty::log("[direct] Grand Prix (%s): no current weekend to read", when);
+        return;
+    }
+    swofty::log("[direct] Grand Prix (%s): %s", when, weekend_text(wk).c_str());
+    std::string name = request["session"].str();
+    if (name.empty())
+        return;
+    int want = testagent::session_id_of(name);
+    if (want < 0 || want == testagent::SESSION_TIME_TRIAL) {
+        swofty::log("[direct] Grand Prix: session '%s' is not a Grand Prix session; the weekend's own is kept", name.c_str());
+        return;
+    }
+    auto *b = *reinterpret_cast<uint8_t **>(wk + WK_SESSIONS), *e = *reinterpret_cast<uint8_t **>(wk + WK_SESSIONS + 8);
+    auto &cur = *reinterpret_cast<uint32_t *>(wk + WK_CURRENT);
+    uint32_t n = b && e > b ? uint32_t(size_t(e - b) / SESSION_STRIDE) : 0;
+    for (uint32_t i = 0; i < n; i++)
+        if (*reinterpret_cast<uint32_t *>(b + size_t(i) * SESSION_STRIDE + SESSION_ID) == uint32_t(want)) {
+            if (cur != i)
+                swofty::log("[direct] Grand Prix: current session %u -> %u (%s)", cur, i, testagent::SESSION_NAMES[want]);
+            cur = i;
+            return;
+        }
+    if (cur < n) {
+        auto &id = *reinterpret_cast<uint32_t *>(b + size_t(cur) * SESSION_STRIDE + SESSION_ID);
+        swofty::log("[direct] Grand Prix: the weekend has no %s; session %u rewritten from %s", testagent::SESSION_NAMES[want],
+                    cur, id < 19 ? testagent::SESSION_NAMES[id] : "?");
+        id = uint32_t(want);
+    }
 }
 
 ds::Setup new_grand_prix(std::string &why)
@@ -545,6 +632,7 @@ ds::Setup new_grand_prix(std::string &why)
     swofty::log("[direct] Grand Prix: entrants %zu before the fill, %zu after", before, entrants);
     swofty::log("[direct] Grand Prix: new weekend: setup mode %s, list %s (%p), track %s (%p), rounds %p, %zu entrant(s)",
                 setup_name.c_str(), list_name.c_str(), list, track_name.c_str(), track, rounds, entrants);
+    choose_session(modes, "built");
     return ds::Setup::done;
 }
 
