@@ -160585,6 +160585,33 @@
    "used_by": [
     "native/src/core/netplay_room.cpp"
    ]
+  },
+  {
+   "id": "core.memory_map_heap_size",
+   "section": ".xtls",
+   "pattern": "48 8B 8C 24 F0 00 00 00 4C 89 4C 24 58 E8",
+   "match": "0x14396f138",
+   "anchor": "0x8",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14396f140",
+   "kind": "mid",
+   "expect": "4C 89 4C 24 58",
+   "names": [
+    "site_Ne_MemoryMapHeapSize"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "audioheap",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/audio_heap.cpp"
+   ]
   }
  ]
 }
