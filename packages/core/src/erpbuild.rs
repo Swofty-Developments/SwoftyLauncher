@@ -86,6 +86,7 @@ pub struct ErpBuild<'a> {
     // and the origins in the order their ops came.
     writers: HashMap<(String, String), String>,
     origins: Vec<String>,
+    appended: HashMap<(String, String), String>,
     sources: HashMap<SourceKey, Node>,
     archives: HashMap<PathBuf, ErpFile>,
     mipmaps: BTreeMap<String, PathBuf>,
@@ -155,6 +156,25 @@ fn check_scene(uri: &str, data: &[u8]) -> std::result::Result<(), String> {
             ids[0]
         )),
     }
+}
+
+pub fn texture_findings_in(file: &ErpFile) -> Result<Vec<crate::texcheck::Finding>> {
+    use crate::texcheck::{check_surface, view_name};
+    let mut out = Vec::new();
+    for r in file.erp.resources.iter().filter(|r| r.kind() == "GfxSurfaceRes") {
+        let view = match view_name(&r.name) {
+            Some(v) => file
+                .erp
+                .resources
+                .iter()
+                .find(|x| x.name == v)
+                .map(|x| file.load(x))
+                .transpose()?,
+            None => None,
+        };
+        out.extend(check_surface(&file.load(r)?, view.as_ref()));
+    }
+    Ok(out)
 }
 
 pub fn stale_stats_in(file: &ErpFile) -> Result<Vec<String>> {
@@ -419,6 +439,7 @@ impl<'a> ErpBuild<'a> {
             erps: BTreeMap::new(),
             writers: HashMap::new(),
             origins: Vec::new(),
+            appended: HashMap::new(),
             sources: HashMap::new(),
             archives: HashMap::new(),
             mipmaps: BTreeMap::new(),
@@ -486,6 +507,10 @@ impl<'a> ErpBuild<'a> {
             return Ok(());
         }
         self.apply(op, resolve)?;
+        if let ErpOp::AppendSlices { erp, resource, .. } = op {
+            self.appended
+                .insert((erp.clone(), resource.clone()), origin.to_owned());
+        }
         let written = match op {
             ErpOp::PatchPkg { erp, resource, .. }
             | ErpOp::ReplaceResource { erp, resource, .. }
@@ -1096,6 +1121,35 @@ impl<'a> ErpBuild<'a> {
             write_archive(out, &r.erp, archive, None)?;
         }
         Ok(found)
+    }
+
+    /// Checks the textures an addon wrote or appended to against what the
+    /// game's D3D12 renderer accepts. Each finding names the addon that last
+    /// wrote the resource, as `name` gives it, and the archive.
+    pub fn check_textures(&self, name: &dyn Fn(&str) -> String) -> Vec<(crate::texcheck::Severity, String)> {
+        use crate::texcheck::{check_surface, view_name};
+        let mut out = Vec::new();
+        for (rel, a) in &self.erps {
+            for s in &a.slots {
+                let Slot::Owned(r) = s else { continue };
+                let view = view_name(&r.name).and_then(|v| {
+                    a.slots.iter().find_map(|s| match s {
+                        Slot::Owned(v2) if v2.name == v => Some(v2),
+                        _ => None,
+                    })
+                });
+                let key = (rel.clone(), r.name.clone());
+                let by = self
+                    .writers
+                    .get(&key)
+                    .or_else(|| self.appended.get(&key))
+                    .map_or_else(|| "an addon".to_owned(), |o| name(o));
+                for f in check_surface(r, view) {
+                    out.push((f.severity, format!("{by}: {rel}: {f}")));
+                }
+            }
+        }
+        out
     }
 
     /// Checks the archives with UI resources that ops wrote against the rules
