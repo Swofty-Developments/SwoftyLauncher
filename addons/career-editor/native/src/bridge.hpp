@@ -11,7 +11,7 @@
 
 namespace ce {
 
-inline constexpr const char *kVersion = "0.3.7";
+inline constexpr const char *kVersion = "0.3.8";
 
 uint64_t now_ms();
 uint64_t wall_ms();
