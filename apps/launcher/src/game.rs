@@ -352,8 +352,11 @@ fn install(copy: &GameCopy, recorded: &[PathBuf]) -> Install {
     }
 }
 
+pub const DIRECT_START_FILE: &str = "swofty/direct_start.json";
+
 pub struct Launch {
     child: Child,
+    direct_start: Option<PathBuf>,
     pub since: Instant,
     pub at: f64,
     pub log: PathBuf,
@@ -369,6 +372,7 @@ impl Launch {
         mode: LaunchMode,
         netplay: Option<&str>,
         row_ids: Option<&Path>,
+        direct_start: Option<&str>,
         steam_saves_once: bool,
     ) -> Result<Self, String> {
         let cli = cli_path(store).ok_or_else(|| app_control::missing(&expected_cli(store)))?;
@@ -399,6 +403,17 @@ impl Launch {
         if let Some(file) = row_ids {
             c.env(swofty_core::row_ids::ENV, file);
         }
+        let request_file = install.dir.join(DIRECT_START_FILE);
+        std::fs::remove_file(&request_file).ok();
+        let direct_start = match direct_start {
+            Some(request) => {
+                std::fs::create_dir_all(install.dir.join("swofty"))
+                    .and_then(|()| std::fs::write(&request_file, request))
+                    .map_err(|e| format!("{}: {e}", request_file.display()))?;
+                Some(request_file)
+            }
+            None => None,
+        };
         #[cfg(windows)]
         std::os::windows::process::CommandExt::creation_flags(&mut c, 0x0800_0000);
         let child = c
@@ -409,6 +424,7 @@ impl Launch {
             .map_err(|e| not_started(store, &log, &cli, &e))?;
         Ok(Self {
             child,
+            direct_start,
             since: Instant::now(),
             at,
             log,
@@ -424,6 +440,14 @@ impl Launch {
     pub fn failure(&self) -> String {
         failure_line(&std::fs::read_to_string(&self.log).unwrap_or_default())
             .unwrap_or_else(|| "the launch exited before the game started".into())
+    }
+}
+
+impl Drop for Launch {
+    fn drop(&mut self) {
+        if let Some(file) = &self.direct_start {
+            std::fs::remove_file(file).ok();
+        }
     }
 }
 

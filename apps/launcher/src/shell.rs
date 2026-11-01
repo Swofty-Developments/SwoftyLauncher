@@ -956,7 +956,7 @@ impl Shell {
             window.push_notification(Notification::warning(d.text()).title(d.title).autohide(false), cx);
         }
         let armed = match &room {
-            Some(_) => Some(swofty_core::multiplayer::bridge::ARMED_ROOM),
+            Some(_) => Some(swofty_core::multiplayer::bridge::ARMED),
             None => self
                 .mp_allowed()
                 .then_some(swofty_core::multiplayer::bridge::ARMED),
@@ -968,6 +968,7 @@ impl Shell {
             self.launch_mode(),
             armed,
             room.as_ref().and_then(|r| r.row_ids.as_deref()),
+            room.as_ref().map(|r| r.direct_start.as_str()),
             std::mem::take(&mut self.steam_saves_once),
         ) {
             Ok(l) => {
