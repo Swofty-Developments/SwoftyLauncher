@@ -17,9 +17,11 @@
 #include <array>
 #include <cstdint>
 #include <cstdio>
+#include <mutex>
 #include <string>
 
 #include <swofty/career.hpp>
+#include <swofty/systems/career.hpp>
 #include <swofty/mixin.hpp>
 
 #include "bridge.hpp"
@@ -153,7 +155,26 @@ bool safe()
     return state::blocked(false).empty();
 }
 
+namespace {
+std::mutex g_instance_mu;
+Instance g_instance;
+}
+
 std::string career_id()
+{
+    SwoftyCareerState s = core_state();
+    std::string saves = s.loaded ? career::saves::current() : std::string();
+    std::lock_guard<std::mutex> lock(g_instance_mu);
+    return g_instance.resolve(s.loaded != 0, s.key, saves);
+}
+
+std::string career_renamed_to(const std::string &from)
+{
+    std::lock_guard<std::mutex> lock(g_instance_mu);
+    return g_instance.renamed_to(from);
+}
+
+std::string legacy_career_key()
 {
     return core_state().key;
 }

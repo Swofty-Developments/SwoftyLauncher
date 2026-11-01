@@ -87,6 +87,7 @@
 #include "calendar_rules.hpp"
 #include "ce.hpp"
 #include "components.hpp"
+#include "points_math.hpp"
 
 using namespace swofty::game;
 
@@ -585,16 +586,44 @@ std::string sidecar_path(const std::string &career)
     return "careers/" + safe + ".season.json";
 }
 
+bool store_persists()
+{
+    return !g_store.career.empty() && !ce::provisional_instance(g_store.career);
+}
+
+bool store_save();
+
 void store_load(const std::string &career)
 {
     if (g_store.loaded && g_store.career == career)
         return;
+    if (g_store.loaded && !career.empty() && ce::provisional_instance(g_store.career) &&
+        ce::career_renamed_to(g_store.career) == career) {
+        ce::log("season: career %s was saved as %s; its points adjustments move with it", g_store.career.c_str(),
+                career.c_str());
+        g_store.career = career;
+        g_store.file = sidecar_path(career);
+        if (!g_store.seasons.empty())
+            store_save();
+        return;
+    }
     g_store = Store{};
     g_store.career = career;
     g_store.loaded = true;
     if (career.empty())
         return;
     g_store.file = sidecar_path(career);
+    if (ce::provisional_instance(career)) {
+        ce::log("season: career %s is not saved yet; its points adjustments stay in memory until its first save",
+                career.c_str());
+        return;
+    }
+    std::string legacy = ce::legacy_career_key();
+    std::string legacy_text;
+    if (!legacy.empty() && swofty::storage::read(sidecar_path(legacy), legacy_text) == swofty::storage::Result::ok)
+        ce::log("season: %s holds points adjustments made before careers had their own identity; they are not "
+                "applied to %s",
+                sidecar_path(legacy).c_str(), career.c_str());
     std::string text;
     if (swofty::storage::read(g_store.file, text) != swofty::storage::Result::ok)
         return;
@@ -623,6 +652,8 @@ bool store_save()
 {
     if (g_store.file.empty())
         return false;
+    if (!store_persists())
+        return true;
     ce::Writer w;
     w.begin_object();
     w.key("version");
@@ -740,6 +771,26 @@ void free_call(void *alloc, void *p)
 
 std::atomic<int> g_inject_log{0};
 
+std::map<uint16_t, int32_t> live_extras(uintptr_t season);
+
+std::map<uint16_t, int> base_points(uintptr_t season)
+{
+    std::map<uint16_t, int> base;
+    Table t = read_table(season);
+    std::map<uint16_t, int32_t> live = live_extras(season);
+    for (auto &[stat, d] : t.drivers) {
+        auto it = live.find(stat);
+        base[stat] = d.points - (it == live.end() ? 0 : it->second);
+    }
+    return base;
+}
+
+int base_of(const std::map<uint16_t, int> &base, uint16_t stat)
+{
+    auto it = base.find(stat);
+    return it == base.end() ? 0 : it->second;
+}
+
 }
 
 // Career_Rebuild_SeasonStandings: the only path into the standings init. When the
@@ -777,16 +828,17 @@ SWOFTY_WRAP(Career_Rebuild_SeasonStandings, void, void *season, void *order_a, v
             merged.emplace_back(k, v);
         }
     }
+    std::map<uint16_t, int> base = base_points(s);
     for (auto &a : add) {
         bool hit = false;
         for (auto &m : merged)
             if ((m.first >> 16) == a.stat) {
-                m.second += a.points;
+                m.second = ce::merge_extra(m.second, a.points, base_of(base, a.stat));
                 hit = true;
                 break;
             }
         if (!hit)
-            merged.emplace_back(a.key, a.points);
+            merged.emplace_back(a.key, ce::clamp_extra(a.points, base_of(base, a.stat)));
     }
     void *alloc = nullptr;
     if (g_Ne_DefaultAllocator.get())
@@ -870,10 +922,11 @@ void reconcile(const Where &wh)
         return;
     std::vector<Adj> want = adjustments_for(wh.season);
     std::map<uint16_t, int32_t> live = live_extras(wh.season);
+    std::map<uint16_t, int> base = base_points(wh.season);
     bool same = true;
     for (auto &a : want) {
         auto it = live.find(a.stat);
-        if (it == live.end() || it->second != a.points) {
+        if (it == live.end() || it->second != ce::clamp_extra(a.points, base_of(base, a.stat))) {
             same = false;
             break;
         }
@@ -1015,7 +1068,7 @@ void section_standings(ce::Writer &w)
             continue;
         Team &tm = teams[d.team];
         tm.stat = d.team;
-        tm.points += d.points;
+        tm.points += ce::shown_points(d.points);
         tm.wins += d.wins;
         tm.best = std::min(tm.best, d.position);
     }
@@ -1060,7 +1113,7 @@ void section_standings(ce::Writer &w)
         w.key("position");
         w.integer(d->position);
         w.key("points");
-        w.integer(d->points);
+        w.integer(ce::shown_points(d->points));
         w.key("wins");
         w.integer(d->wins);
         w.key("podiums");
@@ -1816,7 +1869,7 @@ void set_adjustment(uint32_t index, const std::string &name, uint16_t stat, uint
 int points_of(const Table &t, uint16_t stat)
 {
     auto it = t.drivers.find(stat);
-    return it == t.drivers.end() ? 0 : it->second.points;
+    return it == t.drivers.end() ? 0 : ce::shown_points(it->second.points);
 }
 
 // season.points.adjust: stores the driver's adjustment in the sidecar, then runs the
@@ -1865,7 +1918,7 @@ ce::OpResult op_points_adjust(const ce::Json &args)
         rebuild_championship(wh.champ);
     Table t2 = read_table(wh.season);
     int after_pts = points_of(t2, stat);
-    int expected = before_pts - live_extra + after_adj;
+    int expected = ce::shown_points(before_pts - live_extra + ce::clamp_extra(after_adj, before_pts - live_extra));
     ce::OpResult r;
     r.before = driver_json(stat, key, before_pts, before_adj);
     r.after = driver_json(stat, key, after_pts, after_adj, pending);
