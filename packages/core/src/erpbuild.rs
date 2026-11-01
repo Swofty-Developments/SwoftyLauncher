@@ -473,6 +473,10 @@ impl<'a> ErpBuild<'a> {
         Ok(self.erps.get_mut(rel).expect("inserted above"))
     }
 
+    pub fn load(&mut self, rel: &str) -> Result<()> {
+        self.erp(rel).map(|_| ())
+    }
+
     // Applies an op for an origin, such as an addon or a mod inside one. The
     // runtime route puts each origin's resources in an overlay archive of its own.
     pub fn apply_for(
@@ -964,9 +968,9 @@ impl<'a> ErpBuild<'a> {
             let mut images: Vec<String> = self.erps[&rel]
                 .slots
                 .iter()
-                .filter_map(|s| match s {
-                    Slot::Owned(r) => Some(r.name.as_str()),
-                    Slot::Stock(_) => None,
+                .map(|s| match s {
+                    Slot::Owned(r) => r.name.as_str(),
+                    Slot::Stock(j) => self.erps[&rel].file.erp.resources[*j].name.as_str(),
                 })
                 .filter_map(|n| match n.strip_suffix(".image") {
                     Some(v) if v.ends_with(".texarray") => Some(n.to_owned()),
@@ -2860,6 +2864,38 @@ mod tests {
         );
         assert!(lines.is_empty());
         assert_eq!(views[0].1, 6);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_whole_archive_put_with_a_wider_view_than_its_image_is_repaired() {
+        let root = texture_game("cohere-put");
+        let game = root.join("game");
+        let view = LOGOS.strip_suffix(".image").unwrap();
+        let stock = game.join(UI);
+        std::fs::write(&stock, texture_erp(vec![array(2, &[[1; 4]; 6]), view_res(16)])).unwrap();
+        let original = |rel: &str| game.join(rel);
+        let mut b = ErpBuild::new(&original);
+        b.load(UI).unwrap();
+        let lines = b.cohere_arrays().unwrap();
+        assert_eq!(
+            lines,
+            [format!(
+                "texture array {view}: view said 16 slices, image has 6; fixed"
+            )]
+        );
+        let counts: Vec<u32> = b
+            .resources()
+            .filter(|(_, r, _, _)| r.name == view)
+            .map(|(_, r, _, _)| view_count(r))
+            .collect();
+        assert_eq!(counts, [6]);
+        let mut again = ErpBuild::new(&original);
+        again.load(UI).unwrap();
+        std::fs::write(&stock, texture_erp(vec![array(2, &[[1; 4]; 6]), view_res(6)])).unwrap();
+        let mut ok = ErpBuild::new(&original);
+        ok.load(UI).unwrap();
+        assert!(ok.cohere_arrays().unwrap().is_empty());
         std::fs::remove_dir_all(&root).ok();
     }
 

@@ -1788,7 +1788,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             .get(origin)
             .map_or_else(|| origin.to_owned(), |m| m.name.clone()),
     };
-    if !erp_ops.is_empty() {
+    if !erp_ops.is_empty() || !puts.is_empty() {
         let staged = built.plan.data.clone();
         let base = |rel: &str| {
             staged
@@ -1830,6 +1830,9 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             }
         }
         let mut erps = ErpBuild::new(&base);
+        for rel in puts.keys() {
+            erps.load(rel)?;
+        }
         for (erp, resource) in menu_kept.keys() {
             erps.keep(erp, resource);
         }
@@ -2633,15 +2636,22 @@ fn archive_puts(
             _ => Vec::new(),
         })
         .collect();
-    let mut puts = BTreeMap::new();
+    let mut last = BTreeMap::new();
     for op in files {
         let AssetOp::File(FileOp::Put { source, target }) = &op.op else {
             continue;
         };
-        if changed.contains(target.as_str()) {
-            let path = source.resolve(&source_dir(store, &op.origin.addon, source.root))?;
+        let erp = target.to_ascii_lowercase().ends_with(".erp");
+        if erp || changed.contains(target.as_str()) {
+            last.insert(target.clone(), (op, source));
+        }
+    }
+    let mut puts = BTreeMap::new();
+    for (target, (op, source)) in last {
+        let path = source.resolve(&source_dir(store, &op.origin.addon, source.root))?;
+        if changed.contains(target.as_str()) || holds_texture_arrays(&path) {
             puts.insert(
-                target.clone(),
+                target,
                 ArchivePut {
                     rank: rank(&op.origin),
                     origin: op.origin.clone(),
@@ -2651,6 +2661,15 @@ fn archive_puts(
         }
     }
     Ok(puts)
+}
+
+fn holds_texture_arrays(path: &Path) -> bool {
+    swofty_formats::erp::ErpFile::open(path).is_ok_and(|f| {
+        f.erp
+            .resources
+            .iter()
+            .any(|r| r.name.ends_with(".texarray") || r.name.ends_with(".texarray.image"))
+    })
 }
 
 /// Leaves out of `op` the archives a put replaces later in load order; false
