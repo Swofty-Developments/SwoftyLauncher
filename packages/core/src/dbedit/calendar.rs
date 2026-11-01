@@ -1,21 +1,10 @@
-//! Calendar pages: which season of Track settings dates a track list, and the rounds a lowered event count cuts.
+//! Calendar pages: the rounds a lowered Events count cuts.
 
 use swofty_formats::gvdb::Gvdb;
 use swofty_formats::hash::fnv1a64;
 
 const LISTS: &str = "schedule.track_lists";
 const LIST: &str = "schedule.track_lists.track_event_list";
-
-/// The Track settings season whose weekend dates order a track list's rounds:
-/// `F1_2026_full` -> `f1_2026`, `F2_2024_8` -> `f2_2024`. Lists without a year in the name have none.
-pub fn season_of(list: &str) -> Option<String> {
-    let mut parts = list.split('_');
-    let series = parts.next()?.to_ascii_lowercase();
-    let year = parts.next()?;
-    let ok =
-        (series == "f1" || series == "f2") && year.len() == 4 && year.bytes().all(|b| b.is_ascii_digit());
-    ok.then(|| format!("{series}_{year}"))
-}
 
 /// A track list whose Events count is lower than the rounds it holds.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -97,16 +86,6 @@ pub fn cut_rounds(db: &Gvdb) -> Vec<CutRounds> {
 mod tests {
     use super::*;
     use swofty_formats::gvdb::Record;
-
-    #[test]
-    fn a_track_list_names_its_track_settings_season() {
-        assert_eq!(season_of("F1_2026_full").as_deref(), Some("f1_2026"));
-        assert_eq!(season_of("F1_2026_16").as_deref(), Some("f1_2026"));
-        assert_eq!(season_of("F2_2024_8").as_deref(), Some("f2_2024"));
-        assert_eq!(season_of("F1_career_beta"), None);
-        assert_eq!(season_of("F1CG_Test_TrackList"), None);
-        assert_eq!(season_of(""), None);
-    }
 
     fn list(label: &str, count: usize, events: &[&str]) -> Gvdb {
         let mut r = vec![
