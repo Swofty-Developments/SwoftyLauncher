@@ -37,7 +37,7 @@ int main()
 
     CHECK(audio.stock == 45088768);
     CHECK(save.stock == 78643200);
-    CHECK(game.stock == 204472320);
+    CHECK(game.stock == 408944640);
     CHECK(!std::strcmp(audio.env, "SWOFTY_AUDIO_BUNDLE_MB"));
     CHECK(!std::strcmp(save.env, "SWOFTY_SAVE_TEMP_MB"));
     CHECK(!std::strcmp(game.env, "SWOFTY_GAME_HEAP_MB"));
@@ -57,12 +57,12 @@ int main()
     CHECK(!hs::find(F::internal, 200 * M, {1, 0, 0}));
     CHECK(!hs::find(F::internal, 3 * M, {1, 0, 0}));
     CHECK(!hs::find(F::plain, 75 * M, {1, 0, 0}));
-    CHECK(hs::find(F::plain, 195 * M, {1, 0, 0}) == &game);
-    CHECK(hs::find(F::plain, 195 * M, {1, 0, 64 * 1024}) == &game);
-    CHECK(!hs::find(F::plain, 195 * M, {0, 0, 0}));
-    CHECK(!hs::find(F::internal, 195 * M, {1, 0, 0}));
-    CHECK(!hs::find(F::plain, 1300 * M, {1, 0, 0}));
-    CHECK(!hs::find(F::plain, 512 * M, {1, 0, 0}));
+    CHECK(hs::find(F::plain, 390 * M, {1, 100, 0}) == &game);
+    CHECK(hs::find(F::plain, 390 * M, {1, 100, 64 * 1024}) == &game);
+    CHECK(!hs::find(F::plain, 390 * M, {0, 100, 0}));
+    CHECK(!hs::find(F::internal, 390 * M, {1, 100, 0}));
+    CHECK(!hs::find(F::plain, 195 * M, {1, 0, 0}) && !hs::find(F::plain, 2600 * M, {1, 100, 0}));
+    CHECK(!hs::find(F::plain, 1024 * M, {1, 100, 0}));
 
     {
         hs::Choice c = hs::choose(audio, nullptr, 32 * GiB);
@@ -109,18 +109,18 @@ int main()
     }
     {
         hs::Choice c = hs::choose(game, nullptr, 32 * GiB);
-        CHECK(c.raised(game) && c.bytes == 512 * M && c.source == hs::Source::ram);
+        CHECK(c.raised(game) && c.bytes == 1024 * M && c.source == hs::Source::ram);
         c = hs::choose(game, nullptr, 8 * GiB);
-        CHECK(c.raised(game) && c.bytes == 320 * M && c.source == hs::Source::small_ram);
-        CHECK(hs::choose(game, nullptr, 0).bytes == 512 * M);
-        c = hs::choose(game, "768", 8 * GiB);
-        CHECK(c.bytes == 768 * M && c.source == hs::Source::env);
-        CHECK(hs::choose(game, "99999", 32 * GiB).bytes == 1300 * M);
-        for (const char *off : {"0", "off", "195", "100"}) {
+        CHECK(c.raised(game) && c.bytes == 640 * M && c.source == hs::Source::small_ram);
+        CHECK(hs::choose(game, nullptr, 0).bytes == 1024 * M);
+        c = hs::choose(game, "1536", 8 * GiB);
+        CHECK(c.bytes == 1536 * M && c.source == hs::Source::env);
+        CHECK(hs::choose(game, "99999", 32 * GiB).bytes == 2600 * M);
+        for (const char *off : {"0", "off", "390", "100"}) {
             c = hs::choose(game, off, 32 * GiB);
             CHECK(!c.raised(game) && c.bytes == game.stock);
         }
-        CHECK(hs::choose(game, "196", 32 * GiB).bytes == 196 * M);
+        CHECK(hs::choose(game, "391", 32 * GiB).bytes == 391 * M);
         CHECK(hs::choose(game, "big", 32 * GiB).bad_env);
         CHECK(hs::source_text(game, hs::Source::env) == "SWOFTY_GAME_HEAP_MB");
     }
@@ -132,12 +132,12 @@ int main()
         CHECK(hs::apply_line(save, {1, 0, 0}, "", save.stock, c) ==
               "[saves] temp pool: heap SAVE_TEMP_ALLOC (virtual 1, expand 0%): size 78643200 -> 209715200 bytes (200 MiB, default)");
         c = hs::choose(game, "600", 32 * GiB);
-        CHECK(hs::apply_line(game, {1, 0, 0}, "GAME_DEFAULT", game.stock, c) ==
-              "[heap] heap 'GAME_DEFAULT' (virtual 1, pagesize 0): size 204472320 -> 629145600 bytes (600 MiB, SWOFTY_GAME_HEAP_MB)");
+        CHECK(hs::apply_line(game, {1, 100, 0}, "GAME_DEFAULT", game.stock, c) ==
+              "[heap] heap 'GAME_DEFAULT' (virtual 1, pagesize 0): size 408944640 -> 629145600 bytes (600 MiB, SWOFTY_GAME_HEAP_MB)");
         CHECK(hs::kept_line(audio, nullptr) == "[audio] AUDIO_BUNDLE heap kept at the game's 43 MiB (SWOFTY_AUDIO_BUNDLE_MB=)");
         CHECK(hs::kept_line(save, "off") == "[saves] temp pool: SAVE_TEMP_ALLOC kept at the game's 75 MiB (SWOFTY_SAVE_TEMP_MB=off)");
         CHECK(hs::armed_line(game, hs::choose(game, nullptr, 32 * GiB)) ==
-              "[heap] GAME_DEFAULT heap armed: 512 MiB instead of the game's 195 MiB when system/memory_map.xml is read");
+              "[heap] GAME_DEFAULT heap armed: 1024 MiB instead of the game's 390 MiB when system/memory_map.xml is read");
         CHECK(hs::bad_env_line(save) == "[saves] temp pool: SWOFTY_SAVE_TEMP_MB is not a number of MiB, 0 or off; using the default");
         CHECK(hs::late_line(audio, "window").find("the core loaded at the window stage") != std::string::npos);
         CHECK(hs::unresolved_line(game, "site_X") == "[heap] GAME_DEFAULT heap not raised: site_X does not resolve on this build");
