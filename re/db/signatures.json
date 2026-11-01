@@ -160774,6 +160774,60 @@
    "used_by": [
     "native/src/core/ai_corner_guard.cpp"
    ]
+  },
+  {
+   "id": "session.time_trial_leaderboard_tab_child",
+   "section": ".xtls",
+   "pattern": "48 8B 01 B2 01 FF 50 30 48 89 F1 E8 ?? ?? ?? ?? 90 48 83 C4 40 5E C3 56",
+   "match": "0x142fcbb09",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142fcbb09",
+   "kind": "mid",
+   "expect": "48 8B 01 B2 01",
+   "names": [
+    "site_Sess_TimeTrialLeaderboard_TabChild"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "ttlbnull",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/leaderboard_guard.cpp"
+   ]
+  },
+  {
+   "id": "session.time_trial_leaderboard_tab_done",
+   "section": ".xtls",
+   "pattern": "90 48 83 C4 40 5E C3 56 48 83 EC 40",
+   "match": "0x142fcbb19",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142fcbb19",
+   "kind": "mid",
+   "expect": "90 48 83 C4 40",
+   "names": [
+    "site_Sess_TimeTrialLeaderboard_TabDone"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "ttlbnull",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/leaderboard_guard.cpp"
+   ]
   }
  ]
 }
