@@ -105,6 +105,7 @@ Args:
     seconds, 0..1800; default 2% of `length_s`, clamped to 30..300). The weather starts changing at the
     point's position and reaches the new state `ramp_s` later. Points are sorted by position; two points
     at the same position are an error.
+  - Every transition the builder gets is at least 1 s long and every state after the first holds at least 1 s (a zero-length transition divides by zero in the game's blend). Points that would start inside the last second of the session are dropped, and the log says so (`weather: <key> (...): <n> point(s) dropped`).
   - `start` (state, optional): the state before the first point when the first point is after 0. If it's
     omitted, the session starts in the first point's state when that point is at 0, otherwise in the game's
     own first state for that session (`clear` if unknown).

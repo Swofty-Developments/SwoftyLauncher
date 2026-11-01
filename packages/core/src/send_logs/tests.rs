@@ -1771,6 +1771,39 @@ fn no_crash_line_and_no_file_still_says_none_was_written() {
 }
 
 #[test]
+fn a_fast_fail_exit_without_a_crash_report_is_named_with_the_loader_log_tail() {
+    let root = tmp("fastfail");
+    let (store, game) = fake_data(&root);
+    let session = store.root.join("sessions").join("20261020-090000");
+    put(&session.join("exit_code"), "-1073740791\n");
+    put(
+        &session.join("loader.log"),
+        "[core] up\n[crash] crash log armed\n[loader] last line before the end\n",
+    );
+    let bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "x");
+    let summary = summary_of(&bundle);
+    assert!(
+        summary.contains(
+            "F1 25 stopped itself after detecting a corrupted stack or an invalid call (0xc0000409).\n\
+             Last loader.log lines:\n  [core] up\n  [crash] crash log armed\n  [loader] last line before the end\n"
+        ),
+        "{summary}"
+    );
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn a_clean_exit_adds_no_fast_fail_sentence() {
+    let root = tmp("fastfailclean");
+    let (store, game) = fake_data(&root);
+    let session = store.root.join("sessions").join("20261020-090000");
+    put(&session.join("exit_code"), "0\n");
+    let bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "x");
+    assert!(!summary_of(&bundle).contains("stopped itself"));
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
 fn saves_excerpt_keeps_the_save_source_and_slot_lines() {
     let text = "1 [core] up\n\
         2 [saves] launcher saves are off for profile main: the game reads Steam's saves natively\n\
@@ -1781,4 +1814,32 @@ fn saves_excerpt_keeps_the_save_source_and_slot_lines() {
     assert!(lines[0].contains("reads Steam's saves natively"));
     assert!(lines[1].contains("career=dc-000b0000"));
     assert_eq!(super::saves_excerpt(text, 1).len(), 1);
+}
+
+#[test]
+fn summary_names_the_stub_an_antivirus_blocked() {
+    let root = tmp("stub-av");
+    let (store, game) = fake_data(&root);
+    let mut bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "x");
+    assert_eq!(bundle.stub_blocked_line(Some(&game)), None);
+
+    bundle.entries.push(Entry {
+        path: "ea-app/EAEgsProxy.log".into(),
+        data: b"20\t[2026-11-01T01:57:04.895Z]\tERROR   \t(eax::services::process::ProcessWin::createProcess)\t[PROCESS] \
+          Create Process: Operation did not complete successfully because the file contains a virus or \
+          potentially unwanted software. | exe=[C:\\F1 25\\F1 25\\EAAntiCheat.GameServiceLauncher.exe] | OS \
+          ErrorCode:  0xe1\n"
+            .to_vec(),
+        note: None,
+    });
+    let line = bundle.stub_blocked_line(Some(&game)).unwrap();
+    assert!(
+        line.starts_with("offline: EAAntiCheat.GameServiceLauncher.exe was blocked by antivirus (error 225)"),
+        "{line}"
+    );
+
+    put(&game.join("EAAntiCheat.GameServiceLauncher.exe.bak"), "real");
+    let plain = Bundle::collect_with(&store, &report(&game), Limits::default(), "x");
+    assert_eq!(plain.stub_blocked_line(Some(&game)), None);
+    std::fs::remove_dir_all(&root).ok();
 }

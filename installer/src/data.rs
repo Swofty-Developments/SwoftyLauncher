@@ -110,6 +110,16 @@ pub fn plan(data: &Data, to: &Path) -> Result<Option<DataMove>, String> {
             Record::Link,
         ),
     };
+    if record != Record::Env
+        && let Some(target) = &linked
+        && !target.exists()
+    {
+        return Err(format!(
+            "{} links to {}, which is missing. Reconnect that drive or folder, or restore it, before moving your data.",
+            data.default.display(),
+            target.display()
+        ));
+    }
     if !to.is_absolute() {
         return Err("Choose a full path for the data folder.".into());
     }
@@ -689,6 +699,24 @@ mod tests {
         std::fs::create_dir_all(dir.join("D/Empty")).unwrap();
         assert!(plan(&d, &dir.join("D/Empty")).unwrap().is_some());
         assert_eq!(read(&busy.join("notes.txt")), "mine");
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn stops_instead_of_starting_fresh_when_the_link_target_is_missing() {
+        let dir = temp("dangling");
+        let (default, gone) = (dir.join("Local").join("Swofty"), dir.join("D").join("Old"));
+        std::fs::create_dir_all(&gone).unwrap();
+        std::fs::create_dir_all(default.parent().unwrap()).unwrap();
+        link(&gone, &default).unwrap();
+        std::fs::remove_dir(&gone).unwrap();
+        let d = data(&default);
+        for to in [default.clone(), dir.join("E").join("New")] {
+            let err = plan(&d, &to).unwrap_err();
+            assert!(err.contains("is missing"), "{err}");
+        }
+        assert!(default.symlink_metadata().unwrap().file_type().is_symlink());
+        assert!(!dir.join("E").join("New").exists());
         std::fs::remove_dir_all(&dir).ok();
     }
 

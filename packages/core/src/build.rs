@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use swofty_formats::gvdb::Gvdb;
 
-use crate::activation::db::{Registry, TrackHost, activate};
+use crate::activation::db::{Registry, TrackHost, activate_with};
 use crate::activation::ers::{self, ErsMap, build_ers};
 use crate::activation::grid::grid_size;
 use crate::activation::handling::{self, HandlingMap};
@@ -24,7 +24,7 @@ use crate::dbedit::driver_manager;
 use crate::erpbuild::{ErpBuild, Held, Resized, SliceMerge, reads, unsupported, writes};
 use crate::install::{Game, LOADER_DIR, Plan};
 use crate::launcher::BuildCx;
-use crate::manifest::{AddonManifest, PassValue, PostFx, Strength, relative_inside};
+use crate::manifest::{AddonManifest, Binds, PassValue, PostFx, Strength, placeholders, relative_inside};
 use crate::map::{TrackPackage, Unusable};
 use crate::multiplayer::fingerprint::{self, OutputBuilder};
 use crate::owned;
@@ -37,7 +37,8 @@ use crate::profile::Profile;
 use crate::registry::Host;
 use crate::resolver::resolve;
 use crate::runtime::{
-    Prebuilt, Runtime, db_edits, overlay_fits, runtime_loaded_estimate, runtime_record_room,
+    PostFxLive, PostFxPass, PostFxTexture, PostFxWhen, Prebuilt, Runtime, db_edits, overlay_fits,
+    runtime_loaded_estimate, runtime_record_room,
 };
 use crate::settings::{
     SessionMod, SessionSettings, SessionUi, render_ops, render_text, screen_file, screens,
@@ -265,6 +266,52 @@ fn shader_look(m: &AddonManifest, p: &Profile) -> Result<(String, f64)> {
             .ok_or_else(|| Error::Other(format!("{}: shader strength {t} is not from 0 to 100", m.name)))?,
     };
     Ok((rel, strength))
+}
+
+fn texture_name(m: &AddonManifest, name: &str) -> String {
+    format!("{}/{name}", m.id)
+}
+
+fn option_id(t: &str) -> Option<&str> {
+    match placeholders(t)[..] {
+        [id] => Some(id),
+        _ => None,
+    }
+}
+
+/// The slots of a pass that bind to native options, which the core reads live.
+fn pass_live(m: &AddonManifest, pass: &PostFx) -> Vec<PostFxLive> {
+    pass.options
+        .iter()
+        .enumerate()
+        .filter_map(|(slot, v)| {
+            let PassValue::Option(t) = v else { return None };
+            let id = option_id(t)?;
+            m.options
+                .iter()
+                .any(|o| o.id == id && o.binds == Binds::Native)
+                .then(|| PostFxLive {
+                    slot,
+                    option: id.into(),
+                })
+        })
+        .collect()
+}
+
+/// `None` when the pass is left out; otherwise the live toggle that gates it, if any.
+fn pass_enabled(m: &AddonManifest, pass: &PostFx, p: &Profile) -> Result<Option<Option<String>>> {
+    let Some(t) = &pass.enabled else {
+        return Ok(Some(None));
+    };
+    let id = option_id(t)
+        .ok_or_else(|| Error::Other(format!("{}: postfx enabled {t} is not one option", m.name)))?;
+    if m.options.iter().any(|o| o.id == id && o.binds == Binds::Native) {
+        return Ok(Some(Some(id.into())));
+    }
+    Ok(match render_text(t, m, p)?.trim() {
+        "true" => Some(None),
+        _ => None,
+    })
 }
 
 /// The values a pass reads with `option(i)`, with `{{id}}` options filled from the profile's settings.
@@ -828,6 +875,51 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             n = cube.size
         ));
     }
+    for id in &resolved.order {
+        let m = &addons[id];
+        if m.postfx.is_empty() {
+            continue;
+        }
+        for t in &m.postfx_textures {
+            let image = match &t.file {
+                None => None,
+                Some(file) => {
+                    let path = store.addons_dir().join(&m.id).join(file);
+                    let png =
+                        std::fs::read(&path).map_err(|e| Error::Other(format!("{}: {file}: {e}", m.name)))?;
+                    hasher.update(format!("postfx texture {} {file};", m.id));
+                    hasher.update(&png);
+                    Some(
+                        crate::postfx::png_to_tex(&png)
+                            .map_err(|e| Error::Other(format!("{}: {file}: {e}", m.name)))?,
+                    )
+                }
+            };
+            hasher.update(format!("postfx texture {} {t:?};", m.id));
+            runtime.postfx_texture(
+                PostFxTexture {
+                    name: texture_name(m, &t.name),
+                    scale: t.scale,
+                    width: t.width,
+                    height: t.height,
+                    format: if image.is_some() {
+                        "rgba8".into()
+                    } else {
+                        t.format.clone().unwrap_or_else(|| "rgba16f".into())
+                    },
+                    persistent: image.is_none().then_some(t.persistent),
+                    file: None,
+                },
+                image,
+            );
+        }
+        if let Some(t) = &m.postfx_toggle
+            && let [option] = placeholders(t)[..]
+        {
+            hasher.update(format!("postfx toggle {} {option};", m.id));
+            runtime.postfx_toggle(&m.id, option);
+        }
+    }
     let mut passes: Vec<(i32, usize, &AddonManifest, &PostFx)> = Vec::new();
     for id in &resolved.order {
         for pass in &addons[id].postfx {
@@ -837,23 +929,60 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     passes.sort_by_key(|(order, at, ..)| (*order, *at));
     for (_, _, m, pass) in passes {
         let label = pass.label();
+        let Some(enabled) = pass_enabled(m, pass, &p)? else {
+            hasher.update(format!("postfx {} {} off;", m.id, pass.shader));
+            built
+                .lines
+                .push(format!("postfx: {}'s pass {label} is switched off", m.name));
+            continue;
+        };
         let options = pass_options(m, pass, &p)?;
         let source = store.addons_dir().join(&m.id).join(&pass.shader);
         let budget = pass.budget_ms.unwrap_or(1.5);
+        let spec = PostFxPass {
+            shader: String::new(),
+            name: label.clone(),
+            addon: m.name.clone(),
+            options,
+            budget_ms: budget,
+            addon_id: m.id.clone(),
+            live: pass_live(m, pass),
+            inputs: pass
+                .inputs
+                .iter()
+                .map(|n| match n.as_str() {
+                    "original" | "previous" => n.clone(),
+                    _ => texture_name(m, n),
+                })
+                .collect(),
+            output: pass
+                .output
+                .as_deref()
+                .map(|n| texture_name(m, n))
+                .unwrap_or_default(),
+            threads: pass.threads.unwrap_or([8, 8]),
+            raw: pass.raw,
+            when: pass.when.as_ref().map(|w| PostFxWhen {
+                views: w.views.clone(),
+                skip: w.skip.clone(),
+            }),
+            enabled,
+        };
         hasher.update(format!(
-            "postfx {} {} {options:?} {} {budget};",
+            "postfx {} {} {} {spec:?};",
             m.id, pass.shader, pass.order
         ));
-        match crate::postfx::compile(&source, &store.addon_cache_dir(&m.id).join("postfx")) {
+        let entry = crate::postfx::Entry::of(pass);
+        match crate::postfx::compile(&source, &store.addon_cache_dir(&m.id).join("postfx"), entry) {
             Ok(crate::postfx::Compiled { dxil, .. }) => {
                 hasher.update(&dxil);
                 built.lines.push(format!(
-                    "postfx: {}'s pass {label} runs as pass {} after the tonemap ({} bytes of DXIL)",
+                    "postfx: {}'s pass {label} runs as pass {} before the HUD ({} bytes of DXIL)",
                     m.name,
                     runtime.assets.postfx.len() + 1,
                     dxil.len()
                 ));
-                runtime.postfx(dxil, &label, &m.name, options, budget);
+                runtime.postfx(dxil, spec);
             }
             Err(e) => {
                 hasher.update(format!("skipped {e};"));
@@ -1238,6 +1367,19 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         let shipped = std::fs::read(&db_src).map_err(io_err(&db_src))?;
         let mut db = Gvdb::parse(&shipped)?;
         let stock: HashSet<u64> = db.records.iter().map(|r| r.key).collect();
+        let row_ids_lock = crate::row_ids::lock(&store.root)?;
+        let last = crate::row_ids::last_build(&store.overlays_dir(profile), &built.buildhash, GVDB);
+        let (mut row_ids, row_id_warnings) =
+            crate::row_ids::Store::load(&store.root, Some(&game.dir), profile, last);
+        built.warnings.extend(row_id_warnings);
+        built.lines.extend(row_ids.recover(&store.sessions_dir()).lines);
+        if let Some(lent) = &lent_ids {
+            let n = row_ids.lend(lent, &resolved.order).map_err(Error::Resolve)?;
+            built.lines.push(format!(
+                "database: {n} added-row id(s) are the room host's, for this session only; row-ids.json keeps yours"
+            ));
+        }
+        let older = crate::tracks::read_older(&store.root, profile);
         for (((_, pkg), slot), (_, _, origin)) in maps.iter().zip(&slots).zip(&tracks) {
             if recorded.contains(&origin.addon) {
                 built.lines.push(format!(
@@ -1257,7 +1399,15 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 None => TrackHost::Natural,
             };
             let lists = ui_lists.get(&pkg.track_code).cloned().unwrap_or_default();
-            let report = activate(&mut db, pkg, &reg, Some(&route), &lists)?;
+            let seed = older
+                .iter()
+                .find(|o| o.addon == origin.addon && o.code == pkg.track_code)
+                .and_then(|o| o.stat_id)
+                .map(i64::from);
+            let mut give = |top: i64, held: &dyn Fn(i64) -> bool| {
+                row_ids.track_stat_id(&origin.addon, &pkg.track_code, seed, top, held)
+            };
+            let report = activate_with(&mut db, pkg, &reg, Some(&route), &lists, Some(&mut give))?;
             for l in report.lines {
                 built.lines.push(format!("{}: {l}", pkg.track_code));
             }
@@ -1279,18 +1429,6 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         let staged = (planner.route(Kind::Db) == Route::Runtime && planner.has_db()).then(|| db.clone());
         let mut db_report = crate::ops::DbReport::default();
         planner.keep_entrant_lists(crate::entrant_lists::StockLists::new(&shipped_db));
-        let row_ids_lock = crate::row_ids::lock(&store.root)?;
-        let last = crate::row_ids::last_build(&store.overlays_dir(profile), &built.buildhash, GVDB);
-        let (mut row_ids, row_id_warnings) =
-            crate::row_ids::Store::load(&store.root, Some(&game.dir), profile, last);
-        built.warnings.extend(row_id_warnings);
-        built.lines.extend(row_ids.recover(&store.sessions_dir()).lines);
-        if let Some(lent) = &lent_ids {
-            let n = row_ids.lend(lent, &resolved.order).map_err(Error::Resolve)?;
-            built.lines.push(format!(
-                "database: {n} added-row id(s) are the room host's, for this session only; row-ids.json keeps yours"
-            ));
-        }
         planner.keep_row_ids(row_ids);
         let added = planner.apply_db_report(&mut db, &stock, &tracked, &mut db_report)?;
         if let Some(ids) = planner.take_row_ids() {
@@ -6861,11 +6999,54 @@ mod tests {
             serde_json::from_slice(&std::fs::read(&built.plan.loader["swofty/assets.json"]).unwrap())
                 .unwrap();
         assert_eq!(assets["features"], serde_json::json!(["postfx"]));
+        let ns = "example.vignette-pass";
+        let pass = |i: usize,
+                    name: &str,
+                    options: serde_json::Value,
+                    inputs: serde_json::Value,
+                    output: String| {
+            serde_json::json!({ "shader": format!("postfx/{i:02}.dxil"), "name": name, "addon": "Vignette Pass",
+                                "addon_id": ns, "options": options, "budget_ms": 1.5, "live": [],
+                                "inputs": inputs, "output": output, "threads": [8, 8], "raw": false })
+        };
         assert_eq!(
             assets["postfx"],
-            serde_json::json!([{ "shader": "postfx/00.dxil", "name": "vignette", "addon": "Vignette Pass",
-                                 "options": [60.0, 40.0], "budget_ms": 1.5 }])
+            serde_json::json!([
+                pass(
+                    0,
+                    "vignette",
+                    serde_json::json!([60.0, 40.0]),
+                    serde_json::json!([]),
+                    String::new()
+                ),
+                pass(
+                    1,
+                    "glow-down",
+                    serde_json::json!([]),
+                    serde_json::json!(["original"]),
+                    format!("{ns}/half")
+                ),
+                pass(
+                    2,
+                    "glow-up",
+                    serde_json::json!([30.0]),
+                    serde_json::json!([format!("{ns}/half")]),
+                    String::new()
+                ),
+            ])
         );
+        assert_eq!(
+            assets["postfx_textures"],
+            serde_json::json!([{ "name": format!("{ns}/half"), "scale": 0.5, "format": "rgba16f", "persistent": false }])
+        );
+        assert!(assets.get("postfx_toggles").is_none());
+        for i in 0..3 {
+            assert!(
+                std::fs::read(&built.plan.loader[&format!("swofty/postfx/{i:02}.dxil")])
+                    .unwrap()
+                    .starts_with(b"DXBC")
+            );
+        }
         let dxil = std::fs::read(&built.plan.loader["swofty/postfx/00.dxil"]).unwrap();
         assert!(dxil.starts_with(b"DXBC"));
         assert!(
@@ -6873,10 +7054,140 @@ mod tests {
                 .lines
                 .iter()
                 .any(|l| l
-                    .starts_with("postfx: Vignette Pass's pass vignette runs as pass 1 after the tonemap")),
+                    .starts_with("postfx: Vignette Pass's pass vignette runs as pass 1 before the HUD")),
             "{:?}",
             built.lines
         );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_v2_postfx_addon_builds_live_slots_textures_and_toggles() {
+        if loader_dir().is_some() || crate::postfx::dxc().is_none() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("swofty-build-postfx2-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir,
+            user_reg: None,
+        };
+        let store = Store::new(root.join("data"));
+        let src = root.join("src");
+        std::fs::create_dir_all(src.join("fx")).unwrap();
+        std::fs::create_dir_all(src.join("tex")).unwrap();
+        let template = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../templates/postfx-pass/fx");
+        std::fs::copy(template.join("glow.hlsl"), src.join("fx/glow.hlsl")).unwrap();
+        std::fs::write(
+            src.join("fx/raw.hlsl"),
+            "#include \"swofty/postfx.hlsli\"\n\
+             [numthreads(16, 16, 1)] void fill(uint3 id : SV_DispatchThreadID)\n\
+             { if (all(id.xy < swofty_size)) swofty_output[id.xy] = option(0).xxxx; }\n",
+        )
+        .unwrap();
+        let mut png = Vec::new();
+        {
+            let mut e = png::Encoder::new(&mut png, 1, 2);
+            e.set_color(png::ColorType::Rgba);
+            e.set_depth(png::BitDepth::Eight);
+            e.write_header()
+                .unwrap()
+                .write_image_data(&[1, 2, 3, 4, 5, 6, 7, 8])
+                .unwrap();
+        }
+        std::fs::write(src.join("tex/dirt.png"), &png).unwrap();
+        std::fs::write(
+            src.join(crate::manifest::MANIFEST_FILE),
+            r#"{ "schema_version": 1, "id": "x.fx2", "name": "Fx Two", "version": "1.0.0", "author": "a",
+                "experimental_features": ["postfx"], "compat": { "game": "f1_25" },
+                "options": [
+                    { "id": "amount", "type": "slider", "min": 0, "max": 100, "step": 1, "default": 20, "binds": "native" },
+                    { "id": "fixed", "type": "slider", "min": 0, "max": 100, "step": 1, "default": 7, "binds": "db" },
+                    { "id": "live_on", "type": "toggle", "default": true, "binds": "native" },
+                    { "id": "build_on", "type": "toggle", "default": false, "binds": "db" },
+                    { "id": "key", "type": "choice", "default": "F9", "binds": "native", "values": ["F9", "None"] }
+                ],
+                "postfx_toggle": "{{key}}",
+                "postfx_textures": [
+                    { "name": "half", "scale": 0.5 },
+                    { "name": "dirt", "file": "tex/dirt.png" }
+                ],
+                "postfx": [
+                    { "shader": "fx/glow.hlsl", "entry": "down", "name": "d", "inputs": ["original", "dirt"], "output": "half" },
+                    { "shader": "fx/glow.hlsl", "entry": "up", "name": "u", "options": ["{{amount}}", "{{fixed}}", 3],
+                      "inputs": ["half", "previous"], "enabled": "{{live_on}}",
+                      "when": { "views": ["cockpit"], "skip": ["paused"] } },
+                    { "shader": "fx/glow.hlsl", "entry": "up", "name": "off", "enabled": "{{build_on}}" },
+                    { "shader": "fx/raw.hlsl", "raw": true, "entry": "fill", "threads": [16, 16], "name": "r", "options": [1] }
+                ] }"#,
+        )
+        .unwrap();
+        let m = store.install_addon(&src).unwrap();
+        store
+            .update_profile("default", |p| p.set_enabled(&m.id, true))
+            .unwrap();
+        store
+            .update_profile("default", |p| {
+                p.set_option(&m, "amount", serde_json::json!(55)).map(drop)
+            })
+            .unwrap();
+        let built = build(&store, "default", &game).unwrap();
+        let assets: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(&built.plan.loader["swofty/assets.json"]).unwrap())
+                .unwrap();
+        let ns = "x.fx2";
+        let passes = assets["postfx"].as_array().unwrap();
+        assert_eq!(
+            passes.len(),
+            3,
+            "the pass enabled by a db toggle that is off is left out"
+        );
+        assert_eq!(
+            passes[0]["inputs"],
+            serde_json::json!(["original", format!("{ns}/dirt")])
+        );
+        assert_eq!(passes[0]["output"], format!("{ns}/half"));
+        assert_eq!(passes[1]["options"], serde_json::json!([55.0, 7.0, 3.0]));
+        assert_eq!(
+            passes[1]["live"],
+            serde_json::json!([{ "slot": 0, "option": "amount" }])
+        );
+        assert_eq!(passes[1]["enabled"], "live_on");
+        assert_eq!(
+            passes[1]["when"],
+            serde_json::json!({ "views": ["cockpit"], "skip": ["paused"] })
+        );
+        assert_eq!(
+            passes[1]["inputs"],
+            serde_json::json!([format!("{ns}/half"), "previous"])
+        );
+        assert!(passes[0].get("enabled").is_none() && passes[0].get("when").is_none());
+        assert_eq!(passes[2]["raw"], true);
+        assert_eq!(passes[2]["threads"], serde_json::json!([16, 16]));
+        assert_eq!(passes[2]["output"], "");
+        assert_eq!(
+            assets["postfx_textures"],
+            serde_json::json!([
+                { "name": format!("{ns}/half"), "scale": 0.5, "format": "rgba16f", "persistent": false },
+                { "name": format!("{ns}/dirt"), "format": "rgba8", "file": "postfx/tex/00.tex" }
+            ])
+        );
+        assert_eq!(
+            assets["postfx_toggles"],
+            serde_json::json!([{ "addon_id": ns, "option": "key" }])
+        );
+        let tex = std::fs::read(&built.plan.loader["swofty/postfx/tex/00.tex"]).unwrap();
+        let mut want = b"SWTX".to_vec();
+        want.extend_from_slice(&1u32.to_le_bytes());
+        want.extend_from_slice(&2u32.to_le_bytes());
+        want.extend_from_slice(&0u32.to_le_bytes());
+        want.extend_from_slice(&[1, 2, 3, 4, 5, 6, 7, 8]);
+        assert_eq!(tex, want);
         std::fs::remove_dir_all(&root).ok();
     }
 
