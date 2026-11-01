@@ -65723,7 +65723,7 @@
    "target": "0x143083570",
    "kind": "func_start",
    "names": [
-    "Game_NetworkSession_DeclareActivePresence"
+    "Game_Network_MOXSessionGeneric"
    ],
    "verified": [
     {
@@ -160551,6 +160551,34 @@
      "build": "d873a1c8d2044cef",
      "date": "2026-11-01",
      "by": "room-headless",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/netplay_room.cpp"
+   ]
+  },
+  {
+   "id": "game.net_subsystem_vtable",
+   "section": ".xtls",
+   "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 06 48 8D 05 ?? ?? ?? ?? 48 89 46 20 48 8D 05 ?? ?? ?? ?? 48 89 46 28 C5 C8 57 F6",
+   "match": "0x1430cffee",
+   "anchor": "0x3",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x0",
+    "len": 7
+   },
+   "target": "0x145814050",
+   "kind": "data",
+   "names": [
+    "vt_Game_NetworkSubsystem"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "room-fix",
      "how": "static"
     }
    ],
