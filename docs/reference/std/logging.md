@@ -167,7 +167,7 @@ Addon screens that fail to build, with the engine's result code. With `SWOFTY_UI
 [ui] screen swofty_addon_0 (flow_options): root 'persistent' built with result 0x0 (ok, the engine inserts it into the screen table next)
 ```
 
-Crashes, with the exception, registers and a stack named from `symbols.tsv`. Calls to `ExitProcess` and `TerminateProcess` include the caller's stack:
+Crashes, with the exception, registers and a stack named from `symbols.tsv`. The report is named `swofty\crash-<time>.txt`, or by its full path in the data folder's `state` folder when the game folder refuses the write. Calls to `ExitProcess` and `TerminateProcess` include the caller's stack:
 
 ```text
 [crash] crash report swofty\crash-20261023-092347.txt: unhandled ACCESS_VIOLATION (0xc0000005) reading 0x978 at F1_25.exe+0x15436fda .data1 fn base+0x15436e70+0x16a; stack F1_25.exe+0x15436fda .data1 fn base+0x15436e70+0x16a < F1_25.exe+0x46b1829 .xtls fn base+0x46b1460+0x3c9 < F1_25.exe+0x4629740 .xtls fn base+0x4628190+0x15b0 < F1_25.exe+0x4637a08 .xtls Game_Check_MovingWingNodes+0x18; minidump crash-20261023-092347.dmp, 2.2 MB, thread stacks and registers, written in 2.5 s

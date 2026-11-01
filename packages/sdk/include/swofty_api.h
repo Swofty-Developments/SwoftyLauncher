@@ -90,6 +90,7 @@ typedef struct SwoftyAssets {
 
 #define SWOFTY_EVENT_SESSION_START "session.start"
 #define SWOFTY_EVENT_SESSION_END "session.end"
+#define SWOFTY_EVENT_SESSION_UNLOAD "session.unload"
 #define SWOFTY_EVENT_RACE_START "race.start"
 #define SWOFTY_EVENT_LAP "lap"
 #define SWOFTY_EVENT_FLAG "flag"
