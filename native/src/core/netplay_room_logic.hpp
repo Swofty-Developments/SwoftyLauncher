@@ -578,11 +578,12 @@ struct Facts {
     bool home = false;
     bool lan_mode = false;
     bool pending_taken = false;
+    bool join_ready = true;
     InviteState invite;
 };
 
 constexpr uint64_t MODE_MS = 3000, PENDING_MS = 5000, INTERRUPT_MS = 4000, HOST_LOBBY_MS = 120000,
-                   JOIN_LOBBY_MS = 30000;
+                   JOIN_LOBBY_MS = 30000, JOIN_READY_MS = 90000;
 
 enum class Do { nothing, mode_switch, host_call, join_write, fallback_notify };
 
@@ -650,12 +651,18 @@ public:
             }
             if (f.lan_mode) {
                 stage = mode_only_ ? Stage::done : Stage::call;
+                deadline = now + JOIN_READY_MS;
                 return Do::nothing;
             }
             if (now >= deadline)
                 fail("the game did not switch to LAN mode");
             return Do::nothing;
         case Stage::call:
+            if (role == Role::join && !f.join_ready) {
+                if (now >= deadline)
+                    fail("the game's join request owner never became available");
+                return Do::nothing;
+            }
             stage = Stage::interrupt;
             deadline = now + PENDING_MS;
             taken_at = role == Role::host ? now : 0;
