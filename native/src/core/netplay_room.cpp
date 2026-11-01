@@ -12,6 +12,7 @@
 #include "json.hpp"
 #include "netplay_drive_logic.hpp"
 #include "netplay_room.hpp"
+#include "room_cover.hpp"
 
 // Room set-up with no LAN tile and no main menu (research/multiplayer/ns-resolve.md, carcat-direct.md).
 //
@@ -472,6 +473,8 @@ void ui_act(room::UiDo d, uint64_t now)
     }
 }
 
+void cover_ui(room::UiStep s);
+
 void ui_tick()
 {
     if (!ui_started)
@@ -488,12 +491,33 @@ void ui_tick()
     }
     if (host_ui_run.step != ui_logged_step) {
         ui_logged_step = host_ui_run.step;
+        cover_ui(host_ui_run.step);
         swofty::log("[netplay] room host: %s", ui_step_name(host_ui_run.step));
     }
     if (host_ui_run.failed() && host_ui_run.error != ui_logged_error) {
         ui_logged_error = host_ui_run.error;
         swofty::log("[netplay] room host failed: %s", host_ui_run.error.c_str());
     }
+}
+
+void cover_stage(room::Stage s, room::Role r)
+{
+    if (s == room::Stage::call)
+        runtime::room_cover::step(r == room::Role::host ? "Creating the session" : "Reaching the host", 0.78f, 0.86f);
+    else if (s == room::Stage::interrupt)
+        runtime::room_cover::step(r == room::Role::host ? "Creating the session" : "Reaching the host", 0.82f, 0.9f);
+    else if (s == room::Stage::lobby)
+        runtime::room_cover::step(r == room::Role::host ? "Opening the lobby" : "Joining the lobby", 0.9f, 0.97f);
+}
+
+void cover_ui(room::UiStep s)
+{
+    if (s == room::UiStep::state)
+        runtime::room_cover::step("Setting up the lobby", 0.82f, 0.88f);
+    else if (s == room::UiStep::container)
+        runtime::room_cover::step("Opening Car Category", 0.88f, 0.93f);
+    else if (s == room::UiStep::settle)
+        runtime::room_cover::step("Opening Car Category", 0.94f, 0.98f);
 }
 
 void finish(room::Phase phase, const std::string &detail)
@@ -594,6 +618,7 @@ bool begin(Role r, const char *host_ip, bool from_home, std::string &why)
     ui_logged_error.clear();
     run.start(r, GetTickCount64(), from_home, host_ui);
     state = {Phase::running, "mode switch"};
+    runtime::room_cover::step("Switching the game mode", 0.6f, 0.72f);
     swofty::log("[netplay] room %s: set-up started %s (plan checked: %s)", role_name(r),
                 from_home ? "from the main menu" : "before the main menu",
                 host_ui ? "the network subsystem, then the front end's custom game state and the Car Category tab"
@@ -726,10 +751,12 @@ void tick()
     Do d = run.tick(f, GetTickCount64());
     if (d != Do::nothing)
         act(d);
-    if (run.stage != before && run.stage != Stage::failed && run.stage != Stage::done)
+    if (run.stage != before && run.stage != Stage::failed && run.stage != Stage::done) {
+        cover_stage(run.stage, run.role);
         state.detail = run.stage == Stage::call        ? "calling the game"
                        : run.stage == Stage::interrupt ? "waiting for the invite to reach the join"
                                                        : "waiting for the session";
+    }
     if (run.done() && host_ui) {
         finish(Phase::done, "the game is in LAN mode; the Car Category tab is next");
         host_ui_run.start(GetTickCount64());

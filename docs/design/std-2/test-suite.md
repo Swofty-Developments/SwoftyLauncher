@@ -37,6 +37,52 @@ It has two halves:
   - There is no deep link to a given slot: the deep-link manager's career activity resumes the mode's current slot only.
 - **`session`** (`session.start`): the game's settings-driven dev session. `DevSessionSetupChampionshipComponent` (vtable 0x1456bfed0) reads `DevSessionDataContract.*` keys with `Ne_Config_GetString` (`Game.setup_mode`, `Game.entrant_setup_mode`, `Entrants.entrant_list`, `Track.name`/`Track.layer`/`Track.list`, `Game.session_id` as one of the 19 session names, `Game.laps`) in `Sess_DevSession_Apply` (slot 25, 0x141125e80) and passes the built sessions to the session service at comp+0x398 (vcall +0x268). The switch is comp+0x350, which `Sess_DevSession_Enable` (0x141124ad0) sets to 0 in retail; writing 1 after `Sess_DevSession_Init` (slot 9, 0x1411244f0) turns it on, and a wrap of `Ne_Config_GetString` answers the keys. No key exists for weather, AI difficulty, team or driver, and a Time Trial has no championship, so it needs its own path (`Sess_TimeTrialMode_FillDescriptor`, 0x142936760). The benchmark mode (`Game_BenchmarkGameMode_BuildSessionSettings`, 0x1407a4860) fills SessionSettings itself and runs races only. Open: the order of slots 22 and 25 against the championship build, and the call that starts `StateLoadSession` from the front end. The command validates and fills today and answers `unavailable: needs <row>` until those rows have their verify rows.
 
+## Straight into a Grand Prix: `swofty test session`
+
+```sh
+swofty test fixture capture gp-base --from <a copy of userdata/<id>/3059520/remote> --store ~/fixtures
+swofty --profile default test session grand_prix cs_f1_2017 melbourne session=practice1 team=williams \
+    --fixture ~/fixtures/gp-base --lock /mnt/work/.f1-game.lock.d
+```
+
+In game on 2026-11-01 (Steam build, release CLI, profile `default` with Classic Seasons): the cover screen ("SWOFTY LAUNCHER / Test session") is up from the first frame, the game boots behind it, and it comes off in the Williams garage at Albert Park, Practice 1, with the player in the cs17 Williams of Lance Stroll. Boot to garage takes about 80 s, most of it the profile build and the session's own broadcast intro, which runs under the cover. No title, legal, main menu or loading screen is visible.
+
+The words after the mode:
+
+```text
+grand_prix <box> <track> [team=<label part>] [driver=<label part>] [session=<name>] [laps=<1..100>]
+```
+
+- `box` is an entrant list label (`cs_f1_2017`, `f1_1990_gp`, `f1_2025`), `track` a track name (`melbourne`, `silverstone`).
+- `team=` and `driver=` pick the player's seat: the first entrant of the list whose `entrants.teams` / `entrants.drivers` label contains the text. Without them the player takes the list's first seat.
+- `session=` is `practice1`..`practice3`, `qualifying`, `race`, or a game session name (`practice_s`, `qualifying_o`, `race_2`, ...).
+- `laps=` sets a race's laps.
+- `weather=` and `ai_difficulty=` are accepted and not applied yet.
+
+The CLI writes the request to `<run folder>/direct_start.json` and starts the game with `SWOFTY_DIRECT_START=@<that file>`:
+
+```json
+{"target": "session", "mode": "grand_prix", "box": "cs_f1_2017", "track": "melbourne", "session": "practice1", "team": "williams"}
+```
+
+The game runs on a copy of the `--profile` profile (the active one without the flag), with the same addons in the same order and the same settings, so addon boxes and their database content are there. `swofty test shell --profile <p>` takes the same copy; `swofty test shell` without `--profile` keeps the minimal profile (core and `--addon` only).
+
+What the core does (`native/src/core/direct_start.cpp`), in order:
+
+1. The cover arms in `room_cover::setup()` for a `session` request and draws from the present hook's first frame.
+2. The title passes with the shared virtual pad (`title_skip.cpp`); the profile loads; `StateFTUE`'s finished link is held.
+3. The new weekend, on the Grand Prix mode entity E: setup mode `swofty_f1`, the entrant list by name into E+0xe18, one round at the track, the season build, E's components attached, `Sess_Build_DevWeekendStructure` (0x140b025f0) handed to the weekend service (registry component 0x14605ada0, slot 0x268), and the entrants filled from the list (0x142460230; it clears a saved Grand Prix's entrants first).
+4. The player's seat: the chosen entrant gets the profile's identity block (`[[[game manager+0x140]+0x1c0]+0x1c0]` slot 0x38, 0x40 bytes to +8) and the human flag (+0x48 = 0x10000000), between the entrants-changing bus messages (0x1424e2b90 with vtable 0x14578d4e8, 0x1424e2f00 with 0x14578d510).
+5. A profile that already holds a Grand Prix keeps its season, so the weekend is the saved one: the core writes the track's stat id to weekend+0x278 and makes session 0 the requested session (weekend sessions at +0x220, 0xa0 apart, id at +8, current index +0x238). Moving the current index to a later session instead crashed a race in `Ai_Build_TeamPerformanceCurves`.
+6. `StateFTUE` leaves by its exit link, so `StateFrontend` (the menu) never starts, and `StateFrontendWorld` takes `session` (0x8c23ce89): `#e2dcf787 > StateSmokeTestSkipFEPreLaunchHold > StateCerberusServer > #d36d1718 > StateLoadSession`.
+7. `StateLoadSession`'s exit (0x1436e0e40) waits for its sync point (+0xcd0: request node +0x80, UI node +0xa0), which the loading screen sets in a menu start. 500 ms into the exit the core sets the UI node with `Vm_NodeSet_Bool` and the flow goes on to `StateSession`. Without it the game parks on a black screen after the load (`#8ad771dc` is the normal last child of the load, not the stop).
+8. For a race, `Game_ChampionshipGameMode_BuildSessionSettings` (0x1407b7b90) is hooked and the laps written to SessionSettings+0xdf0 (XOR +0xdf8).
+9. The cover comes off 1.5 s after the `garage_cockpit` screen opens (or 60 s after `StateSession` started updating).
+
+The flow is logged as `[direct] ...` lines: the weekend before and after (`weekend ..., track stat id 0, current session 0 of: practice_1 race`), the seat (`the player drives for cs17_williams as lance_stroll (seat 6)`), `StateLoadSession exiting for 503 ms: its sync point is complete` and `the session's screen garage_cockpit is up`.
+
+The Time Trial target is the same request with `"mode": "time_trial"`: `set_up_target` calls the setup registered with `runtime::direct_start_register_time_trial` (`direct_start_tt.cpp`).
+
 ## The agent's commands
 
 - **Skip a session:** post `MessageSetAdvanceDestination` (vtable 0x1457548b8) on the message bus, the same message the game's Simulate Session popup sends. Destination 2 is next session, 3 simulate, 4 skip to a session, 6 quick practice skip; the session type is the race (15) and so on.

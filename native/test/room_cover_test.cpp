@@ -81,6 +81,52 @@ int main()
         c.frame(100 + rc::SETTLE_MS + 10, rc::Signal::failed, &ev);
         expect(c.why() == rc::Why::shown, "the first reason wins");
     }
+    {
+        rc::Progress p;
+        expect(p.percent(1000) == 3 || p.percent(1000) == 0, "a fresh bar starts at the bottom");
+        uint64_t t = 1000;
+        float prev = 0;
+        bool monotone = true;
+        for (int i = 0; i < 400; i++, t += 50) {
+            float s = p.shown(t);
+            monotone = monotone && s >= prev;
+            prev = s;
+        }
+        expect(monotone, "with no milestone the bar creeps forward and never goes back");
+        expect(prev > 0.1f && prev <= 0.2f + 0.001f, "and settles under the first ceiling");
+        p.step("Opening the main menu", 0.55f, t, 0.65f);
+        expect(p.label() == "Opening the main menu", "a milestone sets the status line");
+        float before = p.shown(t);
+        float soon = p.shown(t + 50);
+        expect(soon > before && soon < 0.55f, "the bar eases toward a milestone, it does not jump");
+        for (int i = 0; i < 100; i++, t += 50)
+            p.shown(t);
+        float late = p.shown(t);
+        expect(late >= 0.55f && late <= 0.65f + 0.001f, "it reaches the milestone and creeps toward the ceiling only");
+        p.step("Earlier", 0.3f, t);
+        expect(p.label() == "Opening the main menu" && p.target() == 0.55f, "a lower step is ignored");
+        p.step("Same fraction, new words", 0.55f, t);
+        expect(p.label() == "Same fraction, new words", "the same fraction may rename the step");
+        for (int i = 0; i < 2000; i++, t += 50)
+            p.shown(t);
+        expect(p.percent(t) <= 65 && !p.completed(), "a stalled bar stays under its ceiling, never 100");
+        p.step("X", 5.0f, t, 5.0f);
+        for (int i = 0; i < 4000; i++, t += 50)
+            p.shown(t);
+        expect(p.percent(t) == 97, "a step cannot push the bar to 100");
+        p.complete("Ready", t);
+        expect(p.label() == "Ready" && p.completed(), "completing names the last step");
+        for (int i = 0; i < 100; i++, t += 50)
+            p.shown(t);
+        expect(p.percent(t) == 100 && p.shown(t) == 1.0f, "and fills the bar to 100");
+        p.step("Late", 0.2f, t);
+        expect(p.label() == "Ready", "a step after completion is ignored");
+    }
+    {
+        rc::Progress p;
+        p.step("Stage", 0.4f, 5000000);
+        expect(p.shown(5000000) < 0.05f, "the first call anchors the clock, so a large tick count does not jump the bar");
+    }
     expect(rc::request_is_room("room", ""), "SWOFTY_DIRECT_START=room is a room launch");
     expect(!rc::request_is_room("session", ""), "another target is not");
     expect(rc::request_is_room("", "{\"target\":\"room\",\"role\":\"host\"}"), "direct_start.json with target room is");

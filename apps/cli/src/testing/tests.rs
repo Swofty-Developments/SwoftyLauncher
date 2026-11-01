@@ -1518,3 +1518,63 @@ fn a_capture_from_a_run_records_the_runs_exe_and_addons() {
     assert_eq!(f.manifest.source, "test run r5-1");
     std::fs::remove_dir_all(&root).ok();
 }
+
+#[cfg(unix)]
+#[test]
+fn a_shell_profile_is_a_copy_of_the_named_profile() {
+    let root = temp("profile-copy");
+    let (data, game, out) = (root.join("data"), root.join("game"), root.join("out"));
+    std::fs::create_dir_all(&game).unwrap();
+    let store = Store::new(&data);
+    let mut base = store.profile("base").unwrap();
+    base.set_enabled("a.one", true).unwrap();
+    base.set_enabled("b.two", false).unwrap();
+    base.options.insert(
+        "a.one".to_owned(),
+        BTreeMap::from([("speed".to_owned(), serde_json::json!(3))]),
+    );
+    store.save_profile(&base).unwrap();
+    let mut fake = Fake {
+        scripts: vec![],
+        root: root.clone(),
+        game: game.clone(),
+        launches: Vec::new(),
+        envs: Vec::new(),
+    };
+    let h = Harness {
+        store: &store,
+        game: &game,
+        out: &out,
+        profile: "test-shell-x",
+        launcher: &mut fake,
+        times: quick(),
+        run_id: "shell-x",
+        bases: BTreeMap::new(),
+        exe_sha: None,
+        live_saves: None,
+    };
+    h.profile_from("base", "test-shell-x", &[]).unwrap();
+    let copy = store.profile("test-shell-x").unwrap();
+    let base = store.profile("base").unwrap();
+    let ids = |p: &swofty_core::profile::Profile| {
+        p.addons
+            .iter()
+            .map(|a| (a.id.clone(), a.enabled))
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(ids(&copy), ids(&base), "same addons, order and switches");
+    assert_eq!(copy.options, base.options, "same settings");
+    assert!(
+        h.profile_from("missing", "test-shell-y", &[])
+            .unwrap_err()
+            .to_string()
+            .contains("there is no profile missing")
+    );
+    assert!(
+        h.profile_from("base", "test-shell-z", &["not.installed".to_owned()])
+            .unwrap_err()
+            .to_string()
+            .contains("not.installed is not installed")
+    );
+    std::fs::remove_dir_all(&root).ok();
+}

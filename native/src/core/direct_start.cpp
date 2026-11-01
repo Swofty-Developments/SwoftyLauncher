@@ -5,11 +5,14 @@
 
 #include <atomic>
 #include <cstdio>
+#include <cctype>
 #include <cstring>
+#include <map>
 #include <mutex>
 
 #include "direct_start_logic.hpp"
 #include "json.hpp"
+#include "room_cover.hpp"
 #include "testagent/agent_logic.hpp"
 #include "title_skip.hpp"
 
@@ -41,31 +44,19 @@ const runtime::Sig SIG_FLOW_LINK{"vm.flow_state_update_link",
                                  runtime::Sig::addr, 0, 0x12};
 const runtime::Sig SIG_GAME_MANAGER{"game.manager", "48 8B B8 98 01 00 00 48 85 FF 0F 84 ?? ?? ?? ?? 48 8D 4C 24 70 E8 ?? ?? ?? ?? 48 8B 05", 0x604c2c8, runtime::Sig::riprel, 26, 29, 7};
 const runtime::Sig SIG_SET_MODE{"game.game_set_current_game_mode", "41 56 56 57 55 53 48 81 EC 80 00 00 00 48 8B 81 88 00 00 00", 0x7d07a0};
-const runtime::Sig SIG_MODE_BY_NAME{"game.game_modes_find_by_name",
-                                    "48 8B 89 A0 02 00 00 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 20 48 89 C7 48 89 C1 48 81 C1 30 10 00 00",
-                                    0x7d0de0, runtime::Sig::rel32, 14, 15, 5};
 const runtime::Sig SIG_MODE_BY_PREDICATE{"game.game_modes_find_by_predicate",
                                          "48 8D 54 24 28 E8 ?? ?? ?? ?? 48 85 C0 74 22 48 89 C7 48 8B 8E 08 03 00 00",
                                          0x7d2280, runtime::Sig::rel32, 5, 6, 5};
 const runtime::Sig SIG_GP_PREDICATE{"game.grand_prix_mode_predicate",
                                     "48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 E8 ?? ?? ?? ?? 48 85 C0 74 22",
                                     0x77cff0, runtime::Sig::riprel, 0, 3, 7};
-const runtime::Sig SIG_ROUNDS_PREPARE{"game.championship_rounds_prepare", "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 80 B9 C0 02", 0xbc3900};
+const runtime::Sig SIG_BUILD_SETTINGS{"game.championship_game_mode_build_session_settings",
+                                      "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 68 00", 0x7b7b90};
 
-// The Grand Prix modes a Continue picks from, in the order GrandPrixContinueViewModel's lookup
-// (Game_GrandPrixContinueVm_FindModeEntity 0x141bccc00) tries them: the first whose entity's component
-// registry (+0x1030) reports a season (slot 0x78 == 1).
-constexpr const char *SEASON_MODES[] = {"F2_2026_Championship_Season", "F2_2025_Championship_Season",
-                                        "F2_2024_Championship_Season", "F1_Championship_Season",
-                                        "F1_2026_Championship_Season"};
 constexpr uintptr_t MANAGER_MODES = 0xc0, ENTITY_REGISTRY = 0x1030, ENTITY_MODE = 0xf08;
-constexpr uintptr_t ROUNDS_COMPONENT = 0x605ad20;
-constexpr uint64_t CONTINUE_WAIT_MS = 20000;
 
-using ModeByName_t = uint8_t *(void *modes, const char *name);
 using ModeByPredicate_t = uint8_t *(void *modes, void *const *predicate);
 using SetMode_t = void(void *modes, void *mode);
-using RoundsPrepare_t = void(void *component);
 
 // A new Grand Prix weekend, as the dev session's Apply (0x141125e80) builds one, on the Grand Prix mode entity E
 // (KB build: re/db/subsystems/session.md, re/new-gp): the game setup mode from E's list (vt+0x1d0) by name, the
@@ -74,11 +65,14 @@ using RoundsPrepare_t = void(void *component);
 // attached (vt+0xe8) and the entrants filled from the list (0x142460230).
 constexpr uintptr_t RVA_SET_SETUP_MODE = 0x79f300, RVA_LIST_STAT_ID = 0x24286e0, RVA_ROUNDS_CLEAR = 0x420cd60,
                     RVA_ADD_TRACK = 0xb99450, RVA_BUILD_SEASON = 0x1207290, RVA_FILL_ENTRANTS = 0x2460230;
+// A session request without a box or track gets the stock 2025 grid at Albert Park; it never continues a saved Grand
+// Prix, whose weekend may be one the session load can't take.
+constexpr const char *DEFAULT_BOX = "f1_2025", *DEFAULT_TRACK = "melbourne";
 constexpr uintptr_t MANAGER_ENTRANTS = 0x290, ES_LISTS = 0x560, ENTITY_TRACKS = 0xf58,
                     ENTITY_LIST = 0xe18, ENTITY_ENTRANTS = 0x2e0, ENTRANT_SIZE = 0x88;
 
 struct Game {
-    uintptr_t manager = 0, set_mode = 0, by_name = 0, by_predicate = 0, gp_predicate = 0, prepare = 0;
+    uintptr_t manager = 0, set_mode = 0, by_predicate = 0, gp_predicate = 0;
 } game;
 
 // The game modes context SetCurrentGameMode takes, as the game passes it (it sets the mode once at boot).
@@ -100,6 +94,14 @@ json::Value request;
 safetyhook::MidHook h_link;
 std::atomic<bool> armed{false};
 std::atomic<int> session_frames{0};
+// Read by the cover from the present thread, which holds the cover's lock; the flow thread calls the cover's step()
+// under this file's lock, so the cover side never takes it.
+std::atomic<bool> start_failed{false};
+std::atomic<uint64_t> session_at{0};
+std::atomic<bool> session_screen{false};
+// The broadcast intro runs under the cover; it comes off at the garage (or the grid), or this long after StateSession
+// started updating when neither screen opens.
+constexpr uint64_t SESSION_SCREEN_WAIT_MS = 60000;
 ds::Phase logged = ds::Phase::off;
 
 void note_phase()
@@ -107,6 +109,8 @@ void note_phase()
     if (driver.phase == logged)
         return;
     logged = driver.phase;
+    if (driver.phase == ds::Phase::failed)
+        start_failed = true;
     if (driver.phase == ds::Phase::failed)
         swofty::log("[direct] %s start failed: %s; the menu opens as usual", driver.target.name.c_str(),
                     driver.why.c_str());
@@ -121,6 +125,38 @@ constexpr size_t LOAD_SYNC = 0xcd0;
 constexpr uint64_t LOAD_EXIT_WAIT_MS = 500;
 
 void choose_session(void *modes, const char *when);
+template <class T> bool rd(const void *p, size_t off, T &out);
+
+// The loading screen's activation (Game_LoadingScreenVM_OnScreenActivated 0x141ca43e0) releases the fade reason
+// FrontEnd (bit 1) on the fade owner [[g_Game_Root]+0xa0]: mask +0x7b8, and with no reason left the fade in (state
+// +0x7bc = 3, +0x7cc = 0, curve +0x7c4). A direct start never shows that screen, so the session would stay black
+// under its HUD: once StateSession updates, the core releases FrontEnd itself.
+constexpr uintptr_t RVA_GAME_ROOT = 0x601db08;
+constexpr uint32_t FADE_FRONTEND = 1u << 1;
+bool fade_released = false;
+
+void release_frontend_fade()
+{
+    auto *root = *reinterpret_cast<uint8_t **>(swofty::api->module_base() + RVA_GAME_ROOT);
+    uint8_t *owner = nullptr;
+    if (!root || !rd(root, 0xa0, owner) || !owner || !runtime::readable(owner + 0x7b8, 0x18))
+        return;
+    auto &mask = *reinterpret_cast<uint32_t *>(owner + 0x7b8);
+    uint32_t was = mask, state = *reinterpret_cast<uint32_t *>(owner + 0x7bc);
+    fade_released = true;
+    if (!(was & FADE_FRONTEND)) {
+        swofty::log("[direct] fade owner %p: mask %08x, state %u; FrontEnd is not held", owner, was, state);
+        return;
+    }
+    mask = was & ~FADE_FRONTEND;
+    if (mask == 0) {
+        *reinterpret_cast<uint32_t *>(owner + 0x7bc) = 3;
+        owner[0x7cc] = 0;
+    }
+    *reinterpret_cast<uint32_t *>(owner + 0x7c4) = 0xd47eb226;
+    swofty::log("[direct] fade owner %p: mask %08x -> %08x (FrontEnd released), state %u -> %u", owner, was, mask, state,
+                *reinterpret_cast<uint32_t *>(owner + 0x7bc));
+}
 
 uint8_t *flow_root = nullptr;
 uint64_t load_exiting_at = 0;
@@ -144,6 +180,8 @@ void load_exit(uint8_t *state)
     load_sync_tries++;
     bool done = runtime::title::complete_sync(state + LOAD_SYNC, "StateLoadSession's sync point (+0xcd0)");
     load_sync_done = done;
+    if (done)
+        runtime::room_cover::step("Starting the session", 0.85f, 0.9f);
     swofty::log("[direct] StateLoadSession exiting for %llu ms: its sync point is %s",
                 (unsigned long long)(now - load_exiting_at), done ? "complete" : "still not complete");
 }
@@ -237,8 +275,12 @@ void link_mid(safetyhook::Context &c)
     std::lock_guard<std::mutex> g(lock);
     if (hash == STATE_APP)
         flow_root = state;
-    if (hash == STATE_SESSION && *reinterpret_cast<uint8_t *>(state + STATE_STATUS) == 2)
-        session_frames.fetch_add(1);
+    if (hash == STATE_SESSION && *reinterpret_cast<uint8_t *>(state + STATE_STATUS) == 2 &&
+        session_frames.fetch_add(1) == 0 && driver.target.name == "session" && !fade_released) {
+        session_at = GetTickCount64();
+        release_frontend_fade();
+        runtime::room_cover::step("Opening the garage", 0.9f, 0.97f);
+    }
     uint32_t link = *slot, out = driver.on_update(hash, link, child);
     if (out != link) {
         *slot = out;
@@ -252,9 +294,14 @@ void link_mid(safetyhook::Context &c)
                  n = *reinterpret_cast<uint8_t **>(n + STATE_CHILD))
                 if (*reinterpret_cast<uint32_t *>(n + STATE_HASH) == STATE_LOAD_SESSION) {
                     static bool told = false;
-                    if (!told && driver.target.name == "session" && request["mode"].str() != "time_trial") {
+                    if (!told && driver.target.name == "session") {
                         told = true;
-                        choose_session(modes_seen.load(), "load");
+                        std::string track = request["track"].str();
+                        static std::string what;
+                        what = track.empty() ? "Loading the session" : "Loading " + track;
+                        runtime::room_cover::step(what.c_str(), 0.58f, 0.82f);
+                        if (request["mode"].str() != "time_trial")
+                            choose_session(modes_seen.load(), "load");
                     }
                     load_exit(n);
                     break;
@@ -275,102 +322,28 @@ void *registry_call(uint8_t *entity, size_t slot, const void *a2, int a3)
     return reinterpret_cast<void *(*)(void *, const void *, int)>(vt[slot / 8])(reg, a2, a3);
 }
 
-// A Grand Prix Continue as GrandPrixContinueViewModel's press runs it (0x141bce150): the mode entity, the
-// rounds component's prepare, then the mode is made current. The save slot is current from the profile load.
-ds::Setup continue_grand_prix(std::string &why)
-{
-    if (!game.manager || !game.set_mode || !game.by_name || !game.prepare) {
-        why = "the game manager, SetCurrentGameMode, the game mode lookup or the rounds prepare did not resolve";
-        return ds::Setup::failed;
-    }
-    void *mgr = *reinterpret_cast<void **>(game.manager);
-    void *from_mgr = mgr && runtime::readable(mgr, MANAGER_MODES + 8)
-                         ? *reinterpret_cast<void **>(static_cast<uint8_t *>(mgr) + MANAGER_MODES)
-                         : nullptr;
-    void *modes = modes_seen.load();
-    static bool told = false;
-    if (!told) {
-        told = true;
-        swofty::log("[direct] Grand Prix: game manager %p, its +0xc0 %p, the context SetCurrentGameMode saw %p", mgr,
-                    from_mgr, modes);
-    }
-    if (!modes)
-        modes = from_mgr;
-    if (!modes)
-        return ds::Setup::pending;
-    static bool grand_prix_set = false;
-    static uint8_t *grand_prix_entity = nullptr;
-    if (!grand_prix_set) {
-        // The F1 World Grand Prix tile (0x141a78329): the Grand Prix mode entity by its predicate, made current,
-        // which builds the season entities the Continue lookup finds by name.
-        if (!game.by_predicate || !game.gp_predicate) {
-            why = "the Grand Prix mode lookup did not resolve";
-            return ds::Setup::failed;
-        }
-        void *pred = reinterpret_cast<void *>(game.gp_predicate);
-        uint8_t *gp = reinterpret_cast<ModeByPredicate_t *>(game.by_predicate)(modes, &pred);
-        if (!gp || !runtime::readable(gp, ENTITY_MODE + 8))
-            return ds::Setup::pending;
-        grand_prix_entity = gp;
-        reinterpret_cast<SetMode_t *>(game.set_mode)(modes, *reinterpret_cast<void **>(gp + ENTITY_MODE));
-        grand_prix_set = true;
-        swofty::log("[direct] Grand Prix: the Grand Prix mode is current (entity %p)", gp);
-        return ds::Setup::pending;
-    }
-    uint8_t *entity = nullptr;
-    const char *picked = nullptr;
-    for (const char *name : SEASON_MODES) {
-        uint8_t *e = reinterpret_cast<ModeByName_t *>(game.by_name)(modes, name);
-        if (!e || !runtime::readable(e, ENTITY_MODE + 8))
-            continue;
-        auto *reg = e + ENTITY_REGISTRY;
-        auto **vt = *reinterpret_cast<void ***>(reg);
-        if (reinterpret_cast<int (*)(void *)>(vt[0x78 / 8])(reg) == 1) {
-            entity = e;
-            picked = name;
-            break;
-        }
-    }
-    if (!entity && grand_prix_entity) {
-        auto *reg = grand_prix_entity + ENTITY_REGISTRY;
-        int season = reinterpret_cast<int (*)(void *)>((*reinterpret_cast<void ***>(reg))[0x78 / 8])(reg);
-        swofty::log("[direct] Grand Prix: no named season mode has a season; the Grand Prix mode entity %p reports "
-                    "season %d and is the one a Continue falls back to",
-                    grand_prix_entity, season);
-        entity = grand_prix_entity;
-        picked = "Grand Prix mode";
-    }
-    if (!entity) {
-        static uint64_t first = GetTickCount64();
-        static bool logged = false;
-        if (!logged) {
-            logged = true;
-            for (const char *name : SEASON_MODES) {
-                uint8_t *e = reinterpret_cast<ModeByName_t *>(game.by_name)(modes, name);
-                int season = -1;
-                if (e && runtime::readable(e, ENTITY_MODE + 8)) {
-                    auto *reg = e + ENTITY_REGISTRY;
-                    season = reinterpret_cast<int (*)(void *)>((*reinterpret_cast<void ***>(reg))[0x78 / 8])(reg);
-                }
-                swofty::log("[direct] Grand Prix: mode %s is %p, season %d", name, e, season);
-            }
-        }
-        if (GetTickCount64() - first < CONTINUE_WAIT_MS)
-            return ds::Setup::pending;
-        why = "the profile has no saved Grand Prix to continue";
-        return ds::Setup::failed;
-    }
-    void *rounds = registry_call(entity, 0x10, reinterpret_cast<void *>(swofty::api->module_base() + ROUNDS_COMPONENT), 1);
-    if (rounds)
-        reinterpret_cast<RoundsPrepare_t *>(game.prepare)(rounds);
-    void *mode = *reinterpret_cast<void **>(entity + ENTITY_MODE);
-    reinterpret_cast<SetMode_t *>(game.set_mode)(modes, mode);
-    swofty::log("[direct] Grand Prix: continues the saved %s (mode entity %p, mode %p, rounds %p)", picked, entity,
-                mode, rounds);
-    return ds::Setup::done;
-}
-
 runtime::DirectStartSetup room_setup = nullptr, time_trial_setup = nullptr;
+
+// The race's laps: Game_ChampionshipGameMode_BuildSessionSettings (0x1407b7b90, the championship modes' slot) fills
+// the session's SessionSettings (sessionId +4) and stores the laps at +0xdf0 XOR +0xdf8; for a race session the core
+// writes the requested laps over it after the game's own value.
+safetyhook::InlineHook h_settings;
+
+uint64_t settings_detour(void *mode, uint8_t *settings)
+{
+    uint64_t r = h_settings.call<uint64_t>(mode, settings);
+    if (!armed.load() || !settings)
+        return r;
+    long long laps = request["laps"].num(0);
+    uint32_t id = *reinterpret_cast<uint32_t *>(settings + 4);
+    if (laps > 0 && laps <= 100 && id >= 15 && id <= 17 && request["mode"].str() != "time_trial") {
+        auto &stored = *reinterpret_cast<uint32_t *>(settings + 0xdf0);
+        uint32_t key = *reinterpret_cast<uint32_t *>(settings + 0xdf8), was = stored ^ key;
+        stored = uint32_t(laps) ^ key;
+        swofty::log("[direct] race laps %u -> %lld (session %s)", was, laps, testagent::SESSION_NAMES[id]);
+    }
+    return r;
+}
 std::string request_text;
 std::atomic<bool> setup_ran{false};
 runtime::DirectStartContext context;
@@ -443,7 +416,10 @@ std::string weekend_text(uint8_t *wk)
 }
 
 // The requested session (the CLI's session=, a game session name or practice1..3, qualifying, race) made the
-// weekend's current one: its index when the weekend has it, else the current session's id rewritten.
+// weekend's current one. A Grand Prix the profile already holds keeps its season (the season build only runs for a
+// mode with no season), so the weekend is the saved one: its first session becomes the requested one and the
+// weekend starts there. Moving the current index past a session instead leaves the race without the results it
+// builds the grid from (the AI's team performance build faulted on a race behind an unplayed qualifying).
 void choose_session(void *modes, const char *when)
 {
     uint8_t *wk = current_weekend(modes);
@@ -463,19 +439,216 @@ void choose_session(void *modes, const char *when)
     auto *b = *reinterpret_cast<uint8_t **>(wk + WK_SESSIONS), *e = *reinterpret_cast<uint8_t **>(wk + WK_SESSIONS + 8);
     auto &cur = *reinterpret_cast<uint32_t *>(wk + WK_CURRENT);
     uint32_t n = b && e > b ? uint32_t(size_t(e - b) / SESSION_STRIDE) : 0;
-    for (uint32_t i = 0; i < n; i++)
-        if (*reinterpret_cast<uint32_t *>(b + size_t(i) * SESSION_STRIDE + SESSION_ID) == uint32_t(want)) {
-            if (cur != i)
-                swofty::log("[direct] Grand Prix: current session %u -> %u (%s)", cur, i, testagent::SESSION_NAMES[want]);
-            cur = i;
-            return;
-        }
-    if (cur < n) {
-        auto &id = *reinterpret_cast<uint32_t *>(b + size_t(cur) * SESSION_STRIDE + SESSION_ID);
-        swofty::log("[direct] Grand Prix: the weekend has no %s; session %u rewritten from %s", testagent::SESSION_NAMES[want],
-                    cur, id < 19 ? testagent::SESSION_NAMES[id] : "?");
+    if (!n)
+        return;
+    if (cur != 0) {
+        swofty::log("[direct] Grand Prix: current session %u -> 0", cur);
+        cur = 0;
+    }
+    auto &id = *reinterpret_cast<uint32_t *>(b + SESSION_ID);
+    if (id != uint32_t(want)) {
+        swofty::log("[direct] Grand Prix: session 0 %s -> %s", id < 19 ? testagent::SESSION_NAMES[id] : "?",
+                    testagent::SESSION_NAMES[want]);
         id = uint32_t(want);
     }
+}
+
+// The weekend's sessions as the dev session's Apply (0x141125e80) builds them: Sess_Build_DevWeekendStructure
+// (0x140b025f0) on a 0x38-byte list {+8, +0x10 the allocator, +0x18..+0x20 16-byte entries} with the game setup mode
+// ([E+0x2b0]) and a (practice, qualifying, race) triple from the session name, handed to the weekend service
+// (registry component 0x14605ada0) slot 0x268; then the entries are released and the list freed.
+constexpr uintptr_t RVA_WEEKEND_STRUCTURE = 0xb025f0, RVA_WEEKEND_SERVICE = 0x605ada0;
+
+struct Triple {
+    uint64_t practice, qualifying, race;
+};
+
+bool session_triple(int id, Triple &t)
+{
+    if (id == 4)
+        t = {2, 0, 3};
+    else if (id >= 1 && id <= 3)
+        t = {6, 0, 3};
+    else if (id == 5 || id == 6 || id == 7)
+        t = {0, 4, 3};
+    else if (id == 8)
+        t = {0, 3, 3};
+    else if (id == 9)
+        t = {0, 1, 3};
+    else if (id >= 10 && id <= 14)
+        t = {0, 3, 3};
+    else if (id >= 15 && id <= 17)
+        t = {0, 0, 7};
+    else
+        return false;
+    return true;
+}
+
+void weekend_structure(uint8_t *e, uint8_t *component)
+{
+    std::string name = request["session"].str();
+    if (name.empty())
+        return;
+    int id = testagent::session_id_of(name);
+    if (name == "practice")
+        id = 4;
+    Triple t{};
+    if (!session_triple(id, t)) {
+        swofty::log("[direct] Grand Prix: no weekend structure for session '%s'", name.c_str());
+        return;
+    }
+    void *alloc = *reinterpret_cast<void **>(component + 0x210), *gsm = *reinterpret_cast<void **>(e + 0x2b0);
+    void *svc = registry_call(e, 0x10, reinterpret_cast<void *>(swofty::api->module_base() + RVA_WEEKEND_SERVICE), 1);
+    if (!alloc || !gsm || !svc) {
+        swofty::log("[direct] Grand Prix: the weekend structure is not set (allocator %p, setup mode %p, service %p)",
+                    alloc, gsm, svc);
+        return;
+    }
+    alignas(16) uint8_t list[0x38] = {};
+    *reinterpret_cast<void **>(list + 8) = alloc;
+    *reinterpret_cast<void **>(list + 0x10) = alloc;
+    at_rva<void(void *, void *, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t)>(
+        RVA_WEEKEND_STRUCTURE)(list, gsm, t.practice, t.qualifying, t.race, 0, 1, 0, 0);
+    auto **svt = *reinterpret_cast<void ***>(svc);
+    reinterpret_cast<void (*)(void *, void *, int)>(svt[0x268 / 8])(svc, list, 1);
+    auto *b = *reinterpret_cast<uint8_t **>(list + 0x18), *end = *reinterpret_cast<uint8_t **>(list + 0x20);
+    size_t n = 0;
+    for (auto *it = b; it && it < end; it += 0x10, n++) {
+        auto *o = *reinterpret_cast<uint8_t **>(it + 8);
+        if (!o)
+            continue;
+        auto **ovt = *reinterpret_cast<void ***>(o);
+        if (InterlockedDecrement(reinterpret_cast<volatile LONG *>(o + 8)) == 0) {
+            reinterpret_cast<void (*)(void *)>(ovt[0])(o);
+            if (InterlockedDecrement(reinterpret_cast<volatile LONG *>(o + 0xc)) == 0)
+                reinterpret_cast<void (*)(void *)>(ovt[1])(o);
+        }
+    }
+    if (b)
+        reinterpret_cast<void (*)(void *, void *)>((*reinterpret_cast<void ***>(alloc))[0x38 / 8])(alloc, b);
+    swofty::log("[direct] Grand Prix: weekend structure for %s: practice %llu, qualifying %llu, race %llu (%zu action(s))",
+                name.c_str(), (unsigned long long)t.practice, (unsigned long long)t.qualifying,
+                (unsigned long long)t.race, n);
+}
+
+// The player's seat, as Apply's drivers config (0x141129850) sets it: the first entrant of the requested team (and
+// driver) that is not human gets the player's identity block (the profile [[[game manager+0x140]+0x1c0]+0x1c0]
+// slot 0x38, 0x40 bytes to +8) and the human flag (+0x48 = 0x10000000), between the entrants-changing messages.
+constexpr uintptr_t RVA_MESSAGE_BUS = 0x618b3b8, RVA_POST_BEGIN = 0x24e2b90, RVA_POST_END = 0x24e2f00,
+                    VT_MSG_BEGIN = 0x578d4e8, VT_MSG_END = 0x578d510;
+
+std::map<uint32_t, std::string> labels_of(const char *table, const char *stem)
+{
+    std::map<uint32_t, std::string> out;
+    const SwoftyDb *db = runtime::db_table();
+    if (!db || !db->available || !db->available())
+        return out;
+    int64_t count = 0;
+    std::string t = table;
+    if (db->int_at((t + "._" + stem + "_instancecount_").c_str(), &count) != SWOFTY_ASSET_OK || count <= 0 || count > 8192)
+        return out;
+    for (int64_t i = 0; i < count; i++) {
+        std::string row = t + "." + stem + "_" + std::to_string(i);
+        int64_t id = -1;
+        const char *label = nullptr;
+        if (db->int_at((row + ".stat_id").c_str(), &id) == SWOFTY_ASSET_OK && id >= 0 && id < 0x3fff &&
+            db->string_at((row + "._metadata_").c_str(), &label) == SWOFTY_ASSET_OK && label)
+            out[uint32_t(id)] = std::string(label, strnlen(label, 128));
+    }
+    return out;
+}
+
+bool label_matches(const std::string &label, const std::string &want)
+{
+    if (want.empty())
+        return true;
+    if (label == want)
+        return true;
+    std::string l = label, w = want;
+    for (auto &c : l)
+        c = char(tolower(uint8_t(c)));
+    for (auto &c : w)
+        c = char(tolower(uint8_t(c)));
+    return l.find(w) != std::string::npos;
+}
+
+void seat_player(uint8_t *e, void *mgr)
+{
+    std::string team = request["team"].str(), driver = request["driver"].str();
+    auto **begin = reinterpret_cast<uint8_t **>(e + ENTITY_ENTRANTS);
+    size_t n = size_t(begin[1] - begin[0]) / ENTRANT_SIZE;
+    if (!n)
+        return;
+    auto teams = labels_of("entrants.teams", "team"), drivers = labels_of("entrants.drivers", "driver");
+    auto team_of = [&](uint8_t *r) -> std::string {
+        if (r[0x58])
+            return "?";
+        auto it = teams.find(*reinterpret_cast<uint16_t *>(r + 0x5a));
+        return it == teams.end() ? "#" + std::to_string(*reinterpret_cast<uint16_t *>(r + 0x5a)) : it->second;
+    };
+    auto driver_of = [&](uint8_t *r) -> std::string {
+        if (r[0x50])
+            return "?";
+        auto it = drivers.find(*reinterpret_cast<uint16_t *>(r + 0x52));
+        return it == drivers.end() ? "#" + std::to_string(*reinterpret_cast<uint16_t *>(r + 0x52)) : it->second;
+    };
+    uint8_t *seat = nullptr;
+    size_t humans = 0;
+    std::string grid;
+    for (size_t i = 0; i < n; i++) {
+        uint8_t *r = begin[0] + i * ENTRANT_SIZE;
+        bool human = (r[0x4b] & 0x10) != 0;
+        humans += human;
+        if (grid.size() < 1500)
+            grid += (grid.empty() ? "" : ", ") + team_of(r) + "/" + driver_of(r) + (human ? " (human)" : "");
+        if (!seat && !human && label_matches(team_of(r), team) && label_matches(driver_of(r), driver))
+            seat = r;
+    }
+    swofty::log("[direct] Grand Prix: %zu entrant(s), %zu human: %s", n, humans, grid.c_str());
+    if (!seat) {
+        if (!team.empty() || !driver.empty())
+            swofty::log("[direct] Grand Prix: no entrant of team '%s' driver '%s'; the player takes the first seat",
+                        team.c_str(), driver.c_str());
+        seat = begin[0];
+        if (seat[0x4b] & 0x10) {
+            swofty::log("[direct] Grand Prix: the first seat is already the player's (%s/%s)", team_of(seat).c_str(),
+                        driver_of(seat).c_str());
+            return;
+        }
+    }
+    alignas(16) uint8_t id[0x40] = {};
+    void *users = mgr ? *reinterpret_cast<void **>(static_cast<uint8_t *>(mgr) + 0x140) : nullptr;
+    void *user = users && runtime::readable(users, 0x1c8) ? *reinterpret_cast<void **>(static_cast<uint8_t *>(users) + 0x1c0) : nullptr;
+    void *prof = user && runtime::readable(user, 0x1c8) ? *reinterpret_cast<void **>(static_cast<uint8_t *>(user) + 0x1c0) : nullptr;
+    if (!prof) {
+        swofty::log("[direct] Grand Prix: no player profile for the identity block; the seat is not set");
+        return;
+    }
+    reinterpret_cast<void (*)(void *, void *)>((*reinterpret_cast<void ***>(prof))[0x38 / 8])(prof, id);
+    uintptr_t base = swofty::api->module_base();
+    void *bus = *reinterpret_cast<void **>(base + RVA_MESSAGE_BUS);
+    void *mb = bus && runtime::readable(bus, 0x10) ? *reinterpret_cast<void **>(static_cast<uint8_t *>(bus) + 8) : nullptr;
+    alignas(16) void *msg[3] = {reinterpret_cast<void *>(base + VT_MSG_BEGIN), nullptr, nullptr};
+    if (mb)
+        at_rva<void(void *, void *)>(RVA_POST_BEGIN)(mb, msg);
+    e[0x2f8] = 1;
+    for (size_t i = 0; i < n; i++) {
+        uint8_t *r = begin[0] + i * ENTRANT_SIZE;
+        if (r != seat && (r[0x4b] & 0x10)) {
+            *reinterpret_cast<uint32_t *>(r + 0x48) &= ~0x10000000u;
+            swofty::log("[direct] Grand Prix: %s/%s is no longer the player's", team_of(r).c_str(), driver_of(r).c_str());
+        }
+    }
+    std::memcpy(seat + 8, id, 0x40);
+    *reinterpret_cast<uint32_t *>(seat + 0x48) = 0x10000000;
+    msg[0] = reinterpret_cast<void *>(base + VT_MSG_END);
+    msg[1] = nullptr;
+    msg[2] = e + 0x2d8;
+    if (mb)
+        at_rva<void(void *, void *)>(RVA_POST_END)(mb, msg);
+    e[0x2f8] = 0;
+    swofty::log("[direct] Grand Prix: the player drives for %s as %s (seat %zu)", team_of(seat).c_str(),
+                driver_of(seat).c_str(), size_t(seat - begin[0]) / ENTRANT_SIZE);
 }
 
 ds::Setup new_grand_prix(std::string &why)
@@ -509,12 +682,8 @@ ds::Setup new_grand_prix(std::string &why)
     }
     swofty::log("[direct] Grand Prix: rounds component %p after %llu ms", rounds_seen,
                 (unsigned long long)(GetTickCount64() - mode_set_at));
-    std::string setup_name = request["setup_mode"].str("swofty_f1"), list_name = request["box"].str(),
-                track_name = request["track"].str();
-    if (list_name.empty() || track_name.empty()) {
-        why = "the request names no box (entrant list) or track";
-        return ds::Setup::failed;
-    }
+    std::string setup_name = request["setup_mode"].str("swofty_f1"), list_name = request["box"].str(DEFAULT_BOX),
+                track_name = request["track"].str(DEFAULT_TRACK);
     // 1. The game setup mode by name, from E's setup modes (vt+0x1d0: a vector at +8..+0x10).
     auto **evt = *reinterpret_cast<void ***>(e);
     auto *modes_vec = reinterpret_cast<uint8_t *(*)(void *)>(evt[0x1d0 / 8])(e);
@@ -565,41 +734,6 @@ ds::Setup new_grand_prix(std::string &why)
     }
     // 4. One round at that track, then the season built from the rounds (0x141207290 on a stub that holds the
     // registry at +0x270, the rounds at +0x290 and the track at [+0x298]+0x18).
-    {
-        auto *reg = e + ENTITY_REGISTRY;
-        auto **rvt = *reinterpret_cast<void ***>(reg);
-        auto *code = static_cast<uint8_t *>(rvt[2]);
-        std::string hex;
-        for (int i = 0; i < 96 && runtime::readable(code + i, 1); i++) {
-            char b[4];
-            snprintf(b, sizeof b, "%02x ", code[i]);
-            hex += b;
-        }
-        uintptr_t base = swofty::api->module_base();
-        auto q = [](uintptr_t a) { return runtime::readable(reinterpret_cast<void *>(a), 16) ? *reinterpret_cast<uint64_t *>(a) : 0; };
-        auto q8 = [](uintptr_t a) { return runtime::readable(reinterpret_cast<void *>(a), 16) ? *reinterpret_cast<uint64_t *>(a + 8) : 0; };
-        swofty::log("[direct] Grand Prix: registry %p vt %p slot 0x10 %s: %s", reg, rvt, runtime::code_where(uintptr_t(code)).c_str(),
-                    hex.c_str());
-        swofty::log("[direct] Grand Prix: desc 0x14605ad20 = %llx %llx, desc 0x14605ad40 = %llx %llx",
-                    (unsigned long long)q(base + 0x605ad20), (unsigned long long)q8(base + 0x605ad20),
-                    (unsigned long long)q(base + 0x605ad40), (unsigned long long)q8(base + 0x605ad40));
-        auto dump = [&](uintptr_t rva, int n) {
-            auto *c = reinterpret_cast<uint8_t *>(base + rva);
-            std::string h;
-            for (int i = 0; i < n && runtime::readable(c + i, 1); i++) {
-                char b[4];
-                snprintf(b, sizeof b, "%02x ", c[i]);
-                h += b;
-            }
-            swofty::log("[direct] code at base+0x%llx: %s", (unsigned long long)rva, h.c_str());
-        };
-        dump(0x13417330, 192);
-        dump(0x97c8dd0, 160);
-        if (GetEnvironmentVariableA("SWOFTY_DIRECT_PROBE_ONLY", nullptr, 0)) {
-            why = "probe only (SWOFTY_DIRECT_PROBE_ONLY)";
-            return ds::Setup::failed;
-        }
-    }
     void *rounds = registry_call(e, 0x10, reinterpret_cast<void *>(swofty::api->module_base() + 0x605ad40), 0);
     if (!rounds) {
         why = "the Grand Prix mode has no rounds component";
@@ -617,8 +751,9 @@ ds::Setup new_grand_prix(std::string &why)
     *reinterpret_cast<void **>(holder + 0x18) = track;
     *reinterpret_cast<void **>(stub + 0x298) = holder;
     at_rva<void(void *)>(RVA_BUILD_SEASON)(stub);
-    // 5. E's components attached again, as the track select confirm does after its rounds.
+    // 5. E's components attached again, as the track select confirm does after its rounds, then the sessions.
     reinterpret_cast<void (*)(void *)>(evt[0xe8 / 8])(e);
+    weekend_structure(e, static_cast<uint8_t *>(rounds));
     // 6. The entrants from the list. The fill clears the entrants a saved Grand Prix left first.
     auto **begin = reinterpret_cast<uint8_t **>(e + ENTITY_ENTRANTS);
     size_t before = size_t(begin[1] - begin[0]) / ENTRANT_SIZE;
@@ -630,8 +765,17 @@ ds::Setup new_grand_prix(std::string &why)
     }
     size_t entrants = size_t(begin[1] - begin[0]) / ENTRANT_SIZE;
     swofty::log("[direct] Grand Prix: entrants %zu before the fill, %zu after", before, entrants);
+    seat_player(e, mgr);
     swofty::log("[direct] Grand Prix: new weekend: setup mode %s, list %s (%p), track %s (%p), rounds %p, %zu entrant(s)",
                 setup_name.c_str(), list_name.c_str(), list, track_name.c_str(), track, rounds, entrants);
+    if (uint8_t *wk = current_weekend(modes)) {
+        uint8_t id = track[1];
+        if (wk[WK_TRACK] != id) {
+            swofty::log("[direct] Grand Prix: the weekend's track stat id %u -> %u (%s)", unsigned(wk[WK_TRACK]),
+                        unsigned(id), track_name.c_str());
+            wk[WK_TRACK] = id;
+        }
+    }
     choose_session(modes, "built");
     return ds::Setup::done;
 }
@@ -646,7 +790,7 @@ ds::Setup set_up_target(std::string &why)
         return time_trial_setup(why);
     }
     if (driver.target.name == "session")
-        return request["box"].str().empty() ? continue_grand_prix(why) : new_grand_prix(why);
+        return new_grand_prix(why);
     if (driver.target.name == "room") {
         if (!room_setup) {
             why = "no room setup is registered (netplay_drive.cpp)";
@@ -697,8 +841,6 @@ void direct_start_setup()
     }
     game.manager = runtime::find(SIG_GAME_MANAGER, "game manager", "direct");
     game.set_mode = runtime::find(SIG_SET_MODE, "SetCurrentGameMode", "direct");
-    game.by_name = runtime::find(SIG_MODE_BY_NAME, "game mode lookup", "direct");
-    game.prepare = runtime::find(SIG_ROUNDS_PREPARE, "rounds prepare", "direct");
     game.by_predicate = runtime::find(SIG_MODE_BY_PREDICATE, "game mode lookup by predicate", "direct");
     game.gp_predicate = runtime::find(SIG_GP_PREDICATE, "Grand Prix mode predicate", "direct");
     if (game.set_mode) {
@@ -706,6 +848,19 @@ void direct_start_setup()
                                                 reinterpret_cast<void *>(set_mode_detour));
         if (h)
             h_set_mode = std::move(*h);
+    }
+    if (target == "session" && request["laps"].num(0) > 0) {
+        uintptr_t at = runtime::same_build() ? runtime::find(SIG_BUILD_SETTINGS, "session settings", "direct") : 0;
+        bool hooked = false;
+        if (at) {
+            auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(settings_detour));
+            if (h) {
+                h_settings = std::move(*h);
+                hooked = true;
+            }
+        }
+        if (!hooked)
+            swofty::log("[direct] the race laps are not set: Game_ChampionshipGameMode_BuildSessionSettings did not hook");
     }
     runtime::title::setup();
     if (!runtime::title::why().empty()) {
@@ -774,10 +929,23 @@ int direct_start_cover_signal()
         return 0;
     if (!armed.load())
         return -1;
-    std::lock_guard<std::mutex> g(lock);
-    if (driver.phase == ds::Phase::failed)
+    if (start_failed.load())
         return -1;
-    return session_frames.load() >= 30 ? 1 : 0;
+    if (session_screen.load())
+        return 1;
+    uint64_t at = session_at.load();
+    return at && GetTickCount64() - at >= SESSION_SCREEN_WAIT_MS ? 1 : 0;
+}
+
+void direct_start_screen(const char *name)
+{
+    if (!armed.load() || !name || !session_at.load() || session_screen.load())
+        return;
+    if (!std::strcmp(name, "garage_cockpit") || !std::strcmp(name, "race_hud") || !std::strcmp(name, "grid")) {
+        session_screen = true;
+        swofty::log("[direct] the session's screen %s is up after %llu ms; the cover comes off", name,
+                    (unsigned long long)(GetTickCount64() - session_at.load()));
+    }
 }
 
 void direct_start_profile_read()
@@ -799,6 +967,7 @@ void direct_start_profile_loaded(bool ok)
         swofty::log("[direct] the profile load failed; the start waits for the next one");
         return;
     }
+    runtime::room_cover::step("Profile loaded", 0.4f, 0.54f);
     driver.profile_loaded();
     note_phase();
 }
@@ -813,6 +982,8 @@ void direct_start_tick()
         std::string why;
         ds::Setup r = set_up_target(why);
         driver.setup_result(r, why);
+        if (r == ds::Setup::done && driver.target.name == "session")
+            runtime::room_cover::step("Weekend ready", 0.5f, 0.56f);
     }
     // A session keeps the virtual pad plugged in, idle: the game bound the player to it at the title, and letting
     // go of the claim would stop the session on CONTROLLER DISCONNECTED.

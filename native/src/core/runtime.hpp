@@ -276,6 +276,8 @@ void direct_start_register_time_trial(DirectStartSetup setup);
 std::string direct_start_request_text();
 // For the cover: 0 while a session target is on its way, 1 once its session is on screen, -1 when it failed.
 int direct_start_cover_signal();
+// A UI screen opened (ui.cpp): the session's own screen takes the cover off.
+void direct_start_screen(const char *name);
 uintptr_t direct_start_set_mode();
 // What the direct start knows on the flow thread from the profile load on: the game manager and the game modes
 // context (the object Game_Game_SetCurrentGameMode takes, [game manager+0xc0]).
@@ -293,6 +295,7 @@ void testagent_route_ran(const std::string &name);
 bool frame_capture_request(const std::wstring &path);
 int frame_capture_poll(std::string *why);
 int group_add(const json::Value &entry);
+int group_extend(const std::string &group, const std::string &erp);
 void own_item(uint32_t key, const std::string &addon, const std::string &what);
 int db_add(const json::Value &entry);
 void db_older_edits(const std::function<void(uint64_t key, int tag, const std::string &text)> &fn);

@@ -11,7 +11,8 @@ registry.json, registry.lock.json and registry/ data files, and the files the ma
 plus every
 file an operation file names in a "source" or "sources" field (texture fragments, VTFs, UI files). Entries are
 sorted with a fixed timestamp and mode, so the same inputs give the same bytes. A string in a registry/*.json
-data file that names a file inside the addon (a Path field such as an engine sound's bundle) goes in too.
+data file that names a file or folder inside the addon (a Path field such as an engine sound's bundle or a
+garage's textures folder) goes in too, a folder with every file under it.
 """
 import json, os, sys, zipfile
 
@@ -53,13 +54,14 @@ def sources(addon, rel):
     return out
 
 
-def inside(addon, rel):
+def inside(addon, rel, folders=False):
     if not isinstance(rel, str) or not rel or os.path.isabs(rel) or rel.startswith(('/', '\\')):
         return False
     parts = rel.replace('\\', '/').split('/')
     if '..' in parts or ':' in parts[0]:
         return False
-    return os.path.isfile(os.path.join(addon, rel))
+    path = os.path.join(addon, rel)
+    return os.path.isfile(path) or (folders and os.path.isdir(path))
 
 
 def data_paths(addon):
@@ -75,8 +77,8 @@ def data_paths(addon):
         elif isinstance(o, list):
             for v in o:
                 walk(v)
-        elif inside(addon, o):
-            out.append(o.replace('\\', '/'))
+        elif inside(addon, o, folders=True):
+            out.append(o.replace('\\', '/').rstrip('/'))
 
     for name in sorted(os.listdir(folder)):
         if name.endswith('.json'):

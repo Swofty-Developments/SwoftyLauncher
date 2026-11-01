@@ -40,7 +40,8 @@ Shipped in 1.6.0:
 - **[Seasons and GP/TT content](/std/content)** `swofty/systems/content.hpp`: `content::packages`, `era_boxes`.
 - **[Cars](./cars)** `swofty/systems/cars.hpp`: `cars::vehicles`, `packages`, `handling`.
 - **[Liveries](./liveries)** `swofty/systems/liveries.hpp`: `liveries::liveries`.
-- **[Teams](./teams)** `swofty/systems/teams.hpp`: `teams::constructors`, `identities`, `logos`, `pit_times`.
+- **[Teams](./teams)** `swofty/systems/teams.hpp`: `teams::constructors`, `identities`, `logos`, `pit_times`, `garages`.
+- **[Garage art](./garage)** `swofty/systems/teams.hpp`: `teams::garages`.
 - **[Drivers](./drivers)** `swofty/systems/drivers.hpp`: `drivers::people`, `identities`, `heads`, `looks`, `stats`.
 - **[Helmets, suits and gloves](./wearables)** `swofty/systems/wearables.hpp`: `wearables::helmets`, `suits`, `gloves`, `season_sets`.
 - **[Sounds](./sounds)** `swofty/systems/sounds.hpp`: `sounds::engine_sounds`.

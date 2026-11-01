@@ -117,7 +117,7 @@ struct PackageTrack {                              // track.per_package: one box
     json::Value extra;
 };
 
-struct LeftOut { Ref<Track> track; std::string reason; };   // "its swofty_f1 world has 10 garages; the box has 11 teams"
+struct LeftOut { Ref<Track> track; std::string reason; };   // "its swofty_f1 world has 20 grid slots; the box runs 22 cars"
 
 struct TrackList {                                 // what a box offers in one mode, as catalog.json writes it
     std::vector<Ref<Track>> calendar;              // the season's real calendar, in round order
@@ -385,10 +385,9 @@ Every track in the base is offered in every box where it fits. The track select 
 1. **The season's real calendar,** in round order. The box names its calendar with `content::Package::calendar`. A round whose venue no enabled track provides is dropped.
 2. **"More tracks":** every other track in the base that fits, in the base order. A track an addon adds next month appears here without the box knowing about it.
 
-A track that doesn't fit is left out of that box, with the reason in the log. A track fits a box when all five of these hold:
+A track that doesn't fit is left out of that box, with the reason in the log. A track fits a box when all four of these hold:
 
 - **World.** The track's files hold the world the box's setup mode loads, when other tracks hold it. F1 2012 Season's setup mode `bdx_2012_mode` loads its own `2012` worlds, which it ships for the stock tracks only. A community track such as Mugello is left out of that box.
-- **Garages.** The world the box's setup mode loads at that track has a garage for every team in the box. The setup mode is the game's rule set a weekend runs under. Boxes made from a `content::Package` share `swofty_f1`; an addon's box can bring its own.
 - **Grid size.** That world, with any extra slots from `tracks::slots`, has a grid slot for every car the box runs. Grid size is one boot setting per install, and each box is clamped to it.
 - **AI data.** Every car in the box has AI data at the track: an AI line for its `ai_package_folder/asset_filename`, and the track's `ai_track_difficulties` entry for its package.
 - **Time Trial support.** In a Time Trial box, the track is a stock track, a track made for 1.5 or a record track with `time_trial` set, and its facts don't say `time_trial: false`.
@@ -418,7 +417,7 @@ tracks::TrackList tracks::track_list(Ref<content::Package> box, events::Mode mod
 {
     TrackList list;
     auto offer = [&](Ref<Track> track, std::vector<Ref<Track>> &into) {
-        Fit fit = fits(box, track, mode);           // fits.cpp: garages, grid size, AI data, Time Trial support
+        Fit fit = fits(box, track, mode);           // fits.cpp: world, grid size, AI data, Time Trial support
         if (fit.ok)
             into.push_back(track);
         else
@@ -448,7 +447,7 @@ tracks::TrackList tracks::track_list(Ref<content::Package> box, events::Mode mod
 
 ```text
 [tracks] box swofty.classic-seasons-2016/f1_2016 (grand_prix): calendar 20 of 21 rounds (venue/sochi: no track),
-         more tracks 9; left out mod.miami24/igora_drive (its swofty_f1 world has 10 garages; the box has 11 teams)
+         more tracks 9; left out game/monaco (its swofty_f1 world has 20 grid slots; the box runs 22 cars)
 [tracks] box game/f1_2026 (time_trial): 26 tracks; left out 4 added tracks (no Time Trial support)
 ```
 
@@ -459,14 +458,14 @@ as of the last session of profile Classic Seasons (build 9d7a5f9177e1436d):
 box swofty.classic-seasons-2016/f1_2016 (grand prix): calendar 20, more tracks 9, left out 1
   calendar: game/melbourne, game/bahrain, game/shanghai, ...
   more tracks: game/melbourne_reverse, mod.okayama/okayama, ...
-  left out mod.miami24/igora_drive: its swofty_f1 world has 10 garages; the box has 11 teams
+  left out game/monaco: its swofty_f1 world has 20 grid slots; the box runs 22 cars
 ```
 
 The track select screen's list builder needs reverse engineering (`ui.track_select.build`, `ui::events::TrackSelectBuild`). Until it's understood, the screen shows every track in the base in the game's own order. A guard on the screen stops a track that doesn't fit before the session loads:
 
 ```text
-Igora Drive can't run in F1 2016
-  Its garages hold 10 teams. F1 2016 has 11.
+Monaco can't run in F1 2016
+  Its grid holds 20 cars. F1 2016 runs 22.
   [Back]
 ```
 
@@ -481,7 +480,7 @@ Mugello can't run in game/bdx_s5_2012
 [tracks] guard: mod.mugello/mugello in game/bdx_s5_2012 (grand_prix): refused (its files hold no 2012 world, which the box's bdx_2012_mode layer loads)
 ```
 
-When the entrant list's counts can't be read, the box logs `not fully read (<why>)` and the garage and grid rules assume half the grid size as teams and the grid size as cars, so a track with fewer garages is refused instead of passing with no facts.
+When the entrant list's counts can't be read, the box logs `not fully read (<why>)` and the grid rule assumes the grid size as cars, so a track with fewer grid slots is refused instead of passing with no facts.
 
 ## A box's own track data
 
@@ -731,7 +730,7 @@ tracks::set_data(tracks::tracks["game/monaco"], [](tracks::TrackData &d) { d.lap
 - **Track data is found by mode mask,** and sub-tables inherit from the parent set one table at a time. A session's query names the setup mode and the box's season; with no season, the first set listing the mode wins.
 - **AI packs** are per car folder (`ai_package_folder/asset_filename`). A car package with its own AI data, such as F1 1990's `f1_1990`, has an `ai_track_difficulties.<package folder>` key only on the tracks it was made for. A missing key reads the miss sentinel, not null.
 - **Worlds:** `_f1_26` worlds have 22 grid slots and 11 garages, `_myteam` 24 and 12, and `_f1` 10 garages. An 11-team box crashed on `_f1` worlds in `Sess_Assign_GarageSlotsByPreference`. Classic Seasons fixed it with a layer copy of `f1_26` for `swofty_f1`.
-- **Garage order:** `Sess_Assign_GarageSlotsByTeamOrder` gives the team at position i of the team order garage i with no bound check, so a team past the world's garage count reads past the garage vector. F1 2012 Season (12 teams) at Mugello, which has no `2012` world, crashed there. The world and garages rules stop it at the track select; a session that reaches the assignment some other way is not guarded.
+- **Garage order:** `Sess_Assign_GarageSlotsByTeamOrder` gives the team at position i of the team order garage i with no bound check, so a team past the world's garage count reads past the garage vector. F1 2012 Season (12 teams) at Mugello, which has no `2012` world, crashed there. The world rule stops it at the track select. A box with more teams than the world has garages loads: F1 1990's 13 teams ran a Grand Prix and a Time Trial at Shanghai's 11 garages in game on 2026-11-01, and the garage crew and pit box guards leave the extra cars without a crew or a box.
 - **A world the track doesn't hold:** the game still loads the session. What it puts in the missing world's place is not reverse engineered. The world rule leaves such a track out. A world no track holds in the facts has no facts and passes.
 - **Grid slots per track** differ. Custom Grid Size's table gives Imola, Singapore and Abu Dhabi 26, and Monaco 28.
 - **Unknown:** the invitational slot limit (8 tracks without the loader), Time Trial on added tracks (crashes or freezes), and the 28-car session-enter crash on community maps.

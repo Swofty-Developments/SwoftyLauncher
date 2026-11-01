@@ -56,6 +56,7 @@ pub const CORE_REGISTRIES: &[(&str, &str)] = &[
     ("rules.drs", "1.0"),
     ("suit", "1.0"),
     ("team.constructor", "1.0"),
+    ("team.garage", "1.0"),
     ("team.identity", "1.1"),
     ("team.logo", "1.0"),
     ("team.pit_times", "1.0"),
