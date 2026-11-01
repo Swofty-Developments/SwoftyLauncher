@@ -1445,6 +1445,129 @@ static void crash_teamhq(void)
     fflush(stdout);
 }
 
+// The race length text body of the career activity report (Steam .data1 0x151948840: virtual +0x80 and +0x10 of the ui
+// variable table at championship +0x1030, then three u32 reads through 0x140bc9ef0 at +0x64, +0x76 and +0x7d), with the
+// instructions around the reads copied from the Steam build, in a frame taking the championship in rcx. Core's activity
+// resume guard finds the two reads and the epilogue (lea rsi ; mov rax,rsi ; add rsp,0x20) by byte patterns in .data1.
+__asm__(
+    ".section .data1,\"dwx\"\n"
+    ".globl fake_activity_length\n"
+    ".def fake_activity_length; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_activity_length\n"
+    "fake_activity_length:\n"
+    ".byte 0x41,0x56\n.seh_pushreg %r14\n"
+    ".byte 0x56\n.seh_pushreg %rsi\n"
+    ".byte 0x57\n.seh_pushreg %rdi\n"
+    ".byte 0x55\n.seh_pushreg %rbp\n"
+    ".byte 0x53\n.seh_pushreg %rbx\n"
+    ".byte 0x48,0x83,0xEC,0x20\n.seh_stackalloc 0x20\n"
+    ".seh_endprologue\n"
+    ".byte 0x48,0x89,0xCF\n"
+    ".byte 0x48,0x8B,0x81,0x30,0x10,0x00,0x00\n"
+    ".byte 0x48,0x81,0xC7,0x30,0x10,0x00,0x00\n"
+    ".byte 0x48,0x89,0xF9\n"
+    ".byte 0xFF,0x90,0x80,0x00,0x00,0x00\n"
+    ".byte 0x48,0x8D,0x35\n.long fake_activity_full-(.+4)\n"
+    ".byte 0x48,0x85,0xC0\n"
+    "je 2f\n"
+    ".byte 0x48,0x8B,0x98,0x90,0x02,0x00,0x00\n"
+    ".byte 0x48,0x2B,0x98,0x88,0x02,0x00,0x00\n"
+    ".byte 0x48,0xC1,0xEB,0x03\n"
+    ".byte 0x48,0x8B,0x07\n"
+    ".byte 0x48,0x8D,0x15\n.long fake_activity_full-(.+4)\n"
+    ".byte 0x48,0x89,0xF9\n"
+    ".byte 0x41,0xB8,0x01,0x00,0x00,0x00\n"
+    ".byte 0xFF,0x50,0x10\n"
+    ".byte 0x48,0x89,0xC7\n"
+    ".byte 0x48,0x89,0xC1\n"
+    ".byte 0xB2,0x02\n"
+    ".byte 0xE8\n.long fake_activity_get-(.+4)\n"
+    ".byte 0x44,0x8B,0x30\n"
+    ".byte 0x48,0x89,0xF9\n"
+    ".byte 0xB2,0x01\n"
+    ".byte 0xE8\n.long fake_activity_get-(.+4)\n"
+    ".byte 0x8B,0x28\n"
+    ".byte 0x48,0x89,0xF9\n"
+    ".byte 0x31,0xD2\n"
+    ".byte 0xE8\n.long fake_activity_get-(.+4)\n"
+    ".byte 0x41,0x39,0xDE\n"
+    "jae 3f\n"
+    ".byte 0x39,0xDD\n"
+    "jae 4f\n"
+    "jmp 2f\n"
+    "3:\n"
+    ".byte 0x48,0x8D,0x35\n.long fake_activity_short-(.+4)\n"
+    "jmp 2f\n"
+    "4:\n"
+    ".byte 0x48,0x8D,0x35\n.long fake_activity_medium-(.+4)\n"
+    "2:\n"
+    ".byte 0x48,0x89,0xF0\n"
+    ".byte 0x48,0x83,0xC4,0x20\n"
+    ".byte 0x5B,0x5D,0x5F,0x5E,0x41,0x5E,0xC3\n"
+    ".seh_endproc\n"
+    ".text\n");
+const char *fake_activity_length(void *championship);
+
+const char fake_activity_full[] = "full", fake_activity_short[] = "short", fake_activity_medium[] = "medium";
+
+static uint8_t activity_tracklist[0x298];
+static uint64_t activity_vt[0x20];
+static uint32_t activity_fields[3];
+static int activity_has_group;
+
+__attribute__((ms_abi)) void *fake_activity_get(void *group, uint8_t index)
+{
+    (void)group;
+    return activity_has_group ? (void *)&activity_fields[index] : NULL;
+}
+
+__attribute__((ms_abi)) static void *activity_tracklist_of(void *table)
+{
+    (void)table;
+    return activity_tracklist;
+}
+
+__attribute__((ms_abi)) static void *activity_group_of(void *table, const char *name, int mode)
+{
+    (void)name;
+    (void)mode;
+    return table;
+}
+
+static uint8_t activity_championship[0x1040];
+
+static const char *activity_run(int group, uint32_t length_field, uint32_t kind_field, uint32_t count)
+{
+    activity_has_group = group;
+    activity_fields[2] = length_field;
+    activity_fields[1] = kind_field;
+    *(uint64_t *)(activity_tracklist + 0x288) = 0x1000;
+    *(uint64_t *)(activity_tracklist + 0x290) = 0x1000 + 8ull * count;
+    activity_vt[0x10 / 8] = (uint64_t)(uintptr_t)activity_group_of;
+    activity_vt[0x80 / 8] = (uint64_t)(uintptr_t)activity_tracklist_of;
+    *(uint64_t *)(activity_championship + 0x1030) = (uint64_t)(uintptr_t)activity_vt;
+    return fake_activity_length(activity_championship);
+}
+
+static void test_activity(void)
+{
+    expect(!strcmp(activity_run(1, 1, 1, 4), "full"), "activity: a championship with its fields reads them as the game does");
+    expect(!strcmp(activity_run(1, 9, 1, 4), "short") && !strcmp(activity_run(1, 1, 9, 4), "medium"),
+           "activity: the fields past the track list give the short and medium texts");
+    expect(!strcmp(activity_run(0, 0, 0, 4), "full"), "activity: a championship whose group is missing keeps the default text");
+    activity_run(0, 0, 0, 4);
+}
+
+static void crash_activity(void)
+{
+    SetErrorMode(SEM_NOGPFAULTERRORBOX);
+    printf("      activity: reading a championship whose track is not in the track list\n");
+    fflush(stdout);
+    const char *text = activity_run(0, 0, 0, 4);
+    printf("      activity: the report returned %s\n", text);
+    fflush(stdout);
+}
+
 // The tail of the car setup screen handler Game_CarSetupVm_Initialise (0x140c1b904..0x140c1b945), copied byte for byte
 // from the Steam build in a small frame taking the vm in rcx: the setup data test (mov rax,[vm+0x268] ; je), the car load
 // (mov rax,[rax+0x28]) and the handling version compare with its jne at +0x18, then the two differential range updates,
@@ -2523,6 +2646,7 @@ int main(int argc, char **argv)
         test_standings();
         test_weekends();
         test_teamhq();
+        test_activity();
         test_setup_vm();
         test_fe_tiles();
         test_ai_corner();
@@ -2572,6 +2696,8 @@ int main(int argc, char **argv)
         crash_weekends();
     if (argc > 1 && !strcmp(argv[1], "teamhq"))
         crash_teamhq();
+    if (argc > 1 && !strcmp(argv[1], "activity"))
+        crash_activity();
     if (argc > 1 && !strcmp(argv[1], "setup_vm"))
         crash_setup_vm();
     if (argc > 1 && !strcmp(argv[1], "fe_scan"))

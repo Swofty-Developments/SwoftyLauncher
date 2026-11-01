@@ -28,6 +28,7 @@ struct Sig {
     uintptr_t rva;
     enum Kind { addr, rel32, riprel } kind = addr;
     uintptr_t insn = 0, anchor = 0, len = 0;
+    const char *section = ".xtls";
 };
 
 struct OverlayErp {

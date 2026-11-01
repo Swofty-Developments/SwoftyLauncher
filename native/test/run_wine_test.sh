@@ -349,6 +349,8 @@ EOF
         once "teamhq: the guard is armed" '\[career\] teamhq track guard armed'
         once "teamhq: an event whose track has no track data is skipped and logged once" '\[career\] teamhq: track 6 has no track data; the event shows no track'
         once "teamhq: an event whose track has no record is skipped and logged once" '\[career\] teamhq: track 1 has no track data; the event shows no track'
+        once "activity: the guard is armed" '\[career\] activity resume guard armed'
+        once "activity: a championship without race length fields is skipped and logged once" '\[career\] activity resume: the championship has no race length fields'
         once "setups: the guard is armed" '\[setups\] car guard armed at 1 of 4 sites'
         once "fe tiles: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(front-end tile list guard\)': 3 mixin\(s\)"
         once "fe tiles: the guard is armed" '\[fe\] tiles guard armed'
@@ -759,6 +761,26 @@ for guard in on off; do
         once "teamhq off: the guard is off" '\[career\] teamhq track guard off \(SWOFTY_TEAMHQ_TRACK_GUARD=0\)'
         check "teamhq off: the read faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Career_TeamHqAdvance_BuildTrackNode\+0x52'
         [[ $code != 0 ]] && echo "ok  : teamhq off: process ended with $code" || { echo "FAIL: teamhq off: process exited 0"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== activity ($guard)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_ACTIVITY_RESUME_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" activity >"$OUT/activity.out" 2>&1 || code=$?
+    grep -E '\[career\] activity resume|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    if [[ $guard == on ]]; then
+        once "activity on: the guard is armed" '\[career\] activity resume guard armed'
+        once "activity on: the read is skipped and logged once" '\[career\] activity resume: the championship has no race length fields'
+        grep -q 'activity: the report returned full\b' "$OUT/activity.out" && echo "ok  : activity on: the report kept the default text" ||
+            { echo "FAIL: activity on: the report did not keep the default text"; status=1; }
+        count "activity on: no unhandled fault" 0 '\[crash\] unhandled '
+        compgen -G "$SW/crash-*.txt" >/dev/null && { echo "FAIL: activity on: a crash report was written"; status=1; } ||
+            echo "ok  : activity on: no crash report"
+    else
+        once "activity off: the guard is off" '\[career\] activity resume guard off \(SWOFTY_ACTIVITY_RESUME_GUARD=0\)'
+        check "activity off: the read faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*\.data1 fn base\+0x[0-9a-f]+\+0x65 '
+        [[ $code != 0 ]] && echo "ok  : activity off: process ended with $code" || { echo "FAIL: activity off: process exited 0"; status=1; }
     fi
 done
 for guard in on off; do
