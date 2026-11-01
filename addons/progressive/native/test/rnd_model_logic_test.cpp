@@ -41,6 +41,16 @@ std::vector<Meta> stock()
     return m;
 }
 
+std::vector<Meta> stock_adj()
+{
+    std::vector<Meta> m = stock();
+    for (size_t i = 0; i < m.size(); ++i) {
+        m[i].mass = (i % 3 == 0 ? -1.5f : 0.5f) * static_cast<float>(i);
+        m[i].bhp = (i % 2 ? 2.0f : -0.75f) * static_cast<float>(i + 1);
+    }
+    return m;
+}
+
 void rewrite()
 {
     EXPECT(near(rnd_model::target(0, 0), rnd_model::kTop));
@@ -70,6 +80,45 @@ void rewrite()
 
     std::vector<Meta> none;
     EXPECT(!rnd_model::apply(none, 500, 0));
+}
+
+void catch_up()
+{
+    using namespace rnd_model;
+    EXPECT(near(room_for(kTop), kGainRoom));
+    EXPECT(near(room_for(kTop + 30), kGainRoom));
+    EXPECT(near(room_for(target(3.8, 0)), kGainRoom + kPerPct * 3.8));
+    EXPECT(near(room_for(target(3.8, 0)), 192));
+    EXPECT(near(room_for(kMin), kGainRoom + kTop - kMin));
+    EXPECT(near(physical_scale(0), 1));
+    EXPECT(near(physical_scale(kGainRoom), 1));
+    EXPECT(near(physical_scale(80), 2));
+    EXPECT(near(physical_scale(192), 4.8));
+    EXPECT(near(physical_scale(room_for(kMin)), kMaxScale));
+    EXPECT(near(physical_scale(1e6), kMaxScale));
+
+    std::vector<Meta> stock = stock_adj();
+    std::vector<Meta> m = stock;
+    EXPECT(scaled_adjustments(m, stock, 4.8));
+    for (size_t i = 0; i < m.size(); ++i) {
+        EXPECT(near(m[i].mass, stock[i].mass * 4.8, 1e-3) && near(m[i].bhp, stock[i].bhp * 4.8, 1e-3));
+        EXPECT((m[i].mass < 0) == (stock[i].mass < 0) && (m[i].bhp < 0) == (stock[i].bhp < 0));
+    }
+    std::vector<Meta> once = m;
+    for (int i = 0; i < 5; ++i)
+        EXPECT(!scaled_adjustments(m, stock, 4.8));
+    for (size_t i = 0; i < m.size(); ++i)
+        EXPECT(m[i].mass == once[i].mass && m[i].bhp == once[i].bhp);
+    EXPECT(scaled_adjustments(m, stock, 1.0));
+    for (size_t i = 0; i < m.size(); ++i)
+        EXPECT(m[i].mass == stock[i].mass && m[i].bhp == stock[i].bhp);
+
+    std::vector<Meta> other = stock;
+    other.pop_back();
+    EXPECT(!scaled_adjustments(other, stock, 3));
+    std::vector<Meta> retyped = stock;
+    retyped[0].type = 99;
+    EXPECT(!scaled_adjustments(retyped, stock, 3) && retyped[0].mass == stock[0].mass);
 }
 
 void real(const season::Data &d)
@@ -117,6 +166,7 @@ void real(const season::Data &d)
 int main(int argc, char **argv)
 {
     rewrite();
+    catch_up();
     const char *path = argc > 1 ? argv[1] : "../../data/years.json";
     std::ifstream f(path);
     std::stringstream ss;

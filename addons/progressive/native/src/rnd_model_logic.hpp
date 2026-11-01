@@ -25,6 +25,18 @@
 // reset at each season start (season.cpp), so only this season's R&D moves a team off the real
 // order. Targets depend only on the year, the round and the data, so every apply and reload gives
 // the same values.
+//
+// Hybrid catch-up: a flat room would let a fully developed backmarker close only a quarter of its
+// ~150 point gap to the leader, so each team's room grows with its gap: room_for(goal) = kGainRoom +
+// (kTop - goal). A maxed tree takes a team from its base to about the leader's base plus kGainRoom;
+// the leader keeps kGainRoom. The ratings alone only move the chart and the rankings, so the same
+// factor, room / kGainRoom capped at kMaxScale (5x: past that a car would gain more than five stock
+// trees' worth of mass and bhp), multiplies the type metadata's +4 mass and +8 bhp adjustments the
+// vehicle fill reads, keeping their sign. The factor always multiplies the STOCK adjustments, which
+// the plugin remembers per model and type the first time it sees them (scaled_adjustments), so
+// repeated applies do not compound; Real life (room 0) and a career unload put the stock values
+// back. A stock full tree counts as about one percent of lap time, so the physical gain of a fully
+// developed backmarker matches its chart room on the same kPerPct-per-percent scale (up to the cap).
 
 #pragma once
 #include <algorithm>
@@ -41,12 +53,45 @@ constexpr double kPerPct = 40.0;
 constexpr double kMin = 250.0;
 constexpr double kMax = 700.0;
 constexpr double kGainRoom = 40.0;
+constexpr double kMaxScale = 5.0;
 constexpr double kEps = 0.01;
 
 struct Meta {
     uint8_t type = 0, department = 0;
     float base = 0, full = 0;
+    float mass = 0, bhp = 0;
 };
+
+inline double room_for(double goal)
+{
+    return kGainRoom + std::max(0.0, kTop - goal);
+}
+
+inline double physical_scale(double room)
+{
+    return room <= 0 ? 1.0 : std::clamp(room / kGainRoom, 1.0, kMaxScale);
+}
+
+// Rewrites m's mass and bhp adjustments to the stock values times scale. Returns whether anything
+// changed. m and stock must describe the same entries (same size and types), otherwise nothing is
+// touched.
+inline bool scaled_adjustments(std::vector<Meta> &m, const std::vector<Meta> &stock, double scale)
+{
+    if (m.size() != stock.size())
+        return false;
+    for (size_t i = 0; i < m.size(); ++i)
+        if (m[i].type != stock[i].type)
+            return false;
+    bool changed = false;
+    for (size_t i = 0; i < m.size(); ++i) {
+        float mass = static_cast<float>(stock[i].mass * scale), bhp = static_cast<float>(stock[i].bhp * scale);
+        if (mass != m[i].mass || bhp != m[i].bhp)
+            changed = true;
+        m[i].mass = mass;
+        m[i].bhp = bhp;
+    }
+    return changed;
+}
 
 inline double year_gap(const season::Data &d, int year, int slot)
 {

@@ -9,7 +9,7 @@ Career > Driver Career > **Progressive Career** opens the Progressive settings p
 | Setting | Values |
 |---|---|
 | Starting season | 2016 to 2026 |
-| R&D | **Real life**: each season's car brings that year's pace, the cars develop through the season as they did in real life, and the R&D tab is hidden. **Hybrid**: every team starts each season in its real order and develops through R&D from there. |
+| R&D | **Real life**: each season's car brings that year's pace, the cars develop through the season as they did in real life, and the R&D tab is hidden. **Hybrid**: every team starts each season in its real order and develops through R&D from there; a team behind the leader gets more room to develop (the leader's room plus its gap, and its upgrades' mass and bhp effects scaled to match, up to five times), so a backmarker can catch up over a season. |
 | Team moves | **Follow your driver's real career**: you sign for your driver's real team every season, with no contract scenes and no secret meetings. **Choose your team**: the stock offers and negotiations, with the other teams' line-ups fitted around you. |
 
 **CONFIRM** goes on to the season length and Choose Driver, which lists that season's real drivers in their suits, numbers and team badges. Team Select shows the season's cars and team logos.
