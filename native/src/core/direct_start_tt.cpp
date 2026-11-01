@@ -28,8 +28,6 @@
 
 namespace runtime {
 std::vector<era::Box> era_boxes();
-DirectStartContext direct_start_context();
-uintptr_t direct_start_set_mode();
 }
 
 bool ui_vm_set_path(const std::string &path, int type, const void *value);
@@ -402,5 +400,26 @@ Setup setup(const json::Value &request, std::string &why)
     }
     return s;
 }
+
+}
+
+namespace {
+
+Setup registered(std::string &why)
+{
+    static json::Value request;
+    static bool parsed = false, usable = false;
+    if (!parsed) {
+        parsed = true;
+        usable = json::parse(runtime::direct_start_request_text(), request);
+    }
+    if (!usable) {
+        why = "the direct start request is not JSON";
+        return Setup::failed;
+    }
+    return tt::setup(request, why);
+}
+
+const bool registered_at_load = (runtime::direct_start_register_time_trial(registered), true);
 
 }

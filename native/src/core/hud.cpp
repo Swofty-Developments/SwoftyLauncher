@@ -1899,7 +1899,7 @@ void setup()
     bool on = gate_on();
     bool cover = runtime::room_cover::setup();
     if (cover)
-        swofty::log("[cover] a room launch is requested; the present hook arms for its cover screen");
+        swofty::log("[cover] a direct start is requested; the present hook arms for its cover screen");
     if (!on && !cap.on && !cover) {
         swofty::log("[overlay] the overlay feature is experimental and off; the HUD present hook is not armed");
         return;

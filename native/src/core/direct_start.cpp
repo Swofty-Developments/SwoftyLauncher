@@ -9,8 +9,8 @@
 #include <mutex>
 
 #include "direct_start_logic.hpp"
-#include "direct_start_tt.hpp"
 #include "json.hpp"
+#include "testagent/agent_logic.hpp"
 #include "title_skip.hpp"
 
 // The direct start: the game goes from boot to its target with no title, no legal screens' waits and no
@@ -99,6 +99,7 @@ ds::Driver driver;
 json::Value request;
 safetyhook::MidHook h_link;
 std::atomic<bool> armed{false};
+std::atomic<int> session_frames{0};
 ds::Phase logged = ds::Phase::off;
 
 void note_phase()
@@ -113,22 +114,156 @@ void note_phase()
         swofty::log("[direct] %s start: %s", driver.target.name.c_str(), ds::phase_name(driver.phase));
 }
 
+constexpr size_t STATE_STATUS = 0xb8, STATE_CHILDREN = 0xc0, STATE_LINKS = 0xaf0, STATE_LINK_COUNT = 0xb30,
+                 STATE_PARENT = 0xc10;
+constexpr uint32_t STATE_APP = 0xe11edb87, STATE_SESSION = 0x1505f42a, STATE_LOAD_SESSION = 0x17e3cd0a;
+constexpr size_t LOAD_SYNC = 0xcd0;
+constexpr uint64_t LOAD_EXIT_WAIT_MS = 500;
+
+void choose_session(void *modes, const char *when);
+
+uint8_t *flow_root = nullptr;
+uint64_t load_exiting_at = 0;
+bool load_sync_done = false;
+int load_sync_tries = 0;
+
+// StateLoadSession's exit (0x1436e0e40) waits for its sync point (+0xcd0) once the load is done: the loading
+// screen's UI sets it as it hands over to the session. A direct start never opened that screen, so once the
+// state has been exiting for LOAD_EXIT_WAIT_MS the core sets both nodes itself.
+void load_exit(uint8_t *state)
+{
+    if (*reinterpret_cast<uint8_t *>(state + STATE_STATUS) != 3) {
+        load_exiting_at = 0;
+        return;
+    }
+    uint64_t now = GetTickCount64();
+    if (!load_exiting_at)
+        load_exiting_at = now;
+    if (load_sync_done || load_sync_tries >= 10 || now - load_exiting_at < LOAD_EXIT_WAIT_MS * (load_sync_tries + 1))
+        return;
+    load_sync_tries++;
+    bool done = runtime::title::complete_sync(state + LOAD_SYNC, "StateLoadSession's sync point (+0xcd0)");
+    load_sync_done = done;
+    swofty::log("[direct] StateLoadSession exiting for %llu ms: its sync point is %s",
+                (unsigned long long)(now - load_exiting_at), done ? "complete" : "still not complete");
+}
+uint32_t seen_states[64], seen_links[64];
+size_t seen_count = 0;
+uint64_t chain_at = 0;
+std::string chain_last;
+
+std::string rva(const void *p)
+{
+    return runtime::code_where(reinterpret_cast<uintptr_t>(p));
+}
+
+void describe_state(uint8_t *state, uint32_t hash, uint32_t link)
+{
+    for (size_t i = 0; i < seen_count; i++)
+        if (seen_states[i] == hash) {
+            if (seen_links[i] != link) {
+                swofty::log("[direct] state %08x returns link %08x (was %08x)", hash, link, seen_links[i]);
+                seen_links[i] = link;
+            }
+            return;
+        }
+    if (seen_count < 64) {
+        seen_states[seen_count] = hash;
+        seen_links[seen_count++] = link;
+    }
+    auto **vt = *reinterpret_cast<void ***>(state);
+    std::string links;
+    uint32_t n = *reinterpret_cast<uint32_t *>(state + STATE_LINK_COUNT);
+    for (uint32_t i = 0; i < n && i < 16; i++) {
+        char b[24];
+        snprintf(b, sizeof b, " %08x>%08x", reinterpret_cast<uint32_t *>(state + STATE_LINKS)[i],
+                 *reinterpret_cast<uint32_t *>(state + 0xf0 + size_t(i) * 0xa0 + 0x98));
+        links += b;
+    }
+    std::string kids;
+    auto *cv = *reinterpret_cast<uint8_t **>(state + STATE_CHILDREN);
+    if (cv && runtime::readable(cv, 0x18))
+        for (auto **p = *reinterpret_cast<uint8_t ***>(cv + 8), **e = *reinterpret_cast<uint8_t ***>(cv + 0x10);
+             p && p < e && kids.size() < 400; ++p)
+            if (*p && runtime::readable(*p, STATE_HASH + 4)) {
+                char b[12];
+                snprintf(b, sizeof b, " %08x", *reinterpret_cast<uint32_t *>(*p + STATE_HASH));
+                kids += b;
+            }
+    auto *parent = *reinterpret_cast<uint8_t **>(state + STATE_PARENT);
+    uint32_t ph = parent && runtime::readable(parent, STATE_HASH + 4) ? *reinterpret_cast<uint32_t *>(parent + STATE_HASH) : 0;
+    std::string type = "?";
+    auto *col = runtime::readable(vt - 1, 8) ? static_cast<uint8_t *>(vt[-1]) : nullptr;
+    if (col && runtime::readable(col, 0x18)) {
+        auto *td = reinterpret_cast<const char *>(swofty::api->module_base() + *reinterpret_cast<uint32_t *>(col + 0xc));
+        if (runtime::readable(td + 0x10, 64))
+            type.assign(td + 0x10, strnlen(td + 0x10, 63));
+    }
+    swofty::log("[direct] flow node %08x (%p, parent %08x, type %s): vt %s enter %s update %s exit %s; link now %08x; "
+                "links%s; children%s",
+                hash, state, ph, type.c_str(), rva(vt).c_str(), rva(vt[8]).c_str(), rva(vt[9]).c_str(),
+                rva(vt[10]).c_str(), link, links.c_str(), kids.c_str());
+}
+
+void log_chain()
+{
+    if (!flow_root)
+        return;
+    std::string chain;
+    uint8_t *s = flow_root;
+    for (int depth = 0; s && depth < 24 && runtime::readable(s, STATE_PARENT + 8); depth++) {
+        char b[32];
+        snprintf(b, sizeof b, "%s%08x:%u", depth ? " > " : "", *reinterpret_cast<uint32_t *>(s + STATE_HASH),
+                 unsigned(*reinterpret_cast<uint8_t *>(s + STATE_STATUS)));
+        chain += b;
+        s = *reinterpret_cast<uint8_t **>(s + STATE_CHILD);
+    }
+    if (chain == chain_last)
+        return;
+    chain_last = chain;
+    swofty::log("[direct] flow chain: %s", chain.c_str());
+}
+
 void link_mid(safetyhook::Context &c)
 {
     if (!armed.load())
         return;
     auto *state = reinterpret_cast<uint8_t *>(c.rdi);
-    if (!state || !runtime::readable(state, STATE_CHILD + 8))
+    if (!state || !runtime::readable(state, STATE_PARENT + 8))
         return;
     auto *slot = reinterpret_cast<uint32_t *>(c.rsp + LINK_SLOT);
     uint32_t hash = *reinterpret_cast<uint32_t *>(state + STATE_HASH);
     bool child = *reinterpret_cast<void **>(state + STATE_CHILD) != nullptr;
     std::lock_guard<std::mutex> g(lock);
+    if (hash == STATE_APP)
+        flow_root = state;
+    if (hash == STATE_SESSION && *reinterpret_cast<uint8_t *>(state + STATE_STATUS) == 2)
+        session_frames.fetch_add(1);
     uint32_t link = *slot, out = driver.on_update(hash, link, child);
     if (out != link) {
         *slot = out;
         if (out != ds::LINK_STAY)
             swofty::log("[direct] state %08x: link %08x replaced by %08x", hash, link, out);
+    }
+    if (driver.phase == ds::Phase::left) {
+        describe_state(state, hash, out);
+        if (flow_root)
+            for (uint8_t *n = flow_root; n && runtime::readable(n, STATE_PARENT + 8);
+                 n = *reinterpret_cast<uint8_t **>(n + STATE_CHILD))
+                if (*reinterpret_cast<uint32_t *>(n + STATE_HASH) == STATE_LOAD_SESSION) {
+                    static bool told = false;
+                    if (!told && driver.target.name == "session" && request["mode"].str() != "time_trial") {
+                        told = true;
+                        choose_session(modes_seen.load(), "load");
+                    }
+                    load_exit(n);
+                    break;
+                }
+        uint64_t now = GetTickCount64();
+        if (now - chain_at >= 1000) {
+            chain_at = now;
+            log_chain();
+        }
     }
     note_phase();
 }
@@ -235,7 +370,9 @@ ds::Setup continue_grand_prix(std::string &why)
     return ds::Setup::done;
 }
 
-runtime::DirectStartSetup room_setup = nullptr;
+runtime::DirectStartSetup room_setup = nullptr, time_trial_setup = nullptr;
+std::string request_text;
+std::atomic<bool> setup_ran{false};
 runtime::DirectStartContext context;
 
 void fill_context()
@@ -260,6 +397,85 @@ uint8_t *grand_prix_entity(void *modes)
     void *pred = reinterpret_cast<void *>(game.gp_predicate);
     uint8_t *gp = reinterpret_cast<ModeByPredicate_t *>(game.by_predicate)(modes, &pred);
     return gp && runtime::readable(gp, ENTITY_TRACKS + 8) ? gp : nullptr;
+}
+
+// The weekend the session load reads: the current mode's championship holder ([modes+0x88]) > its entity (+0x260)
+// > the current championship (+0x1058) > seasons[season_index] (+0x548, +0x560, 16-byte entries, season at +8) >
+// weekends[current_weekend] (+0x288, +0x2a0) (apply/moments.cpp reads the same chain for the session facts).
+constexpr size_t WK_SESSIONS = 0x220, WK_CURRENT = 0x238, WK_TRACK = 0x278, SESSION_STRIDE = 0xa0, SESSION_ID = 0x8;
+
+template <class T> bool rd(const void *p, size_t off, T &out)
+{
+    auto *a = static_cast<const uint8_t *>(p) + off;
+    if (!p || !runtime::readable(a, sizeof(T)))
+        return false;
+    out = *reinterpret_cast<const T *>(a);
+    return true;
+}
+
+uint8_t *current_weekend(void *modes)
+{
+    uint8_t *holder = nullptr, *entity = nullptr, *champ = nullptr, *sb = nullptr, *se = nullptr, *season = nullptr,
+            **wb = nullptr, **we = nullptr, *wk = nullptr;
+    uint32_t si = 0, wi = 0;
+    if (!rd(modes, 0x88, holder) || !rd(holder, 0x260, entity) || !rd(entity, 0x1058, champ) ||
+        !rd(champ, 0x548, sb) || !rd(champ, 0x550, se) || !rd(champ, 0x560, si) || se <= sb ||
+        si >= size_t(se - sb) / 16 || !rd(sb, size_t(si) * 16 + 8, season) || !rd(season, 0x288, wb) ||
+        !rd(season, 0x290, we) || !rd(season, 0x2a0, wi) || we <= wb || wi >= size_t(we - wb) ||
+        !rd(wb, size_t(wi) * 8, wk) || !runtime::readable(wk, 0x280))
+        return nullptr;
+    return wk;
+}
+
+std::string weekend_text(uint8_t *wk)
+{
+    auto *b = *reinterpret_cast<uint8_t **>(wk + WK_SESSIONS), *e = *reinterpret_cast<uint8_t **>(wk + WK_SESSIONS + 8);
+    uint32_t cur = *reinterpret_cast<uint32_t *>(wk + WK_CURRENT);
+    std::string ids;
+    for (auto *p = b; p && p < e && runtime::readable(p, SESSION_STRIDE); p += SESSION_STRIDE) {
+        uint32_t id = *reinterpret_cast<uint32_t *>(p + SESSION_ID);
+        ids += (ids.empty() ? "" : " ") + std::string(id < 19 ? testagent::SESSION_NAMES[id] : "?");
+    }
+    char head[96];
+    snprintf(head, sizeof head, "weekend %p, track stat id %u, current session %u of: ", wk,
+             unsigned(wk[WK_TRACK]), cur);
+    return head + ids;
+}
+
+// The requested session (the CLI's session=, a game session name or practice1..3, qualifying, race) made the
+// weekend's current one: its index when the weekend has it, else the current session's id rewritten.
+void choose_session(void *modes, const char *when)
+{
+    uint8_t *wk = current_weekend(modes);
+    if (!wk) {
+        swofty::log("[direct] Grand Prix (%s): no current weekend to read", when);
+        return;
+    }
+    swofty::log("[direct] Grand Prix (%s): %s", when, weekend_text(wk).c_str());
+    std::string name = request["session"].str();
+    if (name.empty())
+        return;
+    int want = testagent::session_id_of(name);
+    if (want < 0 || want == testagent::SESSION_TIME_TRIAL) {
+        swofty::log("[direct] Grand Prix: session '%s' is not a Grand Prix session; the weekend's own is kept", name.c_str());
+        return;
+    }
+    auto *b = *reinterpret_cast<uint8_t **>(wk + WK_SESSIONS), *e = *reinterpret_cast<uint8_t **>(wk + WK_SESSIONS + 8);
+    auto &cur = *reinterpret_cast<uint32_t *>(wk + WK_CURRENT);
+    uint32_t n = b && e > b ? uint32_t(size_t(e - b) / SESSION_STRIDE) : 0;
+    for (uint32_t i = 0; i < n; i++)
+        if (*reinterpret_cast<uint32_t *>(b + size_t(i) * SESSION_STRIDE + SESSION_ID) == uint32_t(want)) {
+            if (cur != i)
+                swofty::log("[direct] Grand Prix: current session %u -> %u (%s)", cur, i, testagent::SESSION_NAMES[want]);
+            cur = i;
+            return;
+        }
+    if (cur < n) {
+        auto &id = *reinterpret_cast<uint32_t *>(b + size_t(cur) * SESSION_STRIDE + SESSION_ID);
+        swofty::log("[direct] Grand Prix: the weekend has no %s; session %u rewritten from %s", testagent::SESSION_NAMES[want],
+                    cur, id < 19 ? testagent::SESSION_NAMES[id] : "?");
+        id = uint32_t(want);
+    }
 }
 
 ds::Setup new_grand_prix(std::string &why)
@@ -403,24 +619,32 @@ ds::Setup new_grand_prix(std::string &why)
     at_rva<void(void *)>(RVA_BUILD_SEASON)(stub);
     // 5. E's components attached again, as the track select confirm does after its rounds.
     reinterpret_cast<void (*)(void *)>(evt[0xe8 / 8])(e);
-    // 6. The entrants from the list, when the entrants manager holds none yet.
+    // 6. The entrants from the list. The fill clears the entrants a saved Grand Prix left first.
     auto **begin = reinterpret_cast<uint8_t **>(e + ENTITY_ENTRANTS);
-    if (begin[0] == begin[1]) {
+    size_t before = size_t(begin[1] - begin[0]) / ENTRANT_SIZE;
+    {
         alignas(16) static uint8_t blk[0x190];
         std::memset(blk, 0, sizeof blk);
         *reinterpret_cast<uint64_t *>(blk + 0x180) = 1;
         at_rva<void(void *, void *, void *, int)>(RVA_FILL_ENTRANTS)(es, e, blk, 0);
     }
     size_t entrants = size_t(begin[1] - begin[0]) / ENTRANT_SIZE;
+    swofty::log("[direct] Grand Prix: entrants %zu before the fill, %zu after", before, entrants);
     swofty::log("[direct] Grand Prix: new weekend: setup mode %s, list %s (%p), track %s (%p), rounds %p, %zu entrant(s)",
                 setup_name.c_str(), list_name.c_str(), list, track_name.c_str(), track, rounds, entrants);
+    choose_session(modes, "built");
     return ds::Setup::done;
 }
 
 ds::Setup set_up_target(std::string &why)
 {
-    if (driver.target.name == "session" && request["mode"].str() == "time_trial")
-        return ds::tt::setup(request, why);
+    if (driver.target.name == "session" && request["mode"].str() == "time_trial") {
+        if (!time_trial_setup) {
+            why = "no Time Trial setup is registered (direct_start_tt.cpp)";
+            return ds::Setup::failed;
+        }
+        return time_trial_setup(why);
+    }
     if (driver.target.name == "session")
         return request["box"].str().empty() ? continue_grand_prix(why) : new_grand_prix(why);
     if (driver.target.name == "room") {
@@ -439,6 +663,9 @@ namespace runtime {
 
 void direct_start_setup()
 {
+    struct Ran {
+        ~Ran() { setup_ran = true; }
+    } ran;
     char env[1024] = {};
     DWORD n = GetEnvironmentVariableA("SWOFTY_DIRECT_START", env, sizeof env);
     std::string target, text;
@@ -451,6 +678,7 @@ void direct_start_setup()
     if (target.empty()) {
         if (text.empty())
             return;
+        request_text = text;
         if (!json::parse(text, request)) {
             swofty::log("[direct] the direct start request is unusable; the game starts as usual");
             return;
@@ -530,6 +758,28 @@ void direct_start_register_room(DirectStartSetup setup)
     room_setup = setup;
 }
 
+void direct_start_register_time_trial(DirectStartSetup setup)
+{
+    time_trial_setup = setup;
+}
+
+std::string direct_start_request_text()
+{
+    return request_text;
+}
+
+int direct_start_cover_signal()
+{
+    if (!setup_ran.load())
+        return 0;
+    if (!armed.load())
+        return -1;
+    std::lock_guard<std::mutex> g(lock);
+    if (driver.phase == ds::Phase::failed)
+        return -1;
+    return session_frames.load() >= 30 ? 1 : 0;
+}
+
 void direct_start_profile_read()
 {
     static std::atomic<bool> once{false};
@@ -564,7 +814,9 @@ void direct_start_tick()
         ds::Setup r = set_up_target(why);
         driver.setup_result(r, why);
     }
-    if (!driver.engage_title() && runtime::title::wanted() && !runtime::test_run())
+    // A session keeps the virtual pad plugged in, idle: the game bound the player to it at the title, and letting
+    // go of the claim would stop the session on CONTROLLER DISCONNECTED.
+    if (!driver.engage_title() && runtime::title::wanted() && !runtime::test_run() && driver.target.name != "session")
         runtime::title::want(false);
     note_phase();
 }
