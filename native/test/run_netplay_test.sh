@@ -67,7 +67,9 @@ for mode in off armed roomlaunch invalid host named traced; do
             none "no invalid-value line for a plain value" '\[netplay\] SWOFTY_NETPLAY='
         fi
         if [[ $mode == roomlaunch ]]; then
-            check "a room launch passes the title and the notice with the virtual pad" "\[netplay\] room launch: the title and the notice are passed with the virtual pad's a"
+            check "a room launch passes the notice with the shared virtual pad" "\[netplay\] room launch: the notice is passed with the shared virtual pad's a"
+            none "a room launch has a virtual pad" '\[netplay\] room launch: the notice is not passed'
+
         else
             none "a plain armed game keeps its own title" '\[netplay\] room launch'
         fi

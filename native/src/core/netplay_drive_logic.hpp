@@ -572,13 +572,13 @@ struct SkipFacts {
     bool frontend = false, home = false, transition = false, lobby = false;
 };
 
-// Presses the virtual pad's a until the main menu is up: the title takes presses from FIRST_MS after the
-// core started, and the core's notice, which sits over the front end's frontend_transition screen,
-// from NOTICE_MS after that screen opened. Each press is held HOLD_MS and released for the rest of
+// Presses the virtual pad's a for the core's notice, which sits over the front end's frontend_transition
+// screen, from NOTICE_MS after that screen opened, until the main menu is up (the title is the direct
+// start's). Each press is held HOLD_MS and released for the rest of
 // CYCLE_MS, long enough for a frame to see it. It ends at the home screen, the LAN lobby, or GIVE_UP_MS.
 class TitleSkip {
 public:
-    static constexpr uint64_t FIRST_MS = 3000, NOTICE_MS = 4000, HOLD_MS = 250, CYCLE_MS = 2000,
+    static constexpr uint64_t NOTICE_MS = 4000, HOLD_MS = 250, CYCLE_MS = 2000,
                               GIVE_UP_MS = 15 * 60 * 1000;
 
     void start(uint64_t now)
@@ -603,9 +603,7 @@ public:
         else if (!transition_)
             transition_ = now;
         uint64_t from = 0;
-        if (!f.frontend)
-            from = started_ + FIRST_MS;
-        else if (transition_)
+        if (f.frontend && transition_)
             from = transition_ + NOTICE_MS;
         if (!from || now < from) {
             origin_ = 0;

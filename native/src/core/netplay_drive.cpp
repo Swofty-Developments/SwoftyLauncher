@@ -14,7 +14,7 @@
 
 #include "netplay_drive_logic.hpp"
 #include "netplay_room.hpp"
-#include "netplay_title_pad.hpp"
+#include "virtual_pad.hpp"
 #include "netplay_session.hpp"
 
 // Launcher commands for LAN netplay, over the same kind of file mailbox the Career Editor uses
@@ -251,18 +251,24 @@ constexpr uint64_t HEARTBEAT_MS = 5000;
 
 std::atomic<bool> armed, frontend, lobby, home_screen;
 
-// The title and the notice without input, for a game the launcher started for a room. The pad itself is
-// netplay_title_pad.cpp (an XInput hook), kept apart so the shared virtual pad can take its place.
+// The core's notice over the front end, for a game the launcher started for a room. The title is the direct
+// start's (title_skip.cpp); the notice is passed with the shared virtual pad (virtual_pad.cpp), which this
+// takes a claim on, so the game sees one controller and no second one is installed.
 std::atomic<bool> skip_armed{false}, transition_screen{false};
 drive::TitleSkip title_skip;
+bool skip_held = false;
 
 void skip_setup()
 {
-    if (!runtime::title_pad::install())
+    runtime::pad::setup();
+    if (!runtime::pad::why().empty()) {
+        swofty::log("[netplay] room launch: the notice is not passed, no virtual pad (%s)", runtime::pad::why().c_str());
         return;
+    }
+    runtime::pad::claim(true);
     title_skip.start(GetTickCount64());
     skip_armed = true;
-    swofty::log("[netplay] room launch: the title and the notice are passed with the virtual pad's a");
+    swofty::log("[netplay] room launch: the notice is passed with the shared virtual pad's a");
 }
 
 void skip_tick()
@@ -275,14 +281,23 @@ void skip_tick()
     f.transition = transition_screen.load();
     f.lobby = lobby.load();
     int before = title_skip.presses();
-    runtime::title_pad::press(title_skip.tick(f, GetTickCount64()));
+    bool press = title_skip.tick(f, GetTickCount64());
+    if (press != skip_held) {
+        skip_held = press;
+        if (press)
+            runtime::pad::set(runtime::pad::A);
+        else
+            runtime::pad::release();
+    }
     if (title_skip.presses() != before)
-        swofty::log("[netplay] room launch: press %d of the virtual pad's a (%s)", title_skip.presses(),
-                    f.frontend ? "the notice" : "the title");
+        swofty::log("[netplay] room launch: press %d of the shared virtual pad's a for the notice", title_skip.presses());
     if (title_skip.done()) {
         skip_armed = false;
-        runtime::title_pad::disarm();
-        swofty::log("[netplay] room launch: the main menu is up after %d press(es)", title_skip.presses());
+        if (skip_held)
+            runtime::pad::release();
+        skip_held = false;
+        runtime::pad::claim(false);
+        swofty::log("[netplay] room launch: the main menu is up after %d notice press(es)", title_skip.presses());
     }
 }
 

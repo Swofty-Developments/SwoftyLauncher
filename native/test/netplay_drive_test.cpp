@@ -264,11 +264,8 @@ int main()
         drive::TitleSkip skip;
         drive::SkipFacts f;
         skip.start(1000);
-        expect(!skip.tick(f, 1000 + drive::TitleSkip::FIRST_MS - 1), "the title is left alone at first");
-        expect(skip.tick(f, 1000 + drive::TitleSkip::FIRST_MS), "the title gets a press after FIRST_MS");
-        expect(!skip.tick(f, 1000 + drive::TitleSkip::FIRST_MS + drive::TitleSkip::HOLD_MS), "a press is released");
-        expect(skip.tick(f, 1000 + drive::TitleSkip::FIRST_MS + drive::TitleSkip::CYCLE_MS), "and pressed again");
-        expect(skip.presses() == 2, "two presses are counted");
+        expect(!skip.tick(f, 1000 + 60000), "the title is the direct start's, so it gets no press here");
+        expect(skip.presses() == 0, "no title press is counted");
         uint64_t t = 20000;
         f.frontend = true;
         expect(!skip.tick(f, t), "the front end without the notice takes no press");
@@ -276,6 +273,9 @@ int main()
         expect(!skip.tick(f, t + 1), "the transition screen starts the notice clock");
         expect(!skip.tick(f, t + drive::TitleSkip::NOTICE_MS), "the notice gets no press before NOTICE_MS");
         expect(skip.tick(f, t + 1 + drive::TitleSkip::NOTICE_MS), "the notice gets a press after NOTICE_MS");
+        expect(!skip.tick(f, t + 1 + drive::TitleSkip::NOTICE_MS + drive::TitleSkip::HOLD_MS), "a press is released");
+        expect(skip.tick(f, t + 1 + drive::TitleSkip::NOTICE_MS + drive::TitleSkip::CYCLE_MS) && skip.presses() == 2,
+               "and pressed again");
         f.home = true;
         expect(!skip.tick(f, t + 9000) && skip.done(), "the home screen ends the skip");
         f.home = false;
