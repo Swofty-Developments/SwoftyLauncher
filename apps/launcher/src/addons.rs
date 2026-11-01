@@ -3109,14 +3109,16 @@ impl Shell {
             .filter(|a| a.track)
             .map(|a| a.manifest.id.as_str())
             .collect();
-        let mut found = order::problems(profile, &installed);
+        let store = &self.store;
+        let pinned = |id: &str| store.is_builtin(id) || order::is_pinned(id);
+        let mut found = order::problems(profile, &installed, &pinned);
         if let Some(r) = &self.addons.report {
-            found.extend(order::from_report(profile, r));
+            found.extend(order::from_report(profile, r, &pinned));
         }
         found.extend(order::careers(profile, &installed, &self.addons.careers));
         found.extend(order::clashes(profile, &installed, &|id| tracks.contains(id)));
         let mut trial = profile.clone();
-        self.addons.cycle = order::fix(&mut trial, &installed, &found)
+        self.addons.cycle = order::fix(&mut trial, &installed, &found, &pinned)
             .err()
             .map(|e| e.to_string());
         self.addons.problems = found;
@@ -3140,8 +3142,10 @@ impl Shell {
     fn order_for_me(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let installed = self.installed_manifests();
         let learned = self.addons.problems.clone();
+        let store = self.store.clone();
         self.update_profile(window, cx, move |profile| {
-            order::fix(profile, &installed, &learned).map(|_| ())
+            let pinned = |id: &str| store.is_builtin(id) || order::is_pinned(id);
+            order::fix(profile, &installed, &learned, &pinned).map(|_| ())
         });
     }
 
