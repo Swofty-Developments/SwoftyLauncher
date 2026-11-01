@@ -61,6 +61,8 @@ t "Live car operations host test" native/test/run_car_live_test.sh
 t "Hook points review test" native/test/run_w5_review_test.sh
 t "Shader look unit test" native/test/run_grade_test.sh
 t "ERS new-lap site unit test" native/test/run_ers_newlap_test.sh
+t "Round track record guard unit test" native/test/run_track_record_test.sh
+t "AI corner start guard unit test" native/test/run_ai_corner_test.sh
 t "Tyre slot guard unit test" native/test/run_tyre_slots_test.sh
 t "Pit slot guard unit test" native/test/run_pit_slots_test.sh
 t "Pit box guard unit test" native/test/run_pit_box_test.sh
@@ -68,12 +70,18 @@ t "Garage slot guard unit test" native/test/run_garage_slots_test.sh
 t "Direct start unit test" native/test/run_direct_start_test.sh
 t "Thrustmaster LCD guard unit test" native/test/run_thrustmaster_lcd_test.sh
 t "Garage setup guard unit test" native/test/run_garage_setup_test.sh
+t "Core site names exported (host-only)" native/test/run_core_sites_exported_test.sh
 t "Garage crew guard unit test" native/test/run_garage_crew_test.sh
+t "Garage crew guard sites export test" native/test/run_garage_crew_sites_test.sh
+t "Leaderboard guard unit test" native/test/run_leaderboard_guard_test.sh
+t "Front-end tile list guard unit test" native/test/run_fe_tile_guard_test.sh
 t "Session enter guard unit test" native/test/run_session_enter_test.sh
 t "Audio job queue fix unit test" native/test/run_audio_queue_test.sh
+t "AUDIO_BUNDLE heap size unit test" native/test/run_audio_heap_test.sh
 t "Boot watchdog grace unit test" native/test/run_watchdog_grace_test.sh
 t "Pattern scan and scan cache unit test" native/test/run_scan_test.sh
 t "Telemetry feed unit test" "$(zig_test "-I packages/sdk/include native/test/telemetry_feed_test.cpp" telemetry_feed_test)"
+t "Save diagnostics log formatting unit test" "$(zig_test "-I packages/sdk/include native/test/save_diag_test.cpp" save_diag_test)"
 t "Career Mode Editor race number unit test" "$(zig_test "-I $cme/src $cme/test/race_numbers_test.cpp $cme/src/race_numbers.cpp" race_numbers_test)"
 t "Career Mode Editor weather plan unit test" "$(zig_test "-I $cme/src $cme/test/weather_plan_test.cpp $cme/src/weather_plan.cpp" weather_plan_test)"
 t "Career Mode Editor line-up unit test" "$(zig_test "-I $cme/src $cme/test/lineup_test.cpp $cme/src/lineup.cpp" lineup_test)"

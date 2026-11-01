@@ -160641,6 +160641,463 @@
    "used_by": [
     "native/src/core/netplay_room.cpp"
    ]
+  },
+  {
+   "id": "core.memory_map_heap_size",
+   "section": ".xtls",
+   "pattern": "48 8B 8C 24 F0 00 00 00 4C 89 4C 24 58 E8",
+   "match": "0x14396f138",
+   "anchor": "0x8",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14396f140",
+   "kind": "mid",
+   "expect": "4C 89 4C 24 58",
+   "names": [
+    "site_Ne_MemoryMapHeapSize"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "audioheap",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/audio_heap.cpp"
+   ]
+  },
+  {
+   "id": "career.weekends_track_record_load",
+   "section": ".xtls",
+   "pattern": "48 8B 44 08 08 48 8B 80 C0 02 00 00 48 8D 48 08 48 85 C0",
+   "match": "0x14181b854",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14181b859",
+   "kind": "mid",
+   "expect": "48 8B 80 C0 02 00 00",
+   "names": [
+    "site_Career_WeekendsTrackRecordLoad"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "rnd-track-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/standings_guard.cpp"
+   ]
+  },
+  {
+   "id": "game.pit_stops_crew_template_read",
+   "section": ".xtls",
+   "pattern": "48 8B 5C 24 70 4C 8B 2B 48 8B 73 08",
+   "match": "0x1403c6ee1",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1403c6ee1",
+   "kind": "mid",
+   "expect": "48 8B 5C 24 70",
+   "names": [
+    "site_Game_PitStops_CrewTemplateRead"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "crewpit",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/garage_crew.cpp"
+   ]
+  },
+  {
+   "id": "game.pit_stops_crew_template_skip",
+   "section": ".xtls",
+   "pattern": "4D 85 E4 0F 84 ?? ?? ?? ?? 48 8B 8C 24 A0 00 00 00",
+   "match": "0x1403c787b",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1403c787b",
+   "kind": "mid",
+   "expect": "4D 85 E4",
+   "names": [
+    "site_Game_PitStops_CrewTemplateSkip"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-02",
+     "by": "re-career-teams",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/garage_crew.cpp"
+   ]
+  },
+  {
+   "id": "game.garage_crew_scene_read",
+   "section": ".xtls",
+   "pattern": "0F B6 B7 E0 00 00 00 48 85 FF 0F 84",
+   "match": "0x14038ba20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14038ba20",
+   "kind": "mid",
+   "expect": "0F B6 B7 E0 00 00 00",
+   "names": [
+    "site_Game_GarageCrew_SceneRead"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "crewpit",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/garage_crew.cpp"
+   ]
+  },
+  {
+   "id": "game.garage_crew_scene_test",
+   "section": ".xtls",
+   "pattern": "0F B6 B7 E0 00 00 00 48 85 FF 0F 84",
+   "match": "0x14038ba20",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14038ba27",
+   "kind": "mid",
+   "expect": "48 85 FF 0F 84 CF 00 00 00",
+   "names": [
+    "site_Game_GarageCrew_SceneTest"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "crewpit",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/garage_crew.cpp"
+   ]
+  },
+  {
+   "id": "ai.update_cars_corner_line_load",
+   "section": ".xtls",
+   "pattern": "48 8B 84 F8 B8 00 00 00 48 85 C0 0F 84",
+   "match": "0x14064069e",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14064069e",
+   "kind": "mid",
+   "expect": "48 8B 84 F8 B8 00 00 00",
+   "names": [
+    "site_Ai_UpdateCars_CornerLineLoad"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "ai-corner",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/ai_corner_guard.cpp"
+   ]
+  },
+  {
+   "id": "ai.update_cars_no_corner_line",
+   "section": ".xtls",
+   "pattern": "80 BB 85 01 00 00 00 74 4C C5 FA 11 BB 20 01 00 00",
+   "match": "0x1406409be",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1406409be",
+   "kind": "mid",
+   "expect": "80 BB 85 01 00 00 00",
+   "names": [
+    "site_Ai_UpdateCars_NoCornerLine"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "ai-corner",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/ai_corner_guard.cpp"
+   ]
+  },
+  {
+   "id": "session.time_trial_leaderboard_tab_child",
+   "section": ".xtls",
+   "pattern": "48 8B 01 B2 01 FF 50 30 48 89 F1 E8 ?? ?? ?? ?? 90 48 83 C4 40 5E C3 56",
+   "match": "0x142fcbb09",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142fcbb09",
+   "kind": "mid",
+   "expect": "48 8B 01 B2 01",
+   "names": [
+    "site_Sess_TimeTrialLeaderboard_TabChild"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "ttlbnull",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/leaderboard_guard.cpp"
+   ]
+  },
+  {
+   "id": "session.time_trial_leaderboard_tab_done",
+   "section": ".xtls",
+   "pattern": "90 48 83 C4 40 5E C3 56 48 83 EC 40",
+   "match": "0x142fcbb19",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142fcbb19",
+   "kind": "mid",
+   "expect": "90 48 83 C4 40",
+   "names": [
+    "site_Sess_TimeTrialLeaderboard_TabDone"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "ttlbnull",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/leaderboard_guard.cpp"
+   ]
+  },
+  {
+   "id": "fe_tiles.get_list_first_entrant_id",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 C6 42 04 00",
+   "match": "0x141738eb0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141738eb0",
+   "kind": "func_start",
+   "names": [
+    "FeTile_Get_ListFirstEntrantId"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "fe-tile-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/fe_tile_guard.cpp"
+   ]
+  },
+  {
+   "id": "fe_tiles.check_entrant_list_usable",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 81 EC 30 04 00 00 49 89 D0",
+   "match": "0x142428790",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142428790",
+   "kind": "func_start",
+   "names": [
+    "FeTile_Check_EntrantListUsable"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "fe-tile-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/fe_tile_guard.cpp"
+   ]
+  },
+  {
+   "id": "fe_tiles.list_scan_start",
+   "section": ".xtls",
+   "pattern": "4C 8B 73 08 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 49 8B 46 28",
+   "match": "0x141738f1f",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141738f1f",
+   "kind": "mid",
+   "expect": "4C 8B 73 08 66 66 66 66 2E 0F 1F 84 00 00 00 00 00",
+   "names": [
+    "site_FeTile_ListScanStart"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "fe-tile-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/fe_tile_guard.cpp"
+   ]
+  },
+  {
+   "id": "fe_tiles.list_scan_none",
+   "section": ".xtls",
+   "pattern": "89 06 C6 46 04 01 48 89 F0 48 83 C4 28",
+   "match": "0x141738f5a",
+   "anchor": "0x6",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141738f60",
+   "kind": "mid",
+   "expect": "48 89 F0 48 83 C4 28",
+   "names": [
+    "site_FeTile_ListScanNone"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "fe-tile-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/fe_tile_guard.cpp"
+   ]
+  },
+  {
+   "id": "fe_tiles.list_row_entry",
+   "section": ".xtls",
+   "pattern": "49 89 D0 48 89 CE 48 8B 99 28 02 00 00",
+   "match": "0x14242879e",
+   "anchor": "0x3",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1424287a1",
+   "kind": "mid",
+   "expect": "48 89 CE 48 8B 99 28 02 00 00",
+   "names": [
+    "site_FeTile_ListRowEntry"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "fe-tile-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/fe_tile_guard.cpp"
+   ]
+  },
+  {
+   "id": "fe_tiles.list_row_field_load",
+   "section": ".xtls",
+   "pattern": "48 8B 00 48 85 C0 74 05 44 0F B6 70 08 48 8B 83 60 05 00 00",
+   "match": "0x142428832",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142428832",
+   "kind": "mid",
+   "expect": "48 8B 00 48 85 C0",
+   "names": [
+    "site_FeTile_ListRowFieldLoad"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "fe-tile-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/fe_tile_guard.cpp"
+   ]
+  },
+  {
+   "id": "fe_tiles.list_row_none",
+   "section": ".xtls",
+   "pattern": "31 FF 89 F8 48 81 C4 30 04 00 00 5B",
+   "match": "0x1424288d7",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1424288d7",
+   "kind": "mid",
+   "expect": "31 FF 89 F8 48 81 C4 30 04 00 00",
+   "names": [
+    "site_FeTile_ListRowNone"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "fe-tile-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/fe_tile_guard.cpp"
+   ]
   }
  ]
 }

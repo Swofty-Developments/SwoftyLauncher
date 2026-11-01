@@ -68,6 +68,10 @@ std::vector<CoreMixins> car_levers_mixins();
 void car_levers_commit();
 std::vector<CoreMixins> standings_guard_mixins();
 void standings_guard_commit();
+std::vector<CoreMixins> fe_tile_guard_mixins();
+void fe_tile_guard_commit();
+std::vector<CoreMixins> ai_corner_guard_mixins();
+void ai_corner_guard_commit();
 std::vector<CoreMixins> watchdog_grace_mixins();
 void watchdog_grace_commit();
 std::vector<CoreMixins> tyre_slots_mixins();
@@ -86,6 +90,8 @@ std::vector<CoreMixins> track_acclim_mixins();
 void track_acclim_commit();
 std::vector<CoreMixins> audio_queue_mixins();
 void audio_queue_commit();
+std::vector<CoreMixins> audio_heap_mixins();
+void audio_heap_commit();
 std::vector<CoreMixins> track_select_mixins();
 void track_select_commit();
 std::vector<CoreMixins> team_slots_mixins();
@@ -1785,8 +1791,8 @@ size_t offer_core_sets()
     for (auto *sets : {runtime::save_sandbox_mixins, runtime::career_content_mixins, runtime::characters_mixins, runtime::wizard_mixins,
                        runtime::tile_route_mixins, runtime::era_mixins, runtime::tt_guard_mixins, runtime::career_alias_mixins, runtime::car_category_mixins,
                        runtime::save_splice_mixins, runtime::ers_newlap_mixins, runtime::ers_mode_mixins, runtime::car_levers_mixins,
-                       runtime::garage_crew_mixins, runtime::pit_slots_mixins, runtime::pit_box_mixins, runtime::garage_slots_mixins, runtime::chassis_registry_mixins, runtime::standings_guard_mixins, runtime::tyre_slots_mixins, runtime::track_acclim_mixins,
-                       runtime::audio_queue_mixins, runtime::team_slots_mixins, runtime::track_select_mixins, runtime::netplay_icons_mixins,
+                       runtime::garage_crew_mixins, runtime::pit_slots_mixins, runtime::pit_box_mixins, runtime::garage_slots_mixins, runtime::chassis_registry_mixins, runtime::standings_guard_mixins, runtime::ai_corner_guard_mixins, runtime::fe_tile_guard_mixins, runtime::tyre_slots_mixins, runtime::track_acclim_mixins,
+                       runtime::audio_queue_mixins, runtime::audio_heap_mixins, runtime::team_slots_mixins, runtime::track_select_mixins, runtime::netplay_icons_mixins,
                        runtime::leaderboard_guard_mixins, runtime::thrustmaster_lcd_mixins, runtime::watchdog_grace_mixins, runtime::garage_setup_mixins, runtime::session_enter_mixins})
         add_core_sets(sets());
     return addons.size() - before;
@@ -1808,6 +1814,8 @@ void settle_core_sets()
     runtime::ers_mode_commit();
     runtime::car_levers_commit();
     runtime::standings_guard_commit();
+    runtime::fe_tile_guard_commit();
+    runtime::ai_corner_guard_commit();
     runtime::watchdog_grace_commit();
     runtime::tyre_slots_commit();
     runtime::garage_crew_commit();
@@ -1817,6 +1825,7 @@ void settle_core_sets()
     runtime::chassis_registry_commit();
     runtime::track_acclim_commit();
     runtime::audio_queue_commit();
+    runtime::audio_heap_commit();
     runtime::team_slots_commit();
     runtime::track_select_commit();
     runtime::netplay_icons_commit();

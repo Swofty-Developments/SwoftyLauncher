@@ -1,6 +1,7 @@
 #pragma once
 
 #include "direct_start_logic.hpp"
+#include "session_lifecycle_logic.hpp"
 #include <windows.h>
 
 #include <algorithm>
@@ -96,6 +97,8 @@ void overlay_setup();
 void events_setup();
 void events_drop_module(void *module);
 size_t events_fire(const char *event, int64_t a, int64_t b, const void *data);
+void session_emit(const session_life::Emit &e);
+void session_flow(const char *known, int to);
 
 struct CoreMixins {
     const char *name;
@@ -172,6 +175,9 @@ void save_sandbox_commit();
 bool save_sandbox_test_mode();
 bool save_sandbox_launcher_mode();
 bool save_sandbox_armed();
+std::string save_sandbox_source();
+std::string save_sandbox_file();
+std::string career_saves_id_for_slot(const std::string &key);
 // FileWrite calls the sandbox has served: a save that reached the save device.
 uint32_t save_sandbox_writes();
 // The test run `swofty test` started the game for (SWOFTY_TEST_RUN, SWOFTY_TEST_TOKEN and run.json, read
@@ -206,6 +212,10 @@ std::vector<CoreMixins> car_levers_mixins();
 void car_levers_commit();
 std::vector<CoreMixins> standings_guard_mixins();
 void standings_guard_commit();
+std::vector<CoreMixins> fe_tile_guard_mixins();
+void fe_tile_guard_commit();
+std::vector<CoreMixins> ai_corner_guard_mixins();
+void ai_corner_guard_commit();
 std::vector<CoreMixins> watchdog_grace_mixins();
 void watchdog_grace_commit();
 void watchdog_flow(uint32_t hash, uint32_t to, const char *name);
@@ -225,6 +235,8 @@ std::vector<CoreMixins> track_acclim_mixins();
 void track_acclim_commit();
 std::vector<CoreMixins> audio_queue_mixins();
 void audio_queue_commit();
+std::vector<CoreMixins> audio_heap_mixins();
+void audio_heap_commit();
 std::vector<CoreMixins> track_select_mixins();
 void track_select_commit();
 std::vector<CoreMixins> team_slots_mixins();

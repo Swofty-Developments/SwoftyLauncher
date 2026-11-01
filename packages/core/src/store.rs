@@ -802,7 +802,8 @@ impl Store {
         let requests = crate::paths::game_folder_view(&self.requests_path(profile));
         let p = self.profile(profile)?;
         let mut s = SessionSettings::build(&p, &self.addons()?, Some(requests))?;
-        s.launcher_saves = p.launcher_saves.then(|| settings::SessionSaves {
+        let redirect = p.launcher_saves && !crate::launcher_saves::steam_save_pending(&self.root, &p.name);
+        s.launcher_saves = redirect.then(|| settings::SessionSaves {
             profile: p.name.clone(),
             remote: crate::paths::game_folder_view(&crate::launcher_saves::remote_dir(&self.root, &p.name)),
         });
@@ -1510,6 +1511,17 @@ mod tests {
             ]
         };
         write_addon(&Store::new(&root).addons_dir().join("a.user"), "a.user");
+        crate::write_json(
+            &crate::launcher_saves::marker_path(&root),
+            &crate::launcher_saves::Marker {
+                at: 0,
+                launcher: String::new(),
+                profiles: Vec::new(),
+                note: String::new(),
+                seen: true,
+            },
+        )
+        .unwrap();
         let plain = Store::new(&root).with_builtins(vec![tuned()]);
         let mut expected = SessionSettings::build(
             &plain.profile(DEFAULT_PROFILE).unwrap(),
@@ -1551,6 +1563,30 @@ mod tests {
         let mut without_pages = s.clone();
         without_pages.ui = None;
         assert_eq!(serde_json::to_vec(&without_pages).unwrap(), plain_json);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_profile_keeps_playing_on_the_steam_save_until_an_import_finds_one() {
+        let root = tmp("steam-pending");
+        let store = Store::new(&root);
+        assert!(
+            store
+                .session_settings(DEFAULT_PROFILE)
+                .unwrap()
+                .launcher_saves
+                .is_none()
+        );
+        let remote = crate::launcher_saves::remote_dir(&root, DEFAULT_PROFILE);
+        std::fs::create_dir_all(&remote).unwrap();
+        std::fs::write(remote.join("savegame@profile#X"), b"x").unwrap();
+        assert!(
+            store
+                .session_settings(DEFAULT_PROFILE)
+                .unwrap()
+                .launcher_saves
+                .is_some()
+        );
         std::fs::remove_dir_all(&root).ok();
     }
 

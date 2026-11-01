@@ -6,6 +6,7 @@
 
 #include <cstdio>
 #include <string>
+#include <vector>
 
 namespace dr = runtime::dred;
 
@@ -78,6 +79,56 @@ int main()
     CHECK(dr::allocation_line("", 0x19, 0x1234).find("(unnamed)") != std::string::npos);
     CHECK(dr::allocation_line("", 0x19, 0x1234).find("at 0x1234") != std::string::npos);
     CHECK(dr::page_fault_line(0xdeadbeef000ull).find("0xdeadbeef000") != std::string::npos);
+
+    CHECK(!dr::debug_requested(nullptr));
+    CHECK(!dr::debug_requested(""));
+    CHECK(dr::debug_requested("1"));
+    CHECK(!dr::debug_requested("0"));
+    CHECK(!dr::debug_requested("11"));
+    CHECK(dr::is_error_severity(0) && dr::is_error_severity(1));
+    CHECK(!dr::is_error_severity(2) && !dr::is_error_severity(3) && !dr::is_error_severity(4));
+    dr::DebugBudget budget;
+    CHECK(!budget.take(2));
+    CHECK(budget.taken == 0);
+    for (int i = 0; i < dr::kMaxDebugMessages; i++)
+        CHECK(budget.take(i % 2));
+    CHECK(!budget.take(1));
+    CHECK(!budget.take(0));
+    CHECK(budget.taken == dr::kMaxDebugMessages);
+    std::string line = dr::debug_line(3, 1, 9, 1234, "bad call\r\n");
+    CHECK(line == "[d3d-debug] #3 ERROR EXECUTION id=1234: bad call");
+    CHECK(dr::debug_line(1, 0, 99, 7, nullptr).find("CORRUPTION UNKNOWN_CATEGORY id=7") != std::string::npos);
+    CHECK(dr::debug_missing_note(dr::kSdkLayersMissing).find("0x887a002b") != std::string::npos);
+    CHECK(dr::debug_missing_note(0).find("Graphics Tools") != std::string::npos);
+    CHECK(dr::report_shows_removal("rbp 0x00000000887A0001 rdi 0x887a0005"));
+    CHECK(dr::report_shows_removal("rdi=0x887a0020"));
+    CHECK(!dr::report_shows_removal("rdi=0x887a0002 rax=0x1"));
+    CHECK(!dr::report_shows_removal("Ne_FatalAbort only"));
+    CHECK(dr::report_shows_removal("#1 Ne_FatalAbort\n#2 Render_Check_GfxResult+0x40"));
+    CHECK(!dr::report_shows_removal("#1 Render_Check_GfxResult+0x40"));
+    CHECK(dr::log_shows_removal("[game] error: The GPU was removed (reason)"));
+    CHECK(!dr::log_shows_removal("fine"));
+
+    std::vector<std::string> names{"crash-20261101-101010.txt", "crash-20261101-101010-2.txt", "crash-20261031-235959.txt",
+                                   "crash-20261101-101010.dmp", "loader.log"};
+    CHECK(dr::newest_report(names) == "crash-20261101-101010-2.txt");
+    CHECK(dr::newest_report({}).empty());
+    CHECK(dr::newest_report({"loader.log"}).empty());
+
+    CHECK(dr::should_arm_from("", "crash-a.txt", "rdi=0x887a0005"));
+    CHECK(!dr::should_arm_from("crash-a.txt", "crash-a.txt", "rdi=0x887a0005"));
+    CHECK(!dr::should_arm_from("", "", "rdi=0x887a0005"));
+    CHECK(!dr::should_arm_from("crash-a.txt", "crash-b.txt", "access violation"));
+    CHECK(dr::should_arm_from("crash-a.txt", "crash-b.txt", "the GPU was removed"));
+
+    CHECK(dr::state_dir(L"C:\\Users\\a\\AppData\\Local") == L"C:\\Users\\a\\AppData\\Local\\Swofty\\state\\");
+    CHECK(dr::state_dir(L"").empty());
+    auto dirs = dr::marker_dirs(L"G:\\game\\swofty\\", L"C:\\L");
+    CHECK(dirs.size() == 2 && dirs[0] == L"G:\\game\\swofty\\" && dirs[1] == L"C:\\L\\Swofty\\state\\");
+    CHECK(dr::marker_dirs(L"G:\\x\\", L"").size() == 1);
+    CHECK(dr::write_first(dirs, [](const std::wstring &) { return true; }) == 0);
+    CHECK(dr::write_first(dirs, [&](const std::wstring &d) { return d == dirs[1]; }) == 1);
+    CHECK(dr::write_first(dirs, [](const std::wstring &) { return false; }) == -1);
 
     if (!g_fail)
         std::printf("dred test passed\n");

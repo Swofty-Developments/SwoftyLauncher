@@ -96,4 +96,13 @@ Repair repair(const std::vector<RoundState> &rounds, uint32_t current, int race_
     return r;
 }
 
+std::string reorder_refusal(bool driver_career)
+{
+    if (!driver_career)
+        return {};
+    return "Moving rounds isn't available in a Driver Career (Progressive included): the game lays out each "
+           "weekend's sessions from its own calendar, so a moved round can end up with its sessions out of "
+           "order.";
+}
+
 } // namespace ce::cal
