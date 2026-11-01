@@ -4150,6 +4150,14 @@
   },
   {
    "op": "add-row",
+   "table": "leaderboards",
+   "from": "leaderboards.leaderboard_descriptor[_metadata_=classic]",
+   "set": {
+    "_metadata_": "swofty_cs_f1_2016"
+   }
+  },
+  {
+   "op": "add-row",
    "table": "entrants.entrant_lists",
    "from": "entrants.entrant_lists.entrant_list[_metadata_=f1_2026]",
    "set": {
@@ -4157,7 +4165,7 @@
     "display_name": "lng_cs_f1_2016",
     "previous_season_team_standings": "cs_f1_teams_2016",
     "previous_season_driver_standings": "",
-    "leaderboard": "classic",
+    "leaderboard": "swofty_cs_f1_2016",
     "season": "season_2025",
     "ui_path": "f1_2023"
    }

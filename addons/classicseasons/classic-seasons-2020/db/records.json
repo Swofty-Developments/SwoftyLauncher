@@ -3827,6 +3827,14 @@
   },
   {
    "op": "add-row",
+   "table": "leaderboards",
+   "from": "leaderboards.leaderboard_descriptor[_metadata_=classic]",
+   "set": {
+    "_metadata_": "swofty_cs_f1_2020"
+   }
+  },
+  {
+   "op": "add-row",
    "table": "entrants.entrant_lists",
    "from": "entrants.entrant_lists.entrant_list[_metadata_=f1_2025]",
    "set": {
@@ -3834,7 +3842,7 @@
     "display_name": "lng_cs_f1_2020",
     "previous_season_team_standings": "cs_f1_teams_2020",
     "previous_season_driver_standings": "",
-    "leaderboard": "classic"
+    "leaderboard": "swofty_cs_f1_2020"
    }
   },
   {

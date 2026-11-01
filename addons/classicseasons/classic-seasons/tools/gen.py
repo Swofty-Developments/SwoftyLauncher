@@ -370,7 +370,7 @@ def package_record(own, season, year, list_label, standings, wide, index):
                                    "look": None} for driver, number in team["drivers"]]})
     looks = {f"{team.get('key', team['folder'])}/{driver}": look_label(year, team.get("key", team["folder"]), driver)
              for team in season["teams"] for driver, _ in team["drivers"]}
-    rows = {"leaderboard": "classic", "previous_season_driver_standings": ""}
+    rows = {"previous_season_driver_standings": ""}
     if wide:
         rows.update(season="season_2025", ui_path="f1_2023")
     return {"title": f"lng_cs_f1_{year}", "entrant_list": list_label, "season": year,
@@ -569,11 +569,16 @@ def build():
             covered.append({"op": "set", "select": f"entrants.standings.standings[_metadata_={standings}].team_reference_{position}",
                         "field": "team", "value": team_label(year, team.get("key", team["folder"]))})
 
-        # Time Trial's stock F1 2025 box loads the cars of every available list on the f1 leaderboard, which with
-        # all years installed overflows the engine sound heap; an empty leaderboard crashes Time Trial itself.
+        # Time Trial loads the cars of every available list on the selected list's leaderboard, which with all years
+        # on one leaderboard overflows the engine sound heap; an empty leaderboard crashes Time Trial itself. Each
+        # season's list has a leaderboard of its own, the label the core's content.package lowering gives it.
+        board = f"swofty_{list_label}"
+        covered.append({"op": "add-row", "table": "leaderboards",
+                        "from": "leaderboards.leaderboard_descriptor[_metadata_=classic]",
+                        "set": {"_metadata_": board}})
         entrant_list = {"_metadata_": list_label, "display_name": f"lng_cs_f1_{year}",
                         "previous_season_team_standings": standings, "previous_season_driver_standings": "",
-                        "leaderboard": "classic"}
+                        "leaderboard": board}
         if wide:
             entrant_list.update(season="season_2025", ui_path="f1_2023")
             covered.append({"op": "set", "select": f"{SETUP_ROW}[_metadata_={HOST_MODE}]", "field": "max_entrants",
