@@ -365,7 +365,6 @@ A track addon goes into the base that every box inherits. Hockenheim appears in 
 
 The box's track list shows the season's real calendar first, in round order: the calendar the package names in `content::Package::calendar`. Every other track that fits the box follows under **More tracks**. A track fits a box when:
 
-- The world the box loads at that track has a garage for every team in the box.
 - The track has a grid slot for every car the box runs.
 - Every car in the box has AI data at that track.
 - In a Time Trial box, the track supports Time Trial.
