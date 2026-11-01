@@ -10,6 +10,7 @@
 
 #include "direct_start_logic.hpp"
 #include "json.hpp"
+#include "room_cover.hpp"
 #include "title_skip.hpp"
 
 // The direct start: the game goes from boot to its target with no title, no legal screens' waits and no
@@ -546,6 +547,7 @@ void direct_start_profile_loaded(bool ok)
         swofty::log("[direct] the profile load failed; the start waits for the next one");
         return;
     }
+    runtime::room_cover::step("Profile loaded", 0.4f, 0.54f);
     driver.profile_loaded();
     note_phase();
 }

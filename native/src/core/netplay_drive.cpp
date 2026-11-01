@@ -14,6 +14,7 @@
 
 #include "netplay_drive_logic.hpp"
 #include "netplay_room.hpp"
+#include "room_cover.hpp"
 #include "virtual_pad.hpp"
 #include "netplay_session.hpp"
 
@@ -268,6 +269,7 @@ void skip_setup()
     runtime::pad::claim(true);
     title_skip.start(GetTickCount64());
     skip_armed = true;
+    runtime::room_cover::step("Starting F1 25", 0.05f, 0.2f);
     swofty::log("[netplay] room launch: the notice is passed with the shared virtual pad's a");
 }
 
@@ -290,8 +292,10 @@ void skip_tick()
         else
             runtime::pad::release();
     }
-    if (title_skip.presses() != before)
+    if (title_skip.presses() != before) {
+        runtime::room_cover::step("Getting past the title screen", 0.2f, 0.38f);
         swofty::log("[netplay] room launch: press %d of the shared virtual pad's a for the notice", title_skip.presses());
+    }
     if (title_skip.done()) {
         skip_armed = false;
         if (skip_held)
@@ -487,6 +491,8 @@ void netplay_flow(uint32_t hash, uint32_t to)
     bool in = to == 1 || to == 2;
     if (hash == drive::STATE_FRONTEND) {
         frontend = in;
+        if (in)
+            runtime::room_cover::step("Opening the main menu", 0.55f, 0.65f);
         if (!in) {
             home_screen = false;
             home_vm.self = nullptr;
@@ -509,8 +515,10 @@ void netplay_screen(const char *name)
     runtime::netplay_room_screen(name);
     if (!std::strcmp(name, "frontend_transition"))
         transition_screen = true;
-    if (!std::strcmp(name, "f1_world_activity_container"))
+    if (!std::strcmp(name, "f1_world_activity_container")) {
         activity_screen = true;
+        runtime::room_cover::step("Preparing your session", 0.7f, 0.78f);
+    }
     if (std::strncmp(name, "fe_", 3) != 0)
         return;
     for (const char *o : overlays)
