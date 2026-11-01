@@ -48,7 +48,7 @@ constexpr uintptr_t ENTITY_MODE = 0xf08, ENTITY_TRACKS = 0xf58, ENTITY_TEAMS = 0
 constexpr uintptr_t GSM_HOLDER = 0xd8, GSM_ESMS = 0x10, GSM_ESM_COUNT = 0x70, ESM_LISTS = 0x130, ESM_LIST_COUNT = 0x230,
                     LIST_NAME = 0x28, LIST_BEGIN = 0x10, LIST_END = 0x18, RECORD = 0x88, RECORD_TEAM = 0x58,
                     TRACK_NAME = 0x78, PLAYER_STRIDE = 0xc0, PLAYER_TEAM = 0x68, PLAYER_TEAM_SET = 0x6c;
-constexpr size_t ESM_SLOTS = 32, GSM_SLOTS = 32;
+constexpr size_t ESM_SLOTS = 32, GSM_SLOTS = 32, GSM_ESM_SLOTS = (GSM_ESM_COUNT - GSM_ESMS) / 8;
 
 using SetMode_t = void(void *modes, void *mode);
 using CurrentTrack_t = uint8_t *(void *entity);
@@ -150,9 +150,9 @@ ListAt find_list(uint8_t *gsm, const std::string &want, std::vector<std::string>
     if (!runtime::readable(gsm, GSM_ESM_COUNT + 8))
         return hit;
     int64_t n = at<int64_t>(gsm, GSM_ESM_COUNT);
-    auto **esms = at<uint8_t **>(gsm, GSM_ESMS);
-    for (int64_t i = 0; esms && i < n && i < int64_t(ESM_SLOTS); ++i) {
-        uint8_t *esm = runtime::readable(esms + i, 8) ? esms[i] : nullptr;
+    auto **esms = reinterpret_cast<uint8_t **>(gsm + GSM_ESMS);
+    for (int64_t i = 0; i < n && i < int64_t(GSM_ESM_SLOTS); ++i) {
+        uint8_t *esm = esms[i];
         if (!esm || !runtime::readable(esm, ESM_LIST_COUNT + 8))
             continue;
         int64_t lists = at<int64_t>(esm, ESM_LIST_COUNT);
