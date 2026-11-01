@@ -23,7 +23,6 @@ ID3D12Device *devices[kDevices];
 LONG ndevices;
 safetyhook::InlineHook create_hook;
 bool debug_armed;
-void (*log_fn)(const char *, ...);
 CRITICAL_SECTION debug_lock;
 DebugBudget debug_budget;
 std::vector<std::string> debug_lines;
