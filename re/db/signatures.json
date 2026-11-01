@@ -160585,6 +160585,60 @@
    "used_by": [
     "native/src/core/netplay_room.cpp"
    ]
+  },
+  {
+   "id": "game.pit_stops_crew_template_read",
+   "section": ".xtls",
+   "pattern": "48 8B 5C 24 70 4C 8B 2B 48 8B 73 08",
+   "match": "0x1403c6ee1",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1403c6ee1",
+   "kind": "mid",
+   "expect": "48 8B 5C 24 70",
+   "names": [
+    "site_Game_PitStops_CrewTemplateRead"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "crewpit",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/garage_crew.cpp"
+   ]
+  },
+  {
+   "id": "game.pit_stops_crew_template_skip",
+   "section": ".xtls",
+   "pattern": "4D 85 E4 0F 84 ?? ?? ?? ?? 48 8B 8C 24 A0 00 00 00",
+   "match": "0x1403c787b",
+   "anchor": "0x9",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1403c7884",
+   "kind": "mid",
+   "expect": "48 8B 8C 24 A0 00 00 00",
+   "names": [
+    "site_Game_PitStops_CrewTemplateSkip"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "crewpit",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/garage_crew.cpp"
+   ]
   }
  ]
 }
