@@ -283,7 +283,7 @@ Args: `{ "driver": int (driver stat id, or the standings `key`), "delta": int (-
 `"team"` is refused (`unsupported`): the game's list is per driver, and the constructors' table sums
 its drivers' adjustments.
 
-Path: the adjustment is stored in the career's sidecar `careers/<career id>.season.json` (by season
+Path: the adjustment is stored in the career's sidecar `careers/<career id>.season.json` (the first time a saved career loads with no such file, CME adopts an older `careers/dc-<driver>.season.json` for its driver once and keeps that file as `.season.json.adopted`; a new, unsaved career never adopts) (by season
 index and driver), then the op runs the game's championship standings rebuild
 (`Career_Rebuild_ChampionshipStandings`). Its per-season step (`Career_Rebuild_SeasonStandings`) is
 wrapped: the stored adjustments are merged into the game's own extra-points list (a new list from the

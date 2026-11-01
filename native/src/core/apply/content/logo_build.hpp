@@ -157,6 +157,7 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
     for (auto &w : wants)
         by_array[w.array].push_back(&w);
     bool uidb_changed = false;
+    std::set<std::string> viewed;
     for (auto &[array, list] : by_array) {
         uidb::Node *node = pkg.find(list_path(array));
         if (!node || node->kind != uidb::Node::array) {
@@ -170,6 +171,7 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
         std::vector<std::string> carriers;
         logo_array::Stock stock;
         bool have = false, mismatch = false;
+        std::map<std::string, std::string> repaired;
         std::map<std::string, std::vector<std::string>> image_in, view_in;
         for (auto &rel : files) {
             if (!get(rel))
@@ -191,17 +193,27 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
                 !erpfile::fragment(*fv.open->src, fv.open->arc, ev->frags[0], got.view, why)) {
                 out.lines.push_back("team.logo: " + rel + " carries " + array + " in a layout this build does not read");
                 mismatch = true;
-                break;
+                continue;
+            }
+            uint32_t said = 0;
+            if (logo_array::repair_view(got, said)) {
+                repaired[rel] = got.view;
+                if (viewed.insert(array).second)
+                    out.lines.push_back("team.logo: " + array + " view said " + std::to_string(said) + " slices for " +
+                                        std::to_string(logo_array::le32(got.head, logo_array::HEAD_COUNT)) + "; fixed");
             }
             if (have && (got.head != stock.head || got.data != stock.data || got.view != stock.view)) {
                 out.lines.push_back("team.logo: " + rel + " carries a different " + array + " than " + carriers[0]);
                 mismatch = true;
-                break;
+                continue;
             }
             stock = std::move(got);
             have = true;
             carriers.push_back(rel);
         }
+        for (auto &[rel, bytes] : repaired)
+            for (auto &l : view_in[rel])
+                out.changes[l][view] = {bytes};
         stock.names = names;
         logo_array::Shape shape;
         bool sound = !mismatch && have && logo_array::shape_of_images(stock, shape, why);

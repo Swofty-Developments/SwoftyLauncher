@@ -534,6 +534,16 @@
    "pattern": "E8 ?? ?? ?? ?? 8B 7C 24 4C 4C 8D 74 24 68",
    "expect": "E8 57 34 87 FE",
    "note": "The pattern matches EA once at the Steam offset. The expected site bytes carry a rip-relative or call displacement that differs on EA; they are the EA dump's bytes."
+  },
+  "site_Game_GarageSetups_EntryStep": {
+   "pattern": "4E 8B 0C C2 4A 8D 14 C2 4D 8B 41 38 4D 8B 80 60 02 00 00 41 39 80",
+   "expect": "4A 8D 14 C2 4D 8B 41 38",
+   "note": "EA's owner lookup is inlined into the setup-list builder (F1_25.exe+0xc1fe90) with the entry walk in rdx instead of rcx; the entry is still r9 and the lea sits at the same offset. The first 12 bytes also match two other hash-set walks (+0x2bf0c2f, +0x2bf0e8f), so the pattern runs on to the +0x260/+0x2a8 reads that only the setup walk has."
+  },
+  "site_Game_GarageSetups_NotFound": {
+   "pattern": "31 F6 48 8D 8C 24 D8 00 00 00 48 89 F2",
+   "expect": "31 F6 48 8D 8C",
+   "note": "The inlined lookup's not-found join (xor esi,esi, then the name node built from rsi) at F1_25.exe+0xc2076f; Steam's equivalent is the function exit that returns rsi."
   }
  },
  "hints": {

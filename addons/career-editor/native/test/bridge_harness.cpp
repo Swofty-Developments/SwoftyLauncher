@@ -64,7 +64,8 @@ static ce::OpResult cash_set(const ce::Json &a) {
     r.before = "{\"cash\":" + std::to_string(cash) + "}"; cash = (int64_t)a["value"].n; r.after = "{\"cash\":" + std::to_string(cash) + "}"; r.ok = true; return r; }
 static ce::OpResult weather_set(const ce::Json &a) { ce::OpResult r; r.ok = true; r.before = "\"dry\""; r.after = "\"" + a["value"].str() + "\""; return r; }
 static ce::OpResult thrower(const ce::Json &) { throw std::runtime_error("boom"); }
-static void econ_section(ce::Writer &w) { w.begin_object(); w.key("cash"); w.integer(cash); w.key("name"); w.str("Team \"Q\"\n"); w.key("ratio"); w.num(0.1); w.key("big"); w.num(1e300); w.key("bad"); w.str(std::string("\x90\xcc*@\x01ok\xe2\x82")); w.key("\xff"); w.integer(1); w.key("arr"); w.begin_array(); w.integer(1); w.null(); w.boolean(true); w.begin_object(); w.end_object(); w.end_array(); w.end_object(); }
+static int econ_renders = 0;
+static void econ_section(ce::Writer &w) { ++econ_renders; w.begin_object(); w.key("cash"); w.integer(cash); w.key("name"); w.str("Team \"Q\"\n"); w.key("ratio"); w.num(0.1); w.key("big"); w.num(1e300); w.key("bad"); w.str(std::string("\x90\xcc*@\x01ok\xe2\x82")); w.key("\xff"); w.integer(1); w.key("arr"); w.begin_array(); w.integer(1); w.null(); w.boolean(true); w.begin_object(); w.end_object(); w.end_array(); w.end_object(); }
 static void season_section(ce::Writer &w) { w.begin_object(); w.key("season_number"); w.integer(2); w.end_object(); }
 static void broken_section(ce::Writer &w) { w.key("x"); w.integer(1); }
 CE_OP("economy.cash.set", cash_set);
@@ -123,6 +124,9 @@ int main() {
     CHECK(snap["bridge"]["viewer"].b && snap["bridge"]["renders"].n >= 1);
     CHECK(snap["sections"]["economy"]["name"].str() == "Team \"Q\"\n");
     CHECK(snap["sections"]["economy"]["ratio"].n == 0.1);
+    // 2b: an unchanged section is not rendered again every second: 100 frames (3 s) cost at most 2 renders
+    int before_renders = econ_renders; pump(100);
+    CHECK(econ_renders - before_renders <= 2);
     // 3: safe -> runs. expect is an object here -> op sees expect object -> not number -> no stale check
     f_safe = true; pump(40);
     CHECK(!fs::exists(root / "inbox/100.json"));
