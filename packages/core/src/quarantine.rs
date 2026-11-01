@@ -45,6 +45,10 @@ const ATTACH_WINDOW_NO_STUB: Duration = Duration::from_secs(90);
 /// which the crash report covers.
 const SHORTEST_RUN: Duration = Duration::from_secs(10);
 const POLL: Duration = Duration::from_secs(1);
+/// How long after the stub's patching line the session looks inside the game
+/// for the loader, while the game is still running: a game that closes within
+/// the attach window is gone by the time the verdict comes.
+pub const PROBE_AFTER: Duration = Duration::from_secs(8);
 
 pub fn is_virus_code(code: i32) -> bool {
     matches!(code, ERROR_VIRUS_INFECTED | ERROR_VIRUS_DELETED)
@@ -129,6 +133,16 @@ pub enum Cause {
     /// Windows denied the session a look inside the game process, and no
     /// block event or other antivirus explains the miss.
     Unreadable,
+    /// The game had already exited when the session looked, so what it
+    /// loaded is unknown; Windows logged no block. `antivirus`: the products
+    /// other than Microsoft Defender that are on.
+    GameEnded {
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        antivirus: Vec<String>,
+    },
+    /// The game held the game folder's version.dll, yet the loader never
+    /// logged an attach: it was loaded and failed or stalled on its own.
+    LoadedSilently,
 }
 
 /// Where Windows turns on "prefer System32 DLLs" for F1_25.exe.
@@ -280,13 +294,24 @@ impl Cause {
                 "Windows didn't let Swofty Launcher look inside the game (access denied), so it can't tell what kept \
                  {PROXY} out. Windows Security and Smart App Control show no block"
             ),
+            Self::GameEnded { .. } => format!(
+                "F1 25 had already closed when Swofty Launcher looked, so it can't tell whether {PROXY} was loaded. \
+                 Windows Security and Smart App Control logged no block, so an antivirus is not shown to be the cause"
+            ),
+            Self::LoadedSilently => format!(
+                "the game loaded the game folder's {PROXY}, so nothing blocked it, but the loader never reported \
+                 that it started"
+            ),
         }
     }
 
     /// Whether the session found nothing that explains the miss, so the
     /// player is pointed at Send Logs and the support Discord.
     pub fn unexplained(&self) -> bool {
-        matches!(self, Self::Unexplained { .. } | Self::Unreadable)
+        matches!(
+            self,
+            Self::Unexplained { .. } | Self::Unreadable | Self::GameEnded { .. } | Self::LoadedSilently
+        )
     }
 
     /// The fix, when it is not the antivirus one.
@@ -411,6 +436,21 @@ impl Cause {
             Self::Unreadable => "To fix it, close F1 25, fully quit the EA app or Steam from the system tray, then \
                  launch again. If mods still don't load, press Send Logs to Developers and ask in the support \
                  Discord."
+                .to_owned(),
+            Self::GameEnded { antivirus } => {
+                let av = match antivirus.as_slice() {
+                    [] => String::new(),
+                    names => format!(
+                        " If {} is on for the game folder, check its protection history for {PROXY}.",
+                        names.join(" and ")
+                    ),
+                };
+                format!(
+                    "Press Send Logs to Developers and say how far F1 25 got before it closed.{av}"
+                )
+            }
+            Self::LoadedSilently => "Press Send Logs to Developers and ask in the support Discord; the loader's own \
+                 files in the launcher folder are what the developers need to look at."
                 .to_owned(),
             Self::Defender => return None,
         })
@@ -677,6 +717,7 @@ pub struct AttachWatch {
     fallback: Option<PathBuf>,
     started: Instant,
     patched: Option<Instant>,
+    probed: bool,
     next: Instant,
     state: Attach,
 }
@@ -689,6 +730,7 @@ impl AttachWatch {
             fallback: None,
             started: now,
             patched: None,
+            probed: false,
             next: now,
             state: Attach::Waiting,
         }
@@ -723,6 +765,23 @@ impl AttachWatch {
             self.state = Attach::Missed;
         }
         self.state
+    }
+
+    /// True once, when the game has run `PROBE_AFTER` since the stub patched
+    /// it and the loader has not attached: the moment to look at which
+    /// version.dll it holds.
+    pub fn probe_due(&mut self, now: Instant) -> bool {
+        if self.probed || self.state != Attach::Waiting {
+            return false;
+        }
+        let Some(at) = self.patched else {
+            return false;
+        };
+        if now.duration_since(at) < PROBE_AFTER {
+            return false;
+        }
+        self.probed = true;
+        self.read(now) != Some(true)
     }
 
     /// The verdict when the game has exited: a game that ran a while and
@@ -940,6 +999,48 @@ mod tests {
         let mut long = AttachWatch::new(log, None, t0);
         assert_eq!(long.ended(t0 + Duration::from_secs(13 * 60)), Attach::Missed);
         std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn looks_inside_the_game_once_while_it_runs() {
+        let dir = temp("watch-probe");
+        let log = dir.join("loader.log");
+        let t0 = Instant::now();
+        let mut w = AttachWatch::new(log.clone(), None, t0);
+        assert!(!w.probe_due(t0 + PROBE_AFTER * 2));
+        std::fs::write(&log, STUB).unwrap();
+        w.poll(t0);
+        assert!(!w.probe_due(t0));
+        assert!(!w.probe_due(t0 + PROBE_AFTER - Duration::from_secs(1)));
+        assert!(w.probe_due(t0 + PROBE_AFTER));
+        assert!(!w.probe_due(t0 + PROBE_AFTER * 2));
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn a_game_that_closed_before_the_look_is_not_blamed_on_the_antivirus() {
+        let mut r = Report {
+            at: 1.0,
+            stage: Stage::InGame,
+            files: vec!["version.dll".into()],
+            removed: false,
+            game: PathBuf::from(r"C:\Steam\steamapps\common\F1 25"),
+            launcher: None,
+            cause: Some(Box::new(Cause::GameEnded {
+                antivirus: Vec::new(),
+            })),
+        };
+        let text = r.text();
+        assert!(text.contains("had already closed"), "{text}");
+        assert!(
+            text.contains("an antivirus is not shown to be the cause"),
+            "{text}"
+        );
+        assert!(!text.contains("most likely blocked"), "{text}");
+        r.cause = Some(Box::new(Cause::LoadedSilently));
+        let text = r.text();
+        assert!(text.contains("so nothing blocked it"), "{text}");
+        assert!(Cause::LoadedSilently.unexplained());
     }
 
     #[test]

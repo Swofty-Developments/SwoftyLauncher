@@ -916,8 +916,21 @@ fn play(
         .unwrap_or_default()
         .into_iter()
         .find_map(|(rel, sha)| rel.eq_ignore_ascii_case(PROXY).then_some(sha));
+    let sampled: std::cell::RefCell<Option<Vec<loader_check::Seen>>> = std::cell::RefCell::new(None);
     let missed = || {
-        let found = loader_check::collect(game, placed.as_deref(), launched, g.user_reg.as_deref());
+        let mut found = loader_check::collect(game, placed.as_deref(), launched, g.user_reg.as_deref());
+        if found.games.is_empty()
+            && let Some(early) = sampled.borrow_mut().take()
+        {
+            found.games = early;
+            say(
+                "loader",
+                &format!(
+                    "  the game had closed by now; the game lines below are from a look {} s after it started",
+                    quarantine::PROBE_AFTER.as_secs()
+                ),
+            );
+        }
         say(
             "loader",
             "version.dll did not attach to F1 25; what the session found:",
@@ -947,6 +960,10 @@ fn play(
         if let Some(w) = watch.as_mut()
             && w.state() == Attach::Waiting
         {
+            if w.probe_due(Instant::now()) {
+                let early = loader_check::collect(game, placed.as_deref(), launched, g.user_reg.as_deref());
+                *sampled.borrow_mut() = Some(early.games);
+            }
             verdict(w.poll(Instant::now()));
         }
     };
