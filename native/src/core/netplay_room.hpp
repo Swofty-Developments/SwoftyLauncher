@@ -43,6 +43,7 @@ Setup set_up(Role role, const char *host_ip, std::string &why);
 // `return Setup(room_poll(why));` once #686 is in.
 void set_room_request(Role role, const std::string &host_ip);
 Setup room_poll(std::string &why);
+bool room_requested();
 
 bool set_up_from_home(Role role, const char *host_ip, std::string &why);
 bool provide_context(void *registry, void *context);

@@ -251,6 +251,7 @@ void netplay_bridge_status_changed();
 void netplay_exit();
 void netplay_drive_setup();
 void netplay_room_setup();
+bool netplay_room_requested();
 void netplay_room_screen(const char *name);
 void netplay_flow(uint32_t hash, uint32_t to);
 void netplay_screen(const char *name);

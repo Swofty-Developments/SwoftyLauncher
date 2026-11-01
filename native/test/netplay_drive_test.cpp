@@ -261,6 +261,43 @@ int main()
                !drive::room_launch(""),
            "an armed game or a name with room in it is not a room launch");
     {
+        namespace sess = runtime::netplay_session;
+        auto req = drive::parse_room_request(
+            R"({"target":"room","role":"join","host_ip":"10.77.0.1","self":3,"base":41000,"name":"Ana  Sm\u00f6ft"})");
+        expect(req.room && req.error.empty() && req.role == "join" && req.host_ip == "10.77.0.1",
+               "a room request reads its role and the host's address");
+        expect(req.configured && req.self == 3 && req.base == 41000 && req.name == "Ana Sm\xc3\xb6" "ft",
+               "a room request reads self, base and the name as the driver carries it");
+        sess::clear();
+        expect(!sess::configured() && sess::driver_name().empty(), "nothing is configured before the request is applied");
+        expect(drive::apply_room_config(req) && sess::configured(), "applying the request configures the room");
+        int self = 0, base = 0;
+        expect(sess::snapshot(self, base) && self == 3 && base == 41000, "the room holds the request's member and base");
+        expect(sess::driver_name() == "Ana Sm\xc3\xb6" "ft", "the request's name is the driver name once configured");
+        sess::clear();
+        auto bare = drive::parse_room_request(R"({"target":"room","role":"host","host_ip":"10.77.0.1"})");
+        expect(bare.room && bare.error.empty() && !bare.configured && !drive::apply_room_config(bare) && !sess::configured(),
+               "a request without self and base leaves the room to the mailbox");
+        auto nameless = drive::parse_room_request(R"({"target":"room","role":"host","host_ip":"x","self":1,"base":40000})");
+        expect(nameless.configured && nameless.name.empty(), "a request without a name keeps the game's own");
+        expect(!drive::parse_room_request(R"({"target":"session"})").room, "another target is not a room request");
+        expect(!drive::parse_room_request("").room && !drive::parse_room_request("[1]").room, "an empty or odd request is not one");
+        expect(!drive::parse_room_request(R"({"target":"room","role":"x","self":1,"base":40000})").error.empty(),
+               "an unknown role is an error");
+        auto bad = drive::parse_room_request(R"({"target":"room","role":"host","host_ip":"x","self":0,"base":40000})");
+        expect(bad.room && !bad.configured && !bad.error.empty() && !drive::apply_room_config(bad), "member 0 is refused");
+        expect(!drive::parse_room_request(R"({"target":"room","role":"host","self":1,"base":21400})").configured,
+               "a base whose members cover the game port is refused");
+        expect(!drive::parse_room_request(R"({"target":"room","role":"host","self":1,"base":"40000"})").error.empty(),
+               "a string base is refused");
+        expect(drive::room_notice("online_services_generic_exception_online_with_code") &&
+                   drive::room_notice("online_services_generic_exception_offline") && drive::room_notice("swofty_message"),
+               "the online services messages and the core's notice are the room launch's notices");
+        expect(!drive::room_notice("lan_game_dialog") && !drive::room_notice("") &&
+                   !drive::room_notice("error_online_services_generic_exception_"),
+               "no other popup is treated as the notice");
+    }
+    {
         drive::TitleSkip skip;
         drive::SkipFacts f;
         skip.start(1000);

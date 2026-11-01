@@ -10,6 +10,7 @@
 #include <string>
 
 #include "json.hpp"
+#include "netplay_drive_logic.hpp"
 #include "netplay_room.hpp"
 
 // Room set-up with no LAN tile and no main menu (research/multiplayer/ns-resolve.md, carcat-direct.md).
@@ -663,6 +664,12 @@ void set_room_request(Role r, const std::string &host_ip)
     requested = true;
 }
 
+bool room_requested()
+{
+    std::lock_guard<std::mutex> g(lock);
+    return requested;
+}
+
 Setup room_poll(std::string &why)
 {
     Role r;
@@ -749,17 +756,22 @@ bool load_request()
         text = read_file(wide(env + 1), size_t(1) << 16);
     else if (!n)
         text = read_file(swofty_root() + L"direct_start.json", size_t(1) << 16);
-    json::Value request;
-    if (text.empty() || !json::parse(text, request) || request["target"].str() != "room")
+    auto request = drive::parse_room_request(text);
+    if (!request.room)
         return false;
-    std::string role = request["role"].str(), ip = request["host_ip"].str();
-    if (role != "host" && role != "join") {
-        swofty::log("[netplay] room: the direct start request has role '%s' (host or join expected)", role.c_str());
-        return false;
+    if (!request.error.empty()) {
+        swofty::log("[netplay] room: %s", request.error.c_str());
+        if (request.role != "host" && request.role != "join")
+            return false;
     }
-    room::set_room_request(role == "host" ? room::Role::host : room::Role::join, ip);
-    swofty::log("[netplay] room: the direct start request is a %s%s%s", role.c_str(), role == "join" ? " of " : "",
-                role == "join" ? ip.c_str() : "");
+    room::set_room_request(request.role == "host" ? room::Role::host : room::Role::join, request.host_ip);
+    swofty::log("[netplay] room: the direct start request is a %s%s%s", request.role.c_str(),
+                request.role == "join" ? " of " : "", request.role == "join" ? request.host_ip.c_str() : "");
+    if (drive::apply_room_config(request)) {
+        swofty::log("[netplay] room: configured from the direct start request, self=%d base=%d%s%s", request.self,
+                    request.base, request.name.empty() ? "" : ", driver name ", request.name.c_str());
+        netplay_bridge_status_changed();
+    }
     return true;
 }
 
@@ -786,6 +798,11 @@ void netplay_room_setup()
     direct_start_register_room([](std::string &why) {
         return static_cast<direct_start::Setup>(adapter(why));
     });
+}
+
+bool netplay_room_requested()
+{
+    return netplay_room::room_requested();
 }
 
 void netplay_room_screen(const char *name)

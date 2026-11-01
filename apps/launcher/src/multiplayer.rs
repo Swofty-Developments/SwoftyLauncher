@@ -439,18 +439,9 @@ enum Start {
 
 pub(crate) struct RoomLaunch {
     pub(crate) row_ids: Option<PathBuf>,
-    /// The direct start request the game reads at boot: the room target, this player's role and the host's
-    /// address, as `swofty\direct_start.json`.
+    /// The direct start request the game reads at boot, as `swofty\direct_start.json`: the room target, this
+    /// player's role, the host's address and the room configuration (`LaunchAsk::direct_start`).
     pub(crate) direct_start: String,
-}
-
-fn room_direct_start(host: bool) -> String {
-    serde_json::json!({
-        "target": "room",
-        "role": if host { "host" } else { "join" },
-        "host_ip": swofty_core::multiplayer::session::HOST_IP.to_string(),
-    })
-    .to_string()
 }
 
 pub(crate) struct Multiplayer {
@@ -661,7 +652,7 @@ impl Shell {
         self.mp_page.launch_seen = ask.seq;
         self.mp_page.stopping = None;
         self.mp_page.room_launching = true;
-        let direct_start = room_direct_start(session.state().host);
+        let direct_start = ask.direct_start(session.state().host);
         let started = self.play_for(
             Some(RoomLaunch {
                 row_ids,

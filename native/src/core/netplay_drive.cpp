@@ -249,7 +249,7 @@ void probe_setup()
 constexpr DWORD POLL_MS = 250;
 constexpr uint64_t HEARTBEAT_MS = 5000;
 
-std::atomic<bool> armed, frontend, lobby, home_screen;
+std::atomic<bool> armed, frontend, lobby, home_screen, room_launched;
 
 // The core's notice over the front end, for a game the launcher started for a room. The title is the direct
 // start's (title_skip.cpp); the notice is passed with the shared virtual pad (virtual_pad.cpp), which this
@@ -475,6 +475,7 @@ void netplay_drive_setup()
     swofty::log("[netplay] launcher commands on (<game>/swofty/netplay); configure, host, join and leave accepted");
     probe_setup();
     runtime::netplay_room_setup();
+    room_launched = drive::room_launch(v) || runtime::netplay_room_requested();
     if (drive::room_launch(v))
         skip_setup();
     if (!started.exchange(true))
@@ -521,10 +522,36 @@ void netplay_screen(const char *name)
         local_mp_opened = true;
 }
 
+namespace {
+
+std::mutex notice_lock;
+std::deque<std::pair<void *, void *>> notices;
+
+void flush_notices()
+{
+    std::deque<std::pair<void *, void *>> now;
+    {
+        std::lock_guard<std::mutex> g(notice_lock);
+        now.swap(notices);
+    }
+    for (auto &[fn, ctx] : now)
+        answer(fn, ctx, "cancel");
+}
+
+}
+
 bool netplay_popup(const char *id, void *fn, void *ctx)
 {
     if (!id)
         return false;
+    if (room_launched.load() && drive::room_notice(id)) {
+        swofty::log("[netplay] room launch: the notice '%s' is not shown; it is answered for the player", id);
+        if (fn && ctx) {
+            std::lock_guard<std::mutex> g(notice_lock);
+            notices.emplace_back(fn, ctx);
+        }
+        return true;
+    }
     std::lock_guard<std::mutex> g(job_lock);
     if (!job.popup(id, GetTickCount64()))
         return false;
@@ -635,6 +662,7 @@ void netplay_tick()
     if (!started.load())
         return;
     skip_tick();
+    flush_notices();
     runtime::netplay_room::tick();
     bool running;
     {

@@ -362,6 +362,33 @@ pub struct LaunchAsk {
     /// player before it does.
     pub restart: bool,
     pub why: String,
+    /// This player's member number, the bridge's base port and the signed-in name the game is
+    /// started with, in its direct start request.
+    #[serde(skip)]
+    pub self_member: u8,
+    #[serde(skip)]
+    pub base: u16,
+    #[serde(skip)]
+    pub name: Option<String>,
+}
+
+impl LaunchAsk {
+    /// The direct start request the game reads at boot (`swofty/direct_start.json`): the room target,
+    /// this player's role and the host's address, and the room configuration the game applies before
+    /// anything else (`self`, `base` and, when there is one, `name`).
+    pub fn direct_start(&self, host: bool) -> String {
+        let mut request = json!({
+            "target": "room",
+            "role": if host { "host" } else { "join" },
+            "host_ip": HOST_IP.to_string(),
+            "self": self.self_member,
+            "base": self.base,
+        });
+        if let Some(name) = &self.name {
+            request["name"] = json!(name);
+        }
+        request.to_string()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -882,7 +909,11 @@ impl Worker {
                 return Err(Halt::Game(why.clone()));
             }
             self.ensure_game()?;
-            self.drive_game()?;
+            if self.setup.room_launch && self.launched.is_some() {
+                self.adopt_direct_start();
+            } else {
+                self.drive_game()?;
+            }
         }
         Ok(())
     }
@@ -961,8 +992,24 @@ impl Worker {
         Ok(Some(ids).filter(|o| !o.is_empty()))
     }
 
+    fn adopt_direct_start(&mut self) {
+        diag::line("launch: the game was started with its room configuration; it hosts or joins by itself");
+        self.configured = true;
+        self.driven = Some(Instant::now());
+        self.seen_in_session = false;
+    }
+
     fn ask_launch(&mut self, restart: bool, why: &str) -> Result<(), Halt> {
         let row_ids = self.host_ids()?;
+        let self_member = self
+            .self_number()
+            .ok_or_else(|| Halt::Fail("the server gave this player no virtual IP".into()))?;
+        let base = self
+            .bridge
+            .as_ref()
+            .map(Bridge::base)
+            .ok_or_else(|| Halt::Step("starting the bridge".into(), Duration::from_millis(200)))?;
+        let name = self.driver_name();
         let id_addons = row_ids.as_ref().map_or(0, |o| o.rows.len());
         let same = self
             .launch
@@ -980,6 +1027,9 @@ impl Worker {
                 id_addons,
                 restart,
                 why: why.to_owned(),
+                self_member,
+                base,
+                name,
             });
         }
         Err(Halt::Game(if restart {
@@ -2842,23 +2892,44 @@ mod tests {
             |s| matches!(&s.phase, Phase::WaitingForGame(w) if w == "F1 25 is starting"),
         );
         assert!(state.launch.is_none());
+        let request: Value = serde_json::from_str(&ask.direct_start(true)).unwrap();
+        assert_eq!(
+            request,
+            json!({"target": "room", "role": "host", "host_ip": "10.77.0.1", "self": 1,
+                   "base": ask.base, "name": "Host"})
+        );
+        assert!(ask.base != 0);
         game.closed.store(false, Ordering::Relaxed);
         game.set_screen(Screen::Other);
-        wait_until(
-            &host,
-            "the main menu wait",
-            |s| matches!(&s.phase, Phase::WaitingForGame(w) if w == "waiting for F1 25's main menu"),
+        wait_until(&host, "the lobby without a main menu", in_lobby);
+        assert!(
+            game.log().is_empty(),
+            "a game started with its room configuration is sent no commands: {:?}",
+            game.log()
         );
-        assert!(game.log().is_empty());
-        game.set_screen(Screen::MainMenu);
-        let state = wait_until(&host, "the lobby", in_lobby);
+    }
+
+    #[test]
+    fn the_direct_start_request_names_the_room_configuration() {
+        let ask = |name: Option<&str>| LaunchAsk {
+            seq: 1,
+            row_ids: None,
+            id_addons: 0,
+            restart: false,
+            why: String::new(),
+            self_member: 3,
+            base: 41000,
+            name: name.map(str::to_owned),
+        };
+        let join: Value = serde_json::from_str(&ask(Some("Ana")).direct_start(false)).unwrap();
         assert_eq!(
-            game.log(),
-            vec![
-                format!("configure 1 {} Host", state.base.unwrap()),
-                "host f1-2026".into()
-            ]
+            join,
+            json!({"target": "room", "role": "join", "host_ip": "10.77.0.1", "self": 3,
+                   "base": 41000, "name": "Ana"})
         );
+        let nameless: Value = serde_json::from_str(&ask(None).direct_start(true)).unwrap();
+        assert_eq!(nameless["role"], "host");
+        assert!(nameless.get("name").is_none());
     }
 
     #[test]
@@ -2891,13 +2962,9 @@ mod tests {
         guest_game.closed.store(false, Ordering::Relaxed);
         let state = wait_until(&guest, "the guest's lobby", in_lobby);
         assert!(state.mismatches.is_empty(), "{:?}", state.mismatches);
-        assert_eq!(
-            guest_game.log(),
-            vec![
-                format!("configure 2 {} Ana", state.base.unwrap()),
-                "join 10.77.0.1".into()
-            ]
-        );
+        assert!(guest_game.log().is_empty(), "{:?}", guest_game.log());
+        assert_eq!((ask.self_member, ask.name.as_deref()), (2, Some("Ana")));
+        assert_eq!(Some(ask.base), state.base);
     }
 
     #[test]

@@ -4,6 +4,7 @@
 #include <string>
 
 #include "json.hpp"
+#include "netplay_session.hpp"
 
 // Netplay command logic without the game: parsing a launcher command, deciding whether the game's
 // state allows it, and the JSON the reply and status file carry. netplay_drive.cpp feeds it the flow
@@ -566,6 +567,66 @@ inline bool room_launch(const std::string &env)
         at = end + 1;
     }
     return false;
+}
+
+// The direct start request a room launch carries (<game>/swofty/direct_start.json): the target, this player's
+// role and the host's address, and the room configuration, `self` (member number), `base` (bridge base port)
+// and the signed-in `name`. A request without `self` and `base` is an older launcher's; the room then comes
+// through the netplay mailbox.
+struct RoomRequest {
+    bool room = false;
+    std::string role, host_ip, error;
+    bool configured = false;
+    int self = 0, base = 0;
+    std::string name;
+};
+
+inline RoomRequest parse_room_request(const std::string &text)
+{
+    RoomRequest r;
+    json::Value v;
+    if (text.empty() || !json::parse(text, v) || v["target"].str() != "room")
+        return r;
+    r.room = true;
+    r.role = v["role"].str();
+    r.host_ip = v["host_ip"].str();
+    if (r.role != "host" && r.role != "join") {
+        r.error = "the direct start request has role '" + r.role + "' (host or join expected)";
+        return r;
+    }
+    const json::Value &self = v["self"], &base = v["base"];
+    if (self.type == json::Value::Null && base.type == json::Value::Null)
+        return r;
+    if (self.type != json::Value::Num || base.type != json::Value::Num) {
+        r.error = "the direct start request has a self or base that is not a number";
+        return r;
+    }
+    int s = static_cast<int>(self.n), b = static_cast<int>(base.n);
+    if (s != self.n || b != base.n || !runtime::netplay_session::valid(s, b)) {
+        r.error = "the direct start request's room was refused (self " + std::to_string(s) + ", base " +
+                  std::to_string(b) + ")";
+        return r;
+    }
+    r.configured = true;
+    r.self = s;
+    r.base = b;
+    r.name = driver_name(v["name"].str());
+    return r;
+}
+
+inline bool apply_room_config(const RoomRequest &r)
+{
+    if (!r.configured || !runtime::netplay_session::configure(r.self, r.base))
+        return false;
+    runtime::netplay_session::set_name(r.name);
+    return true;
+}
+
+// The core's own notice and the game's online services messages: for a room launch neither is shown, and
+// the game's response callback is answered for the player.
+inline bool room_notice(const std::string &id)
+{
+    return id.rfind("online_services_generic_exception_", 0) == 0 || id == "swofty_message";
 }
 
 struct SkipFacts {
