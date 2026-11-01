@@ -504,6 +504,12 @@ static void schemas()
     CHECK(teams::identities.schema().find("\"x-ref\":\"team.logo\"") != std::string::npos);
     CHECK(teams::logos.schema().find("\"x-applies\":\"read\"") != std::string::npos);
     CHECK(teams::pit_times.schema().find("\"x-ref\":\"team.pit_times\"") != std::string::npos);
+    std::string garage = teams::garages.schema();
+    CHECK(garage.find("\"x-registry\":\"team.garage\"") != std::string::npos && garage.find("\"x-applies\":\"boot\"") != std::string::npos);
+    CHECK(garage.find("\"x-ref\":\"content.package\"") != std::string::npos && teams::garages.at_major() == "team.garage@1");
+    teams::Garage garage_rec;
+    CHECK(swofty::to_json(garage_rec).find("\"root\":\"eaid://environment_package/core_assets/objects/textures/\"") != std::string::npos &&
+          garage_rec.srgb);
     std::string tree = career::rnd_trees.schema();
     CHECK(tree.find("\"x-applies\":\"boot\"") != std::string::npos && tree.find("\"x-key\":[\"label\"]") != std::string::npos);
     CHECK(tree.find("\"enum\":[\"aerodynamics\",\"chassis\",\"durability\",\"engine\"]") != std::string::npos);

@@ -86,6 +86,7 @@ STOCK = json.loads((ROOT / "data" / "stock_looks.json").read_text())
 DRIVER_FIELDS = json.loads((ROOT / "data" / "driver_fields.json").read_text())
 SETUP_PRESET_FIELDS = json.loads((ROOT / "data" / "setup_preset_fields.json").read_text())
 TEAM_COLOURS = json.loads((ROOT / "data" / "team_colours.json").read_text())
+GARAGES = json.loads((ROOT / "data" / "garages.json").read_text())["garages"]
 STAT_IDS = json.loads((ROOT / "data" / "stat_ids.json").read_text())
 REAL_HEADS = heads.shipped()
 HEAD_ROWS = "entrants.animation.driver_heads"
@@ -109,7 +110,8 @@ HOST_MODE = "swofty_f1"
 SETUP_ROW = "entrants.entrant_setup_modes.entrant_setup_mode"
 SETUP_PRESETS = "car_setup.presets.vehicle_package_setups"
 SEASON_LAUNCHER = ">=1.5.1"
-SEASON_VERSION = "0.6.8"
+SEASON_VERSION = "0.6.9"
+GARAGE_LAUNCHER = ">=1.7.7"
 SEASON_CORE = "0.6.1"
 DIRECT_SUITS = [e for e in suit_sources.REAL["suits"] if "transfer" not in suit_sources.REAL["mods"][e["mod"]]]
 TRANSFERRED_SUITS = [e for e in suit_sources.REAL["suits"] if "transfer" in suit_sources.REAL["mods"][e["mod"]]]
@@ -380,6 +382,15 @@ def package_record(own, season, year, list_label, standings, wide, index):
                          "entrant_prefix": f"cs{year}-", "looks": looks, "content_sets": list(CONTENT_SETS)}}
 
 
+def garages(year):
+    return [g for g in GARAGES if g["season"] == year]
+
+
+def garage_records(year):
+    return {"team.garage": {g["name"]: {"package": f"swofty.classic-seasons-{year}/f1_{year}", "entry": g["entry"],
+                                        "textures": f"garage/{g['name']}"} for g in garages(year)}}
+
+
 def season_manifest(core, year, assets):
     return {
         "schema_version": 1,
@@ -393,7 +404,7 @@ def season_manifest(core, year, assets):
         "icon": "icon.png",
         "category": "seasons",
         "kind": ["database", "files"],
-        "compat": {**core["compat"], "launcher": SEASON_LAUNCHER},
+        "compat": {**core["compat"], "launcher": GARAGE_LAUNCHER if garages(year) else SEASON_LAUNCHER},
         "requires": core["requires"] + [{"id": core["id"], "version": f">={SEASON_CORE}"}],
         "operations": {"database": ["db/season.json", "db/records.json"], "assets": ["lang/season.json", *assets]},
     }
@@ -644,7 +655,11 @@ def build():
         replaced = ["db/records.json"] + (["assets/liveries.json"] if split and split[1]["ops"] else [])
         write_json(folder / "registry.json", {"replaced_operations": replaced})
         write_json(folder / "lang" / "season.json", {"schema_version": 1, "ops": text})
-        (folder / ".gitignore").write_text("cars/\nsuits/\nhelmets/\nsounds/\n")
+        (folder / ".gitignore").write_text("cars/\nsuits/\nhelmets/\nsounds/\ngarage/\n")
+        if garages(year):
+            write_json(folder / "registry" / "garage.json", garage_records(year))
+        elif (folder / "registry" / "garage.json").exists():
+            (folder / "registry" / "garage.json").unlink()
         if cars:
             write_json(folder / "assets" / "cars.json", split[0])
             write_json(folder / "assets" / "liveries.json", split[1])

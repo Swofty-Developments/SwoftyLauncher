@@ -295,6 +295,7 @@ void testagent_route_ran(const std::string &name);
 bool frame_capture_request(const std::wstring &path);
 int frame_capture_poll(std::string *why);
 int group_add(const json::Value &entry);
+int group_extend(const std::string &group, const std::string &erp);
 void own_item(uint32_t key, const std::string &addon, const std::string &what);
 int db_add(const json::Value &entry);
 void db_older_edits(const std::function<void(uint64_t key, int tag, const std::string &text)> &fn);

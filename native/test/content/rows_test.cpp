@@ -490,6 +490,72 @@ static void twelve_team_tests(const std::string &regs)
     }
 }
 
+static void garage_tests()
+{
+    std::map<std::string, std::string> db = {
+        {std::string(content::VEHICLES) + "[_metadata_=cs20_lotus].vehicle_package", "cs_2020_lotus"},
+        {std::string(content::VEHICLES) + "[_metadata_=cs20_mercedes].vehicle_package", "cs_2020_mercedes"},
+        {std::string(content::VEHICLES) + "[_metadata_=renault_2025].vehicle_package", "f1_2025_renault"},
+        {std::string(content::PACKAGES) + "[_metadata_=cs_2020_lotus].resource_path", "cs_2020_vehicle_package/teams/lotus/wep/lotus"},
+        {std::string(content::PACKAGES) + "[_metadata_=cs_2020_mercedes].resource_path", "cs_2020_vehicle_package/teams/mercedes/wep/mercedes"},
+        {std::string(content::PACKAGES) + "[_metadata_=f1_2025_renault].resource_path", "f1_2025_vehicle_package/teams/renault/wep/renault"},
+    };
+    content::Read read = [&](const std::string &p) -> std::optional<std::string> {
+        auto it = db.find(p);
+        return it == db.end() ? std::nullopt : std::optional<std::string>(it->second);
+    };
+    auto team = [](const char *key, const char *vehicle, const char *identity) {
+        return Value::object({{"key", key}, {"team", identity}, {"vehicle", vehicle}});
+    };
+    std::map<std::string, Value> recs = {
+        {"vehicle|mod.a/lotus", Value::object({{"label", "cs20_lotus"}})},
+        {"vehicle|mod.a/mercedes", Value::object({{"label", "cs20_mercedes"}})},
+        {"vehicle|mod.b/renault", Value::object({{"label", "renault_2025"}})},
+        {"content.package|mod.a/f1_2020",
+         Value::object({{"teams", Value::array({team("lotus", "mod.a/lotus", ""), team("mercedes", "mod.a/mercedes", "mod.a/merc")})}})},
+        {"content.package|mod.b/f1_2025", Value::object({{"teams", Value::array({team("renault", "mod.b/renault", "game/renault")})}})}};
+    content::Lookup lookup = [&](const std::string &reg, const std::string &id) -> const Value * {
+        auto it = recs.find(reg + "|" + id);
+        return it == recs.end() ? nullptr : &it->second;
+    };
+    auto lower = [&](const char *json) {
+        content::Plan plan;
+        Value rec = swofty::json::parse(json);
+        content::lower_garage("mod.a/renault_2020", rec, lookup, read, plan);
+        return plan;
+    };
+
+    content::Plan by_entry = lower(R"j({"package":"mod.a/f1_2020","entry":"lotus","textures":"garage/renault_2020"})j");
+    check(by_entry.garages.size() == 1 && by_entry.garages[0].groups.size() == 1 &&
+              by_entry.garages[0].groups[0] == "asset_groups/cs_2020_vehicle_package/teams/lotus/wep/lotus.assetgroup",
+          "a garage by team entry key goes to that team's car group in the box");
+    check(by_entry.garages[0].folder == "garage/renault_2020/" && by_entry.garages[0].srgb &&
+              by_entry.garages[0].root == "eaid://environment_package/core_assets/objects/textures/",
+          "the folder gains a slash and root and srgb take their defaults");
+    check(by_entry.garages[0].game_path == "2025_asset_groups/swofty_garage/mod_a_renault_2020.erp",
+          "the archive has a game path of its own per record");
+    content::Plan by_team = lower(R"j({"package":"mod.a/f1_2020","team":"mod.a/merc","textures":"g","root":"eaid://x/","srgb":false})j");
+    check(by_team.garages.size() == 1 && by_team.garages[0].groups[0] == "asset_groups/cs_2020_vehicle_package/teams/mercedes/wep/mercedes.assetgroup" &&
+              by_team.garages[0].root == "eaid://x/" && !by_team.garages[0].srgb,
+          "a garage by team identity matches the package entry that names it");
+    check(lower(R"j({"package":"mod.b/f1_2025","entry":"renault","textures":"g"})j").garages[0].groups[0] ==
+              "asset_groups/f1_2025_vehicle_package/teams/renault/wep/renault.assetgroup",
+          "another box's garage lands on that box's own car group, never the 2020 ones");
+    content::Plan other = lower(R"j({"package":"mod.a/f1_2020","entry":"lotus","textures":"g"})j");
+    bool leaks = false;
+    for (auto &g : other.garages[0].groups)
+        leaks = leaks || g.find("f1_2025") != std::string::npos || g.find("mercedes") != std::string::npos;
+    check(!leaks, "a box's garage names only the groups of its team's cars");
+    for (const char *bad : {R"j({"package":"mod.a/f1_2020","entry":"ferrari","textures":"g"})j", R"j({"package":"mod.a/nope","entry":"lotus","textures":"g"})j",
+                            R"j({"package":"mod.a/f1_2020","textures":"g"})j", R"j({"package":"mod.a/f1_2020","entry":"lotus"})j"}) {
+        content::Plan p = lower(bad);
+        check(p.garages.empty() && p.refused == 1, std::string("refused: ") + bad);
+    }
+    db.erase(std::string(content::VEHICLES) + "[_metadata_=cs20_lotus].vehicle_package");
+    check(lower(R"j({"package":"mod.a/f1_2020","entry":"lotus","textures":"g"})j").garages.empty(),
+          "a car without a vehicle row in the game database leaves nothing to attach to");
+}
+
 static void livery_tests()
 {
     std::map<std::string, std::string> db = {
@@ -1695,6 +1761,7 @@ int main(int argc, char **argv)
     slot_tests();
     engine_tests();
     livery_tests();
+    garage_tests();
     if (argc > 1)
         variant_tests(argv[1]);
     if (argc > 1)
