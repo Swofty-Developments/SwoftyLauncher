@@ -142,4 +142,70 @@ inline std::string page_fault_line(uint64_t va)
     return b;
 }
 
+constexpr int kMaxDebugMessages = 50;
+constexpr uint32_t kSdkLayersMissing = 0x887a002b;
+
+inline bool debug_requested(const char *env)
+{
+    return env && env[0] == '1' && !env[1];
+}
+
+inline bool is_error_severity(int severity)
+{
+    return severity == 0 || severity == 1;
+}
+
+inline const char *severity_name(int severity)
+{
+    switch (severity) {
+    case 0: return "CORRUPTION";
+    case 1: return "ERROR";
+    case 2: return "WARNING";
+    case 3: return "INFO";
+    default: return "MESSAGE";
+    }
+}
+
+inline const char *category_name(int category)
+{
+    static const char *const names[] = {"APPLICATION_DEFINED", "MISCELLANEOUS", "INITIALIZATION", "CLEANUP", "COMPILATION",
+                                        "STATE_CREATION", "STATE_SETTING", "STATE_GETTING", "RESOURCE_MANIPULATION", "EXECUTION",
+                                        "SHADER"};
+    return category >= 0 && category < int(sizeof names / sizeof *names) ? names[category] : "UNKNOWN_CATEGORY";
+}
+
+struct DebugBudget {
+    int taken = 0;
+
+    bool take(int severity)
+    {
+        if (!is_error_severity(severity) || taken >= kMaxDebugMessages)
+            return false;
+        taken++;
+        return true;
+    }
+};
+
+inline std::string debug_line(int index, int severity, int category, uint32_t id, const char *text)
+{
+    char b[1400];
+    std::snprintf(b, sizeof b, "[d3d-debug] #%d %s %s id=%u: %.1200s", index, severity_name(severity), category_name(category), id,
+                  text ? text : "");
+    std::string s = b;
+    while (!s.empty() && (s.back() == '\n' || s.back() == '\r'))
+        s.pop_back();
+    return s;
+}
+
+inline std::string debug_missing_note(uint32_t hr)
+{
+    char b[300];
+    std::snprintf(b, sizeof b,
+                  "[d3d-debug] the D3D12 debug layer is not installed (0x%08x; no Graphics Tools and no d3d12SDKLayers.dll next to "
+                  "D3D12Core.dll); carrying on without it",
+                  hr);
+    return b;
+}
+
+
 }

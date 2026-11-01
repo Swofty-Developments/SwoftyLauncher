@@ -79,6 +79,27 @@ int main()
     CHECK(dr::allocation_line("", 0x19, 0x1234).find("at 0x1234") != std::string::npos);
     CHECK(dr::page_fault_line(0xdeadbeef000ull).find("0xdeadbeef000") != std::string::npos);
 
+    CHECK(!dr::debug_requested(nullptr));
+    CHECK(!dr::debug_requested(""));
+    CHECK(dr::debug_requested("1"));
+    CHECK(!dr::debug_requested("0"));
+    CHECK(!dr::debug_requested("11"));
+    CHECK(dr::is_error_severity(0) && dr::is_error_severity(1));
+    CHECK(!dr::is_error_severity(2) && !dr::is_error_severity(3) && !dr::is_error_severity(4));
+    dr::DebugBudget budget;
+    CHECK(!budget.take(2));
+    CHECK(budget.taken == 0);
+    for (int i = 0; i < dr::kMaxDebugMessages; i++)
+        CHECK(budget.take(i % 2));
+    CHECK(!budget.take(1));
+    CHECK(!budget.take(0));
+    CHECK(budget.taken == dr::kMaxDebugMessages);
+    std::string line = dr::debug_line(3, 1, 9, 1234, "bad call\r\n");
+    CHECK(line == "[d3d-debug] #3 ERROR EXECUTION id=1234: bad call");
+    CHECK(dr::debug_line(1, 0, 99, 7, nullptr).find("CORRUPTION UNKNOWN_CATEGORY id=7") != std::string::npos);
+    CHECK(dr::debug_missing_note(dr::kSdkLayersMissing).find("0x887a002b") != std::string::npos);
+    CHECK(dr::debug_missing_note(0).find("Graphics Tools") != std::string::npos);
+
     if (!g_fail)
         std::printf("dred test passed\n");
     return g_fail ? 1 : 0;
