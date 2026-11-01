@@ -649,6 +649,18 @@ impl Findings {
         if sac {
             return Some(Cause::SmartAppControl { seen: false });
         }
+        if self
+            .games
+            .iter()
+            .any(|g| matches!(&g.modules, Ok(m) if m.version.iter().any(|p| in_folder(p, game))))
+        {
+            return Some(Cause::LoadedSilently);
+        }
+        if self.games.is_empty() && self.created.is_some() {
+            return Some(Cause::GameEnded {
+                antivirus: self.third_party_antivirus(),
+            });
+        }
         let unreadable = !self.games.is_empty() && self.games.iter().all(|g| g.modules.is_err());
         (unreadable && self.third_party_antivirus().is_empty()).then_some(Cause::Unreadable)
     }
@@ -1808,7 +1820,7 @@ mod tests {
         );
         let loaded = running(&[&format!(r"{GAME}\version.dll"), SYSTEM], Mitigation::default());
         let f = found([audit, core].concat(), vec![loaded]);
-        assert_eq!(f.cause(&game()), None);
+        assert_eq!(f.cause(&game()), Some(Cause::LoadedSilently));
     }
 
     #[test]
@@ -2016,6 +2028,28 @@ mod tests {
         assert_eq!(found(Vec::new(), Vec::new()).cause(&game()), None);
     }
 
+    #[test]
+    fn a_game_gone_before_the_look_is_unknown_and_a_loaded_loader_is_not_blocked() {
+        let mut f = found(Vec::new(), Vec::new());
+        f.created = Some(28016);
+        assert_eq!(
+            f.cause(&game()),
+            Some(Cause::GameEnded {
+                antivirus: Vec::new()
+            })
+        );
+        f.antivirus = Some(Ok(vec!["Bitdefender Antivirus (on)".into()]));
+        assert_eq!(
+            f.cause(&game()),
+            Some(Cause::GameEnded {
+                antivirus: vec!["Bitdefender Antivirus".into()]
+            })
+        );
+        let ours = format!(r"{GAME}\version.dll");
+        let f = found(Vec::new(), vec![running(&[ours.as_str()], Mitigation::default())]);
+        assert_eq!(f.cause(&game()), Some(Cause::LoadedSilently));
+    }
+
     fn system_copy() -> Findings {
         found(Vec::new(), vec![running(&[SYSTEM], Mitigation::default())])
     }
@@ -2218,11 +2252,11 @@ mod tests {
     fn smart_app_control_on_is_the_cause_only_when_nothing_else_is() {
         let ours = format!(r"{GAME}\version.dll");
         let mut f = found(Vec::new(), vec![running(&[&ours, SYSTEM], Mitigation::default())]);
-        assert_eq!(f.cause(&game()), None);
+        assert_eq!(f.cause(&game()), Some(Cause::LoadedSilently));
         f.smart_app_control = Some(Ok(Some(1)));
         assert_eq!(f.cause(&game()), Some(Cause::SmartAppControl { seen: false }));
         f.smart_app_control = Some(Ok(Some(2)));
-        assert_eq!(f.cause(&game()), None);
+        assert_eq!(f.cause(&game()), Some(Cause::LoadedSilently));
         f.games = vec![running(&[SYSTEM], Mitigation::default())];
         f.smart_app_control = Some(Ok(Some(1)));
         assert!(matches!(f.cause(&game()), Some(Cause::Unexplained { .. })));
