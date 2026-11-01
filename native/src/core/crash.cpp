@@ -12,6 +12,8 @@
 #include "crash_dir.hpp"
 #include "crash_heap.hpp"
 #include "../loader/data_folder.h"
+#include "dred.hpp"
+#include "dred_logic.hpp"
 #include "json.hpp"
 #include "perf.hpp"
 #include "safetyhook.hpp"
@@ -1642,6 +1644,22 @@ void step_prior(Request &r)
     section_stack(p.ctx, p.lo, p.hi, "Stack of the earlier exception");
 }
 
+void step_dred(Request &r)
+{
+    bool seen = false;
+    auto look = [&](const CONTEXT &c) {
+        const DWORD64 *v = &c.Rax;
+        for (int i = 0; i < 16; i++)
+            seen = seen || runtime::dred::is_removal_hresult(v[i]);
+    };
+    look(r.ctx);
+    if (r.has_prior)
+        look(r.prior.ctx);
+    std::string text = runtime::dred::section(seen);
+    if (!text.empty())
+        out.put("%s", text.c_str());
+}
+
 void step_close(Request &)
 {
     CloseHandle(out.file);
@@ -1665,6 +1683,7 @@ const Step STEPS[] = {
     {"the Code around rip and Memory sections", [](Request &r) { section_memory(r); }},
     {"the Ne heap section", [](Request &r) { section_heap(r); }},
     {"the Game state section", [](Request &r) { section_state(r); }},
+    {"the GPU device removal section", step_dred},
     {"the Black box sections", [](Request &r) { section_blackbox(r); }},
     {"the Swofty probes section", [](Request &r) { section_probes(r); }},
     {"the registry reports", [](Request &) { swofty_core::apply::moments::crash_reports(); }},
@@ -2033,4 +2052,5 @@ void crash_attach(SwoftyApi *a, const std::wstring &dir)
        dump_mode == DUMP_FULL ? "full-memory" : dump_mode == DUMP_OFF ? "no" : "stacks-only",
        dump_mode == DUMP_NORMAL ? " (SWOFTY_CRASH_DUMP=full for all memory, off for none)" : "",
        writer_tid ? "a dedicated thread" : "the reporting thread", ntt ? "hooked" : "NOT hooked");
+    runtime::dred::arm(swofty_dir, tap, self);
 }

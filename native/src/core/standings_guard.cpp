@@ -1,4 +1,5 @@
 #include "runtime.hpp"
+#include "track_record_logic.hpp"
 
 #include <windows.h>
 
@@ -24,7 +25,17 @@
 // branch, which the game takes for a round without a record and which leaves that round's track fields empty. A
 // round with a record runs the game's code unchanged.
 //
-// SWOFTY_STANDINGS_GUARD=0 turns it off.
+// The same guard covers the weekend list builder at 0x14181b3a0 (Career_Weekends_BuildResultNodes), which Team HQ
+// screens such as the R&D table build per round: weekend_<n> nodes with track, show_pos_result, pos_string and
+// visited_track. For each round it takes the TrackDataRecord from TrackDataSystem (CareerEntity +0xf58) +0x28 by Weekend
+// +0x278 into rax and reads [rax+0x2c0] without checking rax, so a round whose track has no record faults with
+// ACCESS_VIOLATION reading 0x2c0 at F1_25.exe+0x181b859. The record is empty for a track the build or the addons leave
+// out, such as Paul Ricard (stat id 1), which Progressive Career puts on the 2018, 2019, 2021 and 2022 calendars and
+// which only a community track fills. At site_Career_WeekendsTrackRecordLoad a null rax resumes after the load with
+// rax still 0, which the game already handles (the next instructions test rax and use an empty node), so the round
+// shows no track. Each track is logged once.
+//
+// SWOFTY_STANDINGS_GUARD=0 turns both off.
 
 namespace {
 
@@ -35,7 +46,10 @@ constexpr size_t FRAME_WEEKEND = 0xa0;
 constexpr size_t WEEKEND_TRACK = 0x278;
 constexpr size_t LOG_ROUNDS = 64;
 
-uintptr_t track_done = 0;
+constexpr size_t RECORD_LOAD_LEN = 7;
+
+uintptr_t track_done = 0, record_next = 0;
+runtime::track_record::Seen record_seen;
 bool offered = false, settled = false;
 std::mutex logged_lock;
 std::vector<uint32_t> logged;
@@ -69,6 +83,21 @@ void track_load(SwoftyContext *c)
         swofty::log("[career] standings: round %u has no track data; skipped%s", round, more);
 }
 
+void record_load(SwoftyContext *c)
+{
+    if (c->rax)
+        return;
+    c->rip = record_next;
+    uint8_t track = static_cast<uint8_t>(c->rdi);
+    bool first;
+    {
+        std::lock_guard<std::mutex> hold(logged_lock);
+        first = record_seen.first(track);
+    }
+    if (first)
+        swofty::log("[career] weekends: track %u has no track data; the round shows no track", unsigned(track));
+}
+
 }
 
 namespace runtime {
@@ -92,8 +121,15 @@ std::vector<CoreMixins> standings_guard_mixins()
                     "site_Career_StandingsWeekendTrackDone, which this build does not resolve");
         return out;
     }
-    out.push_back(
-        {MIXIN, {{"site_Career_StandingsWeekendTrackLoad", SWOFTY_MIXIN_SITE, 100, (void *)&track_load, nullptr}}});
+    std::vector<SwoftyMixin> sites = {
+        {"site_Career_StandingsWeekendTrackLoad", SWOFTY_MIXIN_SITE, 100, (void *)&track_load, nullptr}};
+    uintptr_t record_load_site = swofty::api->resolve("site_Career_WeekendsTrackRecordLoad");
+    if (record_load_site) {
+        record_next = record_load_site + RECORD_LOAD_LEN;
+        sites.push_back({"site_Career_WeekendsTrackRecordLoad", SWOFTY_MIXIN_SITE, 100, (void *)&record_load, nullptr});
+    } else
+        swofty::log("[career] weekends track guard off: site_Career_WeekendsTrackRecordLoad is not resolved in this build");
+    out.push_back({MIXIN, sites});
     return out;
 }
 

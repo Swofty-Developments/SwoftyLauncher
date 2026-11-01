@@ -160585,6 +160585,33 @@
    "used_by": [
     "native/src/core/netplay_room.cpp"
    ]
+  },
+  {
+   "id": "career.weekends_track_record_load",
+   "section": ".xtls",
+   "pattern": "48 8B 44 08 08 48 8B 80 C0 02 00 00 48 8D 48 08 48 85 C0",
+   "match": "0x14181b854",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14181b859",
+   "kind": "mid",
+   "expect": "48 8B 80 C0 02 00 00",
+   "names": [
+    "site_Career_WeekendsTrackRecordLoad"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "rnd-track-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/standings_guard.cpp"
+   ]
   }
  ]
 }

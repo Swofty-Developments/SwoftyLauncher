@@ -241,6 +241,21 @@ impl Collector {
         }
     }
 
+    fn ea_diagnostics(&mut self) {
+        if !cfg!(windows) {
+            return;
+        }
+        let mut taken = Vec::new();
+        for log in crate::ea_diag::newest_logs(&crate::ea_diag::log_dirs(), crate::ea_diag::LOG_FILES) {
+            let name = crate::ea_diag::log_entry_name(&log, &mut taken);
+            self.file_capped(format!("ea-app/{name}"), &log, None, crate::ea_diag::LOG_TAIL);
+        }
+        match crate::ea_diag::application_events() {
+            Ok(text) => self.push("windows/application-events.txt".into(), text.into_bytes(), None),
+            Err(e) => self.skipped.push(format!("windows/application-events.txt: {e}")),
+        }
+    }
+
     fn file(&mut self, path: String, from: &Path, redact: Option<fn(&str) -> String>) {
         self.file_capped(path, from, redact, self.limits.file);
     }
@@ -421,6 +436,7 @@ impl Bundle {
                 Some(crate::multiplayer::diag::scrub as fn(&str) -> String),
             );
         }
+        c.ea_diagnostics();
         let not_stock = store.root.join("state/not-stock.json");
         if not_stock.is_file() {
             c.file("state/not-stock.json".into(), &not_stock, None);
@@ -582,6 +598,15 @@ impl Bundle {
             CrashFound::None => {
                 s.push_str("No crash report was found (the game did not write one this session)\n")
             }
+        }
+        s.push_str("\nSaves\n");
+        let mut sources = logs.clone();
+        for name in LAUNCH_LOGS {
+            sources.push((name.to_owned(), store.root.join(name)));
+        }
+        for l in saves_lines(&sources) {
+            s.push_str(&l);
+            s.push('\n');
         }
         s.push_str("\nGame files against Steam\n");
         s.push_str(&game_files_section(store, report.game.dir.as_deref()));
@@ -794,6 +819,43 @@ fn overlay_lines(store: &Store, logs: &[(String, PathBuf)]) -> Vec<String> {
         let state = crate::overlay_guard::SessionOverlay::scan(&String::from_utf8_lossy(&head))
             .map_or_else(|| "no [overlay] lines".to_owned(), |o| o.describe());
         out.push(format!("  {label:40} {state}"));
+    }
+    out
+}
+
+const SAVES_LINES: usize = 60;
+
+/// The `[saves]` lines that say where the game's profile save came from and which career slots
+/// and containers it held, minus the per-call sandbox chatter.
+fn saves_excerpt(text: &str, cap: usize) -> Vec<String> {
+    text.lines()
+        .filter(|l| {
+            (l.contains("[saves]") && !l.contains("[saves] sandbox:"))
+                || l.contains("saves: Steam remote folder")
+        })
+        .take(cap)
+        .map(|l| format!("  {}", l.trim_end()))
+        .collect()
+}
+
+fn saves_lines(logs: &[(String, PathBuf)]) -> Vec<String> {
+    let mut out = Vec::new();
+    for (label, log) in logs {
+        let Ok(head) = read_head(log, OVERLAY_READ) else {
+            continue;
+        };
+        let lines = saves_excerpt(&String::from_utf8_lossy(&head), SAVES_LINES);
+        if lines.is_empty() && label.starts_with("state/") {
+            continue;
+        }
+        out.push(label.clone());
+        if lines.is_empty() {
+            out.push("  no [saves] lines".to_owned());
+        }
+        out.extend(lines);
+    }
+    if out.is_empty() {
+        out.push("  No loader log was found".to_owned());
     }
     out
 }
