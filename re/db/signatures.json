@@ -319,6 +319,62 @@
    "used_by": []
   },
   {
+   "id": "session.garage_slots_done",
+   "section": ".xtls",
+   "pattern": "75 C0 E9 ?? ?? ?? ?? 48 81 C4 B8 00 00 00",
+   "match": "0x1424a855e",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1424a8565",
+   "kind": "mid",
+   "expect": "48 81 C4 B8",
+   "names": [
+    "site_Sess_GarageSlots_Done"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "garageslots",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/garage_slots.cpp"
+   ],
+   "func_start": "0x1424a8080"
+  },
+  {
+   "id": "session.garage_slots_garage_load",
+   "section": ".xtls",
+   "pattern": "0F 45 D8 49 8B 44 24 08 48 8B 4C 24 58",
+   "match": "0x1424a821d",
+   "anchor": "0x3",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1424a8220",
+   "kind": "mid",
+   "expect": "49 8B 44 24",
+   "names": [
+    "site_Sess_GarageSlots_GarageLoad"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "garageslots",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/garage_slots.cpp"
+   ],
+   "func_start": "0x1424a8080"
+  },
+  {
    "id": "session.selector_limit_load",
    "section": ".xtls",
    "pattern": "8B 00 48 89 44 24 40 4C 8D AC 24 30 01 00 00",
