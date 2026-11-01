@@ -50,6 +50,7 @@
 #include "race_numbers.hpp"
 #include "components.hpp"
 #include "lineup.hpp"
+#include "names_load.hpp"
 #include "rating_solve.hpp"
 
 using namespace swofty::game;
@@ -441,18 +442,11 @@ template <class F> void each_row(const std::string &table, const std::string &st
 
 constexpr double kNamesSliceMs = 2.0;
 
-struct NamesLoad {
-    int stage = 0;
-    int64_t row = 0;
-    int64_t count = -1;
-};
+ce::names::Load g_load;
 
-NamesLoad g_load;
-int g_name_tries = 0;
-
-double since_ms(std::chrono::steady_clock::time_point t0)
+double now_ms()
 {
-    return std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
+    return std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now().time_since_epoch()).count();
 }
 
 void load_driver_row(const std::string &row)
@@ -479,48 +473,43 @@ void load_named_row(const std::string &row, std::unordered_map<uint32_t, std::st
         into[static_cast<uint32_t>(id)] = v;
 }
 
-bool names_step(double budget_ms)
-{
-    static const char *const kTable[] = {"entrants.drivers", "entrants.teams",
-                                         "driver_statistics.driver_statistics.driver_statistics_info"};
-    static const char *const kStem[] = {"driver", "team", "StatisticInfo"};
-    if (g_names.loaded || !swofty::db::available())
-        return false;
-    if (g_load.stage == 0 && g_load.count < 0 && g_name_tries++ % 30 != 0)
-        return false;
-    auto t0 = std::chrono::steady_clock::now();
-    while (g_load.stage < 3) {
-        std::string table = kTable[g_load.stage], stem = kStem[g_load.stage];
-        if (g_load.count < 0) {
-            int64_t count = 0;
-            if (!db_int(table + "._" + stem + "_instancecount_", count) || count <= 0 || count > 4096)
-                count = 0;
-            g_load.count = count;
-            g_load.row = 0;
-        }
-        while (g_load.row < g_load.count) {
-            std::string row = table + "." + stem + "_" + std::to_string(g_load.row++);
-            if (g_load.stage == 0)
-                load_driver_row(row);
-            else
-                load_named_row(row, g_load.stage == 1 ? g_names.team : g_names.stat);
-            if (since_ms(t0) >= budget_ms)
-                return false;
-        }
-        ++g_load.stage;
-        g_load.count = -1;
+struct NamesSource {
+    static constexpr const char *kTable[ce::names::kStages] = {
+        "entrants.drivers", "entrants.teams", "driver_statistics.driver_statistics.driver_statistics_info"};
+    static constexpr const char *kStem[ce::names::kStages] = {"driver", "team", "StatisticInfo"};
+
+    bool available() const { return swofty::db::available(); }
+
+    int64_t count(int stage) const
+    {
+        int64_t n = 0;
+        return db_int(std::string(kTable[stage]) + "._" + kStem[stage] + "_instancecount_", n) ? n : 0;
     }
-    g_load = NamesLoad{};
-    g_names.loaded = !g_names.driver.empty();
-    if (g_names.loaded || g_name_tries <= 90)
-        ce::log("drivers: gamedb names loaded: %zu drivers, %zu teams, %zu statistics",
-            g_names.driver.size(), g_names.team.size(), g_names.stat.size());
-    return true;
-}
+
+    void row(int stage, int64_t index) const
+    {
+        std::string path = std::string(kTable[stage]) + "." + kStem[stage] + "_" + std::to_string(index);
+        if (stage == 0)
+            load_driver_row(path);
+        else
+            load_named_row(path, stage == 1 ? g_names.team : g_names.stat);
+    }
+
+    bool filled() const { return !g_names.driver.empty(); }
+
+    void finished(bool loaded) const
+    {
+        g_names.loaded = loaded;
+        if (loaded || g_load.tries <= 90)
+            ce::log("drivers: gamedb names loaded: %zu drivers, %zu teams, %zu statistics",
+                g_names.driver.size(), g_names.team.size(), g_names.stat.size());
+    }
+};
 
 const Names &names()
 {
-    names_step(1e9);
+    NamesSource src;
+    ce::names::step(g_load, src, now_ms, 1e9);
     return g_names;
 }
 
@@ -529,11 +518,15 @@ const Names &names_cached()
     return g_names;
 }
 
+bool names_pending()
+{
+    return ce::names::pending(g_load, NamesSource{});
+}
+
 int names_idle()
 {
-    if (g_names.loaded || !swofty::db::available())
-        return 0;
-    return names_step(kNamesSliceMs) ? 2 : 1;
+    NamesSource src;
+    return ce::names::idle(g_load, src, now_ms, kNamesSliceMs);
 }
 
 bool g_in_section = false;
@@ -917,6 +910,10 @@ void section(ce::Writer &w)
     Comp c;
     const char *why = "no career loaded";
     bool ok = ce::in_career() && find_comp(c, &why);
+    if (ok && names_pending()) {
+        ok = false;
+        why = "reading the driver and team names from the game database";
+    }
     w.begin_object();
     w.key("available");
     w.boolean(ok);

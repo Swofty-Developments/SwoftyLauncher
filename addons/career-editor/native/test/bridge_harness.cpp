@@ -66,6 +66,9 @@ static ce::OpResult weather_set(const ce::Json &a) { ce::OpResult r; r.ok = true
 static ce::OpResult thrower(const ce::Json &) { throw std::runtime_error("boom"); }
 static int econ_renders = 0;
 static void econ_section(ce::Writer &w) { ++econ_renders; w.begin_object(); w.key("cash"); w.integer(cash); w.key("name"); w.str("Team \"Q\"\n"); w.key("ratio"); w.num(0.1); w.key("big"); w.num(1e300); w.key("bad"); w.str(std::string("\x90\xcc*@\x01ok\xe2\x82")); w.key("\xff"); w.integer(1); w.key("arr"); w.begin_array(); w.integer(1); w.null(); w.boolean(true); w.begin_object(); w.end_object(); w.end_array(); w.end_object(); }
+static int names_state = 0;
+static int names_idle() { return names_state == 1 ? (names_state = 2, 2) : 0; }
+static void names_section(ce::Writer &w) { w.begin_object(); w.key("name"); if (names_state == 2) w.str("ready"); else w.null(); w.end_object(); }
 static void season_section(ce::Writer &w) { w.begin_object(); w.key("season_number"); w.integer(2); w.end_object(); }
 static void broken_section(ce::Writer &w) { w.key("x"); w.integer(1); }
 CE_OP("economy.cash.set", cash_set);
@@ -74,6 +77,8 @@ CE_OP_ANYTIME("weather.session.set", weather_set);
 CE_OP("test.throw", thrower);
 CE_SECTION("economy", econ_section);
 CE_SECTION("season", season_section);
+CE_SECTION("names", names_section);
+CE_IDLE(names_idle);
 CE_SECTION("broken", broken_section);
 
 static std::string slurp(const fs::path &p) { std::ifstream f(p); std::stringstream ss; ss << f.rdbuf(); return ss.str(); }
@@ -127,6 +132,12 @@ int main() {
     // 2b: an unchanged section is not rendered again every second: 100 frames (3 s) cost at most 2 renders
     int before_renders = econ_renders; pump(100);
     CHECK(econ_renders - before_renders <= 2);
+    // 2c: a section that read half-loaded data renders again once the module that loads it says it finished
+    snap = parse(slurp(root / "snapshot.json"));
+    CHECK(snap["sections"]["names"]["name"].type == ce::Json::Null);
+    names_state = 1; pump(100);
+    snap = parse(slurp(root / "snapshot.json"));
+    CHECK(snap["sections"]["names"]["name"].str() == "ready");
     // 3: safe -> runs. expect is an object here -> op sees expect object -> not number -> no stale check
     f_safe = true; pump(40);
     CHECK(!fs::exists(root / "inbox/100.json"));
