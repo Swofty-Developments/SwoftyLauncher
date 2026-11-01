@@ -131,6 +131,7 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
 {
     std::vector<logo_build::Want> wants;
     std::set<std::string> seen;
+    logo_build::Refusals refusals;
     uint64_t key = 0xcbf29ce484222325ull;
     for (auto &l : logos) {
         if (!seen.insert(l.array + "|" + l.key).second)
@@ -142,7 +143,7 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         if (l.stock.empty()) {
             std::string bytes = runtime::read_file(runtime::under_swofty("addons/" + l.addon + "/" + l.file), size_t(64) << 20), why;
             if (bytes.empty() || !png::decode(bytes, w.rgba, w.width, w.height, why)) {
-                report.lines.push_back("team.logo " + l.id + ": " + l.context + " image " + l.file + (why.empty() ? " is empty" : ": " + why));
+                refusals.add(l.context + " image does not decode: " + (why.empty() ? "it is empty" : why), l.id + " " + l.file);
                 report.refused++;
                 continue;
             }
@@ -153,6 +154,7 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         }
         wants.push_back(std::move(w));
     }
+    refusals.flush(report.lines);
     if (wants.empty())
         return;
     std::vector<std::string> files;
