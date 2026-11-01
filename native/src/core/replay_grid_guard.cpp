@@ -25,6 +25,9 @@
 // [rsp+0x98], its base [rsp+0xa0] and the holder's capacity [rsp+0x108]. A state larger than the capacity is cut to
 // nothing by moving the position back to the base: the recorder then writes an empty state for that recordable and
 // copies no bytes into the holder. The session's grid is not touched. A state that fits runs the game's code unchanged.
+// A session of 24 cars or fewer, the size of My Team's stock grid, also runs the game's code unchanged: the recorder
+// there writes CannedEventsSystem's state a few bytes past its holder, as it did before this guard, and the replay
+// reader expects that state, so an emptied one would be read back as garbage.
 // The first skip is logged.
 //
 // SWOFTY_REPLAY_GRID_GUARD=0 turns it off.
@@ -62,6 +65,8 @@ std::string name_of(uint64_t p)
 void after_record(SwoftyContext *c)
 {
     namespace rg = runtime::replay_grid;
+    if (!rg::guards(rg::session_vehicles.load()))
+        return;
     uint64_t pos = slot(c, rg::STREAM_POS), base = slot(c, rg::STREAM_BASE);
     uint64_t cap = rg::capacity_of(slot(c, rg::HOLDER_CAPACITY));
     if (!rg::outgrew(pos, base, cap))
