@@ -298,6 +298,7 @@ float3 srgb_to_linear(float3 c), linear_to_srgb(float3 c), pq_to_linear(float3 c
 - A pass that writes the picture writes the picture's own format, so values outside 0 to 1 clip in SDR.
 - A pass that works in `to_linear` and `from_linear` looks the same in SDR and HDR.
 - The header runs the pass's function from an 8×8 `main` compute shader, once per pixel of `swofty_size`.
+- Where the function returns NaN or infinity, the header writes the pixel it was given instead: the picture's pixel in a pass that writes the picture, black in an addon texture.
 
 ## Build
 
