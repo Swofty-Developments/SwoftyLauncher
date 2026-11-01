@@ -1490,11 +1490,18 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
     let row = add_row_name(&path, src_path)
         .ok_or_else(|| Error::Resolve(format!("{from} is not a row of {table}")))?;
     let count_path = instance_count_path(&path, row);
-    let n = db.instance_count(&path, row).ok_or_else(|| {
+    let counted = db.instance_count(&path, row).ok_or_else(|| {
         Error::Resolve(format!(
             "{count_path}: missing; add-row needs the table's real path"
         ))
     })?;
+    let mut n = counted;
+    while db
+        .get(fnv1a64(format!("{path}.{row}_{n}._metadata_")))
+        .is_some_and(|r| !names.stock(r.key))
+    {
+        n += 1;
+    }
     let listed = names.fields(table, row).or_else(|| names.fields(&path, row));
     let mode = copy.unwrap_or(CopyMode::All);
     let mut found = Walk::default();
@@ -1520,6 +1527,12 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
         return Err(Error::Resolve(format!("{table}.{row}: unknown field {f}")));
     }
     let what = format!("add-row {dst_path} (from {from})");
+    if n > counted {
+        cx.report.lines.push(format!(
+            "{what}: {path}'s count is {counted} but rows {counted} to {} already hold another addon's records; adds after them and raises the count",
+            n - 1
+        ));
+    }
     if !found.uncatalogued.is_empty() {
         let shapes: Vec<&String> = found.uncatalogued.iter().collect();
         cx.warn(format!(
@@ -1935,8 +1948,60 @@ mod tests {
         let taken = ops(
             r#"{"schema_version":1,"ops":[{"op":"add-row","table":"entrants.teams","from":"entrants.teams.team_0"}]}"#,
         );
-        let err = apply_db_ops(&mut db, &taken, &names()).unwrap_err();
-        assert!(err.to_string().contains("already exists"), "{err}");
+        let mut report = DbReport::default();
+        apply_db_ops_report(&mut db, &taken, &names(), &mut report).unwrap();
+        assert_eq!(db.instance_count("entrants.teams", "team"), Some(4));
+        assert_eq!(
+            db.get_text("entrants.teams.team_2._metadata_").as_deref(),
+            Some("stale")
+        );
+        assert!(db.get("entrants.teams.team_3._metadata_").is_some());
+    }
+
+    #[test]
+    fn add_row_adds_after_rows_another_addon_left_above_the_count() {
+        let mut db = db();
+        for i in [2, 3] {
+            db.records.push(Record::new(
+                &format!("entrants.teams.team_{i}._metadata_"),
+                4,
+                format!("other_{i}"),
+            ));
+        }
+        let stock: HashSet<u64> = db
+            .records
+            .iter()
+            .filter(|r| !r.text().starts_with("other_"))
+            .map(|r| r.key)
+            .collect();
+        let add = ops(
+            r#"{"schema_version":1,"fields":{"entrants.teams.team":["_metadata_","stat_id","display_name_code"]},
+            "ops":[{"op":"add-row","table":"entrants.teams","from":"entrants.teams.team_0",
+            "set":{"_metadata_":"mine"}}]}"#,
+        );
+        let mut report = DbReport::default();
+        apply_db_ops_report(&mut db, &add, &stock, &mut report).unwrap();
+        assert_eq!(
+            db.get_text("entrants.teams.team_2._metadata_").as_deref(),
+            Some("other_2")
+        );
+        assert_eq!(
+            db.get_text("entrants.teams.team_3._metadata_").as_deref(),
+            Some("other_3")
+        );
+        assert_eq!(
+            db.get_text("entrants.teams.team_4._metadata_").as_deref(),
+            Some("mine")
+        );
+        assert_eq!(db.instance_count("entrants.teams", "team"), Some(5));
+        assert!(
+            report
+                .lines
+                .iter()
+                .any(|l| l.contains("rows 2 to 3 already hold")),
+            "{:?}",
+            report.lines
+        );
     }
 
     #[test]
