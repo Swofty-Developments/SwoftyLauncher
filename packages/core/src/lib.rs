@@ -16,6 +16,7 @@ pub mod crash;
 pub mod dbedit;
 pub mod disk;
 pub mod ea_app;
+pub mod ea_diag;
 pub mod entrant_lists;
 pub mod erpbuild;
 pub mod exe_version;
