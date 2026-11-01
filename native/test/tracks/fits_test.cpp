@@ -36,10 +36,7 @@ int main()
     expect(f.ok && f.no_facts.empty(), "Melbourne fits the 11-team 2016 box");
 
     f = trk::fits(box, *base.by_code("igora_drive"), trk::Mode::grand_prix, &facts);
-    expect(!f.ok && f.rule == trk::Rule::garages && f.reason == "its swofty_f1 world has 10 garages; the box has 11 teams",
-           "an 11-team box and a 10-garage world: left out with the frozen reason");
-    expect(trk::fits(cs2016(10), *base.by_code("igora_drive"), trk::Mode::grand_prix, &facts).ok,
-           "a 10-team box fits the 10-garage world");
+    expect(f.ok, "an 11-team box fits a 10-garage world: a team without a garage runs from the pit lane");
 
     f = trk::fits(box, *base.by_code("monaco"), trk::Mode::grand_prix, &facts);
     expect(!f.ok && f.rule == trk::Rule::grid && f.reason == "its swofty_f1 world has 20 grid slots; the box runs 22 cars",
@@ -48,7 +45,7 @@ int main()
     f = trk::fits(big, *base.by_code("okayama"), trk::Mode::grand_prix, &facts);
     expect(f.ok, "a 24-car box clamped to the install's 22 fits a 24-slot world");
     f = trk::fits(big, *base.by_code("melbourne"), trk::Mode::grand_prix, &facts);
-    expect(!f.ok && f.rule == trk::Rule::garages, "a 12-team box needs 12 garages");
+    expect(f.ok, "a 12-team box fits an 11-garage world");
     trk::BoxInfo grid_only = cs2016();
     grid_only.cars = 24;
     f = trk::fits(grid_only, *base.by_code("bahrain"), trk::Mode::grand_prix, &facts);
@@ -121,8 +118,7 @@ int main()
     expect(trk::fits(cs, *base.by_code("melbourne"), trk::Mode::grand_prix, &built).ok,
            "an 11-team box fits a stock track's 11-garage f1_26 world");
     f = trk::fits(cs, *base.by_code("igora_drive"), trk::Mode::grand_prix, &built);
-    expect(!f.ok && f.rule == trk::Rule::garages && f.reason == "its swofty_f1 world has 10 garages; the box has 11 teams",
-           "a track whose f1_26 world has 10 garages is left out of an 11-team box");
+    expect(f.ok, "a track whose f1_26 world has 10 garages fits an 11-team box");
     trk::Facts no_layer = built;
     no_layer.layers.pop_back();
     f = trk::fits(cs, *base.by_code("igora_drive"), trk::Mode::grand_prix, &no_layer);
@@ -132,7 +128,7 @@ int main()
     trk::BoxInfo stock;
     stock.package = "game/f1_2026";
     f = trk::fits(stock, *base.by_code("igora_drive"), trk::Mode::grand_prix, &facts);
-    expect(f.ok && f.no_facts.size() >= 2, "a stock box without a record: unknown teams and cars pass");
+    expect(f.ok && !f.no_facts.empty(), "a stock box without a record: unknown cars pass");
     trk::BoxInfo half = box;
     half.ai[3].folder.clear();
     f = trk::fits(half, *base.by_code("melbourne"), trk::Mode::grand_prix, &facts);
@@ -141,11 +137,8 @@ int main()
 
     trk::Decision d = trk::decide(base.by_code("igora_drive"), box, trk::Mode::grand_prix,
                                   trk::fits(box, *base.by_code("igora_drive"), trk::Mode::grand_prix, &facts), "");
-    expect(!d.ok && d.title == "Igora Drive can't run in F1 2016" && d.body == "Its garages hold 10 teams. F1 2016 has 11.",
-           "the guard's popup is the one tracks.md shows");
-    expect(d.line == "[tracks] guard: mod.miami24/igora_drive in swofty.classic-seasons-2016/f1_2016 (grand_prix): refused "
-                     "(its swofty_f1 world has 10 garages; the box has 11 teams)",
-           "the guard's refusal line names the track, box, mode and reason");
+    expect(d.ok && d.line == "[tracks] guard: mod.miami24/igora_drive in swofty.classic-seasons-2016/f1_2016 (grand_prix): fits",
+           "more teams than garages is no reason to refuse a track");
     d = trk::decide(base.by_code("monaco"), box, trk::Mode::grand_prix,
                     trk::fits(box, *base.by_code("monaco"), trk::Mode::grand_prix, &facts), "Monaco");
     expect(!d.ok && d.body == "Its grid holds 20 cars. F1 2016 runs 22.", "the grid popup");
@@ -295,24 +288,20 @@ int main()
     f = trk::fits(b2012, *base.by_code("melbourne"), trk::Mode::grand_prix, &mugello);
     expect(f.ok && f.no_facts.empty(), "the 12-team 2012 box fits a stock track whose 2012 world has 12 garages");
     f = trk::fits(b2012, *base.by_code("igora_drive"), trk::Mode::grand_prix, &mugello);
-    expect(!f.ok && f.rule == trk::Rule::garages &&
-               f.reason == "its bdx_2012_mode world has 10 garages; the box has 12 teams",
-           "the 12-team 2012 box and a 10-garage 2012 world: the garages rule refuses it");
+    expect(f.ok, "the 12-team 2012 box fits a 10-garage 2012 world");
 
     texts["entrants.entrant_setup_modes.entrant_setup_mode_2.entrant_lists"] = "cs_f1_2016";
     trk::BoxInfo n33y = trk::box_from_list("bdx_s5_2012", ldb);
     expect(n33y.setup_mode == "swofty_f1" && n33y.teams == 12 && n33y.cars == 24 && n33y.derived,
            "a box only the host's entrant setup mode offers (the n33y 2012 box): counts still read");
     f = trk::fits(n33y, *base.by_code("okayama"), trk::Mode::grand_prix, &mugello);
-    expect(!f.ok && f.rule == trk::Rule::garages && f.have == 11 && f.need == 12,
-           "n33y: 12 teams, a community track with 11 garages: refused instead of fits (no facts)");
+    expect(f.ok && f.no_facts.empty(), "n33y: 12 teams and 24 cars at a community track with 11 garages and 24 grid slots fit");
     texts["entrants.entrant_lists.entrant_list_1.season"] = "season_2025";
     ints.erase("entrants.entrant_lists.entrant_list_1._entrant_instancecount_");
     trk::BoxInfo unread = trk::box_from_list("bdx_s5_2012", ldb);
     expect(unread.teams == -1 && unread.cars == -1 && !unread.unread.empty(), "an unreadable count is reported");
     f = trk::fits(unread, *base.by_code("okayama"), trk::Mode::grand_prix, &mugello);
-    expect(!f.ok && f.rule == trk::Rule::garages && f.need == 12 && f.reason.find("assumed") != std::string::npos,
-           "unreadable counts on a list-derived box: the garage rule assumes half the grid's cars and refuses");
+    expect(f.ok, "unreadable counts on a list-derived box: the grid rule assumes the install's grid and the track holds it");
     f = trk::fits(b2012, *base.by_code("okayama"), trk::Mode::grand_prix, &mugello);
     expect(!f.ok && f.rule == trk::Rule::world &&
                f.reason == "its files hold no 2012 world, which the box's bdx_2012_mode layer loads",

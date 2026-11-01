@@ -12,6 +12,7 @@
 
 #include "direct_start_logic.hpp"
 #include "json.hpp"
+#include "room_cover.hpp"
 #include "testagent/agent_logic.hpp"
 #include "title_skip.hpp"
 
@@ -104,6 +105,9 @@ json::Value request;
 safetyhook::MidHook h_link;
 std::atomic<bool> armed{false};
 std::atomic<int> session_frames{0};
+// Read by the cover from the present thread, which holds the cover's lock; the flow thread calls the cover's step()
+// under this file's lock, so the cover side never takes it.
+std::atomic<bool> start_failed{false};
 std::atomic<uint64_t> session_at{0};
 std::atomic<bool> session_screen{false};
 // The broadcast intro runs under the cover; it comes off at the garage (or the grid), or this long after StateSession
@@ -116,6 +120,8 @@ void note_phase()
     if (driver.phase == logged)
         return;
     logged = driver.phase;
+    if (driver.phase == ds::Phase::failed)
+        start_failed = true;
     if (driver.phase == ds::Phase::failed)
         swofty::log("[direct] %s start failed: %s; the menu opens as usual", driver.target.name.c_str(),
                     driver.why.c_str());
@@ -185,6 +191,8 @@ void load_exit(uint8_t *state)
     load_sync_tries++;
     bool done = runtime::title::complete_sync(state + LOAD_SYNC, "StateLoadSession's sync point (+0xcd0)");
     load_sync_done = done;
+    if (done)
+        runtime::room_cover::step("Starting the session", 0.85f, 0.9f);
     swofty::log("[direct] StateLoadSession exiting for %llu ms: its sync point is %s",
                 (unsigned long long)(now - load_exiting_at), done ? "complete" : "still not complete");
 }
@@ -282,6 +290,7 @@ void link_mid(safetyhook::Context &c)
         session_frames.fetch_add(1) == 0 && driver.target.name == "session" && !fade_released) {
         session_at = GetTickCount64();
         release_frontend_fade();
+        runtime::room_cover::step("Opening the garage", 0.9f, 0.97f);
     }
     uint32_t link = *slot, out = driver.on_update(hash, link, child);
     if (out != link) {
@@ -296,9 +305,14 @@ void link_mid(safetyhook::Context &c)
                  n = *reinterpret_cast<uint8_t **>(n + STATE_CHILD))
                 if (*reinterpret_cast<uint32_t *>(n + STATE_HASH) == STATE_LOAD_SESSION) {
                     static bool told = false;
-                    if (!told && driver.target.name == "session" && request["mode"].str() != "time_trial") {
+                    if (!told && driver.target.name == "session") {
                         told = true;
-                        choose_session(modes_seen.load(), "load");
+                        std::string track = request["track"].str();
+                        static std::string what;
+                        what = track.empty() ? "Loading the session" : "Loading " + track;
+                        runtime::room_cover::step(what.c_str(), 0.58f, 0.82f);
+                        if (request["mode"].str() != "time_trial")
+                            choose_session(modes_seen.load(), "load");
                     }
                     load_exit(n);
                     break;
@@ -1027,11 +1041,8 @@ int direct_start_cover_signal()
         return 0;
     if (!armed.load())
         return -1;
-    {
-        std::lock_guard<std::mutex> g(lock);
-        if (driver.phase == ds::Phase::failed)
-            return -1;
-    }
+    if (start_failed.load())
+        return -1;
     if (session_screen.load())
         return 1;
     uint64_t at = session_at.load();
@@ -1068,6 +1079,7 @@ void direct_start_profile_loaded(bool ok)
         swofty::log("[direct] the profile load failed; the start waits for the next one");
         return;
     }
+    runtime::room_cover::step("Profile loaded", 0.4f, 0.54f);
     driver.profile_loaded();
     note_phase();
 }
@@ -1082,6 +1094,8 @@ void direct_start_tick()
         std::string why;
         ds::Setup r = set_up_target(why);
         driver.setup_result(r, why);
+        if (r == ds::Setup::done && driver.target.name == "session")
+            runtime::room_cover::step("Weekend ready", 0.5f, 0.56f);
     }
     // A session keeps the virtual pad plugged in, idle: the game bound the player to it at the title, and letting
     // go of the claim would stop the session on CONTROLLER DISCONNECTED.
