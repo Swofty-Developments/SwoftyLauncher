@@ -5,7 +5,9 @@
 
 #include <atomic>
 #include <cstdio>
+#include <cctype>
 #include <cstring>
+#include <map>
 #include <mutex>
 
 #include "direct_start_logic.hpp"
@@ -478,6 +480,204 @@ void choose_session(void *modes, const char *when)
     }
 }
 
+// The weekend's sessions as the dev session's Apply (0x141125e80) builds them: Sess_Build_DevWeekendStructure
+// (0x140b025f0) on a 0x38-byte list {+8, +0x10 the allocator, +0x18..+0x20 16-byte entries} with the game setup mode
+// ([E+0x2b0]) and a (practice, qualifying, race) triple from the session name, handed to the weekend service
+// (registry component 0x14605ada0) slot 0x268; then the entries are released and the list freed.
+constexpr uintptr_t RVA_WEEKEND_STRUCTURE = 0xb025f0, RVA_WEEKEND_SERVICE = 0x605ada0;
+
+struct Triple {
+    uint64_t practice, qualifying, race;
+};
+
+bool session_triple(int id, Triple &t)
+{
+    if (id == 4)
+        t = {2, 0, 3};
+    else if (id >= 1 && id <= 3)
+        t = {6, 0, 3};
+    else if (id == 5 || id == 6 || id == 7)
+        t = {0, 4, 3};
+    else if (id == 8)
+        t = {0, 3, 3};
+    else if (id == 9)
+        t = {0, 1, 3};
+    else if (id >= 10 && id <= 14)
+        t = {0, 3, 3};
+    else if (id >= 15 && id <= 17)
+        t = {0, 0, 7};
+    else
+        return false;
+    return true;
+}
+
+void weekend_structure(uint8_t *e, uint8_t *component)
+{
+    std::string name = request["session"].str();
+    if (name.empty())
+        return;
+    int id = testagent::session_id_of(name);
+    if (name == "practice")
+        id = 4;
+    Triple t{};
+    if (!session_triple(id, t)) {
+        swofty::log("[direct] Grand Prix: no weekend structure for session '%s'", name.c_str());
+        return;
+    }
+    void *alloc = *reinterpret_cast<void **>(component + 0x210), *gsm = *reinterpret_cast<void **>(e + 0x2b0);
+    void *svc = registry_call(e, 0x10, reinterpret_cast<void *>(swofty::api->module_base() + RVA_WEEKEND_SERVICE), 1);
+    if (!alloc || !gsm || !svc) {
+        swofty::log("[direct] Grand Prix: the weekend structure is not set (allocator %p, setup mode %p, service %p)",
+                    alloc, gsm, svc);
+        return;
+    }
+    alignas(16) uint8_t list[0x38] = {};
+    *reinterpret_cast<void **>(list + 8) = alloc;
+    *reinterpret_cast<void **>(list + 0x10) = alloc;
+    at_rva<void(void *, void *, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t)>(
+        RVA_WEEKEND_STRUCTURE)(list, gsm, t.practice, t.qualifying, t.race, 0, 1, 0, 0);
+    auto **svt = *reinterpret_cast<void ***>(svc);
+    reinterpret_cast<void (*)(void *, void *, int)>(svt[0x268 / 8])(svc, list, 1);
+    auto *b = *reinterpret_cast<uint8_t **>(list + 0x18), *end = *reinterpret_cast<uint8_t **>(list + 0x20);
+    size_t n = 0;
+    for (auto *it = b; it && it < end; it += 0x10, n++) {
+        auto *o = *reinterpret_cast<uint8_t **>(it + 8);
+        if (!o)
+            continue;
+        auto **ovt = *reinterpret_cast<void ***>(o);
+        if (--*reinterpret_cast<volatile int *>(o + 8) == 0) {
+            reinterpret_cast<void (*)(void *)>(ovt[0])(o);
+            if (--*reinterpret_cast<volatile int *>(o + 0xc) == 0)
+                reinterpret_cast<void (*)(void *)>(ovt[1])(o);
+        }
+    }
+    if (b)
+        reinterpret_cast<void (*)(void *, void *)>((*reinterpret_cast<void ***>(alloc))[0x38 / 8])(alloc, b);
+    swofty::log("[direct] Grand Prix: weekend structure for %s: practice %llu, qualifying %llu, race %llu (%zu action(s))",
+                name.c_str(), (unsigned long long)t.practice, (unsigned long long)t.qualifying,
+                (unsigned long long)t.race, n);
+}
+
+// The player's seat, as Apply's drivers config (0x141129850) sets it: the first entrant of the requested team (and
+// driver) that is not human gets the player's identity block (the profile [[[game manager+0x140]+0x1c0]+0x1c0]
+// slot 0x38, 0x40 bytes to +8) and the human flag (+0x48 = 0x10000000), between the entrants-changing messages.
+constexpr uintptr_t RVA_MESSAGE_BUS = 0x618b3b8, RVA_POST_BEGIN = 0x24e2b90, RVA_POST_END = 0x24e2f00,
+                    VT_MSG_BEGIN = 0x578d4e8, VT_MSG_END = 0x578d510;
+
+std::map<uint32_t, std::string> labels_of(const char *table, const char *stem)
+{
+    std::map<uint32_t, std::string> out;
+    const SwoftyDb *db = runtime::db_table();
+    if (!db || !db->available || !db->available())
+        return out;
+    int64_t count = 0;
+    std::string t = table;
+    if (db->int_at((t + "._" + stem + "_instancecount_").c_str(), &count) != SWOFTY_ASSET_OK || count <= 0 || count > 8192)
+        return out;
+    for (int64_t i = 0; i < count; i++) {
+        std::string row = t + "." + stem + "_" + std::to_string(i);
+        int64_t id = -1;
+        const char *label = nullptr;
+        if (db->int_at((row + ".stat_id").c_str(), &id) == SWOFTY_ASSET_OK && id >= 0 && id < 0x3fff &&
+            db->string_at((row + "._metadata_").c_str(), &label) == SWOFTY_ASSET_OK && label)
+            out[uint32_t(id)] = std::string(label, strnlen(label, 128));
+    }
+    return out;
+}
+
+bool label_matches(const std::string &label, const std::string &want)
+{
+    if (want.empty())
+        return true;
+    if (label == want)
+        return true;
+    std::string l = label, w = want;
+    for (auto &c : l)
+        c = char(tolower(uint8_t(c)));
+    for (auto &c : w)
+        c = char(tolower(uint8_t(c)));
+    return l.find(w) != std::string::npos;
+}
+
+void seat_player(uint8_t *e, void *mgr)
+{
+    std::string team = request["team"].str(), driver = request["driver"].str();
+    auto **begin = reinterpret_cast<uint8_t **>(e + ENTITY_ENTRANTS);
+    size_t n = size_t(begin[1] - begin[0]) / ENTRANT_SIZE;
+    if (!n)
+        return;
+    auto teams = labels_of("entrants.teams", "team"), drivers = labels_of("entrants.drivers", "driver");
+    auto team_of = [&](uint8_t *r) -> std::string {
+        if (r[0x58])
+            return "?";
+        auto it = teams.find(*reinterpret_cast<uint16_t *>(r + 0x5a));
+        return it == teams.end() ? "#" + std::to_string(*reinterpret_cast<uint16_t *>(r + 0x5a)) : it->second;
+    };
+    auto driver_of = [&](uint8_t *r) -> std::string {
+        if (r[0x50])
+            return "?";
+        auto it = drivers.find(*reinterpret_cast<uint16_t *>(r + 0x52));
+        return it == drivers.end() ? "#" + std::to_string(*reinterpret_cast<uint16_t *>(r + 0x52)) : it->second;
+    };
+    uint8_t *seat = nullptr;
+    size_t humans = 0;
+    std::string grid;
+    for (size_t i = 0; i < n; i++) {
+        uint8_t *r = begin[0] + i * ENTRANT_SIZE;
+        bool human = (r[0x4b] & 0x10) != 0;
+        humans += human;
+        if (grid.size() < 1500)
+            grid += (grid.empty() ? "" : ", ") + team_of(r) + "/" + driver_of(r) + (human ? " (human)" : "");
+        if (!seat && !human && label_matches(team_of(r), team) && label_matches(driver_of(r), driver))
+            seat = r;
+    }
+    swofty::log("[direct] Grand Prix: %zu entrant(s), %zu human: %s", n, humans, grid.c_str());
+    if (!seat) {
+        if (!team.empty() || !driver.empty())
+            swofty::log("[direct] Grand Prix: no entrant of team '%s' driver '%s'; the player takes the first seat",
+                        team.c_str(), driver.c_str());
+        seat = begin[0];
+        if (seat[0x4b] & 0x10) {
+            swofty::log("[direct] Grand Prix: the first seat is already the player's (%s/%s)", team_of(seat).c_str(),
+                        driver_of(seat).c_str());
+            return;
+        }
+    }
+    alignas(16) uint8_t id[0x40] = {};
+    void *users = mgr ? *reinterpret_cast<void **>(static_cast<uint8_t *>(mgr) + 0x140) : nullptr;
+    void *user = users && runtime::readable(users, 0x1c8) ? *reinterpret_cast<void **>(static_cast<uint8_t *>(users) + 0x1c0) : nullptr;
+    void *prof = user && runtime::readable(user, 0x1c8) ? *reinterpret_cast<void **>(static_cast<uint8_t *>(user) + 0x1c0) : nullptr;
+    if (!prof) {
+        swofty::log("[direct] Grand Prix: no player profile for the identity block; the seat is not set");
+        return;
+    }
+    reinterpret_cast<void (*)(void *, void *)>((*reinterpret_cast<void ***>(prof))[0x38 / 8])(prof, id);
+    uintptr_t base = swofty::api->module_base();
+    void *bus = *reinterpret_cast<void **>(base + RVA_MESSAGE_BUS);
+    void *mb = bus && runtime::readable(bus, 0x10) ? *reinterpret_cast<void **>(static_cast<uint8_t *>(bus) + 8) : nullptr;
+    alignas(16) void *msg[3] = {reinterpret_cast<void *>(base + VT_MSG_BEGIN), nullptr, nullptr};
+    if (mb)
+        at_rva<void(void *, void *)>(RVA_POST_BEGIN)(mb, msg);
+    e[0x2f8] = 1;
+    for (size_t i = 0; i < n; i++) {
+        uint8_t *r = begin[0] + i * ENTRANT_SIZE;
+        if (r != seat && (r[0x4b] & 0x10)) {
+            *reinterpret_cast<uint32_t *>(r + 0x48) &= ~0x10000000u;
+            swofty::log("[direct] Grand Prix: %s/%s is no longer the player's", team_of(r).c_str(), driver_of(r).c_str());
+        }
+    }
+    std::memcpy(seat + 8, id, 0x40);
+    *reinterpret_cast<uint32_t *>(seat + 0x48) = 0x10000000;
+    msg[0] = reinterpret_cast<void *>(base + VT_MSG_END);
+    msg[1] = nullptr;
+    msg[2] = e + 0x2d8;
+    if (mb)
+        at_rva<void(void *, void *)>(RVA_POST_END)(mb, msg);
+    e[0x2f8] = 0;
+    swofty::log("[direct] Grand Prix: the player drives for %s as %s (seat %zu)", team_of(seat).c_str(),
+                driver_of(seat).c_str(), size_t(seat - begin[0]) / ENTRANT_SIZE);
+}
+
 ds::Setup new_grand_prix(std::string &why)
 {
     if (!game.manager || !game.set_mode || !game.by_predicate || !game.gp_predicate) {
@@ -617,8 +817,9 @@ ds::Setup new_grand_prix(std::string &why)
     *reinterpret_cast<void **>(holder + 0x18) = track;
     *reinterpret_cast<void **>(stub + 0x298) = holder;
     at_rva<void(void *)>(RVA_BUILD_SEASON)(stub);
-    // 5. E's components attached again, as the track select confirm does after its rounds.
+    // 5. E's components attached again, as the track select confirm does after its rounds, then the sessions.
     reinterpret_cast<void (*)(void *)>(evt[0xe8 / 8])(e);
+    weekend_structure(e, static_cast<uint8_t *>(rounds));
     // 6. The entrants from the list. The fill clears the entrants a saved Grand Prix left first.
     auto **begin = reinterpret_cast<uint8_t **>(e + ENTITY_ENTRANTS);
     size_t before = size_t(begin[1] - begin[0]) / ENTRANT_SIZE;
@@ -630,6 +831,7 @@ ds::Setup new_grand_prix(std::string &why)
     }
     size_t entrants = size_t(begin[1] - begin[0]) / ENTRANT_SIZE;
     swofty::log("[direct] Grand Prix: entrants %zu before the fill, %zu after", before, entrants);
+    seat_player(e, mgr);
     swofty::log("[direct] Grand Prix: new weekend: setup mode %s, list %s (%p), track %s (%p), rounds %p, %zu entrant(s)",
                 setup_name.c_str(), list_name.c_str(), list, track_name.c_str(), track, rounds, entrants);
     choose_session(modes, "built");
