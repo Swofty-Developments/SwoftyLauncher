@@ -9,63 +9,6 @@
 namespace runtime::save_heap {
 
 constexpr uint64_t kMiB = 1048576;
-constexpr uint64_t kStock = 75 * kMiB;
-constexpr uint32_t kDefaultMb = 200;
-constexpr uint32_t kMaxMb = 512;
-
-constexpr size_t kConfigVirtual = 0x4;
-constexpr size_t kConfigExpand = 0x8;
-
-enum class Source : uint8_t { off, ram, env };
-
-struct Choice {
-    uint64_t bytes = kStock;
-    Source source = Source::off;
-    bool bad_env = false;
-    bool raised() const { return source != Source::off && bytes > kStock; }
-};
-
-inline bool is_stock_save_temp_alloc(uint64_t size, uint32_t virt, uint32_t expand_percent)
-{
-    return size == kStock && virt != 0 && expand_percent == 0;
-}
-
-inline Choice choose(const char *env)
-{
-    Choice c;
-    if (env && *env) {
-        if (!std::strcmp(env, "0") || !std::strcmp(env, "off"))
-            return c;
-        char *end = nullptr;
-        unsigned long long mb = std::strtoull(env, &end, 10);
-        if (end != env && *end == '\0') {
-            if (mb > kMaxMb)
-                mb = kMaxMb;
-            if (mb * kMiB <= kStock)
-                return c;
-            c.bytes = mb * kMiB;
-            c.source = Source::env;
-            return c;
-        }
-        c.bad_env = true;
-    }
-    c.bytes = kDefaultMb * kMiB;
-    c.source = Source::ram;
-    return c;
-}
-
-inline const char *source_text(Source s)
-{
-    switch (s) {
-    case Source::off:
-        return "the game's size";
-    case Source::ram:
-        return "default";
-    case Source::env:
-        return "SWOFTY_SAVE_TEMP_MB";
-    }
-    return "";
-}
 
 constexpr uintptr_t kPoolVtable = 0x14568df40;
 constexpr uintptr_t kImageBase = 0x140000000;
