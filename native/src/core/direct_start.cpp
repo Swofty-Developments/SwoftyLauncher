@@ -279,7 +279,9 @@ void link_mid(safetyhook::Context &c)
         session_frames.fetch_add(1) == 0 && driver.target.name == "session" && !fade_released) {
         session_at = GetTickCount64();
         release_frontend_fade();
-        runtime::room_cover::step("Opening the garage", 0.9f, 0.97f);
+        int id = testagent::session_id_of(request["session"].str());
+        bool race = id >= 15 && id <= 17;
+        runtime::room_cover::step(race ? "Lining up on the grid" : "Opening the garage", 0.9f, 0.97f);
     }
     uint32_t link = *slot, out = driver.on_update(hash, link, child);
     if (out != link) {
@@ -289,7 +291,7 @@ void link_mid(safetyhook::Context &c)
     }
     if (driver.phase == ds::Phase::left) {
         describe_state(state, hash, out);
-        if (flow_root)
+        if (flow_root && driver.target.name == "session")
             for (uint8_t *n = flow_root; n && runtime::readable(n, STATE_PARENT + 8);
                  n = *reinterpret_cast<uint8_t **>(n + STATE_CHILD))
                 if (*reinterpret_cast<uint32_t *>(n + STATE_HASH) == STATE_LOAD_SESSION) {
@@ -714,6 +716,17 @@ ds::Setup new_grand_prix(std::string &why)
         return ds::Setup::failed;
     }
     void *list = *reinterpret_cast<void **>(lists + size_t(id) * 16 + 8);
+    if (!list) {
+        std::string held;
+        size_t count = size_t(lists_end - lists) / 16;
+        for (size_t i = 0; i < count && held.size() < 1200; i++)
+            if (*reinterpret_cast<void **>(lists + i * 16 + 8))
+                held += " " + std::to_string(i);
+        why = "the entrant list '" + list_name + "' (stat id " + std::to_string(id) + ") is not loaded";
+        swofty::log("[direct] Grand Prix: %s; the entrants system holds %zu list slot(s), loaded:%s", why.c_str(), count,
+                    held.c_str());
+        return ds::Setup::failed;
+    }
     *reinterpret_cast<void **>(e + ENTITY_LIST) = list;
     swofty::log("[direct] Grand Prix: entrant list %s (stat id %u) is %p", list_name.c_str(), unsigned(id), list);
     // 3. The track by name in E's track system: 16-byte entries at +0x28..+0x30, the record at +8, its name at +0x78.
