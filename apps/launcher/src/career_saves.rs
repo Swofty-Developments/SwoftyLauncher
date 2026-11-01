@@ -91,6 +91,7 @@ pub(crate) struct SavesView {
     steam: Option<Location>,
     steam_running: bool,
     awaiting_import: bool,
+    steam_missing: bool,
 }
 
 impl SavesView {
@@ -137,8 +138,37 @@ pub(crate) const EMPTY_SAVE: &str =
     "This profile's launcher save is empty. Import from Steam brings your careers in.";
 pub(crate) const EMPTY_SAVE_SHORT: &str = "Launcher save is empty · import from Steam on the Saves page";
 
+pub(crate) const STEAM_SAVE_MISSING: &str =
+    "Couldn't find your Steam save, so this profile's launcher saves are empty.";
+
 pub(crate) fn awaiting_import(vanilla: bool, has_save: bool, steam_has_save: bool) -> bool {
     !vanilla && !has_save && steam_has_save
+}
+
+pub(crate) fn steam_save_missing(vanilla: bool, has_save: bool, steam_has_save: bool, pending: bool) -> bool {
+    !vanilla && !has_save && !steam_has_save && pending
+}
+
+pub(crate) fn steam_save_in(folder: &Path) -> Option<Location> {
+    let app = swofty_core::STEAM_APP_ID.to_string();
+    let accounts = |dir: PathBuf| {
+        std::fs::read_dir(dir)
+            .into_iter()
+            .flatten()
+            .flatten()
+            .map(|u| u.path().join(&app).join("remote"))
+            .collect::<Vec<_>>()
+    };
+    [
+        folder.to_path_buf(),
+        folder.join("remote"),
+        folder.join(&app).join("remote"),
+    ]
+    .into_iter()
+    .chain(accounts(folder.to_path_buf()))
+    .chain(accounts(folder.join("userdata")))
+    .filter_map(|d| Location::steam(&d))
+    .find(launcher_saves::has_files)
 }
 
 pub(crate) fn source_of_profile(root: &Path, profile: &str) -> Option<String> {
@@ -355,6 +385,12 @@ impl Shell {
             has_save,
             steam.as_ref().is_some_and(launcher_saves::has_files),
         );
+        let steam_missing = steam_save_missing(
+            vanilla,
+            has_save,
+            steam.as_ref().is_some_and(launcher_saves::has_files),
+            launcher_saves::import_pending(&root),
+        ) && launcher_saves::steam_save_pending(&root, &name);
         self.saves.view = Some(SavesView {
             steam,
             profile: name,
@@ -369,6 +405,7 @@ impl Shell {
             cap,
             steam_running: running.steam,
             awaiting_import,
+            steam_missing,
         });
     }
 
@@ -815,11 +852,13 @@ impl Shell {
         let versions = self.versions_block(view, p, cx);
         let footer = self.storage_line(view, p, cx);
         let empty = self.empty_save_notice(view, p, cx);
+        let missing = self.steam_missing_notice(view, p, cx);
         v_flex()
             .size_full()
             .child(self.header(title, subtitle, actions, p))
             .children(banner)
             .children(empty)
+            .children(missing)
             .child(
                 div()
                     .flex_1()
@@ -868,6 +907,112 @@ impl Shell {
                         })),
                 ),
         )
+    }
+
+    fn steam_missing_notice(&self, view: &SavesView, p: Palette, cx: &mut Context<Self>) -> Option<Div> {
+        if !view.steam_missing {
+            return None;
+        }
+        let blocked = self.saves.game_running;
+        let name = view.profile.clone();
+        let on = self.library.profile.launcher_saves;
+        Some(
+            h_flex()
+                .mx(px(GUTTER))
+                .mb(px(8.))
+                .px(px(12.))
+                .py(px(8.))
+                .gap(px(8.))
+                .items_center()
+                .flex_wrap()
+                .rounded(px(8.))
+                .border_1()
+                .border_color(p.border)
+                .text_size(px(13.))
+                .text_color(p.text_muted)
+                .child(Icon::new(IconName::Info).size(px(15.)))
+                .child(div().flex_1().min_w(px(240.)).child(STEAM_SAVE_MISSING))
+                .when(on, |row| {
+                    row.child(
+                        Button::new("saves-missing-steam")
+                            .small()
+                            .label("Play with your Steam saves")
+                            .on_click(cx.listener(|this, _, window, cx| {
+                                this.set_launcher_saves(false, window, cx);
+                                this.refresh_saves();
+                            })),
+                    )
+                })
+                .child(
+                    Button::new("saves-missing-retry")
+                        .small()
+                        .icon(IconName::Download)
+                        .label("Import from Steam")
+                        .disabled(blocked)
+                        .when(blocked, |b| b.tooltip("Close F1 25 first"))
+                        .on_click(cx.listener(|this, _, window, cx| this.retry_steam_import(window, cx))),
+                )
+                .child(
+                    Button::new("saves-missing-pick")
+                        .small()
+                        .outline()
+                        .icon(IconName::Folder)
+                        .label("Choose the folder…")
+                        .disabled(blocked)
+                        .on_click(cx.listener(move |this, _, window, cx| {
+                            this.pick_steam_save(name.clone(), window, cx);
+                        })),
+                ),
+        )
+    }
+
+    fn retry_steam_import(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        crate::game::import_now(&self.store);
+        self.refresh_saves();
+        let found = !self.saves.view.as_ref().is_some_and(|v| v.steam_missing);
+        window.push_notification(
+            match found {
+                true => Notification::success("Imported your Steam save."),
+                false => Notification::warning(
+                    "Still couldn't find your Steam save. The log lists where it looked.",
+                ),
+            },
+            cx,
+        );
+        cx.notify();
+    }
+
+    fn pick_steam_save(&mut self, profile: String, window: &mut Window, cx: &mut Context<Self>) {
+        let rx = cx.prompt_for_paths(PathPromptOptions {
+            files: false,
+            directories: true,
+            multiple: false,
+            prompt: Some("Choose".into()),
+        });
+        cx.spawn_in(window, async move |this, cx| {
+            let Ok(Ok(Some(paths))) = rx.await else { return };
+            let Some(folder) = paths.into_iter().next() else {
+                return;
+            };
+            this.update_in(cx, |s, window, cx| match steam_save_in(&folder) {
+                Some(from) => s.ask_copy(from, VANILLA.to_owned(), profile, window, cx),
+                None => {
+                    crate::app_log::note(&format!(
+                        "saves: {} is not a Steam save folder (userdata/<id>/{}/remote)",
+                        folder.display(),
+                        swofty_core::STEAM_APP_ID
+                    ));
+                    window.push_notification(
+                        Notification::warning(
+                            "That isn't a Steam save folder. Pick the one named remote under userdata.",
+                        ),
+                        cx,
+                    );
+                }
+            })
+            .ok();
+        })
+        .detach();
     }
 
     fn saves_actions(&self, view: &SavesView, cx: &mut Context<Self>) -> impl IntoElement + use<> {
@@ -1118,7 +1263,10 @@ impl Shell {
                     .py(px(14.))
                     .text_size(px(13.))
                     .text_color(p.text_muted)
-                    .child("No versions yet.")
+                    .child(match view.steam_missing {
+                        true => STEAM_SAVE_MISSING,
+                        false => "No versions yet.",
+                    })
                     .into_any_element(),
             ],
             false => view
@@ -1296,7 +1444,10 @@ mod tests {
 
     use swofty_core::launcher_saves::{self, Marker};
 
-    use super::{Banner, SavesPage, awaiting_import, banner_from, list, reason_label, whose};
+    use super::{
+        Banner, SavesPage, awaiting_import, banner_from, list, reason_label, steam_save_in,
+        steam_save_missing, whose,
+    };
 
     #[test]
     fn an_empty_launcher_save_with_a_steam_save_waits_for_an_import() {
@@ -1304,6 +1455,38 @@ mod tests {
         assert!(!awaiting_import(true, false, true));
         assert!(!awaiting_import(false, true, true));
         assert!(!awaiting_import(false, false, false));
+    }
+
+    #[test]
+    fn a_missed_steam_save_is_told_apart_from_an_empty_one() {
+        assert!(steam_save_missing(false, false, false, true));
+        assert!(!steam_save_missing(false, false, false, false));
+        assert!(!steam_save_missing(false, false, true, true));
+        assert!(!steam_save_missing(false, true, false, true));
+        assert!(!steam_save_missing(true, false, false, true));
+    }
+
+    #[test]
+    fn a_picked_folder_may_be_remote_the_app_folder_or_the_steam_root() {
+        let base = std::env::temp_dir().join(format!("swofty-pick-{}", std::process::id()));
+        let remote = base.join("Steam Ünï/userdata/843502855/3059520/remote");
+        std::fs::create_dir_all(&remote).unwrap();
+        assert!(steam_save_in(&remote).is_none());
+        std::fs::write(remote.join("savegame@profile#X"), b"x").unwrap();
+        for pick in [
+            remote.clone(),
+            remote.parent().unwrap().to_path_buf(),
+            base.join("Steam Ünï/userdata"),
+            base.join("Steam Ünï"),
+        ] {
+            assert_eq!(
+                steam_save_in(&pick).map(|l| l.dir),
+                Some(remote.clone()),
+                "{pick:?}"
+            );
+        }
+        assert!(steam_save_in(&base).is_none());
+        std::fs::remove_dir_all(&base).ok();
     }
 
     fn row(id: &str, status: Status, at: i64) -> Row {
