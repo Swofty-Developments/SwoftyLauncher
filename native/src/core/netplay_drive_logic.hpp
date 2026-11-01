@@ -267,6 +267,8 @@ struct State {
     bool home_screen = false;
     bool busy = false;
     Role role = Role::none;
+    std::string cover_step;
+    int cover_percent = -1;
 
     Screen screen() const
     {
@@ -347,6 +349,11 @@ inline std::string status_json(const State &s)
     out += s.configured ? "true" : "false";
     out += ",\"self\":" + std::to_string(s.configured ? s.self : 0);
     out += ",\"base\":" + std::to_string(s.configured ? s.base : 0);
+    if (s.cover_percent >= 0) {
+        out += ",\"cover\":{\"step\":";
+        quote(out, s.cover_step);
+        out += ",\"percent\":" + std::to_string(s.cover_percent) + '}';
+    }
     out += '}';
     return out;
 }

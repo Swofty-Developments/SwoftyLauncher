@@ -324,6 +324,11 @@ drive::State state()
     s.lobby = lobby.load();
     s.home_screen = home_screen.load();
     s.role = drive::Role(role.load());
+    auto cover = runtime::room_cover::snapshot();
+    if (cover.active) {
+        s.cover_step = cover.label;
+        s.cover_percent = cover.percent;
+    }
     return s;
 }
 
