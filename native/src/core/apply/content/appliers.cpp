@@ -456,11 +456,18 @@ void apply_garages(Expansion &x, Report &report)
     if (x.garages.empty())
         return;
     constexpr const char *CACHE_ADDON = "swofty.garage";
+    char art[8] = {};
+    DWORD art_len = GetEnvironmentVariableA("SWOFTY_GARAGE_ART", art, sizeof art);
+    bool art_on = art_len && art_len < sizeof art && garage_art_enabled(art);
+    if (!art_on)
+        report.lines.push_back(GARAGE_FENCE_LINE);
     std::string dir = "addons/" + std::string(CACHE_ADDON) + "/";
     CreateDirectoryW(runtime::under_swofty("addons").c_str(), nullptr);
     CreateDirectoryW(runtime::under_swofty(dir).c_str(), nullptr);
     std::set<std::string> keep;
     for (auto &g : x.garages) {
+        if (!art_on)
+            break;
         std::filesystem::path root(runtime::under_swofty("addons/" + g.addon + "/" + g.folder));
         std::vector<garage::Input> inputs;
         std::error_code ec;
