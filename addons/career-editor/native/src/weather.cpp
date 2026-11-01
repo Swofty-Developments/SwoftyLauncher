@@ -40,7 +40,10 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
+#include <fstream>
+#include <sstream>
 #include <map>
 #include <string>
 #include <vector>
@@ -252,6 +255,7 @@ struct CareerState {
 };
 
 std::map<std::string, CareerState> g_careers;
+bool g_test_seed = false;
 std::string g_career;
 int g_no_career_logged = 0;
 
@@ -310,6 +314,8 @@ std::string sidecar_text()
     w.key("careers");
     w.begin_object();
     for (auto &[id, c] : g_careers) {
+        if (g_test_seed)
+            break;
         if (c.plans.empty() && c.locked.empty() && !c.pinned)
             continue;
         if (ce::provisional_instance(id))
@@ -324,6 +330,8 @@ std::string sidecar_text()
 
 bool save_sidecar()
 {
+    if (g_test_seed)
+        return true;
     auto r = swofty::storage::write(kSidecar, sidecar_text());
     if (r != swofty::storage::Result::ok) {
         ce::log("weather: sidecar %s write failed (%s)", kSidecar, swofty::storage::name(r));
@@ -383,7 +391,20 @@ void load_sidecar()
         return;
     g_loaded = true;
     std::string text;
-    auto r = swofty::storage::read(kSidecar, text);
+    const char *seed_file = std::getenv("CME_TEST_PLAN");
+    swofty::storage::Result r = swofty::storage::Result::unavailable;
+    if (seed_file && *seed_file) {
+        std::ifstream in(seed_file, std::ios::binary);
+        std::stringstream ss;
+        ss << in.rdbuf();
+        text = ss.str();
+        g_test_seed = in.good() || !text.empty();
+        r = g_test_seed ? swofty::storage::Result::ok : swofty::storage::Result::unavailable;
+        ce::log("weather: CME_TEST_PLAN=%s %s; plans under career \"*\" apply to any career and nothing is saved",
+                seed_file, g_test_seed ? "read" : "not readable");
+    } else {
+        r = swofty::storage::read(kSidecar, text);
+    }
     if (r != swofty::storage::Result::ok) {
         ce::log("weather: no sidecar %s (%s); starting with no plan", kSidecar, swofty::storage::name(r));
         return;
@@ -429,6 +450,8 @@ bool enter(bool sticky = false)
         }
         g_career = id;
         auto it = id.empty() ? g_careers.end() : g_careers.find(id);
+        if (it == g_careers.end() && g_test_seed && !id.empty())
+            it = g_careers.find("*");
         CareerState c = it != g_careers.end() ? it->second : CareerState{};
         g_plans = c.plans;
         g_locked = c.locked;
