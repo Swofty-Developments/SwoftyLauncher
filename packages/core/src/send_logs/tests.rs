@@ -1805,12 +1805,8 @@ fn summary_names_the_stub_an_antivirus_blocked() {
         "{line}"
     );
 
-    let gone = Bundle::collect_with(&store, &report(&game), Limits::default(), "x");
     put(&game.join("EAAntiCheat.GameServiceLauncher.exe.bak"), "real");
-    let line = gone.stub_blocked_line(Some(&game)).unwrap();
-    assert!(
-        line.contains("missing from the game folder while its .bak exists"),
-        "{line}"
-    );
+    let plain = Bundle::collect_with(&store, &report(&game), Limits::default(), "x");
+    assert_eq!(plain.stub_blocked_line(Some(&game)), None);
     std::fs::remove_dir_all(&root).ok();
 }

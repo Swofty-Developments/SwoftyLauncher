@@ -1,5 +1,1 @@
 # One line per "site_*" name that native/src/core resolves by name (swofty::api->resolve) while the generated headers do not export it: the guard that needs it logs "off ... does not resolve". Format: name, tab, reason.
-site_Game_GarageCrew_SceneRead	fix/pit-crew-setup-third-car promotes these
-site_Game_GarageCrew_SceneTest	fix/pit-crew-setup-third-car promotes these
-site_Game_PitStops_CrewTemplateRead	fix/pit-crew-setup-third-car promotes these
-site_Game_PitStops_CrewTemplateSkip	fix/pit-crew-setup-third-car promotes these

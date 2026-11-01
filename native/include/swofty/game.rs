@@ -15252,6 +15252,16 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_GarageCrew_SceneRead: Binding = Binding {
+        id: "site_Game_GarageCrew_SceneRead",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_GarageCrew_SceneTest: Binding = Binding {
+        id: "site_Game_GarageCrew_SceneTest",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_GarageCrew_SpawnVector: Binding = Binding {
         id: "site_Game_GarageCrew_SpawnVector",
         kind: "site",
@@ -15274,6 +15284,16 @@ pub mod bindings {
     };
     pub const site_Game_PitLane_BoxSlotRead: Binding = Binding {
         id: "site_Game_PitLane_BoxSlotRead",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_PitStops_CrewTemplateRead: Binding = Binding {
+        id: "site_Game_PitStops_CrewTemplateRead",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_PitStops_CrewTemplateSkip: Binding = Binding {
+        id: "site_Game_PitStops_CrewTemplateSkip",
         kind: "site",
         status: Status::Experimental,
     };

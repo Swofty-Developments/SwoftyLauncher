@@ -512,14 +512,7 @@ impl Bundle {
             "offline: {} was blocked by antivirus (error {}); {}",
             block.name(),
             block.code,
-            if logs
-                .iter()
-                .any(|l| crate::ea_diag::proxy_virus_block(l, &block.name(), 0))
-            {
-                "the EA app log shows the virus error on createProcess"
-            } else {
-                "the file is missing from the game folder while its .bak exists"
-            }
+            "the EA app log shows the virus error on createProcess"
         ))
     }
 

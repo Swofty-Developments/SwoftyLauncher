@@ -356,8 +356,7 @@ pub fn stub_blocked(game: &Path, proxy_logs: &[String], since: i64) -> Option<Bl
     let logged = proxy_logs
         .iter()
         .any(|log| crate::ea_diag::proxy_virus_block(log, EAC_EXE, since));
-    let removed = !game.join(EAC_EXE).exists() && game.join(EAC_BAK).is_file();
-    (logged || removed).then(|| Block {
+    logged.then(|| Block {
         program: game.join(EAC_EXE),
         code: crate::quarantine::ERROR_VIRUS_INFECTED,
     })
@@ -2182,18 +2181,14 @@ mod tests {
     }
 
     #[test]
-    fn a_stub_missing_beside_its_backup_is_an_antivirus_block() {
+    fn a_stub_missing_beside_its_backup_is_not_an_antivirus_block_without_the_log_line() {
         let d = temp("stub-missing");
         let game = d.join("game");
         std::fs::create_dir_all(&game).unwrap();
-        assert_eq!(stub_blocked(&game, &[], 0), None);
         std::fs::write(game.join(EAC_BAK), "real").unwrap();
-        let block = stub_blocked(&game, &[], 0).unwrap();
-        assert_eq!(block.program, game.join(EAC_EXE));
-        assert_eq!(block.blocker(), Some(crate::app_control::Blocker::Antivirus));
-        assert!(block.headline().contains(EAC_EXE), "{}", block.headline());
-        std::fs::write(game.join(EAC_EXE), "stub").unwrap();
         assert_eq!(stub_blocked(&game, &[], 0), None);
+        let other = "20\t[2026-11-01T01:57:04.895Z]\tINFO\tcreateProcess ok".to_owned();
+        assert_eq!(stub_blocked(&game, &[other], 0), None);
         std::fs::remove_dir_all(&d).ok();
     }
 
@@ -2202,7 +2197,7 @@ mod tests {
         let d = temp("stub-logged");
         let game = d.join("game");
         std::fs::create_dir_all(&game).unwrap();
-        std::fs::write(game.join(EAC_EXE), "stub").unwrap();
+        std::fs::write(game.join(EAC_BAK), "real").unwrap();
         let log = format!(
             "20\t[2026-11-01T01:57:04.895Z]\tERROR   \t(eax::services::process::ProcessWin::createProcess)\t[PROCESS] \
              Create Process: Operation did not complete successfully because the file contains a virus or \
