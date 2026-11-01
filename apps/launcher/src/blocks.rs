@@ -34,6 +34,7 @@ const LONG_TABLE: usize = 30;
 /// fixed width may get beside it before the panel opens under its row instead.
 const DETAIL_W: f32 = 380.;
 const DETAIL_COLUMN_MIN: f32 = 96.;
+const COLUMN_MIN_W: f32 = 48.;
 const SELECT_MENU_H: f32 = 320.;
 const SELECT_HEADING_H: f32 = 26.;
 const SELECT_THUMB: f32 = 30.;
@@ -1753,9 +1754,28 @@ impl Shell {
         });
         let selected_id = selected.map(|(i, r)| r.id(i));
         let specs: Vec<_> = t.columns.iter().map(|c| c.spec()).collect();
+        let defaults: Vec<Option<f32>> = specs.iter().map(|c| c.width).collect();
+        let custom: Vec<Option<f32>> = t
+            .columns
+            .iter()
+            .map(|c| self.column_widths.get(&(table_key.clone(), c.key().to_owned())).copied())
+            .collect();
+        // The open row's detail goes beside the table when every column still fits, else under
+        // its row, where it was clicked.
+        let needed = 24.
+            + custom
+                .iter()
+                .zip(&defaults)
+                .map(|(c, d)| c.or(*d).unwrap_or(DETAIL_COLUMN_MIN))
+                .sum::<f32>()
+            + 12. * specs.len().saturating_sub(1) as f32;
+        let beside = selected.is_some() && at.width - DETAIL_W - GAP >= needed;
+        let table_w = if beside { at.width - DETAIL_W - GAP } else { at.width };
+        let avail = (table_w - 24. - 12. * specs.len().saturating_sub(1) as f32).max(0.);
+        let widths = resolve_column_widths(avail, &defaults, &custom);
         let sized = |d: Div, i: usize| -> Div {
             let spec = &specs[i];
-            let d = match spec.width {
+            let d = match widths[i] {
                 Some(w) => d.w(px(w)).flex_shrink_0(),
                 None => d.flex_1().flex_basis(px(0.)).min_w_0(),
             };
@@ -1781,8 +1801,18 @@ impl Shell {
                         matches!(c, Cell::Spec(s) if s.edit.as_ref().is_some_and(|e| !matches!(e, Field::Toggle(_))))
                     })
                 });
-                let head = sized(h_flex().gap(px(4.)), i)
+                let head = h_flex()
                     .id(SharedString::from(format!("{table_key}/h/{i}")))
+                    .flex_1()
+                    .min_w_0()
+                    .h_full()
+                    .pr(px(10.))
+                    .gap(px(4.))
+                    .map(|d| match spec.align {
+                        Align::Left => d.justify_start(),
+                        Align::Right => d.justify_end(),
+                        Align::Center => d.justify_center(),
+                    })
                     .text_size(px(11.))
                     .font_weight(FontWeight::MEDIUM)
                     .text_color(if active.is_some() {
@@ -1809,29 +1839,81 @@ impl Shell {
                             .text_color(p.accent),
                         )
                     });
-                if spec.sort {
+                let head = if spec.sort {
                     let key = table_key.clone();
+                    let col = column.clone();
                     head.cursor_pointer()
                         .hover(move |s| s.text_color(p.text))
                         .on_click(cx.listener(move |this, _, _, cx| {
                             let desc = active.is_some_and(|d| !d);
-                            this.sorts.insert(key.clone(), (column.clone(), desc));
+                            this.sorts.insert(key.clone(), (col.clone(), desc));
                             cx.notify();
                         }))
                         .into_any_element()
                 } else {
                     head.into_any_element()
-                }
+                };
+                let dragging = self
+                    .column_drag
+                    .as_ref()
+                    .is_some_and(|d| d.table == table_key && d.column == column);
+                let (r_table, r_col) = (table_key.clone(), column.clone());
+                let fallback_w = widths[i].unwrap_or(DETAIL_COLUMN_MIN);
+                let handle = div()
+                    .id(SharedString::from(format!("{table_key}/resize/{i}")))
+                    .absolute()
+                    .top_0()
+                    .bottom_0()
+                    .right_0()
+                    .w(px(10.))
+                    .flex()
+                    .items_center()
+                    .justify_end()
+                    .cursor_col_resize()
+                    .border_r_2()
+                    .border_color(if dragging {
+                        p.accent
+                    } else {
+                        p.border_variant.opacity(0.65)
+                    })
+                    .hover(move |s| s.border_color(p.accent).bg(p.accent.opacity(0.12)))
+                    .on_click(|_, _, cx| cx.stop_propagation())
+                    .on_mouse_down(
+                        MouseButton::Left,
+                        cx.listener(move |this, ev: &MouseDownEvent, _, cx| {
+                            cx.stop_propagation();
+                            let key = (r_table.clone(), r_col.clone());
+                            if ev.click_count >= 2 {
+                                this.column_drag = None;
+                                this.column_widths.remove(&key);
+                                cx.notify();
+                                return;
+                            }
+                            let start_width = this
+                                .column_widths
+                                .get(&key)
+                                .copied()
+                                .or_else(|| this.column_bounds.borrow().get(&key).copied())
+                                .unwrap_or(fallback_w)
+                                .max(COLUMN_MIN_W);
+                            this.column_drag = Some(ColumnDrag {
+                                table: r_table.clone(),
+                                column: r_col.clone(),
+                                start_x: f32::from(ev.position.x),
+                                start_width,
+                            });
+                            this.column_widths.insert(key, start_width);
+                            cx.notify();
+                        }),
+                    );
+                sized(h_flex(), i)
+                    .relative()
+                    .h_full()
+                    .child(self.column_width_tracker(&table_key, &column))
+                    .child(head)
+                    .child(handle)
+                    .into_any_element()
             }));
-        // The open row's detail goes beside the table when every column still fits, else under
-        // its row, where it was clicked.
-        let needed = 24.
-            + specs
-                .iter()
-                .map(|c| c.width.unwrap_or(DETAIL_COLUMN_MIN))
-                .sum::<f32>()
-            + 12. * specs.len().saturating_sub(1) as f32;
-        let beside = at.width - DETAIL_W - GAP >= needed;
         // A long table draws the rows in and near the page's view and leaves room for the rest.
         let shown = self.visible_rows(at, &table_key, order.len(), row_h, selected.is_some() && !beside);
         let (above, below) = (shown.start, order.len() - shown.end);
@@ -1940,7 +2022,78 @@ impl Shell {
             .gap(px(10.))
             .children(search_key.and_then(|k| self.search_box(&k, p)))
             .child(table)
+            .children(self.column_drag_listener(&table_key, cx))
             .into_any_element()
+    }
+
+    fn column_width_tracker(&self, table_key: &str, column: &str) -> impl IntoElement {
+        let bounds = self.column_bounds.clone();
+        let key = (table_key.to_owned(), column.to_owned());
+        canvas(
+            move |b, _, _| {
+                let w = f32::from(b.size.width);
+                if w > 0. {
+                    bounds.borrow_mut().insert(key.clone(), w);
+                }
+            },
+            |_, _, _, _| {},
+        )
+        .absolute()
+        .inset_0()
+    }
+
+    fn column_drag_listener(&self, table_key: &str, cx: &mut Context<Self>) -> Option<impl IntoElement> {
+        let drag = self
+            .column_drag
+            .as_ref()
+            .filter(|d| d.table == table_key)?
+            .clone();
+        let this = cx.entity().downgrade();
+        Some(
+            canvas(
+                |_, _, _| {},
+                move |_, _, window, _| {
+                    let moved = this.clone();
+                    let drag_move = drag.clone();
+                    window.on_mouse_event(move |ev: &MouseMoveEvent, phase, _, cx| {
+                        if phase != DispatchPhase::Bubble {
+                            return;
+                        }
+                        let d = drag_move.clone();
+                        moved
+                            .update(cx, |this, cx| match ev.pressed_button {
+                                Some(MouseButton::Left) => {
+                                    let width = column_drag_width(
+                                        d.start_width,
+                                        d.start_x,
+                                        f32::from(ev.position.x),
+                                    );
+                                    this.column_widths.insert((d.table, d.column), width);
+                                    cx.notify();
+                                }
+                                _ => {
+                                    this.column_drag = None;
+                                    cx.notify();
+                                }
+                            })
+                            .ok();
+                    });
+                    let released = this.clone();
+                    window.on_mouse_event(move |_: &MouseUpEvent, phase, _, cx| {
+                        if phase == DispatchPhase::Bubble {
+                            released
+                                .update(cx, |this, cx| {
+                                    this.column_drag = None;
+                                    cx.notify();
+                                })
+                                .ok();
+                        }
+                    });
+                },
+            )
+            .absolute()
+            .size_0(),
+        )
     }
 
     /// The rows of `n` worth drawing: those within the page's view, plus a few either side, for
@@ -2529,4 +2682,129 @@ pub(crate) struct CellTarget {
     table: String,
     row: String,
     column: String,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct ColumnDrag {
+    pub table: String,
+    pub column: String,
+    pub start_x: f32,
+    pub start_width: f32,
+}
+
+fn column_drag_width(start_width: f32, start_x: f32, current_x: f32) -> f32 {
+    (start_width + (current_x - start_x)).max(COLUMN_MIN_W)
+}
+
+fn resolve_column_widths(
+    available: f32,
+    defaults: &[Option<f32>],
+    custom: &[Option<f32>],
+) -> Vec<Option<f32>> {
+    if custom.iter().all(Option::is_none) {
+        return defaults.to_vec();
+    }
+    let mut widths: Vec<Option<f32>> = custom
+        .iter()
+        .zip(defaults)
+        .map(|(c, d)| c.or(*d).map(|w| w.max(COLUMN_MIN_W)))
+        .collect();
+    if available <= 0. {
+        return widths;
+    }
+    let flex_count = widths.iter().filter(|w| w.is_none()).count();
+    let budget = (available - flex_count as f32 * COLUMN_MIN_W).max(0.);
+    let explicit_sum: f32 = widths.iter().flatten().sum();
+    if explicit_sum > budget {
+        let mut excess = explicit_sum - budget;
+        // Shrink un-dragged fixed columns first so user-resized columns keep their target width.
+        let slack: f32 = widths
+            .iter()
+            .enumerate()
+            .filter(|(i, _)| custom.get(*i).copied().flatten().is_none())
+            .filter_map(|(_, w)| w.map(|v| (v - COLUMN_MIN_W).max(0.)))
+            .sum();
+        if slack > 0. {
+            let ratio = (excess / slack).min(1.);
+            for (i, w) in widths.iter_mut().enumerate() {
+                if custom.get(i).copied().flatten().is_none()
+                    && let Some(v) = w
+                {
+                    let cut = (*v - COLUMN_MIN_W).max(0.) * ratio;
+                    *v -= cut;
+                    excess -= cut;
+                }
+            }
+        }
+        if excess > 0.5 {
+            let rem_slack: f32 = widths
+                .iter()
+                .filter_map(|w| w.map(|v| (v - COLUMN_MIN_W).max(0.)))
+                .sum();
+            if rem_slack > 0. {
+                let ratio = (excess / rem_slack).min(1.);
+                for v in widths.iter_mut().flatten() {
+                    *v -= (*v - COLUMN_MIN_W).max(0.) * ratio;
+                }
+            }
+        }
+    } else if flex_count == 0 && explicit_sum < available {
+        let extra = available - explicit_sum;
+        let idx = (0..widths.len())
+            .rev()
+            .find(|&i| custom.get(i).copied().flatten().is_none())
+            .or_else(|| widths.len().checked_sub(1));
+        if let Some(i) = idx
+            && let Some(v) = &mut widths[i]
+        {
+            *v += extra;
+        }
+    }
+    widths
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{COLUMN_MIN_W, column_drag_width, resolve_column_widths};
+
+    #[test]
+    fn dragging_a_column_clamps_at_the_minimum_width() {
+        assert_eq!(column_drag_width(120., 300., 360.), 180.);
+        assert_eq!(column_drag_width(120., 300., 100.), COLUMN_MIN_W);
+    }
+
+    #[test]
+    fn untouched_columns_keep_their_declared_spec_widths() {
+        let defaults = [Some(195.), None, Some(112.), None, Some(240.)];
+        let custom = [None; 5];
+        assert_eq!(resolve_column_widths(800., &defaults, &custom), defaults);
+    }
+
+    #[test]
+    fn widening_a_flex_column_trims_unresized_fixed_columns_before_overflowing() {
+        let defaults = [
+            Some(195.),
+            None,
+            Some(112.),
+            Some(84.),
+            None,
+            Some(180.),
+            Some(240.),
+        ];
+        let custom = [None, Some(160.), None, None, None, None, None];
+        let resolved = resolve_column_widths(850., &defaults, &custom);
+        assert_eq!(resolved[1], Some(160.));
+        assert_eq!(resolved[4], None);
+        let explicit_sum: f32 = resolved.iter().flatten().sum();
+        assert!((explicit_sum - (850. - COLUMN_MIN_W)).abs() < 0.01, "{resolved:?}");
+        assert!(resolved.iter().flatten().all(|&w| w >= COLUMN_MIN_W));
+    }
+
+    #[test]
+    fn narrowing_all_explicit_columns_fills_remaining_table_width() {
+        let defaults = [Some(200.), Some(200.)];
+        let custom = [Some(120.), None];
+        let resolved = resolve_column_widths(400., &defaults, &custom);
+        assert_eq!(resolved, vec![Some(120.), Some(280.)]);
+    }
 }
