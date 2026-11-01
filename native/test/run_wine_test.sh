@@ -355,6 +355,9 @@ EOF
         once "ai corner: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(ai corner start guard\)': 1 mixin"
         once "ai corner: the guard is armed" '\[ai\] corner start guard armed'
         once "ai corner: a car with no corner start line is skipped and logged once" '\[ai\] corner start: car 3 has no corner start ahead on this track'"'"'s AI line'
+        once "replay grid: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(replay recorder grid guard\)': 1 mixin"
+        once "replay grid: the guard is armed" '\[replay\] recorder grid guard armed'
+        once "replay grid: a recordable whose state outgrows its holder is skipped and logged once" '\[replay\] session has \? cars, the recorder holds 22; VehicleSystem needs 768 bytes of replay state and its holder has 512, so it is not recorded'
         once "garage crew: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(garage crew guard\)': 3 mixin"
         once "garage crew: the guard is armed" '\[garage\] crew guard armed'
         count "garage crew: each car dropped from a garage's crew vector is logged once" 4 '\[garage\] garage [5-7]: team 1[2-4] car #4[0-9] \(driver 3[0-9][0-9]\) is the (third|extra) car of its garage'
@@ -825,6 +828,22 @@ for guard in on off; do
         once "ai corner off: the guard is off" '\[ai\] corner start guard off \(SWOFTY_AI_CORNER_GUARD=0\)'
         check "ai corner off: the read faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Ai_Job_UpdateCarsParallel\+0x10'
         [[ $code != 0 ]] && echo "ok  : ai corner off: process ended with $code" || { echo "FAIL: ai corner off: process exited 0"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== replay_grid ($guard)"
+    code=0
+    SWOFTY_REPLAY_GRID_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" replay_grid >"$OUT/replay_grid.out" 2>&1 || code=$?
+    grep -E '\[replay\] (session has|recorder grid guard)' "$LOG" || true
+    if [[ $guard == on ]]; then
+        once "replay grid on: the oversize state is skipped and logged" '\[replay\] session has \? cars, the recorder holds 22; VehicleSystem needs 12288 bytes of replay state and its holder has 7168, so it is not recorded'
+        grep -q 'replay grid: the recorder would copy 0x0 bytes' "$OUT/replay_grid.out" && echo "ok  : replay grid on: the recorder copies nothing into the holder" ||
+            { echo "FAIL: replay grid on: the recorder would still copy the state"; status=1; }
+    else
+        once "replay grid off: the guard is off" '\[replay\] recorder grid guard off \(SWOFTY_REPLAY_GRID_GUARD=0\)'
+        grep -q 'replay grid: the recorder would copy 0x3000 bytes' "$OUT/replay_grid.out" && echo "ok  : replay grid off: the recorder copies the whole state, as the game does" ||
+            { echo "FAIL: replay grid off: the state was changed"; status=1; }
+        count "replay grid off: nothing is logged about a skipped state" 0 '\[replay\] session has'
     fi
 done
 for guard in on off; do

@@ -8462,7 +8462,8 @@
     }
    ],
    "used_by": [
-    "addons/f1-1990/native/src/replay_holders.cpp"
+    "addons/f1-1990/native/src/replay_holders.cpp",
+    "native/src/core/replay_grid_guard.cpp"
    ]
   },
   {

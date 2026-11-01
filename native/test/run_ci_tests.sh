@@ -67,6 +67,7 @@ t "Round track record guard unit test" native/test/run_track_record_test.sh
 t "Team HQ track guard unit test" native/test/run_teamhq_track_test.sh
 t "Setup screen car guard unit test" native/test/run_setup_vm_test.sh
 t "AI corner start guard unit test" native/test/run_ai_corner_test.sh
+t "Replay recorder grid guard unit test" native/test/run_replay_grid_test.sh
 t "Tyre slot guard unit test" native/test/run_tyre_slots_test.sh
 t "Pit slot guard unit test" native/test/run_pit_slots_test.sh
 t "Pit box guard unit test" native/test/run_pit_box_test.sh

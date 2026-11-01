@@ -18,6 +18,7 @@ want = {b'fake_crash': 'Fake_Crash_Here', b'fake_heap_free': 'Fake_Heap_Free',
         b'fake_list_first_id': 'FeTile_Get_ListFirstEntrantId',
         b'fake_list_usable': 'FeTile_Check_EntrantListUsable',
         b'fake_ai_corner': 'Ai_Job_UpdateCarsParallel',
+        b'fake_replay_write': 'Ne_Replay_WriteFrames',
         b'fake_lb_select': 'Game_TimeTrialLeaderboard_SelectBoard'}
 rows = []
 for i in range(count):
