@@ -724,14 +724,16 @@ impl<'a> ErpBuild<'a> {
     fn add(&mut self, erp: &str, name: &str, kind: &str, data: &[Vec<u8>]) -> Result<()> {
         let wanted = erp::kind(kind).map_err(|e| fail(format!("add-resource {name}: {e}")))?;
         let target = self.erp(erp)?;
-        if target
-            .position(name)
-            .map_err(|e| fail(format!("{erp}: {e}")))?
-            .is_some()
-        {
-            return Err(fail(format!(
-                "{erp}: {name} already exists; put-resource replaces a resource"
-            )));
+        if let Some(i) = target.position(name).map_err(|e| fail(format!("{erp}: {e}")))? {
+            return Err(fail(match target.slots[i] {
+                Slot::Stock(_) => format!(
+                    "{erp} in the game folder already has {name}, so something outside the launcher probably changed this file \
+                     (a hand-installed mod or a leftover). \
+                     Remove hand-installed mods, then Repair F1 25 in the EA app (Steam: Verify integrity of game files), then Play. \
+                     (Addon authors: if the stock file has it, use put-resource.)"
+                ),
+                Slot::Owned(_) => format!("{erp}: {name} already exists; put-resource replaces a resource"),
+            }));
         }
         let like = target
             .slots
@@ -2209,11 +2211,24 @@ mod tests {
             ))
             .contains("missing.bin")
         );
+        let in_game_copy = fails(&format!(
+            r#"{{"op":"add-resource","erp":"ui/a.erp","resource":"{y}","type":"GfxSurfaceRes","sources":["raw/head.bin","raw/z.bin"]}}"#
+        ));
         assert_eq!(
-            fails(&format!(
-                r#"{{"op":"add-resource","erp":"ui/a.erp","resource":"{y}","type":"GfxSurfaceRes","sources":["raw/head.bin","raw/z.bin"]}}"#
-            )),
-            format!("ui/a.erp: {y} already exists; put-resource replaces a resource")
+            in_game_copy,
+            format!(
+                "ui/a.erp in the game folder already has {y}, so something outside the launcher probably changed this file \
+                 (a hand-installed mod or a leftover). \
+                 Remove hand-installed mods, then Repair F1 25 in the EA app (Steam: Verify integrity of game files), then Play. \
+                 (Addon authors: if the stock file has it, use put-resource.)"
+            )
+        );
+        let added = format!(
+            r#"{{"op":"add-resource","erp":"ui/a.erp","resource":"{z}","type":"GfxSurfaceRes","sources":["raw/head.bin","raw/z.bin"]}}"#
+        );
+        assert_eq!(
+            fails(&format!("{added},{added}")),
+            format!("ui/a.erp: {z} already exists; put-resource replaces a resource")
         );
         assert!(
             fails(&format!(
