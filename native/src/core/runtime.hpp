@@ -1,4 +1,6 @@
 #pragma once
+
+#include "direct_start_logic.hpp"
 #include <windows.h>
 
 #include <algorithm>
@@ -248,6 +250,9 @@ void netplay_bridge_setup();
 void netplay_bridge_status_changed();
 void netplay_exit();
 void netplay_drive_setup();
+void netplay_room_setup();
+bool netplay_room_requested();
+void netplay_room_screen(const char *name);
 void netplay_flow(uint32_t hash, uint32_t to);
 void netplay_screen(const char *name);
 bool netplay_popup(const char *id, void *fn, void *ctx);
@@ -257,6 +262,22 @@ void net_trace_setup();
 void udp_ids_setup();
 // The test agent (native/src/core/testagent/agent.cpp): armed only by `swofty test`'s run token.
 void testagent_setup();
+void direct_start_setup();
+void direct_start_tick();
+void direct_start_profile_loaded(bool ok);
+void direct_start_profile_read();
+// The room target's setup (netplay_drive.cpp registers it): polled on the flow thread after the profile has
+// loaded, while StateFTUE is held, until it answers done or failed.
+using DirectStartSetup = runtime::direct_start::Setup (*)(std::string &why);
+void direct_start_register_room(DirectStartSetup setup);
+uintptr_t direct_start_set_mode();
+// What the direct start knows on the flow thread from the profile load on: the game manager and the game modes
+// context (the object Game_Game_SetCurrentGameMode takes, [game manager+0xc0]).
+struct DirectStartContext {
+    void *game_manager = nullptr, *game_modes = nullptr;
+};
+DirectStartContext direct_start_context();
+std::string code_where(uintptr_t a);
 void testagent_tick();
 void testagent_fired(const std::string &id, bool hot);
 void testagent_screen(const char *name);

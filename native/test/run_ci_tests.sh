@@ -64,6 +64,7 @@ t "ERS new-lap site unit test" native/test/run_ers_newlap_test.sh
 t "Tyre slot guard unit test" native/test/run_tyre_slots_test.sh
 t "Pit slot guard unit test" native/test/run_pit_slots_test.sh
 t "Pit box guard unit test" native/test/run_pit_box_test.sh
+t "Direct start unit test" native/test/run_direct_start_test.sh
 t "Thrustmaster LCD guard unit test" native/test/run_thrustmaster_lcd_test.sh
 t "Garage setup guard unit test" native/test/run_garage_setup_test.sh
 t "Garage crew guard unit test" native/test/run_garage_crew_test.sh

@@ -474,6 +474,10 @@ pub struct LaunchRequest {
     /// `SWOFTY_NETPLAY` for the game, for a wrapper Steam starts without the caller's environment.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub netplay: Option<String>,
+    /// A file of the host's row ids ([`crate::row_ids::Overrides`]) this one session's builds use, for a
+    /// room launch.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub row_ids: Option<PathBuf>,
     /// Run this one session on Steam's saves, though the profile uses launcher saves.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub steam_saves_once: bool,

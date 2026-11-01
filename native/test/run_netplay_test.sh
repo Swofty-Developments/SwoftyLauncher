@@ -40,15 +40,23 @@ run() {
     rm -f "$LOG" "$TRACE" "$STATUS"
     (cd "$OUT/game" && timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe") || status=1
 }
-for mode in off armed invalid host named traced; do
+for mode in off armed roomlaunch invalid host named traced request; do
     unset SWOFTY_NETPLAY SWOFTY_NET_TRACE
+    rm -f "$OUT/game/swofty/direct_start.json"
     export FAKE_NETPLAY_SELF=1 FAKE_NETPLAY_BASE=$BASE FAKE_NETPLAY_HOOKS=1 FAKE_NETPLAY_ROOM=0
     case $mode in
     off) export FAKE_NETPLAY_HOOKS=0 ;;
     armed) export SWOFTY_NETPLAY=armed ;;
+    roomlaunch) export SWOFTY_NETPLAY="armed;room" ;;
     invalid) export SWOFTY_NETPLAY="self=1;base=$BASE;port=21414" ;;
     host) export SWOFTY_NETPLAY="self=1;base=$BASE" FAKE_NETPLAY_ROOM=1 ;;
     named) export SWOFTY_NETPLAY="self=1;base=$BASE;name=%20Sw%C3%B6fty%E2%80%8B%20%3B%201%20%20" FAKE_NETPLAY_ROOM=1 ;;
+    request)
+        export SWOFTY_NETPLAY="armed;room" FAKE_NETPLAY_SELF=5 FAKE_NETPLAY_ROOM=1
+        mkdir -p "$OUT/game/swofty"
+        printf '{"target":"room","role":"host","host_ip":"10.77.0.1","self":5,"base":%s,"name":"Sw\\u00f6fty"}' "$BASE" \
+            > "$OUT/game/swofty/direct_start.json"
+        ;;
     traced) export SWOFTY_NETPLAY="base=$BASE;self=7" FAKE_NETPLAY_SELF=7 FAKE_NETPLAY_ROOM=1 SWOFTY_NET_TRACE=1 ;;
     esac
     echo "==== $mode${SWOFTY_NETPLAY:+ SWOFTY_NETPLAY=$SWOFTY_NETPLAY}${SWOFTY_NET_TRACE:+ SWOFTY_NET_TRACE=1}"
@@ -59,11 +67,18 @@ for mode in off armed invalid host named traced; do
     off)
         none "no bridge line without the variable" '\[netplay\] (bridge|SWOFTY_NETPLAY|room|own address|first datagram)'
         ;;
-    armed | invalid)
+    armed | roomlaunch | invalid)
         if [[ $mode == invalid ]]; then
             check "the invalid value is logged" "\[netplay\] SWOFTY_NETPLAY=\"self=1;base=$BASE;port=21414\" is not self=<1-254>;base=<port>\[;name=<name>\]; armed without a room"
         else
             none "no invalid-value line for a plain value" '\[netplay\] SWOFTY_NETPLAY='
+        fi
+        if [[ $mode == roomlaunch ]]; then
+            check "a room launch passes the notice with the shared virtual pad" "\[netplay\] room launch: the notice is passed with the shared virtual pad's a"
+            none "a room launch has a virtual pad" '\[netplay\] room launch: the notice is not passed'
+
+        else
+            none "a plain armed game keeps its own title" '\[netplay\] room launch'
         fi
         check "armed on every slot without a room" "\[netplay\] bridge armed: $slots; no room yet[[:cntrl:]]?$"
         check "the game socket's bind writes the status without a room" "\[netplay\] bridge on, self=0 base=0 game_port=21414[[:cntrl:]]?$"
@@ -82,6 +97,13 @@ for mode in off armed invalid host named traced; do
         check "the own address rewrite is logged" "\[netplay\] own address: adapter 13 192\.168\.50\.13 reported as 10\.77\.0\.$n[[:cntrl:]]?$"
         ;;
     esac
+    if [[ $mode == request ]]; then
+        check "the room is configured from the direct start request" \
+            "\[netplay\] room: configured from the direct start request, self=5 base=$BASE, driver name Swöfty"
+        check "the bridge is told the room is configured" "\[netplay\] room configured, self=5 base=$BASE"
+        check "the game socket's bind turns the bridge on in that room" "\[netplay\] bridge on, self=5 base=$BASE game_port=21414[[:cntrl:]]?$"
+        none "no mailbox configure was needed" "\[netplay\] command .* configure"
+    fi
     if [[ $mode == traced ]]; then
         check "the trace sits below the bridge: it logs the loopback destination" \
             " sendto #[0-9]+ .* to=127\.0\.0\.1:$((BASE + 2)) len=16 flags=0x0 data=$(printf hello-member-two | xxd -p) ret=16 " "$TRACE"

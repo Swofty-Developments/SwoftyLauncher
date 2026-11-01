@@ -1,5 +1,5 @@
 use std::collections::{HashMap, HashSet};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
@@ -7,8 +7,9 @@ use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::{Input, InputEvent, InputState};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
+use gpui_kit::component::notification::Notification;
 use gpui_kit::component::switch::Switch;
-use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Icon, Sizable, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::catalog::{self, Addon};
@@ -18,7 +19,7 @@ use swofty_core::multiplayer::fingerprint::{Mismatch, MismatchKind};
 use swofty_core::multiplayer::game::{self as mp_game, Command, GameStatus, Screen};
 use swofty_core::multiplayer::rooms::{Api, RoomSettings, RoomSummary};
 use swofty_core::multiplayer::session::{
-    FixStep, Local, MemberState, Phase, PrintMatch, RelayStatus, Session, SessionState, Setup,
+    FixStep, LaunchAsk, Local, MemberState, Phase, PrintMatch, RelayStatus, Session, SessionState, Setup,
 };
 use swofty_core::store::Store;
 
@@ -66,13 +67,11 @@ impl GameState {
         }
     }
 
-    /// Why Create and Join wait, or `None` on the main menu.
+    /// Why Create and Join wait, or `None` when the launcher can start or reach the game for the room.
     pub(crate) fn not_ready(self) -> Option<&'static str> {
         match self {
-            Self::MainMenu => None,
-            Self::NotRunning => Some("Start F1 25 to create or join a room."),
+            Self::MainMenu | Self::NotRunning | Self::Busy => None,
             Self::LanLobby => Some("Leave F1 25's LAN lobby to create or join a room."),
-            Self::Busy => Some("Go to F1 25's main menu to create or join a room."),
         }
     }
 }
@@ -223,6 +222,24 @@ fn waiting_text(why: &str, host: bool) -> (Tone, String, Option<&'static str>) {
         (Tone::Working, "Waiting for the host\u{2026}", None)
     } else if has("already in a LAN session") {
         (Tone::Blocked, "Leave the LAN lobby in F1 25 first.", None)
+    } else if has("restart F1 25") {
+        (
+            Tone::Blocked,
+            "F1 25 needs a restart to match the room.",
+            Some("Restart it from here; it comes back in the room's lobby."),
+        )
+    } else if has("starting F1 25") || has("F1 25 is starting") || has("waiting for F1 25's main menu") {
+        (
+            Tone::Working,
+            "Starting F1 25\u{2026}",
+            Some("It opens in the room's lobby on its own."),
+        )
+    } else if has("didn't start for the room") {
+        (
+            Tone::Blocked,
+            "F1 25 didn't start for the room.",
+            Some("Try again, or leave the room."),
+        )
     } else if has("start F1 25") {
         (
             Tone::Blocked,
@@ -420,6 +437,13 @@ enum Start {
     Join(String),
 }
 
+pub(crate) struct RoomLaunch {
+    pub(crate) row_ids: Option<PathBuf>,
+    /// The direct start request the game reads at boot, as `swofty\direct_start.json`: the room target, this
+    /// player's role, the host's address and the room configuration (`LaunchAsk::direct_start`).
+    pub(crate) direct_start: String,
+}
+
 pub(crate) struct Multiplayer {
     visible: bool,
     game: Option<GameStatus>,
@@ -447,6 +471,9 @@ pub(crate) struct Multiplayer {
     refreshed: bool,
     error: Option<String>,
     copied: Option<Instant>,
+    launch_seen: u32,
+    stopping: Option<u32>,
+    room_launching: bool,
     faces: HashMap<String, Arc<Image>>,
     faces_asked: HashSet<String>,
     _inputs: [Subscription; 2],
@@ -491,6 +518,9 @@ impl Multiplayer {
             refreshed: false,
             error: None,
             copied: None,
+            launch_seen: 0,
+            stopping: None,
+            room_launching: false,
             faces: HashMap::new(),
             faces_asked: HashSet::new(),
             _inputs: inputs,
@@ -503,6 +533,9 @@ impl Multiplayer {
 
     fn finish_leaving(&mut self) {
         self.session = None;
+        self.launch_seen = 0;
+        self.stopping = None;
+        self.room_launching = false;
         self.state = None;
         self.leaving = false;
         self.fixing = false;
@@ -524,11 +557,11 @@ impl Shell {
         self.mp.as_ref().is_some_and(|m| m.allowed)
     }
 
-    pub(crate) fn watch_multiplayer(cx: &mut Context<Self>) {
-        cx.spawn(async move |this, cx| {
+    pub(crate) fn watch_multiplayer(window: &mut Window, cx: &mut Context<Self>) {
+        cx.spawn_in(window, async move |this, cx| {
             loop {
                 cx.background_executor().timer(TICK).await;
-                if this.update(cx, |s, cx| s.mp_tick(cx)).is_err() {
+                if this.update_in(cx, |s, window, cx| s.mp_tick(window, cx)).is_err() {
                     break;
                 }
             }
@@ -536,7 +569,8 @@ impl Shell {
         .detach();
     }
 
-    fn mp_tick(&mut self, cx: &mut Context<Self>) {
+    fn mp_tick(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.mp_room_launch(window, cx);
         let m = &mut self.mp_page;
         if m.leaving && m.session.as_ref().is_none_or(Session::is_finished) {
             m.finish_leaving();
@@ -583,6 +617,93 @@ impl Shell {
             self.mp_read_digest(cx);
         }
         self.mp_load_faces(cx);
+    }
+
+    /// Starts F1 25 for the room when the session asks and the game isn't running; a running game that
+    /// has to restart waits for the player's go-ahead (`mp_restart_game`), then for it to close.
+    fn mp_room_launch(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let Some(session) = &self.mp_page.session else {
+            return;
+        };
+        let Some(ask) = session.state().launch else {
+            return;
+        };
+        if self.mp_page.launch_seen == ask.seq || self.launch.is_some() || self.build.is_some() {
+            return;
+        }
+        if !self.processes.is_empty() {
+            return;
+        }
+        let row_ids = match &ask.row_ids {
+            Some(ids) => {
+                let file = self.store.root.join("state/room-row-ids.json");
+                if let Err(e) = std::fs::create_dir_all(self.store.root.join("state"))
+                    .map_err(|e| e.to_string())
+                    .and_then(|()| ids.write(&file).map_err(|e| e.to_string()))
+                {
+                    self.mp_page.launch_seen = ask.seq;
+                    session.launch_failed(&format!("the host's ids couldn't be written ({e})"));
+                    return;
+                }
+                Some(file)
+            }
+            None => None,
+        };
+        self.mp_page.launch_seen = ask.seq;
+        self.mp_page.stopping = None;
+        self.mp_page.room_launching = true;
+        let direct_start = ask.direct_start(session.state().host);
+        let started = self.play_for(
+            Some(RoomLaunch {
+                row_ids,
+                direct_start,
+            }),
+            window,
+            cx,
+        );
+        let Some(session) = &self.mp_page.session else {
+            return;
+        };
+        if started {
+            session.launched();
+        } else {
+            self.mp_page.room_launching = false;
+            session.launch_failed("see the notice, finish what it asks, then try again");
+        }
+        cx.notify();
+    }
+
+    /// The launch `mp_room_launch` started ended without the game: `why` says what stopped it.
+    pub(crate) fn mp_launch_ended(&mut self, why: Option<String>) {
+        if !std::mem::take(&mut self.mp_page.room_launching) {
+            return;
+        }
+        if let (Some(why), Some(session)) = (why, &self.mp_page.session) {
+            session.launch_failed(&why);
+        }
+    }
+
+    fn mp_restart_game(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let Some(seq) = self
+            .mp_page
+            .session
+            .as_ref()
+            .and_then(|s| s.state().launch)
+            .map(|a| a.seq)
+        else {
+            return;
+        };
+        let Some(dir) = self.install.as_ref().map(|i| i.dir.clone()) else {
+            return;
+        };
+        swofty_core::session::request_stop(&self.store.root);
+        if let Err(e) = swofty_core::process::stop_game_in(&dir) {
+            crate::app_log::action("stop f1 25").failed(&e);
+            window.push_notification(Notification::error(e.to_string()), cx);
+            return;
+        }
+        self.mp_page.stopping = Some(seq);
+        cx.notify();
     }
 
     fn mp_load_faces(&mut self, cx: &mut Context<Self>) {
@@ -750,7 +871,13 @@ impl Shell {
                     let local = read_local(&store, &profile, &dir).inspect_err(|e| {
                         diag::line(format!("session not started: couldn't read the addons: {e}"));
                     })?;
-                    let setup = Setup::new(Api::new(&token), &dir, local);
+                    let mut setup = Setup::new(Api::new(&token), &dir, local);
+                    setup.room_launch = true;
+                    let (refresh_store, refresh_profile, refresh_dir) =
+                        (store.clone(), profile.clone(), dir.clone());
+                    setup.refresh = Some(Arc::new(move || {
+                        read_local(&refresh_store, &refresh_profile, &refresh_dir).ok()
+                    }));
                     Ok::<_, String>(match start {
                         Start::Create(settings) => Session::create(setup, settings),
                         Start::Join(code) => Session::join(setup, &code),
@@ -1279,7 +1406,7 @@ impl Shell {
     }
 
     fn fixed_card(&self, f: &Fixed, p: Palette, cx: &mut Context<Self>) -> Div {
-        let blocked = self.mp_game_state() != GameState::MainMenu;
+        let blocked = self.mp_game_state() == GameState::LanLobby;
         let m = &self.mp_page;
         let title = if f.failed.is_empty() {
             "Addons updated"
@@ -1318,7 +1445,7 @@ impl Shell {
                         div()
                             .flex_1()
                             .text_size(px(13.))
-                            .child("Close F1 25 and press Play so it loads them, then join again."),
+                            .child("Join again: F1 25 starts, or restarts, with them."),
                     )
                     .child(
                         Button::new("mp-rejoin")
@@ -1465,9 +1592,14 @@ impl Shell {
                 .children(race)
                 .children(retry),
         );
+        let restart = state
+            .launch
+            .as_ref()
+            .filter(|_| !self.processes.is_empty() && !m.leaving && !over)
+            .map(|ask| self.restart_card(ask, p, cx));
         let differences = match &m.fixed {
             Some(f) => Some(self.fixed_card(f, p, cx)),
-            None if !state.mismatches.is_empty() && !m.leaving && !over => {
+            None if restart.is_none() && !state.mismatches.is_empty() && !m.leaving && !over => {
                 Some(self.mismatch_card(state, p, cx))
             }
             None => None,
@@ -1491,6 +1623,7 @@ impl Shell {
                     .pb(px(24.))
                     .gap(px(24.))
                     .child(status)
+                    .children(restart)
                     .children(differences)
                     .child(
                         v_flex()
@@ -1514,6 +1647,40 @@ impl Shell {
                     ),
             )
             .into_any_element()
+    }
+
+    fn restart_card(&self, ask: &LaunchAsk, p: Palette, cx: &mut Context<Self>) -> Div {
+        let closing = self.mp_page.stopping == Some(ask.seq);
+        let text = if ask.restart {
+            "F1 25 was built differently from the host's. It restarts with the host's setup for this room only; your own setup is back the next time you press Play."
+        } else {
+            "F1 25 is running without the room's setup. Restart it from here and it opens in the room's lobby."
+        };
+        self.mp_card(p).child(
+            h_flex()
+                .gap(px(12.))
+                .items_center()
+                .child(
+                    div()
+                        .flex_1()
+                        .text_size(px(13.))
+                        .text_color(p.text_muted)
+                        .child(text),
+                )
+                .child(
+                    Button::new("mp-restart-game")
+                        .primary()
+                        .small()
+                        .label(if closing {
+                            "Closing F1 25\u{2026}"
+                        } else {
+                            "Restart F1 25"
+                        })
+                        .loading(closing)
+                        .disabled(closing)
+                        .on_click(cx.listener(|this, _, window, cx| this.mp_restart_game(window, cx))),
+                ),
+        )
     }
 
     fn mismatch_card(&self, state: &SessionState, p: Palette, cx: &mut Context<Self>) -> Div {
@@ -1683,6 +1850,7 @@ mod tests {
             bridge: None,
             game: None,
             last_error: None,
+            launch: None,
         }
     }
 
@@ -1721,7 +1889,13 @@ mod tests {
         assert_eq!(GameState::MainMenu.not_ready(), None);
         assert_eq!(
             GameState::NotRunning.not_ready(),
-            Some("Start F1 25 to create or join a room.")
+            None,
+            "the launcher starts the game"
+        );
+        assert_eq!(GameState::Busy.not_ready(), None);
+        assert_eq!(
+            GameState::LanLobby.not_ready(),
+            Some("Leave F1 25's LAN lobby to create or join a room.")
         );
     }
 
@@ -1778,6 +1952,36 @@ mod tests {
         assert!(hint.unwrap().contains("tracks"));
         let (_, text, _) = status_text(&session(Phase::Ended("the host closed the room".into()), false));
         assert_eq!(text, "The host closed the room");
+        for why in [
+            "starting F1 25 for the room",
+            "F1 25 is starting",
+            "waiting for F1 25's main menu",
+        ] {
+            let (tone, text, _) = status_text(&session(Phase::WaitingForGame(why.into()), false));
+            assert_eq!(
+                (tone, text.as_str()),
+                (Tone::Working, "Starting F1 25\u{2026}"),
+                "{why}"
+            );
+        }
+        let (tone, text, _) = status_text(&session(
+            Phase::WaitingForGame("restart F1 25 into the room to use the host's ids".into()),
+            false,
+        ));
+        assert_eq!(
+            (tone, text.as_str()),
+            (Tone::Blocked, "F1 25 needs a restart to match the room.")
+        );
+        let (tone, _, hint) = status_text(&session(
+            Phase::WaitingForGame(
+                "F1 25 didn't start for the room: the build failed; retry or leave the room".into(),
+            ),
+            true,
+        ));
+        assert_eq!(
+            (tone, hint),
+            (Tone::Blocked, Some("Try again, or leave the room."))
+        );
     }
 
     #[test]
