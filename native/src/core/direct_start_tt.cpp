@@ -53,7 +53,10 @@ constexpr uintptr_t ENTITY_MODE = 0xf08, ENTITY_TRACKS = 0xf58, ENTITY_TEAMS = 0
                     ENTITY_ENTRANT_SETUP = 0xe10, ENTITY_LIST = 0xe18;
 constexpr uintptr_t GSM_HOLDER = 0xd8, GSM_ESMS = 0x10, GSM_ESM_COUNT = 0x70, ESM_LISTS = 0x130, ESM_LIST_COUNT = 0x230,
                     LIST_NAME = 0x28, LIST_BEGIN = 0x10, LIST_END = 0x18, RECORD = 0x88, RECORD_TEAM = 0x58,
-                    TRACK_NAME = 0x78, PLAYER_STRIDE = 0xc0, PLAYER_TEAM = 0x68, PLAYER_TEAM_SET = 0x6c;
+                    TRACK_NAME = 0x78, PLAYER_STRIDE = 0xc0, PLAYER_TEAM = 0x68, PLAYER_TEAM_SET = 0x6c,
+                    RECORD_VEHICLE = 0x5c;
+constexpr uintptr_t RVA_TT_COMPONENT_VT = 0x57b13d0, MODE_COMPONENTS = 0x238, TT_HOT_LOAD = 0x298, HOT_VEHICLE = 0x2be,
+                    HOT_VEHICLE_SET = 0x2c2, HOT_TEAM = 0x2c4, HOT_TEAM_SET = 0x2c8;
 constexpr size_t ESM_SLOTS = 32, GSM_SLOTS = 32, GSM_ESM_SLOTS = (GSM_ESM_COUNT - GSM_ESMS) / 8;
 
 using SetMode_t = void(void *modes, void *mode);
@@ -84,8 +87,8 @@ const char *holder_name(const uint8_t *obj, uintptr_t holder_off)
 
 struct State {
     tt::Step step = tt::Step::mode;
-    uint64_t started = 0, mode_set = 0, static_wait = 0;
-    uint8_t *entity = nullptr, *list = nullptr;
+    uint64_t started = 0, mode_set = 0;
+    uint8_t *mode = nullptr, *entity = nullptr, *list = nullptr;
     bool placed = false;
 } st;
 
@@ -271,6 +274,24 @@ int player_index()
     return at<uint8_t *>(owner, 0x1a0) == user ? 1 : 0;
 }
 
+// The Time Trial component (vtable 0x1457b13d0) among the mode's components (+0x238..+0x240), whose +0x298 is
+// the hot load holder Sess_TimeTrialMode_FillDescriptor reads first: the player's vehicle ref at +0x2be (engaged
+// +0x2c2) and team ref at +0x2c4 (engaged +0x2c8), as the in-session hot load (0x14291a320) writes them. Without
+// them the fill takes the team from the player's entrant selection and the vehicle from a per-team table built for
+// the list the screens selected, which a list set here never reaches, and the session faults building the AI's
+// team curves on a player with no vehicle (Ai_Build_TeamPerformanceCurves+0xa3).
+uint8_t *tt_component(uint8_t *mode)
+{
+    if (!mode || !runtime::readable(mode, MODE_COMPONENTS + 0x10))
+        return nullptr;
+    auto *vt = rva<void>(RVA_TT_COMPONENT_VT);
+    for (auto **p = at<uint8_t **>(mode, MODE_COMPONENTS), **end = at<uint8_t **>(mode, MODE_COMPONENTS + 8);
+         p && p < end && runtime::readable(p, 8); ++p)
+        if (*p && runtime::readable(*p, TT_HOT_LOAD + 8) && at<void *>(*p, 0) == vt)
+            return *p;
+    return nullptr;
+}
+
 Setup set_team(uint8_t *e, uint8_t *list, const std::string &want, std::string &why)
 {
     auto *begin = at<uint8_t *>(list, LIST_BEGIN), *end = at<uint8_t *>(list, LIST_END);
@@ -279,44 +300,53 @@ Setup set_team(uint8_t *e, uint8_t *list, const std::string &want, std::string &
         return Setup::failed;
     }
     std::vector<std::string> labels;
-    std::vector<uint32_t> refs;
+    std::vector<uint32_t> refs, vehicles;
     for (auto *r = begin; r < end; r += RECORD) {
         uint32_t ref = at<uint32_t>(r, RECORD_TEAM);
-        if (tt::ref_index(ref) == tt::NO_REF)
+        if (tt::ref_index(ref) == tt::NO_REF || std::find(refs.begin(), refs.end(), ref) != refs.end())
             continue;
         std::string name = team_name(e, ref);
         if (name.empty())
             name = team_label(tt::ref_index(ref));
         if (name.empty())
             name = "team#" + std::to_string(tt::ref_kind(ref)) + "." + std::to_string(tt::ref_index(ref));
-        if (std::find(refs.begin(), refs.end(), ref) != refs.end())
-            continue;
         labels.push_back(name);
         refs.push_back(ref);
+        vehicles.push_back(at<uint32_t>(r, RECORD_VEHICLE));
     }
     int i = tt::pick_team(labels, want);
     if (i < 0) {
         why = "the list has no team '" + want + "' (teams: " + tt::joined(labels) + ")";
         return Setup::failed;
     }
-    int guard = *rva<int>(RVA_PLAYER_GUARD);
-    if (guard <= 0) {
-        if (!st.static_wait)
-            st.static_wait = GetTickCount64();
-        if (GetTickCount64() - st.static_wait < tt::STATIC_WAIT_MS)
-            return Setup::pending;
-        swofty::log("[direct] Time Trial: the player's entrant selection is not built yet (guard %d); the team is "
-                    "written anyway",
-                    guard);
+    uint32_t team = refs[size_t(i)], vehicle = vehicles[size_t(i)];
+    if (tt::ref_index(vehicle) == tt::NO_REF) {
+        why = "the list's " + labels[size_t(i)] + " entrant has no vehicle";
+        return Setup::failed;
     }
-    int p = player_index();
-    auto *sel = rva<uint8_t>(RVA_PLAYER_ENTRANTS) + size_t(p) * PLAYER_STRIDE;
-    uint32_t was = at<uint32_t>(sel, PLAYER_TEAM);
-    uint8_t was_set = at<uint8_t>(sel, PLAYER_TEAM_SET);
-    *reinterpret_cast<uint32_t *>(sel + PLAYER_TEAM) = refs[size_t(i)];
-    sel[PLAYER_TEAM_SET] = 1;
-    swofty::log("[direct] Time Trial: team %s (ref %08x) for player %d; the selection held %08x (set %u)",
-                labels[size_t(i)].c_str(), refs[size_t(i)], p, was, unsigned(was_set));
+    uint8_t *comp = tt_component(st.mode);
+    if (!comp) {
+        why = "the Time Trial component (vtable 0x1457b13d0) is not among the mode's components";
+        return Setup::failed;
+    }
+    auto *hot = at<uint8_t *>(comp, TT_HOT_LOAD);
+    if (!hot || !runtime::readable(hot, HOT_TEAM_SET + 8)) {
+        why = "the Time Trial component has no hot load holder";
+        return Setup::failed;
+    }
+    *reinterpret_cast<uint32_t *>(hot + HOT_VEHICLE) = vehicle;
+    hot[HOT_VEHICLE_SET] = 1;
+    *reinterpret_cast<uint32_t *>(hot + HOT_TEAM) = team;
+    hot[HOT_TEAM_SET] = 1;
+    int guard = *rva<int>(RVA_PLAYER_GUARD), p = player_index();
+    if (guard != 0 && guard != -1) {
+        auto *sel = rva<uint8_t>(RVA_PLAYER_ENTRANTS) + size_t(p) * PLAYER_STRIDE;
+        *reinterpret_cast<uint32_t *>(sel + PLAYER_TEAM) = team;
+        sel[PLAYER_TEAM_SET] = 1;
+    }
+    swofty::log("[direct] Time Trial: team %s (team ref %08x, vehicle ref %08x) in the hot load holder %p of %p%s",
+                labels[size_t(i)].c_str(), team, vehicle, hot, comp,
+                guard != 0 && guard != -1 ? " and the player's entrant selection" : "");
     return Setup::done;
 }
 
@@ -444,6 +474,7 @@ Setup setup(const json::Value &request, std::string &why)
             why = "the game has no game mode 'time_trial' (modes: " + tt::joined(names, 60) + ")";
             return Setup::failed;
         }
+        st.mode = mode;
         st.entity = e;
         reinterpret_cast<SetMode_t *>(set_mode)(ctx.game_modes, mode);
         st.mode_set = GetTickCount64();

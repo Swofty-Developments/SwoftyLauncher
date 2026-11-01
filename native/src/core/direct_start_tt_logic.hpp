@@ -99,6 +99,6 @@ constexpr uint16_t NO_REF = 0x3fff;
 // The setup's steps, one per flow tick: the mode made current, its components awaited, then everything applied.
 enum class Step : uint8_t { mode, settle, apply, done };
 
-constexpr uint64_t SETTLE_MS = 1500, MODE_WAIT_MS = 20000, STATIC_WAIT_MS = 5000;
+constexpr uint64_t SETTLE_MS = 1500, MODE_WAIT_MS = 20000;
 
 }
