@@ -226,6 +226,7 @@ These environment variables change what swofty_core and the loader log. Set them
 
 - `SWOFTY_UI_DIAG=1`: logs each node of an addon screen as it builds, and every node the engine rejects with a reason. `"diagnostics": true` in the `"ui"` block of `swofty/settings.json` does the same.
 - `SWOFTY_LOG_SYNC=1`: writes each `loader.log` line as it's logged. Without it, a background thread writes lines in batches and crash lines go out at once.
+- `SWOFTY_DRED=1`: switches on D3D12 Device Removed Extended Data (DRED) before the game creates its GPU device. Without it, DRED turns on by itself for the session after one whose crash held a DXGI device-removed error (`0x887a0001`, `0x887a0005`, `0x887a0006`, `0x887a0007` or `0x887a0020`); `swofty/dred.flag` marks that. `SWOFTY_DRED=0` keeps it off. When DRED was on and the GPU was removed, the crash report has a `GPU device removal (D3D12 DRED)` section: the removal reason, the command lists that did not finish with the last 64 operations around the last one that completed, and for a page fault the faulting GPU address and the existing and recently freed allocations with their names and types. It reads `DRED is on` in `loader.log` as `[dred] on (...)`. Wine and vkd3d may lack the interface; `loader.log` says so and the game goes on.
 - `SWOFTY_STORAGE_LOG=all`: logs every storage call. Without it, swofty_core logs the first three successful calls of each kind from each addon, then only failures:
 
   ```text
