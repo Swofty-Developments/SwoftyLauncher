@@ -150,6 +150,8 @@ pub struct Shell {
     pub(crate) dropping: bool,
     pub(crate) vr_profiles: BTreeSet<String>,
     pub(crate) start_store: bool,
+    pub(crate) developer_mode: bool,
+    reload_generation: u64,
     /// `updates.check` from config.json, read when the library loads.
     pub(crate) update_check: bool,
     pub(crate) updates: crate::update::Updates,
@@ -393,6 +395,7 @@ impl Shell {
         } = prepared;
         let vr_profiles = config.vr_profiles;
         let start_store = config.launch.start_store;
+        let developer_mode = config.developer;
         let update_check = config.updates.check;
         let stale = store.clone();
         cx.background_executor()
@@ -406,15 +409,15 @@ impl Shell {
             .detach();
         let poll = cx.spawn_in(window, async move |this, cx| {
             loop {
-                let Ok((store, rediscover, seen)) = this.update(cx, |s, _| {
+                let Ok((store, rediscover, seen, profile)) = this.update(cx, |s, _| {
                     let r = std::mem::take(&mut s.rediscover);
-                    (s.store.clone(), r, s.requests)
+                    (s.store.clone(), r, s.requests, s.library.profile.name.clone())
                 }) else {
                     break;
                 };
                 let probe = cx
                     .background_executor()
-                    .spawn(async move { game::probe(&store, rediscover, seen) })
+                    .spawn(async move { game::probe(&store, rediscover, seen, &profile) })
                     .await;
                 if this
                     .update_in(cx, |s, window, cx| s.apply(probe, window, cx))
@@ -540,6 +543,8 @@ impl Shell {
             dropping: false,
             vr_profiles,
             start_store,
+            developer_mode,
+            reload_generation: 0,
             update_check,
             updates: crate::update::Updates::new(),
             forms: HashMap::new(),
@@ -640,7 +645,9 @@ impl Shell {
         let was_live = self.launch.is_some();
         self.requests = probe.requests;
         let root = self.store.root.clone();
-        self.saves.refresh_banner(&root, &self.library.profile.name);
+        if probe.banner_profile == self.library.profile.name {
+            self.saves.banner = probe.banner;
+        }
         self.saves.game_running = !probe.processes.is_empty();
         if self.saves.take_notice(&root) {
             self.show_saves_notice(window, cx);
@@ -813,8 +820,34 @@ impl Shell {
     }
 
     pub(crate) fn reload(&mut self, cx: &mut Context<Self>) {
-        self.library = Library::load(&self.store);
+        self.reload_generation += 1;
+        let library = Library::load(&self.store);
+        self.install_library(library, cx);
+    }
+
+    pub(crate) fn reload_in_background(&mut self, cx: &mut Context<Self>) {
+        self.reload_generation += 1;
+        let generation = self.reload_generation;
+        let store = self.store.clone();
+        cx.spawn(async move |this, cx| {
+            let library = cx
+                .background_executor()
+                .spawn(async move { Library::load(&store) })
+                .await;
+            this.update(cx, |s, cx| {
+                if s.reload_generation == generation {
+                    s.install_library(library, cx);
+                }
+            })
+            .ok();
+        })
+        .detach();
+    }
+
+    fn install_library(&mut self, library: Library, cx: &mut Context<Self>) {
+        self.library = library;
         let config = self.store.config();
+        self.developer_mode = config.developer;
         self.vr_profiles = config.vr_profiles;
         self.start_store = config.launch.start_store;
         self.update_check = config.updates.check;
@@ -822,10 +855,9 @@ impl Shell {
             self.page = Page::Addons;
         }
         if self.page == Page::Careers {
-            self.refresh_saves();
+            self.refresh_saves_in_background(cx);
         } else {
-            let root = self.store.root.clone();
-            self.saves.refresh_banner(&root, &self.library.profile.name);
+            self.refresh_banner_in_background(cx);
         }
         self.refresh_views(cx);
         self.db_profile_changed(cx);
@@ -1381,7 +1413,7 @@ impl Shell {
             crate::app_log::action("switch profile").failed(&e);
             window.push_notification(Notification::error(e.to_string()), cx);
         }
-        self.reload(cx);
+        self.reload_in_background(cx);
     }
 
     pub(crate) fn locate_game(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -1887,7 +1919,7 @@ impl Shell {
             (Page::Profiles, Some(self.library.profiles.len())),
             (Page::Careers, None),
         ];
-        if self.store.config().developer {
+        if self.developer_mode {
             big.insert(3, (Page::Tools, None));
         }
         if self.mp_allowed() {
