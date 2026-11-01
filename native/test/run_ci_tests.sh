@@ -71,6 +71,7 @@ t "Garage setup guard unit test" native/test/run_garage_setup_test.sh
 t "Garage crew guard unit test" native/test/run_garage_crew_test.sh
 t "Session enter guard unit test" native/test/run_session_enter_test.sh
 t "Audio job queue fix unit test" native/test/run_audio_queue_test.sh
+t "Save temp heap size unit test" native/test/run_save_heap_test.sh
 t "Boot watchdog grace unit test" native/test/run_watchdog_grace_test.sh
 t "Pattern scan and scan cache unit test" native/test/run_scan_test.sh
 t "Telemetry feed unit test" "$(zig_test "-I packages/sdk/include native/test/telemetry_feed_test.cpp" telemetry_feed_test)"
