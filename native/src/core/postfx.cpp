@@ -641,7 +641,7 @@ void write_ppm(const std::string &path, const uint8_t *src, UINT pitch, UINT w, 
 
 void land_capture()
 {
-    if (!capture_pending || fence->GetCompletedValue() < capture_fence)
+    if (!capture_pending || !fence || fence->GetCompletedValue() < capture_fence)
         return;
     capture_pending = false;
     if (target.view != DXGI_FORMAT_R8G8B8A8_UNORM && target.view != DXGI_FORMAT_R10G10B10A2_UNORM)
@@ -819,8 +819,15 @@ void copy_back(ID3D12GraphicsCommandList *l, ID3D12Resource *back, D3D12_RESOURC
 bool run(ID3D12CommandQueue *q, ID3D12Resource *res, D3D12_RESOURCE_STATES state, ID3D12Resource *hudless,
          D3D12_RESOURCE_STATES hudless_state, ID3D12Resource *back = nullptr)
 {
+    if (broken)
+        return false;
     if (!device && !init(q, res)) {
         broken = true;
+        return false;
+    }
+    if (!fence) {
+        broken = true;
+        swofty::log("[postfx] the passes' device never finished setting up; post-processing is off");
         return false;
     }
     if (device->GetDeviceRemovedReason() != S_OK) {
@@ -1223,7 +1230,7 @@ void snapshot_between(ID3D12CommandQueue *q, ID3D12Resource *back, D3D12_RESOURC
         return;
     UINT k = snap_next++ % SNAPS;
     Snap &sn = snaps[k];
-    if (copy_fence->GetCompletedValue() < sn.copy_fence || FAILED(sn.alloc->Reset()) ||
+    if (!copy_fence || copy_fence->GetCompletedValue() < sn.copy_fence || FAILED(sn.alloc->Reset()) ||
         FAILED(sn.list->Reset(sn.alloc, nullptr)))
         return;
     copy_back(sn.list, back, state, sn.tex, false);
