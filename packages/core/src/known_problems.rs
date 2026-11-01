@@ -828,6 +828,15 @@ fn classic_years(e: &Evidence) -> usize {
         .count()
 }
 
+const CAREER_ADDONS: [&str; 2] = ["swofty.progressive", "career.classic-career"];
+
+fn needs_all_years(e: &Evidence) -> bool {
+    e.enabled.iter().any(|id| CAREER_ADDONS.contains(&id.as_str()))
+}
+
+const KEEP_YEARS: &str = "Keep every Classic Seasons year on (Progressive needs them for the next seasons); turn off \
+     imported tracks that aren't in your calendar and other content addons you don't need.";
+
 fn years(n: usize) -> String {
     format!("{n} Classic Seasons year{}", if n == 1 { "" } else { "s" })
 }
@@ -1031,6 +1040,7 @@ fn game_heap(e: &Evidence) -> Diagnosis {
     let tracks: Vec<String> = tracks.iter().map(|id| name(e, id)).collect();
     let mut heavy = tracks.clone();
     let years_on = classic_years(e);
+    let all_years = needs_all_years(e);
     if years_on > 0 {
         heavy.push(years(years_on));
     }
@@ -1056,12 +1066,18 @@ fn game_heap(e: &Evidence) -> Diagnosis {
             false => (list(&tracks), "one of them".to_owned()),
         };
         steps.push(format!(
-            "Turn off {which} in your profile, or make a lighter profile without it for the sessions it crashes in. \
-             If your career's next round is at {at}, change that round with the Career Mode Editor first: the career \
-             won't load while that track is off."
+            "Turn off {which} in your profile, or make a lighter profile without it for the sessions it crashes in."
         ));
+        if !all_years {
+            steps[0].push_str(&format!(
+                " In a My Team career whose next round is at {at}, change that round with the Career Mode Editor \
+                 first: the career won't load while that track is off."
+            ));
+        }
     }
-    steps.push(if years_on > 0 {
+    steps.push(if all_years {
+        KEEP_YEARS.to_owned()
+    } else if years_on > 0 {
         "Turn on fewer imported tracks and only the Classic Seasons years you race.".to_owned()
     } else {
         "Play with fewer imported tracks and season addons on at once.".to_owned()
@@ -1076,7 +1092,9 @@ fn game_heap(e: &Evidence) -> Diagnosis {
 
 fn windows_memory(e: &Evidence) -> Diagnosis {
     let years_on = classic_years(e);
-    let fewer = if years_on > 0 {
+    let fewer = if needs_all_years(e) {
+        KEEP_YEARS.to_owned()
+    } else if years_on > 0 {
         format!(
             "Turn on only the Classic Seasons years you race; your profile has {} on.",
             years(years_on)
@@ -1520,10 +1538,10 @@ fn career_content_off(e: &Evidence) -> Diagnosis {
         what,
         steps: vec![
             match off.is_empty() {
-                true => "Turn back on the track addon your career's calendar uses, or change that round with the Career Mode Editor."
+                true => "Turn back on the track addon your career's calendar uses. In a My Team career you can also change that round with the Career Mode Editor."
                     .to_owned(),
                 false => format!(
-                    "Turn {} back on, or change that round with the Career Mode Editor.",
+                    "Turn {} back on. In a My Team career you can also change that round with the Career Mode Editor.",
                     list(&off)
                 ),
             },
@@ -1764,9 +1782,13 @@ fn matched(e: &Evidence) -> Option<Diagnosis> {
         steps.extend([
             "Lower Texture Quality, and the resolution if it's above your screen's, in F1 25's graphics settings."
                 .to_owned(),
-            "Play with fewer car, livery and track addons on at once, for example only the Classic Seasons years \
-             you race."
-                .to_owned(),
+            if needs_all_years(e) {
+                KEEP_YEARS.to_owned()
+            } else {
+                "Play with fewer car, livery and track addons on at once, for example only the Classic Seasons years \
+                 you race."
+                    .to_owned()
+            },
             "Close other programs, especially web browsers, while you play.".to_owned(),
             "On a laptop with integrated graphics, give the graphics more memory if its settings allow it (often \
              called UMA frame buffer size)."
@@ -2432,7 +2454,7 @@ mod tests {
         );
         assert!(
             d.steps[0].ends_with(
-                "If your career's next round is at Sepang, change that round with the Career Mode Editor first: \
+                "In a My Team career whose next round is at Sepang, change that round with the Career Mode Editor first: \
                  the career won't load while that track is off."
             ),
             "{}",
@@ -2449,6 +2471,27 @@ mod tests {
         let d = diagnose(&ev(GAME_HEAP, &[])).unwrap();
         assert_eq!(d.id, "game_heap");
         assert_eq!(d.steps.len(), 1);
+    }
+
+    #[test]
+    fn a_full_game_heap_in_progressive_keeps_every_year_and_never_moves_a_round() {
+        let mut e = with_names(
+            ev(GAME_HEAP, &[]),
+            &[
+                ("mod.bahrain24", "Sepang"),
+                ("swofty.progressive", "Progressive Career"),
+                ("swofty.classic-seasons-2016", "Classic Seasons 2016"),
+            ],
+        );
+        e.tracks = vec!["mod.bahrain24".into()];
+        let d = diagnose(&e).unwrap();
+        let all = d.steps.join(" ");
+        assert!(
+            !all.contains("Career Mode Editor") && !all.contains("you race"),
+            "{all}"
+        );
+        assert!(all.contains("Keep every Classic Seasons year on"), "{all}");
+        assert!(d.steps[0].starts_with("Turn off Sepang in your profile"), "{all}");
     }
 
     const COMMIT: &str = "\
@@ -2765,7 +2808,7 @@ mod tests {
         );
         assert_eq!(
             d.steps[0],
-            "Turn Sepang back on, or change that round with the Career Mode Editor."
+            "Turn Sepang back on. In a My Team career you can also change that round with the Career Mode Editor."
         );
 
         let d = diagnose(&career_off(
@@ -2783,7 +2826,7 @@ mod tests {
         assert!(!d.what.contains("uses Sepang"), "{}", d.what);
         assert_eq!(
             d.steps[0],
-            "Turn Sepang and F1 2018 GP/TT Addon back on, or change that round with the Career Mode Editor."
+            "Turn Sepang and F1 2018 GP/TT Addon back on. In a My Team career you can also change that round with the Career Mode Editor."
         );
     }
 
