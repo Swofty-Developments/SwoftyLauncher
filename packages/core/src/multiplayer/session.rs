@@ -53,6 +53,9 @@ const WS_BACKOFF_MAX: Duration = Duration::from_secs(10);
 const RELAY_BACKOFF: Duration = Duration::from_secs(5);
 const RELAY_BACKOFF_MAX: Duration = Duration::from_secs(60);
 const JOIN_SLOW: Duration = Duration::from_secs(30);
+/// How long a game that adopted its room configuration may sit on the main menu before the session
+/// treats its own start as failed.
+const ADOPT_DEADLINE: Duration = Duration::from_secs(120);
 const STATS_EVERY: Duration = Duration::from_secs(30);
 /// How long the launcher's build and the game's boot may take before the session asks again.
 const LAUNCH_WAIT: Duration = Duration::from_secs(600);
@@ -743,6 +746,8 @@ struct Worker {
     stats: Option<Stats>,
     game_status: Option<GameStatus>,
     configured: bool,
+    adopted: bool,
+    take_over: bool,
     driven: Option<Instant>,
     entering: Option<mpsc::Receiver<Result<GameStatus, game::Error>>>,
     seen_in_session: bool,
@@ -796,6 +801,8 @@ impl Worker {
             stats: None,
             game_status: None,
             configured: false,
+            adopted: false,
+            take_over: false,
             driven: None,
             entering: None,
             seen_in_session: false,
@@ -924,7 +931,7 @@ impl Worker {
                 return Err(Halt::Game(why.clone()));
             }
             self.ensure_game()?;
-            if self.setup.room_launch && self.launched.is_some() {
+            if self.setup.room_launch && self.launched.is_some() && !self.take_over {
                 self.adopt_direct_start();
             } else {
                 self.drive_game()?;
@@ -1000,6 +1007,7 @@ impl Worker {
     fn adopt_direct_start(&mut self) {
         diag::line("launch: the game was started with its room configuration; it hosts or joins by itself");
         self.configured = true;
+        self.adopted = true;
         self.driven = Some(Instant::now());
         self.seen_in_session = false;
     }
@@ -1586,6 +1594,13 @@ impl Worker {
                     diag::line("session: retry requested");
                     self.paused = None;
                     self.driven = None;
+                    if self.adopted {
+                        diag::line(
+                            "session: the game's own room start failed; driving the join from the launcher",
+                        );
+                        self.take_over = true;
+                        self.adopted = false;
+                    }
                     self.next_step = Instant::now();
                 }
                 Action::Reconnect => {
@@ -1596,6 +1611,8 @@ impl Worker {
                     diag::line("launch: the launcher started F1 25");
                     self.launch = None;
                     self.launched = Some(Instant::now());
+                    self.take_over = false;
+                    self.adopted = false;
                     self.refreshed = false;
                     self.paused = None;
                     self.next_step = Instant::now();
@@ -1812,7 +1829,13 @@ impl Worker {
         if let Some(driven) = self.driven {
             match self.setup.game.status() {
                 Ok(status) => {
-                    if status.in_session {
+                    if let Some(why) = self.failed_start(&status, driven) {
+                        diag::line(format!("launch: the game's own room start failed: {why}"));
+                        self.driven = None;
+                        self.paused = Some(format!(
+                            "the game's own room start failed: {why}; retry or leave the room"
+                        ));
+                    } else if status.in_session {
                         self.seen_in_session = true;
                     } else if self.seen_in_session && !self.over {
                         self.driven = None;
@@ -1826,6 +1849,19 @@ impl Worker {
             }
         }
         self.sync_stage();
+    }
+
+    /// For a game that was started with its room configuration: why that start failed, from the game's own
+    /// report or from sitting on the main menu past [`ADOPT_DEADLINE`].
+    fn failed_start(&self, status: &GameStatus, since: Instant) -> Option<String> {
+        if !self.adopted || status.in_session {
+            return None;
+        }
+        if let Some(why) = &status.room_failed {
+            return Some(why.clone());
+        }
+        (status.configured && status.screen == Screen::MainMenu && since.elapsed() > ADOPT_DEADLINE)
+            .then(|| "it stayed on the main menu".to_owned())
     }
 
     /// Mint fresh credentials, allocate a new relay, give it the members, swap it in under the
@@ -2412,6 +2448,7 @@ mod tests {
                     self_member: 0,
                     base: 0,
                     cover: None,
+                    room_failed: None,
                 }),
                 log: Mutex::new(Vec::new()),
                 host_delay: Mutex::new(Duration::ZERO),
@@ -3064,6 +3101,51 @@ mod tests {
         assert!(guest_game.log().is_empty(), "{:?}", guest_game.log());
         assert_eq!((ask.self_member, ask.name.as_deref()), (2, Some("Ana")));
         assert_eq!(Some(ask.base), state.base);
+    }
+
+    #[test]
+    fn retry_after_the_games_own_room_start_failed_drives_the_join_from_the_launcher() {
+        let server = server();
+        let (host_game, guest_game) = (FakeGame::new("launch-h9"), FakeGame::new("launch-g9"));
+        let same = built_print("aa", &[("t/x", 512)]);
+        let host = create(
+            setup(&server.url, "host-token", &host_game, same.clone()),
+            RoomSettings::default(),
+        );
+        let code = wait_until(&host, "the host's lobby", in_lobby).room.unwrap().code;
+        guest_game.closed.store(true, Ordering::Relaxed);
+        let guest = join(
+            launching(setup(&server.url, "guest-token", &guest_game, same), None),
+            &code,
+        );
+        wait_until(&guest, "the launch ask", asked);
+        {
+            let mut s = lock(&guest_game.status);
+            s.configured = true;
+            s.room_failed = Some("no registry holds the join request owner".into());
+        }
+        guest.launched();
+        guest_game.closed.store(false, Ordering::Relaxed);
+        let state = wait_until(
+            &guest,
+            "the failed start",
+            |s| matches!(&s.phase, Phase::WaitingForGame(w) if w.contains("room start failed")),
+        );
+        assert_eq!(
+            super::super::progress::problem(&state).map(|p| (p.text, p.retry)),
+            Some((
+                "F1 25 couldn't join the room: no registry holds the join request owner.".to_owned(),
+                true
+            ))
+        );
+        assert!(guest_game.log().is_empty(), "nothing is driven before Retry");
+        guest.retry();
+        wait_until(&guest, "the guest's lobby", in_lobby);
+        assert!(
+            guest_game.log().iter().any(|l| l.starts_with("join ")),
+            "{:?}",
+            guest_game.log()
+        );
     }
 
     #[test]

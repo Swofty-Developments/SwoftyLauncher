@@ -177,7 +177,15 @@ pub fn problem(state: &SessionState) -> Option<Problem> {
         }
         Phase::WaitingForGame(why) => {
             let has = |s: &str| why.contains(s);
-            if has("didn't host") || has("didn't join") {
+            if let Some(reason) = why.split_once("own room start failed: ").map(|(_, r)| r) {
+                let reason = reason
+                    .split(';')
+                    .next()
+                    .unwrap_or(reason)
+                    .trim()
+                    .trim_end_matches('.');
+                sentence(&format!("F1 25 couldn't join the room: {reason}."), true)
+            } else if has("didn't host") || has("didn't join") {
                 sentence("F1 25 couldn't open the lobby.", true)
             } else if has("left the LAN session") {
                 sentence("F1 25 left the lobby.", true)
@@ -216,6 +224,7 @@ mod tests {
             configured: true,
             self_member: 2,
             base: 50000,
+            room_failed: None,
             cover: cover.map(|(step, percent)| Cover {
                 step: step.into(),
                 percent,

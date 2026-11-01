@@ -1652,6 +1652,7 @@ mod tests {
             self_member: 0,
             base: 0,
             cover: None,
+            room_failed: None,
         }
     }
 

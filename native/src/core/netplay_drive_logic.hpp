@@ -269,6 +269,7 @@ struct State {
     Role role = Role::none;
     std::string cover_step;
     int cover_percent = -1;
+    std::string room_failed;
 
     Screen screen() const
     {
@@ -353,6 +354,10 @@ inline std::string status_json(const State &s)
         out += ",\"cover\":{\"step\":";
         quote(out, s.cover_step);
         out += ",\"percent\":" + std::to_string(s.cover_percent) + '}';
+    }
+    if (!s.room_failed.empty()) {
+        out += ",\"room_failed\":";
+        quote(out, s.room_failed);
     }
     out += '}';
     return out;

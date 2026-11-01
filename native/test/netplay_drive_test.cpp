@@ -101,6 +101,9 @@ int main()
     expect(drive::status_json(loading) ==
                R"({"screen":"other","in_session":false,"role":"none","armed":true,"configured":true,"self":2,"base":40000,"cover":{"step":"Joining the lobby","percent":93}})",
            "status JSON carries the cover's step and percent while the room cover is up");
+    loading.room_failed = "no registry holds the join request owner";
+    expect(drive::status_json(loading).find(R"("room_failed":"no registry holds the join request owner")") != std::string::npos,
+           "status JSON carries the game's own room start failure");
     loading.cover_percent = -1;
     expect(drive::status_json(loading).find("cover") == std::string::npos, "no cover, no cover field");
 

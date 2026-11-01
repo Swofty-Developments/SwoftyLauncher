@@ -220,6 +220,9 @@ pub struct GameStatus {
     pub base: u16,
     #[serde(default)]
     pub cover: Option<Cover>,
+    /// Why the game's own room start (the direct start) failed, when it did.
+    #[serde(default)]
+    pub room_failed: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
