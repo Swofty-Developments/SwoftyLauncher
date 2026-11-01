@@ -14,6 +14,8 @@
 namespace ce::weather {
 
 constexpr int kMaxPlanStates = 6;
+constexpr float kMinRampS = 1.0f;
+constexpr float kMinHoldS = 1.0f;
 inline const char *const kStates[6] = {"clear", "light_cloud", "overcast", "light_rain", "heavy_rain", "storm"};
 
 enum Unit { kFraction, kMinute, kLap };
@@ -39,6 +41,7 @@ struct SessionPlan {
 // One state per entry; inten < 0 leaves the state's intensity to the builder's draw.
 struct Build {
     uint32_t n = 0;
+    uint32_t dropped = 0;
     uint8_t type[kMaxPlanStates] = {};
     float hold[kMaxPlanStates] = {};
     float trans[kMaxPlanStates] = {};

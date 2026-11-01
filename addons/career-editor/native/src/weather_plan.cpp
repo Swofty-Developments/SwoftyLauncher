@@ -161,12 +161,18 @@ Build make_build(const SessionPlan &p, float len, int game_first)
     float prev_end = 0;
     for (size_t k = first_change; k < p.pts.size() && b.n < kMaxPlanStates; ++k) {
         float t = static_cast<float>(fraction(p, p.pts[k].at, len) * len);
-        if (t < prev_end)
-            t = prev_end;
+        float floor_t = prev_end + (b.n == 1 && prev_end == 0 ? 0.0f : kMinHoldS);
+        if (t < floor_t)
+            t = floor_t;
+        if (t + kMinRampS + kMinHoldS > len) {
+            b.dropped = static_cast<uint32_t>(p.pts.size() - k);
+            break;
+        }
         float next = k + 1 < p.pts.size() ? static_cast<float>(fraction(p, p.pts[k + 1].at, len) * len) : len;
         float ramp = p.pts[k].ramp >= 0 ? static_cast<float>(p.pts[k].ramp) : ramp_default;
         ramp = std::fmin(ramp, std::fmax(0.0f, next - t));
-        ramp = std::fmin(ramp, std::fmax(0.0f, len - t));
+        ramp = std::fmin(ramp, std::fmax(0.0f, len - t - kMinHoldS));
+        ramp = std::fmax(ramp, kMinRampS);
         b.hold[b.n - 1] = t - prev_end;
         b.trans[b.n - 1] = ramp;
         prev_end = t + ramp;

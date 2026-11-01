@@ -49,6 +49,15 @@ int main() {
     CHECK(lines.size() == 3);
     CHECK(b.inten[0] < 0 && b.inten[1] < 0 && b.inten[2] < 0);
 
+    // no zero-length hold or transition reaches the builder, whatever the ramp or position
+    CHECK(plan(R"({"timeline":[{"at_fraction":0.5,"state":"light_rain","ramp_s":0},{"at_fraction":0.5001,"state":"overcast","ramp_s":0},
+                  {"at_fraction":1,"state":"heavy_rain"}]})", p, err));
+    b = make_build(p, 3600, -1);
+    CHECK(b.n >= 2);
+    for (uint32_t i = 0; i + 1 < b.n; ++i)
+        CHECK(b.trans[i] >= kMinRampS && b.hold[i] >= 0 && (i == 0 || b.hold[i] >= kMinHoldS));
+    CHECK(b.hold[b.n - 1] >= 1.0f && b.n + b.dropped == 4);
+
     // a plan already inside the range is not touched
     CHECK(plan(R"({"timeline":[{"at_fraction":0,"state":"light_rain","intensity":0.3}]})", p, err));
     b = make_build(p, 3600, -1);

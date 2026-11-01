@@ -612,6 +612,9 @@ std::string rebuild(uintptr_t ws, int s, const SessionPlan &p, int weekend, cons
         len = s >= 5 ? 7200.0f : 3600.0f;
     int game_first = state_count(tod, s) ? static_cast<int>(dataset(tod, s).states[0].type) : -1;
     Build b = make_build(p, len, game_first);
+    if (b.dropped)
+        ce::log("weather: %s (weekend %d, %s): %u point(s) dropped, no room for a %gs transition and %gs hold before the session ends",
+                kKeys[s], weekend, why, b.dropped, kMinRampS, kMinHoldS);
     TypeRange ranges[6];
     for (int t = 0; t < 6; ++t)
         ranges[t] = {T(tod).type_ranges[t].intensity_min, T(tod).type_ranges[t].intensity_max};
