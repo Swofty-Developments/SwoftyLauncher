@@ -1437,7 +1437,7 @@ __asm__(
     ".text\n");
 
 uint64_t *fake_list_first_id(void *item, void *out);
-uint64_t fake_list_usable(void *ctx, const char *label);
+uint8_t fake_list_usable(void *ctx, const char *label);
 
 const char fake_ls_empty[] = "";
 const char fake_ls_statid[] = "stat_id";
