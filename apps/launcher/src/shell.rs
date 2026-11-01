@@ -490,7 +490,7 @@ impl Shell {
             }
         });
         mp_poll.detach();
-        Self::watch_multiplayer(cx);
+        Self::watch_multiplayer(window, cx);
         let mut shell = Self {
             library,
             store,
@@ -751,6 +751,10 @@ impl Shell {
                         None => failed.unwrap_or_else(|| launch.failure()),
                     })
                     .filter(|n| !n.contains(swofty_core::busy::CANCELLED));
+                    let why = self.notice.clone().unwrap_or_else(|| launch.failure());
+                    self.mp_launch_ended(Some(why));
+                } else {
+                    self.mp_launch_ended(None);
                 }
                 self.launch = None;
             }
@@ -895,36 +899,47 @@ impl Shell {
     }
 
     pub(crate) fn play(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.play_for(None, window, cx);
+    }
+
+    /// Play, or Play for a room: armed to go straight to the room's lobby, with the host's row ids for the
+    /// build when `room` has them. Whether the launch started.
+    pub(crate) fn play_for(
+        &mut self,
+        room: Option<crate::multiplayer::RoomLaunch>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> bool {
         let Some(install) = self.install.clone() else {
-            return;
+            return false;
         };
         if install.source == Source::EaApp && self.ea_app_warn_pending() {
             self.ea_app_warn(window, cx);
-            return;
+            return false;
         }
         if self.addons.checking {
             window.push_notification(Notification::info("Play when the conflict check finishes."), cx);
-            return;
+            return false;
         }
         if let Some(moved) = install.moved.clone() {
             self.show_ea_moved(moved, window, cx);
-            return;
+            return false;
         }
         if swofty_core::compat::write_blocker(&install.dir).is_some() {
             self.show_admin_needed(&install, window, cx);
-            return;
+            return false;
         }
         if !swofty_core::setup::done(&self.store.root) {
             self.open_setup(window, cx);
-            return;
+            return false;
         }
         if !swofty_core::offline::is_accepted(&self.store.root) {
             self.confirm_offline_play(window, cx);
-            return;
+            return false;
         }
         if swofty_core::setup::first_launch(&self.store.root) {
             self.first_launch_notice(window, cx);
-            return;
+            return false;
         }
         self.notice = None;
         self.blocked = None;
@@ -935,20 +950,30 @@ impl Shell {
         self.note_lonely_bases(window, cx);
         if !self.registry_check(window, cx) {
             cx.notify();
-            return;
+            return false;
         }
         if let Some(d) = swofty_core::known_problems::outdated_exe(install.version().as_deref()) {
             window.push_notification(Notification::warning(d.text()).title(d.title).autohide(false), cx);
         }
-        match Launch::start(
+        let armed = match &room {
+            Some(_) => Some(swofty_core::multiplayer::bridge::ARMED_ROOM),
+            None => self
+                .mp_allowed()
+                .then_some(swofty_core::multiplayer::bridge::ARMED),
+        };
+        let started = match Launch::start(
             &self.store,
             &self.library.profile.name,
             &install,
             self.launch_mode(),
-            self.mp_allowed(),
+            armed,
+            room.as_ref().and_then(|r| r.row_ids.as_deref()),
             std::mem::take(&mut self.steam_saves_once),
         ) {
-            Ok(l) => self.launch = Some(l),
+            Ok(l) => {
+                self.launch = Some(l);
+                true
+            }
             Err(e) => {
                 self.launch_failed_seen = game::now_secs();
                 window.push_notification(
@@ -957,9 +982,11 @@ impl Shell {
                         .autohide(false),
                     cx,
                 );
+                false
             }
-        }
+        };
         cx.notify();
+        started
     }
 
     /// The 1.6 dependency check before Play, as the build runs it: a stop shows as an error and

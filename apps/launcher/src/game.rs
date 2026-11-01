@@ -12,7 +12,7 @@ use swofty_core::crash::{LogScan, StartFailure, Symbols, fatal_name};
 use swofty_core::ea_app;
 use swofty_core::install::{Game, Source};
 use swofty_core::launch;
-use swofty_core::multiplayer::bridge::{ARMED, armed_env};
+use swofty_core::multiplayer::bridge::armed_env;
 use swofty_core::process::{GameProcess, game_processes};
 use swofty_core::quarantine;
 use swofty_core::recovery::{self, Blocked, Notice, Scope, SessionLock};
@@ -327,7 +327,8 @@ impl Launch {
         profile: &str,
         install: &Install,
         mode: LaunchMode,
-        netplay: bool,
+        netplay: Option<&str>,
+        row_ids: Option<&Path>,
         steam_saves_once: bool,
     ) -> Result<Self, String> {
         let cli = cli_path(store).ok_or_else(|| app_control::missing(&expected_cli(store)))?;
@@ -352,8 +353,11 @@ impl Launch {
             c.arg("--steam-saves-once");
         }
         c.arg("--game").arg(&install.dir);
-        if netplay {
-            c.envs(armed_env(ARMED));
+        if let Some(armed) = netplay {
+            c.envs(armed_env(armed));
+        }
+        if let Some(file) = row_ids {
+            c.env(swofty_core::row_ids::ENV, file);
         }
         #[cfg(windows)]
         std::os::windows::process::CommandExt::creation_flags(&mut c, 0x0800_0000);
