@@ -161125,6 +161125,32 @@
    "used_by": [
     "native/src/core/save_heap.cpp"
    ]
+  },
+  {
+   "id": "core.crt_report_gs_failure",
+   "section": ".xtls",
+   "pattern": "48 89 4C 24 08 48 83 EC 38 B9 17 00 00 00",
+   "match": "0x144d9245c",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144d9245c",
+   "kind": "func_start",
+   "names": [
+    "Ne_Crt_ReportGsFailure"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "fast-fail",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/crash.cpp"
+   ]
   }
  ]
 }

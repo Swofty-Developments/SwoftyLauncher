@@ -220,6 +220,7 @@ inline constexpr address<"Ne_Crt_Memset"> Ne_Crt_Memset{}; // L2 experimental
 inline constexpr address<"Ne_Crt_ParseNumber_L"> Ne_Crt_ParseNumber_L{}; // L2 experimental
 inline constexpr address<"Ne_Crt_Powf"> Ne_Crt_Powf{}; // L2 experimental
 inline constexpr address<"Ne_Crt_Qsort_Impl"> Ne_Crt_Qsort_Impl{}; // L2 experimental
+inline constexpr address<"Ne_Crt_ReportGsFailure"> Ne_Crt_ReportGsFailure{}; // L2 experimental
 inline constexpr address<"Ne_Crt_SecurityCookieFailure"> Ne_Crt_SecurityCookieFailure{}; // L2 experimental
 inline constexpr address<"Ne_Crt_SetMxcsrExceptionFlags"> Ne_Crt_SetMxcsrExceptionFlags{}; // L2 experimental
 inline constexpr address<"Ne_Crt_Setjmp"> Ne_Crt_Setjmp{}; // L2 experimental

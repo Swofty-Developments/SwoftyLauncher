@@ -174,6 +174,22 @@ Crashes, with the exception, registers and a stack named from `symbols.tsv`. The
 [crash] ExitProcess(1) on thread 340, 11 s after load; caller stack:
 ```
 
+A fast-fail ends the game with exit code `0xc0000409` and skips every exception handler, so the core hooks the paths that end in one before they run: `__report_gsfailure` (a stack cookie check failed), the CRT's invalid-parameter terminate path, the CRT's `abort()` path and `RaiseFailFastException`. The report is written first and the fast-fail then goes ahead. Its reason names the path, the fast-fail code and the exit code, and its `Exception` section carries the code as parameter 0:
+
+```text
+[crash] fast-fail FAST_FAIL_STACK_COOKIE_CHECK_FAILURE (2) from __report_gsfailure (a stack cookie check failed); the process would end with exit code 0xc0000409; at F1_25.exe+0x4c1a2f3 .xtls fn base+0x4c1a000+0x2f3
+[crash] crash report swofty\crash-20261101-231504.txt: fast-fail FAST_FAIL_STACK_COOKIE_CHECK_FAILURE (2) from __report_gsfailure (a stack cookie check failed); the process would end with exit code 0xc0000409; at ...; minidump crash-20261101-231504.dmp, 2.2 MB, thread stacks and registers, written in 2.4 s
+```
+
+```text
+== Exception
+  STACK_BUFFER_OVERRUN (0xc0000409), flags 0x1, at F1_25.exe+0x4d9245c .xtls Ne_Crt_ReportGsFailure+0x0
+  parameter 0: 0x2
+  fast-fail code 2: FAST_FAIL_STACK_COOKIE_CHECK_FAILURE
+```
+
+Codes the report names: `2` stack cookie check, `5` invalid argument, `7` fatal app exit (`abort()`). `RaiseFailFastException` ends with the code of the exception record it was given, or `0xc0000602` without one. A fast-fail the game's own code does inline, without these paths, still ends with no report; the launcher then names the exit code in the Send Logs summary.
+
 ## The game's own log
 
 `swofty_gamelog.dll` copies the engine's own messages into `loader.log`: warnings and errors from every channel by default. To configure that copy, edit `swofty/session.json`:
