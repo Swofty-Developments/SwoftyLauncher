@@ -279,7 +279,9 @@ void link_mid(safetyhook::Context &c)
         session_frames.fetch_add(1) == 0 && driver.target.name == "session" && !fade_released) {
         session_at = GetTickCount64();
         release_frontend_fade();
-        runtime::room_cover::step("Opening the garage", 0.9f, 0.97f);
+        int id = testagent::session_id_of(request["session"].str());
+        bool race = id >= 15 && id <= 17;
+        runtime::room_cover::step(race ? "Lining up on the grid" : "Opening the garage", 0.9f, 0.97f);
     }
     uint32_t link = *slot, out = driver.on_update(hash, link, child);
     if (out != link) {
