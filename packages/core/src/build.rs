@@ -1201,6 +1201,10 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     if let Some(asked) = room_asked {
         hasher.update(format!("room {asked};"));
     }
+    let lent_ids = crate::row_ids::lent().filter(|o| o.stamp(&resolved.order).is_some());
+    if let Some(stamp) = lent_ids.as_ref().and_then(|o| o.stamp(&resolved.order)) {
+        hasher.update(stamp);
+    }
     built.buildhash = hex(&hasher.finalize())[..16].to_owned();
     built.overlay = store.overlay_dir(profile, &built.buildhash);
     let (lines_at, warnings_at) = (built.lines.len(), built.warnings.len());
@@ -1281,9 +1285,18 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             crate::row_ids::Store::load(&store.root, Some(&game.dir), profile, last);
         built.warnings.extend(row_id_warnings);
         built.lines.extend(row_ids.recover(&store.sessions_dir()).lines);
+        if let Some(lent) = &lent_ids {
+            let n = row_ids.lend(lent, &resolved.order).map_err(Error::Resolve)?;
+            built.lines.push(format!(
+                "database: {n} added-row id(s) are the room host's, for this session only; row-ids.json keeps yours"
+            ));
+        }
         planner.keep_row_ids(row_ids);
         let added = planner.apply_db_report(&mut db, &stock, &tracked, &mut db_report)?;
         if let Some(ids) = planner.take_row_ids() {
+            if let Some(missed) = ids.lent_missed() {
+                return Err(Error::Resolve(missed));
+            }
             id_aliases = ids.id_aliases();
             built.lines.extend(ids.summary());
             if !checking {
@@ -3607,6 +3620,95 @@ mod tests {
             kept["rows"][key],
             serde_json::json!({ "id": 140, "from": "seeded" })
         );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_room_launch_build_uses_the_hosts_ids_under_its_own_cache_key_and_keeps_row_ids_json() {
+        use swofty_formats::gvdb::Record;
+        if loader_dir().is_some() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("swofty-build-lent-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        let mut records = vec![Record::new("entrants.teams._team_instancecount_", 0, "2")];
+        for (i, label) in ["mclaren_26", "gm_cadillac_26"].iter().enumerate() {
+            let row = format!("entrants.teams.team_{i}");
+            records.push(Record::new(&format!("{row}._metadata_"), 4, *label));
+            records.push(Record::new(&format!("{row}.stat_id"), 0, (100 + i).to_string()));
+        }
+        std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir,
+            user_reg: None,
+        };
+        let manifest = AddonManifest::parse(
+            r#"{ "schema_version": 1, "id": "t.lent", "name": "Lent", "version": "1.0.0", "author": "t",
+                 "compat": { "game": "f1_25" } }"#,
+        )
+        .unwrap();
+        let store = Store::new(root.join("data")).with_builtins(vec![Builtin {
+            addon: Arc::new(Rows(manifest)),
+            locked: false,
+            default_on: true,
+        }]);
+        let own = build(&store, "default", &game).unwrap();
+        let ids = crate::row_ids::path(&store.root);
+        let kept = std::fs::read(&ids).unwrap();
+        let stat_id = |b: &Built| {
+            let db = Gvdb::parse(&std::fs::read(&b.plan.data[GVDB]).unwrap()).unwrap();
+            db.get_text("entrants.teams.team_2.stat_id").unwrap()
+        };
+        assert_eq!(stat_id(&own), "102");
+        let host = crate::row_ids::Overrides {
+            rows: BTreeMap::from([(
+                "t.lent".to_owned(),
+                BTreeMap::from([("entrants.teams.team/team12_26".to_owned(), 140)]),
+            )]),
+        };
+        crate::row_ids::lend(Some(host));
+        let lent = build(&store, "default", &game);
+        crate::row_ids::lend(None);
+        let lent = lent.unwrap();
+        assert_ne!(
+            lent.buildhash, own.buildhash,
+            "the host's ids are part of the cache key"
+        );
+        assert_eq!(stat_id(&lent), "140");
+        assert!(
+            lent.lines
+                .iter()
+                .any(|l| l.contains("the room host's, for this session only")),
+            "{:?}",
+            lent.lines
+        );
+        assert_eq!(lent.row_ids["t.lent"]["entrants.teams.team/team12_26"], 140);
+        assert_eq!(std::fs::read(&ids).unwrap(), kept, "row-ids.json is as it was");
+        let back = build(&store, "default", &game).unwrap();
+        assert_eq!(
+            back.buildhash, own.buildhash,
+            "the next normal build is the player's own"
+        );
+        assert_eq!(stat_id(&back), "102");
+        let clash = crate::row_ids::Overrides {
+            rows: BTreeMap::from([(
+                "t.lent".to_owned(),
+                BTreeMap::from([("entrants.teams.team/team12_26".to_owned(), 101)]),
+            )]),
+        };
+        crate::row_ids::lend(Some(clash));
+        let refused = build(&store, "default", &game);
+        crate::row_ids::lend(None);
+        let err = refused
+            .map(|_| ())
+            .expect_err("a stock id is refused")
+            .to_string();
+        assert!(err.contains("stat id 101"), "{err}");
+        assert_eq!(std::fs::read(&ids).unwrap(), kept);
         std::fs::remove_dir_all(&root).ok();
     }
 
