@@ -29,10 +29,14 @@ struct Fixture {
 
 impl Fixture {
     fn new(name: &str) -> Self {
+        Self::at(name, None)
+    }
+
+    fn at(name: &str, game: Option<PathBuf>) -> Self {
         let root = std::env::temp_dir().join(format!("swofty-restore-{name}-{}", std::process::id()));
         std::fs::remove_dir_all(&root).ok();
         let f = Self {
-            game: root.join("game"),
+            game: game.unwrap_or_else(|| root.join("game")),
             data: root.join("data"),
             reg: root.join("pfx/user.reg"),
             src: root.join("src"),
@@ -103,6 +107,20 @@ impl Fixture {
             added: BTreeMap::new(),
             loader,
             registry_override: true,
+        }
+    }
+
+    fn built(&self, plan: &mut Plan) {
+        let dir = self
+            .data
+            .join("cache")
+            .join("overlay")
+            .join(&plan.profile)
+            .join("0123456789abcdef");
+        for (rel, src) in plan.data.iter_mut() {
+            let out = dir.join(rel);
+            write(&out, &std::fs::read_to_string(&*src).unwrap());
+            *src = out;
         }
     }
 
@@ -444,4 +462,151 @@ fn a_kill_while_installing_maps_rolls_back_to_the_baseline() {
         assert_eq!(f.snapshot(), original, "k={k}");
         assert_eq!(restarted.verify().unwrap(), [], "k={k}");
     }
+}
+
+fn logged() -> (std::cell::RefCell<Vec<String>>,) {
+    (std::cell::RefCell::new(Vec::new()),)
+}
+
+#[cfg(unix)]
+fn inode(path: &Path) -> u64 {
+    use std::os::unix::fs::MetadataExt;
+    std::fs::metadata(path).unwrap().ino()
+}
+
+#[cfg(unix)]
+#[test]
+fn build_outputs_on_the_game_volume_are_linked_and_the_rest_copied() {
+    let f = Fixture::new("link-same");
+    let game = f.game("1");
+    let mut plan = f.plan("b");
+    f.built(&mut plan);
+    let (lines,) = logged();
+    let out = |l: &str| lines.borrow_mut().push(l.to_owned());
+    let inst = Installer {
+        out: &out,
+        copy_only: false,
+        ..Installer::new(&f.data, &game)
+    };
+    inst.apply(&plan).unwrap();
+    assert_eq!(f.read(GVDB), "db-B");
+    assert_eq!(f.read(UI), "ui-B");
+    assert_eq!(inode(&f.game.join(GVDB)), inode(&plan.data[GVDB]));
+    assert_eq!(inode(&f.game.join(UI)), inode(&plan.data[UI]));
+    assert_ne!(inode(&f.game.join(CORE)), inode(&f.src.join("core")));
+    assert!(
+        lines
+            .borrow()
+            .iter()
+            .any(|l| l == "installing: hard links; 2 file(s) linked, 4 copied"),
+        "{:?}",
+        lines.borrow()
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn rolling_back_a_linked_install_restores_stock_and_leaves_the_build_output() {
+    let f = Fixture::new("link-rollback");
+    let game = f.game("1");
+    let original = f.snapshot();
+    let mut plan = f.plan("b");
+    f.built(&mut plan);
+    let inst = Installer::new(&f.data, &game);
+    inst.apply(&plan).unwrap();
+    assert_eq!(inode(&f.game.join(GVDB)), inode(&plan.data[GVDB]));
+
+    inst.apply(&Plan::vanilla()).unwrap();
+    assert_eq!(f.snapshot(), original);
+    assert_eq!(f.read(GVDB), "db-v1");
+    assert_eq!(f.read(UI), "ui-v1");
+    assert_eq!(std::fs::read_to_string(&plan.data[GVDB]).unwrap(), "db-B");
+    assert_eq!(std::fs::read_to_string(&plan.data[UI]).unwrap(), "ui-B");
+    assert_ne!(inode(&f.game.join(GVDB)), inode(&plan.data[GVDB]));
+    assert_eq!(inst.verify().unwrap(), []);
+
+    inst.apply(&plan).unwrap();
+    assert_eq!(f.read(GVDB), "db-B");
+}
+
+#[test]
+fn copy_only_and_sources_outside_the_build_cache_are_copied() {
+    let f = Fixture::new("link-copy");
+    let game = f.game("1");
+    let mut plan = f.plan("b");
+    f.built(&mut plan);
+    let (lines,) = logged();
+    let out = |l: &str| lines.borrow_mut().push(l.to_owned());
+    let inst = Installer {
+        out: &out,
+        copy_only: true,
+        ..Installer::new(&f.data, &game)
+    };
+    inst.apply(&plan).unwrap();
+    assert_eq!(f.read(GVDB), "db-B");
+    #[cfg(unix)]
+    assert_ne!(inode(&f.game.join(GVDB)), inode(&plan.data[GVDB]));
+    assert!(
+        lines
+            .borrow()
+            .iter()
+            .any(|l| l == "installing: copy (SWOFTY_INSTALL_COPY=1); 0 file(s) linked, 6 copied"),
+        "{:?}",
+        lines.borrow()
+    );
+    inst.apply(&Plan::vanilla()).unwrap();
+
+    let elsewhere = Installer {
+        copy_only: false,
+        out: &out,
+        ..Installer::new(&f.data, &game)
+    };
+    elsewhere.apply(&f.plan("b")).unwrap();
+    assert!(
+        lines
+            .borrow()
+            .iter()
+            .any(|l| l == "installing: copy (no build output to link); 0 file(s) linked, 6 copied"),
+        "{:?}",
+        lines.borrow()
+    );
+}
+
+#[cfg(target_os = "linux")]
+#[test]
+fn a_build_output_on_another_volume_than_the_game_is_copied() {
+    use std::os::unix::fs::MetadataExt;
+    let shm = PathBuf::from("/dev/shm");
+    let here = std::env::temp_dir();
+    if !shm.is_dir() || std::fs::metadata(&shm).unwrap().dev() == std::fs::metadata(&here).unwrap().dev() {
+        return;
+    }
+    let game_dir = shm.join(format!("swofty-link-game-{}", std::process::id()));
+    let f = Fixture::at("link-cross", Some(game_dir.clone()));
+    let game = f.game("1");
+    let mut plan = f.plan("b");
+    f.built(&mut plan);
+    let (lines,) = logged();
+    let out = |l: &str| lines.borrow_mut().push(l.to_owned());
+    let inst = Installer {
+        out: &out,
+        copy_only: false,
+        ..Installer::new(&f.data, &game)
+    };
+    let applied = inst.apply(&plan);
+    let read = f.read(GVDB);
+    inst.apply(&Plan::vanilla()).unwrap();
+    std::fs::remove_dir_all(&game_dir).ok();
+    applied.unwrap();
+    assert_eq!(read, "db-B");
+    assert!(
+        lines
+            .borrow()
+            .iter()
+            .any(|l| l.starts_with("installing: copy (hard link failed")
+                && l.ends_with("0 file(s) linked, 6 copied")),
+        "{:?}",
+        lines.borrow()
+    );
+    assert_eq!(std::fs::read_to_string(&plan.data[GVDB]).unwrap(), "db-B");
 }

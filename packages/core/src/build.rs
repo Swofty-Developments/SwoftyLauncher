@@ -1352,6 +1352,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         false => crate::busy::check(&store.root),
     };
     cancel()?;
+    std::fs::remove_dir_all(&built.overlay).ok();
     crate::now_doing("editing the game database");
     let ui_lists = if ui_maps.is_empty() {
         Default::default()
@@ -3809,6 +3810,76 @@ mod tests {
             kept["rows"][key],
             serde_json::json!({ "id": 140, "from": "seeded" })
         );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn rebuilding_a_profile_never_rewrites_a_file_a_session_has_linked() {
+        use std::os::unix::fs::MetadataExt;
+        use swofty_formats::gvdb::Record;
+        if loader_dir().is_some() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("swofty-build-linked-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        let mut records = vec![Record::new("entrants.teams._team_instancecount_", 0, "2")];
+        for (i, label) in ["mclaren_26", "gm_cadillac_26"].iter().enumerate() {
+            let row = format!("entrants.teams.team_{i}");
+            records.push(Record::new(&format!("{row}._metadata_"), 4, *label));
+            records.push(Record::new(&format!("{row}.stat_id"), 0, (100 + i).to_string()));
+        }
+        let stock = Gvdb { records }.to_bytes();
+        std::fs::write(dir.join(GVDB), &stock).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir: dir.clone(),
+            user_reg: None,
+        };
+        let manifest = AddonManifest::parse(
+            r#"{ "schema_version": 1, "id": "t.rows", "name": "Rows", "version": "1.0.0", "author": "t",
+                 "compat": { "game": "f1_25" } }"#,
+        )
+        .unwrap();
+        let store = Store::new(root.join("data")).with_builtins(vec![Builtin {
+            addon: Arc::new(Rows(manifest)),
+            locked: false,
+            default_on: true,
+        }]);
+        let built = build(&store, "default", &game).unwrap();
+        let out = built.plan.data[GVDB].clone();
+        let made = std::fs::read(&out).unwrap();
+        let lines = std::cell::RefCell::new(Vec::new());
+        let say = |l: &str| lines.borrow_mut().push(l.to_owned());
+        let inst = crate::install::Installer {
+            out: &say,
+            ..crate::install::Installer::new(&store.root, &game)
+        };
+        inst.apply(&built.plan).unwrap();
+        let installed = dir.join(GVDB);
+        assert_eq!(
+            std::fs::metadata(&installed).unwrap().ino(),
+            std::fs::metadata(&out).unwrap().ino()
+        );
+        assert_eq!(std::fs::read(&installed).unwrap(), made);
+
+        std::fs::remove_file(built.overlay.join(SAVED_FILE)).unwrap();
+        let again = build(&store, "default", &game).unwrap();
+        assert_eq!(again.plan.data[GVDB], out);
+        assert_eq!(std::fs::read(&installed).unwrap(), made);
+        assert_ne!(
+            std::fs::metadata(&installed).unwrap().ino(),
+            std::fs::metadata(&out).unwrap().ino(),
+            "the rebuild wrote a new file"
+        );
+        assert_eq!(std::fs::metadata(&installed).unwrap().nlink(), 1);
+
+        inst.apply(&crate::install::Plan::vanilla()).unwrap();
+        assert_eq!(std::fs::read(&installed).unwrap(), stock);
+        assert_eq!(std::fs::read(&out).unwrap(), made);
         std::fs::remove_dir_all(&root).ok();
     }
 

@@ -222,7 +222,7 @@ impl Store {
     }
 
     pub fn overlays_dir(&self, profile: &str) -> PathBuf {
-        self.root.join("cache/overlay").join(profile)
+        overlay_root(&self.root).join(profile)
     }
 
     pub fn overlay_dir(&self, profile: &str, buildhash: &str) -> PathBuf {
@@ -1077,6 +1077,10 @@ fn copy_dir(src: &Path, dest: &Path) -> Result<()> {
         }
     }
     Ok(())
+}
+
+pub fn overlay_root(root: &std::path::Path) -> PathBuf {
+    root.join("cache").join("overlay")
 }
 
 #[cfg(test)]
