@@ -1710,3 +1710,58 @@ fn carries_the_blocked_record_when_there_is_one() {
     let bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "20261020-101010");
     assert!(bundle.entries.iter().any(|e| e.path == "state/blocked.json"));
 }
+
+#[test]
+fn finds_a_crash_report_left_in_the_data_folder() {
+    let root = tmp("crashfallback");
+    let (store, game) = fake_data(&root);
+    put(&store.root.join("state/crash-20261101-125350.txt"), CRASH);
+    put(
+        &store.root.join("state/crash-20261101-125350.dmp"),
+        noise(50_000, 3),
+    );
+    let bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "x");
+    let names: Vec<_> = bundle.entries.iter().map(|e| e.path.clone()).collect();
+    assert!(
+        names.contains(&"crash/crash-20261101-125350.txt".to_string()),
+        "{names:?}"
+    );
+    assert!(
+        names.contains(&"crash/crash-20261101-125350.dmp".to_string()),
+        "{names:?}"
+    );
+    assert!(!summary_of(&bundle).contains("No crash report was found"));
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn a_logged_crash_report_that_is_missing_is_not_reported_as_never_written() {
+    let root = tmp("crashunsaved");
+    let (store, game) = fake_data(&root);
+    let path = "C:\\Users\\id\\AppData\\Local\\Swofty\\state\\crash-20261101-125350.txt";
+    put(
+        &store.root.join("state/loader-fallback.log"),
+        format!(
+            "2026-11-01 12:53:50.100 [5] [crash] crash report {path}: boom; minidump failed (error 5)\r\n"
+        ),
+    );
+    let bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "x");
+    let summary = summary_of(&bundle);
+    assert!(!summary.contains("No crash report was found"), "{summary}");
+    assert!(
+        summary.contains(&format!(
+            "A crash report was started ({path}) but could not be saved"
+        )),
+        "{summary}"
+    );
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn no_crash_line_and_no_file_still_says_none_was_written() {
+    let root = tmp("crashnone");
+    let (store, game) = fake_data(&root);
+    let bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "x");
+    assert!(summary_of(&bundle).contains("No crash report was found"));
+    std::fs::remove_dir_all(&root).ok();
+}

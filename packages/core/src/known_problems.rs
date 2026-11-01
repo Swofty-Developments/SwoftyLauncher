@@ -162,7 +162,12 @@ pub struct Evidence {
 }
 
 impl Evidence {
-    pub fn read(session: &SessionRecord, game: Option<&Path>, names: BTreeMap<String, String>) -> Self {
+    pub fn read(
+        session: &SessionRecord,
+        game: Option<&Path>,
+        names: BTreeMap<String, String>,
+        data: Option<&Path>,
+    ) -> Self {
         let loader = ["loader.log", "game-logs/loader.log"]
             .iter()
             .map(|rel| session.dir.join(rel))
@@ -174,6 +179,9 @@ impl Evidence {
             let mut dirs = vec![session.dir.clone(), session.dir.join("game-logs")];
             if let Some(game) = game {
                 dirs.insert(0, game.join(LOADER_DIR));
+            }
+            if let Some(data) = data {
+                dirs.push(crate::crash_report::fallback_dir(data));
             }
             dirs.iter()
                 .map(|d| d.join(&name))
@@ -258,7 +266,7 @@ fn evidence(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Evid
         .iter()
         .map(|(id, m)| (id.clone(), m.name.clone()))
         .collect();
-    Evidence::read(session, game, names).with_profile(store, &addons)
+    Evidence::read(session, game, names, Some(&store.root)).with_profile(store, &addons)
 }
 
 fn read_perf(dir: &Path) -> Option<String> {
@@ -277,14 +285,8 @@ fn read_capped(path: &Path) -> Option<String> {
     Some(String::from_utf8_lossy(&bytes).into_owned())
 }
 
-/// The crash report's file name from the loader's `crash report swofty\crash-….txt:` line.
 fn report_name(loader: &str) -> Option<String> {
-    loader.lines().rev().find_map(|line| {
-        let rest = &line[line.find("[crash] crash report ")? + "[crash] crash report ".len()..];
-        let path = rest.split(':').next()?;
-        let name = path.rsplit(['\\', '/']).next()?;
-        (name.starts_with("crash-") && name.ends_with(".txt")).then(|| name.to_owned())
-    })
+    crate::crash_report::logged_name(loader)
 }
 
 /// The fatal exception as the loader log and the crash report describe it.
@@ -1795,6 +1797,11 @@ mod tests {
         assert_eq!(f.module.as_deref(), Some("f1_25.exe"));
         assert_eq!(f.stack, ["f1_25.exe", "f1_25.exe"]);
         assert_eq!(report_name(GPU).as_deref(), Some("crash-20261024-025226.txt"));
+        let fallback = "2026-11-01 12:53:50.100 [5] [crash] crash report C:\\Users\\id\\AppData\\Local\\Swofty\\state\\crash-20261101-125350.txt: boom\n";
+        assert_eq!(
+            report_name(fallback).as_deref(),
+            Some("crash-20261101-125350.txt")
+        );
     }
 
     #[test]
@@ -2764,7 +2771,7 @@ mod tests {
                     || loader.contains(LOW_DISK);
                 let report = report_name(&loader).and_then(|n| read_capped(&logs.join("crash").join(n)));
                 let game_files = report.as_deref().map(game_folder_modules).unwrap_or_default();
-                let mut e = Evidence::read(&record, None, BTreeMap::new());
+                let mut e = Evidence::read(&record, None, BTreeMap::new(), None);
                 let game_version = read_capped(&logs.join("summary.txt")).and_then(|t| {
                     t.lines()
                         .find_map(|l| l.strip_prefix("F1 25 "))

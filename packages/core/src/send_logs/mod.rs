@@ -455,6 +455,11 @@ impl Bundle {
             }
             crash_report = std::fs::read_to_string(&c0.report).ok();
         }
+        let found = match (crash_report.as_deref(), crash.is_none()) {
+            (Some(text), _) => CrashFound::Report(text),
+            (None, true) => logged_report(store, &sessions).map_or(CrashFound::None, CrashFound::Unsaved),
+            (None, false) => CrashFound::None,
+        };
         let os = os_description();
         let mut bundle = Self {
             stem: format!("swofty-logs-{}-{stamp}", file_safe(&report.name)),
@@ -467,7 +472,7 @@ impl Bundle {
             skipped: c.skipped,
         };
         let perf = newest_perf(live_perf, &sessions);
-        let summary = bundle.summary(store, report, stamp, perf, crash_report.as_deref(), &loader);
+        let summary = bundle.summary(store, report, stamp, perf, found, &loader);
         bundle.entries.insert(
             0,
             Entry {
@@ -485,7 +490,7 @@ impl Bundle {
         report: &Report,
         stamp: &str,
         perf: Option<(String, PathBuf)>,
-        crash: Option<&str>,
+        crash: CrashFound,
         loader: &[String],
     ) -> String {
         let mut s = String::new();
@@ -565,13 +570,18 @@ impl Bundle {
         }
         s.push_str("\nCrash\n");
         match crash {
-            Some(text) => {
+            CrashFound::Report(text) => {
                 for l in crash_excerpt(text) {
                     s.push_str(&l);
                     s.push('\n');
                 }
             }
-            None => s.push_str("No crash report was found (the game did not write one this session)\n"),
+            CrashFound::Unsaved(path) => s.push_str(&format!(
+                "A crash report was started ({path}) but could not be saved, so none was found\n"
+            )),
+            CrashFound::None => {
+                s.push_str("No crash report was found (the game did not write one this session)\n")
+            }
         }
         s.push_str("\nGame files against Steam\n");
         s.push_str(&game_files_section(store, report.game.dir.as_deref()));
@@ -811,8 +821,30 @@ fn file_name(path: &Path) -> String {
 /// A crash report the core wrote (`crash-<time>.txt`) or its minidump
 /// (`crash-<time>.dmp`).
 fn is_crash_file(path: &Path) -> bool {
-    let name = file_name(path);
-    name.starts_with("crash-") && (name.ends_with(".txt") || name.ends_with(".dmp"))
+    crate::crash_report::is_crash_name(&file_name(path))
+}
+
+enum CrashFound<'a> {
+    Report(&'a str),
+    Unsaved(String),
+    None,
+}
+
+const LOGGED_READ: u64 = 4 << 20;
+
+/// The crash report path the newest session's loader.log (or the fallback log in the data folder) says the
+/// core began writing, for when no such file turned up.
+fn logged_report(store: &Store, sessions: &[PathBuf]) -> Option<String> {
+    let mut logs: Vec<PathBuf> = sessions
+        .first()
+        .map(|d| d.join("loader.log"))
+        .into_iter()
+        .collect();
+    logs.push(store.root.join(LOADER_FALLBACK));
+    logs.iter().find_map(|log| {
+        let (tail, _) = read_tail(log, LOGGED_READ).ok()?;
+        crate::crash_report::logged_path(&String::from_utf8_lossy(&tail))
+    })
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -821,8 +853,8 @@ pub struct Crash {
     pub dump: Option<PathBuf>,
 }
 
-/// The newest crash report across the running game's loader folder and the
-/// kept sessions, with its minidump beside it when one exists.
+/// The newest crash report across the running game's loader folder, the
+/// data folder's fallback and the kept sessions, with its minidump beside it when one exists.
 pub fn newest_crash(store: &Store, game: Option<&Path>, sessions: &[PathBuf]) -> Option<Crash> {
     let mut dirs: Vec<PathBuf> = Vec::new();
     if let Some(game) = game {
@@ -832,14 +864,14 @@ pub fn newest_crash(store: &Store, game: Option<&Path>, sessions: &[PathBuf]) ->
         dirs.push(s.clone());
         dirs.push(s.join("game-logs"));
     }
-    let _ = store;
+    dirs.push(crate::crash_report::fallback_dir(&store.root));
     let mut reports: Vec<PathBuf> = dirs
         .iter()
         .flat_map(|d| std::fs::read_dir(d).into_iter().flatten().flatten())
         .map(|e| e.path())
         .filter(|p| {
             let n = file_name(p);
-            n.starts_with("crash-") && n.ends_with(".txt") && p.is_file()
+            crate::crash_report::is_crash_name(&n) && n.ends_with(".txt") && p.is_file()
         })
         .collect();
     // The names carry a sortable UTC-ish stamp, so the last by name is the newest; modified time
