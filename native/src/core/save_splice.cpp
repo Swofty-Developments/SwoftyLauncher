@@ -18,6 +18,7 @@
 
 #include "career_saves_logic.hpp"
 #include "save_diag_logic.hpp"
+#include "save_heap_logic.hpp"
 #include "layout.hpp"
 #include "save_splice_logic.hpp"
 
@@ -455,6 +456,16 @@ void count_entry(SwoftyContext *c)
                     store.size() - picked.size());
     if (picked.empty())
         return;
+    static bool pool_logged = false;
+    if (!pool_logged) {
+        pool_logged = true;
+        uint64_t heap_bytes = 0;
+        bool raised = runtime::save_heap_raised(heap_bytes);
+        uint64_t bytes = 0;
+        for (size_t i : picked)
+            bytes += store.kept()[i].body.size();
+        swofty::log("%s", runtime::save_heap::session_line(heap_bytes, raised, picked.size(), bytes).c_str());
+    }
     *reinterpret_cast<uint64_t *>(c->rsp + FRAME_COUNT) =
         owed.bump(reinterpret_cast<const void *>(c->r12), count, std::move(picked));
 }

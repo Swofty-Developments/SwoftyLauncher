@@ -473,7 +473,20 @@ impl Bundle {
         }
         let found = match (crash_report.as_deref(), crash.is_none()) {
             (Some(text), _) => CrashFound::Report(text),
-            (None, true) => logged_report(store, &sessions).map_or(CrashFound::None, CrashFound::Unsaved),
+            (None, true) => logged_report(store, &sessions).map_or_else(
+                || {
+                    let lines = sessions
+                        .first()
+                        .map(|d| crate::fast_fail::session_lines(d))
+                        .unwrap_or_default();
+                    if lines.is_empty() {
+                        CrashFound::None
+                    } else {
+                        CrashFound::FastFail(lines)
+                    }
+                },
+                CrashFound::Unsaved,
+            ),
             (None, false) => CrashFound::None,
         };
         let os = os_description();
@@ -498,6 +511,22 @@ impl Bundle {
             },
         );
         bundle
+    }
+
+    fn stub_blocked_line(&self, game: Option<&Path>) -> Option<String> {
+        let logs: Vec<String> = self
+            .entries
+            .iter()
+            .filter(|e| e.path.ends_with(crate::ea_diag::PROXY_LOG))
+            .map(|e| String::from_utf8_lossy(&e.data).into_owned())
+            .collect();
+        let block = crate::offline::stub_blocked(game.unwrap_or(Path::new("")), &logs, 0)?;
+        Some(format!(
+            "offline: {} was blocked by antivirus (error {}); {}",
+            block.name(),
+            block.code,
+            "the EA app log shows the virus error on createProcess"
+        ))
     }
 
     fn summary(
@@ -595,6 +624,13 @@ impl Bundle {
             CrashFound::Unsaved(path) => s.push_str(&format!(
                 "A crash report was started ({path}) but could not be saved, so none was found\n"
             )),
+            CrashFound::FastFail(lines) => {
+                s.push_str("No crash report was found (the game did not write one this session)\n");
+                for l in lines {
+                    s.push_str(&l);
+                    s.push('\n');
+                }
+            }
             CrashFound::None => {
                 s.push_str("No crash report was found (the game did not write one this session)\n")
             }
@@ -610,6 +646,9 @@ impl Bundle {
         }
         s.push_str("\nGame files against Steam\n");
         s.push_str(&game_files_section(store, report.game.dir.as_deref()));
+        if let Some(line) = self.stub_blocked_line(report.game.dir.as_deref()) {
+            s.push_str(&format!("  {line}\n"));
+        }
         s.push_str("\nPerformance\n");
         match perf {
             Some((label, path)) => {
@@ -889,6 +928,7 @@ fn is_crash_file(path: &Path) -> bool {
 enum CrashFound<'a> {
     Report(&'a str),
     Unsaved(String),
+    FastFail(Vec<String>),
     None,
 }
 

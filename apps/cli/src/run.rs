@@ -950,6 +950,7 @@ fn play(
             verdict(w.poll(Instant::now()));
         }
     };
+    let via_ea = ea.is_some();
     let (code, unread) = match ea {
         Some(started) => {
             crate::ea::wait(game, &copies_before, started, tick);
@@ -996,7 +997,11 @@ fn play(
     {
         stop_process(g.pid).ok();
     }
-    note_failed_launch(store, loader, code, launched.elapsed().unwrap_or_default());
+    let blocked =
+        via_ea && end.end != swofty_core::session::Ending::Quit && crate::ea::note_stub_blocked(store, game);
+    if !blocked {
+        note_failed_launch(store, loader, code, launched.elapsed().unwrap_or_default());
+    }
     Ok(code)
 }
 

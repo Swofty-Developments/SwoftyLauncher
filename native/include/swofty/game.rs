@@ -8352,6 +8352,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Crt_ReportGsFailure: Binding = Binding {
+        id: "Ne_Crt_ReportGsFailure",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Crt_SecurityCookieFailure: Binding = Binding {
         id: "Ne_Crt_SecurityCookieFailure",
         kind: "func",
@@ -15527,6 +15532,16 @@ pub mod bindings {
         kind: "call",
         status: Status::Experimental,
     };
+    pub const site_Ne_MemoryMapHeapSize: Binding = Binding {
+        id: "site_Ne_MemoryMapHeapSize",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Ne_MemoryMapInternalHeapSize: Binding = Binding {
+        id: "site_Ne_MemoryMapInternalHeapSize",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Ne_ReplayAfterRecord: Binding = Binding {
         id: "site_Ne_ReplayAfterRecord",
         kind: "site",
@@ -15555,6 +15570,16 @@ pub mod bindings {
     pub const site_Sess_ControllerSystem_ApplyRecordCall: Binding = Binding {
         id: "site_Sess_ControllerSystem_ApplyRecordCall",
         kind: "call",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_GarageSlots_Done: Binding = Binding {
+        id: "site_Sess_GarageSlots_Done",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_GarageSlots_GarageLoad: Binding = Binding {
+        id: "site_Sess_GarageSlots_GarageLoad",
+        kind: "site",
         status: Status::Experimental,
     };
     pub const site_Sess_InGamePlayerFinishedAiCall: Binding = Binding {

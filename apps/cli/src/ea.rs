@@ -26,6 +26,7 @@ const HANDOFF_TIMEOUT: Duration = Duration::from_secs(300);
 #[cfg(not(windows))]
 const SERVER_STOP_TIMEOUT: Duration = Duration::from_secs(30);
 const PRESS_PLAY_TIMEOUT: Duration = Duration::from_secs(600);
+const STUB_LOG_WINDOW: i64 = 6 * 3600;
 const HANDOFF_LOG: &str = "ea_handoff.log";
 
 /// Which store Play brings up first for a copy of the game.
@@ -320,7 +321,10 @@ pub fn start(store: &Store, game: &Path, args: &[String], session: &Path, before
             match &slot {
                 Ok(Some(Slot::Staged)) => say("ea app", "offline play's file is in place"),
                 Ok(Some(Slot::Replaced)) => say("ea app", "the EA app put its own file over offline play's"),
-                Ok(Some(Slot::Missing)) => say("ea app", "offline play's file is gone from the game folder"),
+                Ok(Some(Slot::Missing)) => {
+                    say("ea app", "offline play's file is gone from the game folder");
+                    note_stub_blocked(store, game);
+                }
                 Ok(Some(Slot::Unknown)) => {
                     say("ea app", "offline play's file was changed by another program")
                 }
@@ -341,7 +345,7 @@ pub fn start(store: &Store, game: &Path, args: &[String], session: &Path, before
         }
     };
     say("ea app", &format!("F1 25 started (pid {pid})"));
-    restage(store);
+    restage(store, game);
     Ok(Started { pid, handoff })
 }
 
@@ -361,10 +365,23 @@ fn waiting(slot: Option<Slot>) -> (&'static str, &'static str) {
     }
 }
 
+pub fn note_stub_blocked(store: &Store, game: &Path) -> bool {
+    let since = swofty_core::catalog::now_secs() - STUB_LOG_WINDOW;
+    let Some(block) = offline::stub_blocked(game, &ea_diag::proxy_logs(), since) else {
+        return false;
+    };
+    let failure = launch::Failure::new(launch::Cause::Blocked(block));
+    say("warning", &format!("{}: {}", failure.title(), failure.text()));
+    if let Err(e) = failure.write(&store.root) {
+        say("info", &format!("could not record it for the launcher: {e}"));
+    }
+    true
+}
+
 /// An EA app repair puts EA's anti-cheat launcher over offline play's file,
 /// and the game it then starts has no mods. Put the file back for the next
 /// Play and tell the player.
-fn restage(store: &Store) {
+fn restage(store: &Store, game: &Path) {
     let journal = offline::journal_path(&store.root);
     if matches!(offline::slot(&journal), Ok(None)) {
         return;
@@ -373,6 +390,9 @@ fn restage(store: &Store) {
     match done {
         Ok(Some(Slot::Staged) | None) => {}
         Ok(Some(Slot::Replaced | Slot::Missing)) => {
+            if note_stub_blocked(store, game) {
+                return;
+            }
             let failure = launch::Failure::new(launch::Cause::EaRepaired);
             say("warning", &format!("{}: {}", failure.title(), failure.text()));
             if let Err(e) = failure.write(&store.root) {
