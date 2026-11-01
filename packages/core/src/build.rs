@@ -1799,6 +1799,20 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         for w in erps.check_ui(&name)? {
             built.warnings.push(format!("ui: {w}"));
         }
+        let (invalid, suspect): (Vec<_>, Vec<_>) = erps
+            .check_textures(&name)
+            .into_iter()
+            .partition(|(s, _)| *s == crate::texcheck::Severity::Invalid);
+        if !invalid.is_empty() {
+            let lines: Vec<String> = invalid.into_iter().map(|(_, l)| l).collect();
+            return Err(Error::Other(format!(
+                "texture the game's renderer rejects: {}",
+                lines.join("; ")
+            )));
+        }
+        for (_, w) in suspect {
+            built.warnings.push(format!("texture: {w}"));
+        }
         let stats = erps.repair_stats();
         let by_origin = |list: &[(String, String)]| {
             let mut out: Vec<(String, Vec<String>)> = Vec::new();

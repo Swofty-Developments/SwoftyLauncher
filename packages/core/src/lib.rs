@@ -64,6 +64,7 @@ pub mod steam_client;
 pub mod stock;
 pub mod store;
 pub mod testsuite;
+pub mod texcheck;
 pub mod tracks;
 pub mod transfer;
 pub mod udp_ids;
