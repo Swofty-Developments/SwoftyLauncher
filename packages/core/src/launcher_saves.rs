@@ -252,6 +252,12 @@ pub fn mark_seen(data: &Path) -> Result<()> {
 /// running game defers it to the next start, and a start that finds no Steam save to read records
 /// nothing, so the next start tries again; the Steam save is only read.
 pub fn first_start_import(data: &Path, profiles: &[String], running: Running, now: i64) -> Vec<String> {
+    let config = crate::store::Store::new(data.to_path_buf()).config();
+    if crate::copies::find_active(&config).is_some_and(|c| c.source == crate::install::Source::EaApp) {
+        return vec![
+            "saves: the import into the launcher saves is only for Steam copies; the active copy is from the EA app, so nothing is imported and it is not retried".into(),
+        ];
+    }
     first_start_import_from(data, profiles, || steam_source(data), running, now)
 }
 
