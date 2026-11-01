@@ -20,3 +20,7 @@ CE_TEST_DIR="$OUT" "$OUT/ce_bridge_harness"
 "$OUT/ce_calendar_rules_test"
 "${CXX[@]}" -o "$OUT/ce_section_schedule_test" section_schedule_test.cpp
 "$OUT/ce_section_schedule_test"
+"${CXX[@]}" -o "$OUT/ce_instance_test" instance_test.cpp
+"$OUT/ce_instance_test"
+"${CXX[@]}" -o "$OUT/ce_points_math_test" points_math_test.cpp
+"$OUT/ce_points_math_test"
