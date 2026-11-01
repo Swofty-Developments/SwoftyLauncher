@@ -217,6 +217,8 @@ void garage_crew_commit();
 void pit_slots_commit();
 std::vector<CoreMixins> pit_box_mixins();
 void pit_box_commit();
+std::vector<CoreMixins> garage_slots_mixins();
+void garage_slots_commit();
 std::vector<CoreMixins> chassis_registry_mixins();
 void chassis_registry_commit();
 std::vector<CoreMixins> track_acclim_mixins();

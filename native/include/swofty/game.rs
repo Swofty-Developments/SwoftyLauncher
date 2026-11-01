@@ -15483,6 +15483,16 @@ pub mod bindings {
         kind: "call",
         status: Status::Experimental,
     };
+    pub const site_Sess_GarageSlots_Done: Binding = Binding {
+        id: "site_Sess_GarageSlots_Done",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_GarageSlots_GarageLoad: Binding = Binding {
+        id: "site_Sess_GarageSlots_GarageLoad",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Sess_InGamePlayerFinishedAiCall: Binding = Binding {
         id: "site_Sess_InGamePlayerFinishedAiCall",
         kind: "call",
