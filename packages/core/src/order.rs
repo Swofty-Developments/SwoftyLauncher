@@ -83,6 +83,10 @@ fn glob_match(pattern: &str, id: &str) -> bool {
     }
 }
 
+pub fn is_pinned(id: &str) -> bool {
+    id == CORE_ID || crate::managed::is_managed(id)
+}
+
 fn enabled_ids(profile: &Profile) -> Vec<&str> {
     match profile.is_vanilla() {
         true => Vec::new(),
@@ -90,7 +94,11 @@ fn enabled_ids(profile: &Profile) -> Vec<&str> {
     }
 }
 
-pub fn problems(profile: &Profile, installed: &BTreeMap<String, AddonManifest>) -> Vec<Problem> {
+pub fn problems(
+    profile: &Profile,
+    installed: &BTreeMap<String, AddonManifest>,
+    pinned: &dyn Fn(&str) -> bool,
+) -> Vec<Problem> {
     let on = enabled_ids(profile);
     let place: BTreeMap<&str, usize> = on.iter().enumerate().map(|(i, id)| (*id, i)).collect();
     let mut out = Vec::new();
@@ -99,6 +107,7 @@ pub fn problems(profile: &Profile, installed: &BTreeMap<String, AddonManifest>) 
             continue;
         };
         let at = place[*id];
+        let movable = !pinned(id);
         let mut push = |other: &str, kind| {
             out.push(Problem {
                 addon: (*id).to_owned(),
@@ -118,11 +127,11 @@ pub fn problems(profile: &Profile, installed: &BTreeMap<String, AddonManifest>) 
                         found: dep.version.to_string(),
                     },
                 ),
-                (Some(&dep_at), Some(_)) if dep_at > at => push(&r.id, Kind::Below),
+                (Some(&dep_at), Some(_)) if movable && dep_at > at => push(&r.id, Kind::Below),
                 _ => {}
             }
         }
-        for pat in &m.load_after {
+        for pat in m.load_after.iter().filter(|_| movable) {
             for (other, &other_at) in &place {
                 let listed_requirement = m.requires.iter().any(|r| r.id == *other);
                 if *other != *id && !listed_requirement && glob_match(pat, other) && other_at > at {
@@ -139,13 +148,17 @@ pub fn problems(profile: &Profile, installed: &BTreeMap<String, AddonManifest>) 
     out
 }
 
-pub fn from_report(profile: &Profile, report: &crate::conflicts::Report) -> Vec<Problem> {
+pub fn from_report(
+    profile: &Profile,
+    report: &crate::conflicts::Report,
+    pinned: &dyn Fn(&str) -> bool,
+) -> Vec<Problem> {
     if profile.is_vanilla() || !report.is_current(profile) {
         return Vec::new();
     }
     let at: BTreeMap<&str, usize> = profile.enabled().enumerate().map(|(i, id)| (id, i)).collect();
     let mut out = Vec::new();
-    for w in &report.waits {
+    for w in report.waits.iter().filter(|w| !pinned(&w.addon)) {
         if let (Some(a), Some(o)) = (at.get(w.addon.as_str()), at.get(w.on.as_str()))
             && o > a
         {
@@ -260,6 +273,7 @@ pub fn fix(
     profile: &mut Profile,
     installed: &BTreeMap<String, AddonManifest>,
     learned: &[Problem],
+    pinned: &dyn Fn(&str) -> bool,
 ) -> Result<bool> {
     if profile.is_vanilla() {
         return Ok(false);
@@ -274,7 +288,7 @@ pub fn fix(
     let ids: Vec<String> = slots.iter().map(|&i| profile.addons[i].id.clone()).collect();
     let index: BTreeMap<&str, usize> = ids.iter().enumerate().map(|(i, id)| (id.as_str(), i)).collect();
     let mut before: Vec<BTreeSet<usize>> = vec![BTreeSet::new(); ids.len()];
-    for (i, id) in ids.iter().enumerate() {
+    for (i, id) in ids.iter().enumerate().filter(|(_, id)| !pinned(id)) {
         let m = &installed[id];
         for r in &m.requires {
             if let Some(&d) = index.get(r.id.as_str()) {
@@ -290,7 +304,10 @@ pub fn fix(
             );
         }
     }
-    for p in learned.iter().filter(|p| p.kind == Kind::Waits) {
+    for p in learned
+        .iter()
+        .filter(|p| p.kind == Kind::Waits && !pinned(&p.addon))
+    {
         if let (Some(&a), Some(&o)) = (index.get(p.addon.as_str()), index.get(p.other.as_str()))
             && a != o
             && !reaches(&before, o, a)
@@ -364,7 +381,7 @@ pub fn lines(profile: &Profile, installed: &BTreeMap<String, AddonManifest>) -> 
             .get(id)
             .map_or_else(|| id.to_owned(), |m| m.name.clone())
     };
-    problems(profile, installed)
+    problems(profile, installed, &is_pinned)
         .iter()
         .map(|p| format!("{}: {}", name(&p.addon), p.line(&name)))
         .collect()
@@ -411,7 +428,7 @@ mod tests {
     }
 
     fn kinds(p: &Profile) -> Vec<(String, String, Kind)> {
-        problems(p, &installed())
+        problems(p, &installed(), &is_pinned)
             .into_iter()
             .map(|x| (x.addon, x.other, x.kind))
             .collect()
@@ -421,8 +438,8 @@ mod tests {
     fn a_dependency_below_is_reported() {
         let p = profile(&["cs.2016", "cs.base"]);
         assert_eq!(kinds(&p), [("cs.2016".into(), "cs.base".into(), Kind::Below)]);
-        assert!(!problems(&p, &installed())[0].blocks_play());
-        assert!(problems(&profile(&["cs.base", "cs.2016"]), &installed()).is_empty());
+        assert!(!problems(&p, &installed(), &is_pinned)[0].blocks_play());
+        assert!(problems(&profile(&["cs.base", "cs.2016"]), &installed(), &is_pinned).is_empty());
     }
 
     #[test]
@@ -432,7 +449,7 @@ mod tests {
         assert_eq!(kinds(&p), [("cs.2016".into(), "cs.base".into(), Kind::Off)]);
         let mut gone = installed();
         gone.remove("cs.base");
-        let found = problems(&profile(&["cs.2016"]), &gone);
+        let found = problems(&profile(&["cs.2016"]), &gone, &is_pinned);
         assert_eq!(found[0].kind, Kind::Missing);
         assert!(found[0].blocks_play());
     }
@@ -462,24 +479,60 @@ mod tests {
     }
 
     #[test]
+    fn a_built_in_addon_that_loads_after_others_is_not_asked_to_move() {
+        let mut all = installed();
+        all.extend([m(
+            crate::managed::ID,
+            r#","load_after":["cs.*","track.*"],"requires":[{"id":"cs.base"}]"#,
+        )]);
+        let mut p = profile(&[crate::managed::ID, "cs.base", "cs.2016", "track.a"]);
+        let report = crate::conflicts::Report {
+            order: p.enabled().map(str::to_owned).collect(),
+            waits: vec![crate::conflicts::Wait {
+                addon: crate::managed::ID.into(),
+                on: "track.a".into(),
+            }],
+            ..Default::default()
+        };
+        let mut found = problems(&p, &all, &is_pinned);
+        found.extend(from_report(&p, &report, &is_pinned));
+        assert!(found.is_empty(), "{found:?}");
+        let before = ids(&p).join(",");
+        assert!(!fix(&mut p, &all, &found, &is_pinned).unwrap());
+        assert_eq!(ids(&p).join(","), before);
+        let plan = crate::resolver::resolve(&p, &all).unwrap();
+        let at = |id: &str| plan.order.iter().position(|x| x == id).unwrap();
+        assert!(at("cs.2016") < at(crate::managed::ID) && at("track.a") < at(crate::managed::ID));
+        assert!(
+            plan.warnings.iter().all(|w| !w.contains("above it")),
+            "{:?}",
+            plan.warnings
+        );
+    }
+
+    #[test]
     fn nothing_is_reported_for_addons_that_are_off_or_in_vanilla() {
         let mut p = profile(&["cs.2016"]);
         p.set_enabled("cs.2016", false).unwrap();
-        assert!(problems(&p, &installed()).is_empty());
-        assert!(problems(&Profile::vanilla(), &installed()).is_empty());
+        assert!(problems(&p, &installed(), &is_pinned).is_empty());
+        assert!(problems(&Profile::vanilla(), &installed(), &is_pinned).is_empty());
     }
 
     #[test]
     fn fix_moves_only_what_the_dependencies_need() {
         let mut p = profile(&["cs.2016", "track.a", "cs.base", "c.grid", "track.b"]);
-        assert!(fix(&mut p, &installed(), &[]).unwrap());
+        assert!(fix(&mut p, &installed(), &[], &is_pinned).unwrap());
         let order = ids(&p);
         let at = |id: &str| order.iter().position(|x| *x == id).unwrap();
         assert!(at("cs.base") < at("cs.2016"));
         assert!(at("track.a") < at("c.grid") && at("track.b") < at("c.grid"));
-        assert!(problems(&p, &installed()).iter().all(|x| x.kind != Kind::Below));
+        assert!(
+            problems(&p, &installed(), &is_pinned)
+                .iter()
+                .all(|x| x.kind != Kind::Below)
+        );
         let mut fine = profile(&["cs.base", "cs.2016"]);
-        assert!(!fix(&mut fine, &installed(), &[]).unwrap());
+        assert!(!fix(&mut fine, &installed(), &[], &is_pinned).unwrap());
     }
 
     #[test]
@@ -487,7 +540,7 @@ mod tests {
         let mut p = profile(&["cs.2016", "track.a", "cs.base"]);
         p.set_enabled("track.a", false).unwrap();
         let off_at = ids(&p).iter().position(|x| *x == "track.a").unwrap();
-        fix(&mut p, &installed(), &[]).unwrap();
+        fix(&mut p, &installed(), &[], &is_pinned).unwrap();
         assert_eq!(ids(&p)[off_at], "track.a");
     }
 
@@ -499,7 +552,7 @@ mod tests {
             m("x.b", r#","requires":[{"id":"x.a"}]"#),
         ]);
         let mut p = profile(&["x.a", "x.b"]);
-        let err = fix(&mut p, &all, &[]).unwrap_err().to_string();
+        let err = fix(&mut p, &all, &[], &is_pinned).unwrap_err().to_string();
         assert!(
             err.contains("need each other") && err.contains("x.a, x.b"),
             "{err}"
@@ -511,13 +564,13 @@ mod tests {
     fn fix_result_survives_folder_grouping() {
         use crate::folders::{Key, flatten, group};
         let mut p = profile(&["cs.2016", "track.a", "cs.base", "c.grid"]);
-        fix(&mut p, &installed(), &[]).unwrap();
+        fix(&mut p, &installed(), &[], &is_pinned).unwrap();
         let place = |id: &str| id.starts_with("track.").then(|| Key::Own("tracks".into()));
         let grouped = flatten(&group(p.addons.iter().map(|a| a.id.clone()), place));
         let mut regrouped = p.clone();
         crate::folders::reorder(&mut regrouped, &grouped, &|_| false);
         assert!(
-            problems(&regrouped, &installed())
+            problems(&regrouped, &installed(), &is_pinned)
                 .iter()
                 .all(|x| x.kind != Kind::Below)
         );
@@ -563,12 +616,12 @@ mod tests {
             }],
             ..Default::default()
         };
-        let found = from_report(&p, &report);
+        let found = from_report(&p, &report, &is_pinned);
         assert_eq!(found[0].kind, Kind::Waits);
         assert_eq!(found[1].kind, Kind::Loses { items: 2 });
         assert_eq!(found[1].severity(), Severity::Amber);
         assert_eq!(found[0].severity(), Severity::Red);
-        fix(&mut p, &installed(), &found).unwrap();
+        fix(&mut p, &installed(), &found, &is_pinned).unwrap();
         let order = ids(&p);
         let at = |id: &str| order.iter().position(|x| *x == id).unwrap();
         assert!(at("cs.base") < at("c.grid"));
@@ -576,7 +629,7 @@ mod tests {
             order: vec![],
             ..report
         };
-        assert!(from_report(&p, &stale).is_empty());
+        assert!(from_report(&p, &stale, &is_pinned).is_empty());
     }
 
     #[test]
@@ -587,7 +640,7 @@ mod tests {
             other: "cs.2016".into(),
             kind: Kind::Waits,
         }];
-        fix(&mut p, &installed(), &learned).unwrap();
+        fix(&mut p, &installed(), &learned, &is_pinned).unwrap();
         let order = ids(&p);
         let at = |id: &str| order.iter().position(|x| *x == id).unwrap();
         assert!(at("cs.base") < at("cs.2016"));
