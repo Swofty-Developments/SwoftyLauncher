@@ -276,6 +276,8 @@ void direct_start_register_time_trial(DirectStartSetup setup);
 std::string direct_start_request_text();
 // For the cover: 0 while a session target is on its way, 1 once its session is on screen, -1 when it failed.
 int direct_start_cover_signal();
+// A UI screen opened (ui.cpp): the session's own screen takes the cover off.
+void direct_start_screen(const char *name);
 uintptr_t direct_start_set_mode();
 // What the direct start knows on the flow thread from the profile load on: the game manager and the game modes
 // context (the object Game_Game_SetCurrentGameMode takes, [game manager+0xc0]).

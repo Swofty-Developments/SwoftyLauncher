@@ -52,6 +52,8 @@ const runtime::Sig SIG_MODE_BY_PREDICATE{"game.game_modes_find_by_predicate",
 const runtime::Sig SIG_GP_PREDICATE{"game.grand_prix_mode_predicate",
                                     "48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 E8 ?? ?? ?? ?? 48 85 C0 74 22",
                                     0x77cff0, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig SIG_BUILD_SETTINGS{"game.championship_game_mode_build_session_settings",
+                                      "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 68 00", 0x7b7b90};
 const runtime::Sig SIG_ROUNDS_PREPARE{"game.championship_rounds_prepare", "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 80 B9 C0 02", 0xbc3900};
 
 // The Grand Prix modes a Continue picks from, in the order GrandPrixContinueViewModel's lookup
@@ -102,6 +104,11 @@ json::Value request;
 safetyhook::MidHook h_link;
 std::atomic<bool> armed{false};
 std::atomic<int> session_frames{0};
+std::atomic<uint64_t> session_at{0};
+std::atomic<bool> session_screen{false};
+// The broadcast intro runs under the cover; it comes off at the garage (or the grid), or this long after StateSession
+// started updating when neither screen opens.
+constexpr uint64_t SESSION_SCREEN_WAIT_MS = 60000;
 ds::Phase logged = ds::Phase::off;
 
 void note_phase()
@@ -272,8 +279,10 @@ void link_mid(safetyhook::Context &c)
     if (hash == STATE_APP)
         flow_root = state;
     if (hash == STATE_SESSION && *reinterpret_cast<uint8_t *>(state + STATE_STATUS) == 2 &&
-        session_frames.fetch_add(1) == 0 && driver.target.name == "session" && !fade_released)
+        session_frames.fetch_add(1) == 0 && driver.target.name == "session" && !fade_released) {
+        session_at = GetTickCount64();
         release_frontend_fade();
+    }
     uint32_t link = *slot, out = driver.on_update(hash, link, child);
     if (out != link) {
         *slot = out;
@@ -406,6 +415,27 @@ ds::Setup continue_grand_prix(std::string &why)
 }
 
 runtime::DirectStartSetup room_setup = nullptr, time_trial_setup = nullptr;
+
+// The race's laps: Game_ChampionshipGameMode_BuildSessionSettings (0x1407b7b90, the championship modes' slot) fills
+// the session's SessionSettings (sessionId +4) and stores the laps at +0xdf0 XOR +0xdf8; for a race session the core
+// writes the requested laps over it after the game's own value.
+safetyhook::InlineHook h_settings;
+
+uint64_t settings_detour(void *mode, uint8_t *settings)
+{
+    uint64_t r = h_settings.call<uint64_t>(mode, settings);
+    if (!armed.load() || !settings)
+        return r;
+    long long laps = request["laps"].num(0);
+    uint32_t id = *reinterpret_cast<uint32_t *>(settings + 4);
+    if (laps > 0 && laps <= 100 && id >= 15 && id <= 17 && request["mode"].str() != "time_trial") {
+        auto &stored = *reinterpret_cast<uint32_t *>(settings + 0xdf0);
+        uint32_t key = *reinterpret_cast<uint32_t *>(settings + 0xdf8), was = stored ^ key;
+        stored = uint32_t(laps) ^ key;
+        swofty::log("[direct] race laps %u -> %lld (session %s)", was, laps, testagent::SESSION_NAMES[id]);
+    }
+    return r;
+}
 std::string request_text;
 std::atomic<bool> setup_ran{false};
 runtime::DirectStartContext context;
@@ -798,41 +828,6 @@ ds::Setup new_grand_prix(std::string &why)
     }
     // 4. One round at that track, then the season built from the rounds (0x141207290 on a stub that holds the
     // registry at +0x270, the rounds at +0x290 and the track at [+0x298]+0x18).
-    {
-        auto *reg = e + ENTITY_REGISTRY;
-        auto **rvt = *reinterpret_cast<void ***>(reg);
-        auto *code = static_cast<uint8_t *>(rvt[2]);
-        std::string hex;
-        for (int i = 0; i < 96 && runtime::readable(code + i, 1); i++) {
-            char b[4];
-            snprintf(b, sizeof b, "%02x ", code[i]);
-            hex += b;
-        }
-        uintptr_t base = swofty::api->module_base();
-        auto q = [](uintptr_t a) { return runtime::readable(reinterpret_cast<void *>(a), 16) ? *reinterpret_cast<uint64_t *>(a) : 0; };
-        auto q8 = [](uintptr_t a) { return runtime::readable(reinterpret_cast<void *>(a), 16) ? *reinterpret_cast<uint64_t *>(a + 8) : 0; };
-        swofty::log("[direct] Grand Prix: registry %p vt %p slot 0x10 %s: %s", reg, rvt, runtime::code_where(uintptr_t(code)).c_str(),
-                    hex.c_str());
-        swofty::log("[direct] Grand Prix: desc 0x14605ad20 = %llx %llx, desc 0x14605ad40 = %llx %llx",
-                    (unsigned long long)q(base + 0x605ad20), (unsigned long long)q8(base + 0x605ad20),
-                    (unsigned long long)q(base + 0x605ad40), (unsigned long long)q8(base + 0x605ad40));
-        auto dump = [&](uintptr_t rva, int n) {
-            auto *c = reinterpret_cast<uint8_t *>(base + rva);
-            std::string h;
-            for (int i = 0; i < n && runtime::readable(c + i, 1); i++) {
-                char b[4];
-                snprintf(b, sizeof b, "%02x ", c[i]);
-                h += b;
-            }
-            swofty::log("[direct] code at base+0x%llx: %s", (unsigned long long)rva, h.c_str());
-        };
-        dump(0x13417330, 192);
-        dump(0x97c8dd0, 160);
-        if (GetEnvironmentVariableA("SWOFTY_DIRECT_PROBE_ONLY", nullptr, 0)) {
-            why = "probe only (SWOFTY_DIRECT_PROBE_ONLY)";
-            return ds::Setup::failed;
-        }
-    }
     void *rounds = registry_call(e, 0x10, reinterpret_cast<void *>(swofty::api->module_base() + 0x605ad40), 0);
     if (!rounds) {
         why = "the Grand Prix mode has no rounds component";
@@ -950,6 +945,19 @@ void direct_start_setup()
         if (h)
             h_set_mode = std::move(*h);
     }
+    if (target == "session" && request["laps"].num(0) > 0) {
+        uintptr_t at = runtime::same_build() ? runtime::find(SIG_BUILD_SETTINGS, "session settings", "direct") : 0;
+        bool hooked = false;
+        if (at) {
+            auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(settings_detour));
+            if (h) {
+                h_settings = std::move(*h);
+                hooked = true;
+            }
+        }
+        if (!hooked)
+            swofty::log("[direct] the race laps are not set: Game_ChampionshipGameMode_BuildSessionSettings did not hook");
+    }
     runtime::title::setup();
     if (!runtime::title::why().empty()) {
         swofty::log("[direct] off: the title can't pass by itself (%s)", runtime::title::why().c_str());
@@ -1017,10 +1025,26 @@ int direct_start_cover_signal()
         return 0;
     if (!armed.load())
         return -1;
-    std::lock_guard<std::mutex> g(lock);
-    if (driver.phase == ds::Phase::failed)
-        return -1;
-    return session_frames.load() >= 30 ? 1 : 0;
+    {
+        std::lock_guard<std::mutex> g(lock);
+        if (driver.phase == ds::Phase::failed)
+            return -1;
+    }
+    if (session_screen.load())
+        return 1;
+    uint64_t at = session_at.load();
+    return at && GetTickCount64() - at >= SESSION_SCREEN_WAIT_MS ? 1 : 0;
+}
+
+void direct_start_screen(const char *name)
+{
+    if (!armed.load() || !name || !session_at.load() || session_screen.load())
+        return;
+    if (!std::strcmp(name, "garage_cockpit") || !std::strcmp(name, "race_hud") || !std::strcmp(name, "grid")) {
+        session_screen = true;
+        swofty::log("[direct] the session's screen %s is up after %llu ms; the cover comes off", name,
+                    (unsigned long long)(GetTickCount64() - session_at.load()));
+    }
 }
 
 void direct_start_profile_read()
