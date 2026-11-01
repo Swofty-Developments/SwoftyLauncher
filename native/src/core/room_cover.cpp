@@ -15,6 +15,7 @@ namespace {
 
 std::mutex lock;
 Cover cover;
+Kind kind = Kind::none;
 std::atomic<bool> armed{false};
 uint64_t polled_at = 0;
 Signal last = Signal::waiting;
@@ -53,10 +54,12 @@ bool setup()
         text = read_file(swofty_root() + L"direct_start.json", size_t(1) << 16);
     else if (value[0] == '@')
         text = read_file(wide(value.c_str() + 1), size_t(1) << 16);
-    if (!request_is_room(value, text))
+    Kind k = request_kind(value, text);
+    if (k == Kind::none)
         return false;
     std::lock_guard<std::mutex> g(lock);
-    cover.arm();
+    kind = k;
+    cover.arm(k == Kind::session ? SESSION_CAP_MS : CAP_MS);
     armed.store(true);
     return true;
 }
@@ -73,17 +76,23 @@ void paint(hud::Frame &f, uint64_t now)
     std::lock_guard<std::mutex> g(lock);
     if (now - polled_at >= 100) {
         polled_at = now;
-        auto sig = netplay_room::cover_signal();
-        last = sig == netplay_room::CoverSignal::failed  ? Signal::failed
-               : sig == netplay_room::CoverSignal::shown ? Signal::shown
-                                                         : Signal::waiting;
+        if (kind == Kind::session) {
+            int sig = direct_start_cover_signal();
+            last = sig < 0 ? Signal::failed : sig > 0 ? Signal::shown : Signal::waiting;
+        } else {
+            auto sig = netplay_room::cover_signal();
+            last = sig == netplay_room::CoverSignal::failed  ? Signal::failed
+                   : sig == netplay_room::CoverSignal::shown ? Signal::shown
+                                                             : Signal::waiting;
+        }
     }
     Event ev = Event::none;
     float alpha = cover.frame(now, last, &ev);
+    const char *what = kind == Kind::session ? "test session" : "room launch";
     if (ev == Event::went_up)
-        swofty::log("[cover] room launch cover up (%.0fx%.0f)", double(f.width), double(f.height));
+        swofty::log("[cover] %s cover up (%.0fx%.0f)", what, double(f.width), double(f.height));
     else if (ev == Event::came_off)
-        swofty::log("[cover] room launch cover off: %s", why_name(cover.why()));
+        swofty::log("[cover] %s cover off: %s", what, why_name(cover.why()));
     if (!cover.drawing()) {
         armed.store(false);
         return;
@@ -93,14 +102,15 @@ void paint(hud::Frame &f, uint64_t now)
     hud::reset_state(f);
     f.opacity = alpha;
     hud::rect(f, 0, 0, f.width, f.height, BACKGROUND);
+    const char *sub = kind == Kind::session ? "Test session" : "Multiplayer";
     if (measured_for != f.height) {
         measured_for = f.height;
         hud::measure(title_style(f.height), "SWOFTY LAUNCHER", &title_w, &title_h);
-        hud::measure(sub_style(f.height), "Multiplayer", &sub_w, &sub_h);
+        hud::measure(sub_style(f.height), sub, &sub_w, &sub_h);
     }
     float gap = f.height * 0.02f, top = (f.height - (title_h + gap + sub_h)) * 0.5f;
     hud::text(f, (f.width - title_w) * 0.5f, top, title_style(f.height), "SWOFTY LAUNCHER");
-    hud::text(f, (f.width - sub_w) * 0.5f, top + title_h + gap, sub_style(f.height), "Multiplayer");
+    hud::text(f, (f.width - sub_w) * 0.5f, top + title_h + gap, sub_style(f.height), sub);
 }
 
 }
