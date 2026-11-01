@@ -243,6 +243,47 @@ std::string validate_build(const Build &b, float len)
     return "";
 }
 
+std::vector<PlanMove> plan_moves(const std::vector<PlanRef> &plans, const std::vector<std::string> &rounds)
+{
+    std::vector<PlanMove> out;
+    for (const PlanRef &p : plans) {
+        PlanMove m;
+        m.from = m.to = p.weekend;
+        bool in = p.weekend >= 0 && static_cast<size_t>(p.weekend) < rounds.size();
+        if (p.weekend < 0 || (p.event.empty() && !in)) {
+            out.push_back(m);
+            continue;
+        }
+        if (p.event.empty()) {
+            m.stamp = true;
+        } else if (!(in && rounds[p.weekend] == p.event)) {
+            m.drop = true;
+            for (size_t j = 0; j < rounds.size(); ++j)
+                if (rounds[j] == p.event) {
+                    m.to = static_cast<int>(j);
+                    m.drop = false;
+                    break;
+                }
+        }
+        out.push_back(m);
+    }
+    return out;
+}
+
+std::string unsupported_state(const Build &b, const TypeRange (&ranges)[6])
+{
+    for (uint32_t i = 0; i < b.n; ++i) {
+        uint8_t t = b.type[i];
+        if (t < 3 || t >= 6)
+            continue;
+        const TypeRange &r = ranges[t];
+        bool usable = std::isfinite(r.min) && std::isfinite(r.max) && r.min >= 0 && r.min <= r.max && r.max <= 1;
+        if (!usable || r.max <= 0.0f)
+            return kStates[t];
+    }
+    return "";
+}
+
 std::vector<std::string> clamp_build(Build &b, const TypeRange (&ranges)[6])
 {
     std::vector<std::string> out;

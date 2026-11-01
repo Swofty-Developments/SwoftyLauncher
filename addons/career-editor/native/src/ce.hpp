@@ -100,6 +100,19 @@ class GameCall {
     bool on_;
 };
 
+struct RoundId {
+    std::string name;
+    int track = -1;
+};
+
+// The current season's rounds in order (weekend name and track stat id); false when they cannot be read.
+bool season_rounds(std::vector<RoundId> &out);
+
+namespace weather {
+// Re-binds each weather plan to its round after the calendar changed.
+void reconcile(const char *why);
+} // namespace weather
+
 } // namespace ce
 
 #define CE_CAT_(a, b) a##b

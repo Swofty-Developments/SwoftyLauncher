@@ -134,6 +134,8 @@ WeatherAndTimeOfDayComponent &C(uintptr_t c)
 // Plan sidecar (the plan model is weather_plan.cpp).
 
 struct WeekendPlan {
+    std::string event;
+    int track = -1;
     bool has[kSessions] = {};
     SessionPlan s[kSessions];
     bool empty() const
@@ -283,6 +285,12 @@ void write_career(ce::Writer &w, const CareerState &c)
         w.begin_object();
         w.key("weekend");
         write_weekend_id(w, wk);
+        if (!wp.event.empty()) {
+            w.key("event");
+            w.str(wp.event);
+            w.key("track");
+            w.integer(wp.track);
+        }
         w.key("sessions");
         write_weekend_sessions(w, wp);
         w.end_object();
@@ -364,6 +372,8 @@ int read_career(const ce::Json &doc, CareerState &c, int &dropped)
             continue;
         }
         WeekendPlan &wp = c.plans[wk];
+        wp.event = e["event"].type == ce::Json::Str ? e["event"].s : std::string();
+        wp.track = static_cast<int>(e["track"].num(-1));
         for (auto &[k, v] : e["sessions"].o) {
             int s = session_of(k);
             SessionPlan sp;
@@ -606,6 +616,70 @@ int default_weekend()
 // ---------------------------------------------------------------------------
 // Rebuild one dataset from a plan.
 
+std::string track_label(const std::string &event)
+{
+    std::string t = event.compare(0, 3, "rw_") == 0 ? event.substr(3) : event;
+    if (t.size() > 3 && t.compare(t.size() - 3, 3, "_26") == 0)
+        t.resize(t.size() - 3);
+    return t.empty() ? "?" : t;
+}
+
+std::string round_label(int weekend)
+{
+    std::vector<ce::RoundId> rs;
+    if (ce::season_rounds(rs) && weekend >= 0 && static_cast<size_t>(weekend) < rs.size())
+        return track_label(rs[weekend].name);
+    return "weekend " + std::to_string(weekend);
+}
+
+void reconcile_locked(const char *why)
+{
+    if (g_plans.empty())
+        return;
+    std::vector<ce::RoundId> rs;
+    if (!ce::season_rounds(rs) || rs.empty())
+        return;
+    std::vector<std::string> names;
+    for (auto &r : rs)
+        names.push_back(r.name);
+    std::vector<PlanRef> refs;
+    for (auto &[wk, wp] : g_plans)
+        refs.push_back({wk, wp.event});
+    std::vector<PlanMove> moves = plan_moves(refs, names);
+    std::map<int, WeekendPlan> next;
+    bool changed = false;
+    for (const PlanMove &m : moves) {
+        WeekendPlan wp = g_plans[m.from];
+        if (m.drop) {
+            ce::log("weather: plan for %s dropped (%s): its round is no longer on the calendar", track_label(wp.event).c_str(),
+                    why);
+            changed = true;
+            continue;
+        }
+        if (m.stamp) {
+            wp.event = names[m.from];
+            wp.track = rs[m.from].track;
+            changed = true;
+        }
+        if (m.to != m.from) {
+            wp.track = rs[m.to].track;
+            ce::log("weather: plan for %s moved with its round (weekend %d -> %d, %s)", track_label(wp.event).c_str(),
+                    m.from, m.to, why);
+            changed = true;
+        }
+        if (next.count(m.to)) {
+            ce::log("weather: plan for %s dropped (%s): another plan already sits at weekend %d", track_label(wp.event).c_str(),
+                    why, m.to);
+            continue;
+        }
+        next[m.to] = wp;
+    }
+    if (changed) {
+        g_plans = next;
+        save_sidecar();
+    }
+}
+
 std::string rebuild_gate(uintptr_t ws, uintptr_t &tod, uintptr_t &owner)
 {
     char buf[160];
@@ -667,6 +741,13 @@ std::string rebuild(uintptr_t ws, int s, const SessionPlan &p, int weekend, cons
         ranges[t] = {T(tod).type_ranges[t].intensity_min, T(tod).type_ranges[t].intensity_max};
     for (const std::string &c : clamp_build(b, ranges))
         ce::log("weather: %s (weekend %d, %s): %s", kKeys[s], weekend, why, c.c_str());
+    std::string lacking = unsupported_state(b, ranges);
+    if (!lacking.empty()) {
+        g_reason[s] = "refused: " + round_label(weekend) + " has no " + lacking;
+        ce::log("weather: %s has no %s; kept the game's forecast (%s, weekend %d, %s)", round_label(weekend).c_str(),
+                lacking.c_str(), kKeys[s], weekend, why);
+        return g_reason[s];
+    }
     std::string bad = validate_build(b, len);
     if (!bad.empty()) {
         g_reason[s] = "refused: " + bad;
@@ -959,6 +1040,7 @@ SWOFTY_WRAP(Sess_GameWeatherSystem_SetupSession, void, void *ws, void *settings,
         save_sidecar();
         ce::log("weather: plan for the next weekend bound to weekend %d", weekend);
     }
+    reconcile_locked("forecast build");
     apply_weekend(w, weekend, "forecast build");
 }
 
@@ -1079,6 +1161,7 @@ ce::OpResult op_plan_set(const ce::Json &args)
     WeekendPlan prev = g_plans.count(weekend) ? g_plans[weekend] : WeekendPlan{};
     bool existed = g_plans.count(weekend) != 0;
     g_plans[weekend] = next;
+    reconcile_locked("plan.set");
     if (!save_sidecar()) {
         if (existed)
             g_plans[weekend] = prev;
@@ -1453,3 +1536,15 @@ CE_OP_ANYTIME("weather.seed.lock", op_seed_lock);
 CE_OP_ANYTIME("weather.seed.reroll", op_seed_reroll);
 CE_OP_ANYTIME("weather.seed.unlock", op_seed_unlock);
 CE_SECTION("weather", section);
+
+namespace ce::weather {
+
+void reconcile(const char *why)
+{
+    Guard g;
+    if (!enter(true))
+        return;
+    reconcile_locked(why);
+}
+
+} // namespace ce::weather
