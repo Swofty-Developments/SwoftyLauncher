@@ -885,6 +885,25 @@ mod tests {
     }
 
     #[test]
+    fn a_profile_with_launcher_saves_off_leaves_an_after_play_version_of_the_steam_save() {
+        let f = fixture("after-steam");
+        f.store
+            .update_profile("default", |p| {
+                p.launcher_saves = false;
+                Ok(())
+            })
+            .unwrap();
+        let b = before_session_at(&f.store, "default", &f.game, "s1", true, Some(f.steam.clone())).unwrap();
+        std::fs::write(f.steam.dir.join(DATA), [9u8; 1200]).unwrap();
+        after_session(Some(b));
+        let snaps = Vault::of(&f.store.root, &f.steam).unwrap().list().unwrap();
+        let last = snaps.iter().find(|s| s.reason == Reason::AfterSession).unwrap();
+        assert_eq!(last.layout, vault::Layout::Steam);
+        assert_eq!(last.session_id.as_deref(), Some("s1"));
+        std::fs::remove_dir_all(&f.root).ok();
+    }
+
+    #[test]
     fn the_vanilla_profile_always_plays_on_steam_saves() {
         let f = fixture("vanilla");
         let b = before_session_at(&f.store, "vanilla", &f.game, "s1", true, Some(f.steam.clone())).unwrap();
