@@ -84,7 +84,8 @@ What the core does (`native/src/core/direct_start.cpp`), in order:
 6. `StateFTUE` leaves by its exit link, so `StateFrontend` (the menu) never starts, and `StateFrontendWorld` takes `session` (0x8c23ce89): `#e2dcf787 > StateSmokeTestSkipFEPreLaunchHold > StateCerberusServer > #d36d1718 > StateLoadSession`.
 7. `StateLoadSession`'s exit (0x1436e0e40) waits for its sync point (+0xcd0: request node +0x80, UI node +0xa0), which the loading screen sets in a menu start. 500 ms into the exit the core sets the UI node with `Vm_NodeSet_Bool` and the flow goes on to `StateSession`. Without it the game parks on a black screen after the load (`#8ad771dc` is the normal last child of the load, not the stop).
 8. For a race, `Game_ChampionshipGameMode_BuildSessionSettings` (0x1407b7b90) is hooked and the laps written to SessionSettings+0xdf0 (XOR +0xdf8).
-9. The cover comes off 1.5 s after the `garage_cockpit` screen opens, or 60 s after `StateSession` started updating (a race opens no screen of its own at the grid), and at once when the start fails.
+9. When `StateSession` first updates, the front end's main scene (the menus' dark backdrop with red light streaks) is despawned, as `StateFrontend`'s exit does in a menu start (`Game_FrontendSceneManager_DespawnMainScene` 0x1428d9a90 on the node's +0xd20).
+10. The cover comes off 1.5 s after the `garage_cockpit` screen opens, or 60 s after `StateSession` started updating (a race opens no screen of its own at the grid), and at once when the start fails.
 
 The flow is logged as `[direct] ...` lines: the weekend before and after (`weekend ..., track stat id 0, current session 0 of: practice_1 race`), the seat (`the player drives for cs17_williams as lance_stroll (seat 6)`), `StateLoadSession exiting for 503 ms: its sync point is complete` and `the session's screen garage_cockpit is up`.
 

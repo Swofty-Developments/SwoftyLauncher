@@ -536,58 +536,9 @@ void release_fade()
                 at<uint32_t>(owner, FADE_STATE));
 }
 
-// The front end's main scene (the menus' dark backdrop with red light streaks) is despawned by StateFrontend's
-// exit (Game_StateFrontend_OnStateExit 0x1436d3b00: Game_FrontendSceneManager_DespawnMainScene 0x1428d9a90 on
-// [state+0xd20] when [[state+0xd20]+0x40]+0x1048 or +0x1049 is set). A direct start never enters StateFrontend, so
-// the backdrop stays over a Time Trial's garage, which has no broadcast intro camera to take the view. The node
-// exists in the flow graph all the same (FrontendWorld's child 0x957880c6), so the core despawns the scene through
-// its manager.
-constexpr uint32_t STATE_FRONTEND = 0x957880c6;
-constexpr uintptr_t NODE_HASH = 0xb0, NODE_CHILDREN = 0xc0, FRONTEND_SCENES = 0xd20, SCENES_MAIN = 0x40,
-                    MAIN_SPAWNED = 0x1048, RVA_DESPAWN_MAIN_SCENE = 0x28d9a90;
-
-uint8_t *flow_node(uint32_t want)
-{
-    std::vector<uint8_t *> todo{static_cast<uint8_t *>(runtime::direct_start_flow_root())};
-    for (size_t i = 0; i < todo.size() && i < 1024; ++i) {
-        uint8_t *n = todo[i];
-        if (!n || !runtime::readable(n, NODE_CHILDREN + 8))
-            continue;
-        if (at<uint32_t>(n, NODE_HASH) == want)
-            return n;
-        auto *cv = at<uint8_t *>(n, NODE_CHILDREN);
-        if (!cv || !runtime::readable(cv, 0x18))
-            continue;
-        for (auto **p = at<uint8_t **>(cv, 8), **e = at<uint8_t **>(cv, 0x10); p && p < e && runtime::readable(p, 8); ++p)
-            todo.push_back(*p);
-    }
-    return nullptr;
-}
-
-bool main_scene(uint8_t *&mgr)
-{
-    uint8_t *node = flow_node(STATE_FRONTEND);
-    mgr = node && runtime::readable(node, FRONTEND_SCENES + 8) ? at<uint8_t *>(node, FRONTEND_SCENES) : nullptr;
-    auto *scenes = mgr && runtime::readable(mgr, SCENES_MAIN + 8) ? at<uint8_t *>(mgr, SCENES_MAIN) : nullptr;
-    return scenes && runtime::readable(scenes, MAIN_SPAWNED + 2) && (scenes[MAIN_SPAWNED] || scenes[MAIN_SPAWNED + 1]);
-}
-
 void despawn_main_scene(const char *when)
 {
-    uint8_t *mgr = nullptr;
-    bool spawned = main_scene(mgr);
-    if (!mgr) {
-        swofty::log("[direct] Time Trial: no StateFrontend node or front end scene manager %s", when);
-        return;
-    }
-    if (!spawned) {
-        swofty::log("[direct] Time Trial: the front end's main scene is not spawned %s (manager %p)", when, mgr);
-        return;
-    }
-    rva<void(void *)>(RVA_DESPAWN_MAIN_SCENE)(mgr);
-    uint8_t *again = nullptr;
-    swofty::log("[direct] Time Trial: despawned the front end's main scene %s (manager %p; still spawned: %s)", when, mgr,
-                main_scene(again) ? "yes" : "no");
+    runtime::direct_start_despawn_frontend_scene(when);
 }
 
 void on_screen(const char *name)

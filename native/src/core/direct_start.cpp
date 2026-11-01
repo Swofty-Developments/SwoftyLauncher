@@ -4,6 +4,7 @@
 #include <swofty/mixin.hpp>
 
 #include <atomic>
+#include <vector>
 #include <cstdio>
 #include <cctype>
 #include <cstring>
@@ -158,8 +159,85 @@ void release_frontend_fade()
                 *reinterpret_cast<uint32_t *>(owner + 0x7bc));
 }
 
+// The fade owner's reasons and state as the session's intro runs, logged when they change.
+void note_fade()
+{
+    static uint32_t last_mask = ~0u, last_state = ~0u;
+    static int told = 0;
+    auto *root = *reinterpret_cast<uint8_t **>(swofty::api->module_base() + RVA_GAME_ROOT);
+    uint8_t *owner = nullptr;
+    if (told >= 40 || !root || !rd(root, 0xa0, owner) || !owner || !runtime::readable(owner + 0x7b8, 8))
+        return;
+    uint32_t mask = *reinterpret_cast<uint32_t *>(owner + 0x7b8), state = *reinterpret_cast<uint32_t *>(owner + 0x7bc);
+    if (mask == last_mask && state == last_state)
+        return;
+    last_mask = mask;
+    last_state = state;
+    told++;
+    swofty::log("[direct] fade owner: mask %08x, state %u, %llu ms into the session", mask, state,
+                (unsigned long long)(GetTickCount64() - session_at.load()));
+}
+
 uint8_t *flow_root = nullptr;
 uint64_t load_exiting_at = 0;
+
+// The front end's main scene (the menus' dark backdrop with red light streaks) is despawned by StateFrontend's
+// exit (Game_StateFrontend_OnStateExit 0x1436d3b00: Game_FrontendSceneManager_DespawnMainScene 0x1428d9a90 on
+// [state+0xd20] when [[state+0xd20]+0x40]+0x1048 or +0x1049 is set). A direct start never enters StateFrontend, so
+// the backdrop stays under the session: a Time Trial's garage shows it instead of the 3D view, and a Grand Prix's
+// broadcast intro cards sit on it. The node exists in the flow graph all the same (FrontendWorld's child
+// 0x957880c6, its +0xd20 set by its init), so the core despawns the scene through its manager, once.
+constexpr uint32_t STATE_FRONTEND = 0x957880c6;
+constexpr uintptr_t FRONTEND_SCENES = 0xd20, SCENES_MAIN = 0x40, MAIN_SPAWNED = 0x1048, RVA_DESPAWN_MAIN_SCENE = 0x28d9a90;
+std::atomic<bool> frontend_scene_despawned{false};
+
+uint8_t *flow_node(uint32_t want)
+{
+    std::vector<uint8_t *> todo{flow_root};
+    for (size_t i = 0; i < todo.size() && i < 1024; ++i) {
+        uint8_t *n = todo[i];
+        if (!n || !runtime::readable(n, 0xc8))
+            continue;
+        if (*reinterpret_cast<uint32_t *>(n + 0xb0) == want)
+            return n;
+        auto *cv = *reinterpret_cast<uint8_t **>(n + 0xc0);
+        if (!cv || !runtime::readable(cv, 0x18))
+            continue;
+        for (auto **p = *reinterpret_cast<uint8_t ***>(cv + 8), **e = *reinterpret_cast<uint8_t ***>(cv + 0x10);
+             p && p < e && runtime::readable(p, 8); ++p)
+            todo.push_back(*p);
+    }
+    return nullptr;
+}
+
+bool frontend_main_scene(uint8_t *&mgr)
+{
+    uint8_t *node = flow_node(STATE_FRONTEND);
+    mgr = node && runtime::readable(node, FRONTEND_SCENES + 8) ? *reinterpret_cast<uint8_t **>(node + FRONTEND_SCENES)
+                                                                : nullptr;
+    auto *scenes = mgr && runtime::readable(mgr, SCENES_MAIN + 8) ? *reinterpret_cast<uint8_t **>(mgr + SCENES_MAIN)
+                                                                  : nullptr;
+    return scenes && runtime::readable(scenes, MAIN_SPAWNED + 2) && (scenes[MAIN_SPAWNED] || scenes[MAIN_SPAWNED + 1]);
+}
+
+void despawn_frontend_scene(const char *when)
+{
+    if (frontend_scene_despawned.load())
+        return;
+    uint8_t *mgr = nullptr;
+    bool spawned = frontend_main_scene(mgr);
+    if (!mgr) {
+        swofty::log("[direct] no StateFrontend node or front end scene manager %s", when);
+        return;
+    }
+    if (!spawned) {
+        swofty::log("[direct] the front end's main scene is not spawned %s (manager %p)", when, mgr);
+        return;
+    }
+    frontend_scene_despawned = true;
+    reinterpret_cast<void (*)(void *)>(swofty::api->module_base() + RVA_DESPAWN_MAIN_SCENE)(mgr);
+    swofty::log("[direct] despawned the front end's main scene %s (manager %p)", when, mgr);
+}
 bool load_sync_done = false;
 int load_sync_tries = 0;
 
@@ -279,10 +357,14 @@ void link_mid(safetyhook::Context &c)
         session_frames.fetch_add(1) == 0 && driver.target.name == "session" && !fade_released) {
         session_at = GetTickCount64();
         release_frontend_fade();
+        if (request["mode"].str() != "time_trial")
+            despawn_frontend_scene("as the Grand Prix session starts");
         int id = testagent::session_id_of(request["session"].str());
         bool race = id >= 15 && id <= 17;
         runtime::room_cover::step(race ? "Lining up on the grid" : "Opening the garage", 0.9f, 0.97f);
     }
+    if (session_at.load())
+        note_fade();
     uint32_t link = *slot, out = driver.on_update(hash, link, child);
     if (out != link) {
         *slot = out;
@@ -956,6 +1038,11 @@ void *direct_start_flow_root()
     return flow_root;
 }
 
+void direct_start_despawn_frontend_scene(const char *when)
+{
+    despawn_frontend_scene(when);
+}
+
 void direct_start_register_time_trial_screen(void (*screen)(const char *name))
 {
     time_trial_screen = screen;
@@ -967,6 +1054,10 @@ void direct_start_screen(const char *name)
         time_trial_screen(name);
     if (!armed.load() || !name || !session_at.load() || session_screen.load())
         return;
+    static std::atomic<int> told{0};
+    if (told.fetch_add(1) < 40)
+        swofty::log("[direct] screen %s opened %llu ms into the session", name,
+                    (unsigned long long)(GetTickCount64() - session_at.load()));
     if (!std::strcmp(name, "garage_cockpit") || !std::strcmp(name, "race_hud") || !std::strcmp(name, "grid")) {
         session_screen = true;
         swofty::log("[direct] the session's screen %s is up after %llu ms; the cover comes off", name,

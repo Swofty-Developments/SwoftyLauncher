@@ -283,6 +283,8 @@ void direct_start_register_time_trial(DirectStartSetup setup);
 void direct_start_register_time_trial_screen(void (*screen)(const char *name));
 // The flow graph's root state (StateApp) once the flow has updated it, or null.
 void *direct_start_flow_root();
+// Despawns the front end's main scene (the menu backdrop) once; a direct start never runs StateFrontend's exit.
+void direct_start_despawn_frontend_scene(const char *when);
 std::string direct_start_request_text();
 // For the cover: 0 while a session target is on its way, 1 once its session is on screen, -1 when it failed.
 int direct_start_cover_signal();
