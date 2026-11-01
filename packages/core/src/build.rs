@@ -1524,6 +1524,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         for c in &mut copies {
             c.quiet = c.addon == CORE_ID;
         }
+        let row_adders = crate::stdlib::room::row_adders(copies.iter().map(|c| c.addon.as_str()), CORE_ID);
         built.row_ids = added_row_ids(&db, &copies);
         udp_ids = crate::udp_ids::build(&db, &copies);
         let addon_name = |id: &str| addons.get(id).map_or(id, |m| m.name.as_str()).to_owned();
@@ -1556,6 +1557,11 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             let created = db.records.iter().filter(|r| !known.contains(&r.key)).count();
             let route = crate::stdlib::room::route(loaded, created, room_asked);
             match db_edits(&staged, &db) {
+                Ok(_) if !row_adders.is_empty() => built.lines.push(format!(
+                    "database: built into the game file; {} add rows to its tables, which the game indexes while it \
+                     loads the file and cannot take as runtime edits",
+                    row_adders.join(", ")
+                )),
                 Ok(_) if created > room => built.lines.push(format!(
                     "database: built into the game file; the addons add {created} record(s) and the game's \
                      database takes {room} more once it has loaded"

@@ -682,6 +682,25 @@ mod tests {
     }
 
     #[test]
+    fn a_build_without_database_edits_writes_no_assets_json_to_replay() {
+        let out = std::env::temp_dir().join(format!("swofty-runtime-empty-{}", std::process::id()));
+        std::fs::remove_dir_all(&out).ok();
+        let mut with = Runtime::new(Vec::new());
+        with.db(vec![DbEdit {
+            hash: "0000000000000001".into(),
+            tag: 0,
+            value: "1".into(),
+            retype: false,
+        }]);
+        let kept = with.finish(&out).unwrap().unwrap();
+        assert!(out.join(ASSETS_FILE).is_file() && kept.files.contains_key(ASSETS_FILE));
+        let none = out.join("next");
+        assert!(Runtime::new(Vec::new()).finish(&none).unwrap().is_none());
+        assert!(!none.join(ASSETS_FILE).exists());
+        std::fs::remove_dir_all(&out).ok();
+    }
+
+    #[test]
     fn writes_assets_json_in_the_core_schema() {
         let dir = std::env::temp_dir().join(format!("swofty-runtime-{}", std::process::id()));
         std::fs::remove_dir_all(&dir).ok();
