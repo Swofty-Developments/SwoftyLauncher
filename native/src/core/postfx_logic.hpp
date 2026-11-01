@@ -146,6 +146,23 @@ inline uint32_t groups(uint32_t size, uint32_t threads)
     return threads ? (size + threads - 1) / threads : 0;
 }
 
+// A view a slot wrote into one entry of its descriptor tables: the resource and its format.
+template <class R, class F> struct Written {
+    R *r = nullptr;
+    F f{};
+    bool set = false;
+};
+
+// Whether the entry holding v must be written again for r in format f, noting it as written when it
+// must: a frame whose views are the ones its slot wrote last time keeps them.
+template <class R, class F> bool rewrite(Written<R, F> &v, R *r, F f)
+{
+    if (v.set && v.r == r && v.f == f)
+        return false;
+    v = {r, f, true};
+    return true;
+}
+
 // Makes at point to r with a reference of its own on r and lets go of the one it held, so a resource
 // the game releases stays alive while the core still points at it.
 template <class T> void hold(T *&at, std::type_identity_t<T> *r)

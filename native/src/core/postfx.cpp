@@ -127,6 +127,8 @@ struct Slot {
     UINT passes = 0;
     int pass_of[MAX_PASSES] = {};
     ID3D12Resource *depth = nullptr;
+    postfx::Written<ID3D12Resource, DXGI_FORMAT> views[MAX_PASSES * TABLE];
+    unsigned views_made = 0;
 };
 
 // The core's textures for one picture size: each slot's working set, last frame's result, and the
@@ -365,6 +367,8 @@ std::wstring off_file, trace_file, swofty_root_dir;
 ID3D12Device *device;
 ID3D12RootSignature *root;
 Slot slots[FRAMES];
+// Counts the times the core made its heap or textures, so slots know their descriptor tables are old.
+unsigned textures_made;
 UINT slot_at;
 ID3D12QueryHeap *queries;
 ID3D12Resource *query_readback;
@@ -646,6 +650,7 @@ bool make_frame(const D3D12_RESOURCE_DESC &d)
     }
     drop_depths(nullptr);
     frame = Frame{};
+    textures_made++;
     frame.desc = d;
     frame.view = view;
     UINT w = UINT(d.Width), h = d.Height;
@@ -705,6 +710,7 @@ bool ensure_work(int k)
     Work &wk = frame.work[k];
     if (wk.orig)
         return true;
+    textures_made++;
     UINT w = UINT(frame.desc.Width), h = frame.desc.Height;
     wk.orig = texture(w, h, frame.view, false);
     wk.pic[0] = texture(w, h, frame.view, true);
@@ -1025,6 +1031,11 @@ bool record(const Where &w, int k)
         broken = true;
         return false;
     }
+    if (s.views_made != textures_made) {
+        for (auto &view : s.views)
+            view.set = false;
+        s.views_made = textures_made;
+    }
     Work &wk = frame.work[k];
     view::State v = view::current();
     trace.view = v;
@@ -1133,14 +1144,20 @@ bool record(const Where &w, int k)
         DXGI_FORMAT of = p.output < 0 ? frame.view : textures[size_t(p.output)].format;
         UINT ow = p.output < 0 ? pw : textures[size_t(p.output)].w, oh = p.output < 0 ? ph : textures[size_t(p.output)].h;
         UINT at = (UINT(k) * MAX_PASSES + s.passes) * TABLE;
-        srv(cur, frame.view, cpu_at(frame.heap, at));
-        srv(depth, depth_fmt, cpu_at(frame.heap, at + 1));
+        auto *view = &s.views[s.passes * TABLE];
+        auto put_srv = [&](UINT i, ID3D12Resource *r, DXGI_FORMAT f) {
+            if (postfx::rewrite(view[i], r, f))
+                srv(r, f, cpu_at(frame.heap, at + i));
+        };
+        put_srv(0, cur, frame.view);
+        put_srv(1, depth, depth_fmt);
         for (UINT i = 0; i < INPUTS; i++) {
             DXGI_FORMAT f;
             ID3D12Resource *r = input_res(p.inputs[i], k, f);
-            srv(r, f, cpu_at(frame.heap, at + 2 + i));
+            put_srv(2 + i, r, f);
         }
-        uav(out, of, cpu_at(frame.heap, at + TABLE - 1));
+        if (postfx::rewrite(view[TABLE - 1], out, of))
+            uav(out, of, cpu_at(frame.heap, at + TABLE - 1));
         transition(l, out, HOME, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
         c[0] = ow;
         c[1] = oh;

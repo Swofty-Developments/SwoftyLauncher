@@ -88,6 +88,15 @@ int main()
     hold(slot, nullptr);
     CHECK(rebuilt.refs == 1);
 
+    Written<Res, int> view;
+    CHECK(rewrite(view, &depth, 46));
+    CHECK(!rewrite(view, &depth, 46));
+    CHECK(rewrite(view, &depth, 41) && view.f == 41);
+    CHECK(rewrite(view, &rebuilt, 41) && view.r == &rebuilt);
+    CHECK(rewrite(view, static_cast<Res *>(nullptr), 41) && !rewrite(view, static_cast<Res *>(nullptr), 41));
+    view.set = false;
+    CHECK(rewrite(view, static_cast<Res *>(nullptr), 41));
+
     if (failed)
         return 1;
     std::printf("postfx logic: all checks passed\n");
