@@ -68,7 +68,7 @@ When the mods did not load and `version.dll` is still in the game folder, the la
 - Code Integrity and Microsoft Defender events since the game started
 - the antivirus registered with Windows, and programs that hook into games, such as Medal or RivaTuner, among the game's modules
 
-When the loader runs but the game can't create its log in the game folder, the log is in `state\loader-fallback.log` in the data folder instead. The session then counts the mods as loaded, and its `[warning]` line in `state\wrapper-run.log` says what to do.
+When the loader runs but the game can't create its log in the game folder, the log is in `state\loader-fallback.log` in the data folder instead. The crash report and its minidump go to `state\` there too, as `crash-<time>.txt` and `crash-<time>.dmp`, and the `[crash] crash report` line in the log names the full path. The session then counts the mods as loaded, and its `[warning]` line in `state\wrapper-run.log` says what to do.
 
 The **Mods did not load** dialog then names what it found and its fix, for example turning off Smart App Control, removing the Exploit protection settings for `F1_25.exe`, unticking its **Compatibility** tab, or the DLL protection of an antivirus other than Microsoft Defender, by name. When nothing it found explains it, the dialog says so, names any program hooked into the game to close first, and offers **Send Logs to Developers** and **Join the support Discord**. When Windows doesn't let the launcher look inside the game and no antivirus other than Microsoft Defender is on, the dialog says that instead of naming an antivirus. The details are under `[loader]` in `state\wrapper-run.log`, which [Send Logs](/using/send-logs) includes.
 

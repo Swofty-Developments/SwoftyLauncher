@@ -9,7 +9,9 @@
 #include <vector>
 #include "apply/moments.hpp"
 #include "blackbox.hpp"
+#include "crash_dir.hpp"
 #include "crash_heap.hpp"
+#include "../loader/data_folder.h"
 #include "json.hpp"
 #include "perf.hpp"
 #include "safetyhook.hpp"
@@ -185,7 +187,15 @@ Out out;
 Mod mods[512];
 int nmods;
 wchar_t report_path[MAX_PATH], dump_path[MAX_PATH];
-char report_name[64], dump_note[256];
+char report_name[64], report_where[MAX_PATH * 3], dump_note[256];
+std::wstring crash_dir;
+
+std::wstring data_folder()
+{
+    wchar_t buf[MAX_PATH * 2];
+    DWORD n = swofty_data_folder(buf, MAX_PATH * 2);
+    return std::wstring(buf, n);
+}
 
 blackbox::Ring<256> events;
 blackbox::Ring<64> warnings;
@@ -674,7 +684,7 @@ bool request_report(Kind kind, const char *reason, const EXCEPTION_RECORD *rec, 
 void already(const char *what)
 {
     if (claimed && report_name[0])
-        cl("[crash] %s; swofty\\%s already has this process's crash report", what, report_name);
+        cl("[crash] %s; %s already has this process's crash report", what, report_where);
 }
 
 bool writer_fault(EXCEPTION_POINTERS *e, bool breakpoint);
@@ -1388,6 +1398,12 @@ void section_log()
     HANDLE f = CreateFileW((swofty_dir + L"loader.log").c_str(), GENERIC_READ,
                            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, 0, nullptr);
     if (f == INVALID_HANDLE_VALUE) {
+        std::wstring other = crash_dir::fallback(data_folder());
+        if (!other.empty())
+            f = CreateFileW((other + L"loader-fallback.log").c_str(), GENERIC_READ,
+                            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, 0, nullptr);
+    }
+    if (f == INVALID_HANDLE_VALUE) {
         out.put("  loader.log could not be opened (error %lu)\n", GetLastError());
         return;
     }
@@ -1510,22 +1526,51 @@ void minidump(Request &r)
                             : "");
 }
 
-void report_names()
+bool create_report(const std::wstring &dir, const char *stamp)
 {
-    char stamp[32];
-    local_stamp(stamp, sizeof stamp, true);
     for (int i = 0; i < 100; i++) {
         snprintf(report_name, sizeof report_name - 4, i ? "crash-%s-%d" : "crash-%s", stamp, i + 1);
         wchar_t wname[64];
         MultiByteToWideChar(CP_UTF8, 0, report_name, -1, wname, 64);
-        swprintf(report_path, MAX_PATH, L"%ls%ls.txt", swofty_dir.c_str(), wname);
-        swprintf(dump_path, MAX_PATH, L"%ls%ls.dmp", swofty_dir.c_str(), wname);
+        swprintf(report_path, MAX_PATH, L"%ls%ls.txt", dir.c_str(), wname);
+        swprintf(dump_path, MAX_PATH, L"%ls%ls.dmp", dir.c_str(), wname);
         out.file = CreateFileW(report_path, GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL,
                                nullptr);
-        if (out.file != INVALID_HANDLE_VALUE || GetLastError() != ERROR_FILE_EXISTS)
-            break;
+        if (out.file != INVALID_HANDLE_VALUE)
+            return true;
+        if (GetLastError() != ERROR_FILE_EXISTS)
+            return false;
+    }
+    return false;
+}
+
+std::string narrow(const std::wstring &w)
+{
+    char b[MAX_PATH * 3];
+    int n = WideCharToMultiByte(CP_UTF8, 0, w.c_str(), -1, b, sizeof b, nullptr, nullptr);
+    return n > 0 ? std::string(b, n - 1) : std::string();
+}
+
+void report_names()
+{
+    char stamp[32];
+    local_stamp(stamp, sizeof stamp, true);
+    DWORD refused = 0;
+    crash_dir = swofty_dir;
+    if (!create_report(crash_dir, stamp)) {
+        refused = GetLastError();
+        std::wstring other = crash_dir::fallback(data_folder());
+        if (!other.empty()) {
+            CreateDirectoryW(other.c_str(), nullptr);
+            if (create_report(other, stamp))
+                crash_dir = other;
+        }
     }
     strcat(report_name, ".txt");
+    snprintf(report_where, sizeof report_where, "%s",
+             crash_dir::logged(narrow(crash_dir), narrow(swofty_dir), report_name).c_str());
+    if (crash_dir != swofty_dir)
+        cl("[crash] the game folder refused the crash report (error %lu); it goes to the data folder", refused);
 }
 
 void summary_line(const Request &r)
@@ -1543,7 +1588,7 @@ void summary_line(const Request &r)
              frames += (frames.empty() ? "" : " < ") + std::string(w);
              return ++kept < 4;
          });
-    cl("[crash] crash report swofty\\%s: %s; %sstack %s; minidump %s", report_name, r.reason,
+    cl("[crash] crash report %s: %s; %sstack %s; minidump %s", report_where, r.reason,
        prior ? "earlier exception's " : "", frames.c_str(), dump_note);
 }
 
@@ -1699,8 +1744,8 @@ void write_report()
     out.put("\n[%s is cut short: the writer hit %s (0x%08lx) at %s]\n", STEPS[step].name, code_name(fault_code),
             fault_code, w);
     out.flush();
-    cl("[crash] the crash report writer hit %s (0x%08lx) at %s in %s of swofty\\%s; %s", code_name(fault_code),
-       fault_code, w, STEPS[step].name, report_name,
+    cl("[crash] the crash report writer hit %s (0x%08lx) at %s in %s of %s; %s", code_name(fault_code),
+       fault_code, w, STEPS[step].name, report_where,
        n >= MAX_WRITER_FAULTS ? "too many faults, the report ends here" : "it goes on with the next step");
     step_at = n >= MAX_WRITER_FAULTS ? std::max(step + 1, CLOSE_STEP) : step + 1;
     run_steps();
@@ -1765,11 +1810,11 @@ void read_addons(const std::wstring &path)
     }
 }
 
-void prune(const wchar_t *pattern, int keep)
+void prune(const std::wstring &dir, const wchar_t *pattern, int keep)
 {
     std::vector<std::wstring> names;
     WIN32_FIND_DATAW fd;
-    HANDLE h = FindFirstFileW((swofty_dir + pattern).c_str(), &fd);
+    HANDLE h = FindFirstFileW((dir + pattern).c_str(), &fd);
     if (h == INVALID_HANDLE_VALUE)
         return;
     do
@@ -1778,7 +1823,7 @@ void prune(const wchar_t *pattern, int keep)
     FindClose(h);
     std::sort(names.begin(), names.end());
     for (size_t i = 0; i + keep < names.size(); i++)
-        DeleteFileW((swofty_dir + names[i]).c_str());
+        DeleteFileW((dir + names[i]).c_str());
 }
 
 uintptr_t function_at(uint32_t rva, const uint8_t *expect, size_t n)
@@ -1961,8 +2006,12 @@ void crash_attach(SwoftyApi *a, const std::wstring &dir)
     } else {
         writer_tid = 0;
     }
-    prune(L"crash-*.txt", KEEP_REPORTS);
-    prune(L"crash-*.dmp", KEEP_DUMPS);
+    for (auto &d : {swofty_dir, crash_dir::fallback(data_folder())}) {
+        if (d.empty())
+            continue;
+        prune(d, L"crash-*.txt", KEEP_REPORTS);
+        prune(d, L"crash-*.dmp", KEEP_DUMPS);
+    }
     AddVectoredExceptionHandler(1, veh);
     AddVectoredExceptionHandler(0, last_chance);
     previous = SetUnhandledExceptionFilter(unhandled);
@@ -1980,7 +2029,7 @@ void crash_attach(SwoftyApi *a, const std::wstring &dir)
              "filter%s, ExitProcess %s, TerminateProcess %s",
              MAX_REPORTS, previous ? " (chained to the game's)" : "", e ? "hooked" : "NOT hooked",
              tp ? "hooked" : "NOT hooked");
-    cl("[crash] crash reports: swofty\\crash-<time>.txt with a %s minidump%s, written by %s; NtTerminateProcess %s",
+    cl("[crash] crash reports: swofty\\crash-<time>.txt (the data folder's state folder when the game folder refuses it) with a %s minidump%s, written by %s; NtTerminateProcess %s",
        dump_mode == DUMP_FULL ? "full-memory" : dump_mode == DUMP_OFF ? "no" : "stacks-only",
        dump_mode == DUMP_NORMAL ? " (SWOFTY_CRASH_DUMP=full for all memory, off for none)" : "",
        writer_tid ? "a dedicated thread" : "the reporting thread", ntt ? "hooked" : "NOT hooked");
