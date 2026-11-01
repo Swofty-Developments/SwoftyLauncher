@@ -120,7 +120,14 @@ fn the_first_start_seeds_every_profile_once() {
     let r = root("first");
     let from = steam(&r);
     let data = r.join("data");
-    let lines = first_start_import_from(&data, &profiles(), || Some(from.clone()), closed(), NOW);
+    let lines = first_start_import_from(
+        &data,
+        &profiles(),
+        || (Some(from.clone()), Vec::new()),
+        closed(),
+        NOW,
+        true,
+    );
     assert_eq!(
         lines
             .iter()
@@ -142,7 +149,14 @@ fn the_first_start_seeds_every_profile_once() {
 
     std::fs::remove_file(location(&data, "default").dir.join(INDEX)).unwrap();
     std::fs::write(from.dir.join(DATA), [9u8; 10]).unwrap();
-    let again = first_start_import_from(&data, &profiles(), || Some(from.clone()), closed(), NOW + 60);
+    let again = first_start_import_from(
+        &data,
+        &profiles(),
+        || (Some(from.clone()), Vec::new()),
+        closed(),
+        NOW + 60,
+        true,
+    );
     assert!(again.is_empty(), "{again:?}");
     assert_eq!(names(&location(&data, "default").dir), [DATA]);
     assert_eq!(
@@ -160,12 +174,26 @@ fn a_running_game_defers_the_first_start_import() {
         game: true,
         ..Running::default()
     };
-    let lines = first_start_import_from(&data, &profiles(), || Some(from.clone()), running, NOW);
+    let lines = first_start_import_from(
+        &data,
+        &profiles(),
+        || (Some(from.clone()), Vec::new()),
+        running,
+        NOW,
+        true,
+    );
     assert_eq!(lines.len(), 1);
     assert!(lines[0].contains("F1 25 is running"), "{lines:?}");
     assert!(!root_exists(&data));
     assert_eq!(marker(&data), None);
-    let later = first_start_import_from(&data, &profiles(), || Some(from.clone()), closed(), NOW + 60);
+    let later = first_start_import_from(
+        &data,
+        &profiles(),
+        || (Some(from.clone()), Vec::new()),
+        closed(),
+        NOW + 60,
+        true,
+    );
     assert_eq!(
         later
             .iter()
@@ -188,7 +216,14 @@ fn the_first_start_import_leaves_a_store_with_files_untouched() {
     let mine = location(&data, "default");
     std::fs::create_dir_all(&mine.dir).unwrap();
     std::fs::write(mine.dir.join(DATA), b"mine").unwrap();
-    let lines = first_start_import_from(&data, &profiles(), || Some(from.clone()), closed(), NOW);
+    let lines = first_start_import_from(
+        &data,
+        &profiles(),
+        || (Some(from.clone()), Vec::new()),
+        closed(),
+        NOW,
+        true,
+    );
     assert!(
         lines
             .iter()
@@ -204,12 +239,19 @@ fn the_first_start_import_leaves_a_store_with_files_untouched() {
 fn no_steam_save_records_nothing_and_the_next_start_imports() {
     let r = root("nosteam");
     let data = r.join("data");
-    let lines = first_start_import_from(&data, &profiles(), || None, closed(), NOW);
+    let lines = first_start_import_from(&data, &profiles(), || (None, Vec::new()), closed(), NOW, true);
     assert!(lines[0].contains("no Steam save found"), "{lines:?}");
     assert_eq!(marker(&data), None);
     assert!(import_pending(&data));
     let from = steam(&r);
-    first_start_import_from(&data, &profiles(), || Some(from.clone()), closed(), NOW + 60);
+    first_start_import_from(
+        &data,
+        &profiles(),
+        || (Some(from.clone()), Vec::new()),
+        closed(),
+        NOW + 60,
+        true,
+    );
     assert!(!import_pending(&data));
     assert_eq!(names(&location(&data, "default").dir), [DATA, INDEX]);
 }
@@ -221,7 +263,14 @@ fn an_empty_steam_folder_records_nothing() {
     let remote = r.join("steam/userdata/843502855/3059520/remote");
     std::fs::create_dir_all(&remote).unwrap();
     let from = Location::steam(&remote).unwrap();
-    first_start_import_from(&data, &profiles(), || Some(from.clone()), closed(), NOW);
+    first_start_import_from(
+        &data,
+        &profiles(),
+        || (Some(from.clone()), Vec::new()),
+        closed(),
+        NOW,
+        true,
+    );
     assert_eq!(marker(&data), None);
 }
 
@@ -404,12 +453,26 @@ fn the_first_start_notice_is_due_once() {
     let data = r.join("data");
     let from = steam(&r);
     assert!(!notice_due(&data));
-    first_start_import_from(&data, &profiles(), || Some(from.clone()), closed(), NOW);
+    first_start_import_from(
+        &data,
+        &profiles(),
+        || (Some(from.clone()), Vec::new()),
+        closed(),
+        NOW,
+        true,
+    );
     assert!(notice_due(&data));
     mark_seen(&data).unwrap();
     assert!(!notice_due(&data));
     assert!(marker(&data).unwrap().seen);
-    first_start_import_from(&data, &profiles(), || Some(from.clone()), closed(), NOW + 9);
+    first_start_import_from(
+        &data,
+        &profiles(),
+        || (Some(from.clone()), Vec::new()),
+        closed(),
+        NOW + 9,
+        true,
+    );
     assert!(!notice_due(&data));
 }
 
@@ -417,6 +480,48 @@ fn the_first_start_notice_is_due_once() {
 fn no_notice_when_nothing_was_copied() {
     let r = root("notice-empty");
     let data = r.join("data");
-    first_start_import_from(&data, &profiles(), || None, closed(), NOW);
+    first_start_import_from(&data, &profiles(), || (None, Vec::new()), closed(), NOW, true);
     assert!(!notice_due(&data));
+}
+
+#[test]
+fn a_miss_lists_where_it_looked_once_and_retries_quietly() {
+    let r = root("miss-log");
+    let data = r.join("data");
+    let tried = || vec!["Steam root C:/Steam (a known Steam install)".to_owned()];
+    let first = first_start_import_from(&data, &profiles(), || (None, tried()), closed(), NOW, true);
+    assert!(first[0].contains("play on Steam's saves"), "{first:?}");
+    assert!(
+        first
+            .iter()
+            .any(|l| l.contains("looked for the Steam save: Steam root C:/Steam")),
+        "{first:?}"
+    );
+    let quiet = first_start_import_from(&data, &profiles(), || (None, tried()), closed(), NOW + 30, false);
+    assert!(quiet.is_empty(), "{quiet:?}");
+    assert!(import_pending(&data));
+}
+
+#[test]
+fn the_steam_save_is_pending_until_an_import_found_it() {
+    let r = root("pending");
+    let data = r.join("data");
+    assert!(steam_save_pending(&data, "default"));
+    assert!(!steam_save_pending(&data, "vanilla"));
+    let to = location(&data, "default");
+    std::fs::create_dir_all(&to.dir).unwrap();
+    std::fs::write(to.dir.join(DATA), b"x").unwrap();
+    assert!(!steam_save_pending(&data, "default"));
+    assert!(steam_save_pending(&data, "progressive"));
+    std::fs::remove_file(to.dir.join(DATA)).unwrap();
+    let from = steam(&r);
+    first_start_import_from(
+        &data,
+        &profiles(),
+        || (Some(from.clone()), Vec::new()),
+        closed(),
+        NOW,
+        true,
+    );
+    assert!(!steam_save_pending(&data, "default"));
 }
