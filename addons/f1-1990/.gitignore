@@ -1,3 +1,27 @@
 build/
 faces/src/
 erp/crew/
+# Assets stay local: game resource fragments, art and audio are built or supplied, never committed.
+*.erp
+*.erpk
+*.bdl
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.tga
+*.dds
+*.tif
+*.mipmaps
+*.srv
+*.material
+*.f1
+*.f2
+*.bind
+*.world
+*.idf
+*.ui
+*.head
+*.wav
+*.wem
+*.bnk
