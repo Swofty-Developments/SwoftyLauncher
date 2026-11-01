@@ -477,6 +477,11 @@ bool ui_vm_set_path(const std::string &path, int type, const void *value)
     return false;
 }
 
+void *ui_vm_binding_manager()
+{
+    return binding_manager();
+}
+
 void *ui_vm_message_system()
 {
     if (!ui_system || !swofty::mem::readable(ui_system, sizeof(void *)) || !*ui_system)

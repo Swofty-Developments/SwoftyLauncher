@@ -33,6 +33,7 @@ std::vector<era::Box> era_boxes();
 }
 
 bool ui_vm_set_path(const std::string &path, int type, const void *value);
+void *ui_vm_binding_manager();
 
 namespace runtime {
 std::string hook_error(const safetyhook::InlineHook::Error &e);
@@ -507,6 +508,84 @@ Setup setup(const json::Value &request, std::string &why)
 
 namespace {
 
+// The boot's splash_transition screen (the press-start background with the loading lights) is closed by the front
+// end's first route, which a direct start never runs, so in a Time Trial (no broadcast intro covers it) it stays over
+// the garage. Its own route group has 'close' (TransitionScreen out, CloseScreen). Vm_Fire_Route (0x1442c0e20) takes
+// the router (the binding manager every view model holds at +0x28), a view model only for its binding key (+0x250),
+// and runs the route on the screen that key binds: the router's robin-hood map at +0x48 holds 16-byte entries
+// {u32 key, screen} from map+0xa0 up to its info bytes at map+0xa8; a screen's name is at +0x68 (+9 for the chars).
+const runtime::Sig SIG_FIRE_CALL{"Vm_Fire_Route", "48 8B 4E 28 48 89 F2 49 89 F8 45 31 C9 E8 ?? ?? ?? ?? E9 E4 00 00 00",
+                                 0x42c0e20, runtime::Sig::rel32, 13, 14, 5};
+constexpr uintptr_t ROUTER_MAP = 0x48, MAP_ENTRIES = 0xa0, MAP_INFO = 0xa8, SCREEN_NAME = 0x68, VM_KEY = 0x250;
+constexpr const char *SPLASH = "splash_transition";
+
+using Fire_t = void(void *router, void *vm, void **name, uint64_t a4);
+using MakeStr_t = void(void **out, const char *text, int a3, int a4);
+
+std::atomic<bool> tt_armed{false}, splash_closed{false};
+
+const char *screen_name(const uint8_t *screen)
+{
+    if (!screen || !runtime::readable(screen, SCREEN_NAME + 8))
+        return nullptr;
+    auto *s = at<const uint8_t *>(screen, SCREEN_NAME);
+    return s && runtime::readable(s, 10) ? c_name(s + 9) : nullptr;
+}
+
+bool close_screen(const char *want)
+{
+    auto *router = static_cast<uint8_t *>(ui_vm_binding_manager());
+    uintptr_t fire = runtime::find(SIG_FIRE_CALL, "Vm_Fire_Route", "direct");
+    uintptr_t make = swofty::api->resolve("Ne_Make_StrFromCStr");
+    if (!router || !fire || !make || !runtime::readable(router, ROUTER_MAP + 8)) {
+        swofty::log("[direct] Time Trial: no router, Vm_Fire_Route or Ne_Make_StrFromCStr to close %s", want);
+        return false;
+    }
+    auto *map = at<uint8_t *>(router, ROUTER_MAP);
+    if (!map || !runtime::readable(map, MAP_INFO + 8))
+        return false;
+    auto *entries = at<uint8_t *>(map, MAP_ENTRIES), *info = at<uint8_t *>(map, MAP_INFO);
+    if (!entries || info <= entries || size_t(info - entries) / 16 > 65536)
+        return false;
+    size_t slots = size_t(info - entries) / 16;
+    std::string seen;
+    uint32_t key = 0;
+    bool found = false;
+    for (size_t i = 0; i < slots; ++i) {
+        if (!runtime::readable(info + i, 1) || !info[i] || !runtime::readable(entries + i * 16, 16))
+            continue;
+        const char *name = screen_name(at<uint8_t *>(entries + i * 16, 8));
+        if (!name)
+            continue;
+        seen += (seen.empty() ? "" : " ") + std::string(name);
+        if (!found && !std::strcmp(name, want)) {
+            key = at<uint32_t>(entries + i * 16, 0);
+            found = true;
+        }
+    }
+    swofty::log("[direct] Time Trial: the router binds %s", seen.c_str());
+    if (!found)
+        return false;
+    alignas(16) static uint8_t vm[VM_KEY + 0x10];
+    std::memset(vm, 0, sizeof vm);
+    *reinterpret_cast<uint32_t *>(vm + VM_KEY) = key;
+    void *route = nullptr;
+    reinterpret_cast<MakeStr_t *>(make)(&route, "close", 0, 0);
+    reinterpret_cast<Fire_t *>(fire)(router, vm, &route, 0);
+    reinterpret_cast<MakeStr_t *>(make)(&route, nullptr, 0, 0);
+    swofty::log("[direct] Time Trial: fired %s's close route (binding %08x)", want, key);
+    return true;
+}
+
+void on_screen(const char *name)
+{
+    if (!tt_armed.load() || !name || std::strcmp(name, "garage_cockpit") || splash_closed.exchange(true))
+        return;
+    close_screen(SPLASH);
+}
+
+const bool screen_registered = (runtime::direct_start_register_time_trial_screen(on_screen), true);
+
 Setup registered(std::string &why)
 {
     static json::Value request;
@@ -519,6 +598,7 @@ Setup registered(std::string &why)
         why = "the direct start request is not JSON";
         return Setup::failed;
     }
+    tt_armed = true;
     return tt::setup(request, why);
 }
 
