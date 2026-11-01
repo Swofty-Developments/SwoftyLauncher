@@ -254,7 +254,7 @@ std::atomic<bool> armed, frontend, lobby, home_screen;
 // The core's notice over the front end, for a game the launcher started for a room. The title is the direct
 // start's (title_skip.cpp); the notice is passed with the shared virtual pad (virtual_pad.cpp), which this
 // takes a claim on, so the game sees one controller and no second one is installed.
-std::atomic<bool> skip_armed{false}, transition_screen{false};
+std::atomic<bool> skip_armed{false}, transition_screen{false}, activity_screen{false};
 drive::TitleSkip title_skip;
 bool skip_held = false;
 
@@ -280,6 +280,7 @@ void skip_tick()
     f.home = home_screen.load();
     f.transition = transition_screen.load();
     f.lobby = lobby.load();
+    f.activity = activity_screen.load();
     int before = title_skip.presses();
     bool press = title_skip.tick(f, GetTickCount64());
     if (press != skip_held) {
@@ -297,7 +298,8 @@ void skip_tick()
             runtime::pad::release();
         skip_held = false;
         runtime::pad::claim(false);
-        swofty::log("[netplay] room launch: the main menu is up after %d notice press(es)", title_skip.presses());
+        swofty::log("[netplay] room launch: stopped pressing the notice after %d press(es) (%s)", title_skip.presses(),
+                    activity_screen.load() ? "the activity screen is up" : home_screen.load() ? "the main menu is up" : "the lobby or the time limit");
     }
 }
 
@@ -505,6 +507,8 @@ void netplay_screen(const char *name)
     runtime::netplay_room_screen(name);
     if (!std::strcmp(name, "frontend_transition"))
         transition_screen = true;
+    if (!std::strcmp(name, "f1_world_activity_container"))
+        activity_screen = true;
     if (std::strncmp(name, "fe_", 3) != 0)
         return;
     for (const char *o : overlays)

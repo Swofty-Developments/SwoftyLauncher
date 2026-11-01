@@ -569,7 +569,7 @@ inline bool room_launch(const std::string &env)
 }
 
 struct SkipFacts {
-    bool frontend = false, home = false, transition = false, lobby = false;
+    bool frontend = false, home = false, transition = false, lobby = false, activity = false;
 };
 
 // Presses the virtual pad's a for the core's notice, which sits over the front end's frontend_transition
@@ -594,7 +594,7 @@ public:
     {
         if (!on_)
             return false;
-        if (f.home || f.lobby || now - started_ >= GIVE_UP_MS) {
+        if (f.home || f.lobby || f.activity || now - started_ >= GIVE_UP_MS) {
             on_ = false;
             return false;
         }

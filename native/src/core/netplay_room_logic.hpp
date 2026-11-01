@@ -492,12 +492,14 @@ public:
         started_ = now;
         deadline_ = now + UI_STATE_MS;
         written_ = false;
+        unready_ = false;
     }
 
     bool active() const { return step != UiStep::idle && step != UiStep::sent && step != UiStep::failed; }
     bool sent() const { return step == UiStep::sent; }
     bool failed() const { return step == UiStep::failed; }
     bool written() const { return written_; }
+    bool sent_unready() const { return unready_; }
 
     bool released(uint64_t now) const
     {
@@ -548,8 +550,11 @@ public:
                 step = UiStep::sent;
                 return UiDo::send_open;
             }
-            if (now >= deadline_)
-                fail("the container's tab list never became ready");
+            if (now >= deadline_) {
+                unready_ = true;
+                step = UiStep::sent;
+                return UiDo::send_open;
+            }
             return UiDo::nothing;
         default:
             return UiDo::nothing;
@@ -562,6 +567,7 @@ public:
 private:
     uint64_t started_ = 0, deadline_ = 0, seen_ = 0;
     bool written_ = false;
+    bool unready_ = false;
 };
 
 enum class Stage { idle, mode, call, interrupt, lobby, done, failed };

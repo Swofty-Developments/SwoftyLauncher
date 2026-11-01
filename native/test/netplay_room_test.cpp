@@ -492,8 +492,8 @@ int main()
         no_tabs.start(0);
         no_tabs.wrote(0);
         no_tabs.tick(tf, 1);
-        no_tabs.tick(tf, 1 + room::UI_SETTLE_MS);
-        expect(no_tabs.failed() && no_tabs.error.find("tab list") != std::string::npos, "a tab list that never readies is a named failure");
+        expect(no_tabs.tick(tf, 1 + room::UI_SETTLE_MS) == room::UiDo::send_open && no_tabs.sent() && no_tabs.sent_unready(),
+               "a tab list that never reads as ready still gets open_create_custom once, marked unready");
     }
 
     {

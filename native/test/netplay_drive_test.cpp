@@ -287,6 +287,14 @@ int main()
         skip.start(0);
         f.lobby = true;
         expect(!skip.tick(f, 5000) && skip.done(), "the lobby ends the skip");
+        drive::TitleSkip world;
+        drive::SkipFacts w;
+        world.start(0);
+        w.frontend = w.transition = true;
+        world.tick(w, 20000);
+        w.activity = true;
+        expect(!world.tick(w, 20000 + 1 + drive::TitleSkip::NOTICE_MS) && world.done() && world.presses() == 0,
+               "the activity screen ends the skip before any press, so no tab is picked by it");
         drive::TitleSkip late;
         late.start(0);
         expect(!late.tick(drive::SkipFacts{}, drive::TitleSkip::GIVE_UP_MS) && late.done(), "the skip gives up");

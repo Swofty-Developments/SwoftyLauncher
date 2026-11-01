@@ -466,7 +466,8 @@ void ui_act(room::UiDo d, uint64_t now)
         swofty::game::Ne_Make_StrFromCStr(&name, room::UI_OPEN_MESSAGE, 0, 0);
         reinterpret_cast<Send_t *>(vt[SEND_SLOT])(c, &name, &data);
         swofty::game::Ne_Make_StrFromCStr(&name, nullptr, 0, 0);
-        swofty::log("[netplay] room host: sent %s to the container %p; the Car Category tab is next", room::UI_OPEN_MESSAGE, c);
+        swofty::log("[netplay] room host: sent %s to the container %p%s; the Car Category tab is next", room::UI_OPEN_MESSAGE, c,
+                    host_ui_run.sent_unready() ? " (its tab list never read as ready, sent anyway)" : "");
     }
 }
 
