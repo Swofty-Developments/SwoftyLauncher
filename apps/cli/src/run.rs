@@ -950,6 +950,7 @@ fn play(
             verdict(w.poll(Instant::now()));
         }
     };
+    let via_ea = ea.is_some();
     let (code, unread) = match ea {
         Some(started) => {
             crate::ea::wait(game, &copies_before, started, tick);
@@ -966,7 +967,7 @@ fn play(
         verdict(w.ended(Instant::now()));
     }
     wait_relaunched(game, &copies_before, code, launched.elapsed().unwrap_or_default());
-    keep_game_logs(game, &fallback, &dir, before.as_ref(), launched);
+    keep_game_logs(&store.root, game, &fallback, &dir, before.as_ref(), launched);
     let loader = std::fs::read(dir.join("loader.log"))
         .ok()
         .map(|b| launch::LoaderSeen::scan(&String::from_utf8_lossy(&b)));
@@ -996,7 +997,11 @@ fn play(
     {
         stop_process(g.pid).ok();
     }
-    note_failed_launch(store, loader, code, launched.elapsed().unwrap_or_default());
+    let blocked =
+        via_ea && end.end != swofty_core::session::Ending::Quit && crate::ea::note_stub_blocked(store, game);
+    if !blocked {
+        note_failed_launch(store, loader, code, launched.elapsed().unwrap_or_default());
+    }
     Ok(code)
 }
 
@@ -1231,7 +1236,15 @@ fn note_refused(fallback: &Path) {
 
 /// The session's loader.log: the game folder's when the loader wrote it,
 /// else its fallback in the data folder, which a session starts without.
-fn keep_game_logs(game: &Path, fallback: &Path, dir: &Path, before: Option<&LogMark>, launched: SystemTime) {
+fn keep_game_logs(
+    data: &Path,
+    game: &Path,
+    fallback: &Path,
+    dir: &Path,
+    before: Option<&LogMark>,
+    launched: SystemTime,
+) {
+    swofty_core::crash_report::keep_fallback(data, &dir.join("game-logs"), launched);
     let loader = game.join(LOADER_LOG);
     if LogMark::replaced(&loader, before) {
         std::fs::copy(&loader, dir.join("loader.log")).ok();
@@ -2279,13 +2292,13 @@ mod tests {
         touch(&perf, launched - Duration::from_secs(600));
         let before = LogMark::read(&loader);
         let fallback = dir.join(LOADER_FALLBACK);
-        keep_game_logs(&game, &fallback, &session, before.as_ref(), launched);
+        keep_game_logs(&dir, &game, &fallback, &session, before.as_ref(), launched);
         assert!(!session.join("loader.log").exists());
         assert!(!session.join("perf.log").exists());
 
         std::fs::create_dir_all(fallback.parent().unwrap()).unwrap();
         std::fs::write(&fallback, "attached in the data folder\n").unwrap();
-        keep_game_logs(&game, &fallback, &session, before.as_ref(), launched);
+        keep_game_logs(&dir, &game, &fallback, &session, before.as_ref(), launched);
         assert_eq!(
             std::fs::read_to_string(session.join("loader.log")).unwrap(),
             "attached in the data folder\n"
@@ -2294,7 +2307,7 @@ mod tests {
         std::fs::write(&loader, "fresh\n").unwrap();
         std::fs::write(&perf, "Swofty Launcher performance report\nnew\n").unwrap();
         touch(&perf, launched + Duration::from_secs(1));
-        keep_game_logs(&game, &fallback, &session, before.as_ref(), launched);
+        keep_game_logs(&dir, &game, &fallback, &session, before.as_ref(), launched);
         assert_eq!(
             std::fs::read_to_string(session.join("loader.log")).unwrap(),
             "fresh\n"
@@ -2303,6 +2316,15 @@ mod tests {
             std::fs::read_to_string(session.join("perf.log")).unwrap(),
             "Swofty Launcher performance report\nnew\n"
         );
+
+        std::fs::write(
+            fallback.with_file_name("crash-20261101-125350.txt"),
+            "Swofty crash report\n",
+        )
+        .unwrap();
+        keep_game_logs(&dir, &game, &fallback, &session, before.as_ref(), launched);
+        assert!(session.join("game-logs/crash-20261101-125350.txt").is_file());
+        assert!(!fallback.with_file_name("crash-20261101-125350.txt").exists());
         std::fs::remove_dir_all(&dir).ok();
     }
 

@@ -22,7 +22,7 @@ use swofty_core::multiplayer::session::{Local, MemberState, Phase, Session, Sess
 use swofty_core::store::Store;
 
 use crate::library::plural;
-use crate::pages::{GUTTER, TRACK, badge, label, monogram, tag};
+use crate::pages::{GUTTER, badge, label, monogram, tag};
 use crate::shell::{Page, Shell};
 use crate::theme::{Palette, ScrollArea};
 
@@ -1077,8 +1077,7 @@ impl Shell {
                                 .text_size(px(12.))
                                 .text_color(p.text_placeholder)
                                 .child(
-                                    svg()
-                                        .data(TRACK)
+                                    Icon::new(IconName::Package)
                                         .size(px(13.))
                                         .mt(px(1.))
                                         .text_color(p.text_placeholder),
@@ -1419,8 +1418,13 @@ impl Shell {
                 }
             });
         let running = !self.processes.is_empty();
-        let reopen =
-            (state.launch.is_some() && running && m.closing.is_none() && !over && !m.leaving).then(|| {
+        let reopen = (st.problem.is_some()
+            && state.launch.is_some()
+            && running
+            && m.closing.is_none()
+            && !over
+            && !m.leaving)
+            .then(|| {
                 Button::new("mp-restart-game")
                     .primary()
                     .small()
