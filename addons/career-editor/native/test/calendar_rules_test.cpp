@@ -63,6 +63,10 @@ static Season apply(Season s, const Repair &r)
 
 int main()
 {
+    CHECK(reorder_refusal(false).empty());
+    CHECK(!reorder_refusal(true).empty());
+    CHECK(reorder_refusal(true).find("Driver Career") != std::string::npos);
+
     Season stock{std::vector<int>(24, 0), 0, 24};
     CHECK(play(stock) == End::Finished);
 
