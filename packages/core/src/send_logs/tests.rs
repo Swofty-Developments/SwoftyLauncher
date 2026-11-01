@@ -1710,3 +1710,16 @@ fn carries_the_blocked_record_when_there_is_one() {
     let bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "20261020-101010");
     assert!(bundle.entries.iter().any(|e| e.path == "state/blocked.json"));
 }
+
+#[test]
+fn saves_excerpt_keeps_the_save_source_and_slot_lines() {
+    let text = "1 [core] up\n\
+        2 [saves] launcher saves are off for profile main: the game reads Steam's saves natively\n\
+        3 [saves] sandbox: FileRead profile (call 1)\n\
+        4 [saves] profile load 1: manager 0 slot 0: gm_driver_career id=3 key=0000000000abcdef career=dc-000b0000\n";
+    let lines = super::saves_excerpt(text, 10);
+    assert_eq!(lines.len(), 2);
+    assert!(lines[0].contains("reads Steam's saves natively"));
+    assert!(lines[1].contains("career=dc-000b0000"));
+    assert_eq!(super::saves_excerpt(text, 1).len(), 1);
+}
