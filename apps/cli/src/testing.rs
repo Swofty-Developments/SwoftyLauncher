@@ -51,7 +51,8 @@ pub enum TestCommand {
     )]
     Shell(ShellArgs),
     #[command(
-        about = "Start F1 25 straight into a Grand Prix or Time Trial session, with no title or menu, then take commands as the shell does"
+        about = "Start F1 25 straight into a Grand Prix or Time Trial session, with no title or menu, then take commands as the shell does",
+        after_help = "Example (a 3-lap race at Silverstone in Vettel's Ferrari, on the 2020 Classic Seasons box):\n  swofty --profile default test session grand_prix cs_f1_2020 silverstone session=race laps=3 team=ferrari driver=vettel --fixture <fixture>\n\nA Grand Prix takes the box (its entrant list), the track, team= and driver= (the player's seat; a part of the label is enough: williams, vettel), session= (practice1..3, qualifying, race, or a game session name such as practice_s or qualifying_o) and laps= (races). weather= and ai_difficulty= are not applied yet. The game runs on a copy of --profile (or the active profile) with its addons and settings, behind a cover screen until the garage or the race broadcast is up. Use --fixture: a new Grand Prix overwrites the profile save's Grand Prix."
     )]
     Session(SessionArgs),
     #[command(
@@ -98,6 +99,8 @@ pub struct ShellArgs {
     fixture: Option<String>,
     #[arg(skip)]
     direct: Option<Value>,
+    #[arg(skip)]
+    base: Option<String>,
 }
 
 #[derive(Args)]
@@ -263,12 +266,20 @@ fn parse_wait(s: &str) -> std::result::Result<Duration, String> {
     Ok(Duration::from_secs(secs))
 }
 
-pub fn command(store: &Store, cmd: TestCommand) -> Result<ExitCode> {
+/// `named` is the `--profile` given on the command line and `active` the profile it resolves to (the active
+/// profile without one). A shell starts on a copy of `named`; a session on a copy of `active`.
+pub fn command(store: &Store, named: Option<&str>, active: &str, cmd: TestCommand) -> Result<ExitCode> {
     match cmd {
         TestCommand::Plan(a) => plan_command(&a),
         TestCommand::Run(a) => run_command(store, a),
-        TestCommand::Shell(a) => shell_command(store, a),
-        TestCommand::Session(a) => session_command(store, a),
+        TestCommand::Shell(mut a) => {
+            a.base = named.map(str::to_owned);
+            shell_command(store, a)
+        }
+        TestCommand::Session(mut a) => {
+            a.shell.base = Some(active.to_owned());
+            session_command(store, a)
+        }
         TestCommand::Fixture(c) => fixture_command(store, c),
     }
 }
@@ -1082,6 +1093,26 @@ impl Harness<'_> {
             for (option, value) in options {
                 p.set_option(m, option, value.clone())?;
             }
+        }
+        self.store.save_profile(&p)?;
+        Ok(())
+    }
+
+    /// The shell's profile as a copy of `base`: the same addons in the same order, on or off as there, with the
+    /// same settings, so the build applies what `swofty --profile <base> run --apply` applies; `extra` are
+    /// switched on as well.
+    fn profile_from(&self, base: &str, name: &str, extra: &[String]) -> Result<()> {
+        if !self.store.profile_names()?.iter().any(|n| n == base) {
+            bail!("there is no profile {base}: swofty profile list shows them");
+        }
+        let installed = self.store.addons()?;
+        let mut p = self.store.profile(base)?;
+        p.name = name.to_owned();
+        for id in extra {
+            if !installed.contains_key(id) {
+                bail!("{id} is not installed: install it with swofty addons install <folder>");
+            }
+            p.set_enabled(id, true)?;
         }
         self.store.save_profile(&p)?;
         Ok(())
@@ -2249,7 +2280,7 @@ fn shell_session(store: &Store, game: &Path, a: &ShellArgs, run_id: &str) -> Res
         settings: Default::default(),
         tests: Vec::new(),
     };
-    let code = shell_loop(h, &b, &out, fixture);
+    let code = shell_loop(h, &b, a.base.as_deref(), &out, fixture);
     if store.profile_names().is_ok_and(|n| n.contains(&profile)) {
         store.delete_profile(&profile).ok();
     }
@@ -2260,8 +2291,20 @@ fn shell_session(store: &Store, game: &Path, a: &ShellArgs, run_id: &str) -> Res
     code
 }
 
-fn shell_loop(h: Harness, b: &Batch, out: &Path, fixture: Option<Fixture>) -> Result<ExitCode> {
-    h.profile(b, h.profile)?;
+fn shell_loop(
+    h: Harness,
+    b: &Batch,
+    base: Option<&str>,
+    out: &Path,
+    fixture: Option<Fixture>,
+) -> Result<ExitCode> {
+    match base {
+        Some(base) => {
+            h.profile_from(base, h.profile, &b.addons)?;
+            say(&format!("profile: a copy of {base} with its addons and settings"));
+        }
+        None => h.profile(b, h.profile)?,
+    }
     let (mut br, mut reports) = Harness::blank(b, 1);
     let mut agent = h.open_run(b, 1, out, fixture.is_some())?;
     let sandbox = match fixture {

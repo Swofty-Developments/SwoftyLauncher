@@ -549,6 +549,7 @@ fn run_cli(store: &Store, mut args: Vec<OsString>) -> Result<ExitCode> {
 
 fn dispatch(store: &Store, cli: Cli) -> Result<ExitCode> {
     let store = store.clone();
+    let named = cli.profile.clone();
     let profile = cli.profile.unwrap_or_else(|| store.active_profile());
     match cli.command {
         Command::Run(args) => run::run(&store, &profile, args),
@@ -573,7 +574,7 @@ fn dispatch(store: &Store, cli: Cli) -> Result<ExitCode> {
         Command::Saves(cmd) => saves::command(&store, cmd),
         Command::Steam { start } => run::steam_check(&store, start),
         Command::Postfx(cmd) => postfx::command(cmd),
-        Command::Test(cmd) => testing::command(&store, cmd),
+        Command::Test(cmd) => testing::command(&store, named.as_deref(), &profile, cmd),
         Command::Dev(cmd) => dev::command(&store, &profile, cmd),
         Command::Update { check } => update::update(check),
         Command::Registry(cmd) => registry::command(&store, &profile, cmd),
