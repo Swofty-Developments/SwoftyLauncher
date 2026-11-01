@@ -419,6 +419,7 @@ impl Store {
         if src.join(crate::dbedit::package::MARKER).is_file() {
             return crate::dbedit::package::install(self, src).map(|(p, _)| {
                 std::fs::remove_file(self.registry_install_path(&p.manifest.id)).ok();
+                self.add_to_active_profile(&p.manifest.id);
                 p.manifest
             });
         }
@@ -451,6 +452,7 @@ impl Store {
         }
         crate::busy::refuse_change(&self.root, &m.id, &m.name)?;
         let dest = self.addons_dir().join(&m.id);
+        let fresh = !dest.exists();
         self.helpers.forget(&m.id);
         let staging = self.addons_dir().join(format!("{STAGING_PREFIX}{}", m.id));
         if staging.exists() {
@@ -469,7 +471,23 @@ impl Store {
             &mut |d| std::fs::remove_dir_all(d),
         )?;
         std::fs::remove_file(self.registry_install_path(&m.id)).ok();
+        if fresh {
+            self.add_to_active_profile(&m.id);
+        }
         Ok(m)
+    }
+
+    /// A new addon goes into the profile it was installed from, off, rather than
+    /// every profile; the others add it from their own Addons page. A failure
+    /// only leaves it out of the profile, so it doesn't fail the install.
+    fn add_to_active_profile(&self, id: &str) {
+        let name = self.active_profile();
+        if name == profile::VANILLA {
+            return;
+        }
+        if let Err(e) = self.update_profile(&name, |p| p.add_addon(id)) {
+            eprintln!("couldn't add {id} to the {name} profile: {e}");
+        }
     }
 
     fn in_scratch(&self, path: &Path) -> bool {

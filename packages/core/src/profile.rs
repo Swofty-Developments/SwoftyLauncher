@@ -177,6 +177,38 @@ impl Profile {
         Ok(())
     }
 
+    /// Whether `id` is one of the profile's addons, on or off. The Addons page
+    /// lists only these.
+    pub fn has(&self, id: &str) -> bool {
+        self.addons.iter().any(|m| m.id == id)
+    }
+
+    /// Adds `id` to the profile, off, at the end of the load order; an addon it
+    /// already has stays as it is.
+    pub fn add_addon(&mut self, id: &str) -> crate::Result<()> {
+        if self.has(id) {
+            return Ok(());
+        }
+        self.set_enabled(id, false)
+    }
+
+    /// Takes `id` out of the profile; it stays installed for the others. Its
+    /// settings are kept, so adding it back restores them.
+    pub fn remove_addon(&mut self, id: &str) -> crate::Result<()> {
+        if self.is_vanilla() {
+            return Err(crate::Error::Other(format!(
+                "{VANILLA} is built in and cannot be changed"
+            )));
+        }
+        if id == CORE_ID {
+            return Err(crate::Error::Other(format!(
+                "{CORE_ID} is built in and cannot be removed"
+            )));
+        }
+        self.addons.retain(|m| m.id != id);
+        Ok(())
+    }
+
     pub fn option(&self, m: &AddonManifest, o: &AddonOption) -> serde_json::Value {
         stored(&self.options, m, o).unwrap_or_else(|| o.default_value())
     }
@@ -305,6 +337,22 @@ mod tests {
         assert_eq!(order(&p), [CORE_ID, "a.a", "c.c", "b.b"]);
         assert!(p.move_addon(CORE_ID, 1).is_err() && p.move_addon("nope.x", 1).is_err());
         assert!(Profile::vanilla().move_addon("a.a", 1).is_err());
+    }
+
+    #[test]
+    fn adds_and_removes_addons() {
+        let mut p = Profile::new("x");
+        p.set_enabled("a.a", true).unwrap();
+        p.add_addon("b.b").unwrap();
+        p.add_addon("a.a").unwrap();
+        assert!(p.has("b.b") && !p.has("c.c"));
+        assert_eq!(p.enabled().collect::<Vec<_>>(), [CORE_ID, "a.a"]);
+        p.remove_addon("a.a").unwrap();
+        assert!(!p.has("a.a"));
+        assert_eq!(p.enabled().collect::<Vec<_>>(), [CORE_ID]);
+        assert!(p.remove_addon(CORE_ID).is_err());
+        assert!(Profile::vanilla().add_addon("a.a").is_err());
+        assert!(Profile::vanilla().remove_addon("a.a").is_err());
     }
 
     #[test]
