@@ -184,6 +184,9 @@ pub struct Installer<'a> {
     /// Files copied so far, of how many, after each one.
     pub progress: &'a dyn Fn(usize, usize),
     pub free_space: fn(&Path) -> Option<u64>,
+    /// Copy every file instead of hard-linking build outputs; set by
+    /// `SWOFTY_INSTALL_COPY=1`.
+    pub copy_only: bool,
 }
 
 const PROGRESS_EVERY: std::time::Duration = std::time::Duration::from_secs(10);
@@ -195,6 +198,25 @@ const STATE_PER_FILE: u64 = 2048;
 fn quiet(_: &str) {}
 
 fn unwatched(_: usize, _: usize) {}
+
+fn link_replacing(src: &Path, path: &Path) -> std::io::Result<()> {
+    let tmp = path.with_file_name(format!(
+        ".{}.swofty-link",
+        path.file_name().unwrap_or_default().to_string_lossy()
+    ));
+    std::fs::remove_file(&tmp).ok();
+    std::fs::hard_link(src, &tmp)?;
+    let renamed = match std::fs::rename(&tmp, path) {
+        Err(e) if e.kind() == std::io::ErrorKind::PermissionDenied && crate::clear_readonly(path) => {
+            std::fs::rename(&tmp, path)
+        }
+        r => r,
+    };
+    if renamed.is_err() {
+        std::fs::remove_file(&tmp).ok();
+    }
+    renamed
+}
 
 fn rel_parts(rel: &str) -> Vec<String> {
     let parts: Vec<&str> = rel.split('/').collect();
@@ -311,6 +333,7 @@ impl<'a> Installer<'a> {
             out: &quiet,
             progress: &unwatched,
             free_space: crate::disk::free_space,
+            copy_only: std::env::var_os("SWOFTY_INSTALL_COPY").is_some_and(|v| v == "1"),
         }
     }
 
@@ -961,37 +984,71 @@ impl<'a> Installer<'a> {
             .collect();
         crate::now_doing("copying the mods into the game folder");
         let (mut n, mut copied, mut told) = (0, 0, std::time::Instant::now());
+        let built = crate::store::overlay_root(self.data);
+        let mut linking = !self.copy_only;
+        let (mut linked, mut link_failure) = (0usize, None::<String>);
         for i in 0..j.entries.len() {
             self.step(&mut n)?;
             let e = &j.entries[i];
             let path = self.path(&e.path);
+            let mut link = |src: &Path, replacing: bool| -> bool {
+                if !linking || !src.starts_with(&built) {
+                    return false;
+                }
+                let made = if replacing {
+                    link_replacing(src, &path)
+                } else {
+                    std::fs::hard_link(src, &path)
+                };
+                match made {
+                    Ok(()) => true,
+                    Err(err) => {
+                        link_failure = Some(err.to_string());
+                        linking = false;
+                        false
+                    }
+                }
+            };
             match e.op {
                 Op::ReplaceFile => {
                     let src = sources[e.path.as_str()];
-                    match std::fs::copy(src, &path) {
-                        Err(err)
-                            if err.kind() == std::io::ErrorKind::PermissionDenied
-                                && crate::clear_readonly(&path) =>
-                        {
-                            std::fs::copy(src, &path)
+                    if link(src, true) {
+                        linked += 1;
+                        hashes.wrote(src, e.after.as_deref().expect("a placed file has after"));
+                    } else {
+                        match std::fs::copy(src, &path) {
+                            Err(err)
+                                if err.kind() == std::io::ErrorKind::PermissionDenied
+                                    && crate::clear_readonly(&path) =>
+                            {
+                                std::fs::copy(src, &path)
+                            }
+                            r => r,
                         }
-                        r => r,
+                        .map_err(|err| crate::quarantine::copy_error(&e.path, &path, err))?;
+                        crate::clear_readonly(&path);
                     }
-                    .map_err(|err| crate::quarantine::copy_error(&e.path, &path, err))?;
-                    crate::clear_readonly(&path);
                 }
                 Op::CreateDir => std::fs::create_dir(&path).map_err(io_err(&path))?,
                 // Windows refused the file as a threat. The entry stays pending, so
                 // the rollback clears whatever was left, and the check before the
                 // game starts finds the file missing and refuses the launch with
                 // the antivirus report instead of a bare copy error here.
-                Op::CreateFile => match std::fs::copy(sources[e.path.as_str()], &path) {
-                    Err(err) if crate::quarantine::is_virus_error(&err) => continue,
-                    r => {
-                        r.map_err(io_err(&path))?;
-                        crate::clear_readonly(&path);
+                Op::CreateFile => {
+                    let src = sources[e.path.as_str()];
+                    if link(src, false) {
+                        linked += 1;
+                        hashes.wrote(src, e.after.as_deref().expect("a placed file has after"));
+                    } else {
+                        match std::fs::copy(src, &path) {
+                            Err(err) if crate::quarantine::is_virus_error(&err) => continue,
+                            r => {
+                                r.map_err(io_err(&path))?;
+                                crate::clear_readonly(&path);
+                            }
+                        }
                     }
-                },
+                }
                 Op::RegistryOverride => {
                     if let Some((reg, text, out)) = &registry
                         && out != text
@@ -1014,6 +1071,16 @@ impl<'a> Installer<'a> {
                 told = std::time::Instant::now();
             }
         }
+        let mode = match (&link_failure, self.copy_only) {
+            (_, true) => "copy (SWOFTY_INSTALL_COPY=1)".to_owned(),
+            (Some(why), _) => format!("copy (hard link failed: {why})"),
+            (None, _) if linked == 0 => "copy (no build output to link)".to_owned(),
+            (None, _) => "hard links".to_owned(),
+        };
+        (self.out)(&format!(
+            "installing: {mode}; {linked} file(s) linked, {} copied",
+            copied - linked
+        ));
         let planned: BTreeSet<String> = sources.keys().map(|rel| placed::key(rel)).collect();
         for id in addon_storage::ids(sources.keys().copied()) {
             addon_storage::load_profile(self.data, &id, &plan.profile)?;
