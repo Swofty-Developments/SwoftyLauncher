@@ -100,7 +100,7 @@ swofty --profile f1-1990 test session time_trial f1_1990_gp silverstone team=fer
 time_trial <box> <track> [team=<label part>] [weather=clear|wet]
 ```
 
-- `box` is a box's Grand Prix list or its Time Trial list (`f1_1990_gp` and `f1_1990_tt` both load `f1_1990_tt`), or any entrant list the setup mode `swofty_f1` offers.
+- `box` is a box's Grand Prix list or its Time Trial list (`f1_1990_gp` and `f1_1990_tt` both load `f1_1990_tt`), or any entrant list a setup mode offers: `swofty_f1` when it offers the list, else the first setup mode that does (`setup_mode=` names one).
 - `team=` picks the player's car: the list's team whose label is the text, then holds it as a word (`ferrari` finds `ferrari_1990`), then contains it. Without it the player takes the list's first team.
 - `weather=` sets the Time Trial's weather (`settings.current_settings.tt_weather.value`, `dry` or `wet`).
 
@@ -113,7 +113,7 @@ The request is the Grand Prix one with `"mode": "time_trial"`:
 `direct_start.cpp` calls the setup that `direct_start_tt.cpp` registers with `runtime::direct_start_register_time_trial`, on the flow thread while `StateFTUE` is held:
 
 1. The Time Trial mode: the game modes context's entry labelled `time_trial` (ctx+0x58..+0x60, mode at entry+0x38, label at mode+0x278, entity E at mode+0x260) made current with `Game_Game_SetCurrentGameMode`. `Game_GameModes_FindByName` returns championship modes only.
-2. 1.5 s later, the setup on E as the screens leave it: setup mode `swofty_f1` with its setter (0x14079f300), the entrant setup mode that lists the box's list into E+0xe10 (the setup mode's entrant setup modes are 12 inline pointers from +0x10, count +0x70) and the list into E+0xe18.
+2. 1.5 s later, the setup on E as the screens leave it: setup mode `swofty_f1` (or the first that offers the list) with its setter (0x14079f300), the entrant setup mode that lists the box's list into E+0xe10 (the setup mode's entrant setup modes are 12 inline pointers from +0x10, count +0x70) and the list into E+0xe18.
 3. The track: E's session settings (slot 0xd8, body 0x148731f80) read the track from 0x1407ddbf0, which looks up the VM string `game_mode_data.current_game_mode.track_info.current_track.track_file_name` in E's track system (E+0xf58, record name +0x78). The core's path setter cannot write that node, so the getter is wrapped: while it still reads the profile's track, it answers the requested record.
 4. The car: `Sess_TimeTrialMode_FillDescriptor` (0x142936760) takes the player's vehicle and team from the Time Trial component's hot load holder (the mode's component with vtable 0x1457b13d0, holder at +0x298: vehicle ref +0x2be engaged +0x2c2, team ref +0x2c4 engaged +0x2c8, written in game by the in-session hot load 0x14291a320). The core writes the chosen team's entrant record refs there (+0x58 team, +0x5c vehicle). Without them the fill takes the vehicle from a per-team table built for the list the screens picked, and the session faults in `Ai_Build_TeamPerformanceCurves` with no player vehicle.
 5. The flow leaves the front end as for a Grand Prix and loads `TimeTrial` (#ca472e10): intro video, intro cameras, the garage.
