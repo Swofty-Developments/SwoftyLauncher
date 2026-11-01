@@ -150,6 +150,9 @@ pub struct Shell {
     pub(crate) dropping: bool,
     pub(crate) vr_profiles: BTreeSet<String>,
     pub(crate) start_store: bool,
+    pub(crate) developer_mode: bool,
+    reload_generation: u64,
+    slow_logged: bool,
     /// `updates.check` from config.json, read when the library loads.
     pub(crate) update_check: bool,
     pub(crate) updates: crate::update::Updates,
@@ -393,6 +396,7 @@ impl Shell {
         } = prepared;
         let vr_profiles = config.vr_profiles;
         let start_store = config.launch.start_store;
+        let developer_mode = config.developer;
         let update_check = config.updates.check;
         let stale = store.clone();
         cx.background_executor()
@@ -406,15 +410,17 @@ impl Shell {
             .detach();
         let poll = cx.spawn_in(window, async move |this, cx| {
             loop {
-                let Ok((store, rediscover, seen)) = this.update(cx, |s, _| {
+                let Ok((store, rediscover, seen, profile, banner_due)) = this.update(cx, |s, _| {
                     let r = std::mem::take(&mut s.rediscover);
-                    (s.store.clone(), r, s.requests)
+                    let profile = s.library.profile.name.clone();
+                    let due = r || s.saves.banner_profile != profile;
+                    (s.store.clone(), r, s.requests, profile, due)
                 }) else {
                     break;
                 };
                 let probe = cx
                     .background_executor()
-                    .spawn(async move { game::probe(&store, rediscover, seen) })
+                    .spawn(async move { game::probe(&store, rediscover, seen, &profile, banner_due) })
                     .await;
                 if this
                     .update_in(cx, |s, window, cx| s.apply(probe, window, cx))
@@ -540,6 +546,9 @@ impl Shell {
             dropping: false,
             vr_profiles,
             start_store,
+            developer_mode,
+            reload_generation: 0,
+            slow_logged: false,
             update_check,
             updates: crate::update::Updates::new(),
             forms: HashMap::new(),
@@ -636,13 +645,42 @@ impl Shell {
     }
 
     fn apply(&mut self, probe: Probe, window: &mut Window, cx: &mut Context<Self>) {
+        let started = Instant::now();
+        self.apply_probe(probe, window, cx);
+        self.note_slow("probe", self.page_name(), started);
+    }
+
+    fn page_name(&self) -> &'static str {
+        match self.page {
+            Page::Section(_) => "panel",
+            page => page.nav_label(),
+        }
+    }
+
+    fn note_slow(&mut self, what: &str, page: &str, started: Instant) {
+        let took = started.elapsed();
+        if took > Duration::from_millis(100) && !self.slow_logged {
+            self.slow_logged = true;
+            crate::app_log::note(&format!(
+                "ui: {what} took {} ms on the UI thread while on the {page} page",
+                took.as_millis()
+            ));
+        }
+    }
+
+    fn apply_probe(&mut self, probe: Probe, window: &mut Window, cx: &mut Context<Self>) {
         let before = (self.requests, self.processes.clone(), self.session.clone());
         let was_live = self.launch.is_some();
         self.requests = probe.requests;
         let root = self.store.root.clone();
-        self.saves.refresh_banner(&root, &self.library.profile.name);
+        if let Some(banner) = probe.banner
+            && probe.banner_profile == self.library.profile.name
+        {
+            self.saves.banner = banner;
+            self.saves.banner_profile = probe.banner_profile;
+        }
         self.saves.game_running = !probe.processes.is_empty();
-        if self.saves.take_notice(&root) {
+        if probe.saves_marker && self.saves.take_notice(&root) {
             self.show_saves_notice(window, cx);
         }
         if let Some(n) = probe.recovered.filter(|n| n.at > self.recovered_seen) {
@@ -817,8 +855,41 @@ impl Shell {
     }
 
     pub(crate) fn reload(&mut self, cx: &mut Context<Self>) {
-        self.library = Library::load(&self.store);
+        self.reload_generation += 1;
+        let library = Library::load(&self.store);
+        self.install_library(library, cx);
+    }
+
+    pub(crate) fn reload_in_background(&mut self, cx: &mut Context<Self>) {
+        self.reload_generation += 1;
+        let generation = self.reload_generation;
+        let store = self.store.clone();
+        cx.spawn(async move |this, cx| {
+            let started = Instant::now();
+            let library = cx
+                .background_executor()
+                .spawn(async move { Library::read(&store) })
+                .await;
+            crate::app_log::note(&format!(
+                "profile switch: library loaded in {} ms",
+                started.elapsed().as_millis()
+            ));
+            this.update(cx, |s, cx| {
+                if s.reload_generation == generation {
+                    let mut library = library;
+                    library.save_order(&s.store);
+                    s.install_library(library, cx);
+                }
+            })
+            .ok();
+        })
+        .detach();
+    }
+
+    fn install_library(&mut self, library: Library, cx: &mut Context<Self>) {
+        self.library = library;
         let config = self.store.config();
+        self.developer_mode = config.developer;
         self.vr_profiles = config.vr_profiles;
         self.start_store = config.launch.start_store;
         self.update_check = config.updates.check;
@@ -826,10 +897,9 @@ impl Shell {
             self.page = Page::Addons;
         }
         if self.page == Page::Careers {
-            self.refresh_saves();
+            self.refresh_saves_in_background(cx);
         } else {
-            let root = self.store.root.clone();
-            self.saves.refresh_banner(&root, &self.library.profile.name);
+            self.refresh_banner_in_background(cx);
         }
         self.refresh_views(cx);
         self.db_profile_changed(cx);
@@ -1409,7 +1479,7 @@ impl Shell {
             crate::app_log::action("switch profile").failed(&e);
             window.push_notification(Notification::error(e.to_string()), cx);
         }
-        self.reload(cx);
+        self.reload_in_background(cx);
     }
 
     pub(crate) fn locate_game(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -1678,7 +1748,7 @@ impl Shell {
         self.db_page_change(page, cx);
         self.page = page;
         if page == Page::Careers {
-            self.refresh_saves();
+            self.refresh_saves_in_background(cx);
         }
         if let Some(i) = self.open_section().filter(|i| !self.section_loaded(*i)) {
             self.fetch_views(Some(i), cx);
@@ -1915,7 +1985,7 @@ impl Shell {
             (Page::Profiles, Some(self.library.profiles.len())),
             (Page::Careers, None),
         ];
-        if self.store.config().developer {
+        if self.developer_mode {
             big.insert(3, (Page::Tools, None));
         }
         if self.mp_allowed() {
@@ -2030,6 +2100,7 @@ fn panel_art(art: NavArt, active: bool, p: Palette) -> Div {
 
 impl Render for Shell {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let started = Instant::now();
         self.painted = Instant::now();
         let p = palette(cx);
         let wide = window.viewport_size().width > px(1500.);
@@ -2074,7 +2145,8 @@ impl Render for Shell {
         if self.dropping && !cx.has_active_drag() {
             self.dropping = false;
         }
-        v_flex()
+        let page = self.page_name();
+        let tree = v_flex()
             .id("shell")
             .relative()
             .size_full()
@@ -2114,7 +2186,9 @@ impl Render for Shell {
             .children(self.progress_card(p))
             .children(self.task_dialog(p, window, cx))
             .children(self.crash_overlay(p, cx))
-            .when(self.dropping, |d| d.child(self.drop_overlay(p)))
+            .when(self.dropping, |d| d.child(self.drop_overlay(p)));
+        self.note_slow("render", page, started);
+        tree
     }
 }
 

@@ -1351,6 +1351,12 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 built.warnings.push(t.line(by));
             }
         }
+        for c in crate::dbedit::calendar::cut_rounds(&db) {
+            let by = planner
+                .record_writer(c.key)
+                .map_or("database", |id| addons.get(id).map_or(id, |m| m.name.as_str()));
+            built.warnings.push(c.line(by));
+        }
         for u in crate::heads::keep_wearable(&mut db, &shipped_db) {
             let by = planner
                 .record_writer(u.key)
@@ -1798,6 +1804,13 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         }
         for w in erps.check_ui(&name)? {
             built.warnings.push(format!("ui: {w}"));
+        }
+        for (severity, w) in erps.check_textures(&name) {
+            let kind = match severity {
+                crate::texcheck::Severity::Invalid => "texture the game's renderer may reject",
+                _ => "texture",
+            };
+            built.warnings.push(format!("{kind}: {w}"));
         }
         let stats = erps.repair_stats();
         let by_origin = |list: &[(String, String)]| {

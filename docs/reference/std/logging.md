@@ -167,7 +167,7 @@ Addon screens that fail to build, with the engine's result code. With `SWOFTY_UI
 [ui] screen swofty_addon_0 (flow_options): root 'persistent' built with result 0x0 (ok, the engine inserts it into the screen table next)
 ```
 
-Crashes, with the exception, registers and a stack named from `symbols.tsv`. Calls to `ExitProcess` and `TerminateProcess` include the caller's stack:
+Crashes, with the exception, registers and a stack named from `symbols.tsv`. The report is named `swofty\crash-<time>.txt`, or by its full path in the data folder's `state` folder when the game folder refuses the write. Calls to `ExitProcess` and `TerminateProcess` include the caller's stack:
 
 ```text
 [crash] crash report swofty\crash-20261023-092347.txt: unhandled ACCESS_VIOLATION (0xc0000005) reading 0x978 at F1_25.exe+0x15436fda .data1 fn base+0x15436e70+0x16a; stack F1_25.exe+0x15436fda .data1 fn base+0x15436e70+0x16a < F1_25.exe+0x46b1829 .xtls fn base+0x46b1460+0x3c9 < F1_25.exe+0x4629740 .xtls fn base+0x4628190+0x15b0 < F1_25.exe+0x4637a08 .xtls Game_Check_MovingWingNodes+0x18; minidump crash-20261023-092347.dmp, 2.2 MB, thread stacks and registers, written in 2.5 s
@@ -226,6 +226,7 @@ These environment variables change what swofty_core and the loader log. Set them
 
 - `SWOFTY_UI_DIAG=1`: logs each node of an addon screen as it builds, and every node the engine rejects with a reason. `"diagnostics": true` in the `"ui"` block of `swofty/settings.json` does the same.
 - `SWOFTY_LOG_SYNC=1`: writes each `loader.log` line as it's logged. Without it, a background thread writes lines in batches and crash lines go out at once.
+- `SWOFTY_DRED=1`: switches on D3D12 Device Removed Extended Data (DRED) before the game creates its GPU device. Without it, DRED turns on by itself for the session after one whose crash held a DXGI device-removed error (`0x887a0001`, `0x887a0005`, `0x887a0006`, `0x887a0007` or `0x887a0020`); `swofty/dred.flag` marks that. `SWOFTY_DRED=0` keeps it off. When DRED was on and the GPU was removed, the crash report has a `GPU device removal (D3D12 DRED)` section: the removal reason, the command lists that did not finish with the last 64 operations around the last one that completed, and for a page fault the faulting GPU address and the existing and recently freed allocations with their names and types. It reads `DRED is on` in `loader.log` as `[dred] on (...)`. Wine and vkd3d may lack the interface; `loader.log` says so and the game goes on.
 - `SWOFTY_STORAGE_LOG=all`: logs every storage call. Without it, swofty_core logs the first three successful calls of each kind from each addon, then only failures:
 
   ```text

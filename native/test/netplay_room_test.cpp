@@ -319,6 +319,29 @@ int main()
     f.session_role = 2;
     run.tick(f, 5);
     expect(run.done() && !run.by_hand, "the client session role finishes a join with no lobby state");
+
+    run = {};
+    f = {};
+    f.lan_mode = true;
+    f.join_ready = false;
+    run.start(room::Role::join, 0, false);
+    run.tick(f, 0);
+    run.tick(f, 1);
+    expect(run.tick(f, 2) == room::Do::nothing && run.stage == room::Stage::call && run.active(),
+           "a join waits while the game's join request owner isn't there yet (the room boot before home)");
+    expect(run.tick(f, 30000) == room::Do::nothing && run.active(), "it keeps waiting within the deadline");
+    f.join_ready = true;
+    expect(run.tick(f, 30001) == room::Do::join_write, "the request is written once the owner exists");
+    run = {};
+    f = {};
+    f.lan_mode = true;
+    f.join_ready = false;
+    run.start(room::Role::join, 0, false);
+    run.tick(f, 0);
+    run.tick(f, 1);
+    run.tick(f, 1 + room::JOIN_READY_MS);
+    expect(run.failed() && run.error.find("join request owner") != std::string::npos,
+           "an owner that never appears is a named failure");
     run = {};
     f = {};
     f.lan_mode = true;

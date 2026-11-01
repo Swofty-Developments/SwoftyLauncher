@@ -210,6 +210,7 @@ Choose the event with a `SWOFTY_EVENT_*` constant from `swofty_api.h`:
 |---|---|
 | `SWOFTY_EVENT_SESSION_START` | `session.start` |
 | `SWOFTY_EVENT_SESSION_END` | `session.end` |
+| `SWOFTY_EVENT_SESSION_UNLOAD` | `session.unload` |
 | `SWOFTY_EVENT_RACE_START` | `race.start` |
 | `SWOFTY_EVENT_LAP` | `lap` |
 | `SWOFTY_EVENT_FLAG` | `flag` |
@@ -226,6 +227,33 @@ Choose the event with a `SWOFTY_EVENT_*` constant from `swofty_api.h`:
 | `SWOFTY_EVENT_CAREER_CONTENT_PRESSED` | `career.content.pressed` ([career contents](./career-content)) |
 
 `session.start` fires when the game enters a session (`Game_GameModule_OnSessionEnter`), `race.start` when the formation lap component reports the race started. Both pass `a = b = 0` and no `data`.
+
+`session.end` fires once when the session ends: when `StateSession` exits, or, if the game goes straight to unloading, when `StateUnloadSession` begins, or when a new `session.start` arrives while one is still open (a restart). `session.unload` fires once when `StateUnloadSession` begins, after `session.end`. The order for one session is `session.start`, `session.end`, `session.unload`; a restart gives `session.end` then `session.start` again, and a quit mid-session gives `session.end` then `session.unload`. Neither carries `data`. `e->a` on `session.end` says why it fired: `0` the session state exited, `1` a restart, `2` the session was still open when unloading began. `session.unload` passes `a = b = 0`.
+
+Stop driving the player's car on `session.end`, not on `session.unload`; by the time the unload begins the game refuses control changes.
+
+```cpp
+static void on_session_end(const SwoftyEvent *e, void *)
+{
+    // e->a: 0 StateSession exited, 1 restart, 2 ended as the unload began
+    release_player_car();
+}
+
+static void on_session_unload(const SwoftyEvent *, void *)
+{
+    forget_session_state();
+}
+
+ev::subscribe(SWOFTY_EVENT_SESSION_END, on_session_end);
+ev::subscribe(SWOFTY_EVENT_SESSION_UNLOAD, on_session_unload);
+```
+
+```text
+[events] session.end (StateSession exited)
+[events] session.unload (StateUnloadSession entering)
+```
+
+`state`, `session.grid` and `session.formation_lap` are not fired: the flow hook sees front-end states, not the race's own states, and `race.start` is the only formation lap moment the core hooks.
 
 ## Flow and career events
 

@@ -324,6 +324,13 @@ drive::State state()
     s.lobby = lobby.load();
     s.home_screen = home_screen.load();
     s.role = drive::Role(role.load());
+    if (runtime::netplay_room::status().phase == runtime::netplay_room::Phase::failed)
+        s.room_failed = runtime::netplay_room::last_error();
+    auto cover = runtime::room_cover::snapshot();
+    if (cover.active) {
+        s.cover_step = cover.label;
+        s.cover_percent = cover.percent;
+    }
     return s;
 }
 
