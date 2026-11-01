@@ -931,6 +931,105 @@ fn addon_settings_scrolls_sideways_and_shows_details_on_the_focused_tile() {
     std::fs::remove_dir_all(&out).ok();
 }
 
+#[test]
+fn a_long_addon_page_scrolls_to_keep_the_focused_row_on_screen() {
+    use swofty_core::ui::node::{CHILDREN, NodeExt};
+    let Some(game) = std::env::var_os("F1_25_DIR").map(PathBuf::from) else {
+        eprintln!("F1_25_DIR is not set; skipping");
+        return;
+    };
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/menu_session.json");
+    let mut v: serde_json::Value = serde_json::from_slice(&std::fs::read(fixture).unwrap()).unwrap();
+    let id = v["addons"][1]["id"].as_str().unwrap().to_owned();
+    let template = v["addons"][1]["options"][1].clone();
+    let options: Vec<serde_json::Value> = (0..30)
+        .map(|i| {
+            let mut o = template.clone();
+            o["id"] = format!("opt_{i}").into();
+            o["label"] = format!("Option {i}").into();
+            for (s, state) in o["states"].as_array_mut().unwrap().iter_mut().enumerate() {
+                state["command"] = format!("swofty_set:{id}:opt_{i}:{s}").into();
+            }
+            o
+        })
+        .collect();
+    v["addons"][1]["options"] = options.into();
+    let settings: SessionSettings = serde_json::from_value(v).unwrap();
+    let out = std::env::temp_dir().join(format!("swofty-page-scroll-{}", std::process::id()));
+    std::fs::remove_dir_all(&out).ok();
+    let built = swofty_core::ui::build(&settings, &|rel| game.join(rel), &|_, _| None, &out, false).unwrap();
+    let pages: Vec<_> = built
+        .screens
+        .iter()
+        .filter(|(rel, _)| rel.contains("/swofty_addon_"))
+        .map(|(_, path)| swofty_formats::pkg::Pkg::parse(&std::fs::read(path).unwrap()).unwrap())
+        .collect();
+    let rows_of = |p: &swofty_formats::pkg::Pkg| -> Option<(String, Vec<String>)> {
+        let mut found = None;
+        let mut stack = vec![&p.root];
+        while let Some(n) = stack.pop() {
+            if n.is_node() && n.name().starts_with("swofty_addon_") {
+                let rows = n
+                    .slot(CHILDREN)
+                    .unwrap()
+                    .iter()
+                    .filter(|c| c.is_node() && c.name().starts_with("row_"))
+                    .map(|c| c.name().to_owned())
+                    .collect();
+                found = Some((n.name().to_owned(), rows));
+                break;
+            }
+            match n {
+                swofty_formats::pkg::Node::Arr(a) => stack.extend(a.items.iter()),
+                swofty_formats::pkg::Node::Obj(o) => stack.extend(o.items.iter().map(|(_, c)| c)),
+                _ => {}
+            }
+        }
+        found
+    };
+    let (long, short): (Vec<_>, Vec<_>) = pages
+        .iter()
+        .filter_map(|p| rows_of(p).map(|r| (p, r)))
+        .partition(|(_, (_, rows))| rows.len() == 30);
+    let (pkg, (sname, rows)) = long.first().expect("the 30-option page");
+    let path = |i: usize| format!("{sname}.{}", rows[i]);
+    for (i, name) in rows.iter().enumerate() {
+        let row = named(&pkg.root, name).unwrap();
+        let down = event_signals(row, "navDown");
+        if i + 1 < rows.len() {
+            assert_eq!(down[0], (path(i + 1), "focus".into()), "{name}: {down:?}");
+        }
+        let hides: Vec<_> = down.iter().filter(|(_, pin)| pin == "hide").collect();
+        if i + 1 < rows.len() && i + 1 >= 18 {
+            assert_eq!(hides, [&(path(i + 1 - 18), "hide".to_owned())], "{name}");
+        } else {
+            assert!(hides.is_empty(), "{name}: {down:?}");
+        }
+        let up = event_signals(row, "navUp");
+        if i > 0 {
+            assert_eq!(
+                up,
+                [(path(i - 1), "focus".into()), (path(i - 1), "show".into())],
+                "{name}"
+            );
+        } else {
+            assert!(up.is_empty(), "{name}: {up:?}");
+        }
+    }
+    for (p, (_, rows)) in &short {
+        for name in rows {
+            let row = named(&p.root, name).unwrap();
+            let pins: Vec<_> = ["navDown", "navUp"]
+                .iter()
+                .flat_map(|e| event_signals(row, e))
+                .filter(|(_, pin)| pin == "hide" || pin == "show")
+                .collect();
+            assert!(pins.is_empty(), "{name}: {pins:?}");
+        }
+    }
+    std::fs::remove_dir_all(&out).ok();
+}
+
 fn node_count(n: &swofty_formats::pkg::Node) -> usize {
     use swofty_core::ui::node::{CHILDREN, NodeExt};
     1 + n
