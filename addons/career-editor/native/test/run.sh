@@ -14,5 +14,7 @@ CXX=(g++ -std=c++23 -O1 -Wall -Wextra -Wno-misleading-indentation -include unist
 CE_TEST_DIR="$OUT" "$OUT/ce_bridge_harness"
 "$OUT/ce_weather_plan_test"
 "$OUT/ce_lineup_test"
+"${CXX[@]}" -o "$OUT/ce_entrants_cap_test" entrants_cap_test.cpp
+"$OUT/ce_entrants_cap_test"
 "$OUT/ce_rating_solve_test"
 "$OUT/ce_calendar_rules_test"

@@ -327,7 +327,7 @@ uint32_t driver_key(const EntrantRecord &e)
 uint32_t team_of(const CareerEntity *entity, uint32_t driver)
 {
     size_t n = 0;
-    if (!entity || !comp::array(entity->entrants_begin, entity->entrants_end, 128, n))
+    if (!entity || !comp::array(entity->entrants_begin, entity->entrants_end, comp::kMaxEntrants, n))
         return kNoKey;
     for (size_t i = 0; i < n; ++i)
         if (same_key(driver_key(entity->entrants_begin[i]), driver))
