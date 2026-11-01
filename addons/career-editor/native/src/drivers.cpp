@@ -750,7 +750,7 @@ size_t take_over_records(uintptr_t comp, uint32_t outgoing, uint32_t incoming, u
 
 constexpr uint32_t kNoKey = 0x3fff0000u;   // stat id 0x3fff in the high word: no driver/team/vehicle
 constexpr uint32_t kHumanBit = 0x10000000u; // EntrantRecord::ordinal_flags bit of the human entrant
-constexpr size_t kMaxEntrants = 256;
+constexpr size_t kMaxEntrants = ce::comp::kMaxEntrants;
 constexpr uintptr_t kEntrantSize = sizeof(EntrantRecord);
 constexpr uintptr_t kMoveSize = sizeof(DriverMoveRecord);
 constexpr uint8_t kReasonSigned = 0;  // DriverMoveRecord::reason the game's signing writes for the incoming driver

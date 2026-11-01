@@ -74,6 +74,7 @@ t "Telemetry feed unit test" "$(zig_test "-I packages/sdk/include native/test/te
 t "Career Mode Editor race number unit test" "$(zig_test "-I $cme/src $cme/test/race_numbers_test.cpp $cme/src/race_numbers.cpp" race_numbers_test)"
 t "Career Mode Editor weather plan unit test" "$(zig_test "-I $cme/src $cme/test/weather_plan_test.cpp $cme/src/weather_plan.cpp" weather_plan_test)"
 t "Career Mode Editor line-up unit test" "$(zig_test "-I $cme/src $cme/test/lineup_test.cpp $cme/src/lineup.cpp" lineup_test)"
+t "Career Mode Editor entrant bound unit test" "$(zig_test "-I $cme/src $cme/test/entrants_cap_test.cpp" entrants_cap_test)"
 t "Career Mode Editor rating search unit test" "$(zig_test "-I $cme/src $cme/test/rating_solve_test.cpp $cme/src/rating_solve.cpp" rating_solve_test)"
 t "Career Mode Editor calendar rules unit test" "$(zig_test "-I $cme/src $cme/test/calendar_rules_test.cpp $cme/src/calendar_rules.cpp" calendar_rules_test)"
 
