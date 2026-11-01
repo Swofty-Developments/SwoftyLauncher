@@ -277,6 +277,7 @@ void ready()
     // postfx only observes barriers, and grade replaces some batches, so postfx subscribes first.
     postfx_setup();
     grade_setup();
+    srv_clamp_setup();
     telemetry_setup();
     net_trace_setup();
     udp_ids_setup();
