@@ -170,6 +170,9 @@ BoxInfo box_info(registry::Store &store, const std::string &package, const std::
         swofty::log("[tracks] box %s: no content.package record; from its entrant list: setup mode %s, %s teams, %s cars",
                     b.package.c_str(), b.setup_mode.c_str(), b.teams < 0 ? "unknown" : std::to_string(b.teams).c_str(),
                     b.cars < 0 ? "unknown" : std::to_string(b.cars).c_str());
+        if (!b.unread.empty())
+            swofty::log("[tracks] box %s: not fully read (%s); the garage and grid rules assume the grid's size", b.package.c_str(),
+                        b.unread.c_str());
         return b;
     }
     registry::Record r = store.get("content.package", package);

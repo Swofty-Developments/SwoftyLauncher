@@ -2,14 +2,17 @@
 //
 // Progressive Career: gamedb labels (names.hpp).
 
+#include <chrono>
 #include <cstdio>
 #include <cstring>
+#include <thread>
 
 #include <swofty/db.hpp>
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
 #include "names.hpp"
+#include "names_logic.hpp"
 #include "seats.hpp"
 
 namespace pg::names {
@@ -18,18 +21,16 @@ namespace {
 
 constexpr size_t kLabelMax = 128;
 constexpr int64_t kMaxRows = 8192;
+constexpr int64_t kRetryMs = 5000;
 
-struct Table {
-    std::unordered_map<uint32_t, std::string> by_stat;
-    std::unordered_map<std::string, uint32_t> by_label;
-};
+using names_logic::Tables;
 
-Table g_tables[4];
-bool g_loaded = false;
+names_logic::Cache g_cache;
 
-Table &table(Kind k)
+int64_t now_ms()
 {
-    return g_tables[static_cast<int>(k)];
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch())
+        .count();
 }
 
 bool text(const std::string &path, std::string &out)
@@ -59,16 +60,67 @@ template <class F> void each_row(const std::string &table, const std::string &st
         f(table + "." + stem + "_" + std::to_string(i));
 }
 
-void add(Kind k, const std::string &row)
+void add(Tables &tables, Kind k, const std::string &row)
 {
     int64_t id = -1;
     std::string name;
     if (!integer(row + ".stat_id", id) || id < 0 || id >= 0x3fff || !text(row + "._metadata_", name))
         return;
-    Table &t = table(k);
-    auto s = static_cast<uint32_t>(id);
-    t.by_stat.emplace(s, name);
-    t.by_label.emplace(name, s);
+    tables.kinds[static_cast<int>(k)].add(static_cast<uint32_t>(id), name);
+}
+
+uint64_t fingerprint()
+{
+    uint64_t h = swofty::api && swofty::api->module_base ? static_cast<uint64_t>(swofty::api->module_base()) : 0;
+    for (const char *key : {"entrants.drivers._driver_instancecount_", "entrants.teams._team_instancecount_",
+                            "entrants.vehicles._vehicle_instancecount_",
+                            "entrants.driver_customisations._folder_instancecount_"}) {
+        int64_t n = -1;
+        integer(key, n);
+        h = h * 1099511628211ull + static_cast<uint64_t>(n + 1);
+    }
+    return h;
+}
+
+Tables build()
+{
+    Tables t;
+    each_row("entrants.drivers", "driver", [&](const std::string &r) { add(t, Kind::driver, r); });
+    each_row("entrants.teams", "team", [&](const std::string &r) { add(t, Kind::team, r); });
+    each_row("entrants.vehicles", "vehicle", [&](const std::string &r) { add(t, Kind::vehicle, r); });
+    each_row("entrants.driver_customisations", "folder", [&](const std::string &folder) {
+        each_row(folder, "preloaded_driver_customisation_properties", [&](const std::string &r) { add(t, Kind::look, r); });
+    });
+    return t;
+}
+
+void run(uint64_t id)
+{
+    int64_t began = now_ms();
+    Tables t = build();
+    bool ok = names_logic::usable(t);
+    swofty::log("[progressive] gamedb labels %s in %lld ms: %zu drivers, %zu teams, %zu vehicles, %zu looks",
+                ok ? "loaded" : "NOT loaded (retrying at the next Team HQ)", static_cast<long long>(now_ms() - began),
+                t.kinds[0].by_stat.size(), t.kinds[1].by_stat.size(), t.kinds[2].by_stat.size(),
+                t.kinds[3].by_stat.size());
+    g_cache.finish(id, std::move(t), now_ms());
+}
+
+bool start()
+{
+    if (!swofty::db::available())
+        return false;
+    uint64_t id = fingerprint();
+    if (!g_cache.claim(id, now_ms(), kRetryMs))
+        return false;
+    std::thread(run, id).detach();
+    return true;
+}
+
+const names_logic::Table &table(const names_logic::Cache::Ptr &p, Kind k)
+{
+    static const names_logic::Table none;
+    return p ? p->kinds[static_cast<int>(k)] : none;
 }
 
 } // namespace
@@ -90,40 +142,40 @@ const char *kind_name(Kind k)
 
 bool loaded()
 {
-    return g_loaded;
+    return g_cache.ready() != nullptr;
 }
 
 bool load()
 {
-    if (g_loaded)
+    if (g_cache.ready())
         return true;
-    if (!swofty::db::available())
-        return false;
-    for (auto &t : g_tables)
-        t = {};
-    each_row("entrants.drivers", "driver", [](const std::string &r) { add(Kind::driver, r); });
-    each_row("entrants.teams", "team", [](const std::string &r) { add(Kind::team, r); });
-    each_row("entrants.vehicles", "vehicle", [](const std::string &r) { add(Kind::vehicle, r); });
-    each_row("entrants.driver_customisations", "folder", [](const std::string &folder) {
-        each_row(folder, "preloaded_driver_customisation_properties", [](const std::string &r) { add(Kind::look, r); });
-    });
-    g_loaded = !table(Kind::driver).by_stat.empty() && !table(Kind::vehicle).by_stat.empty();
-    swofty::log("[progressive] gamedb labels %s: %zu drivers, %zu teams, %zu vehicles, %zu looks",
-                g_loaded ? "loaded" : "NOT loaded (retrying at the next Team HQ)", count(Kind::driver),
-                count(Kind::team), count(Kind::vehicle), count(Kind::look));
-    return g_loaded;
+    start();
+    return false;
+}
+
+bool load_wait()
+{
+    if (load())
+        return true;
+    g_cache.wait();
+    return g_cache.ready() != nullptr;
+}
+
+void refresh()
+{
+    start();
 }
 
 std::string label(Kind k, uint32_t s)
 {
-    auto &m = table(k).by_stat;
+    auto &m = table(g_cache.ready(), k).by_stat;
     auto it = m.find(s);
     return it == m.end() ? std::string() : it->second;
 }
 
 bool stat(Kind k, const std::string &l, uint32_t &out)
 {
-    auto &m = table(k).by_label;
+    auto &m = table(g_cache.ready(), k).by_label;
     auto it = m.find(l);
     if (it == m.end())
         return false;
@@ -133,12 +185,12 @@ bool stat(Kind k, const std::string &l, uint32_t &out)
 
 bool known(Kind k, uint32_t s)
 {
-    return table(k).by_stat.count(s) != 0;
+    return table(g_cache.ready(), k).by_stat.count(s) != 0;
 }
 
 size_t count(Kind k)
 {
-    return table(k).by_stat.size();
+    return table(g_cache.ready(), k).by_stat.size();
 }
 
 std::string key_text(Kind k, uint32_t key)

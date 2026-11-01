@@ -35,6 +35,7 @@ struct Want {
 struct Env {
     std::function<std::vector<std::string>()> list;
     std::function<std::shared_ptr<erpfile::Source>(const std::string &rel)> open;
+    std::function<std::vector<std::string>(const std::string &rel)> overlays;
 };
 
 struct Result {
@@ -75,12 +76,45 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
         o.src = src;
         return &opened.emplace(rel, std::move(o)).first->second;
     };
+    auto layers_of = [&](const std::string &rel) {
+        std::vector<std::string> layers{rel};
+        if (env.overlays)
+            for (auto &o : env.overlays(rel))
+                if (std::find(layers.begin(), layers.end(), o) == layers.end())
+                    layers.push_back(o);
+        return layers;
+    };
+    struct Found {
+        Open *open = nullptr;
+        const erpfile::Entry *entry = nullptr;
+    };
+    auto top = [&](const std::vector<std::string> &layers, const std::string &name) {
+        Found f;
+        for (auto &l : layers) {
+            Open *o = get(l);
+            const erpfile::Entry *e = o ? o->arc.find(name) : nullptr;
+            if (e)
+                f = {o, e};
+        }
+        return f;
+    };
+    auto carrying = [&](const std::vector<std::string> &layers, const std::string &name) {
+        std::vector<std::string> out_layers;
+        for (auto &l : layers) {
+            Open *o = get(l);
+            if (o && o->arc.find(name))
+                out_layers.push_back(l);
+        }
+        return out_layers;
+    };
+    std::vector<std::string> db_layers = layers_of(DATABASES);
     Open *db = get(DATABASES);
     if (db)
         out.read.insert(DATABASES);
-    const erpfile::Entry *ue = db ? db->arc.find(OVERRIDES) : nullptr;
+    Found uf = db ? top(db_layers, OVERRIDES) : Found{};
+    const erpfile::Entry *ue = uf.entry;
     std::string uidb_bytes;
-    if (!ue || ue->frags.empty() || !erpfile::fragment(*db->src, db->arc, ue->frags[0], uidb_bytes, why)) {
+    if (!ue || ue->frags.empty() || !erpfile::fragment(*uf.open->src, uf.open->arc, ue->frags[0], uidb_bytes, why)) {
         out.lines.push_back("team.logo: overrides.uidb is not in " + std::string(DATABASES) + (why.empty() ? "" : " (" + why + ")"));
         out.refused += int(wants.size());
         return false;
@@ -110,19 +144,25 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
         std::vector<std::string> carriers;
         logo_array::Stock stock;
         bool have = false, mismatch = false;
+        std::map<std::string, std::vector<std::string>> image_in, view_in;
         for (auto &rel : files) {
-            Open *o = get(rel);
-            if (!o)
+            if (!get(rel))
                 continue;
-            const erpfile::Entry *ei = o->arc.find(image), *ev = o->arc.find(view);
-            if (!ei && !ev)
+            std::vector<std::string> layers = layers_of(rel);
+            Found fi = top(layers, image), fv = top(layers, view);
+            if (!fi.entry && !fv.entry)
                 continue;
+            for (auto &l : carrying(layers, image))
+                image_in[rel].push_back(l), out.read.insert(l);
+            for (auto &l : carrying(layers, view))
+                view_in[rel].push_back(l), out.read.insert(l);
             out.read.insert(rel);
+            const erpfile::Entry *ei = fi.entry, *ev = fv.entry;
             logo_array::Stock got;
             if (!ei || !ev || ei->frags.size() != 2 || ev->frags.size() != 1 ||
-                !erpfile::fragment(*o->src, o->arc, ei->frags[0], got.head, why) ||
-                !erpfile::fragment(*o->src, o->arc, ei->frags[1], got.data, why) ||
-                !erpfile::fragment(*o->src, o->arc, ev->frags[0], got.view, why)) {
+                !erpfile::fragment(*fi.open->src, fi.open->arc, ei->frags[0], got.head, why) ||
+                !erpfile::fragment(*fi.open->src, fi.open->arc, ei->frags[1], got.data, why) ||
+                !erpfile::fragment(*fv.open->src, fv.open->arc, ev->frags[0], got.view, why)) {
                 out.lines.push_back("team.logo: " + rel + " carries " + array + " in a layout this build does not read");
                 mismatch = true;
                 break;
@@ -189,9 +229,10 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
             continue;
         }
         for (auto &rel : carriers) {
-            auto &c = out.changes[rel];
-            c[image] = {grown.head, grown.data};
-            c[view] = {grown.view};
+            for (auto &l : image_in[rel])
+                out.changes[l][image] = {grown.head, grown.data};
+            for (auto &l : view_in[rel])
+                out.changes[l][view] = {grown.view};
         }
         for (auto &s : add) {
             std::string e;
@@ -205,8 +246,13 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
         out.lines.push_back("team.logo: " + array + " grows by " + std::to_string(add.size()) + " slice(s) in " +
                             std::to_string(carriers.size()) + " archive(s)");
     }
-    if (uidb_changed)
-        out.changes[DATABASES][OVERRIDES] = {pkg.write()};
+    if (uidb_changed) {
+        std::string written = pkg.write();
+        for (auto &l : carrying(db_layers, OVERRIDES)) {
+            out.changes[l][OVERRIDES] = {written};
+            out.read.insert(l);
+        }
+    }
     return true;
 }
 
