@@ -318,12 +318,38 @@ mod win32 {
         exe_file: [u16; MAX_PATH],
     }
 
+    const PROCESS_QUERY_LIMITED_INFORMATION: u32 = 0x1000;
+
     #[link(name = "kernel32")]
     unsafe extern "system" {
+        fn OpenProcess(access: u32, inherit: i32, pid: u32) -> *mut c_void;
+        fn QueryFullProcessImageNameW(
+            process: *mut c_void,
+            flags: u32,
+            name: *mut u16,
+            size: *mut u32,
+        ) -> i32;
         fn CreateToolhelp32Snapshot(flags: u32, pid: u32) -> *mut c_void;
         fn Process32FirstW(snapshot: *mut c_void, entry: *mut ProcessEntry32W) -> i32;
         fn Process32NextW(snapshot: *mut c_void, entry: *mut ProcessEntry32W) -> i32;
         fn CloseHandle(handle: *mut c_void) -> i32;
+    }
+
+    /// The full path of the exe the process `pid` runs, or None when it cannot be opened.
+    pub fn image_path(pid: u32) -> Option<std::path::PathBuf> {
+        // SAFETY: the handle is checked before use and closed once; the buffer is `size` u16s long and
+        // QueryFullProcessImageNameW sets `size` to the length it wrote.
+        unsafe {
+            let handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid);
+            if handle.is_null() {
+                return None;
+            }
+            let mut buf = vec![0u16; 32_768];
+            let mut size = buf.len() as u32;
+            let ok = QueryFullProcessImageNameW(handle, 0, buf.as_mut_ptr(), &mut size) != 0;
+            CloseHandle(handle);
+            ok.then(|| std::path::PathBuf::from(String::from_utf16_lossy(&buf[..size as usize])))
+        }
     }
 
     /// The pids of the processes whose exe file name is `name` in any case,
@@ -354,6 +380,15 @@ mod win32 {
             Some(out)
         }
     }
+}
+
+#[cfg(windows)]
+pub(crate) fn named_paths(name: &str) -> Vec<PathBuf> {
+    win32::process_ids(name)
+        .unwrap_or_default()
+        .into_iter()
+        .filter_map(win32::image_path)
+        .collect()
 }
 
 #[cfg(not(any(target_os = "linux", windows)))]
