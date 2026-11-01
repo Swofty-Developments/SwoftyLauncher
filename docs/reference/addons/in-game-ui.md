@@ -201,7 +201,7 @@ The [UI reference](/reference/std/ui) lists every view-model property and comman
 A career setup page shows some of your addon's options between a career content tile and the new-career wizard, in the look of the game's CUSTOM SETTINGS. It needs launcher 1.5.13 or later.
 
 - Its home has a CONFIRM tile on the left and a category tile with the page's title.
-- The category tile opens the rows page: one row per option. **Left** and **Right** change the value, and the panel on the right shows the focused option's description.
+- The category tile opens the rows page: one row per option. **Left** and **Right** change the value, and the panel on the right shows the focused option's description. Past 18 rows the page scrolls as ADDON SETTINGS pages do.
 - Back on the rows page returns to the home.
 - CONFIRM opens the wizard's season length step. Back on the home returns to the career content select.
 

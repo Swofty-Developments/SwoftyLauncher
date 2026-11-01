@@ -18,6 +18,9 @@ const SETTINGS_ICON: &str = "ui_package/art/textures/options/o_category/";
 /// Columns of tiles ADDON SETTINGS keeps on screen; past them the row
 /// scrolls by hiding the column at the other edge, which the stacker closes up.
 const VISIBLE_COLUMNS: usize = 3;
+/// Rows an addon's page keeps on screen: what fits the settings page's clipping window. Past
+/// them the page scrolls by hiding the row at the other edge, which the list's stacker closes up.
+const VISIBLE_ROWS: usize = 18;
 /// Tiles one ADDON SETTINGS home screen holds; more go on further home screens, which a NEXT PAGE
 /// tile opens. No addon page has opened from a home of 60 tiles or more.
 pub const HOME_PAGE_TILES: usize = 24;
@@ -660,8 +663,33 @@ fn build_page(src: &Sources, e: &Entry, rows: &[Row], adjustable: bool) -> Resul
         kids.push(t);
     }
     chain_focus(sname, &mut kids, &rows_at)?;
+    scroll_rows(sname, &mut kids, &rows_at)?;
     let first = kids[rows_at[0]].name().to_owned();
     finish(scr, fr, kids, &first)
+}
+
+fn scroll_rows(sname: &str, kids: &mut [Node], rows_at: &[usize]) -> Result<()> {
+    if rows_at.len() <= VISIBLE_ROWS {
+        return Ok(());
+    }
+    let paths: Vec<String> = rows_at
+        .iter()
+        .map(|&k| format!("{sname}.{}", kids[k].name()))
+        .collect();
+    for (i, &k) in rows_at.iter().enumerate() {
+        let mut evs = Vec::new();
+        if i + 1 < paths.len() && i + 1 >= VISIBLE_ROWS {
+            evs.push(event(
+                "navDown",
+                vec![sig(&paths[i + 1 - VISIBLE_ROWS], "hide", "navDown")],
+            ));
+        }
+        if i > 0 {
+            evs.push(event("navUp", vec![sig(&paths[i - 1], "show", "navUp")]));
+        }
+        add_events(&mut kids[k], evs)?;
+    }
+    Ok(())
 }
 
 fn retitle(scr: &mut Node, e: &Entry) -> Result<()> {

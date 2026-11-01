@@ -28,6 +28,8 @@ A page holds up to 24 tiles, eight columns. With more, the list continues on fur
 2. Move to a setting row on the addon's page.
 3. Press **Left** or **Right** to change the value.
 
+An addon's page shows 18 rows. When it has more, moving past the bottom row slides the list up by a row, and moving past the top row slides it back down.
+
 Only addons have settings. A mod's page shows its id, author and version; a track's page shows its track code, author and version. For an addon with no settings, you'll see its id and version. That makes **ADDON SETTINGS** the one place in game to see everything a profile turns on.
 
 ## When changes take effect
