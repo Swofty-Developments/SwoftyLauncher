@@ -15527,6 +15527,11 @@ pub mod bindings {
         kind: "call",
         status: Status::Experimental,
     };
+    pub const site_Ne_MemoryMapHeapSize: Binding = Binding {
+        id: "site_Ne_MemoryMapHeapSize",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Ne_ReplayAfterRecord: Binding = Binding {
         id: "site_Ne_ReplayAfterRecord",
         kind: "site",

@@ -233,6 +233,8 @@ std::vector<CoreMixins> track_acclim_mixins();
 void track_acclim_commit();
 std::vector<CoreMixins> audio_queue_mixins();
 void audio_queue_commit();
+std::vector<CoreMixins> audio_heap_mixins();
+void audio_heap_commit();
 std::vector<CoreMixins> track_select_mixins();
 void track_select_commit();
 std::vector<CoreMixins> team_slots_mixins();
