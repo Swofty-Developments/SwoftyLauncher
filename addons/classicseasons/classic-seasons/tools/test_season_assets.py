@@ -99,6 +99,25 @@ class SeasonAssetsTest(unittest.TestCase):
         self.assertEqual(old.unk, buffer.unk)
         self.assertEqual(target.frag_data(old, 0), b"geometry")
 
+    def test_2015_addon_detects_custom_package_prefix_and_2016_tyre_source(self):
+        stem_16 = "eaid://f1_2016_vehicle_package/shared/tyres/"
+        buffer = resource(stem_16 + "idf/tyres.idf?lod=all&vb=0", "GfxBufferRes",
+                          b"eaid://f1_2016_vehicle_package/shared/tyres/idf/tyres.idf")
+        buffer.unk = struct.pack("<I", 2)
+        image = resource(stem_16 + "texture_arrays/sidewall_diffuse.texarray.image", "GfxSurfaceRes",
+                         b"header", b"pixels")
+        old = resource(buffer.name.replace("f1_2016", "ms_2015"), "GfxBufferRes", b"old")
+        old.unk = struct.pack("<I", 4)
+        target = archive(old)
+        season_assets.restore_tyres(target, archive(buffer, image), Path("unused"), 2015, source_year=2016)
+        self.assertEqual(old.unk, buffer.unk)
+        self.assertEqual(target.frag_data(old, 0), b"eaid://ms_2015_vehicle_package/shared/tyres/idf/tyres.idf")
+        with tempfile.TemporaryDirectory() as directory:
+            addons = Path(directory)
+            custom = addons / "msyeett.classic-seasons-2015"
+            custom.mkdir()
+            self.assertEqual(season_assets.find_addon(addons, 2015), custom)
+
     def test_geometry_with_binary_links_is_kept_without_other_liveries(self):
         stem = "eaid://f1_2021_vehicle_package/teams/fom_car/idf/fom_car"
         model, binding = stem + ".idf?render", stem + ".emb?context=chosen"

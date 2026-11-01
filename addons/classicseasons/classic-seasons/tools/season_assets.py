@@ -79,9 +79,26 @@ def original_chain(game, archive, resource):
     return fmt, w, h, levels
 
 
+def addon_package(archive, year):
+    suffix = f"_{year}_vehicle_package/"
+    for r in archive.res:
+        if r.name.startswith("eaid://") and suffix in r.name:
+            return r.name[len("eaid://"):r.name.index(suffix) + len(suffix) - 1]
+    return package(year)
+
+
+def find_addon(addons, year):
+    source = addons / f"swofty.classic-seasons-{year}"
+    if source.exists():
+        return source
+    matches = sorted(addons.glob(f"*.classic-seasons-{year}"))
+    return matches[0] if len(matches) == 1 else source
+
+
 def restore_textures(archive, original, game, year, folder, sidecars=None):
+    pkg = addon_package(archive, year)
     old = f"eaid://f1_{year}_vehicle_package/teams/{folder}/textures/"
-    new = f"eaid://{package(year)}/teams/{folder}/textures/"
+    new = f"eaid://{pkg}/teams/{folder}/textures/"
     sources = {r.name: r for r in original.res}
     restored = []
     for r in archive.res:
@@ -104,7 +121,7 @@ def restore_textures(archive, original, game, year, folder, sidecars=None):
             data = (game / path).read_bytes()
             if any(off + packed > len(data) for _, off, packed, _ in entries):
                 raise ValueError(f"{path}: truncated sidecar")
-            target = package(year) + "/original/" + path.split("/", 1)[1]
+            target = pkg + "/original/" + path.split("/", 1)[1]
             sidecars[target] = data
             encoded = target.encode()
             if len(encoded) > 255:
@@ -137,7 +154,7 @@ def restore_textures(archive, original, game, year, folder, sidecars=None):
 def restore_tyres(common, original, game, year, source_year=None):
     """Take the original tyre geometry, materials and textures as one coherent set."""
     old = f"f1_{source_year or year}_vehicle_package/"
-    new = f"{package(year)}/"
+    new = f"{addon_package(common, year)}/"
     targets = {r.name: r for r in common.res}
     restored = []
     images = 0
@@ -179,13 +196,14 @@ def restore_tyres(common, original, game, year, source_year=None):
 
 
 def build(addons, game, year, output, tyres_only=False, source_year=None):
-    source = addons / f"swofty.classic-seasons-{year}"
+    source = find_addon(addons, year)
     destination = output / f"classic-seasons-{year}"
     if any(destination.resolve().is_relative_to(path.resolve()) for path in (addons, game)):
         raise ValueError("output must be outside the original game and installed addons")
     if destination.exists():
         raise FileExistsError(destination)
-    source_year = source_year or year
+    source_year = source_year or (2016 if year == 2015 else year)
+    tyres_only = tyres_only or year == 2015
     asset_root = game / f"{source_year}_asset_groups"
     if not asset_root.exists():
         asset_root = game / "asset_groups"
@@ -217,7 +235,7 @@ def build(addons, game, year, output, tyres_only=False, source_year=None):
             original = OriginalErp(str(original_root / f"{folder}/wep/{folder}.erp"))
             report["textures"][folder] = restore_textures(archive, original, game, year, folder, sidecars)
         if year <= 2021:
-            override_layers(archive, package(year))
+            override_layers(archive, addon_package(archive, year))
         archive.to_file(str(path), reframe=False)
     if sidecars:
         manifest = destination / "assets/cars.json"
@@ -236,7 +254,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--addons", type=Path, required=True)
     ap.add_argument("--game", type=Path, required=True, help="original game for --year")
-    ap.add_argument("--year", type=int, required=True, choices=range(2016, 2025))
+    ap.add_argument("--year", type=int, required=True, choices=range(2015, 2025))
     ap.add_argument("--output", type=Path, required=True)
     ap.add_argument("--tyres-only", action="store_true")
     ap.add_argument("--source-year", type=int, help="original tyre year when --tyres-only uses another season")
