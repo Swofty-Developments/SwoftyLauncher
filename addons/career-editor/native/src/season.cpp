@@ -614,19 +614,39 @@ void store_load(const std::string &career)
         return;
     g_store.file = sidecar_path(career);
     if (ce::provisional_instance(career)) {
-        ce::log("season: career %s is not saved yet; its points adjustments stay in memory until its first save",
+        ce::log("season: career %s is not saved yet, so it does not adopt older adjustments; its points adjustments stay in memory until its first save",
                 career.c_str());
         return;
     }
+    struct Files {
+        bool read(const std::string &path, std::string &out) const
+        {
+            return swofty::storage::read(path, out) == swofty::storage::Result::ok;
+        }
+        bool write(const std::string &path, const std::string &data) const
+        {
+            return swofty::storage::write(path, data) == swofty::storage::Result::ok;
+        }
+        void remove(const std::string &path) const { swofty::storage::remove(path); }
+    } files;
     std::string legacy = ce::legacy_career_key();
-    std::string legacy_text;
-    if (!legacy.empty() && swofty::storage::read(sidecar_path(legacy), legacy_text) == swofty::storage::Result::ok)
-        ce::log("season: %s holds points adjustments made before careers had their own identity; they are not "
-                "applied to %s",
-                sidecar_path(legacy).c_str(), career.c_str());
     std::string text;
-    if (swofty::storage::read(g_store.file, text) != swofty::storage::Result::ok)
+    switch (ce::adopt_legacy(files, career, g_store.file, legacy.empty() ? std::string() : sidecar_path(legacy), text)) {
+    case ce::Adoption::adopted:
+        ce::log("season: career %s adopted the points adjustments in %s (the file is kept as %s.adopted)",
+                career.c_str(), sidecar_path(legacy).c_str(), sidecar_path(legacy).c_str());
+        break;
+    case ce::Adoption::failed:
+        ce::log("season: could not copy %s for career %s; it stays where it is and is not applied",
+                sidecar_path(legacy).c_str(), career.c_str());
         return;
+    case ce::Adoption::none:
+        if (!files.read(g_store.file, text))
+            return;
+        break;
+    default:
+        return;
+    }
     ce::Json root;
     if (!json::parse(text, root) || root.type != ce::Json::Obj)
         return;
