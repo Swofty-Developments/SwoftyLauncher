@@ -201,6 +201,7 @@ skip   paused  replay  photo  menu  cutscene  spectating
 
 - `menu` is every state without a player-driven session view: the frontend, the garage and the hub.
 - A pass without `when` runs in every view.
+- The view is reported only where the core recognises the game's state, and `swofty/loader.log` logs each change as `[view] kind=… flags=… valid=…`. While `valid` is 0, a pass with `views` does not run and `skip` does not apply. The driving camera stays unknown until it is confirmed on the game's build, so `views` passes stay off for now.
 - A shader reads the same state with `view_kind()` and `view_is(SWOFTY_VIEW_PAUSED)`, to change what it draws rather than whether it runs.
 
 ## Live options and enabled
@@ -344,13 +345,19 @@ The passes run between the game's picture and its HUD. The HUD and the menus dra
 [postfx] the picture now goes through 3 pass(es) before the HUD, inside the game's list at its HUD-less step
 ```
 
-Most frames run inside the game's own command list, at the step where it keeps a copy of the picture without the HUD. The core records the passes there and then puts back the pipeline and bindings it changed. On frames where the game ends the picture's list before the HUD, the passes run in a list of the core's own between the game's lists. Every 60 s for the first 30 minutes, the log counts both:
+The passes run once a frame, at the first of these the frame reaches:
+
+- While the HUD reads the finished picture, as when paused: the first barrier of the HUD's list that reads the back buffer.
+- Otherwise, inside the game's own command list, at the step where it keeps a copy of the picture without the HUD.
+- Where the game ends that list while the step goes on elsewhere: in a list of the core's own, submitted right after it.
+
+In the game's lists the core records the passes and then puts back the pipeline and bindings it changed. Every 60 s for the first 30 minutes, the log counts where they ran:
 
 ```text
-[postfx] last 60 s: 7210 frame(s) presented; passes ran in the game's list on 6950 and between its lists on 255; 5 without passes (0 with the picture and the HUD in one list, 0 with list state from before the hooks, 0 with the GPU behind); 0 frame(s) ran them twice
+[postfx] last 60 s: 6427 frame(s) presented; passes ran in the game's list on 5221 and between its lists on 913 (913 after a list that left its HUD-less step to another queue; 0 recorded into lists the game reset unsubmitted); 293 without passes (0 with the picture and the HUD in one list, 0 with list state from before the hooks, 0 with the GPU behind); 0 frame(s) ran them twice
 ```
 
-Frames without passes are loading screens and menus without a 3D picture. With Frame Generation on in the game's settings, the passes' result also goes into the game's HUD-less copy, which Frame Generation reads. Frame Generation still uses the game's own motion vectors, so a pass that moves pixels can smear in the generated frames.
+The game records frames ahead, so a minute's runs and presents are counted in slightly different frames. Frames without passes are mostly loading screens and menus without a 3D picture. With Frame Generation on in the game's settings, the passes' result also goes into the game's HUD-less copy, which Frame Generation reads. Frame Generation still uses the game's own motion vectors, so a pass that moves pixels can smear in the generated frames.
 
 A key from `postfx_toggle` logs and shows a toast:
 

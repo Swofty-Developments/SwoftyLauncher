@@ -188,7 +188,9 @@ void recompute()
     uint32_t kind = view::UNKNOWN;
     bool valid = flow_seen.load(std::memory_order_relaxed);
     if (flags & view::MENU) {
+        // MENU comes from no recognised session state, which is also what an unrecognised one looks like.
         kind = view::UNKNOWN;
+        valid = false;
     } else if (replay || is_photo || cutscene || spectating) {
         kind = view::OTHER;
     } else {
