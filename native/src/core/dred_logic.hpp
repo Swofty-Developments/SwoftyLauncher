@@ -6,6 +6,7 @@
 #include <cstring>
 #include <string>
 #include <string_view>
+#include <vector>
 
 // D3D12 Device Removed Extended Data (DRED) for crash reports. The pure parts: when DRED is switched on, which
 // register values mean the GPU was removed, and how breadcrumb and page fault records are worded. dred.cpp does
@@ -140,6 +141,50 @@ inline std::string page_fault_line(uint64_t va)
     char b[120];
     std::snprintf(b, sizeof b, "  page fault at GPU virtual address 0x%llx\n", (unsigned long long)va);
     return b;
+}
+
+inline bool contains_nocase(std::string_view hay, std::string_view needle)
+{
+    if (needle.empty() || hay.size() < needle.size())
+        return false;
+    for (size_t i = 0; i + needle.size() <= hay.size(); i++) {
+        size_t k = 0;
+        while (k < needle.size() && (hay[i + k] | 0x20) == (needle[k] | 0x20))
+            k++;
+        if (k == needle.size())
+            return true;
+    }
+    return false;
+}
+
+inline bool report_shows_removal(std::string_view text)
+{
+    for (const char *h : {"887a0001", "887a0005", "887a0006", "887a0007", "887a0020"})
+        if (contains_nocase(text, h))
+            return true;
+    return contains_nocase(text, "Ne_FatalAbort") && contains_nocase(text, "Render_Check_GfxResult");
+}
+
+inline bool log_shows_removal(std::string_view text)
+{
+    return contains_nocase(text, "the GPU was removed");
+}
+
+// crash-<yyyymmdd>-<hhmmss>[-n].txt names sort by time; the newest is the greatest.
+inline std::string newest_report(const std::vector<std::string> &names)
+{
+    std::string best;
+    for (const auto &n : names)
+        if (n.size() > 4 && n.compare(0, 6, "crash-") == 0 && n.compare(n.size() - 4, 4, ".txt") == 0 && n.substr(0, n.size() - 4) > best.substr(0, best.size() ? best.size() - 4 : 0))
+            best = n;
+    return best;
+}
+
+inline bool should_arm_from(std::string_view checked_name, std::string_view newest, std::string_view text)
+{
+    if (newest.empty() || newest == checked_name)
+        return false;
+    return report_shows_removal(text) || log_shows_removal(text);
 }
 
 }

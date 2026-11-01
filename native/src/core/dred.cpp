@@ -93,12 +93,82 @@ HRESULT WINAPI hooked_create_device(IUnknown *adapter, D3D_FEATURE_LEVEL level, 
     return hr;
 }
 
-bool prior_session_removed()
+std::wstring checked_path;
+
+std::string read_file(const std::wstring &path, size_t cap)
+{
+    HANDLE f = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (f == INVALID_HANDLE_VALUE)
+        return {};
+    std::string s(cap, '\0');
+    DWORD n = 0;
+    ReadFile(f, s.data(), DWORD(cap), &n, nullptr);
+    CloseHandle(f);
+    s.resize(n);
+    return s;
+}
+
+void write_text(const std::wstring &path, const std::string &text)
+{
+    HANDLE f = CreateFileW(path.c_str(), GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (f == INVALID_HANDLE_VALUE)
+        return;
+    DWORD w;
+    WriteFile(f, text.data(), DWORD(text.size()), &w, nullptr);
+    CloseHandle(f);
+}
+
+std::wstring widen(const std::string &s)
+{
+    return std::wstring(s.begin(), s.end());
+}
+
+std::string newest_in(const std::wstring &dir)
+{
+    std::vector<std::string> names;
+    WIN32_FIND_DATAW fd;
+    HANDLE h = FindFirstFileW((dir + L"crash-*.txt").c_str(), &fd);
+    if (h == INVALID_HANDLE_VALUE)
+        return {};
+    do {
+        std::string n;
+        for (const wchar_t *c = fd.cFileName; *c; c++)
+            n += *c < 0x80 ? char(*c) : '?';
+        names.push_back(n);
+    } while (FindNextFileW(h, &fd));
+    FindClose(h);
+    return newest_report(names);
+}
+
+bool prior_session_removed(const std::wstring &swofty_dir, const char **how)
 {
     DWORD a = flag_path.empty() ? INVALID_FILE_ATTRIBUTES : GetFileAttributesW(flag_path.c_str());
-    if (a == INVALID_FILE_ATTRIBUTES)
+    if (a != INVALID_FILE_ATTRIBUTES) {
+        DeleteFileW(flag_path.c_str());
+        *how = "dred.flag";
+        return true;
+    }
+    std::vector<std::wstring> dirs{swofty_dir};
+    wchar_t local[MAX_PATH];
+    DWORD n = GetEnvironmentVariableW(L"LOCALAPPDATA", local, MAX_PATH);
+    if (n && n < MAX_PATH - 20)
+        dirs.push_back(std::wstring(local) + L"\\Swofty\\state\\");
+    std::string checked = read_file(checked_path, 128);
+    while (!checked.empty() && (checked.back() == '\n' || checked.back() == '\r'))
+        checked.pop_back();
+    std::wstring found_dir;
+    std::string newest;
+    for (const auto &d : dirs) {
+        std::string c = newest_in(d);
+        if (c > newest)
+            newest = c, found_dir = d;
+    }
+    if (newest.empty() || newest == checked)
         return false;
-    DeleteFileW(flag_path.c_str());
+    write_text(checked_path, newest + "\n");
+    if (!should_arm_from(checked, newest, read_file(found_dir + widen(newest), 4 << 20)))
+        return false;
+    *how = "the newest crash report";
     return true;
 }
 
@@ -248,9 +318,11 @@ void arm(const std::wstring &swofty_dir, void (*log)(const char *, ...), HMODULE
 {
     core_module = self;
     flag_path = swofty_dir + L"dred.flag";
+    checked_path = swofty_dir + L"dred.checked";
     char env[16] = {0};
     GetEnvironmentVariableA("SWOFTY_DRED", env, sizeof env);
-    Decision d = decide(env, prior_session_removed());
+    const char *how_prior = "";
+    Decision d = decide(env, prior_session_removed(swofty_dir, &how_prior));
     if (!d.on) {
         log("[dred] off: %s (SWOFTY_DRED=1 turns it on)", d.why);
         return;
