@@ -577,11 +577,41 @@ bool close_screen(const char *want)
     return true;
 }
 
+// The Time Trial's intro states fade out for Broadcast (bit 2), BroadcastFull (bit 3) and CareerHub (bit 14)
+// (Sess_IntroVideo_OnStateEnter 0x142d6cfc0) and fade back in from the intro video's end (0x142d6db20) or the
+// front end's loading screen (FrontEnd, bit 1), neither of which a direct start runs: the garage stays black behind
+// the fade's backdrop. Once the garage screen is up the core releases those reasons on the fade owner
+// [[g_Game_Root]+0xa0] (mask +0x7b8, state +0x7bc, curve +0x7c4) and fades in when none is left.
+constexpr uintptr_t RVA_GAME_ROOT = 0x601db08, ROOT_FADE = 0xa0, FADE_MASK = 0x7b8, FADE_STATE = 0x7bc, FADE_CURVE = 0x7c4,
+                    FADE_HELD = 0x7cc;
+constexpr uint32_t FADE_REASONS = (1u << 1) | (1u << 2) | (1u << 3) | (1u << 14), FADE_IN = 3, FADE_CURVE_DEFAULT = 0xd47eb226;
+
+void release_fade()
+{
+    auto *root = *rva<uint8_t *>(RVA_GAME_ROOT);
+    auto *owner = root && runtime::readable(root, ROOT_FADE + 8) ? at<uint8_t *>(root, ROOT_FADE) : nullptr;
+    if (!owner || !runtime::readable(owner + FADE_MASK, 0x18)) {
+        swofty::log("[direct] Time Trial: no fade owner to fade the garage in");
+        return;
+    }
+    auto &mask = *reinterpret_cast<uint32_t *>(owner + FADE_MASK);
+    uint32_t was = mask, state = at<uint32_t>(owner, FADE_STATE);
+    mask = was & ~FADE_REASONS;
+    if (!mask) {
+        *reinterpret_cast<uint32_t *>(owner + FADE_STATE) = FADE_IN;
+        owner[FADE_HELD] = 0;
+        *reinterpret_cast<uint32_t *>(owner + FADE_CURVE) = FADE_CURVE_DEFAULT;
+    }
+    swofty::log("[direct] Time Trial: fade owner %p: mask %08x -> %08x, state %u -> %u", owner, was, mask, state,
+                at<uint32_t>(owner, FADE_STATE));
+}
+
 void on_screen(const char *name)
 {
     if (!tt_armed.load() || !name || std::strcmp(name, "garage_cockpit") || splash_closed.exchange(true))
         return;
     close_screen(SPLASH);
+    release_fade();
 }
 
 const bool screen_registered = (runtime::direct_start_register_time_trial_screen(on_screen), true);
