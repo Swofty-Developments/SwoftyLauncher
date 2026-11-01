@@ -70,6 +70,19 @@ The build also fills gaps in the archive:
 - **Content sets' `available_tracks`**: the code is added wherever the base track is listed, putting your track in the Grand Prix track list.
 - **`track_data.sorted_track_order`**: gets a `TrackRef` row for the code.
 
+A new track row's `statId` is kept in `$DATA/registry/row-ids.json` under `<addon>/tracks.Track/<code>`, the file that keeps the ids of `add-row` copies ([Kept ids](/reference/ops/database#kept-ids)). A career's calendar stores that id, so the track keeps it whichever other tracks are on:
+
+```text
+$ swofty registry row-ids mod.sokol
+mod.sokol: 1 added row(s) keep these stat ids
+  tracks.Track/sokol   48  kept, seeded from a profile's last build or a game session from before 1.6.10
+```
+
+- A track the file has no id for takes the id the profile's last build gave it (`older-tracks.json`), else the first free id above the table's highest, up to 254, the highest the game reads.
+- A track that is off keeps its id. No other track takes it, so a calendar that names it never lands on a different circuit.
+- A kept id that a row of the database now holds moves to the next free id.
+- A career whose calendar holds a track stat id with no row loads into a crash. The crash dialog then names the track addon to turn back on.
+
 Each clone copies all source-row keys listed in `track_tables.json`, plus any keys named by your manifest's overrides. The table's `_<row>_instancecount_` grows by one.
 
 A database mod built from a whole game database sets the records it holds to its own copy's values. Where that is the game's own value of a record a track changes, the track's value stays, and a track list the mod rewrites keeps the tracks added to it.
