@@ -258,6 +258,7 @@ void hud_setup();
 void focus_setup();
 void hud_fatal();
 void grade_setup();
+void srv_clamp_setup();
 void postfx_setup();
 void telemetry_setup();
 void netplay_setup();
