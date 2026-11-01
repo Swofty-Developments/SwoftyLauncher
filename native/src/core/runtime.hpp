@@ -1,6 +1,7 @@
 #pragma once
 
 #include "direct_start_logic.hpp"
+#include "session_lifecycle_logic.hpp"
 #include <windows.h>
 
 #include <algorithm>
@@ -96,6 +97,8 @@ void overlay_setup();
 void events_setup();
 void events_drop_module(void *module);
 size_t events_fire(const char *event, int64_t a, int64_t b, const void *data);
+void session_emit(const session_life::Emit &e);
+void session_flow(const char *known, int to);
 
 struct CoreMixins {
     const char *name;
