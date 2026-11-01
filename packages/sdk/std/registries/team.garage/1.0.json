@@ -29,9 +29,8 @@
       "type": "string"
     },
     "textures": {
-      "description": "A folder in the addon holding .dds and .png files. A file at garage_liveries/garage_livery_renault_a_01_da.dds is the resource root + garage_liveries/garage_livery_renault_a_01_da.tif.image.",
-      "type": "string",
-      "pattern": "^[^/\\\\][^\\\\]*$"
+      "$ref": "#/$defs/path",
+      "description": "A folder in the addon holding .dds and .png files. A file at garage_liveries/garage_livery_renault_a_01_da.dds is the resource root + garage_liveries/garage_livery_renault_a_01_da.tif.image."
     },
     "root": {
       "description": "The resource name every file path is appended to.",
@@ -58,5 +57,12 @@
     "package",
     "textures"
   ],
-  "additionalProperties": true
+  "additionalProperties": true,
+  "$defs": {
+    "path": {
+      "description": "A folder in the addon's folder, with / between folders.",
+      "type": "string",
+      "pattern": "^[^/\\\\][^\\\\]*$"
+    }
+  }
 }

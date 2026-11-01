@@ -401,6 +401,7 @@ mod tests {
               "team.logo": { "williams_2017": { "images": { "hud": "logos/williams_hud.png", "hub": { "stock": "ui/hub.png" } } } },
               "helmet": { "hamilton_2017": { "archive": "helmets/hamilton_2017.erp", "colours": null } },
               "driver.head": { "senna": { "archive": "heads/senna/", "rig_from": "game/male_ls222" } },
+              "team.garage": { "renault_2020": { "package": "swofty.classic-seasons-2020/f1_2020", "entry": "lotus", "textures": "garage/renault_2020" } },
               "someone.own": { "x": { "file": "not/a/schema/path.bin" } },
               "career.season": { "y": { "name": "sounds/v10_screamer.bdl" } }
             }"#,
@@ -412,6 +413,7 @@ mod tests {
             [
                 "cars/ferrari.erp",
                 "cars/ferrari/",
+                "garage/renault_2020",
                 "heads/senna/",
                 "helmets/hamilton_2017.erp",
                 "logos/williams_hud.png",
