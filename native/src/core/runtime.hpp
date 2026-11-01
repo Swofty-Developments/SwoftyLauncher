@@ -257,6 +257,9 @@ void net_trace_setup();
 void udp_ids_setup();
 // The test agent (native/src/core/testagent/agent.cpp): armed only by `swofty test`'s run token.
 void testagent_setup();
+void direct_start_setup();
+void direct_start_tick();
+void direct_start_profile_loaded(bool ok);
 void testagent_tick();
 void testagent_fired(const std::string &id, bool hot);
 void testagent_screen(const char *name);

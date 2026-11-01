@@ -160364,6 +160364,30 @@
    "used_by": [
     "native/src/core/session_enter.cpp"
    ]
+  },
+  {
+   "id": "session.frontend_world_update",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 55 53 48 83 EC 30 48 89 D6 48 89 CF 8B 0D ?? ?? ?? ?? 85 C9 74 0D 8D 51 01",
+   "match": "0x1436d6f50",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1436d6f50",
+   "kind": "func_start",
+   "names": [
+    "Sess_StateFrontendWorld_OnStateUpdate"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "std16-direct",
+     "how": "static"
+    }
+   ],
+   "used_by": []
   }
  ]
 }

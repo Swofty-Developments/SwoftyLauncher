@@ -228,6 +228,7 @@ int *deserialise_entry(void *self, int *result, void *bag, uint8_t reset_on_erro
         }
         if (report)
             runtime::career_saves_listed(reads, true, true);
+        runtime::direct_start_profile_loaded(r && *r == 0);
         // W4: the swofty_registry body this load kept, for the career snapshots.
         std::vector<uint8_t> entry;
         bool has_entry = false;
