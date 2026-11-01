@@ -27,6 +27,9 @@ int main()
     CHECK(!rg::outgrew(base + 0x4000, base, 0), "a capacity that read as zero leaves the game's code alone");
     CHECK(!rg::outgrew(base - 8, base, 0x20), "a position before the base leaves the game's code alone");
     CHECK(rg::capacity_of(0xdead00000020ull) == 0x20, "the capacity is the low 32 bits of the method's return");
+    CHECK(!rg::guards(22) && !rg::guards(24), "a stock grid of up to 24 cars runs the game's code unchanged");
+    CHECK(rg::guards(25) && rg::guards(30), "a grid past 24 cars is guarded");
+    CHECK(rg::guards(-1), "an unknown car count is guarded");
     CHECK(!rg::outgrew(base + 0x20, base, rg::capacity_of(0xdead00000020ull)), "stale high bits do not shrink the capacity");
 
     std::string l = rg::line(25, "VehicleSystem", 4096, 3072);

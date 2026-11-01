@@ -10,12 +10,18 @@ constexpr uint32_t STREAM_POS = 0x98;
 constexpr uint32_t STREAM_BASE = 0xa0;
 constexpr uint32_t HOLDER_CAPACITY = 0x108;
 constexpr size_t STOCK_CARS = 22;
+constexpr int64_t STOCK_GRID_MAX = 24;
 
 inline std::atomic<int64_t> session_vehicles{-1};
 
 inline uint64_t capacity_of(uint64_t raw)
 {
     return raw & 0xffffffffull;
+}
+
+inline bool guards(int64_t cars)
+{
+    return cars < 0 || cars > STOCK_GRID_MAX;
 }
 
 inline bool outgrew(uint64_t pos, uint64_t base, uint64_t capacity)
