@@ -43,6 +43,7 @@ const runtime::Sig SIG_MODE_BY_NAME{"game.game_modes_find_by_name",
 
 constexpr const char *MODE = "time_trial";
 constexpr const char *TRACK_NODE = "game_mode_data.current_game_mode.track_info.current_track.track_file_name";
+constexpr const char *WEATHER_NODE = "settings.current_settings.tt_weather.value";
 constexpr uintptr_t RVA_SET_SETUP_MODE = 0x79f300, RVA_CURRENT_TRACK = 0x7ddbf0, RVA_PLAYER_ENTRANTS = 0x604eac0,
                     RVA_PLAYER_GUARD = 0x604ec50;
 constexpr uintptr_t ENTITY_MODE = 0xf08, ENTITY_TRACKS = 0xf58, ENTITY_TEAMS = 0xf80, ENTITY_SETUP_MODE = 0x2b0,
@@ -317,6 +318,16 @@ Setup place(uint8_t *e, const json::Value &request, std::string &why)
             return Setup::failed;
         }
         swofty::log("[direct] Time Trial: track %s (%p)", file, rec);
+    }
+    std::string weather = request["weather"].str();
+    if (!weather.empty()) {
+        const char *value = tt::weather_value(weather);
+        if (!value) {
+            why = "the Time Trial has no weather '" + weather + "' (clear or wet)";
+            return Setup::failed;
+        }
+        bool ok = ui_vm_set_path(WEATHER_NODE, 0, value);
+        swofty::log("[direct] Time Trial: weather %s %s", value, ok ? "set" : "NOT set (the VM node is missing)");
     }
     return Setup::done;
 }

@@ -71,6 +71,18 @@ inline std::string joined(const std::vector<std::string> &names, size_t most = 2
     return out.empty() ? "none" : out;
 }
 
+// The Time Trial weather (the VM string settings.current_settings.tt_weather.value is "dry" or "wet") for the
+// request's weather; null for an empty or unknown one.
+inline const char *weather_value(const std::string &weather)
+{
+    std::string w = lower(weather);
+    if (w == "clear" || w == "dry")
+        return "dry";
+    if (w == "wet" || w == "rain")
+        return "wet";
+    return nullptr;
+}
+
 // A packed team or vehicle reference: the kind byte low, the u16 index or stat id in the high half.
 constexpr uint8_t ref_kind(uint32_t ref)
 {

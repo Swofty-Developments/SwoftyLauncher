@@ -40,6 +40,11 @@ int main()
     expect(tt::ref_index(0x3fff0000) == tt::NO_REF, "the empty ref's index is the sentinel");
     expect(tt::joined({}) == "none" && tt::joined({"a", "b"}) == "a, b", "names join for the log");
 
+    expect(std::string(tt::weather_value("clear")) == "dry" && std::string(tt::weather_value("Rain")) == "wet" &&
+               std::string(tt::weather_value("wet")) == "wet",
+           "session weather maps to the Time Trial's dry or wet");
+    expect(!tt::weather_value("") && !tt::weather_value("fog"), "no or unknown weather leaves the Time Trial's own");
+
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;
 }
