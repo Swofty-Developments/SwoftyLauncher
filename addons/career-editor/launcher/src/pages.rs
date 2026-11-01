@@ -99,6 +99,15 @@ fn pretty_team(raw: &str) -> String {
 }
 
 fn team_label(live: &Live, id: i64) -> String {
+    let rnd_name = live
+        .section("rnd")
+        .and_then(|r| r["teams"].as_array())
+        .and_then(|a| a.iter().find(|t| t["team_stat_id"].as_i64() == Some(id)))
+        .and_then(|t| t["team_name"].as_str())
+        .filter(|n| !n.is_empty());
+    if let Some(n) = rnd_name {
+        return pretty_team(n);
+    }
     live.section("drivers")
         .and_then(|d| d["drivers"].as_array())
         .and_then(|a| a.iter().find(|d| d["team"]["teamStatId"].as_i64() == Some(id)))

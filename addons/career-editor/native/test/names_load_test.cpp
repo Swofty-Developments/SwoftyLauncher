@@ -2,6 +2,7 @@
 //
 // Host unit test for the sliced gamedb name load: a roster read a row at a time must not be reported ready until
 // every row is in, and the page must be told when it is, whichever caller finishes the read.
+#include <algorithm>
 #include <cstdio>
 #include <functional>
 #include <map>
@@ -85,6 +86,38 @@ int main() {
         for (int i = 0; i < 100 && r != 2; ++i)
             r = ce::names::idle(l, db, std::ref(clock), 1e9);
         CHECK(r == 2 && l.loaded && db.got[0].size() == 50);
+    }
+    {
+        struct SlowDb : Db {
+            Clock *clock = nullptr;
+            double row_cost = 0;
+            void row(int stage, int64_t i) { clock->t += row_cost; Db::row(stage, i); }
+        };
+        SlowDb db;
+        Clock clock;
+        db.clock = &clock;
+        db.row_cost = 9.0;
+        ce::names::Load l;
+        double worst = 0;
+        int calls = 0;
+        while (!l.loaded && calls < 100000) {
+            double before = clock.t;
+            ce::names::idle(l, db, std::ref(clock), 2.0);
+            worst = std::max(worst, clock.t - before);
+            ++calls;
+        }
+        CHECK(l.loaded && db.got[0].size() == 199);
+        CHECK(worst <= 9.0 + 3.0);
+        CHECK(calls <= 199 + 358 + 5 + 10);
+    }
+    {
+        Db db;
+        ce::names::Load l;
+        Clock clock;
+        ce::names::step(l, db, std::ref(clock), 1e9);
+        CHECK(l.loaded && l.settled);
+        CHECK(!ce::names::pending(l, db));
+        CHECK(ce::names::idle(l, db, std::ref(clock), 2.0) == 2);
     }
     if (fails) return 1;
     std::printf("ok\n");

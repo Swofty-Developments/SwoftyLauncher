@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstdio>
 
 #include "section_schedule.hpp"
@@ -44,6 +45,39 @@ int main()
         }
     CHECK(renders <= 10);
     CHECK(spent / 60000 < 0.0035);
+
+    {
+        const double cost[8] = {141, 40, 40, 31, 35, 31, 5, 20};
+        const int drivers = 6;
+        double worst[2] = {0, 0};
+        for (int urgent = 0; urgent < 2; ++urgent)
+            for (double offset = 0; offset < 30000; offset += 112) {
+                Slot slots[8];
+                Clock gc;
+                double asked = 60000 + offset, waited = -1;
+                for (double now = 0; now < 600000 && waited < 0; now += 16) {
+                    bool ask = now >= asked && asked > 0 && slots[drivers].due_ms != -1;
+                    if (ask && slots[drivers].unchanged != -7) {
+                        slots[drivers].due_ms = 0;
+                        slots[drivers].unchanged = -7;
+                        if (urgent)
+                            slots[drivers].urgent = true;
+                        gc.global_ms = 0;
+                    }
+                    for (int i = 0; i < 8; ++i)
+                        if (may_render(slots[i], gc, now)) {
+                            bool answered = ask && i == drivers;
+                            rendered(slots[i], gc, now, cost[i], answered ? true : (slots[i].unchanged % 2 == 0));
+                            if (answered)
+                                waited = now - asked;
+                            break;
+                        }
+                }
+                worst[urgent] = std::max(worst[urgent], waited < 0 ? 1e9 : waited);
+            }
+        std::printf("worst wait for the invalidated drivers slot: %.0f ms, urgent: %.0f ms\n", worst[0], worst[1]);
+        CHECK(worst[1] <= 100);
+    }
     std::printf(failures ? "FAILED\n" : "ALL OK\n");
     return failures ? 1 : 0;
 }

@@ -60,6 +60,8 @@ void register_section(const char *name, SectionFn fn);
 using IdleFn = int (*)();
 void register_idle(IdleFn fn);
 
+const std::string *cached_team_name(uint32_t stat_id);
+
 Mode mode();
 bool in_career();
 bool safe();
