@@ -1565,6 +1565,9 @@ static void crash_fe_row(void)
     fflush(stdout);
     uint64_t r = fake_list_usable(ls_ctx, "f2_2026");
     printf("      fe tiles: the list returned %llu\n", (unsigned long long)r);
+    fflush(stdout);
+}
+
 // Ai_Job_UpdateCarsParallel's corner line read, copied byte for byte from the Steam build (0x14064069e..0x1406406ac and
 // 0x1406409be..0x1406409ce), in a small frame that takes a gap evaluation result in rcx, the car index in rdx and the car's
 // AI state in r8. The load is [[result+8]+car*8+0xb8], with no check on result+8; it returns that entry for a line that is
