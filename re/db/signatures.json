@@ -109897,30 +109897,6 @@
    "used_by": []
   },
   {
-   "id": "game.app_set_pause_reason",
-   "section": ".xtls",
-   "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 89 D3 48 89 CE 84 D2",
-   "match": "0x14080e110",
-   "anchor": "0x0",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x14080e110",
-   "kind": "func_start",
-   "names": [
-    "Game_App_SetPauseReason"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-30",
-     "by": "engine-re",
-     "how": "static"
-    }
-   ],
-   "used_by": []
-  },
-  {
    "id": "session.red_flag_simulate_reset_entries",
    "section": ".xtls",
    "pattern": "41 56 56 57 55 53 48 83 EC 50 C5 F8 29 74 24 40 48 8B 59 30",
@@ -160584,6 +160560,113 @@
    ],
    "used_by": [
     "native/src/core/netplay_room.cpp"
+   ]
+  },
+  {
+   "id": "game.photo_mode_active_set",
+   "section": ".xtls",
+   "pattern": "C5 F8 29 85 80 03 00 00 C6 85 94 03 00 00 01",
+   "match": "0x142bdba6f",
+   "anchor": "0x8",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142bdba77",
+   "kind": "mid",
+   "expect": "C6 85 94 03 00 00 01",
+   "names": [
+    "site_Game_PhotoModeActiveSet"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "view-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/view_state.cpp"
+   ]
+  },
+  {
+   "id": "game.photo_mode_active_clear",
+   "section": ".xtls",
+   "pattern": "C6 86 25 04 00 00 00 C6 86 94 03 00 00 00",
+   "match": "0x142bdc320",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142bdc327",
+   "kind": "mid",
+   "expect": "C6 86 94 03 00 00 00",
+   "names": [
+    "site_Game_PhotoModeActiveClear"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "view-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/view_state.cpp"
+   ]
+  },
+  {
+   "id": "game.use_camera_setting_call",
+   "section": ".xtls",
+   "pattern": "48 89 F1 B2 0F E8 ?? ?? ?? ?? 90 48 83 C4 70",
+   "match": "0x142424bbd",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142424bbd",
+   "kind": "mid",
+   "expect": "48 89 F1 B2 0F",
+   "names": [
+    "site_Game_UseCameraSettingCall"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "view-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/view_state.cpp"
+   ]
+  },
+  {
+   "id": "game.app_set_pause_reason",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 89 D3 48 89 CE 84 D2",
+   "match": "0x14080e110",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14080e110",
+   "kind": "func_start",
+   "names": [
+    "Game_App_SetPauseReason"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-10-30",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/view_state.cpp"
    ]
   }
  ]
