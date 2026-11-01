@@ -1782,3 +1782,35 @@ fn saves_excerpt_keeps_the_save_source_and_slot_lines() {
     assert!(lines[1].contains("career=dc-000b0000"));
     assert_eq!(super::saves_excerpt(text, 1).len(), 1);
 }
+
+#[test]
+fn summary_names_the_stub_an_antivirus_blocked() {
+    let root = tmp("stub-av");
+    let (store, game) = fake_data(&root);
+    let mut bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "x");
+    assert_eq!(bundle.stub_blocked_line(Some(&game)), None);
+
+    bundle.entries.push(Entry {
+        path: "ea-app/EAEgsProxy.log".into(),
+        data: b"20\t[2026-11-01T01:57:04.895Z]\tERROR   \t(eax::services::process::ProcessWin::createProcess)\t[PROCESS] \
+          Create Process: Operation did not complete successfully because the file contains a virus or \
+          potentially unwanted software. | exe=[C:\\F1 25\\F1 25\\EAAntiCheat.GameServiceLauncher.exe] | OS \
+          ErrorCode:  0xe1\n"
+            .to_vec(),
+        note: None,
+    });
+    let line = bundle.stub_blocked_line(Some(&game)).unwrap();
+    assert!(
+        line.starts_with("offline: EAAntiCheat.GameServiceLauncher.exe was blocked by antivirus (error 225)"),
+        "{line}"
+    );
+
+    let gone = Bundle::collect_with(&store, &report(&game), Limits::default(), "x");
+    put(&game.join("EAAntiCheat.GameServiceLauncher.exe.bak"), "real");
+    let line = gone.stub_blocked_line(Some(&game)).unwrap();
+    assert!(
+        line.contains("missing from the game folder while its .bak exists"),
+        "{line}"
+    );
+    std::fs::remove_dir_all(&root).ok();
+}
