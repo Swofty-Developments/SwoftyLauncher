@@ -270,6 +270,12 @@ void direct_start_profile_read();
 // loaded, while StateFTUE is held, until it answers done or failed.
 using DirectStartSetup = runtime::direct_start::Setup (*)(std::string &why);
 void direct_start_register_room(DirectStartSetup setup);
+// The Time Trial target's setup (a session request with "mode": "time_trial"; direct_start_tt.cpp registers it):
+// polled the same way, with the request's text from direct_start_request_text().
+void direct_start_register_time_trial(DirectStartSetup setup);
+std::string direct_start_request_text();
+// For the cover: 0 while a session target is on its way, 1 once its session is on screen, -1 when it failed.
+int direct_start_cover_signal();
 uintptr_t direct_start_set_mode();
 // What the direct start knows on the flow thread from the profile load on: the game manager and the game modes
 // context (the object Game_Game_SetCurrentGameMode takes, [game manager+0xc0]).

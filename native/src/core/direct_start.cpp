@@ -98,6 +98,7 @@ ds::Driver driver;
 json::Value request;
 safetyhook::MidHook h_link;
 std::atomic<bool> armed{false};
+std::atomic<int> session_frames{0};
 ds::Phase logged = ds::Phase::off;
 
 void note_phase()
@@ -114,9 +115,35 @@ void note_phase()
 
 constexpr size_t STATE_STATUS = 0xb8, STATE_CHILDREN = 0xc0, STATE_LINKS = 0xaf0, STATE_LINK_COUNT = 0xb30,
                  STATE_PARENT = 0xc10;
-constexpr uint32_t STATE_APP = 0xe11edb87;
+constexpr uint32_t STATE_APP = 0xe11edb87, STATE_SESSION = 0x1505f42a, STATE_LOAD_SESSION = 0x17e3cd0a;
+constexpr size_t LOAD_SYNC = 0xcd0;
+constexpr uint64_t LOAD_EXIT_WAIT_MS = 500;
 
 uint8_t *flow_root = nullptr;
+uint64_t load_exiting_at = 0;
+bool load_sync_done = false;
+int load_sync_tries = 0;
+
+// StateLoadSession's exit (0x1436e0e40) waits for its sync point (+0xcd0) once the load is done: the loading
+// screen's UI sets it as it hands over to the session. A direct start never opened that screen, so once the
+// state has been exiting for LOAD_EXIT_WAIT_MS the core sets both nodes itself.
+void load_exit(uint8_t *state)
+{
+    if (*reinterpret_cast<uint8_t *>(state + STATE_STATUS) != 3) {
+        load_exiting_at = 0;
+        return;
+    }
+    uint64_t now = GetTickCount64();
+    if (!load_exiting_at)
+        load_exiting_at = now;
+    if (load_sync_done || load_sync_tries >= 10 || now - load_exiting_at < LOAD_EXIT_WAIT_MS * (load_sync_tries + 1))
+        return;
+    load_sync_tries++;
+    bool done = runtime::title::complete_sync(state + LOAD_SYNC, "StateLoadSession's sync point (+0xcd0)");
+    load_sync_done = done;
+    swofty::log("[direct] StateLoadSession exiting for %llu ms: its sync point is %s",
+                (unsigned long long)(now - load_exiting_at), done ? "complete" : "still not complete");
+}
 uint32_t seen_states[64], seen_links[64];
 size_t seen_count = 0;
 uint64_t chain_at = 0;
@@ -145,7 +172,7 @@ void describe_state(uint8_t *state, uint32_t hash, uint32_t link)
     std::string links;
     uint32_t n = *reinterpret_cast<uint32_t *>(state + STATE_LINK_COUNT);
     for (uint32_t i = 0; i < n && i < 16; i++) {
-        char b[16];
+        char b[24];
         snprintf(b, sizeof b, " %08x>%08x", reinterpret_cast<uint32_t *>(state + STATE_LINKS)[i],
                  *reinterpret_cast<uint32_t *>(state + 0xf0 + size_t(i) * 0xa0 + 0x98));
         links += b;
@@ -162,10 +189,17 @@ void describe_state(uint8_t *state, uint32_t hash, uint32_t link)
             }
     auto *parent = *reinterpret_cast<uint8_t **>(state + STATE_PARENT);
     uint32_t ph = parent && runtime::readable(parent, STATE_HASH + 4) ? *reinterpret_cast<uint32_t *>(parent + STATE_HASH) : 0;
-    swofty::log("[direct] flow node %08x (%p, parent %08x): vt %s enter %s update %s exit %s; link now %08x; links%s; "
-                "children%s",
-                hash, state, ph, rva(vt).c_str(), rva(vt[8]).c_str(), rva(vt[9]).c_str(), rva(vt[10]).c_str(), link,
-                links.c_str(), kids.c_str());
+    std::string type = "?";
+    auto *col = runtime::readable(vt - 1, 8) ? static_cast<uint8_t *>(vt[-1]) : nullptr;
+    if (col && runtime::readable(col, 0x18)) {
+        auto *td = reinterpret_cast<const char *>(swofty::api->module_base() + *reinterpret_cast<uint32_t *>(col + 0xc));
+        if (runtime::readable(td + 0x10, 64))
+            type.assign(td + 0x10, strnlen(td + 0x10, 63));
+    }
+    swofty::log("[direct] flow node %08x (%p, parent %08x, type %s): vt %s enter %s update %s exit %s; link now %08x; "
+                "links%s; children%s",
+                hash, state, ph, type.c_str(), rva(vt).c_str(), rva(vt[8]).c_str(), rva(vt[9]).c_str(),
+                rva(vt[10]).c_str(), link, links.c_str(), kids.c_str());
 }
 
 void log_chain()
@@ -200,6 +234,8 @@ void link_mid(safetyhook::Context &c)
     std::lock_guard<std::mutex> g(lock);
     if (hash == STATE_APP)
         flow_root = state;
+    if (hash == STATE_SESSION && *reinterpret_cast<uint8_t *>(state + STATE_STATUS) == 2)
+        session_frames.fetch_add(1);
     uint32_t link = *slot, out = driver.on_update(hash, link, child);
     if (out != link) {
         *slot = out;
@@ -208,6 +244,13 @@ void link_mid(safetyhook::Context &c)
     }
     if (driver.phase == ds::Phase::left) {
         describe_state(state, hash, out);
+        if (flow_root)
+            for (uint8_t *n = flow_root; n && runtime::readable(n, STATE_PARENT + 8);
+                 n = *reinterpret_cast<uint8_t **>(n + STATE_CHILD))
+                if (*reinterpret_cast<uint32_t *>(n + STATE_HASH) == STATE_LOAD_SESSION) {
+                    load_exit(n);
+                    break;
+                }
         uint64_t now = GetTickCount64();
         if (now - chain_at >= 1000) {
             chain_at = now;
@@ -319,7 +362,9 @@ ds::Setup continue_grand_prix(std::string &why)
     return ds::Setup::done;
 }
 
-runtime::DirectStartSetup room_setup = nullptr;
+runtime::DirectStartSetup room_setup = nullptr, time_trial_setup = nullptr;
+std::string request_text;
+std::atomic<bool> setup_ran{false};
 runtime::DirectStartContext context;
 
 void fill_context()
@@ -487,15 +532,17 @@ ds::Setup new_grand_prix(std::string &why)
     at_rva<void(void *)>(RVA_BUILD_SEASON)(stub);
     // 5. E's components attached again, as the track select confirm does after its rounds.
     reinterpret_cast<void (*)(void *)>(evt[0xe8 / 8])(e);
-    // 6. The entrants from the list, when the entrants manager holds none yet.
+    // 6. The entrants from the list. The fill clears the entrants a saved Grand Prix left first.
     auto **begin = reinterpret_cast<uint8_t **>(e + ENTITY_ENTRANTS);
-    if (begin[0] == begin[1]) {
+    size_t before = size_t(begin[1] - begin[0]) / ENTRANT_SIZE;
+    {
         alignas(16) static uint8_t blk[0x190];
         std::memset(blk, 0, sizeof blk);
         *reinterpret_cast<uint64_t *>(blk + 0x180) = 1;
         at_rva<void(void *, void *, void *, int)>(RVA_FILL_ENTRANTS)(es, e, blk, 0);
     }
     size_t entrants = size_t(begin[1] - begin[0]) / ENTRANT_SIZE;
+    swofty::log("[direct] Grand Prix: entrants %zu before the fill, %zu after", before, entrants);
     swofty::log("[direct] Grand Prix: new weekend: setup mode %s, list %s (%p), track %s (%p), rounds %p, %zu entrant(s)",
                 setup_name.c_str(), list_name.c_str(), list, track_name.c_str(), track, rounds, entrants);
     return ds::Setup::done;
@@ -503,6 +550,13 @@ ds::Setup new_grand_prix(std::string &why)
 
 ds::Setup set_up_target(std::string &why)
 {
+    if (driver.target.name == "session" && request["mode"].str() == "time_trial") {
+        if (!time_trial_setup) {
+            why = "no Time Trial setup is registered (direct_start_tt.cpp)";
+            return ds::Setup::failed;
+        }
+        return time_trial_setup(why);
+    }
     if (driver.target.name == "session")
         return request["box"].str().empty() ? continue_grand_prix(why) : new_grand_prix(why);
     if (driver.target.name == "room") {
@@ -521,6 +575,9 @@ namespace runtime {
 
 void direct_start_setup()
 {
+    struct Ran {
+        ~Ran() { setup_ran = true; }
+    } ran;
     char env[1024] = {};
     DWORD n = GetEnvironmentVariableA("SWOFTY_DIRECT_START", env, sizeof env);
     std::string target, text;
@@ -533,6 +590,7 @@ void direct_start_setup()
     if (target.empty()) {
         if (text.empty())
             return;
+        request_text = text;
         if (!json::parse(text, request)) {
             swofty::log("[direct] the direct start request is unusable; the game starts as usual");
             return;
@@ -612,6 +670,28 @@ void direct_start_register_room(DirectStartSetup setup)
     room_setup = setup;
 }
 
+void direct_start_register_time_trial(DirectStartSetup setup)
+{
+    time_trial_setup = setup;
+}
+
+std::string direct_start_request_text()
+{
+    return request_text;
+}
+
+int direct_start_cover_signal()
+{
+    if (!setup_ran.load())
+        return 0;
+    if (!armed.load())
+        return -1;
+    std::lock_guard<std::mutex> g(lock);
+    if (driver.phase == ds::Phase::failed)
+        return -1;
+    return session_frames.load() >= 30 ? 1 : 0;
+}
+
 void direct_start_profile_read()
 {
     static std::atomic<bool> once{false};
@@ -646,7 +726,9 @@ void direct_start_tick()
         ds::Setup r = set_up_target(why);
         driver.setup_result(r, why);
     }
-    if (!driver.engage_title() && runtime::title::wanted() && !runtime::test_run())
+    // A session keeps the virtual pad plugged in, idle: the game bound the player to it at the title, and letting
+    // go of the claim would stop the session on CONTROLLER DISCONNECTED.
+    if (!driver.engage_title() && runtime::title::wanted() && !runtime::test_run() && driver.target.name != "session")
         runtime::title::want(false);
     note_phase();
 }
