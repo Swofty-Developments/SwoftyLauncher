@@ -51,6 +51,10 @@ pub enum TestCommand {
     )]
     Shell(ShellArgs),
     #[command(
+        about = "Start F1 25 straight into a Grand Prix or Time Trial session, with no title or menu, then take commands as the shell does"
+    )]
+    Session(SessionArgs),
+    #[command(
         subcommand,
         about = "Capture, list and check fixtures: saved games in a known state"
     )]
@@ -92,6 +96,21 @@ pub struct ShellArgs {
         help = "Start in the save sandbox with this fixture's saves (a fixture folder or a name in the fixture store), so career load, advance and save now work"
     )]
     fixture: Option<String>,
+    #[arg(skip)]
+    direct: Option<Value>,
+}
+
+#[derive(Args)]
+pub struct SessionArgs {
+    #[arg(
+        required = true,
+        num_args = 1..,
+        value_name = "PLAN",
+        help = "<time_trial|grand_prix> [box] [track] [team=..] [driver=..] [session=..] [weather=..] [laps=..] [ai_difficulty=..]"
+    )]
+    plan: Vec<String>,
+    #[command(flatten)]
+    shell: ShellArgs,
 }
 
 #[derive(Subcommand)]
@@ -249,6 +268,7 @@ pub fn command(store: &Store, cmd: TestCommand) -> Result<ExitCode> {
         TestCommand::Plan(a) => plan_command(&a),
         TestCommand::Run(a) => run_command(store, a),
         TestCommand::Shell(a) => shell_command(store, a),
+        TestCommand::Session(a) => session_command(store, a),
         TestCommand::Fixture(c) => fixture_command(store, c),
     }
 }
@@ -2100,6 +2120,26 @@ fn strip(v: &Value) -> Value {
     v.get("value").cloned().unwrap_or_else(|| v.clone())
 }
 
+/// The request the core's direct start reads (native/src/core/direct_start.cpp): the game starts with
+/// `SWOFTY_DIRECT_START=@<run folder>/direct_start.json` and goes from boot straight to the session.
+const DIRECT_START_ENV: &str = "SWOFTY_DIRECT_START";
+const DIRECT_START_FILE: &str = "direct_start.json";
+
+fn session_command(store: &Store, a: SessionArgs) -> Result<ExitCode> {
+    let words: Vec<&str> = a.plan.iter().map(String::as_str).collect();
+    let mut request = match session::shell_args(&words) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("swofty: {e}");
+            return Ok(ExitCode::from(exit::FAIL));
+        }
+    };
+    request["target"] = "session".into();
+    let mut shell = a.shell;
+    shell.direct = Some(request);
+    shell_command(store, shell)
+}
+
 fn shell_command(store: &Store, a: ShellArgs) -> Result<ExitCode> {
     let run_id = format!("shell-{}", stamp());
     let g = match crate::build::game(store, a.game.clone()) {
@@ -2195,11 +2235,15 @@ fn shell_session(store: &Store, game: &Path, a: &ShellArgs, run_id: &str) -> Res
     let b = Batch {
         key: "shell".into(),
         env: Env {
-            kind: match fixture {
-                Some(_) => Kind::Career,
-                None => Kind::Boot,
+            kind: match (&a.direct, &fixture) {
+                (Some(_), _) => Kind::Session,
+                (None, Some(_)) => Kind::Career,
+                (None, None) => Kind::Boot,
             },
-            params: Default::default(),
+            params: match &a.direct {
+                Some(Value::Object(m)) => m.clone().into_iter().collect(),
+                _ => Default::default(),
+            },
         },
         addons: a.addons.clone(),
         settings: Default::default(),
@@ -2230,7 +2274,14 @@ fn shell_loop(h: Harness, b: &Batch, out: &Path, fixture: Option<Fixture>) -> Re
             }
         },
     };
-    let env = agent.run.env();
+    let mut env = agent.run.env();
+    if b.env.kind == Kind::Session {
+        let path = agent.run.root.join(DIRECT_START_FILE);
+        let request: serde_json::Map<String, Value> = b.env.params.clone().into_iter().collect();
+        std::fs::write(&path, serde_json::to_vec_pretty(&Value::Object(request))?)?;
+        env.push((DIRECT_START_ENV.to_owned(), format!("@{}", path.display())));
+        say(&format!("direct start: {}", path.display()));
+    }
     say(&format!(
         "starting F1 25 in test mode (run folder {}{})",
         agent.run.root.display(),
