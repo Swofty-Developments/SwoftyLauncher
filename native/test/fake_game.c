@@ -1715,6 +1715,68 @@ static void crash_ai_corner(void)
     fflush(stdout);
 }
 
+// Ne_Replay_WriteFrames' stream and holder state around site_Ne_ReplayAfterRecord (the call [rax+0x20], mov r12,rsi,
+// mov rax,[rsi], mov rcx,rsi bytes of the Steam build at 0x1445d170f), in a small frame that takes the scratch buffer in rcx,
+// the serialized state's size in rdx, the holder's capacity in r8 and the recordable's name in r9. It lays them out where the
+// game keeps them (stream position [rsp+0x98], stream base [rsp+0xa0], holder capacity [rsp+0x108], name in r13) and returns
+// the size the recorder would copy into the holder: position minus base after the site. Core's replay recorder grid guard
+// cuts a state larger than the capacity to nothing there.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_replay_write\n"
+    ".def fake_replay_write; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_replay_write\n"
+    "fake_replay_write:\n"
+    "push %rsi\n.seh_pushreg %rsi\n"
+    "push %r12\n.seh_pushreg %r12\n"
+    "push %r13\n.seh_pushreg %r13\n"
+    "sub $0x120,%rsp\n.seh_stackalloc 0x120\n"
+    ".seh_endprologue\n"
+    "mov %r9,%r13\n"
+    "mov %rcx,0xa0(%rsp)\n"
+    "lea (%rcx,%rdx),%rax\n"
+    "mov %rax,0x98(%rsp)\n"
+    "mov %r8,0x108(%rsp)\n"
+    "lea .Lrwstub(%rip),%rax\n"
+    "mov %rax,0x60(%rsp)\n"
+    "lea 0x40(%rsp),%rax\n"
+    "lea 0x10(%rsp),%rsi\n"
+    ".byte 0xFF,0x50,0x20,0x49,0x89,0xF4,0x48,0x8B,0x06,0x48,0x89,0xF1\n"
+    "mov 0x98(%rsp),%rax\n"
+    "sub 0xa0(%rsp),%rax\n"
+    "add $0x120,%rsp\n"
+    "pop %r13\npop %r12\npop %rsi\n"
+    "ret\n"
+    ".Lrwstub:\n"
+    "ret\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_replay_write\"\n"
+    ".text\n");
+uint64_t fake_replay_write(void *scratch, uint64_t size, uint64_t capacity, const char *name);
+
+static uint8_t replay_scratch[0x400];
+
+static void test_replay_grid(void)
+{
+    expect(fake_replay_write(replay_scratch, 0x100, 0x200, "VehicleSystem") == 0x100,
+           "replay grid: a state within its holder's capacity is recorded whole");
+    expect(fake_replay_write(replay_scratch, 0x200, 0x200, "VehicleSystem") == 0x200,
+           "replay grid: a state exactly the holder's capacity is recorded whole");
+    expect(fake_replay_write(replay_scratch, 0x300, 0x200, "VehicleSystem") == 0,
+           "replay grid: a state larger than its holder's capacity is recorded as nothing");
+    expect(fake_replay_write(replay_scratch, 0x300, 0x300, "TyreSystem") == 0x300,
+           "replay grid: the next recordable with a fitting state is recorded whole");
+}
+
+static void run_replay_grid(void)
+{
+    SetErrorMode(SEM_NOGPFAULTERRORBOX);
+    uint64_t r = fake_replay_write(replay_scratch, 0x3000, 0x1c00, "VehicleSystem");
+    printf("      replay grid: the recorder would copy 0x%llx bytes\n", (unsigned long long)r);
+    fflush(stdout);
+}
+
 static void test_settings(int on, uint64_t chain)
 {
     HMODULE t = GetModuleHandleW(L"t_settings.dll");
@@ -2388,6 +2450,7 @@ int main(int argc, char **argv)
         test_teamhq();
         test_fe_tiles();
         test_ai_corner();
+        test_replay_grid();
         test_garage_crew(1);
         test_pit_crew(1);
         test_garage_scene(1);
@@ -2439,6 +2502,8 @@ int main(int argc, char **argv)
         crash_fe_row();
     if (argc > 1 && !strcmp(argv[1], "ai_corner"))
         crash_ai_corner();
+    if (argc > 1 && !strcmp(argv[1], "replay_grid"))
+        run_replay_grid();
     if (argc > 1 && !strcmp(argv[1], "garage_crew")) {
         const char *off = getenv("SWOFTY_GARAGE_CREW_GUARD");
         test_garage_crew(!(off && *off));
