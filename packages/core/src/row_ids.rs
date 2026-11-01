@@ -367,7 +367,7 @@ pub struct Store {
     aliases: BTreeMap<String, BTreeSet<i64>>,
     existed: bool,
     by_id: HashMap<String, BTreeMap<i64, String>>,
-    pinned: HashMap<String, HashSet<i64>>,
+    pinned: HashMap<String, HashMap<i64, String>>,
     seed: Seed,
     claimed: HashSet<String>,
     building: HashSet<String>,
@@ -479,7 +479,9 @@ impl Store {
 
     /// Gives the rows of `overrides` for the addons in `order` the host's ids for this build only: the store is
     /// not written afterwards, and the aliases leave these rows out. An id another row of the build keeps
-    /// (one in `order`, not itself overridden) or the core's registry holds is refused, naming both rows.
+    /// (one in `order`, not itself overridden) or a registry record of an addon in `order` holds is
+    /// refused, naming both rows. A registry record of an addon outside the build doesn't register this
+    /// session, so its id is lent.
     pub fn lend(&mut self, overrides: &Overrides, order: &[String]) -> std::result::Result<usize, String> {
         let wanted = overrides.keys(order);
         for key in wanted.keys() {
@@ -510,9 +512,11 @@ impl Store {
                     row_name(other)
                 ));
             }
-            if self.pinned.get(table).is_some_and(|ids| ids.contains(&id)) {
+            if let Some(record) = self.pinned.get(table).and_then(|ids| ids.get(&id))
+                && (!record.contains('/') || order.iter().any(|a| a == addon_of(record)))
+            {
                 return Err(format!(
-                    "the host's stat id {id} for {} is held by a record of the game's registry here",
+                    "the host's stat id {id} for {} is held by the game's registry record {record} here",
                     row_name(key)
                 ));
             }
@@ -671,21 +675,25 @@ impl Store {
 }
 
 // The ids `ids.json` holds and its careers use, by the table whose rows they are ids of.
-fn registry_ids(doc: &Value) -> HashMap<String, HashSet<i64>> {
-    let mut out: HashMap<String, HashSet<i64>> = HashMap::new();
+fn registry_ids(doc: &Value) -> HashMap<String, HashMap<i64, String>> {
+    let mut out: HashMap<String, HashMap<i64, String>> = HashMap::new();
     for (registry, table) in REGISTRY_TABLES {
         let ids = out.entry((*table).to_owned()).or_default();
         if let Some(records) = doc["ids"][*registry].as_object() {
-            ids.extend(
-                records
-                    .values()
-                    .filter_map(|e| e.as_i64().or_else(|| e["id"].as_i64())),
-            );
+            ids.extend(records.iter().filter_map(|(record, e)| {
+                e.as_i64()
+                    .or_else(|| e["id"].as_i64())
+                    .map(|id| (id, record.clone()))
+            }));
         }
         if let Some(careers) = doc["careers"].as_object() {
             for career in careers.values() {
                 if let Some(records) = career[*registry].as_object() {
-                    ids.extend(records.values().filter_map(Value::as_i64));
+                    ids.extend(
+                        records
+                            .iter()
+                            .filter_map(|(record, e)| e.as_i64().map(|id| (id, record.clone()))),
+                    );
                 }
             }
         }
@@ -731,7 +739,7 @@ impl RowIds for Scoped<'_> {
             .get(&table)
             .and_then(|ids| ids.get(&id))
             .is_some_and(|k| k != key)
-            || s.pinned.get(&table).is_some_and(|ids| ids.contains(&id))
+            || s.pinned.get(&table).is_some_and(|ids| ids.contains_key(&id))
     }
 
     fn keep(&self, _: &str, _: &str, key: &str, id: i64, from: IdFrom) {
@@ -752,7 +760,9 @@ impl RowIds for Scoped<'_> {
             s.by_id
                 .get(&table)?
                 .iter()
-                .filter(|(id, k)| !s.building.contains(addon_of(k)) && pinned.is_none_or(|p| !p.contains(id)))
+                .filter(|(id, k)| {
+                    !s.building.contains(addon_of(k)) && pinned.is_none_or(|p| !p.contains_key(id))
+                })
                 .map(|(id, k)| (*id, k.clone()))
                 .collect()
         };
@@ -1428,13 +1438,26 @@ mod tests {
     fn a_host_id_the_game_registry_holds_is_refused() {
         let data = data_dir("lend-pinned");
         let (mut store, _) = Store::load(&data, None, "default", None);
-        store
-            .pinned
-            .insert("entrants.vehicles.vehicle".into(), HashSet::from([40]));
+        store.pinned.insert(
+            "entrants.vehicles.vehicle".into(),
+            HashMap::from([(40, "a/a_record".to_owned())]),
+        );
         let err = store
             .lend(&host_ids(&[("a", "a1", 40)]), &order(&["a"]))
             .unwrap_err();
-        assert!(err.contains("registry"), "{err}");
+        assert!(err.contains("registry record a/a_record"), "{err}");
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn a_host_id_held_by_a_registry_record_of_an_addon_outside_the_build_is_lent() {
+        let data = data_dir("lend-pinned-off");
+        let (mut store, _) = Store::load(&data, None, "default", None);
+        store.pinned.insert(
+            "entrants.vehicles.vehicle".into(),
+            HashMap::from([(40, "z.indycar/z_record".to_owned())]),
+        );
+        assert_eq!(store.lend(&host_ids(&[("a", "a1", 40)]), &order(&["a"])), Ok(1));
         std::fs::remove_dir_all(&data).ok();
     }
 
