@@ -430,8 +430,8 @@ int main()
            "a manager with no modes context stops the mode switch");
     sv = services();
     sv.drop(MODES + room::MODES_CURRENT, 8);
-    expect(room::plan_mode_switch(sv.memory(), MGR, NS2, mp).find("current mode") != std::string::npos,
-           "a modes context with no current mode stops the mode switch");
+    expect(room::plan_mode_switch(sv.memory(), MGR, NS2, mp).empty() && mp.current == 0,
+           "a modes context with no current mode yet still plans the mode switch");
 
     {
         room::Facts mf;

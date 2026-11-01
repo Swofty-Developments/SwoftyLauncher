@@ -423,7 +423,7 @@ inline std::string plan_mode_switch(const Memory &m, uint64_t manager, uint64_t 
         return {};
     }
     if (!m.ptr(out.modes + MODES_CURRENT, out.current))
-        return "the game mode context has no current mode at +0x88";
+        out.current = 0;
     return {};
 }
 
