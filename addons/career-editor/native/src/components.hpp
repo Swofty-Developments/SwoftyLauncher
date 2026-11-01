@@ -45,6 +45,8 @@ uintptr_t entity();
 uintptr_t get(Id id);
 const char *name(Id id);
 
+constexpr size_t kMaxEntrants = 512;
+
 struct Entrant {
     uintptr_t at = 0;
     uint32_t driver = 0;
