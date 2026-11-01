@@ -998,6 +998,29 @@ bool rebuild_entrants(uintptr_t e, uintptr_t w, int year, const char *tag)
     return true;
 }
 
+void audit_session_order(uintptr_t w, const Weekend &wk, int year, size_t round)
+{
+    auto sb = reinterpret_cast<uintptr_t>(wk.sessions_begin), se = reinterpret_cast<uintptr_t>(wk.sessions_end);
+    if (!sb || se <= sb || (se - sb) % sizeof(Session) || (se - sb) / sizeof(Session) > 16)
+        return;
+    std::vector<uint32_t> ids;
+    std::string text;
+    for (uintptr_t s = sb; s < se; s += sizeof(Session)) {
+        Session ses{};
+        if (!swofty::mem::read(s, ses))
+            return;
+        ids.push_back(ses.session_id);
+        text += (text.empty() ? "" : ",") + std::to_string(ses.session_id) + "/" + std::to_string(ses.completion);
+    }
+    int bad = weekend::impossible_order(ids);
+    if (bad < 0)
+        return;
+    swofty::log("[progressive] season %d round %zu (weekend %p): the sessions are in an order no weekend format makes "
+                "(session %d is a practice after a qualifying or race; id/completion: %s, current session %u, progress %u); "
+                "left as the game has it, restore a Saves version from before this weekend",
+                year, round, reinterpret_cast<void *>(w), bad + 1, text.c_str(), wk.current_session, wk.progress_state);
+}
+
 void refresh_weekends(uintptr_t e, int year)
 {
     auto ptr = [](uintptr_t a) {
@@ -1021,7 +1044,10 @@ void refresh_weekends(uintptr_t e, int year)
     for (uintptr_t at = wb; at && at < we && weekends < 64; at += sizeof(Weekend *)) {
         uintptr_t w = 0;
         Weekend wk{};
-        if (!swofty::mem::read(at, w) || !w || !swofty::mem::read(w, wk) || wk.progress_state != 0)
+        if (!swofty::mem::read(at, w) || !w || !swofty::mem::read(w, wk))
+            continue;
+        audit_session_order(w, wk, year, static_cast<size_t>((at - wb) / sizeof(Weekend *)) + 1);
+        if (wk.progress_state != 0)
             continue;
         ++weekends;
         char tag[64];
