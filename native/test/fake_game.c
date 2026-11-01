@@ -1520,6 +1520,107 @@ static void crash_setup_vm(void)
     fflush(stdout);
 }
 
+// The pairing step of Sess_Strategy_UpdateTeammatePairs, with the bytes of the size test and the equal-flag test copied
+// from the Steam build (0x1436abc9e..0x1436abcf9) in a small frame taking the vector of a team's car records in
+// rcx (begin) and rdx (end), a pointer to the team entry in r8 and the session in r9. The sort 0x1436b36f0 is
+// fake_pairs_sort: it orders the vector by the byte at +0x80 and faults when a record's byte at +0x81 is 0, where the
+// game throws through Ne_Std_ThrowException. Core's teammate pairs guard finds the size test by its byte pattern (+0x2e).
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_teammate_pairs\n"
+    ".def fake_teammate_pairs; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_teammate_pairs\n"
+    "fake_teammate_pairs:\n"
+    ".byte 0x53\n.seh_pushreg %rbx\n"
+    ".byte 0x56\n.seh_pushreg %rsi\n"
+    ".byte 0x41,0x54\n.seh_pushreg %r12\n"
+    ".byte 0x41,0x55\n.seh_pushreg %r13\n"
+    ".byte 0x55\n.seh_pushreg %rbp\n"
+    ".byte 0x41,0x56\n.seh_pushreg %r14\n"
+    ".byte 0x48,0x83,0xEC,0x28\n.seh_stackalloc 0x28\n"
+    ".seh_endprologue\n"
+    ".byte 0x49,0x89,0xCC,0x48,0x89,0xD5,0x4D,0x89,0xC6,0x4C,0x89,0xCE\n"
+    ".byte 0x49,0x89,0xED,0x4D,0x29,0xE5\n"
+    ".byte 0x49,0x83,0xFD,0x10\n"
+    ".byte 0x0F,0x82\n.long fake_tp_done - . - 4\n"
+    ".byte 0x49,0x8B,0x04,0x24,0x49,0x8B,0x54,0x24,0x08,0x0F,0xB6,0x88,0x81,0x00,0x00,0x00\n"
+    ".byte 0x84,0xC9,0x41,0x0F,0x95,0xC0,0x0F,0xB6,0x82,0x81,0x00,0x00,0x00,0x84,0xC0,0x0F,0x95,0xC2,0x44,0x30,0xC2\n"
+    ".byte 0x0F,0x85\n.long fake_tp_done - . - 4\n"
+    ".byte 0x49,0xC1,0xFD,0x03\n"
+    ".byte 0x84,0xC9\n.byte 0x74\n.byte fake_tp_done - . - 1\n"
+    ".byte 0x84,0xC0\n.byte 0x74\n.byte fake_tp_done - . - 1\n"
+    ".byte 0x4C,0x89,0xE1,0x48,0x89,0xEA,0x4D,0x89,0xE8\n"
+    "call fake_pairs_sort\n"
+    "fake_tp_done:\n"
+    ".byte 0x48,0x83,0xC4,0x28\n"
+    ".byte 0x41,0x5E,0x5D,0x41,0x5D,0x41,0x5C,0x5E,0x5B,0xC3\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_teammate_pairs -export:fake_pairs_sort\"\n"
+    ".text\n");
+void fake_teammate_pairs(void *begin, void *end, void *team_entry, void *session);
+
+static volatile uintptr_t pairs_null;
+
+__attribute__((noinline)) void fake_pairs_sort(uint8_t **begin, uint8_t **end, uint64_t count)
+{
+    for (uint8_t **p = begin; p < end; p++)
+        if (!(*p)[0x81])
+            *(volatile int *)pairs_null = (int)count;
+    for (uint8_t **a = begin; a < end; a++)
+        for (uint8_t **b = a + 1; b < end; b++)
+            if ((*b)[0x80] < (*a)[0x80]) {
+                uint8_t *t = *a;
+                *a = *b;
+                *b = t;
+            }
+}
+
+static uint8_t pairs_cars[3][0x90], pairs_team[0x30], *pairs_team_ptr = pairs_team, pairs_session[8];
+
+static void pairs_setup(uint8_t third_valid)
+{
+    memset(pairs_cars, 0, sizeof pairs_cars);
+    memset(pairs_team, 0, sizeof pairs_team);
+    *(uint32_t *)(pairs_team + 0x28) = 6;
+    pairs_cars[0][0x80] = 5;
+    pairs_cars[0][0x81] = 1;
+    pairs_cars[1][0x80] = 2;
+    pairs_cars[1][0x81] = 1;
+    pairs_cars[2][0x80] = 9;
+    pairs_cars[2][0x81] = third_valid;
+}
+
+static void test_teammate_pairs(void)
+{
+    uint8_t *v[3] = {pairs_cars[0], pairs_cars[1], pairs_cars[2]};
+    pairs_setup(0);
+    fake_teammate_pairs(v, v + 2, &pairs_team_ptr, pairs_session);
+    expect(v[0] == pairs_cars[1] && v[1] == pairs_cars[0],
+           "pairs: a team with two cars is sorted as the game does");
+    uint8_t *w[3] = {pairs_cars[0], pairs_cars[1], pairs_cars[2]};
+    fake_teammate_pairs(w, w + 3, &pairs_team_ptr, pairs_session);
+    expect(w[0] == pairs_cars[1] && w[1] == pairs_cars[0] && w[2] == pairs_cars[2],
+           "pairs: a team with a third car pairs its first two and leaves the third unpaired");
+    uint8_t *x[3] = {pairs_cars[0], pairs_cars[1], pairs_cars[2]};
+    pairs_setup(1);
+    fake_teammate_pairs(x, x + 3, &pairs_team_ptr, pairs_session);
+    expect(x[0] == pairs_cars[1] && x[1] == pairs_cars[0] && x[2] == pairs_cars[2],
+           "pairs: a third car with a valid record is left unpaired too");
+}
+
+static void crash_pairs(void)
+{
+    SetErrorMode(SEM_NOGPFAULTERRORBOX);
+    uint8_t *v[3] = {pairs_cars[0], pairs_cars[1], pairs_cars[2]};
+    pairs_setup(0);
+    printf("      pairs: sorting a team with three cars\n");
+    fflush(stdout);
+    fake_teammate_pairs(v, v + 3, &pairs_team_ptr, pairs_session);
+    printf("      pairs: the team was paired\n");
+    fflush(stdout);
+}
+
 // The two entrant-list lookups behind the front-end tile populate, copied byte for byte from the Steam build in small
 // frames, the calls and the RIP-relative operands pointed at stand-ins. fake_list_first_id is
 // FeTile_Get_ListFirstEntrantId (0x141738eb0..0x141738f6c) taking the item in rcx and the result in rdx: it scans the
@@ -2523,6 +2624,7 @@ int main(int argc, char **argv)
         test_standings();
         test_weekends();
         test_teamhq();
+        test_teammate_pairs();
         test_setup_vm();
         test_fe_tiles();
         test_ai_corner();
@@ -2572,6 +2674,8 @@ int main(int argc, char **argv)
         crash_weekends();
     if (argc > 1 && !strcmp(argv[1], "teamhq"))
         crash_teamhq();
+    if (argc > 1 && !strcmp(argv[1], "pairs"))
+        crash_pairs();
     if (argc > 1 && !strcmp(argv[1], "setup_vm"))
         crash_setup_vm();
     if (argc > 1 && !strcmp(argv[1], "fe_scan"))

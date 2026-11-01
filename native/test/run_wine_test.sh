@@ -348,6 +348,8 @@ EOF
         once "teamhq: the guard is armed" '\[career\] teamhq track guard armed'
         once "teamhq: an event whose track has no track data is skipped and logged once" '\[career\] teamhq: track 6 has no track data; the event shows no track'
         once "teamhq: an event whose track has no record is skipped and logged once" '\[career\] teamhq: track 1 has no track data; the event shows no track'
+        once "pairs: the guard is armed" '\[strategy\] teammate pairs guard armed'
+        once "pairs: a team with a third car is logged once" '\[strategy\] team 6 has 3 cars; only its first two are paired for strategy, the others stay unpaired'
         once "setups: the guard is armed" '\[setups\] car guard armed at 1 of 4 sites'
         once "fe tiles: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(front-end tile list guard\)': 3 mixin\(s\)"
         once "fe tiles: the guard is armed" '\[fe\] tiles guard armed'
@@ -777,6 +779,25 @@ for guard in on off; do
         once "setup_vm off: the guard is off" '\[setups\] car guard off \(SWOFTY_SETUP_VM_GUARD=0\)'
         check "setup_vm off: the read faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Game_CarSetupVm_Initialise\+0x18'
         [[ $code != 0 ]] && echo "ok  : setup_vm off: process ended with $code" || { echo "FAIL: setup_vm off: process exited 0"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== pairs ($guard)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_TEAMMATE_PAIRS_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" pairs >"$OUT/pairs.out" 2>&1 || code=$?
+    grep -E '\[strategy\]|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    if [[ $guard == on ]]; then
+        once "pairs on: the team is logged" '\[strategy\] team 6 has 3 cars; only its first two are paired for strategy, the others stay unpaired'
+        grep -q 'pairs: the team was paired' "$OUT/pairs.out" && echo "ok  : pairs on: the team with three cars was paired" ||
+            { echo "FAIL: pairs on: the team with three cars was not paired"; status=1; }
+        count "pairs on: no unhandled fault" 0 '\[crash\] unhandled '
+        compgen -G "$SW/crash-*.txt" >/dev/null && { echo "FAIL: pairs on: a crash report was written"; status=1; } ||
+            echo "ok  : pairs on: no crash report"
+    else
+        once "pairs off: the guard is off" '\[strategy\] teammate pairs guard off \(SWOFTY_TEAMMATE_PAIRS_GUARD=0\)'
+        check "pairs off: the sort faults where the game throws" '\[crash\] unhandled ACCESS_VIOLATION .*Sess_Strategy_SortTeamCars'
+        [[ $code != 0 ]] && echo "ok  : pairs off: process ended with $code" || { echo "FAIL: pairs off: process exited 0"; status=1; }
     fi
 done
 for guard in on off; do
