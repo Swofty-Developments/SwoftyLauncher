@@ -248,14 +248,15 @@ The launcher can turn the overlay off for one addon: an addon id in `"overlay_of
 
 ## When the overlay draws
 
-The core draws the overlay only where it knows the drawing is ordered with the game's own frame. Where it doesn't draw, paint callbacks don't run, and `swofty/loader.log` says why on an `[overlay]` line.
+Paint callbacks run once per frame at `Present`. Where the swapchain is one the core can draw on, the overlay is drawn into its back buffer there. Where frame generation owns the swapchain, the overlay is drawn into the game's own back buffer in the command queue just after the game's list that moves it to `PRESENT`, so frame generation sees it and the generated frames carry it. That draw uses the callbacks' output from the previous `Present`, so the overlay is one frame late. `swofty/loader.log` has an `[overlay]` line for each case.
 
 | Case | Overlay |
 |---|---|
 | A swapchain the game created after the core loaded | Draws, on the command queue the swapchain was created with |
 | A swapchain created before the core hooked swapchain creation | Doesn't draw on it |
-| A swapchain that a frame generation module (DLSS Frame Generation, FSR or XeSS frame generation) created or presents | Doesn't draw on it |
-| A swapchain created through Streamline's frame generation hook (`sl.dlss_g.dll`, every NVIDIA Streamline build of F1 25) | Draws while the game's `hardware_settings_config.xml` has `frame_gen mode="0"`; stops for the session once it reads anything else |
+| A swapchain that a frame generation module (DLSS Frame Generation, FSR or XeSS frame generation) created or presents | Draws into the game's back buffer (a resource named `BackBuffer`) before `Present` |
+| A swapchain created through Streamline's frame generation hook (`sl.dlss_g.dll`, every NVIDIA Streamline build of F1 25) | Draws at `Present` while the game's `hardware_settings_config.xml` has `frame_gen mode="0"`; draws into the game's back buffer before `Present` once it reads anything else |
+| Frame generation, and the back buffer is not a render target of the swapchain's size, or its queue is not a direct queue, or it is on another device than the overlay's | Doesn't draw; one `[overlay]` line says which |
 | The GPU still holds the previous frames' overlay work | Skips drawing that frame |
 | The GPU was removed | Stops for the rest of the session; an `[overlay]` line says how long after the overlay last drew |
 

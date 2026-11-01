@@ -608,10 +608,19 @@ struct Renderer {
 
     enum Outcome { drawn, busy, broken };
 
-    Outcome render(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, DXGI_FORMAT fmt, UINT width, UINT height,
-                   const hud::Frame &frame, UINT mode, float white)
+    struct Target {
+        ID3D12Resource *res;
+        DXGI_FORMAT fmt;
+        UINT width, height;
+        D3D12_RESOURCE_STATES state;
+    };
+
+    Outcome render(const Target &t, ID3D12CommandQueue *q, const std::vector<Vertex> &verts,
+                   const std::vector<hud::Batch> &batches, UINT mode, float white)
     {
-        const std::vector<Vertex> &verts = frame.verts;
+        const DXGI_FORMAT fmt = t.fmt;
+        const UINT width = t.width, height = t.height;
+        ID3D12Resource *buf = t.res;
         Slot &s = slots[next];
         if (fence->GetCompletedValue() < s.done_at)
             return busy;
@@ -630,15 +639,10 @@ struct Renderer {
         ID3D12PipelineState *pso = pso_for(fmt);
         if (!pso || !ensure_layer(width, height))
             return broken;
-        ID3D12Resource *buf = nullptr;
-        if (FAILED(sc->GetBuffer(sc->GetCurrentBackBufferIndex(), IID_PPV_ARGS(&buf))) || !buf)
-            return broken;
         size_t base = size_t(next) * MAX_VERTS * sizeof(Vertex);
         memcpy(vmap + base, verts.data(), n * sizeof(Vertex));
-        if (FAILED(s.alloc->Reset()) || FAILED(s.list->Reset(s.alloc, geo))) {
-            buf->Release();
+        if (FAILED(s.alloc->Reset()) || FAILED(s.list->Reset(s.alloc, geo)))
             return broken;
-        }
         ID3D12GraphicsCommandList *l = s.list;
         if (ts_heap)
             l->EndQuery(ts_heap, D3D12_QUERY_TYPE_TIMESTAMP, next * 2);
@@ -646,7 +650,10 @@ struct Renderer {
         D3D12_CPU_DESCRIPTOR_HANDLE rtv = rtv_heap->GetCPUDescriptorHandleForHeapStart(), lrtv = rtv;
         rtv.ptr += SIZE_T(next) * 2 * rtv_inc;
         lrtv.ptr += (SIZE_T(next) * 2 + 1) * rtv_inc;
-        dev->CreateRenderTargetView(buf, nullptr, rtv);
+        D3D12_RENDER_TARGET_VIEW_DESC rv{};
+        rv.Format = fmt;
+        rv.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+        dev->CreateRenderTargetView(buf, &rv, rtv);
         dev->CreateRenderTargetView(layer, nullptr, lrtv);
         D3D12_CPU_DESCRIPTOR_HANDLE srv = srv_heap->GetCPUDescriptorHandleForHeapStart();
         srv.ptr += SIZE_T(next) * srv_inc;
@@ -669,7 +676,7 @@ struct Renderer {
         D3D12_VERTEX_BUFFER_VIEW vbv{vbuf->GetGPUVirtualAddress() + base, UINT(n * sizeof(Vertex)), sizeof(Vertex)};
         l->IASetVertexBuffers(0, 1, &vbv);
         l->SetDescriptorHeaps(1, &srv_heap);
-        for (const hud::Batch &b : frame.batches) {
+        for (const hud::Batch &b : batches) {
             if (b.first >= n)
                 break;
             D3D12_RECT sr{std::max(box.left, LONG(std::floor(b.clip.x0))), std::max(box.top, LONG(std::floor(b.clip.y0))),
@@ -684,8 +691,7 @@ struct Renderer {
         D3D12_RESOURCE_BARRIER two[2]{};
         two[0].Transition = {layer, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_STATE_RENDER_TARGET,
                              D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE};
-        two[1].Transition = {buf, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_STATE_PRESENT,
-                             D3D12_RESOURCE_STATE_RENDER_TARGET};
+        two[1].Transition = {buf, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, t.state, D3D12_RESOURCE_STATE_RENDER_TARGET};
         l->ResourceBarrier(2, two);
         layer_state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
         l->OMSetRenderTargets(1, &rtv, FALSE, nullptr);
@@ -697,20 +703,17 @@ struct Renderer {
         l->SetGraphicsRootDescriptorTable(1, gsrv);
         l->SetPipelineState(pso);
         l->DrawInstanced(3, 1, 0, 0);
-        transition(l, buf, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+        transition(l, buf, D3D12_RESOURCE_STATE_RENDER_TARGET, t.state);
         if (ts_heap) {
             l->EndQuery(ts_heap, D3D12_QUERY_TYPE_TIMESTAMP, next * 2 + 1);
             l->ResolveQueryData(ts_heap, D3D12_QUERY_TYPE_TIMESTAMP, next * 2, 2, ts_buf, UINT64(next) * 16);
         }
-        if (FAILED(l->Close())) {
-            buf->Release();
+        if (FAILED(l->Close()))
             return broken;
-        }
         ID3D12CommandList *lists[] = {l};
-        q->ExecuteCommandLists(1, lists);
+        d3d12hooks::exec_original(q, 1, lists);
         q->Signal(fence, ++fence_val);
         s.done_at = fence_val;
-        buf->Release();
         next = (next + 1) % SLOTS;
         return drawn;
     }
@@ -751,6 +754,7 @@ struct Renderer {
 };
 
 Renderer renderer;
+std::mutex render_lock;
 bool dropped_told;
 std::atomic<bool> armed, off, lost_once;
 std::atomic<ID3D12Device *> live_dev;
@@ -840,6 +844,7 @@ bool frame_gen_off(ULONGLONG now)
 
 void flush_stats(ULONGLONG now)
 {
+    std::lock_guard<std::mutex> g(render_lock);
     if (!stats.since)
         stats.since = now;
     if (now - stats.since < STATS_MS)
@@ -1271,9 +1276,6 @@ void draw_cursor(hud::Frame &f)
     hud::pop_transform(f);
 }
 
-void paint_frame(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const std::vector<hud::Paintsub> &subs,
-                 const DXGI_SWAP_CHAIN_DESC &desc, ULONGLONG now, UINT color_space);
-
 int game_hdr_mode()
 {
     static std::wstring path;
@@ -1329,6 +1331,258 @@ UINT output_mode(IDXGISwapChain3 *sc, DXGI_FORMAT fmt, UINT color_space)
     return out;
 }
 
+struct Pending {
+    std::vector<Vertex> verts;
+    std::vector<hud::Batch> batches;
+    IDXGISwapChain3 *sc = nullptr;
+    UINT color_space = 0, width = 0, height = 0;
+    ULONGLONG built = 0;
+};
+
+struct Presenting {
+    ID3D12Resource *res;
+    D3D12_RESOURCE_STATES state;
+};
+
+constexpr size_t BACK_BUFFERS_MAX = 16, PRESENTING_MAX = 64;
+std::mutex fg_lock;
+Pending pending;
+std::vector<ID3D12Resource *> back_buffers;
+std::vector<std::pair<ID3D12GraphicsCommandList *, Presenting>> presenting;
+std::atomic<bool> fg_active, pending_ready;
+std::atomic<size_t> back_count, presenting_count;
+bool device_hooked;
+
+void drop_pending()
+{
+    if (!pending_ready.load(std::memory_order_relaxed))
+        return;
+    std::lock_guard<std::mutex> g(fg_lock);
+    pending_ready.store(false);
+}
+
+void draw_target(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const Renderer::Target &t, const std::vector<Vertex> &verts,
+                 const std::vector<hud::Batch> &batches, UINT color_space, ULONGLONG now)
+{
+    static const uint32_t probe = perf::probe("core", "overlay record");
+    perf::Scope timed(probe);
+    std::lock_guard<std::mutex> g(render_lock);
+    UINT mode = killed("hdr") ? 0 : output_mode(sc, t.fmt, color_space);
+    switch (renderer.render(t, q, verts, batches, mode, paper_white())) {
+    case Renderer::drawn:
+        if (!stats.drawn && !last_draw_ms.load())
+            swofty::log("[overlay] first overlay frame submitted: %zu vertices", verts.size());
+        last_draw_ms.store(now);
+        stats.drawn++;
+        break;
+    case Renderer::busy:
+        stats.busy++;
+        break;
+    case Renderer::broken:
+        renderer.failed = true;
+        swofty::log("[overlay] recording the overlay for swapchain %p failed (format %d); the overlay stops drawing",
+                    static_cast<void *>(sc), int(t.fmt));
+        break;
+    }
+}
+
+void draw_pending(ID3D12CommandQueue *q, ID3D12Resource *res, D3D12_RESOURCE_STATES state)
+{
+    static const uint32_t probe = perf::probe("core", "overlay exec draw");
+    perf::Scope timed(probe);
+    Pending frame;
+    {
+        std::lock_guard<std::mutex> g(fg_lock);
+        if (!pending_ready.exchange(false))
+            return;
+        frame = std::move(pending);
+    }
+    ULONGLONG now = GetTickCount64();
+    if (off.load() || renderer.failed || !hud::guard::pending_fresh(now, frame.built))
+        return;
+    static bool told_queue, told_shape, told_device;
+    D3D12_COMMAND_QUEUE_DESC qd = q->GetDesc();
+    if (qd.Type != D3D12_COMMAND_LIST_TYPE_DIRECT) {
+        if (!told_queue) {
+            told_queue = true;
+            swofty::log("[overlay] the game's back buffer is presented on queue %p of type %d, not a direct queue; the "
+                        "overlay does not draw into it",
+                        static_cast<void *>(q), int(qd.Type));
+        }
+        return;
+    }
+    D3D12_RESOURCE_DESC d = res->GetDesc();
+    if (d.Dimension != D3D12_RESOURCE_DIMENSION_TEXTURE2D || !(d.Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) ||
+        !hud::guard::target_fits(frame.width, frame.height, d.Width, d.Height)) {
+        if (!told_shape) {
+            told_shape = true;
+            swofty::log("[overlay] the game's back buffer %p (%llux%u, format %d, flags 0x%x) is not a render target "
+                        "of the overlay's %ux%u; the overlay does not draw into it",
+                        static_cast<void *>(res), static_cast<unsigned long long>(d.Width), d.Height, int(d.Format),
+                        unsigned(d.Flags), frame.width, frame.height);
+        }
+        return;
+    }
+    ID3D12Device *dev = nullptr;
+    if (FAILED(res->GetDevice(IID_PPV_ARGS(&dev))) || !dev)
+        return;
+    bool ready;
+    {
+        std::lock_guard<std::mutex> g(render_lock);
+        if (!renderer.ready) {
+            if (!renderer.init(q)) {
+                renderer.failed = true;
+                renderer.shutdown();
+                swofty::log("[overlay] renderer init failed; the overlay stays armed but draws nothing");
+            } else {
+                live_dev.store(renderer.dev);
+            }
+        }
+        ready = renderer.ready && renderer.dev == dev && renderer.same_device(q) &&
+                renderer.dev->GetDeviceRemovedReason() == S_OK;
+    }
+    dev->Release();
+    if (!ready) {
+        if (!renderer.failed && !told_device) {
+            told_device = true;
+            swofty::log("[overlay] the game's back buffer %p or its queue %p belongs to another device than the "
+                        "overlay renderer's; the overlay does not draw into it",
+                        static_cast<void *>(res), static_cast<void *>(q));
+        }
+        return;
+    }
+    Renderer::Target t{res, DXGI_FORMAT(hud::guard::renderable_format(int(d.Format))), frame.width, frame.height, state};
+    draw_target(frame.sc, q, t, frame.verts, frame.batches, frame.color_space, now);
+}
+
+void on_setname(ID3D12Object *o, LPCWSTR name)
+{
+    if (!name || !armed.load(std::memory_order_relaxed))
+        return;
+    bool back = wcscmp(name, L"BackBuffer") == 0;
+    if (!back && !back_count.load(std::memory_order_relaxed))
+        return;
+    auto *res = reinterpret_cast<ID3D12Resource *>(o);
+    std::lock_guard<std::mutex> g(fg_lock);
+    back_buffers.erase(std::remove(back_buffers.begin(), back_buffers.end(), res), back_buffers.end());
+    if (back) {
+        if (back_buffers.size() >= BACK_BUFFERS_MAX)
+            back_buffers.erase(back_buffers.begin());
+        back_buffers.push_back(res);
+    }
+    back_count.store(back_buffers.size());
+}
+
+bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers)
+{
+    if (!barriers || !fg_active.load(std::memory_order_relaxed) || !back_count.load(std::memory_order_relaxed))
+        return false;
+    for (UINT i = 0; i < n; i++) {
+        const D3D12_RESOURCE_BARRIER &b = barriers[i];
+        if (b.Type != D3D12_RESOURCE_BARRIER_TYPE_TRANSITION ||
+            !hud::guard::presents_back_buffer(unsigned(b.Transition.StateBefore), unsigned(b.Transition.StateAfter),
+                                              unsigned(b.Flags)))
+            continue;
+        std::lock_guard<std::mutex> g(fg_lock);
+        if (std::find(back_buffers.begin(), back_buffers.end(), b.Transition.pResource) == back_buffers.end())
+            continue;
+        Presenting p{b.Transition.pResource,
+                     D3D12_RESOURCE_STATES(hud::guard::state_after_draw(unsigned(b.Transition.StateAfter)))};
+        auto it = std::find_if(presenting.begin(), presenting.end(), [&](const auto &e) { return e.first == list; });
+        if (it != presenting.end())
+            it->second = p;
+        else if (presenting.size() < PRESENTING_MAX)
+            presenting.push_back({list, p});
+        presenting_count.store(presenting.size());
+    }
+    return false;
+}
+
+void on_exec(ID3D12CommandQueue *, UINT n, ID3D12CommandList *const *lists, d3d12hooks::ExecPlan &plan)
+{
+    if (!lists || !n || !presenting_count.load(std::memory_order_relaxed))
+        return;
+    ID3D12Resource *res = nullptr;
+    D3D12_RESOURCE_STATES state{};
+    UINT at = n;
+    {
+        std::lock_guard<std::mutex> g(fg_lock);
+        for (UINT i = 0; i < n; i++) {
+            auto it = std::find_if(presenting.begin(), presenting.end(), [&](const auto &e) {
+                return static_cast<ID3D12CommandList *>(e.first) == lists[i];
+            });
+            if (it == presenting.end())
+                continue;
+            at = i;
+            res = it->second.res;
+            state = it->second.state;
+            presenting.erase(it);
+        }
+        presenting_count.store(presenting.size());
+    }
+    if (at == n || !fg_active.load() || !pending_ready.load())
+        return;
+    plan.after(at, [res, state](ID3D12CommandQueue *q) { draw_pending(q, res, state); });
+}
+
+hud::Frame &build_frame(const std::vector<hud::Paintsub> &subs, UINT width, UINT height, ULONGLONG now)
+{
+    static const uint32_t paint_probe = perf::probe("core", "overlay paint callbacks");
+    static hud::Frame frame;
+    {
+        perf::Scope painting(paint_probe);
+        input_frame(subs, float(width), float(height), now);
+        hud::build(subs, frame, float(width), float(height), overlay_off());
+        draw_cursor(frame);
+        runtime::room_cover::paint(frame, now);
+    }
+    flush_stats(now);
+    if (frame.dropped && !dropped_told) {
+        dropped_told = true;
+        swofty::log("[overlay] a frame's paint callbacks drew more than %u vertices; %u primitive(s) past that were "
+                    "dropped",
+                    hud::MAX_VERTS, frame.dropped);
+    }
+    return frame;
+}
+
+void keep_pending(IDXGISwapChain3 *sc, const hud::Frame &frame, const DXGI_SWAP_CHAIN_DESC &desc, UINT color_space,
+                  ULONGLONG now)
+{
+    std::lock_guard<std::mutex> g(fg_lock);
+    if (frame.verts.empty()) {
+        pending_ready.store(false);
+        return;
+    }
+    pending.verts = frame.verts;
+    pending.batches = frame.batches;
+    pending.sc = sc;
+    pending.color_space = color_space;
+    pending.width = desc.BufferDesc.Width;
+    pending.height = desc.BufferDesc.Height;
+    pending.built = now;
+    pending_ready.store(true);
+}
+
+void paint_frame(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const std::vector<hud::Paintsub> &subs,
+                 const DXGI_SWAP_CHAIN_DESC &desc, ULONGLONG now, UINT color_space)
+{
+    hud::Frame &frame = build_frame(subs, desc.BufferDesc.Width, desc.BufferDesc.Height, now);
+    if (frame.verts.empty())
+        return;
+    ID3D12Resource *buf = nullptr;
+    if (FAILED(sc->GetBuffer(sc->GetCurrentBackBufferIndex(), IID_PPV_ARGS(&buf))) || !buf) {
+        renderer.failed = true;
+        swofty::log("[overlay] recording the overlay for swapchain %p failed (format %d); the overlay stops drawing",
+                    static_cast<void *>(sc), int(desc.BufferDesc.Format));
+        return;
+    }
+    Renderer::Target t{buf, desc.BufferDesc.Format, desc.BufferDesc.Width, desc.BufferDesc.Height,
+                       D3D12_RESOURCE_STATE_PRESENT};
+    draw_target(sc, q, t, frame.verts, frame.batches, color_space, now);
+    buf->Release();
+}
+
 void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
 {
     if (off.load() || renderer.failed)
@@ -1341,8 +1595,10 @@ void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
         subs = reg.subs();
     }
     bool cover = runtime::room_cover::active();
-    if (subs.empty() && !cap.on && !cover)
+    if (subs.empty() && !cap.on && !cover) {
+        drop_pending();
         return;
+    }
     if (!known) {
         if (std::find(unknown_told.begin(), unknown_told.end(), sc) == unknown_told.end()) {
             unknown_told.push_back(sc);
@@ -1357,20 +1613,51 @@ void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
     bool fresh = std::find(told.begin(), told.end(), seen) == told.end();
     if (fresh)
         told.push_back(seen);
-    if (!c.fg.empty()) {
-        if (fresh)
-            swofty::log("[overlay] frame generation (%s) owns swapchain %p; the overlay does not draw on it",
-                        c.fg.c_str(), static_cast<void *>(sc));
-        return;
-    }
-    if (c.streamline && !frame_gen_off(GetTickCount64())) {
-        if (!fg_watch.told || fresh)
-            swofty::log("[overlay] swapchain %p was created through Streamline's frame generation hook "
-                        "(sl.dlss_g.dll) and frame generation is not off in the game's settings; the overlay does not "
-                        "draw on it",
+    ULONGLONG now = GetTickCount64();
+    const bool fg_named = !c.fg.empty();
+    const hud::guard::Gate gate =
+        hud::guard::gate_for(fg_named, c.streamline, fg_named || !c.streamline || frame_gen_off(now));
+    const UINT color_space = c.color_space_set ? c.color_space : hud::guard::COLOR_SPACE_UNSET;
+    if (!hud::guard::draws_at_present(gate)) {
+        if (!hud::guard::draws_before_present(gate, device_hooked)) {
+            fg_active.store(false);
+            drop_pending();
+            if (fg_named) {
+                if (fresh)
+                    swofty::log("[overlay] frame generation (%s) owns swapchain %p and the core's D3D12 device hooks "
+                                "did not arm; the overlay does not draw on it",
+                                c.fg.c_str(), static_cast<void *>(sc));
+            } else if (!fg_watch.told || fresh) {
+                swofty::log("[overlay] swapchain %p was created through Streamline's frame generation hook "
+                            "(sl.dlss_g.dll), frame generation is not off in the game's settings and the core's D3D12 "
+                            "device hooks did not arm; the overlay does not draw on it",
+                            static_cast<void *>(sc));
+            }
+            return;
+        }
+        DXGI_SWAP_CHAIN_DESC desc{};
+        if (FAILED(sc->GetDesc(&desc)))
+            return;
+        if (fresh) {
+            swofty::log("[overlay] frame generation owns swapchain %p; the overlay draws into the game's back buffer "
+                        "before Present instead",
                         static_cast<void *>(sc));
+            if (implemented)
+                hook_window(desc.OutputWindow);
+        }
+        fg_active.store(true);
+        bool addons = !subs.empty() && !killed("paint");
+        if (addons || cover) {
+            hud::Frame &frame = build_frame(addons ? subs : std::vector<hud::Paintsub>(), desc.BufferDesc.Width,
+                                            desc.BufferDesc.Height, now);
+            keep_pending(sc, frame, desc, color_space, now);
+        } else {
+            drop_pending();
+        }
         return;
     }
+    fg_active.store(false);
+    drop_pending();
     if (!renderer.ready) {
         if (!renderer.init(c.queue)) {
             renderer.failed = true;
@@ -1410,57 +1697,11 @@ void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
                     static_cast<void *>(sc), "direct", static_cast<void *>(c.queue), desc.BufferDesc.Width,
                     desc.BufferDesc.Height, int(desc.BufferDesc.Format), desc.BufferCount, c.by.c_str());
     }
-    ULONGLONG now = GetTickCount64();
     bool addons = !subs.empty() && !killed("paint");
     if (addons || cover)
-        paint_frame(sc, c.queue, addons ? subs : std::vector<hud::Paintsub>(), desc, now,
-                    c.color_space_set ? c.color_space : hud::guard::COLOR_SPACE_UNSET);
+        paint_frame(sc, c.queue, addons ? subs : std::vector<hud::Paintsub>(), desc, now, color_space);
     if (cap.on && !killed("capture"))
         capture_step(sc, c.queue, desc, now);
-}
-
-void paint_frame(IDXGISwapChain3 *sc, ID3D12CommandQueue *q, const std::vector<hud::Paintsub> &subs,
-                 const DXGI_SWAP_CHAIN_DESC &desc, ULONGLONG now, UINT color_space)
-{
-    static const uint32_t paint_probe = perf::probe("core", "overlay paint callbacks");
-    static hud::Frame frame;
-    {
-        perf::Scope painting(paint_probe);
-        input_frame(subs, float(desc.BufferDesc.Width), float(desc.BufferDesc.Height), now);
-        hud::build(subs, frame, float(desc.BufferDesc.Width), float(desc.BufferDesc.Height), overlay_off());
-        draw_cursor(frame);
-        runtime::room_cover::paint(frame, now);
-    }
-    const std::vector<Vertex> &verts = frame.verts;
-    flush_stats(now);
-    if (frame.dropped && !dropped_told) {
-        dropped_told = true;
-        swofty::log("[overlay] a frame's paint callbacks drew more than %u vertices; %u primitive(s) past that were "
-                    "dropped",
-                    hud::MAX_VERTS, frame.dropped);
-    }
-    if (verts.empty())
-        return;
-    static const uint32_t probe = perf::probe("core", "overlay record");
-    perf::Scope timed(probe);
-    UINT mode = killed("hdr") ? 0 : output_mode(sc, desc.BufferDesc.Format, color_space);
-    switch (renderer.render(sc, q, desc.BufferDesc.Format, desc.BufferDesc.Width, desc.BufferDesc.Height, frame, mode,
-                            paper_white())) {
-    case Renderer::drawn:
-        if (!stats.drawn && !last_draw_ms.load())
-            swofty::log("[overlay] first overlay frame submitted: %zu vertices", verts.size());
-        last_draw_ms.store(now);
-        stats.drawn++;
-        break;
-    case Renderer::busy:
-        stats.busy++;
-        break;
-    case Renderer::broken:
-        renderer.failed = true;
-        swofty::log("[overlay] recording the overlay for swapchain %p failed (format %d); the overlay stops drawing",
-                    static_cast<void *>(sc), int(desc.BufferDesc.Format));
-        break;
-    }
 }
 
 void presented(IDXGISwapChain3 *, HRESULT hr)
@@ -1489,6 +1730,14 @@ bool arm()
         return false;
     d3d12hooks::on_present(draw_frame);
     d3d12hooks::on_presented(presented);
+    d3d12hooks::on_setname(on_setname);
+    d3d12hooks::on_barrier(on_barrier);
+    d3d12hooks::on_exec(on_exec);
+    d3d12hooks::ProbeScope probe;
+    device_hooked = d3d12hooks::arm_device();
+    if (!device_hooked)
+        swofty::log("[overlay] the core's D3D12 device hooks did not arm; the overlay cannot draw when frame generation "
+                    "owns the swapchain");
     return d3d12hooks::arm_swapchain();
 }
 
