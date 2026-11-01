@@ -563,6 +563,10 @@ pub fn crash_summary(session: &SessionRecord, game: Option<&Path>) -> Result<Str
         return Err(failure);
     }
     let code = session.exit_code.unwrap_or_default();
+    let fast_fail = swofty_core::fast_fail::session_lines(&session.dir);
+    if !fast_fail.is_empty() {
+        return Ok(fast_fail.join("\n"));
+    }
     Ok(match scan.last_fatal {
         Some((c, addr)) => format!(
             "exit code {code}, last {} at {}",

@@ -47,6 +47,7 @@ t "Box track lists (fit rules, calendar and More tracks, per-box entries, fuel p
 t "Career snapshots (swofty_registry entry, freezes, budgets, migration, fixtures)" native/test/run_snapshots_test.sh
 t "Socket trace Wine test" native/test/run_net_trace_test.sh
 t "Career UI Wine test" native/test/run_career_ui_test.sh
+t "Fast-fail crash reports (fast-fail codes, reasons, exit statuses, byte patterns)" native/test/run_fast_fail_test.sh
 t "Loader log fallback Wine test" native/test/run_log_fallback_test.sh
 t "String override Wine test" native/test/run_lang_override_test.sh
 t "Overlay toolkit Wine test" native/test/run_toolkit_test.sh
@@ -66,15 +67,20 @@ t "AI corner start guard unit test" native/test/run_ai_corner_test.sh
 t "Tyre slot guard unit test" native/test/run_tyre_slots_test.sh
 t "Pit slot guard unit test" native/test/run_pit_slots_test.sh
 t "Pit box guard unit test" native/test/run_pit_box_test.sh
+t "Garage slot guard unit test" native/test/run_garage_slots_test.sh
 t "Direct start unit test" native/test/run_direct_start_test.sh
 t "Direct start Time Trial unit test" native/test/run_direct_start_tt_test.sh
 t "Thrustmaster LCD guard unit test" native/test/run_thrustmaster_lcd_test.sh
 t "Garage setup guard unit test" native/test/run_garage_setup_test.sh
 t "Core site names exported (host-only)" native/test/run_core_sites_exported_test.sh
 t "Garage crew guard unit test" native/test/run_garage_crew_test.sh
+t "Garage crew guard sites export test" native/test/run_garage_crew_sites_test.sh
 t "Leaderboard guard unit test" native/test/run_leaderboard_guard_test.sh
+t "Front-end tile list guard unit test" native/test/run_fe_tile_guard_test.sh
 t "Session enter guard unit test" native/test/run_session_enter_test.sh
 t "Audio job queue fix unit test" native/test/run_audio_queue_test.sh
+t "AUDIO_BUNDLE heap size unit test" native/test/run_audio_heap_test.sh
+t "Save temp heap size unit test" native/test/run_save_heap_test.sh
 t "Boot watchdog grace unit test" native/test/run_watchdog_grace_test.sh
 t "Pattern scan and scan cache unit test" native/test/run_scan_test.sh
 t "Telemetry feed unit test" "$(zig_test "-I packages/sdk/include native/test/telemetry_feed_test.cpp" telemetry_feed_test)"

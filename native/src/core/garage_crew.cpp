@@ -34,8 +34,11 @@
 // that template or 0. It is passed to Game_PitStops_SetupCrew as the fifth argument, which reads [template + 0x560]
 // at +0x12fb with no null test. A garage whose entries have no template (an empty garage, or a team the session has
 // no crew template for) faults the session load there ("reading 0x560"). At site_Game_PitStops_CrewTemplateRead the
-// guard sends such a garage to site_Game_PitStops_CrewTemplateSkip, which frees the entry vector and moves on to the
-// next garage; the garage gets no pit stops crew and its cars still race.
+// guard sends such a garage to site_Game_PitStops_CrewTemplateSkip, the game's own test r12,r12 ahead of the free of
+// the entry vector (an empty garage has no vector and takes the game's je), and the loop moves on to the next garage;
+// the garage gets no pit stops crew and its cars still race. The loop carries r13 (the address of the key at
+// [rsp + 0xc0], which the skipped body would have set back at 0x1403c7745) and sil (the byte at [rsp + 0x4b], reloaded
+// at 0x1403c77e0) into the next garage, so the guard restores both along with r12 = [rsp + 0xa8].
 //
 // Game_GarageCrewModule_SpawnGarageCrew keeps the garage crew scene it looked up at [self + 0xc8]. A track without
 // the garage scenes (an imported track: findScene fails for garagecrew, garagecrew_vehicle, _vehicleLocater,
@@ -135,7 +138,9 @@ void setup_template(SwoftyContext *c)
     if (!gc::setup_template_missing(c->rdi))
         return;
     uint64_t begin = 0;
-    if (!read_memory(c->rsp + gc::SETUP_VECTOR_BEGIN, &begin, sizeof begin, nullptr))
+    uint8_t flag = 0;
+    if (!read_memory(c->rsp + gc::SETUP_VECTOR_BEGIN, &begin, sizeof begin, nullptr) ||
+        !read_memory(c->rsp + gc::SETUP_FLAG, &flag, sizeof flag, nullptr))
         return;
     if (setup_seen.first(c->r14)) {
         uint64_t record = 0;
@@ -154,6 +159,8 @@ void setup_template(SwoftyContext *c)
                         unsigned(c->r14), unsigned(team), unsigned(number));
     }
     c->r12 = begin;
+    c->r13 = c->rsp + gc::SETUP_KEY;
+    c->rsi = flag;
     c->rip = setup_skip;
 }
 
