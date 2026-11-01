@@ -37,15 +37,12 @@ namespace {
 namespace tt = runtime::direct_start::tt;
 using runtime::direct_start::Setup;
 
-const runtime::Sig SIG_MODE_BY_NAME{"game.game_modes_find_by_name",
-                                    "48 8B 89 A0 02 00 00 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 20 48 89 C7 48 89 C1 48 81 C1 30 10 00 00",
-                                    0x7d0de0, runtime::Sig::rel32, 14, 15, 5};
-
 constexpr const char *MODE = "time_trial";
 constexpr const char *TRACK_NODE = "game_mode_data.current_game_mode.track_info.current_track.track_file_name";
 constexpr const char *WEATHER_NODE = "settings.current_settings.tt_weather.value";
 constexpr uintptr_t RVA_SET_SETUP_MODE = 0x79f300, RVA_CURRENT_TRACK = 0x7ddbf0, RVA_PLAYER_ENTRANTS = 0x604eac0,
                     RVA_PLAYER_GUARD = 0x604ec50;
+constexpr uintptr_t MODES_BEGIN = 0x58, MODES_END = 0x60, MODES_ENTRY_MODE = 0x38, MODE_ENTITY = 0x260, MODE_NAME = 0x278;
 constexpr uintptr_t ENTITY_MODE = 0xf08, ENTITY_TRACKS = 0xf58, ENTITY_TEAMS = 0xf80, ENTITY_SETUP_MODE = 0x2b0,
                     ENTITY_ENTRANT_SETUP = 0xe10, ENTITY_LIST = 0xe18;
 constexpr uintptr_t GSM_HOLDER = 0xd8, GSM_ESMS = 0x10, GSM_ESM_COUNT = 0x70, ESM_LISTS = 0x130, ESM_LIST_COUNT = 0x230,
@@ -53,7 +50,6 @@ constexpr uintptr_t GSM_HOLDER = 0xd8, GSM_ESMS = 0x10, GSM_ESM_COUNT = 0x70, ES
                     TRACK_NAME = 0x78, PLAYER_STRIDE = 0xc0, PLAYER_TEAM = 0x68, PLAYER_TEAM_SET = 0x6c;
 constexpr size_t ESM_SLOTS = 32, GSM_SLOTS = 32;
 
-using ModeByName_t = uint8_t *(void *modes, const char *name);
 using SetMode_t = void(void *modes, void *mode);
 using CurrentTrack_t = uint8_t *(void *entity);
 
@@ -82,11 +78,34 @@ const char *holder_name(const uint8_t *obj, uintptr_t holder_off)
 
 struct State {
     tt::Step step = tt::Step::mode;
-    uintptr_t by_name = 0;
     uint64_t started = 0, mode_set = 0, static_wait = 0;
     uint8_t *entity = nullptr, *list = nullptr;
     bool placed = false;
 } st;
+
+// The game modes context's modes (vector at +0x58..+0x60, each entry's mode at +0x38, its label at mode+0x278 and its
+// entity at mode+0x260). Game_GameModes_FindByName (0x1407d0de0) returns only championship-type entities.
+uint8_t *mode_named(void *modes, const char *want, std::vector<std::string> &names)
+{
+    auto *ctx = static_cast<uint8_t *>(modes);
+    if (!runtime::readable(ctx, MODES_END + 8))
+        return nullptr;
+    uint8_t *found = nullptr;
+    for (auto **p = at<uint8_t **>(ctx, MODES_BEGIN), **end = at<uint8_t **>(ctx, MODES_END); p && p < end; ++p) {
+        if (!runtime::readable(p, 8) || !*p || !runtime::readable(*p, MODES_ENTRY_MODE + 8))
+            continue;
+        auto *mode = at<uint8_t *>(*p, MODES_ENTRY_MODE);
+        if (!mode || !runtime::readable(mode, MODE_NAME + 8))
+            continue;
+        const char *name = c_name(at<const char *>(mode, MODE_NAME));
+        if (!name)
+            continue;
+        names.push_back(name);
+        if (!found && !std::strcmp(name, want))
+            found = mode;
+    }
+    return found;
+}
 
 uint8_t *track_record(uint8_t *e, const std::string &want, std::vector<std::string> &names)
 {
@@ -369,27 +388,28 @@ Setup setup(const json::Value &request, std::string &why)
         st.started = GetTickCount64();
     DirectStartContext ctx = runtime::direct_start_context();
     uintptr_t set_mode = runtime::direct_start_set_mode();
-    if (!st.by_name)
-        st.by_name = runtime::find(SIG_MODE_BY_NAME, "game mode lookup", "direct");
-    if (!set_mode || !st.by_name) {
-        why = "SetCurrentGameMode or the game mode lookup did not resolve";
+    if (!set_mode) {
+        why = "SetCurrentGameMode did not resolve";
         return Setup::failed;
     }
     if (!ctx.game_modes)
         return Setup::pending;
     if (st.step == Step::mode) {
-        uint8_t *e = reinterpret_cast<ModeByName_t *>(st.by_name)(ctx.game_modes, MODE);
-        if (!e || !runtime::readable(e, ENTITY_MODE + 8) || !at<void *>(e, ENTITY_MODE)) {
+        std::vector<std::string> names;
+        uint8_t *mode = mode_named(ctx.game_modes, MODE, names);
+        uint8_t *e = mode && runtime::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
+        if (!e || !runtime::readable(e, ENTITY_TEAMS + 8)) {
             if (GetTickCount64() - st.started < MODE_WAIT_MS)
                 return Setup::pending;
-            why = "the game has no game mode 'time_trial'";
+            why = "the game has no game mode 'time_trial' (modes: " + tt::joined(names, 60) + ")";
             return Setup::failed;
         }
         st.entity = e;
-        reinterpret_cast<SetMode_t *>(set_mode)(ctx.game_modes, at<void *>(e, ENTITY_MODE));
+        reinterpret_cast<SetMode_t *>(set_mode)(ctx.game_modes, mode);
         st.mode_set = GetTickCount64();
         st.step = Step::settle;
-        swofty::log("[direct] Time Trial: the Time Trial mode is current (entity %p, mode %p)", e, at<void *>(e, ENTITY_MODE));
+        swofty::log("[direct] Time Trial: the Time Trial mode is current (mode %p, entity %p, entity's mode %p)", mode, e,
+                    at<void *>(e, ENTITY_MODE));
         return Setup::pending;
     }
     if (st.step == Step::settle) {
