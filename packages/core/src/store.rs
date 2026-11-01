@@ -263,6 +263,13 @@ impl Store {
 
     pub fn migrate(&self) -> Result<Vec<String>> {
         let mut notes = Vec::new();
+        if let Some(target) = crate::paths::dangling_link(&self.root) {
+            return Err(Error::Other(format!(
+                "the data folder {} links to {}, which is missing. Reconnect that drive or restore the folder; the launcher will not start a new data folder in its place",
+                self.root.display(),
+                target.display()
+            )));
+        }
         if !self.root.is_dir() {
             return Ok(notes);
         }
