@@ -87,7 +87,8 @@ pub struct Probe {
     pub launch_failed: Option<launch::Failure>,
     pub busy: Option<Busy>,
     pub(crate) banner_profile: String,
-    pub(crate) banner: Option<crate::career_saves::Banner>,
+    pub(crate) banner: Option<Option<crate::career_saves::Banner>>,
+    pub(crate) saves_marker: bool,
 }
 
 static VAULT_WATCH: std::sync::LazyLock<std::sync::Mutex<vault::watch::Watch>> =
@@ -196,7 +197,13 @@ fn retry_import(store: &Store, processes: &[GameProcess]) {
     import_first_start(store);
 }
 
-pub fn probe(store: &Store, rediscover: bool, seen: Option<SystemTime>, profile: &str) -> Probe {
+pub fn probe(
+    store: &Store,
+    rediscover: bool,
+    seen: Option<SystemTime>,
+    profile: &str,
+    banner_due: bool,
+) -> Probe {
     let processes = game_processes();
     watch_vault(store, &processes);
     retry_import(store, &processes);
@@ -215,7 +222,8 @@ pub fn probe(store: &Store, rediscover: bool, seen: Option<SystemTime>, profile:
         launch_failed: launch::Failure::read(&store.root),
         busy: build_state(store),
         banner_profile: profile.to_owned(),
-        banner: crate::career_saves::SavesPage::banner_for(&store.root, profile),
+        banner: banner_due.then(|| crate::career_saves::SavesPage::banner_for(&store.root, profile)),
+        saves_marker: swofty_core::launcher_saves::marker(&store.root).is_some(),
         launch_stage: std::fs::read_to_string(store.root.join(steam_client::STAGE_FILE))
             .ok()
             .map(|s| s.trim().to_owned())

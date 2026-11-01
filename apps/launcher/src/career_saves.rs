@@ -43,6 +43,8 @@ pub(crate) struct SavesPage {
     pub game_running: bool,
     notice_done: bool,
     generation: u64,
+    pub loading: bool,
+    pub banner_profile: String,
 }
 
 pub(crate) struct Built {
@@ -124,6 +126,8 @@ impl SavesPage {
     }
 
     fn apply(&mut self, built: Built) {
+        self.loading = false;
+        self.banner_profile = built.view.profile.clone();
         self.banner = built.banner;
         self.game_running = built.running;
         self.view = Some(built.view);
@@ -301,7 +305,47 @@ fn short_block(layout: vault::Layout, r: Running) -> Option<&'static str> {
     }
 }
 
+type Indexed = (
+    Option<Vec<String>>,
+    Option<Vec<swofty_core::stdlib::careers::Career>>,
+);
+
+static INDEXES: std::sync::LazyLock<std::sync::Mutex<std::collections::HashMap<PathBuf, Indexed>>> =
+    std::sync::LazyLock::new(Default::default);
+
+fn indexed(v: &Vault, snap: &Snapshot) -> Indexed {
+    let key = v.dir.join(&snap.id);
+    if let Some(hit) = INDEXES.lock().ok().and_then(|m| m.get(&key).cloned()) {
+        return hit;
+    }
+    let index = v.index_of(snap);
+    let held = index.as_ref().map(|i| {
+        vault::careers::in_save(i)
+            .map(|c| match c.label.is_empty() {
+                true => c.career.clone(),
+                false => c.label.clone(),
+            })
+            .collect()
+    });
+    let out = (held, index);
+    if let Ok(mut m) = INDEXES.lock() {
+        m.insert(key, out.clone());
+    }
+    out
+}
+
 fn build_saves(store: &Store, install: Option<&crate::game::Install>, name: &str) -> Built {
+    let started = std::time::Instant::now();
+    let built = build_saves_untimed(store, install, name);
+    crate::app_log::note(&format!(
+        "saves: page loaded in {} ms ({} snapshots)",
+        started.elapsed().as_millis(),
+        built.view.versions.len()
+    ));
+    built
+}
+
+fn build_saves_untimed(store: &Store, install: Option<&crate::game::Install>, name: &str) -> Built {
     let root = store.root.clone();
     let name = name.to_owned();
     let banner = SavesPage::banner_for(&root, &name);
@@ -330,15 +374,7 @@ fn build_saves(store: &Store, install: Option<&crate::game::Install>, name: &str
             let versions = snaps
                 .into_iter()
                 .map(|snap| {
-                    let index = v.index_of(&snap);
-                    let held = index.as_ref().map(|i| {
-                        vault::careers::in_save(i)
-                            .map(|c| match c.label.is_empty() {
-                                true => c.career.clone(),
-                                false => c.label.clone(),
-                            })
-                            .collect()
-                    });
+                    let (held, index) = indexed(&v, &snap);
                     let diff = index
                         .filter(|_| !now.is_empty())
                         .map(|i| vault::careers::diff(&now, &i));
@@ -391,6 +427,7 @@ impl Shell {
 
     pub(crate) fn refresh_saves_in_background(&mut self, cx: &mut Context<Self>) {
         self.saves.generation += 1;
+        self.saves.loading = true;
         let generation = self.saves.generation;
         let store = self.store.clone();
         let install = self.install.clone();
@@ -416,6 +453,7 @@ impl Shell {
         let generation = self.saves.generation;
         let root = self.store.root.clone();
         let name = self.library.profile.name.clone();
+        let name_done = name.clone();
         cx.spawn(async move |this, cx| {
             let banner = cx
                 .background_executor()
@@ -423,6 +461,7 @@ impl Shell {
                 .await;
             this.update(cx, |s, cx| {
                 if s.saves.generation == generation {
+                    s.saves.banner_profile = name_done;
                     s.saves.banner = banner;
                     cx.notify();
                 }
@@ -848,7 +887,13 @@ impl Shell {
 
     pub(crate) fn careers_page(&mut self, p: Palette, _wide: bool, cx: &mut Context<Self>) -> AnyElement {
         let banner = self.saves_banner(true, p, cx);
-        let Some(view) = self.saves.view.as_ref() else {
+        let current = self.library.profile.name.as_str();
+        let loading = self.saves.loading && self.saves.view.as_ref().is_none_or(|v| v.profile != current);
+        let Some(view) = self.saves.view.as_ref().filter(|_| !loading) else {
+            let empty = match loading {
+                true => "Loading saves…",
+                false => "No F1 25 save found yet.",
+            };
             return v_flex()
                 .size_full()
                 .child(self.header("Saves", String::new(), div(), p))
@@ -858,7 +903,7 @@ impl Shell {
                         .px(px(GUTTER))
                         .text_size(px(13.))
                         .text_color(p.text_muted)
-                        .child("No F1 25 save found yet."),
+                        .child(empty),
                 )
                 .into_any_element();
         };
