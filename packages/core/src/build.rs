@@ -1948,6 +1948,9 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         for w in erps.check_ui(&name)? {
             built.warnings.push(format!("ui: {w}"));
         }
+        for line in erps.cohere_arrays()? {
+            built.lines.push(format!("erp: {line}"));
+        }
         for (severity, w) in erps.check_textures(&name) {
             let kind = match severity {
                 crate::texcheck::Severity::Invalid => "texture the game's renderer may reject",
