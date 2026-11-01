@@ -1034,6 +1034,38 @@ fn saving(e: &Evidence) -> bool {
         .is_some_and(|r| r.contains("Game_SaveData_WriteBag"))
 }
 
+fn absurd_request(message: &str) -> bool {
+    message
+        .split("Requested size:")
+        .nth(1)
+        .map(|rest| rest.chars().take_while(char::is_ascii_digit).collect::<String>())
+        .and_then(|n| n.parse::<u64>().ok())
+        .is_some_and(|n| n > 1_000_000_000_000_000)
+}
+
+fn replay_state_dropped(e: &Evidence) -> bool {
+    e.loader
+        .lines()
+        .any(|l| l.contains("[replay] ") && l.contains("is not recorded"))
+}
+
+fn replay_state() -> Diagnosis {
+    Diagnosis {
+        id: "replay_state",
+        title: "F1 25 read back a replay it could not record on a grid this big".to_owned(),
+        what: "A season with 23 or more cars outgrew part of the game's replay recorder, so that part was left out \
+               of the recording. Going back through the replay (a flashback, an instant replay) then read it as \
+               garbage and the game closed. It is not a memory problem, and fewer mods or more memory in your PC \
+               won't change it."
+            .to_owned(),
+        steps: vec![
+            "Turn Flashbacks off in the assists for seasons with 23 or more cars.".to_owned(),
+            "Avoid instant replays in those sessions until the next Swofty update.".to_owned(),
+            "Press Play again.".to_owned(),
+        ],
+    }
+}
+
 fn game_heap(e: &Evidence) -> Diagnosis {
     let mut tracks: Vec<&String> = e.tracks.iter().collect();
     tracks.sort_by_key(|id| id.as_str() != SEPANG);
@@ -1702,6 +1734,9 @@ fn matched(e: &Evidence) -> Option<Diagnosis> {
     let windows = !wine(e, &loaded);
     if let Some((code, message)) = heap_error(e) {
         if code == 0xc && message.contains("'GAME_DEFAULT'") {
+            if absurd_request(&message) && replay_state_dropped(e) {
+                return Some(replay_state());
+            }
             return Some(game_heap(e));
         }
         if windows && windows_out_of_memory(code, &message) {
@@ -2405,6 +2440,23 @@ mod tests {
             "{}",
             d.what
         );
+    }
+
+    const REPLAY_STATE: &str = "\
+2026-11-02 05:10:01.100 [4000] [replay] session has 24 cars, the recorder holds 22; CannedEventsSystem needs 1032 bytes of replay state and its holder has 1024, so it is not recorded (replay and flashback lose its state; the session keeps all its cars)
+2026-11-02 05:21:24.880 [17796] [crash] Ne heap error 0xc (fatal) on thread 17796: Allocation error. Requested size:3747052065449325568, Free Memory:829408, Largest Free Block:1392, HeapSize:204472320, Alignment: 8; heap 00000000636F4590 'GAME_DEFAULT', capacity 204472320
+";
+
+    #[test]
+    fn an_absurd_heap_request_after_a_dropped_replay_state_is_the_replay_crash() {
+        let d = diagnose(&ev(REPLAY_STATE, &[])).unwrap();
+        assert_eq!(d.id, "replay_state");
+        assert!(d.steps[0].contains("Flashbacks off"), "{:?}", d.steps);
+        assert!(d.what.contains("not a memory problem"), "{}", d.what);
+        let without = REPLAY_STATE.lines().skip(1).collect::<Vec<_>>().join("\n");
+        assert_eq!(diagnose(&ev(&without, &[])).unwrap().id, "game_heap");
+        let small = REPLAY_STATE.replace("3747052065449325568", "3528");
+        assert_eq!(diagnose(&ev(&small, &[])).unwrap().id, "game_heap");
     }
 
     const QUIT_REPORT: &str = "== Game state (from the black box)\n  last flow      #e11edb87 Exiting (1.8 s before this report)\n  \
