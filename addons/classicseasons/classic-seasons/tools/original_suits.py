@@ -1,4 +1,4 @@
-"""Fit original Mercedes suit artwork to the F1 25 body without changing either game."""
+"""Fit original 2020–21 team suit artwork to the F1 25 body without changing either game."""
 from pathlib import Path
 
 import bcn
@@ -31,9 +31,10 @@ def original_kit(game, year, label):
 
 
 def build(game25, original_game, year, team, cache):
-    base = team.get("suit", {}).get("base", "2025-mercedes")
+    stock_team = suits.suit_sources.stock_team(team)
+    base = team.get("suit", {}).get("base", f"2025-{stock_team}")
     label = suits.suit_sources.generated_label(year, team, base)
-    source_label = f"{year}-mercedes"
+    source_label = f"{year}-{stock_team}"
     old = original_kit(Path(original_game), year, source_label)
     base_path = Path(game25) / f"2025_asset_groups/{suits.LIVERY}/{base}/{base}.erp"
     stock = suits.erpw.Erp(str(base_path))

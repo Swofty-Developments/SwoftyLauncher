@@ -207,7 +207,8 @@ class Surface:
 
     @staticmethod
     def header(data):
-        h = struct.unpack("<10I", data[:40])
+        # Older games have a 36-byte header; these fields have the same offsets.
+        h = struct.unpack_from("<7I", data)
         return h[2], h[3], h[4], h[6]
 
 

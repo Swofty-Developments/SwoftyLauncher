@@ -15,6 +15,11 @@ A track's f1 world has ten garages; the eleventh is in the f1_26 world. With a s
 addon moves swofty_f1 from the f1 track layer to a copy of the f1_26 one for the 2023 to 2025 seasons, which every
 classic entrant list uses, so every season races on the f1_26 worlds.
 
+A car's number comes from the entrant row unless the driver's entrants.drivers.seasonal_infos row lists the session's
+game mode (Ent_Get_EntrantCarNumber, Career_DriverNameOverride_GetNumber 0x140b9a810): Max Verstappen's row gives #1
+in every mode it lists, and swofty.core adds swofty_f1 to it. The shared addon takes swofty_f1 back out, so each
+season's entrant row decides his number (33 to 2021, 1 from 2022); the stock f1 and f1_26 modes keep the game's.
+
 The pit lane reads a team's pit stop times from the pit_lane.pit_times row whose team names it, so each season team
 copies its stock team's row.
 
@@ -107,6 +112,7 @@ DRIVER_STAT_BASE = 225
 SCENARIO_STAT_BASE = 15
 TRACK_LAYER_STAT = 20
 HOST_MODE = "swofty_f1"
+NUMBER_OVERRIDE = "entrants.drivers.seasonal_infos.seasonal_info[_metadata_=max_verstappen]"
 SETUP_ROW = "entrants.entrant_setup_modes.entrant_setup_mode"
 SETUP_PRESETS = "car_setup.presets.vehicle_package_setups"
 SEASON_LAUNCHER = ">=1.5.1"
@@ -452,6 +458,7 @@ def build():
                             "seasons": "season_2023,season_2024,season_2025", "statId": str(TRACK_LAYER_STAT)}})
         ops.append({"op": "list-remove", "select": "track_data.track_layers.TrackLayer[_metadata_=f1]",
                     "field": "game_setup_modes", "value": HOST_MODE})
+    ops.append({"op": "list-remove", "select": NUMBER_OVERRIDE, "field": "game_setup_modes", "value": HOST_MODE})
 
     made = {m["label"]: m for m in real_suits()}
     helmet_ids = iter(HELMET_IDS)

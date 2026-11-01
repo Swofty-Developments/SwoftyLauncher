@@ -1,4 +1,5 @@
 import struct
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -26,6 +27,44 @@ def archive(*resources):
 
 
 class SeasonAssetsTest(unittest.TestCase):
+    def test_original_alphatauri_and_alfa_suits_do_not_inherit_a_different_year(self):
+        for season in suit_sources.DATA['seasons']:
+            if season['year'] not in (2020, 2021):
+                continue
+            for team in season['teams']:
+                if team['folder'] not in ('toro_rosso', 'sauber'):
+                    continue
+                self.assertEqual(team['suit']['source'], suit_sources.ORIGINAL)
+                for driver in [None, *(d for d, _ in team['drivers'])]:
+                    self.assertIsNone(suit_sources.pick(season['year'], team, driver))
+
+    def test_classic_mode_uses_verstappen_entrant_number_without_changing_stock_modes(self):
+        root = Path(__file__).resolve().parent.parent
+        ops = json.loads((root / 'db/core.json').read_text())['ops']
+        selector = 'entrants.drivers.seasonal_infos.seasonal_info[_metadata_=max_verstappen]'
+        changes = [op for op in ops if op.get('select') == selector]
+        self.assertEqual(changes, [{'op': 'list-remove', 'select': selector,
+                                   'field': 'game_setup_modes', 'value': 'swofty_f1'}])
+        for season in suit_sources.DATA['seasons']:
+            numbers = [n for team in season['teams'] for d, n in team['drivers'] if d == 'max_verstappen']
+            self.assertEqual(numbers, [33 if season['year'] <= 2021 else 1])
+
+    def test_driver_number_and_name_mips_restore_from_old_tga_resources(self):
+        # F1 2016's 36-byte header and .tga names differ from the converted car.
+        old = 'eaid://f1_2016_vehicle_package/teams/redbull/textures/redbull_driver_33.tga.image'
+        new = old.replace('f1_2016', 'cs_2016').replace('.tga.', '.tif.')
+        header = struct.pack('<9I', 2, 0x108, 57, 8, 8, 1, 4, 1, 0)
+        levels = [bytes([n]) * size for n, size in enumerate(bcn.level_sizes(57, 8, 8, 4))]
+        source = archive(resource(old, 'GfxSurfaceRes', header, b''.join(levels)))
+        image = resource(new, 'GfxSurfaceRes', struct.pack('<10I', 2, 0x108, 57, 4, 4, 1, 1, 1, 0, 0), b'x' * 16)
+        view = resource(new.removesuffix('.image'), 'GfxShaderResView', struct.pack('<6I', 5, 57, 0, 1, 0, 0))
+        target = archive(image, view)
+        restored = season_assets.restore_textures(target, source, Path('unused'), 2016, 'redbull')
+        self.assertEqual(len(restored), 1)
+        self.assertEqual(bcn.Surface.header(target.frag_data(image, 0)), (57, 8, 8, 4))
+        self.assertEqual(target.frag_data(image, 1), b''.join(levels))
+        self.assertEqual(struct.unpack_from('<I', target.frag_data(view, 0), 12)[0], 4)
+
     def test_old_materials_become_valid_f1_25_materials_with_original_textures(self):
         texture = 'eaid://cs_2021_vehicle_package/shared/tyres/textures/tyre_d.tif'
         shader = 'eaid://shader_package/tyre_sidewall/tyre_sidewall.nefx2'

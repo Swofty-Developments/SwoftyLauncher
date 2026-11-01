@@ -105,10 +105,12 @@ def restore_textures(archive, original, game, year, folder, sidecars=None):
         if not r.name.startswith(new) or not r.name.endswith(".image"):
             continue
         stem = r.name[len(new):]
-        # Only the livery atlases: unrelated car textures keep their performance cap.
-        if not any(token in stem for token in ("_decal_", "_decals_")):
+        # Only the livery atlases and the per-driver number/name decals: unrelated car textures keep their
+        # performance cap. Preserve the original flag/name strip as well as the number and its mip chain.
+        if not any(token in stem for token in ("_decal_", "_decals_", "_driver_")):
             continue
-        source = sources.get(old + stem)
+        # F1 2016 used .tga resource names; the converted car uses .tif.
+        source = sources.get(old + stem) or sources.get(old + stem.replace('.tif.image', '.tga.image'))
         if source is None:
             continue
         desc = original.frag_data(source, 2) if len(source.frags) > 2 else b""
