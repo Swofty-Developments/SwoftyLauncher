@@ -28,6 +28,7 @@ inline double global_gap_ms(double cost_ms)
 
 struct Slot {
     bool rendered = false;
+    bool urgent = false;
     double due_ms = 0;
     int unchanged = 0;
 };
@@ -38,14 +39,15 @@ struct Clock {
 
 inline bool may_render(const Slot &s, const Clock &c, double now_ms)
 {
-    if (!s.rendered)
+    if (!s.rendered || s.urgent)
         return true;
     return now_ms >= s.due_ms && now_ms >= c.global_ms;
 }
 
 inline void rendered(Slot &s, Clock &c, double now_ms, double cost_ms, bool changed)
 {
-    bool first = !s.rendered;
+    bool first = !s.rendered || s.urgent;
+    s.urgent = false;
     s.unchanged = changed ? 0 : s.unchanged + 1;
     s.rendered = true;
     s.due_ms = now_ms + section_interval_ms(cost_ms, s.unchanged);
@@ -57,6 +59,7 @@ inline void invalidate(Slot &s)
 {
     s.due_ms = 0;
     s.unchanged = 0;
+    s.urgent = true;
 }
 
 inline void invalidate_all(Slot *s, int n, Clock &c)

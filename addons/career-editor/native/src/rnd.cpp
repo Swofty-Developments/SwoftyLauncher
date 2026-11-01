@@ -941,6 +941,15 @@ void tally(const Team &t, Counts &all, Counts (&per)[5])
     });
 }
 
+void write_team_name(ce::Writer &w, uint32_t stat_id)
+{
+    const std::string *n = ce::cached_team_name(stat_id);
+    if (n)
+        w.str(*n);
+    else
+        w.null();
+}
+
 void write_team_detail(ce::Writer &w, const Team &t)
 {
     Counts all;
@@ -951,6 +960,8 @@ void write_team_detail(ce::Writer &w, const Team &t)
     w.integer(t.key);
     w.key("team_stat_id");
     w.integer(t.key >> 16);
+    w.key("team_name");
+    write_team_name(w, t.key >> 16);
     w.key("player");
     w.boolean(t.player);
     w.key("mode");
@@ -1013,6 +1024,8 @@ void section_rnd(ce::Writer &w)
         w.integer(t.key);
         w.key("team_stat_id");
         w.integer(t.key >> 16);
+        w.key("team_name");
+        write_team_name(w, t.key >> 16);
         w.key("player");
         w.boolean(t.player);
         w.key("fitted_ratio");

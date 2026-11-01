@@ -3,6 +3,7 @@
 // Career Mode Editor: reads the gamedb name tables a slice at a time. Header-only so the host tests include it.
 
 #pragma once
+#include <algorithm>
 #include <cstdint>
 
 namespace ce::names {
@@ -16,6 +17,7 @@ struct Load {
     int64_t row = 0;
     int64_t count = -1;
     int tries = 0;
+    double row_ms = 0;
     bool loaded = false;
     bool settled = false;
     bool reported = false;
@@ -40,8 +42,11 @@ template <class Source, class Now> bool step(Load &l, Source &src, Now now, doub
             l.row = 0;
         }
         while (l.row < l.count) {
+            double r0 = now();
             src.row(l.stage, l.row++);
-            if (now() - t0 >= budget_ms)
+            double t1 = now();
+            l.row_ms = std::max(t1 - r0, l.row_ms * 0.95);
+            if (t1 - t0 + l.row_ms >= budget_ms)
                 return false;
         }
         ++l.stage;

@@ -2953,6 +2953,12 @@ ce::OpResult op_free_agent_add(const ce::Json &args)
 
 } // namespace
 
+const std::string *ce::cached_team_name(uint32_t stat_id)
+{
+    auto it = g_names.team.find(stat_id);
+    return it != g_names.team.end() && !it->second.empty() && it->second.size() < kNameMax ? &it->second : nullptr;
+}
+
 CE_SECTION("drivers", section);
 CE_IDLE(names_idle);
 CE_OP("drivers.ratings.set", op_ratings_set);
