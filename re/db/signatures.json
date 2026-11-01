@@ -53676,7 +53676,9 @@
      "how": "static"
     }
    ],
-   "used_by": []
+   "used_by": [
+    "native/src/core/netplay_room.cpp"
+   ]
   },
   {
    "id": "career.game_session_ui_on_career_session_requested",
@@ -59148,7 +59150,9 @@
      "how": "static"
     }
    ],
-   "used_by": []
+   "used_by": [
+    "native/src/core/netplay_room.cpp"
+   ]
   },
   {
    "id": "game.network_ui_on_view_profile_requested_by_player_description",
@@ -160363,6 +160367,34 @@
    ],
    "used_by": [
     "native/src/core/session_enter.cpp"
+   ]
+  },
+  {
+   "id": "game.join_request_owner_key",
+   "section": ".xtls",
+   "pattern": "48 8D 15 ?? ?? ?? ?? 48 89 F9 FF 50 28 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B 48 18",
+   "match": "0x14172c631",
+   "anchor": "0x3",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x0",
+    "len": 7
+   },
+   "target": "0x146cb8278",
+   "kind": "data",
+   "names": [
+    "g_Game_JoinRequestOwnerKey"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "room-headless",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/netplay_room.cpp"
    ]
   }
  ]
