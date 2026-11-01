@@ -680,6 +680,7 @@ impl Vault {
             {
                 Some(mut s) => {
                     s.id = id;
+                    s.source.clone_from(&self.source);
                     out.push(s);
                 }
                 None => unreadable.push(name),
