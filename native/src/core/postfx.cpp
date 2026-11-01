@@ -27,23 +27,28 @@ bool settings_state(const std::string &addon, const std::string &option, size_t 
                     std::vector<std::string> *values);
 
 // Post-process passes. The game tonemaps the 3D picture into eaid://ego_package/tonemap_output.image,
-// grades and encodes it into the back buffer, then draws the HUD into the back buffer, in the same
-// command list or a later one. The passes run between the picture and the HUD, so the HUD draws over
-// their result as the game drew it, translucent panels included:
+// grades and encodes it into the back buffer, then draws the HUD into the back buffer. The passes run
+// once a frame between the picture and the HUD, so the HUD draws over their result as the game drew it,
+// translucent panels included. The game records a frame's lists in parallel, so where they run is
+// decided per back buffer: each one is fresh from the barrier that makes it a render target until the
+// passes run on it.
 //
-// - In the game's list, where it moves eaid://ego_package/hudless_backbuffer.image out of UAV while the
-//   back buffer is a render target (its HUD-less step): the core records its passes there, before the
-//   game's barrier, and then puts back the pipeline, descriptor heaps and compute bindings it changed
-//   (d3d12hooks::list_state), so the game's next draw finds its own.
-// - Between the game's lists, where a list in which tonemap_output.image goes from written to read ends
-//   with the back buffer still a render target: the core submits a list of its own after it.
+// - On track while the HUD reads the finished picture (paused, menus over the race), the passes run at
+//   the first barrier of a list that moves the back buffer from render target to a read state.
+// - Otherwise, in the game's list where it moves eaid://ego_package/hudless_backbuffer.image out of UAV
+//   while the back buffer it made a render target is still one (its HUD-less step).
+// - Where the list that made the picture ends before that step finishes (the step goes on on another
+//   queue), in a list of the core's own submitted right after it.
 //
-// The passes copy the back buffer, run as DXIL compute shaders (swofty/postfx.hlsli) through textures of
-// the core's own, and copy the result back; with frame generation on, the result goes into the game's
-// HUD-less copy too. Every texture of the core's rests in NON_PIXEL_SHADER_RESOURCE between recordings,
-// so recordings in game lists and in the core's own need no order between them. A pass whose pipeline
-// cannot be made, or whose GPU time stays above its budget, is turned off and logged; SWOFTY_POSTFX=0
-// or a swofty/postfx.off file turns every pass off.
+// In the game's lists the core records its passes before the game's barrier and then puts back the
+// pipeline, descriptor heaps, compute bindings and graphics descriptor tables it changed
+// (d3d12hooks::list_state). The passes copy the back buffer, run as DXIL compute shaders
+// (swofty/postfx.hlsli) through a slot's own textures, and copy the result back; with frame generation
+// on, the result goes into the game's HUD-less copy too. Each slot has its own fence and working
+// textures, so frames the GPU runs at once on different queues never share them; every texture rests
+// in NON_PIXEL_SHADER_RESOURCE between recordings. A pass whose pipeline cannot be made, or whose GPU
+// time stays above its budget, is turned off and logged; SWOFTY_POSTFX=0 or a swofty/postfx.off file
+// turns every pass off.
 
 namespace {
 
@@ -123,12 +128,22 @@ struct Slot {
     int pass_of[MAX_PASSES] = {};
 };
 
-// The core's textures for one picture size: the picture before the passes, two the passes write in
-// turn, last frame's result, and the addons' own.
+// The core's textures for one picture size: each slot's working set, last frame's result, and the
+// addons' persistent textures and images.
+// A slot's working textures: the picture before the passes, the two the passes write in turn, and
+// the addon textures that are neither persistent nor images. Each slot has its own, so passes of two
+// frames that the GPU runs at once on different queues never write the same texture.
+struct Work {
+    ID3D12Resource *orig = nullptr, *pic[2] = {};
+    std::vector<ID3D12Resource *> tex;
+    bool clear = false;
+};
+
 struct Frame {
     D3D12_RESOURCE_DESC desc{};
     DXGI_FORMAT view = DXGI_FORMAT_UNKNOWN;
-    ID3D12Resource *orig = nullptr, *pic[2] = {}, *prev = nullptr;
+    Work work[FRAMES];
+    ID3D12Resource *prev = nullptr;
     ID3D12DescriptorHeap *heap = nullptr, *cpu = nullptr;
     UINT stride = 0;
     bool prev_valid = false;
@@ -290,7 +305,15 @@ D3D12_RESOURCE_STATES depth_state;
 bool depth_logged;
 std::unordered_map<ID3D12Resource *, std::wstring> names;
 std::unordered_map<ID3D12GraphicsCommandList *, Mark> marks;
-unsigned order_left, burst_left, burst_at, burst_present;
+unsigned order_left, final_left, final_at;
+struct FinalProbe {
+    ID3D12Resource *rb = nullptr;
+    unsigned frame = 0, land = 0;
+    bool pending = false;
+};
+FinalProbe finals[256];
+D3D12_PLACED_SUBRESOURCE_FOOTPRINT final_fp;
+UINT final_w, final_h;
 // Each back buffer's use for one frame: fresh from the barrier that makes it a render target until the
 // passes run on it, and the depth buffer as the picture's list left it.
 struct BackUse {
@@ -324,8 +347,6 @@ std::wstring off_file, trace_file, swofty_root_dir;
 
 ID3D12Device *device;
 ID3D12RootSignature *root;
-ID3D12Fence *fence;
-UINT64 fence_next;
 Slot slots[FRAMES];
 UINT slot_at;
 ID3D12QueryHeap *queries;
@@ -520,8 +541,6 @@ bool init(ID3D12Resource *res)
         swofty::log("[postfx] could not make the passes' root signature; post-processing is off");
         return false;
     }
-    if (FAILED(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence))))
-        return false;
     for (auto &s : slots) {
         if (FAILED(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&s.fence))) ||
             FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&s.alloc))) ||
@@ -603,25 +622,27 @@ bool make_frame(const D3D12_RESOURCE_DESC &d)
                     int(d.Format));
         return false;
     }
-    std::vector<IUnknown *> old = {frame.orig, frame.pic[0], frame.pic[1], frame.prev, frame.heap, frame.cpu};
+    std::vector<IUnknown *> old = {frame.prev, frame.heap, frame.cpu};
+    for (auto &wk : frame.work) {
+        old.insert(old.end(), {wk.orig, wk.pic[0], wk.pic[1]});
+        old.insert(old.end(), wk.tex.begin(), wk.tex.end());
+    }
     depth_res = nullptr;
     frame = Frame{};
     frame.desc = d;
     frame.view = view;
     UINT w = UINT(d.Width), h = d.Height;
-    frame.orig = texture(w, h, view, false);
-    frame.pic[0] = texture(w, h, view, true);
-    frame.pic[1] = texture(w, h, view, true);
     if (uses_previous)
         frame.prev = texture(w, h, view, false);
     for (auto &t : textures) {
         if (!t.file.empty() && t.res)
             continue;
-        old.push_back(t.res);
-        t.res = nullptr;
         postfx::Size s = postfx::texture_size(t.scale, t.width, t.height, w, h);
         t.w = s.w;
         t.h = s.h;
+        if (!t.persistent && t.file.empty())
+            continue;
+        old.push_back(t.res);
         t.res = texture(t.w, t.h, t.format, t.file.empty());
         t.clear = t.file.empty();
         if (!t.res) {
@@ -633,12 +654,12 @@ bool make_frame(const D3D12_RESOURCE_DESC &d)
     retire(std::move(old));
     D3D12_DESCRIPTOR_HEAP_DESC hd{};
     hd.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    hd.NumDescriptors = FRAMES * MAX_PASSES * TABLE + UINT(textures.size()) + 1;
+    hd.NumDescriptors = FRAMES * MAX_PASSES * TABLE + UINT(textures.size()) * (FRAMES + 1) + 1;
     hd.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
     D3D12_DESCRIPTOR_HEAP_DESC cd = hd;
-    cd.NumDescriptors = UINT(textures.size()) + 1;
+    cd.NumDescriptors = UINT(textures.size()) * (FRAMES + 1) + 1;
     cd.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    if (!frame.orig || !frame.pic[0] || !frame.pic[1] || (uses_previous && !frame.prev) ||
+    if ((uses_previous && !frame.prev) ||
         FAILED(device->CreateDescriptorHeap(&hd, IID_PPV_ARGS(&frame.heap))) ||
         FAILED(device->CreateDescriptorHeap(&cd, IID_PPV_ARGS(&frame.cpu))))
         return false;
@@ -654,6 +675,37 @@ bool make_frame(const D3D12_RESOURCE_DESC &d)
     swofty::log("[postfx] passes run on the game's %llux%u picture (format %d) with %zu texture(s) of their own",
                 (unsigned long long)d.Width, d.Height, int(d.Format), textures.size());
     return true;
+}
+
+bool shared(const Tex &t)
+{
+    return t.persistent || !t.file.empty();
+}
+
+// A slot's working set, made the first time the slot runs on this picture size.
+bool ensure_work(int k)
+{
+    Work &wk = frame.work[k];
+    if (wk.orig)
+        return true;
+    UINT w = UINT(frame.desc.Width), h = frame.desc.Height;
+    wk.orig = texture(w, h, frame.view, false);
+    wk.pic[0] = texture(w, h, frame.view, true);
+    wk.pic[1] = texture(w, h, frame.view, true);
+    wk.tex.assign(textures.size(), nullptr);
+    bool ok = wk.orig && wk.pic[0] && wk.pic[1];
+    for (size_t i = 0; i < textures.size() && ok; i++)
+        if (!shared(textures[i]))
+            ok = (wk.tex[i] = texture(textures[i].w, textures[i].h, textures[i].format, true)) != nullptr;
+    wk.clear = true;
+    if (!ok)
+        swofty::log("[postfx] the working textures of slot %d could not be made; post-processing is off", k);
+    return ok;
+}
+
+ID3D12Resource *tex_of(size_t i, int k)
+{
+    return shared(textures[i]) ? textures[i].res : frame.work[k].tex[i];
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE cpu_at(ID3D12DescriptorHeap *h, UINT i)
@@ -744,6 +796,28 @@ void land_capture()
     captures++;
 }
 
+// The mean colour and saturation of a picture read back to the CPU, over a grid of its middle.
+void grid_mean(const uint8_t *src, UINT pitch, UINT w, UINT h, DXGI_FORMAT f, double out[4])
+{
+    double r = 0, g = 0, bl = 0, sat = 0;
+    unsigned n = 0;
+    for (UINT y = h / 8; y < h * 7 / 10; y += std::max(1u, h / 40))
+        for (UINT x = w / 10; x < w * 9 / 10; x += std::max(1u, w / 64)) {
+            uint32_t v;
+            memcpy(&v, src + size_t(y) * pitch + size_t(x) * 4, 4);
+            double c[3];
+            if (f == DXGI_FORMAT_R10G10B10A2_UNORM)
+                c[0] = (v & 1023) / 1023.0, c[1] = ((v >> 10) & 1023) / 1023.0, c[2] = ((v >> 20) & 1023) / 1023.0;
+            else
+                c[0] = (v & 255) / 255.0, c[1] = ((v >> 8) & 255) / 255.0, c[2] = ((v >> 16) & 255) / 255.0;
+            double mx = std::max(c[0], std::max(c[1], c[2])), mn = std::min(c[0], std::min(c[1], c[2]));
+            r += c[0], g += c[1], bl += c[2], sat += mx > 0 ? (mx - mn) / mx : 0;
+            n++;
+        }
+    n = std::max(n, 1u);
+    out[0] = r / n, out[1] = g / n, out[2] = bl / n, out[3] = sat / n;
+}
+
 void read_times(Slot &s)
 {
     if (!ticks_per_ms || !s.passes)
@@ -797,26 +871,31 @@ struct Where {
     const char *path;
 };
 
-// A slot whose GPU work is done. A slot recorded into a game list that was never submitted is free
-// again after two seconds: the game reset that list, so the core's work in it never runs.
+// A slot whose GPU work is done. The game records frames ahead, so the slots of lists it has not
+// submitted yet are skipped rather than waited for. A slot recorded into a game list that was never
+// submitted is free again after two seconds: the game reset that list, so the core's work in it never
+// runs.
 int pick_slot()
 {
-    Slot &s = slots[slot_at];
-    if (s.pending && GetTickCount64() - s.armed_at > 2000) {
-        swofty::log("[postfx] a game list holding the passes was never submitted; its slot is reused");
-        s.pending = false;
+    ULONGLONG now = GetTickCount64();
+    for (UINT n = 0; n < FRAMES; n++) {
+        UINT k = (slot_at + n) % FRAMES;
+        Slot &s = slots[k];
+        if (s.pending && now - s.armed_at > 2000) {
+            swofty::log("[postfx] a game list holding the passes was never submitted; its slot is reused");
+            s.pending = false;
+        }
+        if (s.pending || s.fence->GetCompletedValue() < s.fence_value)
+            continue;
+        slot_at = (k + 1) % FRAMES;
+        return int(k);
     }
-    if (s.pending || s.fence->GetCompletedValue() < s.fence_value) {
-        if (!warned_busy)
-            swofty::log("[postfx] the GPU is %u frames behind; passes skip frames until it catches up", FRAMES);
-        warned_busy = true;
-        stats.busy++;
-        trace.why = "the GPU is behind";
-        return -1;
-    }
-    int k = int(slot_at);
-    slot_at = (slot_at + 1) % FRAMES;
-    return k;
+    if (!warned_busy)
+        swofty::log("[postfx] every one of the %u slots is in flight; passes skip frames until one is free", FRAMES);
+    warned_busy = true;
+    stats.busy++;
+    trace.why = "every slot is in flight";
+    return -1;
 }
 
 bool addon_off(const std::string &id)
@@ -843,16 +922,16 @@ std::vector<int> live_passes(const view::State &v)
     return live;
 }
 
-ID3D12Resource *input_res(int in, DXGI_FORMAT &f)
+ID3D12Resource *input_res(int in, int k, DXGI_FORMAT &f)
 {
     f = frame.view;
     if (in == IN_ORIGINAL)
-        return frame.orig;
+        return frame.work[k].orig;
     if (in == IN_PREVIOUS)
         return frame.prev;
     if (in >= 0 && size_t(in) < textures.size()) {
         f = textures[size_t(in)].format;
-        return textures[size_t(in)].res;
+        return tex_of(size_t(in), k);
     }
     f = DXGI_FORMAT_R8G8B8A8_UNORM;
     return nullptr;
@@ -924,6 +1003,11 @@ bool record(const Where &w, int k)
             broken = true;
             return false;
         }
+    if (!ensure_work(k)) {
+        broken = true;
+        return false;
+    }
+    Work &wk = frame.work[k];
     view::State v = view::current();
     trace.view = v;
     std::vector<int> live = live_passes(v);
@@ -959,30 +1043,32 @@ bool record(const Where &w, int k)
     UINT pw = UINT(d.Width), ph = d.Height;
 
     transition(l, w.back, w.back_state, D3D12_RESOURCE_STATE_COPY_SOURCE);
-    transition(l, frame.orig, HOME, D3D12_RESOURCE_STATE_COPY_DEST);
-    l->CopyResource(frame.orig, w.back);
-    transition(l, frame.orig, D3D12_RESOURCE_STATE_COPY_DEST, HOME);
-    if (capture_now)
-        capture_copy(l, w.back, 0);
+    transition(l, wk.orig, HOME, D3D12_RESOURCE_STATE_COPY_DEST);
+    l->CopyResource(wk.orig, w.back);
+    transition(l, wk.orig, D3D12_RESOURCE_STATE_COPY_DEST, HOME);
     for (auto &t : textures)
         if (!t.file.empty() && !t.uploaded && t.res)
             upload(l, t);
     l->SetComputeRootSignature(root);
     l->SetDescriptorHeaps(1, &frame.heap);
-    UINT clear_at = FRAMES * MAX_PASSES * TABLE;
+    UINT clear_at = FRAMES * MAX_PASSES * TABLE, ntex = UINT(textures.size());
     for (size_t i = 0; i < textures.size(); i++) {
         Tex &t = textures[i];
-        if (!t.clear || !t.res)
+        bool own = !shared(t);
+        ID3D12Resource *r = tex_of(i, k);
+        if (!r || !(own ? wk.clear : t.clear))
             continue;
-        uav(t.res, t.format, cpu_at(frame.heap, clear_at + UINT(i)));
-        uav(t.res, t.format, cpu_at(frame.cpu, UINT(i)));
-        transition(l, t.res, HOME, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+        UINT at = own ? ntex * (1 + UINT(k)) + UINT(i) : UINT(i);
+        uav(r, t.format, cpu_at(frame.heap, clear_at + at));
+        uav(r, t.format, cpu_at(frame.cpu, at));
+        transition(l, r, HOME, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
         const float zero[4] = {};
-        l->ClearUnorderedAccessViewFloat(gpu_at(frame.heap, clear_at + UINT(i)), cpu_at(frame.cpu, UINT(i)), t.res, zero,
-                                         0, nullptr);
-        transition(l, t.res, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, HOME);
-        t.clear = false;
+        l->ClearUnorderedAccessViewFloat(gpu_at(frame.heap, clear_at + at), cpu_at(frame.cpu, at), r, zero, 0, nullptr);
+        transition(l, r, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, HOME);
+        if (!own)
+            t.clear = false;
     }
+    wk.clear = false;
 
     uint32_t c[CONSTANTS] = {};
     float t_now = float(double(now - started) / 1000.0);
@@ -1021,11 +1107,11 @@ bool record(const Where &w, int k)
         transition(l, depth, w.depth_state, depth_read);
     bool timed = queries && query_readback;
     UINT qbase = UINT(k) * MAX_PASSES * 2;
-    ID3D12Resource *cur = frame.orig;
+    ID3D12Resource *cur = wk.orig;
     int next = 0;
     for (int index : live) {
         Pass &p = passes[size_t(index)];
-        ID3D12Resource *out = p.output < 0 ? frame.pic[next] : textures[size_t(p.output)].res;
+        ID3D12Resource *out = p.output < 0 ? wk.pic[next] : tex_of(size_t(p.output), k);
         DXGI_FORMAT of = p.output < 0 ? frame.view : textures[size_t(p.output)].format;
         UINT ow = p.output < 0 ? pw : textures[size_t(p.output)].w, oh = p.output < 0 ? ph : textures[size_t(p.output)].h;
         UINT at = (UINT(k) * MAX_PASSES + s.passes) * TABLE;
@@ -1033,7 +1119,7 @@ bool record(const Where &w, int k)
         srv(depth, depth_fmt, cpu_at(frame.heap, at + 1));
         for (UINT i = 0; i < INPUTS; i++) {
             DXGI_FORMAT f;
-            ID3D12Resource *r = input_res(p.inputs[i], f);
+            ID3D12Resource *r = input_res(p.inputs[i], k, f);
             srv(r, f, cpu_at(frame.heap, at + 2 + i));
         }
         uav(out, of, cpu_at(frame.heap, at + TABLE - 1));
@@ -1065,7 +1151,7 @@ bool record(const Where &w, int k)
         l->ResolveQueryData(queries, D3D12_QUERY_TYPE_TIMESTAMP, qbase, s.passes * 2, query_readback, UINT64(qbase) * 8);
 
     transition(l, cur, HOME, D3D12_RESOURCE_STATE_COPY_SOURCE);
-    if (cur != frame.orig) {
+    if (cur != wk.orig) {
         transition(l, w.back, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
         l->CopyResource(w.back, cur);
         transition(l, w.back, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COPY_SOURCE);
@@ -1073,7 +1159,7 @@ bool record(const Where &w, int k)
     if (capture_now)
         capture_copy(l, w.back, 1);
     transition(l, w.back, D3D12_RESOURCE_STATE_COPY_SOURCE, w.back_state);
-    if (w.hudless && cur != frame.orig && fg_on.load()) {
+    if (w.hudless && cur != wk.orig && fg_on.load()) {
         D3D12_RESOURCE_DESC hd = w.hudless->GetDesc();
         if (hd.Width == d.Width && hd.Height == d.Height && view_format(hd.Format) == frame.view) {
             transition(l, w.hudless, w.hudless_state, D3D12_RESOURCE_STATE_COPY_DEST);
@@ -1276,6 +1362,45 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
             (b.Transition.StateAfter & READ_STATES) && b.Flags == D3D12_RESOURCE_BARRIER_FLAG_NONE && !leaving)
             leaving = b.Transition.pResource;
     }
+    if (final_left && device && m && m->target) {
+        for (UINT i = 0; i < n; i++) {
+            const D3D12_RESOURCE_BARRIER &b = barriers[i];
+            if (b.Type != D3D12_RESOURCE_BARRIER_TYPE_TRANSITION || b.Transition.pResource != m->target ||
+                b.Transition.StateBefore != D3D12_RESOURCE_STATE_RENDER_TARGET || b.Transition.StateAfter != 0)
+                continue;
+            FinalProbe &fp = finals[final_at % 256];
+            if (fp.pending)
+                break;
+            D3D12_RESOURCE_DESC d = m->target->GetDesc();
+            if (!fp.rb) {
+                D3D12_RESOURCE_DESC box = d;
+                box.Width = final_w = UINT(d.Width) * 8 / 10;
+                box.Height = final_h = d.Height * 6 / 10;
+                UINT rows = 0;
+                UINT64 row_bytes = 0, total = 0;
+                device->GetCopyableFootprints(&box, 0, 1, 0, &final_fp, &rows, &row_bytes, &total);
+                fp.rb = buffer(D3D12_HEAP_TYPE_READBACK, total, D3D12_RESOURCE_STATE_COPY_DEST);
+            }
+            if (!fp.rb)
+                break;
+            transition(list, m->target, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
+            D3D12_TEXTURE_COPY_LOCATION to{}, from{};
+            to.pResource = fp.rb;
+            to.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+            to.PlacedFootprint = final_fp;
+            from.pResource = m->target;
+            from.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+            D3D12_BOX src{UINT(d.Width) / 10, d.Height / 8, 0, UINT(d.Width) / 10 + final_w, d.Height / 8 + final_h, 1};
+            list->CopyTextureRegion(&to, 0, 0, 0, &from, &src);
+            transition(list, m->target, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+            fp.pending = true;
+            fp.frame = frame_count;
+            fp.land = frame_count + 60;
+            final_at++;
+            final_left--;
+            break;
+        }
+    }
     // The game records a frame's lists in parallel, so the core cannot tell at one place whether another
     // place of the same frame runs the passes too. On track the game reads the finished picture once
     // per frame for its HUD, as the first back buffer barrier of the HUD's list (or the first one that
@@ -1315,8 +1440,11 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
                 m->slot = k;
                 m->ran_back = w.back;
                 stats.in_list++;
-                if (order_left)
-                    m->order += " [PASSES]";
+                if (order_left) {
+                    char at[24];
+                    snprintf(at, sizeof at, " [PASSES@%04x]", unsigned(uintptr_t(w.back) & 0xffff));
+                    m->order += at;
+                }
             }
         }
     }
@@ -1351,10 +1479,12 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
         if (!diag_done && m->seen.size() < 96)
             m->seen.push_back(b);
         if (order_left && m->order.size() < 3000) {
-            char step[48];
+            char step[64];
             snprintf(step, sizeof step, " %s%s%s%s%s:%x>%x%s", tonemap ? "T" : "", back ? "B" : "", depth ? "D" : "",
                      (c & W_HUDLESS) ? "H" : "", (c & W_UI) ? "U" : "", unsigned(b.Transition.StateBefore),
                      unsigned(b.Transition.StateAfter), b.Flags ? "s" : "");
+            if (back)
+                snprintf(step + strlen(step), sizeof step - strlen(step), "@%04x", unsigned(uintptr_t(r) & 0xffff));
             m->order += step;
         }
         if (tonemap &&
@@ -1368,8 +1498,9 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
             m->target = r;
             m->state = b.Transition.StateAfter;
             if (b.Transition.StateAfter == D3D12_RESOURCE_STATE_RENDER_TARGET &&
-                !(b.Transition.StateBefore & (READ_STATES | D3D12_RESOURCE_STATE_RENDER_TARGET)))
+                !(b.Transition.StateBefore & (READ_STATES | D3D12_RESOURCE_STATE_RENDER_TARGET))) {
                 back_use(r).fresh = true;
+            }
         }
     }
     return false;
@@ -1585,13 +1716,12 @@ void check_trace_file(ULONGLONG now)
         swofty::log("[postfx] logging the barrier order of the next %u list(s) that draw the picture", order_left);
     }
     std::wstring burst_file = swofty_root_dir + L"postfx.burst";
-    if (GetFileAttributesW(burst_file.c_str()) != INVALID_FILE_ATTRIBUTES && !burst_left) {
+    if (GetFileAttributesW(burst_file.c_str()) != INVALID_FILE_ATTRIBUTES && !final_left) {
         std::string text = runtime::read_file(burst_file, 64);
         DeleteFileW(burst_file.c_str());
         unsigned frames = unsigned(std::strtoul(text.c_str(), nullptr, 10));
-        burst_left = std::min(frames ? frames : 60u, 240u);
-        burst_present = 0;
-        swofty::log("[postfx] burst: reading back the next %u presented frame(s)", burst_left);
+        final_left = std::min(frames ? frames : 60u, 240u);
+        swofty::log("[postfx] burst: reading back the next %u frame(s) as the game hands them to Present", final_left);
     }
     if (GetFileAttributesW(trace_file.c_str()) == INVALID_FILE_ATTRIBUTES)
         return;
@@ -1602,111 +1732,25 @@ void check_trace_file(ULONGLONG now)
     swofty::log("[postfx] tracing the next %u presented frame(s)", trace_left);
 }
 
-// SWOFTY_POSTFX_BURST diagnostics: the presented frame of the next frames, read back and summed into a
-// mean colour and saturation over a grid, one log line each, beside the trace's path for that frame.
-struct Burst {
-    ID3D12CommandAllocator *alloc = nullptr;
-    ID3D12GraphicsCommandList *list = nullptr;
-    ID3D12Resource *rb = nullptr;
-    UINT64 fence = 0;
-    unsigned present = 0;
-    const char *path = "";
-    bool pending = false;
-};
-std::vector<Burst> bursts;
-D3D12_PLACED_SUBRESOURCE_FOOTPRINT burst_fp;
-UINT burst_w, burst_h;
-DXGI_FORMAT burst_fmt;
-
-void burst_land()
+void final_land()
 {
-    for (auto &b : bursts) {
-        if (!b.pending || fence->GetCompletedValue() < b.fence)
+    for (auto &fp : finals) {
+        if (!fp.pending || frame_count < fp.land)
             continue;
-        b.pending = false;
+        fp.pending = false;
         uint8_t *mapped = nullptr;
-        if (FAILED(b.rb->Map(0, nullptr, reinterpret_cast<void **>(&mapped))))
+        if (FAILED(fp.rb->Map(0, nullptr, reinterpret_cast<void **>(&mapped))))
             continue;
-        double r = 0, g = 0, bl = 0, sat = 0;
-        unsigned n = 0;
-        for (UINT y = burst_h / 8; y < burst_h * 7 / 10; y += burst_h / 40)
-            for (UINT x = burst_w / 10; x < burst_w * 9 / 10; x += burst_w / 64) {
-                uint32_t v;
-                memcpy(&v, mapped + burst_fp.Offset + size_t(y) * burst_fp.Footprint.RowPitch + size_t(x) * 4, 4);
-                double c[3];
-                if (burst_fmt == DXGI_FORMAT_R10G10B10A2_UNORM)
-                    c[0] = (v & 1023) / 1023.0, c[1] = ((v >> 10) & 1023) / 1023.0, c[2] = ((v >> 20) & 1023) / 1023.0;
-                else
-                    c[0] = (v & 255) / 255.0, c[1] = ((v >> 8) & 255) / 255.0, c[2] = ((v >> 16) & 255) / 255.0;
-                double mx = std::max(c[0], std::max(c[1], c[2])), mn = std::min(c[0], std::min(c[1], c[2]));
-                r += c[0], g += c[1], bl += c[2], sat += mx > 0 ? (mx - mn) / mx : 0;
-                n++;
-            }
+        double m[4];
+        grid_mean(mapped + final_fp.Offset, final_fp.Footprint.RowPitch, final_w, final_h, frame.view, m);
         D3D12_RANGE none{0, 0};
-        b.rb->Unmap(0, &none);
-        if (n)
-            swofty::log("[postfx] burst present=%u path=%s mean=%.4f,%.4f,%.4f sat=%.4f", b.present, b.path, r / n,
-                        g / n, bl / n, sat / n);
+        fp.rb->Unmap(0, &none);
+        swofty::log("[postfx] burst f=%u mean=%.4f,%.4f,%.4f sat=%.4f", fp.frame, m[0], m[1], m[2], m[3]);
     }
-}
-
-void burst_step(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known)
-{
-    if (!fence || !device)
-        return;
-    burst_land();
-    if (!burst_left || !known || !known->queue)
-        return;
-    ID3D12Resource *shown = nullptr;
-    if (FAILED(sc->GetBuffer(sc->GetCurrentBackBufferIndex(), IID_PPV_ARGS(&shown))) || !shown)
-        return;
-    D3D12_RESOURCE_DESC d = shown->GetDesc();
-    if (bursts.empty()) {
-        UINT rows = 0;
-        UINT64 row_bytes = 0, total = 0;
-        device->GetCopyableFootprints(&d, 0, 1, 0, &burst_fp, &rows, &row_bytes, &total);
-        burst_w = UINT(d.Width), burst_h = d.Height, burst_fmt = view_format(d.Format);
-        bursts.resize(burst_left);
-        for (auto &b : bursts)
-            if (FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&b.alloc))) ||
-                FAILED(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, b.alloc, nullptr,
-                                                 IID_PPV_ARGS(&b.list))) ||
-                !(b.rb = buffer(D3D12_HEAP_TYPE_READBACK, total, D3D12_RESOURCE_STATE_COPY_DEST))) {
-                swofty::log("[postfx] burst: could not make its readback buffers");
-                burst_left = 0;
-                shown->Release();
-                return;
-            } else
-                b.list->Close();
-    }
-    Burst &b = bursts[burst_at++ % bursts.size()];
-    if (b.pending || FAILED(b.alloc->Reset()) || FAILED(b.list->Reset(b.alloc, nullptr))) {
-        shown->Release();
-        return;
-    }
-    transition(b.list, shown, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_SOURCE);
-    D3D12_TEXTURE_COPY_LOCATION to{}, from{};
-    to.pResource = b.rb;
-    to.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-    to.PlacedFootprint = burst_fp;
-    from.pResource = shown;
-    from.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-    b.list->CopyTextureRegion(&to, 0, 0, 0, &from, nullptr);
-    transition(b.list, shown, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_PRESENT);
-    b.list->Close();
-    ID3D12CommandList *one[] = {b.list};
-    d3d12hooks::exec_original(known->queue, 1u, one);
-    b.fence = ++fence_next;
-    known->queue->Signal(fence, b.fence);
-    b.pending = true;
-    b.present = burst_present++;
-    b.path = trace.runs ? trace.path : "none";
-    burst_left--;
-    shown->Release();
 }
 
 // Present closes the frame: its trace line and counts, the toggle keys, and the live settings.
-void on_present(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
+void on_present(IDXGISwapChain3 *, const d3d12hooks::Swapchain *known, void *)
 {
     static const uint32_t probe = perf::probe("core", "postfx Present");
     perf::Scope p(probe);
@@ -1721,7 +1765,7 @@ void on_present(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
     stats.presented++;
     stats.without += trace.runs == 0;
     stats.doubled += trace.runs > 1;
-    burst_step(sc, known);
+    final_land();
     log_trace();
     trace = Trace{};
     check_trace_file(now);
