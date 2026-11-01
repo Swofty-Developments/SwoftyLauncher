@@ -120,6 +120,18 @@ inline bool time_trial_mode(std::string_view label)
     return swofty_core::apply::facts::mode_of(label) == "time_trial";
 }
 
+struct FrontEndLeave {
+    bool restore = false, clear_selected = false, forget_pick = false;
+};
+
+inline FrontEndLeave leaving_front_end(std::string_view mode_label, bool selected_is_box)
+{
+    std::string mode = swofty_core::apply::facts::mode_of(mode_label);
+    if (mode != "driver_career" && mode != "my_team" && mode != "story" && mode != "f1_world")
+        return {};
+    return {true, selected_is_box, true};
+}
+
 inline const std::string &list_for(const Box &box, bool time_trial)
 {
     return time_trial && !box.time_trial.empty() ? box.time_trial : box.entrant_list;

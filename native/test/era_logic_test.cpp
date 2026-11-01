@@ -345,6 +345,56 @@ static void grid_limit_tests()
     expect(resume.get() == 20, "the Continue path's put-back restores max_entrants to 20");
 }
 
+static void front_end_leak_tests()
+{
+    struct Pick {
+        bool narrowed = false;
+        std::string last_pick, selected;
+    };
+    auto press = [](Pick &p, const char *list) {
+        p.narrowed = true;
+        p.last_pick = list;
+        p.selected = list;
+    };
+    auto load = [](Pick &p, const char *mode) {
+        era::FrontEndLeave l = era::leaving_front_end(mode, !p.selected.empty());
+        if (l.restore)
+            p.narrowed = false;
+        if (l.clear_selected)
+            p.selected.clear();
+        if (l.forget_pick)
+            p.last_pick.clear();
+    };
+    auto clean = [](const Pick &p) { return !p.narrowed && p.last_pick.empty() && p.selected.empty(); };
+
+    Pick gp;
+    press(gp, "cs_f1_2023");
+    load(gp, "grand_prix_23");
+    expect(gp.narrowed && gp.last_pick == "cs_f1_2023" && gp.selected == "cs_f1_2023",
+           "a Grand Prix session load keeps the box pick");
+    load(gp, "driver_career_progressive");
+    expect(clean(gp), "GP box press then career Continue: narrowing, last pick and selected list are put back");
+
+    Pick tt;
+    press(tt, "bdy_s5_2010_tt");
+    load(tt, "time_trial");
+    expect(tt.narrowed && tt.selected == "bdy_s5_2010_tt", "a Time Trial session load keeps the box pick");
+    load(tt, "driver_career_progressive");
+    expect(clean(tt), "TT box press then career New: everything is put back");
+
+    Pick two;
+    press(two, "ms_f1_2015");
+    press(two, "bdy_s5_2010");
+    load(two, "driver_career_progressive");
+    expect(clean(two), "two box presses then a career load: nothing of either survives");
+
+    Pick none;
+    era::FrontEndLeave l = era::leaving_front_end("my_team_career_25", false);
+    expect(l.restore && !l.clear_selected && l.forget_pick, "a career load with no box list selected leaves the selection alone");
+    expect(!era::leaving_front_end("grand_prix_splitscreen", true).restore && !era::leaving_front_end("solo_testing", true).restore,
+           "Grand Prix and Time Trial front ends are not left");
+}
+
 int main()
 {
     std::vector<era::Box> have;
@@ -758,6 +808,7 @@ int main()
     continue_tests();
     setup_guard_tests();
     grid_limit_tests();
+    front_end_leak_tests();
 
     printf("%s\n", fails ? "era_logic_test: FAILED" : "era_logic_test: all passed");
     return fails ? 1 : 0;
