@@ -219,7 +219,9 @@ Errors: `unknown_weekend` (new name without `verified`), `unknown_track` (no usa
 Args: `{ "order": [string] }`, the weekend names of every round after the current one, in the new
 order (a permutation of `calendar.rounds[r].weekend` for `r >= editable_from`; every moved round must
 be not started). Permutes the season's weekend list in place; the weekend objects and the season's name
-map are unchanged. Undo: `reorder` with the `before` order of the future rounds. `"unsafe": true`
+map are unchanged. Refused with `unsupported` in a Driver Career (Progressive careers are Driver
+Careers): the game re-lays out a weekend's sessions at a load, keeping completed sessions first, and a moved round has left
+weekends with their sessions out of order. Undo: `reorder` with the `before` order of the future rounds. `"unsafe": true`
 (direct write to the owner's list).
 
 ### `season.calendar.set_round`
