@@ -161316,6 +161316,114 @@
    "used_by": [
     "native/src/core/teamhq_track_guard.cpp"
    ]
+  },
+  {
+   "id": "game.car_setup_vm_init_car_load",
+   "section": ".xtls",
+   "pattern": "83 B8 40 9F 00 00 64 75 10 48 89 F1 E8 ?? ?? ?? ?? 48 89 F1 E8 ?? ?? ?? ?? C7 44 24 30 04 00 00 00",
+   "match": "0x140c1b92c",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c1b92c",
+   "kind": "mid",
+   "expect": "83 B8 40 9F 00 00 64",
+   "names": [
+    "site_Game_CarSetupVm_InitCarLoad"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-02",
+     "by": "setup-vm",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/setup_vm_guard.cpp"
+   ]
+  },
+  {
+   "id": "game.car_setup_vm_value_set_car_load",
+   "section": ".xtls",
+   "pattern": "83 B8 40 9F 00 00 64 75 10 48 89 F1 E8 ?? ?? ?? ?? 48 89 F1 E8 ?? ?? ?? ?? 4C 8D AE D8 76 00 00",
+   "match": "0x140c1cbca",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c1cbca",
+   "kind": "mid",
+   "expect": "83 B8 40 9F 00 00 64",
+   "names": [
+    "site_Game_CarSetupVm_ValueSetCarLoad"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-02",
+     "by": "setup-vm",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/setup_vm_guard.cpp"
+   ]
+  },
+  {
+   "id": "game.car_setup_vm_on_value_changed_car_load_a",
+   "section": ".xtls",
+   "pattern": "48 8B 40 28 83 B8 40 9F 00 00 64 0F 85",
+   "match": "0x140c1ed9b",
+   "anchor": "0x4",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c1ed9f",
+   "kind": "mid",
+   "expect": "83 B8 40 9F 00 00 64",
+   "names": [
+    "site_Game_CarSetupVm_OnValueChangedCarLoadA"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-02",
+     "by": "setup-vm",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/setup_vm_guard.cpp"
+   ]
+  },
+  {
+   "id": "game.car_setup_vm_on_value_changed_car_load_b",
+   "section": ".xtls",
+   "pattern": "83 B8 40 9F 00 00 64 75 10 48 89 F1 E8 ?? ?? ?? ?? 48 89 F1 E8 ?? ?? ?? ?? 80 BE 6A 7E 00 00 00",
+   "match": "0x140c1eeb7",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c1eeb7",
+   "kind": "mid",
+   "expect": "83 B8 40 9F 00 00 64",
+   "names": [
+    "site_Game_CarSetupVm_OnValueChangedCarLoadB"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-02",
+     "by": "setup-vm",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/setup_vm_guard.cpp"
+   ]
   }
  ]
 }
