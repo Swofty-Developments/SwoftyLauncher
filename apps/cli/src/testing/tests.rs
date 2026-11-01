@@ -569,7 +569,10 @@ fn a_run_of_only_skipped_tests_starts_nothing_and_passes() {
     let crate::Command::Test(cmd) = cli.command else {
         panic!("test");
     };
-    assert_eq!(command(&store, cmd).unwrap(), ExitCode::from(exit::PASS));
+    assert_eq!(
+        command(&store, None, "default", cmd).unwrap(),
+        ExitCode::from(exit::PASS)
+    );
     let r: Report = serde_json::from_str(&std::fs::read_to_string(out.join("report.json")).unwrap()).unwrap();
     assert_eq!(r.game_starts, 0);
     assert!(r.tests.iter().all(|t| t.status == Status::Skipped));
@@ -584,7 +587,10 @@ fn a_run_of_only_skipped_tests_starts_nothing_and_passes() {
     let crate::Command::Test(cmd) = none.command else {
         panic!("test");
     };
-    assert_eq!(command(&store, cmd).unwrap(), ExitCode::from(exit::INFRA));
+    assert_eq!(
+        command(&store, None, "default", cmd).unwrap(),
+        ExitCode::from(exit::INFRA)
+    );
     std::fs::remove_dir_all(&root).ok();
 }
 
