@@ -54,6 +54,28 @@ struct TypeRange {
 };
 
 bool timed_session(const std::string &key);
+struct PlanRef {
+    int weekend = 0;
+    std::string event;
+};
+
+struct PlanMove {
+    int from = 0;
+    int to = 0;
+    bool drop = false;
+    bool stamp = false;
+};
+
+// Where each stored plan belongs once the calendar reads `rounds` (weekend names in round order). A plan
+// with an event follows that event: kept when it still sits at its index, moved to the index it has now,
+// dropped when the round is gone. A plan with no event (stored before plans carried one, or just made)
+// is stamped with the round now at its index. Negative weekends ("next") and indices past the calendar
+// are kept as they are.
+std::vector<PlanMove> plan_moves(const std::vector<PlanRef> &plans, const std::vector<std::string> &rounds);
+
+// The first wet state (light_rain, heavy_rain, storm) the track's per-type range cannot draw, or "".
+std::string unsupported_state(const Build &b, const TypeRange (&ranges)[6]);
+
 int state_of(const std::string &s);
 bool is_int(const Json &v, double lo, double hi);
 bool is_num(const Json &v, double lo, double hi);

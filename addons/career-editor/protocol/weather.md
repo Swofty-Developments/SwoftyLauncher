@@ -263,3 +263,11 @@ addon init.
 | `WeatherTypeRange` (0x14) | 3 | per-type intensity range (planned intensities are clamped into it, and it's pinned while a planned intensity is built); the weight isn't read or written (only types 0..4 are weighted) |
 | `WeatherSessionSettings` | 3 | session type (time trial skip), mode, exact flag (scripted skip) |
 | `WeatherAndTimeOfDayComponent` | 2 | weather system pointer, `rnd_seed` |
+
+## Plans follow their round
+Each stored plan carries `event` (the round's weekend name) and `track` (its track stat id). After `add_round`,
+`set_round`, `remove_round`, `reorder` and at every forecast build, a plan whose round moved is re-keyed to the round's new
+index (`weather: plan for <track> moved with its round`), and one whose round is gone is dropped (`weather: plan for <track>
+dropped`). A plan stored without `event` is stamped with the round at its index the first time it is seen. A session whose
+plan names a wet state (light_rain, heavy_rain, storm) the track's per-type range cannot draw keeps the game's forecast
+(`weather: <track> has no <state>; kept the game's forecast`).

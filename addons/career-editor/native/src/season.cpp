@@ -1393,6 +1393,7 @@ ce::OpResult op_calendar_reorder(const ce::Json &args)
     r.after = rounds_json(back);
     ce::log("season.calendar.reorder season %u rounds %zu..%zu %s -> %s", wh.index + 1, first + 1,
             rs.size(), r.before.c_str(), r.after.c_str());
+    ce::weather::reconcile("season.calendar.reorder");
     return r;
 }
 
@@ -1556,6 +1557,7 @@ const char *cal_ctx(CalCtx &c)
 
 ce::OpResult cal_done(const char *op, const CalCtx &c, const std::string &before, const char *what)
 {
+    ce::weather::reconcile(op);
     std::vector<Round> back;
     uint32_t cur2 = 0;
     ce::OpResult r;
@@ -2029,3 +2031,23 @@ CE_OP("season.calendar.repair", op_calendar_repair);
 CE_OP("season.points.adjust", op_points_adjust);
 CE_OP("season.points.clear", op_points_clear);
 CE_OP("season.result.set", op_result_set);
+
+namespace ce {
+
+bool season_rounds(std::vector<RoundId> &out)
+{
+    out.clear();
+    Where wh;
+    std::vector<Round> rs;
+    uint32_t cur = 0;
+    if (!locate(wh) || !rounds(wh.season, rs, cur))
+        return false;
+    for (auto &r : rs) {
+        uint8_t t = kNoTrack;
+        rd(r.weekend + kWeekendTrack, t);
+        out.push_back({r.name, t == kNoTrack ? -1 : static_cast<int>(t)});
+    }
+    return true;
+}
+
+} // namespace ce

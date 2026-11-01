@@ -181,6 +181,46 @@ int main() {
     b = make_build(nf, 3600, -1);
     CHECK(validate_build(b, 3600).empty());
 
+
+    // a plan follows its round when the calendar changes
+    {
+        std::vector<std::string> before = {"rw_a", "rw_b", "rw_c", "rw_d"};
+        std::vector<PlanRef> refs = {{3, "rw_d"}, {2, "rw_c"}, {-1, ""}};
+        auto m = plan_moves(refs, before);
+        CHECK(m.size() == 3 && !m[0].drop && m[0].to == 3 && !m[1].drop && m[1].to == 2 && m[2].to == -1 && !m[2].stamp);
+        std::vector<std::string> added = {"rw_a", "rw_b", "rw_sochi", "rw_c", "rw_d"};
+        m = plan_moves(refs, added);
+        CHECK(!m[0].drop && m[0].to == 4 && !m[1].drop && m[1].to == 3 && m[2].to == -1);
+        std::vector<std::string> removed = {"rw_a", "rw_d"};
+        m = plan_moves(refs, removed);
+        CHECK(!m[0].drop && m[0].to == 1 && m[1].drop);
+        std::vector<std::string> reordered = {"rw_d", "rw_a", "rw_c", "rw_b"};
+        m = plan_moves(refs, reordered);
+        CHECK(m[0].to == 0 && !m[0].drop && m[1].to == 2 && !m[1].drop);
+        std::vector<std::string> replaced = {"rw_a", "rw_b", "rw_x", "rw_d"};
+        m = plan_moves({{2, "rw_c"}}, replaced);
+        CHECK(m[0].drop);
+        m = plan_moves({{2, ""}, {9, ""}}, before);
+        CHECK(m[0].stamp && !m[0].drop && m[0].to == 2 && !m[1].stamp && !m[1].drop && m[1].to == 9);
+    }
+
+    // a wet state the track's range cannot draw is refused, dry types and a good range are not
+    {
+        Build wet; wet.n = 2; wet.type[0] = 0; wet.type[1] = 3;
+        const TypeRange good[6] = {{0, 0}, {0, 0}, {0, 0}, {0.1f, 0.4f}, {0.41f, 0.7f}, {1, 1}};
+        CHECK(unsupported_state(wet, good).empty());
+        const TypeRange none[6] = {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0.41f, 0.7f}, {1, 1}};
+        CHECK(unsupported_state(wet, none) == "light_rain");
+        Build storm; storm.n = 1; storm.type[0] = 5;
+        const TypeRange nostorm[6] = {{0, 0}, {0, 0}, {0, 0}, {0.1f, 0.4f}, {0.41f, 0.7f}, {0, 0}};
+        CHECK(unsupported_state(storm, nostorm) == "storm" && unsupported_state(storm, good).empty());
+        const TypeRange bad[6] = {{0, 0}, {0, 0}, {0, 0}, {0.1f, 0.4f}, {(float)NAN, 0.7f}, {1, 1}};
+        Build heavy; heavy.n = 1; heavy.type[0] = 4;
+        CHECK(unsupported_state(heavy, bad) == "heavy_rain");
+        Build dry; dry.n = 1; dry.type[0] = 2;
+        CHECK(unsupported_state(dry, none).empty());
+    }
+
     std::printf("%s (%d failure(s))\n", fails ? "FAILED" : "ALL OK", fails);
     return fails ? 1 : 0;
 }
