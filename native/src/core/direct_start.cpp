@@ -713,6 +713,17 @@ ds::Setup new_grand_prix(std::string &why)
         return ds::Setup::failed;
     }
     void *list = *reinterpret_cast<void **>(lists + size_t(id) * 16 + 8);
+    if (!list) {
+        std::string held;
+        size_t count = size_t(lists_end - lists) / 16;
+        for (size_t i = 0; i < count && held.size() < 1200; i++)
+            if (*reinterpret_cast<void **>(lists + i * 16 + 8))
+                held += " " + std::to_string(i);
+        why = "the entrant list '" + list_name + "' (stat id " + std::to_string(id) + ") is not loaded";
+        swofty::log("[direct] Grand Prix: %s; the entrants system holds %zu list slot(s), loaded:%s", why.c_str(), count,
+                    held.c_str());
+        return ds::Setup::failed;
+    }
     *reinterpret_cast<void **>(e + ENTITY_LIST) = list;
     swofty::log("[direct] Grand Prix: entrant list %s (stat id %u) is %p", list_name.c_str(), unsigned(id), list);
     // 3. The track by name in E's track system: 16-byte entries at +0x28..+0x30, the record at +8, its name at +0x78.
