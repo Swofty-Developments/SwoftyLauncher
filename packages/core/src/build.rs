@@ -1872,8 +1872,9 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                         None if stale > 0 => {
                             Err(format!("{stale} resource(s) in it need their size headers fixed"))
                         }
-                        None if !ers_maps.is_empty() && carries_handling(&path, targets)? => Err(
-                            "it carries car handling files, which get the tracks' ERS settings".to_owned(),
+                        None if carries_handling(&path, targets)? => Err(
+                            "it carries car handling files, which the game reads from the game file"
+                                .to_owned(),
                         ),
                         None => overlay_fits(&path, targets, &base)?,
                     };
@@ -2583,9 +2584,9 @@ fn record_merge(built: &mut Built, planner: &mut Planner, origin: &Origin, m: Sl
 }
 
 /// Whether the overlay archive at `path` holds a car handling file for one of
-/// the 2026 team archives in `targets`.
+/// a team archive in `targets`.
 fn carries_handling(path: &Path, targets: &[String]) -> Result<bool> {
-    if !targets.iter().any(|t| ers::in_teams(t)) {
+    if !targets.iter().any(|t| t.to_ascii_lowercase().contains("/teams/")) {
         return Ok(false);
     }
     let file = swofty_formats::erp::ErpFile::open(path)?;
@@ -5572,6 +5573,65 @@ mod tests {
         assert!(built.plan.added.contains_key("Mixed_Case/New_File.bin"));
         assert!(!built.plan.added.contains_key("mixed_case/new_file.bin"));
         std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn an_overlay_with_a_handling_file_never_loads_as_it_is() {
+        use swofty_formats::erp::{Erp, Fragment, HEADER_LEN, MAGIC, Resource, STORED};
+        let archive = |name: &str, kind: &str| {
+            let mut header = [0u8; HEADER_LEN];
+            header[..4].copy_from_slice(MAGIC);
+            header[4..8].copy_from_slice(&3u32.to_le_bytes());
+            Erp {
+                header,
+                version: 3,
+                resources: vec![Resource {
+                    name: name.into(),
+                    kind: swofty_formats::erp::kind(kind).unwrap(),
+                    unk: vec![0; 4],
+                    fragments: vec![Fragment {
+                        name: *b"temp",
+                        offset: 0,
+                        size: 4,
+                        flags: 0x10,
+                        compression: STORED,
+                        packed: 4,
+                        raw: b"data".to_vec(),
+                    }],
+                    hash: [0; 16],
+                }],
+            }
+            .to_bytes()
+        };
+        let dir = std::env::temp_dir().join(format!("swofty-carries-handling-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(&dir).unwrap();
+        let (vtf, other) = (dir.join("vtf.erp"), dir.join("other.erp"));
+        std::fs::write(
+            &vtf,
+            archive(
+                "eaid://f1_2026_vehicle_package/teams/ferrari/handling/ferrari.vtf",
+                "VTF",
+            ),
+        )
+        .unwrap();
+        std::fs::write(
+            &other,
+            archive(
+                "eaid://f1_2026_vehicle_package/teams/ferrari/art/a.tex",
+                "Texture",
+            ),
+        )
+        .unwrap();
+        let ferrari = ["2025_asset_groups/f1_2026_vehicle_package/teams/ferrari/wep/ferrari.erp".to_owned()];
+        let monza =
+            ["2025_asset_groups/f1_2025_vehicle_package/teams/ferrari/wep/ferrari_monza_25.erp".to_owned()];
+        let track = ["2025_asset_groups/track_package/a.erp".to_owned()];
+        assert!(carries_handling(&vtf, &ferrari).unwrap());
+        assert!(carries_handling(&vtf, &monza).unwrap());
+        assert!(!carries_handling(&vtf, &track).unwrap());
+        assert!(!carries_handling(&other, &ferrari).unwrap());
+        std::fs::remove_dir_all(&dir).ok();
     }
 
     #[test]
