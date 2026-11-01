@@ -318,12 +318,6 @@ impl Shell {
                 };
                 row.child(dot(p.warning))
                     .child(div().min_w_0().truncate().child(text))
-                    .when(!self.cancelling, |d| {
-                        d.child(
-                            link("cancel-build", "Cancel", p)
-                                .on_click(cx.listener(|this, _, window, cx| this.cancel_build(window, cx))),
-                        )
-                    })
                     .when_some(self.wrapper_log(), |d, log| {
                         d.child(
                             link("launch-log", "Log", p).on_click(move |_, _, cx| cx.open_with_system(&log)),
@@ -677,7 +671,10 @@ impl Shell {
             PlayState::Ready | PlayState::Crashed(_) => (IconName::Play, "Play", p.accent, p.on_accent, true),
             PlayState::Launching => (IconName::LoaderCircle, "Launching…", p.elevated, p.accent, false),
             PlayState::Restoring => (IconName::LoaderCircle, "Restoring…", p.elevated, p.accent, false),
-            PlayState::Building => (IconName::LoaderCircle, "Building…", p.elevated, p.accent, false),
+            PlayState::Building if self.cancelling => {
+                (IconName::LoaderCircle, "Cancelling…", p.elevated, p.accent, false)
+            }
+            PlayState::Building => (IconName::LoaderCircle, "Building…", p.elevated, p.accent, true),
             PlayState::Running => (IconName::Square, "Stop", p.elevated, p.error, true),
             PlayState::NotInstalled => (IconName::FolderSearch, "Locate game", p.elevated, p.text, true),
             PlayState::Detecting | PlayState::Checking => {
@@ -688,6 +685,7 @@ impl Shell {
         let ready = matches!(state, PlayState::Ready | PlayState::Crashed(_));
         let missing = matches!(state, PlayState::NotInstalled);
         let running = matches!(state, PlayState::Running);
+        let building = matches!(state, PlayState::Building);
         let button = div()
             .id("play")
             .h(px(52.))
@@ -705,6 +703,7 @@ impl Shell {
             .when(ready, |d| d.hover(move |s| s.bg(p.accent_hover)))
             .when(missing, |d| d.hover(move |s| s.bg(p.selected)))
             .when(enabled, |d| d.cursor_pointer())
+            .when(building && enabled, |d| d.hover(move |s| s.bg(p.selected)))
             .map(|d| match icon {
                 IconName::LoaderCircle => d.child(Spinner::new().icon(icon).with_size(px(18.))),
                 _ => d.child(Icon::new(icon).size(px(18.))),
@@ -719,6 +718,8 @@ impl Shell {
                 d.on_click(cx.listener(move |this, _, window, cx| {
                     if running {
                         this.confirm_stop(window, cx);
+                    } else if building {
+                        this.cancel_build(window, cx);
                     } else if missing {
                         this.locate_game(window, cx);
                     } else {
@@ -731,6 +732,43 @@ impl Shell {
             .child(button)
             .when(ready, |d| d.child(self.play_caret(cx)))
             .into_any_element()
+    }
+
+    fn room_button(&self, state: &PlayState, p: Palette, cx: &mut Context<Self>) -> Option<AnyElement> {
+        let ready = matches!(
+            state,
+            PlayState::Ready | PlayState::Running | PlayState::Crashed(_)
+        );
+        if !ready || !self.mp_can_play_room() {
+            return None;
+        }
+        let host = self.mp_viewed_room()?.host.name.clone();
+        Some(
+            div()
+                .id("play-room")
+                .h(px(52.))
+                .px(px(18.))
+                .flex_shrink_0()
+                .rounded(px(9.))
+                .border_1()
+                .border_color(p.accent)
+                .text_color(p.accent)
+                .flex()
+                .items_center()
+                .justify_center()
+                .gap(px(8.))
+                .cursor_pointer()
+                .hover(move |s| s.bg(p.selected))
+                .child(Icon::new(IconName::Users).size(px(18.)))
+                .child(
+                    div()
+                        .text_size(px(15.))
+                        .font_weight(FontWeight::SEMIBOLD)
+                        .child(format!("Play {host}'s Lobby")),
+                )
+                .on_click(cx.listener(|this, _, window, cx| this.mp_view_play(window, cx)))
+                .into_any_element(),
+        )
     }
 
     pub(crate) fn play_bar(&self, p: Palette, wide: bool, cx: &mut Context<Self>) -> impl IntoElement {
@@ -753,6 +791,7 @@ impl Shell {
                     .gap(px(20.))
                     .child(self.game_info(p, wide, cx))
                     .child(self.status(&state, p, cx))
+                    .children(self.room_button(&state, p, cx))
                     .child(self.big_button(&state, p, cx)),
             )
     }
