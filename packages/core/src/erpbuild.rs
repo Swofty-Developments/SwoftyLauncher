@@ -17,6 +17,12 @@ use crate::{Error, Result};
 const SCENE: &str = "UILayout";
 const ASSET_GROUPS: &str = "2025_asset_groups";
 
+const HANDLING_WHY: &str = "a car handling file is read from the game file, as a hand copy puts it";
+
+fn is_handling(r: &Resource) -> bool {
+    r.name.to_ascii_lowercase().ends_with(".vtf")
+}
+
 pub fn served_at_runtime(rel: &str) -> bool {
     rel.starts_with(ASSET_GROUPS)
 }
@@ -1146,9 +1152,9 @@ impl<'a> ErpBuild<'a> {
                 .slots
                 .iter()
                 .filter_map(|s| match s {
-                    Slot::Owned(r) if !foreign_argument(r, stock) => {
-                        layout_change(r, stock).map(|why| (r.name.clone(), why))
-                    }
+                    Slot::Owned(r) if !foreign_argument(r, stock) => layout_change(r, stock)
+                        .or_else(|| is_handling(r).then(|| HANDLING_WHY.to_owned()))
+                        .map(|why| (r.name.clone(), why)),
                     _ => None,
                 })
                 .collect();
@@ -2309,6 +2315,52 @@ mod tests {
         }
         .to_bytes()
         .unwrap()
+    }
+
+    #[test]
+    fn a_same_size_handling_file_rewrites_its_archive_instead_of_the_runtime_overlay() {
+        let root = std::env::temp_dir().join(format!("swofty-erphandling-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let (game, addon) = (root.join("game"), root.join("addon"));
+        std::fs::create_dir_all(game.join("car")).unwrap();
+        std::fs::create_dir_all(addon.join("car")).unwrap();
+        let vtf = "eaid://f1_2026_vehicle_package/teams/ferrari/handling/ferrari.vtf";
+        let other = "eaid://f1_2026_vehicle_package/teams/ferrari/art/other.idf";
+        std::fs::write(
+            game.join("car/ferrari.erp"),
+            typed_erp("VTF", &[(vtf, b"Mass 771".to_vec()), (other, b"stays".to_vec())]),
+        )
+        .unwrap();
+        std::fs::write(addon.join("car/edited.vtf"), b"Mass 900").unwrap();
+        std::fs::write(addon.join("car/edited.idf"), b"stayz").unwrap();
+        let replace = |res: &str, src: &str| {
+            format!(
+                r#"{{"op":"replace-resource","erp":"car/ferrari.erp","resource":"{res}","source":"car/{src}"}}"#
+            )
+        };
+        let ops = |list: &[String]| erp_ops(&format!(r#"{{"schema_version":1,"ops":[{}]}}"#, list.join(",")));
+        let original = |rel: &str| game.join(rel);
+
+        let mut b = ErpBuild::new(&original);
+        apply(&mut b, &ops(&[replace(other, "edited.idf")]), &addon).unwrap();
+        assert!(b.resized().is_empty());
+
+        let mut b = ErpBuild::new(&original);
+        apply(&mut b, &ops(&[replace(vtf, "edited.vtf")]), &addon).unwrap();
+        let expected = vec![Resized {
+            erp: "car/ferrari.erp".into(),
+            resources: vec![(vtf.into(), HANDLING_WHY.into())],
+        }];
+        assert_eq!(b.resized(), expected);
+        let out = root.join("out");
+        assert_eq!(b.take_resized(&out).unwrap(), expected);
+        assert_eq!(b.resources().count(), 0);
+        let written = Erp::parse(&std::fs::read(out.join("car/ferrari.erp")).unwrap()).unwrap();
+        assert_eq!(
+            written.find(vtf).unwrap().fragments[0].data().unwrap(),
+            b"Mass 900"
+        );
+        std::fs::remove_dir_all(&root).ok();
     }
 
     #[test]
