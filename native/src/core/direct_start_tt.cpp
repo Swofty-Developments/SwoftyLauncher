@@ -359,19 +359,34 @@ Setup place(uint8_t *e, const json::Value &request, std::string &why)
         for (const auto &b : runtime::era_boxes())
             boxes.push_back({b.entrant_list, b.time_trial});
         std::string want = tt::list_for(boxes, box);
-        uint8_t *gsm = nullptr;
+        std::vector<uint8_t *> gsms;
         std::vector<std::string> modes;
+        std::vector<std::vector<std::string>> offered;
         for (uint8_t *m : setup_modes(e)) {
             const char *name = holder_name(m, GSM_HOLDER);
-            if (name)
-                modes.push_back(name);
-            if (name && setup_name == name)
-                gsm = m;
+            if (!name)
+                continue;
+            gsms.push_back(m);
+            modes.push_back(name);
+            offered.emplace_back();
+            find_list(m, want, offered.back());
         }
-        if (!gsm) {
-            why = "the Time Trial mode has no game setup mode '" + setup_name + "' (it has " + tt::joined(modes) + ")";
+        bool named = !request["setup_mode"].str().empty();
+        int pick = tt::pick_setup_mode(modes, offered, setup_name, named, want);
+        if (pick < 0) {
+            auto it = std::find(modes.begin(), modes.end(), setup_name);
+            if (it == modes.end() && named)
+                why = "the Time Trial mode has no game setup mode '" + setup_name + "' (it has " + tt::joined(modes) + ")";
+            else {
+                why = "no setup mode offers the entrant list '" + want + "' (";
+                for (size_t k = 0; k < modes.size(); ++k)
+                    why += (k ? "; " : "") + modes[k] + ": " + tt::joined(offered[k]);
+                why += ")";
+            }
             return Setup::failed;
         }
+        uint8_t *gsm = gsms[size_t(pick)];
+        setup_name = modes[size_t(pick)];
         std::vector<std::string> lists;
         ListAt hit = find_list(gsm, want, lists);
         if (!hit.list) {

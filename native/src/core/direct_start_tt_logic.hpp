@@ -30,6 +30,25 @@ inline std::string list_for(const std::vector<BoxLists> &boxes, const std::strin
     return box;
 }
 
+// The setup mode for a list: the wanted one when it offers the list or the request named it, else the first
+// setup mode that offers the list; -1 when none does. offered[i] holds modes[i]'s lists.
+inline int pick_setup_mode(const std::vector<std::string> &modes, const std::vector<std::vector<std::string>> &offered,
+                           const std::string &want, bool named, const std::string &list)
+{
+    auto offers = [&](size_t i) {
+        return i < offered.size() && std::find(offered[i].begin(), offered[i].end(), list) != offered[i].end();
+    };
+    for (size_t i = 0; i < modes.size(); ++i)
+        if (modes[i] == want && (named || offers(i)))
+            return int(i);
+    if (named)
+        return -1;
+    for (size_t i = 0; i < modes.size(); ++i)
+        if (offers(i))
+            return int(i);
+    return -1;
+}
+
 inline bool word_of(const std::string &label, const std::string &want)
 {
     for (size_t at = label.find(want); at != std::string::npos; at = label.find(want, at + 1)) {

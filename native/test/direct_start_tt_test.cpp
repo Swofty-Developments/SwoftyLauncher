@@ -45,6 +45,18 @@ int main()
            "session weather maps to the Time Trial's dry or wet");
     expect(!tt::weather_value("") && !tt::weather_value("fog"), "no or unknown weather leaves the Time Trial's own");
 
+    std::vector<std::string> modes{"f1", "swofty_f1"};
+    std::vector<std::vector<std::string>> offered{{"f1_2025", "f1_2025_tt"}, {"f1_1990_tt", "ms_f1_2015"}};
+    expect(tt::pick_setup_mode(modes, offered, "swofty_f1", false, "f1_1990_tt") == 1,
+           "the default setup mode is kept when it offers the list");
+    expect(tt::pick_setup_mode(modes, offered, "swofty_f1", false, "f1_2025") == 0,
+           "a stock list falls back to the setup mode that offers it");
+    expect(tt::pick_setup_mode(modes, offered, "swofty_f1", true, "f1_2025") == 1,
+           "a setup mode the request names is kept, offered or not");
+    expect(tt::pick_setup_mode(modes, offered, "swofty_f1", false, "cs_f1_2017_tt") == -1,
+           "a list no setup mode offers picks none");
+    expect(tt::pick_setup_mode(modes, offered, "custom", true, "f1_2025") == -1, "a named setup mode that is missing picks none");
+
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;
 }
