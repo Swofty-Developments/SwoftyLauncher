@@ -1001,7 +1001,7 @@ impl<'a> ErpBuild<'a> {
                     continue;
                 };
                 let said = u32::from_le_bytes((&*at).try_into().expect("4 bytes"));
-                if said as usize == array.count {
+                if said == 0 || said as usize == array.count {
                     continue;
                 }
                 at.copy_from_slice(&(array.count as u32).to_le_bytes());
@@ -2864,6 +2864,22 @@ mod tests {
         );
         assert!(lines.is_empty());
         assert_eq!(views[0].1, 6);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_view_that_names_no_slice_count_is_left_alone() {
+        let root = texture_game("cohere-zero");
+        let game = root.join("game");
+        std::fs::write(
+            game.join(UI),
+            texture_erp(vec![array(2, &[[1; 4]; 1]), view_res(0)]),
+        )
+        .unwrap();
+        let original = |rel: &str| game.join(rel);
+        let mut b = ErpBuild::new(&original);
+        b.load(UI).unwrap();
+        assert!(b.cohere_arrays().unwrap().is_empty());
         std::fs::remove_dir_all(&root).ok();
     }
 
