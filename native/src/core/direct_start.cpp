@@ -291,7 +291,7 @@ void link_mid(safetyhook::Context &c)
     }
     if (driver.phase == ds::Phase::left) {
         describe_state(state, hash, out);
-        if (flow_root)
+        if (flow_root && driver.target.name == "session")
             for (uint8_t *n = flow_root; n && runtime::readable(n, STATE_PARENT + 8);
                  n = *reinterpret_cast<uint8_t **>(n + STATE_CHILD))
                 if (*reinterpret_cast<uint32_t *>(n + STATE_HASH) == STATE_LOAD_SESSION) {
