@@ -15543,6 +15543,16 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Sess_TimeTrialLeaderboard_TabChild: Binding = Binding {
+        id: "site_Sess_TimeTrialLeaderboard_TabChild",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_TimeTrialLeaderboard_TabDone: Binding = Binding {
+        id: "site_Sess_TimeTrialLeaderboard_TabDone",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Sess_TyreVisSlotLookup: Binding = Binding {
         id: "site_Sess_TyreVisSlotLookup",
         kind: "site",
