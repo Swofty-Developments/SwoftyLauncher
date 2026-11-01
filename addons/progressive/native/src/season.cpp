@@ -1364,7 +1364,9 @@ void development_apply(uintptr_t e, store::Career *c, int year, const char *when
 // +4, +8).
 constexpr uintptr_t kModelTypeMeta = 0x1a38;
 constexpr uintptr_t kMetaStride = 0x20, kMetaDept = 0x1, kMetaBase = 0xc, kMetaFull = 0x10;
+constexpr uintptr_t kMetaMass = 0x4, kMetaBhp = 0x8;
 std::string g_models_logged;
+std::map<uintptr_t, std::vector<rnd_model::Meta>> g_stock_meta;
 
 bool read_meta(uintptr_t model, uintptr_t &begin, std::vector<rnd_model::Meta> &out)
 {
@@ -1381,9 +1383,32 @@ bool read_meta(uintptr_t model, uintptr_t &begin, std::vector<rnd_model::Meta> &
         swofty::mem::read(at + kMetaDept, m.department);
         swofty::mem::read(at + kMetaBase, m.base);
         swofty::mem::read(at + kMetaFull, m.full);
+        swofty::mem::read(at + kMetaMass, m.mass);
+        swofty::mem::read(at + kMetaBhp, m.bhp);
         out.push_back(m);
     }
     return true;
+}
+
+void write_adjustments(uintptr_t begin, const std::vector<rnd_model::Meta> &m)
+{
+    for (size_t i = 0; i < m.size(); ++i) {
+        *reinterpret_cast<float *>(begin + i * kMetaStride + kMetaMass) = m[i].mass;
+        *reinterpret_cast<float *>(begin + i * kMetaStride + kMetaBhp) = m[i].bhp;
+    }
+}
+
+void restore_adjustments()
+{
+    for (auto &[model, stock] : g_stock_meta) {
+        uintptr_t begin = 0;
+        std::vector<rnd_model::Meta> m;
+        if (!swofty::mem::readable(model, sizeof(Upgrades)) || !read_meta(model, begin, m) || m.size() != stock.size())
+            continue;
+        if (rnd_model::scaled_adjustments(m, stock, 1.0))
+            write_adjustments(begin, m);
+    }
+    g_stock_meta.clear();
 }
 
 bool team_models(std::vector<uintptr_t> &out, UpgradesComponent &view)
@@ -1427,7 +1452,6 @@ void rnd_models(uintptr_t e, store::Career *c, int year, const char *when)
         swofty::log("[progressive] R&D models %d (%s): no UpgradesComponent or team models; left alone", year, when);
         return;
     }
-    double room = real ? 0.0 : rnd_model::kGainRoom;
     const season::Year *y = g_data.year(year);
     std::string teams;
     size_t count = 0, changed = 0, failed = 0, skipped = 0;
@@ -1444,24 +1468,35 @@ void rnd_models(uintptr_t e, store::Career *c, int year, const char *when)
         ++count;
         double delta = have_dev ? dev.teams[slot].delta : 0.0;
         double goal = rnd_model::target(rnd_model::year_gap(g_data, year, slot), delta);
+        double room = real ? 0.0 : rnd_model::room_for(goal);
+        double scale = rnd_model::physical_scale(room);
         double was = rnd_model::base_sum(m), was_room = rnd_model::gain_room(m);
-        if (rnd_model::apply(m, goal, room)) {
+        auto &stock = g_stock_meta[model];
+        if (stock.size() != m.size() ||
+            !std::equal(stock.begin(), stock.end(), m.begin(), [](auto &a, auto &b) { return a.type == b.type; }))
+            stock = m;
+        bool rated = rnd_model::apply(m, goal, room);
+        bool adjusted = rnd_model::scaled_adjustments(m, stock, scale);
+        if (rated || adjusted) {
             ++changed;
             for (size_t i = 0; i < m.size(); ++i) {
                 *reinterpret_cast<float *>(begin + i * kMetaStride + kMetaBase) = m[i].base;
                 *reinterpret_cast<float *>(begin + i * kMetaStride + kMetaFull) = m[i].full;
             }
+            write_adjustments(begin, m);
         }
         std::vector<rnd_model::Meta> back;
         uintptr_t begin2 = 0;
         bool ok = read_meta(model, begin2, back) && begin2 == begin && back.size() == m.size() &&
                   std::fabs(rnd_model::base_sum(back) - goal) < 0.5 && std::fabs(rnd_model::gain_room(back) - room) < 0.5;
+        for (size_t i = 0; ok && i < back.size(); ++i)
+            ok = back[i].mass == m[i].mass && back[i].bhp == m[i].bhp;
         if (!ok)
             ++failed;
-        char b[192];
-        std::snprintf(b, sizeof b, "%s%s(%u) %.0f +%.0f (was %.0f +%.0f)%s", teams.empty() ? "" : ", ",
+        char b[224];
+        std::snprintf(b, sizeof b, "%s%s(%u) %.0f +%.0f x%.2f (was %.0f +%.0f)%s", teams.empty() ? "" : ", ",
                       y && !y->teams[slot].name.empty() ? y->teams[slot].name.c_str() : g_data.slots[slot].team.c_str(),
-                      key >> 16, ok ? rnd_model::base_sum(back) : goal, ok ? rnd_model::gain_room(back) : room, was, was_room,
+                      key >> 16, ok ? rnd_model::base_sum(back) : goal, ok ? rnd_model::gain_room(back) : room, scale, was, was_room,
                       ok ? "" : " READ-BACK FAILED");
         teams += b;
     }
@@ -1470,9 +1505,10 @@ void rnd_models(uintptr_t e, store::Career *c, int year, const char *when)
         return;
     g_models_logged = logged;
     swofty::log("[progressive] R&D models %d: %s [%s; %s; each of a model's types = rating / n, room for upgrades "
-                "after +; rating = %.0f - %.0f x (gap %%%s); %zu model(s), %zu rewritten, %zu skipped, read-back %s]",
-                year, teams.c_str(), when, real ? "Real life: upgrades add nothing" : "Hybrid: this season's R&D on top",
-                rnd_model::kTop, rnd_model::kPerPct, have_dev ? " + development delta %" : "", count, changed, skipped,
+                "after +, x = factor on the stock mass and bhp adjustments (room / %.0f, max %.0f); rating = %.0f - %.0f x (gap %%%s); %zu model(s), %zu rewritten, %zu skipped, read-back %s]",
+                year, teams.c_str(), when,
+                real ? "Real life: upgrades add nothing" : "Hybrid: this season's R&D on top, room = 40 + (560 - rating)",
+                rnd_model::kGainRoom, rnd_model::kMaxScale, rnd_model::kTop, rnd_model::kPerPct, have_dev ? " + development delta %" : "", count, changed, skipped,
                 failed ? "FAILED" : "ok");
 }
 
@@ -2013,6 +2049,7 @@ void season_unloaded()
     dev_publish(nullptr);
     g_dev_logged.clear();
     g_models_logged.clear();
+    restore_adjustments();
     g_current.clear();
     g_entry.clear();
     g_applies.clear();
