@@ -45,4 +45,10 @@ struct Repair {
 Repair repair(const std::vector<RoundState> &rounds, uint32_t current, int race_weekends,
               const std::vector<Candidate> &given, const std::vector<Candidate> &known);
 
+// Empty when season.calendar.reorder may run; otherwise the refusal's detail. A Driver Career (Progressive
+// careers are Driver Careers) builds a weekend's sessions from the format its track list gives each round
+// and re-lays them out at a load, keeping the completed sessions first, so moving rounds under it leaves
+// a weekend whose session order is wrong.
+std::string reorder_refusal(bool driver_career);
+
 } // namespace ce::cal
