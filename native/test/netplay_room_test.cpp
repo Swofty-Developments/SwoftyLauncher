@@ -494,6 +494,12 @@ int main()
         no_tabs.tick(tf, 1);
         expect(no_tabs.tick(tf, 1 + room::UI_SETTLE_MS) == room::UiDo::send_open && no_tabs.sent() && no_tabs.sent_unready(),
                "a tab list that never reads as ready still gets open_create_custom once, marked unready");
+        room::HostUi brief;
+        brief.start(0);
+        brief.wrote(0);
+        brief.tick(tf, 1);
+        expect(room::UI_SETTLE_MS == 3000 && brief.tick(tf, 1 + room::UI_SETTLE_MS - 1) == room::UiDo::nothing,
+               "the unready settle is 3 s: nothing is sent just before it");
     }
 
     {

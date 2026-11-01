@@ -39,6 +39,9 @@ mkdir -p "$OUT"
 "${PIN[@]}" zig c++ -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../../packages/sdk/include \
     -o "$OUT/netplay_room_test" netplay_room_test.cpp
 "$OUT/netplay_room_test"
+"${PIN[@]}" zig c++ -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../src/core \
+    -o "$OUT/room_cover_test" room_cover_test.cpp
+"$OUT/room_cover_test"
 "${PIN[@]}" zig c++ -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../../packages/sdk/include \
     -o "$OUT/netplay_icons_test" netplay_icons_test.cpp
 "$OUT/netplay_icons_test"
