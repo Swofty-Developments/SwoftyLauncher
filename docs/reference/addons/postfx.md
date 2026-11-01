@@ -205,7 +205,7 @@ skip   paused  replay  photo  menu  cutscene  spectating
 
 ## Live options and enabled
 
-A `{{id}}` option that binds `native` is read from the addon's settings every frame, so moving the slider in game changes the picture at once. A `db` option is fixed when the profile builds.
+A `{{id}}` option that binds `native` is read from the addon's settings four times a second, so moving the slider in **ADDON SETTINGS** in game changes the picture straight away. A `db` option is fixed when the profile builds.
 
 ```json [swofty.json]
 "options": [
@@ -332,7 +332,31 @@ The compiled passes are installed as `swofty/postfx/00.dxil` onwards, and `swoft
 
 ## In game
 
-<!-- TODO(lead): the v2 in-game log lines go here: where the passes run (the game's list or the core's own list), per-pass readiness, the view the core reports, and the toggle key toast. -->
+The passes run between the game's picture and its HUD. The HUD and the menus draw over the processed picture with their own colours and transparency. A pass that moves pixels, such as a lens, bends the picture under a translucent pause menu as well as on track.
+
+`swofty/loader.log` shows the passes getting ready and where they first run:
+
+```text
+[d3d12] command list state hooks armed: Reset, ClearState, SetPipelineState(1), SetDescriptorHeaps and the compute root bindings
+[postfx] 3 pass(es) and 1 texture(s) wait for the game's picture
+[postfx] Vignette Pass's pass vignette is ready (postfx/00.dxil, 6336 bytes of DXIL)
+[postfx] passes run on the game's 1920x1080 picture (format 28) with 1 texture(s) of their own
+[postfx] the picture now goes through 3 pass(es) before the HUD, inside the game's list at its HUD-less step
+```
+
+Most frames run inside the game's own command list, at the step where it keeps a copy of the picture without the HUD. The core records the passes there and then puts back the pipeline and bindings it changed. On frames where the game ends the picture's list before the HUD, the passes run in a list of the core's own between the game's lists. Every 60 s for the first 30 minutes, the log counts both:
+
+```text
+[postfx] last 60 s: 7210 frame(s) presented; passes ran in the game's list on 6950 and between its lists on 255; 5 without passes (0 with the picture and the HUD in one list, 0 with list state from before the hooks, 0 with the GPU behind); 0 frame(s) ran them twice
+```
+
+Frames without passes are loading screens and menus without a 3D picture. With Frame Generation on in the game's settings, the passes' result also goes into the game's HUD-less copy, which Frame Generation reads. Frame Generation still uses the game's own motion vectors, so a pass that moves pixels can smear in the generated frames.
+
+A key from `postfx_toggle` logs and shows a toast:
+
+```text
+[postfx] PolyphoniX Native's passes are off (its key)
+```
 
 A pass is turned off when its pipeline cannot be made, or when its average GPU time over 120 frames stays above `budget_ms` three times in a row. The core measures each pass's GPU time.
 
@@ -353,6 +377,15 @@ SWOFTY_POSTFX=0
 # write the picture before and after the passes six times in the first minute,
 # and once more each time a swofty/postfx.capture file appears in the game folder
 SWOFTY_POSTFX_CAPTURE=C:\captures
+
+# log one line for each of the next N presented frames: where the passes ran, how many,
+# the view, and why a frame had none; a swofty/postfx.trace file holding N does the same in game
+SWOFTY_POSTFX_TRACE=600
+```
+
+```text
+[postfx] trace present=41 path=in-list runs=1 passes=3/3 view=cockpit flags=- valid=1 serial=7 fg=off back=000000006E2A1C10
+[postfx] trace present=42 path=none runs=0 passes=0/1 view=chase_far flags=- valid=1 serial=8 fg=off back=0000000000000000 why=no pass runs in this view skipped=fisheye (not in one of its views)
 ```
 
 `SWOFTY_FRAME_CAPTURE` writes the presented frame with the HUD ([logging switches](/reference/std/logging)).
