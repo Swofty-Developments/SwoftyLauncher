@@ -2797,10 +2797,9 @@ mod tests {
         u32::from_le_bytes(r.fragments[0].data().unwrap()[0x14..0x18].try_into().unwrap())
     }
 
-    fn coherence_build(
-        name: &str,
-        adds: &[(&str, Resource)],
-    ) -> (PathBuf, Vec<String>, Vec<(String, u32, String)>, Vec<String>) {
+    type Coherence = (PathBuf, Vec<String>, Vec<(String, u32, String)>, Vec<String>);
+
+    fn coherence_build(name: &str, adds: &[(&str, Resource)]) -> Coherence {
         let root = texture_game(name);
         let (game, addon) = (root.join("game"), root.join("addon"));
         let view = LOGOS.strip_suffix(".image").unwrap();
