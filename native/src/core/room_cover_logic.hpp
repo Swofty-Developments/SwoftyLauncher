@@ -82,6 +82,10 @@ public:
 
     const std::string &label() const { return label_; }
     float target() const { return target_; }
+    int target_percent() const
+    {
+        return done_ ? 100 : std::clamp(int(target_ * 100.0f + 0.5f), 0, 99);
+    }
     bool completed() const { return done_; }
 
 private:
