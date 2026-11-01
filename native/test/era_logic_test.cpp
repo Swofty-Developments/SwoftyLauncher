@@ -752,8 +752,8 @@ int main()
             early.previous = 25;
             expect(!era::budget_mismatch(early).empty(), "from Exiting on, any count is compared, changed or not");
             expect(era::leaderboard_text(0) == "0, f1" && era::leaderboard_text(1) == "1, classic" &&
-                       era::leaderboard_text(4) == "4" && era::leaderboard_text(40) == "40",
-                   "stock leaderboard ids print with their names (f1 is 0); others print as the id");
+                       era::leaderboard_text(4) == "4" && era::leaderboard_text(40) == "40, added",
+                   "stock leaderboard ids print with their names (f1 is 0); ids past them print as added");
         }
         expect(era::vehicle_flags(era::TAKES_LIST, 0) == era::TAKES_LIST &&
                    era::vehicle_flags(0, era::TAKES_POOL_A) == era::TAKES_POOL_A && era::vehicle_flags(0, 0) == 0,
