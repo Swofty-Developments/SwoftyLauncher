@@ -6,6 +6,7 @@
 #include <safetyhook.hpp>
 #include <swofty/mixin.hpp>
 
+#include <atomic>
 #include <cstdint>
 #include <cstring>
 #include <string>
@@ -37,6 +38,8 @@ const runtime::Sig S_RECORD{"Render_Gfx2Heap_BumpAllocPlacedResource record inde
                             runtime::Sig::addr, 0, 9, 0};
 
 constexpr uintptr_t EPILOGUE = 0x2b;
+constexpr uint64_t SUMMARY_MS = 15000;
+std::atomic<uint64_t> last_summary{0};
 
 safetyhook::MidHook hook;
 runtime::placed::Parked<void *> parked;
@@ -55,8 +58,29 @@ void on_record(safetyhook::Context &c)
     int32_t index = int32_t(c.r9);
     uint32_t id = *reinterpret_cast<uint32_t *>(heap);
     pl::Seen seen = pl::observe(s, id, index);
-    if (seen.log_high)
-        swofty::log("[gfx] placed records: heap %u reached %d of %d this frame", id, seen.reached, pl::CAPACITY);
+    if (seen.log_high) {
+        auto *buf = reinterpret_cast<const uint8_t *>(c.rsi);
+        auto *name = reinterpret_cast<const char *>(c.rcx);
+        char label[48] = "?";
+        if (runtime::readable(name, 48)) {
+            strncpy(label, name, sizeof label - 1);
+            label[sizeof label - 1] = 0;
+        }
+        uint64_t flags = 0, bytes = 0;
+        if (runtime::readable(buf, 0x38)) {
+            flags = *reinterpret_cast<const uint64_t *>(buf + 0x20);
+            bytes = (*reinterpret_cast<const uint64_t *>(buf + 0x28)) * (*reinterpret_cast<const uint64_t *>(buf + 0x30)) & 0xffffffffull;
+        }
+        swofty::log("[gfx] placed records: heap %u reached %d of %d this frame (buffer '%s', flags 0x%llx, %llu bytes)", id,
+                    seen.reached, pl::CAPACITY, label, (unsigned long long)flags, (unsigned long long)bytes);
+    }
+    uint64_t now = GetTickCount64();
+    uint64_t last = last_summary.load(std::memory_order_relaxed);
+    if (now - last >= SUMMARY_MS && last_summary.compare_exchange_strong(last, now)) {
+        char t[256];
+        runtime::placed_record_crash_text(t, sizeof t);
+        swofty::log("[gfx] %s", t);
+    }
     if (!seen.overflow)
         return;
     if (seen.first_overflow)
