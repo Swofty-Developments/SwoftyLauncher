@@ -281,6 +281,12 @@ void direct_start_register_room(DirectStartSetup setup);
 // The Time Trial target's setup (a session request with "mode": "time_trial"; direct_start_tt.cpp registers it):
 // polled the same way, with the request's text from direct_start_request_text().
 void direct_start_register_time_trial(DirectStartSetup setup);
+// Every screen the UI opens while a direct start is armed (ui.cpp's open hook), for the Time Trial's own steps.
+void direct_start_register_time_trial_screen(void (*screen)(const char *name));
+// The flow graph's root state (StateApp) once the flow has updated it, or null.
+void *direct_start_flow_root();
+// Despawns the front end's main scene (the menu backdrop) once; a direct start never runs StateFrontend's exit.
+void direct_start_despawn_frontend_scene(const char *when);
 std::string direct_start_request_text();
 // For the cover: 0 while a session target is on its way, 1 once its session is on screen, -1 when it failed.
 int direct_start_cover_signal();
