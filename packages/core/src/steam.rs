@@ -1059,8 +1059,9 @@ mod tests {
             Some(root.join("userdata/22/3059520/remote"))
         );
         let log = tried.join("\n");
+        let empty = root.join("userdata").join("11").join("3059520").join("remote");
         assert!(
-            log.contains("userdata/11/3059520/remote") && log.contains("rejected, the folder is empty"),
+            log.contains(&empty.display().to_string()) && log.contains("rejected, the folder is empty"),
             "{log}"
         );
         assert_eq!(
