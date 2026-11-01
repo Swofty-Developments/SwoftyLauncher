@@ -87,6 +87,7 @@ The build skips an operation whose `erp` archive isn't in the game folder and no
 ```text
 2025_asset_groups/ui_package/screens/fe_loading.erp: add-resource eaid://ui_package/art/textures/loading/sponsor.tif.image takes its layout from a GfxSurfaceRes resource with 2 fragment(s) in the archive, and it has none
 2025_asset_groups/ui_package/screens/fe_loading.erp: eaid://ui_package/art/textures/loading/sponsor.tif.image already exists; put-resource replaces a resource
+2025_asset_groups/ui_package/screens/fe_loading.erp in the game folder already has eaid://ui_package/art/textures/loading/sponsor.tif.image, so something outside the launcher probably changed this file (a hand-installed mod or a leftover). Remove hand-installed mods, then Repair F1 25 in the EA app (Steam: Verify integrity of game files), then Play. (Addon authors: if the stock file has it, use put-resource.)
 ```
 
 ### Raw resources

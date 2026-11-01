@@ -473,6 +473,10 @@ impl<'a> ErpBuild<'a> {
         Ok(self.erps.get_mut(rel).expect("inserted above"))
     }
 
+    pub fn load(&mut self, rel: &str) -> Result<()> {
+        self.erp(rel).map(|_| ())
+    }
+
     // Applies an op for an origin, such as an addon or a mod inside one. The
     // runtime route puts each origin's resources in an overlay archive of its own.
     pub fn apply_for(
@@ -724,14 +728,16 @@ impl<'a> ErpBuild<'a> {
     fn add(&mut self, erp: &str, name: &str, kind: &str, data: &[Vec<u8>]) -> Result<()> {
         let wanted = erp::kind(kind).map_err(|e| fail(format!("add-resource {name}: {e}")))?;
         let target = self.erp(erp)?;
-        if target
-            .position(name)
-            .map_err(|e| fail(format!("{erp}: {e}")))?
-            .is_some()
-        {
-            return Err(fail(format!(
-                "{erp}: {name} already exists; put-resource replaces a resource"
-            )));
+        if let Some(i) = target.position(name).map_err(|e| fail(format!("{erp}: {e}")))? {
+            return Err(fail(match target.slots[i] {
+                Slot::Stock(_) => format!(
+                    "{erp} in the game folder already has {name}, so something outside the launcher probably changed this file \
+                     (a hand-installed mod or a leftover). \
+                     Remove hand-installed mods, then Repair F1 25 in the EA app (Steam: Verify integrity of game files), then Play. \
+                     (Addon authors: if the stock file has it, use put-resource.)"
+                ),
+                Slot::Owned(_) => format!("{erp}: {name} already exists; put-resource replaces a resource"),
+            }));
         }
         let like = target
             .slots
@@ -964,9 +970,9 @@ impl<'a> ErpBuild<'a> {
             let mut images: Vec<String> = self.erps[&rel]
                 .slots
                 .iter()
-                .filter_map(|s| match s {
-                    Slot::Owned(r) => Some(r.name.as_str()),
-                    Slot::Stock(_) => None,
+                .map(|s| match s {
+                    Slot::Owned(r) => r.name.as_str(),
+                    Slot::Stock(j) => self.erps[&rel].file.erp.resources[*j].name.as_str(),
                 })
                 .filter_map(|n| match n.strip_suffix(".image") {
                     Some(v) if v.ends_with(".texarray") => Some(n.to_owned()),
@@ -997,7 +1003,7 @@ impl<'a> ErpBuild<'a> {
                     continue;
                 };
                 let said = u32::from_le_bytes((&*at).try_into().expect("4 bytes"));
-                if said as usize == array.count {
+                if said == 0 || said as usize == array.count {
                     continue;
                 }
                 at.copy_from_slice(&(array.count as u32).to_le_bytes());
@@ -2209,11 +2215,24 @@ mod tests {
             ))
             .contains("missing.bin")
         );
+        let in_game_copy = fails(&format!(
+            r#"{{"op":"add-resource","erp":"ui/a.erp","resource":"{y}","type":"GfxSurfaceRes","sources":["raw/head.bin","raw/z.bin"]}}"#
+        ));
         assert_eq!(
-            fails(&format!(
-                r#"{{"op":"add-resource","erp":"ui/a.erp","resource":"{y}","type":"GfxSurfaceRes","sources":["raw/head.bin","raw/z.bin"]}}"#
-            )),
-            format!("ui/a.erp: {y} already exists; put-resource replaces a resource")
+            in_game_copy,
+            format!(
+                "ui/a.erp in the game folder already has {y}, so something outside the launcher probably changed this file \
+                 (a hand-installed mod or a leftover). \
+                 Remove hand-installed mods, then Repair F1 25 in the EA app (Steam: Verify integrity of game files), then Play. \
+                 (Addon authors: if the stock file has it, use put-resource.)"
+            )
+        );
+        let added = format!(
+            r#"{{"op":"add-resource","erp":"ui/a.erp","resource":"{z}","type":"GfxSurfaceRes","sources":["raw/head.bin","raw/z.bin"]}}"#
+        );
+        assert_eq!(
+            fails(&format!("{added},{added}")),
+            format!("ui/a.erp: {z} already exists; put-resource replaces a resource")
         );
         assert!(
             fails(&format!(
@@ -2860,6 +2879,54 @@ mod tests {
         );
         assert!(lines.is_empty());
         assert_eq!(views[0].1, 6);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_view_that_names_no_slice_count_is_left_alone() {
+        let root = texture_game("cohere-zero");
+        let game = root.join("game");
+        std::fs::write(
+            game.join(UI),
+            texture_erp(vec![array(2, &[[1; 4]; 1]), view_res(0)]),
+        )
+        .unwrap();
+        let original = |rel: &str| game.join(rel);
+        let mut b = ErpBuild::new(&original);
+        b.load(UI).unwrap();
+        assert!(b.cohere_arrays().unwrap().is_empty());
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_whole_archive_put_with_a_wider_view_than_its_image_is_repaired() {
+        let root = texture_game("cohere-put");
+        let game = root.join("game");
+        let view = LOGOS.strip_suffix(".image").unwrap();
+        let stock = game.join(UI);
+        std::fs::write(&stock, texture_erp(vec![array(2, &[[1; 4]; 6]), view_res(16)])).unwrap();
+        let original = |rel: &str| game.join(rel);
+        let mut b = ErpBuild::new(&original);
+        b.load(UI).unwrap();
+        let lines = b.cohere_arrays().unwrap();
+        assert_eq!(
+            lines,
+            [format!(
+                "texture array {view}: view said 16 slices, image has 6; fixed"
+            )]
+        );
+        let counts: Vec<u32> = b
+            .resources()
+            .filter(|(_, r, _, _)| r.name == view)
+            .map(|(_, r, _, _)| view_count(r))
+            .collect();
+        assert_eq!(counts, [6]);
+        let mut again = ErpBuild::new(&original);
+        again.load(UI).unwrap();
+        std::fs::write(&stock, texture_erp(vec![array(2, &[[1; 4]; 6]), view_res(6)])).unwrap();
+        let mut ok = ErpBuild::new(&original);
+        ok.load(UI).unwrap();
+        assert!(ok.cohere_arrays().unwrap().is_empty());
         std::fs::remove_dir_all(&root).ok();
     }
 

@@ -343,6 +343,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # The EC2 runner has a 150 GB root volume; the hosted fallback has about 14 GB free, which the Wine
+      # prefixes of the parallel tests fill, so it drops the preinstalled toolchains it never uses.
+      - name: Free disk space on a hosted runner
+        run: |
+          df -h /
+          if [ "$RUNNER_ENVIRONMENT" = github-hosted ]; then
+            sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/.ghcup
+            df -h /
+          fi
+
       # Only the Wine tests need these, so the install runs in the background while the build and unit tests do.
       - name: Start installing Wine and Xvfb
         run: |
@@ -444,7 +454,10 @@ jobs:
       # Every host and Wine test, the templates build and the Any Team Transfers build, side by side; each
       # test's output is in its own group in the log, and the step fails on any failing test.
       - name: Native tests
-        run: native/test/run_ci_tests.sh
+        run: |
+          df -h / "$RUNNER_TEMP"
+          trap 'df -h / "$RUNNER_TEMP"' EXIT
+          native/test/run_ci_tests.sh
 
       # Saved after the tests, which compile their fixtures into the same cache.
       - name: Save the Zig cache
