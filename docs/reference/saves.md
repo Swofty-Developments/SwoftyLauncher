@@ -307,6 +307,37 @@ $ swofty saves versions
 
 `swofty saves pin <snapshot>` adds the pin `pinned`; `unpin` removes only that pin. Pins from a backup, a restore or a missing career stay.
 
+### Addon careers on the Steam save
+
+A profile with **Use launcher saves** off keeps its careers in the Steam save. An F1 25 started from Steam without the launcher runs without the profile's addons and drops the career containers no loaded game mode claims (`gm_driver_career_progressive`) when it saves; Steam Cloud then uploads that save. The profile save is encrypted, so the launcher reads the signs in the vault instead of the containers.
+
+```rust
+// packages/core/src/vault/guard.rs
+let loss = vault.probable_loss();   // Option<Loss { snapshot, at, careers, .. }>
+```
+
+`probable_loss` returns the addon careers (`careers::is_addon`: the career lists addons, or its mode is not Driver Career or My Team) of the newest `after-session`, `before-session` or `restored` snapshot when all of these hold:
+
+- the career index stored with that snapshot lists them;
+- a `changed-outside` or `foreign-exit` snapshot is newer than every launcher snapshot or unchanged check;
+- the newest snapshot is smaller than that version;
+- the careers table does not already call them missing, and the player has not dismissed it for that version.
+
+The launcher checks at its start and when F1 25 closes outside it. The Saves page and the Addons page show the careers, the date of that version and **Restore**; the play bar shows the same line with **Restore** and **Open Career saves**. Restore is `vault::restore::restore` of that snapshot, which keeps the save it replaces as `before-restore`. A session the launcher starts afterwards clears the notice, and the career index decides from then on (`missing-since:` above).
+
+Every launcher session on the Steam save writes `before-session` and `after-session` snapshots to the Steam vault (`steam-<id3>`), whatever the profile's launcher saves setting:
+
+```text
+$ swofty saves versions
+20261101-231502-after-session  after Play, profile progressive, 0.9 MB, Steam Cloud: synced, 2 career(s)
+```
+
+With launcher saves off and an addon career in the index, the Saves page shows a warning, and **Use launcher saves** when the profile's launcher store is empty:
+
+```rust
+guard::steam_save_warning(vanilla, profile.launcher_saves, &careers::addon_careers(&index, Some("progressive")))
+```
+
 ### Steam Cloud status
 
 The status compares each file's SHA-1 with the `sha` Steam recorded in `userdata/<steamid3>/3059520/remotecache.vdf`:

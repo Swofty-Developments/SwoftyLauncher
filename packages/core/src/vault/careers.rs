@@ -504,6 +504,30 @@ fn brief(c: &Career) -> Brief {
     }
 }
 
+/// Whether a career belongs to an addon's game mode, or was made with addons: the careers a game
+/// without those addons does not know how to keep.
+pub fn is_addon(c: &Career) -> bool {
+    let key: String = text(c, "mode")
+        .unwrap_or_default()
+        .chars()
+        .filter(|c| c.is_ascii_alphanumeric())
+        .collect::<String>()
+        .to_lowercase();
+    !c.addons.is_empty() || !matches!(key.as_str(), "" | "driver" | "drivercareer" | "myteam")
+}
+
+/// The addon careers an index holds in the save for `profile` (and the ones with no profile yet).
+pub fn addon_careers(index: &[Career], profile: Option<&str>) -> Vec<Brief> {
+    in_save(index)
+        .filter(|c| is_addon(c))
+        .filter(|c| match (profile, c.profile.as_deref()) {
+            (Some(p), Some(q)) => p == q,
+            _ => true,
+        })
+        .map(brief)
+        .collect()
+}
+
 /// What restoring a version does to the careers, from two indexes.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Diff {

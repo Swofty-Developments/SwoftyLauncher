@@ -413,7 +413,7 @@ impl Shell {
                 let Ok((store, rediscover, seen, profile, banner_due)) = this.update(cx, |s, _| {
                     let r = std::mem::take(&mut s.rediscover);
                     let profile = s.library.profile.name.clone();
-                    let due = r || s.saves.banner_profile != profile;
+                    let due = r || s.saves.banner_profile != profile || game::banner_stale();
                     (s.store.clone(), r, s.requests, profile, due)
                 }) else {
                     break;
