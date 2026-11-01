@@ -161424,6 +161424,93 @@
    "used_by": [
     "native/src/core/setup_vm_guard.cpp"
    ]
+  },
+  {
+   "id": "game.activity_resume_race_length_first",
+   "section": ".data1",
+   "pattern": "E8 ?? ?? ?? ?? 44 8B 30 48 89 F9 B2 01",
+   "match": "0x1519488a4",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1519488a9",
+   "kind": "mid",
+   "expect": "44 8B 30 48 89 F9",
+   "names": [
+    "site_Game_ActivityResumeRaceLengthFirst"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-02",
+     "by": "activity-resume",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/activity_resume_guard.cpp"
+   ],
+   "func_start": "0x151948840",
+   "data1_reason": "the race length text body is a .data1 body (thunk 0x14386b1d0, called from Game_ActivitiesUIDeeplinkManager_ReportCareerActivityResume at 0x1438682e5); no .xtls site sees the ui variable group before it is read"
+  },
+  {
+   "id": "game.activity_resume_race_length_second",
+   "section": ".data1",
+   "pattern": "E8 ?? ?? ?? ?? 8B 28 48 89 F9 31 D2",
+   "match": "0x1519488b1",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1519488b6",
+   "kind": "mid",
+   "expect": "8B 28 48 89 F9",
+   "names": [
+    "site_Game_ActivityResumeRaceLengthSecond"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-02",
+     "by": "activity-resume",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/activity_resume_guard.cpp"
+   ],
+   "func_start": "0x151948840",
+   "data1_reason": "the race length text body is a .data1 body (thunk 0x14386b1d0, called from Game_ActivitiesUIDeeplinkManager_ReportCareerActivityResume at 0x1438682e5); no .xtls site sees the ui variable group before it is read"
+  },
+  {
+   "id": "game.activity_resume_race_length_return",
+   "section": ".data1",
+   "pattern": "48 8D 35 ?? ?? ?? ?? 48 89 F0 48 83 C4 20",
+   "match": "0x1519488ef",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1519488f6",
+   "kind": "mid",
+   "expect": "48 89 F0 48 83 C4 20",
+   "names": [
+    "site_Game_ActivityResumeRaceLengthReturn"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-02",
+     "by": "activity-resume",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/activity_resume_guard.cpp"
+   ],
+   "func_start": "0x151948840",
+   "data1_reason": "the race length text body is a .data1 body (thunk 0x14386b1d0, called from Game_ActivitiesUIDeeplinkManager_ReportCareerActivityResume at 0x1438682e5); no .xtls site sees the ui variable group before it is read"
   }
  ]
 }
