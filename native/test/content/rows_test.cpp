@@ -554,6 +554,9 @@ static void garage_tests()
     db.erase(std::string(content::VEHICLES) + "[_metadata_=cs20_lotus].vehicle_package");
     check(lower(R"j({"package":"mod.a/f1_2020","entry":"lotus","textures":"g"})j").garages.empty(),
           "a car without a vehicle row in the game database leaves nothing to attach to");
+    check(!content::garage_art_enabled(nullptr) && !content::garage_art_enabled("") && !content::garage_art_enabled("0") &&
+              !content::garage_art_enabled("on") && !content::garage_art_enabled("11") && content::garage_art_enabled("1"),
+          "garage art stays fenced off unless SWOFTY_GARAGE_ART is exactly 1");
 }
 
 static void livery_tests()
