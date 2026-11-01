@@ -17,8 +17,8 @@ inline bool garage_art_enabled(const char *env)
 }
 
 inline constexpr const char *GARAGE_FENCE_LINE =
-    "team.garage: left off; the archive's textures are not streamed like the stock ones, and a stock streamed copy of the same "
-    "name crashes the texture stream (Ne_Crt_Memcpy in the ERP stream copy). SWOFTY_GARAGE_ART=1 turns it back on";
+    "team.garage: left off; a stock streamed copy of a texture the archive holds crashed the texture stream in 1.7.8 to 1.7.10 "
+    "(Ne_Crt_Memcpy in the ERP stream copy). SWOFTY_GARAGE_ART=1 turns it on";
 
 inline std::string garage_game_path(const std::string &id)
 {

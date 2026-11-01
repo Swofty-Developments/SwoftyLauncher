@@ -120,7 +120,9 @@ python3 tools/garage_textures.py "shader_package_2025/pack.erp" garage/renault_2
 
 ## What is known
 
-- **Off by default:** the core leaves `team.garage` records unapplied and logs one line saying so. Stock garage and pit lane textures are streamed (a 40 byte header, the resident low mips and a streaming descriptor naming a `.tif.2025.mipmaps` file), and the archive's are not, so a stock copy of the same name streaming into the archive's resource wrote to a null buffer in the stream copy (`Ne_Crt_Memcpy`, 1.7.8 and 1.7.9 reports). `SWOFTY_GARAGE_ART=1` applies the records again.
-- **Built and tested:** the archive builder (names, headers, views, mip chains, the cache key) and the lowering to the cars' asset groups run in the host tests.
-- **Not run in game:** whether the archive loads before the track's own copy. The resource map keeps the first copy that is loaded (`re/db/subsystems/assets.md`). The sizes and times in the log above are examples of its format.
+- **Off by default:** the core leaves `team.garage` records unapplied and logs one line saying so. `SWOFTY_GARAGE_ART=1` applies them.
+- **Surface layout:** each surface carries the stock fragments: the 40 byte header, every mip level and a streaming descriptor. The descriptor names `environment_package/.../<name>.tif.2025.mipmaps` below the root, lists no streamed level and is 288 bytes, as large as the stock ones (190 to 232 bytes). `SWOFTY_GARAGE_DESC=0` writes the two fragment surfaces of 1.7.8 to 1.7.10 again.
+- **The crash reports:** `Ne_Crt_Memcpy+0x293` under the zstd fragment job (`0x143a6d4b0`) copies a 194 or 216 byte fragment that starts with a length byte of 0x66 and `environment_pac`. That is the third fragment of a stock surface, the streaming descriptor, written to a null destination. A stock surface has three fragments and the archive's had two, so the stock copy of the same name had no buffer for its third.
+- **Not reproduced:** Time Trial runs of 90 seconds in `cs_f1_2020` and `cs_f1_2019` (Silverstone, the Renault slot, headless) did not crash with either layout. The 2020 box shows the 2020 Renault monitors and banner in the garage, the 2019 box keeps the Alpine monitors.
+- **Built and tested:** the archive builder (names, headers, descriptors, views, mip chains, the cache key) and the lowering to the cars' asset groups run in the host tests.
 - **Groups the core cannot extend:** a car group of the stock manifest. Only groups an addon declares, as Classic Seasons' cars do, take the archive.
