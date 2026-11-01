@@ -1931,6 +1931,10 @@ __asm__(
     "sub $0x120,%rsp\n.seh_stackalloc 0x120\n"
     ".seh_endprologue\n"
     "mov %r9,%r13\n"
+    "mov 0x160(%rsp),%rax\n"
+    "mov %rax,0x198(%rsp)\n"
+    "movq $0,0x190(%rsp)\n"
+    "movq $0,0x118(%rsp)\n"
     "mov %rcx,0xa0(%rsp)\n"
     "lea (%rcx,%rdx),%rax\n"
     "mov %rax,0x98(%rsp)\n"
@@ -1951,26 +1955,119 @@ __asm__(
     ".section .drectve\n"
     ".ascii \" -export:fake_replay_write\"\n"
     ".text\n");
-uint64_t fake_replay_write(void *scratch, uint64_t size, uint64_t capacity, const char *name);
+uint64_t fake_replay_write(void *scratch, uint64_t size, uint64_t capacity, const char *name, void *entry);
+
+
+// Ne_ReplayRecordable_ReadFrom's two apply sites (the bytes of the Steam build at 0x1445cdcc0 and 0x1445ceece): the full state
+// read, which calls the recordable's vtable slot 0x38 with the stream at rsp+0x90, and the delta read, which calls slot 0x28
+// (mode 1) or 0x40 (mode 2) and then the stream's cleanup slot 0xc0. The stored state size is the stream's field at
+// rsp+0xa8. The frame takes the registry entry in rcx, the stored size in edx and the read mode in r8d, and applies the
+// entry's recordable (entry+0x10) through the game's own bytes. Core's replay read guard skips the apply for a recordable the
+// recorder wrote as nothing and a stored size of 0.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_replay_read\n"
+    ".def fake_replay_read; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_replay_read\n"
+    "fake_replay_read:\n"
+    "push %rsi\n.seh_pushreg %rsi\n"
+    "push %rdi\n.seh_pushreg %rdi\n"
+    "push %r12\n.seh_pushreg %r12\n"
+    "push %r13\n.seh_pushreg %r13\n"
+    "sub $0x120,%rsp\n.seh_stackalloc 0x120\n"
+    ".seh_endprologue\n"
+    "mov %edx,0xa8(%rsp)\n"
+    "lea 0x30(%rsp),%r13\n"
+    "movl %r8d,4(%r13)\n"
+    "movl $0,0x10(%r13)\n"
+    "lea fake_stream_obj(%rip),%rsi\n"
+    "mov %rcx,%r12\n"
+    "mov %rcx,%rdi\n"
+    "test %r8d,%r8d\n"
+    "jnz .Lrrdelta\n"
+    "lea 0x90(%rsp),%rdi\n"
+    ".byte 0x49,0x8B,0x4C,0x24,0x10,0x48,0x8B,0x01,0x48,0x89,0xFA,0xFF,0x50,0x38,0xE9\n"
+    ".long .Lrrend - . - 4\n"
+    ".Lrrdelta:\n"
+    ".byte 0x41,0x8B,0x45,0x04,0x83,0xF8,0x02,0x74,0x19,0x83,0xF8,0x01,0x75,0x30,0x48,0x8B,0x4F,0x10,0x48,0x8B,0x01,0x48,0x8D,0x94,0x24,0x90,0x00,0x00,0x00,0xFF,0x50,0x28,0xEB,0x1C,0xC4,0xC1,0x7A,0x10,0x45,0x10,0xC5,0xFA,0x5A,0xD0,0x48,0x8B,0x4F,0x10,0x48,0x8B,0x01,0x48,0x8D,0x94,0x24,0x90,0x00,0x00,0x00,0xFF,0x50,0x40,0x48,0x8B,0x06,0x48,0x89,0xF1,0xFF,0x90,0xC0,0x00,0x00,0x00\n"
+    ".Lrrend:\n"
+    "mov fake_applied(%rip),%rax\n"
+    "add $0x120,%rsp\n"
+    "pop %r13\npop %r12\npop %rdi\npop %rsi\n"
+    "ret\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_replay_read\"\n"
+    ".text\n");
+uint64_t fake_replay_read(void *entry, uint32_t stored_size, uint32_t mode);
+
+uint64_t fake_applied;
+uintptr_t fake_stream_obj;
+static uintptr_t fake_stream_vt[0x20], fake_rec_vt[0x10];
+static uintptr_t fake_rec_obj[2][1];
+static uint8_t fake_entries[2][0x688];
+
+static void fake_apply(void *self)
+{
+    (void)self;
+    fake_applied++;
+}
+
+static void fake_stream_done(void *self)
+{
+    (void)self;
+}
 
 static uint8_t replay_scratch[0x400];
 
+static void replay_entries_init(void)
+{
+    fake_stream_vt[0xc0 / 8] = (uintptr_t)&fake_stream_done;
+    fake_stream_obj = (uintptr_t)fake_stream_vt;
+    for (int i = 0; i < 0x10; i++)
+        fake_rec_vt[i] = (uintptr_t)&fake_apply;
+    for (int i = 0; i < 2; i++) {
+        fake_rec_obj[i][0] = (uintptr_t)fake_rec_vt;
+        *(uintptr_t *)(fake_entries[i] + 0x10) = (uintptr_t)&fake_rec_obj[i];
+    }
+}
+
+static uint64_t replay_read(int entry, uint32_t size, uint32_t mode)
+{
+    uint64_t before = fake_applied;
+    fake_replay_read(fake_entries[entry], size, mode);
+    return fake_applied - before;
+}
+
 static void test_replay_grid(void)
 {
-    expect(fake_replay_write(replay_scratch, 0x100, 0x200, "VehicleSystem") == 0x100,
+    replay_entries_init();
+    expect(fake_replay_write(replay_scratch, 0x100, 0x200, "VehicleSystem", fake_entries[0]) == 0x100,
            "replay grid: a state within its holder's capacity is recorded whole");
-    expect(fake_replay_write(replay_scratch, 0x200, 0x200, "VehicleSystem") == 0x200,
+    expect(fake_replay_write(replay_scratch, 0x200, 0x200, "VehicleSystem", fake_entries[0]) == 0x200,
            "replay grid: a state exactly the holder's capacity is recorded whole");
-    expect(fake_replay_write(replay_scratch, 0x300, 0x200, "VehicleSystem") == 0,
+    expect(replay_read(0, 12, 1) == 1 && replay_read(0, 12, 2) == 1 && replay_read(0, 12, 0) == 1,
+           "replay grid: a recorded state is applied by the delta reads and the full read");
+    expect(replay_read(1, 0, 1) == 1 && replay_read(1, 0, 2) == 1 && replay_read(1, 0, 0) == 1,
+           "replay grid: an empty stored state of a recordable the recorder never cut is applied as the game does");
+    expect(fake_replay_write(replay_scratch, 0x300, 0x200, "CannedEventsSystem", fake_entries[0]) == 0,
            "replay grid: a state larger than its holder's capacity is recorded as nothing");
-    expect(fake_replay_write(replay_scratch, 0x300, 0x300, "TyreSystem") == 0x300,
+    expect(fake_replay_write(replay_scratch, 0x300, 0x300, "TyreSystem", fake_entries[1]) == 0x300,
            "replay grid: the next recordable with a fitting state is recorded whole");
+    expect(replay_read(0, 0, 1) == 0 && replay_read(0, 0, 2) == 0,
+           "replay grid: reading the empty state of a cut recordable skips its delta apply");
+    expect(replay_read(0, 0, 0) == 0, "replay grid: reading the empty state of a cut recordable skips its full apply");
+    expect(replay_read(0, 12, 1) == 1 && replay_read(0, 12, 0) == 1,
+           "replay grid: a stored state with bytes is applied even for a cut recordable");
+    expect(replay_read(1, 0, 1) == 1 && replay_read(1, 0, 0) == 1,
+           "replay grid: another recordable's empty state is still applied");
 }
 
 static void run_replay_grid(void)
 {
     SetErrorMode(SEM_NOGPFAULTERRORBOX);
-    uint64_t r = fake_replay_write(replay_scratch, 0x3000, 0x1c00, "VehicleSystem");
+    replay_entries_init();
+    uint64_t r = fake_replay_write(replay_scratch, 0x3000, 0x1c00, "VehicleSystem", fake_entries[0]);
     printf("      replay grid: the recorder would copy 0x%llx bytes\n", (unsigned long long)r);
     fflush(stdout);
 }

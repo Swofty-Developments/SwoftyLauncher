@@ -360,7 +360,9 @@ EOF
         once "ai corner: a car with no corner start line is skipped and logged once" '\[ai\] corner start: car 3 has no corner start ahead on this track'"'"'s AI line'
         once "replay grid: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(replay recorder grid guard\)': 1 mixin"
         once "replay grid: the guard is armed" '\[replay\] recorder grid guard armed'
-        once "replay grid: a recordable whose state outgrows its holder is skipped and logged once" '\[replay\] session has \? cars, the recorder holds 22; VehicleSystem needs 768 bytes of replay state and its holder has 512, so it is not recorded'
+        once "replay grid: the read guard is armed" '\[replay\] read guard armed'
+        once "replay grid: the empty state of a cut recordable is skipped on read and logged once" '\[replay\] a recordable the recorder could not hold has no stored state'
+        once "replay grid: a recordable whose state outgrows its holder is skipped and logged once" '\[replay\] session has \? cars, the recorder holds 22; CannedEventsSystem needs 768 bytes of replay state and its holder has 512, so it is not recorded'
         once "garage crew: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(garage crew guard\)': 3 mixin"
         once "garage crew: the guard is armed" '\[garage\] crew guard armed'
         count "garage crew: each car dropped from a garage's crew vector is logged once" 4 '\[garage\] garage [5-7]: team 1[2-4] car #4[0-9] \(driver 3[0-9][0-9]\) is the (third|extra) car of its garage'
