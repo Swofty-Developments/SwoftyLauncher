@@ -255,6 +255,8 @@ void hud_fatal();
 void grade_setup();
 void postfx_setup();
 void telemetry_setup();
+void placed_record_setup();
+void placed_record_crash_text(char *out, size_t cap);
 void netplay_setup();
 void netplay_bridge_setup();
 void netplay_bridge_status_changed();

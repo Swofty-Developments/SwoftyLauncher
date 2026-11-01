@@ -19,6 +19,10 @@
 #include "safetyhook.hpp"
 #include "swofty_api.h"
 
+namespace runtime {
+void placed_record_crash_text(char *out, size_t cap);
+}
+
 std::string core_code_owner(uintptr_t addr);
 
 namespace runtime {
@@ -1273,6 +1277,9 @@ void section_state(const Request &r)
             out.put("  last %-9s none recorded\n", k);
     }
     out.put("  track and car count: core does not read them\n");
+    char placed[256];
+    runtime::placed_record_crash_text(placed, sizeof placed);
+    out.put("  %s\n", placed);
 }
 
 void section_blackbox(const Request &r)
