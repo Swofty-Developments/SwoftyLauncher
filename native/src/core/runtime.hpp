@@ -260,6 +260,8 @@ void testagent_setup();
 void direct_start_setup();
 void direct_start_tick();
 void direct_start_profile_loaded(bool ok);
+void direct_start_profile_read();
+std::string code_where(uintptr_t a);
 void testagent_tick();
 void testagent_fired(const std::string &id, bool hot);
 void testagent_screen(const char *name);

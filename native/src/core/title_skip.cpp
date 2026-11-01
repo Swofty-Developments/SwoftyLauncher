@@ -1,6 +1,7 @@
 #include "title_skip.hpp"
 
 #include "runtime.hpp"
+#include "virtual_pad.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mixin.hpp>
@@ -41,6 +42,31 @@ std::atomic<void *> intro_state{nullptr};
 std::atomic<bool> title_wanted{false}, title_engaged{false}, title_set{false};
 std::atomic<uint32_t> title_view{0};
 std::string title_why = "not set up";
+
+// In game the title's view only comes up after a press, so the sync point alone never passes it: while the
+// title is wanted and has not engaged 3 s after that, the virtual pad holds a for 250 ms and lets go for
+// 1750 ms, until the title engages.
+constexpr uint64_t PRESS_AFTER = 3000, PRESS_HOLD = 250, PRESS_GAP = 1750;
+std::atomic<uint64_t> wanted_at{0};
+uint64_t press_at = 0;
+bool pressing = false;
+int presses = 0;
+
+void press_tick()
+{
+    uint64_t now = GetTickCount64(), since = wanted_at.load();
+    if (!since || now - since < PRESS_AFTER || !runtime::pad::why().empty())
+        return;
+    if (pressing && now - press_at >= PRESS_HOLD) {
+        runtime::pad::release();
+        pressing = false;
+    } else if (!pressing && (!press_at || now - press_at >= PRESS_HOLD + PRESS_GAP)) {
+        runtime::pad::set(runtime::pad::A);
+        pressing = true;
+        press_at = now;
+        presses++;
+    }
+}
 
 uint8_t *addr_of(uintptr_t a)
 {
@@ -107,11 +133,20 @@ uint32_t *intro_detour(void *state, uint32_t *link)
     auto *st = static_cast<uint8_t *>(state);
     if (intro_state.exchange(state) != state)
         swofty::log("[title] StateIntro %p", state);
-    if (title_wanted.load() && !st[INTRO_ENGAGED])
+    if (title_wanted.load() && !st[INTRO_ENGAGED]) {
         title_nodes(st);
+        press_tick();
+    }
     uint32_t *r = h_intro.call<uint32_t *>(state, link);
-    if (st[INTRO_ENGAGED] && !title_engaged.exchange(true))
-        swofty::log("[title] engaged (StateIntro+0xef4 set by the title's request callback); the front end comes next");
+    if (st[INTRO_ENGAGED] && !title_engaged.exchange(true)) {
+        if (pressing || presses) {
+            runtime::pad::release();
+            pressing = false;
+        }
+        swofty::log("[title] engaged (StateIntro+0xef4 set by the title's request callback) after %d press(es) of "
+                    "the virtual pad's a; the front end comes next",
+                    presses);
+    }
     return r;
 }
 
@@ -162,7 +197,17 @@ const std::string &why()
 
 void want(bool on)
 {
-    title_wanted = on;
+    if (on == title_wanted.exchange(on))
+        return;
+    if (on) {
+        runtime::pad::setup();
+        runtime::pad::claim(true);
+        wanted_at = GetTickCount64();
+    } else {
+        wanted_at = 0;
+        runtime::pad::release();
+        runtime::pad::claim(false);
+    }
 }
 
 bool wanted()

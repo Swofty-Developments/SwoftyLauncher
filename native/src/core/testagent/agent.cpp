@@ -15,6 +15,7 @@
 
 #include "../apply/tracks/box.hpp"
 #include "../title_skip.hpp"
+#include "../virtual_pad.hpp"
 #include "agent_logic.hpp"
 
 // The test agent (docs/design/std-2/test-suite.md, "The test run" and "The agent's commands"). It arms
@@ -356,79 +357,6 @@ void controller_setup()
     controller_why.clear();
 }
 
-// The virtual pad: XInputGetState and XInputGetCapabilities in xinput1_4.dll (the game imports them
-// by ordinal 2 and 4) report a connected pad in slot 0 while the agent is armed. A script's buttons
-// replace a real pad's state while they are held; otherwise a real pad passes through.
-struct XPad {
-    uint16_t buttons;
-    uint8_t lt, rt;
-    int16_t lx, ly, rx, ry;
-};
-struct XState {
-    DWORD packet;
-    XPad pad;
-};
-struct XCaps {
-    uint8_t type, subtype;
-    uint16_t flags;
-    XPad pad;
-    uint16_t vib_l, vib_r;
-};
-
-std::atomic<uint32_t> pad_word{0};
-std::atomic<bool> pad_held{false};
-std::atomic<DWORD> pad_packet{1};
-safetyhook::InlineHook h_xget, h_xcaps;
-std::string pad_why = "not set up";
-
-DWORD WINAPI x_get_state(DWORD user, XState *s)
-{
-    DWORD r = h_xget.call<DWORD>(user, s);
-    if (user != 0 || !s || !armed.load() || stopped.load())
-        return r;
-    if (pad_held.load() || r != ERROR_SUCCESS) {
-        uint32_t w = pad_word.load();
-        std::memset(s, 0, sizeof *s);
-        s->packet = pad_packet.load();
-        s->pad.buttons = uint16_t(w);
-        s->pad.lt = uint8_t(w >> 16);
-        s->pad.rt = uint8_t(w >> 24);
-    }
-    return ERROR_SUCCESS;
-}
-
-DWORD WINAPI x_get_caps(DWORD user, DWORD flags, XCaps *c)
-{
-    DWORD r = h_xcaps.call<DWORD>(user, flags, c);
-    if (user != 0 || !c || !armed.load() || stopped.load() || r == ERROR_SUCCESS)
-        return r;
-    std::memset(c, 0, sizeof *c);
-    c->type = 1;
-    c->subtype = 1;
-    c->pad.buttons = 0xf3ff;
-    c->pad.lt = c->pad.rt = 0xff;
-    return ERROR_SUCCESS;
-}
-
-void pad_setup()
-{
-    HMODULE x = LoadLibraryW(L"xinput1_4.dll");
-    void *get = x ? reinterpret_cast<void *>(GetProcAddress(x, MAKEINTRESOURCEA(2))) : nullptr;
-    void *caps = x ? reinterpret_cast<void *>(GetProcAddress(x, MAKEINTRESOURCEA(4))) : nullptr;
-    if (!get || !caps) {
-        pad_why = "xinput1_4.dll or its XInputGetState/XInputGetCapabilities exports were not found";
-        return;
-    }
-    auto g = safetyhook::InlineHook::create(get, reinterpret_cast<void *>(x_get_state));
-    auto c = safetyhook::InlineHook::create(caps, reinterpret_cast<void *>(x_get_caps));
-    if (!g || !c) {
-        pad_why = "hooking xinput1_4.dll's exports failed";
-        return;
-    }
-    h_xget = std::move(*g);
-    h_xcaps = std::move(*c);
-    pad_why.clear();
-}
 
 // Cars: g_Sess_VehicleTable (0x146ce86e0, L2, no signature) holds a CarLive per vehicle id, so it is
 // read only on the build the KB describes. The field table is the KB's L3 rows (re/db/structs/Car*.h);
@@ -684,7 +612,7 @@ struct InGame : ta::Game {
     ta::Outcome hello() override
     {
         std::string c = "{\"route\":" + ta::esc(route_why.empty() ? "ok" : route_why) +
-                        ",\"pad\":" + ta::esc(pad_why.empty() ? "ok" : pad_why) +
+                        ",\"pad\":" + ta::esc(runtime::pad::why().empty() ? "ok" : runtime::pad::why()) +
                         ",\"ai_drives_player\":" + ta::esc(controller_why.empty() ? "ok" : controller_why) +
                         ",\"car\":" + ta::esc(car_unbound().empty() ? "ok" : car_unbound()) +
                         ",\"title\":" + ta::esc(runtime::title::why().empty() ? "ok" : runtime::title::why()) +
@@ -914,11 +842,9 @@ struct InGame : ta::Game {
 
     ta::Outcome pad(const ta::PadState &p) override
     {
-        if (!pad_why.empty())
-            return ta::Outcome::unavailable(pad_why);
-        pad_word = uint32_t(p.buttons) | uint32_t(p.lt) << 16 | uint32_t(p.rt) << 24;
-        pad_held = p.buttons || p.lt || p.rt;
-        pad_packet.fetch_add(1);
+        if (!runtime::pad::why().empty())
+            return ta::Outcome::unavailable(runtime::pad::why());
+        runtime::pad::set(p.buttons, p.lt, p.rt);
         return ta::Outcome::ok();
     }
 
@@ -1556,7 +1482,8 @@ void watch()
 {
     resolve_game();
     routes_setup();
-    pad_setup();
+    runtime::pad::setup();
+    runtime::pad::claim(true);
     controller_setup();
     runtime::title::setup();
     ga.node_set_bool = runtime::title::node_set_bool();
@@ -1569,7 +1496,7 @@ void watch()
     swofty::log("[test] agent armed for run %s: %zu test DLL(s); route %s, pad %s, ai_drives_player %s, title %s; save "
                 "sandbox %s",
                 session.run.c_str(), dlls.size(), route_why.empty() ? "ok" : route_why.c_str(),
-                pad_why.empty() ? "ok" : pad_why.c_str(), controller_why.empty() ? "ok" : controller_why.c_str(),
+                runtime::pad::why().empty() ? "ok" : runtime::pad::why().c_str(), controller_why.empty() ? "ok" : controller_why.c_str(),
                 runtime::title::why().empty() ? "ok" : runtime::title::why().c_str(),
                 runtime::save_sandbox_test_mode() ? "required" : "off (the player's own saves)");
     ta::Outcome h = game->hello();
@@ -1590,8 +1517,8 @@ void watch()
             checked = GetTickCount64();
             if (!runtime::test_run_live()) {
                 stopped = true;
-                pad_word = 0;
-                pad_held = false;
+                runtime::pad::release();
+                runtime::pad::claim(false);
                 runtime::title::want(false);
                 swofty::log("[test] the run's token is gone from run.json: the agent stops and lets go of the pad");
                 return;
