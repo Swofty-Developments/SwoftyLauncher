@@ -1156,6 +1156,40 @@ int entrant_vector_entry(void *vector, void *bag)
     ExitProcess(logic::CONTINUE_STOP_EXIT);
 }
 
+std::string mode_label(uintptr_t ctx)
+{
+    uintptr_t holder = 0, name = 0;
+    std::string label;
+    if (mem::read(ctx + MODE_SETUP, holder) && holder && mem::read(holder + MODE_NAME, name) && mem::c_string(name, label, 64))
+        return label;
+    return {};
+}
+
+void leave_front_end(uintptr_t ctx)
+{
+    static uint32_t logged;
+    std::string label = mode_label(ctx);
+    if (label.empty())
+        return;
+    uintptr_t holder = 0, setup = 0, list = 0;
+    std::string selected;
+    if (mem::read(ctx + MODE_SETUP, holder) && holder && mem::read(holder + SETUP_MODES, setup) && setup &&
+        mem::read(setup + SELECTED_LIST, list) && list)
+        if (const char *n = name_of(reinterpret_cast<void *>(list), LIST_NAME))
+            selected = n;
+    bool box = !selected.empty() && (box_list(selected) || is_ours(selected.c_str()));
+    logic::FrontEndLeave leave = logic::leaving_front_end(label, box);
+    if (leave.restore)
+        restore();
+    if (leave.clear_selected)
+        ref<uintptr_t>(reinterpret_cast<void *>(setup), SELECTED_LIST) = 0;
+    if (leave.forget_pick)
+        last_pick.clear();
+    if ((leave.restore || leave.clear_selected) && logged++ < LOG_FIRST)
+        swofty::log("[era] %s session loads: %s's narrowed lists and DRS group are back%s", label.c_str(), logic::HOST,
+                    leave.clear_selected ? ("; the box list " + selected + " no longer selected").c_str() : "");
+}
+
 void grand_prix_load(uintptr_t ctx)
 {
     static uint32_t logged;
@@ -1241,6 +1275,7 @@ void era_session_load()
         !ctx)
         return;
     if (!time_trial(reinterpret_cast<void *>(ctx))) {
+        leave_front_end(ctx);
         grand_prix_load(ctx);
         return;
     }

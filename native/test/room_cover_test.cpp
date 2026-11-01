@@ -127,6 +127,16 @@ int main()
         p.step("Stage", 0.4f, 5000000);
         expect(p.shown(5000000) < 0.05f, "the first call anchors the clock, so a large tick count does not jump the bar");
     }
+    {
+        rc::Progress p;
+        expect(p.target_percent() == 3, "a fresh bar reports the start fraction as its percent");
+        p.step("Joining the lobby", 0.93f, 100);
+        expect(p.target_percent() == 93 && p.label() == "Joining the lobby", "a step reports its fraction and label");
+        p.step("Setting up the lobby", 0.4f, 200);
+        expect(p.target_percent() == 93, "a lower step does not move it back");
+        p.complete("Ready", 300);
+        expect(p.target_percent() == 100, "completing reports 100");
+    }
     expect(rc::request_is_room("room", ""), "SWOFTY_DIRECT_START=room is a room launch");
     expect(!rc::request_is_room("session", ""), "another target is not");
     expect(rc::request_is_room("", "{\"target\":\"room\",\"role\":\"host\"}"), "direct_start.json with target room is");

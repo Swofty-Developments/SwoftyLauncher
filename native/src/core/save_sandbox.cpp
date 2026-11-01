@@ -14,6 +14,7 @@
 #include <string>
 #include <utility>
 
+#include "save_diag_logic.hpp"
 #include "save_sandbox_logic.hpp"
 
 // Test save sandbox (re/db/subsystems/core.md#save-sandbox, docs/design/std-2/test-suite.md "The save
@@ -49,6 +50,7 @@ namespace {
 
 namespace mem = swofty::mem;
 namespace ss = runtime::save_sandbox;
+namespace sdg = runtime::save_diag;
 
 constexpr const char *MIXIN = "swofty_core.dll (test save sandbox)";
 constexpr const char *START = "Ne_SaveSystem2Win_Start";
@@ -72,6 +74,8 @@ ss::Run run_info;
 std::wstring run_dir, saves_dir, remote_w, status_w;
 std::string run_id, remote_a, remote_a_unix;
 std::mutex lock;
+std::string last_file;
+uint32_t file_reads = 0;
 std::unique_ptr<ss::RemoteDir> remote;
 std::atomic<bool> armed{false};
 std::atomic<uint32_t> calls[ss::SLOTS];
@@ -171,6 +175,11 @@ int32_t p_file_read(Proxy *, const char *name, void *data, int32_t size)
     std::lock_guard<std::mutex> g(lock);
     int32_t n = remote->read(named(name), data, size);
     note(ss::FileRead, (named(name) + " -> " + std::to_string(n) + " bytes").c_str());
+    if (n > 0) {
+        last_file = sdg::file_line(named(name), n, remote->timestamp(named(name)));
+        if (++file_reads <= 8)
+            swofty::log("[saves] %s", last_file.c_str());
+    }
     return n;
 }
 
@@ -507,8 +516,7 @@ void read_launcher()
     run_id = l.profile;
     switch (sel.mode) {
     case ss::Mode::off:
-        if (l.present)
-            swofty::log("[saves] launcher saves are off: %s", sel.why.c_str());
+        swofty::log("[saves] %s", sdg::off_line(l.present, l.profile, sel.why).c_str());
         status_w.clear();
         return;
     case ss::Mode::fail:
@@ -582,6 +590,21 @@ bool save_sandbox_test_mode()
 bool save_sandbox_launcher_mode()
 {
     return mode == Mode::on && launcher_on;
+}
+
+std::string save_sandbox_source()
+{
+    if (test_on)
+        return "test sandbox (run " + run_id + ")";
+    if (launcher_on && mode == Mode::on)
+        return "launcher saves (profile " + run_id + ", " + remote_a + ")";
+    return "Steam native";
+}
+
+std::string save_sandbox_file()
+{
+    std::lock_guard<std::mutex> g(lock);
+    return last_file;
 }
 
 bool save_sandbox_armed()
