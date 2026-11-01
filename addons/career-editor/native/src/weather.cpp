@@ -312,6 +312,8 @@ std::string sidecar_text()
     for (auto &[id, c] : g_careers) {
         if (c.plans.empty() && c.locked.empty() && !c.pinned)
             continue;
+        if (ce::provisional_instance(id))
+            continue;
         w.key(id.c_str());
         write_career(w, c);
     }
@@ -416,6 +418,15 @@ bool enter(bool sticky = false)
         return true;
     if (id != g_career) {
         stash_career();
+        if (!id.empty() && !g_career.empty() && ce::provisional_instance(g_career) &&
+            ce::career_renamed_to(g_career) == id) {
+            ce::log("weather: career %s was saved as %s; its plans move with it", g_career.c_str(), id.c_str());
+            g_careers[id] = g_careers[g_career];
+            g_careers.erase(g_career);
+            g_career = id;
+            save_sidecar();
+            return true;
+        }
         g_career = id;
         auto it = id.empty() ? g_careers.end() : g_careers.find(id);
         CareerState c = it != g_careers.end() ? it->second : CareerState{};

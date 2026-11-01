@@ -109974,7 +109974,9 @@
      "how": "static"
     }
    ],
-   "used_by": []
+   "used_by": [
+    "native/src/core/view_state.cpp"
+   ]
   },
   {
    "id": "session.red_flag_simulate_reset_entries",
@@ -161150,6 +161152,87 @@
    ],
    "used_by": [
     "native/src/core/crash.cpp"
+   ]
+  },
+  {
+   "id": "game.photo_mode_active_set",
+   "section": ".xtls",
+   "pattern": "C5 F8 29 85 80 03 00 00 C6 85 94 03 00 00 01",
+   "match": "0x142bdba6f",
+   "anchor": "0x8",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142bdba77",
+   "kind": "mid",
+   "expect": "C6 85 94 03 00 00 01",
+   "names": [
+    "site_Game_PhotoModeActiveSet"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "view-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/view_state.cpp"
+   ]
+  },
+  {
+   "id": "game.photo_mode_active_clear",
+   "section": ".xtls",
+   "pattern": "C6 86 25 04 00 00 00 C6 86 94 03 00 00 00",
+   "match": "0x142bdc320",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142bdc327",
+   "kind": "mid",
+   "expect": "C6 86 94 03 00 00 00",
+   "names": [
+    "site_Game_PhotoModeActiveClear"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "view-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/view_state.cpp"
+   ]
+  },
+  {
+   "id": "game.use_camera_setting_call",
+   "section": ".xtls",
+   "pattern": "48 89 F1 B2 0F E8 ?? ?? ?? ?? 90 48 83 C4 70",
+   "match": "0x142424bbd",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142424bbd",
+   "kind": "mid",
+   "expect": "48 89 F1 B2 0F",
+   "names": [
+    "site_Game_UseCameraSettingCall"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "view-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/view_state.cpp"
    ]
   }
  ]

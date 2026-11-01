@@ -14,6 +14,7 @@
 #include "dbread_logic.hpp"
 #include "layout.hpp"
 #include "perf.hpp"
+#include "view_state.hpp"
 
 // Flow states (site_FeFlow_SetStateStatus, FlowState). Every flow state's status change goes
 // through FeFlow_Set_StateStatus(state, status); the site sits after its prologue with rcx = the
@@ -257,6 +258,7 @@ void on_flow(SwoftyContext *c)
     runtime::watchdog_flow(hash, to, name.c_str());
     runtime::netplay_flow(hash, to);
     runtime::testagent_flow(name, to);
+    view::flow(hash, to);
     if (known) {
         runtime::era_session_trace(known, int(to));
         runtime::era_session_unloaded(known, int(to));

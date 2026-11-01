@@ -20,7 +20,7 @@ All four templates are MIT-licensed; your addon can use any licence.
 
 - [`templates/addon`](#templates-addon): [data](/reference/data/) and an [engine plugin](./native-plugins). Database and UI edits driven by settings, plus a C++ plugin.
 - [`templates/launcher-addon`](#templates-launcher-addon): a [launcher plugin](./launcher-api). A dashboard page, a page with a switch per item, an importer, a build hook and a command.
-- [`templates/postfx-pass`](#templates-postfx-pass): a [post-process pass](./postfx). A vignette with saturation, with settings for both.
+- [`templates/postfx-pass`](#templates-postfx-pass): a [post-process pass](./postfx). A vignette with saturation, and a glow made in two passes through a half-size texture.
 - [`templates/shader-pack`](#templates-shader-pack): a [shader pack](./shader-packs). Three colour looks, with settings to pick one and its strength.
 
 ## templates/addon
@@ -155,20 +155,24 @@ On Windows, build `example-helper.exe` and copy it to `bin/`. Ship both binaries
 
 ## templates/postfx-pass
 
-[`templates/postfx-pass`](https://github.com/Swofty-Developments/SwoftyLauncher/tree/main/templates/postfx-pass) is a [post-process pass](./postfx): a vignette with saturation, and a setting for each.
+[`templates/postfx-pass`](https://github.com/Swofty-Developments/SwoftyLauncher/tree/main/templates/postfx-pass) is a [post-process pass](./postfx): a vignette with saturation, and a glow made in two passes through a half-size texture.
 
 ```text
 templates/postfx-pass/
-├── swofty.json        the postfx experimental feature, vignette and saturation sliders (both db), and the postfx block that names the shader and passes the sliders to it
-├── fx/vignette.hlsl   the pass
+├── swofty.json        the postfx experimental feature, vignette, saturation and glow sliders (all db), the half texture, and the postfx block with three passes
+├── fx/vignette.hlsl   the vignette pass
+├── fx/glow.hlsl       the down and up passes of the glow
 └── README.md          how to change the pass, and install steps
 ```
 
 ```json [swofty.json]
 "category": "shaders",
 "experimental_features": ["postfx"],
+"postfx_textures": [{ "name": "half", "scale": 0.5 }],
 "postfx": [
-  { "shader": "fx/vignette.hlsl", "name": "vignette", "options": ["{{vignette}}", "{{saturation}}"] }
+  { "shader": "fx/vignette.hlsl", "name": "vignette", "options": ["{{vignette}}", "{{saturation}}"] },
+  { "shader": "fx/glow.hlsl", "entry": "down", "name": "glow-down", "inputs": ["original"], "output": "half" },
+  { "shader": "fx/glow.hlsl", "entry": "up", "name": "glow-up", "options": ["{{glow}}"], "inputs": ["half"] }
 ]
 ```
 

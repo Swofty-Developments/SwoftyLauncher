@@ -103,7 +103,7 @@ A section is absent when it has never rendered in this career. Sections render o
   "game": "running",
   "career": true,                 // a career is loaded
   "mode": "my_team" | "driver_career" | "none",
-  "career_id": "mt-000a000a-00004000" | null,   // ce::career_id(), see below
+  "career_id": "f1_career_progressive:7731" | null,   // ce::career_id(), see below
   "humans": 1,                    // human entrants; more than 1 blocks every op (two-player career)
   "phase": "team_hq" | "team_hq_busy" | "weekend_hub" | "session" | "loading" | "frontend" | "unknown",
   "safe": true,                   // CE_OP ops can run now
@@ -125,7 +125,7 @@ A section is absent when it has never rendered in this career. Sections render o
 }
 ```
 
-`career_id` (`ce::career_id()`, empty in C++ when unknown): `mt-<team key>-<driver key>` in My Team, `dc-<driver key>` in Driver Career (8 hex digits each, the player's packed keys from the components helper). It is stable for a career's life (the My Team team and the Driver Career driver never change) but two careers with the same team and driver share it. The save slot would be a better key; the slot manager component is not bound yet.
+`career_id` (`ce::career_id()`, empty in C++ when unknown): the loaded career's id from the core's career saves (`career::saves::current()`, for example `f1_career_progressive:7731`), taken from its save slot, so two careers with the same driver or team have different ids and one career keeps its id across loads. A new career carries a provisional id ending in `:new<N>` until its first save; CME keeps its data in memory under that id and moves it to the slot id at the first save. It is empty on a core without career saves, and the ops that need it fail with `no_career_id`.
 
 `why` values: `no career is loaded`, `two-player careers are not supported`, `Team HQ is advancing time`, `Team HQ is heading to a session`, `Team HQ is running the end of season`, `Team HQ is in the season break`, `a session is running; edits wait for Team HQ`, `not in Team HQ`, `Team HQ is settling` (the first 0.75 s after Team HQ comes up). `why_anytime`: `no career is loaded`, `the game is loading`.
 
