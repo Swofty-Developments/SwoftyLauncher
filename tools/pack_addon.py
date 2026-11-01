@@ -6,7 +6,8 @@
 --zip writes <out>/<id>.zip instead; the launcher installs either. --with adds a file the addon's code names
 (swofty dev pack passes the paths its SWOFTY_REGISTER records name).
 
-Only swofty.json, LICENSE, README.md, the icon, the launcher plugin's programs, the standard library's
+Only swofty.json, LICENSE, README.md, the icon, the shaders beside postfx passes and shader pack looks,
+their image textures, the launcher plugin's programs, the standard library's
 registry.json, registry.lock.json and registry/ data files, and the files the manifest's operations name go in,
 plus every
 file an operation file names in a "source" or "sources" field (texture fragments, VTFs, UI files). Entries are
@@ -30,7 +31,24 @@ def wanted(m):
         out += [n['dll'], *n.get('files', [])]
     program = m.get('launcher', {}).get('program')
     out += list(program.values()) if isinstance(program, dict) else [program]
+    out += [t['file'] for t in m.get('postfx_textures', []) if t.get('file')]
     return [r.rstrip('/') for r in out if r]
+
+
+def shader_files(addon, m):
+    """Every .hlsl and .hlsli beside a postfx pass, which the pass may include, and every .cube beside a
+    shader pack's look, whose name can come from an option."""
+    dirs = {os.path.dirname(p['shader']) for p in m.get('postfx', []) if p.get('shader')}
+    lut = (m.get('shader') or {}).get('lut')
+    exts = {d: ('.hlsl', '.hlsli') for d in dirs}
+    if lut:
+        exts[os.path.dirname(lut)] = ('.cube',)
+    out = []
+    for d, ext in exts.items():
+        full = os.path.join(addon, d)
+        if os.path.isdir(full):
+            out += [os.path.join(d, f) for f in sorted(os.listdir(full)) if f.lower().endswith(ext)]
+    return out
 
 
 def sources(addon, rel):
@@ -126,6 +144,7 @@ def main():
         for rel in ops.get(key, []):
             rels += sources(addon, rel)
     rels += data_paths(addon)
+    rels += shader_files(addon, m)
     for rel in extra:
         if not inside(addon, rel):
             sys.exit(f'pack_addon.py: {addon}: {rel} is missing')
