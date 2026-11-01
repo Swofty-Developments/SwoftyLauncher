@@ -9,6 +9,7 @@
 #include <mutex>
 
 #include "direct_start_logic.hpp"
+#include "direct_start_tt.hpp"
 #include "json.hpp"
 #include "title_skip.hpp"
 
@@ -418,6 +419,8 @@ ds::Setup new_grand_prix(std::string &why)
 
 ds::Setup set_up_target(std::string &why)
 {
+    if (driver.target.name == "session" && request["mode"].str() == "time_trial")
+        return ds::tt::setup(request, why);
     if (driver.target.name == "session")
         return request["box"].str().empty() ? continue_grand_prix(why) : new_grand_prix(why);
     if (driver.target.name == "room") {

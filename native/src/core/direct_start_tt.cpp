@@ -1,0 +1,406 @@
+#include "runtime.hpp"
+
+#include <swofty/mixin.hpp>
+
+#include <cstring>
+#include <string>
+#include <vector>
+
+#include "direct_start_tt.hpp"
+#include "direct_start_tt_logic.hpp"
+#include "era_logic.hpp"
+
+// The direct start's Time Trial (a `session` request with "mode": "time_trial"): the Time Trial mode made
+// current, then its setup written where the front end's screens leave it, so StateFrontendWorld's 'session'
+// link loads a Time Trial at the chosen track with the chosen box and team.
+//
+// The Time Trial mode entity E (game mode "time_trial", vtable 0x145648300) holds the setup the screens build:
+// E+0x2b0 the game setup mode (setter 0x14079f300), E+0xe10 the entrant setup mode, E+0xe18 the selected entrant
+// list. Its session settings (slot 0xd8, body 0x148731f80: session 18, ruleset 2) take the track from
+// 0x1407ddbf0, which reads the VM string game_mode_data.current_game_mode.track_info.current_track.track_file_name
+// and finds the record of that name (+0x78) in E's track system (E+0xf58, 16-byte entries at +0x28..+0x30, the
+// record at +8). Sess_TimeTrialMode_FillDescriptor (0x142936760) takes the player's team from the local player's
+// entrant selection, a static pair of 0xc0-byte records at 0x14604eac0 (guard 0x14604ec50): the packed team ref
+// at +0x68 with its engaged byte at +0x6c, which the team select writes (0x1407dfda0 shows the write) and the fill
+// reads at 0x142936c72 when no hot load is pending. Team refs pack a kind byte with a u16 index into
+// [[[E+0xf80]+0x58]+0x2c8+kind*0x10] (16-byte entries at +8, the team's name at entry+0x18); an entrant record
+// carries its team's ref at +0x58.
+
+namespace runtime {
+std::vector<era::Box> era_boxes();
+DirectStartContext direct_start_context();
+uintptr_t direct_start_set_mode();
+}
+
+bool ui_vm_set_path(const std::string &path, int type, const void *value);
+
+namespace {
+
+namespace tt = runtime::direct_start::tt;
+using runtime::direct_start::Setup;
+
+const runtime::Sig SIG_MODE_BY_NAME{"game.game_modes_find_by_name",
+                                    "48 8B 89 A0 02 00 00 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 20 48 89 C7 48 89 C1 48 81 C1 30 10 00 00",
+                                    0x7d0de0, runtime::Sig::rel32, 14, 15, 5};
+
+constexpr const char *MODE = "time_trial";
+constexpr const char *TRACK_NODE = "game_mode_data.current_game_mode.track_info.current_track.track_file_name";
+constexpr uintptr_t RVA_SET_SETUP_MODE = 0x79f300, RVA_CURRENT_TRACK = 0x7ddbf0, RVA_PLAYER_ENTRANTS = 0x604eac0,
+                    RVA_PLAYER_GUARD = 0x604ec50;
+constexpr uintptr_t ENTITY_MODE = 0xf08, ENTITY_TRACKS = 0xf58, ENTITY_TEAMS = 0xf80, ENTITY_SETUP_MODE = 0x2b0,
+                    ENTITY_ENTRANT_SETUP = 0xe10, ENTITY_LIST = 0xe18;
+constexpr uintptr_t GSM_HOLDER = 0xd8, GSM_ESMS = 0x10, GSM_ESM_COUNT = 0x70, ESM_LISTS = 0x130, ESM_LIST_COUNT = 0x230,
+                    LIST_NAME = 0x28, LIST_BEGIN = 0x10, LIST_END = 0x18, RECORD = 0x88, RECORD_TEAM = 0x58,
+                    TRACK_NAME = 0x78, PLAYER_STRIDE = 0xc0, PLAYER_TEAM = 0x68, PLAYER_TEAM_SET = 0x6c;
+constexpr size_t ESM_SLOTS = 32, GSM_SLOTS = 32;
+
+using ModeByName_t = uint8_t *(void *modes, const char *name);
+using SetMode_t = void(void *modes, void *mode);
+using CurrentTrack_t = uint8_t *(void *entity);
+
+template <class T> T at(const void *p, uintptr_t off)
+{
+    return *reinterpret_cast<const T *>(static_cast<const uint8_t *>(p) + off);
+}
+
+template <class T> T *rva(uintptr_t r)
+{
+    return reinterpret_cast<T *>(swofty::api->module_base() + r);
+}
+
+const char *c_name(const void *p)
+{
+    return p && runtime::readable(p, 1) ? static_cast<const char *>(p) : nullptr;
+}
+
+const char *holder_name(const uint8_t *obj, uintptr_t holder_off)
+{
+    if (!obj || !runtime::readable(obj + holder_off, 8))
+        return nullptr;
+    auto *holder = at<const uint8_t *>(obj, holder_off);
+    return holder && runtime::readable(holder, 0x18) ? c_name(at<const char *>(holder, 0x10)) : nullptr;
+}
+
+struct State {
+    tt::Step step = tt::Step::mode;
+    uintptr_t by_name = 0;
+    uint64_t started = 0, mode_set = 0, static_wait = 0;
+    uint8_t *entity = nullptr, *list = nullptr;
+    bool placed = false;
+} st;
+
+uint8_t *track_record(uint8_t *e, const std::string &want, std::vector<std::string> &names)
+{
+    auto *tracks = at<uint8_t *>(e, ENTITY_TRACKS);
+    if (!tracks || !runtime::readable(tracks, 0x38))
+        return nullptr;
+    uint8_t *found = nullptr;
+    for (auto *q = at<uint8_t *>(tracks, 0x28), *end = at<uint8_t *>(tracks, 0x30); q && q < end; q += 16) {
+        if (!runtime::readable(q, 16))
+            break;
+        auto *rec = at<uint8_t *>(q, 8);
+        const char *name = rec && runtime::readable(rec, TRACK_NAME + 8) ? c_name(at<const char *>(rec, TRACK_NAME)) : nullptr;
+        if (!name)
+            continue;
+        names.push_back(name);
+        if (!found && tt::lower(name) == tt::lower(want))
+            found = rec;
+    }
+    return found;
+}
+
+std::vector<uint8_t *> setup_modes(uint8_t *e)
+{
+    std::vector<uint8_t *> out;
+    auto **evt = at<void **>(e, 0);
+    auto *vec = reinterpret_cast<uint8_t *(*)(void *)>(evt[0x1d0 / 8])(e);
+    if (!vec || !runtime::readable(vec, 0x18))
+        return out;
+    for (auto **p = at<uint8_t **>(vec, 8), **end = at<uint8_t **>(vec, 0x10); p && p != end && out.size() < GSM_SLOTS; ++p)
+        if (*p && runtime::readable(*p, GSM_HOLDER + 8))
+            out.push_back(*p);
+    return out;
+}
+
+struct ListAt {
+    uint8_t *esm = nullptr, *list = nullptr;
+};
+
+ListAt find_list(uint8_t *gsm, const std::string &want, std::vector<std::string> &names)
+{
+    ListAt hit;
+    if (!runtime::readable(gsm, GSM_ESM_COUNT + 8))
+        return hit;
+    int64_t n = at<int64_t>(gsm, GSM_ESM_COUNT);
+    auto **esms = at<uint8_t **>(gsm, GSM_ESMS);
+    for (int64_t i = 0; esms && i < n && i < int64_t(ESM_SLOTS); ++i) {
+        uint8_t *esm = runtime::readable(esms + i, 8) ? esms[i] : nullptr;
+        if (!esm || !runtime::readable(esm, ESM_LIST_COUNT + 8))
+            continue;
+        int64_t lists = at<int64_t>(esm, ESM_LIST_COUNT);
+        for (int64_t j = 0; j < lists && j < int64_t(ESM_SLOTS); ++j) {
+            auto *list = at<uint8_t *>(esm, ESM_LISTS + size_t(j) * 8);
+            const char *name = holder_name(list, LIST_NAME);
+            if (!name)
+                continue;
+            names.push_back(name);
+            if (!hit.list && want == name)
+                hit = {esm, list};
+        }
+    }
+    return hit;
+}
+
+std::string team_name(uint8_t *e, uint32_t ref)
+{
+    uint8_t kind = tt::ref_kind(ref);
+    uint16_t index = tt::ref_index(ref);
+    auto *teams = at<uint8_t *>(e, ENTITY_TEAMS);
+    if (kind >= 3 || !teams || !runtime::readable(teams, 0x60))
+        return {};
+    auto *sys = at<uint8_t *>(teams, 0x58);
+    if (!sys || !runtime::readable(sys + 0x2c8 + kind * 0x10, 8))
+        return {};
+    auto *table = at<uint8_t *>(sys, 0x2c8 + kind * 0x10);
+    if (!table || !runtime::readable(table, 0x18))
+        return {};
+    auto *begin = at<uint8_t *>(table, 8), *end = at<uint8_t *>(table, 0x10);
+    if (!begin || end < begin || size_t(end - begin) / 16 <= index || !runtime::readable(begin + index * 16, 16))
+        return {};
+    auto *entry = at<uint8_t *>(begin + index * 16, 8);
+    const char *name = entry && runtime::readable(entry, 0x20) ? c_name(at<const char *>(entry, 0x18)) : nullptr;
+    return name ? std::string(name) : std::string();
+}
+
+std::string team_label(uint16_t stat)
+{
+    const SwoftyDb *db = runtime::db_table();
+    if (!db || !db->available || !db->available())
+        return {};
+    int64_t count = 0;
+    if (db->int_at("entrants.teams._team_instancecount_", &count) != SWOFTY_ASSET_OK || count <= 0 || count > 8192)
+        return {};
+    for (int64_t i = 0; i < count; ++i) {
+        std::string row = "entrants.teams.team_" + std::to_string(i);
+        int64_t id = -1;
+        const char *name = nullptr;
+        if (db->int_at((row + ".stat_id").c_str(), &id) == SWOFTY_ASSET_OK && id == stat &&
+            db->string_at((row + "._metadata_").c_str(), &name) == SWOFTY_ASSET_OK && name && strnlen(name, 128) < 128)
+            return name;
+    }
+    return {};
+}
+
+int player_index()
+{
+    uintptr_t slot = swofty::api->resolve("g_Game_Manager"), mgr = 0;
+    if (!slot || !runtime::readable(reinterpret_cast<void *>(slot), 8) || !(mgr = *reinterpret_cast<uintptr_t *>(slot)))
+        return 0;
+    auto *m = reinterpret_cast<uint8_t *>(mgr);
+    auto *users = runtime::readable(m + 0x148, 8) ? at<uint8_t *>(m, 0x140) : nullptr;
+    if (!users || !runtime::readable(users, 0x1b0))
+        return 0;
+    auto *user = at<uint8_t *>(users, 0x1a8);
+    if (!user)
+        user = at<uint8_t *>(users, 0x198);
+    if (!user || !runtime::readable(user, 0x28))
+        return 0;
+    auto *owner = at<uint8_t *>(user, 0x20);
+    if (!owner || !runtime::readable(owner, 0x1a8) || at<uint8_t *>(owner, 0x198) == user)
+        return 0;
+    return at<uint8_t *>(owner, 0x1a0) == user ? 1 : 0;
+}
+
+Setup set_team(uint8_t *e, uint8_t *list, const std::string &want, std::string &why)
+{
+    auto *begin = at<uint8_t *>(list, LIST_BEGIN), *end = at<uint8_t *>(list, LIST_END);
+    if (!begin || end <= begin || size_t(end - begin) % RECORD || !runtime::readable(begin, size_t(end - begin))) {
+        why = "the selected entrant list holds no entrant records";
+        return Setup::failed;
+    }
+    std::vector<std::string> labels;
+    std::vector<uint32_t> refs;
+    for (auto *r = begin; r < end; r += RECORD) {
+        uint32_t ref = at<uint32_t>(r, RECORD_TEAM);
+        if (tt::ref_index(ref) == tt::NO_REF)
+            continue;
+        std::string name = team_name(e, ref);
+        if (name.empty())
+            name = team_label(tt::ref_index(ref));
+        if (name.empty())
+            name = "team#" + std::to_string(tt::ref_kind(ref)) + "." + std::to_string(tt::ref_index(ref));
+        if (std::find(refs.begin(), refs.end(), ref) != refs.end())
+            continue;
+        labels.push_back(name);
+        refs.push_back(ref);
+    }
+    int i = tt::pick_team(labels, want);
+    if (i < 0) {
+        why = "the list has no team '" + want + "' (teams: " + tt::joined(labels) + ")";
+        return Setup::failed;
+    }
+    int guard = *rva<int>(RVA_PLAYER_GUARD);
+    if (guard <= 0) {
+        if (!st.static_wait)
+            st.static_wait = GetTickCount64();
+        if (GetTickCount64() - st.static_wait < tt::STATIC_WAIT_MS)
+            return Setup::pending;
+        swofty::log("[direct] Time Trial: the player's entrant selection is not built yet (guard %d); the team is "
+                    "written anyway",
+                    guard);
+    }
+    int p = player_index();
+    auto *sel = rva<uint8_t>(RVA_PLAYER_ENTRANTS) + size_t(p) * PLAYER_STRIDE;
+    uint32_t was = at<uint32_t>(sel, PLAYER_TEAM);
+    uint8_t was_set = at<uint8_t>(sel, PLAYER_TEAM_SET);
+    *reinterpret_cast<uint32_t *>(sel + PLAYER_TEAM) = refs[size_t(i)];
+    sel[PLAYER_TEAM_SET] = 1;
+    swofty::log("[direct] Time Trial: team %s (ref %08x) for player %d; the selection held %08x (set %u)",
+                labels[size_t(i)].c_str(), refs[size_t(i)], p, was, unsigned(was_set));
+    return Setup::done;
+}
+
+Setup place(uint8_t *e, const json::Value &request, std::string &why)
+{
+    std::string box = request["box"].str(), track = request["track"].str(),
+                setup_name = request["setup_mode"].str("swofty_f1");
+    if (!box.empty()) {
+        std::vector<tt::BoxLists> boxes;
+        for (const auto &b : runtime::era_boxes())
+            boxes.push_back({b.entrant_list, b.time_trial});
+        std::string want = tt::list_for(boxes, box);
+        uint8_t *gsm = nullptr;
+        std::vector<std::string> modes;
+        for (uint8_t *m : setup_modes(e)) {
+            const char *name = holder_name(m, GSM_HOLDER);
+            if (name)
+                modes.push_back(name);
+            if (name && setup_name == name)
+                gsm = m;
+        }
+        if (!gsm) {
+            why = "the Time Trial mode has no game setup mode '" + setup_name + "' (it has " + tt::joined(modes) + ")";
+            return Setup::failed;
+        }
+        std::vector<std::string> lists;
+        ListAt hit = find_list(gsm, want, lists);
+        if (!hit.list) {
+            why = "the setup mode " + setup_name + " offers no entrant list '" + want + "' (it offers " +
+                  tt::joined(lists) + ")";
+            return Setup::failed;
+        }
+        rva<void(void *, void *, int)>(RVA_SET_SETUP_MODE)(e, gsm, 0);
+        if (at<uint8_t *>(e, ENTITY_SETUP_MODE) != gsm)
+            swofty::log("[direct] Time Trial: the setup mode setter left %p, not %p, at E+0x2b0",
+                        at<uint8_t *>(e, ENTITY_SETUP_MODE), gsm);
+        *reinterpret_cast<uint8_t **>(e + ENTITY_ENTRANT_SETUP) = hit.esm;
+        *reinterpret_cast<uint8_t **>(e + ENTITY_LIST) = hit.list;
+        st.list = hit.list;
+        swofty::log("[direct] Time Trial: setup mode %s (%p), entrant setup mode %p, list %s (%p)%s", setup_name.c_str(),
+                    gsm, hit.esm, want.c_str(), hit.list, want == box ? "" : (" for box " + box).c_str());
+    } else
+        st.list = at<uint8_t *>(e, ENTITY_LIST);
+    if (!track.empty()) {
+        std::vector<std::string> names;
+        uint8_t *rec = track_record(e, track, names);
+        if (!rec) {
+            why = "the Time Trial mode has no track '" + track + "' (it has " + tt::joined(names, 40) + ")";
+            return Setup::failed;
+        }
+        const char *file = c_name(at<const char *>(rec, TRACK_NAME));
+        if (!ui_vm_set_path(TRACK_NODE, 0, file)) {
+            why = std::string("the VM node ") + TRACK_NODE + " could not be written";
+            return Setup::failed;
+        }
+        uint8_t *now = rva<CurrentTrack_t>(RVA_CURRENT_TRACK)(e);
+        if (now != rec) {
+            why = std::string("the Time Trial's current track reads ") +
+                  (now ? c_name(at<const char *>(now, TRACK_NAME)) : "nothing") + " after " + file + " was written";
+            return Setup::failed;
+        }
+        swofty::log("[direct] Time Trial: track %s (%p)", file, rec);
+    }
+    return Setup::done;
+}
+
+Setup apply(uint8_t *e, const json::Value &request, std::string &why)
+{
+    if (!st.placed) {
+        Setup s = place(e, request, why);
+        if (s != Setup::done)
+            return s;
+        st.placed = true;
+    }
+    std::string team = request["team"].str();
+    if (!team.empty()) {
+        if (!st.list) {
+            why = "no entrant list is selected to pick the team from";
+            return Setup::failed;
+        }
+        Setup s = set_team(e, st.list, team, why);
+        if (s != Setup::done)
+            return s;
+    }
+    return Setup::done;
+}
+
+}
+
+namespace runtime::direct_start::tt {
+
+Setup setup(const json::Value &request, std::string &why)
+{
+    if (st.step == Step::done)
+        return Setup::done;
+    if (!runtime::same_build()) {
+        why = "the Time Trial setup's addresses are the KB build's and this F1_25.exe is another build";
+        return Setup::failed;
+    }
+    if (!st.started)
+        st.started = GetTickCount64();
+    DirectStartContext ctx = runtime::direct_start_context();
+    uintptr_t set_mode = runtime::direct_start_set_mode();
+    if (!st.by_name)
+        st.by_name = runtime::find(SIG_MODE_BY_NAME, "game mode lookup", "direct");
+    if (!set_mode || !st.by_name) {
+        why = "SetCurrentGameMode or the game mode lookup did not resolve";
+        return Setup::failed;
+    }
+    if (!ctx.game_modes)
+        return Setup::pending;
+    if (st.step == Step::mode) {
+        uint8_t *e = reinterpret_cast<ModeByName_t *>(st.by_name)(ctx.game_modes, MODE);
+        if (!e || !runtime::readable(e, ENTITY_MODE + 8) || !at<void *>(e, ENTITY_MODE)) {
+            if (GetTickCount64() - st.started < MODE_WAIT_MS)
+                return Setup::pending;
+            why = "the game has no game mode 'time_trial'";
+            return Setup::failed;
+        }
+        st.entity = e;
+        reinterpret_cast<SetMode_t *>(set_mode)(ctx.game_modes, at<void *>(e, ENTITY_MODE));
+        st.mode_set = GetTickCount64();
+        st.step = Step::settle;
+        swofty::log("[direct] Time Trial: the Time Trial mode is current (entity %p, mode %p)", e, at<void *>(e, ENTITY_MODE));
+        return Setup::pending;
+    }
+    if (st.step == Step::settle) {
+        uint8_t *tracks = at<uint8_t *>(st.entity, ENTITY_TRACKS);
+        bool ready = tracks && runtime::readable(tracks, 0x38) && at<uint8_t *>(tracks, 0x28) != at<uint8_t *>(tracks, 0x30);
+        if (!ready || GetTickCount64() - st.mode_set < SETTLE_MS) {
+            if (GetTickCount64() - st.mode_set < MODE_WAIT_MS)
+                return Setup::pending;
+            why = "the Time Trial mode's track system stayed empty";
+            return Setup::failed;
+        }
+        st.step = Step::apply;
+    }
+    Setup s = apply(st.entity, request, why);
+    if (s == Setup::done) {
+        st.step = Step::done;
+        swofty::log("[direct] Time Trial: set up %llu ms after the mode was made current",
+                    (unsigned long long)(GetTickCount64() - st.mode_set));
+    }
+    return s;
+}
+
+}
