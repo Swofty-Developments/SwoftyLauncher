@@ -340,10 +340,11 @@ EOF
         once "ers mode: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(ers mode guard\)': 1 mixin"
         once "ers mode: the guard is armed" '\[ers\] mode guard armed'
         count "ers mode: each car whose ERS mode is out of range is set to Medium and logged once" 2 '\[ers\] car (8: ERS mode -2141928108|9: ERS mode 4) out of range; set to 1 \(Medium\)'
-        once "standings: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(standings track guard\)': 1 mixin"
+        once "standings: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(standings track guard\)': 2 mixins"
         once "standings: the guard is armed" '\[career\] standings guard armed'
         once "standings: a round whose track is off is skipped and logged once" '\[career\] standings: round 7 has no track data \(track 200 is off\); skipped'
         once "standings: a round whose weekend can't be read is skipped and logged once" '\[career\] standings: round 10 has no track data; skipped'
+        once "weekends: a round whose track has no record is skipped and logged once" '\[career\] weekends: track 1 has no track data; the round shows no track'
         once "garage crew: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(garage crew guard\)': 1 mixin"
         once "garage crew: the guard is armed" '\[garage\] crew guard armed'
         count "garage crew: each car dropped from a garage's crew vector is logged once" 4 '\[garage\] garage [5-7]: team 1[2-4] car #4[0-9] \(driver 3[0-9][0-9]\) is the (third|extra) car of its garage'
@@ -705,6 +706,23 @@ for guard in on off; do
         check "standings off: the round faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Career_Standings_BuildWeekendNode\+0x28'
         parse_report "Career_Standings_BuildWeekendNode+0x28" "" || status=1
         [[ $code != 0 ]] && echo "ok  : standings off: process ended with $code" || { echo "FAIL: standings off: process exited 0"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== weekends ($guard)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_STANDINGS_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" weekends >"$OUT/weekends.out" 2>&1 || code=$?
+    grep -E '\[career\] weekends|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    if [[ $guard == on ]]; then
+        grep -q 'weekends: the round returned 0\b' "$OUT/weekends.out" && echo "ok  : weekends on: the round read as empty" ||
+            { echo "FAIL: weekends on: the round did not read as empty"; status=1; }
+        count "weekends on: no unhandled fault" 0 '\[crash\] unhandled '
+        compgen -G "$SW/crash-*.txt" >/dev/null && { echo "FAIL: weekends on: a crash report was written"; status=1; } ||
+            echo "ok  : weekends on: no crash report"
+    else
+        check "weekends off: the read faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Career_Weekends_BuildResultNodes\+0x13'
+        [[ $code != 0 ]] && echo "ok  : weekends off: process ended with $code" || { echo "FAIL: weekends off: process exited 0"; status=1; }
     fi
 done
 for guard in on off; do
