@@ -36,6 +36,7 @@ Subs<ResizeFn> resizes;
 Subs<ExecFn> execs;
 Subs<BarrierFn> barriers;
 Subs<SetNameFn> setnames;
+Subs<ResetFn> resets;
 
 template <class T> void release(T *&p)
 {
@@ -305,7 +306,9 @@ enum : size_t {
     PSO_SLOT = 25,
     HEAPS_SLOT = 28,
     COMPUTE_ROOT_SLOT = 29,
+    GRAPHICS_ROOT_SLOT = 30,
     COMPUTE_TABLE_SLOT = 31,
+    GRAPHICS_TABLE_SLOT = 32,
     COMPUTE_CONSTANT_SLOT = 33,
     COMPUTE_CONSTANTS_SLOT = 35,
     COMPUTE_CBV_SLOT = 37,
@@ -315,7 +318,7 @@ enum : size_t {
 };
 
 safetyhook::InlineHook h_reset, h_clear_state, h_pso, h_heaps, h_compute_root, h_compute_table, h_compute_constant,
-    h_compute_constants, h_compute_cbv, h_compute_srv, h_compute_uav, h_pso1;
+    h_compute_constants, h_compute_cbv, h_compute_srv, h_compute_uav, h_pso1, h_graphics_root, h_graphics_table;
 std::mutex states_lock;
 std::vector<std::pair<ID3D12GraphicsCommandList *, ListState *>> states;
 thread_local ID3D12GraphicsCommandList *state_list;
@@ -346,6 +349,8 @@ void forget(ListState *s, ID3D12PipelineState *pso)
     s->heaps = 0;
     s->compute_root = nullptr;
     s->args = 0;
+    s->graphics_root = nullptr;
+    s->tables = 0;
 }
 
 RootArg *arg_at(ListState *s, UINT index)
@@ -363,8 +368,11 @@ RootArg *arg_at(ListState *s, UINT index)
 HRESULT STDMETHODCALLTYPE reset_hook(ID3D12GraphicsCommandList *l, ID3D12CommandAllocator *a, ID3D12PipelineState *p)
 {
     HRESULT hr = h_reset.call<HRESULT>(l, a, p);
-    if (SUCCEEDED(hr))
+    if (SUCCEEDED(hr)) {
         forget(tracked(l), p);
+        for (int i = 0, k = resets.n.load(); i < k; i++)
+            resets.fns[i](l);
+    }
     return hr;
 }
 
@@ -409,6 +417,27 @@ void STDMETHODCALLTYPE compute_root_hook(ID3D12GraphicsCommandList *l, ID3D12Roo
     if (s->compute_root != r)
         s->args = 0;
     s->compute_root = r;
+}
+
+void STDMETHODCALLTYPE graphics_root_hook(ID3D12GraphicsCommandList *l, ID3D12RootSignature *r)
+{
+    h_graphics_root.call<void>(l, r);
+    ListState *s = tracked(l);
+    if (s->graphics_root != r)
+        s->tables = 0;
+    s->graphics_root = r;
+}
+
+void STDMETHODCALLTYPE graphics_table_hook(ID3D12GraphicsCommandList *l, UINT i, D3D12_GPU_DESCRIPTOR_HANDLE h)
+{
+    h_graphics_table.call<void>(l, i, h);
+    if (i >= 64)
+        return;
+    ListState *s = tracked(l);
+    for (UINT k = s->tables; k < i; k++)
+        s->table[k] = 0;
+    s->table[i] = h.ptr;
+    s->tables = std::max(s->tables, i + 1);
 }
 
 void STDMETHODCALLTYPE compute_table_hook(ID3D12GraphicsCommandList *l, UINT i, D3D12_GPU_DESCRIPTOR_HANDLE h)
@@ -572,6 +601,11 @@ void on_setname(SetNameFn fn)
     setnames.add(fn);
 }
 
+void on_reset(ResetFn fn)
+{
+    resets.add(fn);
+}
+
 void exec_original(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists)
 {
     if (h_exec && hud::guard::vtable_slot_is(q, EXEC_SLOT, h_exec.target()))
@@ -603,6 +637,9 @@ bool list_state(ID3D12GraphicsCommandList *list, ListState &out)
     out.heap[1] = s->heap[1];
     out.compute_root = s->compute_root;
     out.args = s->args;
+    out.graphics_root = s->graphics_root;
+    out.tables = s->tables;
+    memcpy(out.table, s->table, size_t(s->tables) * 8);
     for (UINT i = 0; i < s->args; i++) {
         out.arg[i].kind = s->arg[i].kind;
         out.arg[i].count = s->arg[i].count;
@@ -619,9 +656,14 @@ void restore_list_state(ID3D12GraphicsCommandList *l, const ListState &s)
 {
     if (s.heaps)
         l->SetDescriptorHeaps(s.heaps, s.heap);
-    if (s.state_object) {
-        using SetPso1 = void(STDMETHODCALLTYPE *)(ID3D12GraphicsCommandList *, ID3D12StateObject *);
-        reinterpret_cast<SetPso1>((*reinterpret_cast<void ***>(l))[PSO1_SLOT])(l, s.state_object);
+    if (s.graphics_root)
+        for (UINT i = 0; i < s.tables; i++)
+            if (s.table[i])
+                l->SetGraphicsRootDescriptorTable(i, {s.table[i]});
+    ID3D12GraphicsCommandList4 *l4 = nullptr;
+    if (s.state_object && SUCCEEDED(l->QueryInterface(IID_PPV_ARGS(&l4)))) {
+        l4->SetPipelineState1(s.state_object);
+        l4->Release();
     } else if (s.pso)
         l->SetPipelineState(s.pso);
     if (!s.compute_root)
@@ -819,7 +861,7 @@ bool arm_list_state()
     if (dev && SUCCEEDED(dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&alloc))) &&
         SUCCEEDED(dev->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, alloc, nullptr, IID_PPV_ARGS(&list))) &&
         SUCCEEDED(list->QueryInterface(IID_PPV_ARGS(&list4)))) {
-        void **vt = *reinterpret_cast<void ***>(list);
+        void **vt = *reinterpret_cast<void ***>(list), **vt4 = *reinterpret_cast<void ***>(list4);
         struct Want {
             size_t slot;
             safetyhook::InlineHook *h;
@@ -831,6 +873,8 @@ bool arm_list_state()
             {HEAPS_SLOT, &h_heaps, reinterpret_cast<void *>(&heaps_hook)},
             {COMPUTE_ROOT_SLOT, &h_compute_root, reinterpret_cast<void *>(&compute_root_hook)},
             {COMPUTE_TABLE_SLOT, &h_compute_table, reinterpret_cast<void *>(&compute_table_hook)},
+            {GRAPHICS_ROOT_SLOT, &h_graphics_root, reinterpret_cast<void *>(&graphics_root_hook)},
+            {GRAPHICS_TABLE_SLOT, &h_graphics_table, reinterpret_cast<void *>(&graphics_table_hook)},
             {COMPUTE_CONSTANT_SLOT, &h_compute_constant, reinterpret_cast<void *>(&compute_constant_hook)},
             {COMPUTE_CONSTANTS_SLOT, &h_compute_constants, reinterpret_cast<void *>(&compute_constants_hook)},
             {COMPUTE_CBV_SLOT, &h_compute_cbv, reinterpret_cast<void *>(&compute_view_hook<ARG_CBV, &h_compute_cbv>)},
@@ -841,7 +885,7 @@ bool arm_list_state()
         ok = true;
         for (auto &a : want)
             for (auto &b : want)
-                if (&a != &b && vt[a.slot] == vt[b.slot]) {
+                if (&a != &b && (a.slot == PSO1_SLOT ? vt4 : vt)[a.slot] == (b.slot == PSO1_SLOT ? vt4 : vt)[b.slot]) {
                     swofty::log("[d3d12] command list slots vt+0x%zx and vt+0x%zx share their code; list state is not "
                                 "followed",
                                 a.slot * 8, b.slot * 8);
@@ -849,7 +893,7 @@ bool arm_list_state()
                 }
         for (auto &w : want)
             if (ok)
-                ok = install(*w.h, vt[w.slot], w.detour, "ID3D12GraphicsCommandList state");
+                ok = install(*w.h, (w.slot == PSO1_SLOT ? vt4 : vt)[w.slot], w.detour, "ID3D12GraphicsCommandList state");
         if (!ok)
             for (auto &w : want)
                 *w.h = {};
@@ -857,7 +901,7 @@ bool arm_list_state()
     }
     if (ok)
         swofty::log("[d3d12] command list state hooks armed: Reset, ClearState, SetPipelineState(1), "
-                    "SetDescriptorHeaps and the compute root bindings");
+                    "SetDescriptorHeaps, the compute root bindings and the graphics descriptor tables");
     release(list4);
     release(list);
     release(alloc);

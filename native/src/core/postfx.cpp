@@ -573,6 +573,7 @@ bool make_frame(const D3D12_RESOURCE_DESC &d)
         return false;
     }
     std::vector<IUnknown *> old = {frame.orig, frame.pic[0], frame.pic[1], frame.prev, frame.heap, frame.cpu};
+    depth_res = nullptr;
     frame = Frame{};
     frame.desc = d;
     frame.view = view;
@@ -656,16 +657,12 @@ DXGI_FORMAT depth_view(DXGI_FORMAT f)
 {
     switch (f) {
     case DXGI_FORMAT_R24G8_TYPELESS:
-    case DXGI_FORMAT_D24_UNORM_S8_UINT:
         return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
     case DXGI_FORMAT_R32G8X24_TYPELESS:
-    case DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
         return DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS;
     case DXGI_FORMAT_R32_TYPELESS:
-    case DXGI_FORMAT_D32_FLOAT:
         return DXGI_FORMAT_R32_FLOAT;
     case DXGI_FORMAT_R16_TYPELESS:
-    case DXGI_FORMAT_D16_UNORM:
         return DXGI_FORMAT_R16_UNORM;
     default:
         return DXGI_FORMAT_UNKNOWN;
@@ -974,7 +971,7 @@ bool record(const Where &w, int k)
     if (w.depth && (w.depth_state & (D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_DEPTH_WRITE))) {
         D3D12_RESOURCE_DESC dd = w.depth->GetDesc();
         DXGI_FORMAT f = depth_view(dd.Format);
-        if (f != DXGI_FORMAT_UNKNOWN && dd.SampleDesc.Count == 1) {
+        if (f != DXGI_FORMAT_UNKNOWN && dd.SampleDesc.Count == 1 && !(dd.Flags & D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE)) {
             depth = w.depth;
             depth_fmt = f;
             c[24] = UINT(dd.Width);
@@ -1233,13 +1230,18 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
             continue;
         uint8_t c = watched_bits(b.Transition.pResource);
         moves_back |= (c & W_BACK) != 0;
-        if ((c & W_HUDLESS) && (b.Transition.StateBefore & D3D12_RESOURCE_STATE_UNORDERED_ACCESS)) {
+        if ((c & W_HUDLESS) && (b.Transition.StateBefore & D3D12_RESOURCE_STATE_UNORDERED_ACCESS) &&
+            b.Flags == D3D12_RESOURCE_BARRIER_FLAG_NONE) {
             hudless = b.Transition.pResource;
             hudless_now = b.Transition.StateBefore;
         }
     }
     if (hudless && !moves_back && m && m->target && m->state == D3D12_RESOURCE_STATE_RENDER_TARGET && m->slot < 0 &&
         state_armed && !killed_now() && !passes.empty()) {
+        if (!device && !init(m->target)) {
+            broken = true;
+            return false;
+        }
         int k = pick_slot();
         Where w{list, true, m->target, D3D12_RESOURCE_STATE_RENDER_TARGET, hudless, hudless_now, m->depth,
                 m->depth_state, "in-list"};
@@ -1282,6 +1284,12 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
         }
     }
     return false;
+}
+
+void on_reset(ID3D12GraphicsCommandList *list)
+{
+    std::lock_guard<std::recursive_mutex> g(lock);
+    marks.erase(list);
 }
 
 // Submits the game's lists, the core's own list after a picture list that ended before the HUD, and a
@@ -1565,7 +1573,6 @@ bool load_passes()
                 bad = "names an input that is not there";
             else
                 p.inputs[p.n_inputs++] = t;
-            uses_previous |= t == IN_PREVIOUS;
         }
         std::string out = e["output"].str();
         if (!out.empty()) {
@@ -1594,6 +1601,7 @@ bool load_passes()
             continue;
         }
         p.dxil.assign(bytes.begin(), bytes.end());
+        uses_previous |= std::find(p.inputs, p.inputs + p.n_inputs, IN_PREVIOUS) != p.inputs + p.n_inputs;
         passes.push_back(std::move(p));
     }
     for (auto &e : cfg["postfx_toggles"].a) {
@@ -1640,6 +1648,7 @@ void postfx_setup()
     d3d12hooks::on_barrier(on_barrier);
     d3d12hooks::on_exec(on_exec);
     d3d12hooks::on_present(on_present);
+    d3d12hooks::on_reset(on_reset);
     d3d12hooks::ProbeScope probe;
     bool hooked = d3d12hooks::arm_device();
     if (!hooked) {

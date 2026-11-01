@@ -337,7 +337,7 @@ The passes run between the game's picture and its HUD. The HUD and the menus dra
 `swofty/loader.log` shows the passes getting ready and where they first run:
 
 ```text
-[d3d12] command list state hooks armed: Reset, ClearState, SetPipelineState(1), SetDescriptorHeaps and the compute root bindings
+[d3d12] command list state hooks armed: Reset, ClearState, SetPipelineState(1), SetDescriptorHeaps, the compute root bindings and the graphics descriptor tables
 [postfx] 3 pass(es) and 1 texture(s) wait for the game's picture
 [postfx] Vignette Pass's pass vignette is ready (postfx/00.dxil, 6336 bytes of DXIL)
 [postfx] passes run on the game's 1920x1080 picture (format 28) with 1 texture(s) of their own

@@ -25,6 +25,7 @@ using ResizeFn = void (*)(IDXGISwapChain3 *sc);
 using ExecFn = bool (*)(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists);
 using BarrierFn = bool (*)(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers);
 using SetNameFn = void (*)(ID3D12Object *object, LPCWSTR name);
+using ResetFn = void (*)(ID3D12GraphicsCommandList *list);
 
 void on_present(PresentFn fn);
 void on_presented(PresentedFn fn);
@@ -32,6 +33,7 @@ void on_resize(ResizeFn fn);
 void on_exec(ExecFn fn);
 void on_barrier(BarrierFn fn);
 void on_setname(SetNameFn fn);
+void on_reset(ResetFn fn);
 
 bool arm_swapchain();
 bool arm_device();
@@ -49,7 +51,8 @@ void exec_original(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *list
 void barrier_original(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers);
 
 // What the core's compute work in a game's command list changes: the pipeline, the descriptor heaps
-// and the compute root signature with its arguments. Once arm_list_state has run, every list's are
+// and the compute root signature with its arguments, and the graphics descriptor tables, which are
+// set again after the heaps come back. Once arm_list_state has run, every list's are
 // followed from its Reset; a feature saves them before recording into the game's list and puts them
 // back afterwards, so the game's next draw or dispatch finds its own bindings.
 struct RootArg {
@@ -68,6 +71,9 @@ struct ListState {
     ID3D12RootSignature *compute_root = nullptr;
     UINT args = 0;
     RootArg arg[64];
+    ID3D12RootSignature *graphics_root = nullptr;
+    UINT tables = 0;
+    UINT64 table[64] = {};
 };
 
 bool arm_list_state();
