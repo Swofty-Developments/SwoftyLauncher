@@ -66,6 +66,23 @@ constexpr uint64_t REQ_TAIL_B = 0x3d;
 constexpr uint64_t REQ_TAIL_C = 0x40;
 constexpr uint32_t REQUEST_LAN = 2;
 
+constexpr uint64_t MGR_SERVICES = 0x30;
+constexpr uint64_t MAP_ITEMS = 0x18;
+constexpr uint64_t MAP_END = 0x20;
+constexpr uint64_t MAP_ENTRY_SIZE = 0x10;
+constexpr uint64_t MAP_ENTRY_VALUE = 8;
+constexpr uint64_t MGR_MODES = 0xc0;
+constexpr uint64_t MODES_NAMES = 0x30;
+constexpr uint64_t MODES_ENTRIES = 0x58;
+constexpr uint64_t MODES_CURRENT = 0x88;
+constexpr uint64_t ENTRY_HOLDER = 0x38;
+constexpr uint64_t HOLDER_ENTITY = 0x260;
+constexpr uint64_t ENTITY_MODE = 0xf08;
+constexpr uint64_t MODE_INDEX_LIMIT = 0x4000;
+constexpr uint64_t VTABLE_NAME_BEFORE = 0x10;
+constexpr char NET_SUBSYSTEM_NAME[] = "Ne-NetSubsystem";
+constexpr uint64_t NET_SYSTEM_LAN = 1;
+
 enum class Role { host, join };
 
 inline std::string hex(uint64_t v)
@@ -319,6 +336,230 @@ inline int established_role(Role r)
     return r == Role::host ? 1 : 2;
 }
 
+
+// The network subsystem without the LAN tile: the game manager keeps a services map at +0x30 and the
+// subsystem is the entry keyed by the address of a static (research/multiplayer/ns-resolve.md section 1).
+// The game's own find function (index of the key, end when absent) is passed in, so the host test can stand
+// in a plain scan.
+using ServiceFind = uint64_t (*)(void *ctx, uint64_t map, uint64_t key);
+
+inline std::string net_subsystem_check(const Memory &m, uint64_t ns)
+{
+    uint64_t vt = 0;
+    if (!m.ptr(ns, vt))
+        return "the service the map returned is not an object (its vtable is unreadable)";
+    char name[sizeof NET_SUBSYSTEM_NAME] = {};
+    if (!m.get(vt - VTABLE_NAME_BEFORE, name) || std::memcmp(name, NET_SUBSYSTEM_NAME, sizeof name) != 0)
+        return "the service the map returned is not the network subsystem (no Ne-NetSubsystem name before its vtable)";
+    uint64_t slot0 = 0;
+    if (!m.ptr(vt, slot0))
+        return "the network subsystem's vtable is unreadable";
+    return {};
+}
+
+inline std::string find_net_subsystem(const Memory &m, uint64_t manager, uint64_t key, ServiceFind find, void *ctx,
+                                      uint64_t &ns)
+{
+    ns = 0;
+    uint64_t map = 0, items = 0, end = 0;
+    if (!manager)
+        return "the game manager is not created yet";
+    if (!m.ptr(manager + MGR_SERVICES, map))
+        return "the game manager has no services map at +0x30";
+    if (!m.ptr(map + MAP_ITEMS, items) || !m.ptr(map + MAP_END, end))
+        return "the services map is not readable";
+    uint64_t index = find(ctx, map, key);
+    uint64_t entry = items + index * MAP_ENTRY_SIZE;
+    if (index > 0x100000 || entry == end)
+        return "the services map has no network subsystem yet";
+    uint64_t value = 0;
+    if (!m.ptr(entry + MAP_ENTRY_VALUE, value))
+        return "the services map entry for the network subsystem is empty";
+    if (std::string why = net_subsystem_check(m, value); !why.empty())
+        return why;
+    ns = value;
+    return {};
+}
+
+inline int net_mode(const Memory &m, uint64_t ns)
+{
+    uint64_t sys = 0;
+    uint8_t mode = 0;
+    if (!m.get(ns + NS_NET_SYSTEM, sys))
+        return -1;
+    if (!sys)
+        return 0;
+    if (sys < 0x10000 || sys >= 0x0000800000000000ull)
+        return -1;
+    if (!m.get(sys + NET_SYSTEM_MODE, mode))
+        return -1;
+    return mode;
+}
+
+// The LAN mode switch's reads (the tile's getAction without the tile, ns-resolve.md section 3): the
+// game mode context from the manager, the "online_custom" entry from its name index, and the mode the
+// entity carries.
+struct ModePlan {
+    uint64_t ns = 0, modes = 0, entity = 0, mode = 0, current = 0;
+    int net = -1;
+    bool already = false;
+};
+
+inline std::string plan_mode_switch(const Memory &m, uint64_t manager, uint64_t ns, ModePlan &out)
+{
+    out = {};
+    out.ns = ns;
+    if (!manager || !m.ptr(manager + MGR_MODES, out.modes))
+        return "the game manager has no game mode context at +0xc0";
+    out.net = net_mode(m, ns);
+    if (out.net < 0)
+        return "the network subsystem's mode is not readable (+0xd8, +0x750)";
+    if (out.net == int(NET_SYSTEM_LAN)) {
+        out.already = true;
+        return {};
+    }
+    if (!m.ptr(out.modes + MODES_CURRENT, out.current))
+        return "the game mode context has no current mode at +0x88";
+    return {};
+}
+
+inline std::string mode_entity(const Memory &m, uint64_t modes, uint64_t index, ModePlan &out)
+{
+    uint64_t entries = 0, entry = 0, holder = 0;
+    if (index >= MODE_INDEX_LIMIT)
+        return "the game mode names have no online_custom (index " + hex(index) + ")";
+    if (!m.ptr(modes + MODES_ENTRIES, entries))
+        return "the game mode context has no mode entries at +0x58";
+    if (!m.ptr(entries + index * 8, entry) || !m.ptr(entry + ENTRY_HOLDER, holder) ||
+        !m.ptr(holder + HOLDER_ENTITY, out.entity))
+        return "the online_custom entry (index " + hex(index) + ") has no mode entity";
+    if (!m.ptr(out.entity + ENTITY_MODE, out.mode))
+        return "the online_custom mode entity has no mode at +0xf08";
+    return {};
+}
+
+// What the host writes so the front end skips the main menu: the frontend_transition screen reads the
+// state and goes to the custom game route, and a LAN game skips the online login (carcat-direct.md
+// section 3). The states go in as VM strings and a bool through the core's ui_vm_set_path.
+constexpr char UI_STATE_PATH[] = "ui_menu_data.frontend_transition_state";
+constexpr char UI_STATE_VALUE[] = "custom_game";
+constexpr char UI_LAN_PATH[] = "ui_menu_data.is_in_lan_game";
+constexpr char UI_OPEN_MESSAGE[] = "open_create_custom";
+constexpr uint64_t CONTAINER_TABS_READY = 0x290;
+constexpr uint64_t TABS_READY_BYTE = 0x80;
+constexpr uint64_t CONTAINER_STATE_BYTE = 0x945;
+constexpr size_t CONTAINER_SIZE = 0x950;
+
+struct ContainerFacts {
+    bool readable = false;
+    bool ready = false;
+};
+
+inline ContainerFacts container_facts(const Memory &m, uint64_t container)
+{
+    ContainerFacts f;
+    uint64_t tabs = 0;
+    uint8_t ready = 0, state = 0;
+    if (!container || !m.ptr(container + CONTAINER_TABS_READY, tabs) || !m.get(tabs + TABS_READY_BYTE, ready) ||
+        !m.get(container + CONTAINER_STATE_BYTE, state))
+        return f;
+    f.readable = true;
+    f.ready = ready != 0 && state != 5;
+    return f;
+}
+
+enum class UiStep { idle, state, container, settle, sent, failed };
+enum class UiDo { nothing, write_state, send_open };
+
+constexpr uint64_t UI_STATE_GRACE_MS = 3000, UI_STATE_MS = 90000, UI_CONTAINER_MS = 180000, UI_SETTLE_MS = 20000,
+                   UI_SETTLE_MIN_MS = 600;
+
+struct UiFacts {
+    bool container = false;
+    bool ready = false;
+};
+
+class HostUi {
+public:
+    void start(uint64_t now)
+    {
+        step = UiStep::state;
+        error.clear();
+        started_ = now;
+        deadline_ = now + UI_STATE_MS;
+        written_ = false;
+    }
+
+    bool active() const { return step != UiStep::idle && step != UiStep::sent && step != UiStep::failed; }
+    bool sent() const { return step == UiStep::sent; }
+    bool failed() const { return step == UiStep::failed; }
+    bool written() const { return written_; }
+
+    bool released(uint64_t now) const
+    {
+        return step == UiStep::sent || written_ || (step == UiStep::state && now >= started_ + UI_STATE_GRACE_MS);
+    }
+
+    void wrote(uint64_t now)
+    {
+        if (step != UiStep::state)
+            return;
+        written_ = true;
+        step = UiStep::container;
+        deadline_ = now + UI_CONTAINER_MS;
+    }
+
+    void fail(const std::string &why)
+    {
+        error = why;
+        step = UiStep::failed;
+    }
+
+    UiDo tick(const UiFacts &f, uint64_t now)
+    {
+        switch (step) {
+        case UiStep::state:
+            if (now >= deadline_) {
+                fail("the front end's ui_menu_data never took the custom game state");
+                return UiDo::nothing;
+            }
+            return UiDo::write_state;
+        case UiStep::container:
+            if (f.container) {
+                step = UiStep::settle;
+                seen_ = now;
+                deadline_ = now + UI_SETTLE_MS;
+                return UiDo::nothing;
+            }
+            if (now >= deadline_)
+                fail("the Car Category's container (f1_world_activity_container) never opened");
+            return UiDo::nothing;
+        case UiStep::settle:
+            if (!f.container) {
+                step = UiStep::container;
+                deadline_ = now + UI_CONTAINER_MS;
+                return UiDo::nothing;
+            }
+            if (f.ready && now >= seen_ + UI_SETTLE_MIN_MS) {
+                step = UiStep::sent;
+                return UiDo::send_open;
+            }
+            if (now >= deadline_)
+                fail("the container's tab list never became ready");
+            return UiDo::nothing;
+        default:
+            return UiDo::nothing;
+        }
+    }
+
+    UiStep step = UiStep::idle;
+    std::string error;
+
+private:
+    uint64_t started_ = 0, deadline_ = 0, seen_ = 0;
+    bool written_ = false;
+};
+
 enum class Stage { idle, mode, call, interrupt, lobby, done, failed };
 
 struct Facts {
@@ -354,9 +595,10 @@ class Run {
 public:
     // from_home: the game was on its main menu when the run started, so coming back to it before the lobby
     // opened is a failure. A run started before home (the room boot) never sees home.
-    void start(Role r, uint64_t now, bool home_start = true)
+    void start(Role r, uint64_t now, bool home_start = true, bool mode_only = false)
     {
         role = r;
+        mode_only_ = mode_only;
         from_home = home_start;
         stage = Stage::mode;
         phase = 0;
@@ -397,7 +639,7 @@ public:
                 return Do::mode_switch;
             }
             if (f.lan_mode) {
-                stage = Stage::call;
+                stage = mode_only_ ? Stage::done : Stage::call;
                 return Do::nothing;
             }
             if (now >= deadline)
@@ -459,6 +701,7 @@ private:
     }
 
     int phase = 0;
+    bool mode_only_ = false;
     bool left_home = false;
     uint64_t deadline = 0, taken_at = 0;
 };

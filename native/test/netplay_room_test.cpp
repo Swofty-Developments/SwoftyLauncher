@@ -333,6 +333,182 @@ int main()
     run.tick(f, 4);
     expect(run.done(), "the host session role finishes a host");
 
+
+    constexpr uint64_t MGR = 0xa10000, MAP = 0xa20000, ITEMS = 0xa30000, CTRL_END = 0xa31000, VT = 0xa40000, KEY = 0x1460bed80,
+                       NS2 = 0xa50000, SYS = 0xa60000, MODES = 0xa70000, ENTRIES = 0xa80000, ENTRY = 0xa90000,
+                       HOLDER = 0xaa0000, ENTITY = 0xab0000, MODE = 0xac0000;
+    struct Scan {
+        Image *image;
+        uint64_t calls = 0;
+    };
+    auto services = [&]() {
+        Image w;
+        w.set<uint64_t>(MGR + room::MGR_SERVICES, MAP);
+        w.set<uint64_t>(MAP + room::MAP_ITEMS, ITEMS);
+        w.set<uint64_t>(MAP + room::MAP_END, ITEMS + 2 * room::MAP_ENTRY_SIZE);
+        w.set<uint64_t>(ITEMS, 0x1234);
+        w.set<uint64_t>(ITEMS + 8, 0x5678);
+        w.set<uint64_t>(ITEMS + room::MAP_ENTRY_SIZE, KEY);
+        w.set<uint64_t>(ITEMS + room::MAP_ENTRY_SIZE + 8, NS2);
+        w.set<uint64_t>(NS2, VT);
+        const char name[] = "Ne-NetSubsystem";
+        for (size_t i = 0; i < sizeof name; i++)
+            w.set<uint8_t>(VT - room::VTABLE_NAME_BEFORE + i, uint8_t(name[i]));
+        w.set<uint64_t>(VT, 0xb00000);
+        w.set<uint64_t>(NS2 + room::NS_NET_SYSTEM, SYS);
+        w.set<uint8_t>(SYS + room::NET_SYSTEM_MODE, 0);
+        w.set<uint64_t>(MGR + room::MGR_MODES, MODES);
+        w.set<uint64_t>(MODES + room::MODES_CURRENT, 0xad0000);
+        w.set<uint64_t>(MODES + room::MODES_ENTRIES, ENTRIES);
+        w.set<uint64_t>(ENTRIES + 3 * 8, ENTRY);
+        w.set<uint64_t>(ENTRY + room::ENTRY_HOLDER, HOLDER);
+        w.set<uint64_t>(HOLDER + room::HOLDER_ENTITY, ENTITY);
+        w.set<uint64_t>(ENTITY + room::ENTITY_MODE, MODE);
+        return w;
+    };
+    static Image *scan_image;
+    auto scan = [](void *, uint64_t map, uint64_t key) -> uint64_t {
+        uint64_t items = scan_image->get<uint64_t>(map + room::MAP_ITEMS), end = scan_image->get<uint64_t>(map + room::MAP_END);
+        uint64_t at = items;
+        while (at != end) {
+            if (scan_image->get<uint64_t>(at) == key)
+                return (at - items) / room::MAP_ENTRY_SIZE;
+            at += room::MAP_ENTRY_SIZE;
+        }
+        return (end - items) / room::MAP_ENTRY_SIZE;
+    };
+    Image sv = services();
+    scan_image = &sv;
+    uint64_t found = 0;
+    expect(room::find_net_subsystem(sv.memory(), MGR, KEY, scan, nullptr, found).empty() && found == NS2,
+           "the services map lookup finds the network subsystem by its key");
+    expect(room::find_net_subsystem(sv.memory(), MGR, 0x999, scan, nullptr, found).find("no network subsystem") != std::string::npos &&
+               found == 0,
+           "a key the map lacks is named");
+    expect(room::find_net_subsystem(sv.memory(), 0, KEY, scan, nullptr, found).find("not created") != std::string::npos,
+           "no game manager is named");
+    sv.drop(MGR + room::MGR_SERVICES, 8);
+    expect(room::find_net_subsystem(sv.memory(), MGR, KEY, scan, nullptr, found).find("services map") != std::string::npos,
+           "a manager without a services map is named");
+    sv = services();
+    sv.set<uint8_t>(VT - 1, 'X');
+    sv.set<uint8_t>(VT - room::VTABLE_NAME_BEFORE, 'X');
+    expect(room::find_net_subsystem(sv.memory(), MGR, KEY, scan, nullptr, found).find("not the network subsystem") != std::string::npos,
+           "an entry whose vtable is not the network subsystem's is refused");
+    sv = services();
+    sv.drop(NS2, 8);
+    expect(room::find_net_subsystem(sv.memory(), MGR, KEY, scan, nullptr, found).find("vtable is unreadable") != std::string::npos,
+           "an entry that is not an object is refused");
+
+    sv = services();
+    room::ModePlan mp;
+    expect(room::plan_mode_switch(sv.memory(), MGR, NS2, mp).empty() && !mp.already && mp.net == 0 && mp.modes == MODES,
+           "the mode switch plan reads the modes context and the network mode");
+    expect(room::mode_entity(sv.memory(), MODES, 3, mp).empty() && mp.entity == ENTITY && mp.mode == MODE,
+           "the online_custom entry gives its entity and mode");
+    expect(room::mode_entity(sv.memory(), MODES, room::MODE_INDEX_LIMIT, mp).find("no online_custom") != std::string::npos,
+           "an index past the table is refused");
+    expect(room::mode_entity(sv.memory(), MODES, 4, mp).find("no mode entity") != std::string::npos,
+           "an entry past the filled ones is refused");
+    sv.set<uint64_t>(ENTITY + room::ENTITY_MODE, 0);
+    expect(room::mode_entity(sv.memory(), MODES, 3, mp).find("no mode at +0xf08") != std::string::npos, "an entity with no mode is refused");
+    sv = services();
+    sv.set<uint8_t>(SYS + room::NET_SYSTEM_MODE, 1);
+    expect(room::plan_mode_switch(sv.memory(), MGR, NS2, mp).empty() && mp.already && room::net_mode(sv.memory(), NS2) == 1,
+           "a subsystem already in LAN mode needs no switch");
+    sv = services();
+    sv.set<uint64_t>(NS2 + room::NS_NET_SYSTEM, 0);
+    expect(room::net_mode(sv.memory(), NS2) == 0, "a null net system reads as not LAN");
+    sv.drop(NS2 + room::NS_NET_SYSTEM, 8);
+    expect(room::plan_mode_switch(sv.memory(), MGR, NS2, mp).find("not readable") != std::string::npos,
+           "an unreadable net system stops the mode switch");
+    sv = services();
+    sv.drop(MGR + room::MGR_MODES, 8);
+    expect(room::plan_mode_switch(sv.memory(), MGR, NS2, mp).find("game mode context") != std::string::npos,
+           "a manager with no modes context stops the mode switch");
+    sv = services();
+    sv.drop(MODES + room::MODES_CURRENT, 8);
+    expect(room::plan_mode_switch(sv.memory(), MGR, NS2, mp).find("current mode") != std::string::npos,
+           "a modes context with no current mode stops the mode switch");
+
+    {
+        room::Facts mf;
+        room::Run mr;
+        mr.start(room::Role::host, 0, false, true);
+        mf.lan_mode = false;
+        expect(mr.tick(mf, 0) == room::Do::mode_switch, "a mode-only run starts with the mode switch");
+        mf.lan_mode = true;
+        mr.tick(mf, 5);
+        expect(mr.done(), "a mode-only host run is done once the mode reads LAN, with no CustomCreate");
+    }
+
+    {
+        room::HostUi ui;
+        room::UiFacts uf;
+        ui.start(1000);
+        expect(ui.tick(uf, 1000) == room::UiDo::write_state && !ui.released(1000), "the host writes the state first and is not released yet");
+        expect(ui.released(1000 + room::UI_STATE_GRACE_MS), "the flow is released after the grace even when the write has not taken");
+        expect(ui.tick(uf, 1100) == room::UiDo::write_state, "it keeps writing until it takes");
+        ui.wrote(1200);
+        expect(ui.written() && ui.released(1200), "a written state releases at once");
+        expect(ui.tick(uf, 1300) == room::UiDo::nothing && ui.step == room::UiStep::container, "then it waits for the container");
+        uf.container = true;
+        expect(ui.tick(uf, 2000) == room::UiDo::nothing && ui.step == room::UiStep::settle, "a container starts the settle wait");
+        expect(ui.tick(uf, 2000 + room::UI_SETTLE_MIN_MS + 1) == room::UiDo::nothing && ui.step == room::UiStep::settle,
+               "it does not send before the tab list is ready");
+        uf.ready = true;
+        expect(ui.tick(uf, 2000 + room::UI_SETTLE_MIN_MS - 1) == room::UiDo::nothing, "a ready list is still given the settle minimum");
+        expect(ui.tick(uf, 2000 + room::UI_SETTLE_MIN_MS) == room::UiDo::send_open && ui.sent(), "then open_create_custom is sent once");
+        expect(ui.tick(uf, 99999) == room::UiDo::nothing && !ui.active() && !ui.failed(), "and the machine is over");
+
+        room::HostUi lost;
+        room::UiFacts lf;
+        lost.start(0);
+        lost.wrote(1);
+        lf.container = true;
+        lost.tick(lf, 2);
+        lf.container = false;
+        lost.tick(lf, 3);
+        expect(lost.step == room::UiStep::container, "a container that closes before the send sends the machine back to waiting");
+
+        room::HostUi no_state;
+        no_state.start(0);
+        no_state.tick(uf, room::UI_STATE_MS);
+        expect(no_state.failed() && no_state.error.find("ui_menu_data") != std::string::npos, "a state that never takes is a named failure");
+
+        room::HostUi no_container;
+        room::UiFacts nf;
+        no_container.start(0);
+        no_container.wrote(0);
+        no_container.tick(nf, room::UI_CONTAINER_MS);
+        expect(no_container.failed() && no_container.error.find("container") != std::string::npos,
+               "a container that never opens is a named failure");
+
+        room::HostUi no_tabs;
+        room::UiFacts tf;
+        tf.container = true;
+        no_tabs.start(0);
+        no_tabs.wrote(0);
+        no_tabs.tick(tf, 1);
+        no_tabs.tick(tf, 1 + room::UI_SETTLE_MS);
+        expect(no_tabs.failed() && no_tabs.error.find("tab list") != std::string::npos, "a tab list that never readies is a named failure");
+    }
+
+    {
+        Image c;
+        constexpr uint64_t CT = 0xc10000, TABS = 0xc20000;
+        expect(!room::container_facts(c.memory(), CT).readable, "an unreadable container reads as not ready");
+        c.set<uint64_t>(CT + room::CONTAINER_TABS_READY, TABS);
+        c.set<uint8_t>(TABS + room::TABS_READY_BYTE, 1);
+        c.set<uint8_t>(CT + room::CONTAINER_STATE_BYTE, 0);
+        expect(room::container_facts(c.memory(), CT).ready, "the tab list byte makes the container ready");
+        c.set<uint8_t>(CT + room::CONTAINER_STATE_BYTE, 5);
+        expect(!room::container_facts(c.memory(), CT).ready, "state 5 makes it not ready");
+        c.set<uint8_t>(CT + room::CONTAINER_STATE_BYTE, 0);
+        c.set<uint8_t>(TABS + room::TABS_READY_BYTE, 0);
+        expect(!room::container_facts(c.memory(), CT).ready, "a tab list byte of 0 makes it not ready");
+    }
+
     printf(fails ? "netplay room test: FAILED\n" : "netplay room test: ALL PASSED\n");
     return fails ? 1 : 0;
 }

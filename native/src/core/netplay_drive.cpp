@@ -456,6 +456,7 @@ void netplay_drive_setup()
         return;
     swofty::log("[netplay] launcher commands on (<game>/swofty/netplay); configure, host, join and leave accepted");
     probe_setup();
+    runtime::netplay_room_setup();
     if (drive::room_launch(v))
         skip_setup();
     if (!started.exchange(true))
@@ -486,6 +487,7 @@ void netplay_screen(const char *name)
                                            "slice_bg_content_underlay", "f1_life_driver_tags", "audio_themes"};
     if (!name)
         return;
+    runtime::netplay_room_screen(name);
     if (!std::strcmp(name, "frontend_transition"))
         transition_screen = true;
     if (std::strncmp(name, "fe_", 3) != 0)
