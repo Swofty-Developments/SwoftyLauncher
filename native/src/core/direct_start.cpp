@@ -159,7 +159,11 @@ void release_frontend_fade()
                 *reinterpret_cast<uint32_t *>(owner + 0x7bc));
 }
 
-// The fade owner's reasons and state as the session's intro runs, logged when they change.
+// The fade owner's reasons and state as the session's intro runs, logged when they change. A race opens no screen
+// of its own: its broadcast starts with the first fade in after the intro video (BroadcastFull released, state 3),
+// and the cover comes off there. The grid follows the broadcast's grid rundown, two minutes or more later.
+bool race_session = false;
+
 void note_fade()
 {
     static uint32_t last_mask = ~0u, last_state = ~0u;
@@ -171,11 +175,14 @@ void note_fade()
     uint32_t mask = *reinterpret_cast<uint32_t *>(owner + 0x7b8), state = *reinterpret_cast<uint32_t *>(owner + 0x7bc);
     if (mask == last_mask && state == last_state)
         return;
+    bool faded_in = last_mask != ~0u && last_mask != 0 && mask == 0 && state == 3;
     last_mask = mask;
     last_state = state;
     told++;
-    swofty::log("[direct] fade owner: mask %08x, state %u, %llu ms into the session", mask, state,
-                (unsigned long long)(GetTickCount64() - session_at.load()));
+    uint64_t ms = GetTickCount64() - session_at.load();
+    swofty::log("[direct] fade owner: mask %08x, state %u, %llu ms into the session", mask, state, (unsigned long long)ms);
+    if (race_session && faded_in && !session_screen.exchange(true))
+        swofty::log("[direct] the race's broadcast is up after %llu ms; the cover comes off", (unsigned long long)ms);
 }
 
 uint8_t *flow_root = nullptr;
@@ -361,6 +368,7 @@ void link_mid(safetyhook::Context &c)
             despawn_frontend_scene("as the Grand Prix session starts");
         int id = testagent::session_id_of(request["session"].str());
         bool race = id >= 15 && id <= 17;
+        race_session = race && request["mode"].str() != "time_trial";
         runtime::room_cover::step(race ? "Lining up on the grid" : "Opening the garage", 0.9f, 0.97f);
     }
     if (session_at.load())
