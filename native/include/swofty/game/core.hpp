@@ -957,6 +957,7 @@ inline constexpr call<"site_Ne_HwInt_VolFogMapWidth"> site_Ne_HwInt_VolFogMapWid
 inline constexpr call<"site_Ne_HwInt_WorldShadowMapSize"> site_Ne_HwInt_WorldShadowMapSize{}; // L2 experimental
 inline constexpr call<"site_Ne_HwXmlParseCall"> site_Ne_HwXmlParseCall{}; // L2 experimental
 inline constexpr call<"site_Ne_HwXmlWriteCall"> site_Ne_HwXmlWriteCall{}; // L2 experimental
+inline constexpr site<"site_Ne_MemoryMapHeapSize"> site_Ne_MemoryMapHeapSize{}; // L2 experimental
 inline constexpr site<"site_Ne_MemoryMapInternalHeapSize"> site_Ne_MemoryMapInternalHeapSize{}; // L2 experimental
 inline constexpr site<"site_Ne_ReplayAfterRecord"> site_Ne_ReplayAfterRecord{}; // L2 experimental
 inline constexpr site<"site_Ne_WatchdogKillPath"> site_Ne_WatchdogKillPath{}; // L2 experimental
