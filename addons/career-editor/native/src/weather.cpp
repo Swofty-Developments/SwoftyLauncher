@@ -414,7 +414,7 @@ bool enter(bool sticky = false)
 {
     load_sidecar();
     std::string id = ce::career_id();
-    if (id.empty() && sticky && !g_career.empty())
+    if (id.empty() && sticky && !g_career.empty() && ce::in_career())
         return true;
     if (id != g_career) {
         stash_career();
@@ -609,6 +609,19 @@ std::string rebuild_gate(uintptr_t ws, uintptr_t &tod, uintptr_t &owner)
     return "";
 }
 
+bool dataset_finite(uintptr_t tod, int s, bool in_range = true)
+{
+    uint32_t n = state_count(tod, s);
+    const WeatherState *st = dataset(tod, s).states;
+    for (uint32_t i = 0; i < n && i < 16; ++i) {
+        if (!std::isfinite(st[i].end) || !std::isfinite(st[i].transition) || !std::isfinite(st[i].intensity))
+            return false;
+        if (in_range && (st[i].end < 0 || st[i].transition < 0 || st[i].intensity < 0 || st[i].intensity > 1))
+            return false;
+    }
+    return true;
+}
+
 std::string rebuild(uintptr_t ws, int s, const SessionPlan &p, int weekend, const char *why)
 {
     uintptr_t tod = 0, owner = 0;
@@ -631,6 +644,13 @@ std::string rebuild(uintptr_t ws, int s, const SessionPlan &p, int weekend, cons
         ranges[t] = {T(tod).type_ranges[t].intensity_min, T(tod).type_ranges[t].intensity_max};
     for (const std::string &c : clamp_build(b, ranges))
         ce::log("weather: %s (weekend %d, %s): %s", kKeys[s], weekend, why, c.c_str());
+    std::string bad = validate_build(b, len);
+    if (!bad.empty()) {
+        g_reason[s] = "refused: " + bad;
+        ce::log("weather: refused %s (weekend %d, %s): %s; the game's forecast is kept", kKeys[s], weekend, why,
+                bad.c_str());
+        return g_reason[s];
+    }
 
     float saved_min[6] = {}, saved_max[6] = {};
     bool pinned[6] = {};
@@ -643,6 +663,10 @@ std::string rebuild(uintptr_t ws, int s, const SessionPlan &p, int weekend, cons
         saved_max[t] = r.intensity_max;
         if (put(r.intensity_min, b.inten[i]) && put(r.intensity_max, b.inten[i]))
             pinned[t] = true;
+        else {
+            put(r.intensity_min, saved_min[t]);
+            put(r.intensity_max, saved_max[t]);
+        }
     }
     uint8_t exact = T(tod).exact_timing;
     if (!put(T(tod).exact_timing, uint8_t{1})) {
@@ -659,13 +683,27 @@ std::string rebuild(uintptr_t ws, int s, const SessionPlan &p, int weekend, cons
     const uint8_t random[kMaxPlanStates] = {};
     Sess_Tod_BuildSessionDataset_Thunk(reinterpret_cast<void *>(owner), b.type, b.hold, b.trans, random, b.n, len,
                                        static_cast<uint16_t>(0x100 | s), 1);
-    put(T(tod).exact_timing, exact);
     for (int t = 0; t < 6; ++t)
         if (pinned[t]) {
             WeatherTypeRange &r = T(tod).type_ranges[t];
             put(r.intensity_min, saved_min[t]);
             put(r.intensity_max, saved_max[t]);
         }
+    if (!dataset_finite(tod, s)) {
+        ce::log("weather: refused %s (weekend %d, %s): the game built a non-finite or out-of-range state from the plan; "
+                "rebuilding one plain state",
+                kKeys[s], weekend, why);
+        Build safe;
+        safe.n = 1;
+        safe.type[0] = static_cast<uint8_t>(game_first >= 0 && game_first < 6 ? game_first : 0);
+        safe.hold[0] = len;
+        Sess_Tod_BuildSessionDataset_Thunk(reinterpret_cast<void *>(owner), safe.type, safe.hold, safe.trans, random,
+                                           safe.n, len, static_cast<uint16_t>(0x100 | s), 1);
+        if (!dataset_finite(tod, s))
+            ce::log("weather: %s (weekend %d, %s): the plain rebuild is still non-finite", kKeys[s], weekend, why);
+        b = safe;
+    }
+    put(T(tod).exact_timing, exact);
     uint32_t n = state_count(tod, s);
     WeatherState *st = dataset(tod, s).states;
     bool match = n >= b.n;
@@ -684,6 +722,22 @@ std::string rebuild(uintptr_t ws, int s, const SessionPlan &p, int weekend, cons
     ce::log("weather: rebuilt %s (weekend %d, %s) %s%s", kKeys[s], weekend, why, describe(tod, s).c_str(),
             match ? "" : " MISMATCH: the game's dataset does not hold the planned states");
     return g_reason[s];
+}
+
+int repair_nonfinite(uintptr_t ws, int weekend)
+{
+    uintptr_t tod = tod_of(ws);
+    int fixed = 0;
+    for (int s = 0; tod && s < kSessions; ++s) {
+        if (!state_count(tod, s) || dataset_finite(tod, s, false))
+            continue;
+        ce::log("weather: %s (weekend %d): the game's own forecast holds a non-finite value (%s); replacing it with one "
+                "plain state",
+                kKeys[s], weekend, describe(tod, s).c_str());
+        if (rebuild(ws, s, SessionPlan{}, weekend, "non-finite game forecast").empty())
+            ++fixed;
+    }
+    return fixed;
 }
 
 int apply_weekend(uintptr_t ws, int weekend, const char *why, uint8_t only = 0xff)
@@ -871,6 +925,8 @@ SWOFTY_WRAP(Sess_GameWeatherSystem_SetupSession, void, void *ws, void *settings,
         ce::log("weather: dropped session locks of weekends after %d (an earlier save or another career)", weekend);
     }
     log_game_forecast(w, sp, scripted);
+    if (career)
+        repair_nonfinite(w, weekend);
     if (scripted || time_trial || !career)
         return;
     auto next = g_plans.find(kNext);

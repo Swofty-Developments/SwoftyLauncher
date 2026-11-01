@@ -13,6 +13,8 @@ namespace {
 
 double fraction(const SessionPlan &p, double at, float len)
 {
+    if (!std::isfinite(at))
+        return 0;
     double f = p.unit == kFraction ? at
                : p.unit == kMinute ? (p.minutes ? at / p.minutes : at * 60.0 / len)
                                    : (at - 1.0) / (p.laps ? p.laps : 1);
@@ -20,6 +22,11 @@ double fraction(const SessionPlan &p, double at, float len)
 }
 
 } // namespace
+
+bool timed_session(const std::string &key)
+{
+    return key == "p1" || key == "p2" || key == "p3" || key == "q" || key == "ss";
+}
 
 int state_of(const std::string &s)
 {
@@ -118,6 +125,8 @@ bool parse_session(const ce::Json &v, const char *key, SessionPlan &p, std::stri
         if (unit == kLap && !is_int(pos, 1, 200))
             return fail(at + ".at_lap must be an integer 1..200");
         pt.at = pos.n;
+        if (unit == kLap && timed_session(key))
+            return fail(at + ".at_lap needs a race; this session is timed, use at_minute or at_fraction");
         if (unit == kLap && !p.laps)
             return fail(at + ".at_lap needs laps on the session (laps is missing or 0)");
         if (unit == kLap && pt.at > p.laps)
@@ -152,8 +161,14 @@ bool parse_session(const ce::Json &v, const char *key, SessionPlan &p, std::stri
 Build make_build(const SessionPlan &p, float len, int game_first)
 {
     Build b;
-    if (!std::isfinite(len) || len <= 0)
+    if (!std::isfinite(len) || len < 60.0f || len > 36000.0f)
         len = 3600.0f;
+    if (p.pts.empty()) {
+        b.type[0] = static_cast<uint8_t>(p.start >= 0 ? p.start : (game_first >= 0 && game_first < 6) ? game_first : 0);
+        b.n = 1;
+        b.hold[0] = len;
+        return b;
+    }
     bool zero = at_zero(p, p.pts[0].at);
     size_t first_change = zero ? 1 : 0;
     b.type[0] = static_cast<uint8_t>(zero ? p.pts[0].state : p.start >= 0 ? p.start
@@ -165,7 +180,7 @@ Build make_build(const SessionPlan &p, float len, int game_first)
     float prev_end = 0;
     for (size_t k = first_change; k < p.pts.size() && b.n < kMaxPlanStates; ++k) {
         float t = static_cast<float>(fraction(p, p.pts[k].at, len) * len);
-        float floor_t = prev_end + (b.n == 1 && prev_end == 0 ? 0.0f : kMinHoldS);
+        float floor_t = prev_end + kMinHoldS;
         if (t < floor_t)
             t = floor_t;
         if (t + kMinRampS + kMinHoldS > len) {
@@ -187,6 +202,45 @@ Build make_build(const SessionPlan &p, float len, int game_first)
     b.hold[b.n - 1] = std::fmax(len - prev_end, 1.0f);
     b.trans[b.n - 1] = 0;
     return b;
+}
+
+std::string validate_build(const Build &b, float len)
+{
+    char buf[160];
+    if (!std::isfinite(len) || len <= 0)
+        return "session length is not a positive number";
+    if (b.n < 1 || b.n > kMaxPlanStates) {
+        std::snprintf(buf, sizeof buf, "%u states (1..%d allowed)", b.n, kMaxPlanStates);
+        return buf;
+    }
+    double total = 0;
+    for (uint32_t i = 0; i < b.n; ++i) {
+        bool last = i + 1 == b.n;
+        if (b.type[i] >= 6) {
+            std::snprintf(buf, sizeof buf, "state %u has type %u", i, b.type[i]);
+            return buf;
+        }
+        if (!std::isfinite(b.hold[i]) || b.hold[i] < kMinHoldS) {
+            std::snprintf(buf, sizeof buf, "state %u hold %g s is not a finite time of at least %g s", i, b.hold[i],
+                          kMinHoldS);
+            return buf;
+        }
+        if (!std::isfinite(b.trans[i]) || (last ? b.trans[i] != 0 : b.trans[i] < kMinRampS)) {
+            std::snprintf(buf, sizeof buf, "state %u transition %g s is not finite or is shorter than %g s", i,
+                          b.trans[i], kMinRampS);
+            return buf;
+        }
+        if (!std::isfinite(b.inten[i]) || b.inten[i] > 1.0f) {
+            std::snprintf(buf, sizeof buf, "state %u intensity %g is not a number up to 1", i, b.inten[i]);
+            return buf;
+        }
+        total += static_cast<double>(b.hold[i]) + b.trans[i];
+    }
+    if (!(total <= static_cast<double>(len) * 1.0001 + 0.01)) {
+        std::snprintf(buf, sizeof buf, "states add up to %g s, past the %g s session", total, len);
+        return buf;
+    }
+    return "";
 }
 
 std::vector<std::string> clamp_build(Build &b, const TypeRange (&ranges)[6])
