@@ -4,7 +4,8 @@
 
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::Path;
-use std::time::Duration;
+use std::sync::mpsc::{RecvTimeoutError, sync_channel};
+use std::time::{Duration, Instant};
 
 use sha2::{Digest, Sha256};
 
@@ -21,6 +22,18 @@ const BACKOFF: Duration = if cfg!(test) {
 } else {
     Duration::from_secs(2)
 };
+
+/// The longest a body may go without a byte, and the span in which it must
+/// deliver [`WINDOW_BYTES`], before the connection counts as stalled.
+const WINDOW: Duration = if cfg!(test) {
+    Duration::from_millis(800)
+} else {
+    Duration::from_secs(60)
+};
+/// The fewest bytes a body may deliver in one [`WINDOW`] after its first byte.
+const WINDOW_BYTES: u64 = if cfg!(test) { 64 } else { 4 * 1024 };
+/// Stalled connections one download reconnects through before it gives up.
+const STALLS: u32 = 5;
 
 /// What a download that kept breaking off says to do.
 pub const ADVICE: &str = "the connection kept breaking during the download, usually from antivirus HTTPS or web \
@@ -44,6 +57,7 @@ pub(crate) enum Opening {
 
 enum Attempt {
     Broke(String),
+    Stalled(u64),
     Failed(Error),
 }
 
@@ -64,7 +78,7 @@ pub(crate) fn fetch(
         len: 0,
         resumable: true,
     };
-    let (mut quiet, mut tries) = (0, 0);
+    let (mut quiet, mut tries, mut stalls) = (0, 0, 0);
     loop {
         tries += 1;
         let before = got.len;
@@ -72,6 +86,25 @@ pub(crate) fn fetch(
             Ok(()) => break,
             Err(Attempt::Failed(e)) => return Err(e),
             Err(Attempt::Broke(e)) => e,
+            Err(Attempt::Stalled(rate)) => {
+                stalls += 1;
+                if stalls >= STALLS {
+                    return Err(Error::Other(format!(
+                        "the download from {} stayed below {} KB in {} s, {STALLS} times; check your connection or VPN",
+                        host(f.url),
+                        WINDOW_BYTES / 1024,
+                        WINDOW.as_secs()
+                    )));
+                }
+                eprintln!(
+                    "[download] stalled at {} KB ({rate} B/s for {} s); reconnecting, attempt {}/{STALLS}",
+                    got.len / 1024,
+                    WINDOW.as_secs(),
+                    stalls + 1
+                );
+                std::thread::sleep(BACKOFF * 2u32.pow(stalls - 1));
+                continue;
+            }
         };
         quiet = if got.len > before { 0 } else { quiet + 1 };
         if quiet >= TRIES || tries >= MOST {
@@ -142,26 +175,52 @@ fn attempt(
             f.url, f.lister, f.size
         ))));
     }
-    let mut body = response.into_body();
-    let mut reader = body.with_config().limit(left + 1).reader();
-    let mut buf = vec![0; 64 * 1024];
+    let (tx, rx) = sync_channel::<std::io::Result<Vec<u8>>>(4);
+    std::thread::spawn(move || {
+        let mut body = response.into_body();
+        let mut reader = body.with_config().limit(left + 1).reader();
+        loop {
+            let mut buf = vec![0; 64 * 1024];
+            let read = reader.read(&mut buf).map(|n| {
+                buf.truncate(n);
+                buf
+            });
+            let end = !matches!(&read, Ok(b) if !b.is_empty());
+            if tx.send(read).is_err() || end {
+                break;
+            }
+        }
+    });
+    let (mut window_at, mut window_bytes, mut started) = (Instant::now(), 0u64, false);
     loop {
-        let n = match reader.read(&mut buf) {
-            Ok(n) => n,
-            Err(e) if broken(&e) => return Err(Attempt::Broke(e.to_string())),
-            Err(e) => return Err(Attempt::Failed(Error::Other(format!("{}: {e}", f.url)))),
-        };
-        if n == 0 {
-            break;
+        let wait = WINDOW.saturating_sub(window_at.elapsed());
+        match rx.recv_timeout(wait) {
+            Ok(Err(e)) if broken(&e) => return Err(Attempt::Broke(e.to_string())),
+            Ok(Err(e)) => return Err(Attempt::Failed(Error::Other(format!("{}: {e}", f.url)))),
+            Ok(Ok(chunk)) if chunk.is_empty() => break,
+            Ok(Ok(chunk)) => {
+                started = true;
+                window_bytes += chunk.len() as u64;
+                got.len += chunk.len() as u64;
+                if got.len > f.size {
+                    return Err(Attempt::Failed(Error::Other((f.too_long)())));
+                }
+                got.hash.update(&chunk);
+                file.write_all(&chunk)
+                    .map_err(|e| Attempt::Failed(io_err(to)(e)))?;
+                progress(got.len);
+            }
+            Err(RecvTimeoutError::Timeout) => {}
+            Err(RecvTimeoutError::Disconnected) => {
+                return Err(Attempt::Broke("the download thread ended".into()));
+            }
         }
-        got.len += n as u64;
-        if got.len > f.size {
-            return Err(Attempt::Failed(Error::Other((f.too_long)())));
+        if window_at.elapsed() >= WINDOW {
+            if window_bytes < if started { WINDOW_BYTES } else { 1 } {
+                return Err(Attempt::Stalled(window_bytes / WINDOW.as_secs().max(1)));
+            }
+            (window_at, window_bytes) = (Instant::now(), 0);
         }
-        got.hash.update(&buf[..n]);
-        file.write_all(&buf[..n])
-            .map_err(|e| Attempt::Failed(io_err(to)(e)))?;
-        progress(got.len);
     }
     if got.len < f.size && !encoded {
         return Err(Attempt::Broke(format!(
@@ -170,6 +229,11 @@ fn attempt(
         )));
     }
     Ok(())
+}
+
+fn host(url: &str) -> &str {
+    let rest = url.split_once("://").map_or(url, |(_, r)| r);
+    rest.split(['/', '?']).next().unwrap_or(rest)
 }
 
 /// The first byte of a `Content-Range: bytes <first>-<last>/<size>` that
@@ -241,5 +305,133 @@ mod tests {
         assert_eq!(resumes_at(Some("bytes */1000"), 1000), None);
         assert_eq!(resumes_at(Some("items 100-999/1000"), 1000), None);
         assert_eq!(resumes_at(None, 1000), None);
+    }
+
+    fn serve(
+        size: usize,
+        trickle: fn(usize) -> bool,
+    ) -> (String, std::sync::Arc<std::sync::Mutex<Vec<u64>>>) {
+        use std::io::BufRead;
+        use std::sync::{Arc, Mutex};
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let url = format!("http://{}/file", listener.local_addr().unwrap());
+        let ranges = Arc::new(Mutex::new(Vec::new()));
+        let seen = ranges.clone();
+        std::thread::spawn(move || {
+            for (n, stream) in listener.incoming().enumerate() {
+                let mut stream = stream.unwrap();
+                let mut lines = std::io::BufReader::new(stream.try_clone().unwrap());
+                let mut from = 0u64;
+                loop {
+                    let mut line = String::new();
+                    lines.read_line(&mut line).unwrap();
+                    if line.trim().is_empty() {
+                        break;
+                    }
+                    if let Some(r) = line.to_ascii_lowercase().strip_prefix("range: bytes=") {
+                        from = r.trim().trim_end_matches('-').parse().unwrap();
+                    }
+                }
+                seen.lock().unwrap().push(from);
+                let data: Vec<u8> = (from as usize..size).map(|i| (i % 251) as u8).collect();
+                let head = if from > 0 {
+                    format!(
+                        "HTTP/1.1 206 Partial Content\r\nContent-Range: bytes {from}-{}/{size}\r\nContent-Length: {}\r\n\r\n",
+                        size - 1,
+                        data.len()
+                    )
+                } else {
+                    format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n", data.len())
+                };
+                std::thread::spawn(move || {
+                    if stream.write_all(head.as_bytes()).is_err() {
+                        return;
+                    }
+                    if trickle(n) {
+                        for b in data {
+                            std::thread::sleep(Duration::from_millis(250));
+                            if stream.write_all(&[b]).is_err() {
+                                return;
+                            }
+                        }
+                    } else {
+                        let _ = stream.write_all(&data);
+                    }
+                });
+            }
+        });
+        (url, ranges)
+    }
+
+    fn download(url: &str, size: u64, name: &str) -> (Result<(u64, String)>, Vec<u8>) {
+        let to = std::env::temp_dir().join(format!("swofty-stall-{}-{name}", std::process::id()));
+        let too_long = || "too long".to_string();
+        let f = Fetch {
+            url,
+            size,
+            lister: "the test",
+            too_long: &too_long,
+        };
+        let mut open = |from: u64| {
+            let mut request = ureq::get(url).header("Accept-Encoding", "identity");
+            if from > 0 {
+                request = request.header("Range", format!("bytes={from}-"));
+            }
+            request
+                .config()
+                .http_status_as_error(false)
+                .build()
+                .call()
+                .map_err(Opening::Call)
+        };
+        let out = fetch(&f, &to, &mut open, &|_| {});
+        let bytes = std::fs::read(&to).unwrap_or_default();
+        let _ = std::fs::remove_file(&to);
+        (out, bytes)
+    }
+
+    fn expected(size: usize) -> Vec<u8> {
+        (0..size).map(|i| (i % 251) as u8).collect()
+    }
+
+    #[test]
+    fn a_trickling_connection_reconnects_and_resumes_with_a_range() {
+        let (url, ranges) = serve(5000, |n| n == 0);
+        let (out, bytes) = download(&url, 5000, "resume");
+        let (len, _) = out.unwrap();
+        assert_eq!(len, 5000);
+        assert_eq!(bytes, expected(5000));
+        let ranges = ranges.lock().unwrap();
+        assert_eq!(ranges.len(), 2);
+        assert_eq!(ranges[0], 0);
+        assert!(ranges[1] > 0 && ranges[1] < 64);
+    }
+
+    #[test]
+    fn a_connection_that_always_trickles_fails_with_the_speed_error() {
+        let (url, ranges) = serve(5000, |_| true);
+        let (out, _) = download(&url, 5000, "always");
+        let Err(Error::Other(message)) = out else {
+            panic!("expected the stall error");
+        };
+        assert!(message.contains("stayed below"), "{message}");
+        assert!(message.contains("5 times"), "{message}");
+        assert!(message.contains("check your connection or VPN"), "{message}");
+        assert_eq!(ranges.lock().unwrap().len(), STALLS as usize);
+    }
+
+    #[test]
+    fn a_normal_speed_download_is_untouched() {
+        let (url, ranges) = serve(300_000, |_| false);
+        let (out, bytes) = download(&url, 300_000, "fast");
+        assert_eq!(out.unwrap().0, 300_000);
+        assert_eq!(bytes, expected(300_000));
+        assert_eq!(*ranges.lock().unwrap(), vec![0]);
+    }
+
+    #[test]
+    fn names_the_host_of_a_url() {
+        assert_eq!(host("https://api.f1.swofty.net/a/b?c"), "api.f1.swofty.net");
+        assert_eq!(host("http://127.0.0.1:80/x"), "127.0.0.1:80");
     }
 }
