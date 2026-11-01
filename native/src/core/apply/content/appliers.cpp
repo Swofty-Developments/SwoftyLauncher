@@ -461,6 +461,9 @@ void apply_garages(Expansion &x, Report &report)
     bool art_on = art_len && art_len < sizeof art && garage_art_enabled(art);
     if (!art_on)
         report.lines.push_back(GARAGE_FENCE_LINE);
+    char desc[8] = {};
+    DWORD desc_len = GetEnvironmentVariableA("SWOFTY_GARAGE_DESC", desc, sizeof desc);
+    bool descriptor = !(desc_len && desc_len < sizeof desc && desc[0] == '0');
     std::string dir = "addons/" + std::string(CACHE_ADDON) + "/";
     CreateDirectoryW(runtime::under_swofty("addons").c_str(), nullptr);
     CreateDirectoryW(runtime::under_swofty(dir).c_str(), nullptr);
@@ -495,6 +498,7 @@ void apply_garages(Expansion &x, Report &report)
         };
         mix(g.root);
         mix(g.srgb ? "srgb" : "linear");
+        mix(descriptor ? "descriptor" : "resident");
         for (auto &in : inputs) {
             mix(in.rel);
             mix(in.bytes);
@@ -505,7 +509,7 @@ void apply_garages(Expansion &x, Report &report)
         bool reused = runtime::file_size(path, &have) && have > 0;
         DWORD t0 = GetTickCount();
         if (!reused) {
-            garage::Built built = garage::build(inputs, g.root, g.srgb);
+            garage::Built built = garage::build(inputs, g.root, g.srgb, descriptor);
             for (auto &l : built.lines)
                 report.lines.push_back("team.garage " + g.id + ": " + l);
             report.refused += built.refused;
