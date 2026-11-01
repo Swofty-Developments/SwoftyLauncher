@@ -45,6 +45,24 @@ struct Result {
     int built = 0, refused = 0;
 };
 
+struct Refusals {
+    std::map<std::string, std::pair<int, std::string>> by;
+
+    void add(const std::string &reason, const std::string &example, int n = 1)
+    {
+        auto &r = by[reason];
+        if (!r.first)
+            r.second = example;
+        r.first += n;
+    }
+
+    void flush(std::vector<std::string> &lines) const
+    {
+        for (auto &[reason, r] : by)
+            lines.push_back("team.logo: " + std::to_string(r.first) + " slot(s) refused: " + reason + " (first " + r.second + ")");
+    }
+};
+
 inline std::string list_path(const std::string &array)
 {
     std::string path = "overrides.Contents.", rest = array;
@@ -65,6 +83,16 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
     };
     std::map<std::string, Open> opened;
     std::string why;
+    Refusals refusals;
+    struct Flush {
+        Refusals &r;
+        Result &out;
+        ~Flush() { r.flush(out.lines); }
+    } flush{refusals, out};
+    auto refuse = [&](const std::string &reason, const std::string &example, int n = 1) {
+        out.refused += n;
+        refusals.add(reason, example, n);
+    };
     auto get = [&](const std::string &rel) -> Open * {
         auto it = opened.find(rel);
         if (it != opened.end())
@@ -115,14 +143,13 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
     const erpfile::Entry *ue = uf.entry;
     std::string uidb_bytes;
     if (!ue || ue->frags.empty() || !erpfile::fragment(*uf.open->src, uf.open->arc, ue->frags[0], uidb_bytes, why)) {
-        out.lines.push_back("team.logo: overrides.uidb is not in " + std::string(DATABASES) + (why.empty() ? "" : " (" + why + ")"));
-        out.refused += int(wants.size());
+        refuse("overrides.uidb is not in " + std::string(DATABASES) + (why.empty() ? "" : " (" + why + ")"),
+               wants.empty() ? "" : wants[0].array + "/" + wants[0].key, int(wants.size()));
         return false;
     }
     uidb::Pkg pkg;
     if (!pkg.read(uidb_bytes)) {
-        out.lines.push_back("team.logo: overrides.uidb does not read: " + pkg.why);
-        out.refused += int(wants.size());
+        refuse("overrides.uidb does not read: " + pkg.why, wants.empty() ? "" : wants[0].array + "/" + wants[0].key, int(wants.size()));
         return false;
     }
     std::vector<std::string> files = env.list();
@@ -133,8 +160,7 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
     for (auto &[array, list] : by_array) {
         uidb::Node *node = pkg.find(list_path(array));
         if (!node || node->kind != uidb::Node::array) {
-            out.lines.push_back("team.logo: overrides.uidb has no list " + array);
-            out.refused += int(list.size());
+            refuse("overrides.uidb has no list " + array, array + "/" + list[0]->key, int(list.size()));
             continue;
         }
         std::vector<std::string> names;
@@ -178,10 +204,22 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
         }
         stock.names = names;
         logo_array::Shape shape;
-        if (mismatch || !have || !logo_array::shape_of(stock, shape, why)) {
-            if (!mismatch)
-                out.lines.push_back("team.logo: " + array + (have ? ": " + why : " is in no archive of the ui_package folder"));
-            out.refused += int(list.size());
+        bool sound = !mismatch && have && logo_array::shape_of_images(stock, shape, why);
+        if (sound && names.size() > shape.count) {
+            size_t dangling = names.size() - shape.count;
+            std::string blank = bc7::encode_logo(reinterpret_cast<const uint8_t *>(std::string(shape.slice_bytes() * 4, '\0').data()),
+                                                 int(shape.width), int(shape.height));
+            out.lines.push_back("team.logo: " + array + " lists " + std::to_string(names.size()) + " keys but its image holds " +
+                                std::to_string(shape.count) + " slice(s): another addon replaced the whole array, so " +
+                                std::to_string(dangling) + " key(s) from " + names[shape.count] + " on have no image of their own; padded with blank slices so new logos land on their own keys");
+            logo_array::pad(stock, shape, blank, uint32_t(names.size()));
+            shape.count = uint32_t(names.size());
+        }
+        if (sound)
+            sound = logo_array::shape_of(stock, shape, why);
+        if (!sound) {
+            std::string reason = mismatch ? "the carriers of " + array + " do not agree" : !have ? array + " is in no archive of the ui_package folder" : array + ": " + why;
+            refuse(reason, array + "/" + list[0]->key, int(list.size()));
             continue;
         }
         std::vector<logo_array::Slice> add;
@@ -199,7 +237,7 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
                     out.lines.push_back("team.logo: " + array + " has no stock key " + w->donor + " for " + w->key +
                                         (w->fallback ? "; the donor fallback is left out" : ""));
                     if (!w->fallback)
-                        out.refused++;
+                        refuse(array + " has no stock key to copy", w->donor + " for " + w->key);
                     seen.erase(w->key);
                     continue;
                 }
@@ -208,8 +246,7 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
                 bool scaled = false;
                 if (!logo_array::slice_from_rgba(shape, reinterpret_cast<const uint8_t *>(w->rgba.data()), w->width, w->height, s.bc7,
                                                  why, &scaled)) {
-                    out.lines.push_back("team.logo: " + w->key + " in " + array + ": " + why);
-                    out.refused++;
+                    refuse(array + ": " + why, w->key);
                     seen.erase(w->key);
                     continue;
                 }
@@ -224,8 +261,7 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
             continue;
         logo_array::Stock grown;
         if (!logo_array::grow(stock, add, grown, why)) {
-            out.lines.push_back("team.logo: " + array + ": " + why);
-            out.refused += int(add.size());
+            refuse(array + ": " + why, array + "/" + add[0].key, int(add.size()));
             continue;
         }
         for (auto &rel : carriers) {
@@ -237,8 +273,7 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
         for (auto &s : add) {
             std::string e;
             if (!pkg.append_entry(*node, s.key, std::string(TEXTURE_PATH) + s.key + ".tif", e)) {
-                out.lines.push_back("team.logo: " + array + ": " + e);
-                out.refused++;
+                refuse(array + ": " + e, s.key);
             }
         }
         uidb_changed = true;
