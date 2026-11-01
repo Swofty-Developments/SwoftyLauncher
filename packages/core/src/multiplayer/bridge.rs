@@ -19,10 +19,10 @@ use std::collections::{BTreeMap, VecDeque};
 use std::io;
 use std::net::{Ipv4Addr, SocketAddr, UdpSocket};
 use std::path::Path;
-use std::sync::atomic::{AtomicBool, AtomicU16, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU16, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard, RwLock, RwLockReadGuard};
 use std::thread::{self, JoinHandle};
-use std::time::{Duration, SystemTime};
+use std::time::{Duration, Instant, SystemTime};
 
 use ring::rand::{SecureRandom, SystemRandom};
 use serde::{Deserialize, Serialize};
@@ -253,6 +253,8 @@ struct Shared {
 /// The relay side: absent in echo mode.
 struct Link {
     transport: RwLock<Arc<dyn Transport>>,
+    swaps: AtomicU64,
+    listening: AtomicU64,
     sealer: Sealer,
     opener: Mutex<Opener>,
 }
@@ -276,6 +278,8 @@ impl Bridge {
         let remotes = cfg.remotes(true)?;
         let link = Link {
             transport: RwLock::new(transport),
+            swaps: AtomicU64::new(0),
+            listening: AtomicU64::new(0),
             sealer: Sealer::new(
                 &cfg.key,
                 cfg.self_member,
@@ -377,10 +381,20 @@ impl Bridge {
 
     /// Relay over `transport` from now on, keeping the ports, the session id and its counters,
     /// so the game notices nothing. Give it the members' addresses first. Does nothing in echo
-    /// mode.
+    /// mode. Returns once the receiving thread has left the old transport, or after a few poll
+    /// periods if it has stopped.
     pub fn replace_transport(&self, transport: Arc<dyn Transport>) {
-        if let Some(link) = &self.shared.link {
-            *link.transport.write().unwrap_or_else(|e| e.into_inner()) = transport;
+        let Some(link) = &self.shared.link else {
+            return;
+        };
+        *link.transport.write().unwrap_or_else(|e| e.into_inner()) = transport;
+        let generation = link.swaps.fetch_add(1, Ordering::SeqCst) + 1;
+        let deadline = Instant::now() + POLL * 3;
+        while link.listening.load(Ordering::SeqCst) < generation
+            && !self.shared.stopping()
+            && Instant::now() < deadline
+        {
+            thread::sleep(Duration::from_millis(1));
         }
     }
 
@@ -658,6 +672,8 @@ fn inbound(shared: &Shared) {
     };
     let mut buf = vec![0u8; BUF];
     while !shared.stopping() {
+        link.listening
+            .store(link.swaps.load(Ordering::SeqCst), Ordering::SeqCst);
         let (sender, n) = match link.transport().recv(&mut buf, POLL) {
             Ok(Some(got)) => got,
             Ok(None) => continue,
@@ -739,6 +755,27 @@ mod tests {
             .recv_from(&mut buf)
             .expect("a datagram reaches the fake game");
         (buf[..n].to_vec(), from)
+    }
+
+    fn send_until_received(
+        from: &UdpSocket,
+        to: SocketAddr,
+        game: &UdpSocket,
+        payload: &[u8],
+    ) -> (Vec<u8>, SocketAddr) {
+        let deadline = Instant::now() + WAIT;
+        let mut buf = [0u8; 4096];
+        game.set_read_timeout(Some(Duration::from_millis(250))).unwrap();
+        loop {
+            from.send_to(payload, to).unwrap();
+            match game.recv_from(&mut buf) {
+                Ok((n, src)) if &buf[..n] == payload => {
+                    game.set_read_timeout(Some(WAIT)).unwrap();
+                    return (buf[..n].to_vec(), src);
+                }
+                _ => assert!(Instant::now() < deadline, "the datagram never arrived"),
+            }
+        }
     }
 
     struct Player {
@@ -899,12 +936,15 @@ mod tests {
         one.transport.set_peers(&HashMap::new()).unwrap();
         two.transport.set_peers(&HashMap::new()).unwrap();
 
-        one.game.send_to(b"after", to_two).unwrap();
-        assert_eq!(recv(&two.game).0, b"after");
-        two.game
-            .send_to(b"back", loopback(two.bridge.port(1).unwrap()))
-            .unwrap();
-        assert_eq!(recv(&one.game), (b"back".to_vec(), loopback(base + 2)));
+        assert_eq!(
+            send_until_received(&one.game, to_two, &two.game, b"after").0,
+            b"after"
+        );
+        let to_one = loopback(two.bridge.port(1).unwrap());
+        assert_eq!(
+            send_until_received(&two.game, to_one, &one.game, b"back"),
+            (b"back".to_vec(), loopback(base + 2))
+        );
         assert_eq!(one.bridge.base(), base);
         assert_eq!(one.bridge.stats().drops, Drops::default());
         assert_eq!(two.bridge.stats().drops, Drops::default());
