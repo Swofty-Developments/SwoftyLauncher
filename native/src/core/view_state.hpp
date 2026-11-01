@@ -1,9 +1,6 @@
 #pragma once
-
 #include <cstdint>
 
-// What the game shows this frame: the player's driving camera, and whether the session is paused, in a
-// replay, in photo mode, in a menu, in a cutscene or spectating. Read lock-free from any thread.
 namespace view {
 
 enum Kind : uint32_t { UNKNOWN = 0, COCKPIT, TCAM, TCAM_OFFSET, CHASE_NEAR, CHASE_FAR, OTHER };
@@ -17,5 +14,6 @@ struct State {
 
 State current();
 void setup();
+void flow(uint32_t hash, uint32_t to);
 
 }

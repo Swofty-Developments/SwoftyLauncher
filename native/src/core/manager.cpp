@@ -18,6 +18,7 @@
 #include "perf.hpp"
 #include "safetyhook.hpp"
 #include "scan_cache.hpp"
+#include "view_state.hpp"
 #include "swofty_api.h"
 
 void crash_attach(SwoftyApi *a, const std::wstring &dir);
@@ -2371,6 +2372,8 @@ static int commit_pass()
         runtime::when_code_ready("popup: message system hook", runtime::popup_setup);
     if (!from)
         runtime::when_code_ready("mfd: development switch", runtime::mfd_setup);
+    if (!from)
+        runtime::when_code_ready("view state hooks", view::setup);
     if (!waits(true))
         settle_core_sets();
     for (size_t i = from; i < settled; i++)
