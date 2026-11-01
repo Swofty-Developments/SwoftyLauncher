@@ -1,7 +1,9 @@
 #include "runtime.hpp"
 
+#include <safetyhook.hpp>
 #include <swofty/mixin.hpp>
 
+#include <atomic>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -31,6 +33,10 @@ std::vector<era::Box> era_boxes();
 }
 
 bool ui_vm_set_path(const std::string &path, int type, const void *value);
+
+namespace runtime {
+std::string hook_error(const safetyhook::InlineHook::Error &e);
+}
 
 namespace {
 
@@ -105,6 +111,42 @@ uint8_t *mode_named(void *modes, const char *want, std::vector<std::string> &nam
             found = mode;
     }
     return found;
+}
+
+// When the VM node does not hold the track (the node missing, or rewritten before the load), the Time Trial's track
+// getter is wrapped to answer the chosen record until the session is on screen.
+safetyhook::InlineHook h_track;
+std::atomic<uint8_t *> forced_track{nullptr};
+std::atomic<bool> told_forced{false};
+
+uint8_t *track_detour(void *e)
+{
+    uint8_t *r = h_track.call<uint8_t *>(e);
+    uint8_t *want = forced_track.load();
+    if (!want)
+        return r;
+    if (runtime::direct_start_cover_signal() != 0) {
+        forced_track = nullptr;
+        return r;
+    }
+    if (r != want && !told_forced.exchange(true))
+        swofty::log("[direct] Time Trial: the track getter read %p; it answers the chosen track %p", r, want);
+    return want;
+}
+
+bool force_track(uint8_t *rec)
+{
+    forced_track = rec;
+    if (h_track)
+        return true;
+    auto h = safetyhook::InlineHook::create(rva<void>(RVA_CURRENT_TRACK), reinterpret_cast<void *>(track_detour));
+    if (!h) {
+        swofty::log("[direct] Time Trial: the track getter hook failed: %s", runtime::hook_error(h.error()).c_str());
+        forced_track = nullptr;
+        return false;
+    }
+    h_track = std::move(*h);
+    return true;
 }
 
 uint8_t *track_record(uint8_t *e, const std::string &want, std::vector<std::string> &names)
@@ -326,17 +368,15 @@ Setup place(uint8_t *e, const json::Value &request, std::string &why)
             return Setup::failed;
         }
         const char *file = c_name(at<const char *>(rec, TRACK_NAME));
-        if (!ui_vm_set_path(TRACK_NODE, 0, file)) {
-            why = std::string("the VM node ") + TRACK_NODE + " could not be written";
-            return Setup::failed;
-        }
+        bool written = ui_vm_set_path(TRACK_NODE, 0, file);
         uint8_t *now = rva<CurrentTrack_t>(RVA_CURRENT_TRACK)(e);
-        if (now != rec) {
-            why = std::string("the Time Trial's current track reads ") +
-                  (now ? c_name(at<const char *>(now, TRACK_NAME)) : "nothing") + " after " + file + " was written";
+        const char *reads = now && runtime::readable(now, TRACK_NAME + 8) ? c_name(at<const char *>(now, TRACK_NAME)) : nullptr;
+        swofty::log("[direct] Time Trial: track %s (%p): the VM node %s, the getter reads %s", file, rec,
+                    written ? "written" : "NOT written", reads ? reads : "nothing");
+        if (now != rec && !force_track(rec)) {
+            why = std::string("the Time Trial's track could not be set to ") + file;
             return Setup::failed;
         }
-        swofty::log("[direct] Time Trial: track %s (%p)", file, rec);
     }
     std::string weather = request["weather"].str();
     if (!weather.empty()) {
