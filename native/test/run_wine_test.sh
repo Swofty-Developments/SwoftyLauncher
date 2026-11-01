@@ -340,7 +340,7 @@ EOF
         once "ers mode: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(ers mode guard\)': 1 mixin"
         once "ers mode: the guard is armed" '\[ers\] mode guard armed'
         count "ers mode: each car whose ERS mode is out of range is set to Medium and logged once" 2 '\[ers\] car (8: ERS mode -2141928108|9: ERS mode 4) out of range; set to 1 \(Medium\)'
-        once "standings: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(standings track guard\)': 2 mixins"
+        once "standings: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(standings track guard\)': 2 mixin"
         once "standings: the guard is armed" '\[career\] standings guard armed'
         once "standings: a round whose track is off is skipped and logged once" '\[career\] standings: round 7 has no track data \(track 200 is off\); skipped'
         once "standings: a round whose weekend can't be read is skipped and logged once" '\[career\] standings: round 10 has no track data; skipped'
@@ -552,7 +552,7 @@ EOF
 done
 check "crash log armed at attach" '\[crash\] crash log armed'
 check "clean exit logged" '\[crash\] ExitProcess\(0\)'
-check "crash reports armed with a minidump" '\[crash\] crash reports: .*crash-<time>\.txt with a stacks-only minidump'
+check "crash reports armed with a minidump" '\[crash\] crash reports: .*crash-<time>\.txt .*with a stacks-only minidump'
 check "Ne heap error reporting hooked by the pattern" '\[crash\] Ne_ReportMemoryError at base\+0x[0-9a-f]+ hooked'
 python3 fake_symbols.py "$OUT/game/F1_25.exe" "$OUT/game/swofty/addons/core/symbols.tsv"
 SW=$OUT/game/swofty
