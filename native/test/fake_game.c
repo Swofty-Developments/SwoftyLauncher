@@ -1368,6 +1368,83 @@ static void crash_weekends(void)
     fflush(stdout);
 }
 
+// The three unchecked loads of Career_TeamHqAdvance_BuildTrackNode, with the bytes around them copied from the Steam build
+// (0x1419b44e5..0x1419b44f6, 0x1419b4788..0x1419b4799, 0x1419b47a6..0x1419b47b6), in a small frame taking the track record
+// (rbx) in rcx, the TrackDataTrack (r14) in rdx, the calendar event (rdi, track byte at +0x18) in r8 and a three-slot
+// result in r9. The empty node handle (r13) is 0xe3e7; the result holds rdx after each record read and rcx after the track
+// read, the game's own fallback for an empty node. Core's Team HQ track guard finds the three loads by their byte
+// patterns: the record handle read at +0x1d, the second record read at +0x37 and the track read at +0x52.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_teamhq_node\n"
+    ".def fake_teamhq_node; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_teamhq_node\n"
+    "fake_teamhq_node:\n"
+    ".byte 0x53\n.seh_pushreg %rbx\n"
+    ".byte 0x57\n.seh_pushreg %rdi\n"
+    ".byte 0x41,0x55\n.seh_pushreg %r13\n"
+    ".byte 0x41,0x56\n.seh_pushreg %r14\n"
+    ".seh_endprologue\n"
+    ".byte 0x48,0x89,0xCB,0x49,0x89,0xD6,0x4C,0x89,0xC7,0x41,0xBD,0xE7,0xE3,0x00,0x00\n"
+    ".byte 0x48,0x85,0xDB,0x75,0x03\n"
+    ".byte 0x45,0x31,0xF6\n"
+    ".byte 0x48,0x8B,0x83,0xC0,0x02,0x00,0x00,0x48,0x8D,0x50,0x08,0x48,0x85,0xC0,0x49,0x0F,0x44,0xD5\n"
+    ".byte 0x49,0x89,0x11\n"
+    "call fake_teamhq_stub\n"
+    ".byte 0x48,0x8B,0x83,0xC0,0x02,0x00,0x00,0x48,0x8D,0x50,0x08,0x48,0x85,0xC0,0x49,0x0F,0x44,0xD5\n"
+    ".byte 0x49,0x89,0x51,0x08\n"
+    "call fake_teamhq_stub\n"
+    ".byte 0x49,0x8B,0x46,0x30,0x48,0x8D,0x48,0x08,0x48,0x85,0xC0,0x49,0x0F,0x44,0xCD\n"
+    ".byte 0x49,0x89,0x49,0x10\n"
+    ".byte 0x41,0x5E,0x41,0x5D,0x5F,0x5B,0xC3\n"
+    ".seh_endproc\n"
+    "fake_teamhq_stub:\n"
+    ".byte 0xC3\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_teamhq_node\"\n"
+    ".text\n");
+void fake_teamhq_node(void *record, void *track, void *event, uint64_t *out);
+
+static uint8_t teamhq_record[0x2c8], teamhq_track[0x40], teamhq_event[0x20];
+
+static void teamhq_setup(uint8_t track_id)
+{
+    memset(teamhq_record, 0, sizeof teamhq_record);
+    memset(teamhq_track, 0, sizeof teamhq_track);
+    teamhq_record[1] = track_id;
+    *(uint64_t *)(teamhq_record + 0x2c0) = 0x2c0c0de;
+    *(uint64_t *)(teamhq_track + 0x30) = 0x7ac0de;
+    teamhq_event[0x18] = track_id;
+}
+
+static void test_teamhq(void)
+{
+    uint64_t out[3] = {0, 0, 0};
+    teamhq_setup(9);
+    fake_teamhq_node(teamhq_record, teamhq_track, teamhq_event, out);
+    expect(out[0] == 0x2c0c0de + 8 && out[1] == 0x2c0c0de + 8 && out[2] == 0x7ac0de + 8,
+           "teamhq: an event with a record and a track reads both as the game does");
+    teamhq_setup(6);
+    fake_teamhq_node(teamhq_record, NULL, teamhq_event, out);
+    expect(out[0] == 0x2c0c0de + 8 && out[2] == 0xe3e7, "teamhq: an event whose track has no track data takes the empty node handle");
+    fake_teamhq_node(teamhq_record, NULL, teamhq_event, out);
+    teamhq_setup(1);
+    fake_teamhq_node(NULL, NULL, teamhq_event, out);
+    expect(out[0] == 0xe3e7 && out[1] == 0xe3e7 && out[2] == 0xe3e7, "teamhq: an event whose track has no record takes the empty node handle");
+}
+
+static void crash_teamhq(void)
+{
+    SetErrorMode(SEM_NOGPFAULTERRORBOX);
+    uint64_t out[3] = {0, 0, 0};
+    teamhq_setup(6);
+    printf("      teamhq: reading an event whose track has no track data\n");
+    fflush(stdout);
+    fake_teamhq_node(teamhq_record, NULL, teamhq_event, out);
+    printf("      teamhq: the event returned %llx\n", (unsigned long long)out[2]);
+    fflush(stdout);
+}
+
 // The two entrant-list lookups behind the front-end tile populate, copied byte for byte from the Steam build in small
 // frames, the calls and the RIP-relative operands pointed at stand-ins. fake_list_first_id is
 // FeTile_Get_ListFirstEntrantId (0x141738eb0..0x141738f6c) taking the item in rcx and the result in rdx: it scans the
@@ -2308,6 +2385,7 @@ int main(int argc, char **argv)
         test_ers_mode();
         test_standings();
         test_weekends();
+        test_teamhq();
         test_fe_tiles();
         test_ai_corner();
         test_garage_crew(1);
@@ -2353,6 +2431,8 @@ int main(int argc, char **argv)
         crash_standings();
     if (argc > 1 && !strcmp(argv[1], "weekends"))
         crash_weekends();
+    if (argc > 1 && !strcmp(argv[1], "teamhq"))
+        crash_teamhq();
     if (argc > 1 && !strcmp(argv[1], "fe_scan"))
         crash_fe_scan();
     if (argc > 1 && !strcmp(argv[1], "fe_row"))
