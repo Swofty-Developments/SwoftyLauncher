@@ -740,6 +740,10 @@ void tick()
     f.lobby = bind::in_lobby();
     f.lan_mode = net_mode_now() == int(NET_SYSTEM_LAN);
     f.session_role = session_role_now();
+    if (run.role == Role::join && run.stage == Stage::call) {
+        std::string why;
+        f.join_ready = request_owner(why) != nullptr;
+    }
     if (run.role == Role::join) {
         uint8_t pending = 1;
         f.pending_taken = join_plan.request && read_memory(join_plan.request + REQ_PENDING, &pending, 1, nullptr) && !pending;
