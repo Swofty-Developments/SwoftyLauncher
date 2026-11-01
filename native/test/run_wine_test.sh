@@ -348,6 +348,9 @@ EOF
         once "fe tiles: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(front-end tile list guard\)': 3 mixin\(s\)"
         once "fe tiles: the guard is armed" '\[fe\] tiles guard armed'
         once "fe tiles: a list missing from the slot array is skipped and logged once" '\[fe\] tiles: entrant list f2_2026 is not in the game data; its tile is left without a list'
+        once "ai corner: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(ai corner start guard\)': 1 mixin"
+        once "ai corner: the guard is armed" '\[ai\] corner start guard armed'
+        once "ai corner: a car with no corner start line is skipped and logged once" '\[ai\] corner start: car 3 has no corner start ahead on this track'"'"'s AI line'
         once "garage crew: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(garage crew guard\)': 1 mixin"
         once "garage crew: the guard is armed" '\[garage\] crew guard armed'
         count "garage crew: each car dropped from a garage's crew vector is logged once" 4 '\[garage\] garage [5-7]: team 1[2-4] car #4[0-9] \(driver 3[0-9][0-9]\) is the (third|extra) car of its garage'
@@ -758,6 +761,25 @@ for guard in on off; do
             parse_report "$fn+$at" "" || status=1
             [[ $code != 0 ]] && echo "ok  : fe tiles off ($name): process ended with $code" || { echo "FAIL: fe tiles off ($name): process exited 0"; status=1; }
         done
+    fi
+done
+for guard in on off; do
+    echo "==== ai_corner ($guard)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_AI_CORNER_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" ai_corner >"$OUT/ai_corner.out" 2>&1 || code=$?
+    grep -E '\[ai\] corner start|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    if [[ $guard == on ]]; then
+        once "ai corner on: the car is skipped and logged" '\[ai\] corner start: car 3 has no corner start ahead on this track'"'"'s AI line'
+        grep -q 'ai corner: the car returned 0x9be\b' "$OUT/ai_corner.out" && echo "ok  : ai corner on: the car took the game's no-corner-line path" ||
+            { echo "FAIL: ai corner on: the car did not take the game's no-corner-line path"; status=1; }
+        count "ai corner on: no unhandled fault" 0 '\[crash\] unhandled '
+        compgen -G "$SW/crash-*.txt" >/dev/null && { echo "FAIL: ai corner on: a crash report was written"; status=1; } ||
+            echo "ok  : ai corner on: no crash report"
+    else
+        once "ai corner off: the guard is off" '\[ai\] corner start guard off \(SWOFTY_AI_CORNER_GUARD=0\)'
+        check "ai corner off: the read faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Ai_Job_UpdateCarsParallel\+0x10'
+        [[ $code != 0 ]] && echo "ok  : ai corner off: process ended with $code" || { echo "FAIL: ai corner off: process exited 0"; status=1; }
     fi
 done
 for guard in on off; do

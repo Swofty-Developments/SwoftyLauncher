@@ -1433,6 +1433,73 @@ static void crash_fe_row(void)
     fflush(stdout);
     uint64_t r = fake_list_usable(ls_ctx, "f2_2026");
     printf("      fe tiles: the list returned %llu\n", (unsigned long long)r);
+// Ai_Job_UpdateCarsParallel's corner line read, copied byte for byte from the Steam build (0x14064069e..0x1406406ac and
+// 0x1406409be..0x1406409ce), in a small frame that takes a gap evaluation result in rcx, the car index in rdx and the car's
+// AI state in r8. The load is [[result+8]+car*8+0xb8], with no check on result+8; it returns that entry for a line that is
+// there, 0x9be for the game's own no-corner-line path (the cmp byte [state+0x185] and its je, state+0x185 clear), 0x222 when
+// that byte is set. Core's AI corner guard resolves site_Ai_UpdateCars_CornerLineLoad at +0x10 and
+// site_Ai_UpdateCars_NoCornerLine here.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_ai_corner\n"
+    ".def fake_ai_corner; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_ai_corner\n"
+    "fake_ai_corner:\n"
+    ".byte 0x56\n.seh_pushreg %rsi\n"
+    ".byte 0x57\n.seh_pushreg %rdi\n"
+    ".byte 0x53\n.seh_pushreg %rbx\n"
+    ".seh_endprologue\n"
+    ".byte 0x48,0x89,0xCE,0x48,0x89,0xD7,0x4C,0x89,0xC3,0x48,0x8B,0x46,0x08\n"
+    ".byte 0x48,0x8B,0x84,0xF8,0xB8,0x00,0x00,0x00\n"
+    ".byte 0x48,0x85,0xC0\n"
+    ".byte 0x0F,0x84\n.long .Laicnone-.Laicje\n.Laicje:\n"
+    ".byte 0xEB\n.byte .Laicdone-.Laicj1\n.Laicj1:\n"
+    ".Laicnone:\n"
+    ".byte 0x80,0xBB,0x85,0x01,0x00,0x00,0x00,0x74,0x4C\n"
+    ".byte 0xC5,0xFA,0x11,0xBB,0x20,0x01,0x00,0x00\n"
+    ".byte 0xB8,0x22,0x02,0x00,0x00\n"
+    ".byte 0xEB\n.byte .Laicdone-.Laicj2\n.Laicj2:\n"
+    ".fill 0x3D,1,0x90\n"
+    ".byte 0xB8,0xBE,0x09,0x00,0x00\n"
+    ".Laicdone:\n"
+    ".byte 0x5B,0x5F,0x5E,0xC3\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_ai_corner\"\n"
+    ".text\n");
+uint64_t fake_ai_corner(void *result, uint64_t car, void *state);
+
+static uint64_t ai_corner_result[0x50 / 8];
+static uint8_t ai_corner_line[0x100];
+static uint8_t ai_corner_state[0x200];
+
+static void ai_corner_setup(void)
+{
+    memset(ai_corner_result, 0, sizeof ai_corner_result);
+    memset(ai_corner_state, 0, sizeof ai_corner_state);
+    *(uint64_t *)(ai_corner_line + 0xb8 + 3 * 8) = 0xc0de;
+}
+
+static void test_ai_corner(void)
+{
+    ai_corner_setup();
+    ai_corner_result[1] = (uint64_t)ai_corner_line;
+    uint64_t r = fake_ai_corner(ai_corner_result, 3, ai_corner_state);
+    expect(r == 0xc0de, "ai corner: a car with a corner start line reads its entry as the game does");
+    ai_corner_result[1] = 0;
+    r = fake_ai_corner(ai_corner_result, 3, ai_corner_state);
+    uint64_t again = fake_ai_corner(ai_corner_result, 5, ai_corner_state);
+    expect(r == 0x9be && again == 0x9be, "ai corner: a car with no corner start line takes the game's no-corner-line path");
+}
+
+static void crash_ai_corner(void)
+{
+    SetErrorMode(SEM_NOGPFAULTERRORBOX);
+    ai_corner_setup();
+    printf("      ai corner: reading a car with no corner start line\n");
+    fflush(stdout);
+    uint64_t r = fake_ai_corner(ai_corner_result, 3, ai_corner_state);
+    printf("      ai corner: the car returned 0x%llx\n", (unsigned long long)r);
     fflush(stdout);
 }
 
@@ -2107,6 +2174,7 @@ int main(int argc, char **argv)
         test_standings();
         test_weekends();
         test_fe_tiles();
+        test_ai_corner();
         test_garage_crew(1);
         test_pit_slots(1);
         test_leaderboard_guard();
@@ -2152,6 +2220,8 @@ int main(int argc, char **argv)
         crash_fe_scan();
     if (argc > 1 && !strcmp(argv[1], "fe_row"))
         crash_fe_row();
+    if (argc > 1 && !strcmp(argv[1], "ai_corner"))
+        crash_ai_corner();
     if (argc > 1 && !strcmp(argv[1], "garage_crew")) {
         const char *off = getenv("SWOFTY_GARAGE_CREW_GUARD");
         test_garage_crew(!(off && *off));
