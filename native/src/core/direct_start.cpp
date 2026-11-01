@@ -508,7 +508,10 @@ std::string weekend_text(uint8_t *wk)
 }
 
 // The requested session (the CLI's session=, a game session name or practice1..3, qualifying, race) made the
-// weekend's current one: its index when the weekend has it, else the current session's id rewritten.
+// weekend's current one. A Grand Prix the profile already holds keeps its season (the season build only runs for a
+// mode with no season), so the weekend is the saved one: its first session becomes the requested one and the
+// weekend starts there. Moving the current index past a session instead leaves the race without the results it
+// builds the grid from (the AI's team performance build faulted on a race behind an unplayed qualifying).
 void choose_session(void *modes, const char *when)
 {
     uint8_t *wk = current_weekend(modes);
@@ -528,17 +531,16 @@ void choose_session(void *modes, const char *when)
     auto *b = *reinterpret_cast<uint8_t **>(wk + WK_SESSIONS), *e = *reinterpret_cast<uint8_t **>(wk + WK_SESSIONS + 8);
     auto &cur = *reinterpret_cast<uint32_t *>(wk + WK_CURRENT);
     uint32_t n = b && e > b ? uint32_t(size_t(e - b) / SESSION_STRIDE) : 0;
-    for (uint32_t i = 0; i < n; i++)
-        if (*reinterpret_cast<uint32_t *>(b + size_t(i) * SESSION_STRIDE + SESSION_ID) == uint32_t(want)) {
-            if (cur != i)
-                swofty::log("[direct] Grand Prix: current session %u -> %u (%s)", cur, i, testagent::SESSION_NAMES[want]);
-            cur = i;
-            return;
-        }
-    if (cur < n) {
-        auto &id = *reinterpret_cast<uint32_t *>(b + size_t(cur) * SESSION_STRIDE + SESSION_ID);
-        swofty::log("[direct] Grand Prix: the weekend has no %s; session %u rewritten from %s", testagent::SESSION_NAMES[want],
-                    cur, id < 19 ? testagent::SESSION_NAMES[id] : "?");
+    if (!n)
+        return;
+    if (cur != 0) {
+        swofty::log("[direct] Grand Prix: current session %u -> 0", cur);
+        cur = 0;
+    }
+    auto &id = *reinterpret_cast<uint32_t *>(b + SESSION_ID);
+    if (id != uint32_t(want)) {
+        swofty::log("[direct] Grand Prix: session 0 %s -> %s", id < 19 ? testagent::SESSION_NAMES[id] : "?",
+                    testagent::SESSION_NAMES[want]);
         id = uint32_t(want);
     }
 }
