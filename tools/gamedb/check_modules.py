@@ -338,7 +338,7 @@ class Checker:
             self.ref_cache[key] = out
         return self.ref_cache[key]
 
-    def field_base(self, row, label, scope, path):
+    def field_base(self, row, label, scope, path, fields=()):
         if "{" not in path:
             return self.db.under(row, path)
 
@@ -350,6 +350,24 @@ class Checker:
                 if scope is None:
                     raise ResolveError("%s: {scope} in a module without a scope" % path)
                 return scope
+            if k == "season":
+                parts = (scope or "").split("_")
+                if len(parts) > 1 and parts[0].lower() in ("f1", "f2") and re.fullmatch(r"\d{4}", parts[1]):
+                    return "%s_%s" % (parts[0].lower(), parts[1])
+                raise ResolveError("%s: %s has no season" % (path, scope))
+            if k.startswith("ref."):
+                fid, rel = k[4:].split(".", 1)
+                f = next((f for f in fields if f["id"] == fid), None)
+                if f is None or not f.get("refs"):
+                    raise ResolveError("%s: no ref field %s" % (path, fid))
+                want = self.label(row, f["path"])
+                spec = f["refs"]
+                for r in self.table_rows(spec["rows"], spec.get("filter"), scope):
+                    if self.label(r, spec.get("label", "_metadata_")) == want:
+                        v = self.label(r, rel)
+                        if v is not None:
+                            return v
+                raise ResolveError("%s: no %s under %s" % (path, rel, want))
             if k.startswith("row."):
                 v = self.label(row, k[4:])
                 if v is None:
@@ -438,7 +456,7 @@ class Checker:
                 for f in fields:
                     value = None
                     try:
-                        b = self.field_base(row, label, scope, f["path"])
+                        b = self.field_base(row, label, scope, f["path"], m["fields"])
                         value = self.db.text(b)
                     except ResolveError:
                         value = None
