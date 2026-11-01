@@ -230,14 +230,22 @@ static void pending_queue()
     Ops::reset(0);
     table[2] = addr(1);
     auto got = Ops::take();
-    expect(got.size() == 2 && got[0].index == 1 && got[0].car == addr(1) && !got[0].reset,
+    expect(got.size() == 2 && got[0].index == 1 && got[0].car == addr(1) && got[0].what == Ops::What::built,
            "car.built keeps a built car still in its slot, drops a bad id and a car gone from its slot");
-    expect(got.size() == 2 && got[1].index == 0 && got[1].car == addr(0) && got[1].reset,
+    expect(got.size() == 2 && got[1].index == 0 && got[1].car == addr(0) && got[1].what == Ops::What::reset,
            "car.reset finds the car from the reset thunk's loader (CarLive+0x4a0); a null loader is dropped");
     expect(Ops::take().empty(), "the queue is taken once");
+    alignas(16) static uint8_t front_wing[0x100];
+    *reinterpret_cast<uintptr_t *>(front_wing + cl::SYSTEM_CAR) = addr(1);
+    Ops::damaged(reinterpret_cast<uintptr_t>(front_wing), 1, 0.25f);
+    Ops::damaged(reinterpret_cast<uintptr_t>(front_wing), 0, 0.0f);
+    auto hit = Ops::take();
+    expect(hit.size() == 1 && hit[0].index == 1 && hit[0].what == Ops::What::damage && hit[0].part == 1 &&
+               hit[0].progress == 0.25f,
+           "car.damage queues a front wing hit with its side and amount and drops a hit that added none");
     for (int i = 0; i < 300; i++)
         Ops::built(addr(1));
-    expect(Ops::take().size() == 4 * cl::MAX_CARS, "the queue is capped when no frame takes it");
+    expect(Ops::take().size() == 8 * cl::MAX_CARS, "the queue is capped when no frame takes it");
 }
 
 static void engine_limiter()
@@ -297,6 +305,236 @@ static void gear_ratios()
            "a zero ratio is invalid");
 }
 
+alignas(16) static uint8_t aero[CARS][0x1a10], brake[CARS][0x2210], chassis[CARS][0x200], suspension[CARS][0xd8],
+    tyre_front[CARS][0x80], tyre_rear[CARS][0x80], axle_a[CARS][0x1670], axle_b[CARS][0x1670];
+
+static void build_v2()
+{
+    build_world();
+    for (int i = 0; i < CARS; i++) {
+        uint8_t *c = car_mem[i];
+        attach(c, cl::F1_AERO, aero[i]);
+        attach(c, cl::BRAKE_ECU, brake[i]);
+        attach(c, cl::CHASSIS, chassis[i]);
+        attach(c, cl::SUSPENSION, suspension[i]);
+        at<float>(aero[i], 0x19a4) = 1.0f;
+        at<float>(aero[i], 0x19a0) = 1.0f;
+        at<float>(brake[i], 0x21d8) = 0.4f;
+        at<float>(brake[i], 0x21dc) = 1.0f;
+        put_obf(chassis[i], 0x28, 800.0f, 0x31415926u);
+        put_obf(chassis[i], 0x98, std::sqrt(800.0f), 0x27182818u);
+        memset(tyre_front[i], 0, sizeof tyre_front[i]);
+        memset(tyre_rear[i], 0, sizeof tyre_rear[i]);
+        strcpy(reinterpret_cast<char *>(tyre_rear[i]), "Rear");
+        strcpy(reinterpret_cast<char *>(tyre_front[i]), "Front");
+        at<float>(tyre_front[i], 0x2c) = 1.0f;
+        at<float>(tyre_rear[i], 0x2c) = 1.1f;
+        at<void *>(suspension[i], cl::SUSP_TYRE_TYPES) = tyre_rear[i];
+        at<void *>(suspension[i], cl::SUSP_TYRE_TYPES + 8) = tyre_front[i];
+        at<void *>(suspension[i], cl::SUSP_AXLE0) = axle_a[i];
+        at<void *>(suspension[i], cl::SUSP_AXLE1) = axle_b[i];
+        at<float>(axle_a[i], cl::AXLE_LOCAL_REST_Z) = -1.7f;
+        at<float>(axle_b[i], cl::AXLE_LOCAL_REST_Z) = 1.6f;
+        at<float>(axle_a[i], 0x1664) = 50000.0f;
+        at<float>(axle_b[i], 0x1664) = 30000.0f;
+    }
+}
+
+static uint32_t token_of(Ops &, uint32_t t) { return t; }
+
+static void v2_fields()
+{
+    build_v2();
+    Ops::bind(make_env());
+    uint32_t id = 0;
+    expect(Ops::op_field("aero.lift_scale", &id) == SWOFTY_ASSET_OK && id == SWOFTY_CAR_AERO_LIFT_SCALE &&
+               Ops::op_field("steering.max_steering_lock", &id) == SWOFTY_ASSET_OK && id == SWOFTY_CAR_STEERING_LOCK &&
+               Ops::op_field("nope.field", &id) == SWOFTY_ASSET_INVALID,
+           "field(path) resolves a Handling path and refuses an unknown one");
+    for (size_t i = 0; i < cl::FIELD_COUNT; i++)
+        for (size_t j = i + 1; j < cl::FIELD_COUNT; j++)
+            if (cl::FIELDS[i].id == cl::FIELDS[j].id || !std::strcmp(cl::FIELDS[i].name, cl::FIELDS[j].name))
+                expect(false, std::string("duplicate field ") + cl::FIELDS[i].name);
+    float v = 0;
+    expect(Ops::op_get(0, nullptr, SWOFTY_CAR_AERO_LIFT_SCALE, &v) == SWOFTY_ASSET_OK && v == 1.0f &&
+               Ops::op_set(0, nullptr, SWOFTY_CAR_AERO_DRAG_SCALE, 0.96f) == SWOFTY_ASSET_OK &&
+               plain(aero[0], 0x19a0) == 0.96f,
+           "the aero scales are plain floats at +0x19a4 and +0x19a0 of F1Aero");
+    expect(Ops::op_get(0, nullptr, SWOFTY_CAR_BRAKES_BIAS, &v) == SWOFTY_ASSET_OK && v == 0.4f &&
+               Ops::op_set(0, nullptr, SWOFTY_CAR_BRAKES_PRESSURE, 0.9f) == SWOFTY_ASSET_OK && plain(brake[0], 0x21dc) == 0.9f,
+           "brake bias and pressure are plain floats at +0x21d8 and +0x21dc of the BrakeECU");
+    expect(Ops::op_get(0, nullptr, SWOFTY_CAR_TYRES_FRONT_GRIP_SCALE, &v) == SWOFTY_ASSET_OK && v == 1.0f &&
+               Ops::op_get(0, nullptr, SWOFTY_CAR_TYRES_REAR_GRIP_SCALE, &v) == SWOFTY_ASSET_OK && v == 1.1f,
+           "the tyre records are found by name, whatever their order");
+    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_TYRES_REAR_GRIP_SCALE, 0.9f) == SWOFTY_ASSET_OK &&
+               plain(tyre_rear[0], 0x2c) == 0.9f && plain(tyre_front[0], 0x2c) == 1.0f,
+           "grip scale writes only its axle's record");
+    expect(Ops::op_get(0, nullptr, SWOFTY_CAR_SUSP_REAR_ANTI_ROLL, &v) == SWOFTY_ASSET_OK && v == 50000.0f &&
+               Ops::op_get(0, nullptr, SWOFTY_CAR_SUSP_FRONT_ANTI_ROLL, &v) == SWOFTY_ASSET_OK && v == 30000.0f,
+           "the rear axle is the one with the lower local rest position");
+    at<float>(axle_b[1], cl::AXLE_LOCAL_REST_Z) = -1.0f;
+    expect(Ops::op_get(1, nullptr, SWOFTY_CAR_SUSP_FRONT_ANTI_ROLL, &v) == SWOFTY_ASSET_UNAVAILABLE,
+           "two axles on the same side are unavailable");
+    at<float>(axle_b[1], cl::AXLE_LOCAL_REST_Z) = 1.6f;
+
+    static uintptr_t chassis_reset_on = 0;
+    static uint32_t chassis_flags = 0;
+    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_CHASSIS_BALLAST_KG, 20.0f) == SWOFTY_ASSET_UNAVAILABLE,
+           "ballast is unavailable without the chassis reset");
+    cl::Env e = make_env();
+    e.chassis_reset = [](uintptr_t c, uint32_t f) {
+        chassis_reset_on = c;
+        chassis_flags = f;
+    };
+    Ops::bind(std::move(e));
+    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_CHASSIS_BALLAST_KG, 20.0f) == SWOFTY_ASSET_OK &&
+               (at<uint32_t>(chassis[0], 0x28) ^ 0x31415926u) == bits(820.0f) &&
+               std::fabs(std::sqrt(820.0f) - [] { uint32_t b = at<uint32_t>(chassis[0], 0x98) ^ 0x27182818u; float f; memcpy(&f, &b, 4); return f; }()) < 1e-4f &&
+               chassis_reset_on == reinterpret_cast<uintptr_t>(chassis[0]) && chassis_flags == 0x208,
+           "ballast adds to the VTF mass, writes its square root and runs the chassis reset with 0x208");
+    expect(Ops::op_get(0, nullptr, SWOFTY_CAR_CHASSIS_BALLAST_KG, &v) == SWOFTY_ASSET_OK && std::fabs(v - 20.0f) < 1e-3f,
+           "ballast reads back as the kilograms added");
+    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_CHASSIS_BALLAST_KG, 30.0f) == SWOFTY_ASSET_OK &&
+               (at<uint32_t>(chassis[0], 0x28) ^ 0x31415926u) == bits(830.0f),
+           "setting ballast twice does not compound");
+    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_CHASSIS_BALLAST_KG, 900.0f) == SWOFTY_ASSET_INVALID,
+           "ballast outside -300 .. 600 is refused");
+}
+
+static void v2_layers()
+{
+    build_v2();
+    Ops::bind(make_env());
+    float v = 0;
+    uint32_t a = 0, b = 0, c = 0;
+    expect(Ops::op_layer("one", SWOFTY_CAR_ALL, SWOFTY_CAR_AERO_LIFT_SCALE, SWOFTY_CAR_OP_SCALE, 0.5f, 0, &a) == SWOFTY_ASSET_OK &&
+               plain(aero[0], 0x19a4) == 0.5f && plain(aero[1], 0x19a4) == 0.5f && plain(aero[2], 0x19a4) == 0.5f,
+           "a layer for all cars applies at once on the flow thread");
+    Ops::flush();
+    Ops::apply_all();
+    expect(plain(aero[0], 0x19a4) == 0.5f, "applying the same layers again does not compound");
+    expect(Ops::op_layer("two", 1, SWOFTY_CAR_AERO_LIFT_SCALE, SWOFTY_CAR_OP_ADD, 0.1f, 0, &b) == SWOFTY_ASSET_OK &&
+               std::fabs(plain(aero[1], 0x19a4) - 0.6f) < 1e-6f && plain(aero[0], 0x19a4) == 0.5f,
+           "a layer for one car composes in load order and leaves the others");
+    expect(Ops::op_layer("three", 1, SWOFTY_CAR_AERO_LIFT_SCALE, SWOFTY_CAR_OP_SET, 2.0f, -5, &c) == SWOFTY_ASSET_OK &&
+               std::fabs(plain(aero[1], 0x19a4) - 1.1f) < 1e-6f,
+           "a lower priority applies first: the set at priority -5 is the base the scale and add then act on");
+    expect(Ops::op_layer("four", 2, SWOFTY_CAR_AERO_LIFT_SCALE, SWOFTY_CAR_OP_SET, 3.0f, 10, nullptr) == SWOFTY_ASSET_OK &&
+               plain(aero[2], 0x19a4) == 3.0f,
+           "a higher priority set wins");
+    at<float>(aero[0], 0x19a4) = 1.0f;
+    expect(plain(aero[0], 0x19a4) == 1.0f, "(the game resets a value)");
+    Ops::reset(reinterpret_cast<uintptr_t>(car_mem[0]) + cl::CAR_LOADER);
+    for (auto &p : Ops::take())
+        Ops::apply_car(p.index);
+    expect(plain(aero[0], 0x19a4) == 0.5f, "after car.reset the layers are applied again to the game's value");
+    expect(Ops::op_unlayer(a) == SWOFTY_ASSET_OK && plain(aero[0], 0x19a4) == 1.0f && std::fabs(plain(aero[1], 0x19a4) - 2.1f) < 1e-6f,
+           "unlayer restores a car with no layer left and recomposes the others");
+    expect(Ops::op_unlayer(a) == SWOFTY_ASSET_INVALID, "an unknown token is invalid");
+    Ops::drop_owner("one", SWOFTY_CAR_ALL);
+    Ops::drop_owner("two", 1);
+    Ops::drop_owner("three", 1);
+    Ops::flush();
+    expect(plain(aero[1], 0x19a4) == 1.0f, "dropping an owner's layers restores the car");
+    expect(Ops::op_layer("x", 40, SWOFTY_CAR_AERO_LIFT_SCALE, SWOFTY_CAR_OP_SET, 1.0f, 0, nullptr) == SWOFTY_ASSET_INVALID &&
+               Ops::op_layer("x", 0, SWOFTY_CAR_AERO_LIFT_SCALE, 7, 1.0f, 0, nullptr) == SWOFTY_ASSET_INVALID &&
+               Ops::op_layer("x", 0, 999, SWOFTY_CAR_OP_SET, 1.0f, 0, nullptr) == SWOFTY_ASSET_INVALID,
+           "an index past the cars, an unknown op and an unknown field are invalid");
+    Ops::op_layer("clamp", 0, SWOFTY_CAR_AERO_DRAG_SCALE, SWOFTY_CAR_OP_SCALE, 100.0f, 0, nullptr);
+    expect(plain(aero[0], 0x19a0) == 10.0f, "a composed value is clamped to the field's range");
+    (void)token_of;
+    (void)v;
+}
+
+static void v2_virtual()
+{
+    build_v2();
+    Ops::bind(make_env());
+    float v = 0;
+    expect(Ops::op_get(0, nullptr, SWOFTY_CAR_ENGINE_POWER_SCALE, &v) == SWOFTY_ASSET_OK && v == 1.0f &&
+               Ops::op_get(0, nullptr, SWOFTY_CAR_ENGINE_LIMITER_OFFSET_RPM, &v) == SWOFTY_ASSET_OK && v == 0.0f &&
+               Ops::op_get(0, nullptr, SWOFTY_CAR_AI_GRIP_SCALE, &v) == SWOFTY_ASSET_OK && v == 1.0f,
+           "virtual fields start at their neutral value");
+    uintptr_t eng = reinterpret_cast<uintptr_t>(engine[1]);
+    expect(Ops::drive_torque(eng, 100.0f, 1000.0f, 1371.8f) == 100.0f && Ops::ai_grip(1, 0, 2.0f) == 2.0f,
+           "no layer: the handlers change nothing");
+    Ops::op_layer("profile", SWOFTY_CAR_ALL, SWOFTY_CAR_ENGINE_POWER_SCALE, SWOFTY_CAR_OP_SCALE, 0.9725f, 0, nullptr);
+    Ops::op_layer("profile", SWOFTY_CAR_ALL, SWOFTY_CAR_ENGINE_LIMITER_OFFSET_RPM, SWOFTY_CAR_OP_ADD, -300.0f, 0, nullptr);
+    Ops::op_layer("profile", SWOFTY_CAR_ALL, SWOFTY_CAR_AI_GRIP_SCALE, SWOFTY_CAR_OP_SCALE, 0.87f, 0, nullptr);
+    float t = Ops::drive_torque(eng, 100.0f, 1000.0f, 1371.8f);
+    expect(std::fabs(t - 97.25f) < 1e-3f, "below the cut the torque is scaled by the power factor only");
+    float cut = 1371.8f - 300.0f * cl::RPM_TO_RAD_S;
+    expect(Ops::drive_torque(eng, 100.0f, cut, 1371.8f) == 0.0f && Ops::drive_torque(eng, 100.0f, cut + 5.0f, 1371.8f) == 0.0f,
+           "at the lowered limiter the torque is cut to zero");
+    float mid = Ops::drive_torque(eng, 100.0f, cut - 3.0f, 1371.8f);
+    expect(mid > 0.0f && mid < 97.25f, "inside the ramp under the lowered limiter it falls linearly");
+    expect(std::fabs(Ops::ai_grip(1, 0, 2.0f) - 1.74f) < 1e-5f && Ops::ai_grip(1, 1, 2.0f) == 2.0f,
+           "AI grip is scaled in the dry only");
+    expect(Ops::op_get(0, nullptr, SWOFTY_CAR_ENGINE_POWER_SCALE, &v) == SWOFTY_ASSET_OK && v == 0.9725f,
+           "a virtual field reads the composed value");
+    Ops::op_layer("one-car", 1, SWOFTY_CAR_ENGINE_POWER_SCALE, SWOFTY_CAR_OP_SET, 1.2f, 5, nullptr);
+    expect(std::fabs(Ops::drive_torque(eng, 100.0f, 1000.0f, 1371.8f) - 120.0f) < 1e-3f &&
+               std::fabs(Ops::drive_torque(reinterpret_cast<uintptr_t>(engine[0]), 100.0f, 1000.0f, 1371.8f) - 97.25f) < 1e-3f,
+           "a layer for one car does not reach the others, and the higher priority set wins");
+    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_ENGINE_POWER_SCALE, 9.0f) == SWOFTY_ASSET_INVALID, "power scale above 4 is refused");
+    expect(std::fabs(cl::shaped_torque(100.0f, 1300.0f, 1371.8f, 1.0f, 300.0f) - 100.0f) < 1e-4f,
+           "a positive limiter offset changes nothing");
+    Ops::drop_owner("profile", SWOFTY_CAR_ALL);
+    Ops::drop_owner("one-car", SWOFTY_CAR_ALL);
+    expect(Ops::drive_torque(eng, 100.0f, 1000.0f, 1371.8f) == 100.0f && Ops::ai_grip(1, 0, 2.0f) == 2.0f,
+           "dropping the layers returns the handlers to doing nothing");
+}
+
+static void v2_gating()
+{
+    build_v2();
+    static std::string asked;
+    cl::Env e = make_env();
+    e.row_ready = [](const char *row) {
+        asked = row;
+        return std::strcmp(row, "CarF1Aero.lift_scale") != 0 && std::strcmp(row, "site_Ai_TableGripInput") != 0;
+    };
+    Ops::bind(std::move(e));
+    float v = 0;
+    expect(Ops::op_get(0, nullptr, SWOFTY_CAR_AERO_LIFT_SCALE, &v) == SWOFTY_ASSET_UNAVAILABLE &&
+               Ops::op_set(0, nullptr, SWOFTY_CAR_AERO_LIFT_SCALE, 0.5f) == SWOFTY_ASSET_UNAVAILABLE &&
+               plain(aero[0], 0x19a4) == 1.0f,
+           "a field whose row has no verify row is unavailable and writes nothing");
+    expect(Ops::op_layer("x", SWOFTY_CAR_ALL, SWOFTY_CAR_AERO_LIFT_SCALE, SWOFTY_CAR_OP_SET, 0.5f, 0, nullptr) ==
+                   SWOFTY_ASSET_UNAVAILABLE &&
+               Ops::op_layer("x", SWOFTY_CAR_ALL, SWOFTY_CAR_AI_GRIP_SCALE, SWOFTY_CAR_OP_SET, 0.5f, 0, nullptr) ==
+                   SWOFTY_ASSET_UNAVAILABLE,
+           "a layer on an off field is unavailable, and AI grip stays off until its site row is verified");
+    expect(Ops::op_layer("x", SWOFTY_CAR_ALL, SWOFTY_CAR_AERO_DRAG_SCALE, SWOFTY_CAR_OP_SET, 0.9f, 0, nullptr) == SWOFTY_ASSET_OK &&
+               plain(aero[0], 0x19a0) == 0.9f,
+           "the other fields keep working");
+    expect(Ops::op_refit_tyres(0, "F1_1990") == SWOFTY_ASSET_UNAVAILABLE && Ops::op_refit_tyres(0, "bad name") == SWOFTY_ASSET_INVALID &&
+               Ops::op_refit_tyres(0, nullptr) == SWOFTY_ASSET_INVALID,
+           "refit_tyres is unavailable without its rows and refuses a bad group name");
+}
+
+static void v2_refit()
+{
+    build_v2();
+    static char buffer[2][0x28];
+    static uintptr_t refitted = 0;
+    memset(buffer, 0, sizeof buffer);
+    for (int i = 0; i < CARS; i++) {
+        at<size_t>(chassis[i], cl::CHASSIS_GROUP + cl::STRING_CAPACITY) = 0x20;
+        at<void *>(chassis[i], cl::CHASSIS_GROUP + cl::STRING_BUFFER) = buffer[i % 2];
+    }
+    cl::Env e = make_env();
+    e.tyre_component = [](uint32_t index, uintptr_t) { return index == 2 ? uintptr_t(0) : uintptr_t(0x1000 + index); };
+    e.tyre_refit = [](uintptr_t tc) { refitted = tc; };
+    Ops::bind(std::move(e));
+    expect(Ops::op_refit_tyres(1, "F1_1990P") == SWOFTY_ASSET_OK && !std::strcmp(buffer[1], "F1_1990P") && refitted == 0x1001,
+           "refit writes the group into the chassis string and refits that car's tyre component");
+    refitted = 0;
+    expect(Ops::op_refit_tyres(2, "F1_1990") == SWOFTY_ASSET_UNAVAILABLE && !refitted,
+           "a car without a tyre component is unavailable and nothing is written");
+    expect(Ops::op_refit_tyres(0, "ThisGroupNameIsFarTooLongForTheStringXX") == SWOFTY_ASSET_INVALID, "a name past 31 characters is invalid");
+}
+
 int main()
 {
     core_ops();
@@ -304,6 +542,11 @@ int main()
     pending_queue();
     engine_limiter();
     gear_ratios();
+    v2_fields();
+    v2_layers();
+    v2_virtual();
+    v2_gating();
+    v2_refit();
     if (fails) {
         printf("car_live_test: %d failure(s)\n", fails);
         return 1;

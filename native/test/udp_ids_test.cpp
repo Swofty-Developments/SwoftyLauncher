@@ -155,6 +155,125 @@ static void test_lobby()
     }
 }
 
+static void test_lobby_2026()
+{
+    ids::Map m = load_map();
+    Bytes b = header(2026, 9, 1062);
+    b[29] = 3;
+    for (int i = 0; i < 3; i++) {
+        b[30 + size_t(i) * 43] = uint8_t(i + 1);
+        b[30 + size_t(i) * 43 + 3] = 77;
+        b[30 + size_t(i) * 43 + 5] = 'N';
+    }
+    put16(b, 31, 700);
+    put16(b, 31 + 43, 507);
+    put16(b, 31 + 86, 9);
+    Bytes was = b;
+    CHECK(ids::rewrite(m, b.data(), b.size()));
+    CHECK((b[31] | b[32] << 8) == 2 && (b[74] | b[75] << 8) == 4 && (b[117] | b[118] << 8) == 9);
+    for (size_t i = 0; i < b.size(); i++)
+        if (i != 31 && i != 32 && i != 74 && i != 75)
+            CHECK(b[i] == was[i]);
+    b = header(2026, 9, 1062);
+    b[29] = 25;
+    put16(b, 31, 700);
+    CHECK(!ids::rewrite(m, b.data(), b.size()));
+}
+
+static void test_time_trial_2026()
+{
+    ids::Map m = load_map();
+    Bytes b = header(2026, 14, 104);
+    b[29] = 5;
+    put16(b, 30, 700);
+    b[29 + 25] = 6;
+    put16(b, 29 + 25 + 1, 507);
+    b[29 + 50] = 7;
+    put16(b, 29 + 50 + 1, 3);
+    Bytes was = b;
+    CHECK(ids::rewrite(m, b.data(), b.size()));
+    CHECK((b[30] | b[31] << 8) == 478 && (b[55] | b[56] << 8) == 480 && (b[80] | b[81] << 8) == 3);
+    CHECK(b[29] == 5 && b[54] == 6 && b[79] == 7);
+    for (size_t i = 0; i < b.size(); i++)
+        if (i != 30 && i != 31 && i != 55 && i != 56)
+            CHECK(b[i] == was[i]);
+    b = header(2026, 14, 101);
+    put16(b, 30, 700);
+    CHECK(!ids::rewrite(m, b.data(), b.size()));
+}
+
+static int team16(const Bytes &b, size_t at)
+{
+    return b[at] | b[at + 1] << 8;
+}
+
+static void test_models_2026()
+{
+    int driver[3] = {8, 8, 8};
+    {
+        ids::Map m = load_map();
+        int team[3] = {478, 700, 507};
+        Bytes b = participants(2026, 1470, 60, 3, driver, team, true);
+        CHECK(ids::rewrite(m, b.data(), b.size()));
+        CHECK(m.model == ids::MODEL_2026);
+        CHECK(team16(b, 35) == 478 && team16(b, 95) == 478 && team16(b, 155) == 480);
+        Bytes tt = header(2026, 14, 104);
+        put16(tt, 30, 700);
+        CHECK(ids::rewrite(m, tt.data(), tt.size()));
+        CHECK(team16(tt, 30) == 478);
+    }
+    {
+        ids::Map m = load_map();
+        int team[3] = {2, 700, 507};
+        Bytes b = participants(2026, 1470, 60, 3, driver, team, true);
+        CHECK(ids::rewrite(m, b.data(), b.size()));
+        CHECK(m.model == ids::MODEL_2025);
+        CHECK(team16(b, 35) == 2 && team16(b, 95) == 2 && team16(b, 155) == 4);
+        Bytes tt = header(2026, 14, 104);
+        put16(tt, 30, 700);
+        CHECK(ids::rewrite(m, tt.data(), tt.size()));
+        CHECK(team16(tt, 30) == 2);
+        Bytes lobby = header(2026, 9, 1062);
+        lobby[29] = 1;
+        put16(lobby, 31, 478);
+        CHECK(!ids::rewrite(m, lobby.data(), lobby.size()));
+        CHECK(m.model == ids::MODEL_2026);
+        put16(tt, 30, 700);
+        CHECK(ids::rewrite(m, tt.data(), tt.size()));
+        CHECK(team16(tt, 30) == 478);
+    }
+    {
+        ids::Map m = load_map();
+        Bytes tt = header(2026, 14, 104);
+        put16(tt, 30, 507);
+        CHECK(ids::rewrite(m, tt.data(), tt.size()));
+        CHECK(team16(tt, 30) == 480);
+    }
+    {
+        ids::Map m = load_map();
+        int t25[1] = {251};
+        Bytes b = participants(2025, 1284, 57, 1, driver, t25, false);
+        CHECK(ids::rewrite(m, b.data(), b.size()));
+        CHECK(b[33] == 4);
+    }
+    CHECK(ids::to_2026_team(0) == 476 && ids::to_2026_team(8) == 484 && ids::to_2026_team(9) == 485);
+    CHECK(ids::to_2026_team(10) == 10 && ids::to_2026_team(581) == 581 && ids::to_2026_team(486) == 486);
+}
+
+static void test_misfit()
+{
+    Bytes tt = header(2025, 14, 104);
+    CHECK(ids::misfit(tt.data(), tt.size()) && !ids::identify(tt.data(), tt.size()));
+    tt = header(2025, 14, 101);
+    CHECK(!ids::misfit(tt.data(), tt.size()));
+    tt = header(2026, 14, 101);
+    CHECK(ids::misfit(tt.data(), tt.size()) && ids::misfit(tt.data(), tt.size())->size == 104);
+    tt = header(2026, 2, 1399);
+    CHECK(!ids::misfit(tt.data(), tt.size()));
+    tt = header(2023, 14, 99);
+    CHECK(!ids::misfit(tt.data(), tt.size()));
+}
+
 static void test_time_trial()
 {
     ids::Map m = load_map();
@@ -238,7 +357,11 @@ int main()
     test_participants_2024();
     test_participants_2026();
     test_lobby();
+    test_lobby_2026();
     test_time_trial();
+    test_time_trial_2026();
+    test_models_2026();
+    test_misfit();
     test_untouched();
     test_identify();
     if (failures) {

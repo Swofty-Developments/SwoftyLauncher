@@ -14,6 +14,14 @@ on:
         description: How long the binaries stay on the run
         type: number
         default: 1
+      linux-runner:
+        description: The runner label for the Linux build; CI passes an EC2 runner of the same Ubuntu release
+        type: string
+        default: ubuntu-22.04
+      windows-runner:
+        description: The runner label for the Windows build
+        type: string
+        default: windows-latest
 
 env:
   CARGO_TERM_COLOR: always
@@ -22,7 +30,7 @@ jobs:
   linux-build:
     name: Linux build
     # The oldest supported runner gives the oldest glibc baseline, for SteamOS.
-    runs-on: ubuntu-22.04
+    runs-on: ${{ inputs.linux-runner }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -77,7 +85,7 @@ jobs:
 
   windows-build:
     name: Windows build
-    runs-on: windows-latest
+    runs-on: ${{ inputs.windows-runner }}
     steps:
       - uses: actions/checkout@v7
         with:

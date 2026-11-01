@@ -12,10 +12,17 @@
 //              the mid-season changes in force from their real round until the regular is back),
 //              so a career that ran its year's changes still shows that year. At least 12 drivers
 //              must match; ties give every best year.
+//   year_cars  the car repair at career load (season.cpp repair_cars, season_logic.hpp car_repair):
+//              whether the seats are on `year`'s cars, so a seat on another existing car has a moved
+//              id. Each seated car counts as it will be once the seats whose car names no row are
+//              repaired; the year's own cars must outnumber every other year's. A season not yet
+//              applied keeps the previous year's cars (a season break) or the stock 2026 ones (a new
+//              career), which outnumber the year's, and the season apply changes those at Team HQ.
 
 #pragma once
 #include <algorithm>
 #include <cstdint>
+#include <functional>
 #include <map>
 #include <set>
 #include <string>
@@ -141,6 +148,33 @@ inline Years seats_years(const Data &d, const Resolve &r, const std::vector<Seat
     if (out.count < kMinMatch)
         out.years.clear();
     return out;
+}
+
+struct SeatCar {
+    uint32_t team_key = 0;
+    uint32_t vehicle_ref = 0;
+};
+
+inline bool year_cars(const Data &d, const Resolve &r, int year, const std::vector<SeatCar> &seats,
+                      const std::function<bool(int)> &vehicle_known, const std::map<int, int> &cars)
+{
+    std::map<int, int> votes;
+    for (auto &s : seats) {
+        if (season::empty_key(s.vehicle_ref) || season::empty_key(s.team_key))
+            continue;
+        int car = static_cast<int>(s.vehicle_ref >> 16);
+        if (auto fix = season::car_repair(d, r, year, s.team_key, s.vehicle_ref, vehicle_known); fix && !fix->left)
+            car = fix->car.stat;
+        if (auto it = cars.find(car); it != cars.end())
+            ++votes[it->second];
+    }
+    auto own = votes.find(year);
+    if (own == votes.end())
+        return false;
+    for (auto &[y, n] : votes)
+        if (y != year && n >= own->second)
+            return false;
+    return true;
 }
 
 } // namespace progressive::seats

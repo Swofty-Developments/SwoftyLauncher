@@ -208,12 +208,13 @@ The game's own UDP telemetry (formats 2024, 2025 and 2026) reports the stat id o
 ```text
 [udp] stock ids on: 2 team id(s), 2 driver id(s), 1 sendto slot(s)
 [udp] stock ids: team 507 -> 4 (forceindia); driver 197 -> 255 (no stock driver)
-[udp] first telemetry packet rewritten: format 2025, packet 4: driver 197 -> 255, team 251 -> 4
+[udp] first telemetry packet rewritten: format 2025, packet 4, 2025 model: driver 197 -> 255, team 251 -> 4
 ```
 
 The rule:
 
 - An added team reports its stock ancestor's stat id, found by following the `add-row` `from` chain to a row the game ships.
+- In the 2026 format an added team reports the 2026 stock team of its ancestor's slot, 476 + the 2025 id (476 Mercedes, 477 Ferrari, 478 Red Bull, 479 Williams, 480 Aston Martin, 481 Alpine, 482 RB, 483 Haas, 484 McLaren, 485 Audi, 486 Cadillac). When the session's Participants or Lobby Info packet shows only the 2025 teams (ids 0-9), it keeps the 2025 id.
 - An added driver reports its stock ancestor's id when `first_name`, `last_name` and `full_name` equal the ancestor's. Otherwise it reports 255, the spec's network human, and overlays show the driver by `m_name`. A driver id above 254 with no stock ancestor reports 255.
 - Stock rows keep their ids.
 - The 2024 and 2025 formats carry one byte per id. An added id whose low byte a stock row or another mapped id shares is not rewritten in those formats.
@@ -223,9 +224,20 @@ The core changes a buffer only when it parses as an F1 packet: `m_packetFormat` 
 ```text
 Participants (4)   2024 1350 B, 2025 1284 B: driverId, teamId (u8 per entry)
                    2026 1470 B: driverId, teamId (u16 per entry)
-Lobby Info (9)     2024 1306 B, 2025 954 B: teamId in each entry
-Time Trial (14)    2024 and 2025 101 B: teamId in each of the three data sets
+Lobby Info (9)     2024 1306 B, 2025 954 B: teamId in each entry (u8)
+                   2026 1062 B: teamId in each entry (u16)
+Time Trial (14)    2024 and 2025 101 B: teamId in each of the three data sets (u8)
+                   2026 104 B: teamId in each of the three data sets (u16)
 ```
+
+No other packet in any of the three formats carries a team or driver id.
+
+```text
+[udp] format 2025 packet 14 is 104 bytes, not the 101 the id rewrite expects; left alone
+[udp] first time trial packet: format 2025, team ids 29, 0, 0, rewritten
+```
+
+The core logs the first packet of each format and id whose length differs from the table, and the team ids of the first Time Trial packet it sees.
 
 `SWOFTY_UDP_STOCK_IDS=0` turns the rewrite off, for a tool that reads the real ids through an addon's registry `stat_id`.
 

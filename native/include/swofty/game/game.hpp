@@ -78,14 +78,43 @@ static_assert(offsetof(GameModeContext, championship_holder) == 0x88);
 struct SaveSlotInfo {
     uint64_t slot_id; // L2 experimental
     uint64_t slot_guid; // L2 experimental
+    uint8_t _pad_0x10[0x10];
+    char *name; // L2 experimental
+    uint8_t _pad_0x28[0x80];
+    uint8_t game_setup_mode; // L2 experimental
+    uint8_t _pad_0xa9[0x3];
+    uint32_t info_season; // L2 experimental
+    uint32_t info_weekend; // L2 experimental
+    uint8_t _pad_0xb4[0xa];
+    uint16_t info_team; // L2 experimental
+    uint16_t info_driver; // L2 experimental
+    uint16_t info_vehicle; // L2 experimental
+    uint8_t _pad_0xc4[0x4];
+    uint64_t info_date; // L2 experimental
+    uint8_t _pad_0xd0[0xa1];
+    uint8_t type_flags; // L2 experimental
 };
 static_assert(offsetof(SaveSlotInfo, slot_id) == 0x0);
 static_assert(offsetof(SaveSlotInfo, slot_guid) == 0x8);
+static_assert(offsetof(SaveSlotInfo, name) == 0x20);
+static_assert(offsetof(SaveSlotInfo, game_setup_mode) == 0xa8);
+static_assert(offsetof(SaveSlotInfo, info_season) == 0xac);
+static_assert(offsetof(SaveSlotInfo, info_weekend) == 0xb0);
+static_assert(offsetof(SaveSlotInfo, info_team) == 0xbe);
+static_assert(offsetof(SaveSlotInfo, info_driver) == 0xc0);
+static_assert(offsetof(SaveSlotInfo, info_vehicle) == 0xc2);
+static_assert(offsetof(SaveSlotInfo, info_date) == 0xc8);
+static_assert(offsetof(SaveSlotInfo, type_flags) == 0x171);
 
 struct SaveSlotManager {
-    uint8_t _pad_0x0[0x280];
+    uint8_t _pad_0x0[0x268];
+    SaveSlotInfo **slots_begin; // L2 experimental
+    SaveSlotInfo **slots_end; // L2 experimental
+    uint8_t _pad_0x278[0x8];
     SaveSlotInfo *current; // L2 experimental
 };
+static_assert(offsetof(SaveSlotManager, slots_begin) == 0x268);
+static_assert(offsetof(SaveSlotManager, slots_end) == 0x270);
 static_assert(offsetof(SaveSlotManager, current) == 0x280);
 
 struct ScheduleComponent {
@@ -595,6 +624,8 @@ inline constexpr address<"Game_GameSessionMigrationManager_SendSelfState"> Game_
 inline constexpr address<"Game_GameSessionMigrationManager_SetPeerStatus"> Game_GameSessionMigrationManager_SetPeerStatus{}; // L2 experimental
 inline constexpr address<"Game_GameSessionUI_Shutdown"> Game_GameSessionUI_Shutdown{}; // L2 experimental
 inline constexpr address<"Game_Game_OnRetireLocalPlayersMessage"> Game_Game_OnRetireLocalPlayersMessage{}; // L2 experimental
+using Game_Game_SetCurrentGameMode_t = uint64_t(void *mode_context, void *mode);
+inline constexpr fn<"Game_Game_SetCurrentGameMode", Game_Game_SetCurrentGameMode_t> Game_Game_SetCurrentGameMode{}; // L2 experimental
 inline constexpr address<"Game_GarageCrewInstance_PlayOverlaySequence"> Game_GarageCrewInstance_PlayOverlaySequence{}; // L2 experimental
 inline constexpr address<"Game_GarageCrewInstance_PlaySequence"> Game_GarageCrewInstance_PlaySequence{}; // L2 experimental
 inline constexpr address<"Game_GarageModule_Initialise"> Game_GarageModule_Initialise{}; // L2 experimental
@@ -715,6 +746,7 @@ inline constexpr address<"Game_NetworkReady_OnUnpauseSendSuperReady"> Game_Netwo
 inline constexpr address<"Game_NetworkReady_OnUnreadyMessage"> Game_NetworkReady_OnUnreadyMessage{}; // L2 experimental
 inline constexpr address<"Game_NetworkReady_SendSuperReady"> Game_NetworkReady_SendSuperReady{}; // L2 experimental
 inline constexpr address<"Game_NetworkReady_SetRelevantSet"> Game_NetworkReady_SetRelevantSet{}; // L2 experimental
+inline constexpr address<"Game_NetworkSubsystem_ChangeMPMode"> Game_NetworkSubsystem_ChangeMPMode{}; // L2 experimental, NetworkSubsystem::changeMPMode
 inline constexpr address<"Game_NetworkSubsystem_SelectTitleConfig"> Game_NetworkSubsystem_SelectTitleConfig{}; // L2 experimental
 inline constexpr address<"Game_NetworkUI_StartRankedDivisionSearch"> Game_NetworkUI_StartRankedDivisionSearch{}; // L2 experimental
 inline constexpr address<"Game_NetworkUI_StartRankedRematching"> Game_NetworkUI_StartRankedRematching{}; // L2 experimental
@@ -783,6 +815,9 @@ inline constexpr fn<"Game_Place_Vehicle", Game_Place_Vehicle_t> Game_Place_Vehic
 inline constexpr address<"Game_PlatformAuthorisationTask_OnStart"> Game_PlatformAuthorisationTask_OnStart{}; // L2 experimental
 inline constexpr address<"Game_PlatformAuthorisationTask_Update"> Game_PlatformAuthorisationTask_Update{}; // L2 experimental
 inline constexpr address<"Game_PlayerManager_HandleControllerUnplugged"> Game_PlayerManager_HandleControllerUnplugged{}; // L2 experimental
+inline constexpr address<"Game_PlayerSetSubsystem_CreateHumanPlayers"> Game_PlayerSetSubsystem_CreateHumanPlayers{}; // L2 experimental, PlayerSetSubsystem::createHumanPlayers
+using Game_PlayerSetSubsystem_HandleUpdatePresenceNameMessage_t = void(void *player_set, void *msg);
+inline constexpr fn<"Game_PlayerSetSubsystem_HandleUpdatePresenceNameMessage", Game_PlayerSetSubsystem_HandleUpdatePresenceNameMessage_t> Game_PlayerSetSubsystem_HandleUpdatePresenceNameMessage{}; // L2 experimental, PlayerSetSubsystem::handleUpdatePresenceNameMessage
 inline constexpr address<"Game_PlayerSetSubsystem_Init"> Game_PlayerSetSubsystem_Init{}; // L2 experimental
 inline constexpr address<"Game_PlayerSetSubsystem_OnNewConnection"> Game_PlayerSetSubsystem_OnNewConnection{}; // L2 experimental
 inline constexpr address<"Game_PlayerSetSubsystem_UpdatePresence"> Game_PlayerSetSubsystem_UpdatePresence{}; // L2 experimental
@@ -868,10 +903,14 @@ using Game_SaveData_DeserialiseContainer_t = int *(SaveDataContainer *self, int 
 inline constexpr fn<"Game_SaveData_DeserialiseContainer", Game_SaveData_DeserialiseContainer_t> Game_SaveData_DeserialiseContainer{}; // L3 stable
 using Game_SaveData_SerialiseContainer_t = int *(SaveDataContainer *self, int *result, void *bag, uint64_t groups);
 inline constexpr fn<"Game_SaveData_SerialiseContainer", Game_SaveData_SerialiseContainer_t> Game_SaveData_SerialiseContainer{}; // L2 experimental
+using Game_SaveData_SerialiseContainer_2_t = int *(SaveDataContainer *self, int *result, void *stream, void *a4, uint64_t groups, void *a6);
+inline constexpr fn<"Game_SaveData_SerialiseContainer_2", Game_SaveData_SerialiseContainer_2_t> Game_SaveData_SerialiseContainer_2{}; // L2 experimental
 using Game_SaveData_WriteBag_t = int(NeBagCodec *codec, void *bag);
 inline constexpr fn<"Game_SaveData_WriteBag", Game_SaveData_WriteBag_t> Game_SaveData_WriteBag{}; // L3 stable
 using Game_SaveMgr_RequestProfileSave_Thunk_t = bool(void *save_mgr, void *callback, uint8_t a3, uint8_t a4);
 inline constexpr fn<"Game_SaveMgr_RequestProfileSave_Thunk", Game_SaveMgr_RequestProfileSave_Thunk_t> Game_SaveMgr_RequestProfileSave_Thunk{}; // L2 experimental
+using Game_SaveSlotManager_Deserialise_t = int(void *iface, void *bag, void *ctx);
+inline constexpr fn<"Game_SaveSlotManager_Deserialise", Game_SaveSlotManager_Deserialise_t> Game_SaveSlotManager_Deserialise{}; // L2 experimental
 using Game_SaveSlotManager_SelectSlot_t = int(void *manager, uint64_t slot_id, bool force, uint32_t a4);
 inline constexpr fn<"Game_SaveSlotManager_SelectSlot", Game_SaveSlotManager_SelectSlot_t> Game_SaveSlotManager_SelectSlot{}; // L2 experimental
 inline constexpr address<"Game_SceneManagerSpawn_MergeScene"> Game_SceneManagerSpawn_MergeScene{}; // L2 experimental
@@ -974,6 +1013,7 @@ inline constexpr address<"Game_TeamHQTimeline_AnimateDeptEvent"> Game_TeamHQTime
 using Game_Teleport_Vehicle_t = void(void *car, const char *name, float *prev_mtx, float *new_mtx, float dt, uint32_t flags);
 inline constexpr fn<"Game_Teleport_Vehicle", Game_Teleport_Vehicle_t> Game_Teleport_Vehicle{}; // L2 experimental
 inline constexpr address<"Game_TerminalDamage_Initialise"> Game_TerminalDamage_Initialise{}; // L2 experimental
+inline constexpr address<"Game_ThrustmasterLcd_UpdateSectors"> Game_ThrustmasterLcd_UpdateSectors{}; // L2 experimental
 inline constexpr address<"Game_Thrustmaster_SetWheelRange"> Game_Thrustmaster_SetWheelRange{}; // L2 experimental
 inline constexpr address<"Game_TimeAttackGates_CreateGateModel"> Game_TimeAttackGates_CreateGateModel{}; // L2 experimental
 inline constexpr address<"Game_TimeOfDayDebug_Update"> Game_TimeOfDayDebug_Update{}; // L2 experimental
@@ -1004,6 +1044,7 @@ inline constexpr address<"Game_TyreWearRelevanceCriterion_Update"> Game_TyreWear
 inline constexpr address<"Game_UDPPreferences_OnLocalPreferenceChange"> Game_UDPPreferences_OnLocalPreferenceChange{}; // L2 experimental
 inline constexpr address<"Game_UDPPreferences_OnLocalShowPlayerNameChange"> Game_UDPPreferences_OnLocalShowPlayerNameChange{}; // L2 experimental
 inline constexpr address<"Game_UIConnectionManager_ShowConnectionLostPopup"> Game_UIConnectionManager_ShowConnectionLostPopup{}; // L2 experimental
+inline constexpr address<"Game_UIThumbnailSystem_FindDriverCustomisationWill"> Game_UIThumbnailSystem_FindDriverCustomisationWill{}; // L2 experimental
 inline constexpr address<"Game_UiMessageScreen_Destructor"> Game_UiMessageScreen_Destructor{}; // L2 experimental
 inline constexpr address<"Game_VehicleAntiStallSystem_GetStateByPlayerId"> Game_VehicleAntiStallSystem_GetStateByPlayerId{}; // L2 experimental
 inline constexpr address<"Game_VehicleAntiStallSystem_IsLaunchPending"> Game_VehicleAntiStallSystem_IsLaunchPending{}; // L2 experimental
@@ -1062,6 +1103,10 @@ inline constexpr call<"site_Game_DriverSelect_TeamLogoFormat"> site_Game_DriverS
 inline constexpr site<"site_Game_ErsNewLap_NextVehicle"> site_Game_ErsNewLap_NextVehicle{}; // L2 experimental
 inline constexpr site<"site_Game_ErsNewLap_VehicleLookup"> site_Game_ErsNewLap_VehicleLookup{}; // L2 experimental
 inline constexpr site<"site_Game_GarageCrew_SpawnVector"> site_Game_GarageCrew_SpawnVector{}; // L2 experimental
+inline constexpr site<"site_Game_GarageSetups_EntryStep"> site_Game_GarageSetups_EntryStep{}; // L2 experimental
+inline constexpr site<"site_Game_GarageSetups_NotFound"> site_Game_GarageSetups_NotFound{}; // L2 experimental
+inline constexpr site<"site_Game_PitLane_BoxPoseFalse"> site_Game_PitLane_BoxPoseFalse{}; // L2 experimental
+inline constexpr site<"site_Game_PitLane_BoxSlotRead"> site_Game_PitLane_BoxSlotRead{}; // L2 experimental
 inline constexpr site<"site_Game_SaveData_ContainersChildren"> site_Game_SaveData_ContainersChildren{}; // L3 stable
 inline constexpr site<"site_Game_SaveData_ContainersCount"> site_Game_SaveData_ContainersCount{}; // L3 stable
 inline constexpr site<"site_Game_SaveData_ContainersDone"> site_Game_SaveData_ContainersDone{}; // L2 experimental
@@ -1069,6 +1114,10 @@ inline constexpr site<"site_Game_SaveData_UnclaimedChild"> site_Game_SaveData_Un
 inline constexpr site<"site_Game_SaveSlot_Selected"> site_Game_SaveSlot_Selected{}; // L2 experimental
 inline constexpr site<"site_Game_TeamSelect_NumberResult"> site_Game_TeamSelect_NumberResult{}; // L2 experimental
 inline constexpr call<"site_Game_TeamSelect_TeamLogoFormat"> site_Game_TeamSelect_TeamLogoFormat{}; // L2 experimental
+inline constexpr site<"site_Game_ThrustmasterLcd_EntrantRecord"> site_Game_ThrustmasterLcd_EntrantRecord{}; // L2 experimental
+inline constexpr site<"site_Game_ThrustmasterLcd_SectorTail"> site_Game_ThrustmasterLcd_SectorTail{}; // L2 experimental
+inline constexpr site<"site_Game_TimeTrialLeaderboard_BoardRead"> site_Game_TimeTrialLeaderboard_BoardRead{}; // L2 experimental
+inline constexpr site<"site_Game_TimeTrialLeaderboard_BoardsDone"> site_Game_TimeTrialLeaderboard_BoardsDone{}; // L2 experimental
 inline constexpr vtable<"vt_Game_CareerDLCSelectViewModel", 19> vt_Game_CareerDLCSelectViewModel{}; // L2 experimental
 inline constexpr vtable<"vt_Game_CareerWizardSettingsSelectViewModel", 19> vt_Game_CareerWizardSettingsSelectViewModel{}; // L2 experimental, CareerWizardSettingsSelectViewModel.
 inline constexpr vtable<"vt_Game_DriverCareerDriverSelectViewModel", 22> vt_Game_DriverCareerDriverSelectViewModel{}; // L2 experimental

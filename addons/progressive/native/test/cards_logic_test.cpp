@@ -300,7 +300,8 @@ void team_logos()
 void logo_paths()
 {
     const char *text = R"({
-      "slots": [{"slot": 5, "team": "forceindia_26"}, {"slot": 11, "team": "gm_cadillac_26"}],
+      "slots": [{"slot": 5, "team": "forceindia_26", "names_2026": {"timing_tower_texture_path": "aston_martin_26"}},
+                {"slot": 11, "team": "gm_cadillac_26"}],
       "logo_keys": ["cs16_manor", "cs17_force_india"],
       "seasons": {"2017": {"teams": [{"slot": 5, "cs_team": "cs17_force_india"}, {"slot": 11, "cs_team": "cs16_manor"}]},
                   "2025": {"teams": [{"slot": 5, "cs_team": null}]}}})";
@@ -313,6 +314,8 @@ void logo_paths()
            out == "#overrides.teams.badges_broadcast.cs17_force_india");
     EXPECT(logo_path(map, 2017, "overrides.osd.timing_tower.team_badges_hud.gm_cadillac_26", out) &&
            out == "overrides.osd.timing_tower.team_badges_hud.cs16_manor");
+    EXPECT(logo_path(map, 2017, "overrides.osd.timing_tower.team_badges_hud.aston_martin_26", out) &&
+           out == "overrides.osd.timing_tower.team_badges_hud.cs17_force_india");
     EXPECT(logo_path(map, 2017, "#overrides.team_logos.driver_career_2024_team_select.forceindia_26", out) &&
            out == "#overrides.team_logos.driver_career_2024_team_select.cs17_force_india");
     EXPECT(logo_path(map, 2017, "#overrides.broadcast_ui_generic.grid_team_logos.forceindia_26", out));

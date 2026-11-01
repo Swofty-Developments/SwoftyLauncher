@@ -188,6 +188,29 @@ int main()
     Boot retry = boot(disk, unhashed);
     check(retry.key == added.key && retry.hashed == 1, "a stamp without a hash is hashed again");
 
+    Disk again;
+    again.files[DATABASES] = {"database bytes", 100};
+    again.files["ui/common.erp"] = {data, 100};
+    again.files["ui/flow.erp"] = {"flow bytes", 100};
+    again.files["ui/stock.erp"] = {"stock bytes", 50};
+    Boot s1 = boot(again, "");
+    Boot s1b = built(again, s1.stamps, {"ui/common.erp", "ui/flow.erp"});
+    for (auto &[rel, f] : again.files)
+        f.time += 1000;
+    std::vector<std::string> shuffled = again.list();
+    std::reverse(shuffled.begin(), shuffled.end());
+    auto before = lc::parse(s1b.stamps);
+    auto inputs = lc::inputs_of(before);
+    inputs.insert(DATABASES);
+    auto s2 = lc::key_archives(7, shuffled, inputs, again.env(), before);
+    check(s2.key == s1b.key, "a second session with every write time changed and the list in another order gets the first session's key");
+    check(s2.hashed == 3, "the second session hashes only the three inputs");
+    auto s3 = lc::key_archives(7, shuffled, inputs, again.env(), s2.stamps);
+    check(s3.key == s1b.key && s3.hashed == 0, "a third session reads nothing");
+    auto dup = shuffled;
+    dup.insert(dup.end(), shuffled.begin(), shuffled.end());
+    check(lc::key_archives(7, dup, inputs, again.env(), s2.stamps).key == s1b.key, "a listed archive counts once");
+
     std::printf("%s\n", failures ? "FAILED" : "all logo cache checks passed");
     return failures ? 1 : 0;
 }

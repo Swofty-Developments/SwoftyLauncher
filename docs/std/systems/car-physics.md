@@ -5,6 +5,10 @@ description: How a car's handling is built from its handling file, every part yo
 
 # Car physics and handling
 
+::: warning Experimental
+Live car physics (`cars::live`, layers, `car.profile`) is experimental in 1.7.0. Nothing in it has run in game yet, and its shape can change before it is stable. A field whose game code has no independent verification yet stays off and logs `<field> off: needs <row>`.
+:::
+
 Every car on track is built from its **handling file**: the `.vtf` in the car's package (`teams/ferrari/handling/ferrari.vtf`). The file has one section per part of the car, such as Engine, F1Aero or F1WingDamage, and each section is a list of named values. Your addon changes those values in three ways:
 
 - **Layer the handling record.** The change reaches every car built from that handling file, from the next session.
@@ -118,13 +122,9 @@ The core logs each build:
 
 ## Changing a car live
 
-::: warning Experimental
-`cars::live` is experimental: nothing in it has run in game yet, and the final drive and gear ratio fields depend on the gearbox's `use_setup_ratios` byte (+0x540), which hasn't been read at runtime. Its shape can change before it's stable.
-:::
-
 `cars::live` gives you each car on track during a session: its index and the game's car. `car.control()` reads who drives it, human or AI, and its controller flags, fresh on every call (see [Who drives a car](./sessions#who-drives-a-car)), and `car.is_ai()` reads whether the AI drives it right now (the player's car too, while the AI has it).
 
-Read and write a value with `get`, `set` and `scale`. The core finds the car's part, decodes and re-encodes the game's scrambled values, and refuses a value outside the field's range with `Result::invalid`:
+Read and write a value with `get`, `set` and `scale`, by `Field` or by its Handling path. The core finds the car's part, decodes and re-encodes the game's scrambled values, and refuses a value outside the field's range with `Result::invalid`:
 
 ```cpp
 #include <swofty/systems/cars.hpp>
@@ -136,43 +136,171 @@ for (cars::live::Car &car : cars::live::cars()) {
     if (car.is_ai())
         continue;
     car.scale(Field::steering_lock, 1.2f);            // 20 % more steering lock, next frame
-    car.set(Field::fuel_mass, 50.0f);                 // kg, up to the tank's capacity
+    car.set("fuel_tank.fuel_mass", 50.0f);            // kg, up to the tank's capacity
     car.set(Field::wing_full_detach_scale, 0.6f);     // the wing comes off sooner, next hit
 }
 ```
 
-| Field | Part and key | Range | Reaches the car |
-| --- | --- | --- | --- |
-| `steering_lock` | Steering / MaxSteeringLock (rad) | 0.01 .. 1.5708 | next frame |
-| `clutch_torque` | GearBox / MaxClutchTorque (multiple of engine torque) | 0 .. 100 | next frame |
-| `diff_on_throttle`, `diff_off_throttle` | the setup's differential, 0 open .. 1 locked | 0 .. 1 | next physics step, until the setup is applied again |
-| `turbo_max_boost` | Turbo / MaxBoost (bar) | 0 .. 100 | next physics step; the stock boost-efficiency curve is flat, so it changes no power on a stock car |
-| `fuel_mass` | the fuel in the tank (kg) | 0 .. capacity | next physics step |
-| `wing_speed_threshold`, `wing_damage_scale`, `wing_chassis_damage_multiple`, `wing_side_detach_scale`, `wing_full_detach_scale` | F1WingDamage | 0 or more | next hit |
-| `susp_speed_threshold`, `susp_front_damage_scale`, `susp_rear_damage_scale`, `susp_wheel_detach_scale`, `susp_parts_detach_scale`, `susp_linear_fracture_limit`, `susp_angular_fracture_limit` | F1SuspensionDamage | 0 or more | next hit |
-| `engine_limiter` | Engine / LimiterRotationRate (rad/s; Ferrari 2025 1371.8 = 13100 rpm) | 100 .. 2500 | next physics step: `set` also re-runs the engine's derived values, so the rev limiter follows (times the fuel mode's revs scale) |
-| `final_drive`, `gear_ratio_1` .. `gear_ratio_9` | GearBox / FinalDriveRatio and the ratios of 1st..9th | 1 .. 20 (final drive), 0.1 .. 20 (ratios) | next physics step: `set` also rebuilds the gearbox's ratio table without changing gear; `Result::unavailable` while the car runs setup ratios, and until the core can resolve `Car_Tuning_SetFinalDrive` |
+A write lasts until the game rebuilds, resets or replays the car's parts. To keep a value, make a layer.
 
-A car's index is the game's vehicle id: dense from 0 in the order the cars were built, the safety car included. A `Car` from `cars()` also carries the game's car, and a call on it answers `Result::late` once that car is gone from its slot (the game moves its last car into a destroyed car's slot). `set` runs on the game's flow thread, so call it from a frame, setting or event handler; from another thread it answers `Result::late`. The values are read from the build the core's field table was mapped on: on any other build of the game `cars::live::available()` is false and `cars()` is empty.
+### Fields
 
-The game resets a car's parts to the handling file when it rebuilds them, and applying a setup writes the differential again, so a live write lasts until then. Damage settings are read on every impact, so a live change reaches the next hit. Lowering `wing_full_detach_scale` during a race can take off a wing that's already damaged on its next hit.
+```text
+steering.max_steering_lock             rad, 0.01 .. 1.5708
+gearbox.max_clutch_torque              multiple of engine torque, 0 .. 100
+gearbox.final_drive_ratio              1 .. 20, rebuilds the ratio table
+gearbox.gear_ratio_1 .. gear_ratio_9   0.1 .. 20, rebuilds the ratio table
+differential.diff_on_throttle          0 .. 1, until the setup is applied again
+differential.diff_off_throttle         0 .. 1
+turbo.max_boost                        bar; no effect on a stock car
+fuel_tank.fuel_mass                    kg, up to the tank's capacity
+engine.vtf_limiter_rotation_rate       rad/s, 100 .. 2500, re-runs the derived limiter
+f1_wing_damage.*                       speed_threshold, damage_scale, chassis_damage_multiple, side_detach_scale, full_detach_scale
+f1_suspension_damage.*                 speed_threshold, front/rear_damage_scale, wheel/parts_detach_scale, linear/angular_fracture_limit
 
-`cars::events::Built` fires once for every car the game builds: at session load and when a restart builds the cars again. The game builds them on a loading thread, so the core holds the event and fires it on the next frame, on the flow thread, where `set` works; a car already gone from its slot by then gets none.
-
-The game also re-reads a car's parts without building it again: during loading (twice for every car) and when it hands a car to the AI or back (T120). Each time is a `cars::events::Reset`, fired the same way on the next frame, and it wipes live writes, so write your values in both:
-
-```cpp
-auto apply = [](cars::live::Car car) {
-    if (!car.is_ai())
-        car.scale(Field::steering_lock, 1.2f);
-};
-events::on<cars::events::Built>().after([apply](cars::events::Built &b, const events::Context &) { apply(b.car); });
-events::on<cars::events::Reset>().after([apply](cars::events::Reset &r, const events::Context &) { apply(r.car); });
+aero.lift_scale                        0 .. 10, multiplies the body lift, read every step
+aero.drag_scale                        0 .. 10, multiplies the body drag
+engine.power_scale                     0 .. 4, the engine drive torque, written to no game data
+engine.limiter_offset_rpm              negative: the torque is cut that many rpm under the limiter
+ai.grip_scale                          0 .. 4, the AI's table grip input, dry weather only
+tyres.front.grip_scale                 off: the tyre solver never reads GripMultiplier
+tyres.rear.grip_scale
+chassis.ballast_kg                     -300 .. 600, added to the VTF mass, then the chassis reset (fuel mass drops out until the next fuel update)
+brakes.bias                            0 .. 1, rewritten when a setup is applied
+brakes.pressure                        0 .. 4
+suspension.front.camber  .toe  .anti_roll  .ride_height_offset
+suspension.rear.camber   .toe  .anti_roll  .ride_height_offset
 ```
 
-`Reset::upgrade` is always false from the core: the R&D upgrade replay doesn't go through this reset.
+`engine.power_scale`, `engine.limiter_offset_rpm` and `ai.grip_scale` are the core's own handlers: nothing is written to the car, and a car with no layer on them runs the game's code unchanged. The suspension fields are copied into the solver every frame, so a write reaches the car on the next frame.
 
-Still to come: the car's vehicle, team and driver, and the other values the game derives (engine power and torque, mass and inertia).
+A car's index is the game's vehicle id: dense from 0 in the order the cars were built, the safety car included. A `Car` from `cars()` also carries the game's car, and a call on it answers `Result::late` once that car is gone from its slot. `set` runs on the game's flow thread, so call it from a frame, setting or event handler; from another thread it answers `Result::late`. The values are read from the build the core's field table was mapped on: on any other build of the game `cars::live::available()` is false and `cars()` is empty.
+
+## Layers
+
+A layer is a value the core keeps and applies again after every `car.built`, `car.reset`, R&D upgrade replay and setup apply, so it outlives the game's own resets. It is removed when the `Layer` is destroyed:
+
+```cpp
+using namespace swofty;
+using cars::live::Cars;
+using cars::live::Layer;
+
+static Layer power, lift, fuel;
+
+SWOFTY_REGISTER
+{
+    power = Layer::scale(Cars::all(), "engine.power_scale", 0.9725f, /*priority*/ 0);
+    lift = Layer::scale(Cars::ai(), "aero.lift_scale", 0.9f, 10);
+    fuel = Layer::set(Cars::player(), "fuel_tank.fuel_mass", 60.0f);
+}
+```
+
+Layers of one field compose by priority, lowest first, then in the order they were made: `set` replaces the value, `scale` multiplies it and `add` adds to it. The base is the game's value after its last reset (1 for `engine.power_scale` and `ai.grip_scale`, 0 for `engine.limiter_offset_rpm`). A composed value outside the field's range is clamped.
+
+`Cars::all()` reaches every car, those built later too. `Cars::ai()`, `Cars::player()` and `Cars::car(car)` name the cars on track when the selector is made. `Layer::result()` is `Result::unavailable` when the field is off.
+
+The C table (`SwoftyCarOps` version 2) has the same calls:
+
+```c
+const SwoftyCarOps *ops = SwoftyCoreCarOps();
+uint32_t field = 0, token = 0;
+ops->field("aero.drag_scale", &field);
+ops->layer("my.addon", SWOFTY_CAR_ALL, field, SWOFTY_CAR_OP_SCALE, 0.96f, 0, &token);
+ops->unlayer(token);
+```
+
+## Car profiles
+
+`car.profile` records put layers on the cars a scope matches, from data, with no code. The core reads them at `car.built`, `car.reset`, the upgrade replay and whenever the session changes, drops its earlier profile layers for the car and adds the matching profiles' again. A career freezes the season's profiles at season start. A box names none: a profile's `within` selects the box, as a `rules.drs` record does.
+
+```json
+{
+  "car.profile": {
+    "race_engine": {
+      "within": [{ "data_group": "f1_career_1990" }],
+      "when": ["practice", "race"],
+      "power_scale": 0.9725,
+      "limiter_offset_rpm": -300,
+      "ai_grip_scale": 0.87
+    }
+  }
+}
+```
+
+That record is all of F1 1990's two native DLLs: the race engine (power x0.9725 and a cut 300 rpm under the limiter outside qualifying) and the AI's grip (x0.87 outside qualifying, in the dry).
+
+```cpp
+namespace swofty::cars {
+struct Profile {
+    json::Value within;                         // selector array: content, data_group, setup_mode, vehicle_package, ...
+    std::vector<events::SessionType> when;      // empty: every session
+    CarSelect cars;                             // indices; vehicle_package, vehicle and team wait for the car identity
+    bool ai_only = false, player_only = false;
+    int priority = 0;
+    float power_scale = 1, limiter_offset_rpm = 0, lift_scale = 1, drag_scale = 1;
+    float grip_scale = 1, ai_grip_scale = 1;
+    std::optional<uint32_t> fuel_modes;         // off until the fuel mode call is verified
+    json::Value extra;                          // every other key is a live field path
+};
+}
+```
+
+Every key the record does not name is a live field path. A number sets it; an object with `set`, `scale` or `add` composes:
+
+```json
+{
+  "car.profile": {
+    "heavy_aero_cars": {
+      "when": ["race"],
+      "ai_only": true,
+      "aero.drag_scale": { "scale": 1.05 },
+      "brakes.bias": 0.56,
+      "chassis.ballast_kg": { "add": 12 }
+    }
+  }
+}
+```
+
+Profiles compose by priority, then by record id. A profile whose `cars` names a vehicle package, vehicle or team is skipped and logged until the car's identity is mapped.
+
+## Events
+
+```cpp
+events::on<cars::events::Built>().after([](const cars::events::Built &e, const events::Context &) {});
+events::on<cars::events::Reset>().after([](const cars::events::Reset &e, const events::Context &) {});
+events::on<cars::events::UpgradesReplayed>().after([](const cars::events::UpgradesReplayed &e, const events::Context &) {
+    float progress = e.progress;                // the development progress the block was replayed at
+});
+events::on<cars::events::SetupApplied>().after([](const cars::events::SetupApplied &e, const events::Context &) {});
+
+events::on<cars::events::PartsRegister>().after([](const cars::events::PartsRegister &e, const events::Context &) {
+    e.add(cars::Part{.node = "frontwing_fl_03", .detach_at = 0.9f});     // one more piece of the front wing
+});
+
+events::on<cars::events::Damage>().after([](const cars::events::Damage &e, const events::Context &) {
+    if (e.part == cars::events::Damage::front_wing_left)
+        log("car %u lost %.2f of its left front wing", e.car.index(), e.amount);
+});
+
+events::on<sessions::events::Pit>().after([](const sessions::events::Pit &e, const events::Context &) {
+    log("car %u: pit status %u -> %u", e.car, e.previous, e.status);
+});
+events::on<sessions::events::PitStop>().after([](const sessions::events::PitStop &e, const events::Context &) {
+    log("car %u has made %u stop(s)", e.car, e.stops);
+});
+```
+
+- `car.built` fires once for every car the game builds: at session load and when a restart builds the cars again.
+- `car.reset` fires when the game re-reads a car's parts without building it again: during loading (twice for every car) and when it hands a car to the AI or back (T120).
+- `car.upgrades.replayed` fires after the game replays an R&D upgrade block onto a car. The replay resets `aero.lift_scale`, `aero.drag_scale` and the fuel mode.
+- `car.setup.applied` fires after a setup is written to the car: the differential, suspension, brakes and centre of mass.
+- `car.parts.register` fires after the game has registered the front wing's own 11 pieces, once per car (not on a reset or an upgrade replay). `add` registers one more piece on that wing: `node` is the model node, `detach_at` the multiplier `k` the piece comes off at (it comes off when `k` times the wing's full detach scale is at most the left and right damage together), and a node the car's model doesn't have adds nothing. `debris` is stored, not applied.
+- `car.damage` fires after the front wing takes a hit that adds damage: `part` is `front_wing_left` or `front_wing_right` and `amount` the damage the hit added to that side. It fires on the next frame, like the events above.
+- `session.pit` fires when a car's pit status changes, with the status it had and the one the game stored. `session.pit_stop` fires on the change where the game adds one to the car's stop count. A stop's stationary time and tyre change are off: they need a row for the PitStopInstance's car.
+
+The game builds cars on a loading thread, so the core holds each event and fires it on the next frame, on the flow thread, where `set` works. The core applies its layers and profiles to the car first, so a handler sees the layered values. A car already gone from its slot by then gets none.
+
+`Reset::upgrade` is always false from the core; the upgrade replay is its own event.
 
 ## R&D upgrades
 
@@ -239,4 +367,233 @@ For how the AI drives, see [AI](/std/systems/ai).
 
 The parts, their fields and how they're stored are mapped from the game's code and checked independently. An in-game trace confirmed that cars are built once at session load and torn down when it ends, that the game rebuilds every car twice while a session loads and rebuilds one car when control of it changes, and the live values of engine speed, fuel, ERS, tyre wear, mass and the aero coefficients. Still to confirm in game: DRS, the fuel-mix and setup controls, career R&D upgrades, and how a car's index matches its participant. The `cars::live` fields are mapped from the game's code and checked on fake cars in the core's host test; none of them is tested in game yet. Their offsets are those of the game build the bindings document was made for: on any other build, a game patch included, the core's `same_build()` check turns `cars::live` off until the KB is re-derived for that build.
 
+These fields are on; each rests on a verified row:
+
+```text
+engine.power_scale, engine.limiter_offset_rpm, ai.grip_scale
+aero.lift_scale, aero.drag_scale
+brakes.bias, brakes.pressure
+suspension.front/rear.camber, toe, anti_roll, ride_height_offset
+chassis.ballast_kg
+car.parts.register, car.upgrades.replayed, car.setup.applied
+```
+
+A ballast change rebuilds the car's mass without the fuel; the fuel mass comes back at the next fuel update.
+
+These stay off:
+
+```text
+tyres.*.grip_scale     the tyre solver (Car_Suspension_SolveWheels) never reads CarSuspTyreType.grip_multiplier;
+                       only the AI snapshot (0x1405ee660) and force feedback do, so a write changes neither the car's grip nor the lap time
+refit_tyres            returns unavailable until a car-to-tyre-component lookup is bound
+fuel modes             Car_FuelEcu_SetMode_Thunk is verified, but no call is bound yet
+```
+
 Credit: the front wing damage, suspension damage, fuel ECU and ERS layouts were cross-checked against findings shared by Will (william09leo), the author of Heavier Damage.
+
+## Handling records
+
+::: warning Experimental
+Applying `vehicle.handling` records at build is experimental (launcher 1.7.0). The records, the typed sections and the launcher's build step can change before they are stable.
+:::
+
+The launcher applies the `vehicle.handling` records in an addon's data files to the handling files the build ships. The change is in the file before the game starts, so every car built from it has it, in every session, with no code running in game. A GearBox change, a removed ERS and a raised suspension in one file:
+
+```json
+{
+  "vehicle.handling": {
+    "ferrari_1990": {
+      "vtf": { "stock": "2025_asset_groups/f1_2026_vehicle_package/teams/ferrari/wep/ferrari.erp" },
+
+      "gearbox": {
+        "final_drive_ratio": 3.9,
+        "ratios": [3.0, 2.2, 1.7, 1.3, 1.0, 0.8],
+        "up_speed_multiple": [0.8, 0.9, 0.95, 0.96, 0.96],
+        "down_speed_multiple": [0.6, 0.7, 0.8, 0.85, 0.9]
+      },
+
+      "ers": null,
+
+      "suspension": {
+        "front": { "rest_length": 0.083, "min_height": 0.01, "bump_stop_height": 0.035 },
+        "rear":  { "rest_length": 0.2,   "min_height": 0.01, "bump_stop_height": 0.045 }
+      },
+      "edits": [
+        { "path": "suspension.front.anti_roll_constant", "op": "scale", "value": 0.85 },
+        { "path": "suspension.rear.anti_roll_constant",  "op": "scale", "value": 1.45 },
+        { "path": "chassis.mass", "op": "set", "value": 620 }
+      ],
+
+      "chassis": { "ffb_scale": 1.3, "tyre_physics_group": "F1_1990" },
+      "f1_aero": { "drs": { "hardware": false }, "slipstream": { "drag": 0.65, "front_wing": 0.6 } },
+      "turbo": { "mode": "off" }
+    }
+  }
+}
+```
+
+```text
+handling swofty.f1-1990/ferrari_1990 -> ferrari.vtf: 112 change(s)
+handling ferrari.vtf: GearBox: 6 gears, ratios past the top gear 0, 4 shift-speed multiple(s) past it removed
+handling ferrari.vtf: EnergyRecoverySystem: section removed, 3 part(s) dropped from the radUpgrade blocks
+handling ferrari.vtf: SuspensionSystem/RestLength: 0.1 -> 0.2
+handling ferrari.vtf: Chassis/Mass: 771 -> 620
+```
+
+The build logs each change per handling file in the build log. A key or section the file doesn't have is a warning on the build and nothing else.
+
+### Which file a record changes
+
+The record's `vtf` names the archive. Every VTF in it is changed, or only the ones `vtf.resources` lists.
+
+```json
+{ "vtf": { "stock": "2025_asset_groups/f1_2026_vehicle_package/teams/ferrari/wep/ferrari.erp" } }
+{ "vtf": "cars/handling/ferrari_handling.erp" }
+{ "vtf": { "erp": "cars/handling/ferrari_handling.erp", "resources": ["ferrari.vtf"] } }
+```
+
+- `stock`: the game's archive. The build ships a changed copy.
+- A path in your addon: the archive your `file.put` op puts in the game folder. The build changes the copy it puts.
+- A record that names no `vtf` changes nothing and the build warns.
+
+Layers apply in load order as a merge patch: `"extends"` on your own records, a key with a `/` for a layer on another addon's record, and `"$select"` entries with `ids`, `where` and `when`. `when` reads the addon's options at build, so an option changes the file at the next Play. `tag` and `in` entries are skipped at build. Layers written in native code run in game, after the build, and don't reach the file.
+
+A vehicle record with a `tyre_group` and a `handling` sets `chassis.tyre_physics_group` on that handling record when the record doesn't set it.
+
+### Typed sections
+
+Each field maps to the VTF element of the same name in snake_case: `front_coeff_lift_multiplier` is `FrontCoeffLiftMultiplier`. The fields whose element is named differently:
+
+```text
+gearbox.final_drive_ratio       GearBox/FinalDriveRatio
+gearbox.ratios                  GearRatio1st .. 9th
+gearbox.up_speed_multiple       GearUpSpeedMultiple1st ..
+gearbox.down_speed_multiple     GearDnSpeedMultiple2nd ..
+turbo.mode                      Engine/TurboMode (off, full)
+turbo.max_boost                 Turbo/MaxBoost
+differential.drive_type         Differential/DriveType (rwd, fwd, awd = 4WD)
+suspension.front.rest_x         SuspensionSystem/Suspension name=Front/LocalRestPositionX
+suspension.front.tyre_radius    SuspensionSystem/Tyre name=Front/TyreRadius
+suspension.front.grip_multiplier   SuspensionSystem/Tyre name=Front/GripMultiplier
+suspension.front_tyre.<key>     any key of the Tyre element, front_brake.<key> of the Brake element
+f1_aero.slipstream.drag         F1Aero/m_aeroSlipStreamAirDensityScaleDrag
+f1_aero.slipstream.car_width    F1Aero/m_aeroSlipStreamCarWidth
+f1_aero.drs.angle               F1Aero/DRSRotationAngleRadians
+ers.max_deploy_power            EnergyRecoverySystem/Common/MaxDeployPower
+tuning.chassis_com_z            F1Tuning/ChassisCOMZMin and ChassisCOMZMax
+```
+
+A section holds any other key of its VTF section too: `engine.wear_ice_rate`, `fuel_tank.fuel_bsfc_min`, `steering.max_steering_lock`. A curve is an array of `[x, y]` pairs and replaces the spline's vertices:
+
+```json
+{ "engine": { "limiter_rotation_rate": 1180, "revs_power_spline": [[0, 0], [314.2, 34562], [1151.9, 415319], [1570.8, 285922]] } }
+```
+
+`tuning` fields are `Range` pairs, `{ "min": 0.1, "max": 1.0 }`. `differential_on_throttle_multiple_min` and `brake_bias_max` from 1.6.0 still work.
+
+### Gear count
+
+`gearbox.ratios.size()` is the gear count. The build writes the ratios, writes 0 for the gears past the top one and removes the shift-speed multiples past it, the layout of the EA F2 car. `up_speed_multiple` and `down_speed_multiple` hold one value per shift: up for gears 1 to n-1, down for gears 2 to n.
+
+```json
+{ "gearbox": { "ratios": [3.1, 2.3, 1.8, 1.4, 1.1, 0.9] } }
+```
+
+### Removing a section
+
+`"ers": null` removes the EnergyRecoverySystem section and the ERS parts of every radUpgrade block. The blocks stay, empty. In a layer, `ers` is the one field where `null` removes the section instead of removing the field from the record. `std::optional<Ers> ers` is `nullopt` in code for the same.
+
+`remove` takes any section name and drops its parts from the radUpgrade blocks the same way:
+
+```json
+{ "remove": ["turbo", "ers"] }
+```
+
+`f1_aero.drs.hardware: false` removes the DRS keys from F1Aero, sets the flap angle, open speed and the DRS wing factors to the safety car's values and empties `radUpgradeDRS`.
+
+### Set, scale and add
+
+`edits` run after the typed sections. `path` is `section.key`, or `section.front.key` for an axle. `op` is `set`, `scale` or `add`:
+
+```json
+{ "edits": [
+  { "path": "fuel_tank.fuel_bsfc_min", "op": "scale", "value": 0.9 },
+  { "path": "suspension.rear.rest_length", "op": "add", "value": 0.03 },
+  { "path": "brake_ecu.brake_front", "op": "scale", "value": 0.74 }
+] }
+```
+
+`rad_upgrades` records change the radUpgrade blocks the same way: `{ "name": "radUpgradeEngine", "changes": [{ "section": "fuel_tank", "key": "fuel_bsfc_min", "op": "*", "value": 0.9 }] }`.
+
+### The centre of mass
+
+The centre of mass is at `-com_z`. The game's static axle loads put `(-com_z - rear_z) / wheelbase` of the weight on the front axle, so the stock 2026 `com_z` of +0.171 on axles at +1.7 and -1.7 m is 45 % on the front. `cars::front_weight(handling)` reads it from the record:
+
+```cpp
+cars::Handling h;
+h.suspension.front.rest_z = 1.7f;
+h.suspension.rear.rest_z = -1.7f;
+h.chassis.com_z = 0.171f;
+float front = cars::front_weight(h);      // 0.4497
+```
+
+For 41 % on the front axle, `-com_z = 0.41 * wheelbase + rear_z`, so on those axles `com_z = -(0.41 * 3.4 - 1.7) = 0.306`.
+
+### Vehicles
+
+A vehicle record sets three more things:
+
+```json
+{
+  "vehicle": {
+    "ferrari_1990": {
+      "donor": "game/ferrari_2025",
+      "handling": "swofty.f1-1990/ferrari_1990",
+      "drs_capable": false,
+      "engine": "game/cosworth_f1_v8",
+      "tyre_group": "F1_1990"
+    }
+  }
+}
+```
+
+- `drs_capable` is written into the vehicle row at boot. Absent keeps the donor's.
+- `engine` is the vehicle row's engine, an `entrants.engines` label. A `power::Supplier` record (`power.supplier`) can name its donor and limiter; the core writes no engine row from it yet, so rev lights stay the donor's.
+- `tyre_group` is the Chassis `TyrePhysicsGroup` of the car's handling file, one group per team. The group's compounds are the tyre files' work.
+
+### Tyres
+
+`swofty/systems/tyres.hpp` holds the first slice, as records the core stores and applies nothing from: `tyre.physical` (a compound with its `group`, `code`, class and grip factors), `tyre.visual`, `tyre.class`, `tyre.allocation` and `tyre.rules`. What reaches the game today is the group above.
+
+```cpp
+tyres::physical.add("f1_1990_soft", tyres::Physical{ .group = "F1_1990", .code = "c5", .race_grip = 0.96f });
+```
+
+### What isn't applied
+
+- Native-code layers on `vehicle.handling` reach the game after the build.
+- Fields the 2026 stock file has no element for: `fuel_tank.fuel_mass`, `ers.exhaust_power_coefficient`, `ers.overtake_power_efficiency`, `turbo.mode: lag_spoof`. The build warns.
+- `ers.modes`, `damage_scale`, `class` and the radUpgrade splines.
+- The ConvexHull vertices.
+- Archives written by `erp.*` ops. Put the archive with `file.put`.
+
+## Template
+
+`templates/std/car-physics` is a working addon with all three layers: a `car.profile` record (F1 1990's race engine and AI grip), a `vehicle.handling` record (six gears, no ERS) and live layers made on `car.built`, with a `car.parts.register` handler. Its test runs on the host against a fake car table:
+
+```cpp
+static Layer lift, ballast;
+
+void make_layers()
+{
+    if (!lift.ok())
+        lift = Layer::scale(Cars::all(), "aero.lift_scale", 0.95f, 0);
+    if (!ballast.ok())
+        ballast = Layer::add(Cars::player(), "chassis.ballast_kg", 12.0f, 0);
+}
+
+SWOFTY_REGISTER
+{
+    events::on<cars::events::Built>().after([](const cars::events::Built &, const events::Context &) { make_layers(); });
+}
+```

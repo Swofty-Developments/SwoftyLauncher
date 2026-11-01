@@ -183,13 +183,20 @@ struct PenaltyIssue {                          // Sess_Issue_TimePenalty, _GridP
     float amount;                              // seconds or places; before handlers may change it; replace = veto
 };
 
-struct PitStop {                               // a car stops in its pit box and leaves it (notify)
+struct Pit {                                   // a car's pit status changes (notify)
+    static constexpr const char *point = "session.pit";
+    static constexpr uint32_t version = 1;
+    uint32_t size, payload_version;
+    uint32_t car;                              // vehicle index in the session
+    uint32_t previous, status;                 // the game's pit status numbers, 0 to 16
+};
+
+struct PitStop {                               // the game counts a pit stop for a car (notify)
     static constexpr const char *point = "session.pit_stop";
     static constexpr uint32_t version = 1;
     uint32_t size, payload_version;
     uint32_t car;                              // vehicle index in the session
-    float stationary_s;                        // time in the box
-    uint8_t tyres_changed;                     // 0 or 1: the car left on a new set
+    uint32_t stops;                            // the car's stop count after it
 };
 
 // payloads on the Events page

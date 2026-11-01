@@ -2,7 +2,8 @@
 # The test agent in a fake game, on the test run contract (docs/design/std-2/test-suite.md "The test
 # run"): with SWOFTY_TEST_RUN naming a run folder and SWOFTY_TEST_TOKEN equal to its run.json's token it
 # arms, answers the commands in <run>/agent/commands.jsonl through the flow tick, reports unbound
-# commands as unavailable and refuses career load, advance and save now outside the save sandbox; with
+# commands as unavailable, refuses career load, advance and save now outside the save sandbox and checks
+# session.start's arguments and its wait for the main menu; with
 # another token the game quits before the title; a retired run.json stops it; without the variables it
 # does nothing.
 set -euo pipefail
@@ -55,6 +56,9 @@ mailbox() {
 {"seq":11,"cmd":"bogus"}
 {"seq":12,"cmd":"career","args":{"op":"load","slot":"newest","at":"team_hq"}}
 {"seq":13,"cmd":"title"}
+{"seq":14,"cmd":"session.start","args":{"mode":"race"}}
+{"seq":15,"cmd":"session.start","args":{"mode":"time_trial","laps":3}}
+{"seq":16,"cmd":"session.start","args":{"mode":"grand_prix","track":"melbourne"},"timeout_ms":600}
 EOC
 }
 run() {
@@ -95,8 +99,11 @@ for mode in armed refused retired off; do
         check "an unknown command is an error" '"seq":11,"status":"error","error":"unknown command' "$RES"
         check "career load outside the sandbox is refused" '"seq":12,"status":"error","error":"career load runs only in the save sandbox' "$RES"
         check "title off the KB build is unavailable, so the CLI falls back to the pad" '"seq":13,"status":"unavailable","error":"StateIntro.s state layout' "$RES"
+        check "session.start with an unknown mode is an error" '"seq":14,"status":"error","error":"session.start needs' "$RES"
+        check "session.start refuses a Time Trial with laps" '"seq":15,"status":"error","error":"a Time Trial has no laps setting' "$RES"
+        check "session.start without a main menu times out saying so" '"seq":16,"status":"timeout","error":"session.start: the main menu was not reached' "$RES"
         n=$(grep -c '"seq":' "$RES" || true)
-        [[ $n == 13 ]] && echo "ok  : every command answered once" || { echo "FAIL: $n answers, want 13"; status=1; }
+        [[ $n == 16 ]] && echo "ok  : every command answered once" || { echo "FAIL: $n answers, want 16"; status=1; }
         ;;
     refused)
         [[ $code == 91 ]] && echo "ok  : another token ends the game (91)" || { echo "FAIL: exit $code, want 91"; status=1; }

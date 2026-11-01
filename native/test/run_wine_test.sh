@@ -206,7 +206,7 @@ EOF
     if [[ $mode == udp ]]; then
         once "udp: the map is read and sendto is hooked" '\[udp\] stock ids on: 1 team id\(s\), 1 driver id\(s\), 1 sendto slot\(s\)'
         once "udp: the launcher's mapping lines are logged" '\[udp\] stock ids: team 507 -> 4 \(forceindia\); driver 197 -> 255 \(no stock driver\)'
-        once "udp: the first rewritten packet is logged once" '\[udp\] first telemetry packet rewritten: format 2025, packet 4: driver 197 -> 255, team 251 -> 4'
+        once "udp: the first rewritten packet is logged once" '\[udp\] first telemetry packet rewritten: format 2025, packet 4, [a-z0-9]+ model: driver 197 -> 255, team 251 -> 4'
     fi
     if [[ $mode == udp_off ]]; then
         once "udp: SWOFTY_UDP_STOCK_IDS=0 is logged" '\[udp\] stock ids off \(SWOFTY_UDP_STOCK_IDS=0\)'
@@ -348,6 +348,9 @@ EOF
         once "garage crew: the guard is armed" '\[garage\] crew guard armed'
         count "garage crew: each car dropped from a garage's crew vector is logged once" 4 '\[garage\] garage [5-7]: team 1[2-4] car #4[0-9] \(driver 3[0-9][0-9]\) is the (third|extra) car of its garage'
         count "ers: each participant without a vehicle is skipped and logged" 4 '\[ers\] vehicle_newlap for vehicle (9|24): participant [01] of 4 has no vehicle'
+        once "leaderboard: the time trial leaderboard guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(time trial leaderboard guard\)': 1 mixin"
+        once "leaderboard: the time trial leaderboard guard is armed" '\[leaderboard\] time trial leaderboard guard armed'
+        count "leaderboard: each view without a board is skipped and logged" 2 '\[leaderboard\] Time Trial leaderboard view 0x[0-9a-f]+ has no board for this track'
         once "acclim: the track acclimatisation guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(track acclimatisation guard\)': 1 mixin"
         once "acclim: the track acclimatisation guard is armed" '\[acclim\] track acclimatisation guard armed'
         once "acclim: the programme without targets is skipped and logged" '\[acclim\] Track Acclimatisation programme 0x[0-9a-f]+ has no targets at this track \(targets 0x0\); refresh skipped'
@@ -592,7 +595,7 @@ for mode in crash exit heap abort; do
     echo "==== $mode"
     code=0
     rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
-    timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" $mode >/dev/null 2>&1 || code=$?
+    timeout -k 5 $([[ $mode == heap || $mode == abort ]] && echo 30 || echo 120) "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" $mode >/dev/null 2>&1 || code=$?
     grep -F '[crash]' "$LOG"
     if [[ $mode == crash ]]; then
         check "crash: first-chance fault with module, section and KB name" '\[crash\] #1 first-chance .*ACCESS_VIOLATION .* at F1_25\.exe\+0x[0-9a-f]+ \.text Fake_Crash_Here\+0x'
@@ -613,11 +616,11 @@ for mode in crash exit heap abort; do
         check "heap: the fatal heap error 0x16 is logged" '\[crash\] Ne heap error 0x16 \(fatal\).*Failed to find address'
         check "heap: a report is written before the abort" '\[crash\] crash report .*crash-.*: fatal Ne heap error 0x16'
         parse_report "fatal Ne heap error 0x16" "Ne heap,FakeHeap,Failed to find address,capacity 65536,guard 32 bytes,CORRUPT" || status=1
-        [[ $code != 0 ]] && echo "ok  : heap: the process aborted ($code)" || { echo "FAIL: heap: process exited 0"; status=1; }
+        [[ $code != 0 && $code != 124 && $code != 137 ]] && echo "ok  : heap: the process aborted ($code)" || { echo "FAIL: heap: the process did not abort on its own (exit $code)"; status=1; }
     else
         check "abort: Ne_FatalAbort is recognised" '\[crash\] crash report .*crash-.*: the game aborted itself'
         parse_report "the game aborted itself" "Ne_FatalAbort" || status=1
-        [[ $code != 0 ]] && echo "ok  : abort: the process aborted ($code)" || { echo "FAIL: abort: process exited 0"; status=1; }
+        [[ $code != 0 && $code != 124 && $code != 137 ]] && echo "ok  : abort: the process aborted ($code)" || { echo "FAIL: abort: the process did not abort on its own (exit $code)"; status=1; }
     fi
 done
 for guard in on off; do
@@ -716,6 +719,45 @@ for guard in on off; do
         once "garage_crew off: the guard is off" '\[garage\] crew guard off \(SWOFTY_GARAGE_CREW_GUARD=0\)'
         grep -q 'garage 5 with slots 0,1,2 keeps 3 entries' "$OUT/garage_crew.out" && echo "ok  : garage_crew off: the vector keeps the third car" ||
             { echo "FAIL: garage_crew off: the vector lost the third car"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== pit_slots ($guard)"
+    code=0
+    SWOFTY_PIT_SLOT_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" pit_slots >"$OUT/pit_slots.out" 2>&1 || code=$?
+    grep -E '\[pit\]' "$LOG" || true
+    if [[ $guard == on ]]; then
+        [[ $code == 0 ]] && echo "ok  : pit_slots on: the test run finished" || { echo "FAIL: pit_slots on: exit $code"; status=1; }
+        grep -q 'FAIL' "$OUT/pit_slots.out" && { echo "FAIL: pit_slots on: a check failed"; grep FAIL "$OUT/pit_slots.out"; status=1; } || echo "ok  : pit_slots on: every check passed"
+        check "pit_slots on: the guard is armed" '\[pit\] slot guard armed'
+        check "pit_slots on: a listed car without a slot is logged" '\[pit\] guard: vehicle [0-9]+ has no race slot, a listed car .*the entry is skipped'
+        check "pit_slots on: an own car without a slot is logged" '\[pit\] guard: vehicle [0-9]+ has no race slot, its own car .*the check answers no'
+    else
+        once "pit_slots off: the guard is off" '\[pit\] slot guard off \(SWOFTY_PIT_SLOT_GUARD=0\)'
+        grep -q 'FAIL' "$OUT/pit_slots.out" && { echo "FAIL: pit_slots off: a check failed"; grep FAIL "$OUT/pit_slots.out"; status=1; } || echo "ok  : pit_slots off: the unguarded cases pass"
+        grep -q 'guard off, the null slot cases are not run' "$OUT/pit_slots.out" && echo "ok  : pit_slots off: the null slot cases are left out" ||
+            { echo "FAIL: pit_slots off: the test did not reach its end"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== leaderboard ($guard)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_LEADERBOARD_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" leaderboard >"$OUT/leaderboard.out" 2>&1 || code=$?
+    grep -E '\[leaderboard\]|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    if [[ $guard == on ]]; then
+        once "leaderboard on: the view of an empty board list is skipped" '\[leaderboard\] Time Trial leaderboard view 0x[0-9a-f]+ has no board for this track'
+        grep -q 'leaderboard: the view returned' "$OUT/leaderboard.out" && echo "ok  : leaderboard on: the view returned" ||
+            { echo "FAIL: leaderboard on: the view did not return"; status=1; }
+        count "leaderboard on: no unhandled fault" 0 '\[crash\] unhandled '
+        compgen -G "$SW/crash-*.txt" >/dev/null && { echo "FAIL: leaderboard on: a crash report was written"; status=1; } ||
+            echo "ok  : leaderboard on: no crash report"
+    else
+        once "leaderboard off: the guard is off" '\[leaderboard\] time trial leaderboard guard off \(SWOFTY_LEADERBOARD_GUARD=0\)'
+        check "leaderboard off: the view faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Game_TimeTrialLeaderboard_SelectBoard\+0x81'
+        check "leaderboard off: faulting access" '\[crash\]   reading 0x98'
+        parse_report "Game_TimeTrialLeaderboard_SelectBoard+0x81" "reading 0x98" || status=1
+        [[ $code != 0 ]] && echo "ok  : leaderboard off: process ended with $code" || { echo "FAIL: leaderboard off: process exited 0"; status=1; }
     fi
 done
 echo "==== ntpage"

@@ -151,7 +151,7 @@ enum Command {
     Postfx(postfx::PostfxCommand),
     #[command(
         subcommand,
-        about = "List the profile save backups taken before sessions without an addon that affects saves, and restore one"
+        about = "The career vault: snapshots of the profile save around every session; list, show, back up and restore them"
     )]
     Saves(saves::SavesCommand),
     #[command(
@@ -622,6 +622,9 @@ fn game(store: &Store, cmd: GameCommand) -> Result<()> {
             game,
         } => {
             let g = crate::build::game(store, game)?;
+            if swofty_core::install::Source::detect(&g.dir) == swofty_core::install::Source::EaApp {
+                crate::ea::check_recorded(&g.dir)?;
+            }
             crate::ea::launch_installed(store, &g, vr, no_start_store)?;
         }
         GameCommand::Add { path } => {

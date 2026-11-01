@@ -1,6 +1,6 @@
 ---
 title: The C ABI
-description: The SwoftyAddonRegister export, the SwoftyRegistry, SwoftyHooks and SwoftyServices tables under the standard library's C++ wrappers, and the career operations table.
+description: The SwoftyAddonRegister export, the SwoftyRegistry, SwoftyHooks and SwoftyServices tables under the standard library's C++ wrappers, the career operations table and the career saves table.
 ---
 
 # The C ABI
@@ -83,7 +83,7 @@ Like every other table, the three tables are appended to `SwoftyApi` and also ex
 #define SWOFTY_HOOKS_VERSION 1
 #define SWOFTY_SERVICES_VERSION 1
 
-enum { SWOFTY_SCOPE_GLOBAL = 0, SWOFTY_SCOPE_PROFILE = 1, SWOFTY_SCOPE_CAREER = 2 };
+enum { SWOFTY_SCOPE_GLOBAL = 0, SWOFTY_SCOPE_PROFILE = 1, SWOFTY_SCOPE_CAREER = 2, SWOFTY_SCOPE_AUTOMATIC = 3 };
 enum { SWOFTY_PHASE_BEFORE = 0, SWOFTY_PHASE_REPLACE = 1, SWOFTY_PHASE_AFTER = 2 };
 enum { SWOFTY_TOO_SMALL = 4 };   /* joins ok/late/unavailable/invalid: *len holds the size needed */
 
@@ -248,6 +248,31 @@ The report the core writes:
 ```
 
 `result` is `ok`, `failed` (the batch was written back) or `refused`. For a season, `changed` counts seats set and `unchanged` seats already right. For a line-up, they count rows written and rows already as planned.
+
+## The career saves table
+
+The core exports `SwoftyCoreCareerSaves` (since 1.7.0, experimental). `swofty/systems/career.hpp` finds it with `GetProcAddress`, and on a core without it `career::saves` is empty and every call returns `unavailable`.
+
+```c
+typedef struct SwoftyCareerSaves {
+    uint32_t version;                                                              /* 1 */
+    int (*available)(void);
+    int (*index)(char *json, size_t cap, size_t *len);                             /* the career index */
+    int (*current)(char *id, size_t cap, size_t *len);                             /* SWOFTY_ASSET_LATE: no career loaded */
+    int (*describe)(SwoftyText request_json);                                      /* {driver, team, season, round, label} */
+    int (*need)(const char *addon, const char *range, const char *why);
+    int (*data_get)(const char *career, const char *addon, char *json, size_t cap, size_t *len, uint32_t *version);
+    int (*data_set)(const char *career, const char *addon, uint32_t version, SwoftyText json);
+    int (*data_remove)(const char *career, const char *addon);
+    int (*missing)(char *json, size_t cap, size_t *len);
+} SwoftyCareerSaves;
+
+SWOFTY_EXPORT const SwoftyCareerSaves *SwoftyCoreCareerSaves(void);
+```
+
+- **Buffers:** `SWOFTY_TOO_SMALL` sets `*len` to the size needed.
+- **`data_set`:** `SWOFTY_REFUSED` for a career the index does not know, `SWOFTY_ASSET_INVALID` for text that is not JSON or an addon id with a path in it.
+- **Threads:** any thread.
 
 ## What the C++ wrapper calls
 

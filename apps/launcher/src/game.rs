@@ -2,12 +2,14 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
+use std::sync::atomic::{AtomicI64, Ordering};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use swofty_core::app_control::{self, Block};
 use swofty_core::busy::Busy;
 use swofty_core::copies::{self, Found, GameCopy};
 use swofty_core::crash::{LogScan, StartFailure, Symbols, fatal_name};
+use swofty_core::ea_app;
 use swofty_core::install::{Game, Source};
 use swofty_core::launch;
 use swofty_core::multiplayer::bridge::{ARMED, armed_env};
@@ -17,6 +19,7 @@ use swofty_core::recovery::{self, Blocked, Notice, Scope, SessionLock};
 use swofty_core::session::{LaunchMode, SessionRecord};
 use swofty_core::stock;
 use swofty_core::store::Store;
+use swofty_core::vault;
 use swofty_core::{GAME_EXE, steam, steam_client};
 
 const KB: &str = include_str!("../../../re/db/functions.tsv");
@@ -30,6 +33,7 @@ pub struct Install {
     pub via_steam: bool,
     pub manual: bool,
     pub source: Source,
+    pub moved: Option<ea_app::Moved>,
 }
 
 impl Install {
@@ -84,8 +88,76 @@ pub struct Probe {
     pub busy: Option<Busy>,
 }
 
+static VAULT_WATCH: std::sync::LazyLock<std::sync::Mutex<vault::watch::Watch>> =
+    std::sync::LazyLock::new(Default::default);
+
+/// The career vault's snapshot of an F1 25 the launcher didn't start, and
+/// again once it closes.
+fn watch_vault(store: &Store, processes: &[GameProcess]) {
+    let pid = processes.first().map(|p| p.pid);
+    let session = || SessionLock::held_elsewhere(&store.root) || Busy::live(&store.root).is_some();
+    let lines = match VAULT_WATCH.lock() {
+        Ok(mut w) => w.tick(&store.root, pid, session),
+        Err(_) => Vec::new(),
+    };
+    lines.iter().for_each(|l| crate::app_log::note(l));
+}
+
+/// At launcher start, once an unfinished session is rolled back: move old
+/// save backups into the career vault and snapshot the save, unless F1 25
+/// runs (the probe's watch takes that one) or a session holds the lock.
+pub fn vault_at_start(store: &Store) {
+    if !game_processes().is_empty() {
+        if swofty_core::launcher_saves::marker(&store.root).is_none() {
+            crate::app_log::note(
+                "saves: F1 25 is running; the import of the Steam save into the launcher saves waits for the next launcher start",
+            );
+        }
+        return;
+    }
+    let Ok(Some(_lock)) = SessionLock::try_acquire(&store.root) else {
+        return;
+    };
+    for l in vault::watch::at_launcher_start(&store.root) {
+        crate::app_log::note(&l);
+    }
+    import_first_start(store);
+}
+
+fn import_first_start(store: &Store) {
+    let profiles = store.profile_names().unwrap_or_default();
+    let running = vault::restore::Running::now();
+    for l in swofty_core::launcher_saves::first_start_import(&store.root, &profiles, running, vault::now()) {
+        crate::app_log::note(&l);
+    }
+}
+
+static IMPORT_RETRY: AtomicI64 = AtomicI64::new(0);
+const IMPORT_RETRY_SECS: i64 = 30;
+
+/// While the first-start import has found no Steam save, try again once Steam is signed in.
+fn retry_import(store: &Store, processes: &[GameProcess]) {
+    if !processes.is_empty()
+        || !swofty_core::launcher_saves::import_pending(&store.root)
+        || !swofty_core::steam_client::status().state.usable()
+    {
+        return;
+    }
+    let now = vault::now();
+    if now - IMPORT_RETRY.load(Ordering::Relaxed) < IMPORT_RETRY_SECS {
+        return;
+    }
+    IMPORT_RETRY.store(now, Ordering::Relaxed);
+    let Ok(Some(_lock)) = SessionLock::try_acquire(&store.root) else {
+        return;
+    };
+    import_first_start(store);
+}
+
 pub fn probe(store: &Store, rediscover: bool, seen: Option<SystemTime>) -> Probe {
     let processes = game_processes();
+    watch_vault(store, &processes);
+    retry_import(store, &processes);
     let (requests, merged) = merge_requests(store, processes.is_empty(), seen);
     Probe {
         install: rediscover.then(|| discover_all(store)),
@@ -196,8 +268,14 @@ pub fn discover(store: &Store) -> Option<Install> {
 pub fn discover_all(store: &Store) -> Copies {
     let config = store.config();
     let found = copies::discover(&config);
-    let active = copies::active(&found, &config).map(|c| c.dir.clone());
-    let all: Vec<Install> = found.iter().map(install).collect();
+    let active = copies::active(&found, &config);
+    let recorded = if active.is_some_and(|c| c.source == Source::EaApp) {
+        ea_app::recorded_here()
+    } else {
+        Vec::new()
+    };
+    let active = active.map(|c| c.dir.clone());
+    let all: Vec<Install> = found.iter().map(|c| install(c, &recorded)).collect();
     Copies {
         active: active.and_then(|dir| all.iter().find(|i| i.dir == dir).cloned()),
         missing: copies::missing(&found, &config),
@@ -205,7 +283,7 @@ pub fn discover_all(store: &Store) -> Copies {
     }
 }
 
-fn install(copy: &GameCopy) -> Install {
+fn install(copy: &GameCopy, recorded: &[PathBuf]) -> Install {
     let steam_root = copy.steam.as_ref().map(|g| g.steam_root.clone());
     let via_steam = steam_root.as_deref().is_some_and(|root| {
         steam::launch_options(root)
@@ -228,6 +306,9 @@ fn install(copy: &GameCopy) -> Install {
         via_steam,
         manual: copy.found == Found::Added,
         source: copy.source,
+        moved: (copy.source == Source::EaApp)
+            .then(|| ea_app::moved(&copy.dir, recorded, ea_app::is_install))
+            .flatten(),
     }
 }
 
@@ -247,6 +328,7 @@ impl Launch {
         install: &Install,
         mode: LaunchMode,
         netplay: bool,
+        steam_saves_once: bool,
     ) -> Result<Self, String> {
         let cli = cli_path(store).ok_or_else(|| app_control::missing(&expected_cli(store)))?;
         let at = now_secs();
@@ -265,6 +347,9 @@ impl Launch {
             .arg("--apply");
         if mode.is_vr() {
             c.arg("--vr");
+        }
+        if steam_saves_once {
+            c.arg("--steam-saves-once");
         }
         c.arg("--game").arg(&install.dir);
         if netplay {

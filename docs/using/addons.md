@@ -66,7 +66,27 @@ When the launcher opens a profile whose addons aren't grouped by folder, it move
 
 After a conflict check, a row that is on shows **Loses to** with the number of addons lower in the list that replace some of its changes, or **Wins over** with the number it replaces. The badges go away when an addon is turned on, turned off or moved, until the next check.
 
-An addon loads after every addon it requires, whatever their places in the list. A row that is on and listed above an addon it requires shows **Loads after** with that addon's name. A row that is on whose required addon isn't installed, is off, or has a version outside the range shows **Needs** with its name, and **Play** stops until that addon is on. The panel's **Requires** line says which.
+An addon loads after every addon it requires, whatever their places in the list. The Addons page shows a box under each row that has a problem, and a banner at the top counts them. Red boxes are problems, amber boxes are warnings:
+
+```
+Classic Career         Needs Classic Seasons (shared) above it     [Move Classic Seasons (shared) above] [Order for me]
+Progressive Career     Needs F1 2019, which is off                 [Turn F1 2019 on]
+Classic Career         Needs F1 2020, which isn't installed        [Install F1 2020]
+Simplified for Swofty  Changes rows that Classic Seasons adds, so it needs Classic Seasons above it
+Supercars              Supercars adds teams to every session (with Pedro's Mugello)
+```
+
+- **Needs X above it** is a required addon, or one the addon loads after, listed below it. **Move X above** puts X directly above the row. **Order for me** reorders the whole profile with the smallest change that puts every addon below what it needs, and keeps the rest of your order. If addons need each other above themselves, the banner names them and **Order for me** is not offered.
+- **Needs X, which is off** and **Needs X, which isn't installed** stop Play. **Turn X on** and **Install X** fix them. A version outside the required range says which version is installed and opens the Addon Browser.
+- **Can't be on with X** is a declared conflict. **Turn X off** fixes it.
+- **Changes rows that X adds** comes from the profile's last build: the addon's database changes waited for rows X adds. Check conflicts after moving addons to see it clear.
+- **Your career K needs X, which is off** shows on X's row when a saved career lists X among the addons it needs. It also shows when X is not installed or outside the range the career needs.
+- An amber **loads below it and replaces N of its changes** is a conflict from the last check. **Move X above** makes the row win instead.
+- An amber clash is a known bad pairing, such as Supercars with a community track. The list is in `packages/core/src/order_clashes.json`.
+
+The Play log lists a required addon listed below its dependent as a warning. The build loads it first anyway.
+
+The panel of an addon shows the same box.
 
 A row whose addon asks to remove records the game's database ships with shows a badge such as **12 removals skipped**. The build leaves those records in place, and the panel's **Conflicts** section says so. See [Removing stock records](/reference/ops/database#removing-stock-records).
 
@@ -105,6 +125,10 @@ A profile saved by a newer launcher keeps the settings this launcher doesn't kno
 
 Every other addon, including [Swofty's own](/using/swofty-addons), comes from the [Addon Browser](/using/addon-browser).
 
+## Careers that need an addon
+
+An addon can own a career mode, such as Progressive Career. A session without that addon can drop its careers from F1 25's save. When the launcher finds careers missing from the save, a banner on the **Addons** page names them and opens the [Saves](/using/career-saves) page, where **Restore** puts back the version that still held them.
+
 ## From a terminal
 
 | Command | Does |
@@ -125,5 +149,6 @@ Add `--profile <name>` to work on a profile other than the active one. For an ad
 
 - [Simplified Importer](/using/mods): turn a mod into an addon.
 - [DB Editor](/using/db-editor): change the game database and save it as an addon.
+- [Saves](/using/career-saves): the careers in your save, and the versions the launcher keeps.
 - [Profiles](/using/profiles): keep different sets of addons apart.
 - To make an addon, see [Addons](/reference/addons/) in the developer docs.

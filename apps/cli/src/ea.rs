@@ -61,6 +61,23 @@ fn handoff(store: &Store) -> Option<Handoff> {
     ea_app::handoff(store.config().launch.ea_launch_command.as_deref())
 }
 
+/// Stop before anything is built when the EA app has F1 25 in another
+/// folder: its launch link can't start this copy.
+pub fn check_recorded(game: &Path) -> Result<()> {
+    let Some(m) = ea_app::moved(game, &ea_app::recorded_here(), ea_app::is_install) else {
+        return Ok(());
+    };
+    let pick = if m.there {
+        format!(
+            ". To play the copy in {0}: swofty game use \"{0}\"",
+            m.recorded.display()
+        )
+    } else {
+        String::new()
+    };
+    bail!("{}{pick}", m.text())
+}
+
 fn desktop_opener(h: &Handoff) -> Option<(std::process::Command, bool)> {
     ea_app::desktop_opener(h, swofty_core::compat::elevated())
 }

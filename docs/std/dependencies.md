@@ -340,6 +340,7 @@ Every career gets an id and a dependency record when it's created. The record is
 ```
 
 - **`career` and `profile`:** the career's id and the launcher profile that started it. `match` identifies a career whose id can't be read yet.
+- **Since 1.7.0** the core writes this index itself, with the career's mode, content, driver, team, season, round and last save time, and the `needs` of its career content. Addons read it and keep per-career data beside it: see [Saves](/std/systems/career#saves).
 - **Which addons go in:** every addon whose records the career uses, plus any addon that says so, with `saves.careers` in `registry.json` or a code call:
 
 ```json

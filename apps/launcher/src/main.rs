@@ -5,6 +5,7 @@ mod admin_needed;
 mod app_log;
 mod blocks;
 mod browser;
+mod career_saves;
 mod colour;
 mod console;
 mod crash_modal;

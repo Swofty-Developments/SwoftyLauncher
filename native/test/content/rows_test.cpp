@@ -208,7 +208,8 @@ static void stock_package_rows(Db &db)
              {"_metadata_", "f1_m_mercedes"}, {"bundle_name", "mercedes_2025.bdl"}, {"engine_offset_x", "0.1"}})
         db.put(std::string("audio.audio_car_data.f1_m_mercedes.") + f, std::string_view(f) == "engine_offset_x" ? 1 : 2, v);
     db.put("entrants.vehicles._vehicle_instancecount_", 0, "1");
-    row("entrants.vehicles.vehicle_0", {{"_metadata_", "mercedes_2025"}, {"performance_tier", "0"}, {"tyre_wear_scale", "1"}});
+    row("entrants.vehicles.vehicle_0", {{"_metadata_", "mercedes_2025"}, {"performance_tier", "0"}, {"tyre_wear_scale", "1"},
+                                          {"drs_capable", "True"}});
     db.put("entrants.vehicles.vehicle_0.stat_id", 0, "508");
     db.put("content_sets._content_set_instancecount_", 0, "1");
     row("content_sets.content_set_0", {{"_metadata_", "2025"}});
@@ -223,7 +224,7 @@ static void variant_tests(const std::string &regs)
     st.set_validator(&registry::schema_validator());
     const SwoftyRegistry *t = registry::table();
     for (const char *name : {"engine_sound", "vehicle.package", "vehicle", "livery", "content.package", "era.box"}) {
-        std::string schema = slurp(regs + "/" + name + "/1.0.json");
+        std::string schema = slurp(regs + "/" + name + (std::string_view(name) == "vehicle" ? "/1.1.json" : "/1.0.json"));
         t->declare(name, SwoftyText{schema.data(), schema.size()});
     }
     int r1 = registry::load_data_file("swofty.classic-seasons-2017", "registry/content.json", R"j({
@@ -245,7 +246,7 @@ static void variant_tests(const std::string &regs)
       "engine_sound": { "v10_screamer": { "bundle": "sounds/v10_screamer.bdl", "settings_from": "game/mercedes_2025" },
                         "mercedes_mix": { "extends": "swofty.classic-seasons-2017/mercedes", "settings_from": "game/mercedes_2025" } },
       "vehicle": { "mercedes_v10": { "extends": "swofty.classic-seasons-2017/mercedes", "label": "esp_cs17_mercedes",
-                                     "engine_sound": "mod.esp/v10_screamer" },
+                                     "engine_sound": "mod.esp/v10_screamer", "drs_capable": false, "tyre_group": "F1_1990" },
                    "mercedes_copy": { "extends": "swofty.classic-seasons-2017/mercedes" } },
       "content.package": { "f1_2017_v10": {
         "extends": "swofty.classic-seasons-2017/f1_2017",
@@ -318,6 +319,9 @@ static void variant_tests(const std::string &regs)
     check(written(x.engine, base_sw + "_metadata_") == "f1_M_mercedes" &&
               written(x.engine, base_sw + "bundle_name") == "cs17_mercedes.bdl",
           "the base car's sound rows keep the base's sound");
+    check(written(x.engine, v10 + ".drs_capable") == "False" &&
+              written(x.engine, car + ".drs_capable") == "True",
+          "a vehicle's drs_capable reaches its row; a row that names none keeps the donor's");
     check(written(x.engine, v10_sw + "_metadata_") == "esp_cs17_mercedes" &&
               written(x.engine, v10_sw + "bundle_name") == "v10_screamer.bdl" &&
               written(x.engine, v10_sw + "engine_offset_x") == "0.1",

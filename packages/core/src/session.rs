@@ -99,6 +99,9 @@ pub struct Config {
     pub discord_username: Option<String>,
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     pub news_seen: BTreeSet<String>,
+    /// The career vault's size cap in MB; 500 when unset.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vault_cap_mb: Option<u64>,
 }
 
 /// The copies of F1 25 the player added by folder, and the one Play uses.
@@ -471,6 +474,9 @@ pub struct LaunchRequest {
     /// `SWOFTY_NETPLAY` for the game, for a wrapper Steam starts without the caller's environment.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub netplay: Option<String>,
+    /// Run this one session on Steam's saves, though the profile uses launcher saves.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub steam_saves_once: bool,
 }
 
 pub const END_FILE: &str = "end.json";
@@ -582,6 +588,17 @@ impl SessionEnd {
                 format!(
                     "the core closed F1 25 at the session load (exit code {c}) instead of letting it crash: the Grand \
                      Prix save names a grid or a track this build doesn't have, and loader.log's [era] line says which"
+                ),
+            );
+        }
+        if c == crate::launcher_saves::EXIT && loader.attached && loader.unhandled.is_none() {
+            return end(
+                Ending::Stopped,
+                None,
+                format!(
+                    "the core closed F1 25 before the title screen because launcher saves could not be used (exit \
+                     code {c}); no save was read or written. Play once with your Steam saves, or turn off Use \
+                     launcher saves for the profile; loader.log's [saves] lines say why"
                 ),
             );
         }

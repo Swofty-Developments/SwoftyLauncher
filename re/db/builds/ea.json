@@ -382,6 +382,154 @@
   "site_Ne_HwInt_NightShadowMapSize": {
    "pattern": "49 8B 4C 24 50 31 D2 45 31 C0 E8 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 89 86 A8 05 00 00",
    "note": "The base pattern ends on Steam .data1 protector filler (66). EA's .xcode copy has 10 other filler bytes after the call. They are wildcarded up to the mov [rsi+0x5a8], eax that both builds share (found through its nightShadowMapSize string xref)."
+  },
+  "core.save_system2_win_start": {
+   "pattern": "56 57 53 48 81 EC 50 02 00 00 C5 F8 29 B4 24 40 02 00 00 48 89 CE 48 8B 49 08",
+   "note": "EA's save device is a different build of the same class (0x340 bytes, no Steam helper): Start is at 0x14413f690 and its frame is 0x250 bytes. From the decrypted dump; one match."
+  },
+  "core.save_system2_win_mount": {
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 18 13 00 00 E8 ?? ?? ?? ?? 48 29 C4 44 89 CD 4C 89 C3 48",
+   "note": "EA's Mount is at 0x144146f80 with a 0x1318-byte frame (Steam 0x1728). From the decrypted dump."
+  },
+  "core.save_system2_win": {
+   "pattern": "48 89 47 20 48 8D 05 ?? ?? ?? ?? 48 89 07 48 8D 47 48 48 C7 47 38 04 01 00 00",
+   "note": "The Steam pattern also matches a second site on EA. This one extends it into the next stores of the device constructor (vtable 0x145b6dbf0 on EA). From the decrypted dump."
+  },
+  "Car_Register_DetachablePart_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 0D B5 EB 62 31 20 18 E9 3C",
+   "note": "The bytes after the protector thunk's jmp are Steam-only filler. EA's thunk sits at 0x4656690: the rel32 target of the mapped Steam callers, taken from the EA dump."
+  },
+  "Car_Systems_Reset_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 0F 8E 75 07 FD FF DA 77 BC",
+   "note": "The bytes after the protector thunk's jmp are Steam-only filler. EA's thunk sits at 0x4738910: the rel32 target of the mapped Steam callers, taken from the EA dump."
+  },
+  "Game_Handle_GarageCrewEvent_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 06 FB D0 0F 86 68 25 70 FB",
+   "note": "The bytes after the protector thunk's jmp are Steam-only filler. EA's thunk sits at 0x38d3c0: the rel32 target of the mapped Steam callers, taken from the EA dump."
+  },
+  "Game_SaveMgr_RequestProfileSave_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 0F 8C D8 24 28 02 FB AC 0F",
+   "note": "The bytes after the protector thunk's jmp are Steam-only filler. EA's thunk sits at 0x3649810: the rel32 target of the mapped Steam callers, taken from the EA dump."
+  },
+  "Game_Set_VehicleController_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? A5 95 52 E9 DC 58 4C 02 F3",
+   "note": "The bytes after the protector thunk's jmp are Steam-only filler. EA's thunk sits at 0x3889e60: the rel32 target of the mapped Steam callers, taken from the EA dump."
+  },
+  "Sess_Invalidate_Lap_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? DB E9 26 FB 45 FE 47 FC 23",
+   "note": "The bytes after the protector thunk's jmp are Steam-only filler. EA's thunk sits at 0x3562880: the rel32 target of the mapped Steam callers, taken from the EA dump."
+  },
+  "Sess_Recordable_Register": {
+   "pattern": "E9 ?? ?? ?? ?? 55 0E 14 58 86 B5 E3 3E 9F",
+   "note": "The bytes after the protector thunk's jmp are Steam-only filler. EA's thunk sits at 0x45c3110: the rel32 target of the mapped Steam callers, taken from the EA dump."
+  },
+  "Sess_SafetyCarTether_UpdateTarget": {
+   "pattern": "E9 ?? ?? ?? ?? 59 46 0F 20 A0 0C 75 12 D0",
+   "note": "The bytes after the protector thunk's jmp are Steam-only filler. EA's thunk sits at 0x35fb1f0: the rel32 target of the mapped Steam callers, taken from the EA dump."
+  },
+  "Sess_SessionClock_SetTime": {
+   "pattern": "E9 ?? ?? ?? ?? DF 6D C9 56 C8 E9 10 72 26",
+   "note": "The bytes after the protector thunk's jmp are Steam-only filler. EA's thunk sits at 0x2cde7b0: the rel32 target of the mapped Steam callers, taken from the EA dump."
+  },
+  "Game_F1os_F1CGTask_Update": {
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 03 00 00 C5 F8 29 B4 24 30 03 00 00 48 89 CE 48 81 C1 98 00 00 00 4C 8B",
+   "note": "The function is at 0x2798ea0 in the EA dump. The base pattern differs there in rip-relative displacements and frame constants; the pattern is the EA body, extended until it matches once."
+  },
+  "Game_FanZoneSeasonResults_Exit": {
+   "pattern": "41 56 56 57 53 48 81 EC A8 01 00 00 C5 F8 29 B4 24 90 01 00 00 48 8B 71",
+   "note": "The function is at 0x2386dc0 in the EA dump. The base pattern differs there in rip-relative displacements and frame constants; the pattern is the EA body, extended until it matches once."
+  },
+  "Render_Gfx2Buffer_Construct": {
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 F8 29 B4 24 10 01 00 00 48 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 4C",
+   "note": "The function is at 0x39c2800 in the EA dump. The base pattern differs there in rip-relative displacements and frame constants; the pattern is the EA body, extended until it matches once."
+  },
+  "Game_Input_OnControlSchemeAdded": {
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 4C 89 C6 48 89 D3 49 89 CD 49 8B 90",
+   "note": "The function is at 0x2a576b0 in the EA dump. The base pattern differs there in rip-relative displacements and frame constants; the pattern is the EA body, extended until it matches once."
+  },
+  "Game_NetworkReady_OnPauseSendSuperReady": {
+   "pattern": "56 48 83 EC 60 41 8B 40 10 83 E0 FE 83 F8 02 0F 85 ?? ?? ?? ?? 48 89 CE C5 FB 10 41 68 C5 F9 2E ?? ?? ?? ?? 02 0F 82 ?? ?? ?? ?? C6",
+   "note": "The function is at 0x321ce60 in the EA dump. The base pattern differs there in rip-relative displacements and frame constants; the pattern is the EA body, extended until it matches once."
+  },
+  "Game_NetworkReady_OnUnpauseSendSuperReady": {
+   "pattern": "56 48 83 EC 60 41 8B 40 10 83 E0 FE 83 F8 02 0F 85 ?? ?? ?? ?? 48 89 CE C5 FB 10 41 68 C5 F9 2E ?? ?? ?? ?? 02 0F 82 ?? ?? ?? ?? C4",
+   "note": "The function is at 0x321cfc0 in the EA dump. The base pattern differs there in rip-relative displacements and frame constants; the pattern is the EA body, extended until it matches once."
+  },
+  "Sess_RedFlagRaceStrategy_Update": {
+   "pattern": "56 57 53 48 83 EC 30 48 89 D6 8B 05 ?? ?? ?? ?? 89 81 90 0C 00 00 80 B9",
+   "note": "The function is at 0x2df0b00 in the EA dump. The base pattern differs there in rip-relative displacements and frame constants; the pattern is the EA body, extended until it matches once."
+  },
+  "Ne_SaveSystem2Win_Mount": {
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 18 13 00 00 E8 ?? ?? ?? ?? 48 29 C4 44 89 CD 4C 89 C3 48 89",
+   "note": "The function is at 0x4146f80 in the EA dump. The base pattern differs there in rip-relative displacements and frame constants; the pattern is the EA body, extended until it matches once."
+  },
+  "Ne_SaveSystem2Win_SaveSelected": {
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 04 00 00 44 89 CB 4D 89 C6 48 89 D7",
+   "note": "The function is at 0x4150830 in the EA dump. The base pattern differs there in rip-relative displacements and frame constants; the pattern is the EA body, extended until it matches once."
+  },
+  "Ne_SaveSystem2Win_Start": {
+   "pattern": "56 57 53 48 81 EC 50 02 00 00 C5 F8 29 B4 24 40 02 00 00 48 89 CE 48 8B 49 08 48 8B",
+   "note": "The function is at 0x413f690 in the EA dump. The base pattern differs there in rip-relative displacements and frame constants; the pattern is the EA body, extended until it matches once."
+  },
+  "Ne_SaveSystem_BuildSaveInfoList": {
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 04 00 00 4C 89 CB",
+   "note": "The function is at 0x413fee0 in the EA dump. The base pattern differs there in rip-relative displacements and frame constants; the pattern is the EA body, extended until it matches once."
+  },
+  "Ne_SaveSystem_SelectAndDelete": {
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC A0 04 00 00 4C 89 CB",
+   "note": "The function is at 0x4144940 in the EA dump. The base pattern differs there in rip-relative displacements and frame constants; the pattern is the EA body, extended until it matches once."
+  },
+  "Game_CreateSessionDlcSelectTab_BuildTiles": {
+   "pattern": "07 3A 05 ?? ?? ?? ?? 10 48 8B 54 24 50 48 85 D2 74 06 48 8B 01 FF 50 38 48 8D BE 30 06 00 00 80 BE 70 07 00 00 00 74 0F 48 89 F9 E8 ?? ?? ?? ?? C6 86 70 07 00 00 00 48 8B 46 10 48 8D 50 08 48 85 C0 4C 8D 35 ?? ?? ?? ?? 49 0F 44 D6 4C 8D 05 ?? ?? ?? ?? 48 89 F9 E8 ?? ?? ?? ?? 48 8D 9E 50 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? 48 8D 9E D0 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? C6 44 24 30 00",
+   "anchor": -515,
+   "note": "The base pattern matches EA twice (0x1a3a76b and 0x1d48fcb); the override starts 24 bytes earlier so it matches once at 0x1a3a550+24, and the anchor and call offsets move by 24. EA call targets: BuildTiles 0x1a3a550, FillTile 0x1a3a9b0, Vm_List_AppendChild 0x42af880."
+  },
+  "Game_CreateSessionDlcSelectTab_FillTile": {
+   "pattern": "07 3A 05 ?? ?? ?? ?? 10 48 8B 54 24 50 48 85 D2 74 06 48 8B 01 FF 50 38 48 8D BE 30 06 00 00 80 BE 70 07 00 00 00 74 0F 48 89 F9 E8 ?? ?? ?? ?? C6 86 70 07 00 00 00 48 8B 46 10 48 8D 50 08 48 85 C0 4C 8D 35 ?? ?? ?? ?? 49 0F 44 D6 4C 8D 05 ?? ?? ?? ?? 48 89 F9 E8 ?? ?? ?? ?? 48 8D 9E 50 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? 48 8D 9E D0 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? C6 44 24 30 00",
+   "anchor": 140,
+   "resolve": {
+    "kind": "rel32",
+    "insn": 139
+   },
+   "note": "The base pattern matches EA twice (0x1a3a76b and 0x1d48fcb); the override starts 24 bytes earlier so it matches once at 0x1a3a550+24, and the anchor and call offsets move by 24. EA call targets: BuildTiles 0x1a3a550, FillTile 0x1a3a9b0, Vm_List_AppendChild 0x42af880."
+  },
+  "Vm_List_AppendChild": {
+   "pattern": "07 3A 05 ?? ?? ?? ?? 10 48 8B 54 24 50 48 85 D2 74 06 48 8B 01 FF 50 38 48 8D BE 30 06 00 00 80 BE 70 07 00 00 00 74 0F 48 89 F9 E8 ?? ?? ?? ?? C6 86 70 07 00 00 00 48 8B 46 10 48 8D 50 08 48 85 C0 4C 8D 35 ?? ?? ?? ?? 49 0F 44 D6 4C 8D 05 ?? ?? ?? ?? 48 89 F9 E8 ?? ?? ?? ?? 48 8D 9E 50 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? 48 8D 9E D0 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? C6 44 24 30 00",
+   "anchor": 103,
+   "resolve": {
+    "kind": "rel32",
+    "insn": 102
+   },
+   "note": "The base pattern matches EA twice (0x1a3a76b and 0x1d48fcb); the override starts 24 bytes earlier so it matches once at 0x1a3a550+24, and the anchor and call offsets move by 24. EA call targets: BuildTiles 0x1a3a550, FillTile 0x1a3a9b0, Vm_List_AppendChild 0x42af880."
+  },
+  "Vm_Release_Node": {
+   "pattern": "CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC 41 56 56 57 53 48 83 EC 28 48 89 CF 48 8D 71 08 48 89 F2 E8 ?? ?? ?? ?? 48 8D 1D ?? ?? ?? ?? 48 89 9F 20 01 00 00 48 8B 87 28 01 00 00 48 85 C0 74 57 48 8B 8F 30 01 00 00 48 8B 97 38 01 00 00 48 85 D2 74 04 48 89 4A 08 4C 8D B7 28 01 00 00 4C 8D 87 30 01 00 00 48 85 C9 74 04 48 89 51 10 C5 F8 57 C0 C4 C1 78 11 00 4C 39 70 28 75 04 48 89 48 28 48 8B 0D ?? ?? ?? ?? 49 8B 16 E8 ?? ?? ?? ?? 49 C7 06 00 00 00 00",
+   "anchor": 145,
+   "resolve": {
+    "kind": "rel32",
+    "insn": 144
+   },
+   "note": "The base pattern matches EA twice (0x1b65e99 and 0x1e675b9); the override starts 28 bytes earlier so it matches once, and the anchor and call offset move by 28. The call reaches EA 0x42a79e0."
+  },
+  "site_Car_VehicleTableRemove": {
+   "pattern": "74 07 41 88 89 E8 00 00 00 FE C8 88 05",
+   "expect": "88 05 43 AD 6E 02",
+   "note": "The pattern matches EA once at the Steam offset. The expected site bytes carry a rip-relative or call displacement that differs on EA; they are the EA dump's bytes."
+  },
+  "site_Sess_InGamePlayerFinishedAiCall": {
+   "pattern": "E8 ?? ?? ?? ?? 49 81 C6 A8 00 00 00 4C 89 F1 E8",
+   "expect": "E8 FA F3 B3 00",
+   "note": "The pattern matches EA once at the Steam offset. The expected site bytes carry a rip-relative or call displacement that differs on EA; they are the EA dump's bytes."
+  },
+  "site_Sess_InGameSessionCompleteAiCall": {
+   "pattern": "E8 ?? ?? ?? ?? FE C3 48 8B 87 A8 0D 00 00 8B 48 30 2B 48 28 C1 E9 03 38 CB 72 D0 EB 6C",
+   "expect": "E8 96 F9 B3 00",
+   "note": "The pattern matches EA once at the Steam offset. The expected site bytes carry a rip-relative or call displacement that differs on EA; they are the EA dump's bytes."
+  },
+  "site_Team_LoadInsertCall": {
+   "pattern": "E8 ?? ?? ?? ?? 8B 7C 24 4C 4C 8D 74 24 68",
+   "expect": "E8 57 34 87 FE",
+   "note": "The pattern matches EA once at the Steam offset. The expected site bytes carry a rip-relative or call displacement that differs on EA; they are the EA dump's bytes."
   }
  },
  "hints": {
@@ -1402,6 +1550,12 @@
   },
   "site_Game_TeamSelect_TeamLogoFormat": {
    "match": "0x1873df5"
+  },
+  "site_Game_TimeTrialLeaderboard_BoardRead": {
+   "match": "0x2fc29bd"
+  },
+  "site_Game_TimeTrialLeaderboard_BoardsDone": {
+   "match": "0x2fc2d72"
   },
   "site_Gdb_DeptCountStore": {
    "match": "0x4598b6f"

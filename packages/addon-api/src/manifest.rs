@@ -32,6 +32,7 @@ pub struct AddonManifest {
     /// Experimental engines of the core the addon uses; the build turns them on while it is on.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub experimental_features: Vec<ExperimentalFeature>,
+    #[serde(default)]
     pub compat: Compat,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub requires: Vec<Requirement>,
@@ -490,6 +491,17 @@ pub struct Compat {
     pub launcher: Option<VersionReq>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub seasons: Vec<String>,
+}
+
+impl Default for Compat {
+    fn default() -> Self {
+        Self {
+            game: crate::GAME_ID.to_owned(),
+            game_builds: Vec::new(),
+            launcher: None,
+            seasons: Vec::new(),
+        }
+    }
 }
 
 impl Compat {
@@ -1572,5 +1584,17 @@ mod tests {
         .unwrap();
         assert!(m.options[0].hidden);
         assert_eq!(serde_json::to_value(&m).unwrap()["options"][0]["hidden"], true);
+    }
+
+    #[test]
+    fn a_manifest_without_compat_is_for_f1_25_on_any_build_and_launcher() {
+        let m = AddonManifest::parse(
+            r#"{"schema_version":1,"id":"t.nocompat","name":"No compat","version":"1.0.1","author":"t","kind":["erp"]}"#,
+        )
+        .unwrap();
+        assert_eq!(m.compat, Compat::default());
+        assert_eq!(m.compat.game, crate::GAME_ID);
+        assert!(m.compat.accepts_build(25251167));
+        assert!(m.compat.accepts_launcher(&Version::new(1, 7, 3)));
     }
 }

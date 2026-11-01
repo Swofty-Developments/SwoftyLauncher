@@ -4,11 +4,13 @@
 // career: the stock 2026 grid on the race seats, every other pool driver a free agent, two
 // fictional reserves.
 
+#include "midseason_logic.hpp"
 #include "season_logic.hpp"
 
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
+#include <map>
 #include <sstream>
 
 using namespace progressive;
@@ -767,6 +769,80 @@ void missing_cars_go_back_to_the_season_car_by_label()
 
 } // namespace
 
+void applied_season_is_not_refitted_over_player_edits()
+{
+    using progressive::season::refit_due;
+    EXPECT(refit_due(true, false, -1, 2019, "", ""));
+    EXPECT(!refit_due(false, false, 2019, 2019, "", ""));
+    EXPECT(!refit_due(false, true, 2019, 2019, "a,b", "a,b"));
+    EXPECT(refit_due(false, true, 2019, 2019, "a", "a,b"));
+    EXPECT(refit_due(false, true, 2018, 2019, "a,b", "a,b"));
+}
+
+std::vector<int> cars_after(const season::Plan &p, const std::vector<CareerRow> &rows)
+{
+    std::map<uint32_t, int> count;
+    for (auto &row : rows)
+        ++count[row.driver];
+    std::vector<int> cars(season::kSlots, 0);
+    for (auto &row : rows) {
+        if (!row.car)
+            continue;
+        int slot = season::slot_of_team(g_data, row.team);
+        bool moved = false;
+        for (auto &m : p.moves)
+            moved = moved || m.driver == row.driver;
+        bool released = count[row.driver] == 1 &&
+                        std::find(p.releases.begin(), p.releases.end(), row.driver) != p.releases.end();
+        if (slot >= 0 && !moved && !released)
+            ++cars[slot];
+    }
+    for (auto &m : p.moves)
+        ++cars[m.to.slot];
+    return cars;
+}
+
+std::vector<CareerRow> career_with_duplicate_incumbent(const std::string &player)
+{
+    auto rows = career(player);
+    uint32_t hadjar = static_cast<uint32_t>(stat("isack_hadjar"));
+    uint32_t tsunoda = static_cast<uint32_t>(stat("yuki_tsunoda"));
+    for (auto &row : rows)
+        if (row.car && row.driver == hadjar)
+            row.driver = tsunoda;
+    return rows;
+}
+
+void swap_pair_at_round_one_keeps_two_cars_per_slot()
+{
+    const std::vector<int> calendar = {0, 2, 13, 3, 29, 30, 6, 5, 4, 17, 7, 10, 9, 26, 11, 42};
+    auto is_player = [](const std::string &l) { return l == "max_verstappen"; };
+    midseason::At due = midseason::at_round(g_data, 2016, calendar, 1, is_player);
+    EXPECT(due.active.size() == 2);
+    for (bool duplicate : {false, true})
+        for (bool follow : {true, false}) {
+            auto rows = duplicate ? career_with_duplicate_incumbent("max_verstappen") : career("max_verstappen");
+            season::Plan p = season::plan(g_data, 2016, rows, resolver(), follow, &due.line_up, &due.line_up);
+            EXPECT(p.error.empty());
+            EXPECT(seated_once(p));
+            std::vector<int> cars = cars_after(p, rows);
+            for (int c : cars)
+                EXPECT(c <= 2);
+            int total = 0;
+            for (int c : cars)
+                total += c;
+            EXPECT(total == 22);
+            bool third_car_noted = false;
+            for (auto &n : p.notes)
+                third_car_noted = third_car_noted || n.find("would hold a third car") != std::string::npos;
+            EXPECT(third_car_noted == duplicate);
+            if (!duplicate && follow) {
+                EXPECT(at(p, 3, 1) == static_cast<uint32_t>(stat("daniil_kvyat")) ||
+                       at(p, 3, 0) == static_cast<uint32_t>(stat("daniil_kvyat")));
+            }
+        }
+}
+
 int main(int argc, char **argv)
 {
     const char *path = argc > 1 ? argv[1] : "../../data/years.json";
@@ -801,6 +877,8 @@ int main(int argc, char **argv)
     added_team_names_leave_the_dressed_slot_alone();
     wizard_names_follow_the_start_season();
     missing_cars_go_back_to_the_season_car_by_label();
+    applied_season_is_not_refitted_over_player_edits();
+    swap_pair_at_round_one_keeps_two_cars_per_slot();
     if (failures) {
         std::printf("season_logic_test: %d failure(s)\n", failures);
         return EXIT_FAILURE;

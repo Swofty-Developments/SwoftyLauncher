@@ -277,6 +277,9 @@ impl Store {
         let candidates: HashSet<&str> = order.iter().map(|r| r.key.as_str()).collect();
         for row in order {
             if keep.contains(&row.addon) {
+                if let Some((_, id)) = earlier.get(&row.key) {
+                    self.alias(&row.key, *id);
+                }
                 kept_new += 1;
                 continue;
             }
@@ -290,11 +293,13 @@ impl Store {
             };
             match earlier.get(&row.key).map(|(_, id)| *id) {
                 Some(id) if !held(id) && taken.entry(table.clone()).or_default().insert(id) => {
+                    self.alias(&row.key, row.kept);
                     self.insert(row.key.clone(), id);
                     self.from.insert(row.key.clone(), IdFrom::Seeded);
                     back += 1;
                 }
                 _ => {
+                    self.alias(&row.key, row.kept);
                     if self.rows.get(&row.key) == Some(&row.kept) {
                         self.rows.remove(&row.key);
                         if let Some(ids) = self.by_id.get_mut(&table)
@@ -413,6 +418,8 @@ mod tests {
             "{:?}",
             r.lines
         );
+        let teams = BTreeMap::from([(646, 518), (652, 524)]);
+        assert_eq!(store.id_aliases().tables["teams"], teams);
         store.save(&data).unwrap();
         let (mut again, _) = Store::load(&data, None, "default", None);
         assert!(
@@ -420,6 +427,17 @@ mod tests {
             "the recovery runs once"
         );
         assert_eq!(again.get(a), Some(518));
+        let aliases = again.id_aliases();
+        assert_eq!(
+            aliases.tables["teams"], teams,
+            "the earlier ids outlive the recovery"
+        );
+        let out = data.join("id_aliases.json");
+        aliases.write(&out).unwrap();
+        let doc: serde_json::Value = serde_json::from_slice(&std::fs::read(&out).unwrap()).unwrap();
+        assert_eq!(doc["version"], 1);
+        assert_eq!(doc["tables"]["teams"]["646"], 518);
+        assert_eq!(doc["tables"]["teams"]["652"], 524);
         std::fs::remove_dir_all(&data).ok();
     }
 
@@ -459,6 +477,11 @@ mod tests {
             labels.iter().map(|l| built.ids[*l]).collect::<Vec<_>>(),
             [550, 551, 552]
         );
+        assert_eq!(
+            built.store.id_aliases().tables["teams"],
+            BTreeMap::from([(700, 550), (731, 551), (712, 552)]),
+            "a row given again keeps its hashed id as an alias of the new one"
+        );
         std::fs::remove_dir_all(&data).ok();
 
         let data = data_dir("since");
@@ -472,6 +495,10 @@ mod tests {
         let (mut store, _) = Store::load(&data, None, "default", None);
         let r = store.recover(&sessions);
         assert_eq!(store.get(&cs19[1]), Some(731));
+        assert!(
+            store.id_aliases().is_empty(),
+            "rows that keep their ids have no aliases"
+        );
         assert!(
             r.lines
                 .iter()

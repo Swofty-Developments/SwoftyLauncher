@@ -84,6 +84,8 @@ struct FakeGame : ta::Game {
     bool home_ready() override { return home; }
     uint64_t built = 0;
     uint64_t tile_screens() override { return built; }
+    uint64_t screens = 0;
+    uint64_t screen_changes() override { return screens; }
     ta::Outcome tile_select(const std::string &id) override
     {
         if (tile_ids.empty())
@@ -152,6 +154,17 @@ struct FakeGame : ta::Game {
         return ta::Outcome::ok("{\"index\":0,\"slot\":" + (slot == "newest" ? std::string("3") : slot) + "}");
     }
     ta::Outcome session_start() override { return ta::Outcome::unavailable(session_why); }
+    std::vector<ta::SessionPlan> begun;
+    std::string begin_error, begin_missing;
+    ta::Outcome session_begin(const ta::SessionPlan &p) override
+    {
+        if (!begin_missing.empty())
+            return ta::Outcome::unavailable("session.start: needs " + begin_missing);
+        if (!begin_error.empty())
+            return ta::Outcome::fail(begin_error);
+        begun.push_back(p);
+        return ta::Outcome::ok("{\"filled\":" + std::to_string(ta::session_fill(p, {"f1_26", "entrant_setup_mode_8", "swofty_f1"}).size()) + "}");
+    }
     bool sandboxed() override { return sandbox; }
     void note(const std::string &l) override { notes.push_back(l); }
 };
@@ -306,6 +319,68 @@ static ta::Runner &fast(ta::Runner &r)
     t.title = 400, t.route = 300, t.tile = 300, t.card = 300, t.team_hq = 600, t.advance = 300, t.hub = 600, t.session = 300;
     t.retry = 50, t.title_pad_after = 100, t.pad_hold = 20, t.pad_gap = 30, t.notice_after = 100, t.route_settle = 200;
     return r;
+}
+
+static void pad_timing()
+{
+    {
+        FakeGame g;
+        ta::Runner r(g);
+        uint64_t now = 1000;
+        g.screens = 1;
+        std::vector<std::string> out;
+        r.tick(now, out);
+        submit(r, "{\"seq\":1,\"cmd\":\"pad\",\"args\":{\"press\":\"a\",\"ms\":30,\"settle_ms\":500}}");
+        auto o = run(r, now, 20);
+        expect(g.pads.empty() && answered(o) == 0, "a pad press waits while the screen has just changed");
+        o = run(r, now, 40);
+        expect(!g.pads.empty() && g.pads[0].buttons == 0x1000, "the press fires once the screen has settled");
+        expect(answered(o) == 1 && has(o[0], "\"status\":\"ok\""), "the press then finishes");
+        g.pads.clear();
+        g.screens = 2;
+        submit(r, "{\"seq\":2,\"cmd\":\"pad\",\"args\":{\"press\":\"a\",\"ms\":30,\"settle_ms\":500}}");
+        run(r, now, 20);
+        g.screens = 3;
+        run(r, now, 20);
+        expect(g.pads.empty(), "a screen that changes again restarts the settle time");
+        run(r, now, 80);
+    }
+    {
+        FakeGame g;
+        ta::Runner r(g);
+        uint64_t now = 1000;
+        g.screens = 1;
+        submit(r, "{\"seq\":1,\"cmd\":\"pad\",\"args\":{\"press\":\"a\",\"ms\":30,\"settle_ms\":0,\"retry\":2,\"retry_after_ms\":200}}");
+        auto o = run(r, now, 100);
+        expect(g.a_presses == 3 && answered(o) == 1 && has(o[0], "\"status\":\"error\"") && has(o[0], "did not change after 3"),
+               "a pad that never changes the screen presses again twice, then fails");
+    }
+    {
+        FakeGame g;
+        ta::Runner r(g);
+        uint64_t now = 1000;
+        g.screens = 1;
+        submit(r, "{\"seq\":1,\"cmd\":\"pad\",\"args\":{\"press\":\"a\",\"ms\":30,\"settle_ms\":0,\"retry\":3,\"retry_after_ms\":200}}");
+        auto o = run(r, now, 30);
+        g.screens = 2;
+        o = run(r, now, 30);
+        expect(g.a_presses == 2 && answered(o) == 1 && has(o[0], "\"screen_changed\":true"),
+               "a pad that changes the screen after one retry stops there");
+    }
+    {
+        FakeGame g;
+        ta::Runner r(g);
+        uint64_t now = 1000;
+        g.screens = 1;
+        std::vector<std::string> out;
+        r.tick(now, out);
+        submit(r, "{\"seq\":1,\"cmd\":\"at\",\"args\":{\"phase\":\"track_select\",\"settle_ms\":300}}");
+        g.screen = "|track_select||";
+        auto o = run(r, now, 10);
+        expect(answered(o) == 0, "a screen wait with settle_ms waits for the screen to hold still");
+        o = run(r, now, 40);
+        expect(answered(o) == 1 && has(o[0], "\"status\":\"ok\""), "then it answers");
+    }
 }
 
 static void career()
@@ -517,6 +592,99 @@ static void career_content_step()
            "content without a saved career fails naming the step");
 }
 
+static void session_args()
+{
+    auto parse = [](const char *json_text, ta::SessionPlan &p) {
+        json::Value v;
+        json::parse(json_text, v);
+        return ta::parse_session(v, p);
+    };
+    ta::SessionPlan p;
+    expect(parse("{\"mode\":\"grand_prix\",\"track\":\"melbourne\"}", p).empty() && p.session_id == 15 &&
+               p.session_name == "race" && p.laps == 0 && p.ai_difficulty == -1,
+           "a Grand Prix defaults to the race");
+    expect(parse("{\"mode\":\"time_trial\"}", p).empty() && p.session_id == 18 && p.session_name == "time_trial",
+           "a Time Trial defaults to the time_trial session");
+    expect(parse("{\"mode\":\"grand_prix\",\"session\":\"practice2\"}", p).empty() && p.session_name == "practice_2",
+           "practice2 is the game's practice_2");
+    expect(parse("{\"mode\":\"grand_prix\",\"session\":\"qualifying_o\"}", p).empty() && p.session_id == 9,
+           "the game's own names are taken");
+    expect(has(parse("{\"mode\":\"race\"}", p), "time_trial\" or \"grand_prix"), "an unknown mode is refused");
+    expect(has(parse("{\"mode\":\"time_trial\",\"session\":\"race\"}", p), "a Time Trial has the session time_trial"),
+           "a Time Trial takes no other session");
+    expect(has(parse("{\"mode\":\"grand_prix\",\"session\":\"time_trial\"}", p), "no time_trial session"),
+           "a Grand Prix takes no time_trial session");
+    expect(has(parse("{\"mode\":\"grand_prix\",\"session\":\"warmup\"}", p), "not a session name"), "an unknown session is refused");
+    expect(has(parse("{\"mode\":\"grand_prix\",\"laps\":0}", p), "laps is 1 to 100"), "laps are 1 to 100");
+    expect(has(parse("{\"mode\":\"time_trial\",\"laps\":3}", p), "no laps setting"), "a Time Trial has no laps");
+    expect(has(parse("{\"mode\":\"grand_prix\",\"ai_difficulty\":111}", p), "0 to 110"), "AI difficulty is 0 to 110");
+    expect(has(parse("{\"mode\":\"grand_prix\",\"weather\":\"snow\"}", p), "clear, wet or rain"), "weather is checked");
+
+    parse("{\"mode\":\"grand_prix\",\"track\":\"melbourne\",\"session\":\"qualifying\",\"laps\":5,\"weather\":\"wet\"}", p);
+    ta::Fill f = ta::session_fill(p, {"f1_26", "entrant_setup_mode_8", "swofty_f1"});
+    expect(f.size() == 6 && f[0].first == "DevSessionDataContract.Game.setup_mode" && f[0].second == "f1_26" &&
+               f[2].first == "DevSessionDataContract.Entrants.entrant_list" && f[2].second == "swofty_f1" &&
+               f[3].first == "DevSessionDataContract.Track.name" && f[3].second == "melbourne" &&
+               f[4].second == "qualifying_1" && f[5].first == "DevSessionDataContract.Game.laps" && f[5].second == "5",
+           "the fill is the dev session's keys in the order it reads them");
+    expect(ta::session_fill(p, {}).size() == 3, "a box with no names leaves its keys out");
+    expect(ta::session_unfilled(p) == "weather", "weather has no dev session setting");
+}
+
+static void session_start_step()
+{
+    FakeGame g;
+    g.engaged = g.home = true;
+    ta::Runner r(g);
+    fast(r);
+    uint64_t now = 1000;
+    submit(r, "{\"seq\":1,\"cmd\":\"session.start\",\"args\":{\"mode\":\"grand_prix\",\"track\":\"melbourne\"}}");
+    auto out = run(r, now, 4);
+    expect(g.begun.size() == 1 && g.begun[0].track == "melbourne" && !answered(out),
+           "session.start fills the setup from the main menu, then waits for the load");
+    flow(r, "StateLoadSession");
+    out = run(r, now, 2);
+    expect(has(out[0], "\"status\":\"ok\"") && has(out[0], "\"event\":\"session.start\"") && has(out[0], "\"session\":\"race\""),
+           "and answers once the flow enters StateLoadSession");
+    expect(!g.notes.empty() && has(g.notes.back(), "[test] session.start grand_prix melbourne"), "the agent logs it");
+
+    FakeGame m;
+    m.engaged = m.home = true;
+    m.begin_missing = "Sess_DevSession_Apply";
+    ta::Runner r2(m);
+    fast(r2);
+    submit(r2, "{\"seq\":1,\"cmd\":\"session.start\",\"args\":{\"mode\":\"time_trial\"}}");
+    out = run(r2, now, 4);
+    expect(has(out[0], "\"status\":\"unavailable\"") && has(out[0], "needs Sess_DevSession_Apply"),
+           "a missing row answers unavailable naming it");
+
+    FakeGame e;
+    e.engaged = e.home = true;
+    e.begin_error = "melbourne can't run in cs_f1_2017: no 2017 world";
+    ta::Runner r3(e);
+    fast(r3);
+    submit(r3, "{\"seq\":1,\"cmd\":\"session.start\",\"args\":{\"mode\":\"grand_prix\"}}");
+    out = run(r3, now, 4);
+    expect(has(out[0], "\"status\":\"error\"") && has(out[0], "can't run in cs_f1_2017"), "a track the box can't run is refused");
+
+    FakeGame b;
+    ta::Runner r4(b);
+    fast(r4);
+    submit(r4, "{\"seq\":1,\"cmd\":\"session.start\",\"args\":{\"mode\":\"time_trial\",\"laps\":2}}");
+    out = run(r4, now, 2);
+    expect(has(out[0], "\"status\":\"error\"") && has(out[0], "no laps setting") && b.begun.empty(),
+           "bad arguments are refused before anything is asked of the game");
+
+    FakeGame t;
+    t.engaged = true;
+    ta::Runner r5(t);
+    fast(r5);
+    submit(r5, "{\"seq\":1,\"cmd\":\"session.start\",\"args\":{\"mode\":\"time_trial\"},\"timeout_ms\":200}");
+    out = run(r5, now, 60);
+    expect(has(out[0], "\"status\":\"timeout\"") && has(out[0], "main menu was not reached") && t.begun.empty(),
+           "without a home screen it waits for the main menu, then times out");
+}
+
 static void route_settles()
 {
     FakeGame g;
@@ -722,8 +890,11 @@ int main()
 {
     setvbuf(stdout, nullptr, _IONBF, 0);
     career();
+    pad_timing();
     home_and_tiles();
     route_settles();
+    session_args();
+    session_start_step();
     career_content_step();
     sandboxed_ops();
     parsing();

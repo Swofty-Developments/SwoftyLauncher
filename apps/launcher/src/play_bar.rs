@@ -431,9 +431,47 @@ impl Shell {
                         )),
                     );
                 }
+                if let Some(refused) = self.saves_refused() {
+                    let dir = refused.dir.clone();
+                    return row
+                        .child(dot(p.warning))
+                        .child(
+                            div().min_w_0().truncate().child(
+                                "Launcher saves could not be used, so F1 25 closed before loading a save",
+                            ),
+                        )
+                        .child(link("steam-once", "Play once with your Steam saves", p).on_click(
+                            cx.listener(|this, _, window, cx| this.play_with_steam_saves(window, cx)),
+                        ))
+                        .child(
+                            link("saves-log", "Open logs", p)
+                                .on_click(move |_, _, cx| cx.open_with_system(&dir)),
+                        )
+                        .child(link("saves-dismiss", "Dismiss", p).on_click(cx.listener(
+                            |this, _, _, cx| {
+                                this.dismissed = this.session.as_ref().map(|s| s.dir.clone());
+                                cx.notify();
+                            },
+                        )));
+                }
+                if self.saves_await_import() {
+                    return row.text_color(p.text_muted).child(dot(p.warning)).child(
+                        div()
+                            .min_w_0()
+                            .truncate()
+                            .child(crate::career_saves::EMPTY_SAVE_SHORT),
+                    );
+                }
                 row
             }
         }
+    }
+
+    fn saves_await_import(&self) -> bool {
+        self.saves
+            .view
+            .as_ref()
+            .is_some_and(|v| v.awaiting_import_for(&self.library.profile.name))
     }
 
     fn wrapper_log(&self) -> Option<std::path::PathBuf> {
@@ -545,6 +583,12 @@ impl Shell {
                         })
                 };
                 let (console, steam, developer) = (shell.clone(), shell.clone(), shell.clone());
+                let (saves, once) = (shell.clone(), shell.clone());
+                let profile = shell.upgrade().map(|s| {
+                    let p = &s.read(cx).library.profile;
+                    (p.is_vanilla(), p.launcher_saves)
+                });
+                let (vanilla, saves_on) = profile.unwrap_or((true, false));
                 menu.min_w(px(220.))
                     .check_side(Side::Right)
                     .item(mode("Play", IconName::Play, LaunchMode::Normal))
@@ -562,6 +606,28 @@ impl Shell {
                                     .ok();
                             }),
                     )
+                    .separator()
+                    .when(!vanilla, |menu| {
+                        menu.item(
+                            PopupMenuItem::new("Use launcher saves")
+                                .icon(IconName::Save)
+                                .checked(saves_on)
+                                .on_click(move |_, window, cx| {
+                                    saves
+                                        .update(cx, |s, cx| s.set_launcher_saves(!saves_on, window, cx))
+                                        .ok();
+                                }),
+                        )
+                        .when(saves_on, |menu| {
+                            menu.item(
+                                PopupMenuItem::new("Play once with your Steam saves")
+                                    .icon(IconName::Play)
+                                    .on_click(move |_, window, cx| {
+                                        once.update(cx, |s, cx| s.play_with_steam_saves(window, cx)).ok();
+                                    }),
+                            )
+                        })
+                    })
                     .separator()
                     .item(
                         PopupMenuItem::new(start_label)

@@ -339,7 +339,8 @@ size_t build(const Rows<R> &career, const Rows<R> &season, const Rows<R> &first_
 // .cs_team of the label's slot (cs17_force_india; slot 11 is the filler cs16_manor in 2017-2025)
 // when logo_keys lists it, else the stock label; a season team with no cs_team (2025) maps to the
 // label without _26 (forceindia), the stock 2025 key. A label of no slot, or a slot the season
-// leaves empty, keeps its own key.
+// leaves empty, keeps its own key. The slot's timing tower texture (names_2026 timing_tower_texture_path,
+// aston_martin_26 for the forceindia_26 slot) maps to the same key.
 struct LogoMap {
     int year = 0;
     std::string from, to;
@@ -359,17 +360,24 @@ inline std::vector<LogoMap> logo_map(const json::Value &doc, std::vector<std::st
             long long n = slot["slot"].num(-1);
             if (label.empty() || n < 0)
                 continue;
+            std::string tower = slot["names_2026"]["timing_tower_texture_path"].str();
             for (const json::Value &t : season["teams"].a) {
                 if (t["slot"].num(-2) != n)
                     continue;
                 std::string cs = t["cs_team"].str();
+                std::string to;
                 if (cs.empty()) {
                     if (label.size() > 3 && label.compare(label.size() - 3, 3, "_26") == 0)
-                        out.push_back({year, label, label.substr(0, label.size() - 3)});
+                        to = label.substr(0, label.size() - 3);
                 } else if (std::find(keys.begin(), keys.end(), cs) != keys.end()) {
-                    out.push_back({year, label, cs});
+                    to = cs;
                 } else if (std::find(missing.begin(), missing.end(), cs) == missing.end()) {
                     missing.push_back(cs);
+                }
+                if (!to.empty()) {
+                    out.push_back({year, label, to});
+                    if (!tower.empty() && tower != label)
+                        out.push_back({year, tower, to});
                 }
                 break;
             }

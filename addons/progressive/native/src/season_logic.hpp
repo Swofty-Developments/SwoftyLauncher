@@ -700,13 +700,21 @@ inline VehicleSet vehicle_for(const Data &d, const Resolve &r, int year, int slo
 // database. Before 1.6.6 an addon's add-row ids were numbered afresh by every build, so an update moved Classic
 // Seasons' cars (cs16_mercedes 534 -> 725 for vanderlinde0401) and a save's seats kept the old ids: entering a
 // session, Sess_Build_AiSystem read a null vehicle (0xce8). The seat gets its team slot's season car back, by
-// label (vehicle_for, the season apply's car). A seat with no car, or whose car exists, is left alone; `left`
-// says why a seat with a missing car cannot be repaired.
+// label (vehicle_for, the season apply's car). A seat with no car is left alone; `left` says why a seat with a
+// missing car cannot be repaired.
+// A moved id can also name another row: launcher 1.6.10 (#553) hashes add-row ids, so on a player's first 1.6.10+
+// build Classic Seasons' cars moved once and minik8824's 2019 save (cs19 cars at 550-559) kept five ids that now
+// name cs20_lotus, cs20_mercedes, cs16_toro_rosso, cs19_force_india and cs23_sauber; the race loaded three more
+// years' engine bundles and AUDIO_BUNDLE ran out. With `year_cars` (the career's seats are on the year's cars,
+// seats_logic.hpp year_cars) a race seat of a career slot before 2026 whose car exists but is not the slot's own
+// car of the year (vehicle_for, from that year) gets it too, `other_car` set. 2026 cars are stock rows, whose ids
+// never move.
 struct CarRepair {
     int old_stat = -1;
     int slot = -1;
     VehicleSet car;
     const char *left = nullptr;
+    bool other_car = false;
 };
 
 inline bool empty_key(uint32_t key)
@@ -715,10 +723,26 @@ inline bool empty_key(uint32_t key)
 }
 
 inline std::optional<CarRepair> car_repair(const Data &d, const Resolve &r, int year, uint32_t team_key,
-                                           uint32_t vehicle_ref, const std::function<bool(int)> &vehicle_known)
+                                           uint32_t vehicle_ref, const std::function<bool(int)> &vehicle_known,
+                                           bool year_cars = false)
 {
-    if (empty_key(vehicle_ref) || vehicle_known(static_cast<int>(vehicle_ref >> 16)))
+    if (empty_key(vehicle_ref))
         return std::nullopt;
+    if (vehicle_known(static_cast<int>(vehicle_ref >> 16))) {
+        if (!year_cars || year >= kLastYear || empty_key(team_key))
+            return std::nullopt;
+        CarRepair out;
+        out.old_stat = static_cast<int>(vehicle_ref >> 16);
+        out.slot = slot_of_team(d, static_cast<int>(team_key >> 16));
+        if (out.slot < 0)
+            return std::nullopt;
+        out.car = vehicle_for(d, r, year, out.slot);
+        if (out.car.stat < 0 || out.car.stat == out.old_stat || out.car.from_year != year ||
+            !vehicle_known(out.car.stat))
+            return std::nullopt;
+        out.other_car = true;
+        return out;
+    }
     CarRepair out;
     out.old_stat = static_cast<int>(vehicle_ref >> 16);
     if (empty_key(team_key)) {
@@ -739,6 +763,16 @@ inline std::optional<CarRepair> car_repair(const Data &d, const Resolve &r, int 
 inline uint32_t repaired_ref(uint32_t vehicle_ref, int stat)
 {
     return (static_cast<uint32_t>(stat) << 16) | (vehicle_ref & 0xffffu);
+}
+
+// A season already applied is fitted again only when its mid-season line-up changed: seats that differ
+// from the plan because the player edited them stay as he left them.
+inline bool refit_due(bool new_season, bool mid, int applied_year, int year, const std::string &applied_ids,
+                      const std::string &ids)
+{
+    if (new_season)
+        return true;
+    return mid && (applied_year != year || applied_ids != ids);
 }
 
 // move_player (follow mode): when the player raced in the year (at the career's round, with `at`)
@@ -1007,6 +1041,53 @@ inline Plan plan(const Data &d, int year, const std::vector<CareerRow> &rows, co
     for (int k : p.extras)
         if (std::find(seated.begin(), seated.end(), rows[k].driver) == seated.end())
             p.releases.push_back(rows[k].driver);
+    auto cars_in = [&](int slot) {
+        int n = 0;
+        auto leaves = [&](uint32_t dr) {
+            for (auto &m : p.moves)
+                if (m.driver == dr)
+                    return true;
+            return count[dr] == 1 && std::find(p.releases.begin(), p.releases.end(), dr) != p.releases.end();
+        };
+        for (int k = 0; k < lineup::kSeats; ++k)
+            if (p.holder[slot][k] >= 0 && !leaves(rows[p.holder[slot][k]].driver))
+                ++n;
+        for (int k : p.extras)
+            if (slot_of_team(d, rows[k].team) == slot && !leaves(rows[k].driver))
+                ++n;
+        for (auto &m : p.moves)
+            if (m.to.slot == slot)
+                ++n;
+        return n;
+    };
+    for (int i = 0; i < kSlots; ++i)
+        while (!p.closed[i] && cars_in(i) > lineup::kSeats) {
+            auto drop_at = p.moves.end();
+            for (auto it = p.moves.begin(); it != p.moves.end(); ++it) {
+                int h = p.holder[it->to.slot][it->to.index];
+                if (it->to.slot == i && it->driver != p.player && h >= 0 &&
+                    (count[rows[h].driver] > 1 ||
+                     std::find(p.releases.begin(), p.releases.end(), rows[h].driver) == p.releases.end()) &&
+                    std::none_of(p.moves.begin(), p.moves.end(), [&](const Move &m) { return m.driver == rows[h].driver; }))
+                    drop_at = it;
+            }
+            if (drop_at == p.moves.end()) {
+                p.notes.push_back("slot " + std::to_string(i + 1) + " (" + d.slots[i].team + ") would hold more than " +
+                                  std::to_string(lineup::kSeats) + " cars after the apply and no move into it can be dropped");
+                break;
+            }
+            Move gone = *drop_at;
+            p.moves.erase(drop_at);
+            uint32_t keep = rows[p.holder[gone.to.slot][gone.to.index]].driver;
+            p.notes.push_back("slot " + std::to_string(i + 1) + " (" + d.slots[i].team + ") would hold a third car: driver " +
+                              std::to_string(gone.driver) + " is not moved in and driver " + std::to_string(keep) +
+                              " keeps seat " + std::to_string(gone.to.index + 1));
+            p.target[gone.to.slot][gone.to.index] = keep;
+            seated.erase(std::remove(seated.begin(), seated.end(), gone.driver), seated.end());
+            seated.push_back(keep);
+            if (gone.from.slot >= 0 && count[gone.driver] == 1)
+                p.releases.push_back(gone.driver);
+        }
     p.repositions.erase(std::remove_if(p.repositions.begin(), p.repositions.end(),
                                        [&](const Move &m) {
                                            for (auto &mv : p.moves)

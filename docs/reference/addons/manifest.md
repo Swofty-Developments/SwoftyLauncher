@@ -9,7 +9,7 @@ description: Every swofty.json field in one annotated manifest, then each group 
 
 ## Every field
 
-This manifest uses every field. Only `schema_version`, `id`, `name`, `version`, `author` and `compat` are required; leave out the rest until you need them.
+This manifest uses every field. Only `schema_version`, `id`, `name`, `version` and `author` are required; leave out the rest until you need them.
 
 ```jsonc [swofty.json]
 {
@@ -179,7 +179,7 @@ A launcher before 1.3.0 rejects `category` and `origin`; set `"compat": { "launc
 
 ### compat
 
-`compat` (object) is required.
+`compat` (object) is optional. Without it the addon is for F1 25 on every game build and every launcher, as `{ "game": "f1_25" }`. Launchers before 1.7.4 refuse a manifest without `compat`.
 
 ```jsonc
 "compat": {
@@ -196,6 +196,24 @@ On a launcher outside `compat.launcher`, installing the addon fails, and so does
 yourname.my-addon needs Swofty Launcher >=1.5.13; this is 1.5.12. Update the launcher, or turn the addon off
 ```
 
+That is the case where the launcher is older than the range. When the launcher is newer than the whole range, the addon is capped below it. Installing it still fails, but a profile that already enables it builds and plays without it: the build leaves the addon out with a warning, and leaves out every enabled addon that `requires` it, each with its own warning.
+
+```jsonc
+"compat": { "launcher": ">=1.6.11, <1.6.13" }    // capped: left out on launcher 1.6.13 and later
+"compat": { "launcher": "<=1.6.12" }              // capped
+"compat": { "launcher": "^1.5" }                  // capped from 2.0.0
+"compat": { "launcher": ">=1.8.0, <2.0.0" }       // not capped on 1.7.x: still refused as too old
+```
+
+On launcher 1.7.2, with `j.orders` capped at `<1.6.13` and `a.uses` requiring it:
+
+```text
+Team Orders is left out: it is made for Swofty Launcher >=1.6.11, <1.6.13 and this is 1.7.2. Its author needs to publish an update; turn it off on the Addons page to stop this message
+a.uses is left out: it needs Team Orders, which is left out
+```
+
+Only a range the launcher is above counts as a cap: every comparator the launcher fails must be an upper bound (`<`, `<=`, or an exact, caret or tilde version the launcher has passed). A range with a failed lower bound (`>=`, `>`) still stops the build. The core addon is never left out. Raise the upper bound, or drop it, in the addon's next release.
+
 ### requires, conflicts, load_after
 
 ```jsonc
@@ -207,6 +225,8 @@ yourname.my-addon needs Swofty Launcher >=1.5.13; this is 1.5.12. Update the lau
 - **`requires`** (`[{ id, version }]`): the addons that must be installed. `version` is a semver range and defaults to `*`.
 - **`conflicts`** (`[{ id, touches? }]`): the addons that must not be enabled together. Use `touches` to narrow the conflict to a shared target; `id` may be `*`.
 - **`load_after`** (string array): addon ids or `*` patterns to build before your addon.
+
+The Addons page marks an addon red when a `requires` entry is off, missing, outside its version range or listed below it, when a `load_after` match is listed below it, and when a `conflicts` entry without `touches` is on. It offers to move, turn on, install or turn off the other addon, or to order the whole profile.
 
 A profile with your addon enabled builds only when every addon in `requires` is enabled at a matching version, and the build loads your addon after them, as if they were in `load_after`, whatever their places in the player's list. List as many as your addon needs; `swofty.core` and the other built-in addons are always present.
 

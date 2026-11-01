@@ -345,6 +345,20 @@ int race_weekends(uint32_t season_index)
     return best > 0 ? best : -1;
 }
 
+// When this season's own record is empty (the daily tick that fills it never ran, so the clock can't
+// move), the nearest other season of the ScheduleComponent that has one: the same season length, so the
+// same count. Previous seasons first, then later ones. -1 when none can be read.
+int race_weekends_estimate(uint32_t season_index)
+{
+    for (uint32_t i = season_index; i-- > 0;)
+        if (int n = race_weekends(i); n > 0)
+            return n;
+    for (uint32_t i = season_index + 1; i < kMaxSeasons; ++i)
+        if (int n = race_weekends(i); n > 0)
+            return n;
+    return -1;
+}
+
 std::string track_of(const std::string &weekend)
 {
     std::string t = weekend;
@@ -1130,6 +1144,12 @@ void section_calendar(ce::Writer &w)
         w.integer(stops);
     else
         w.null();
+    w.key("race_weekends_estimate");
+    int estimate = stops > 0 ? -1 : race_weekends_estimate(wh.index);
+    if (estimate > 0)
+        w.integer(estimate);
+    else
+        w.null();
     w.key("round_count_ok");
     if (stops > 0)
         w.boolean(static_cast<size_t>(stops) == rs.size());
@@ -1636,6 +1656,8 @@ ce::OpResult op_calendar_repair(const ce::Json &args)
     if (const char *e = cal_ctx(c))
         return fail(e);
     int stops = race_weekends(c.wh.index);
+    if (stops < 1)
+        stops = race_weekends_estimate(c.wh.index);
     std::vector<ce::cal::RoundState> states;
     for (auto &r : c.rs) {
         ce::cal::RoundState st;
@@ -1702,33 +1724,41 @@ ce::OpResult op_calendar_toggle_sprint(const ce::Json &)
                        "(new careers: DB preset)");
 }
 
-uint32_t key_for(uintptr_t season, uint16_t stat, const Table &t)
+// Driver stat 0 is a real driver, and his key can be 0, so whether a key was found is returned apart from it.
+bool key_for(uintptr_t season, uint16_t stat, const Table &t, uint32_t &key)
 {
     auto it = t.drivers.find(stat);
-    if (it != t.drivers.end() && it->second.key)
-        return it->second.key;
+    if (it != t.drivers.end() && it->second.key) {
+        key = it->second.key;
+        return true;
+    }
     std::vector<Round> rs;
     uint32_t cur = 0;
-    if (!rounds(season, rs, cur))
-        return 0;
-    for (auto &r : rs) {
-        uintptr_t sb = 0;
-        size_t sn = 0;
-        if (!vec(r.weekend + kWeekendSessions, kSessionStride, kMaxSessions, sb, sn))
-            continue;
-        for (size_t s = 0; s < sn; ++s) {
-            uintptr_t pb = 0;
-            size_t pn = 0;
-            if (!vec(sb + s * kSessionStride + kSessionParticipants, kEntrantStride, kMaxRecs, pb, pn))
+    if (rounds(season, rs, cur))
+        for (auto &r : rs) {
+            uintptr_t sb = 0;
+            size_t sn = 0;
+            if (!vec(r.weekend + kWeekendSessions, kSessionStride, kMaxSessions, sb, sn))
                 continue;
-            for (size_t i = 0; i < pn; ++i) {
-                uint32_t k = 0;
-                if (rd(pb + i * kEntrantStride + kEntrantKey, k) && (k >> 16) == stat)
-                    return k;
+            for (size_t s = 0; s < sn; ++s) {
+                uintptr_t pb = 0;
+                size_t pn = 0;
+                if (!vec(sb + s * kSessionStride + kSessionParticipants, kEntrantStride, kMaxRecs, pb, pn))
+                    continue;
+                for (size_t i = 0; i < pn; ++i) {
+                    uint32_t k = 0;
+                    if (rd(pb + i * kEntrantStride + kEntrantKey, k) && k && (k >> 16) == stat) {
+                        key = k;
+                        return true;
+                    }
+                }
             }
         }
+    if (it != t.drivers.end()) {
+        key = it->second.key;
+        return true;
     }
-    return 0;
+    return false;
 }
 
 std::string driver_json(uint16_t stat, uint32_t key, int points, int adjustment, bool pending = false)
@@ -1801,14 +1831,14 @@ ce::OpResult op_points_adjust(const ce::Json &args)
         return fail("not_ready");
     long long drv = args["driver"].num(-1);
     long long delta = args["delta"].num(0);
-    if (drv <= 0 || drv > 0xffffffffll || delta == 0 || delta < -kMaxDelta || delta > kMaxDelta)
+    if (drv < 0 || drv > 0xffffffffll || delta == 0 || delta < -kMaxDelta || delta > kMaxDelta)
         return fail("bad_args");
     uint16_t stat = static_cast<uint16_t>(drv > 0xffff ? (static_cast<uint32_t>(drv) >> 16) : static_cast<uint32_t>(drv));
     Table t = read_table(wh.season);
     if (!t.ok)
         return fail("not_ready");
-    uint32_t key = key_for(wh.season, stat, t);
-    if (!key)
+    uint32_t key = 0;
+    if (!key_for(wh.season, stat, t, key))
         return fail("no_driver");
     std::map<uint16_t, int32_t> live = live_extras(wh.season);
     int before_pts = points_of(t, stat);
@@ -1855,7 +1885,7 @@ ce::OpResult op_points_clear(const ce::Json &args)
     Where wh;
     if (!locate(wh) || !wh.champ)
         return fail("not_ready");
-    long long drv = args["driver"].num(0);
+    long long drv = args["driver"].num(-1);
     uint16_t stat = static_cast<uint16_t>(drv > 0xffff ? (static_cast<uint32_t>(drv) >> 16) : static_cast<uint32_t>(drv));
     std::vector<Adj> before;
     {
@@ -1864,7 +1894,7 @@ ce::OpResult op_points_clear(const ce::Json &args)
         SeasonAdj *sa = store_season(wh.index, false, {});
         if (sa) {
             before = sa->drivers;
-            if (drv > 0)
+            if (drv >= 0)
                 std::erase_if(sa->drivers, [&](const Adj &a) { return a.stat == stat; });
             else
                 sa->drivers.clear();

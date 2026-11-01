@@ -20,10 +20,11 @@ struct Rules {
     Ref<power::DrsRule> drs;
     Ref<tyres::Class> tyre_class;
     Ref<RulesProfile> rules_profile;
+    Ref<cars::Profile> car_profile;
     bool refuelling = false;
     std::optional<float> race_fuel_kg;
 };
-SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, refuelling, race_fuel_kg)
+SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, car_profile, refuelling, race_fuel_kg)
 
 inline Result set_control(cars::live::Car car, Control mode)
 {
@@ -53,6 +54,27 @@ struct Lap {
     static constexpr uint32_t version = 1;
     uint32_t size, payload_version;
     cars::live::Car car;
+};
+
+// A car's pit status changes (notify): inside Game_Pitlane_SetVehicleStatus, on the game thread, after the game has
+// stored the new status. status is the game's pit status number (0 to 16) and previous the one it replaced.
+struct Pit {
+    static constexpr const char *point = "session.pit";
+    static constexpr uint32_t version = 1;
+    uint32_t size, payload_version;
+    uint32_t car;
+    uint32_t previous;
+    uint32_t status;
+};
+
+// A car's pit stop is counted (notify), on the status change where the game adds one to the car's stop count.
+// stops is the count after it.
+struct PitStop {
+    static constexpr const char *point = "session.pit_stop";
+    static constexpr uint32_t version = 1;
+    uint32_t size, payload_version;
+    uint32_t car;
+    uint32_t stops;
 };
 
 }

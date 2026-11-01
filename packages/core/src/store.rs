@@ -635,6 +635,9 @@ impl Store {
         if saves.is_dir() {
             std::fs::rename(&saves, self.saves_dir(to)).map_err(io_err(&saves))?;
         }
+        crate::launcher_saves::rename_vaults(&self.root, from, to)?;
+        crate::launcher_saves::rename_in_marker(&self.root, from, to)?;
+        crate::stdlib::careers::rename_profile(&self.root, from, to)?;
         crate::addon_storage::profile_deleted(&self.root, from)?;
         if self.config().active_profile.as_deref().unwrap_or(DEFAULT_PROFILE) == from {
             self.set_active_profile(to)?;
@@ -797,7 +800,12 @@ impl Store {
 
     pub fn session_settings(&self, profile: &str) -> Result<SessionSettings> {
         let requests = crate::paths::game_folder_view(&self.requests_path(profile));
-        let mut s = SessionSettings::build(&self.profile(profile)?, &self.addons()?, Some(requests))?;
+        let p = self.profile(profile)?;
+        let mut s = SessionSettings::build(&p, &self.addons()?, Some(requests))?;
+        s.launcher_saves = p.launcher_saves.then(|| settings::SessionSaves {
+            profile: p.name.clone(),
+            remote: crate::paths::game_folder_view(&crate::launcher_saves::remote_dir(&self.root, &p.name)),
+        });
         s.addons
             .retain(|a| a.id == CORE_ID || !self.is_builtin(&a.id) || !a.options.is_empty());
         Ok(s)
@@ -1503,7 +1511,7 @@ mod tests {
         };
         write_addon(&Store::new(&root).addons_dir().join("a.user"), "a.user");
         let plain = Store::new(&root).with_builtins(vec![tuned()]);
-        let expected = SessionSettings::build(
+        let mut expected = SessionSettings::build(
             &plain.profile(DEFAULT_PROFILE).unwrap(),
             &plain.addons().unwrap(),
             Some(crate::paths::game_folder_view(
@@ -1511,6 +1519,13 @@ mod tests {
             )),
         )
         .unwrap();
+        expected.launcher_saves = Some(settings::SessionSaves {
+            profile: DEFAULT_PROFILE.into(),
+            remote: crate::paths::game_folder_view(&crate::launcher_saves::remote_dir(
+                &plain.root,
+                DEFAULT_PROFILE,
+            )),
+        });
         let plain_json = serde_json::to_vec(&plain.session_settings(DEFAULT_PROFILE).unwrap()).unwrap();
         assert_eq!(plain_json, serde_json::to_vec(&expected).unwrap());
 
@@ -1630,6 +1645,60 @@ mod tests {
         assert_eq!(config.launch_mode("grid"), LaunchMode::Normal);
         store.delete_profile("vrgrid").unwrap();
         assert!(store.config().vr_profiles.is_empty());
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_renamed_profile_keeps_its_vault_careers_and_import_record() {
+        let root = tmp("rename-vault");
+        let store = Store::new(&root);
+        store.create_profile("grid", None).unwrap();
+        let vault = root.join("career-vault").join("launcher-grid");
+        std::fs::create_dir_all(&vault).unwrap();
+        std::fs::write(vault.join("marker"), "x").unwrap();
+        let saves = root.join("saves");
+        std::fs::create_dir_all(&saves).unwrap();
+        std::fs::write(
+            saves.join("imported.json"),
+            r#"{"at":1,"launcher":"1","profiles":["grid","other"]}"#,
+        )
+        .unwrap();
+        let careers = root.join("careers");
+        std::fs::create_dir_all(&careers).unwrap();
+        std::fs::write(
+            careers.join("index.json"),
+            r#"{"version":1,"careers":[{"career":"a","profile":"grid"},{"career":"b","profile":"other"}]}"#,
+        )
+        .unwrap();
+        store.rename_profile("grid", "vrgrid").unwrap();
+        assert!(!vault.exists());
+        assert!(
+            root.join("career-vault")
+                .join("launcher-vrgrid")
+                .join("marker")
+                .is_file()
+        );
+        let marker = crate::launcher_saves::marker(&root).unwrap();
+        assert_eq!(marker.profiles, ["vrgrid", "other"]);
+        let index = crate::stdlib::careers::read(&crate::stdlib::careers::data_path(&root));
+        assert_eq!(index[0].profile.as_deref(), Some("vrgrid"));
+        assert_eq!(index[1].profile.as_deref(), Some("other"));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn deleting_a_profile_keeps_its_versions_in_the_vault() {
+        let root = tmp("delete-keeps-vault");
+        let store = Store::new(&root);
+        store.create_profile("grid", None).unwrap();
+        store.create_profile("main", None).unwrap();
+        let vault = root.join("career-vault").join("launcher-grid");
+        std::fs::create_dir_all(&vault).unwrap();
+        let plan = store.plan_profile_deletion("grid").unwrap();
+        assert!(!plan.paths.contains(&vault));
+        store.delete_profile("grid").unwrap();
+        assert!(vault.is_dir());
+        assert!(!store.profile_names().unwrap().iter().any(|n| n == "grid"));
         std::fs::remove_dir_all(&root).ok();
     }
 

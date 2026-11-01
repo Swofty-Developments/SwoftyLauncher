@@ -44,7 +44,11 @@ python3 registry/random_stacks.py --runner "$OUT/corpus_test" --count "${REGISTR
 "${PIN[@]}" zig c++ -target x86_64-linux-musl -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness \
     -Wno-cast-function-type-mismatch -I../../packages/sdk/include -DSWOFTY_FAKE_CORE_ENGINE=swofty_registry_engine \
     -o "$OUT/older_test" registry/older_test.cpp ../src/core/registry/older.cpp "${SRC[@]}"
+"${PIN[@]}" zig c++ -target x86_64-linux-musl -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness \
+    -Wno-cast-function-type-mismatch -I../../packages/sdk/include -DSWOFTY_FAKE_CORE_ENGINE=swofty_registry_engine \
+    -o "$OUT/career_scope_test" registry/career_scope_test.cpp "${SRC[@]}"
 "$OUT/older_test"
+"$OUT/career_scope_test"
 "$OUT/index_load_test"
 "$OUT/declare_all_test"
 "$OUT/career_wait_test"

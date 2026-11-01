@@ -1725,14 +1725,15 @@ fn count_note(stops: Option<i64>, rounds: usize) -> String {
 
 fn calendar_count_card(live: &Live, cal: &Value) -> Option<Value> {
     let rounds = cal["rounds"].as_array().map_or(0, Vec::len);
-    let Some(stops) = int(&cal["race_weekends"]) else {
+    let own = int(&cal["race_weekends"]);
+    let Some(stops) = own.or_else(|| int(&cal["race_weekends_estimate"])) else {
         return Some(card_full(
             "Round count",
             Some("The game's race dates for this season aren't readable yet"),
             vec![],
             vec![],
             vec![text(
-                "Repair the round count is unavailable until the game has loaded this season's race dates. Advance a day in the game, then open this page again. If it stays unavailable, load the career again.",
+                "Repair the round count is unavailable until the game has loaded this season's race dates. Load the career again, then open this page again.",
                 "warn",
             )],
         ));
@@ -1751,6 +1752,13 @@ fn calendar_count_card(live: &Live, cal: &Value) -> Option<Value> {
             "This season has {rounds} rounds, but the game only has {stops} race weekends on its calendar, so the season can't finish. Repairing removes the last {} round(s) that haven't started.",
             rounds as i64 - stops
         )
+    };
+    let what = if own.is_none() {
+        format!(
+            "{what} The game hasn't loaded this season's race dates, so the count of {stops} comes from another season of this career."
+        )
+    } else {
+        what
     };
     Some(card_full(
         "Round count",
@@ -4158,6 +4166,20 @@ mod calendar_count_tests {
         assert!(count_note(Some(24), 24).contains("Rounds can't be removed"));
         assert!(count_note(Some(24), 24).contains("keeps 24 rounds"));
         assert!(count_note(None, 24).contains("can't be added or removed"));
+    }
+
+    #[test]
+    fn unreadable_race_dates_fall_back_to_another_seasons_count() {
+        let mut c = cal(20, Value::Null);
+        c["race_weekends_estimate"] = json!(21);
+        let card = serde_json::to_string(&calendar_count_card(&live(), &c).unwrap()).unwrap();
+        assert!(
+            card.contains("repair_calendar")
+                && card.contains("adds 1 round(s)")
+                && card.contains("another season")
+        );
+        c["race_weekends_estimate"] = json!(20);
+        assert!(calendar_count_card(&live(), &c).is_none());
     }
 
     #[test]

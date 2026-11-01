@@ -31,6 +31,7 @@ use swofty_core::testsuite::lock::{self, GameLock};
 use swofty_core::testsuite::plan::{self, Batch, Plan};
 use swofty_core::testsuite::report::{self, BatchReport, Report, Status, StepReport, TestReport, exit};
 use swofty_core::testsuite::sandbox::{self, RunDir, RunOptions};
+use swofty_core::testsuite::session;
 use swofty_core::testsuite::suite::{self, Env, Kind, Selector, Suite, Test};
 
 use crate::time::{now_secs, stamp};
@@ -530,7 +531,7 @@ fn sandbox_preflight(
 }
 
 pub(crate) fn sandboxed(b: &Batch) -> bool {
-    b.env.kind == Kind::Career
+    b.env.kind == Kind::Career || (b.env.kind == Kind::Session && b.env.str("fixture").is_some())
 }
 
 pub(crate) fn check_sandbox(
@@ -1263,7 +1264,8 @@ impl Harness<'_> {
                     sandbox.as_ref().and_then(|s| s.mode.as_deref()),
                     a,
                     &mut *run,
-                )
+                )?;
+                self.env_session(&b.env, a, &mut *run)
             }
         });
         if dropped_agent {
@@ -1543,6 +1545,19 @@ impl Harness<'_> {
                 .timeout_s
                 .map_or(self.times.step, Duration::from_secs)
                 .min(test_limit.saturating_sub(started.elapsed()));
+            if let Some(suite::Wait::Ms(n)) = s.host {
+                let t0 = Instant::now();
+                let span = Duration::from_millis(n).min(test_limit.saturating_sub(started.elapsed()));
+                while t0.elapsed() < span && !run.finished() {
+                    std::thread::sleep(self.times.poll.min(span - t0.elapsed()));
+                }
+                r.steps.push(StepReport {
+                    step: s.text.clone(),
+                    status: "ok".to_owned(),
+                    ms: Some(ms(t0)),
+                });
+                continue;
+            }
             let by_agent =
                 s.host.is_none() || matches!(s.host, Some(suite::Wait::Event(_))) && agent.is_some();
             if by_agent {
@@ -1812,6 +1827,30 @@ impl Harness<'_> {
                 Ok(())
             }
             _ => Err(reply.text()),
+        }
+    }
+
+    /// A session environment: the agent starts the Time Trial or Grand Prix
+    /// session and the CLI waits for it to say the load has started. A
+    /// refusal ends the batch with the agent's reason.
+    fn env_session(
+        &self,
+        env: &Env,
+        a: &mut Agent,
+        run: &mut dyn Running,
+    ) -> std::result::Result<(), String> {
+        if env.kind != Kind::Session {
+            return Ok(());
+        }
+        let (cmd, args) = session::agent_command(env);
+        say(&format!("{cmd} {}", args));
+        let reply = a.call(&cmd, args, self.times.career, &self.times, run)?;
+        match reply.outcome {
+            Outcome::Ok => {
+                say(&format!("session started ({})", reply.value));
+                Ok(())
+            }
+            _ => Err(format!("{cmd}: {}", reply.text())),
         }
     }
 

@@ -739,6 +739,10 @@ impl Browser {
         text
     }
 
+    pub(crate) fn has(&self, id: &str) -> bool {
+        self.find(id).is_some()
+    }
+
     fn find(&self, id: &str) -> Option<&Addon> {
         self.addons.iter().find(|a| a.id == id)
     }
