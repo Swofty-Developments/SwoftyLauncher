@@ -340,11 +340,14 @@ EOF
         once "ers mode: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(ers mode guard\)': 1 mixin"
         once "ers mode: the guard is armed" '\[ers\] mode guard armed'
         count "ers mode: each car whose ERS mode is out of range is set to Medium and logged once" 2 '\[ers\] car (8: ERS mode -2141928108|9: ERS mode 4) out of range; set to 1 \(Medium\)'
-        once "standings: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(standings track guard\)': 2 mixins"
+        once "standings: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(standings track guard\)': 2 mixin"
         once "standings: the guard is armed" '\[career\] standings guard armed'
         once "standings: a round whose track is off is skipped and logged once" '\[career\] standings: round 7 has no track data \(track 200 is off\); skipped'
         once "standings: a round whose weekend can't be read is skipped and logged once" '\[career\] standings: round 10 has no track data; skipped'
         once "weekends: a round whose track has no record is skipped and logged once" '\[career\] weekends: track 1 has no track data; the round shows no track'
+        once "ai corner: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(ai corner start guard\)': 1 mixin"
+        once "ai corner: the guard is armed" '\[ai\] corner start guard armed'
+        once "ai corner: a car with no corner start line is skipped and logged once" '\[ai\] corner start: car 3 has no corner start ahead on this track'"'"'s AI line'
         once "garage crew: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(garage crew guard\)': 1 mixin"
         once "garage crew: the guard is armed" '\[garage\] crew guard armed'
         count "garage crew: each car dropped from a garage's crew vector is logged once" 4 '\[garage\] garage [5-7]: team 1[2-4] car #4[0-9] \(driver 3[0-9][0-9]\) is the (third|extra) car of its garage'
@@ -552,7 +555,7 @@ EOF
 done
 check "crash log armed at attach" '\[crash\] crash log armed'
 check "clean exit logged" '\[crash\] ExitProcess\(0\)'
-check "crash reports armed with a minidump" '\[crash\] crash reports: .*crash-<time>\.txt with a stacks-only minidump'
+check "crash reports armed with a minidump" '\[crash\] crash reports: .*crash-<time>\.txt .*with a stacks-only minidump'
 check "Ne heap error reporting hooked by the pattern" '\[crash\] Ne_ReportMemoryError at base\+0x[0-9a-f]+ hooked'
 python3 fake_symbols.py "$OUT/game/F1_25.exe" "$OUT/game/swofty/addons/core/symbols.tsv"
 SW=$OUT/game/swofty
@@ -723,6 +726,25 @@ for guard in on off; do
     else
         check "weekends off: the read faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Career_Weekends_BuildResultNodes\+0x13'
         [[ $code != 0 ]] && echo "ok  : weekends off: process ended with $code" || { echo "FAIL: weekends off: process exited 0"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== ai_corner ($guard)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_AI_CORNER_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" ai_corner >"$OUT/ai_corner.out" 2>&1 || code=$?
+    grep -E '\[ai\] corner start|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    if [[ $guard == on ]]; then
+        once "ai corner on: the car is skipped and logged" '\[ai\] corner start: car 3 has no corner start ahead on this track'"'"'s AI line'
+        grep -q 'ai corner: the car returned 0x9be\b' "$OUT/ai_corner.out" && echo "ok  : ai corner on: the car took the game's no-corner-line path" ||
+            { echo "FAIL: ai corner on: the car did not take the game's no-corner-line path"; status=1; }
+        count "ai corner on: no unhandled fault" 0 '\[crash\] unhandled '
+        compgen -G "$SW/crash-*.txt" >/dev/null && { echo "FAIL: ai corner on: a crash report was written"; status=1; } ||
+            echo "ok  : ai corner on: no crash report"
+    else
+        once "ai corner off: the guard is off" '\[ai\] corner start guard off \(SWOFTY_AI_CORNER_GUARD=0\)'
+        check "ai corner off: the read faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Ai_Job_UpdateCarsParallel\+0x10'
+        [[ $code != 0 ]] && echo "ok  : ai corner off: process ended with $code" || { echo "FAIL: ai corner off: process exited 0"; status=1; }
     fi
 done
 for guard in on off; do

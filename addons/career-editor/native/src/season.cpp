@@ -1266,6 +1266,9 @@ ce::OpResult unsupported(const char *op, const char *detail)
 // name map is keyed by each weekend's own name, so only the order changes.
 ce::OpResult op_calendar_reorder(const ce::Json &args)
 {
+    std::string refusal = ce::cal::reorder_refusal(ce::mode() == ce::Mode::DriverCareer);
+    if (!refusal.empty())
+        return unsupported("season.calendar.reorder", refusal.c_str());
     Where wh;
     if (!locate(wh))
         return fail("not_ready");
