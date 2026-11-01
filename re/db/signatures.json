@@ -161098,6 +161098,33 @@
    "used_by": [
     "native/src/core/fe_tile_guard.cpp"
    ]
+  },
+  {
+   "id": "core.memory_map_internal_heap_size",
+   "section": ".xtls",
+   "pattern": "48 8D 94 24 A0 00 00 00 48 89 F1 4D 89 F9",
+   "match": "0x143972474",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143972474",
+   "kind": "mid",
+   "expect": "48 8D 94 24 A0 00 00 00",
+   "names": [
+    "site_Ne_MemoryMapInternalHeapSize"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "savepool",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/save_heap.cpp"
+   ]
   }
  ]
 }
