@@ -1359,6 +1359,73 @@ bool hud_reads()
     return hud_read_seen && frame_count - hud_read_at <= 30;
 }
 
+// Batches that move only depth and UI images, most watched batches, are marked without the lock by
+// the thread recording the list; the locked paths take the side marks into the list's Mark before they
+// read it.
+using Side = postfx::SideMark<ID3D12GraphicsCommandList, ID3D12Resource, D3D12_RESOURCE_STATES>;
+postfx::SideMarks<ID3D12GraphicsCommandList, ID3D12Resource, D3D12_RESOURCE_STATES> side_marks;
+
+// A list's Mark, made when it has none; its side entry notes that it has one.
+Mark &mark_of(ID3D12GraphicsCommandList *list)
+{
+    if (Side *s = side_marks.find(list, true))
+        s->marked.store(true, std::memory_order_relaxed);
+    return marks[list];
+}
+
+void unmark(ID3D12GraphicsCommandList *list)
+{
+    marks.erase(list);
+    if (Side *s = side_marks.find(list, false)) {
+        s->depth.store(nullptr, std::memory_order_relaxed);
+        s->ui.store(false, std::memory_order_relaxed);
+        s->marked.store(false, std::memory_order_relaxed);
+    }
+}
+
+// Takes a list's side marks into its Mark m. A depth barrier makes the Mark when the list has none, as
+// it does on the locked path.
+Mark *absorb(ID3D12GraphicsCommandList *list, Mark *m)
+{
+    Side *s = side_marks.find(list, false);
+    if (!s)
+        return m;
+    ID3D12Resource *d = s->depth.exchange(nullptr, std::memory_order_relaxed);
+    bool ui = s->ui.exchange(false, std::memory_order_relaxed);
+    if (!m) {
+        if (!d)
+            return nullptr;
+        m = &mark_of(list);
+    }
+    if (d) {
+        m->depth = d;
+        m->depth_state = s->depth_state.load(std::memory_order_relaxed);
+    }
+    m->ui |= ui;
+    return m;
+}
+
+// Marks a batch that moves only depth and UI images without the lock, the way the locked path marks
+// it: a UI barrier counts once the list has a Mark or a depth barrier. False when the batch needs the
+// lock: while the diagnostics record each barrier, and once the side table is full.
+bool mark_aside(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers, bool depth)
+{
+    if (!diag_done || order_left || side_marks.full())
+        return false;
+    Side *s = side_marks.find(list, depth);
+    if (!s)
+        return !depth;
+    bool marked = s->marked.load(std::memory_order_relaxed) || s->depth.load(std::memory_order_relaxed);
+    for (UINT i = 0; i < n; i++) {
+        const D3D12_RESOURCE_BARRIER &b = barriers[i];
+        if (b.Type != D3D12_RESOURCE_BARRIER_TYPE_TRANSITION)
+            continue;
+        uint8_t c = watched_bits(b.Transition.pResource);
+        postfx::note(*s, marked, (c & W_DEPTH) != 0, (c & W_UI) != 0, b.Transition.pResource, b.Transition.StateAfter);
+    }
+    return true;
+}
+
 // Marks what each game list does with the watched resources. At the HUD-less step (the HUD-less copy
 // leaves UAV while this list has made the back buffer a render target) the passes are recorded into the
 // list, before the game's barrier, with every state as it was before this batch.
@@ -1368,16 +1435,19 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
     if (!barriers || !n || broken)
         return false;
     perf::Scope p(probe);
-    bool look = false;
-    for (UINT i = 0; i < n && !look; i++)
-        look = barriers[i].Type == D3D12_RESOURCE_BARRIER_TYPE_TRANSITION && watched_bits(barriers[i].Transition.pResource);
-    if (!look)
+    uint8_t seen = 0;
+    for (UINT i = 0; i < n; i++)
+        if (barriers[i].Type == D3D12_RESOURCE_BARRIER_TYPE_TRANSITION)
+            seen |= watched_bits(barriers[i].Transition.pResource);
+    if (!seen)
         return false;
     static const uint32_t marking = perf::probe("core", "postfx ResourceBarrier (watched)");
     perf::Scope m_scope(marking);
+    if (!(seen & (W_TONEMAP | W_BACK | W_HUDLESS)) && mark_aside(list, n, barriers, seen & W_DEPTH))
+        return false;
     std::lock_guard<std::recursive_mutex> g(lock);
     auto it = marks.find(list);
-    Mark *m = it == marks.end() ? nullptr : &it->second;
+    Mark *m = absorb(list, it == marks.end() ? nullptr : &it->second);
     ID3D12Resource *hudless = nullptr, *leaving = nullptr;
     D3D12_RESOURCE_STATES hudless_now{};
     bool moves_back = false;
@@ -1470,7 +1540,7 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
             int k = pick_slot();
             if (k >= 0 && record(w, k)) {
                 if (!m)
-                    m = &marks[list];
+                    m = &mark_of(list);
                 m->slot = k;
                 m->ran_back = w.back;
                 stats.in_list++;
@@ -1492,7 +1562,7 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
         if (!m) {
             if (!tonemap && !back && !depth && !(c & W_HUDLESS))
                 continue;
-            m = &marks[list];
+            m = &mark_of(list);
         }
         if (depth) {
             m->depth = r;
@@ -1546,15 +1616,13 @@ void on_reset(ID3D12GraphicsCommandList *list)
 {
     std::lock_guard<std::recursive_mutex> g(lock);
     auto it = marks.find(list);
-    if (it == marks.end())
-        return;
-    if (it->second.slot >= 0) {
+    if (it != marks.end() && it->second.slot >= 0) {
         slots[it->second.slot].pending = false;
         if (it->second.ran_back)
             back_use(it->second.ran_back).fresh = true;
         stats.dropped++;
     }
-    marks.erase(it);
+    unmark(list);
 }
 
 // Submits the game's lists, the core's own list after a picture list that ended before the HUD, and a
@@ -1572,11 +1640,13 @@ bool on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists)
     UINT signals = 0;
     {
         std::lock_guard<std::recursive_mutex> g(lock);
-        for (UINT i = 0; i < n && !marks.empty(); i++) {
-            auto it = marks.find(reinterpret_cast<ID3D12GraphicsCommandList *>(lists[i]));
-            if (it == marks.end())
+        for (UINT i = 0; i < n; i++) {
+            auto *gl = reinterpret_cast<ID3D12GraphicsCommandList *>(lists[i]);
+            auto it = marks.find(gl);
+            Mark *mark = absorb(gl, it == marks.end() ? nullptr : &it->second);
+            if (!mark)
                 continue;
-            Mark &m = it->second;
+            Mark &m = *mark;
             if (m.slot >= 0 && signals < FRAMES)
                 signal[signals++] = m.slot;
             if (m.tonemap && !diag_done) {
@@ -1613,7 +1683,7 @@ bool on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists)
                 swofty::log("[postfx] order: list %p of %u in this submission%s:%s%s", static_cast<void *>(lists[i]), n,
                             m.tonemap ? " (picture)" : "", m.order.c_str(), split == i ? " [BETWEEN after this list]" : "");
             }
-            marks.erase(it);
+            unmark(gl);
         }
     }
     if (split == n && !signals) {

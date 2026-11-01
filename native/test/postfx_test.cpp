@@ -97,6 +97,31 @@ int main()
     view.set = false;
     CHECK(rewrite(view, static_cast<Res *>(nullptr), 41));
 
+    struct List {};
+    List la, lb, many[3];
+    SideMarks<List, Res, int, 8, 8> side;
+    CHECK(!side.find(&la, false));
+    SideMark<List, Res, int> *a = side.find(&la, true);
+    CHECK(a && side.find(&la, false) == a && side.find(&lb, true) != a && !side.full());
+    bool marked = a->marked || a->depth;
+    note(*a, marked, false, true, &rebuilt, 0);
+    CHECK(!a->ui && !marked);
+    note(*a, marked, true, false, &depth, 16);
+    CHECK(a->depth == &depth && a->depth_state == 16 && marked);
+    note(*a, marked, false, true, &rebuilt, 0);
+    CHECK(a->ui);
+    SideMark<List, Res, int> *b = side.find(&lb, false);
+    b->marked = true;
+    marked = b->marked || b->depth;
+    note(*b, marked, false, true, &rebuilt, 0);
+    CHECK(b->ui && !b->depth);
+
+    SideMarks<List, Res, int, 2, 2> cramped;
+    CHECK(cramped.find(&many[0], true) && cramped.find(&many[1], true));
+    CHECK(!cramped.find(&many[2], false) && !cramped.full());
+    CHECK(!cramped.find(&many[2], true) && cramped.full());
+    CHECK(cramped.find(&many[0], false) && cramped.find(&many[1], false));
+
     if (failed)
         return 1;
     std::printf("postfx logic: all checks passed\n");
