@@ -101,6 +101,15 @@ int main()
     CHECK(!dr::should_arm_from("crash-a.txt", "crash-b.txt", "access violation"));
     CHECK(dr::should_arm_from("crash-a.txt", "crash-b.txt", "the GPU was removed"));
 
+    CHECK(dr::state_dir(L"C:\\Users\\a\\AppData\\Local") == L"C:\\Users\\a\\AppData\\Local\\Swofty\\state\\");
+    CHECK(dr::state_dir(L"").empty());
+    auto dirs = dr::marker_dirs(L"G:\\game\\swofty\\", L"C:\\L");
+    CHECK(dirs.size() == 2 && dirs[0] == L"G:\\game\\swofty\\" && dirs[1] == L"C:\\L\\Swofty\\state\\");
+    CHECK(dr::marker_dirs(L"G:\\x\\", L"").size() == 1);
+    CHECK(dr::write_first(dirs, [](const std::wstring &) { return true; }) == 0);
+    CHECK(dr::write_first(dirs, [&](const std::wstring &d) { return d == dirs[1]; }) == 1);
+    CHECK(dr::write_first(dirs, [](const std::wstring &) { return false; }) == -1);
+
     if (!g_fail)
         std::printf("dred test passed\n");
     return g_fail ? 1 : 0;

@@ -187,4 +187,29 @@ inline bool should_arm_from(std::string_view checked_name, std::string_view newe
     return report_shows_removal(text) || log_shows_removal(text);
 }
 
+// %LOCALAPPDATA%\\Swofty\\state\\, where the loader log and crash reports go when the game folder refuses a write.
+inline std::wstring state_dir(const std::wstring &local_app_data)
+{
+    return local_app_data.empty() ? std::wstring() : local_app_data + L"\\Swofty\\state\\";
+}
+
+// The folders a marker file is written to and read from, in order: the game's swofty folder, then the state folder.
+inline std::vector<std::wstring> marker_dirs(const std::wstring &swofty_dir, const std::wstring &local_app_data)
+{
+    std::vector<std::wstring> dirs{swofty_dir};
+    std::wstring st = state_dir(local_app_data);
+    if (!st.empty() && st != swofty_dir)
+        dirs.push_back(st);
+    return dirs;
+}
+
+// Index of the first folder try_write accepts, or -1.
+template <typename F> int write_first(const std::vector<std::wstring> &dirs, F try_write)
+{
+    for (size_t i = 0; i < dirs.size(); i++)
+        if (try_write(dirs[i]))
+            return int(i);
+    return -1;
+}
+
 }

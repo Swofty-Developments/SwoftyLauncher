@@ -17,7 +17,8 @@ constexpr int kDevices = 8;
 
 bool armed;
 HMODULE core_module;
-std::wstring flag_path;
+std::vector<std::wstring> marker_folders;
+void (*log_fn)(const char *, ...);
 ID3D12Device *devices[kDevices];
 LONG ndevices;
 safetyhook::InlineHook create_hook;
@@ -93,8 +94,6 @@ HRESULT WINAPI hooked_create_device(IUnknown *adapter, D3D_FEATURE_LEVEL level, 
     return hr;
 }
 
-std::wstring checked_path;
-
 std::string read_file(const std::wstring &path, size_t cap)
 {
     HANDLE f = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
@@ -108,14 +107,51 @@ std::string read_file(const std::wstring &path, size_t cap)
     return s;
 }
 
-void write_text(const std::wstring &path, const std::string &text)
+DWORD write_text(const std::wstring &path, const std::string &text)
 {
     HANDLE f = CreateFileW(path.c_str(), GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (f == INVALID_HANDLE_VALUE)
-        return;
-    DWORD w;
-    WriteFile(f, text.data(), DWORD(text.size()), &w, nullptr);
+        return GetLastError();
+    DWORD w = 0, err = 0;
+    if (!WriteFile(f, text.data(), DWORD(text.size()), &w, nullptr))
+        err = GetLastError();
     CloseHandle(f);
+    return err;
+}
+
+bool put_marker(const wchar_t *name, const std::string &text)
+{
+    DWORD err = 0;
+    int at = write_first(marker_folders, [&](const std::wstring &dir) {
+        if (dir.size() > 4 && dir.find(L"\\state\\") != std::wstring::npos)
+            CreateDirectoryW((dir.substr(0, dir.size() - 7)).c_str(), nullptr), CreateDirectoryW(dir.c_str(), nullptr);
+        err = write_text(dir + name, text);
+        if (err && log_fn)
+            log_fn("[dred] could not write %ls%ls: error %lu", dir.c_str(), name, (unsigned long)err);
+        return err == 0;
+    });
+    return at >= 0;
+}
+
+std::string read_marker(const wchar_t *name)
+{
+    for (const auto &d : marker_folders) {
+        std::string s = read_file(d + name, 128);
+        if (!s.empty())
+            return s;
+    }
+    return {};
+}
+
+bool take_marker(const wchar_t *name)
+{
+    bool had = false;
+    for (const auto &d : marker_folders)
+        if (GetFileAttributesW((d + name).c_str()) != INVALID_FILE_ATTRIBUTES) {
+            had = true;
+            DeleteFileW((d + name).c_str());
+        }
+    return had;
 }
 
 std::wstring widen(const std::string &s)
@@ -140,32 +176,25 @@ std::string newest_in(const std::wstring &dir)
     return newest_report(names);
 }
 
-bool prior_session_removed(const std::wstring &swofty_dir, const char **how)
+bool prior_session_removed(const char **how)
 {
-    DWORD a = flag_path.empty() ? INVALID_FILE_ATTRIBUTES : GetFileAttributesW(flag_path.c_str());
-    if (a != INVALID_FILE_ATTRIBUTES) {
-        DeleteFileW(flag_path.c_str());
+    if (take_marker(L"dred.flag")) {
         *how = "dred.flag";
         return true;
     }
-    std::vector<std::wstring> dirs{swofty_dir};
-    wchar_t local[MAX_PATH];
-    DWORD n = GetEnvironmentVariableW(L"LOCALAPPDATA", local, MAX_PATH);
-    if (n && n < MAX_PATH - 20)
-        dirs.push_back(std::wstring(local) + L"\\Swofty\\state\\");
-    std::string checked = read_file(checked_path, 128);
+    std::string checked = read_marker(L"dred.checked");
     while (!checked.empty() && (checked.back() == '\n' || checked.back() == '\r'))
         checked.pop_back();
     std::wstring found_dir;
     std::string newest;
-    for (const auto &d : dirs) {
+    for (const auto &d : marker_folders) {
         std::string c = newest_in(d);
         if (c > newest)
             newest = c, found_dir = d;
     }
     if (newest.empty() || newest == checked)
         return false;
-    write_text(checked_path, newest + "\n");
+    put_marker(L"dred.checked", newest + "\n");
     if (!should_arm_from(checked, newest, read_file(found_dir + widen(newest), 4 << 20)))
         return false;
     *how = "the newest crash report";
@@ -174,15 +203,7 @@ bool prior_session_removed(const std::wstring &swofty_dir, const char **how)
 
 void write_flag()
 {
-    if (flag_path.empty())
-        return;
-    HANDLE f = CreateFileW(flag_path.c_str(), GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-    if (f == INVALID_HANDLE_VALUE)
-        return;
-    DWORD w;
-    const char text[] = "removed\n";
-    WriteFile(f, text, sizeof text - 1, &w, nullptr);
-    CloseHandle(f);
+    put_marker(L"dred.flag", "removed\n");
 }
 
 template <typename Node> std::string breadcrumbs(const Node *head)
@@ -317,12 +338,14 @@ std::string removed_device(ID3D12Device *dev, HRESULT reason)
 void arm(const std::wstring &swofty_dir, void (*log)(const char *, ...), HMODULE self)
 {
     core_module = self;
-    flag_path = swofty_dir + L"dred.flag";
-    checked_path = swofty_dir + L"dred.checked";
+    log_fn = log;
+    wchar_t local[MAX_PATH];
+    DWORD ln = GetEnvironmentVariableW(L"LOCALAPPDATA", local, MAX_PATH);
+    marker_folders = marker_dirs(swofty_dir, ln && ln < MAX_PATH ? std::wstring(local) : std::wstring());
     char env[16] = {0};
     GetEnvironmentVariableA("SWOFTY_DRED", env, sizeof env);
     const char *how_prior = "";
-    Decision d = decide(env, prior_session_removed(swofty_dir, &how_prior));
+    Decision d = decide(env, prior_session_removed(&how_prior));
     if (!d.on) {
         log("[dred] off: %s (SWOFTY_DRED=1 turns it on)", d.why);
         return;
