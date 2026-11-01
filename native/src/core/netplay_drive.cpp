@@ -238,6 +238,104 @@ constexpr DWORD POLL_MS = 250;
 constexpr uint64_t HEARTBEAT_MS = 5000;
 
 std::atomic<bool> armed, frontend, lobby, home_screen;
+
+// The title and the notice without input, for a game the launcher started for a room: the virtual pad's
+// a, through XInputGetState and XInputGetCapabilities in xinput1_4.dll (the game imports them by ordinals 2
+// and 4). A real pad passes through whenever the skip isn't pressing.
+struct XPad {
+    uint16_t buttons;
+    uint8_t lt, rt;
+    int16_t lx, ly, rx, ry;
+};
+struct XState {
+    DWORD packet;
+    XPad pad;
+};
+struct XCaps {
+    uint8_t type, subtype;
+    uint16_t flags;
+    XPad pad;
+    uint16_t vib_l, vib_r;
+};
+
+constexpr uint16_t PAD_A = 0x1000;
+
+std::atomic<bool> skip_armed{false}, skip_press{false}, transition_screen{false};
+std::atomic<DWORD> skip_packet{1};
+drive::TitleSkip title_skip;
+safetyhook::InlineHook h_xget, h_xcaps;
+
+DWORD WINAPI skip_get_state(DWORD user, XState *s)
+{
+    DWORD r = h_xget.call<DWORD>(user, s);
+    if (user != 0 || !s || !skip_armed.load() || !skip_press.load())
+        return r;
+    std::memset(s, 0, sizeof *s);
+    s->packet = skip_packet.load();
+    s->pad.buttons = PAD_A;
+    return ERROR_SUCCESS;
+}
+
+DWORD WINAPI skip_get_caps(DWORD user, DWORD flags, XCaps *c)
+{
+    DWORD r = h_xcaps.call<DWORD>(user, flags, c);
+    if (user != 0 || !c || !skip_armed.load() || r == ERROR_SUCCESS)
+        return r;
+    std::memset(c, 0, sizeof *c);
+    c->type = 1;
+    c->subtype = 1;
+    c->pad.buttons = 0xf3ff;
+    c->pad.lt = c->pad.rt = 0xff;
+    return ERROR_SUCCESS;
+}
+
+void skip_setup()
+{
+    HMODULE x = LoadLibraryW(L"xinput1_4.dll");
+    void *get = x ? reinterpret_cast<void *>(GetProcAddress(x, MAKEINTRESOURCEA(2))) : nullptr;
+    void *caps = x ? reinterpret_cast<void *>(GetProcAddress(x, MAKEINTRESOURCEA(4))) : nullptr;
+    if (!get || !caps) {
+        swofty::log("[netplay] room launch: xinput1_4.dll or its exports were not found; the title waits for a press");
+        return;
+    }
+    auto g = safetyhook::InlineHook::create(get, reinterpret_cast<void *>(skip_get_state));
+    auto c = safetyhook::InlineHook::create(caps, reinterpret_cast<void *>(skip_get_caps));
+    if (!g || !c) {
+        swofty::log("[netplay] room launch: hooking xinput1_4.dll failed; the title waits for a press");
+        return;
+    }
+    h_xget = std::move(*g);
+    h_xcaps = std::move(*c);
+    title_skip.start(GetTickCount64());
+    skip_armed = true;
+    swofty::log("[netplay] room launch: the title and the notice are passed with the virtual pad's a");
+}
+
+void skip_tick()
+{
+    if (!skip_armed.load())
+        return;
+    drive::SkipFacts f;
+    f.frontend = frontend.load();
+    f.home = home_screen.load();
+    f.transition = transition_screen.load();
+    f.lobby = lobby.load();
+    int before = title_skip.presses();
+    bool press = title_skip.tick(f, GetTickCount64());
+    if (press != skip_press.load()) {
+        skip_press = press;
+        skip_packet++;
+    }
+    if (title_skip.presses() != before)
+        swofty::log("[netplay] room launch: press %d of the virtual pad's a (%s)", title_skip.presses(),
+                    f.frontend ? "the notice" : "the title");
+    if (title_skip.done()) {
+        skip_armed = false;
+        skip_press = false;
+        swofty::log("[netplay] room launch: the main menu is up after %d press(es)", title_skip.presses());
+    }
+}
+
 std::atomic<int> role{int(drive::Role::none)};
 
 std::mutex queue_lock;
@@ -363,6 +461,8 @@ void netplay_drive_setup()
         return;
     swofty::log("[netplay] launcher commands on (<game>/swofty/netplay); configure, host, join and leave accepted");
     probe_setup();
+    if (drive::room_launch(v))
+        skip_setup();
     if (!started.exchange(true))
         std::thread(watch).detach();
 }
@@ -389,11 +489,16 @@ void netplay_screen(const char *name)
     static const char *const overlays[] = {"fe_planes", "persistent", "playercard", "render_badge",
                                            "theming_overlay_frontend", "standard_wipe", "frontend_transition",
                                            "slice_bg_content_underlay", "f1_life_driver_tags", "audio_themes"};
-    if (!name || std::strncmp(name, "fe_", 3) != 0)
+    if (!name)
+        return;
+    if (!std::strcmp(name, "frontend_transition"))
+        transition_screen = true;
+    if (std::strncmp(name, "fe_", 3) != 0)
         return;
     for (const char *o : overlays)
         if (!std::strcmp(name, o))
             return;
+    transition_screen = false;
     home_screen = !std::strcmp(name, "fe_home");
     if (!std::strcmp(name, "fe_local_multiplayer"))
         local_mp_opened = true;
@@ -496,6 +601,7 @@ void netplay_tick()
 {
     if (!started.load())
         return;
+    skip_tick();
     bool running;
     {
         std::lock_guard<std::mutex> g(job_lock);

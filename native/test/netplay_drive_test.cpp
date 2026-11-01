@@ -255,6 +255,43 @@ int main()
                std::string(drive::do_name(drive::Do::mode_switch)) == "switch to LAN mode",
            "each job step has a name for loader.log");
 
+    expect(drive::room_launch("armed;room") && drive::room_launch("room") && drive::room_launch("self=1;base=3;room"),
+           "a room launch is told by its token");
+    expect(!drive::room_launch("armed") && !drive::room_launch("self=1;base=30000;name=roomy") &&
+               !drive::room_launch(""),
+           "an armed game or a name with room in it is not a room launch");
+    {
+        drive::TitleSkip skip;
+        drive::SkipFacts f;
+        skip.start(1000);
+        expect(!skip.tick(f, 1000 + drive::TitleSkip::FIRST_MS - 1), "the title is left alone at first");
+        expect(skip.tick(f, 1000 + drive::TitleSkip::FIRST_MS), "the title gets a press after FIRST_MS");
+        expect(!skip.tick(f, 1000 + drive::TitleSkip::FIRST_MS + drive::TitleSkip::HOLD_MS), "a press is released");
+        expect(skip.tick(f, 1000 + drive::TitleSkip::FIRST_MS + drive::TitleSkip::CYCLE_MS), "and pressed again");
+        expect(skip.presses() == 2, "two presses are counted");
+        uint64_t t = 20000;
+        f.frontend = true;
+        expect(!skip.tick(f, t), "the front end without the notice takes no press");
+        f.transition = true;
+        expect(!skip.tick(f, t + 1), "the transition screen starts the notice clock");
+        expect(!skip.tick(f, t + drive::TitleSkip::NOTICE_MS), "the notice gets no press before NOTICE_MS");
+        expect(skip.tick(f, t + 1 + drive::TitleSkip::NOTICE_MS), "the notice gets a press after NOTICE_MS");
+        f.home = true;
+        expect(!skip.tick(f, t + 9000) && skip.done(), "the home screen ends the skip");
+        f.home = false;
+        expect(!skip.tick(f, t + 11000), "an ended skip never presses again");
+    }
+    {
+        drive::TitleSkip skip;
+        drive::SkipFacts f;
+        skip.start(0);
+        f.lobby = true;
+        expect(!skip.tick(f, 5000) && skip.done(), "the lobby ends the skip");
+        drive::TitleSkip late;
+        late.start(0);
+        expect(!late.tick(drive::SkipFacts{}, drive::TitleSkip::GIVE_UP_MS) && late.done(), "the skip gives up");
+    }
+
     printf("%s\n", fails ? "FAILED" : "all ok");
     return fails ? 1 : 0;
 }

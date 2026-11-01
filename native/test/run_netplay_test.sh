@@ -40,12 +40,13 @@ run() {
     rm -f "$LOG" "$TRACE" "$STATUS"
     (cd "$OUT/game" && timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe") || status=1
 }
-for mode in off armed invalid host named traced; do
+for mode in off armed roomlaunch invalid host named traced; do
     unset SWOFTY_NETPLAY SWOFTY_NET_TRACE
     export FAKE_NETPLAY_SELF=1 FAKE_NETPLAY_BASE=$BASE FAKE_NETPLAY_HOOKS=1 FAKE_NETPLAY_ROOM=0
     case $mode in
     off) export FAKE_NETPLAY_HOOKS=0 ;;
     armed) export SWOFTY_NETPLAY=armed ;;
+    roomlaunch) export SWOFTY_NETPLAY="armed;room" ;;
     invalid) export SWOFTY_NETPLAY="self=1;base=$BASE;port=21414" ;;
     host) export SWOFTY_NETPLAY="self=1;base=$BASE" FAKE_NETPLAY_ROOM=1 ;;
     named) export SWOFTY_NETPLAY="self=1;base=$BASE;name=%20Sw%C3%B6fty%E2%80%8B%20%3B%201%20%20" FAKE_NETPLAY_ROOM=1 ;;
@@ -59,11 +60,16 @@ for mode in off armed invalid host named traced; do
     off)
         none "no bridge line without the variable" '\[netplay\] (bridge|SWOFTY_NETPLAY|room|own address|first datagram)'
         ;;
-    armed | invalid)
+    armed | roomlaunch | invalid)
         if [[ $mode == invalid ]]; then
             check "the invalid value is logged" "\[netplay\] SWOFTY_NETPLAY=\"self=1;base=$BASE;port=21414\" is not self=<1-254>;base=<port>\[;name=<name>\]; armed without a room"
         else
             none "no invalid-value line for a plain value" '\[netplay\] SWOFTY_NETPLAY='
+        fi
+        if [[ $mode == roomlaunch ]]; then
+            check "a room launch passes the title and the notice with the virtual pad" "\[netplay\] room launch: the title and the notice are passed with the virtual pad's a"
+        else
+            none "a plain armed game keeps its own title" '\[netplay\] room launch'
         fi
         check "armed on every slot without a room" "\[netplay\] bridge armed: $slots; no room yet[[:cntrl:]]?$"
         check "the game socket's bind writes the status without a room" "\[netplay\] bridge on, self=0 base=0 game_port=21414[[:cntrl:]]?$"

@@ -535,6 +535,80 @@ public:
     uint64_t started = 0, deadline = 0;
 };
 
+// The launcher starts the game for a room with SWOFTY_NETPLAY=armed;room: the game then passes the title
+// and the core's notice by itself, so the player reaches the main menu without input.
+inline bool room_launch(const std::string &env)
+{
+    size_t at = 0;
+    while (at <= env.size()) {
+        size_t end = env.find(';', at);
+        if (end == std::string::npos)
+            end = env.size();
+        if (env.compare(at, end - at, "room") == 0)
+            return true;
+        at = end + 1;
+    }
+    return false;
+}
+
+struct SkipFacts {
+    bool frontend = false, home = false, transition = false, lobby = false;
+};
+
+// Presses the virtual pad's a until the main menu is up: the title takes presses from FIRST_MS after the
+// core started, and the core's notice, which sits over the front end's frontend_transition screen,
+// from NOTICE_MS after that screen opened. Each press is held HOLD_MS and released for the rest of
+// CYCLE_MS, long enough for a frame to see it. It ends at the home screen, the LAN lobby, or GIVE_UP_MS.
+class TitleSkip {
+public:
+    static constexpr uint64_t FIRST_MS = 3000, NOTICE_MS = 4000, HOLD_MS = 250, CYCLE_MS = 2000,
+                              GIVE_UP_MS = 15 * 60 * 1000;
+
+    void start(uint64_t now)
+    {
+        started_ = now;
+        on_ = true;
+    }
+
+    bool done() const { return !on_; }
+    int presses() const { return presses_; }
+
+    bool tick(const SkipFacts &f, uint64_t now)
+    {
+        if (!on_)
+            return false;
+        if (f.home || f.lobby || now - started_ >= GIVE_UP_MS) {
+            on_ = false;
+            return false;
+        }
+        if (!f.transition)
+            transition_ = 0;
+        else if (!transition_)
+            transition_ = now;
+        uint64_t from = 0;
+        if (!f.frontend)
+            from = started_ + FIRST_MS;
+        else if (transition_)
+            from = transition_ + NOTICE_MS;
+        if (!from || now < from) {
+            origin_ = 0;
+            return false;
+        }
+        if (!origin_)
+            origin_ = now;
+        bool press = (now - origin_) % CYCLE_MS < HOLD_MS;
+        if (press && !held_)
+            presses_++;
+        held_ = press;
+        return press;
+    }
+
+private:
+    uint64_t started_ = 0, transition_ = 0, origin_ = 0;
+    bool on_ = false, held_ = false;
+    int presses_ = 0;
+};
+
 // Names of inbox files the launcher writes: <digits>.json, written as .tmp and renamed.
 inline bool inbox_name(const std::string &name, uint64_t *seq)
 {
