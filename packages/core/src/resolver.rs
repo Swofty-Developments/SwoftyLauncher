@@ -117,7 +117,7 @@ pub fn resolve(profile: &Profile, installed: &BTreeMap<String, AddonManifest>) -
             .get(id)
             .map_or_else(|| id.to_owned(), |m| m.name.clone())
     };
-    for p in crate::order::problems(profile, installed)
+    for p in crate::order::problems(profile, installed, &crate::order::is_pinned)
         .iter()
         .filter(|p| p.kind == crate::order::Kind::Below)
     {
