@@ -1445,6 +1445,81 @@ static void crash_teamhq(void)
     fflush(stdout);
 }
 
+// The tail of the car setup screen handler Game_CarSetupVm_Initialise (0x140c1b904..0x140c1b945), copied byte for byte
+// from the Steam build in a small frame taking the vm in rcx: the setup data test (mov rax,[vm+0x268] ; je), the car load
+// (mov rax,[rax+0x28]) and the handling version compare with its jne at +0x18, then the two differential range updates,
+// here fake_setup_diff_a and fake_setup_diff_b counting their calls, and the game's following mov dword [rsp+0x30],4. Core's
+// setup screen car guard finds the compare by its byte pattern.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_setup_vm\n"
+    ".def fake_setup_vm; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_setup_vm\n"
+    "fake_setup_vm:\n"
+    ".byte 0x56\n.seh_pushreg %rsi\n"
+    ".byte 0x48,0x83,0xEC,0x40\n.seh_stackalloc 0x40\n"
+    ".seh_endprologue\n"
+    ".byte 0x48,0x89,0xCE\n"
+    ".byte 0x48,0x8B,0x86,0x68,0x02,0x00,0x00\n"
+    ".byte 0x48,0x85,0xC0\n"
+    ".byte 0x74,0x1D\n"
+    ".byte 0x48,0x8B,0x40,0x28\n"
+    ".byte 0x83,0xB8,0x40,0x9F,0x00,0x00,0x64\n"
+    ".byte 0x75,0x10\n"
+    ".byte 0x48,0x89,0xF1\n"
+    "call fake_setup_diff_a\n"
+    ".byte 0x48,0x89,0xF1\n"
+    "call fake_setup_diff_b\n"
+    ".byte 0xC7,0x44,0x24,0x30,0x04,0x00,0x00,0x00\n"
+    ".byte 0x48,0x83,0xC4,0x40\n"
+    ".byte 0x5E,0xC3\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_setup_vm\"\n"
+    ".text\n");
+void fake_setup_vm(void *vm);
+
+static int setup_diff_calls;
+void fake_setup_diff_a(void) { setup_diff_calls++; }
+void fake_setup_diff_b(void) { setup_diff_calls += 10; }
+
+static uint8_t setup_vm_mem[0x300], setup_data[0x40], setup_car[0x9f60];
+
+static void setup_vm_prepare(int has_data, int has_car, uint32_t version)
+{
+    memset(setup_vm_mem, 0, sizeof setup_vm_mem);
+    memset(setup_data, 0, sizeof setup_data);
+    memset(setup_car, 0, sizeof setup_car);
+    *(uint32_t *)(setup_car + 0x9f40) = version;
+    *(void **)(setup_data + 0x28) = has_car ? (void *)setup_car : NULL;
+    *(void **)(setup_vm_mem + 0x268) = has_data ? (void *)setup_data : NULL;
+    setup_diff_calls = 0;
+}
+
+static void test_setup_vm(void)
+{
+    setup_vm_prepare(1, 1, 100);
+    fake_setup_vm(setup_vm_mem);
+    expect(setup_diff_calls == 11, "setups: a setup screen with a version 100 car updates both differential ranges");
+    setup_vm_prepare(1, 1, 90);
+    fake_setup_vm(setup_vm_mem);
+    expect(setup_diff_calls == 0, "setups: a setup screen with an older car updates neither range");
+    setup_vm_prepare(0, 0, 0);
+    fake_setup_vm(setup_vm_mem);
+    expect(setup_diff_calls == 0, "setups: a setup screen with no setup data updates neither range");
+}
+
+static void crash_setup_vm(void)
+{
+    SetErrorMode(SEM_NOGPFAULTERRORBOX);
+    setup_vm_prepare(1, 0, 0);
+    printf("      setups: refreshing a setup screen whose setup data has no car\n");
+    fflush(stdout);
+    fake_setup_vm(setup_vm_mem);
+    printf("      setups: the refresh returned with %d range updates\n", setup_diff_calls);
+    fflush(stdout);
+}
+
 // The two entrant-list lookups behind the front-end tile populate, copied byte for byte from the Steam build in small
 // frames, the calls and the RIP-relative operands pointed at stand-ins. fake_list_first_id is
 // FeTile_Get_ListFirstEntrantId (0x141738eb0..0x141738f6c) taking the item in rcx and the result in rdx: it scans the
@@ -2386,6 +2461,7 @@ int main(int argc, char **argv)
         test_standings();
         test_weekends();
         test_teamhq();
+        test_setup_vm();
         test_fe_tiles();
         test_ai_corner();
         test_garage_crew(1);
@@ -2433,6 +2509,8 @@ int main(int argc, char **argv)
         crash_weekends();
     if (argc > 1 && !strcmp(argv[1], "teamhq"))
         crash_teamhq();
+    if (argc > 1 && !strcmp(argv[1], "setup_vm"))
+        crash_setup_vm();
     if (argc > 1 && !strcmp(argv[1], "fe_scan"))
         crash_fe_scan();
     if (argc > 1 && !strcmp(argv[1], "fe_row"))

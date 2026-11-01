@@ -348,6 +348,7 @@ EOF
         once "teamhq: the guard is armed" '\[career\] teamhq track guard armed'
         once "teamhq: an event whose track has no track data is skipped and logged once" '\[career\] teamhq: track 6 has no track data; the event shows no track'
         once "teamhq: an event whose track has no record is skipped and logged once" '\[career\] teamhq: track 1 has no track data; the event shows no track'
+        once "setups: the guard is armed" '\[setups\] car guard armed at 1 of 4 sites'
         once "fe tiles: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(front-end tile list guard\)': 3 mixin\(s\)"
         once "fe tiles: the guard is armed" '\[fe\] tiles guard armed'
         once "fe tiles: a list missing from the slot array is skipped and logged once" '\[fe\] tiles: entrant list f2_2026 is not in the game data; its tile is left without a list'
@@ -754,6 +755,25 @@ for guard in on off; do
         once "teamhq off: the guard is off" '\[career\] teamhq track guard off \(SWOFTY_TEAMHQ_TRACK_GUARD=0\)'
         check "teamhq off: the read faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Career_TeamHqAdvance_BuildTrackNode\+0x52'
         [[ $code != 0 ]] && echo "ok  : teamhq off: process ended with $code" || { echo "FAIL: teamhq off: process exited 0"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== setup_vm ($guard)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_SETUP_VM_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" setup_vm >"$OUT/setup_vm.out" 2>&1 || code=$?
+    grep -E '\[setups\]|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    if [[ $guard == on ]]; then
+        once "setup_vm on: the refresh is skipped and logged" '\[setups\] the setup screen has no car yet; skipped'
+        grep -q 'setups: the refresh returned with 0 range updates' "$OUT/setup_vm.out" && echo "ok  : setup_vm on: the refresh took the game's skip path" ||
+            { echo "FAIL: setup_vm on: the refresh did not take the game's skip path"; status=1; }
+        count "setup_vm on: no unhandled fault" 0 '\[crash\] unhandled '
+        compgen -G "$SW/crash-*.txt" >/dev/null && { echo "FAIL: setup_vm on: a crash report was written"; status=1; } ||
+            echo "ok  : setup_vm on: no crash report"
+    else
+        once "setup_vm off: the guard is off" '\[setups\] car guard off \(SWOFTY_SETUP_VM_GUARD=0\)'
+        check "setup_vm off: the read faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Game_CarSetupVm_Initialise\+0x18'
+        [[ $code != 0 ]] && echo "ok  : setup_vm off: process ended with $code" || { echo "FAIL: setup_vm off: process exited 0"; status=1; }
     fi
 done
 for guard in on off; do
