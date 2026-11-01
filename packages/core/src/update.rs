@@ -18,6 +18,8 @@ pub const PRETEND_ENV: &str = "SWOFTY_UPDATE_PRETEND_VERSION";
 pub const FIXTURE_ENV: &str = "SWOFTY_TEST_GITHUB";
 pub const CHECK_TIMEOUT: Duration = Duration::from_secs(10);
 pub const STAGING_DIR: &str = ".update";
+pub const INSTALL_MANIFEST: &str = ".install-manifest";
+const SWEPT_DIRS: [&str; 3] = ["loader", "addons", crate::postfx::DXC_DIR];
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct UpdateConfig {
@@ -531,6 +533,7 @@ impl Install {
         if crate::process::game_running() {
             return Err(Error::Other("close F1 25 before updating".into()));
         }
+        refuse_data_root(&self.root, &crate::paths::data_dir())?;
         let asset = release.platform_asset()?;
         self.cleanup();
         let work = self
@@ -570,6 +573,7 @@ impl Install {
         if crate::process::game_running() {
             return Err(Error::Other("close F1 25 before updating".into()));
         }
+        refuse_data_root(&self.root, &crate::paths::data_dir())?;
         progress.report(0.95, "Replacing files");
         apply(&new, &self.root, &staging.join("old"))
     }
@@ -651,18 +655,92 @@ fn roll_back(done: &[Swap]) {
     }
 }
 
+pub fn refuse_data_root(root: &Path, data: &Path) -> Result<()> {
+    let resolve = |p: &Path| std::fs::canonicalize(p).unwrap_or_else(|_| p.to_path_buf());
+    let (root_abs, data_abs) = (resolve(root), resolve(data));
+    let why = if data_abs.starts_with(&root_abs) {
+        Some(format!(
+            "the install folder {} is or contains the data folder {}",
+            root.display(),
+            data.display()
+        ))
+    } else {
+        ["config.json", "profiles", "saves"]
+            .iter()
+            .find(|m| root.join(m).symlink_metadata().is_ok())
+            .map(|m| {
+                format!(
+                    "the install folder {} holds {m}, so it looks like a data folder the launcher could not resolve (data folder resolved to {})",
+                    root.display(),
+                    data.display()
+                )
+            })
+    };
+    match why {
+        Some(why) => {
+            let why = format!("refusing to update: {why}");
+            eprintln!("swofty: {why}");
+            Err(Error::Other(why))
+        }
+        None => Ok(()),
+    }
+}
+
+fn read_install_manifest(root: &Path) -> Option<Vec<String>> {
+    let text = std::fs::read_to_string(root.join(INSTALL_MANIFEST)).ok()?;
+    Some(
+        text.lines()
+            .filter(|l| !l.is_empty())
+            .filter(|l| {
+                !l.split('/').any(|c| c == ".." || c.is_empty())
+                    && !l.starts_with('/')
+                    && SWEPT_DIRS.iter().any(|d| l.starts_with(&format!("{d}/")))
+            })
+            .map(str::to_owned)
+            .collect(),
+    )
+}
+
 pub fn apply(new: &Path, root: &Path, backup: &Path) -> Result<()> {
     let files = crate::builtin::loader_files(new)?;
+    let previous = read_install_manifest(root);
     let mut stale: Vec<String> = Vec::new();
-    for sub in ["loader", "addons", crate::postfx::DXC_DIR] {
-        let dir = root.join(sub);
-        if dir.is_dir() {
-            stale.extend(
-                crate::builtin::loader_files(&dir)?
-                    .into_keys()
-                    .map(|rel| format!("{sub}/{rel}"))
-                    .filter(|rel| !files.contains_key(rel)),
+    match &previous {
+        Some(prev) => stale.extend(
+            prev.iter()
+                .filter(|rel| !files.contains_key(*rel) && root.join(rel).symlink_metadata().is_ok())
+                .cloned(),
+        ),
+        None => {
+            eprintln!(
+                "swofty: no {INSTALL_MANIFEST} from the previous install; sweeping only loader/, dxc/ and the bundled addons the new package holds"
             );
+            let bundled: std::collections::BTreeSet<&str> = files
+                .keys()
+                .filter_map(|rel| rel.strip_prefix("addons/")?.split_once('/').map(|(id, _)| id))
+                .collect();
+            for id in bundled {
+                let dir = root.join("addons").join(id);
+                if dir.is_dir() {
+                    stale.extend(
+                        crate::builtin::loader_files(&dir)?
+                            .into_keys()
+                            .map(|rel| format!("addons/{id}/{rel}"))
+                            .filter(|rel| !files.contains_key(rel)),
+                    );
+                }
+            }
+            for sub in ["loader", crate::postfx::DXC_DIR] {
+                let dir = root.join(sub);
+                if dir.is_dir() {
+                    stale.extend(
+                        crate::builtin::loader_files(&dir)?
+                            .into_keys()
+                            .map(|rel| format!("{sub}/{rel}"))
+                            .filter(|rel| !files.contains_key(rel)),
+                    );
+                }
+            }
         }
     }
     let steps = files
@@ -695,6 +773,14 @@ pub fn apply(new: &Path, root: &Path, backup: &Path) -> Result<()> {
         }
     }
     std::fs::remove_file(&journal).map_err(io_err(&journal))?;
+    let recorded: String = files
+        .keys()
+        .filter(|rel| SWEPT_DIRS.iter().any(|d| rel.starts_with(&format!("{d}/"))))
+        .map(|rel| format!("{rel}\n"))
+        .collect();
+    if let Err(e) = std::fs::write(root.join(INSTALL_MANIFEST), recorded) {
+        eprintln!("swofty: couldn't record {INSTALL_MANIFEST}: {e}");
+    }
     Ok(())
 }
 
@@ -1015,12 +1101,98 @@ mod tests {
     }
 
     #[test]
+    fn an_install_root_that_is_or_holds_the_data_folder_is_refused() {
+        let dir = temp("refuse");
+        let data = dir.join("Swofty");
+        std::fs::create_dir_all(data.join("addons")).unwrap();
+        assert!(refuse_data_root(&data, &data).is_err());
+        assert!(refuse_data_root(&dir, &data).is_err());
+        assert!(refuse_data_root(&dir.join("elsewhere"), &data).is_ok());
+        assert!(refuse_data_root(&data.join("app"), &data).is_ok());
+        let moved = dir.join("D");
+        write(&moved.join("saves").join("p").join("career.sav"), "career");
+        let stale_config = dir.join("C-old");
+        assert!(refuse_data_root(&moved, &stale_config).is_err());
+        let custom = dir.join("install").join("mydata");
+        std::fs::create_dir_all(&custom).unwrap();
+        assert!(refuse_data_root(&dir.join("install"), &custom).is_err());
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn user_addons_survive_when_the_install_root_is_the_data_folder() {
+        let dir = temp("data-root");
+        let (root, new) = (dir.join("Swofty"), dir.join("new"));
+        release_tree(&root, "v1");
+        write(&root.join("addons").join("mine").join("addon.json"), "{}");
+        write(&root.join("addons").join("other.swoftyaddon"), "user");
+        write(&root.join("loader").join("stale.dll"), "stale");
+        write(&root.join("saves").join("p").join("career.sav"), "career");
+        release_tree(&new, "v2");
+        apply(&new, &root, &dir.join("old")).unwrap();
+        assert_eq!(read(&root.join("addons").join("mine").join("addon.json")), "{}");
+        assert_eq!(read(&root.join("addons").join("other.swoftyaddon")), "user");
+        assert!(!root.join("loader").join("stale.dll").exists());
+        assert_eq!(read(&root.join("saves").join("p").join("career.sav")), "career");
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn without_a_manifest_only_bundled_addon_folders_are_swept() {
+        let dir = temp("no-manifest");
+        let (root, new) = (dir.join("install"), dir.join("new"));
+        release_tree(&root, "v1");
+        write(&root.join("addons").join("core").join("addon.json"), "v1");
+        write(&root.join("addons").join("core").join("removed.txt"), "stale");
+        write(&root.join("addons").join("mine").join("addon.json"), "user");
+        write(&root.join("addons").join("mine").join("extra.txt"), "user");
+        write(&root.join("saves").join("p").join("career.sav"), "career");
+        release_tree(&new, "v2");
+        write(&new.join("addons").join("core").join("addon.json"), "v2");
+        apply(&new, &root, &dir.join("old")).unwrap();
+        assert_eq!(read(&root.join("addons").join("core").join("addon.json")), "v2");
+        assert!(!root.join("addons").join("core").join("removed.txt").exists());
+        assert_eq!(read(&root.join("addons").join("mine").join("addon.json")), "user");
+        assert_eq!(read(&root.join("addons").join("mine").join("extra.txt")), "user");
+        assert_eq!(read(&root.join("saves").join("p").join("career.sav")), "career");
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn only_files_in_the_previous_manifest_are_swept() {
+        let dir = temp("manifest-sweep");
+        let (root, new) = (dir.join("install"), dir.join("new"));
+        release_tree(&root, "v1");
+        write(&root.join("addons").join("bundled.swoftyaddon"), "old");
+        write(&root.join("addons").join("user.swoftyaddon"), "user");
+        write(&root.join("loader").join("old.dll"), "old");
+        write(&root.join("loader").join("user-added.dll"), "user");
+        write(
+            &root.join(INSTALL_MANIFEST),
+            "addons/bundled.swoftyaddon\nloader/old.dll\n../escape\naddons/../bin/x\n",
+        );
+        release_tree(&new, "v2");
+        apply(&new, &root, &dir.join("old")).unwrap();
+        assert!(!root.join("addons").join("bundled.swoftyaddon").exists());
+        assert!(!root.join("loader").join("old.dll").exists());
+        assert_eq!(read(&root.join("addons").join("user.swoftyaddon")), "user");
+        assert_eq!(read(&root.join("loader").join("user-added.dll")), "user");
+        let recorded = read(&root.join(INSTALL_MANIFEST));
+        assert!(recorded.contains(&format!("loader/{}", crate::builtin::CORE_DLL)));
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
     fn replaces_the_install_and_mirrors_the_loader() {
         let dir = temp("apply");
         let (root, new) = (dir.join("install"), dir.join("new"));
         release_tree(&root, "v1");
         write(&root.join("loader/stale.dll"), "stale");
         write(&root.join("addons/gone.swoftyaddon"), "gone");
+        write(
+            &root.join(INSTALL_MANIFEST),
+            "loader/stale.dll\naddons/gone.swoftyaddon\naddons/kept.swoftyaddon\ndxc/lib/libold.so\n",
+        );
         write(&root.join("addons/kept.swoftyaddon"), "kept v1");
         write(&root.join("dxc/lib/libold.so"), "old dxc");
         write(&root.join("bin/user-note.txt"), "mine");
