@@ -113,6 +113,7 @@ pub struct Before {
     loc: Location,
     snapshot: Option<Snapshot>,
     meta: Meta,
+    steam: Option<std::path::PathBuf>,
 }
 
 fn report(lines: Vec<String>) {
@@ -170,6 +171,19 @@ fn before_session_at(
     };
     if let (Some(store_loc), Some(from)) = (&launcher, &game_loc) {
         seed_if_empty(store, profile, from, store_loc);
+    }
+    let steam = game_loc
+        .as_ref()
+        .filter(|l| l.layout.named_like_steam() && !l.layout.is_launcher())
+        .map(|l| l.dir.clone());
+    if let Some(dir) = &steam {
+        say(
+            "info",
+            &format!(
+                "saves: Steam remote folder at session start, {}",
+                vault::folder_listing(dir)
+            ),
+        );
     }
     let Some(loc) = launcher.or(game_loc) else {
         say(
@@ -247,6 +261,7 @@ fn before_session_at(
         loc,
         snapshot,
         meta,
+        steam,
     })
 }
 
@@ -271,6 +286,15 @@ pub fn after_session(before: Option<Before>) {
     let Some(b) = before else {
         return;
     };
+    if let Some(dir) = &b.steam {
+        say(
+            "info",
+            &format!(
+                "saves: Steam remote folder at session end, {}",
+                vault::folder_listing(dir)
+            ),
+        );
+    }
     let mut meta = b.meta;
     meta.reason = Reason::AfterSession;
     meta.pin = None;

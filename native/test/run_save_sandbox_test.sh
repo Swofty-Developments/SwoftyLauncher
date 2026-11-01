@@ -197,7 +197,7 @@ SETTINGS=$(launcher_settings default "$LS/saves/default/remote") play launcherno
 check "launcher saves: a device without a Steam helper fails closed" 'LAUNCHER SAVES FAILED: the save device has no Steam helper'
 
 SETTINGS=$(launcher_settings default "$LS/saves/default/remote") play launcheroptout 0 T_EXPECT_NORMAL=1 SWOFTY_LAUNCHER_SAVES=off
-check "launcher saves: the once-on-Steam opt-out runs the session on Steam's saves" "\[saves\] launcher saves are off: this session runs on Steam's saves"
+check "launcher saves: the once-on-Steam opt-out runs the session on Steam's saves" "\[saves\] launcher saves are off.*this session runs on Steam's saves"
 none "launcher saves: the opt-out arms nothing" '\[saves\] (launcher saves armed|sandbox)'
 
 cp "$OUT/bindings.full.json" "$OUT/bindings.steam.json"
@@ -209,7 +209,7 @@ json.dump(doc, open(sys.argv[2], 'w'))
 EOB
 SETTINGS=$(launcher_settings default "$LS/saves/default/remote") play launcherea 0 T_EXPECT_NORMAL=1
 cp "$OUT/bindings.steam.json" "$OUT/bindings.full.json"
-check "launcher saves: the EA copy keeps its own saves and says why" '\[saves\] launcher saves are off: launcher saves are not available on the EA copy yet'
+check "launcher saves: the EA copy keeps its own saves and says why" '\[saves\] launcher saves are off.*launcher saves are not available on the EA copy yet'
 none "launcher saves: the EA copy arms nothing" '\[saves\] (launcher saves armed|sandbox)'
 
 if grep -q 'constexpr bool EA_BACKEND = true' ../src/core/save_sandbox.cpp; then

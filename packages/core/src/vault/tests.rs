@@ -844,3 +844,17 @@ fn a_restore_puts_the_snapshots_careers_back_and_dates_the_files() {
         std::time::UNIX_EPOCH + std::time::Duration::from_secs((T0 + 200) as u64)
     );
 }
+
+#[test]
+fn folder_listing_names_each_file_with_size_and_time() {
+    let dir = tmp("listing");
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(dir.join("savegame@profile#a"), b"12345").unwrap();
+    std::fs::write(dir.join("remotecache.vdf"), b"x").unwrap();
+    let line = folder_listing(&dir);
+    assert!(line.contains("remotecache.vdf 1 bytes 20"), "{line}");
+    assert!(line.contains("savegame@profile#a 5 bytes 20"), "{line}");
+    assert!(line.find("remotecache").unwrap() < line.find("savegame").unwrap());
+    assert!(folder_listing(&dir.join("missing")).contains("could not be read"));
+    std::fs::remove_dir_all(&dir).ok();
+}
