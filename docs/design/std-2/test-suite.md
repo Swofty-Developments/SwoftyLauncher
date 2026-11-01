@@ -81,7 +81,37 @@ What the core does (`native/src/core/direct_start.cpp`), in order:
 
 The flow is logged as `[direct] ...` lines: the weekend before and after (`weekend ..., track stat id 0, current session 0 of: practice_1 race`), the seat (`the player drives for cs17_williams as lance_stroll (seat 6)`), `StateLoadSession exiting for 503 ms: its sync point is complete` and `the session's screen garage_cockpit is up`.
 
-The Time Trial target is the same request with `"mode": "time_trial"`: `set_up_target` calls the setup registered with `runtime::direct_start_register_time_trial` (`direct_start_tt.cpp`).
+## Straight into a Time Trial
+
+```sh
+swofty --profile f1-1990 test session time_trial f1_1990_gp silverstone team=ferrari \
+    --fixture ~/fixtures/gp-base --lock /mnt/work/.f1-game.lock.d
+```
+
+```text
+time_trial <box> <track> [team=<label part>] [weather=clear|wet]
+```
+
+- `box` is a box's Grand Prix list or its Time Trial list (`f1_1990_gp` and `f1_1990_tt` both load `f1_1990_tt`), or any entrant list the setup mode `swofty_f1` offers.
+- `team=` picks the player's car: the list's team whose label is the text, then holds it as a word (`ferrari` finds `ferrari_1990`), then contains it. Without it the player takes the list's first team.
+- `weather=` sets the Time Trial's weather (`settings.current_settings.tt_weather.value`, `dry` or `wet`).
+
+The request is the Grand Prix one with `"mode": "time_trial"`:
+
+```json
+{"target": "session", "mode": "time_trial", "box": "f1_1990_gp", "track": "silverstone", "team": "ferrari"}
+```
+
+`direct_start.cpp` calls the setup that `direct_start_tt.cpp` registers with `runtime::direct_start_register_time_trial`, on the flow thread while `StateFTUE` is held:
+
+1. The Time Trial mode: the game modes context's entry labelled `time_trial` (ctx+0x58..+0x60, mode at entry+0x38, label at mode+0x278, entity E at mode+0x260) made current with `Game_Game_SetCurrentGameMode`. `Game_GameModes_FindByName` returns championship modes only.
+2. 1.5 s later, the setup on E as the screens leave it: setup mode `swofty_f1` with its setter (0x14079f300), the entrant setup mode that lists the box's list into E+0xe10 (the setup mode's entrant setup modes are 12 inline pointers from +0x10, count +0x70) and the list into E+0xe18.
+3. The track: E's session settings (slot 0xd8, body 0x148731f80) read the track from 0x1407ddbf0, which looks up the VM string `game_mode_data.current_game_mode.track_info.current_track.track_file_name` in E's track system (E+0xf58, record name +0x78). The core's path setter cannot write that node, so the getter is wrapped: while it still reads the profile's track, it answers the requested record.
+4. The car: `Sess_TimeTrialMode_FillDescriptor` (0x142936760) takes the player's vehicle and team from the Time Trial component's hot load holder (the mode's component with vtable 0x1457b13d0, holder at +0x298: vehicle ref +0x2be engaged +0x2c2, team ref +0x2c4 engaged +0x2c8, written in game by the in-session hot load 0x14291a320). The core writes the chosen team's entrant record refs there (+0x58 team, +0x5c vehicle). Without them the fill takes the vehicle from a per-team table built for the list the screens picked, and the session faults in `Ai_Build_TeamPerformanceCurves` with no player vehicle.
+5. The flow leaves the front end as for a Grand Prix and loads `TimeTrial` (#ca472e10): intro video, intro cameras, the garage.
+6. When `garage_cockpit` opens, the front end's main scene (the menus' dark backdrop with red light streaks) is despawned: `StateFrontend`'s exit does it in a menu start (`Game_FrontendSceneManager_DespawnMainScene` 0x1428d9a90 on the state's +0xd20), and a direct start never enters `StateFrontend`, so the core finds that node (0x957880c6) in the flow graph and calls it on its scene manager.
+
+The log lines are `[direct] Time Trial: ...`: the mode, `setup mode swofty_f1 (...), entrant setup mode ..., list f1_1990_tt (...) for box f1_1990_gp`, `track silverstone (...)`, `team ferrari_1990 (team ref 01f70000, vehicle ref 01fe6f00) in the hot load holder ...`, then `the track getter read ...; it answers the chosen track ...` during the load.
 
 ## The agent's commands
 
