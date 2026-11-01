@@ -48,6 +48,14 @@ A page shows its rows in a table. Pages with a choice above the table, such as t
 
 **Calendar**, **Garage order** and **Line-ups** have **Move up** and **Move down** on each row.
 
+## Calendar order
+
+A career orders its rounds by each event's weekend date, not by the order of the list, and **Sort by date** on **Track lists** doesn't change that. Swapping events between rounds on **Calendar** changes which events run, not the order they run in.
+
+The date is the weekend day and month of the event's weekend in **Track settings**, in the season the list is named for: **F1_2026_full** uses the **f1_2026** season. **Calendar** shows both as **Weekend month** and **Weekend day** on each round and writes them to that season, so a new career runs the rounds in the order the dates give. The date belongs to the weekend, so an event keeps its place when **Race weekends** points its weekend at another track, and an event with no date in the season runs last. Rounds at the same event, and every other list of the season, share its date.
+
+**Events** on **Track lists** is how many rounds the game reads from the list. A lower count drops the rounds after it, and **Calendar** and the build log name them.
+
 **Driver Manager** creates new drivers. The **Drivers**, **Entrants** and **Line-ups** pages link to it: the link opens its page when it's installed, offers to turn it on when it's off, and opens its download page when it isn't installed.
 
 ## Heads from addons
