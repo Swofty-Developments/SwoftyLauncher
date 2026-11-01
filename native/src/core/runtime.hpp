@@ -271,6 +271,12 @@ void direct_start_profile_read();
 using DirectStartSetup = runtime::direct_start::Setup (*)(std::string &why);
 void direct_start_register_room(DirectStartSetup setup);
 uintptr_t direct_start_set_mode();
+// What the direct start knows on the flow thread from the profile load on: the game manager and the game modes
+// context (the object Game_Game_SetCurrentGameMode takes, [game manager+0xc0]).
+struct DirectStartContext {
+    void *game_manager = nullptr, *game_modes = nullptr;
+};
+DirectStartContext direct_start_context();
 std::string code_where(uintptr_t a);
 void testagent_tick();
 void testagent_fired(const std::string &id, bool hot);

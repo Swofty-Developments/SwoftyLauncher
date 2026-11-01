@@ -4,6 +4,8 @@
 #include <swofty/mixin.hpp>
 
 #include <atomic>
+#include <cstdio>
+#include <cstring>
 #include <mutex>
 
 #include "direct_start_logic.hpp"
@@ -63,6 +65,16 @@ using ModeByName_t = uint8_t *(void *modes, const char *name);
 using ModeByPredicate_t = uint8_t *(void *modes, void *const *predicate);
 using SetMode_t = void(void *modes, void *mode);
 using RoundsPrepare_t = void(void *component);
+
+// A new Grand Prix weekend, as the dev session's Apply (0x141125e80) builds one, on the Grand Prix mode entity E
+// (KB build: re/db/subsystems/session.md, re/new-gp): the game setup mode from E's list (vt+0x1d0) by name, the
+// setter 0x14079f300, the entrant list by name (EntrantsSystem [game manager+0x290] +0x560), one round at a
+// track found by name in E's track system (+0xf58), the season built by 0x141207290 on a stub, E's components
+// attached (vt+0xe8) and the entrants filled from the list (0x142460230).
+constexpr uintptr_t RVA_SET_SETUP_MODE = 0x79f300, RVA_LIST_STAT_ID = 0x24286e0, RVA_ROUNDS_CLEAR = 0x420cd60,
+                    RVA_ADD_TRACK = 0xb99450, RVA_BUILD_SEASON = 0x1207290, RVA_FILL_ENTRANTS = 0x2460230;
+constexpr uintptr_t MANAGER_ENTRANTS = 0x290, ES_LISTS = 0x560, ENTITY_TRACKS = 0xf58,
+                    ENTITY_LIST = 0xe18, ENTITY_ENTRANTS = 0x2e0, ENTRANT_SIZE = 0x88;
 
 struct Game {
     uintptr_t manager = 0, set_mode = 0, by_name = 0, by_predicate = 0, gp_predicate = 0, prepare = 0;
@@ -223,11 +235,191 @@ ds::Setup continue_grand_prix(std::string &why)
 }
 
 runtime::DirectStartSetup room_setup = nullptr;
+runtime::DirectStartContext context;
+
+void fill_context()
+{
+    if (!game.manager)
+        return;
+    void *mgr = *reinterpret_cast<void **>(game.manager);
+    context.game_manager = mgr;
+    void *modes = modes_seen.load();
+    if (!modes && mgr && runtime::readable(mgr, MANAGER_MODES + 8))
+        modes = *reinterpret_cast<void **>(static_cast<uint8_t *>(mgr) + MANAGER_MODES);
+    context.game_modes = modes;
+}
+
+template <class F> F *at_rva(uintptr_t rva)
+{
+    return reinterpret_cast<F *>(swofty::api->module_base() + rva);
+}
+
+uint8_t *grand_prix_entity(void *modes)
+{
+    void *pred = reinterpret_cast<void *>(game.gp_predicate);
+    uint8_t *gp = reinterpret_cast<ModeByPredicate_t *>(game.by_predicate)(modes, &pred);
+    return gp && runtime::readable(gp, ENTITY_TRACKS + 8) ? gp : nullptr;
+}
+
+ds::Setup new_grand_prix(std::string &why)
+{
+    if (!game.manager || !game.set_mode || !game.by_predicate || !game.gp_predicate) {
+        why = "the game manager, SetCurrentGameMode or the Grand Prix mode lookup did not resolve";
+        return ds::Setup::failed;
+    }
+    void *mgr = *reinterpret_cast<void **>(game.manager);
+    void *modes = modes_seen.load();
+    if (!mgr || !modes)
+        return ds::Setup::pending;
+    uint8_t *e = grand_prix_entity(modes);
+    if (!e)
+        return ds::Setup::pending;
+    // The mode attaches its components over the frames after it is made current, so the weekend is built on a
+    // later tick, once the rounds component is there (looked up without creating it: 0x1407c1200, mode 0).
+    static uint64_t mode_set_at = 0;
+    if (!mode_set_at) {
+        reinterpret_cast<SetMode_t *>(game.set_mode)(modes, *reinterpret_cast<void **>(e + ENTITY_MODE));
+        mode_set_at = GetTickCount64();
+        swofty::log("[direct] Grand Prix: the Grand Prix mode is current (entity %p); waiting for its components", e);
+        return ds::Setup::pending;
+    }
+    void *rounds_seen = registry_call(e, 0x10, reinterpret_cast<void *>(swofty::api->module_base() + 0x605ad40), 0);
+    if (!rounds_seen) {
+        if (GetTickCount64() - mode_set_at < 15000)
+            return ds::Setup::pending;
+        why = "the Grand Prix mode's rounds component did not appear within 15 s of making the mode current";
+        return ds::Setup::failed;
+    }
+    swofty::log("[direct] Grand Prix: rounds component %p after %llu ms", rounds_seen,
+                (unsigned long long)(GetTickCount64() - mode_set_at));
+    std::string setup_name = request["setup_mode"].str("swofty_f1"), list_name = request["box"].str(),
+                track_name = request["track"].str();
+    if (list_name.empty() || track_name.empty()) {
+        why = "the request names no box (entrant list) or track";
+        return ds::Setup::failed;
+    }
+    // 1. The game setup mode by name, from E's setup modes (vt+0x1d0: a vector at +8..+0x10).
+    auto **evt = *reinterpret_cast<void ***>(e);
+    auto *modes_vec = reinterpret_cast<uint8_t *(*)(void *)>(evt[0x1d0 / 8])(e);
+    uint8_t *gsm = nullptr;
+    for (auto **p = *reinterpret_cast<uint8_t ***>(modes_vec + 8), **end = *reinterpret_cast<uint8_t ***>(modes_vec + 0x10);
+         p && p != end; ++p) {
+        uint8_t *m = *p;
+        void *holder = m && runtime::readable(m, 0xe0) ? *reinterpret_cast<void **>(m + 0xd8) : nullptr;
+        const char *name = holder ? *reinterpret_cast<const char **>(static_cast<uint8_t *>(holder) + 0x10) : nullptr;
+        if (name && setup_name == name) {
+            gsm = m;
+            break;
+        }
+    }
+    if (!gsm) {
+        why = "the Grand Prix mode has no game setup mode '" + setup_name + "'";
+        return ds::Setup::failed;
+    }
+    at_rva<void(void *, void *, int)>(RVA_SET_SETUP_MODE)(e, gsm, 0);
+    swofty::log("[direct] Grand Prix: setup mode %s (%p) set on %p", setup_name.c_str(), gsm, e);
+    // 2. The entrant list by name: EntrantsSystem +0x560, 16-byte entries, the list at +8.
+    uint8_t *es = *reinterpret_cast<uint8_t **>(static_cast<uint8_t *>(mgr) + MANAGER_ENTRANTS);
+    uint8_t id = at_rva<uint8_t(const char *)>(RVA_LIST_STAT_ID)(list_name.c_str());
+    auto *lists = *reinterpret_cast<uint8_t **>(es + ES_LISTS), *lists_end = *reinterpret_cast<uint8_t **>(es + ES_LISTS + 8);
+    if (!lists || size_t(lists_end - lists) / 16 <= id) {
+        why = "no entrant list '" + list_name + "' (stat id " + std::to_string(id) + ")";
+        return ds::Setup::failed;
+    }
+    void *list = *reinterpret_cast<void **>(lists + size_t(id) * 16 + 8);
+    *reinterpret_cast<void **>(e + ENTITY_LIST) = list;
+    swofty::log("[direct] Grand Prix: entrant list %s (stat id %u) is %p", list_name.c_str(), unsigned(id), list);
+    // 3. The track by name in E's track system: 16-byte entries at +0x28..+0x30, the record at +8, its name at +0x78.
+    uint8_t *tracks = *reinterpret_cast<uint8_t **>(e + ENTITY_TRACKS);
+    uint8_t *track = nullptr;
+    if (tracks && runtime::readable(tracks, 0x38))
+        for (auto *q = *reinterpret_cast<uint8_t **>(tracks + 0x28), *qend = *reinterpret_cast<uint8_t **>(tracks + 0x30);
+             q && q < qend; q += 16) {
+            auto *rec = *reinterpret_cast<uint8_t **>(q + 8);
+            const char *name = rec && runtime::readable(rec, 0x80) ? *reinterpret_cast<const char **>(rec + 0x78) : nullptr;
+            if (name && track_name == name) {
+                track = rec;
+                break;
+            }
+        }
+    if (!track) {
+        why = "the Grand Prix mode's track system has no track '" + track_name + "'";
+        return ds::Setup::failed;
+    }
+    // 4. One round at that track, then the season built from the rounds (0x141207290 on a stub that holds the
+    // registry at +0x270, the rounds at +0x290 and the track at [+0x298]+0x18).
+    {
+        auto *reg = e + ENTITY_REGISTRY;
+        auto **rvt = *reinterpret_cast<void ***>(reg);
+        auto *code = static_cast<uint8_t *>(rvt[2]);
+        std::string hex;
+        for (int i = 0; i < 96 && runtime::readable(code + i, 1); i++) {
+            char b[4];
+            snprintf(b, sizeof b, "%02x ", code[i]);
+            hex += b;
+        }
+        uintptr_t base = swofty::api->module_base();
+        auto q = [](uintptr_t a) { return runtime::readable(reinterpret_cast<void *>(a), 16) ? *reinterpret_cast<uint64_t *>(a) : 0; };
+        auto q8 = [](uintptr_t a) { return runtime::readable(reinterpret_cast<void *>(a), 16) ? *reinterpret_cast<uint64_t *>(a + 8) : 0; };
+        swofty::log("[direct] Grand Prix: registry %p vt %p slot 0x10 %s: %s", reg, rvt, runtime::code_where(uintptr_t(code)).c_str(),
+                    hex.c_str());
+        swofty::log("[direct] Grand Prix: desc 0x14605ad20 = %llx %llx, desc 0x14605ad40 = %llx %llx",
+                    (unsigned long long)q(base + 0x605ad20), (unsigned long long)q8(base + 0x605ad20),
+                    (unsigned long long)q(base + 0x605ad40), (unsigned long long)q8(base + 0x605ad40));
+        auto dump = [&](uintptr_t rva, int n) {
+            auto *c = reinterpret_cast<uint8_t *>(base + rva);
+            std::string h;
+            for (int i = 0; i < n && runtime::readable(c + i, 1); i++) {
+                char b[4];
+                snprintf(b, sizeof b, "%02x ", c[i]);
+                h += b;
+            }
+            swofty::log("[direct] code at base+0x%llx: %s", (unsigned long long)rva, h.c_str());
+        };
+        dump(0x13417330, 192);
+        dump(0x97c8dd0, 160);
+        if (GetEnvironmentVariableA("SWOFTY_DIRECT_PROBE_ONLY", nullptr, 0)) {
+            why = "probe only (SWOFTY_DIRECT_PROBE_ONLY)";
+            return ds::Setup::failed;
+        }
+    }
+    void *rounds = registry_call(e, 0x10, reinterpret_cast<void *>(swofty::api->module_base() + 0x605ad40), 0);
+    if (!rounds) {
+        why = "the Grand Prix mode has no rounds component";
+        return ds::Setup::failed;
+    }
+    // The clear (0x14420cd60, a jump to runtime-decrypted code) reads its list holder from the second argument:
+    // it starts mov rcx,[rdx], and the track select calls it with rdx = rounds+0x298.
+    at_rva<void(void *, void *)>(RVA_ROUNDS_CLEAR)(nullptr, static_cast<uint8_t *>(rounds) + 0x298);
+    at_rva<void(void *, void *)>(RVA_ADD_TRACK)(rounds, track);
+    alignas(16) static uint8_t stub[0x400], holder[0x40];
+    std::memset(stub, 0, sizeof stub);
+    std::memset(holder, 0, sizeof holder);
+    *reinterpret_cast<void **>(stub + 0x270) = e + ENTITY_REGISTRY;
+    *reinterpret_cast<void **>(stub + 0x290) = rounds;
+    *reinterpret_cast<void **>(holder + 0x18) = track;
+    *reinterpret_cast<void **>(stub + 0x298) = holder;
+    at_rva<void(void *)>(RVA_BUILD_SEASON)(stub);
+    // 5. E's components attached again, as the track select confirm does after its rounds.
+    reinterpret_cast<void (*)(void *)>(evt[0xe8 / 8])(e);
+    // 6. The entrants from the list, when the entrants manager holds none yet.
+    auto **begin = reinterpret_cast<uint8_t **>(e + ENTITY_ENTRANTS);
+    if (begin[0] == begin[1]) {
+        alignas(16) static uint8_t blk[0x190];
+        std::memset(blk, 0, sizeof blk);
+        *reinterpret_cast<uint64_t *>(blk + 0x180) = 1;
+        at_rva<void(void *, void *, void *, int)>(RVA_FILL_ENTRANTS)(es, e, blk, 0);
+    }
+    size_t entrants = size_t(begin[1] - begin[0]) / ENTRANT_SIZE;
+    swofty::log("[direct] Grand Prix: new weekend: setup mode %s, list %s (%p), track %s (%p), rounds %p, %zu entrant(s)",
+                setup_name.c_str(), list_name.c_str(), list, track_name.c_str(), track, rounds, entrants);
+    return ds::Setup::done;
+}
 
 ds::Setup set_up_target(std::string &why)
 {
     if (driver.target.name == "session")
-        return continue_grand_prix(why);
+        return request["box"].str().empty() ? continue_grand_prix(why) : new_grand_prix(why);
     if (driver.target.name == "room") {
         if (!room_setup) {
             why = "no room setup is registered (netplay_drive.cpp)";
@@ -325,6 +517,11 @@ uintptr_t direct_start_set_mode()
     return game.set_mode;
 }
 
+DirectStartContext direct_start_context()
+{
+    return context;
+}
+
 void direct_start_register_room(DirectStartSetup setup)
 {
     room_setup = setup;
@@ -359,6 +556,7 @@ void direct_start_tick()
         return;
     std::lock_guard<std::mutex> g(lock);
     if (driver.phase == ds::Phase::setup) {
+        fill_context();
         std::string why;
         ds::Setup r = set_up_target(why);
         driver.setup_result(r, why);
