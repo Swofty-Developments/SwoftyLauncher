@@ -376,7 +376,7 @@ inline std::string reply_json(const Command &c, const State &s, const std::strin
 // ui_menu_data.lan_ip_address. The job then waits for StateOnlineLobby. Every wait has a deadline,
 // and a popup whose id names an error while the job runs ends it with that id.
 enum class Step { none, open_local_mp, wait_local_mp, switch_lan, check_lan, fire_lan, wait_dialog, answer_dialog,
-                  wait_ip_prompt, answer_ip, wait_lobby, finished };
+                  wait_ip_prompt, answer_ip, wait_lobby, headless, finished };
 enum class Do { nothing, fire_local_mp, mode_switch, fire_lan, answer_dialog, answer_ip };
 
 inline const char *do_name(Do d)
@@ -397,6 +397,8 @@ struct Facts {
     bool lan_mode = false;
     bool lobby = false;
     bool home = false;
+    bool room_failed = false;
+    std::string room_error;
 };
 
 constexpr const char *BACK_HOME = "the game went back to its main menu before the LAN lobby opened";
@@ -415,6 +417,15 @@ public:
         detail.clear();
         started = now;
         deadline = 0;
+    }
+
+    // Host or join through netplay_room (no screens): the room's own run does the steps and the job only
+    // waits for its end, the LAN lobby or its named failure.
+    void start_headless(const Command &c, uint64_t now)
+    {
+        start(c, now);
+        step = Step::headless;
+        detail = "set up without the front-end screens";
     }
 
     bool active() const { return step != Step::none && step != Step::finished; }
@@ -469,6 +480,12 @@ public:
             return true;
         };
         switch (step) {
+        case Step::headless:
+            if (f.lobby)
+                step = Step::finished;
+            else if (f.room_failed)
+                fail(f.room_error);
+            return Do::nothing;
         case Step::open_local_mp:
             step = Step::wait_local_mp;
             wait(OPEN_MS);

@@ -292,6 +292,31 @@ int main()
         expect(!late.tick(drive::SkipFacts{}, drive::TitleSkip::GIVE_UP_MS) && late.done(), "the skip gives up");
     }
 
+    {
+        drive::Command host = drive::parse(R"({"seq":1,"op":"host","args":{"category":"f1-2026"}})");
+        drive::Job j;
+        j.start_headless(host, 0);
+        drive::Facts f;
+        f.home = true;
+        expect(j.active() && j.tick(f, 10) == drive::Do::nothing && j.active(), "a headless job takes no screen step and waits");
+        expect(j.detail.find("without the front-end screens") != std::string::npos, "its detail says no screens");
+        f.lobby = true;
+        j.tick(f, 20);
+        expect(j.finished() && j.error.empty(), "the LAN lobby finishes a headless job");
+        drive::Job k;
+        k.start_headless(drive::parse(R"({"seq":2,"op":"join","args":{"ip":"10.77.0.1"}})"), 0);
+        drive::Facts g;
+        g.room_failed = true;
+        g.room_error = "the invite never reached the invite manager";
+        k.tick(g, 5);
+        expect(k.finished() && k.error == g.room_error, "the room's failure ends a headless job with its own message");
+        drive::Job m;
+        m.start_headless(host, 0);
+        m.popup("lan_join_via_ip_error", 3);
+        expect(m.finished() && m.error.find("lan_join_via_ip_error") != std::string::npos,
+               "an error popup still ends a headless job");
+    }
+
     printf("%s\n", fails ? "FAILED" : "all ok");
     return fails ? 1 : 0;
 }
