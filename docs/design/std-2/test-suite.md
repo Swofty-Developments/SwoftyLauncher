@@ -41,11 +41,16 @@ It has two halves:
 
 ```sh
 swofty test fixture capture gp-base --from <a copy of userdata/<id>/3059520/remote> --store ~/fixtures
-swofty --profile default test session grand_prix cs_f1_2017 melbourne session=practice1 team=williams \
+swofty --profile default test session grand_prix cs_f1_2020 silverstone session=race laps=3 team=ferrari driver=vettel \
     --fixture ~/fixtures/gp-base --lock /mnt/work/.f1-game.lock.d
 ```
 
-In game on 2026-11-01 (Steam build, release CLI, profile `default` with Classic Seasons): the cover screen ("SWOFTY LAUNCHER / Test session") is up from the first frame, the game boots behind it, and it comes off in the Williams garage at Albert Park, Practice 1, with the player in the cs17 Williams of Lance Stroll. Boot to garage takes about 80 s, most of it the profile build and the session's own broadcast intro, which runs under the cover. No title, legal, main menu or loading screen is visible.
+In game on 2026-11-01 (Steam build, release CLI, profile `default` with Classic Seasons, a fixture made from a copy of the player's save):
+
+- `grand_prix cs_f1_2017 melbourne session=practice1 team=williams` (launcher 1.7.6 build): the cover is up from the first frame, the game boots behind it, and the player sits in the cs17 Williams of Lance Stroll in the garage at Albert Park, Practice 1 (`Look Around / Session Info / Go to Track`). Launch to garage is about 2 minutes: the profile build, the boot, and the session's broadcast intro, which runs under the cover.
+- `grand_prix cs_f1_2020 silverstone session=race laps=3 team=ferrari driver=vettel` (1.7.7 build): the cs20 Ferrari of Sebastian Vettel on the Silverstone grid after the race's grid rundown, 3 laps (`[direct] race laps 52 -> 3`), `Car Setup / Start Race`.
+
+No title, legal, main menu or loading screen is visible. The cover shows the start's steps (`Starting F1 25`, `Profile loaded`, `Weekend ready`, `Loading silverstone`, `Starting the session`, `Opening the garage` or `Lining up on the grid`).
 
 The words after the mode:
 
@@ -58,6 +63,8 @@ grand_prix <box> <track> [team=<label part>] [driver=<label part>] [session=<nam
 - `session=` is `practice1`..`practice3`, `qualifying`, `race`, or a game session name (`practice_s`, `qualifying_o`, `race_2`, ...).
 - `laps=` sets a race's laps.
 - `weather=` and `ai_difficulty=` are accepted and not applied yet.
+- Without a box or track the start takes `f1_2025` at `melbourne`. It never continues a saved Grand Prix.
+- A box whose entrant list the game did not load fails the start (`[direct] session start failed: the entrant list 'cs_f1_2017' (stat id 114) is not loaded`) and the menu opens.
 
 The CLI writes the request to `<run folder>/direct_start.json` and starts the game with `SWOFTY_DIRECT_START=@<that file>`:
 
@@ -77,7 +84,7 @@ What the core does (`native/src/core/direct_start.cpp`), in order:
 6. `StateFTUE` leaves by its exit link, so `StateFrontend` (the menu) never starts, and `StateFrontendWorld` takes `session` (0x8c23ce89): `#e2dcf787 > StateSmokeTestSkipFEPreLaunchHold > StateCerberusServer > #d36d1718 > StateLoadSession`.
 7. `StateLoadSession`'s exit (0x1436e0e40) waits for its sync point (+0xcd0: request node +0x80, UI node +0xa0), which the loading screen sets in a menu start. 500 ms into the exit the core sets the UI node with `Vm_NodeSet_Bool` and the flow goes on to `StateSession`. Without it the game parks on a black screen after the load (`#8ad771dc` is the normal last child of the load, not the stop).
 8. For a race, `Game_ChampionshipGameMode_BuildSessionSettings` (0x1407b7b90) is hooked and the laps written to SessionSettings+0xdf0 (XOR +0xdf8).
-9. The cover comes off 1.5 s after the `garage_cockpit` screen opens (or 60 s after `StateSession` started updating).
+9. The cover comes off 1.5 s after the `garage_cockpit` screen opens, or 60 s after `StateSession` started updating (a race opens no screen of its own at the grid), and at once when the start fails.
 
 The flow is logged as `[direct] ...` lines: the weekend before and after (`weekend ..., track stat id 0, current session 0 of: practice_1 race`), the seat (`the player drives for cs17_williams as lance_stroll (seat 6)`), `StateLoadSession exiting for 503 ms: its sync point is complete` and `the session's screen garage_cockpit is up`.
 
