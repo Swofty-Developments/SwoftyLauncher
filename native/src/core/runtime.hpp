@@ -269,6 +269,7 @@ void direct_start_profile_read();
 // loaded, while StateFTUE is held, until it answers done or failed.
 using DirectStartSetup = runtime::direct_start::Setup (*)(std::string &why);
 void direct_start_register_room(DirectStartSetup setup);
+uintptr_t direct_start_set_mode();
 std::string code_where(uintptr_t a);
 void testagent_tick();
 void testagent_fired(const std::string &id, bool hot);

@@ -79,8 +79,6 @@ constexpr uint64_t ENTRY_HOLDER = 0x38;
 constexpr uint64_t HOLDER_ENTITY = 0x260;
 constexpr uint64_t ENTITY_MODE = 0xf08;
 constexpr uint64_t MODE_INDEX_LIMIT = 0x4000;
-constexpr uint64_t VTABLE_NAME_BEFORE = 0x10;
-constexpr char NET_SUBSYSTEM_NAME[] = "Ne-NetSubsystem";
 constexpr uint64_t NET_SYSTEM_LAN = 1;
 
 enum class Role { host, join };
@@ -343,22 +341,28 @@ inline int established_role(Role r)
 // in a plain scan.
 using ServiceFind = uint64_t (*)(void *ctx, uint64_t map, uint64_t key);
 
-inline std::string net_subsystem_check(const Memory &m, uint64_t ns)
+inline std::string hex_text(uint64_t v)
+{
+    char b[24];
+    std::snprintf(b, sizeof b, "0x%llx", static_cast<unsigned long long>(v));
+    return b;
+}
+
+// The entry's object is the NetworkSubsystem when its first qword is the NetworkSubsystem vtable (the KB
+// build's 0x145814050, ns-resolve.md section 1), which the caller resolves through its signature.
+inline std::string net_subsystem_check(const Memory &m, uint64_t ns, uint64_t expected_vtable)
 {
     uint64_t vt = 0;
     if (!m.ptr(ns, vt))
-        return "the service the map returned is not an object (its vtable is unreadable)";
-    char name[sizeof NET_SUBSYSTEM_NAME] = {};
-    if (!m.get(vt - VTABLE_NAME_BEFORE, name) || std::memcmp(name, NET_SUBSYSTEM_NAME, sizeof name) != 0)
-        return "the service the map returned is not the network subsystem (no Ne-NetSubsystem name before its vtable)";
-    uint64_t slot0 = 0;
-    if (!m.ptr(vt, slot0))
-        return "the network subsystem's vtable is unreadable";
+        return "the service the map returned (" + hex_text(ns) + ") is not an object (its vtable is unreadable)";
+    if (!expected_vtable || vt != expected_vtable)
+        return "the service the map returned (" + hex_text(ns) + ") is not the network subsystem: its vtable is " +
+               hex_text(vt) + ", the network subsystem's is " + hex_text(expected_vtable);
     return {};
 }
 
-inline std::string find_net_subsystem(const Memory &m, uint64_t manager, uint64_t key, ServiceFind find, void *ctx,
-                                      uint64_t &ns)
+inline std::string find_net_subsystem(const Memory &m, uint64_t manager, uint64_t key, uint64_t expected_vtable,
+                                      ServiceFind find, void *ctx, uint64_t &ns)
 {
     ns = 0;
     uint64_t map = 0, items = 0, end = 0;
@@ -375,7 +379,7 @@ inline std::string find_net_subsystem(const Memory &m, uint64_t manager, uint64_
     uint64_t value = 0;
     if (!m.ptr(entry + MAP_ENTRY_VALUE, value))
         return "the services map entry for the network subsystem is empty";
-    if (std::string why = net_subsystem_check(m, value); !why.empty())
+    if (std::string why = net_subsystem_check(m, value, expected_vtable); !why.empty())
         return why;
     ns = value;
     return {};

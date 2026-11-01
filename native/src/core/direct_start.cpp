@@ -37,7 +37,7 @@ const runtime::Sig SIG_FLOW_LINK{"vm.flow_state_update_link",
                                  "48 8B 07 48 8D 54 24 40 48 89 F9 C5 F9 28 D6 FF 50 20 8B 44 24 40 39 05", 0x4424c78,
                                  runtime::Sig::addr, 0, 0x12};
 const runtime::Sig SIG_GAME_MANAGER{"game.manager", "48 8B B8 98 01 00 00 48 85 FF 0F 84 ?? ?? ?? ?? 48 8D 4C 24 70 E8 ?? ?? ?? ?? 48 8B 05", 0x604c2c8, runtime::Sig::riprel, 26, 29, 7};
-const runtime::Sig SIG_SET_MODE{"game.set_current_game_mode", "41 56 56 57 55 53 48 81 EC 80 00 00 00 48 8B 81", 0x7d07a0};
+const runtime::Sig SIG_SET_MODE{"game.game_set_current_game_mode", "41 56 56 57 55 53 48 81 EC 80 00 00 00 48 8B 81 88 00 00 00", 0x7d07a0};
 const runtime::Sig SIG_MODE_BY_NAME{"game.game_modes_find_by_name",
                                     "48 8B 89 A0 02 00 00 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 20 48 89 C7 48 89 C1 48 81 C1 30 10 00 00",
                                     0x7d0de0, runtime::Sig::rel32, 14, 15, 5};
@@ -318,6 +318,11 @@ void log_stack(const char *what)
     swofty::log("[direct] %s, thread %lu, from:", what, GetCurrentThreadId());
     for (USHORT i = 0; i < n; i++)
         swofty::log("[direct]   #%u %s", unsigned(i), runtime::code_where(reinterpret_cast<uintptr_t>(frames[i])).c_str());
+}
+
+uintptr_t direct_start_set_mode()
+{
+    return game.set_mode;
 }
 
 void direct_start_register_room(DirectStartSetup setup)

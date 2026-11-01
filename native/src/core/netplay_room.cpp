@@ -69,10 +69,10 @@ namespace {
 
 namespace room = runtime::netplay_room;
 
-const runtime::Sig S_CUSTOM_CREATE{"Game_Network_CustomCreate", "56 48 81 EC 70 01 00 00 48 89 CE E8", 0x30ae3f0};
-const runtime::Sig S_INVITE_NOTIFY{"Game_GameSessionUI_OnInviteJoinNotification",
+const runtime::Sig S_CUSTOM_CREATE{"game.network_custom_create", "56 48 81 EC 70 01 00 00 48 89 CE E8", 0x30ae3f0};
+const runtime::Sig S_INVITE_NOTIFY{"game.game_session_ui_on_invite_join_notification",
                                    "56 57 53 48 83 EC 40 48 89 CE 80 3D ?? ?? ?? ?? 01 75 66 B8 70 01 00 00", 0x30acca0};
-const runtime::Sig S_REQUEST_KEY{"g_Game_JoinRequestOwnerKey",
+const runtime::Sig S_REQUEST_KEY{"game.join_request_owner_key",
                                  "48 8D 15 ?? ?? ?? ?? 48 89 F9 FF 50 28 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B 48 18", 0x6cb8278,
                                  runtime::Sig::riprel, 0, 3, 7};
 
@@ -85,7 +85,10 @@ const runtime::Sig S_MANAGER{"game.manager",
                              0x604c2c8, runtime::Sig::riprel, 26, 29, 7};
 const runtime::Sig S_SERVICE_FIND{"game.service_map_find", LOOKUP_SITE, 0x30ffd0, runtime::Sig::rel32, 0x14, 0x15, 5};
 const runtime::Sig S_NS_KEY{"game.net_subsystem_key", LOOKUP_SITE, 0x60bed80, runtime::Sig::riprel, 0, 3, 7};
-const runtime::Sig S_SET_MODE{"game.set_current_game_mode", "41 56 56 57 55 53 48 81 EC 80 00 00 00 48 8B 81", 0x7d07a0};
+const runtime::Sig S_NS_VTABLE{"game.net_subsystem_vtable",
+                                "48 8D 05 ?? ?? ?? ?? 48 89 06 48 8D 05 ?? ?? ?? ?? 48 89 46 20 48 8D 05 ?? ?? ?? ?? 48 89 46 28 C5 C8 57 F6",
+                                0x5814050, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig S_SET_MODE{"game.game_set_current_game_mode", "41 56 56 57 55 53 48 81 EC 80 00 00 00 48 8B 81 88 00 00 00", 0x7d07a0};
 const runtime::Sig S_NAME_INDEX{"game.game_modes_name_index", "E9 ?? ?? ?? ?? EF 7B F2 64 0F 84 ?? ?? ?? ?? 2B CA", 0x9763b0};
 const runtime::Sig S_STR_VTABLE{"game.ne_inline_str_vtable",
                                 "48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 E8 ?? ?? ?? ?? 48 8B 4B 58 48 8B", 0x5612ea8,
@@ -123,7 +126,7 @@ room::JoinPlan join_plan;
 room::Status state;
 std::string error_now;
 std::string join_ip;
-uintptr_t a_create, a_notify, a_key, a_manager, a_find, a_ns_key, a_set_mode, a_name_index, a_str_vtable, a_mp_mode,
+uintptr_t a_create, a_notify, a_key, a_manager, a_find, a_ns_key, a_ns_vtable, a_set_mode, a_name_index, a_str_vtable, a_mp_mode,
     a_presence, a_add_tabs;
 uint64_t ns_cached;
 std::string network_note;
@@ -181,14 +184,15 @@ void note_network(const std::string &what)
 
 void *resolve_network(std::string &why)
 {
-    if (ns_cached && room::net_subsystem_check(memory(), ns_cached).empty())
+    if (ns_cached && room::net_subsystem_check(memory(), ns_cached, a_ns_vtable).empty())
         return reinterpret_cast<void *>(ns_cached);
     ns_cached = 0;
-    if (!a_manager || !a_find || !a_ns_key) {
-        why = "the game manager, the services map lookup or the network subsystem key did not resolve on this build";
+    if (!a_manager || !a_find || !a_ns_key || !a_ns_vtable) {
+        why = "the game manager, the services map lookup, the network subsystem key or the network subsystem vtable did not "
+              "resolve on this build";
     } else {
         uint64_t ns = 0;
-        why = room::find_net_subsystem(memory(), manager(), a_ns_key, service_find, nullptr, ns);
+        why = room::find_net_subsystem(memory(), manager(), a_ns_key, a_ns_vtable, service_find, nullptr, ns);
         if (why.empty()) {
             ns_cached = ns;
             char b[96];
@@ -234,7 +238,10 @@ void resolve_once()
     a_manager = runtime::find(S_MANAGER, "game manager", "netplay");
     a_find = runtime::find(S_SERVICE_FIND, "services map lookup", "netplay");
     a_ns_key = runtime::find(S_NS_KEY, "network subsystem key", "netplay");
-    a_set_mode = runtime::find(S_SET_MODE, "SetCurrentGameMode", "netplay");
+    a_ns_vtable = runtime::find(S_NS_VTABLE, "network subsystem vtable", "netplay");
+    a_set_mode = runtime::direct_start_set_mode();
+    if (!a_set_mode)
+        a_set_mode = runtime::find(S_SET_MODE, "SetCurrentGameMode", "netplay");
     a_name_index = runtime::find(S_NAME_INDEX, "game mode name index", "netplay");
     a_str_vtable = runtime::find(S_STR_VTABLE, "inline string vtable", "netplay");
     a_mp_mode = runtime::find(S_MP_MODE, "changeMPMode", "netplay");

@@ -351,9 +351,6 @@ int main()
         w.set<uint64_t>(ITEMS + room::MAP_ENTRY_SIZE, KEY);
         w.set<uint64_t>(ITEMS + room::MAP_ENTRY_SIZE + 8, NS2);
         w.set<uint64_t>(NS2, VT);
-        const char name[] = "Ne-NetSubsystem";
-        for (size_t i = 0; i < sizeof name; i++)
-            w.set<uint8_t>(VT - room::VTABLE_NAME_BEFORE + i, uint8_t(name[i]));
         w.set<uint64_t>(VT, 0xb00000);
         w.set<uint64_t>(NS2 + room::NS_NET_SYSTEM, SYS);
         w.set<uint8_t>(SYS + room::NET_SYSTEM_MODE, 0);
@@ -380,24 +377,29 @@ int main()
     Image sv = services();
     scan_image = &sv;
     uint64_t found = 0;
-    expect(room::find_net_subsystem(sv.memory(), MGR, KEY, scan, nullptr, found).empty() && found == NS2,
+    expect(room::find_net_subsystem(sv.memory(), MGR, KEY, VT, scan, nullptr, found).empty() && found == NS2,
            "the services map lookup finds the network subsystem by its key");
-    expect(room::find_net_subsystem(sv.memory(), MGR, 0x999, scan, nullptr, found).find("no network subsystem") != std::string::npos &&
+    expect(room::find_net_subsystem(sv.memory(), MGR, 0x999, VT, scan, nullptr, found).find("no network subsystem") != std::string::npos &&
                found == 0,
            "a key the map lacks is named");
-    expect(room::find_net_subsystem(sv.memory(), 0, KEY, scan, nullptr, found).find("not created") != std::string::npos,
+    expect(room::find_net_subsystem(sv.memory(), 0, KEY, VT, scan, nullptr, found).find("not created") != std::string::npos,
            "no game manager is named");
     sv.drop(MGR + room::MGR_SERVICES, 8);
-    expect(room::find_net_subsystem(sv.memory(), MGR, KEY, scan, nullptr, found).find("services map") != std::string::npos,
+    expect(room::find_net_subsystem(sv.memory(), MGR, KEY, VT, scan, nullptr, found).find("services map") != std::string::npos,
            "a manager without a services map is named");
     sv = services();
-    sv.set<uint8_t>(VT - 1, 'X');
-    sv.set<uint8_t>(VT - room::VTABLE_NAME_BEFORE, 'X');
-    expect(room::find_net_subsystem(sv.memory(), MGR, KEY, scan, nullptr, found).find("not the network subsystem") != std::string::npos,
-           "an entry whose vtable is not the network subsystem's is refused");
+    sv.set<uint64_t>(NS2, 0xbad000);
+    std::string refused = room::find_net_subsystem(sv.memory(), MGR, KEY, VT, scan, nullptr, found);
+    expect(refused.find("not the network subsystem") != std::string::npos && refused.find("0xa50000") != std::string::npos &&
+               refused.find("0xbad000") != std::string::npos && refused.find("0xa40000") != std::string::npos && found == 0,
+           "an entry whose vtable is not the network subsystem's is refused, naming the pointer, the vtable read and the expected one");
+    sv = services();
+    expect(room::find_net_subsystem(sv.memory(), MGR, KEY, 0, scan, nullptr, found).find("not the network subsystem") !=
+               std::string::npos,
+           "an unresolved expected vtable refuses every entry");
     sv = services();
     sv.drop(NS2, 8);
-    expect(room::find_net_subsystem(sv.memory(), MGR, KEY, scan, nullptr, found).find("vtable is unreadable") != std::string::npos,
+    expect(room::find_net_subsystem(sv.memory(), MGR, KEY, VT, scan, nullptr, found).find("vtable is unreadable") != std::string::npos,
            "an entry that is not an object is refused");
 
     sv = services();
