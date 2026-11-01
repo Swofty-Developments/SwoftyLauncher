@@ -18,3 +18,7 @@ CE_TEST_DIR="$OUT" "$OUT/ce_bridge_harness"
 "$OUT/ce_entrants_cap_test"
 "$OUT/ce_rating_solve_test"
 "$OUT/ce_calendar_rules_test"
+"${CXX[@]}" -o "$OUT/ce_instance_test" instance_test.cpp
+"$OUT/ce_instance_test"
+"${CXX[@]}" -o "$OUT/ce_points_math_test" points_math_test.cpp
+"$OUT/ce_points_math_test"

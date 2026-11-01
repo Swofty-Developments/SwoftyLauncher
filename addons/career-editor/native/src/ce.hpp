@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "../../../../native/src/core/json.hpp"
+#include "instance.hpp"
 
 namespace ce {
 
@@ -58,6 +59,8 @@ Mode mode();
 bool in_career();
 bool safe();
 std::string career_id();
+std::string career_renamed_to(const std::string &from);
+std::string legacy_career_key();
 
 void log(const char *fmt, ...);
 

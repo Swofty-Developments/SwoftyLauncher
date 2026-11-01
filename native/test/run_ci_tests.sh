@@ -87,6 +87,8 @@ t "Pattern scan and scan cache unit test" native/test/run_scan_test.sh
 t "Telemetry feed unit test" "$(zig_test "-I packages/sdk/include native/test/telemetry_feed_test.cpp" telemetry_feed_test)"
 t "Save diagnostics log formatting unit test" "$(zig_test "-I packages/sdk/include native/test/save_diag_test.cpp" save_diag_test)"
 t "Career Mode Editor race number unit test" "$(zig_test "-I $cme/src $cme/test/race_numbers_test.cpp $cme/src/race_numbers.cpp" race_numbers_test)"
+t "Career Mode Editor career instance unit test" "$(zig_test "-I $cme/src $cme/test/instance_test.cpp" instance_test)"
+t "Career Mode Editor points clamp unit test" "$(zig_test "-I $cme/src $cme/test/points_math_test.cpp" points_math_test)"
 t "Career Mode Editor weather plan unit test" "$(zig_test "-I $cme/src $cme/test/weather_plan_test.cpp $cme/src/weather_plan.cpp" weather_plan_test)"
 t "Career Mode Editor line-up unit test" "$(zig_test "-I $cme/src $cme/test/lineup_test.cpp $cme/src/lineup.cpp" lineup_test)"
 t "Career Mode Editor entrant bound unit test" "$(zig_test "-I $cme/src $cme/test/entrants_cap_test.cpp" entrants_cap_test)"
