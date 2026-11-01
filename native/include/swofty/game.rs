@@ -14328,6 +14328,16 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Ai_UpdateCars_CornerLineLoad: Binding = Binding {
+        id: "site_Ai_UpdateCars_CornerLineLoad",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Ai_UpdateCars_NoCornerLine: Binding = Binding {
+        id: "site_Ai_UpdateCars_NoCornerLine",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Car_AeroStoreRearDownforce: Binding = Binding {
         id: "site_Car_AeroStoreRearDownforce",
         kind: "site",
