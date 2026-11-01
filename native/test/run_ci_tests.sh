@@ -65,6 +65,7 @@ t "Post-process pass logic unit test" native/test/run_postfx_test.sh
 t "ERS new-lap site unit test" native/test/run_ers_newlap_test.sh
 t "Round track record guard unit test" native/test/run_track_record_test.sh
 t "AI corner start guard unit test" native/test/run_ai_corner_test.sh
+t "placed record bound unit test" native/test/run_placed_record_test.sh
 t "Tyre slot guard unit test" native/test/run_tyre_slots_test.sh
 t "Pit slot guard unit test" native/test/run_pit_slots_test.sh
 t "Pit box guard unit test" native/test/run_pit_box_test.sh
