@@ -624,6 +624,9 @@ impl SessionEnd {
                 format!("F1 25 closed with code {c} after its Insufficient Storage dialog"),
             );
         }
+        if let Some(sentence) = crate::fast_fail::sentence(u) {
+            return end(Ending::Crash, Some(u), sentence);
+        }
         if crash_code(u) {
             return end(
                 Ending::Crash,
@@ -1080,7 +1083,10 @@ mod tests {
 
         let end = SessionEnd::resolve(Some(-1073740791), "", None, None);
         assert_eq!((end.end, end.crash_code), (Ending::Crash, Some(0xc000_0409)));
-        assert!(end.reason.contains("stack buffer overrun"), "{}", end.reason);
+        assert_eq!(
+            end.reason,
+            "F1 25 stopped itself after detecting a corrupted stack or an invalid call (0xc0000409)"
+        );
         for code in [0xc0e9_0002u32, 0xcfff_ffff, 0xc000_001d, 0x8000_0003] {
             assert_eq!(
                 SessionEnd::resolve(Some(code as i32), "", None, None).end,

@@ -1771,6 +1771,39 @@ fn no_crash_line_and_no_file_still_says_none_was_written() {
 }
 
 #[test]
+fn a_fast_fail_exit_without_a_crash_report_is_named_with_the_loader_log_tail() {
+    let root = tmp("fastfail");
+    let (store, game) = fake_data(&root);
+    let session = store.root.join("sessions").join("20261020-090000");
+    put(&session.join("exit_code"), "-1073740791\n");
+    put(
+        &session.join("loader.log"),
+        "[core] up\n[crash] crash log armed\n[loader] last line before the end\n",
+    );
+    let bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "x");
+    let summary = summary_of(&bundle);
+    assert!(
+        summary.contains(
+            "F1 25 stopped itself after detecting a corrupted stack or an invalid call (0xc0000409).\n\
+             Last loader.log lines:\n  [core] up\n  [crash] crash log armed\n  [loader] last line before the end\n"
+        ),
+        "{summary}"
+    );
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn a_clean_exit_adds_no_fast_fail_sentence() {
+    let root = tmp("fastfailclean");
+    let (store, game) = fake_data(&root);
+    let session = store.root.join("sessions").join("20261020-090000");
+    put(&session.join("exit_code"), "0\n");
+    let bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "x");
+    assert!(!summary_of(&bundle).contains("stopped itself"));
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
 fn saves_excerpt_keeps_the_save_source_and_slot_lines() {
     let text = "1 [core] up\n\
         2 [saves] launcher saves are off for profile main: the game reads Steam's saves natively\n\

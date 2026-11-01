@@ -473,7 +473,20 @@ impl Bundle {
         }
         let found = match (crash_report.as_deref(), crash.is_none()) {
             (Some(text), _) => CrashFound::Report(text),
-            (None, true) => logged_report(store, &sessions).map_or(CrashFound::None, CrashFound::Unsaved),
+            (None, true) => logged_report(store, &sessions).map_or_else(
+                || {
+                    let lines = sessions
+                        .first()
+                        .map(|d| crate::fast_fail::session_lines(d))
+                        .unwrap_or_default();
+                    if lines.is_empty() {
+                        CrashFound::None
+                    } else {
+                        CrashFound::FastFail(lines)
+                    }
+                },
+                CrashFound::Unsaved,
+            ),
             (None, false) => CrashFound::None,
         };
         let os = os_description();
@@ -611,6 +624,13 @@ impl Bundle {
             CrashFound::Unsaved(path) => s.push_str(&format!(
                 "A crash report was started ({path}) but could not be saved, so none was found\n"
             )),
+            CrashFound::FastFail(lines) => {
+                s.push_str("No crash report was found (the game did not write one this session)\n");
+                for l in lines {
+                    s.push_str(&l);
+                    s.push('\n');
+                }
+            }
             CrashFound::None => {
                 s.push_str("No crash report was found (the game did not write one this session)\n")
             }
@@ -908,6 +928,7 @@ fn is_crash_file(path: &Path) -> bool {
 enum CrashFound<'a> {
     Report(&'a str),
     Unsaved(String),
+    FastFail(Vec<String>),
     None,
 }
 

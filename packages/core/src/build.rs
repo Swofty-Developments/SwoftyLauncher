@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use swofty_formats::gvdb::Gvdb;
 
-use crate::activation::db::{Registry, TrackHost, activate};
+use crate::activation::db::{Registry, TrackHost, activate_with};
 use crate::activation::ers::{self, ErsMap, build_ers};
 use crate::activation::grid::grid_size;
 use crate::activation::handling::{self, HandlingMap};
@@ -1238,6 +1238,19 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         let shipped = std::fs::read(&db_src).map_err(io_err(&db_src))?;
         let mut db = Gvdb::parse(&shipped)?;
         let stock: HashSet<u64> = db.records.iter().map(|r| r.key).collect();
+        let row_ids_lock = crate::row_ids::lock(&store.root)?;
+        let last = crate::row_ids::last_build(&store.overlays_dir(profile), &built.buildhash, GVDB);
+        let (mut row_ids, row_id_warnings) =
+            crate::row_ids::Store::load(&store.root, Some(&game.dir), profile, last);
+        built.warnings.extend(row_id_warnings);
+        built.lines.extend(row_ids.recover(&store.sessions_dir()).lines);
+        if let Some(lent) = &lent_ids {
+            let n = row_ids.lend(lent, &resolved.order).map_err(Error::Resolve)?;
+            built.lines.push(format!(
+                "database: {n} added-row id(s) are the room host's, for this session only; row-ids.json keeps yours"
+            ));
+        }
+        let older = crate::tracks::read_older(&store.root, profile);
         for (((_, pkg), slot), (_, _, origin)) in maps.iter().zip(&slots).zip(&tracks) {
             if recorded.contains(&origin.addon) {
                 built.lines.push(format!(
@@ -1257,7 +1270,15 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 None => TrackHost::Natural,
             };
             let lists = ui_lists.get(&pkg.track_code).cloned().unwrap_or_default();
-            let report = activate(&mut db, pkg, &reg, Some(&route), &lists)?;
+            let seed = older
+                .iter()
+                .find(|o| o.addon == origin.addon && o.code == pkg.track_code)
+                .and_then(|o| o.stat_id)
+                .map(i64::from);
+            let mut give = |top: i64, held: &dyn Fn(i64) -> bool| {
+                row_ids.track_stat_id(&origin.addon, &pkg.track_code, seed, top, held)
+            };
+            let report = activate_with(&mut db, pkg, &reg, Some(&route), &lists, Some(&mut give))?;
             for l in report.lines {
                 built.lines.push(format!("{}: {l}", pkg.track_code));
             }
@@ -1279,18 +1300,6 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         let staged = (planner.route(Kind::Db) == Route::Runtime && planner.has_db()).then(|| db.clone());
         let mut db_report = crate::ops::DbReport::default();
         planner.keep_entrant_lists(crate::entrant_lists::StockLists::new(&shipped_db));
-        let row_ids_lock = crate::row_ids::lock(&store.root)?;
-        let last = crate::row_ids::last_build(&store.overlays_dir(profile), &built.buildhash, GVDB);
-        let (mut row_ids, row_id_warnings) =
-            crate::row_ids::Store::load(&store.root, Some(&game.dir), profile, last);
-        built.warnings.extend(row_id_warnings);
-        built.lines.extend(row_ids.recover(&store.sessions_dir()).lines);
-        if let Some(lent) = &lent_ids {
-            let n = row_ids.lend(lent, &resolved.order).map_err(Error::Resolve)?;
-            built.lines.push(format!(
-                "database: {n} added-row id(s) are the room host's, for this session only; row-ids.json keeps yours"
-            ));
-        }
         planner.keep_row_ids(row_ids);
         let added = planner.apply_db_report(&mut db, &stock, &tracked, &mut db_report)?;
         if let Some(ids) = planner.take_row_ids() {

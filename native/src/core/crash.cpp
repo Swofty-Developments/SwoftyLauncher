@@ -14,6 +14,7 @@
 #include "../loader/data_folder.h"
 #include "dred.hpp"
 #include "dred_logic.hpp"
+#include "fast_fail_logic.hpp"
 #include "json.hpp"
 #include "perf.hpp"
 #include "save_heap_logic.hpp"
@@ -66,6 +67,10 @@ constexpr const char *PATTERN_REPORT_MEMORY_ERROR =
 constexpr uint8_t HEAP_ERROR_PREFIX[] = {0x55, 0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41, 0x54, 0x56,
                                          0x57, 0x53, 0x48, 0x83, 0xEC, 0x18, 0x48, 0x8D, 0x6C, 0x24,
                                          0x10, 0x89, 0xD6, 0x48, 0x89, 0xCF, 0x48, 0x8B, 0x5D, 0x78};
+constexpr uint32_t RVA_REPORT_GS_FAILURE = 0x4d9245c, RVA_FAST_FAIL_TERMINATE = 0x5349d58, RVA_INVALID_PARAMETER_ABORT = 0x5351784;
+constexpr const char *PATTERN_REPORT_GS_FAILURE = "48 89 4C 24 08 48 83 EC 38 B9 17 00 00 00";
+constexpr const char *PATTERN_FAST_FAIL_TERMINATE = "48 83 EC 28 B9 17 00 00 00 FF 15 ?? ?? ?? ?? 85 C0 74 07 B9";
+constexpr const char *PATTERN_INVALID_PARAMETER_ABORT = "48 83 EC 28 E8 ?? ?? ?? ?? 48 85 C0 74 0A B9 16";
 constexpr uint8_t FATAL_ABORT[] = {0xC7, 0x04, 0x25, 0x01, 0x00, 0x00, 0x00, 0xAD, 0xDE, 0xAD, 0xDE};
 
 struct Symbol {
@@ -162,7 +167,8 @@ ULONGLONG start_ms;
 std::vector<Symbol> symbols;
 bool symbols_match, kb_build;
 LPTOP_LEVEL_EXCEPTION_FILTER previous;
-safetyhook::InlineHook exit_hook, terminate_hook, nt_terminate_hook, heap_error_hook;
+safetyhook::InlineHook exit_hook, terminate_hook, nt_terminate_hook, heap_error_hook, fail_fast_hook;
+safetyhook::MidHook gs_hook, invalid_parameter_hook, abort_hook;
 uintptr_t seen[MAX_SEEN];
 volatile LONG seen_count, reports, busy, exited, claimed, writing, snapshot_lock, fatal_count, window_reached;
 bool ea_build;
@@ -177,7 +183,7 @@ ThreadInfoFn query_thread;
 using DescriptionFn = HRESULT(WINAPI *)(HANDLE, PWSTR *);
 DescriptionFn thread_description;
 const char *(*wine_version)();
-uintptr_t heap_error_fn, report_memory_error;
+uintptr_t heap_error_fn, report_memory_error, gs_failure_fn, fast_fail_terminate_fn, abort_fn;
 HANDLE go_event, text_event, done_event;
 DWORD writer_tid;
 uintptr_t writer_stack_top;
@@ -906,6 +912,78 @@ int hooked_report_memory_error(int code, const char *msg, char is_fatal, char br
     return heap_error_hook.unsafe_call<int>(code, msg, is_fatal, brk, a5, heap);
 }
 
+bool fast_fail_available()
+{
+    return IsProcessorFeaturePresent(PF_FASTFAIL_AVAILABLE) != 0;
+}
+
+void report_fast_fail(fast_fail::Source src, const fast_fail::Outcome &o, const CONTEXT &ctx, uintptr_t at_addr)
+{
+    perf::flush("fast-fail");
+    if (!enter())
+        return;
+    std::string why = fast_fail::reason(src, o, where(at_addr));
+    cl("[crash] %s", why.c_str());
+    blackbox::note("fast-fail", why.c_str());
+    cl("[crash]   rax=%016llx rbx=%016llx rcx=%016llx rdx=%016llx", ctx.Rax, ctx.Rbx, ctx.Rcx, ctx.Rdx);
+    cl("[crash]   stack:");
+    backtrace(ctx, true);
+    leave();
+    EXCEPTION_RECORD rec{};
+    rec.ExceptionCode = o.exit_status;
+    rec.ExceptionFlags = EXCEPTION_NONCONTINUABLE;
+    rec.ExceptionAddress = reinterpret_cast<PVOID>(ctx.Rip);
+    if (o.has_code) {
+        rec.NumberParameters = 1;
+        rec.ExceptionInformation[0] = o.code;
+    }
+    runtime::hud_fatal();
+    CONTEXT copy = ctx;
+    if (!request_report(K_EXCEPTION, why.c_str(), &rec, &copy))
+        already("fast-fail");
+}
+
+void report_from_hook(fast_fail::Source src, safetyhook::Context &c, uintptr_t entry)
+{
+    alignas(16) CONTEXT ctx;
+    memset(&ctx, 0, sizeof ctx);
+    ctx.ContextFlags = CONTEXT_CONTROL | CONTEXT_INTEGER;
+    ctx.Rax = c.rax, ctx.Rbx = c.rbx, ctx.Rcx = c.rcx, ctx.Rdx = c.rdx, ctx.Rsi = c.rsi, ctx.Rdi = c.rdi;
+    ctx.Rbp = c.rbp, ctx.Rsp = c.rsp, ctx.R8 = c.r8, ctx.R9 = c.r9, ctx.R10 = c.r10, ctx.R11 = c.r11;
+    ctx.R12 = c.r12, ctx.R13 = c.r13, ctx.R14 = c.r14, ctx.R15 = c.r15;
+    ctx.Rip = entry;
+    ctx.EFlags = DWORD(c.rflags);
+    uintptr_t caller = readable(ctx.Rsp, 8) ? *reinterpret_cast<uintptr_t *>(ctx.Rsp) : entry;
+    report_fast_fail(src, fast_fail::outcome(src, fast_fail_available(), 0), ctx, caller);
+}
+
+void on_gs_failure(safetyhook::Context &c)
+{
+    report_from_hook(fast_fail::Source::GsFailure, c, gs_failure_fn);
+}
+
+void on_invalid_parameter(safetyhook::Context &c)
+{
+    report_from_hook(fast_fail::Source::InvalidParameter, c, fast_fail_terminate_fn);
+}
+
+void on_abort(safetyhook::Context &c)
+{
+    report_from_hook(fast_fail::Source::Abort, c, abort_fn);
+}
+
+void WINAPI hooked_raise_fail_fast(PEXCEPTION_RECORD rec, PCONTEXT given, DWORD flags)
+{
+    alignas(16) CONTEXT ctx;
+    RtlCaptureContext(&ctx);
+    if (given && readable(reinterpret_cast<uintptr_t>(given), sizeof(CONTEXT)) && given->Rip)
+        memcpy(&ctx, given, sizeof ctx);
+    uint32_t status = rec && readable(reinterpret_cast<uintptr_t>(rec), sizeof(DWORD)) ? rec->ExceptionCode : 0;
+    report_fast_fail(fast_fail::Source::RaiseFailFast, fast_fail::outcome(fast_fail::Source::RaiseFailFast, true, status),
+                     ctx, ctx.Rip);
+    fail_fast_hook.unsafe_call<void>(rec, given, flags);
+}
+
 void load_symbols(const std::wstring &path, DWORD stamp)
 {
     FILE *f = _wfopen(path.c_str(), L"rb");
@@ -1269,6 +1347,9 @@ void section_exception(const Request &r)
             e.ExceptionFlags, w);
     for (DWORD i = 0; i < e.NumberParameters && i < EXCEPTION_MAXIMUM_PARAMETERS; i++)
         out.put("  parameter %lu: 0x%llx\n", i, (unsigned long long)e.ExceptionInformation[i]);
+    std::string ff = fast_fail::exception_line(e.ExceptionCode, e.NumberParameters >= 1, e.ExceptionInformation[0]);
+    if (!ff.empty())
+        out.put("  %s\n", ff.c_str());
     if ((e.ExceptionCode == EXCEPTION_ACCESS_VIOLATION || e.ExceptionCode == EXCEPTION_IN_PAGE_ERROR) &&
         e.NumberParameters >= 2) {
         auto op = e.ExceptionInformation[0];
@@ -1873,11 +1954,11 @@ uintptr_t kb_function(uint32_t rva, const uint8_t *expect, size_t n)
     return kb_build ? function_at(rva, expect, n) : 0;
 }
 
-// A fixed-byte scan of the exe's executable sections, used only to find Ne_ReportMemoryError on a
-// build with no known address for it. It stays in the crash code and does not go through the
+// A byte scan of the exe's executable sections, used only to find Ne_ReportMemoryError and the CRT's
+// fast-fail paths on a build with no known address for them. It stays in the crash code and does not go through the
 // loader's scan (whose cache and log lines are the binding resolver's). It asks Windows about each
 // memory region once rather than about every page.
-uintptr_t scan_exe(const uint8_t *pat, size_t n)
+uintptr_t scan_exe(const uint8_t *pat, size_t n, const fast_fail::Pattern *masked = nullptr)
 {
     auto dos = reinterpret_cast<const IMAGE_DOS_HEADER *>(exe_base);
     auto nt = reinterpret_cast<const IMAGE_NT_HEADERS *>(exe_base + dos->e_lfanew);
@@ -1901,7 +1982,7 @@ uintptr_t scan_exe(const uint8_t *pat, size_t n)
                 a = static_cast<const uint8_t *>(memchr(a, pat[0], size_t(hi - a) - n + 1));
                 if (!a)
                     break;
-                if (!memcmp(a, pat, n)) {
+                if (masked ? fast_fail::matches(a, *masked) : !memcmp(a, pat, n)) {
                     found = reinterpret_cast<uintptr_t>(a);
                     if (++hits >= 2)
                         return 0;
@@ -1947,12 +2028,51 @@ void hook_heap_errors()
        how, heap_error_fn ? "their error method at the KB address" : "the error method's prologue");
 }
 
+
+uintptr_t find_fast_fail_path(const char *name, uint32_t rva, const char *pattern, const char *&how)
+{
+    fast_fail::Pattern p = fast_fail::parse_pattern(pattern);
+    uintptr_t a = exe_base + rva;
+    how = "KB address";
+    if (kb_build && rva < exe_size && readable(a, p.bytes.size()) &&
+        fast_fail::matches(reinterpret_cast<const uint8_t *>(a), p))
+        return a;
+    how = "found by its prologue";
+    a = scan_exe(p.bytes.data(), p.bytes.size(), &p);
+    if (!a)
+        cl("[crash] %s: its prologue matched 0 or several times; a fast-fail from it gets no report", name);
+    return a;
+}
+
+void hook_fast_fail_path(const char *name, uint32_t rva, const char *pattern, uintptr_t &fn, safetyhook::MidHook &hook,
+                         void (*callback)(safetyhook::Context &))
+{
+    const char *how = "";
+    fn = find_fast_fail_path(name, rva, pattern, how);
+    if (!fn)
+        return;
+    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(fn), callback);
+    if (h)
+        hook = std::move(*h);
+    cl("[crash] %s at base+0x%llx %s (%s)", name, (unsigned long long)(fn - exe_base), h ? "hooked" : "NOT hooked", how);
+}
+
+void hook_fast_fails()
+{
+    hook_fast_fail_path("__report_gsfailure", RVA_REPORT_GS_FAILURE, PATTERN_REPORT_GS_FAILURE, gs_failure_fn, gs_hook,
+                        on_gs_failure);
+    hook_fast_fail_path("the CRT invalid-parameter terminate path", RVA_FAST_FAIL_TERMINATE, PATTERN_FAST_FAIL_TERMINATE,
+                        fast_fail_terminate_fn, invalid_parameter_hook, on_invalid_parameter);
+    hook_fast_fail_path("the CRT abort path", RVA_INVALID_PARAMETER_ABORT, PATTERN_INVALID_PARAMETER_ABORT, abort_fn,
+                        abort_hook, on_abort);
+}
 }
 
 /* Called by the core once the game's code reads decrypted, which on a packed build is the decrypted stage. */
 void crash_game_hooks()
 {
     hook_heap_errors();
+    hook_fast_fails();
 }
 
 namespace blackbox {
@@ -2055,6 +2175,14 @@ void crash_attach(SwoftyApi *a, const std::wstring &dir)
     auto tp = safetyhook::InlineHook::create(reinterpret_cast<void *>(GetProcAddress(k32, "TerminateProcess")), hooked_terminate);
     auto ntt = safetyhook::InlineHook::create(reinterpret_cast<void *>(GetProcAddress(ntdll, "NtTerminateProcess")),
                                               hooked_nt_terminate);
+    bool fail_fast_hooked = false;
+    if (auto raise = GetProcAddress(kb ? kb : k32, "RaiseFailFastException")) {
+        auto ff = safetyhook::InlineHook::create(reinterpret_cast<void *>(raise), hooked_raise_fail_fast);
+        if (ff) {
+            fail_fast_hook = std::move(*ff);
+            fail_fast_hooked = true;
+        }
+    }
     if (e)
         exit_hook = std::move(*e);
     if (tp)
@@ -2069,5 +2197,7 @@ void crash_attach(SwoftyApi *a, const std::wstring &dir)
        dump_mode == DUMP_FULL ? "full-memory" : dump_mode == DUMP_OFF ? "no" : "stacks-only",
        dump_mode == DUMP_NORMAL ? " (SWOFTY_CRASH_DUMP=full for all memory, off for none)" : "",
        writer_tid ? "a dedicated thread" : "the reporting thread", ntt ? "hooked" : "NOT hooked");
+    cl("[crash] RaiseFailFastException %s; the CRT's fast-fail paths are hooked once the game's code is decrypted",
+       fail_fast_hooked ? "hooked" : "NOT hooked");
     runtime::dred::arm(swofty_dir, tap, self);
 }

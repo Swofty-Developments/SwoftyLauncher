@@ -8352,6 +8352,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Crt_ReportGsFailure: Binding = Binding {
+        id: "Ne_Crt_ReportGsFailure",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Crt_SecurityCookieFailure: Binding = Binding {
         id: "Ne_Crt_SecurityCookieFailure",
         kind: "func",

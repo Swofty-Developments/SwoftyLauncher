@@ -296,4 +296,20 @@ uintptr_t node_set_bool()
     return ga.node_set_bool;
 }
 
+bool complete_sync(void *sync, const char *what)
+{
+    if (!ga.node_set_bool || !ga.sync_complete || !ga.bool_type || !ga.empty_node || !sync)
+        return false;
+    auto *s = static_cast<uint8_t *>(sync);
+    const uint8_t one = 1;
+    for (size_t off : {SYNC_REQUEST, SYNC_UI}) {
+        void *node = *reinterpret_cast<void **>(s + off);
+        if (!bool_node(node) || node_value(node))
+            continue;
+        reinterpret_cast<NodeSetBool_t *>(ga.node_set_bool)(node, &one, 0, 0);
+        swofty::log("[title] set %s's %s node to true", what, off == SYNC_REQUEST ? "request (+0x80)" : "ui (+0xa0)");
+    }
+    return reinterpret_cast<SyncComplete_t *>(ga.sync_complete)(sync);
+}
+
 }
