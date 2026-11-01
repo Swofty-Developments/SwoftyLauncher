@@ -529,6 +529,16 @@ pub fn write_older(
     crate::write_json(&path, &file)
 }
 
+/// The tracks the last build recorded in `older-tracks.json`, for `profile`: their stat ids seed the ids the store keeps.
+pub fn read_older(data: &Path, profile: &str) -> Vec<OlderTrack> {
+    let path = crate::stdlib::reports::path(data, OLDER_FILE);
+    crate::read_json::<OlderTracks>(&path)
+        .ok()
+        .filter(|f| f.profile == profile)
+        .map(|f| f.tracks)
+        .unwrap_or_default()
+}
+
 /// One venue of `packages/sdk/std/data/venues.json`.
 #[derive(Debug, Clone, Default, PartialEq, Deserialize)]
 pub struct Venue {
