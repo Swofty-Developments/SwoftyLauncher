@@ -160720,6 +160720,60 @@
    "used_by": [
     "native/src/core/garage_crew.cpp"
    ]
+  },
+  {
+   "id": "ai.update_cars_corner_line_load",
+   "section": ".xtls",
+   "pattern": "48 8B 84 F8 B8 00 00 00 48 85 C0 0F 84",
+   "match": "0x14064069e",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14064069e",
+   "kind": "mid",
+   "expect": "48 8B 84 F8 B8 00 00 00",
+   "names": [
+    "site_Ai_UpdateCars_CornerLineLoad"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "ai-corner",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/ai_corner_guard.cpp"
+   ]
+  },
+  {
+   "id": "ai.update_cars_no_corner_line",
+   "section": ".xtls",
+   "pattern": "80 BB 85 01 00 00 00 74 4C C5 FA 11 BB 20 01 00 00",
+   "match": "0x1406409be",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1406409be",
+   "kind": "mid",
+   "expect": "80 BB 85 01 00 00 00",
+   "names": [
+    "site_Ai_UpdateCars_NoCornerLine"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "ai-corner",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/ai_corner_guard.cpp"
+   ]
   }
  ]
 }
