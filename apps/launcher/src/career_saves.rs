@@ -61,7 +61,29 @@ pub(crate) enum Banner {
         kept_at: i64,
         names: Vec<String>,
     },
+    Lost {
+        profile: String,
+        source: String,
+        snapshot: String,
+        kept_at: i64,
+        names: Vec<String>,
+    },
     Hint(Notice),
+}
+
+impl Banner {
+    pub(crate) fn lost(&self) -> Option<(&[String], &str, &str, i64)> {
+        match self {
+            Self::Lost {
+                names,
+                source,
+                snapshot,
+                kept_at,
+                ..
+            } => Some((names, source, snapshot, *kept_at)),
+            _ => None,
+        }
+    }
 }
 
 struct Version {
@@ -101,6 +123,7 @@ pub(crate) struct SavesView {
     steam_running: bool,
     awaiting_import: bool,
     steam_missing: bool,
+    steam_warning: bool,
 }
 
 impl SavesView {
@@ -185,7 +208,11 @@ pub(crate) fn steam_save_in(folder: &Path) -> Option<Location> {
 }
 
 pub(crate) fn source_of_profile(root: &Path, profile: &str) -> Option<String> {
-    match profile == VANILLA {
+    let steam_saves = profile == VANILLA
+        || !Store::new(root.to_path_buf())
+            .profile(profile)
+            .map_or(true, |p| p.launcher_saves);
+    match steam_saves {
         true => Location::active(root).map(|l| l.source),
         false => Some(Location::launcher(root, profile).source),
     }
@@ -216,6 +243,15 @@ fn banner_from(root: &Path, source: String, profile: String) -> Option<Banner> {
             snapshot: newest.last_seen.clone(),
             kept_at: newest.last_seen_at,
             names: shown.iter().map(|r| row_name(r)).collect(),
+        });
+    }
+    if let Some(loss) = v.probable_loss() {
+        return Some(Banner::Lost {
+            profile,
+            source,
+            snapshot: loss.snapshot.clone(),
+            kept_at: loss.at,
+            names: loss.names(),
         });
     }
     Notice::read(root).map(Banner::Hint)
@@ -433,6 +469,16 @@ fn build_saves_untimed(store: &Store, install: Option<&crate::game::Install>, na
         steam.as_ref().is_some_and(launcher_saves::has_files),
         launcher_saves::import_pending(&root),
     ) && launcher_saves::steam_save_pending(&root, &name);
+    let steam_warning = store.profile(&name).is_ok_and(|p| {
+        swofty_core::vault::guard::steam_save_warning(
+            vanilla,
+            p.launcher_saves,
+            &careers::addon_careers(
+                &swofty_core::stdlib::careers::read(&swofty_core::stdlib::careers::data_path(&root)),
+                Some(&name),
+            ),
+        )
+    });
     let view = SavesView {
         steam,
         profile: name,
@@ -448,6 +494,7 @@ fn build_saves_untimed(store: &Store, install: Option<&crate::game::Install>, na
         steam_running: running.steam,
         awaiting_import,
         steam_missing,
+        steam_warning,
     };
     Built {
         banner,
@@ -672,6 +719,32 @@ impl Shell {
                 snapshot.clone(),
                 *kept_at,
             ),
+            Banner::Lost {
+                profile,
+                source,
+                snapshot,
+                kept_at,
+                names,
+            } => (
+                format!(
+                    "{} may have been removed from your Steam save when F1 25 started without the launcher: {}. \
+                     The last version that held {} is from {}.",
+                    match names.len() {
+                        1 => "1 addon career".to_owned(),
+                        n => format!("{n} addon careers"),
+                    },
+                    names.join("; "),
+                    match names.len() {
+                        1 => "it",
+                        _ => "them",
+                    },
+                    vault::human(*kept_at),
+                ),
+                profile.clone(),
+                source.clone(),
+                snapshot.clone(),
+                *kept_at,
+            ),
             Banner::Hint(n) => (
                 n.headline(),
                 profile_of_source(&n.source),
@@ -681,7 +754,10 @@ impl Shell {
             ),
         };
         let hint = matches!(banner, Banner::Hint(_));
+        let lost = matches!(banner, Banner::Lost { .. });
+        let restorable = !hint;
         let review = snapshot.clone();
+        let restore = (source.clone(), snapshot.clone());
         let _ = kept_at;
         let _ = profile;
         let dismiss_source = source;
@@ -700,6 +776,16 @@ impl Shell {
                         .text_color(p.warning),
                 )
                 .child(div().flex_1().min_w_0().child(text))
+                .when(restorable, |row| {
+                    row.child(
+                        Button::new("saves-banner-restore")
+                            .small()
+                            .label("Restore")
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                this.restore_version(&restore.0, &restore.1, window, cx);
+                            })),
+                    )
+                })
                 .child(
                     Button::new("saves-banner-review")
                         .outline()
@@ -724,6 +810,9 @@ impl Shell {
                             }
                             if let Ok(v) = Vault::open(&root, &dismiss_source) {
                                 v.dismiss_drop().ok();
+                                if lost {
+                                    v.dismiss_loss().ok();
+                                }
                             }
                             this.refresh_saves();
                             cx.notify();
@@ -958,12 +1047,14 @@ impl Shell {
         let footer = self.storage_line(view, p, cx);
         let empty = self.empty_save_notice(view, p, cx);
         let missing = self.steam_missing_notice(view, p, cx);
+        let warning = self.steam_warning_notice(view, p, cx);
         v_flex()
             .size_full()
             .child(self.header(title, subtitle, actions, p))
             .children(banner)
             .children(empty)
             .children(missing)
+            .children(warning)
             .child(
                 div()
                     .flex_1()
@@ -1011,6 +1102,50 @@ impl Shell {
                             this.ask_copy(steam.clone(), VANILLA.to_owned(), name.clone(), window, cx);
                         })),
                 ),
+        )
+    }
+
+    fn steam_warning_notice(&self, view: &SavesView, p: Palette, cx: &mut Context<Self>) -> Option<Div> {
+        if !view.steam_warning {
+            return None;
+        }
+        let turn_on = !view.has_save;
+        Some(
+            h_flex()
+                .mx(px(GUTTER))
+                .mb(px(8.))
+                .px(px(12.))
+                .py(px(8.))
+                .gap(px(8.))
+                .items_center()
+                .flex_wrap()
+                .rounded(px(8.))
+                .border_1()
+                .border_color(p.border)
+                .text_size(px(13.))
+                .text_color(p.text_muted)
+                .child(
+                    Icon::new(IconName::CircleAlert)
+                        .size(px(15.))
+                        .text_color(p.warning),
+                )
+                .child(
+                    div()
+                        .flex_1()
+                        .min_w(px(240.))
+                        .child(swofty_core::vault::guard::STEAM_SAVE_WARNING),
+                )
+                .when(turn_on, |row| {
+                    row.child(
+                        Button::new("saves-warning-launcher-saves")
+                            .small()
+                            .label("Use launcher saves")
+                            .on_click(cx.listener(|this, _, window, cx| {
+                                this.set_launcher_saves(true, window, cx);
+                                this.refresh_saves();
+                            })),
+                    )
+                }),
         )
     }
 
@@ -1634,6 +1769,48 @@ mod tests {
         std::fs::remove_dir_all(&d).ok();
         std::fs::create_dir_all(d.join("career-vault/steam-1")).unwrap();
         d
+    }
+
+    #[test]
+    fn the_banner_names_an_addon_career_a_start_outside_the_launcher_probably_removed() {
+        let d = std::env::temp_dir().join(format!("swofty-launcher-saves-lost-{}", std::process::id()));
+        std::fs::remove_dir_all(&d).ok();
+        let remote = d
+            .join("steam")
+            .join("userdata")
+            .join("843502855")
+            .join("3059520")
+            .join("remote");
+        std::fs::create_dir_all(&remote).unwrap();
+        std::fs::write(remote.join("savegame@profile#NXDSMWW.BWW"), vec![1u8; 4000]).unwrap();
+        let index = swofty_core::stdlib::careers::data_path(&d);
+        std::fs::create_dir_all(index.parent().unwrap()).unwrap();
+        std::fs::write(
+            &index,
+            r#"{"careers":[{"career":"progressive:7f","slot":"7f","status":"present","mode":"progressive","label":"Progressive 2016","addons":[{"id":"swofty.progressive"}]}]}"#,
+        )
+        .unwrap();
+        let loc = vault::Location::steam(&remote).unwrap();
+        let v = Vault::of(&d, &loc).unwrap();
+        let meta = |r| vault::Meta::new(r);
+        v.snapshot(&loc, meta(vault::Reason::AfterSession), 1_000)
+            .unwrap();
+        std::fs::write(remote.join("savegame@profile#NXDSMWW.BWW"), vec![2u8; 900]).unwrap();
+        v.snapshot(&loc, meta(vault::Reason::ForeignExit), 2_000).unwrap();
+        match banner_from(&d, loc.source.clone(), "p".into()) {
+            Some(Banner::Lost {
+                names,
+                kept_at,
+                source,
+                ..
+            }) => {
+                assert_eq!(names, ["Progressive 2016"]);
+                assert_eq!(kept_at, 1_000);
+                assert_eq!(source, loc.source);
+            }
+            _ => panic!("expected a lost banner"),
+        }
+        std::fs::remove_dir_all(&d).ok();
     }
 
     #[test]

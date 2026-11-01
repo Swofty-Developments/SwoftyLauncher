@@ -103,7 +103,16 @@ fn watch_vault(store: &Store, processes: &[GameProcess]) {
         Ok(mut w) => w.tick(&store.root, pid, session),
         Err(_) => Vec::new(),
     };
+    if !lines.is_empty() {
+        BANNER_STALE.store(true, Ordering::Relaxed);
+    }
     lines.iter().for_each(|l| crate::app_log::note(l));
+}
+
+static BANNER_STALE: AtomicBool = AtomicBool::new(false);
+
+pub(crate) fn banner_stale() -> bool {
+    BANNER_STALE.swap(false, Ordering::Relaxed)
 }
 
 /// At launcher start, once an unfinished session is rolled back: move old
@@ -125,6 +134,7 @@ pub fn vault_at_start(store: &Store) {
         crate::app_log::note(&l);
     }
     import_first_start(store);
+    BANNER_STALE.store(true, Ordering::Relaxed);
 }
 
 static IMPORT_MISS_LOGGED: AtomicBool = AtomicBool::new(false);
