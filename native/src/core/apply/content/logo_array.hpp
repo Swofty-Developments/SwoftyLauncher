@@ -64,6 +64,21 @@ inline bool shape_of_images(const Stock &stock, Shape &out, std::string &why)
     return true;
 }
 
+inline bool repair_view(Stock &stock, uint32_t &said)
+{
+    if (stock.head.size() < HEAD_SIZE || stock.view.size() < VIEW_COUNT + 4)
+        return false;
+    uint32_t fmt = le32(stock.head, HEAD_FORMAT), w = le32(stock.head, HEAD_FORMAT + 4), h = le32(stock.head, HEAD_FORMAT + 8);
+    uint32_t mips = le32(stock.head, HEAD_MIPS), count = le32(stock.head, HEAD_COUNT);
+    if (fmt != FORMAT_BC7 || mips != 1 || !w || !h || w % 4 || h % 4 || !count || stock.data.size() != size_t(count) * w * h)
+        return false;
+    said = le32(stock.view, VIEW_COUNT);
+    if (said == count)
+        return false;
+    put32(stock.view, VIEW_COUNT, count);
+    return true;
+}
+
 inline bool shape_of(const Stock &stock, Shape &out, std::string &why)
 {
     if (!shape_of_images(stock, out, why))
