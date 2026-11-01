@@ -68,7 +68,31 @@ int main() {
     CHECK(err == "sessions.r: timeline[0].intensity must be 0..1");
     CHECK(!plan(R"({"timeline":[{"at_fraction":0,"at_minute":3,"state":"clear"}]})", p, err));
     CHECK(!plan(R"({"timeline":[{"at_lap":3,"state":"clear"}]})", p, err));
-    CHECK(err == "sessions.r: timeline[0].at_lap needs laps on the session and at_lap <= laps");
+    CHECK(err == "sessions.r: timeline[0].at_lap needs laps on the session (laps is missing or 0)");
+
+    // 0 laps, negative laps and non-finite times are refused instead of becoming a time
+    CHECK(!plan(R"({"laps":0,"timeline":[{"at_lap":5,"state":"clear"}]})", p, err));
+    CHECK(err.find("laps must be an integer 1..200") != std::string::npos);
+    CHECK(!plan(R"({"laps":-3,"timeline":[{"at_lap":1,"state":"clear"}]})", p, err));
+    CHECK(!plan(R"({"laps":53,"timeline":[{"at_lap":0,"state":"clear"}]})", p, err));
+    CHECK(!plan(R"({"timeline":[{"at_minute":-1,"state":"clear"}]})", p, err));
+    CHECK(!plan(R"({"timeline":[{"at_minute":1e999,"state":"clear"}]})", p, err));
+    CHECK(!plan(R"({"timeline":[{"at_fraction":1e999,"state":"clear"}]})", p, err));
+    CHECK(!plan(R"({"laps":1e999,"timeline":[{"at_lap":1,"state":"clear"}]})", p, err));
+
+    // a zero or non-finite session length cannot produce a NaN or infinite point
+    CHECK(plan(R"({"timeline":[{"at_minute":10,"state":"heavy_rain"}]})", p, err));
+    for (float len : {0.0f, -5.0f, (float)NAN, (float)INFINITY}) {
+        b = make_build(p, len, -1);
+        for (uint32_t i = 0; i < b.n; ++i)
+            CHECK(std::isfinite(b.hold[i]) && std::isfinite(b.trans[i]) && b.hold[i] >= 0 && (i + 1 == b.n || b.trans[i] >= kMinRampS));
+    }
+
+    // a lap point built by hand with laps 0 converts to a finite time, not a division by zero
+    SessionPlan z; z.unit = kLap; z.laps = 0; z.pts.push_back({20, 4, -1, -1});
+    b = make_build(z, 3600, -1);
+    for (uint32_t i = 0; i < b.n; ++i)
+        CHECK(std::isfinite(b.hold[i]) && std::isfinite(b.trans[i]) && b.hold[i] >= 0 && b.trans[i] >= 0);
 
     std::printf("%s (%d failure(s))\n", fails ? "FAILED" : "ALL OK", fails);
     return fails ? 1 : 0;

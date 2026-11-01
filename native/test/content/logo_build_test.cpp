@@ -353,6 +353,86 @@ int main(int argc, char **argv)
     }
 
     {
+        fs::path ov = out / "viewfix";
+        fs::create_directories(ov / "ov");
+        std::string array = "teams.driver_select_team_logos";
+        std::string image = std::string(lb::ARRAY_URI) + array + ".texarray.image", view = std::string(lb::ARRAY_URI) + array + ".texarray";
+        std::string stock_rel = list[1], over_rel = "ov/flow_a.erp";
+        auto frag = [&](const fs::path &file, const std::string &name, size_t n) {
+            auto src = open_file(file);
+            ef::Archive arc;
+            std::string bytes, w2;
+            if (src && ef::open(*src, arc, w2)) {
+                const ef::Entry *e = arc.find(name);
+                if (e && e->frags.size() > n)
+                    ef::fragment(*src, arc, e->frags[n], bytes, w2);
+            }
+            return bytes;
+        };
+        std::string stock_view = frag(game / stock_rel, view, 0);
+        uint32_t slices = content::logo_array::le32(frag(game / stock_rel, image, 0), content::logo_array::HEAD_COUNT);
+        std::string wide = stock_view;
+        content::logo_array::put32(wide, content::logo_array::VIEW_COUNT, slices + 10);
+        {
+            auto src = open_file(game / stock_rel);
+            ef::Archive arc;
+            ef::open(*src, arc, why);
+            ef::Changes edit;
+            edit[view] = {wide};
+            std::ofstream(ov / over_rel, std::ios::binary) << rewrite_to_string(*src, arc, edit, why);
+        }
+        lb::Env skewed;
+        skewed.list = [&] { return list; };
+        skewed.open = [&](const std::string &rel) { return rel.rfind("ov/", 0) == 0 ? open_file(ov / rel) : open_file(game / rel); };
+        skewed.overlays = [&](const std::string &rel) {
+            return rel == stock_rel ? std::vector<std::string>{over_rel} : std::vector<std::string>{};
+        };
+        auto view_count_in = [&](const lb::Result &r) {
+            std::set<uint32_t> seen;
+            for (auto &[rel, changes] : r.changes) {
+                auto it = changes.find(view);
+                if (it != changes.end())
+                    seen.insert(content::logo_array::le32(*it->second[0], content::logo_array::VIEW_COUNT));
+            }
+            return seen;
+        };
+        auto head_count_in = [&](const lb::Result &r) {
+            std::set<uint32_t> seen;
+            for (auto &[rel, changes] : r.changes) {
+                auto it = changes.find(image);
+                if (it != changes.end())
+                    seen.insert(content::logo_array::le32(*it->second[0], content::logo_array::HEAD_COUNT));
+            }
+            return seen;
+        };
+        std::vector<lb::Want> add(1);
+        add[0].array = array;
+        add[0].key = "viewfixed";
+        add[0].donor = "b";
+        lb::Result fixed;
+        check(lb::build(skewed, add, fixed) && fixed.built == 1 && fixed.refused == 0,
+              "an array whose view is ten above its slices is repaired and grown instead of refused");
+        std::string said = "team.logo: " + array + " view said " + std::to_string(slices + 10) + " slices for " + std::to_string(slices) + "; fixed";
+        check(std::count(fixed.lines.begin(), fixed.lines.end(), said) == 1, "the repair is logged once for the array");
+        check(view_count_in(fixed) == std::set<uint32_t>{slices + 1} && head_count_in(fixed) == std::set<uint32_t>{slices + 1},
+              "every archive gets the grown image and a view that matches it");
+
+        std::vector<lb::Want> refused(1);
+        refused[0].array = array;
+        refused[0].key = "nokey";
+        refused[0].donor = "no_such_stock_key";
+        lb::Result left;
+        lb::build(skewed, refused, left);
+        check(left.refused == 1 && left.built == 0 && view_count_in(left) == std::set<uint32_t>{slices},
+              "a refused slot still leaves the array with a view that matches its image");
+
+        lb::Result untouched;
+        lb::build(env, refused, untouched);
+        check(untouched.changes.empty(),
+              "a stock array that is already consistent is never rewritten for its view");
+    }
+
+    {
         auto bad = wants;
         bad[0].width = 32;
         lb::Result r2;

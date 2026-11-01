@@ -25,6 +25,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#include <chrono>
 #include <windows.h>
 
 #include <algorithm>
@@ -438,51 +439,108 @@ template <class F> void each_row(const std::string &table, const std::string &st
         f(table + "." + stem + "_" + std::to_string(i));
 }
 
+constexpr double kNamesSliceMs = 2.0;
+
+struct NamesLoad {
+    int stage = 0;
+    int64_t row = 0;
+    int64_t count = -1;
+};
+
+NamesLoad g_load;
 int g_name_tries = 0;
 
-const Names &names()
+double since_ms(std::chrono::steady_clock::time_point t0)
 {
+    return std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
+}
+
+void load_driver_row(const std::string &row)
+{
+    int64_t id;
+    if (!db_int(row + ".stat_id", id) || id < 0 || id > 0xffff)
+        return;
+    uint32_t k = static_cast<uint32_t>(id);
+    std::string v;
+    if (db_text(row + "._metadata_", v))
+        g_names.driver[k] = v;
+    if (db_text(row + ".initials", v))
+        g_names.initials[k] = v;
+    int64_t num;
+    if (db_int(row + ".car_number", num) && num >= 0 && num < 1000)
+        g_names.number[k] = static_cast<int>(num);
+}
+
+void load_named_row(const std::string &row, std::unordered_map<uint32_t, std::string> &into)
+{
+    int64_t id;
+    std::string v;
+    if (db_int(row + ".stat_id", id) && id >= 0 && id <= 0xffff && db_text(row + "._metadata_", v))
+        into[static_cast<uint32_t>(id)] = v;
+}
+
+bool names_step(double budget_ms)
+{
+    static const char *const kTable[] = {"entrants.drivers", "entrants.teams",
+                                         "driver_statistics.driver_statistics.driver_statistics_info"};
+    static const char *const kStem[] = {"driver", "team", "StatisticInfo"};
     if (g_names.loaded || !swofty::db::available())
-        return g_names;
-    if (g_name_tries++ % 30 != 0)
-        return g_names;
-    each_row("entrants.drivers", "driver", [](const std::string &row) {
-        int64_t id;
-        if (!db_int(row + ".stat_id", id) || id < 0 || id > 0xffff)
-            return;
-        uint32_t k = static_cast<uint32_t>(id);
-        std::string v;
-        if (db_text(row + "._metadata_", v))
-            g_names.driver[k] = v;
-        if (db_text(row + ".initials", v))
-            g_names.initials[k] = v;
-        int64_t num;
-        if (db_int(row + ".car_number", num) && num >= 0 && num < 1000)
-            g_names.number[k] = static_cast<int>(num);
-    });
-    each_row("entrants.teams", "team", [](const std::string &row) {
-        int64_t id;
-        std::string v;
-        if (db_int(row + ".stat_id", id) && id >= 0 && id <= 0xffff && db_text(row + "._metadata_", v))
-            g_names.team[static_cast<uint32_t>(id)] = v;
-    });
-    each_row("driver_statistics.driver_statistics.driver_statistics_info", "StatisticInfo",
-             [](const std::string &row) {
-                 int64_t id;
-                 std::string v;
-                 if (db_int(row + ".stat_id", id) && id >= 0 && id <= 0xffff && db_text(row + "._metadata_", v))
-                     g_names.stat[static_cast<uint32_t>(id)] = v;
-             });
+        return false;
+    if (g_load.stage == 0 && g_load.count < 0 && g_name_tries++ % 30 != 0)
+        return false;
+    auto t0 = std::chrono::steady_clock::now();
+    while (g_load.stage < 3) {
+        std::string table = kTable[g_load.stage], stem = kStem[g_load.stage];
+        if (g_load.count < 0) {
+            int64_t count = 0;
+            if (!db_int(table + "._" + stem + "_instancecount_", count) || count <= 0 || count > 4096)
+                count = 0;
+            g_load.count = count;
+            g_load.row = 0;
+        }
+        while (g_load.row < g_load.count) {
+            std::string row = table + "." + stem + "_" + std::to_string(g_load.row++);
+            if (g_load.stage == 0)
+                load_driver_row(row);
+            else
+                load_named_row(row, g_load.stage == 1 ? g_names.team : g_names.stat);
+            if (since_ms(t0) >= budget_ms)
+                return false;
+        }
+        ++g_load.stage;
+        g_load.count = -1;
+    }
+    g_load = NamesLoad{};
     g_names.loaded = !g_names.driver.empty();
     if (g_names.loaded || g_name_tries <= 90)
         ce::log("drivers: gamedb names loaded: %zu drivers, %zu teams, %zu statistics",
             g_names.driver.size(), g_names.team.size(), g_names.stat.size());
+    return true;
+}
+
+const Names &names()
+{
+    names_step(1e9);
     return g_names;
 }
 
+const Names &names_cached()
+{
+    return g_names;
+}
+
+int names_idle()
+{
+    if (g_names.loaded || !swofty::db::available())
+        return 0;
+    return names_step(kNamesSliceMs) ? 2 : 1;
+}
+
+bool g_in_section = false;
+
 std::string stat_name(uint16_t info)
 {
-    auto &m = names().stat;
+    auto &m = g_in_section ? names_cached().stat : names().stat;
     auto it = m.find(info);
     if (it != m.end() && !it->second.empty())
         return it->second;
@@ -848,8 +906,14 @@ void moves_json(ce::Writer &w)
 bool dc_contracts(std::unordered_map<uint32_t, uintptr_t> &out);
 void contract_json(ce::Writer &w, uintptr_t contract);
 
+struct SectionScope {
+    SectionScope() { g_in_section = true; }
+    ~SectionScope() { g_in_section = false; }
+};
+
 void section(ce::Writer &w)
 {
+    SectionScope scope;
     Comp c;
     const char *why = "no career loaded";
     bool ok = ce::in_career() && find_comp(c, &why);
@@ -893,7 +957,7 @@ void section(ce::Writer &w)
     std::unordered_map<uint32_t, ce::comp::Entrant> seat;
     for (auto &e : ce::comp::entrants())
         seat[e.driver] = e;
-    const Names &nm = names();
+    const Names &nm = names_cached();
     std::unordered_map<uint32_t, uintptr_t> contract;
     bool dc = dc_contracts(contract);
 
@@ -2893,6 +2957,7 @@ ce::OpResult op_free_agent_add(const ce::Json &args)
 } // namespace
 
 CE_SECTION("drivers", section);
+CE_IDLE(names_idle);
 CE_OP("drivers.ratings.set", op_ratings_set);
 CE_OP("drivers.number.set", op_number_set);
 CE_OP("drivers.contract.set", op_contract_set);

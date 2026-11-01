@@ -132,7 +132,7 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     std::vector<logo_build::Want> wants;
     std::set<std::string> seen;
     logo_build::Refusals refusals;
-    uint64_t key = 0xcbf29ce484222325ull;
+    uint64_t key = stamp(0xcbf29ce484222325ull, logo_cache::CACHE_FORMAT);
     for (auto &l : logos) {
         if (!seen.insert(l.array + "|" + l.key).second)
             continue;
@@ -190,20 +190,16 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     std::string manifest_name = "logos_" + id + ".manifest";
     std::string manifest = runtime::read_file(runtime::under_swofty(dir + manifest_name), size_t(1) << 20);
     std::vector<std::pair<std::string, std::string>> routes;
-    if (!manifest.empty()) {
-        size_t at = 0;
-        while (at < manifest.size()) {
-            size_t end = manifest.find('\n', at);
-            if (end == std::string::npos)
-                end = manifest.size();
-            std::string line = manifest.substr(at, end - at);
-            size_t tab = line.find('\t');
-            if (tab != std::string::npos)
-                routes.emplace_back(line.substr(0, tab), line.substr(tab + 1));
-            at = end + 1;
-        }
+    int cached_built = -1;
+    if (!manifest.empty())
+        logo_cache::manifest_parse(manifest, [&](const std::string &file) {
+            return GetFileAttributesW(runtime::under_swofty(dir + file).c_str()) != INVALID_FILE_ATTRIBUTES;
+        }, cached_built, routes);
+    if (!routes.empty()) {
+        report.built = cached_built;
         report.lines.push_back("team.logo: " + std::to_string(routes.size()) + " cached archive(s) of " + id + " reused");
     } else {
+        DeleteFileW(runtime::under_swofty(dir + manifest_name).c_str());
         DWORD t0 = GetTickCount();
         logo_build::Env env;
         env.list = [&] { return files; };
@@ -239,7 +235,6 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
             id = runtime::hex16(keyed.key).substr(2);
             manifest_name = "logos_" + id + ".manifest";
         }
-        std::string out_manifest;
         for (auto &[rel, changes] : res.changes) {
             auto src = env.open(rel);
             erpfile::Archive arc;
@@ -268,10 +263,9 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
                 continue;
             }
             routes.emplace_back(rel, file);
-            out_manifest += rel + "\t" + file + "\n";
         }
-        if (routes.size() == res.changes.size() && !routes.empty())
-            runtime::write_file(runtime::under_swofty(dir + manifest_name), out_manifest);
+        if (logo_cache::cacheable(routes.size(), res.changes.size(), res.refused))
+            runtime::write_file(runtime::under_swofty(dir + manifest_name), logo_cache::manifest_text(res.built, routes));
         report.built = res.built;
         report.lines.push_back("team.logo: " + std::to_string(res.built) + " slice(s) built into " + std::to_string(routes.size()) +
                                " archive(s) in " + std::to_string(GetTickCount() - t0) + " ms");

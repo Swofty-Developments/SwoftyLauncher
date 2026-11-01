@@ -31,7 +31,7 @@ int state_of(const std::string &s)
 
 bool is_int(const ce::Json &v, double lo, double hi)
 {
-    return v.type == ce::Json::Num && std::floor(v.n) == v.n && v.n >= lo && v.n <= hi;
+    return v.type == ce::Json::Num && std::isfinite(v.n) && std::floor(v.n) == v.n && v.n >= lo && v.n <= hi;
 }
 
 bool is_num(const ce::Json &v, double lo, double hi)
@@ -63,7 +63,7 @@ bool parse_session(const ce::Json &v, const char *key, SessionPlan &p, std::stri
     const ce::Json &laps = v["laps"];
     if (laps.type != ce::Json::Null) {
         if (!is_int(laps, 1, 200))
-            return fail("laps must be an integer 1..200");
+            return fail("laps must be an integer 1..200; a lap-based change needs the race laps");
         p.laps = static_cast<int>(laps.n);
     }
     const ce::Json &mins = v["minutes"];
@@ -118,7 +118,9 @@ bool parse_session(const ce::Json &v, const char *key, SessionPlan &p, std::stri
         if (unit == kLap && !is_int(pos, 1, 200))
             return fail(at + ".at_lap must be an integer 1..200");
         pt.at = pos.n;
-        if (unit == kLap && (!p.laps || pt.at > p.laps))
+        if (unit == kLap && !p.laps)
+            return fail(at + ".at_lap needs laps on the session (laps is missing or 0)");
+        if (unit == kLap && pt.at > p.laps)
             return fail(at + ".at_lap needs laps on the session and at_lap <= laps");
         if (unit == kMinute && p.minutes && pt.at > p.minutes)
             return fail(at + ".at_minute is past the session's minutes");
@@ -150,6 +152,8 @@ bool parse_session(const ce::Json &v, const char *key, SessionPlan &p, std::stri
 Build make_build(const SessionPlan &p, float len, int game_first)
 {
     Build b;
+    if (!std::isfinite(len) || len <= 0)
+        len = 3600.0f;
     bool zero = at_zero(p, p.pts[0].at);
     size_t first_change = zero ? 1 : 0;
     b.type[0] = static_cast<uint8_t>(zero ? p.pts[0].state : p.start >= 0 ? p.start
