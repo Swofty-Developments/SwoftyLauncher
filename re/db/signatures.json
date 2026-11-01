@@ -161234,6 +161234,87 @@
    "used_by": [
     "native/src/core/view_state.cpp"
    ]
+  },
+  {
+   "id": "career.team_hq_advance_track_load",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 49 8B 46 30 48 8D 48 08",
+   "match": "0x1419b47a6",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1419b47ab",
+   "kind": "mid",
+   "expect": "49 8B 46 30 48 8D 48 08",
+   "names": [
+    "site_Career_TeamHqAdvanceTrackLoad"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-02",
+     "by": "teamhq-track",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/teamhq_track_guard.cpp"
+   ]
+  },
+  {
+   "id": "career.team_hq_advance_record_handle",
+   "section": ".xtls",
+   "pattern": "45 31 F6 48 8B 83 C0 02 00 00 48 8D 50 08",
+   "match": "0x1419b44e5",
+   "anchor": "0x3",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1419b44e8",
+   "kind": "mid",
+   "expect": "48 8B 83 C0 02 00 00",
+   "names": [
+    "site_Career_TeamHqAdvanceRecordHandle"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-02",
+     "by": "teamhq-track",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/teamhq_track_guard.cpp"
+   ]
+  },
+  {
+   "id": "career.team_hq_advance_record_node",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 48 8B 83 C0 02 00 00",
+   "match": "0x1419b4788",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1419b478d",
+   "kind": "mid",
+   "expect": "48 8B 83 C0 02 00 00",
+   "names": [
+    "site_Career_TeamHqAdvanceRecordNode"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-02",
+     "by": "teamhq-track",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/teamhq_track_guard.cpp"
+   ]
   }
  ]
 }

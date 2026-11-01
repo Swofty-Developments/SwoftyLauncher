@@ -345,6 +345,9 @@ EOF
         once "standings: a round whose track is off is skipped and logged once" '\[career\] standings: round 7 has no track data \(track 200 is off\); skipped'
         once "standings: a round whose weekend can't be read is skipped and logged once" '\[career\] standings: round 10 has no track data; skipped'
         once "weekends: a round whose track has no record is skipped and logged once" '\[career\] weekends: track 1 has no track data; the round shows no track'
+        once "teamhq: the guard is armed" '\[career\] teamhq track guard armed'
+        once "teamhq: an event whose track has no track data is skipped and logged once" '\[career\] teamhq: track 6 has no track data; the event shows no track'
+        once "teamhq: an event whose track has no record is skipped and logged once" '\[career\] teamhq: track 1 has no track data; the event shows no track'
         once "fe tiles: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(front-end tile list guard\)': 3 mixin\(s\)"
         once "fe tiles: the guard is armed" '\[fe\] tiles guard armed'
         once "fe tiles: a list missing from the slot array is skipped and logged once" '\[fe\] tiles: entrant list f2_2026 is not in the game data; its tile is left without a list'
@@ -732,6 +735,25 @@ for guard in on off; do
     else
         check "weekends off: the read faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Career_Weekends_BuildResultNodes\+0x13'
         [[ $code != 0 ]] && echo "ok  : weekends off: process ended with $code" || { echo "FAIL: weekends off: process exited 0"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== teamhq ($guard)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_TEAMHQ_TRACK_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" teamhq >"$OUT/teamhq.out" 2>&1 || code=$?
+    grep -E '\[career\] teamhq|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    if [[ $guard == on ]]; then
+        once "teamhq on: the event is skipped and logged" '\[career\] teamhq: track 6 has no track data; the event shows no track'
+        grep -q 'teamhq: the event returned e3e7\b' "$OUT/teamhq.out" && echo "ok  : teamhq on: the event took the game's empty node path" ||
+            { echo "FAIL: teamhq on: the event did not take the game's empty node path"; status=1; }
+        count "teamhq on: no unhandled fault" 0 '\[crash\] unhandled '
+        compgen -G "$SW/crash-*.txt" >/dev/null && { echo "FAIL: teamhq on: a crash report was written"; status=1; } ||
+            echo "ok  : teamhq on: no crash report"
+    else
+        once "teamhq off: the guard is off" '\[career\] teamhq track guard off \(SWOFTY_TEAMHQ_TRACK_GUARD=0\)'
+        check "teamhq off: the read faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Career_TeamHqAdvance_BuildTrackNode\+0x52'
+        [[ $code != 0 ]] && echo "ok  : teamhq off: process ended with $code" || { echo "FAIL: teamhq off: process exited 0"; status=1; }
     fi
 done
 for guard in on off; do
