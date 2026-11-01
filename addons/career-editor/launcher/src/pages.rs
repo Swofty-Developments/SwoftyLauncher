@@ -1652,6 +1652,19 @@ fn move_card(app: &App, live: &Live, cal: &Value) -> Value {
     let (first, future) = upcoming(cal);
     let movable = future.len() >= 2 && future.iter().all(|r| r["editable"] == true);
     let mut blocks = Vec::new();
+    if live.mode() == "driver_career" {
+        blocks.push(text(
+            "Moving rounds isn't available in a Driver Career (Progressive included): the game lays out each weekend's sessions from its own calendar, so a moved round can end up with its sessions out of order.",
+            "muted",
+        ));
+        return card_full(
+            "Move a round",
+            None,
+            vec![pill("Not in Driver Career", "warn")],
+            vec![],
+            blocks,
+        );
+    }
     if !movable {
         blocks.push(text(
             if future.len() < 2 {
