@@ -202,7 +202,12 @@ float4 SWOFTY_EFFECT(float2 uv, uint2 pixel);
     if (any(id.xy >= swofty_size))
         return;
     float2 uv = (float2(id.xy) + 0.5) * swofty_texel;
-    swofty_output[id.xy] = SWOFTY_EFFECT(uv, id.xy);
+    float4 c = SWOFTY_EFFECT(uv, id.xy);
+    // A pass that returns NaN or infinity keeps the pixel it was given: the picture where it writes the
+    // picture, black in its own textures.
+    if (any(!isfinite(c)))
+        c = all(swofty_size == swofty_scene_size) ? scene_at(int2(id.xy)) : float4(0, 0, 0, 0);
+    swofty_output[id.xy] = c;
 }
 #endif
 
