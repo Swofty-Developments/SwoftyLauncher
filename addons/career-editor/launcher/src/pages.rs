@@ -2527,7 +2527,7 @@ fn weather(app: &App, live: &Live) -> Value {
     let mut fields = vec![
         json!({ "select": { "id": "session", "label": "Session", "value": "", "options": session_opts } }),
         json!({ "select": { "id": "start", "label": "Starts", "value": "", "options": start_opts } }),
-        json!({ "number": { "id": "laps", "label": "Race laps", "value": 0, "min": 0, "max": 200, "step": 1, "help": "Needed for lap-based changes" } }),
+        json!({ "number": { "id": "laps", "label": "Race laps", "value": 0, "min": 0, "max": 200, "step": 1, "help": "Needed for changes \"At lap\"; leave 0 otherwise" } }),
     ];
     let defaults = [
         (15, "light_rain", 50),
@@ -2536,13 +2536,13 @@ fn weather(app: &App, live: &Live) -> Value {
     ];
     let kinds = [
         json!({ "value": "off", "label": "Not used" }),
-        json!({ "value": "lap", "label": "At lap" }),
         json!({ "value": "minute", "label": "At minute" }),
         json!({ "value": "percent", "label": "At % of the session" }),
+        json!({ "value": "lap", "label": "At lap (needs Race laps)" }),
     ];
     for (i, (at, state, _)) in defaults.iter().enumerate() {
         let n = i + 1;
-        fields.push(json!({ "select": { "id": format!("p{n}_kind"), "label": format!("Change {n}"), "value": if n == 1 { "lap" } else { "off" }, "options": kinds } }));
+        fields.push(json!({ "select": { "id": format!("p{n}_kind"), "label": format!("Change {n}"), "value": if n == 1 { "minute" } else { "off" }, "options": kinds } }));
         fields.push(json!({ "number": { "id": format!("p{n}_at"), "label": "When", "value": at, "min": 0, "max": 240, "step": 1 } }));
         fields.push(json!({ "select": { "id": format!("p{n}_state"), "label": "Weather", "value": state, "options": state_opts } }));
     }
@@ -2557,7 +2557,7 @@ fn weather(app: &App, live: &Live) -> Value {
         json!({ "form": { "id": "weather_plan", "columns": 3, "apply": "Save plan", "disabled": !can, "fields": fields } }),
     ];
     pb.push(text(
-        &form_help(live, op).unwrap_or_else(|| "Plans apply the next time the weekend hub builds the forecast, or at once for the live weekend. Sessions that have started are locked.".into()),
+        &form_help(live, op).unwrap_or_else(|| "Plans apply the next time the weekend hub builds the forecast, or at once for the live weekend. Sessions that have started are locked. A change has to come after the start: use Starts for the opening weather, and set Race laps before choosing \"At lap\".".into()),
         "muted",
     ));
     let mut buttons = Vec::new();
@@ -3894,6 +3894,16 @@ fn weather_point(v: &Value, n: usize, laps: i64) -> Result<Option<Value>, String
         return Ok(None);
     }
     let at = v[format!("p{n}_at")].as_f64().unwrap_or(0.0);
+    if kind == "lap" && laps <= 0 {
+        return Err(format!(
+            "Change {n} is \"At lap\" but Race laps is 0. Set the race laps, or pick \"At minute\" or \"At %\"."
+        ));
+    }
+    if !at.is_finite() || at <= 0.0 {
+        return Err(format!(
+            "Change {n} has to come after the start (When must be above 0). Use Starts for the opening weather."
+        ));
+    }
     let mut p = json!({ "state": v[format!("p{n}_state")].as_str().unwrap_or("clear") });
     let intensity = v[format!("p{n}_int")].as_f64().unwrap_or(50.0);
     if intensity > 0.0 {
@@ -3901,8 +3911,8 @@ fn weather_point(v: &Value, n: usize, laps: i64) -> Result<Option<Value>, String
     }
     match kind {
         "lap" => {
-            if laps <= 0 {
-                return Err("Set the race laps to plan by lap.".into());
+            if at > laps as f64 {
+                return Err(format!("Change {n} is at lap {at}, past the {laps} race laps."));
             }
             p["at_lap"] = json!(at.max(1.0) as i64);
         }
@@ -3946,7 +3956,39 @@ mod weather_form_tests {
             Some(json!({ "state": "heavy_rain", "intensity": 0.85, "at_lap": 20 }))
         );
         assert!(weather_point(&v, 2, 0).is_err());
+        assert!(weather_point(&v, 2, 10).is_err());
         assert_eq!(weather_point(&v, 3, 53).unwrap(), None);
+    }
+}
+
+#[cfg(test)]
+mod weather_form_refusal_tests {
+    use super::*;
+
+    #[test]
+    fn a_lap_change_without_race_laps_is_refused_with_a_message() {
+        let v = json!({ "p1_kind": "lap", "p1_at": 15, "p1_state": "light_rain", "p1_int": 50 });
+        let e = weather_point(&v, 1, 0).unwrap_err();
+        assert!(e.contains("Race laps is 0"), "{e}");
+    }
+
+    #[test]
+    fn a_change_at_the_start_is_refused() {
+        for kind in ["minute", "percent", "lap"] {
+            for at in [0.0, -2.0] {
+                let v = json!({ "p1_kind": kind, "p1_at": at, "p1_state": "clear" });
+                let e = weather_point(&v, 1, 53).unwrap_err();
+                assert!(e.contains("after the start"), "{kind} {at}: {e}");
+            }
+        }
+        let v = json!({ "p1_kind": "minute", "p1_at": 5, "p1_state": "clear" });
+        assert!(weather_point(&v, 1, 0).is_ok());
+    }
+
+    #[test]
+    fn the_first_change_defaults_to_a_minute() {
+        let src = include_str!("pages.rs");
+        assert!(src.contains(r#""value": if n == 1 { "minute" } else { "off" }"#));
     }
 }
 
