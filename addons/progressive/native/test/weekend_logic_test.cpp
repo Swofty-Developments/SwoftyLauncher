@@ -67,12 +67,23 @@ void entrants_compare_as_a_multiset()
     EXPECT(!weekend::same_entrants(creation, seated));
 }
 
+void impossible_orders_are_found()
+{
+    EXPECT(weekend::impossible_order({1, 2, 3, 5, 15}) == -1);
+    EXPECT(weekend::impossible_order({1, 10, 15, 5, 16}) == -1);
+    EXPECT(weekend::impossible_order({1, 5, 2, 3, 15}) == 2);
+    EXPECT(weekend::impossible_order({5, 2, 3, 15}) == 1);
+    EXPECT(weekend::impossible_order({1, 10, 15, 2, 5, 16}) == 3);
+    EXPECT(weekend::impossible_order({}) == -1);
+}
+
 } // namespace
 
 int main()
 {
     only_an_untouched_weekend_is_rebuilt();
     entrants_compare_as_a_multiset();
+    impossible_orders_are_found();
     if (failures) {
         std::printf("weekend_logic_test: %d failure(s)\n", failures);
         return EXIT_FAILURE;

@@ -54,4 +54,22 @@ inline bool same_entrants(std::vector<uint32_t> copy, std::vector<uint32_t> care
     return copy == career;
 }
 
+// Session.session_id values (the game's session enum): 1..4 practice, 5..9 qualifying, 10..14 sprint shootout,
+// 15..17 races. Every weekend format lists its practice sessions first (a sprint weekend has one), so a practice
+// session after a qualifying, shootout or race session is a layout no format makes: the game keeps the completed
+// sessions of the old layout first and appends the rest of the new one when a weekend's format changes under it.
+// Returns the index of the first such practice session, or -1.
+inline int impossible_order(const std::vector<uint32_t> &ids)
+{
+    bool later = false;
+    for (size_t i = 0; i < ids.size(); ++i) {
+        bool practice = ids[i] >= 1 && ids[i] <= 4;
+        if (practice && later)
+            return static_cast<int>(i);
+        if (ids[i] >= 5)
+            later = true;
+    }
+    return -1;
+}
+
 } // namespace progressive::weekend
