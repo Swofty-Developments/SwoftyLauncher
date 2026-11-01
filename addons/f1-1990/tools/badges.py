@@ -161,18 +161,15 @@ def build(game, baseline, sheet):
         image, view = ARRAY.format(path) + ".image", ARRAY.format(path)
         n = len(append)
         head2 = bytearray(head)
-        struct.pack_into("<I", head2, 28, count + n)
-        view2 = bytearray(view0)
-        struct.pack_into("<I", view2, 0x14, count + n)
-        grown[path] = (bytes(head2), data + b"".join(encoded[(path, t)] for _, _, t in append), bytes(view2))
+        struct.pack_into("<I", head2, 28, n)
+        grown[path] = (bytes(head2), b"".join(encoded[(path, t)] for _, _, t in append))
         for rel in rels:
-            for res in (image, view):
-                ops.append({"op": "put-resource", "erp": rel, "resource": res, "source": "erp/badges/badges.erpk"})
+            ops.append({"op": "append-slices", "erp": rel, "resource": image, "source": "erp/badges/badges.erpk"})
         at = "overrides.Contents." + ".Contents.".join(path.split(".")) + ".Contents"
         for k, *_ in append:
             edits.append({"op": "clone-entry", "at": at, "src": f"[Name={names_[-1]}]", "as": k,
                           "set": {"Value": f"ui_package/art/textures/f1990/badges/{k}.tif"}})
-        report.append(f"{path}: {w}x{h}, {count} + {n} slices, {len(rels)} archive(s)")
+        report.append(f"{path}: {w}x{h}, {n} slices appended, {len(rels)} archive(s)")
 
     write_archive(stock, plans, grown, OUT / "badges.erpk")
     ops.append({"op": "patch-pkg", "erp": DATABASES, "resource": OVERRIDES, "fragment": 0, "edits": edits})
@@ -186,13 +183,11 @@ def write_archive(stock, plans, grown, out):
     keep, arc = [], None
     for path, (rels, *_rest) in plans.items():
         e = Erp(str(stock.path(rels[0])))
-        image, view = ARRAY.format(path) + ".image", ARRAY.format(path)
-        r_image, r_view = e.find(image), e.find(view)
-        h2, d2, v2 = grown[path]
+        r_image = e.find(ARRAY.format(path) + ".image")
+        h2, d2 = grown[path]
         e.set_frag(r_image, 0, h2)
         e.set_frag(r_image, 1, d2)
-        e.set_frag(r_view, 0, v2)
-        keep += [r_image, r_view]
+        keep.append(r_image)
         if arc is None:
             arc = e
     arc.res = keep

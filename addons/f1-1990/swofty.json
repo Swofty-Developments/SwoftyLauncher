@@ -8,7 +8,7 @@
   "license": "LicenseRef-private",
   "kind": ["database", "erp", "text", "native", "files"],
   "category": "seasons",
-  "compat": { "game": "f1_25", "game_builds": [">=25251167"], "seasons": ["f1_2026"], "launcher": ">=1.3.0" },
+  "compat": { "game": "f1_25", "game_builds": [">=25251167"], "seasons": ["f1_2026"], "launcher": ">=1.7.4" },
   "requires": [
     { "id": "swofty.core", "version": ">=0.2.12" }
   ],

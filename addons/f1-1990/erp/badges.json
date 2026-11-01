@@ -2,723 +2,363 @@
  "schema_version": 1,
  "ops": [
   {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_frontend.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.team_logos.f1_2026.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_frontend.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.team_logos.f1_2026.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_frontend.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.mp_team_select_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_frontend.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.mp_team_select_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_f1_world.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.fanzone_room.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_f1_world.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.fanzone_room.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_f1_world.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.teams_f1_2024_gp_voting.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_f1_world.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.teams_f1_2024_gp_voting.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/fan_zone_voting.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.teams_f1_2024_gp_voting.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/fan_zone_voting.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.teams_f1_2024_gp_voting.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/common_front_end.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.team_logos.driver_career_2024_team_select.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/common_front_end.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.team_logos.driver_career_2024_team_select.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_boot.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.team_logos.driver_career_2024_team_select.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_boot.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.team_logos.driver_career_2024_team_select.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_career_season_setup.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.team_logos.driver_career_2024_team_select.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_career_season_setup.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.team_logos.driver_career_2024_team_select.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/ftue_stay_in_touch.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.team_logos.driver_career_2024_team_select.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/ftue_stay_in_touch.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.team_logos.driver_career_2024_team_select.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_race_intro.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.broadcast_ui_generic.grid_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_race_intro.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.broadcast_ui_generic.grid_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_f1_world.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.fanzone_expressions_large.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_f1_world.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.fanzone_expressions_large.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_frontend.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.fanzone_expressions_large.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_frontend.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.fanzone_expressions_large.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_playercard_menu.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.fanzone_expressions_large.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_playercard_menu.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.fanzone_expressions_large.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_career_season_setup.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_career_season_setup.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_r_and_d.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_r_and_d.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/laptop_develop_overview.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/laptop_develop_overview.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/laptop_develop_overview_header.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/laptop_develop_overview_header.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/laptop_develop_upgrades.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/laptop_develop_upgrades.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/laptop_driver_upgrades.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/laptop_driver_upgrades.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/laptop_fit_upgrades.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/laptop_fit_upgrades.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/laptop_research_upgrades.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/laptop_research_upgrades.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/laptop_research_upgrades_header.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/laptop_research_upgrades_header.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/laptop_rush_production.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/laptop_rush_production.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/my_team_contracts_counter_offers.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/my_team_contracts_counter_offers.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/team_hq_my_team_activities.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/team_hq_my_team_activities.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/team_hq_my_team_container.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/team_hq_my_team_container.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/team_hq_my_team_driver_contracts_counter_offers.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/team_hq_my_team_driver_contracts_counter_offers.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/team_hq_my_team_driver_progression.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/team_hq_my_team_driver_progression.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/team_hq_my_team_owner_perks_slice.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/team_hq_my_team_owner_perks_slice.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/team_hq_my_team_upgrades.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/team_hq_my_team_upgrades.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/team_hq_my_team_upgrades_header.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/team_hq_my_team_upgrades_header.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/team_hq_my_team_workforce.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/team_hq_my_team_workforce.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/team_hq_sponsor_contract_selection.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/team_hq_sponsor_contract_selection.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/title_sponsors_loyalty_rewards.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/title_sponsors_loyalty_rewards.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.driver_select_team_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/common_front_end.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.badges_broadcast.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/common_front_end.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.badges_broadcast.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.badges_broadcast.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.badges_broadcast.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_post_race.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.badges_broadcast.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_post_race.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.badges_broadcast.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_press_interview.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.badges_broadcast.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_press_interview.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.badges_broadcast.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_r_and_d.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.badges_broadcast.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_r_and_d.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.badges_broadcast.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/laptop_fit_upgrades.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.badges_broadcast.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/laptop_fit_upgrades.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.badges_broadcast.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/multiplayer_driver_of_the_day.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.badges_broadcast.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/multiplayer_driver_of_the_day.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.badges_broadcast.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/screens/press_interview.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.badges_broadcast.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/screens/press_interview.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.badges_broadcast.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_persistent.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.fanzone_expressions.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_persistent.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.fanzone_expressions.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_race.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.osd.timing_tower.team_badges_hud.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_race.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.osd.timing_tower.team_badges_hud.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_race.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.osd.timing_tower.team_badges_broadcast.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_race.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.osd.timing_tower.team_badges_broadcast.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_career_rewards.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.driver_career_rewards.recognition.team_icons.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_career_rewards.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.driver_career_rewards.recognition.team_icons.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.team_contract_logo.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.team_contract_logo.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.team_hq.contract_negotiation_logos.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.team_hq.contract_negotiation_logos.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.team_hq.contract_logos_mid.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.team_hq.contract_logos_mid.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.team_hq.contract_logos_large.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.team_hq.contract_logos_large.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.team_hq.contract_holding_screen_bgs.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_team_hq.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.team_hq.contract_holding_screen_bgs.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_press_interview.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.press_interviews.pill_bg.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_press_interview.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.press_interviews.pill_bg.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_car_monitor.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.career_laptop_header.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_car_monitor.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.career_laptop_header.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.career_laptop_header.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.career_laptop_header.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_race.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.broadcast_ui_generic.team.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_race.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.broadcast_ui_generic.team.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_race_intro.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.broadcast_ui_generic.team.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_race_intro.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.broadcast_ui_generic.team.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/common_front_end.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.career_team_select_logo_small.texarray.image",
    "source": "erp/badges/badges.erpk"
   },
   {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/common_front_end.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.career_team_select_logo_small.texarray",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
+   "op": "append-slices",
    "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
    "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.career_team_select_logo_small.texarray.image",
-   "source": "erp/badges/badges.erpk"
-  },
-  {
-   "op": "put-resource",
-   "erp": "2025_asset_groups/ui_package/flow_career_hub.erp",
-   "resource": "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.teams.career_team_select_logo_small.texarray",
    "source": "erp/badges/badges.erpk"
   },
   {
