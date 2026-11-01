@@ -7,6 +7,8 @@
 #include <swofty/mixin.hpp>
 
 #include <atomic>
+#include <cstdio>
+#include <cstdlib>
 #include <mutex>
 
 namespace {
@@ -46,7 +48,8 @@ std::string title_why = "not set up";
 // In game the title's view only comes up after a press, so the sync point alone never passes it: while the
 // title is wanted and has not engaged 3 s after that, the virtual pad holds a for 250 ms and lets go for
 // 1750 ms, until the title engages.
-constexpr uint64_t PRESS_AFTER = 3000, PRESS_HOLD = 250, PRESS_GAP = 1750;
+constexpr uint64_t PRESS_HOLD = 250, PRESS_GAP = 1750;
+std::atomic<uint64_t> press_after{3000};
 std::atomic<uint64_t> wanted_at{0};
 uint64_t press_at = 0;
 bool pressing = false;
@@ -55,7 +58,7 @@ int presses = 0;
 void press_tick()
 {
     uint64_t now = GetTickCount64(), since = wanted_at.load();
-    if (!since || now - since < PRESS_AFTER || !runtime::pad::why().empty())
+    if (!since || now - since < press_after.load() || !runtime::pad::why().empty())
         return;
     if (pressing && now - press_at >= PRESS_HOLD) {
         runtime::pad::release();
@@ -101,6 +104,55 @@ bool node_value(void *node)
     return *reinterpret_cast<const char *(*)(void *)>(hvt[7])(holder) != 0;
 }
 
+// The player manager (NePlayerManager, [[state+0xc88]+0x140]): +0x198 the primary player, which the title's
+// press makes (sign-in state +0x1f0: 1 or 4 starts the platform sign-in, 3 completes it), +0x1b0 the lead local
+// player, a player's +0x1c0 platform user handle and +0x1c8 flags (bit 0 user set, bit 1 logged in). Logged as it
+// changes; with SWOFTY_DIRECT_SIGNIN=1 the title's first update starts the sign-in itself.
+constexpr size_t PM_PRIMARY = 0x198, PM_LEAD = 0x1b0, PM_CANDIDATE = 0x1d0, PM_SIGNIN = 0x1f0, PL_USER = 0x1c0,
+                 PL_FLAGS = 0x1c8;
+
+uint8_t *player_manager(uint8_t *state)
+{
+    void *a = *reinterpret_cast<void **>(state + 0xc88);
+    if (!a || !runtime::readable(a, 0x148))
+        return nullptr;
+    auto *m = *reinterpret_cast<uint8_t **>(static_cast<uint8_t *>(a) + 0x140);
+    return m && runtime::readable(m, PM_SIGNIN + 8) ? m : nullptr;
+}
+
+void player_probe(uint8_t *state)
+{
+    static std::string last;
+    static bool signin_tried = false;
+    uint8_t *m = player_manager(state);
+    if (!m)
+        return;
+    auto *primary = *reinterpret_cast<uint8_t **>(m + PM_PRIMARY);
+    auto *lead = *reinterpret_cast<uint8_t **>(m + PM_LEAD);
+    uint64_t user = 0;
+    uint32_t flags = 0;
+    if (lead && runtime::readable(lead, PL_FLAGS + 4)) {
+        user = *reinterpret_cast<uint64_t *>(lead + PL_USER);
+        flags = *reinterpret_cast<uint32_t *>(lead + PL_FLAGS);
+    }
+    uint32_t signin = *reinterpret_cast<uint32_t *>(m + PM_SIGNIN);
+    void *candidate = *reinterpret_cast<void **>(m + PM_CANDIDATE);
+    char line[200];
+    snprintf(line, sizeof line, "sign-in state %u, candidate %p, primary %p, lead %p user %llx flags %x", signin,
+             candidate, primary, lead, (unsigned long long)user, flags);
+    if (last != line) {
+        last = line;
+        swofty::log("[title] player manager %p: %s", m, line);
+    }
+    char env[8] = {};
+    if (!signin_tried && signin == 0 && !primary && GetEnvironmentVariableA("SWOFTY_DIRECT_SIGNIN", env, sizeof env) &&
+        env[0] == '1') {
+        signin_tried = true;
+        *reinterpret_cast<uint32_t *>(m + PM_SIGNIN) = 1;
+        swofty::log("[title] SWOFTY_DIRECT_SIGNIN: player manager sign-in state set to 1");
+    }
+}
+
 void title_nodes(uint8_t *state)
 {
     void *view = nullptr;
@@ -134,6 +186,7 @@ uint32_t *intro_detour(void *state, uint32_t *link)
     if (intro_state.exchange(state) != state)
         swofty::log("[title] StateIntro %p", state);
     if (title_wanted.load() && !st[INTRO_ENGAGED]) {
+        player_probe(st);
         title_nodes(st);
         press_tick();
     }
@@ -202,6 +255,9 @@ void want(bool on)
     if (on) {
         runtime::pad::setup();
         runtime::pad::claim(true);
+        char env[16] = {};
+        if (GetEnvironmentVariableA("SWOFTY_TITLE_PRESS_AFTER_MS", env, sizeof env))
+            press_after = strtoull(env, nullptr, 10);
         wanted_at = GetTickCount64();
     } else {
         wanted_at = 0;
