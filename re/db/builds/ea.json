@@ -1667,6 +1667,12 @@
    "match": "0x603b5d",
    "func_rva": "0x600160"
   },
+  "site_Sess_TimeTrialLeaderboard_TabChild": {
+   "match": "0x2fbfae9"
+  },
+  "site_Sess_TimeTrialLeaderboard_TabDone": {
+   "match": "0x2fbfaf9"
+  },
   "vt_Career_BankTransactionMessage": {
    "match": "0xc57216"
   },

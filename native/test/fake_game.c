@@ -994,6 +994,138 @@ static void test_garage_crew(int guard)
     expect(n == 0, "garage crew: a garage with no records runs the game's empty path");
 }
 
+// The per-garage tail of the pit stops module's setup (fn 0x1403c69e0), with the byte runs core's pit crew guard
+// resolves its sites from copied from the Steam build: the template read at 0x1403c6ee1 (mov rbx,[rsp+0x70] ...), and
+// the test r12,r12 / je ahead of the free of the garage's entry vector (0x1403c787b, the site the skip lands on). It takes the crew
+// template in rcx (the game's rdi), the entry vector begin in rdx (stored at [rsp+0xa8]), the garage id in r8 (the
+// game's r14) and a flag in r9 that the stand-in for Game_PitStops_SetupCrew sets, then reads [template + 0x560]
+// there. It returns 2 after the vector free and 1 when the vector is null, plus 0x100 when the loop registers the next
+// garage relies on hold what the game leaves there (r13 = rsp+0xc0, sil = the byte at [rsp+0x4b]).
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_pit_crew\n"
+    ".def fake_pit_crew; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_pit_crew\n"
+    "fake_pit_crew:\n"
+    "push %rbx\n.seh_pushreg %rbx\n"
+    "push %rsi\n.seh_pushreg %rsi\n"
+    "push %rdi\n.seh_pushreg %rdi\n"
+    "push %r12\n.seh_pushreg %r12\n"
+    "push %r13\n.seh_pushreg %r13\n"
+    "push %r14\n.seh_pushreg %r14\n"
+    "sub $0xb8,%rsp\n.seh_stackalloc 0xb8\n"
+    ".seh_endprologue\n"
+    "mov %rcx,%rdi\n"
+    "mov %rdx,0xa8(%rsp)\n"
+    "mov %r8,%r14\n"
+    "mov %r9,0xb0(%rsp)\n"
+    "lea 0x90(%rsp),%rax\n"
+    "mov %rax,0x70(%rsp)\n"
+    "movq $0,0x90(%rsp)\n"
+    "movq $0,0x98(%rsp)\n"
+    "movq $0,0xa0(%rsp)\n"
+    "movb $0x5a,0x4b(%rsp)\n"
+    ".byte 0x48,0x8B,0x5C,0x24,0x70,0x4C,0x8B,0x2B,0x48,0x8B,0x73,0x08\n"
+    "mov 0xb0(%rsp),%rax\n"
+    "movl $1,(%rax)\n"
+    "mov 0x560(%rdi),%rax\n"
+    "lea 0xc0(%rsp),%r13\n"
+    "movzbl 0x4b(%rsp),%esi\n"
+    "mov 0xa8(%rsp),%r12\n"
+    ".byte 0x4D,0x85,0xE4,0x0F,0x84\n.long 1f-(.+4)\n"
+    ".byte 0x48,0x8B,0x8C,0x24,0xA0,0x00,0x00,0x00\n"
+    "mov $2,%eax\n"
+    "jmp 2f\n"
+    "1: mov $1,%eax\n"
+    "2: lea 0xc0(%rsp),%rdx\n"
+    "cmp %rdx,%r13\n"
+    "jne 4f\n"
+    "cmp $0x5a,%sil\n"
+    "jne 4f\n"
+    "or $0x100,%eax\n"
+    "4: add $0xb8,%rsp\n"
+    "pop %r14\npop %r13\npop %r12\npop %rdi\npop %rsi\npop %rbx\n"
+    "ret\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_pit_crew\"\n"
+    ".text\n");
+uint64_t fake_pit_crew(void *tmpl, void *vec, uint64_t garage, uint32_t *ran);
+
+// The garage crew scene lookup of Game_GarageCrewModule_SpawnGarageCrew, copied byte for byte from the Steam build
+// (0x14038ba20..0x14038ba2a: the hoisted movzx esi,[rdi+0xe0] ahead of test rdi,rdi / je 0x14038baff). It takes the
+// scene in rcx (the game's rdi) and the module in rdx (the game's rbp) and returns 0x100 | the byte at scene + 0xe0,
+// or 0x50 on the game's null path, which sits 0xcf bytes after the je like the original.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_garage_scene\n"
+    ".def fake_garage_scene; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_garage_scene\n"
+    "fake_garage_scene:\n"
+    "push %rbp\n.seh_pushreg %rbp\n"
+    "push %rdi\n.seh_pushreg %rdi\n"
+    "push %rsi\n.seh_pushreg %rsi\n"
+    "sub $0x20,%rsp\n.seh_stackalloc 0x20\n"
+    ".seh_endprologue\n"
+    "mov %rdx,%rbp\n"
+    "mov %rcx,%rdi\n"
+    ".byte 0x0F,0xB6,0xB7,0xE0,0x00,0x00,0x00\n"
+    ".byte 0x48,0x85,0xFF,0x0F,0x84,0xCF,0x00,0x00,0x00\n"
+    "3: mov %esi,%eax\n"
+    "or $0x100,%eax\n"
+    "add $0x20,%rsp\n"
+    "pop %rsi\npop %rdi\npop %rbp\n"
+    "ret\n"
+    ".org 3b+0xcf,0xCC\n"
+    "mov $0x50,%eax\n"
+    "add $0x20,%rsp\n"
+    "pop %rsi\npop %rdi\npop %rbp\n"
+    "ret\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_garage_scene\"\n"
+    ".text\n");
+uint64_t fake_garage_scene(void *scene, void *module);
+
+static void test_pit_crew(int guard)
+{
+    static uint8_t tmpl[0x600], record[0x98];
+    static uint64_t vec[2];
+    uint32_t ran = 0;
+    record[0x5a] = 14;
+    record[0x83] = 44;
+    vec[0] = (uint64_t)(uintptr_t)record;
+    uint64_t r = fake_pit_crew(tmpl, vec, 9, &ran);
+    expect(ran == 1 && r == 0x102, "pit crew: a garage with a crew template runs its setup and frees its vector");
+    if (!guard) {
+        printf("      pit crew: guard off, the null template cases are not run\n");
+        return;
+    }
+    ran = 0;
+    r = fake_pit_crew(NULL, vec, 10, &ran);
+    expect(ran == 0 && r == 0x102, "pit crew: a garage whose cars have no crew template skips its setup, frees its vector and leaves the loop registers as the game does");
+    ran = 0;
+    r = fake_pit_crew(NULL, vec, 10, &ran);
+    expect(ran == 0 && r == 0x102, "pit crew: the same garage skipped again takes the same path");
+    ran = 0;
+    r = fake_pit_crew(NULL, NULL, 11, &ran);
+    expect(ran == 0 && r == 0x101, "pit crew: a garage with no entry vector skips its setup and takes the game's own null test instead of freeing");
+}
+
+static void test_garage_scene(int guard)
+{
+    static uint8_t scene[0x100], module[0x100];
+    scene[0xe0] = 7;
+    *(uint64_t *)(module + 0xd0) = 0x1111;
+    *(uint64_t *)(module + 0xe0) = 0x2222;
+    expect(fake_garage_scene(scene, module) == 0x107, "garage scene: a scene that exists takes the game's own path");
+    if (!guard) {
+        printf("      garage scene: guard off, the null scene case is not run\n");
+        return;
+    }
+    expect(fake_garage_scene(NULL, module) == 0x50, "garage scene: a missing scene takes the game's null path instead of faulting");
+}
+
 // Pit strategy evaluators, rebuilt around the byte runs core's pit slot guard resolves its sites from (copied from the
 // Steam build: 0x143691fbb, 0x143692014, 0x143692129..0x14369214c for Sess_PitStrategy_EvaluateAgainstPitList and
 // 0x143691d44, 0x143691d80..0x143691db8, 0x143691dc9 for Sess_PitStrategy_EvaluateByRank). fake_pit_eval takes the
@@ -1233,6 +1365,276 @@ static void crash_weekends(void)
     fflush(stdout);
     uint64_t r = fake_weekends_record(weekends_items, 1);
     printf("      weekends: the round returned %llu\n", (unsigned long long)r);
+    fflush(stdout);
+}
+
+// The two entrant-list lookups behind the front-end tile populate, copied byte for byte from the Steam build in small
+// frames, the calls and the RIP-relative operands pointed at stand-ins. fake_list_first_id is
+// FeTile_Get_ListFirstEntrantId (0x141738eb0..0x141738f6c) taking the item in rcx and the result in rdx: it scans the
+// slot array of the entrant lists for the label and has no end check. fake_list_usable is FeTile_Check_EntrantListUsable
+// (0x142428790..0x1424288e9) taking the tile context in rcx and the label in rdx: a label with no database row makes
+// the field lookup return the miss pointer, whose first qword is not a canonical address. Core's tile list guard resolves
+// site_FeTile_ListScanStart at fake_list_first_id+0x6f, site_FeTile_ListScanNone at +0xb0, site_FeTile_ListRowEntry at
+// fake_list_usable+0x11, site_FeTile_ListRowFieldLoad at +0xa2 and site_FeTile_ListRowNone at +0x147.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_list_first_id\n"
+    ".def fake_list_first_id; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_list_first_id\n"
+    "fake_list_first_id:\n"
+    ".byte 0x41,0x56\n"
+    ".seh_pushreg %r14\n"
+    ".byte 0x56\n"
+    ".seh_pushreg %rsi\n"
+    ".byte 0x57\n"
+    ".seh_pushreg %rdi\n"
+    ".byte 0x53\n"
+    ".seh_pushreg %rbx\n"
+    ".byte 0x48,0x83,0xec,0x28\n"
+    ".seh_stackalloc 0x28\n.seh_endprologue\n"
+    ".byte 0x48,0x89,0xd6,0xc6,0x42,0x04,0x00,0x80,0xb9,0xb8,0x01,0x00,0x00,0x00,0x0f,0x84,0x93,0x00,0x00,0x00,0x48,0x8b,0x91,0x98,0x01,0x00,0x00,0x48,0x8b,0x81,0xc8,0x01,0x00,0x00,0x48,0x8d,0x4a,0x09,0x48,0x85,0xd2,0x48,0x8d,0x3d\n"
+    ".long fake_ls_empty - . - 4\n"
+    ".byte 0x48,0x0f,0x45,0xf9,0x48,0x8b,0x98,0x60,0x05,0x00,0x00,0x48,0x85,0xdb,0x74,0x26,0x48,0x3b,0x98,0x68,0x05,0x00,0x00,0x74,0x1d,0x48,0x83,0x7b,0x08,0x00,0x75,0x16,0x48,0x83,0xc3,0x10,0x0f,0x1f,0x00,0x48,0x83,0x7b,0x08,0x00,0x48,0x8d,0x5b,0x10,0x74,0xf5,0x48,0x83,0xc3,0xf0,0x4c,0x8b,0x73,0x08,0x66,0x66,0x66,0x66,0x2e,0x0f,0x1f,0x84,0x00,0x00,0x00,0x00,0x00,0x49,0x8b,0x46,0x28,0x48,0x8b,0x48,0x10,0x48,0x89,0xfa,0xe8\n"
+    ".long fake_ls_strcmp - . - 4\n"
+    ".byte 0x85,0xc0,0x74,0x0f,0x48,0x83,0xc3,0x10,0x4c,0x8b,0x73,0x08,0x4d,0x85,0xf6,0x75,0xdf,0xeb,0xf1,0x49,0x8b,0x46,0x10,0x8b,0x40,0x5c,0x89,0x06,0xc6,0x46,0x04,0x01,0x48,0x89,0xf0,0x48,0x83,0xc4,0x28,0x5b,0x5f,0x5e,0x41,0x5e,0xc3\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_list_first_id\"\n"
+    ".text\n");
+
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_list_usable\n"
+    ".def fake_list_usable; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_list_usable\n"
+    "fake_list_usable:\n"
+    ".byte 0x41,0x57\n"
+    ".seh_pushreg %r15\n"
+    ".byte 0x41,0x56\n"
+    ".seh_pushreg %r14\n"
+    ".byte 0x56\n"
+    ".seh_pushreg %rsi\n"
+    ".byte 0x57\n"
+    ".seh_pushreg %rdi\n"
+    ".byte 0x53\n"
+    ".seh_pushreg %rbx\n"
+    ".byte 0x48,0x81,0xec,0x30,0x04,0x00,0x00\n"
+    ".seh_stackalloc 0x430\n.seh_endprologue\n"
+    ".byte 0x49,0x89,0xd0,0x48,0x89,0xce,0x48,0x8b,0x99,0x28,0x02,0x00,0x00,0xc7,0x84,0x24,0x20,0x02,0x00,0x00,0xff,0xff,0xff,0xff,0xc6,0x84,0x24,0x24,0x02,0x00,0x00,0x01,0xc5,0xf8,0x28,0x05\n"
+    ".long fake_ls_const - . - 4\n"
+    ".byte 0xc5,0xf8,0x11,0x44,0x24,0x20,0xc7,0x44,0x24,0x30,0x5f,0x6c,0x69,0x73,0x66,0xc7,0x44,0x24,0x34,0x74,0x73,0xc6,0x44,0x24,0x36,0x00,0x48,0xb8,0x65,0x6e,0x74,0x72,0x61,0x6e,0x74,0x5f,0x48,0x89,0x84,0x24,0x20,0x01,0x00,0x00,0xc7,0x84,0x24,0x28,0x01,0x00,0x00,0x6c,0x69,0x73,0x74,0xc6,0x84,0x24,0x2c,0x01,0x00,0x00,0x00,0x45,0x31,0xf6,0x48,0x8d,0x4c,0x24,0x20,0x48,0x8d,0xbc,0x24,0x28,0x02,0x00,0x00,0x48,0x89,0xfa,0x45,0x31,0xc9,0xe8\n"
+    ".long fake_ls_find - . - 4\n"
+    ".byte 0x48,0x8d,0x15\n"
+    ".long fake_ls_statid - . - 4\n"
+    ".byte 0x48,0x89,0xf9,0x45,0x31,0xc0,0xe8\n"
+    ".long fake_ls_get - . - 4\n"
+    ".byte 0x48,0x8b,0x00,0x48,0x85,0xc0,0x74,0x05,0x44,0x0f,0xb6,0x70,0x08,0x48,0x8b,0x83,0x60,0x05,0x00,0x00,0x48,0x8b,0x8b,0x68,0x05,0x00,0x00,0x48,0x29,0xc1,0x48,0xc1,0xf9,0x04,0x4c,0x39,0xf1,0x76,0x7e,0x49,0xc1,0xe6,0x04,0x4a,0x8b,0x44,0x30,0x08,0x48,0x85,0xc0,0x74,0x70,0x4c,0x8b,0x70,0x10,0x4c,0x8b,0x78,0x18,0x40,0xb7,0x01,0xeb,0x1b,0x84,0xc9,0x74,0x5f,0x48,0x8b,0x03,0x48,0x89,0xd9,0xff,0x50,0x40,0xa9,0xfd,0xff,0xff,0xff,0x74,0x4f,0x49,0x81,0xc6,0x88,0x00,0x00,0x00,0x4d,0x39,0xfe,0x74,0x45,0x45,0x8b,0x46,0x5c,0x48,0x8b,0x8e,0x28,0x02,0x00,0x00,0x48,0x8b,0x96,0x38,0x02,0x00,0x00,0xe8\n"
+    ".long fake_ls_entrant - . - 4\n"
+    ".byte 0x48,0x85,0xc0,0x74,0xd8,0x48,0x89,0xc3,0x48,0x8b,0x88,0xc8,0x00,0x00,0x00,0x48,0x85,0xc9,0x74,0xb9,0x48,0x8b,0x01,0xff,0x50,0x40,0x0f,0xb6,0x8e,0x2a,0x03,0x00,0x00,0x83,0xf8,0x01,0x75,0xa3,0x84,0xc9,0x75,0xb3,0xeb,0x9d,0x31,0xff,0x89,0xf8,0x48,0x81,0xc4,0x30,0x04,0x00,0x00,0x5b,0x5f,0x5e,0x41,0x5e,0x41,0x5f,0xc3\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_list_usable\"\n"
+    ".text\n");
+
+uint64_t *fake_list_first_id(void *item, void *out);
+uint64_t fake_list_usable(void *ctx, const char *label);
+
+const char fake_ls_empty[] = "";
+const char fake_ls_statid[] = "stat_id";
+__attribute__((aligned(16))) const uint8_t fake_ls_const[16] = {'e', 'n', 't', 'r', 'a', 'n', 't', 's', '.', 'e', 'n', 't', 'r', 'a', 'n', 't'};
+
+int fake_ls_strcmp(const char *a, const char *b)
+{
+    return strcmp(a, b);
+}
+
+void *fake_ls_find(void *table, void *row, const char *label, void *found)
+{
+    (void)table;
+    (void)found;
+    *(const char **)row = label;
+    return row;
+}
+
+static uint64_t ls_miss = 0x08000f000800000eull;
+static uint8_t ls_row_record[16] = {0, 0, 0, 0, 0, 0, 0, 0, 2};
+static uint64_t ls_row_slot;
+
+uint64_t *fake_ls_get(void *row, const char *name, int def)
+{
+    (void)name;
+    (void)def;
+    const char *label = *(const char **)row;
+    if (!strcmp(label, "f2_2026"))
+        return &ls_miss;
+    ls_row_slot = (uint64_t)ls_row_record;
+    return &ls_row_slot;
+}
+
+void *fake_ls_entrant(void *a, void *b, uint32_t id)
+{
+    (void)a;
+    (void)b;
+    (void)id;
+    return NULL;
+}
+
+static uint8_t ls_entrants[0x88];
+static uint8_t ls_records[3][0x40];
+static uint8_t ls_boxes[3][0x20];
+static char ls_names[3][16] = {"f1_2026", "", "f3_2026"};
+static uint64_t ls_slots[5][2];
+static uint8_t ls_container[0x580];
+static uint8_t ls_item[0x1d0];
+static uint8_t ls_label_str[0x20];
+static uint8_t ls_ctx[0x240];
+static uint64_t ls_out[2];
+
+static void ls_setup(void)
+{
+    static const int rec_for_slot[3] = {0, -1, 2};
+    for (int s = 0; s < 3; s++) {
+        if (rec_for_slot[s] < 0)
+            continue;
+        int r = rec_for_slot[s];
+        ls_slots[s][1] = (uint64_t)ls_records[r];
+        *(uint64_t *)(ls_records[r] + 0x28) = (uint64_t)ls_boxes[r];
+        *(uint64_t *)(ls_boxes[r] + 0x10) = (uint64_t)ls_names[r];
+        *(uint64_t *)(ls_records[r] + 0x10) = (uint64_t)ls_entrants;
+        *(uint64_t *)(ls_records[r] + 0x18) = (uint64_t)ls_entrants;
+    }
+    *(uint32_t *)(ls_entrants + 0x5c) = 303;
+    ls_slots[3][1] = 0x00001234deadb000ull;
+    *(uint64_t *)(ls_container + 0x560) = (uint64_t)&ls_slots[0];
+    *(uint64_t *)(ls_container + 0x568) = (uint64_t)&ls_slots[3];
+    *(uint64_t *)(ls_ctx + 0x228) = (uint64_t)ls_container;
+    *(uint64_t *)(ls_ctx + 0x238) = 0;
+    *(uint64_t *)(ls_container + 0x58) = 0;
+    ls_item[0x1b8] = 1;
+    *(uint64_t *)(ls_item + 0x1c8) = (uint64_t)ls_container;
+    *(uint64_t *)(ls_item + 0x198) = (uint64_t)ls_label_str;
+    ls_slots[1][1] = 0;
+    memset(ls_slots[4], 0, sizeof ls_slots[4]);
+}
+
+static void ls_label(const char *name)
+{
+    strcpy((char *)ls_label_str + 9, name);
+}
+
+static int ls_first_id(const char *name, uint32_t *id)
+{
+    ls_setup();
+    ls_label(name);
+    ls_out[0] = ls_out[1] = 0;
+    fake_list_first_id(ls_item, ls_out);
+    *id = (uint32_t)ls_out[0];
+    return ((uint8_t *)ls_out)[4];
+}
+
+static void test_fe_tiles(void)
+{
+    uint32_t id = 0;
+    int found = ls_first_id("f3_2026", &id);
+    expect(found == 1 && id == 303, "fe tiles: a list in the slot array is found and runs the game's code");
+    found = ls_first_id("f2_2026", &id);
+    expect(found == 0, "fe tiles: a list the import removed takes the game's no-list path");
+    found = ls_first_id("f2_2026", &id);
+    expect(found == 0, "fe tiles: the removed list is skipped again");
+    ls_setup();
+    expect(fake_list_usable(ls_ctx, "f1_2026") == 1, "fe tiles: a list with a database row is usable as the game says");
+    expect(fake_list_usable(ls_ctx, "f2_2026") == 0, "fe tiles: a list with no database row is not usable");
+}
+
+static void crash_fe_scan(void)
+{
+    SetErrorMode(SEM_NOGPFAULTERRORBOX);
+    uint32_t id = 0;
+    printf("      fe tiles: looking up a list that is not in the slot array\n");
+    fflush(stdout);
+    int found = ls_first_id("f2_2026", &id);
+    printf("      fe tiles: the scan returned %d\n", found);
+    fflush(stdout);
+}
+
+static void crash_fe_row(void)
+{
+    SetErrorMode(SEM_NOGPFAULTERRORBOX);
+    ls_setup();
+    printf("      fe tiles: reading a list that has no database row\n");
+    fflush(stdout);
+    uint64_t r = fake_list_usable(ls_ctx, "f2_2026");
+    printf("      fe tiles: the list returned %llu\n", (unsigned long long)r);
+    fflush(stdout);
+}
+
+// Ai_Job_UpdateCarsParallel's corner line read, copied byte for byte from the Steam build (0x14064069e..0x1406406ac and
+// 0x1406409be..0x1406409ce), in a small frame that takes a gap evaluation result in rcx, the car index in rdx and the car's
+// AI state in r8. The load is [[result+8]+car*8+0xb8], with no check on result+8; it returns that entry for a line that is
+// there, 0x9be for the game's own no-corner-line path (the cmp byte [state+0x185] and its je, state+0x185 clear), 0x222 when
+// that byte is set. Core's AI corner guard resolves site_Ai_UpdateCars_CornerLineLoad at +0x10 and
+// site_Ai_UpdateCars_NoCornerLine here.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_ai_corner\n"
+    ".def fake_ai_corner; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_ai_corner\n"
+    "fake_ai_corner:\n"
+    ".byte 0x56\n.seh_pushreg %rsi\n"
+    ".byte 0x57\n.seh_pushreg %rdi\n"
+    ".byte 0x53\n.seh_pushreg %rbx\n"
+    ".seh_endprologue\n"
+    ".byte 0x48,0x89,0xCE,0x48,0x89,0xD7,0x4C,0x89,0xC3,0x48,0x8B,0x46,0x08\n"
+    ".byte 0x48,0x8B,0x84,0xF8,0xB8,0x00,0x00,0x00\n"
+    ".byte 0x48,0x85,0xC0\n"
+    ".byte 0x0F,0x84\n.long .Laicnone-.Laicje\n.Laicje:\n"
+    ".byte 0xEB\n.byte .Laicdone-.Laicj1\n.Laicj1:\n"
+    ".Laicnone:\n"
+    ".byte 0x80,0xBB,0x85,0x01,0x00,0x00,0x00,0x74,0x4C\n"
+    ".byte 0xC5,0xFA,0x11,0xBB,0x20,0x01,0x00,0x00\n"
+    ".byte 0xB8,0x22,0x02,0x00,0x00\n"
+    ".byte 0xEB\n.byte .Laicdone-.Laicj2\n.Laicj2:\n"
+    ".fill 0x3D,1,0x90\n"
+    ".byte 0xB8,0xBE,0x09,0x00,0x00\n"
+    ".Laicdone:\n"
+    ".byte 0x5B,0x5F,0x5E,0xC3\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_ai_corner\"\n"
+    ".text\n");
+uint64_t fake_ai_corner(void *result, uint64_t car, void *state);
+
+static uint64_t ai_corner_result[0x50 / 8];
+static uint8_t ai_corner_line[0x100];
+static uint8_t ai_corner_state[0x200];
+
+static void ai_corner_setup(void)
+{
+    memset(ai_corner_result, 0, sizeof ai_corner_result);
+    memset(ai_corner_state, 0, sizeof ai_corner_state);
+    *(uint64_t *)(ai_corner_line + 0xb8 + 3 * 8) = 0xc0de;
+}
+
+static void test_ai_corner(void)
+{
+    ai_corner_setup();
+    ai_corner_result[1] = (uint64_t)ai_corner_line;
+    uint64_t r = fake_ai_corner(ai_corner_result, 3, ai_corner_state);
+    expect(r == 0xc0de, "ai corner: a car with a corner start line reads its entry as the game does");
+    ai_corner_result[1] = 0;
+    r = fake_ai_corner(ai_corner_result, 3, ai_corner_state);
+    uint64_t again = fake_ai_corner(ai_corner_result, 5, ai_corner_state);
+    expect(r == 0x9be && again == 0x9be, "ai corner: a car with no corner start line takes the game's no-corner-line path");
+}
+
+static void crash_ai_corner(void)
+{
+    SetErrorMode(SEM_NOGPFAULTERRORBOX);
+    ai_corner_setup();
+    printf("      ai corner: reading a car with no corner start line\n");
+    fflush(stdout);
+    uint64_t r = fake_ai_corner(ai_corner_result, 3, ai_corner_state);
+    printf("      ai corner: the car returned 0x%llx\n", (unsigned long long)r);
     fflush(stdout);
 }
 
@@ -1906,7 +2308,11 @@ int main(int argc, char **argv)
         test_ers_mode();
         test_standings();
         test_weekends();
+        test_fe_tiles();
+        test_ai_corner();
         test_garage_crew(1);
+        test_pit_crew(1);
+        test_garage_scene(1);
         test_pit_slots(1);
         test_leaderboard_guard();
         test_track_acclim();
@@ -1947,9 +2353,17 @@ int main(int argc, char **argv)
         crash_standings();
     if (argc > 1 && !strcmp(argv[1], "weekends"))
         crash_weekends();
+    if (argc > 1 && !strcmp(argv[1], "fe_scan"))
+        crash_fe_scan();
+    if (argc > 1 && !strcmp(argv[1], "fe_row"))
+        crash_fe_row();
+    if (argc > 1 && !strcmp(argv[1], "ai_corner"))
+        crash_ai_corner();
     if (argc > 1 && !strcmp(argv[1], "garage_crew")) {
         const char *off = getenv("SWOFTY_GARAGE_CREW_GUARD");
         test_garage_crew(!(off && *off));
+        test_pit_crew(!(off && *off));
+        test_garage_scene(!(off && *off));
     }
     if (argc > 1 && !strcmp(argv[1], "pit_slots")) {
         const char *off = getenv("SWOFTY_PIT_SLOT_GUARD");

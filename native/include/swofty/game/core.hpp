@@ -207,6 +207,7 @@ inline constexpr address<"Ne_Crt_FatalTrapC"> Ne_Crt_FatalTrapC{}; // L2 experim
 inline constexpr address<"Ne_Crt_Fmodf"> Ne_Crt_Fmodf{}; // L2 experimental
 inline constexpr address<"Ne_Crt_ForwardTo14534a050"> Ne_Crt_ForwardTo14534a050{}; // L2 experimental
 inline constexpr address<"Ne_Crt_InitThreadHeader"> Ne_Crt_InitThreadHeader{}; // L2 experimental
+inline constexpr address<"Ne_Crt_InvalidParameterAbort"> Ne_Crt_InvalidParameterAbort{}; // L2 experimental
 inline constexpr address<"Ne_Crt_InvalidParameterDispatch"> Ne_Crt_InvalidParameterDispatch{}; // L2 experimental
 inline constexpr address<"Ne_Crt_InvalidParameterNoReturn"> Ne_Crt_InvalidParameterNoReturn{}; // L2 experimental
 inline constexpr address<"Ne_Crt_LazyInitPreserveLastError"> Ne_Crt_LazyInitPreserveLastError{}; // L2 experimental
@@ -957,6 +958,8 @@ inline constexpr call<"site_Ne_HwInt_VolFogMapWidth"> site_Ne_HwInt_VolFogMapWid
 inline constexpr call<"site_Ne_HwInt_WorldShadowMapSize"> site_Ne_HwInt_WorldShadowMapSize{}; // L2 experimental
 inline constexpr call<"site_Ne_HwXmlParseCall"> site_Ne_HwXmlParseCall{}; // L2 experimental
 inline constexpr call<"site_Ne_HwXmlWriteCall"> site_Ne_HwXmlWriteCall{}; // L2 experimental
+inline constexpr site<"site_Ne_MemoryMapHeapSize"> site_Ne_MemoryMapHeapSize{}; // L2 experimental
+inline constexpr site<"site_Ne_MemoryMapInternalHeapSize"> site_Ne_MemoryMapInternalHeapSize{}; // L2 experimental
 inline constexpr site<"site_Ne_ReplayAfterRecord"> site_Ne_ReplayAfterRecord{}; // L2 experimental
 inline constexpr site<"site_Ne_WatchdogKillPath"> site_Ne_WatchdogKillPath{}; // L2 experimental
 inline constexpr site<"site_Ne_WatchdogKillSkip"> site_Ne_WatchdogKillSkip{}; // L2 experimental

@@ -513,6 +513,22 @@ impl Bundle {
         bundle
     }
 
+    fn stub_blocked_line(&self, game: Option<&Path>) -> Option<String> {
+        let logs: Vec<String> = self
+            .entries
+            .iter()
+            .filter(|e| e.path.ends_with(crate::ea_diag::PROXY_LOG))
+            .map(|e| String::from_utf8_lossy(&e.data).into_owned())
+            .collect();
+        let block = crate::offline::stub_blocked(game.unwrap_or(Path::new("")), &logs, 0)?;
+        Some(format!(
+            "offline: {} was blocked by antivirus (error {}); {}",
+            block.name(),
+            block.code,
+            "the EA app log shows the virus error on createProcess"
+        ))
+    }
+
     fn summary(
         &self,
         store: &Store,
@@ -630,6 +646,9 @@ impl Bundle {
         }
         s.push_str("\nGame files against Steam\n");
         s.push_str(&game_files_section(store, report.game.dir.as_deref()));
+        if let Some(line) = self.stub_blocked_line(report.game.dir.as_deref()) {
+            s.push_str(&format!("  {line}\n"));
+        }
         s.push_str("\nPerformance\n");
         match perf {
             Some((label, path)) => {

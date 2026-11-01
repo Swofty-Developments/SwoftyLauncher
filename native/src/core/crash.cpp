@@ -17,6 +17,7 @@
 #include "fast_fail_logic.hpp"
 #include "json.hpp"
 #include "perf.hpp"
+#include "save_heap_logic.hpp"
 #include "safetyhook.hpp"
 #include "swofty_api.h"
 
@@ -110,6 +111,8 @@ struct HeapError {
     ULONGLONG ms;
     uintptr_t heap;
     uint64_t capacity, used, free_bytes, largest;
+    bool pool;
+    runtime::save_heap::Pool pool_info;
     char name[64];
     char msg[768];
 };
@@ -872,6 +875,18 @@ void on_heap_error(int code, const char *msg, bool is_fatal, void *heap)
         h.largest = reinterpret_cast<Largest>(vt[0x80 / 8])(heap, 1);
         h.stats = true;
     }
+    else if (heap && readable(h.heap, runtime::save_heap::kPoolFlags + 8) && !(h.heap & 7) &&
+             *reinterpret_cast<uintptr_t *>(h.heap) == exe_base + (runtime::save_heap::kPoolVtable - runtime::save_heap::kImageBase)) {
+        const uint8_t *p = reinterpret_cast<const uint8_t *>(h.heap);
+        auto &pi = h.pool_info;
+        memcpy(&pi.start, p + runtime::save_heap::kPoolStart, 8);
+        memcpy(&pi.size, p + runtime::save_heap::kPoolSize, 8);
+        memcpy(&pi.cursor, p + runtime::save_heap::kPoolCursor, 8);
+        memcpy(&pi.flags, p + runtime::save_heap::kPoolFlags, 4);
+        h.pool = true;
+        snprintf(h.name, sizeof h.name, "SAVE_PROPERTY_BAG_TEMP");
+        cl("%s", runtime::save_heap::pool_line(pi, runtime::save_heap::parse_request(h.msg)).c_str());
+    }
     h.set = true;
     char line[blackbox::TEXT];
     snprintf(line, sizeof line, "0x%x%s in '%s': %s", code, is_fatal ? " (fatal)" : "", h.name, h.msg);
@@ -1287,6 +1302,8 @@ void section_heap(const Request &r)
             out.put("  heap %p '%s': capacity %llu, used %llu, free %llu, largest free %llu bytes\n",
                     reinterpret_cast<void *>(h.heap), h.name, (unsigned long long)h.capacity, (unsigned long long)h.used,
                     (unsigned long long)h.free_bytes, (unsigned long long)h.largest);
+        if (h.pool)
+            out.put("  %s\n", runtime::save_heap::pool_line(h.pool_info, runtime::save_heap::parse_request(h.msg)).c_str() + 8);
     }
     for (int i = 0; i < nheaps; i++) {
         const neheap::Heap &h = heaps[i];

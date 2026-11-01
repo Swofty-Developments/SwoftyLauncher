@@ -11,5 +11,7 @@ inline constexpr address<"Ai_Job_UpdateCarsParallel"> Ai_Job_UpdateCarsParallel{
 inline constexpr address<"Ai_Select_ErsDeployMode"> Ai_Select_ErsDeployMode{}; // L2 experimental
 inline constexpr address<"Ai_Update_CompoundPaceCurves"> Ai_Update_CompoundPaceCurves{}; // L2 experimental
 inline constexpr site<"site_Ai_TableGripInput"> site_Ai_TableGripInput{}; // L2 experimental
+inline constexpr site<"site_Ai_UpdateCars_CornerLineLoad"> site_Ai_UpdateCars_CornerLineLoad{}; // L2 experimental
+inline constexpr site<"site_Ai_UpdateCars_NoCornerLine"> site_Ai_UpdateCars_NoCornerLine{}; // L2 experimental
 
 }

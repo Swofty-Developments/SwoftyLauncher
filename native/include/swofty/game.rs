@@ -2531,9 +2531,13 @@ pub type FeTile_Build_List_t = unsafe extern "C" fn(
 );
 pub type FeTile_CareerDlcItem_Populate_t =
     unsafe extern "C" fn(item: *mut HomeItem, node: *mut c_void, a7: u32);
+pub type FeTile_Check_EntrantListUsable_t =
+    unsafe extern "C" fn(tile_ctx: *mut c_void, label: *const c_char) -> u64;
 pub type FeTile_Clear_EraTileSet_Thunk_t = unsafe extern "C" fn(tiles: *mut c_void);
 pub type FeTile_Construct_CareerItem_t =
     unsafe extern "C" fn(item: *mut HomeItem, alloc: *mut NeAllocator, id: *const c_char) -> *mut HomeItem;
+pub type FeTile_Get_ListFirstEntrantId_t =
+    unsafe extern "C" fn(item: *mut c_void, out: *mut c_void) -> *mut c_void;
 pub type FeTile_Is_EraScenarioAvailable_Thunk_t =
     unsafe extern "C" fn(mode: *mut c_void, setup_mode: *const c_char, entrant_list: *const c_char) -> u8;
 pub type FeTile_ItemBase_Populate_t = unsafe extern "C" fn(item: *mut HomeItem, node: *mut c_void, a7: u32);
@@ -2600,6 +2604,7 @@ pub type Game_Handle_GarageCrewEvent_Thunk_t =
     unsafe extern "C" fn(cars: *mut *mut c_void, event: *mut c_void) -> u64;
 pub type Game_Handle_SpecGarageCrewEvent_Thunk_t =
     unsafe extern "C" fn(self_: *mut c_void, event: *mut c_void) -> u64;
+pub type Game_Network_CategoryOptionUsing_t = unsafe extern "C" fn(self_: *mut c_void);
 pub type Game_Network_SendingRedFlagVehicleStatusUpdate_t =
     unsafe extern "C" fn(red_flag_state: *mut c_void, dt: *const f64);
 pub type Game_Network_SetScenario_t =
@@ -3697,6 +3702,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const FeTile_Check_EntrantListUsable: Binding = Binding {
+        id: "FeTile_Check_EntrantListUsable",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const FeTile_Clear_EraTileSet_Thunk: Binding = Binding {
         id: "FeTile_Clear_EraTileSet_Thunk",
         kind: "func",
@@ -3704,6 +3714,11 @@ pub mod bindings {
     };
     pub const FeTile_Construct_CareerItem: Binding = Binding {
         id: "FeTile_Construct_CareerItem",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const FeTile_Get_ListFirstEntrantId: Binding = Binding {
+        id: "FeTile_Get_ListFirstEntrantId",
         kind: "func",
         status: Status::Experimental,
     };
@@ -6352,6 +6367,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_Network_CategoryOptionUsing: Binding = Binding {
+        id: "Game_Network_CategoryOptionUsing",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Network_SendingRedFlagVehicleStatusUpdate: Binding = Binding {
         id: "Game_Network_SendingRedFlagVehicleStatusUpdate",
         kind: "func",
@@ -7487,6 +7507,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_ThrustmasterLcd_UpdateSectors: Binding = Binding {
+        id: "Game_ThrustmasterLcd_UpdateSectors",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Thrustmaster_SetWheelRange: Binding = Binding {
         id: "Game_Thrustmaster_SetWheelRange",
         kind: "func",
@@ -7624,6 +7649,11 @@ pub mod bindings {
     };
     pub const Game_UIConnectionManager_ShowConnectionLostPopup: Binding = Binding {
         id: "Game_UIConnectionManager_ShowConnectionLostPopup",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_UIThumbnailSystem_FindDriverCustomisationWill: Binding = Binding {
+        id: "Game_UIThumbnailSystem_FindDriverCustomisationWill",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8254,6 +8284,11 @@ pub mod bindings {
     };
     pub const Ne_Crt_InitThreadHeader: Binding = Binding {
         id: "Ne_Crt_InitThreadHeader",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ne_Crt_InvalidParameterAbort: Binding = Binding {
+        id: "Ne_Crt_InvalidParameterAbort",
         kind: "func",
         status: Status::Experimental,
     };
@@ -14312,6 +14347,16 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Ai_UpdateCars_CornerLineLoad: Binding = Binding {
+        id: "site_Ai_UpdateCars_CornerLineLoad",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Ai_UpdateCars_NoCornerLine: Binding = Binding {
+        id: "site_Ai_UpdateCars_NoCornerLine",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Car_AeroStoreRearDownforce: Binding = Binding {
         id: "site_Car_AeroStoreRearDownforce",
         kind: "site",
@@ -15127,6 +15172,31 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_FeTile_ListRowEntry: Binding = Binding {
+        id: "site_FeTile_ListRowEntry",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_FeTile_ListRowFieldLoad: Binding = Binding {
+        id: "site_FeTile_ListRowFieldLoad",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_FeTile_ListRowNone: Binding = Binding {
+        id: "site_FeTile_ListRowNone",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_FeTile_ListScanNone: Binding = Binding {
+        id: "site_FeTile_ListScanNone",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_FeTile_ListScanStart: Binding = Binding {
+        id: "site_FeTile_ListScanStart",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_AcclimPenalty_Entry: Binding = Binding {
         id: "site_Game_AcclimPenalty_Entry",
         kind: "site",
@@ -15187,6 +15257,16 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_GarageCrew_SceneRead: Binding = Binding {
+        id: "site_Game_GarageCrew_SceneRead",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_GarageCrew_SceneTest: Binding = Binding {
+        id: "site_Game_GarageCrew_SceneTest",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_GarageCrew_SpawnVector: Binding = Binding {
         id: "site_Game_GarageCrew_SpawnVector",
         kind: "site",
@@ -15209,6 +15289,16 @@ pub mod bindings {
     };
     pub const site_Game_PitLane_BoxSlotRead: Binding = Binding {
         id: "site_Game_PitLane_BoxSlotRead",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_PitStops_CrewTemplateRead: Binding = Binding {
+        id: "site_Game_PitStops_CrewTemplateRead",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_PitStops_CrewTemplateSkip: Binding = Binding {
+        id: "site_Game_PitStops_CrewTemplateSkip",
         kind: "site",
         status: Status::Experimental,
     };
@@ -15442,6 +15532,16 @@ pub mod bindings {
         kind: "call",
         status: Status::Experimental,
     };
+    pub const site_Ne_MemoryMapHeapSize: Binding = Binding {
+        id: "site_Ne_MemoryMapHeapSize",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Ne_MemoryMapInternalHeapSize: Binding = Binding {
+        id: "site_Ne_MemoryMapInternalHeapSize",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Ne_ReplayAfterRecord: Binding = Binding {
         id: "site_Ne_ReplayAfterRecord",
         kind: "site",
@@ -15470,6 +15570,16 @@ pub mod bindings {
     pub const site_Sess_ControllerSystem_ApplyRecordCall: Binding = Binding {
         id: "site_Sess_ControllerSystem_ApplyRecordCall",
         kind: "call",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_GarageSlots_Done: Binding = Binding {
+        id: "site_Sess_GarageSlots_Done",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_GarageSlots_GarageLoad: Binding = Binding {
+        id: "site_Sess_GarageSlots_GarageLoad",
+        kind: "site",
         status: Status::Experimental,
     };
     pub const site_Sess_InGamePlayerFinishedAiCall: Binding = Binding {
@@ -15524,6 +15634,16 @@ pub mod bindings {
     };
     pub const site_Sess_PuPanel_SlotHolder: Binding = Binding {
         id: "site_Sess_PuPanel_SlotHolder",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_TimeTrialLeaderboard_TabChild: Binding = Binding {
+        id: "site_Sess_TimeTrialLeaderboard_TabChild",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_TimeTrialLeaderboard_TabDone: Binding = Binding {
+        id: "site_Sess_TimeTrialLeaderboard_TabDone",
         kind: "site",
         status: Status::Experimental,
     };
