@@ -1,3 +1,4 @@
+#include "leaderboard_guard_logic.hpp"
 #include "runtime.hpp"
 
 #include <windows.h>
@@ -26,29 +27,61 @@
 // takes its failure branch, and the other caller ignores it. A board that was found runs the game's code
 // unchanged.
 //
-// SWOFTY_LEADERBOARD_GUARD=0 turns it off.
+// Activating the leaderboard tab runs Sess_TimeTrialLeaderboard_ActivateTab (vtable slot 0x13 of the same model), which
+// reads the child list model at self+0x9a0 and calls through it with no null check (F1_25.exe+0x2fcbb09 reading 0). The
+// child is null when the screen opened for a track the view skipped above. site_Sess_TimeTrialLeaderboard_TabChild is
+// that read (rcx = the child). When it is null the guard continues at site_Sess_TimeTrialLeaderboard_TabDone, the
+// function's own epilogue, which skips the child call and the refresh that follows it. A child that exists runs the
+// game's code unchanged.
+//
+// SWOFTY_LEADERBOARD_GUARD=0 turns the board guard off, SWOFTY_LEADERBOARD_TAB_GUARD=0 the tab guard.
 
 namespace {
 
 constexpr const char *MIXIN = "swofty_core.dll (time trial leaderboard guard)";
-constexpr int LOG_FIRST = 4;
+namespace lg = runtime::leaderboard_guard;
 
-uintptr_t boards_done = 0;
+constexpr const char *TAB_MIXIN = "swofty_core.dll (time trial leaderboard tab guard)";
+
+uintptr_t boards_done = 0, tab_done = 0;
 bool offered = false, settled = false;
-std::atomic<int> skipped{0};
+std::atomic<int> skipped{0}, tab_skipped{0};
+
+bool env_off(const char *name, const char *label)
+{
+    char v[16] = {};
+    DWORD n = GetEnvironmentVariableA(name, v, sizeof v);
+    if (!n || n >= sizeof v || !lg::switch_off(v))
+        return false;
+    swofty::log("[leaderboard] %s off (%s=%s)", label, name, v);
+    return true;
+}
 
 void board_read(SwoftyContext *c)
 {
-    if (c->rcx)
+    if (!lg::board_missing(c->rcx))
         return;
     c->rsi = 0;
     c->rip = boards_done;
-    int n = ++skipped;
-    if (n > LOG_FIRST)
+    lg::Say say = lg::say(++skipped);
+    if (say == lg::Say::none)
         return;
     swofty::log("[leaderboard] Time Trial leaderboard view 0x%llx has no board for this track (online services off or no "
                 "board listed); view skipped%s",
-                (unsigned long long)c->rdi, n == LOG_FIRST ? " (further skips are not logged)" : "");
+                (unsigned long long)c->rdi, say == lg::Say::last ? " (further skips are not logged)" : "");
+}
+
+void tab_child_read(SwoftyContext *c)
+{
+    if (!lg::tab_child_missing(c->rcx))
+        return;
+    c->rip = tab_done;
+    lg::Say say = lg::say(++tab_skipped);
+    if (say == lg::Say::none)
+        return;
+    swofty::log("[leaderboard] Time Trial leaderboard model 0x%llx activated its tab with no child list model; tab "
+                "activation skipped%s",
+                (unsigned long long)(c->rsi - 0x660), say == lg::Say::last ? " (further skips are not logged)" : "");
 }
 
 }
@@ -61,33 +94,46 @@ std::vector<CoreMixins> leaderboard_guard_mixins()
     if (offered || !code_ready())
         return out;
     offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_LEADERBOARD_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[leaderboard] time trial leaderboard guard off (SWOFTY_LEADERBOARD_GUARD=%s)", v);
-        return out;
+    if (!env_off("SWOFTY_LEADERBOARD_GUARD", "time trial leaderboard guard")) {
+        boards_done = swofty::api->resolve("site_Game_TimeTrialLeaderboard_BoardsDone");
+        if (!boards_done || !swofty::api->resolve("site_Game_TimeTrialLeaderboard_BoardRead")) {
+            boards_done = 0;
+            swofty::log("[leaderboard] time trial leaderboard guard off: needs site_Game_TimeTrialLeaderboard_BoardRead "
+                        "and site_Game_TimeTrialLeaderboard_BoardsDone, which this build does not resolve");
+        } else {
+            out.push_back({MIXIN,
+                           {{"site_Game_TimeTrialLeaderboard_BoardRead", SWOFTY_MIXIN_SITE, 100, (void *)&board_read, nullptr}}});
+        }
     }
-    boards_done = swofty::api->resolve("site_Game_TimeTrialLeaderboard_BoardsDone");
-    if (!boards_done || !swofty::api->resolve("site_Game_TimeTrialLeaderboard_BoardRead")) {
-        boards_done = 0;
-        swofty::log("[leaderboard] time trial leaderboard guard off: needs site_Game_TimeTrialLeaderboard_BoardRead "
-                    "and site_Game_TimeTrialLeaderboard_BoardsDone, which this build does not resolve");
-        return out;
+    if (!env_off("SWOFTY_LEADERBOARD_TAB_GUARD", "time trial leaderboard tab guard")) {
+        tab_done = swofty::api->resolve("site_Sess_TimeTrialLeaderboard_TabDone");
+        if (!tab_done || !swofty::api->resolve("site_Sess_TimeTrialLeaderboard_TabChild")) {
+            tab_done = 0;
+            swofty::log("[leaderboard] time trial leaderboard tab guard off: needs site_Sess_TimeTrialLeaderboard_TabChild "
+                        "and site_Sess_TimeTrialLeaderboard_TabDone, which this build does not resolve");
+        } else {
+            out.push_back({TAB_MIXIN,
+                           {{"site_Sess_TimeTrialLeaderboard_TabChild", SWOFTY_MIXIN_SITE, 100, (void *)&tab_child_read, nullptr}}});
+        }
     }
-    out.push_back({MIXIN,
-                   {{"site_Game_TimeTrialLeaderboard_BoardRead", SWOFTY_MIXIN_SITE, 100, (void *)&board_read, nullptr}}});
     return out;
 }
 
 void leaderboard_guard_commit()
 {
-    if (!offered || settled || !boards_done)
+    if (!offered || settled)
         return;
     settled = true;
-    swofty::log("[leaderboard] time trial leaderboard guard %s",
-                core_mixins_active(MIXIN)
-                    ? "armed: View Leaderboards at a track without a board returns instead of faulting"
-                    : "did not install (see the [core] lines)");
+    if (boards_done)
+        swofty::log("[leaderboard] time trial leaderboard guard %s",
+                    core_mixins_active(MIXIN)
+                        ? "armed: View Leaderboards at a track without a board returns instead of faulting"
+                        : "did not install (see the [core] lines)");
+    if (tab_done)
+        swofty::log("[leaderboard] time trial leaderboard tab guard %s",
+                    core_mixins_active(TAB_MIXIN)
+                        ? "armed: activating the leaderboard tab without a child list model returns instead of faulting"
+                        : "did not install (see the [core] lines)");
 }
 
 }

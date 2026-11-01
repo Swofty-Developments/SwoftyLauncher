@@ -266,6 +266,14 @@ The `hockenheim_f1_26` world in step 1 says it has 22 grid slots and 11 garages.
 
 Supply Hockenheim's baked AI data for the car packages you test, using `ai/<package folder>/<asset_filename>/*.erp`; [AI packs](/std/systems/ai) determine which baked data each car reads.
 
+An AI line lists its corner starts and ends. A line with an incomplete set, such as a work-in-progress line with a start that has no end, leaves some cars with no corner start ahead. The game reads that entry without a check and crashes in `Ai_Job_UpdateCarsParallel`; the core sends such a car down the game's own path for a line without corner data, and the car keeps driving the line. The first car logs once per session:
+
+```text
+[ai] corner start: car 3 has no corner start ahead on this track's AI line (its corner starts and ends are incomplete); it drives the line without corner data
+```
+
+`SWOFTY_AI_CORNER_GUARD=0` turns the guard off. Complete every corner's start and end on the line for the AI to brake and overtake at them.
+
 A new track also needs the stack-built keys listed under [track limits](/std/systems/tracks#readiness-and-limits):
 
 ```text
