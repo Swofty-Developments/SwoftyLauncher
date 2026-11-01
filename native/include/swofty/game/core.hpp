@@ -207,7 +207,6 @@ inline constexpr address<"Ne_Crt_FatalTrapC"> Ne_Crt_FatalTrapC{}; // L2 experim
 inline constexpr address<"Ne_Crt_Fmodf"> Ne_Crt_Fmodf{}; // L2 experimental
 inline constexpr address<"Ne_Crt_ForwardTo14534a050"> Ne_Crt_ForwardTo14534a050{}; // L2 experimental
 inline constexpr address<"Ne_Crt_InitThreadHeader"> Ne_Crt_InitThreadHeader{}; // L2 experimental
-inline constexpr address<"Ne_Crt_InvalidParameterAbort"> Ne_Crt_InvalidParameterAbort{}; // L2 experimental
 inline constexpr address<"Ne_Crt_InvalidParameterDispatch"> Ne_Crt_InvalidParameterDispatch{}; // L2 experimental
 inline constexpr address<"Ne_Crt_InvalidParameterNoReturn"> Ne_Crt_InvalidParameterNoReturn{}; // L2 experimental
 inline constexpr address<"Ne_Crt_LazyInitPreserveLastError"> Ne_Crt_LazyInitPreserveLastError{}; // L2 experimental
@@ -220,6 +219,7 @@ inline constexpr address<"Ne_Crt_Memset"> Ne_Crt_Memset{}; // L2 experimental
 inline constexpr address<"Ne_Crt_ParseNumber_L"> Ne_Crt_ParseNumber_L{}; // L2 experimental
 inline constexpr address<"Ne_Crt_Powf"> Ne_Crt_Powf{}; // L2 experimental
 inline constexpr address<"Ne_Crt_Qsort_Impl"> Ne_Crt_Qsort_Impl{}; // L2 experimental
+inline constexpr address<"Ne_Crt_ReportGsFailure"> Ne_Crt_ReportGsFailure{}; // L2 experimental
 inline constexpr address<"Ne_Crt_SecurityCookieFailure"> Ne_Crt_SecurityCookieFailure{}; // L2 experimental
 inline constexpr address<"Ne_Crt_SetMxcsrExceptionFlags"> Ne_Crt_SetMxcsrExceptionFlags{}; // L2 experimental
 inline constexpr address<"Ne_Crt_Setjmp"> Ne_Crt_Setjmp{}; // L2 experimental
