@@ -83,6 +83,7 @@ constexpr size_t STATE_HASH = 0xb0, STATE_CHILD = 0xbd8, LINK_SLOT = 0x40;
 
 std::mutex lock;
 ds::Driver driver;
+json::Value request;
 safetyhook::MidHook h_link;
 std::atomic<bool> armed{false};
 ds::Phase logged = ds::Phase::off;
@@ -221,10 +222,19 @@ ds::Setup continue_grand_prix(std::string &why)
     return ds::Setup::done;
 }
 
+runtime::DirectStartSetup room_setup = nullptr;
+
 ds::Setup set_up_target(std::string &why)
 {
     if (driver.target.name == "session")
         return continue_grand_prix(why);
+    if (driver.target.name == "room") {
+        if (!room_setup) {
+            why = "no room setup is registered (netplay_drive.cpp)";
+            return ds::Setup::failed;
+        }
+        return room_setup(why);
+    }
     return ds::Setup::done;
 }
 
@@ -234,21 +244,23 @@ namespace runtime {
 
 void direct_start_setup()
 {
-    char env[64] = {};
+    char env[1024] = {};
     DWORD n = GetEnvironmentVariableA("SWOFTY_DIRECT_START", env, sizeof env);
-    std::string target;
-    if (n && n < sizeof env)
+    std::string target, text;
+    if (n && n < sizeof env && env[0] == '@')
+        text = runtime::read_file(runtime::wide(env + 1), size_t(1) << 16);
+    else if (n && n < sizeof env)
         target = env;
-    else {
-        std::string text = runtime::read_file(runtime::swofty_root() + L"direct_start.json", size_t(1) << 16);
+    else
+        text = runtime::read_file(runtime::swofty_root() + L"direct_start.json", size_t(1) << 16);
+    if (target.empty()) {
         if (text.empty())
             return;
-        json::Value v;
-        if (!json::parse(text, v)) {
-            swofty::log("[direct] swofty\\direct_start.json is unusable; the game starts as usual");
+        if (!json::parse(text, request)) {
+            swofty::log("[direct] the direct start request is unusable; the game starts as usual");
             return;
         }
-        target = v["target"].str();
+        target = request["target"].str();
     }
     ds::Target t;
     if (target == "session")
@@ -306,6 +318,11 @@ void log_stack(const char *what)
     swofty::log("[direct] %s, thread %lu, from:", what, GetCurrentThreadId());
     for (USHORT i = 0; i < n; i++)
         swofty::log("[direct]   #%u %s", unsigned(i), runtime::code_where(reinterpret_cast<uintptr_t>(frames[i])).c_str());
+}
+
+void direct_start_register_room(DirectStartSetup setup)
+{
+    room_setup = setup;
 }
 
 void direct_start_profile_read()

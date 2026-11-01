@@ -30,9 +30,9 @@ inline const char *phase_name(Phase p)
 
 enum class Setup : uint8_t { pending, done, failed };
 
-// A target leaves the front end from `exit_state` (its finished link is held until the target is set up,
-// then replaced by its exit link, so the menu states never start) and then forces `link` from
-// `from_state` once that has no child. A room target holds and forces nothing: home takes the lobby link.
+// A target holds `exit_state`'s finished link until the target is set up. A session target then replaces it
+// with the exit link, so the menu states never start, and forces `link` from `from_state` once that has no
+// child. A room target then lets it through: home starts and takes the lobby link itself.
 struct Target {
     std::string name;
     uint32_t exit_state = STATE_FTUE;
@@ -47,7 +47,7 @@ inline Target session_target()
 
 inline Target room_target()
 {
-    return {"room", 0, 0, 0};
+    return {"room", STATE_FTUE, 0, 0};
 }
 
 struct Driver {

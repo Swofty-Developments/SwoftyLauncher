@@ -1,4 +1,6 @@
 #pragma once
+
+#include "direct_start_logic.hpp"
 #include <windows.h>
 
 #include <algorithm>
@@ -261,6 +263,10 @@ void direct_start_setup();
 void direct_start_tick();
 void direct_start_profile_loaded(bool ok);
 void direct_start_profile_read();
+// The room target's setup (netplay_drive.cpp registers it): polled on the flow thread after the profile has
+// loaded, while StateFTUE is held, until it answers done or failed.
+using DirectStartSetup = runtime::direct_start::Setup (*)(std::string &why);
+void direct_start_register_room(DirectStartSetup setup);
 std::string code_where(uintptr_t a);
 void testagent_tick();
 void testagent_fired(const std::string &id, bool hot);

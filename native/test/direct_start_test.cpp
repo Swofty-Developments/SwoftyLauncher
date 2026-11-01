@@ -64,10 +64,16 @@ int main()
 
     ds::Driver r;
     r.arm(ds::room_target());
-    expect(r.on_update(ds::STATE_FTUE, FTUE_DONE, false) == FTUE_DONE, "a room target never holds the first-run state");
+    expect(r.on_update(ds::STATE_FTUE, FTUE_DONE, false) == ds::LINK_STAY,
+           "a room target holds the first-run state until the profile has loaded");
     r.profile_loaded();
+    expect(r.on_update(ds::STATE_FTUE, FTUE_DONE, false) == ds::LINK_STAY,
+           "a room target holds the first-run state while the room is set up");
     r.setup_result(ds::Setup::done);
     expect(r.phase == ds::Phase::left, "a room target is done once its setup is");
+    expect(r.on_update(ds::STATE_FTUE, FTUE_DONE, false) == FTUE_DONE, "a set-up room lets the first-run state go home");
+    expect(r.on_update(ds::STATE_FRONTEND_WORLD, ds::LINK_STAY, false) == ds::LINK_STAY,
+           "a room target forces nothing on the front end world");
     expect(r.on_update(ds::STATE_ONLINE_FRONTEND, ds::LINK_STAY, false) == ds::LINK_STAY,
            "a room target lets home take the lobby link itself");
 
