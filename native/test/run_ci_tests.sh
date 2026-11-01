@@ -69,6 +69,7 @@ t "Pit box guard unit test" native/test/run_pit_box_test.sh
 t "Direct start unit test" native/test/run_direct_start_test.sh
 t "Thrustmaster LCD guard unit test" native/test/run_thrustmaster_lcd_test.sh
 t "Garage setup guard unit test" native/test/run_garage_setup_test.sh
+t "Core site names exported (host-only)" native/test/run_core_sites_exported_test.sh
 t "Garage crew guard unit test" native/test/run_garage_crew_test.sh
 t "Leaderboard guard unit test" native/test/run_leaderboard_guard_test.sh
 t "Front-end tile list guard unit test" native/test/run_fe_tile_guard_test.sh
