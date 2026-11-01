@@ -257,6 +257,42 @@ pub fn newest_logs(dirs: &[PathBuf], n: usize) -> Vec<PathBuf> {
     found.into_iter().take(n).map(|(_, p)| p).collect()
 }
 
+pub const PROXY_LOG: &str = "EAEgsProxy.log";
+const VIRUS_TEXT: &str = "contains a virus or potentially unwanted software";
+const VIRUS_CODE: &str = "0xe1";
+
+pub fn proxy_virus_block(log: &str, exe: &str, since: i64) -> bool {
+    let exe = exe.to_ascii_lowercase();
+    log.lines().any(|line| {
+        let lower = line.to_ascii_lowercase();
+        lower.contains("createprocess")
+            && lower.contains(&exe)
+            && (lower.contains(VIRUS_TEXT) || lower.trim_end().ends_with(VIRUS_CODE))
+            && line
+                .split_once('[')
+                .and_then(|(_, rest)| crate::catalog::epoch(rest))
+                .is_none_or(|t| t >= since)
+    })
+}
+
+pub fn proxy_logs() -> Vec<String> {
+    log_dirs()
+        .iter()
+        .map(|d| d.join(PROXY_LOG))
+        .filter_map(|p| tail(&p, LOG_TAIL))
+        .collect()
+}
+
+fn tail(path: &Path, cap: u64) -> Option<String> {
+    use std::io::{Read, Seek, SeekFrom};
+    let mut f = std::fs::File::open(path).ok()?;
+    let len = f.metadata().ok()?.len();
+    f.seek(SeekFrom::Start(len.saturating_sub(cap))).ok()?;
+    let mut data = Vec::new();
+    f.read_to_end(&mut data).ok()?;
+    Some(String::from_utf8_lossy(&data).into_owned())
+}
+
 pub fn log_entry_name(path: &Path, taken: &mut Vec<String>) -> String {
     let base = path
         .file_name()
@@ -279,6 +315,31 @@ mod tests {
 Faulting application name: F1_25.exe, version: 1.0\n\nEvent[1]:\n  Log Name: Application\n  Source: Chrome\n  \
 Description: nothing\n\nEvent[2]:\n  Log Name: Application\n  Source: Windows Error Reporting\n  Description:\n\
 Fault bucket, type 5\nP1: EADesktop.exe\n";
+
+    const PROXY_BLOCKED: &str = "\
+839:    20\t[2026-11-01T01:57:04.895Z]\tPID: 13588\tTID: 29620\tERROR   \t(eax::services::process::ProcessWin::createProcess)\t[PROCESS] Create Process: Operation did not complete successfully because the file contains a virus or potentially unwanted software. | exe=[C:\\F1 25\\F1 25\\EAAntiCheat.GameServiceLauncher.exe], args=[], dir=[C:\\F1 25\\F1 25\\] | OS ErrorCode:  0xe1
+840:    21\t[2026-11-01T01:57:04.895Z]\tPID: 13588\tTID:  5128\tINFO    \t(eax::services::telemetry::TelemetryManagerV2::processEvent)\tTelemetry Event [prcs.create.erro]
+";
+    const EXE: &str = "EAAntiCheat.GameServiceLauncher.exe";
+
+    #[test]
+    fn finds_the_proxy_failing_to_start_the_stub() {
+        assert!(proxy_virus_block(PROXY_BLOCKED, EXE, 0));
+        let code_only = PROXY_BLOCKED.replace("Operation did not complete successfully because the file contains a virus or potentially unwanted software.", "failed");
+        assert!(proxy_virus_block(&code_only, EXE, 0));
+    }
+
+    #[test]
+    fn ignores_other_programs_other_failures_and_old_lines() {
+        assert!(!proxy_virus_block(PROXY_BLOCKED, "EADesktop.exe", 0));
+        assert!(!proxy_virus_block(
+            "[2026-11-01T01:57:04.895Z] INFO createProcess EAAntiCheat.GameServiceLauncher.exe ok",
+            EXE,
+            0
+        ));
+        let after = crate::catalog::epoch("2026-11-01T02:00:00Z").unwrap();
+        assert!(!proxy_virus_block(PROXY_BLOCKED, EXE, after));
+    }
 
     #[test]
     fn splits_events() {

@@ -212,6 +212,10 @@ std::vector<CoreMixins> car_levers_mixins();
 void car_levers_commit();
 std::vector<CoreMixins> standings_guard_mixins();
 void standings_guard_commit();
+std::vector<CoreMixins> fe_tile_guard_mixins();
+void fe_tile_guard_commit();
+std::vector<CoreMixins> ai_corner_guard_mixins();
+void ai_corner_guard_commit();
 std::vector<CoreMixins> watchdog_grace_mixins();
 void watchdog_grace_commit();
 void watchdog_flow(uint32_t hash, uint32_t to, const char *name);
@@ -223,12 +227,19 @@ void garage_crew_commit();
 void pit_slots_commit();
 std::vector<CoreMixins> pit_box_mixins();
 void pit_box_commit();
+std::vector<CoreMixins> garage_slots_mixins();
+void garage_slots_commit();
 std::vector<CoreMixins> chassis_registry_mixins();
 void chassis_registry_commit();
 std::vector<CoreMixins> track_acclim_mixins();
 void track_acclim_commit();
 std::vector<CoreMixins> audio_queue_mixins();
 void audio_queue_commit();
+std::vector<CoreMixins> audio_heap_mixins();
+void audio_heap_commit();
+std::vector<CoreMixins> save_heap_mixins();
+void save_heap_commit();
+bool save_heap_raised(uint64_t &bytes);
 std::vector<CoreMixins> track_select_mixins();
 void track_select_commit();
 std::vector<CoreMixins> team_slots_mixins();
@@ -276,6 +287,20 @@ void direct_start_profile_read();
 // loaded, while StateFTUE is held, until it answers done or failed.
 using DirectStartSetup = runtime::direct_start::Setup (*)(std::string &why);
 void direct_start_register_room(DirectStartSetup setup);
+// The Time Trial target's setup (a session request with "mode": "time_trial"; direct_start_tt.cpp registers it):
+// polled the same way, with the request's text from direct_start_request_text().
+void direct_start_register_time_trial(DirectStartSetup setup);
+// Every screen the UI opens while a direct start is armed (ui.cpp's open hook), for the Time Trial's own steps.
+void direct_start_register_time_trial_screen(void (*screen)(const char *name));
+// The flow graph's root state (StateApp) once the flow has updated it, or null.
+void *direct_start_flow_root();
+// Despawns the front end's main scene (the menu backdrop) once; a direct start never runs StateFrontend's exit.
+void direct_start_despawn_frontend_scene(const char *when);
+std::string direct_start_request_text();
+// For the cover: 0 while a session target is on its way, 1 once its session is on screen, -1 when it failed.
+int direct_start_cover_signal();
+// A UI screen opened (ui.cpp): the session's own screen takes the cover off.
+void direct_start_screen(const char *name);
 uintptr_t direct_start_set_mode();
 // What the direct start knows on the flow thread from the profile load on: the game manager and the game modes
 // context (the object Game_Game_SetCurrentGameMode takes, [game manager+0xc0]).

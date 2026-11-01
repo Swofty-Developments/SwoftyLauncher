@@ -21,6 +21,9 @@ mod recover;
 pub use recover::Recovery;
 
 pub const FILE: &str = "row-ids.json";
+/// The table name of the track rows `track.add` adds; the game reads their `statId` in a byte, 0xff = none.
+const TRACK_TABLE: &str = "tracks.Track";
+pub const TRACK_STAT_MAX: i64 = 254;
 const LOCK: &str = "row-ids.lock";
 const VERSION: u32 = 1;
 
@@ -639,6 +642,69 @@ impl Store {
         self.rows.get(key).copied()
     }
 
+    /// The stat id of the track row `addon` adds for the track `code` through `track.add`, kept in the store under
+    /// `<addon>/tracks.Track/<code>`: the id kept for it, else `seed` (the id the last build gave it), else the first
+    /// free id from `top`, the table's highest plus one, to [`TRACK_STAT_MAX`] and then from 0. `held` says whether a
+    /// track row of this build holds an id. An id kept for any other track stays that track's whether or not its addon
+    /// is on, so no id is ever given to two tracks.
+    pub fn track_stat_id(
+        &mut self,
+        addon: &str,
+        code: &str,
+        seed: Option<i64>,
+        top: i64,
+        held: &dyn Fn(i64) -> bool,
+    ) -> std::result::Result<(i64, String), String> {
+        let base = format!("{addon}/{TRACK_TABLE}/{code}");
+        let mut nth = 0;
+        let key = loop {
+            let key = match nth {
+                0 => base.clone(),
+                n => format!("{base}#{}", n + 1),
+            };
+            if self.claimed.insert(key.clone()) {
+                break key;
+            }
+            nth += 1;
+        };
+        let blocked = |s: &Self, id: i64| {
+            !(0..=TRACK_STAT_MAX).contains(&id)
+                || held(id)
+                || s.by_id
+                    .get(TRACK_TABLE)
+                    .and_then(|ids| ids.get(&id))
+                    .is_some_and(|k| *k != key)
+        };
+        let kept = self.get(&key);
+        if let Some(id) = kept.filter(|id| !blocked(self, *id)) {
+            return Ok((id, format!("stat id {id} (kept from {FILE})")));
+        }
+        if kept.is_none()
+            && let Some(id) = seed.filter(|id| !blocked(self, *id))
+        {
+            self.put(&key, id, IdFrom::Seeded);
+            return Ok((id, format!("stat id {id} (as the last build gave it)")));
+        }
+        let from = match kept {
+            Some(_) => IdFrom::Moved,
+            None => IdFrom::Next,
+        };
+        let id = (top.max(0)..=TRACK_STAT_MAX)
+            .chain(0..top.clamp(0, TRACK_STAT_MAX + 1))
+            .find(|id| !blocked(self, *id))
+            .ok_or_else(|| {
+                format!(
+                    "{code}: tracks have no free statId up to {TRACK_STAT_MAX}, the highest the game reads"
+                )
+            })?;
+        self.put(&key, id, from);
+        let why = match kept {
+            Some(old) => format!("stat id {id} (the {old} kept for it is held by another track)"),
+            None => format!("stat id {id} (new, kept in {FILE})"),
+        };
+        Ok((id, why))
+    }
+
     /// The build line saying what the last build changed, if anything.
     pub fn summary(&self) -> Option<String> {
         if self.added + self.moved + self.reused == 0 {
@@ -894,6 +960,109 @@ mod tests {
     }
 
     pub(super) const TEAMS: (&str, &str) = ("entrants.teams", "team");
+
+    const STOCK_TRACKS: i64 = 46;
+
+    fn track_build(store: &mut Store, on: &[(&str, &str)], seeds: &[(&str, i64)]) -> BTreeMap<String, i64> {
+        store.building(on.iter().map(|(a, _)| (*a).to_owned()));
+        let mut rows: BTreeSet<i64> = (0..STOCK_TRACKS).collect();
+        let mut out = BTreeMap::new();
+        for (addon, code) in on {
+            let seed = seeds.iter().find(|(c, _)| c == code).map(|(_, id)| *id);
+            let top = rows.iter().max().map_or(0, |m| m + 1);
+            let held = rows.clone();
+            let (id, _) = store
+                .track_stat_id(addon, code, seed, top, &|id| held.contains(&id))
+                .unwrap();
+            rows.insert(id);
+            out.insert((*code).to_owned(), id);
+        }
+        out
+    }
+
+    fn sixteen() -> Vec<(String, String)> {
+        let mut v: Vec<(String, String)> = (0..15).map(|i| (format!("mod.t{i}"), format!("t{i}"))).collect();
+        v.insert(9, ("mod.sokol".to_owned(), "sokol".to_owned()));
+        v
+    }
+
+    fn refs(v: &[(String, String)]) -> Vec<(&str, &str)> {
+        v.iter().map(|(a, c)| (a.as_str(), c.as_str())).collect()
+    }
+
+    #[test]
+    fn a_track_keeps_its_stat_id_when_other_tracks_are_turned_off() {
+        let all = sixteen();
+        let mut store = Store::default();
+        let first = track_build(&mut store, &refs(&all), &[]);
+        assert_eq!(first["sokol"], STOCK_TRACKS + 9);
+        let few: Vec<_> = all
+            .iter()
+            .filter(|(_, c)| c == "sokol" || c == "t2" || c == "t13")
+            .cloned()
+            .collect();
+        let second = track_build(&mut store, &refs(&few), &[]);
+        assert_eq!(second["sokol"], first["sokol"]);
+        assert_eq!(second["t13"], first["t13"]);
+        let only: Vec<_> = all.iter().filter(|(_, c)| c == "sokol").cloned().collect();
+        assert_eq!(
+            track_build(&mut store, &refs(&only), &[])["sokol"],
+            first["sokol"]
+        );
+    }
+
+    #[test]
+    fn a_turned_off_tracks_stat_id_is_never_given_to_another_track() {
+        let all = sixteen();
+        let mut store = Store::default();
+        let first = track_build(&mut store, &refs(&all), &[]);
+        let off: Vec<_> = all.iter().filter(|(_, c)| c == "t14").cloned().collect();
+        let mut with_new = refs(&off);
+        with_new.insert(0, ("mod.fresh", "fresh"));
+        let second = track_build(&mut store, &with_new, &[]);
+        assert!(!first.values().any(|id| *id == second["fresh"]));
+        assert_ne!(second["fresh"], first["t14"]);
+        assert_ne!(second["fresh"], first["t13"]);
+        let again = track_build(&mut store, &refs(&all), &[]);
+        assert_eq!(again["t13"], first["t13"]);
+        assert_eq!(again["t14"], first["t14"]);
+        let ids: BTreeSet<i64> = again.values().copied().collect();
+        assert_eq!(ids.len(), again.len());
+    }
+
+    #[test]
+    fn a_track_without_a_kept_id_takes_the_id_the_last_build_gave_it() {
+        let mut store = Store::default();
+        let on = [("mod.sokol", "sokol"), ("mod.other", "other")];
+        let got = track_build(&mut store, &on, &[("sokol", 48), ("other", 48)]);
+        assert_eq!(got["sokol"], 48);
+        assert_ne!(got["other"], 48);
+        assert!(got["other"] >= STOCK_TRACKS);
+    }
+
+    #[test]
+    fn track_stat_ids_stay_within_what_the_game_reads() {
+        let mut store = Store::default();
+        let (id, _) = store
+            .track_stat_id("mod.a", "a", Some(300), 250, &|_| false)
+            .unwrap();
+        assert_eq!(id, 250);
+        let err = store.track_stat_id("mod.b", "b", None, 0, &|_| true).unwrap_err();
+        assert!(err.contains("254"), "{err}");
+    }
+
+    #[test]
+    fn a_kept_track_id_that_stock_now_holds_moves_and_is_aliased() {
+        let mut store = Store::default();
+        store.track_stat_id("mod.a", "a", None, 46, &|_| false).unwrap();
+        store.building(["mod.a".to_owned()]);
+        let (id, why) = store
+            .track_stat_id("mod.a", "a", None, 47, &|id| id == 46)
+            .unwrap();
+        assert_eq!(id, 47);
+        assert!(why.contains("46"), "{why}");
+        assert_eq!(store.get("mod.a/tracks.Track/a"), Some(47));
+    }
 
     #[test]
     fn new_ids_are_the_next_free_ids_in_load_order_as_builds_before_1_6_10_gave_them() {

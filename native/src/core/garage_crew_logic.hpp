@@ -60,6 +60,8 @@ inline bool session_of(uint64_t rsp, Read read, void *user, uint64_t *session)
 
 constexpr uint32_t GARAGES = 0x20;
 constexpr uint64_t SETUP_VECTOR_BEGIN = 0xa8;
+constexpr uint64_t SETUP_KEY = 0xc0;
+constexpr uint64_t SETUP_FLAG = 0x4b;
 
 inline bool setup_template_missing(uint64_t tmpl)
 {

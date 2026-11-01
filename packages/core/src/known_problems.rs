@@ -1455,11 +1455,30 @@ fn missing_entrant_list(e: &Evidence) -> Diagnosis {
     }
 }
 
+/// The track stat id the core logged as having no tracks row or track record at the session load.
+fn missing_track_stat(loader: &str) -> Option<i64> {
+    loader.lines().rev().find_map(|l| {
+        let rest = l.split("track stat id ").nth(1)?;
+        let (id, tail) = rest.split_once(' ')?;
+        tail.starts_with("has no tracks row or track record")
+            .then(|| id.parse().ok())
+            .flatten()
+    })
+}
+
 fn career_content_off(e: &Evidence) -> Diagnosis {
     let off: Vec<String> = e.off.iter().map(|id| name(e, id)).collect();
     let what =
         "F1 25 crashed setting up the track for your career's next session, just after the career loaded.";
+    let missing = missing_track_stat(&e.loader);
     let (title, what) = match off.as_slice() {
+        [] => (
+            "Your career uses a track that is not in this profile".to_owned(),
+            format!(
+                "{what} A race in your career uses a track (track stat id {}) that no addon in this profile provides.",
+                missing.unwrap_or_default()
+            ),
+        ),
         [one] => (
             format!("Your career uses {one}, which is off"),
             format!("{what} A race in your career uses {one}, which is off in this profile."),
@@ -1477,10 +1496,14 @@ fn career_content_off(e: &Evidence) -> Diagnosis {
         title,
         what,
         steps: vec![
-            format!(
-                "Turn {} back on, or change that round with the Career Mode Editor.",
-                list(&off)
-            ),
+            match off.is_empty() {
+                true => "Turn back on the track addon your career's calendar uses, or change that round with the Career Mode Editor."
+                    .to_owned(),
+                false => format!(
+                    "Turn {} back on, or change that round with the Career Mode Editor.",
+                    list(&off)
+                ),
+            },
             "Press Play again.".to_owned(),
         ],
     }
@@ -1607,7 +1630,7 @@ fn matched(e: &Evidence) -> Option<Diagnosis> {
     if entrant_list_crash(e, &f) {
         return Some(missing_entrant_list(e));
     }
-    if !e.off.is_empty() && career_track_crash(e, &f) {
+    if (!e.off.is_empty() || missing_track_stat(&e.loader).is_some()) && career_track_crash(e, &f) {
         return Some(career_content_off(e));
     }
     if windows && gpu_removed(e) {
@@ -2626,6 +2649,22 @@ mod tests {
             None,
             "no career"
         );
+    }
+
+    #[test]
+    fn a_track_stat_id_with_no_row_is_a_missing_track_even_with_nothing_off() {
+        let line =
+            "2026-10-28 20:58:47.900 [5060] [moments] track stat id 48 has no tracks row or track record\n";
+        let loader = CAREER_TRACK.replace(
+            "2026-10-28 20:58:47.933",
+            &format!("{line}2026-10-28 20:58:47.933"),
+        );
+        assert_eq!(missing_track_stat(&loader), Some(48));
+        let d = diagnose(&career_off(&loader, &[])).unwrap();
+        assert_eq!(d.id, "career_content_off");
+        assert_eq!(d.title, "Your career uses a track that is not in this profile");
+        assert!(d.what.contains("track stat id 48"), "{}", d.what);
+        assert_eq!(missing_track_stat(CAREER_TRACK), None);
     }
 
     #[test]

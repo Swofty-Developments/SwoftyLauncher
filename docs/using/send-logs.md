@@ -41,6 +41,16 @@ When a game session ends in a crash, the launcher opens a full-window **F1 25 cr
 
 Under Wine or Proton, the graphics driver, graphics memory and Windows memory checks are skipped.
 
+A game that stopped itself with exit code `0xc0000409`, `0xc0000602` or `0xc0000417` (a fast-fail) shows as a crash. The screen and the **Crash** section of `summary.txt` say it in one sentence, with the last lines of the session's `loader.log` when no crash report was written:
+
+```text
+Crash
+No crash report was found (the game did not write one this session)
+F1 25 stopped itself after detecting a corrupted stack or an invalid call (0xc0000409).
+Last loader.log lines:
+  [crash] crash log armed: fatal exceptions (first 16 in full, deduplicated by address), the top-level filter, ExitProcess hooked, TerminateProcess hooked
+```
+
 A session counts as a crash when it ended with a crash exit code, an exception the mod loader saw or F1 25's **Insufficient Storage** dialog, including a game the EA app started. A game that closes with another code, such as -1, shows as closed, not crashed. The screen opens by itself for a crash from the last 15 minutes. The play bar keeps **Crashed** with the cause, and **What happened** opens the screen again. `state/wrapper-run.log` gets a `[crash] known problem <id>: <title>` line, or `[crash] no known problem matches this crash`.
 
 ## Send the zip yourself
