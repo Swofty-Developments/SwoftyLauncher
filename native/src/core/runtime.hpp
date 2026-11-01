@@ -212,6 +212,8 @@ std::vector<CoreMixins> car_levers_mixins();
 void car_levers_commit();
 std::vector<CoreMixins> standings_guard_mixins();
 void standings_guard_commit();
+std::vector<CoreMixins> fe_tile_guard_mixins();
+void fe_tile_guard_commit();
 std::vector<CoreMixins> ai_corner_guard_mixins();
 void ai_corner_guard_commit();
 std::vector<CoreMixins> watchdog_grace_mixins();

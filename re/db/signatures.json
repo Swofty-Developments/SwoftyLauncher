@@ -160828,6 +160828,193 @@
    "used_by": [
     "native/src/core/leaderboard_guard.cpp"
    ]
+  },
+  {
+   "id": "fe_tiles.get_list_first_entrant_id",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 C6 42 04 00",
+   "match": "0x141738eb0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141738eb0",
+   "kind": "func_start",
+   "names": [
+    "FeTile_Get_ListFirstEntrantId"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "fe-tile-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/fe_tile_guard.cpp"
+   ]
+  },
+  {
+   "id": "fe_tiles.check_entrant_list_usable",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 81 EC 30 04 00 00 49 89 D0",
+   "match": "0x142428790",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142428790",
+   "kind": "func_start",
+   "names": [
+    "FeTile_Check_EntrantListUsable"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "fe-tile-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/fe_tile_guard.cpp"
+   ]
+  },
+  {
+   "id": "fe_tiles.list_scan_start",
+   "section": ".xtls",
+   "pattern": "4C 8B 73 08 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 49 8B 46 28",
+   "match": "0x141738f1f",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141738f1f",
+   "kind": "mid",
+   "expect": "4C 8B 73 08 66 66 66 66 2E 0F 1F 84 00 00 00 00 00",
+   "names": [
+    "site_FeTile_ListScanStart"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "fe-tile-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/fe_tile_guard.cpp"
+   ]
+  },
+  {
+   "id": "fe_tiles.list_scan_none",
+   "section": ".xtls",
+   "pattern": "89 06 C6 46 04 01 48 89 F0 48 83 C4 28",
+   "match": "0x141738f5a",
+   "anchor": "0x6",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141738f60",
+   "kind": "mid",
+   "expect": "48 89 F0 48 83 C4 28",
+   "names": [
+    "site_FeTile_ListScanNone"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "fe-tile-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/fe_tile_guard.cpp"
+   ]
+  },
+  {
+   "id": "fe_tiles.list_row_entry",
+   "section": ".xtls",
+   "pattern": "49 89 D0 48 89 CE 48 8B 99 28 02 00 00",
+   "match": "0x14242879e",
+   "anchor": "0x3",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1424287a1",
+   "kind": "mid",
+   "expect": "48 89 CE 48 8B 99 28 02 00 00",
+   "names": [
+    "site_FeTile_ListRowEntry"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "fe-tile-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/fe_tile_guard.cpp"
+   ]
+  },
+  {
+   "id": "fe_tiles.list_row_field_load",
+   "section": ".xtls",
+   "pattern": "48 8B 00 48 85 C0 74 05 44 0F B6 70 08 48 8B 83 60 05 00 00",
+   "match": "0x142428832",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142428832",
+   "kind": "mid",
+   "expect": "48 8B 00 48 85 C0",
+   "names": [
+    "site_FeTile_ListRowFieldLoad"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "fe-tile-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/fe_tile_guard.cpp"
+   ]
+  },
+  {
+   "id": "fe_tiles.list_row_none",
+   "section": ".xtls",
+   "pattern": "31 FF 89 F8 48 81 C4 30 04 00 00 5B",
+   "match": "0x1424288d7",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1424288d7",
+   "kind": "mid",
+   "expect": "31 FF 89 F8 48 81 C4 30 04 00 00",
+   "names": [
+    "site_FeTile_ListRowNone"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-01",
+     "by": "fe-tile-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/fe_tile_guard.cpp"
+   ]
   }
  ]
 }

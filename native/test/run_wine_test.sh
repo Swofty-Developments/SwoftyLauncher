@@ -345,6 +345,9 @@ EOF
         once "standings: a round whose track is off is skipped and logged once" '\[career\] standings: round 7 has no track data \(track 200 is off\); skipped'
         once "standings: a round whose weekend can't be read is skipped and logged once" '\[career\] standings: round 10 has no track data; skipped'
         once "weekends: a round whose track has no record is skipped and logged once" '\[career\] weekends: track 1 has no track data; the round shows no track'
+        once "fe tiles: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(front-end tile list guard\)': 3 mixin\(s\)"
+        once "fe tiles: the guard is armed" '\[fe\] tiles guard armed'
+        once "fe tiles: a list missing from the slot array is skipped and logged once" '\[fe\] tiles: entrant list f2_2026 is not in the game data; its tile is left without a list'
         once "ai corner: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(ai corner start guard\)': 1 mixin"
         once "ai corner: the guard is armed" '\[ai\] corner start guard armed'
         once "ai corner: a car with no corner start line is skipped and logged once" '\[ai\] corner start: car 3 has no corner start ahead on this track'"'"'s AI line'
@@ -729,6 +732,38 @@ for guard in on off; do
     else
         check "weekends off: the read faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Career_Weekends_BuildResultNodes\+0x13'
         [[ $code != 0 ]] && echo "ok  : weekends off: process ended with $code" || { echo "FAIL: weekends off: process exited 0"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== fe_tiles ($guard)"
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    if [[ $guard == on ]]; then
+        code=0
+        timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" fe_scan >"$OUT/fe_scan.out" 2>&1 || code=$?
+        grep -E '\[fe\] tiles|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+        grep -q 'fe tiles: the scan returned 0\b' "$OUT/fe_scan.out" && echo "ok  : fe tiles on: the scan took the game's no-list path" ||
+            { echo "FAIL: fe tiles on: the scan did not take the game's no-list path"; status=1; }
+        code=0
+        timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" fe_row >"$OUT/fe_row.out" 2>&1 || code=$?
+        grep -q 'fe tiles: the list returned 0\b' "$OUT/fe_row.out" && echo "ok  : fe tiles on: the list with no row returned 0" ||
+            { echo "FAIL: fe tiles on: the list with no row did not return 0"; status=1; }
+        count "fe tiles on: no unhandled fault" 0 '\[crash\] unhandled '
+        compgen -G "$SW/crash-*.txt" >/dev/null && { echo "FAIL: fe tiles on: a crash report was written"; status=1; } ||
+            echo "ok  : fe tiles on: no crash report"
+    else
+        for mode in fe_scan:0x80 fe_row:0xaa; do
+            name=${mode%%:*}
+            at=${mode##*:}
+            fn=$([[ $name == fe_scan ]] && echo FeTile_Get_ListFirstEntrantId || echo FeTile_Check_EntrantListUsable)
+            code=0
+            rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+            SWOFTY_FE_TILE_GUARD=0 timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" "$name" >"$OUT/$name.out" 2>&1 || code=$?
+            grep -E '\[fe\] tiles|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+            once "fe tiles off ($name): the guard is off" '\[fe\] tiles guard off \(SWOFTY_FE_TILE_GUARD=0\)'
+            check "fe tiles off ($name): the lookup faults where the game does" "\\[crash\\] unhandled ACCESS_VIOLATION .*$fn\\+$at"
+            parse_report "$fn+$at" "" || status=1
+            [[ $code != 0 ]] && echo "ok  : fe tiles off ($name): process ended with $code" || { echo "FAIL: fe tiles off ($name): process exited 0"; status=1; }
+        done
     fi
 done
 for guard in on off; do
