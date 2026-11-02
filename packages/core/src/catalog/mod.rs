@@ -574,7 +574,7 @@ pub fn save(mut reader: impl Read, v: &Version, to: &Path, progress: &dyn Fn(Sta
     within_limit(v)?;
     let mut file = std::fs::File::create(to).map_err(io_err(to))?;
     let mut hash = Sha256::new();
-    let mut buf = vec![0; 64 * 1024];
+    let mut buf = vec![0; 256 * 1024];
     let mut len = 0u64;
     loop {
         let n = reader
