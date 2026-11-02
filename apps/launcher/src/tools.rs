@@ -510,9 +510,7 @@ impl Shell {
                             .items_stretch()
                             .overflow_x_scroll()
                             .track_scroll(&self.tools.scroll)
-                            .on_scroll_wheel(
-                                cx.listener(|this, _: &ScrollWheelEvent, _, cx| this.tools_wheel(cx)),
-                            )
+                            .on_scroll(cx.listener(|this, _: &ScrollEvent, _, cx| this.tools_wheel(cx)))
                             .px(px(GUTTER))
                             .pt(px(4.))
                             .pb(px(BAR))

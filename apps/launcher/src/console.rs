@@ -565,7 +565,7 @@ impl Render for Console {
             .child(self.toolbar(p, cx))
             .child(self.body(p, cx))
             .child(self.footer(p, cx))
-            .on_scroll_wheel(cx.listener(|_, _, _, cx| cx.notify()))
+            .on_scroll(cx.listener(|_, _, _, cx| cx.notify()))
     }
 }
 
