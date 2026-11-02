@@ -355,7 +355,7 @@ SWOFTY_REGISTER
 [registry] career.calendar swofty.classic-seasons-2016/f1_2016: round 16 dropped (venue/sepang: no enabled track provides it; optional)
 ```
 
-Every Classic Seasons season from 2016 to 2024 registers its calendar this way, made by `addons/classicseasons/classic-seasons/tools/calendars.py` from Progressive's `data/rounds.json`: each race of the year in round order, with its name and date. The optional rounds, those at venues no stock track provides:
+Every Classic Seasons season from 2016 to 2024 registers its calendar this way, made by Classic Seasons' `calendars.py` from Progressive's `data/rounds.json`: each race of the year in round order, with its name and date. The optional rounds, those at venues no stock track provides:
 
 ```text
 2016  venue/sochi, venue/hockenheimring, venue/sepang

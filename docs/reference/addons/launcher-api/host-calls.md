@@ -146,7 +146,7 @@ game_original, game_original_lang   error: "the game is not available"
 
 Career Editor finds its mailbox in the running game copy this way:
 
-```rust [addons/career-editor/launcher/src/main.rs]
+```rust [Career Mode Editor: launcher/src/main.rs]
 fn locate(&mut self, host: &mut Host) {
     if let Ok(v) = host.call("addon_game_dir", Value::Null)
         && let Some(p) = v.as_str()
@@ -188,7 +188,7 @@ fn locate(&mut self, host: &mut Host) {
 
 *Launcher 1.0.12.* Career Editor lists every track a profile can race:
 
-```rust [addons/career-editor/launcher/src/tracks.rs]
+```rust [Career Mode Editor: launcher/src/tracks.rs]
 match host.call("profile_tracks", Value::Null) {
     Ok(Value::Null) => {
         Err("The launcher hasn't found F1 25, so it can't list the tracks in this profile.".into())
@@ -219,7 +219,7 @@ match host.call("profile_tracks", Value::Null) {
 
 *Launcher 1.5.12.* Send it only when `hello.params.host_calls` lists `profile_heads`, as Driver Manager does:
 
-```rust [addons/driver-manager/launcher/src/app.rs]
+```rust [Driver Manager: launcher/src/app.rs]
 fn profile_heads(&self, host: &mut Host) -> Vec<Choice> {
     if !self.host_calls.iter().any(|c| c == PROFILE_HEADS) {
         return Vec::new();

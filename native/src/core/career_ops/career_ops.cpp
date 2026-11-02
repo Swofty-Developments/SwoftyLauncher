@@ -32,7 +32,7 @@ std::string settings_addon(const void *from, std::string &dll);
 // The core's career operations (standard library 1.6, SwoftyCareerOps): apply_lineup, set_driver_ratings and
 // swap_drivers, (table version 2) report_season, which the career snapshots answer (snapshots/runtime.cpp), and
 // (table version 4) set_seat, which runs one seat change through apply_lineup's executor, set_car_number (Career
-// Mode Editor's drivers.number.set) and set_track_fuel (track_fuel.cpp). The line-up executor is Progressive Career's season batch (addons/progressive/native/src/
+// Mode Editor's drivers.number.set) and set_track_fuel (track_fuel.cpp). The line-up executor is Progressive Career's season batch (its native/src/
 // season.cpp apply(), seats.cpp) moved into the core: one batch of entrant writes through the Driver Career
 // sequence, read back and written back on a mismatch, the seated drivers' contracts, numbers and one
 // finalise. Every binding resolves when an operation first needs it; a missing one makes the operation

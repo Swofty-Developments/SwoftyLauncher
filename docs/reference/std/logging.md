@@ -18,7 +18,7 @@ using swofty::game::NeStr;
 
 namespace {
 
-// Time your own work in swofty/perf.log (pattern from addons/career-editor/native/src/plugin.cpp)
+// Time your own work in swofty/perf.log (pattern from Career Mode Editor's native/src/plugin.cpp)
 struct Profiler {
     uint32_t (*probe)(const char *, const char *) = nullptr;
     void (*enter)(uint32_t) = nullptr;
