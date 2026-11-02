@@ -90,34 +90,6 @@ attribution requirement applies to this work and to every work based on it:
 > **Based on Simplified Suite by Team Simplified - https://github.com/TeamSimplified/simplified-suite**
 ```
 
-## F1 25 RE-Optimization
-
-The bundled addon `addons/re-optimization` (`xanpavle.re-optimization`) is a port of F1 25 RE-Optimization by xanpavle, <https://github.com/xanpavle/F1-25-RE-Optimization>, with his permission. Its settings delta, engine override names and values, in-engine enforcement table and modes, GPU detection and upscaler choice are ported from `src/profile.cpp`, `src/tune.cpp`, `src/enforce.cpp`, `src/gpu.cpp` and `f125_tune.ini` of version 0.2.5. The proxy `dinput8.dll`, the inline-detour engine and the signature scanner are not used; the addon loads as an engine plugin and hooks through the mixin system. The addon folder keeps the licence as `addons/re-optimization/LICENSE`.
-
-```
-MIT License
-
-Copyright (c) 2026 xanpavle
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
 ## bcdec and bcdec_rs
 
 Swofty UI's BC7 texture decoder, `tools/swofty-ui/static/bc7.js`, is a JavaScript port of bcdec_rs 0.2.0 from <https://github.com/ScanMountGoat/image_dds>, which is itself a port of bcdec by Sergii Kudlai, <https://github.com/iOrange/bcdec>. bcdec_rs is MIT-licensed. bcdec is available under the MIT licence or the Unlicense; Swofty UI uses it under the MIT licence.

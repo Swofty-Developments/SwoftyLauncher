@@ -36,7 +36,6 @@ t "swofty::json unit test" native/test/run_json_test.sh
 t "Live apply paths (scheduler, put-back, context, budgets, sizing, stat ids, reports)" native/test/run_apply_test.sh
 t "Track registries (seeds, record lowering, parity with the launcher's track activation)" native/test/run_tracks_test.sh
 t "Save sandbox host and Wine test" native/test/run_save_sandbox_test.sh
-t "RE-Optimization unit and Wine hook tests" addons/re-optimization/native/test/run.sh
 t "Runtime assets Wine test" native/test/run_runtime_assets_test.sh
 t "Box track lists (fit rules, calendar and More tracks, per-box entries, fuel plan, guard decision)" native/test/run_track_lists_test.sh
 t "Career snapshots (swofty_registry entry, freezes, budgets, migration, fixtures)" native/test/run_snapshots_test.sh

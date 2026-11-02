@@ -70,13 +70,11 @@ jobs:
               - templates/addon/native/include/**
               - addons/swoftymod/swofty.json
               - apps/launcher/assets/**
-            # native/build.sh bundles the whole re-optimization addon, so its manifest and README count too.
             native:
               - *always
               - native/**
               - re/**
               - addons/*/native/**
-              - addons/re-optimization/**
               - packages/sdk/**
               - tools/pack_addon.py
               - tools/rtassets.py
@@ -410,29 +408,11 @@ jobs:
         with:
           path: |
             native/build/zig-cache
-            addons/re-optimization/native/build/zig-cache
           key: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-${{ hashFiles('native/**', 'addons/*/native/**', 'packages/sdk/include/**') }}
           restore-keys: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-
 
-      - name: Build version.dll, swofty_core.dll and the bundled addons
+      - name: Build version.dll and swofty_core.dll
         run: native/build.sh
-
-      - name: Bundled addon packages
-        run: |
-          python3 - <<'EOF'
-          import glob, json, zipfile
-          pkgs = sorted(glob.glob('native/bundled/*.swoftyaddon'))
-          assert pkgs, 'native/build.sh packaged no bundled addons'
-          for p in pkgs:
-              z = zipfile.ZipFile(p)
-              names = z.namelist()
-              assert 'swofty.json' in names, f'{p}: no swofty.json at the root'
-              m = json.loads(z.read('swofty.json'))
-              for n in m.get('operations', {}).get('native', []):
-                  assert n['dll'] in names, f"{p}: {n['dll']} is missing"
-              assert not any(n.startswith('native/build/') for n in names), f'{p}: build files packaged'
-              print(p, names)
-          EOF
 
       - name: Wine and Xvfb
         timeout-minutes: 10
@@ -456,7 +436,6 @@ jobs:
         with:
           path: |
             native/build/zig-cache
-            addons/re-optimization/native/build/zig-cache
           key: ${{ steps.zig-cache.outputs.cache-primary-key }}
 
   # Every push to main also builds the release binaries: the run keeps the release cache warm, and a tag on
