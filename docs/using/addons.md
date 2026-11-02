@@ -73,7 +73,7 @@ Classic Career         Needs Classic Seasons (shared) above it     [Move Classic
 Progressive Career     Needs F1 2019, which is off                 [Turn F1 2019 on]
 Classic Career         Needs F1 2020, which isn't installed        [Install F1 2020]
 More Driver Models     Changes rows that Classic Seasons adds, so it needs Classic Seasons above it
-Supercars              Supercars adds teams to every session (with Pedro's Mugello)
+F1 2012 Season         F1 2012 has more teams than this track has garages (with Pedro's Mugello)
 ```
 
 - **Needs X above it** is a required addon, or one the addon loads after, listed below it. **Move X above** puts X directly above the row. **Order for me** reorders the whole profile with the smallest change that puts every addon below what it needs, and keeps the rest of your order. If addons need each other above themselves, the banner names them and **Order for me** is not offered.
@@ -83,7 +83,7 @@ Supercars              Supercars adds teams to every session (with Pedro's Mugel
 - Addons in Built In, such as Simplified for Swofty, don't move, so they get no **Needs X above it** or **Changes rows that X adds** box and **Order for me** leaves them in place. The build still loads them after every addon they require or load after.
 - **Your career K needs X, which is off** shows on X's row when a saved career lists X among the addons it needs. It also shows when X is not installed or outside the range the career needs.
 - An amber **loads below it and replaces N of its changes** is a conflict from the last check. **Move X above** makes the row win instead.
-- An amber clash is a known bad pairing, such as Supercars with a community track. The list is in `packages/core/src/order_clashes.json`.
+- An amber clash is a known bad pairing, such as F1 2012 Season with Mugello. The list is in `packages/core/src/order_clashes.json`.
 
 The Play log lists a required addon listed below its dependent as a warning. The build loads it first anyway.
 

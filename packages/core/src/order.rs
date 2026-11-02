@@ -773,15 +773,20 @@ mod tests {
     #[test]
     fn known_clashes_are_amber() {
         let mut all = installed();
-        all.extend([m("f.supercars", ""), m("t.mugello", "")]);
-        let p = profile(&["f.supercars", "t.mugello", "cs.base"]);
+        let json = r#"{"schema_version":1,"id":"f.f2012","name":"F1 2012 Season","version":"1.0.0",
+            "author":"t","compat":{"game":"f1_25"}}"#;
+        all.extend([
+            ("f.f2012".to_owned(), AddonManifest::parse(json).unwrap()),
+            m("t.mugello", ""),
+        ]);
+        let p = profile(&["f.f2012", "t.mugello", "cs.base"]);
         let found = clashes(&p, &all, &|id| id.starts_with("t."));
         assert_eq!(found.len(), 1);
         assert_eq!(
             (found[0].addon.as_str(), found[0].other.as_str()),
-            ("f.supercars", "t.mugello")
+            ("f.f2012", "t.mugello")
         );
         assert_eq!(found[0].severity(), Severity::Amber);
-        assert!(clashes(&profile(&["f.supercars", "cs.base"]), &all, &|_| false).is_empty());
+        assert!(clashes(&profile(&["f.f2012", "cs.base"]), &all, &|_| false).is_empty());
     }
 }
