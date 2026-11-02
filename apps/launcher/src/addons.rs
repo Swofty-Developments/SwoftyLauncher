@@ -1307,7 +1307,13 @@ impl Shell {
                 ))
         });
         let saves = self.saves_banner(false, p, cx);
-        let hidden = self.library.addons.len() - self.library.listed().count();
+        let hidden = self
+            .library
+            .addons
+            .iter()
+            .filter(|m| m.in_profile && m.track)
+            .count()
+            - self.library.listed().filter(|m| m.track).count();
         let tracks = self.library.tracks_page.filter(|_| hidden > 0).map(|i| {
             h_flex()
                 .px(px(GUTTER))
@@ -1756,6 +1762,16 @@ impl Shell {
                         .flex_shrink_0()
                         .text_color(p.text_placeholder)
                         .child(format!("{matched} of {total}")),
+                )
+            })
+            .when(!vanilla && self.library.not_in_profile().next().is_some(), |d| {
+                d.child(
+                    Button::new("add-to-profile")
+                        .ghost()
+                        .xsmall()
+                        .icon(IconName::Plus)
+                        .label("Add addons")
+                        .on_click(cx.listener(|this, _, window, cx| this.add_to_profile(window, cx))),
                 )
             })
             .when(!vanilla, |d| {
@@ -2711,16 +2727,37 @@ impl Shell {
                     .into_any_element(),
             );
         }
-        let remove = (m.source != Source::Builtin && !m.locked).then(|| {
+        let mut remove: Vec<AnyElement> = Vec::new();
+        if m.source != Source::Builtin && !m.locked {
+            let profile = &self.library.profile;
+            if !profile.is_vanilla() && m.in_profile {
+                let (id, name) = (man.id.clone(), man.name.clone());
+                remove.push(
+                    Button::new("detail-take-out")
+                        .ghost()
+                        .small()
+                        .icon(IconName::Minus)
+                        .label(format!("Remove from {}", profile.name))
+                        .on_click(cx.listener(move |this, _, window, cx| {
+                            this.remove_from_profile(&id, &name, window, cx)
+                        }))
+                        .into_any_element(),
+                );
+            }
             let (id, name) = (man.id.clone(), man.name.clone());
-            Button::new("detail-remove")
-                .ghost()
-                .small()
-                .icon(IconName::Trash)
-                .label("Remove")
-                .text_color(p.error)
-                .on_click(cx.listener(move |this, _, window, cx| this.remove_addon(&id, &name, window, cx)))
-        });
+            remove.push(
+                Button::new("detail-remove")
+                    .ghost()
+                    .small()
+                    .icon(IconName::Trash)
+                    .label("Uninstall")
+                    .text_color(p.error)
+                    .on_click(
+                        cx.listener(move |this, _, window, cx| this.remove_addon(&id, &name, window, cx)),
+                    )
+                    .into_any_element(),
+            );
+        }
         let settings = if man.options.is_empty() {
             None
         } else {
@@ -2741,7 +2778,7 @@ impl Shell {
                         .child(text),
                 )
             })
-            .when(!actions.is_empty() || remove.is_some(), |d| {
+            .when(!actions.is_empty() || !remove.is_empty(), |d| {
                 d.child(
                     h_flex()
                         .flex_wrap()

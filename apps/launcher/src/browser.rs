@@ -266,6 +266,8 @@ impl Job {
 enum Offer {
     Install,
     Installed(semver::Version),
+    /// Installed, but not one of this profile's addons.
+    Elsewhere,
     Update(semver::Version, semver::Version),
     TooOld,
     Working(Progress),
@@ -999,6 +1001,29 @@ impl Shell {
             .map(|m| m.manifest.version.clone())
     }
 
+    /// Adds an installed addon to this profile, off, from the Addon Browser.
+    pub(crate) fn add_one_to_profile(&mut self, id: &str, window: &mut Window, cx: &mut Context<Self>) {
+        let profile = self.library.profile.name.clone();
+        match self.store.update_profile(&profile, |p| p.add_addon(id)) {
+            Ok(()) => {
+                let name = self
+                    .library
+                    .addons
+                    .iter()
+                    .find(|m| m.manifest.id == id)
+                    .map_or(id, |m| m.manifest.name.as_str());
+                window.push_notification(Notification::success(format!("Added {name} to {profile}")), cx);
+            }
+            Err(e) => {
+                crate::app_log::action("add addon to profile")
+                    .addon(id)
+                    .failed(&e);
+                window.push_notification(Notification::error(e.to_string()), cx);
+            }
+        }
+        self.reload(cx);
+    }
+
     fn offer(&self, a: &Addon) -> Offer {
         if let Some(job) = self.browser.working.get(&a.id) {
             return Offer::Working(job.progress());
@@ -1006,7 +1031,13 @@ impl Shell {
         if self.browser.failed.contains_key(&a.id) {
             return Offer::Failed;
         }
+        let elsewhere = self
+            .library
+            .addons
+            .iter()
+            .any(|m| m.manifest.id == a.id && !m.in_profile);
         match (a.offered(&current_version()), self.installed_version(&a.id)) {
+            (_, Some(_)) if elsewhere => Offer::Elsewhere,
             (Some(v), Some(m)) if v.version > m => Offer::Update(m, v.version.clone()),
             (_, Some(m)) => Offer::Installed(m),
             (Some(_), None) if self.needs_of(a).1.is_some() => Offer::Blocked,
@@ -1571,6 +1602,17 @@ impl Shell {
                     .icon(IconName::Check)
                     .label(format!("Installed v{v}"))
                     .disabled(true);
+            }
+            Offer::Elsewhere => {
+                let label = format!("Add to {}", self.library.profile.name);
+                return button
+                    .primary()
+                    .icon(IconName::Plus)
+                    .label(label)
+                    .on_click(cx.listener(move |this, _, window, cx| {
+                        cx.stop_propagation();
+                        this.add_one_to_profile(&target, window, cx);
+                    }));
             }
             Offer::TooOld => {
                 return button.outline().label("Needs a newer launcher").disabled(true);

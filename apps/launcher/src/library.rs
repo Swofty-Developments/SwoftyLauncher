@@ -16,6 +16,9 @@ use swofty_core::view::SectionSpec;
 pub struct AddonItem {
     pub manifest: AddonManifest,
     pub enabled: bool,
+    /// One of the profile's addons, so the Addons page lists it: built-in addons
+    /// always are, and on vanilla every installed addon is.
+    pub in_profile: bool,
     pub locked: bool,
     pub icon: Option<AddonIcon>,
     /// Only tracks (see [`swofty_core::tracks::is_track_addon`]): listed on an
@@ -207,7 +210,9 @@ fn place(folders: &Folders, a: &AddonItem) -> Option<Key> {
 }
 
 fn listed(addons: &[AddonItem], tracks_page: Option<usize>) -> impl Iterator<Item = &AddonItem> {
-    addons.iter().filter(move |m| !(m.track && tracks_page.is_some()))
+    addons
+        .iter()
+        .filter(move |m| m.in_profile && !(m.track && tracks_page.is_some()))
 }
 
 fn section_icon(store: &Store, addon: &str, section: &str) -> Option<AddonIcon> {
@@ -284,14 +289,16 @@ impl Library {
             .values()
             .map(|m| {
                 let package = !m.is_builtin() && swofty_core::dbedit::package::is_package(store, &m.id);
+                let source = Source::of(store, m, package);
                 AddonItem {
                     enabled: enabled.contains(&m.id),
+                    in_profile: profile.is_vanilla() || source == Source::Builtin || profile.has(&m.id),
                     locked: registry.get(&m.id).is_some_and(|e| e.locked),
                     icon: addon_icon(store, &registry, m),
                     track: !m.is_builtin()
                         && swofty_core::tracks::is_track_addon(&store.addons_dir().join(&m.id), m),
                     package,
-                    source: Source::of(store, m, package),
+                    source,
                     left_out: match m.is_builtin() {
                         true => Vec::new(),
                         false => swofty_core::tracks::unusable(store, &m.id, m)
@@ -324,7 +331,7 @@ impl Library {
         let order = profile.addons.iter().map(|a| a.id.clone()).chain(
             addons
                 .iter()
-                .filter(|a| !listed.contains(a.manifest.id.as_str()))
+                .filter(|a| a.in_profile && !listed.contains(a.manifest.id.as_str()))
                 .map(|a| a.manifest.id.clone()),
         );
         let mut entries = swofty_core::folders::group(order, place_of);
@@ -407,6 +414,11 @@ impl Library {
         listed(&self.addons, self.tracks_page)
     }
 
+    /// Installed addons the profile doesn't have, which its Add addons dialog offers.
+    pub fn not_in_profile(&self) -> impl Iterator<Item = &AddonItem> {
+        self.addons.iter().filter(|m| !m.in_profile)
+    }
+
     pub fn active(&self) -> Option<&ProfileItem> {
         self.profiles.iter().find(|p| p.name == self.profile.name)
     }
@@ -447,6 +459,7 @@ mod tests {
         AddonItem {
             manifest,
             enabled: true,
+            in_profile: true,
             locked: false,
             icon: None,
             track,
@@ -486,6 +499,15 @@ mod tests {
         assert_eq!(ids(tracks_page(&other)), ["t.mod"]);
         assert_eq!(addons[1].category(), Some(Category::Tracks));
         assert_eq!(addons[0].category(), None);
+    }
+
+    #[test]
+    fn lists_only_the_profile_addons() {
+        let mut other = addon("t.other", false);
+        other.in_profile = false;
+        let addons = [addon("t.mine", false), other];
+        let ids: Vec<&str> = listed(&addons, None).map(|m| m.manifest.id.as_str()).collect();
+        assert_eq!(ids, ["t.mine"]);
     }
 
     #[test]

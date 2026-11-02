@@ -1182,6 +1182,16 @@ impl Shell {
                 .label(progress.short())
                 .disabled(true)
                 .into_any_element(),
+            Offer::Elsewhere => Button::new(key)
+                .primary()
+                .xsmall()
+                .icon(IconName::Plus)
+                .label("Add")
+                .on_click(cx.listener(move |this, _, window, cx| {
+                    cx.stop_propagation();
+                    this.add_one_to_profile(&target, window, cx);
+                }))
+                .into_any_element(),
             Offer::Installed(_) | Offer::Update(..) => {
                 tag("Installed", p).text_color(p.success).into_any_element()
             }
