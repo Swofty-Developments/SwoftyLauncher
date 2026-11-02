@@ -88,6 +88,44 @@ int main()
     hold(slot, nullptr);
     CHECK(rebuilt.refs == 1);
 
+    Written<Res, int> view;
+    CHECK(rewrite(view, &depth, 46));
+    CHECK(!rewrite(view, &depth, 46));
+    CHECK(rewrite(view, &depth, 41) && view.f == 41);
+    CHECK(rewrite(view, &rebuilt, 41) && view.r == &rebuilt);
+    CHECK(rewrite(view, static_cast<Res *>(nullptr), 41) && !rewrite(view, static_cast<Res *>(nullptr), 41));
+    view.set = false;
+    CHECK(rewrite(view, static_cast<Res *>(nullptr), 41));
+
+    struct List {};
+    List la, lb, many[3];
+    SideMarks<List, Res, int, 8, 8> side;
+    CHECK(!side.find(&la, false));
+    SideMark<List, Res, int> *a = side.find(&la, true);
+    CHECK(a && side.find(&la, false) == a && side.find(&lb, true) != a && !side.full());
+    bool marked = a->marked || a->depth;
+    note(*a, marked, false, true, &rebuilt, 0);
+    CHECK(!a->ui && !marked);
+    note(*a, marked, true, false, &depth, 16);
+    CHECK(a->depth == &depth && a->depth_state == 16 && marked);
+    note(*a, marked, false, true, &rebuilt, 0);
+    CHECK(a->ui);
+    SideMark<List, Res, int> *b = side.find(&lb, false);
+    b->marked = true;
+    marked = b->marked || b->depth;
+    note(*b, marked, false, true, &rebuilt, 0);
+    CHECK(b->ui && !b->depth);
+
+    CHECK(!placed_lately(0, LONG_AGO) && !placed_lately(5000, LONG_AGO));
+    CHECK(placed_lately(100, 100) && placed_lately(101, 100) && !placed_lately(102, 100) && !placed_lately(103, 100));
+    CHECK(placed_lately(0, 0u - 1) && !placed_lately(1, 0u - 1));
+
+    SideMarks<List, Res, int, 2, 2> cramped;
+    CHECK(cramped.find(&many[0], true) && cramped.find(&many[1], true));
+    CHECK(!cramped.find(&many[2], false) && !cramped.full());
+    CHECK(!cramped.find(&many[2], true) && cramped.full());
+    CHECK(cramped.find(&many[0], false) && cramped.find(&many[1], false));
+
     if (failed)
         return 1;
     std::printf("postfx logic: all checks passed\n");

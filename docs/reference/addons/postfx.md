@@ -350,7 +350,8 @@ The passes run once a frame, at the first of these the frame reaches:
 
 - While the HUD reads the finished picture, as when paused: the first barrier of the HUD's list that reads the back buffer.
 - Otherwise, inside the game's own command list, at the step where it keeps a copy of the picture without the HUD.
-- Where the game ends that list while the step goes on elsewhere: in a list of the core's own, submitted right after it.
+- Where the game ends that list inside the step and draws the rest of the picture in its next list: in that next list, where it closes the step with the back buffer bound as its render target (`path=in-list (split step)` in the trace).
+- Where the game ends that list while the step goes on elsewhere and the next list does not draw into the back buffer: in a list of the core's own, submitted right after it.
 
 In the game's lists the core records the passes and then puts back the pipeline and bindings it changed. Every 60 s for the first 30 minutes, the log counts where they ran:
 
@@ -389,11 +390,17 @@ SWOFTY_POSTFX_CAPTURE=C:\captures
 # log one line for each of the next N presented frames: where the passes ran, how many,
 # the view, and why a frame had none; a swofty/postfx.trace file holding N does the same in game
 SWOFTY_POSTFX_TRACE=600
+
+# a swofty/postfx.burst file holding N (up to 240) reads back the next N frames as the game hands
+# them to Present and logs each one's mean colour; with this set, each of them is also written
+# to the folder as final-<frame>.ppm
+SWOFTY_POSTFX_BURST_DUMP=C:\frames
 ```
 
 ```text
-[postfx] trace present=41 path=in-list runs=1 passes=3/3 view=cockpit flags=- valid=1 serial=7 fg=off back=000000006E2A1C10
-[postfx] trace present=42 path=none runs=0 passes=0/1 view=chase_far flags=- valid=1 serial=8 fg=off back=0000000000000000 why=no pass runs in this view skipped=fisheye (not in one of its views)
+[postfx] trace present=41 f=1204 path=in-list runs=1 passes=3/3 view=cockpit flags=- valid=1 serial=7 fg=off back=000000006E2A1C10
+[postfx] trace present=42 f=1205 path=none runs=0 passes=0/1 view=chase_far flags=- valid=1 serial=8 fg=off back=0000000000000000 why=no pass runs in this view skipped=fisheye (not in one of its views)
+[postfx] burst f=1204 mean=0.3612,0.3487,0.3311 sat=0.2042
 ```
 
 `SWOFTY_FRAME_CAPTURE` writes the presented frame with the HUD ([logging switches](/reference/std/logging)).

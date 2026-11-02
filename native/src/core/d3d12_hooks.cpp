@@ -37,6 +37,8 @@ Subs<ExecFn> execs;
 Subs<BarrierFn> barriers;
 Subs<SetNameFn> setnames;
 Subs<ResetFn> resets;
+Subs<RenderTargetsFn> render_targets;
+Subs<RtvFn> rtvs;
 
 template <class T> void release(T *&p)
 {
@@ -52,7 +54,7 @@ std::vector<std::pair<void *, UINT>> pending_color_space;
 safetyhook::InlineHook h_present, h_resize, h_resize1, h_color_space, h_create, h_create_hwnd, h_create_core,
     h_create_comp, h_exec, h_barrier, h_setname;
 HMODULE impl_create, impl_hwnd, impl_core, impl_comp;
-constexpr size_t SETNAME_SLOT = 6, EXEC_SLOT = 10, BARRIER_SLOT = 26;
+constexpr size_t SETNAME_SLOT = 6, EXEC_SLOT = 10, BARRIER_SLOT = 26, RTV_SLOT = 20, OM_SLOT = 46;
 thread_local int creating;
 std::atomic<bool> in_present;
 
@@ -485,6 +487,24 @@ void STDMETHODCALLTYPE compute_view_hook(ID3D12GraphicsCommandList *l, UINT i, D
     }
 }
 
+safetyhook::InlineHook h_rtv, h_om;
+
+void STDMETHODCALLTYPE rtv_hook(ID3D12Device *d, ID3D12Resource *r, const D3D12_RENDER_TARGET_VIEW_DESC *desc,
+                                D3D12_CPU_DESCRIPTOR_HANDLE at)
+{
+    h_rtv.call<void>(d, r, desc, at);
+    for (int i = 0, k = rtvs.n.load(); i < k; i++)
+        rtvs.fns[i](r, at);
+}
+
+void STDMETHODCALLTYPE om_hook(ID3D12GraphicsCommandList *l, UINT n, const D3D12_CPU_DESCRIPTOR_HANDLE *rtv,
+                               BOOL single, const D3D12_CPU_DESCRIPTOR_HANDLE *dsv)
+{
+    for (int i = 0, k = render_targets.n.load(); i < k; i++)
+        render_targets.fns[i](l, n, rtv, single);
+    h_om.call<void>(l, n, rtv, single, dsv);
+}
+
 HRESULT STDMETHODCALLTYPE setname_hook(ID3D12Object *o, LPCWSTR name)
 {
     for (int i = 0, k = setnames.n.load(); i < k; i++)
@@ -599,6 +619,16 @@ void on_barrier(BarrierFn fn)
 void on_setname(SetNameFn fn)
 {
     setnames.add(fn);
+}
+
+void on_render_targets(RenderTargetsFn fn)
+{
+    render_targets.add(fn);
+}
+
+void on_create_rtv(RtvFn fn)
+{
+    rtvs.add(fn);
 }
 
 void on_reset(ResetFn fn)
@@ -832,12 +862,18 @@ bool arm_device()
                          reinterpret_cast<void *>(&barrier_hook), "ID3D12GraphicsCommandList::ResourceBarrier") &&
                  install(h_exec, (*reinterpret_cast<void ***>(q))[EXEC_SLOT], reinterpret_cast<void *>(&exec_hook),
                          "ID3D12CommandQueue::ExecuteCommandLists");
+        if (ok && install(h_rtv, (*reinterpret_cast<void ***>(dev))[RTV_SLOT], reinterpret_cast<void *>(&rtv_hook),
+                          "ID3D12Device::CreateRenderTargetView") &&
+            !install(h_om, (*reinterpret_cast<void ***>(list))[OM_SLOT], reinterpret_cast<void *>(&om_hook),
+                     "ID3D12GraphicsCommandList::OMSetRenderTargets"))
+            h_rtv = {};
         if (list)
             list->Close();
     }
     if (ok)
         swofty::log("[d3d12] device hooks armed: SetName (vt+0x30), ResourceBarrier (vt+0xd0), ExecuteCommandLists "
-                    "(vt+0x50)");
+                    "(vt+0x50)%s",
+                    h_om ? ", CreateRenderTargetView (vt+0xa0), OMSetRenderTargets (vt+0x170)" : "");
     release(q);
     release(list);
     release(alloc);
