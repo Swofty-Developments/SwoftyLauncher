@@ -35,6 +35,17 @@ const WINDOW_BYTES: u64 = if cfg!(test) { 64 } else { 4 * 1024 };
 /// Stalled connections one download reconnects through before it gives up.
 const STALLS: u32 = 5;
 
+/// Chunk size for transport reads and disk streaming.
+/// 256 KB balances low syscall / context-switch overhead with smooth progress updates,
+/// matching modern TCP window scaling and NVMe / SSD write characteristics.
+const CHUNK_SIZE: usize = 256 * 1024;
+
+/// Capacity of the buffer pool and transfer channel.
+/// 16 buffers of 256 KB provide a 4 MB pipelined cushion. This absorbs disk flush
+/// spikes and hashing latency without blocking the network reader thread, keeping the
+/// TCP receive window open and preventing TCP ZeroWindow throttling by remote CDNs.
+const CHANNEL_CAPACITY: usize = 16;
+
 /// What a download that kept breaking off says to do.
 pub const ADVICE: &str = "the connection kept breaking during the download, usually from antivirus HTTPS or web \
      scanning, a VPN or a proxy; turn those off or try another network, such as a phone hotspot, then try again";
@@ -175,12 +186,19 @@ fn attempt(
             f.url, f.lister, f.size
         ))));
     }
-    let (tx, rx) = sync_channel::<std::io::Result<Vec<u8>>>(4);
+    let (tx, rx) = sync_channel::<std::io::Result<Vec<u8>>>(CHANNEL_CAPACITY);
+    let (free_tx, free_rx) = sync_channel::<Vec<u8>>(CHANNEL_CAPACITY);
+    for _ in 0..CHANNEL_CAPACITY {
+        let _ = free_tx.send(vec![0; CHUNK_SIZE]);
+    }
     std::thread::spawn(move || {
         let mut body = response.into_body();
         let mut reader = body.with_config().limit(left + 1).reader();
         loop {
-            let mut buf = vec![0; 64 * 1024];
+            let mut buf = free_rx.recv().unwrap_or_else(|_| vec![0; CHUNK_SIZE]);
+            if buf.len() < CHUNK_SIZE {
+                buf.resize(CHUNK_SIZE, 0);
+            }
             let read = reader.read(&mut buf).map(|n| {
                 buf.truncate(n);
                 buf
@@ -209,6 +227,7 @@ fn attempt(
                 file.write_all(&chunk)
                     .map_err(|e| Attempt::Failed(io_err(to)(e)))?;
                 progress(got.len);
+                let _ = free_tx.try_send(chunk);
             }
             Err(RecvTimeoutError::Timeout) => {}
             Err(RecvTimeoutError::Disconnected) => {

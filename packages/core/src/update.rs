@@ -350,8 +350,13 @@ pub fn download(asset: &Asset, to: &Path, progress: &dyn Fn(u64)) -> Result<(u64
         too_long: &too_long,
     };
     let mut open = |from: u64| {
-        let mut request =
-            builder(url, false, Some(Duration::from_secs(30 * 60))).header("Accept-Encoding", "identity");
+        let left = asset.size.saturating_sub(from);
+        let body_timeout = crate::catalog::body_timeout(left);
+        let mut request = builder(url, false, None)
+            .config()
+            .timeout_recv_body(Some(body_timeout))
+            .build()
+            .header("Accept-Encoding", "identity");
         if from > 0 {
             request = request.header("Range", format!("bytes={from}-"));
         }
