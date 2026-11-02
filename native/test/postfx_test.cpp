@@ -116,6 +116,10 @@ int main()
     note(*b, marked, false, true, &rebuilt, 0);
     CHECK(b->ui && !b->depth);
 
+    CHECK(!placed_lately(0, LONG_AGO) && !placed_lately(5000, LONG_AGO));
+    CHECK(placed_lately(100, 100) && placed_lately(101, 100) && !placed_lately(102, 100) && !placed_lately(103, 100));
+    CHECK(placed_lately(0, 0u - 1) && !placed_lately(1, 0u - 1));
+
     SideMarks<List, Res, int, 2, 2> cramped;
     CHECK(cramped.find(&many[0], true) && cramped.find(&many[1], true));
     CHECK(!cramped.find(&many[2], false) && !cramped.full());

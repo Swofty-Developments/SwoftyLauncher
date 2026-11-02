@@ -26,6 +26,9 @@ using ExecFn = bool (*)(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const 
 using BarrierFn = bool (*)(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers);
 using SetNameFn = void (*)(ID3D12Object *object, LPCWSTR name);
 using ResetFn = void (*)(ID3D12GraphicsCommandList *list);
+using RenderTargetsFn = void (*)(ID3D12GraphicsCommandList *list, UINT n, const D3D12_CPU_DESCRIPTOR_HANDLE *rtvs,
+                                 BOOL single_range);
+using RtvFn = void (*)(ID3D12Resource *res, D3D12_CPU_DESCRIPTOR_HANDLE at);
 
 void on_present(PresentFn fn);
 void on_presented(PresentedFn fn);
@@ -34,6 +37,8 @@ void on_exec(ExecFn fn);
 void on_barrier(BarrierFn fn);
 void on_setname(SetNameFn fn);
 void on_reset(ResetFn fn);
+void on_render_targets(RenderTargetsFn fn);
+void on_create_rtv(RtvFn fn);
 
 bool arm_swapchain();
 bool arm_device();

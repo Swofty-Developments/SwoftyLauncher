@@ -350,7 +350,8 @@ The passes run once a frame, at the first of these the frame reaches:
 
 - While the HUD reads the finished picture, as when paused: the first barrier of the HUD's list that reads the back buffer.
 - Otherwise, inside the game's own command list, at the step where it keeps a copy of the picture without the HUD.
-- Where the game ends that list while the step goes on elsewhere: in a list of the core's own, submitted right after it.
+- Where the game ends that list inside the step and draws the rest of the picture in its next list: in that next list, where it closes the step with the back buffer bound as its render target (`path=in-list (split step)` in the trace).
+- Where the game ends that list while the step goes on elsewhere and the next list does not draw into the back buffer: in a list of the core's own, submitted right after it.
 
 In the game's lists the core records the passes and then puts back the pipeline and bindings it changed. Every 60 s for the first 30 minutes, the log counts where they ran:
 

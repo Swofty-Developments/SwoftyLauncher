@@ -148,6 +148,16 @@ inline uint32_t groups(uint32_t size, uint32_t threads)
     return threads ? (size + threads - 1) / threads : 0;
 }
 
+// A frame count far enough back that the passes count as not run lately.
+inline constexpr unsigned LONG_AGO = 0u - 8;
+
+// Whether the passes ran on a back buffer at frame at, seen at frame now, within this use of it. A back
+// buffer comes round again two or more frames later.
+inline bool placed_lately(unsigned now, unsigned at)
+{
+    return now - at < 2;
+}
+
 // A view a slot wrote into one entry of its descriptor tables: the resource and its format.
 template <class R, class F> struct Written {
     R *r = nullptr;
@@ -169,7 +179,7 @@ template <class R, class F> bool rewrite(Written<R, F> &v, R *r, F f)
 // lock by the thread recording the list.
 template <class L, class R, class S> struct SideMark {
     std::atomic<L *> list{nullptr};
-    std::atomic<R *> depth{nullptr};
+    std::atomic<R *> depth{nullptr}, bound{nullptr};
     std::atomic<S> depth_state{};
     std::atomic<bool> ui{false}, marked{false};
 };
