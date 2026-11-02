@@ -397,7 +397,7 @@ Trace trace;
 unsigned trace_left, trace_present;
 ULONGLONG trace_checked;
 
-std::string capture_dir;
+std::string capture_dir, burst_dir;
 ID3D12Resource *capture_rb[2];
 D3D12_PLACED_SUBRESOURCE_FOOTPRINT capture_fp;
 ULONGLONG capture_next, capture_checked;
@@ -1074,6 +1074,8 @@ bool record(const Where &w, int k)
     transition(l, w.back, w.back_state, D3D12_RESOURCE_STATE_COPY_SOURCE);
     transition(l, wk.orig, HOME, D3D12_RESOURCE_STATE_COPY_DEST);
     l->CopyResource(wk.orig, w.back);
+    if (capture_now)
+        capture_copy(l, w.back, 0);
     transition(l, wk.orig, D3D12_RESOURCE_STATE_COPY_DEST, HOME);
     for (auto &t : textures)
         if (!t.file.empty() && !t.uploaded && t.res)
@@ -1466,16 +1468,17 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
             (b.Transition.StateAfter & READ_STATES) && b.Flags == D3D12_RESOURCE_BARRIER_FLAG_NONE && !leaving)
             leaving = b.Transition.pResource;
     }
-    if (final_left && device && m && m->target) {
+    if (final_left && device) {
         for (UINT i = 0; i < n; i++) {
             const D3D12_RESOURCE_BARRIER &b = barriers[i];
-            if (b.Type != D3D12_RESOURCE_BARRIER_TYPE_TRANSITION || b.Transition.pResource != m->target ||
+            if (b.Type != D3D12_RESOURCE_BARRIER_TYPE_TRANSITION || !(watched_bits(b.Transition.pResource) & W_BACK) ||
                 b.Transition.StateBefore != D3D12_RESOURCE_STATE_RENDER_TARGET || b.Transition.StateAfter != 0)
                 continue;
+            ID3D12Resource *shown = b.Transition.pResource;
             FinalProbe &fp = finals[final_at % 256];
             if (fp.pending)
                 break;
-            D3D12_RESOURCE_DESC d = m->target->GetDesc();
+            D3D12_RESOURCE_DESC d = shown->GetDesc();
             if (!fp.rb) {
                 D3D12_RESOURCE_DESC box = d;
                 box.Width = final_w = UINT(d.Width) * 8 / 10;
@@ -1487,16 +1490,16 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
             }
             if (!fp.rb)
                 break;
-            transition(list, m->target, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
+            transition(list, shown, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
             D3D12_TEXTURE_COPY_LOCATION to{}, from{};
             to.pResource = fp.rb;
             to.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
             to.PlacedFootprint = final_fp;
-            from.pResource = m->target;
+            from.pResource = shown;
             from.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
             D3D12_BOX src{UINT(d.Width) / 10, d.Height / 8, 0, UINT(d.Width) / 10 + final_w, d.Height / 8 + final_h, 1};
             list->CopyTextureRegion(&to, 0, 0, 0, &from, &src);
-            transition(list, m->target, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+            transition(list, shown, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
             fp.pending = true;
             fp.frame = frame_count;
             fp.land = frame_count + 60;
@@ -1797,9 +1800,9 @@ void log_trace()
     if (!trace_left)
         return;
     trace_left--;
-    swofty::log("[postfx] trace present=%u path=%s runs=%u passes=%u/%u view=%s flags=%s valid=%d serial=%u fg=%s "
+    swofty::log("[postfx] trace present=%u f=%u path=%s runs=%u passes=%u/%u view=%s flags=%s valid=%d serial=%u fg=%s "
                 "back=%p%s%s%s%s",
-                trace_present++, trace.path, trace.runs, trace.ran, trace.live,
+                trace_present++, frame_count, trace.path, trace.runs, trace.ran, trace.live,
                 std::string(postfx::view_text(trace.view.kind)).c_str(), postfx::flag_text(trace.view.flags).c_str(),
                 int(trace.view.valid), trace.view.serial, fg_on.load() ? "on" : "off", static_cast<void *>(trace.back),
                 trace.why ? " why=" : "", trace.why ? trace.why : "", trace.skipped.empty() ? "" : " skipped=",
@@ -1847,6 +1850,12 @@ void final_land()
             continue;
         double m[4];
         grid_mean(mapped + final_fp.Offset, final_fp.Footprint.RowPitch, final_w, final_h, frame.view, m);
+        if (!burst_dir.empty()) {
+            char file[64];
+            snprintf(file, sizeof file, "\\final-%08u.ppm", fp.frame);
+            write_ppm(burst_dir + file, mapped + final_fp.Offset, final_fp.Footprint.RowPitch, final_w, final_h,
+                      frame.view);
+        }
         D3D12_RANGE none{0, 0};
         fp.rb->Unmap(0, &none);
         swofty::log("[postfx] burst f=%u mean=%.4f,%.4f,%.4f sat=%.4f", fp.frame, m[0], m[1], m[2], m[3]);
@@ -2021,6 +2030,8 @@ void postfx_setup()
         capture_dir = v;
         capture_file = swofty_root() + L"postfx.capture";
     }
+    if (GetEnvironmentVariableA("SWOFTY_POSTFX_BURST_DUMP", v, sizeof v) && v[0])
+        burst_dir = v;
     if (GetEnvironmentVariableA("SWOFTY_POSTFX_TRACE", v, sizeof v) && v[0])
         trace_left = unsigned(std::strtoul(v, nullptr, 10));
     if (GetEnvironmentVariableA("SWOFTY_POSTFX_ORDER", v, sizeof v) && v[0])
