@@ -159,6 +159,11 @@ pub struct Shell {
     pub(crate) forms: HashMap<String, crate::blocks::FormSlot>,
     pub(crate) searches: HashMap<String, crate::blocks::SearchSlot>,
     pub(crate) sorts: HashMap<String, (String, bool)>,
+    /// User-resized table column widths, keyed by `(table_key, column_key)`.
+    pub(crate) column_widths: HashMap<(String, String), f32>,
+    /// Measured header widths from the last frame, keyed by `(table_key, column_key)`.
+    pub(crate) column_bounds: Rc<std::cell::RefCell<HashMap<(String, String), f32>>>,
+    pub(crate) column_drag: Option<crate::blocks::ColumnDrag>,
     /// The row whose detail panel is open, by table.
     pub(crate) table_rows: HashMap<String, String>,
     /// The scroll position and wheel motion of each addon page of blocks, by addon/section.
@@ -565,6 +570,9 @@ impl Shell {
             forms: HashMap::new(),
             searches: HashMap::new(),
             sorts: HashMap::new(),
+            column_widths: HashMap::new(),
+            column_bounds: Rc::default(),
+            column_drag: None,
             table_rows: HashMap::new(),
             section_scrolls: HashMap::new(),
             table_tops: Rc::default(),
