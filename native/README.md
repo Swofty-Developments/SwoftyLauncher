@@ -74,8 +74,6 @@ Runs `re/tools/bindgen.py`, then cross-compiles the three DLLs with zig for `x86
 
 The launcher takes the files from `loader/` beside its `bin/` folder in a release, from `native/dist/` in a checkout, or from the folder named by `SWOFTY_LOADER_DIR`.
 
-`native/build.sh` also builds the addons a release bundles (`addons/re-optimization`) and packages each as `native/bundled/<id>.swoftyaddon` with `tools/pack_addon.py`. A release ships them in `addons/` beside `bin/`. At start, the launcher installs each package into `$DATA/addons/` switched off (`packages/core/src/bundled.rs`); it reads them from `addons/` beside `bin/`, from `native/bundled/` in a checkout, or from the folder named by `SWOFTY_BUNDLED_DIR`. `native/bundled/` stays outside `native/dist/`, which is copied into the game folder.
-
 ## Loading under Proton
 
 Wine uses its builtin `version.dll` unless the prefix overrides it for the game. The launcher writes `[Software\Wine\AppDefaults\F1_25.exe\DllOverrides] "version"="native,builtin"` into the prefix's `user.reg` for the session and journals it. A Steam session also passes `WINEDLLOVERRIDES=version=n,b` to the game, unless `WINEDLLOVERRIDES` already names `version`, and logs whether the prefix has the override. Windows needs no override.

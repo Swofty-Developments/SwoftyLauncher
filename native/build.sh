@@ -90,19 +90,3 @@ for f in "$DIST/version.dll" "$DIST/swofty/addons/core/swofty_core.dll" "$DIST/s
 done
 md5sum "$DIST"/swofty/addons/core/bindings*.json "$DIST/swofty/addons/core/symbols.tsv" "$DIST/swofty/addons/core/log_channels.tsv" \
     "$DIST/swofty/addons/core/features.json"
-
-# Bundled addons ship next to the loader in a release (addons/ beside loader/) and the launcher installs them
-# switched off. They are packaged into bundled/, never into dist/, because dist/ is copied into the game folder.
-if [[ -z $VARIANT ]]; then
-    rm -rf bundled
-    mkdir -p bundled
-    for addon in ../addons/re-optimization; do
-        if [[ ! -f $addon/native/build.sh || ! -f $addon/swofty.json ]]; then
-            echo "build.sh: $addon has no native/build.sh or swofty.json; not bundled" >&2
-            continue
-        fi
-        "${PIN[@]}" bash "$addon/native/build.sh"
-        python3 ../tools/pack_addon.py "$addon" bundled
-    done
-    md5sum bundled/*.swoftyaddon 2>/dev/null || true
-fi

@@ -60,7 +60,6 @@ jobs:
         with:
           path: |
             native/build/zig-cache
-            addons/re-optimization/native/build/zig-cache
           key: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-${{ hashFiles('native/**', 'addons/*/native/**', 'packages/sdk/include/**') }}
           restore-keys: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-
 
@@ -72,7 +71,6 @@ jobs:
           name: native
           path: |
             native/dist/
-            native/bundled/
 
   # The binaries come from main's CI run for the tagged commit (release-binaries.yml, called by ci.yml), which
   # the maintainer waits for before tagging: this job waits for that run while it is still going and takes its

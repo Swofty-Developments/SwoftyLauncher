@@ -1273,8 +1273,17 @@ mod tests {
         assert_eq!(m(json!({ "category": "helmets" })), Cosmetic);
         assert_eq!(m(json!({ "category": "shaders" })), Cosmetic);
         assert_eq!(m(json!({ "category": "performance" })), Cosmetic);
-        let bundled = include_str!("../../../../addons/re-optimization/swofty.json");
-        assert_eq!(AddonManifest::parse(bundled).unwrap().multiplayer(), Cosmetic);
+        let declared = r#"{
+            "schema_version": 1,
+            "id": "xanpavle.re-optimization",
+            "name": "F1 25 RE-Optimization",
+            "author": "xanpavle",
+            "version": "0.2.5",
+            "kind": ["native"],
+            "compat": { "game": "f1_25", "game_builds": ["=25251167"], "seasons": [] },
+            "multiplayer": "cosmetic"
+        }"#;
+        assert_eq!(AddonManifest::parse(declared).unwrap().multiplayer(), Cosmetic);
         assert_eq!(m(json!({ "category": "cars" })), Gameplay);
         assert_eq!(
             m(json!({ "category": "helmets", "multiplayer": "gameplay" })),
