@@ -1590,7 +1590,7 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
         !passes.empty()) {
         Where w{list, true, nullptr, D3D12_RESOURCE_STATE_RENDER_TARGET, hudless, hudless_now, nullptr,
                 D3D12_RESOURCE_STATE_COMMON, "in-list"};
-        if (leaving && (!m || !m->left_rt)) {
+        if (leaving && (!m || !m->left_rt) && !postfx::placed_lately(frame_count, back_use(leaving).placed_at)) {
             BackUse &u = back_use(leaving);
             hud_read_seen = true;
             hud_read_at = frame_count;
