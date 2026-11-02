@@ -8,7 +8,6 @@ set -uo pipefail
 cd "$(dirname "$0")/../.."
 ROOT=$PWD
 export ZIG_GLOBAL_CACHE_DIR=$ROOT/native/build/zig-cache ZIG_LOCAL_CACHE_DIR=$ROOT/native/build/zig-cache
-export AT_TEST_DIR=${RUNNER_TEMP:-/tmp}/any-team-test
 
 NAMES=()
 CMDS=()
@@ -16,7 +15,6 @@ LOCKS=()
 t() { NAMES+=("$1"); CMDS+=("$2"); LOCKS+=("${3:-}"); }
 
 zig_test() { echo "zig c++ -target x86_64-linux-musl -std=c++23 -O2 $1 -o $2 && ./$2"; }
-cme=addons/career-editor/native
 
 # Both bind 127.0.0.1:21414, the game's LAN port. The Wine test skips its case when the port is taken; the
 # socket hooks test fails, so it goes first.
@@ -30,18 +28,15 @@ t "Test agent Wine test" native/test/run_testagent_test.sh
 # Builds every templates/std addon with its native/build.sh and validates its registry data files.
 t "Standard library templates" "python3 tools/std/templates.py"
 t "Events dispatcher unit test" native/test/run_events_test.sh
-t "Progressive registration test" addons/progressive/native/test/register/run.sh
 t "Content registries (row engine, Classic Seasons lowering, variants, stat-id pools)" native/test/run_content_test.sh
 # Without work/exe/F1_25.exe it runs the synthetic packed image only.
 t "Binding resolver Wine test" native/test/run_bind_test.sh
 t "Career operations planner and SDK calls host test" native/test/run_career_ops_test.sh
-t "Any Team Transfers unit test and build" "addons/any-team-transfers/native/test/run.sh && addons/any-team-transfers/native/build.sh"
 t "swofty::json unit test" native/test/run_json_test.sh
 t "Live apply paths (scheduler, put-back, context, budgets, sizing, stat ids, reports)" native/test/run_apply_test.sh
 t "Track registries (seeds, record lowering, parity with the launcher's track activation)" native/test/run_tracks_test.sh
 t "Save sandbox host and Wine test" native/test/run_save_sandbox_test.sh
 t "RE-Optimization unit and Wine hook tests" addons/re-optimization/native/test/run.sh
-t "Progressive effective records test" addons/progressive/native/test/records/run.sh
 t "Runtime assets Wine test" native/test/run_runtime_assets_test.sh
 t "Box track lists (fit rules, calendar and More tracks, per-box entries, fuel plan, guard decision)" native/test/run_track_lists_test.sh
 t "Career snapshots (swofty_registry entry, freezes, budgets, migration, fixtures)" native/test/run_snapshots_test.sh
@@ -90,15 +85,6 @@ t "Boot watchdog grace unit test" native/test/run_watchdog_grace_test.sh
 t "Pattern scan and scan cache unit test" native/test/run_scan_test.sh
 t "Telemetry feed unit test" "$(zig_test "-I packages/sdk/include native/test/telemetry_feed_test.cpp" telemetry_feed_test)"
 t "Save diagnostics log formatting unit test" "$(zig_test "-I packages/sdk/include native/test/save_diag_test.cpp" save_diag_test)"
-t "Career Mode Editor race number unit test" "$(zig_test "-I $cme/src $cme/test/race_numbers_test.cpp $cme/src/race_numbers.cpp" race_numbers_test)"
-t "Career Mode Editor career instance unit test" "$(zig_test "-I $cme/src $cme/test/instance_test.cpp" instance_test)"
-t "Career Mode Editor points clamp unit test" "$(zig_test "-I $cme/src $cme/test/points_math_test.cpp" points_math_test)"
-t "Career Mode Editor name load unit test" "$(zig_test "-I $cme/src $cme/test/names_load_test.cpp" names_load_test)"
-t "Career Mode Editor weather plan unit test" "$(zig_test "-I $cme/src $cme/test/weather_plan_test.cpp $cme/src/weather_plan.cpp" weather_plan_test)"
-t "Career Mode Editor line-up unit test" "$(zig_test "-I $cme/src $cme/test/lineup_test.cpp $cme/src/lineup.cpp" lineup_test)"
-t "Career Mode Editor entrant bound unit test" "$(zig_test "-I $cme/src $cme/test/entrants_cap_test.cpp" entrants_cap_test)"
-t "Career Mode Editor rating search unit test" "$(zig_test "-I $cme/src $cme/test/rating_solve_test.cpp $cme/src/rating_solve.cpp" rating_solve_test)"
-t "Career Mode Editor calendar rules unit test" "$(zig_test "-I $cme/src $cme/test/calendar_rules_test.cpp $cme/src/calendar_rules.cpp" calendar_rules_test)"
 
 JOBS=${NATIVE_TEST_JOBS:-$(nproc)}
 LOGS=$(mktemp -d)

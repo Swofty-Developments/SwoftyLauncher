@@ -140,4 +140,4 @@ PolyphoniX Native is a shader: the PolyphoniX Native look from Assetto Corsa's C
 | Star glare | `star` | 30 | The six-point star on the brightest highlights |
 | Glare threshold | `threshold` | 82 | How bright a pixel has to be to glow; lower glows more |
 
-Its source is [`addons/polyphonix-native`](https://github.com/Swofty-Developments/SwoftyLauncher/tree/main/addons/polyphonix-native), and it is built on [post-process passes](/reference/addons/postfx).
+Its source is the PolyphoniX Native addon's own repository, and it is built on [post-process passes](/reference/addons/postfx).

@@ -146,7 +146,7 @@ The core logs the first 16 applied writes and every failed one.
 Progressive Career publishes two view-model bools its Team HQ tab reads:
 
 ```cpp
-// addons/progressive/native/src/season.cpp, trimmed
+// Progressive Career's native/src/season.cpp, trimmed
 constexpr const char *kVmCareer = "view_model_data.hud_progressive_career";
 constexpr const char *kVmRnd = "view_model_data.hud_progressive_rnd";
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import math
+import os
 import struct
 import random
 import sys
@@ -9,8 +10,9 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[4]
-sys.path[:0] = [str(ROOT / "addons/classicseasons/classic-seasons/tools"), str(ROOT / "tools"),
-                str(ROOT / "addons/rnd-tyres-thermal/tools")]
+REPOS = Path(os.environ.get("SWOFTY_ADDON_REPOS") or ROOT.parent)
+sys.path[:0] = [str(REPOS / "classic-seasons/classic-seasons/tools"), str(ROOT / "tools"),
+                str(REPOS / "rnd-tyres-thermal/tools")]
 import logos
 
 OUT = Path(__file__).resolve().parent

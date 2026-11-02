@@ -53,7 +53,6 @@ jobs:
               - templates/**
               - addons/builtins/**
               - addons/swoftymod/**
-              - addons/custom-grid-size/**
               - re/db/functions.tsv
               - tools/gamedb/catalog/**
             # The installer crate, its path dependencies (swofty-core, -addon, -formats, -sdk) and what they embed.
@@ -96,17 +95,12 @@ jobs:
               - package.json
               - pnpm-lock.yaml
               - pnpm-workspace.yaml
-            # The registry schemas and examples, the tools that check them, the templates whose data files they validate, and the
-            # venues table with the Classic Seasons calendars made from it.
+            # The registry schemas and examples, the tools that check them, and the templates whose data files they validate.
             std:
               - *always
               - packages/sdk/std/**
               - tools/std/**
               - templates/std/**
-              - addons/classicseasons/*/registry/**
-              - addons/classicseasons/classic-seasons/tools/calendars.py
-              - addons/classicseasons/test/calendars.py
-              - addons/progressive/data/rounds.json
             compat:
               - *always
               - tools/compat/**
@@ -330,10 +324,6 @@ jobs:
       # The native job builds the templates; this checks their registry data files against the schemas.
       - name: Template data files
         run: python3 tools/std/templates.py --no-build
-
-      # The venues table, and each Classic Seasons season's calendar against Progressive's rounds and the schemas.
-      - name: Venues and Classic Seasons calendars
-        run: python3 addons/classicseasons/test/calendars.py
 
   native:
     name: Native loader and Wine test

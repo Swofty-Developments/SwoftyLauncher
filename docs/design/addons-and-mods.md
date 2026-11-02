@@ -33,7 +33,7 @@ The renames and compatibility rules below are already built. In `owned_items` en
 | CLI | `ModsCommand`, `swofty mods list/install/enable/disable` | `AddonsCommand`, `swofty addons list/install/enable/disable` |
 | SDK | `SwoftyModInit`, `SwoftyModInitFn`, `INIT_SYMBOL`, `SWOFTY_MOD()` | `SwoftyAddonInit`, `SwoftyAddonInitFn`, `INIT_SYMBOLS`, `SWOFTY_ADDON()` |
 | Native core | `ModSettings`, `mods[]` in `manager.cpp`, `settings.cpp`, `ui_vm.cpp` | `AddonSettings`, `addons[]` |
-| Repository | `mods/swoftymod`, `mods/custom-grid-size`, `templates/mod` | `addons/swoftymod`, `addons/custom-grid-size`, `templates/addon` |
+| Repository | `mods/swoftymod`, `mods/custom-grid-size`, `templates/mod` | `addons/swoftymod`, `templates/addon`; Custom Grid Size is its own repository |
 | Data dir | `$DATA/mods/<id>/` | `$DATA/addons/<id>/` |
 | Data dir (new) | | `$DATA/addon-data/<id>/` for files an addon owns, `$DATA/cache/addons/<id>/` for its caches |
 | Profile file | `mods` | `addons`, plus a `state` object keyed by addon id |

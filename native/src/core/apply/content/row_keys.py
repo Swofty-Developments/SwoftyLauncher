@@ -4,6 +4,7 @@ launcher's packages/core/src/activation/row_keys.txt.gz (the same lines: `@shape
 table). Run it after that file changes."""
 
 import gzip
+import os
 import json
 from pathlib import Path
 
@@ -53,7 +54,7 @@ def catalogued():
 
 
 EXTRA = {
-    "entrants.drivers.driver_N": (HERE.parents[4] / "addons" / "classicseasons" / "classic-seasons-2019" / "db" / "season.json",
+    "entrants.drivers.driver_N": (Path(os.environ.get("SWOFTY_ADDON_REPOS") or HERE.parents[4].parent) / "classic-seasons" / "classic-seasons-2019" / "db" / "season.json",
                                   "entrants.drivers.driver"),
 }
 
