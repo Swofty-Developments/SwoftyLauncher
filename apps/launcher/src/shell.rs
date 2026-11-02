@@ -2058,6 +2058,7 @@ impl Shell {
                         ),
                 ),
             )
+            .child(crate::donate::button())
             .child(self.send_logs_button(p, cx))
             .child(
                 v_flex()

@@ -12,6 +12,7 @@ mod crash_modal;
 mod db;
 mod developer;
 mod discord;
+mod donate;
 mod ea_app;
 mod game;
 mod game_edited;
