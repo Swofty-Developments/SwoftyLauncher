@@ -25,7 +25,8 @@ pub const FILE: &str = "row-ids.json";
 const TRACK_TABLE: &str = "tracks.Track";
 pub const TRACK_STAT_MAX: i64 = 254;
 const LOCK: &str = "row-ids.lock";
-const VERSION: u32 = 1;
+const VERSION: u32 = 2;
+const ALIASES_VERSION: u32 = 1;
 
 /// The core's registries whose `ids.json` ids are ids of these tables' rows.
 const REGISTRY_TABLES: &[(&str, &str)] = &[
@@ -72,7 +73,7 @@ impl IdAliases {
 
     pub fn write(&self, path: &Path) -> Result<()> {
         let file = IdAliases {
-            version: VERSION,
+            version: ALIASES_VERSION,
             tables: self.tables.clone(),
         };
         crate::write_json(path, &file)
@@ -154,6 +155,24 @@ struct File {
     /// Every id a key's row had before the one it keeps, so saves made under those ids still load.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     aliases: BTreeMap<String, BTreeSet<i64>>,
+    /// Per profile, the ids and aliases that differ from the install-wide ones above: a row of the profile
+    /// that a clash there moved. Another profile never reads them.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    profiles: BTreeMap<String, ProfileIds>,
+}
+
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+struct ProfileIds {
+    #[serde(default)]
+    rows: BTreeMap<String, Entry>,
+    #[serde(default)]
+    aliases: BTreeMap<String, BTreeSet<i64>>,
+}
+
+impl ProfileIds {
+    fn is_empty(&self) -> bool {
+        self.rows.is_empty() && self.aliases.is_empty()
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -368,6 +387,13 @@ pub struct Store {
     seeded: BTreeSet<String>,
     recovered: bool,
     aliases: BTreeMap<String, BTreeSet<i64>>,
+    profile: String,
+    base: BTreeMap<String, Entry>,
+    base_ids: HashMap<String, HashMap<i64, String>>,
+    base_aliases: BTreeMap<String, BTreeSet<i64>>,
+    local: BTreeSet<String>,
+    local_aliases: BTreeMap<String, BTreeSet<i64>>,
+    others: BTreeMap<String, ProfileIds>,
     existed: bool,
     by_id: HashMap<String, BTreeMap<i64, String>>,
     pinned: HashMap<String, HashMap<i64, String>>,
@@ -414,12 +440,34 @@ impl Store {
                 store.read_only = f.version > VERSION;
                 store.seeded = f.seeded;
                 store.recovered = f.recovered;
-                store.aliases = f.aliases;
+                store.aliases = f.aliases.clone();
+                store.base_aliases = f.aliases;
                 store.existed = true;
+                for (key, e) in &f.rows {
+                    store
+                        .base_ids
+                        .entry(table_of(key).to_owned())
+                        .or_default()
+                        .insert(e.id, key.clone());
+                }
+                store.base = f.rows.clone();
                 for (key, e) in f.rows {
                     store.from.insert(key.clone(), e.from);
                     store.insert(key, e.id);
                 }
+                let mut profiles = f.profiles;
+                if let Some(mine) = profiles.remove(profile) {
+                    for (key, e) in mine.rows {
+                        store.from.insert(key.clone(), e.from);
+                        store.local.insert(key.clone());
+                        store.insert(key, e.id);
+                    }
+                    for (key, ids) in mine.aliases {
+                        store.aliases.entry(key.clone()).or_default().extend(&ids);
+                        store.local_aliases.insert(key, ids);
+                    }
+                }
+                store.others = profiles;
             }
             Ok(Loaded::Missing) => {}
             Ok(Loaded::Damaged(to)) => warnings.push(format!(
@@ -439,6 +487,7 @@ impl Store {
         {
             store.pinned = registry_ids(&ids);
         }
+        store.profile = profile.to_owned();
         if store.seeded.insert(profile.to_owned()) {
             store.seed.last = last;
             store.changed = true;
@@ -462,23 +511,66 @@ impl Store {
     }
 
     fn put(&mut self, key: &str, id: i64, from: IdFrom) {
-        match self.rows.get(key) {
-            Some(&kept) if kept == id => return,
-            Some(&kept) => {
+        let table = table_of(key).to_owned();
+        let kept = self.rows.get(key).copied();
+        if kept == Some(id) {
+            return;
+        }
+        let in_base = self.base.get(key).map(|e| e.id);
+        let clashes = self
+            .base_ids
+            .get(&table)
+            .and_then(|ids| ids.get(&id))
+            .is_some_and(|k| k != key);
+        let local = kept.is_some() || in_base.is_some() || clashes;
+        match kept {
+            Some(old) => {
                 self.moved += 1;
-                self.alias(key, kept);
+                self.alias(key, old, local);
             }
             None => self.added += 1,
         }
         self.insert(key.to_owned(), id);
         self.from.insert(key.to_owned(), from);
+        if in_base == Some(id) {
+            self.local.remove(key);
+        } else if local {
+            self.local.insert(key.to_owned());
+        } else {
+            self.base.insert(key.to_owned(), Entry { id, from });
+            self.base_ids.entry(table).or_default().insert(id, key.to_owned());
+        }
         self.changed = true;
     }
 
-    fn alias(&mut self, key: &str, old: i64) {
+    fn base_put(&mut self, key: &str, id: i64, from: IdFrom) {
+        self.base_drop(key);
+        self.base.insert(key.to_owned(), Entry { id, from });
+        self.base_ids
+            .entry(table_of(key).to_owned())
+            .or_default()
+            .insert(id, key.to_owned());
+    }
+
+    fn base_drop(&mut self, key: &str) {
+        if let Some(old) = self.base.remove(key)
+            && let Some(ids) = self.base_ids.get_mut(table_of(key))
+            && ids.get(&old.id).is_some_and(|k| k == key)
+        {
+            ids.remove(&old.id);
+        }
+    }
+
+    fn alias(&mut self, key: &str, old: i64, local: bool) {
         if self.aliases.entry(key.to_owned()).or_default().insert(old) {
             self.changed = true;
         }
+        let into = if local {
+            &mut self.local_aliases
+        } else {
+            &mut self.base_aliases
+        };
+        into.entry(key.to_owned()).or_default().insert(old);
     }
 
     /// Gives the rows of `overrides` for the addons in `order` the host's ids for this build only: the store is
@@ -729,20 +821,30 @@ impl Store {
         if !self.changed || self.read_only {
             return Ok(());
         }
+        let mut profiles = self.others.clone();
         let rows = self
-            .rows
+            .local
             .iter()
-            .map(|(key, &id)| {
+            .filter_map(|key| {
+                let id = *self.rows.get(key)?;
                 let from = self.from.get(key).copied().unwrap_or(IdFrom::Hashed);
-                (key.clone(), Entry { id, from })
+                Some((key.clone(), Entry { id, from }))
             })
             .collect();
+        let mine = ProfileIds {
+            rows,
+            aliases: self.local_aliases.clone(),
+        };
+        if !mine.is_empty() {
+            profiles.insert(self.profile.clone(), mine);
+        }
         let file = File {
             version: VERSION,
-            rows,
+            rows: self.base.clone(),
             seeded: self.seeded.clone(),
             recovered: self.recovered,
-            aliases: self.aliases.clone(),
+            aliases: self.base_aliases.clone(),
+            profiles,
         };
         crate::write_json(&path(data), &file)
     }
@@ -1228,6 +1330,103 @@ mod tests {
         let (store, _) = Store::load(&data, None, "two", None);
         let two = build(VEHICLES, 10, &[("b", &["b1"])], store);
         assert_eq!(two.ids["b1"], one.ids["b1"]);
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    fn saved(data: &Path) -> Value {
+        serde_json::from_slice(&std::fs::read(path(data)).unwrap()).unwrap()
+    }
+
+    #[test]
+    fn a_clash_in_one_profile_leaves_another_profiles_ids_alone() {
+        let data = data_dir("clash-profile");
+        let (store, _) = Store::load(&data, None, "a", None);
+        let a = build(VEHICLES, 10, &[("x", &["x1", "x2"]), ("y", &["y1"])], store);
+        a.store.save(&data).unwrap();
+        let x1 = key("x", VEHICLES, "x1");
+
+        let (store, _) = Store::load(&data, None, "b", None);
+        let b = build(
+            VEHICLES,
+            a.ids["x1"],
+            &[("x", &["x1", "x2"]), ("y", &["y1"])],
+            store,
+        );
+        assert_ne!(b.ids["x1"], a.ids["x1"]);
+        b.store.save(&data).unwrap();
+        let file = saved(&data);
+        assert_eq!(file["rows"][&x1]["id"], a.ids["x1"]);
+        assert_eq!(file["profiles"]["b"]["rows"][&x1]["id"], b.ids["x1"]);
+        assert!(file["profiles"].get("a").is_none());
+
+        let (store, _) = Store::load(&data, None, "a", None);
+        let again_a = build(VEHICLES, 10, &[("x", &["x1", "x2"]), ("y", &["y1"])], store);
+        assert_eq!(again_a.ids, a.ids);
+        assert_eq!(again_a.store.summary(), None);
+        again_a.store.save(&data).unwrap();
+        assert_eq!(saved(&data), file);
+
+        let (store, _) = Store::load(&data, None, "b", None);
+        let again_b = build(
+            VEHICLES,
+            a.ids["x1"],
+            &[("x", &["x1", "x2"]), ("y", &["y1"])],
+            store,
+        );
+        assert_eq!(again_b.ids, b.ids);
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn a_file_from_before_per_profile_ids_loads_and_is_written_back_whole() {
+        let data = data_dir("old-format");
+        let x1 = key("x", VEHICLES, "x1");
+        let doc = serde_json::json!({
+            "version": 1,
+            "rows": { x1.clone(): { "id": 11, "from": "next" } },
+            "seeded": ["default"],
+            "recovered": true,
+            "aliases": { x1.clone(): [7] },
+        });
+        put(&path(&data), &doc.to_string());
+        let (store, warnings) = Store::load(&data, None, "default", None);
+        assert!(warnings.is_empty(), "{warnings:?}");
+        assert_eq!(store.get(&x1), Some(11));
+        let built = build(VEHICLES, 10, &[("x", &["x1", "x2"])], store);
+        assert_eq!(built.ids["x1"], 11);
+        built.store.save(&data).unwrap();
+        let file = saved(&data);
+        assert_eq!(file["version"], VERSION);
+        assert_eq!(file["rows"][&x1], doc["rows"][&x1]);
+        assert_eq!(file["aliases"], doc["aliases"]);
+        assert_eq!(file["seeded"], doc["seeded"]);
+        assert!(file.get("profiles").is_none());
+        assert_eq!(file["rows"].as_object().unwrap().len(), 2);
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn a_profiles_rebuilds_keep_its_ids_and_a_move_there_keeps_the_old_id_as_an_alias() {
+        let data = data_dir("rebuilds");
+        let (store, _) = Store::load(&data, None, "a", None);
+        let first = build(VEHICLES, 10, &[("x", &["x1"])], store);
+        first.store.save(&data).unwrap();
+        let (store, _) = Store::load(&data, None, "b", None);
+        let moved = build(VEHICLES, first.ids["x1"], &[("x", &["x1"])], store);
+        moved.store.save(&data).unwrap();
+        for _ in 0..2 {
+            let (store, _) = Store::load(&data, None, "b", None);
+            let again = build(VEHICLES, first.ids["x1"], &[("x", &["x1"])], store);
+            assert_eq!(again.ids, moved.ids);
+            assert_eq!(again.store.summary(), None);
+            assert_eq!(
+                again.store.id_aliases().tables["vehicles"][&first.ids["x1"]],
+                moved.ids["x1"]
+            );
+            again.store.save(&data).unwrap();
+        }
+        let (store, _) = Store::load(&data, None, "a", None);
+        assert!(store.id_aliases().is_empty());
         std::fs::remove_dir_all(&data).ok();
     }
 
