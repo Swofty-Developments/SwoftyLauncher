@@ -29,6 +29,7 @@ F1_23_YEARS = range(2022, 2024)
 REAL_YEARS = range(SUIT_YEARS.start, F1_23_YEARS.stop)
 F1_23 = "f1_23"
 GENERATED = "generated"
+ORIGINAL = "original"
 
 
 def stock_team(team):
@@ -91,7 +92,7 @@ def pick(year, team, driver=None, made=None):
     usable = [e for e in real() if e["team"] == team["name"] and (e["kind"] == "stock" or e["label"] in made)
               and (e.get("mod") == F1_23) == (year in F1_23_YEARS)]
     source = team.get("suit", {}).get("source")
-    if source == GENERATED:
+    if source in (GENERATED, ORIGINAL):
         return None
     if source:
         chosen = by_label(source)

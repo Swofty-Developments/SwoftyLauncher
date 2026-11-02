@@ -1,0 +1,52 @@
+{
+ "livery": {
+  "racing_bulls_miami": {
+   "vehicle": "swofty.classic-seasons-2024/toro_rosso",
+   "archive": "specials/racing_bulls_miami.erp",
+   "special": true,
+   "suffix": "_cs24_racing_bulls_miami",
+   "picker_name": "lng_cs_2024_racing_bulls_miami",
+   "unlock": "game"
+  },
+  "alpine_esports": {
+   "vehicle": "swofty.classic-seasons-2024/lotus",
+   "archive": "specials/alpine_esports.erp",
+   "special": true,
+   "suffix": "_cs24_alpine_esports",
+   "picker_name": "lng_cs_2024_alpine_esports",
+   "unlock": "game"
+  },
+  "mclaren_chrome": {
+   "vehicle": "swofty.classic-seasons-2024/mclaren",
+   "archive": "specials/mclaren_chrome.erp",
+   "special": true,
+   "suffix": "_cs24_mclaren_chrome",
+   "picker_name": "lng_cs_2024_mclaren_chrome",
+   "unlock": "game"
+  },
+  "mclaren_monaco": {
+   "vehicle": "swofty.classic-seasons-2024/mclaren",
+   "archive": "specials/mclaren_monaco.erp",
+   "special": true,
+   "suffix": "_cs24_mclaren_monaco",
+   "picker_name": "lng_cs_2024_mclaren_monaco",
+   "unlock": "game"
+  },
+  "mclaren_shadow": {
+   "vehicle": "swofty.classic-seasons-2024/mclaren",
+   "archive": "specials/mclaren_shadow.erp",
+   "special": true,
+   "suffix": "_cs24_mclaren_shadow",
+   "picker_name": "lng_cs_2024_mclaren_shadow",
+   "unlock": "game"
+  },
+  "williams_heritage": {
+   "vehicle": "swofty.classic-seasons-2024/williams",
+   "archive": "specials/williams_heritage.erp",
+   "special": true,
+   "suffix": "_cs24_williams_heritage",
+   "picker_name": "lng_cs_2024_williams_heritage",
+   "unlock": "game"
+  }
+ }
+}

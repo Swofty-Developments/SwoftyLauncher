@@ -1,0 +1,20 @@
+{
+ "livery": {
+  "mclaren_future_mode": {
+   "vehicle": "swofty.classic-seasons-2022/mclaren",
+   "archive": "specials/mclaren_future_mode.erp",
+   "special": true,
+   "suffix": "_cs22_mclaren_future_mode",
+   "picker_name": "lng_cs_2022_mclaren_future_mode",
+   "unlock": "game"
+  },
+  "ferrari_monza": {
+   "vehicle": "swofty.classic-seasons-2022/ferrari",
+   "archive": "specials/ferrari_monza.erp",
+   "special": true,
+   "suffix": "_cs22_ferrari_monza",
+   "picker_name": "lng_cs_2022_ferrari_monza",
+   "unlock": "game"
+  }
+ }
+}

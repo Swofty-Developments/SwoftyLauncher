@@ -3,6 +3,11 @@
  "ops": [
   {
    "op": "file.put",
+   "source": "cars/teams/common.erp",
+   "target": "2025_asset_groups/cs_2023_vehicle_package/teams/common.erp"
+  },
+  {
+   "op": "file.put",
    "source": "cars/teams/mercedes/wep/mercedes.erp",
    "target": "2025_asset_groups/cs_2023_vehicle_package/teams/mercedes/wep/mercedes.erp"
   },

@@ -370,12 +370,12 @@ def transparent(size):
     return np.zeros((size[1], size[0], 4), np.uint8)
 
 
-def old_kit(root, slot):
+def old_kit(root, slot, asset_year=2020, archive_type=OldErp):
     team, _, name = slot.partition("_")
-    team_erp = OldErp(str(root / "2020_asset_groups" / TEAMS / team / f"{team}.erp"))
+    team_erp = archive_type(str(root / f"{asset_year}_asset_groups" / TEAMS / team / f"{team}.erp"))
     tex = f"eaid://{TEAMS}/{team}/textures/{team}_"
     if name:
-        e = OldErp(str(root / "2020_asset_groups" / DRIVERS / slot / f"{name}.erp"))
+        e = archive_type(str(root / f"{asset_year}_asset_groups" / DRIVERS / slot / f"{name}.erp"))
         own = f"eaid://{DRIVERS}/{slot}/textures/{name}_"
         idf = f"eaid://{DRIVERS}/{slot}/idf/{name}"
         logos, glove_logos, feet = f"{idf}_body_logos.idf", f"{idf}_glove_logos.idf", f"{idf}.idf"

@@ -3,6 +3,20 @@
  "ops": [
   {
    "op": "file.put",
+   "source": "suits/cg20-mercedes.erp",
+   "target": "2025_asset_groups/character_package/team_livery/cg20-mercedes/cg20-mercedes.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/character_package/team_livery/cg20-mercedes/cg20-mercedes.assetgroup",
+   "erps": [
+    "2025_asset_groups/character_package/team_livery/2025-mercedes/2025-mercedes.erp",
+    "2025_asset_groups/character_package/team_livery/cg20-mercedes/cg20-mercedes.erp"
+   ],
+   "template": "asset_groups/character_package/team_livery/2025-mercedes/2025-mercedes.assetgroup"
+  },
+  {
+   "op": "file.put",
    "source": "suits/cg20-forceindia.erp",
    "target": "2025_asset_groups/character_package/team_livery/cg20-forceindia/cg20-forceindia.erp"
   },

@@ -3,6 +3,20 @@
  "ops": [
   {
    "op": "file.put",
+   "source": "suits/cg21-mercedes.erp",
+   "target": "2025_asset_groups/character_package/team_livery/cg21-mercedes/cg21-mercedes.erp"
+  },
+  {
+   "op": "group.register",
+   "group": "asset_groups/character_package/team_livery/cg21-mercedes/cg21-mercedes.assetgroup",
+   "erps": [
+    "2025_asset_groups/character_package/team_livery/2025-mercedes/2025-mercedes.erp",
+    "2025_asset_groups/character_package/team_livery/cg21-mercedes/cg21-mercedes.erp"
+   ],
+   "template": "asset_groups/character_package/team_livery/2025-mercedes/2025-mercedes.assetgroup"
+  },
+  {
+   "op": "file.put",
    "source": "suits/cg21-tororosso.erp",
    "target": "2025_asset_groups/character_package/team_livery/cg21-tororosso/cg21-tororosso.erp"
   },

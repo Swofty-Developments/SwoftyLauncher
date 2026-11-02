@@ -1396,6 +1396,12 @@
    "value": "swofty_f1"
   },
   {
+   "op": "list-remove",
+   "select": "entrants.drivers.seasonal_infos.seasonal_info[_metadata_=max_verstappen]",
+   "field": "game_setup_modes",
+   "value": "swofty_f1"
+  },
+  {
    "op": "add-row",
    "table": "customisation.custom_avatar.suits",
    "from": "customisation.custom_avatar.suits.Suit[_metadata_=2025-mercedes]",

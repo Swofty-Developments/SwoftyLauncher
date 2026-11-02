@@ -1,0 +1,17 @@
+{
+ "schema_version": 1,
+ "ops": [
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_cs_2022_mclaren_future_mode",
+   "value": "Future Mode"
+  },
+  {
+   "op": "lang.set",
+   "language": "*",
+   "key": "lng_cs_2022_ferrari_monza",
+   "value": "Giallo Modena"
+  }
+ ]
+}

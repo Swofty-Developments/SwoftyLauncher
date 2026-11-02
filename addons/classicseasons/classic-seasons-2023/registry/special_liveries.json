@@ -1,0 +1,84 @@
+{
+ "livery": {
+  "alfa_romeo_boogie": {
+   "vehicle": "swofty.classic-seasons-2023/sauber",
+   "archive": "specials/alfa_romeo_boogie.erp",
+   "special": true,
+   "suffix": "_cs23_alfa_romeo_boogie",
+   "picker_name": "lng_cs_2023_alfa_romeo_boogie",
+   "unlock": "game"
+  },
+  "alfa_romeo_kick": {
+   "vehicle": "swofty.classic-seasons-2023/sauber",
+   "archive": "specials/alfa_romeo_kick.erp",
+   "special": true,
+   "suffix": "_cs23_alfa_romeo_kick",
+   "picker_name": "lng_cs_2023_alfa_romeo_kick",
+   "unlock": "game"
+  },
+  "alfa_romeo_monza": {
+   "vehicle": "swofty.classic-seasons-2023/sauber",
+   "archive": "specials/alfa_romeo_monza.erp",
+   "special": true,
+   "suffix": "_cs23_alfa_romeo_monza",
+   "picker_name": "lng_cs_2023_alfa_romeo_monza",
+   "unlock": "game"
+  },
+  "alpine_pink": {
+   "vehicle": "swofty.classic-seasons-2023/lotus",
+   "archive": "specials/alpine_pink.erp",
+   "special": true,
+   "suffix": "_cs23_alpine_pink",
+   "picker_name": "lng_cs_2023_alpine_pink",
+   "unlock": "game"
+  },
+  "redbull_austin": {
+   "vehicle": "swofty.classic-seasons-2023/redbull",
+   "archive": "specials/redbull_austin.erp",
+   "special": true,
+   "suffix": "_cs23_redbull_austin",
+   "picker_name": "lng_cs_2023_redbull_austin",
+   "unlock": "game"
+  },
+  "williams_gulf": {
+   "vehicle": "swofty.classic-seasons-2023/williams",
+   "archive": "specials/williams_gulf.erp",
+   "special": true,
+   "suffix": "_cs23_williams_gulf",
+   "picker_name": "lng_cs_2023_williams_gulf",
+   "unlock": "game"
+  },
+  "mclaren_triple_crown": {
+   "vehicle": "swofty.classic-seasons-2023/mclaren",
+   "archive": "specials/mclaren_triple_crown.erp",
+   "special": true,
+   "suffix": "_cs23_mclaren_triple_crown",
+   "picker_name": "lng_cs_2023_mclaren_triple_crown",
+   "unlock": "game"
+  },
+  "mclaren_chrome": {
+   "vehicle": "swofty.classic-seasons-2023/mclaren",
+   "archive": "specials/mclaren_chrome.erp",
+   "special": true,
+   "suffix": "_cs23_mclaren_chrome",
+   "picker_name": "lng_cs_2023_mclaren_chrome",
+   "unlock": "game"
+  },
+  "redbull_miami": {
+   "vehicle": "swofty.classic-seasons-2023/redbull",
+   "archive": "specials/redbull_miami.erp",
+   "special": true,
+   "suffix": "_cs23_redbull_miami",
+   "picker_name": "lng_cs_2023_redbull_miami",
+   "unlock": "game"
+  },
+  "williams_british": {
+   "vehicle": "swofty.classic-seasons-2023/williams",
+   "archive": "specials/williams_british.erp",
+   "special": true,
+   "suffix": "_cs23_williams_british",
+   "picker_name": "lng_cs_2023_williams_british",
+   "unlock": "game"
+  }
+ }
+}

@@ -130,7 +130,8 @@ class Erp:
             fr.raw = zstd_c(data)
             fr.packed = len(fr.raw)
 
-        workers = threads or min(32, len(os.sched_getaffinity(0)))
+        available = len(os.sched_getaffinity(0)) if hasattr(os, 'sched_getaffinity') else (os.cpu_count() or 1)
+        workers = threads or min(32, available)
         with ThreadPoolExecutor(max(1, workers)) as pool:
             list(pool.map(redo, todo))
         return len(todo)

@@ -253,15 +253,15 @@ def main():
     ap.add_argument("--downloads", default=os.path.expanduser("~/Downloads"))
     ap.add_argument("--game", default="/mnt/gaming/SteamLibrary/steamapps/common/F1 25")
     ap.add_argument("--years", default="2016-2024")
+    ap.add_argument("--output", type=Path, help="new output parent; existing season folders are never replaced")
     args = ap.parse_args()
     lo, _, hi = args.years.partition("-")
     for year in range(int(lo), int(hi or lo) + 1):
         src = find_zip(args.downloads, year)
-        out = cars_dir(year)
+        out = args.output / f"classic-seasons-{year}" / "cars" if args.output else cars_dir(year)
         if out.exists():
-            for p in sorted(out.rglob("*"), reverse=True):
-                p.unlink() if p.is_file() else p.rmdir()
-        out.mkdir(parents=True, exist_ok=True)
+            raise SystemExit(f"{out}: already exists; choose a new --output directory")
+        out.mkdir(parents=True)
         r = build_season(year, src, out, Path(args.game))
         extras = [t for t in SEASONS.get(year, {}).get("teams", []) if "car" in t]
         if extras:
