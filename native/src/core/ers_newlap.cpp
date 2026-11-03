@@ -50,6 +50,7 @@ std::atomic<int> skipped{0};
 
 void lookup_entry(SwoftyContext *c)
 {
+    mem::Trust trust(runtime::HEAP_TRUST_MS);
     uintptr_t vehicle = 0;
     uint8_t id = 0;
     bool known = c->r9 && mem::read(c->r9 + ENTRY_VEHICLE, vehicle) && vehicle && mem::read(vehicle + VEHICLE_ID, id);

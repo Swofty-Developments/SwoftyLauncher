@@ -279,6 +279,7 @@ void frame(double, void *)
     static const uint32_t unlock_probe = perf::probe("core", "car_live unlock_tick");
     static const uint32_t apply_probe = perf::probe("core", "car_live apply_car");
     static const uint32_t flush_probe = perf::probe("core", "car_live flush");
+    mem::Trust trust(runtime::HEAP_TRUST_MS);
     g_flow_tid = GetCurrentThreadId();
     auto facts = core().current();
     bool changed = facts && facts->epoch != g_epoch;

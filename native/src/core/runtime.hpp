@@ -23,6 +23,11 @@ namespace runtime {
 
 enum Stage { STAGE_WINDOW = 1 };
 
+// How long a poll of the game's long-lived heaps trusts a big region's VirtualQuery answer (swofty::mem::Trust).
+// A fresh answer inside one of those multi-GB regions costs milliseconds on Windows, and without a Trust the
+// answer only lasts 250 ms, so a per-frame or per-lap reader would pay it four times a second.
+constexpr uint32_t HEAP_TRUST_MS = 4000;
+
 struct Sig {
     const char *what, *pattern;
     uintptr_t rva;

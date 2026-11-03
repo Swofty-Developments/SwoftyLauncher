@@ -54,10 +54,6 @@ constexpr const char *TEAM_HQ_MIXIN = "swofty_core.dll (Team HQ answer)";
 constexpr uintptr_t REGISTRY_GET_SLOT = 0x10;
 constexpr uint32_t HUMAN_FLAG = 0x10000000u;
 constexpr size_t MAX_ENTRANTS = 128;
-// How long the poll trusts a big heap region's VirtualQuery answer: the poll
-// runs every POLL_MS after a transition, and each fresh answer for the game's
-// heap costs milliseconds on the game thread.
-constexpr uint32_t POLL_TRUST_MS = 4000;
 constexpr const char *STATUS[4] = {"None", "Entering", "Updating", "Exiting"};
 
 using RegistryGet = void *(void *registry, const void *desc, uint32_t search_parents);
@@ -372,7 +368,7 @@ runtime::career::Components poll()
     static const uint32_t find = perf::probe("core", "career poll: entity");
     static const uint32_t lookup = perf::probe("core", "career poll: components");
     static const uint32_t walk = perf::probe("core", "career poll: entrants");
-    mem::Trust trust(POLL_TRUST_MS);
+    mem::Trust trust(runtime::HEAP_TRUST_MS);
     runtime::career::Components c;
     uintptr_t e = 0;
     {
