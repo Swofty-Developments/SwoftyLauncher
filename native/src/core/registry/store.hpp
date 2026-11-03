@@ -175,6 +175,7 @@ public:
     std::vector<std::string> registries() const;
     std::vector<Refusal> refusals();
     std::vector<Conflict> conflicts();
+    uint64_t generation() const;
     std::size_t layer_count(const std::string &addon, const std::string &registry) const;
     void set_op_index(const std::string &addon, int op);
     bool read_option(const std::string &addon, const std::string &id, Value &out);

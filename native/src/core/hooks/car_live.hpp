@@ -439,15 +439,27 @@ template <class Tag> struct Ops {
         return SWOFTY_ASSET_OK;
     }
 
-    static float composed(uint32_t index, const Field &f, float start)
+    static std::vector<LayerRec> layers_of(uint32_t index)
     {
         std::vector<LayerRec> mine;
-        {
-            std::lock_guard<std::mutex> g(lay_lock);
-            for (auto &l : layers)
-                if (l.field == f.id && (l.index == SWOFTY_CAR_ALL || l.index == index))
-                    mine.push_back(l);
-        }
+        std::lock_guard<std::mutex> g(lay_lock);
+        for (auto &l : layers)
+            if (l.index == SWOFTY_CAR_ALL || l.index == index)
+                mine.push_back(l);
+        return mine;
+    }
+
+    static float composed(uint32_t index, const Field &f, float start)
+    {
+        return composed_of(layers_of(index), f, start);
+    }
+
+    static float composed_of(const std::vector<LayerRec> &all, const Field &f, float start)
+    {
+        std::vector<LayerRec> mine;
+        for (auto &l : all)
+            if (l.field == f.id)
+                mine.push_back(l);
         std::stable_sort(mine.begin(), mine.end(), [](const LayerRec &a, const LayerRec &b) {
             return a.priority != b.priority ? a.priority < b.priority : a.order < b.order;
         });
@@ -624,14 +636,17 @@ template <class Tag> struct Ops {
         if (car_at(index, nullptr, car) != SWOFTY_ASSET_OK)
             return;
         uintptr_t fuel_sys = 0;
+        const std::vector<LayerRec> mine = layers_of(index);
+        std::unique_lock<std::mutex> g(slot_lock);
         for (size_t i = 0; i < FIELD_COUNT; i++) {
             const Field &f = FIELDS[i];
-            if (f.kind == Kind::virt || !ready(f))
+            if (f.kind == Kind::virt)
                 continue;
-            bool want = has_layer(index, f.id);
-            std::lock_guard<std::mutex> g(slot_lock);
+            bool want = std::any_of(mine.begin(), mine.end(), [&](const LayerRec &l) { return l.field == f.id; });
             Slot &s = slots[index][i];
             if (!want && !s.valid)
+                continue;
+            if (!ready(f))
                 continue;
             uintptr_t sys = 0, at = 0;
             float current = 0;
@@ -648,7 +663,7 @@ template <class Tag> struct Ops {
                 s = Slot{};
                 continue;
             }
-            float target = f.relative ? base + clamp(f, composed(index, f, 0)) : clamp(f, composed(index, f, base));
+            float target = f.relative ? base + clamp(f, composed_of(mine, f, 0)) : clamp(f, composed_of(mine, f, base));
             if (s.valid && bitwise_equal(current, s.written) && bitwise_equal(target, current)) {
                 s.base = base;
                 continue;
@@ -663,6 +678,7 @@ template <class Tag> struct Ops {
             load(at, f.kind, written);
             s = Slot{true, base, written};
         }
+        g.unlock();
         if (fuel_sys)
             rerun_fuel(fuel_sys);
     }

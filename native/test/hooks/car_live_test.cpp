@@ -654,8 +654,19 @@ static void replay_frames()
             Ops::apply_car(p.index);
     }
     expect(calls == 0, "unchanged fuel layers are not re-run on every replay frame");
+    writes = 0;
+    for (int c = 0; c < CARS; c++)
+        Ops::apply_car(c);
+    expect(writes == 0, "a steady frame writes nothing: the game's values are the targets");
+    Ops::flush();
+    expect(writes == 0, "and a flush with no layer change does nothing");
     at<uint32_t>(ecu[0], 0x28) ^= 0x1;
+    writes = 0;
     Ops::apply_car(0);
+    expect(writes >= 1, "a game reset of one value is written back");
+    int first = writes;
+    Ops::apply_car(0);
+    expect(writes == first, "and only once: the next frame is steady again");
     expect(calls == 2, "a game reset of a fuel entry re-runs the mix once for the car, not once per entry");
 }
 

@@ -10,6 +10,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "../perf.hpp"
 #include "../registry/table.hpp"
 #include "car_live.hpp"
 #include "car_profile.hpp"
@@ -228,12 +229,34 @@ bool within(const car_profile::Entry &e)
 
 std::unordered_set<std::string> g_logged;
 
-void apply_profiles(uint32_t index)
+car_profile::Memo g_profiled;
+
+car_profile::Memo::Key profile_key(bool ai)
 {
+    car_profile::Memo::Key k;
+    k.store = swofty_core::registry::store().generation();
+    auto facts = core().current();
+    k.epoch = facts ? facts->epoch : 0;
+    k.tick = GetTickCount64() / 1000;
+    k.session = session_type();
+    k.ai = ai;
+    return k;
+}
+
+void apply_profiles(uint32_t index, bool force = false)
+{
+    static const uint32_t probe = perf::probe("core", "car_live profiles");
+    perf::Scope scope(probe);
+    uint32_t is_ai = 1;
+    Ops::op_car(index, nullptr, &is_ai);
+    auto key = profile_key(is_ai != 0);
+    if (force)
+        g_profiled.forget(index);
+    if (g_profiled.fresh(index, key))
+        return;
+    g_profiled.note(index, key);
     auto entries = profile_entries();
-    uint32_t ai = 1;
-    Ops::op_car(index, nullptr, &ai);
-    auto report = car_profile::Applier<Ops>::evaluate(entries, session_type(), within, index, ai != 0);
+    auto report = car_profile::Applier<Ops>::evaluate(entries, session_type(), within, index, is_ai != 0);
     for (const auto &id : report.needs_identity)
         if (g_logged.insert("identity:" + id).second)
             swofty::log("[cars] car.profile %s skipped: its cars selector needs the car's vehicle, team or driver (T121)",
@@ -253,6 +276,9 @@ uint64_t g_epoch = 0;
 
 void frame(double, void *)
 {
+    static const uint32_t unlock_probe = perf::probe("core", "car_live unlock_tick");
+    static const uint32_t apply_probe = perf::probe("core", "car_live apply_car");
+    static const uint32_t flush_probe = perf::probe("core", "car_live flush");
     g_flow_tid = GetCurrentThreadId();
     auto facts = core().current();
     bool changed = facts && facts->epoch != g_epoch;
@@ -265,17 +291,22 @@ void frame(double, void *)
                 apply_profiles(i);
         Ops::flush();
     }
-    Ops::unlock_tick();
+    {
+        perf::Scope scope(unlock_probe);
+        Ops::unlock_tick();
+    }
     uint32_t profiled = 0, applied = 0;
     for (const auto &p : Ops::take_frame()) {
         swofty::cars::live::Car car(p.index, reinterpret_cast<void *>(p.car));
         uint32_t bit = 1u << p.index;
-        if (p.what != Ops::What::setup && !(profiled & bit)) {
+        bool rebuilt = p.what == Ops::What::built || p.what == Ops::What::reset;
+        if (p.what != Ops::What::setup && (rebuilt || !(profiled & bit))) {
             profiled |= bit;
-            apply_profiles(p.index);
+            apply_profiles(p.index, rebuilt);
         }
         if (!(applied & bit)) {
             applied |= bit;
+            perf::Scope scope(apply_probe);
             Ops::apply_car(p.index);
         }
         switch (p.what) {
@@ -286,6 +317,7 @@ void frame(double, void *)
         case Ops::What::damage: events::car_damage(car, p.part, p.progress); break;
         }
     }
+    perf::Scope scope(flush_probe);
     Ops::flush();
 }
 

@@ -2530,6 +2530,12 @@ std::vector<Conflict> Store::conflicts()
     return out;
 }
 
+uint64_t Store::generation() const
+{
+    std::lock_guard g(d->mu);
+    return d->gen;
+}
+
 std::size_t Store::layer_count(const std::string &addon, const std::string &registry) const
 {
     std::lock_guard g(d->mu);
