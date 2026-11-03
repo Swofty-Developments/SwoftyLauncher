@@ -100,6 +100,8 @@ static void build_world()
     count = CARS;
 }
 
+static int writes = 0;
+
 static cl::Env make_env(bool globals = true)
 {
     cl::Env e;
@@ -108,6 +110,7 @@ static cl::Env make_env(bool globals = true)
         return true;
     };
     e.write = [](uintptr_t a, const void *in, size_t n) {
+        writes++;
         memcpy(reinterpret_cast<void *>(a), in, n);
         return true;
     };
@@ -608,6 +611,16 @@ static void v3_fuel()
     for (size_t i = cl::MODE_AVAIL_FUEL + cl::MODE_AVAIL_CARS * cl::MODE_AVAIL_STRIDE; i < sizeof avail_mem; i++)
         tail = tail && avail_mem[i] == 0xff;
     expect(tail, "the unlock never writes past the 26 car entries of the table");
+    memset(avail_mem, 0xff, sizeof avail_mem);
+    Ops::unlock_tick();
+    writes = 0;
+    Ops::unlock_tick();
+    expect(writes == 0, "an entry already cleared is not written again");
+    uint32_t one = 1;
+    memcpy(avail_mem + cl::MODE_AVAIL_FUEL + 1 * cl::MODE_AVAIL_STRIDE + 8, &one, 4);
+    Ops::unlock_tick();
+    expect(writes == 1 && at<uint32_t>(avail_mem, cl::MODE_AVAIL_FUEL + 1 * cl::MODE_AVAIL_STRIDE + 8) == 0,
+           "only the entry the game relocked is written");
     expect(Ops::op_unlock_fuel_mixes("a", 0) == SWOFTY_ASSET_OK && Ops::unlocked_mask() == 0, "withdrawing the mask stops the writes");
 }
 

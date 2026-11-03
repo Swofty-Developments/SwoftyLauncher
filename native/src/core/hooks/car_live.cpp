@@ -357,8 +357,10 @@ void setup()
     Ops::bind(std::move(e));
     const SwoftyEvents *ev = runtime::events_table();
     uint32_t token = 0;
-    if (ev && ev->on_frame)
+    if (ev && ev->on_frame) {
+        runtime::frame_probe_name("car_live");
         ev->on_frame(frame, nullptr, &token);
+    }
 }
 
 }

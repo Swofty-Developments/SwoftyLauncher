@@ -158,6 +158,8 @@ int ev_subscribe(const char *event, SwoftyEventFn fn, void *user, uint32_t *toke
     return r;
 }
 
+thread_local const char *next_frame_probe = nullptr;
+
 int ev_on_frame(SwoftyFrameFn fn, void *user, uint32_t *token)
 {
     const void *from = __builtin_return_address(0);
@@ -169,8 +171,10 @@ int ev_on_frame(SwoftyFrameFn fn, void *user, uint32_t *token)
     if (r == SWOFTY_ASSET_OK && token)
         *token = t;
     std::string by = who(from);
+    std::string what = next_frame_probe ? std::string("on_frame ") + next_frame_probe : "on_frame";
+    next_frame_probe = nullptr;
     if (r == SWOFTY_ASSET_OK)
-        disp.set_probe(t, perf::probe(perf::owner_of(reinterpret_cast<const void *>(fn)), "on_frame"));
+        disp.set_probe(t, perf::probe(perf::owner_of(reinterpret_cast<const void *>(fn)), what));
     if (r == SWOFTY_ASSET_OK && queued)
         remember(t, by);
     swofty::log("[events] on_frame by %s -> %s", by.c_str(), outcome(r, t, queued).c_str());
@@ -280,6 +284,11 @@ namespace runtime {
 const SwoftyEvents *events_table()
 {
     return &table;
+}
+
+void frame_probe_name(const char *what)
+{
+    next_frame_probe = what;
 }
 
 void events_setup()

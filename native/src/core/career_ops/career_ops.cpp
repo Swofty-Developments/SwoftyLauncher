@@ -2079,8 +2079,10 @@ void setup()
 {
     const SwoftyEvents *ev = runtime::events_table();
     uint32_t token = 0;
-    if (ev && ev->on_frame)
+    if (ev && ev->on_frame) {
+        runtime::frame_probe_name("career_ops");
         ev->on_frame(frame, nullptr, &token);
+    }
     career_ops::track_fuel_setup();
 }
 

@@ -99,8 +99,10 @@ void setup()
 {
     const SwoftyEvents *ev = runtime::events_table();
     uint32_t token = 0;
-    if (ev && ev->on_frame)
+    if (ev && ev->on_frame) {
+        runtime::frame_probe_name("session_points");
         ev->on_frame(frame, nullptr, &token);
+    }
 }
 
 }

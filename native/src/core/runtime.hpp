@@ -78,6 +78,7 @@ std::string erp_name(uint64_t hash);
 
 const SwoftyAssets *assets_table();
 const SwoftyEvents *events_table();
+void frame_probe_name(const char *what);
 const SwoftyOverlay *overlay_table();
 const SwoftyTelemetry *telemetry_table();
 const SwoftyDb *db_table();

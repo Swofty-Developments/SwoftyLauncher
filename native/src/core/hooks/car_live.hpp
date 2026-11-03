@@ -931,11 +931,23 @@ template <class Tag> struct Ops {
         uintptr_t base = env.mode_avail();
         if (!base)
             return;
+        if (!env.read || !n)
+            return;
+        uint8_t block[MODE_AVAIL_CARS * MODE_AVAIL_STRIDE];
+        const size_t span = (n - 1) * MODE_AVAIL_STRIDE + 16;
+        if (!env.read(base + MODE_AVAIL_FUEL, block, span))
+            return;
         uint32_t zero = 0;
         for (uint32_t c = 0; c < n; c++)
-            for (uint32_t m = 0; m < 4; m++)
-                if (mask & (1u << m))
-                    env.write(base + MODE_AVAIL_FUEL + c * MODE_AVAIL_STRIDE + m * 4, &zero, 4);
+            for (uint32_t m = 0; m < 4; m++) {
+                if (!(mask & (1u << m)))
+                    continue;
+                const size_t off = c * MODE_AVAIL_STRIDE + m * 4;
+                uint32_t now;
+                std::memcpy(&now, block + off, 4);
+                if (now != 0)
+                    env.write(base + MODE_AVAIL_FUEL + off, &zero, 4);
+            }
     }
 
     static int op_fuel_mix(uint32_t index, uint32_t *mode)
