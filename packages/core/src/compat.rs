@@ -202,7 +202,39 @@ pub(crate) fn windows_tool(program: &str, args: &[&str]) -> Option<String> {
         .creation_flags(CREATE_NO_WINDOW)
         .output()
         .ok()?;
-    Some(String::from_utf8_lossy(&out.stdout).into_owned())
+    Some(tool_text(&out.stdout))
+}
+
+/// A Windows tool's piped output as text. Console tools such as reg.exe and
+/// whoami write it in the OEM code page (850, 857, ...), so a folder named
+/// `Yeni klasör` arrives as bytes that are not UTF-8; output that is UTF-8
+/// stays as it is.
+#[cfg(windows)]
+fn tool_text(bytes: &[u8]) -> String {
+    if let Ok(s) = std::str::from_utf8(bytes) {
+        return s.to_owned();
+    }
+    const CP_OEMCP: u32 = 1;
+    #[link(name = "kernel32")]
+    unsafe extern "system" {
+        fn MultiByteToWideChar(code_page: u32, flags: u32, s: *const u8, n: i32, w: *mut u16, wn: i32)
+        -> i32;
+    }
+    let Ok(n) = i32::try_from(bytes.len()) else {
+        return String::from_utf8_lossy(bytes).into_owned();
+    };
+    // SAFETY: bytes is n bytes long, and a null output with size 0 only asks for the length.
+    let len = unsafe { MultiByteToWideChar(CP_OEMCP, 0, bytes.as_ptr(), n, std::ptr::null_mut(), 0) };
+    if len <= 0 {
+        return String::from_utf8_lossy(bytes).into_owned();
+    }
+    let mut wide = vec![0u16; len as usize];
+    // SAFETY: wide holds len u16s, the size the first call returned for the same input.
+    let got = unsafe { MultiByteToWideChar(CP_OEMCP, 0, bytes.as_ptr(), n, wide.as_mut_ptr(), len) };
+    if got <= 0 {
+        return String::from_utf8_lossy(bytes).into_owned();
+    }
+    String::from_utf16_lossy(&wide[..got as usize])
 }
 
 #[cfg(not(windows))]
@@ -255,11 +287,11 @@ pub(crate) fn windows_tool_within(
             Err(e) => return Err(format!("{program}: {e}")),
         }
     };
-    let out = String::from_utf8_lossy(&out.join().unwrap_or_default()).into_owned();
+    let out = tool_text(&out.join().unwrap_or_default());
     if status.success() {
         return Ok(out);
     }
-    let err = String::from_utf8_lossy(&err.join().unwrap_or_default()).into_owned();
+    let err = tool_text(&err.join().unwrap_or_default());
     let first = err
         .lines()
         .chain(out.lines())
