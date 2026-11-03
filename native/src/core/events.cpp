@@ -163,6 +163,8 @@ thread_local const char *next_frame_probe = nullptr;
 int ev_on_frame(SwoftyFrameFn fn, void *user, uint32_t *token)
 {
     const void *from = __builtin_return_address(0);
+    const char *probe = next_frame_probe;
+    next_frame_probe = nullptr;
     if (!runtime::enabled("events", nullptr))
         return SWOFTY_ASSET_UNAVAILABLE;
     uint32_t t = 0;
@@ -171,8 +173,7 @@ int ev_on_frame(SwoftyFrameFn fn, void *user, uint32_t *token)
     if (r == SWOFTY_ASSET_OK && token)
         *token = t;
     std::string by = who(from);
-    std::string what = next_frame_probe ? std::string("on_frame ") + next_frame_probe : "on_frame";
-    next_frame_probe = nullptr;
+    std::string what = probe ? std::string("on_frame ") + probe : "on_frame";
     if (r == SWOFTY_ASSET_OK)
         disp.set_probe(t, perf::probe(perf::owner_of(reinterpret_cast<const void *>(fn)), what));
     if (r == SWOFTY_ASSET_OK && queued)
