@@ -1,6 +1,7 @@
 #include "runtime.hpp"
 
 #include <safetyhook.hpp>
+#include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
 #include "apply/moments.hpp"
@@ -98,6 +99,7 @@ void session_enter_mid(safetyhook::Context &)
     static const uint32_t probe = perf::probe("core", "session enter");
     perf::mark("session", "enter");
     perf::Scope p(probe);
+    swofty::mem::invalidate();
     swofty_core::apply::moments::session_load("Game_GameModule_OnSessionEnter");
     bool restart;
     {
@@ -318,13 +320,17 @@ void session_flow(const char *known, int to)
     if (!known || (to != 1 && to != 3))
         return;
     session_life::Emit e;
+    bool exiting = to == 3 && !std::strcmp(known, "StateSession");
+    bool unloading = to == 1 && !std::strcmp(known, "StateUnloadSession");
     {
         std::lock_guard<std::mutex> g(lifecycle_lock);
-        if (to == 3 && !std::strcmp(known, "StateSession"))
+        if (exiting)
             e = lifecycle.on_session_exiting();
-        else if (to == 1 && !std::strcmp(known, "StateUnloadSession"))
+        else if (unloading)
             e = lifecycle.on_unload_entering();
     }
+    if (exiting || unloading)
+        swofty::mem::invalidate();
     session_emit(e);
 }
 

@@ -279,13 +279,13 @@ void frame(double, void *)
     static const uint32_t unlock_probe = perf::probe("core", "car_live unlock_tick");
     static const uint32_t apply_probe = perf::probe("core", "car_live apply_car");
     static const uint32_t flush_probe = perf::probe("core", "car_live flush");
-    mem::Trust trust(runtime::HEAP_TRUST_MS);
     g_flow_tid = GetCurrentThreadId();
     auto facts = core().current();
     bool changed = facts && facts->epoch != g_epoch;
     if (facts)
         g_epoch = facts->epoch;
     if (changed) {
+        mem::invalidate();
         uint32_t n = 0;
         if (Ops::op_count(&n) == SWOFTY_ASSET_OK)
             for (uint32_t i = 0; i < n; i++)
@@ -293,6 +293,7 @@ void frame(double, void *)
         Ops::flush();
     }
     {
+        mem::Trust trust(runtime::HEAP_TRUST_MS);
         perf::Scope scope(unlock_probe);
         Ops::unlock_tick();
     }
@@ -307,6 +308,7 @@ void frame(double, void *)
         }
         if (!(applied & bit)) {
             applied |= bit;
+            mem::Trust trust(runtime::HEAP_TRUST_MS);
             perf::Scope scope(apply_probe);
             Ops::apply_car(p.index);
         }
@@ -318,6 +320,7 @@ void frame(double, void *)
         case Ops::What::damage: events::car_damage(car, p.part, p.progress); break;
         }
     }
+    mem::Trust trust(runtime::HEAP_TRUST_MS);
     perf::Scope scope(flush_probe);
     Ops::flush();
 }
