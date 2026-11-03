@@ -6,6 +6,13 @@ namespace swofty_core::apply::ids {
 
 using swofty::json::Value;
 
+namespace {
+bool career_holds(const std::string &registry)
+{
+    return registry != "vehicle.package";
+}
+}
+
 bool Store::load(const std::string &text, std::string *why)
 {
     std::lock_guard g(mu_);
@@ -38,7 +45,7 @@ bool Store::load(const std::string &text, std::string *why)
         for (auto &[career, regs] : *cs)
             if (auto o = regs.if_object())
                 for (auto &[reg, recs] : *o)
-                    if (auto r = recs.if_object())
+                    if (auto r = recs.if_object(); r && career_holds(reg))
                         for (auto &[rec, id] : *r)
                             if (id.is_int())
                                 careers_[career][reg][rec] = id.as_int();
@@ -374,7 +381,7 @@ CareerMap Store::map_for_career(const std::string &career)
     CareerMap m;
     for (auto &[reg, recs] : ids_)
         for (auto &[rec, en] : recs)
-            if (live_locked(reg, rec))
+            if (career_holds(reg) && live_locked(reg, rec))
                 m[reg][rec] = en.id;
     if (!career.empty() && careers_[career] != m) {
         careers_[career] = m;
@@ -389,6 +396,8 @@ std::vector<Clash> Store::adopt(const std::string &career, const CareerMap &map,
     std::vector<Clash> out;
     for (auto &[reg, recs] : map)
         for (auto &[rec, id] : recs) {
+            if (!career_holds(reg))
+                continue;
             auto &mine = ids_[reg];
             auto e = mine.find(rec);
             if (e != mine.end() && e->second.id == id)
@@ -416,7 +425,9 @@ std::vector<Clash> Store::adopt(const std::string &career, const CareerMap &map,
             dirty_ = true;
         }
     if (!career.empty() && out.empty()) {
-        careers_[career] = map;
+        CareerMap held = map;
+        held.erase("vehicle.package");
+        careers_[career] = held;
         dirty_ = true;
     }
     return out;

@@ -42,6 +42,9 @@ const REGISTRY_TABLES: &[(&str, &str)] = &[
     ("driver.head", "entrants.animation.driver_heads.driver_head"),
 ];
 
+/// The core registries whose careers never hold ids: saves name vehicle packages by label, not by `stat_id`.
+const UNHELD_REGISTRIES: &[&str] = &["vehicle.package"];
+
 /// The tables saves hold ids of, and the name `swofty/id_aliases.json` gives each.
 const ALIAS_TABLES: &[(&str, &str)] = &[
     ("entrants.teams.team", "teams"),
@@ -906,6 +909,9 @@ fn career_ids(doc: &Value) -> HashMap<String, HashSet<i64>> {
     };
     for (registry, table) in REGISTRY_TABLES {
         let ids = out.entry((*table).to_owned()).or_default();
+        if UNHELD_REGISTRIES.contains(registry) {
+            continue;
+        }
         for career in careers.values() {
             if let Some(records) = career[*registry].as_object() {
                 ids.extend(
@@ -932,7 +938,10 @@ fn registry_ids(doc: &Value) -> HashMap<String, HashMap<i64, String>> {
                     .map(|id| (id, record.clone()))
             }));
         }
-        if let Some(careers) = doc["careers"].as_object() {
+        if let Some(careers) = doc["careers"]
+            .as_object()
+            .filter(|_| !UNHELD_REGISTRIES.contains(registry))
+        {
             for career in careers.values() {
                 if let Some(records) = career[*registry].as_object() {
                     ids.extend(
@@ -1620,7 +1629,7 @@ mod tests {
     }
 
     #[test]
-    fn a_full_table_takes_an_id_ids_json_holds_for_an_addon_the_build_leaves_out_but_never_one_a_career_uses()
+    fn a_full_table_takes_an_id_ids_json_holds_for_an_addon_the_build_leaves_out_even_one_a_career_listed()
     {
         let data = data_dir("registry-full");
         let records: Vec<String> = (1..=254).map(|id| format!(r#""gone.x/pkg_{id}":{id}"#)).collect();
@@ -1634,10 +1643,10 @@ mod tests {
         );
         let (store, _) = Store::load(&data, None, "p", None);
         let first = build(PACKAGES, 0, &[("a", &["a1", "a2"])], store);
-        assert_eq!((first.ids["a1"], first.ids["a2"]), (2, 3));
+        assert_eq!((first.ids["a1"], first.ids["a2"]), (1, 2));
         assert_eq!(first.store.from[&key("a", PACKAGES, "a1")], IdFrom::Reused);
         assert!(
-            first.lines.iter().any(|l| l.contains("stat_id 2 (the source's is 0; no other id up to 254 is free; reused from gone.x/pkg_2, which this build leaves out)")),
+            first.lines.iter().any(|l| l.contains("stat_id 1 (the source's is 0; no other id up to 254 is free; reused from gone.x/pkg_1, which this build leaves out)")),
             "{:?}",
             first.lines
         );
@@ -1645,6 +1654,47 @@ mod tests {
         let (store, _) = Store::load(&data, None, "p", None);
         let again = build(PACKAGES, 0, &[("a", &["a1", "a2"])], store);
         assert_eq!(again.ids, first.ids);
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn careers_hold_ids_of_teams_vehicles_and_drivers_but_not_vehicle_packages() {
+        let doc = serde_json::json!({
+            "careers": {"c": {
+                "vehicle": {"x/v": 7},
+                "team.identity": {"x/t": 8},
+                "driver.identity": {"x/d": {"id": 9}},
+                "vehicle.package": {"x/p": 10}
+            }}
+        });
+        let held = career_ids(&doc);
+        assert_eq!(held["entrants.vehicles.vehicle"], HashSet::from([7]));
+        assert_eq!(held["entrants.teams.team"], HashSet::from([8]));
+        assert_eq!(held["entrants.drivers.driver"], HashSet::from([9]));
+        assert!(!held.contains_key("entrants.vehicles.vehicle_packages.vehicle_package"));
+        let pinned = registry_ids(&doc);
+        assert_eq!(pinned["entrants.vehicles.vehicle"][&7], "x/v");
+        assert!(!pinned.contains_key("entrants.vehicles.vehicle_packages.vehicle_package"));
+    }
+
+    #[test]
+    fn package_ids_a_career_held_return_when_an_addon_provides_fewer_records() {
+        let data = data_dir("career-packages-shrink");
+        let held: Vec<String> = (1..=89).map(|id| format!(r#""cs/pkg_{id}":{id}"#)).collect();
+        put(
+            &reports::path(&data, reports::IDS),
+            &format!(
+                r#"{{"version":1,"ids":{{}},
+                "careers":{{"f1_career_progressive.driver_career:new1":{{"vehicle.package":{{{}}}}}}}}}"#,
+                held.join(",")
+            ),
+        );
+        let (store, _) = Store::load(&data, None, "p", None);
+        assert!(store.career_held.is_empty());
+        let labels: Vec<String> = (1..=10).map(|i| format!("p{i}")).collect();
+        let refs: Vec<&str> = labels.iter().map(String::as_str).collect();
+        let built = build(PACKAGES, 0, &[("cs", &refs)], store);
+        assert_eq!(built.ids.values().copied().collect::<BTreeSet<_>>(), (1..=10).collect());
         std::fs::remove_dir_all(&data).ok();
     }
 

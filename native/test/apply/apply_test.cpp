@@ -280,6 +280,20 @@ void test_database_ids()
     check(t.allocate("vehicle", "cs/other", "d").id == 510 && t.allocate("vehicle", "cs/more", "d").id == 514,
           "the moved id stays reserved for the career that saved it");
 
+    ap::ids::Store pk;
+    pk.define_pool("vehicle.package", {{{1, 254}}});
+    for (int i = 0; i < 3; i++)
+        pk.allocate("vehicle.package", "cs/pkg_" + std::to_string(i), "d");
+    check(pk.map_for_career("c1").count("vehicle.package") == 0, "a career's map leaves out vehicle packages");
+    ap::ids::Store pl;
+    pl.define_pool("vehicle.package", {{{1, 254}}});
+    check(pl.load("{\"version\":1,\"ids\":{},\"careers\":{\"c1\":{\"vehicle.package\":{\"cs/gone\":1}}}}") &&
+              pl.allocate("vehicle.package", "cs/new", "d").id == 1,
+          "a package id only a career lists is free");
+    check(pl.adopt("c2", {{"vehicle.package", {{"cs/old", 2}}}}, "d").empty() &&
+              pl.dump().find("cs/old") == std::string::npos,
+          "adopting a career keeps none of its package ids");
+
     ap::ids::Store k;
     k.define_pool("vehicle", {{{509, 1023}}});
     k.allocate("vehicle", "cs/auto", "d");
