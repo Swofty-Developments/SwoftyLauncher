@@ -8,7 +8,7 @@ It provides:
 * the **F9 / R3 prompt** "Addon Settings", a listener and a tooltip entry
 * the bottom-left "Launched with Swofty Launcher" panel, with the F9 or R3 glyph and "to open settings"
 * the `mod_menu` route
-* the ADDON SETTINGS screen, with a tile per enabled addon and track and a page for each
+* the ADDON SETTINGS screen, with a tile per enabled addon and track and a page for each. Tiles show the launcher's mark for SwoftyMod, Team Simplified's for Simplified for Swofty, the launcher's track badge for tracks and its box for the rest (`packages/core/src/ui/icons.rs`)
 * its own setting, `show_launcher_panel`
 
 This directory holds the manifest only, never game files. The launcher builds the UI at build time from the player's own copy of the game data (`packages/core/src/ui/`):

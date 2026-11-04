@@ -31,7 +31,8 @@ const PAGE_FIRST: &str = "page_first";
 pub struct TileStyle {
     pub rows: usize,
     pub slot: fn(usize) -> &'static str,
-    pub icon: fn(Kind) -> Icon,
+    /// A tile's icon, from its kind, its id and whether it is a track.
+    pub icon: fn(Kind, &str, bool) -> Icon,
     pub attach: &'static [&'static str],
     pub hide_divider: bool,
     pub by_gap: bool,
@@ -47,12 +48,7 @@ pub enum Icon {
 pub const TILES: TileStyle = TileStyle {
     rows: 3,
     slot: |_| "1a",
-    icon: |k| match k {
-        Kind::Addon => Icon::Ref("#overrides.icons.session.settings"),
-        Kind::Map | Kind::Mod => {
-            Icon::Path("eaid://ui_package/art/textures/custom_track_select/race_completed_icon.tif")
-        }
-    },
+    icon: |k, id, track| Icon::Ref(super::icons::of(k, id, track)),
     attach: &["title_1", "stacker_title"],
     hide_divider: true,
     by_gap: true,
@@ -92,6 +88,8 @@ pub struct Entry<'a> {
     pub version: &'a str,
     pub description: &'a str,
     pub id: &'a str,
+    /// A track addon or a track package's page.
+    pub track: bool,
     pub options: Vec<Opt<'a>>,
     /// Every option of the addon, hidden ones too, for its career setup page.
     pub all: Vec<Opt<'a>>,
@@ -233,6 +231,7 @@ pub fn entries<'a>(
             version: &m.version,
             description: &m.description,
             id: &m.id,
+            track: m.track,
             options,
             all,
             setup: m.career_setup.as_ref(),
@@ -248,6 +247,7 @@ pub fn entries<'a>(
             version: &mp.version,
             description: &mp.description,
             id: &mp.code,
+            track: true,
             options: Vec::new(),
             all: Vec::new(),
             setup: None,
@@ -263,6 +263,7 @@ pub fn entries<'a>(
             version: &md.version,
             description: &md.description,
             id: &md.id,
+            track: false,
             options: Vec::new(),
             all: Vec::new(),
             setup: None,
@@ -784,7 +785,15 @@ fn tile(src: &Sources, style: &TileStyle, parent: &str, name: &str, row: usize, 
         by: &e.details(),
         description: &description,
     };
-    tile_with(src, style, parent, name, row, (style.icon)(e.kind), &text)
+    tile_with(
+        src,
+        style,
+        parent,
+        name,
+        row,
+        (style.icon)(e.kind, e.id, e.track),
+        &text,
+    )
 }
 
 struct TileText<'a> {
@@ -903,7 +912,15 @@ fn page_tile(
         by: &format!("Page {} of {}", to + 1, page.pages),
         description: &description,
     };
-    tile_with(src, style, parent, name, row, (style.icon)(Kind::Addon), &text)
+    tile_with(
+        src,
+        style,
+        parent,
+        name,
+        row,
+        (style.icon)(Kind::Addon, "", false),
+        &text,
+    )
 }
 
 fn home_title(page: &HomePage) -> String {
@@ -1168,6 +1185,7 @@ pub fn build_options_page(src: &Sources, e: &Entry, screen: &str) -> Result<Vec<
         version: e.version,
         description: e.description,
         id: e.id,
+        track: e.track,
         options: e
             .options
             .iter()
@@ -1213,6 +1231,7 @@ fn setup_entry<'a>(e: &Entry<'a>, setup: &'a CareerSetup) -> Entry<'a> {
         version: e.version,
         description: e.description,
         id: e.id,
+        track: e.track,
         options: setup
             .options
             .iter()
@@ -1310,7 +1329,7 @@ pub fn build_setup_home(src: &Sources, e: &Entry, setup: &CareerSetup) -> Result
         &right,
         "options",
         0,
-        (TILES.icon)(Kind::Addon),
+        (TILES.icon)(Kind::Addon, e.id, e.track),
         &text,
     )?;
     add_events(

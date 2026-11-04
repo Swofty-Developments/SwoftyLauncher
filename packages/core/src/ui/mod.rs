@@ -4,6 +4,7 @@ pub mod catalog;
 pub mod check;
 pub mod era;
 pub mod hub;
+pub mod icons;
 pub mod idf;
 pub mod mfd;
 pub mod node;
@@ -40,6 +41,7 @@ const FLOWS: &str = "eaid://ui_package/flows.ui";
 const REGIONS: &str = "eaid://ui_package/region_loading.uiconfig";
 const TOOLTIPS: &str = "eaid://ui_package/databases/tool_tips.uidb";
 const UI_DATA: &str = "eaid://ui_package/databases/ui_data.uidb";
+const OVERRIDES: &str = "eaid://ui_package/databases/overrides.uidb";
 const MESSAGES: &str = "eaid://ui_package/message_data/onlineservices_messages.uimsg";
 const HUD_MESSAGES: &str = "eaid://ui_package/message_data/hud_messages.uimsg";
 const PERSISTENT_UI: &str = "eaid://ui_package/screens/persistent.ui";
@@ -439,7 +441,21 @@ pub fn build(
     if !mfd_rows.is_empty() {
         persistent.push((mfd::METADATA, Box::new(mfd::metadata)));
     }
-    write_erp(&src_p, &dst_p, persistent)?;
+    // The addon tiles' icons, in persistent.erp so they are loaded wherever ADDON SETTINGS shows.
+    let [view, surface] = icons::resources(
+        &read_frag(&flow_options, icons::STOCK, 0)?,
+        &read_frag(&flow_options, &format!("{}.image", icons::STOCK), 0)?,
+    )?;
+    let persistent = persistent.into_iter().map(|(name, f)| (name, 0, f)).collect();
+    write_archive(
+        &src_p,
+        &dst_p,
+        persistent,
+        vec![
+            (view.0, era::SRV_KIND, view.1),
+            (surface.0, era::SURFACE_KIND, surface.1),
+        ],
+    )?;
     for s in &setups {
         for id in [
             format!("{}.{}", s.back, s.route),
@@ -490,6 +506,7 @@ pub fn build(
         vec![
             (TOOLTIPS, Box::new(|d| patch::tooltips(d, ADJUST_TOOLTIP))),
             (UI_DATA, Box::new(move |d| patch::ui_data(d, state))),
+            (OVERRIDES, Box::new(icons::overrides)),
         ],
     )?;
     let (src_f, dst_f) = erp("flow_persistent.erp");

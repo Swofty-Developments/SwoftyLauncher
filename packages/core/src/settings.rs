@@ -134,6 +134,9 @@ pub struct SessionAddon {
     pub description: String,
     pub enabled: bool,
     pub locked: bool,
+    /// A track addon: its category is Tracks or it brings a track package, as the launcher shows it.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub track: bool,
     #[serde(default)]
     pub dlls: Vec<String>,
     pub enable_commands: [String; 2],
@@ -176,6 +179,15 @@ pub struct SessionState {
 }
 
 impl SessionSettings {
+    /// Marks the addons that bring the build's track packages as tracks.
+    pub fn mark_tracks<'a>(&mut self, addons: impl Iterator<Item = &'a str>) {
+        for id in addons {
+            if let Some(a) = self.addons.iter_mut().find(|a| a.id == id) {
+                a.track = true;
+            }
+        }
+    }
+
     pub fn set_maps<'a>(&mut self, packages: impl Iterator<Item = &'a TrackPackage>) {
         self.maps = packages
             .map(|p| SessionMap {
@@ -256,6 +268,7 @@ impl SessionSettings {
                 description: m.description.clone().unwrap_or_default(),
                 enabled: enabled.contains(&m.id.as_str()),
                 locked: m.is_builtin() || crate::managed::is_managed(&m.id),
+                track: m.category == Some(crate::manifest::Category::Tracks),
                 dlls: m
                     .operations
                     .native
