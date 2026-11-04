@@ -419,6 +419,18 @@ pub fn plan(
             retry: None,
         };
         walk.visit(addon, v, read)?;
+        // The root can itself be a dependency of an already installed addon.
+        // Protect those dependents just as we do when replacing a requirement.
+        if let Some(installed) = have.addons.get(addon.id.as_str()) {
+            let needs: Vec<_> = walk
+                .dependents(&addon.id, &installed.version)
+                .into_iter()
+                .filter(|need| !need.version.matches(&v.version))
+                .collect();
+            if !needs.is_empty() {
+                walk.unmet(&addon.id, needs, Why::Installing(v.version.clone()));
+            }
+        }
         if let Some((id, need)) = walk.retry.take() {
             learned.entry(id).or_default().push(need);
             continue;
@@ -816,6 +828,31 @@ mod tests {
             Err(Error::Requires(r)) => r,
             other => panic!("expected a refusal, got {other:?}"),
         }
+    }
+
+    #[test]
+    fn updating_root_preserves_installed_dependents() {
+        let target = addon("dependency", vec![version("2.0.0", &[])]);
+        let installed = [
+            manifest("dependency", "1.0.0", &[]),
+            manifest("consumer", "1.0.0", &[("dependency", "^1")]),
+        ];
+        let failure = refusal(resolve(&target, std::slice::from_ref(&target), &installed));
+        assert!(failure.to_string().contains("consumer name"));
+        assert!(failure.to_string().contains("2.0.0"));
+
+        let compatible = addon("dependency", vec![version("1.5.0", &[])]);
+        assert!(resolve(&compatible, std::slice::from_ref(&compatible), &installed).is_ok());
+    }
+
+    #[test]
+    fn root_update_does_not_block_on_preexisting_unmet_requirement() {
+        let target = addon("dependency", vec![version("3.0.0", &[])]);
+        let installed = [
+            manifest("dependency", "2.0.0", &[]),
+            manifest("consumer", "1.0.0", &[("dependency", "^1")]),
+        ];
+        assert!(resolve(&target, std::slice::from_ref(&target), &installed).is_ok());
     }
 
     #[test]
