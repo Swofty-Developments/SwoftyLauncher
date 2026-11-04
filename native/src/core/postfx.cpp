@@ -2309,13 +2309,12 @@ void rules_reset()
     }
 }
 
-const char *surface_label(int game_id)
+std::string surface_label(int game_id)
 {
     int v = postfx::surface_value(game_id);
     if (v < 0)
         return "none";
-    std::string_view n = postfx::signal_value_name(postfx::S_CAR_SURFACE, size_t(v));
-    return n.data();
+    return std::string(postfx::signal_value_name(postfx::S_CAR_SURFACE, size_t(v)));
 }
 
 void live_trace_tick(ULONGLONG now)
@@ -2356,7 +2355,8 @@ void live_trace_line(ULONGLONG now, const live_car::LiveCar &c)
     swofty::log("[shaders] live car: speed=%.1f km/h gear=%d rpm=%.0f/%.0f thr=%.2f brk=%.2f steer=%.2f g=%.2f/%.2f "
                 "surface=FL:%s FR:%s RL:%s RR:%s (raw %d %d %d %d) player=%d ai=%d",
                 c.speed_kmh, c.gear, c.rpm, c.max_rpm, c.throttle, c.brake, c.steer, c.g_lateral, c.g_long,
-                surface_label(r[0]), surface_label(r[1]), surface_label(r[2]), surface_label(r[3]), r[0], r[1], r[2],
+                surface_label(r[0]).c_str(), surface_label(r[1]).c_str(), surface_label(r[2]).c_str(),
+                surface_label(r[3]).c_str(), r[0], r[1], r[2],
                 r[3], c.player, c.ai ? 1 : 0);
 }
 

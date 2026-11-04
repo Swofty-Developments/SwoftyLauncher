@@ -7,6 +7,7 @@
 #include <swofty/mixin.hpp>
 
 #include <cmath>
+#include <cstdlib>
 
 namespace live_car {
 namespace {
@@ -81,6 +82,20 @@ int find_player(uintptr_t &car, bool &ai)
         return -1;
     if (n > MAX_CARS)
         n = MAX_CARS;
+    static const int forced = [] {
+        char v[16] = {};
+        return GetEnvironmentVariableA("SWOFTY_LIVE_CAR_SLOT", v, sizeof v) && v[0] ? std::atoi(v) : -1;
+    }();
+    if (forced >= 0 && uint32_t(forced) < n) {
+        uintptr_t c = car_at(forced);
+        uint8_t is_ai = 1;
+        if (c) {
+            mem::read(c + CAR_IS_AI, is_ai);
+            car = c;
+            ai = is_ai != 0;
+            return forced;
+        }
+    }
     if (last_player >= 0 && uint32_t(last_player) < n) {
         uintptr_t c = car_at(last_player);
         uint8_t is_ai = 0;
