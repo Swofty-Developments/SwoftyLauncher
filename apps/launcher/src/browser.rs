@@ -57,6 +57,17 @@ const NATIVE: &str = "Runs code in the game";
 const VERIFYING: u8 = 1;
 const INSTALLING: u8 = 2;
 
+/// How many of `versions`, newest first, the Addons page shows before its older-versions toggle.
+fn shown_versions(versions: &[&catalog::Version], installed: &semver::Version) -> usize {
+    let through = versions
+        .iter()
+        .position(|v| v.version <= *installed)
+        .map_or(versions.len(), |i| {
+            i + usize::from(versions[i].version == *installed)
+        });
+    through.max(2).min(versions.len())
+}
+
 /// The updates for addons in `on` that haven't failed at the version offered in `held`.
 fn due_updates<'a>(
     updates: &'a [Update],
@@ -638,6 +649,8 @@ pub(crate) struct Browser {
     pub(crate) smooth: crate::scroll::SmoothScroll,
     details: HashMap<String, Addon>,
     loading: BTreeSet<String>,
+    asked: HashSet<String>,
+    history: HashSet<String>,
     working: HashMap<String, Job>,
     failed: HashMap<String, String>,
     refused: BTreeSet<String>,
@@ -700,6 +713,8 @@ impl Browser {
             smooth: Default::default(),
             details: HashMap::new(),
             loading: BTreeSet::new(),
+            asked: HashSet::new(),
+            history: HashSet::new(),
             working: HashMap::new(),
             failed: HashMap::new(),
             refused: BTreeSet::new(),
@@ -3156,6 +3171,186 @@ impl Shell {
         )
     }
 
+    /// One registry version and its changelog, for the Addon Browser and the Addons page.
+    #[allow(clippy::too_many_arguments)]
+    fn release_row(
+        &self,
+        key: &str,
+        v: &catalog::Version,
+        first: bool,
+        installed: Option<&semver::Version>,
+        newer: bool,
+        inset: f32,
+        mono: &SharedString,
+        p: Palette,
+    ) -> AnyElement {
+        let launcher = current_version();
+        let fits = v.accepts(&launcher);
+        let current = installed == Some(&v.version);
+        v_flex()
+            .px(px(inset))
+            .py(px(12.))
+            .gap(px(6.))
+            .when(!first, |d| d.border_t_1().border_color(p.border_variant))
+            .child(
+                h_flex()
+                    .gap(px(8.))
+                    .items_center()
+                    .child(
+                        div()
+                            .text_size(px(14.))
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .child(format!("v{}", v.version)),
+                    )
+                    .when(current, |d| d.child(tag("Installed", p).text_color(p.success)))
+                    .when(newer, |d| d.child(tag("New", p).text_color(p.accent)))
+                    .child(div().flex_1())
+                    .child(
+                        div()
+                            .text_size(px(12.))
+                            .text_color(p.text_placeholder)
+                            .child(format!("{} · {}", day(&v.published_at), size_text(v.size))),
+                    ),
+            )
+            .when(!fits, |d| {
+                d.child(div().text_size(px(12.)).text_color(p.warning).child(format!(
+                    "Needs launcher {}",
+                    v.launcher.as_ref().map_or_else(String::new, |r| r.to_string())
+                )))
+            })
+            .when_some(
+                v.requires
+                    .as_ref()
+                    .filter(|r| !r.is_empty())
+                    .map(|r| self.requires_text(r)),
+                |d, text| d.child(div().text_size(px(12.)).text_color(p.text_muted).child(text)),
+            )
+            .child(
+                v_flex()
+                    .text_size(px(13.))
+                    .line_height(px(19.))
+                    .when(v.changelog.trim().is_empty(), |d| {
+                        d.child(div().text_color(p.text_placeholder).child("No changelog"))
+                    })
+                    .when(!v.changelog.trim().is_empty(), |d| {
+                        d.children(crate::news::render_markdown(
+                            &format!("{key}-{}", v.version),
+                            &v.changelog,
+                            p,
+                            mono,
+                        ))
+                    }),
+            )
+            .into_any_element()
+    }
+
+    /// The registry's changelog of an installed addon, for its panel on the Addons page.
+    pub(crate) fn changelog_section(
+        &mut self,
+        id: &str,
+        installed: &semver::Version,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> Option<AnyElement> {
+        if !self.browser.has(id) {
+            return None;
+        }
+        if !self.browser.details.contains_key(id) && self.browser.asked.insert(id.to_owned()) {
+            let id = id.to_owned();
+            cx.spawn(async move |this, cx| {
+                this.update(cx, |s, cx| s.fetch_details(&id, cx)).ok();
+            })
+            .detach();
+        }
+        let listed = self.browser.find(id)?;
+        let full = self.browser.details.get(id);
+        let mut versions: Vec<&catalog::Version> = full.map(Addon::listed).unwrap_or_default();
+        for v in listed.listed() {
+            if !versions.iter().any(|o| o.version == v.version) {
+                versions.push(v);
+            }
+        }
+        versions.sort_by(|a, b| b.version.cmp(&a.version));
+        let loading = full.is_none() && self.browser.loading.contains(id);
+        if versions.is_empty() && !loading {
+            return None;
+        }
+        let newer = versions.iter().filter(|v| v.version > *installed).count();
+        let shown = shown_versions(&versions, installed);
+        let older = versions.len() - shown;
+        let open = self.browser.history.contains(id);
+        let mono = cx.theme().mono_font_family.clone();
+        let key = format!("addon-changelog-{id}");
+        let rows: Vec<AnyElement> = versions
+            .iter()
+            .take(if open { versions.len() } else { shown })
+            .enumerate()
+            .map(|(i, v)| {
+                self.release_row(
+                    &key,
+                    v,
+                    i == 0,
+                    Some(installed),
+                    v.version > *installed,
+                    0.,
+                    &mono,
+                    p,
+                )
+            })
+            .collect();
+        let summary = if loading {
+            "Loading…".to_owned()
+        } else if newer > 0 {
+            format!("{} since yours", plural(newer, "new version", "new versions"))
+        } else {
+            plural(versions.len(), "version", "versions")
+        };
+        let toggle = (older > 0).then(|| {
+            let target = id.to_owned();
+            h_flex()
+                .id("addon-changelog-older")
+                .pt(px(10.))
+                .gap(px(6.))
+                .items_center()
+                .border_t_1()
+                .border_color(p.border_variant)
+                .cursor_pointer()
+                .text_size(px(12.))
+                .text_color(p.text_placeholder)
+                .hover(move |s| s.text_color(p.text_muted))
+                .child(crate::pages::chevron(open, p))
+                .child(if open {
+                    "Hide older versions".to_owned()
+                } else {
+                    format!("Show {}", plural(older, "older version", "older versions"))
+                })
+                .on_click(cx.listener(move |this, _, _, cx| {
+                    if !this.browser.history.remove(&target) {
+                        this.browser.history.insert(target.clone());
+                    }
+                    cx.notify();
+                }))
+        });
+        Some(
+            v_flex()
+                .child(
+                    h_flex()
+                        .pb(px(2.))
+                        .items_center()
+                        .child(div().flex_1().child(label("CHANGELOG", p)))
+                        .child(
+                            div()
+                                .text_size(px(12.))
+                                .text_color(p.text_placeholder)
+                                .child(summary),
+                        ),
+                )
+                .children(rows)
+                .children(toggle)
+                .into_any_element(),
+        )
+    }
+
     fn browser_detail(&self, id: &str, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let Some(listed) = self.browser.find(id) else {
             return div().into_any_element();
@@ -3428,68 +3623,12 @@ impl Shell {
         let people = self.published_by(listed, p, cx);
         let more = self.more_from(listed, p, cx);
         let listed_versions = a.listed();
+        let key = format!("browser-{}", a.id);
         let count = listed_versions.len();
         let versions: Vec<AnyElement> = listed_versions
             .into_iter()
             .enumerate()
-            .map(|(i, v)| {
-                let fits = v.accepts(&launcher);
-                let current = installed.as_ref() == Some(&v.version);
-                v_flex()
-                    .px(px(16.))
-                    .py(px(12.))
-                    .gap(px(6.))
-                    .when(i > 0, |d| d.border_t_1().border_color(p.border_variant))
-                    .child(
-                        h_flex()
-                            .gap(px(8.))
-                            .items_center()
-                            .child(
-                                div()
-                                    .text_size(px(14.))
-                                    .font_weight(FontWeight::SEMIBOLD)
-                                    .child(format!("v{}", v.version)),
-                            )
-                            .when(current, |d| d.child(tag("Installed", p).text_color(p.success)))
-                            .child(div().flex_1())
-                            .child(
-                                div()
-                                    .text_size(px(12.))
-                                    .text_color(p.text_placeholder)
-                                    .child(format!("{} · {}", day(&v.published_at), size_text(v.size))),
-                            ),
-                    )
-                    .when(!fits, |d| {
-                        d.child(div().text_size(px(12.)).text_color(p.warning).child(format!(
-                            "Needs launcher {}",
-                            v.launcher.as_ref().map_or_else(String::new, |r| r.to_string())
-                        )))
-                    })
-                    .when_some(
-                        v.requires
-                            .as_ref()
-                            .filter(|r| !r.is_empty())
-                            .map(|r| self.requires_text(r)),
-                        |d, text| d.child(div().text_size(px(12.)).text_color(p.text_muted).child(text)),
-                    )
-                    .child(
-                        v_flex()
-                            .text_size(px(13.))
-                            .line_height(px(19.))
-                            .when(v.changelog.trim().is_empty(), |d| {
-                                d.child(div().text_color(p.text_placeholder).child("No changelog"))
-                            })
-                            .when(!v.changelog.trim().is_empty(), |d| {
-                                d.children(crate::news::render_markdown(
-                                    &format!("browser-{}-{}", a.id, v.version),
-                                    &v.changelog,
-                                    p,
-                                    &mono,
-                                ))
-                            }),
-                    )
-                    .into_any_element()
-            })
+            .map(|(i, v)| self.release_row(&key, v, i == 0, installed.as_ref(), false, 16., &mono, p))
             .collect();
         let changelog = v_flex()
             .rounded(px(10.))
@@ -3559,9 +3698,44 @@ impl Shell {
 
 #[cfg(test)]
 mod tests {
+    fn versions(list: &[&str]) -> Vec<Version> {
+        list.iter()
+            .map(|v| {
+                serde_json::from_value(serde_json::json!({
+                    "version": v, "size": 0, "sha256": "", "url": ""
+                }))
+                .unwrap()
+            })
+            .collect()
+    }
+
+    fn shown(list: &[&str], installed: &str) -> usize {
+        let all = versions(list);
+        let refs: Vec<&Version> = all.iter().collect();
+        shown_versions(&refs, &semver::Version::parse(installed).unwrap())
+    }
+
+    #[test]
+    fn shows_the_newer_versions_and_the_installed_one() {
+        assert_eq!(shown(&["1.3.0", "1.2.0", "1.1.0", "1.0.0"], "1.1.0"), 3);
+    }
+
+    #[test]
+    fn shows_two_when_up_to_date() {
+        assert_eq!(shown(&["1.2.0", "1.1.0", "1.0.0"], "1.2.0"), 2);
+        assert_eq!(shown(&["1.2.0"], "1.2.0"), 1);
+    }
+
+    #[test]
+    fn an_unlisted_install_stops_at_the_versions_above_it() {
+        assert_eq!(shown(&["1.3.0", "1.2.0", "1.0.0"], "1.1.0"), 2);
+        assert_eq!(shown(&["1.3.0", "1.2.5", "1.2.0", "1.0.0"], "1.1.0"), 3);
+        assert_eq!(shown(&["1.3.0", "1.2.0"], "2.0.0"), 2);
+    }
+
     use super::{
-        Event, Job, Progress, Stage, compact, due_updates, host, shelf_columns, shelved, shelves, size_text,
-        tile_faces,
+        Event, Job, Progress, Stage, compact, due_updates, host, shelf_columns, shelved, shelves,
+        shown_versions, size_text, tile_faces,
     };
     use std::collections::{BTreeMap, HashSet};
     use swofty_core::catalog::requires::{Plan, Step};
