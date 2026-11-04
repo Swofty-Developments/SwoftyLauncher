@@ -20,13 +20,19 @@ pub(crate) fn bounds(kind: &ParamKind) -> (Option<f64>, Option<f64>) {
     }
 }
 
-struct Sink<'a> {
+pub(crate) struct Sink<'a> {
     lines: Lines<'a>,
     out: Vec<Diagnostic>,
 }
 
 impl Sink<'_> {
-    fn push(&mut self, severity: Severity, range: Range<usize>, message: String, fix: Option<Fix>) {
+    pub(crate) fn push(
+        &mut self,
+        severity: Severity,
+        range: Range<usize>,
+        message: String,
+        fix: Option<Fix>,
+    ) {
         let (start, end) = self.lines.range(&range);
         self.out.push(Diagnostic {
             severity,
@@ -38,18 +44,20 @@ impl Sink<'_> {
         });
     }
 
-    fn error(&mut self, range: Range<usize>, message: impl Into<String>) {
+    pub(crate) fn error(&mut self, range: Range<usize>, message: impl Into<String>) {
         self.push(Severity::Error, range, message.into(), None);
     }
 }
 
-fn describe(lit: &Lit) -> &'static str {
+pub(crate) fn describe(lit: &Lit) -> &'static str {
     match lit {
         Lit::Int(_) => "a whole number",
         Lit::Float(_) => "a decimal number",
         Lit::Bool(_) => "true or false",
         Lit::Str(_) => "a string",
         Lit::Array(_) => "an array",
+        Lit::Strs(_) => "an array of strings",
+        Lit::Tables(_) => "an array of tables",
     }
 }
 
@@ -81,7 +89,7 @@ fn clamp_one(
     to
 }
 
-fn check_param(sink: &mut Sink, p: &Param, v: &RawValue) -> Option<Value> {
+pub(crate) fn check_param(sink: &mut Sink, p: &Param, v: &RawValue) -> Option<Value> {
     let key = &p.id;
     let range = &v.range;
     let wrong = |sink: &mut Sink, want: &str| {
@@ -300,6 +308,16 @@ pub fn lint(text: &str, catalog: &Catalog) -> Lint {
     let mut instances = Vec::new();
     let mut seen: HashSet<(String, Option<String>)> = HashSet::new();
     for table in doc.tables.iter().filter(|t| !t.bad) {
+        if table.effect == "when" && table.label.is_none() {
+            let fix = Fix {
+                title: "Change to `[[when]]`".into(),
+                range: table.header.clone(),
+                replacement: "[[when]]".into(),
+            };
+            let msg = "`[when]` needs double brackets: `[[when]]`".to_owned();
+            sink.push(Severity::Error, table.header.clone(), msg, Some(fix));
+            continue;
+        }
         let Some(effect) = catalog.get(&table.effect) else {
             let fix = catalog.did_you_mean(&table.effect).map(|c| Fix {
                 title: format!("Change to `{c}`"),
@@ -334,6 +352,8 @@ pub fn lint(text: &str, catalog: &Catalog) -> Lint {
         instances.push(instance(&mut sink, effect, table));
     }
 
+    let rules = crate::when::check(&mut sink, &doc, &instances, catalog);
+
     let has_errors = sink.out.iter().any(|d| d.severity == Severity::Error);
     if !has_errors && !instances.iter().any(|i| i.enabled) {
         let at = doc
@@ -350,6 +370,7 @@ pub fn lint(text: &str, catalog: &Catalog) -> Lint {
         author,
         description,
         instances,
+        rules,
     });
     Lint { config, diagnostics }
 }

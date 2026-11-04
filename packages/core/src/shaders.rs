@@ -636,6 +636,7 @@ pub fn resolve_active(store: &Store, profile: &Profile, catalog: &Catalog) -> Re
             forced_by,
             toggle_key: toggle_key(store),
             instances: Vec::new(),
+            rules: Vec::new(),
         },
         config: config.clone(),
         problem: None,
@@ -652,7 +653,10 @@ pub fn resolve_active(store: &Store, profile: &Profile, catalog: &Catalog) -> Re
     out.active.name = name_of(&text, &r.to_string());
     let lint = swofty_shaders::lint(&text, catalog);
     match &lint.config {
-        Some(config) => out.active.instances = swofty_shaders::resolve(config, catalog),
+        Some(config) => {
+            out.active.instances = swofty_shaders::resolve(config, catalog);
+            out.active.rules = swofty_shaders::resolve_rules(config, catalog);
+        }
         None => {
             let first = lint.diagnostics.iter().find(|d| d.severity == Severity::Error);
             out.problem = Some(match first {
@@ -1208,6 +1212,7 @@ pub(crate) mod tests {
                 label: String::new(),
                 params: vec![2.0],
             }],
+            rules: Vec::new(),
         };
         push_live(&root, &active).unwrap();
         push_live(
@@ -1280,6 +1285,23 @@ pub(crate) mod tests {
         assert_eq!(a.instances.len(), 1);
         assert_eq!(a.instances[0].params, [2.5]);
         assert!(a.serial > 0);
+        assert!(a.rules.is_empty());
+
+        let ruled = create(
+            &store,
+            "Ruled",
+            Some("name = \"Ruled\"\n[spark]\nintensity = 2.5\n[[when]]\nname = \"lap\"\non = \"session.lap\"\n[when.set.spark]\nintensity = 4\n"),
+        )
+        .unwrap();
+        set_active(&store, &mut p, Some(ruled)).unwrap();
+        let a = active_file(&store, &p);
+        assert_eq!(a.rules.len(), 1);
+        assert_eq!(a.rules[0].name, "lap");
+        assert!(a.rules[0].event);
+        assert_eq!(a.rules[0].set[0].slot, Some(0));
+        let json = serde_json::to_value(&a).unwrap();
+        assert_eq!(json["rules"][0]["when"][0]["op"], "event");
+        assert_eq!(json["rules"][0]["set"][0]["mode"], "blend");
 
         let bad = create(&store, "Bad", Some("[nothing]\n")).unwrap();
         set_active(&store, &mut p, Some(bad)).unwrap();

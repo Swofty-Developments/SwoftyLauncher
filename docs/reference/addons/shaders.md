@@ -285,6 +285,256 @@ An effect's `textures` and `passes` are the [post-process passes](./postfx) cont
 - The pass order is the order in the file. Passes of the next instance start where this one ends.
 - A pass that reads `previous` sees the picture after all the instances, so it lags one frame behind.
 
+## Rules
+
+A config can change its own options while something happens in the game, such as a car on a kerb, a hit or a yellow flag. Each `[[when]]` block names a signal and the values to use while it is on. The core fades from the config's own values to the rule's values and back.
+
+```toml [vhs.swfx]
+name = "1980s - VHS Off-Air Recording"
+author = "Jonno"
+
+[rewind_video]
+tvl = 240
+noise = 0.04
+detail = 0.3
+smear = 0.25
+saturation = 1.0
+
+# The tape loses tracking while two wheels are on a kerb.
+[[when]]
+name = "kerb tracking"
+on = "car.surface"
+is = "kerb"
+wheels = 2
+min_ms = 40
+hold_ms = 120
+fade_in_ms = 60
+fade_out_ms = 350
+[when.set.rewind_video]
+noise = 0.12
+detail = 0.15
+smear = 0.6
+
+# The signal breaks up on a hard hit.
+[[when]]
+name = "impact dropout"
+on = "car.impact"
+above = 3.0
+for_ms = 500
+fade_in_ms = 0
+fade_out_ms = 500
+priority = 20
+[when.set.rewind_video]
+noise = 0.35
+saturation = 0.4
+
+# Smear scales with speed: nothing at 250 km/h or below, full at 320 km/h or above.
+[[when]]
+name = "flat out"
+on = "car.speed"
+from = 250
+to = 320
+[when.set.rewind_video]
+smear = 0.5
+```
+
+The Rewind effect is `rewind_video`; see the [effect library](./shader-effects). A rule only moves options the config's effects already have.
+
+### A rule in full
+
+```toml
+[[when]]
+name = "..."              # optional; shown in the editor, the Preview and the log
+on = "<signal>"           # required unless `all` is given
+
+is = "kerb"               # a value of a name signal, or a list: is = ["grass", "gravel"]
+wheels = 2                # 1-4, car.surface only; default 1
+above = 3.0               # a number signal, or the magnitude of an event
+below = 50.0
+from = 250                # a ramp; needs `to`, from < to, number signals only
+to = 320
+all = [                   # every entry must hold
+  { on = "car.surface", is = "kerb" },
+  { on = "car.speed", above = 150 },
+]
+
+min_ms = 0                # the condition must hold this long before the rule turns on
+hold_ms = 0               # the rule stays on this long after the condition clears
+for_ms = 400              # event rules only
+fade_in_ms = 150
+fade_out_ms = 300
+
+priority = 0              # integer -100 to 100
+
+[when.set.rewind_video]   # also [when.set.<effect>.<label>]
+noise = 0.12              # any option of that instance
+enabled = false           # turns the instance off while the rule is on
+```
+
+`[when.set.<effect>]` and `[when.set.<effect>.<label>]` belong to the most recent `[[when]]`. `when` is reserved: no effect can be named `when`, and `[when]` with single brackets is an error with the quick fix `[[when]]`. An array may span several lines, with comments at line ends.
+
+### Conditions
+
+A rule has one kind of condition. Each block below is a separate rule's keys:
+
+```toml
+on = "view.replay"                 # none: a yes/no signal is on while it is true
+
+on = "race.start"                  # none: an event turns the rule on for `for_ms`
+
+on = "car.surface"
+is = "kerb"                        # is: a name signal equals this value
+is = ["grass", "gravel"]           # is: equals any of these
+wheels = 2                         # at least 2 of the 4 wheels on those surfaces
+
+on = "car.speed"
+above = 150                        # above: on above this value
+
+on = "car.speed"
+below = 50                         # below: on below this value
+
+on = "car.speed"
+above = 100
+below = 200                        # both: on between the two values
+
+on = "car.speed"
+from = 250
+to = 320                           # from + to: strength 0 at 250, 1 at 320, no fade
+
+all = [{ on = "car.surface", is = "kerb" }, { on = "car.speed", above = 150 }]
+```
+
+- `above` and `below` on an event test the event's magnitude: `car.impact` is in g, `car.damage` is 0 to 1.
+- `from` and `to` take number signals, only at the top level, and not together with `all`.
+- `all` entries use `on` with one of `is`, `above`, `below`, and `wheels`. An event signal is only ever a rule's top-level `on`.
+
+### Timing
+
+All values are milliseconds, 0 to 60000.
+
+```toml
+min_ms = 0         # default 0: the condition must hold this long before the rule turns on
+hold_ms = 0        # default 0: the rule stays on this long after the condition clears
+for_ms = 400       # default 400: how long one event keeps the rule on; a new event restarts it
+fade_in_ms = 150   # default 150: 0 to full strength
+fade_out_ms = 300  # default 300: full strength to 0
+```
+
+A fade of 0 jumps. A ramp rule takes its strength from the signal: its fades default to 0, and a fade set on it smooths a signal that jumps. `min_ms`, `hold_ms` and `for_ms` don't apply to a ramp.
+
+### Priority and overrides
+
+```toml
+[[when]]
+on = "car.impact"
+above = 3.0
+priority = 20                # beats a priority 0 rule on the same option
+[when.set.rewind_video]
+noise = 0.35
+saturation = 0.4
+
+[[when]]
+on = "session.flag"
+is = "yellow"
+[when.set.bloom.wide]        # the instance bloom.wide
+enabled = false              # only false is allowed
+```
+
+`enabled = false` turns the instance off while the rule is on. A rule cannot turn an instance on, and cannot name an instance that is off in the config. Options take the same types and clamping as the instance tables.
+
+### How values blend
+
+```text
+numbers, vectors, colours   move from the config's value to the rule's value per component, on a smoothstep curve
+integers                    blend, then round
+yes/no, choice, enabled     switch when the rule is halfway in
+several rules, one option   applied in priority order, each blending over the result so far
+```
+
+- The highest priority ends on top. Equal priorities apply in file order, so the later rule wins.
+- Rules that set different options do not affect each other.
+- A smooth on and off for a yes/no option needs an effect with a strength option.
+- A ramp rule sets its strength straight from the signal.
+
+### Signals
+
+Every signal is for the player's car, or for the car the camera follows in replays and spectating.
+
+```text
+in game now
+view.camera         name     cockpit tcam tcam_offset chase_near chase_far other
+view.replay         yes/no
+view.paused         yes/no
+view.photo          yes/no
+view.menu           yes/no
+view.cutscene       yes/no
+view.spectating     yes/no
+session.start       event    the session loads
+race.start          event    lights out
+session.lap         event    the player completes a lap
+session.end         event    the session ends
+
+not read in game yet (works in the Preview)
+car.speed           number   km/h, 0-400
+car.rpm             number   0-1 of the limiter
+car.gear            number   -1 reverse, 0 neutral, 1-8
+car.throttle        number   0-1
+car.brake           number   0-1
+car.steer           number   -1 to 1
+car.g_lateral       number   g, -6 to 6
+car.g_long          number   g, -6 to 6, braking negative
+car.surface         name     tarmac kerb rumble grass gravel sand, per wheel
+car.impact          event    collision g
+car.damage          event    part damage increase, 0-1
+car.in_pit_lane     yes/no
+car.off_track       yes/no   all four wheels off the track
+session.flag        name     none green blue yellow red
+session.safety_car  name     none sc vsc formation
+session.weather     name     clear light_cloud overcast light_rain heavy_rain storm
+session.wetness     number   0-1 track water
+session.flashback   event
+session.chequered   event    the player takes the flag
+```
+
+A signal the game does not read, or one with no live session, has no value: its conditions are false and its events never occur.
+
+### Limits
+
+- At most 16 rules per config and 32 overrides per rule.
+- A rule changes options and turns instances off. It cannot add effects, change passes or swap to another config.
+- An instance a rule turns off keeps its persistent textures, and `previous` keeps flowing.
+- A rule cannot override another rule.
+- A change to the config resets every rule to off.
+
+### Rule checks
+
+The checker marks these as you type, with quick fixes where a name is close:
+
+```text
+unknown signal `car.surfce`; did you mean `car.surface`?
+`is` needs a value of car.surface: tarmac, kerb, rumble, grass, gravel, sand
+`above` needs a number signal; car.surface is a name
+`for_ms` is for events; car.speed is a number
+`from` must be below `to`
+[when.set.bloom] names no instance of this config
+[when.set.x] names an instance that's off in this config
+rewind_video has no option `noiz`; did you mean `noise`?
+`saturation` is 3.0, outside 0.0-2.0 for rewind_video; it is clamped
+car.impact isn't read in game yet; this rule only fires in the Preview     (warning)
+```
+
+### Rule log lines
+
+```text
+[shaders] rule "kerb tracking" on (car.surface = kerb, 2 wheels)
+[shaders] rule "kerb tracking" off after 1.4 s
+[shaders] rule "flat out" on (car.speed = 287 km/h)
+[shaders] rule "impact dropout": car.impact isn't read in game yet; it never fires
+[shaders] rule "kerb tracking": 37 time(s) on in the last 60 s
+```
+
+Every on and off is logged for the first 60 seconds after a config loads. After that, one line per minute gives the count for each rule that turned on. The "isn't read in game yet" line is logged once per rule per config load.
+
 ## The `swofty shaders` command
 
 ```sh

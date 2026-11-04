@@ -95,6 +95,23 @@ The Preview updates as you type. It runs the same effects as the game, so the pi
 
 The clips are dry and wet races at Melbourne: the race start, an onboard camera and a chase camera, plus a wet onboard and a wet chase camera.
 
+## Rules and the triggers strip
+
+A config can react to the game: a rule changes the config's options while a signal is on, such as a car on a kerb, a hit or a yellow flag. Rules are written in the config's text; see [Rules](/reference/addons/shaders#rules).
+
+The triggers strip sits under the Preview clip and shows only when the config has rules. It has one control per signal the rules use, in the order the rules first use them, labelled with the signal's id:
+
+- A yes/no signal is a **yes/no** chip.
+- A name signal is a dropdown of its values, plus **none**. `car.surface` also has a wheels count from 1 to 4: that many wheels get the chosen surface and the rest are tarmac.
+- A number signal is a slider over its usual range, with the value and unit beside it.
+- An event is a **Fire** button. A rule that tests an event's magnitude with `above` or `below` adds a magnitude slider.
+
+Under the controls, each rule has one row with its name and a thin bar. The bar shows the rule's current strength, so a fade is visible as it fills and empties.
+
+The Preview steps the rules with the same timing as the game: fades, `min_ms`, `hold_ms` and `for_ms` all run from the clip's frame rate while it plays. When the clip is paused, the rules keep running in real time after a control changes, so a fade plays out. Scrubbing or stepping back resets every rule. Each **Fire** reaches the rules once. Trigger values reset when you switch configs and stay while you edit the same one.
+
+A rule that turns an effect off removes it from the Preview. A rule on a signal the game does not read yet only works in the Preview, and the editor warns about it.
+
 ## Documentation
 
 The **Documentation** tab lists every effect a config can use: the core library's and those of your installed addons. Each effect shows its options with their defaults, ranges and what they do. **Copy** puts the effect's table in your clipboard with every option at its default:
