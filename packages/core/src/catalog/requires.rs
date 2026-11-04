@@ -642,87 +642,126 @@ fn install_with(
     zips: &Zips,
     progress: &dyn Fn(Event),
 ) -> Result<Vec<AddonManifest>> {
-    let addons = store.addons()?;
-    let have = Have::of(store, &addons);
     let launcher = crate::update::current_version();
-    let mut read = |a: &Addon, v: &Version| -> Result<Vec<Requirement>> {
-        let saved = zips.borrow().get(&(a.id.clone(), v.version.clone())).cloned();
-        match (saved, &v.requires) {
-            (Some(path), _) => requires_in(&path, a, v),
-            (None, Some(listed)) => Ok(listed.clone()),
-            (None, None) => requires_in(&fetch(dir, zips, a, v, progress)?, a, v),
-        }
-    };
-    let mut planned = plan(addon, v, catalog, &have, &launcher, &mut read)?;
-    let mut settled = false;
+    // Other installs may change the store while this job is downloading. Replan
+    // under the installation lock, but never perform network work while holding it.
     for _ in 0..SETTLE {
-        progress(Event::Planned(&planned));
-        for s in &planned.steps {
-            fetch(dir, zips, &s.addon, &s.version, progress)?;
-        }
-        let again = plan(addon, v, catalog, &have, &launcher, &mut read)?;
-        if again == planned {
-            settled = true;
-            break;
-        }
-        planned = again;
-    }
-    if !settled {
-        return Err(Error::Other(format!(
-            "{}'s downloads list other requirements than the registry",
-            addon.name
-        )));
-    }
-    let mut done = Vec::new();
-    for s in &planned.steps {
-        let path = zips.borrow()[&(s.addon.id.clone(), s.version.version.clone())].clone();
-        progress(Event::Addon(&s.addon, &s.version));
-        let installed = {
-            let _one = INSTALLING.lock().unwrap_or_else(|e| e.into_inner());
-            if s.addon.id != addon.id
-                && store
-                    .addons()?
-                    .get(&s.addon.id)
-                    .is_some_and(|m| m.version == s.version.version)
-            {
-                continue;
-            }
-            progress(Event::Stage(Stage::Installing));
-            let installed = store.install_addon(&path);
-            if let Ok(m) = &installed
-                && m.id == s.addon.id
-                && let Err(e) = super::record_install(store, &m.id, &s.version)
-            {
-                super::log(
-                    &store.root,
-                    &format!(
-                        "{}: the install from {} went unrecorded: {e}",
-                        m.id, s.version.url
-                    ),
-                );
-            }
-            installed
-        };
-        let m = match installed {
-            Ok(m) => m,
-            Err(e) if s.addon.id == addon.id => return Err(e),
-            Err(e) => {
-                return Err(Error::Other(format!(
-                    "{}, which {} requires: {e}",
-                    s.label(),
-                    addon.name
-                )));
+        let addons = store.addons()?;
+        let have = Have::of(store, &addons);
+        let mut read = |a: &Addon, v: &Version| -> Result<Vec<Requirement>> {
+            let saved = zips.borrow().get(&(a.id.clone(), v.version.clone())).cloned();
+            match (saved, &v.requires) {
+                (Some(path), _) => requires_in(&path, a, v),
+                (None, Some(listed)) => Ok(listed.clone()),
+                (None, None) => requires_in(&fetch(dir, zips, a, v, progress)?, a, v),
             }
         };
-        if m.id != s.addon.id {
+        let mut planned = plan(addon, v, catalog, &have, &launcher, &mut read)?;
+        let mut settled = false;
+        for _ in 0..SETTLE {
+            progress(Event::Planned(&planned));
+            for s in &planned.steps {
+                fetch(dir, zips, &s.addon, &s.version, progress)?;
+            }
+            let again = plan(addon, v, catalog, &have, &launcher, &mut read)?;
+            if again == planned {
+                settled = true;
+                break;
+            }
+            planned = again;
+        }
+        if !settled {
             return Err(Error::Other(format!(
-                "the registry lists {}, the download installed {}",
-                s.addon.id, m.id
+                "{}'s downloads list other requirements than the registry",
+                addon.name
             )));
         }
-        done.push(m);
+        let _one = INSTALLING.lock().unwrap_or_else(|e| e.into_inner());
+        let current = store.addons()?;
+        let current_have = Have::of(store, &current);
+        let mut missing = false;
+        let refreshed = plan(addon, v, catalog, &current_have, &launcher, &mut |a, version| {
+            let path = zips
+                .borrow()
+                .get(&(a.id.clone(), version.version.clone()))
+                .cloned();
+            match (path, &version.requires) {
+                (Some(path), _) => requires_in(&path, a, version),
+                (None, Some(listed)) => Ok(listed.clone()),
+                (None, None) => {
+                    missing = true;
+                    Err(Error::Other("requirements need another download".into()))
+                }
+            }
+        });
+        if missing {
+            continue;
+        }
+        let refreshed = refreshed?;
+        if refreshed.steps.iter().any(|s| {
+            !zips
+                .borrow()
+                .contains_key(&(s.addon.id.clone(), s.version.version.clone()))
+        }) {
+            continue;
+        }
+        if refreshed != planned {
+            progress(Event::Planned(&refreshed));
+        }
+        let mut done = Vec::new();
+        for s in &refreshed.steps {
+            let path = zips.borrow()[&(s.addon.id.clone(), s.version.version.clone())].clone();
+            progress(Event::Addon(&s.addon, &s.version));
+            let installed = {
+                if s.addon.id != addon.id
+                    && store
+                        .addons()?
+                        .get(&s.addon.id)
+                        .is_some_and(|m| m.version == s.version.version)
+                {
+                    continue;
+                }
+                progress(Event::Stage(Stage::Installing));
+                let installed = store.install_addon(&path);
+                if let Ok(m) = &installed
+                    && m.id == s.addon.id
+                    && let Err(e) = super::record_install(store, &m.id, &s.version)
+                {
+                    super::log(
+                        &store.root,
+                        &format!(
+                            "{}: the install from {} went unrecorded: {e}",
+                            m.id, s.version.url
+                        ),
+                    );
+                }
+                installed
+            };
+            let m = match installed {
+                Ok(m) => m,
+                Err(e) if s.addon.id == addon.id => return Err(e),
+                Err(e) => {
+                    return Err(Error::Other(format!(
+                        "{}, which {} requires: {e}",
+                        s.label(),
+                        addon.name
+                    )));
+                }
+            };
+            if m.id != s.addon.id {
+                return Err(Error::Other(format!(
+                    "the registry lists {}, the download installed {}",
+                    s.addon.id, m.id
+                )));
+            }
+            done.push(m);
+        }
+        return Ok(done);
     }
-    Ok(done)
+    Err(Error::Other(format!(
+        "{}'s dependencies changed while installing; please retry",
+        addon.name
+    )))
 }
 
 #[cfg(test)]
@@ -1286,6 +1325,66 @@ mod tests {
         let downloads = store.root.join(super::super::CACHE_DIR).join("downloads");
         assert_eq!(std::fs::read_dir(&downloads).unwrap().count(), 0);
         assert!(shared().keys().all(|p| !p.starts_with(&root)));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn concurrent_incompatible_late_requirements_do_not_break_an_installed_addon() {
+        let root = std::env::temp_dir().join(format!("swofty-requires-conflict-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let store = Store::new(&root);
+        let a_zip = zipped("", &manifest("t.a", "1.0.0", &[("t.c", "^1")]));
+        let b_zip = zipped("", &manifest("t.b", "1.0.0", &[("t.c", "^2")]));
+        let c1_zip = zipped("", &manifest("t.c", "1.0.0", &[]));
+        let c2_zip = zipped("", &manifest("t.c", "2.0.0", &[]));
+        let base = serve(vec![
+            ("/a.zip".into(), a_zip.clone()),
+            ("/b.zip".into(), b_zip.clone()),
+            ("/c1.zip".into(), c1_zip.clone()),
+            ("/c2.zip".into(), c2_zip.clone()),
+        ]);
+        let a = addon("t.a", vec![hosted(&base, "/a.zip", &a_zip, None)]);
+        let b = addon("t.b", vec![hosted(&base, "/b.zip", &b_zip, None)]);
+        let c1 = hosted(&base, "/c1.zip", &c1_zip, Some(&[]));
+        let mut c2 = hosted(&base, "/c2.zip", &c2_zip, Some(&[]));
+        c2.version = semver::Version::new(2, 0, 0);
+        let catalog = vec![a.clone(), b.clone(), addon("t.c", vec![c2, c1])];
+        let barrier = Arc::new(std::sync::Barrier::new(2));
+        let runs: Vec<_> = [a, b]
+            .into_iter()
+            .map(|target| {
+                let (store, catalog, barrier) = (store.clone(), catalog.clone(), barrier.clone());
+                std::thread::spawn(move || {
+                    let waited = std::cell::Cell::new(false);
+                    install(&store, &catalog, &target, &target.versions[0], &|event| {
+                        if matches!(event, Event::Planned(_)) && !waited.replace(true) {
+                            barrier.wait();
+                        }
+                    })
+                })
+            })
+            .collect();
+        let results: Vec<_> = runs.into_iter().map(|run| run.join().unwrap()).collect();
+        assert_eq!(
+            results.iter().filter(|result| result.is_ok()).count(),
+            1,
+            "{results:?}"
+        );
+        assert!(
+            results
+                .iter()
+                .any(|result| matches!(result, Err(Error::Requires(_))))
+        );
+        let installed = store.addons().unwrap();
+        let dep = &installed["t.c"].version;
+        let consumer = installed.get("t.a").or_else(|| installed.get("t.b")).unwrap();
+        assert!(
+            consumer
+                .requires
+                .iter()
+                .any(|r| r.id == "t.c" && r.version.matches(dep))
+        );
+        assert_ne!(installed.contains_key("t.a"), installed.contains_key("t.b"));
         std::fs::remove_dir_all(&root).ok();
     }
 
