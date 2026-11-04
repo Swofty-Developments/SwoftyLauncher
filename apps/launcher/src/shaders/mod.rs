@@ -3,6 +3,7 @@ mod docs;
 mod editor;
 mod list;
 mod preview;
+mod triggers;
 
 use std::path::PathBuf;
 use std::sync::Arc;

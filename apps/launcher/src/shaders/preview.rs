@@ -14,9 +14,11 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::shaders::CompiledEffect;
 use swofty_preview::{ActiveInstance, Clip, ClipInfo, Frame, Preview};
-use swofty_shaders::{Catalog, Target};
+use swofty_shaders::rules::{Engine, Signals};
+use swofty_shaders::{Catalog, Rule, Target};
 
 use super::clips::{self, ClipItem};
+use super::triggers::Triggers;
 use super::{Mode, ShadersView};
 use crate::theme::Palette;
 
@@ -43,9 +45,16 @@ enum Effects {
 
 enum Job {
     Open(PathBuf),
-    Effects(Vec<CompiledEffect>),
+    Effects(Vec<CompiledEffect>, usize),
+    Rules(Vec<Rule>),
+    Triggers(Signals),
+    Fire(String, f64),
     Instances(Vec<ActiveInstance>),
-    Render { frame: usize, compare: bool },
+    Render {
+        frame: usize,
+        compare: bool,
+        settle: bool,
+    },
 }
 
 enum Done {
@@ -56,6 +65,8 @@ enum Done {
         index: usize,
         config: Arc<RenderImage>,
         original: Option<Arc<RenderImage>>,
+        weights: Vec<f64>,
+        busy: bool,
     },
     Failed {
         message: String,
@@ -75,7 +86,7 @@ pub(super) struct PreviewState {
     clip: usize,
     info: Option<ClipInfo>,
     frame: usize,
-    playing: bool,
+    pub(super) playing: bool,
     config_image: Option<Arc<RenderImage>>,
     original_image: Option<Arc<RenderImage>>,
     compare: bool,
@@ -85,6 +96,7 @@ pub(super) struct PreviewState {
     status: Status,
     effects: Effects,
     instances: Vec<ActiveInstance>,
+    pub(super) triggers: Triggers,
     slider: Entity<SliderState>,
     slider_events: Option<Subscription>,
     pending: usize,
@@ -114,6 +126,7 @@ impl PreviewState {
             status: Status::Idle,
             effects: Effects::NotStarted,
             instances: Vec::new(),
+            triggers: Triggers::default(),
             slider: cx.new(|_| SliderState::new().min(0.).max(1.).step(1.)),
             slider_events: None,
             pending: 0,
@@ -141,12 +154,103 @@ fn image_of(frame: &Frame) -> Result<Arc<RenderImage>, String> {
     Ok(Arc::new(RenderImage::new(vec![image::Frame::new(buffer)])))
 }
 
+const STEP: usize = 8;
+
+struct Want {
+    index: usize,
+    compare: bool,
+    settle: bool,
+}
+
+#[derive(Default)]
+struct Rig {
+    rules: Vec<Rule>,
+    engine: Option<Engine>,
+    base: Vec<ActiveInstance>,
+    signals: Signals,
+    pending: Vec<(String, f64)>,
+    last: Option<usize>,
+    applied: Option<Vec<ActiveInstance>>,
+    settle_left: f64,
+    last_settle: Option<Instant>,
+}
+
+impl Rig {
+    fn set_rules(&mut self, rules: Vec<Rule>) {
+        self.engine = (!rules.is_empty()).then(|| Engine::new(&rules));
+        self.rules = rules;
+        self.pending.clear();
+        self.last = None;
+        self.applied = None;
+    }
+
+    fn touched(&mut self) {
+        let hold = self
+            .rules
+            .iter()
+            .map(|r| r.hold_ms + r.min_ms + r.for_ms)
+            .fold(0.0, f64::max);
+        self.settle_left = hold + 150.0;
+    }
+
+    fn drive(&mut self, p: &mut Preview, index: usize, fps: f32, settle: bool) -> (Vec<f64>, bool) {
+        let Some(engine) = self.engine.as_mut() else {
+            return (Vec::new(), false);
+        };
+        let dt = match self.last {
+            Some(l) if index > l && index - l <= STEP => {
+                Some((index - l) as f64 * 1000.0 / f64::from(fps.max(1.0)))
+            }
+            Some(l) if index == l && settle => Some(
+                self.last_settle
+                    .map_or(33.0, |t| t.elapsed().as_secs_f64() * 1000.0)
+                    .clamp(1.0, 100.0),
+            ),
+            Some(l) if index == l => None,
+            _ => {
+                engine.reset();
+                Some(0.0)
+            }
+        };
+        if let Some(dt) = dt {
+            let mut signals = self.signals.clone();
+            for (id, magnitude) in self.pending.drain(..) {
+                signals.fire(&id, magnitude);
+            }
+            engine.step(dt, &signals);
+            self.settle_left = (self.settle_left - dt).max(0.0);
+        }
+        self.last_settle = Some(Instant::now());
+        self.last = Some(index);
+        let (blended, off) = engine.apply(&self.base);
+        let shown: Vec<ActiveInstance> = blended
+            .into_iter()
+            .zip(off)
+            .filter_map(|(i, off)| (!off).then_some(i))
+            .collect();
+        if self.applied.as_ref() != Some(&shown) {
+            p.set_instances(shown.clone());
+            self.applied = Some(shown);
+        }
+        let weights = engine.weights().to_vec();
+        let busy = self.settle_left > 0.0
+            || weights.iter().any(|&w| w > 0.0 && w < 1.0)
+            || self
+                .rules
+                .iter()
+                .enumerate()
+                .any(|(i, r)| r.event && engine.is_on(i));
+        (weights, busy)
+    }
+}
+
 fn work(jobs: Receiver<Job>, done: Sender<Done>) {
     let mut clip: Option<Clip> = None;
     let mut preview: Option<Preview> = None;
     let mut gpu_error: Option<String> = None;
     let mut original: Option<(usize, Arc<RenderImage>)> = None;
     let mut logged_failure: Option<String> = None;
+    let mut rig = Rig::default();
     while let Ok(first) = jobs.recv() {
         let mut batch = vec![first];
         while let Ok(job) = jobs.try_recv() {
@@ -158,6 +262,7 @@ fn work(jobs: Receiver<Job>, done: Sender<Done>) {
                 Job::Render { .. } if Some(i) != last_render => Done::Skipped,
                 Job::Open(dir) => {
                     original = None;
+                    rig.last = None;
                     match Clip::open(&dir) {
                         Ok(opened) => {
                             let info = opened.info.clone();
@@ -176,28 +281,54 @@ fn work(jobs: Receiver<Job>, done: Sender<Done>) {
                         }
                     }
                 }
-                Job::Effects(effects) => match gpu(&mut preview, &mut gpu_error) {
+                Job::Effects(effects, rules) => match gpu(&mut preview, &mut gpu_error) {
                     Ok(p) => {
-                        crate::app_log::note(&describe(&effects));
+                        crate::app_log::note(&describe(&effects, rules));
                         p.set_effects(effects);
                         Done::Ack
                     }
                     Err(message) => Done::Failed { message, gpu: true },
                 },
+                Job::Rules(rules) => {
+                    rig.set_rules(rules);
+                    Done::Ack
+                }
+                Job::Triggers(signals) => {
+                    rig.signals = signals;
+                    rig.touched();
+                    Done::Ack
+                }
+                Job::Fire(id, magnitude) => {
+                    rig.pending.push((id, magnitude));
+                    rig.touched();
+                    Done::Ack
+                }
                 Job::Instances(instances) => match gpu(&mut preview, &mut gpu_error) {
                     Ok(p) => {
-                        p.set_instances(instances);
+                        rig.applied = None;
+                        if rig.engine.is_none() {
+                            p.set_instances(instances.clone());
+                        }
+                        rig.base = instances;
                         Done::Ack
                     }
                     Err(message) => Done::Failed { message, gpu: true },
                 },
-                Job::Render { frame, compare } => render(
+                Job::Render {
+                    frame,
+                    compare,
+                    settle,
+                } => render(
                     &mut clip,
                     &mut preview,
                     &mut gpu_error,
                     &mut original,
-                    frame,
-                    compare,
+                    &mut rig,
+                    Want {
+                        index: frame,
+                        compare,
+                        settle,
+                    },
                 ),
             };
             if let Done::Failed { message, .. } = &reply
@@ -214,7 +345,7 @@ fn work(jobs: Receiver<Job>, done: Sender<Done>) {
 }
 
 /// The effects the preview loads, each with its textures: a declared one's format, or an image's file and size.
-fn describe(effects: &[CompiledEffect]) -> String {
+fn describe(effects: &[CompiledEffect], rules: usize) -> String {
     let list: Vec<String> = effects
         .iter()
         .map(|e| {
@@ -237,7 +368,7 @@ fn describe(effects: &[CompiledEffect]) -> String {
             }
         })
         .collect();
-    format!("[shaders] preview effects: {}", list.join("; "))
+    format!("[shaders] preview effects: {}; {rules} rule(s)", list.join("; "))
 }
 
 fn gpu<'a>(preview: &'a mut Option<Preview>, error: &mut Option<String>) -> Result<&'a mut Preview, String> {
@@ -265,9 +396,14 @@ fn render(
     preview: &mut Option<Preview>,
     gpu_error: &mut Option<String>,
     original: &mut Option<(usize, Arc<RenderImage>)>,
-    index: usize,
-    compare: bool,
+    rig: &mut Rig,
+    want: Want,
 ) -> Done {
+    let Want {
+        index,
+        compare,
+        settle,
+    } = want;
     let Some(clip) = clip.as_ref() else {
         return Done::Failed {
             message: "No clip is open".into(),
@@ -283,6 +419,7 @@ fn render(
         Ok(f) => f,
         Err(message) => return Done::Failed { message, gpu: false },
     };
+    let (weights, busy) = rig.drive(p, index, clip.info.fps, settle);
     let out = match p.render(&frame).and_then(|f| image_of(&f)) {
         Ok(b) => b,
         Err(message) => return Done::Failed { message, gpu: false },
@@ -305,6 +442,8 @@ fn render(
         index,
         config: out,
         original: original_png,
+        weights,
+        busy,
     }
 }
 
@@ -419,6 +558,8 @@ impl ShadersView {
                 index,
                 config,
                 original,
+                weights,
+                busy,
             } => {
                 show(&mut self.preview.config_image, Some(config), cx);
                 if let Some(o) = original {
@@ -426,6 +567,11 @@ impl ShadersView {
                 }
                 self.preview.render_error = None;
                 let _ = index;
+                self.preview.triggers.weights = weights;
+                self.preview.triggers.busy = busy;
+                if !self.preview.playing {
+                    self.fade_tick(cx);
+                }
             }
             Done::Failed { message, gpu: true } => self.preview.status = Status::NoGpu(message),
             Done::Failed { message, gpu: false } => self.preview.render_error = Some(message),
@@ -585,7 +731,8 @@ impl ShadersView {
                 match compiled {
                     Ok(effects) => {
                         v.preview.effects = Effects::Ready;
-                        v.send(Job::Effects(effects), cx);
+                        let rules = v.preview.triggers.rules.len();
+                        v.send(Job::Effects(effects, rules), cx);
                         v.preview_send_instances(cx);
                         v.preview_render(cx);
                     }
@@ -598,8 +745,14 @@ impl ShadersView {
         .detach();
     }
 
-    pub(super) fn preview_instances(&mut self, instances: Vec<ActiveInstance>, cx: &mut Context<Self>) {
-        if self.preview.instances == instances {
+    pub(super) fn preview_instances(
+        &mut self,
+        instances: Vec<ActiveInstance>,
+        rules: Vec<Rule>,
+        cx: &mut Context<Self>,
+    ) {
+        let rules_changed = self.trigger_rules(rules, cx);
+        if self.preview.instances == instances && !rules_changed {
             return;
         }
         self.preview.instances = instances;
@@ -610,8 +763,25 @@ impl ShadersView {
     }
 
     fn preview_send_instances(&mut self, cx: &mut Context<Self>) {
+        let rules = self.preview.triggers.rules.clone();
+        self.send(Job::Rules(rules), cx);
+        self.preview_send_triggers(cx);
         let instances = self.preview.instances.clone();
         self.send(Job::Instances(instances), cx);
+    }
+
+    pub(super) fn preview_send_triggers(&mut self, cx: &mut Context<Self>) {
+        if self.preview.worker.is_none() {
+            return;
+        }
+        let signals = self.trigger_signals();
+        self.send(Job::Triggers(signals), cx);
+    }
+
+    pub(super) fn preview_fire(&mut self, id: &str, magnitude: f64, cx: &mut Context<Self>) {
+        if self.preview.worker.is_some() {
+            self.send(Job::Fire(id.to_owned(), magnitude), cx);
+        }
     }
 
     fn preview_render(&mut self, cx: &mut Context<Self>) {
@@ -619,7 +789,29 @@ impl ShadersView {
             return;
         }
         let (frame, compare) = (self.preview.frame, self.preview.compare);
-        self.send(Job::Render { frame, compare }, cx);
+        self.send(
+            Job::Render {
+                frame,
+                compare,
+                settle: false,
+            },
+            cx,
+        );
+    }
+
+    pub(super) fn preview_render_settle(&mut self, cx: &mut Context<Self>) {
+        if self.preview.info.is_none() || self.preview.status != Status::Ready {
+            return;
+        }
+        let (frame, compare) = (self.preview.frame, self.preview.compare);
+        self.send(
+            Job::Render {
+                frame,
+                compare,
+                settle: true,
+            },
+            cx,
+        );
     }
 
     fn preview_seek(&mut self, frame: usize, cx: &mut Context<Self>) {
@@ -678,6 +870,7 @@ impl ShadersView {
             self.preview_play(cx);
         } else {
             self.preview.tick = None;
+            self.fade_tick(cx);
         }
         cx.notify();
     }
@@ -732,6 +925,7 @@ impl ShadersView {
             Status::Ready => self.viewport(p, cx),
         };
         let notes = self.preview_notes(p);
+        let strip = self.triggers_strip(p, cx);
         v_flex()
             .size_full()
             .min_h_0()
@@ -739,6 +933,7 @@ impl ShadersView {
             .child(body)
             .children(notes)
             .child(self.transport(p, cx))
+            .children(strip)
             .into_any_element()
     }
 
