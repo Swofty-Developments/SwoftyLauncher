@@ -1172,7 +1172,7 @@ impl Shell {
                 .label("Retry")
                 .on_click(cx.listener(move |this, _, _, cx| {
                     cx.stop_propagation();
-                    this.install_from_catalog(&target, cx);
+                    this.retry_download(&target, cx);
                 }))
                 .into_any_element(),
             Offer::Queued => Button::new(key)

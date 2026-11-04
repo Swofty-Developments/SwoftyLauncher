@@ -270,6 +270,17 @@ mod tests {
     }
 
     #[test]
+    fn duplicate_request_does_not_replace_the_original_version() {
+        let mut q = Queue::default();
+        assert!(q.enqueue("a".into(), "1.0", BTreeSet::new()));
+        assert!(!q.enqueue("a".into(), "2.0", BTreeSet::new()));
+        assert_eq!(q.jobs()[0].request, "1.0");
+        assert_eq!(q.start_next().as_deref(), Some("a"));
+        assert!(!q.enqueue("a".into(), "2.0", BTreeSet::new()));
+        assert_eq!(q.jobs()[0].request, "1.0");
+    }
+
+    #[test]
     fn completed_history_does_not_block_a_new_request_or_its_completion() {
         let mut q = Queue::default();
         assert!(add(&mut q, "a", &[]));

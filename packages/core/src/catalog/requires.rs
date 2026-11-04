@@ -1392,6 +1392,41 @@ mod tests {
     }
 
     #[test]
+    fn failed_root_reports_dependencies_installed_before_failure() {
+        let root = std::env::temp_dir().join(format!("swofty-requires-partial-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let store = Store::new(&root);
+        let dependency = zipped("", &manifest("t.dep", "1.0.0", &[]));
+        let mut zip = zip::ZipWriter::new(std::io::Cursor::new(Vec::new()));
+        zip.start_file(MANIFEST_FILE, zip::write::SimpleFileOptions::default())
+            .unwrap();
+        std::io::Write::write_all(
+            &mut zip,
+            br#"{"id":"t.root","version":"1.0.0","requires":[{"id":"t.dep","version":"^1"}]}"#,
+        )
+        .unwrap();
+        let invalid_root = zip.finish().unwrap().into_inner();
+        let base = serve(vec![
+            ("/root.zip".into(), invalid_root.clone()),
+            ("/dep.zip".into(), dependency.clone()),
+        ]);
+        let target = addon("t.root", vec![hosted(&base, "/root.zip", &invalid_root, None)]);
+        let dep = addon("t.dep", vec![hosted(&base, "/dep.zip", &dependency, Some(&[]))]);
+        let catalog = vec![target.clone(), dep];
+        let installed = RefCell::new(Vec::new());
+        let result = install(&store, &catalog, &target, &target.versions[0], &|event| {
+            if let Event::Installed(manifest) = event {
+                installed.borrow_mut().push(manifest.id.clone());
+            }
+        });
+        assert!(result.is_err(), "invalid root should fail to install");
+        assert_eq!(*installed.borrow(), ["t.dep"]);
+        assert!(store.addons().unwrap().contains_key("t.dep"));
+        assert!(!store.addons().unwrap().contains_key("t.root"));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
     fn a_failed_install_leaves_a_shared_download_to_the_install_still_using_it() {
         let root = std::env::temp_dir().join(format!("swofty-requires-failed-{}", std::process::id()));
         std::fs::remove_dir_all(&root).ok();
