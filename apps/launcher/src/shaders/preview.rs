@@ -93,6 +93,7 @@ pub(super) struct PreviewState {
     split: f32,
     dragging: bool,
     bounds: Rc<Cell<Bounds<Pixels>>>,
+    area: Rc<Cell<Size<Pixels>>>,
     status: Status,
     effects: Effects,
     instances: Vec<ActiveInstance>,
@@ -123,6 +124,7 @@ impl PreviewState {
             split: 0.5,
             dragging: false,
             bounds: Rc::new(Cell::new(Bounds::default())),
+            area: Rc::new(Cell::new(Size::default())),
             status: Status::Idle,
             effects: Effects::NotStarted,
             instances: Vec::new(),
@@ -922,7 +924,31 @@ impl ShadersView {
                 Some((e.clone(), div().into_any_element())),
                 p,
             ),
-            Status::Ready => self.viewport(p, cx),
+            Status::Ready => {
+                let area = self.preview.area.clone();
+                div()
+                    .flex_1()
+                    .min_h_0()
+                    .w_full()
+                    .relative()
+                    .flex()
+                    .justify_center()
+                    .child(
+                        canvas(
+                            move |b, window, _| {
+                                if area.get() != b.size {
+                                    area.set(b.size);
+                                    window.refresh();
+                                }
+                            },
+                            |_, _, _, _| {},
+                        )
+                        .absolute()
+                        .size_full(),
+                    )
+                    .child(self.viewport(p, cx))
+                    .into_any_element()
+            }
         };
         let notes = self.preview_notes(p);
         let strip = self.triggers_strip(p, cx);
@@ -1067,11 +1093,18 @@ impl ShadersView {
             .as_ref()
             .filter(|i| i.height > 0)
             .map_or(16. / 9., |i| i.width as f32 / i.height as f32);
+        let area = self.preview.area.get();
+        let fit = (area.width > px(0.) && area.height > px(0.)).then(|| {
+            let w = area.width.min(area.height * ratio);
+            (w, w / ratio)
+        });
         let frame = div()
             .id("shaders-viewport")
             .relative()
-            .w_full()
-            .aspect_ratio(ratio)
+            .map(|d| match fit {
+                Some((w, h)) => d.w(w).h(h),
+                None => d.w_full().aspect_ratio(ratio),
+            })
             .rounded(px(10.))
             .overflow_hidden()
             .bg(p.chrome)
