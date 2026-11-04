@@ -256,6 +256,21 @@ static const json::Value &child(const json::Value &v, const char *k)
     return v[k];
 }
 
+static int value_index(int signal, const json::Value &v)
+{
+    if (v.type == json::Value::Num)
+        return int(v.n);
+    std::string name = v.str();
+    for (size_t i = 0; i < 32; i++) {
+        std::string_view n = signal_value_name(signal, i);
+        if (n.empty())
+            break;
+        if (n == name)
+            return int(i);
+    }
+    return -1;
+}
+
 static void vector_cases(const char *path)
 {
     std::ifstream f(path);
@@ -276,13 +291,13 @@ static void vector_cases(const char *path)
         cases++;
         std::string name = c["name"].str();
         ActiveSpec spec;
-        const json::Value &insts = c["instances"];
+        const json::Value &base = c["base"];
         Plan plan;
-        for (size_t i = 0; i < insts.a.size(); i++) {
+        for (size_t i = 0; i < base.a.size(); i++) {
             PlanInstance pi;
             pi.source = int(i);
             for (size_t k = 0; k < SLOTS; k++)
-                pi.options[k] = k < insts.a[i]["options"].a.size() ? float(insts.a[i]["options"].a[k].n) : 0.0f;
+                pi.options[k] = k < base.a[i].a.size() ? float(base.a[i].a[k].n) : 0.0f;
             plan.instances.push_back(std::move(pi));
         }
         for (auto &r : c["rules"].a) {
@@ -307,22 +322,24 @@ static void vector_cases(const char *path)
                 if (v.type == json::Value::Arr && s == S_CAR_SURFACE) {
                     int w[4] = {-1, -1, -1, -1};
                     for (size_t k = 0; k < 4 && k < v.a.size(); k++)
-                        w[k] = int(v.a[k].n);
+                        w[k] = value_index(s, v.a[k]);
                     sig.set_surface(w);
                 } else if (v.type == json::Value::Arr) {
                     for (auto &m : v.a)
                         sig.add_event(s, m.n);
-                } else if (SIGNALS[s].kind == SK_EVENT) {
-                    sig.add_event(s, v.n);
                 } else if (v.type == json::Value::Bool) {
                     sig.set(s, v.b ? 1 : 0);
+                } else if (SIGNALS[s].kind == SK_NAME) {
+                    int i = value_index(s, v);
+                    if (i >= 0)
+                        sig.set(s, i);
                 } else if (v.type == json::Value::Num) {
                     sig.set(s, v.n);
                 }
             }
             if (fr["reset"].type == json::Value::Bool && fr["reset"].b)
                 engine.reset(spec.rules, plan);
-            engine.step(sig, fr["dt"].type == json::Value::Num ? fr["dt"].n : 1000.0 / 60);
+            engine.step(sig, fr["dt_ms"].type == json::Value::Num ? fr["dt_ms"].n : 1000.0 / 60);
             const json::Value &ex = fr["expect"];
             for (size_t r = 0; r < ex["weights"].a.size() && r < engine.rules(); r++)
                 if (!near(engine.state(r).w, ex["weights"].a[r].n)) {
