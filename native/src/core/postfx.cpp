@@ -86,7 +86,7 @@ struct Pass {
     postfx::When when;
     double budget_ms = 1.5;
     ID3D12PipelineState *pso = nullptr;
-    bool off = false, on = true;
+    bool off = false, on = true, ruled_off = false;
     const char *why = nullptr;
     double ms_sum = 0, ms_peak = 0;
     unsigned ms_frames = 0, over = 0;
@@ -1019,6 +1019,7 @@ std::vector<int> live_passes(const view::State &v)
                 drop_instance(p.inst);
         }
         const char *why = p.off            ? "off"
+                          : p.ruled_off    ? "a rule turned it off"
                           : !p.on          ? "its option turns it off"
                           : addon_off(p.addon_id) ? "its addon's key turned it off"
                                            : postfx::ineligible(p.when, v.kind, v.flags, v.valid);
@@ -2210,6 +2211,198 @@ void install_plan(postfx::Plan next)
     }
 }
 
+struct RuleLog {
+    bool on = false;
+    ULONGLONG since = 0;
+    unsigned count = 0;
+};
+
+postfx::RuleEngine rule_engine;
+std::vector<RuleLog> rule_log;
+ULONGLONG rules_loaded_at, rules_minute_at;
+LARGE_INTEGER rules_clock{};
+std::atomic<unsigned> pending_events[postfx::SIGNAL_COUNT];
+
+std::string rule_name(size_t i)
+{
+    const postfx::RuleSpec &r = active.rules[i];
+    return r.name.empty() ? "#" + std::to_string(r.order) : r.name;
+}
+
+std::string describe_cond(const postfx::RuleCond &c, const postfx::Signals &sig)
+{
+    const postfx::SignalInfo &info = postfx::SIGNALS[c.signal];
+    std::string id(info.id), unit(info.unit);
+    char buf[96];
+    if (c.op == postfx::OP_IS && c.signal == postfx::S_CAR_SURFACE) {
+        std::string_view name;
+        for (int w : sig.wheel)
+            if (w >= 0 && w < 32 && (c.mask >> w & 1)) {
+                name = postfx::signal_value_name(c.signal, size_t(w));
+                break;
+            }
+        std::snprintf(buf, sizeof buf, " = %.*s, %d wheel%s", int(name.size()), name.data(), c.wheels,
+                      c.wheels == 1 ? "" : "s");
+        return id + buf;
+    }
+    if (c.op == postfx::OP_IS) {
+        std::string_view name = postfx::signal_value_name(c.signal, size_t(sig.num[c.signal]));
+        std::snprintf(buf, sizeof buf, " = %.*s", int(name.size()), name.data());
+        return id + buf;
+    }
+    if (info.kind == postfx::SK_NUMBER) {
+        std::snprintf(buf, sizeof buf, " = %.3g%s%s", sig.num[c.signal], unit.empty() ? "" : " ", unit.c_str());
+        return id + buf;
+    }
+    if (info.kind == postfx::SK_EVENT && sig.n_events[c.signal] && sig.magnitude[c.signal][0] != 0) {
+        std::snprintf(buf, sizeof buf, " = %.3g%s%s", sig.magnitude[c.signal][0], unit.empty() ? "" : " ", unit.c_str());
+        return id + buf;
+    }
+    return id;
+}
+
+std::string describe_rule(size_t i, const postfx::Signals &sig)
+{
+    const postfx::RuleSpec &r = active.rules[i];
+    std::string out;
+    if (r.has_ramp)
+        return describe_cond({r.ramp_signal, postfx::OP_ABOVE}, sig);
+    for (auto &c : r.when)
+        out += (out.empty() ? "" : ", ") + describe_cond(c, sig);
+    return out;
+}
+
+void rules_reset()
+{
+    rule_engine.reset(active.rules, plan);
+    rule_log.assign(active.rules.size(), RuleLog{});
+    rules_loaded_at = GetTickCount64();
+    rules_minute_at = rules_loaded_at + 120000;
+    rules_clock = {};
+    for (auto &n : pending_events)
+        n.store(0);
+    for (auto &p : passes)
+        if (p.inst >= 0)
+            p.ruled_off = false;
+    for (size_t i = 0; i < active.rules.size(); i++) {
+        const postfx::RuleSpec &r = active.rules[i];
+        int unread = r.has_ramp && !postfx::SIGNALS[r.ramp_signal].in_game ? r.ramp_signal : -1;
+        for (auto &c : r.when)
+            if (unread < 0 && !postfx::SIGNALS[c.signal].in_game)
+                unread = c.signal;
+        if (unread >= 0)
+            swofty::log("[shaders] rule \"%s\": %.*s isn't read in game yet; it never fires", rule_name(i).c_str(),
+                        int(postfx::SIGNALS[unread].id.size()), postfx::SIGNALS[unread].id.data());
+    }
+}
+
+void rules_frame(const view::State &v, ULONGLONG now)
+{
+    if (!rule_engine.rules())
+        return;
+    LARGE_INTEGER t, freq;
+    QueryPerformanceCounter(&t);
+    QueryPerformanceFrequency(&freq);
+    double ms = rules_clock.QuadPart ? double(t.QuadPart - rules_clock.QuadPart) * 1000.0 / double(freq.QuadPart) : 0.0;
+    rules_clock = t;
+    postfx::Signals sig;
+    if (v.valid) {
+        if (v.kind >= 1 && v.kind <= 6)
+            sig.set(postfx::S_VIEW_CAMERA, v.kind - 1);
+        sig.set(postfx::S_VIEW_REPLAY, (v.flags & view::REPLAY) != 0);
+        sig.set(postfx::S_VIEW_PAUSED, (v.flags & view::PAUSED) != 0);
+        sig.set(postfx::S_VIEW_PHOTO, (v.flags & view::PHOTO) != 0);
+        sig.set(postfx::S_VIEW_MENU, (v.flags & view::MENU) != 0);
+        sig.set(postfx::S_VIEW_CUTSCENE, (v.flags & view::CUTSCENE) != 0);
+        sig.set(postfx::S_VIEW_SPECTATING, (v.flags & view::SPECTATING) != 0);
+    }
+    for (int s : {postfx::S_SESSION_START, postfx::S_RACE_START, postfx::S_SESSION_LAP, postfx::S_SESSION_END}) {
+        unsigned n = pending_events[s].exchange(0);
+        for (unsigned i = 0; i < n && i < postfx::Signals::MAX_EVENTS; i++)
+            sig.add_event(s);
+    }
+    rule_engine.step(sig, ms);
+    for (auto &p : passes)
+        if (p.inst >= 0 && size_t(p.inst) < plan.instances.size()) {
+            memcpy(p.options, rule_engine.options(size_t(p.inst)), sizeof p.options);
+            p.ruled_off = rule_engine.off(size_t(p.inst));
+        }
+    bool early = now - rules_loaded_at < 60000;
+    for (size_t i = 0; i < rule_log.size(); i++) {
+        const auto &st = rule_engine.state(i);
+        RuleLog &l = rule_log[i];
+        if (!st.changed)
+            continue;
+        if (st.on) {
+            l.since = now;
+            if (!early)
+                l.count++;
+            else
+                swofty::log("[shaders] rule \"%s\" on (%s)", rule_name(i).c_str(), describe_rule(i, sig).c_str());
+        } else if (early) {
+            swofty::log("[shaders] rule \"%s\" off after %.1f s", rule_name(i).c_str(), double(now - l.since) / 1000.0);
+        }
+    }
+    if (now >= rules_minute_at) {
+        rules_minute_at += 60000;
+        for (size_t i = 0; i < rule_log.size(); i++) {
+            if (rule_log[i].count)
+                swofty::log("[shaders] rule \"%s\": %u time(s) on in the last 60 s", rule_name(i).c_str(), rule_log[i].count);
+            rule_log[i].count = 0;
+        }
+    }
+}
+
+bool player_car(int64_t index)
+{
+    static uintptr_t table = 0, count = 0;
+    static bool tried = false;
+    if (!tried) {
+        tried = true;
+        if (runtime::same_build() && swofty::api) {
+            table = swofty::api->resolve("g_Sess_VehicleTable");
+            count = swofty::api->resolve("g_Sess_VehicleCount");
+        }
+        if (!table || !count)
+            swofty::log("[shaders] session.lap is not read: the vehicle table does not resolve, so the player's car "
+                        "cannot be told from the AI's");
+    }
+    if (!table || !count || index < 0 || index >= 26)
+        return false;
+    auto *n = reinterpret_cast<const uint32_t *>(count);
+    auto *const *cars = reinterpret_cast<uint8_t *const *>(table);
+    if (!runtime::readable(n, 4) || !runtime::readable(cars, 8 * 26) || uint64_t(index) >= *n)
+        return false;
+    const uint8_t *car = cars[index];
+    return car && runtime::readable(car, 0x130) && car[0x124] == 0;
+}
+
+void on_rule_event(const SwoftyEvent *ev, void *user)
+{
+    int s = int(reinterpret_cast<intptr_t>(user));
+    if (s == postfx::S_SESSION_LAP && !player_car(ev->a))
+        return;
+    pending_events[s].fetch_add(1);
+}
+
+void subscribe_rule_events()
+{
+    const SwoftyEvents *ev = runtime::events_table();
+    if (!ev || !ev->subscribe)
+        return;
+    struct Feed {
+        const char *event;
+        int signal;
+    };
+    for (Feed f : {Feed{SWOFTY_EVENT_SESSION_START, postfx::S_SESSION_START},
+                   Feed{SWOFTY_EVENT_RACE_START, postfx::S_RACE_START}, Feed{SWOFTY_EVENT_LAP, postfx::S_SESSION_LAP},
+                   Feed{SWOFTY_EVENT_SESSION_END, postfx::S_SESSION_END}}) {
+        uint32_t token = 0;
+        if (ev->subscribe(f.event, on_rule_event, reinterpret_cast<void *>(intptr_t(f.signal)), &token) != SWOFTY_ASSET_OK)
+            swofty::log("[shaders] %s is not read: the core's events are off", f.event);
+    }
+}
+
 void apply_active(postfx::ActiveSpec next)
 {
     postfx::Plan p = postfx::make_plan(next, effects);
@@ -2219,6 +2412,7 @@ void apply_active(postfx::ActiveSpec next)
     shader_vk = postfx::key_code(next.toggle_key);
     install_plan(std::move(p));
     active = std::move(next);
+    rules_reset();
     swofty::log("[shaders] config \"%s\" (serial %llu): %zu effect(s), %zu pass(es)", active.name.c_str(),
                 (unsigned long long)active.serial, n_effects, n_passes);
 }
@@ -2374,6 +2568,7 @@ void on_present(IDXGISwapChain3 *, const d3d12hooks::Swapchain *known, void *)
     check_trace_file(now);
     poll_toggles();
     check_active(now, false);
+    rules_frame(view::current(), now);
     if (now - live_at >= 250) {
         live_at = now;
         refresh_live();
@@ -2524,6 +2719,7 @@ void postfx_setup()
         return;
     }
     check_active(GetTickCount64(), true);
+    subscribe_rule_events();
     if (GetEnvironmentVariableA("SWOFTY_POSTFX_CAPTURE", v, sizeof v) && v[0]) {
         capture_dir = v;
         capture_file = swofty_root() + L"postfx.capture";
