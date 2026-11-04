@@ -628,9 +628,32 @@ pub fn install(
     v: &Version,
     progress: &dyn Fn(Event),
 ) -> Result<Vec<AddonManifest>> {
+    install_target(store, catalog, addon, v, None, progress)
+}
+
+/// Install a catalog job into the profile from which it was requested.
+pub fn install_in_profile(
+    store: &Store,
+    catalog: &[Addon],
+    addon: &Addon,
+    v: &Version,
+    profile: &str,
+    progress: &dyn Fn(Event),
+) -> Result<Vec<AddonManifest>> {
+    install_target(store, catalog, addon, v, Some(profile), progress)
+}
+
+fn install_target(
+    store: &Store,
+    catalog: &[Addon],
+    addon: &Addon,
+    v: &Version,
+    profile: Option<&str>,
+    progress: &dyn Fn(Event),
+) -> Result<Vec<AddonManifest>> {
     let dir = downloads_dir(store)?;
     let zips = Zips::default();
-    let result = install_with(store, catalog, addon, v, &dir, &zips, progress);
+    let result = install_with(store, catalog, addon, v, profile, (&dir, &zips), progress);
     release(zips);
     result
 }
@@ -640,10 +663,11 @@ fn install_with(
     catalog: &[Addon],
     addon: &Addon,
     v: &Version,
-    dir: &Path,
-    zips: &Zips,
+    profile: Option<&str>,
+    downloads: (&Path, &Zips),
     progress: &dyn Fn(Event),
 ) -> Result<Vec<AddonManifest>> {
+    let (dir, zips) = downloads;
     let launcher = crate::update::current_version();
     // Other installs may change the store while this job is downloading. Replan
     // under the installation lock, but never perform network work while holding it.
@@ -724,7 +748,10 @@ fn install_with(
                     continue;
                 }
                 progress(Event::Stage(Stage::Installing));
-                let installed = store.install_addon(&path);
+                let installed = match profile {
+                    Some(profile) => store.install_addon_in_profile(&path, profile),
+                    None => store.install_addon(&path),
+                };
                 if let Ok(m) = &installed
                     && m.id == s.addon.id
                     && let Err(e) = super::record_install(store, &m.id, &s.version)
@@ -1389,6 +1416,59 @@ mod tests {
         );
         assert_ne!(installed.contains_key("t.a"), installed.contains_key("t.b"));
         std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn catalog_job_keeps_requested_profile_after_switch_or_deletion() {
+        for deleted in [false, true] {
+            let root = std::env::temp_dir().join(format!(
+                "swofty-requires-profile-{}-{deleted}",
+                std::process::id()
+            ));
+            std::fs::remove_dir_all(&root).ok();
+            let store = Store::new(&root);
+            store.create_profile("source", None).unwrap();
+            store.create_profile("other", None).unwrap();
+            store.set_active_profile("source").unwrap();
+            let root_zip = zipped("", &manifest("t.root", "1.0.0", &[("t.dep", "^1")]));
+            let dep_zip = zipped("", &manifest("t.dep", "1.0.0", &[]));
+            let base = serve(vec![
+                ("/root.zip".into(), root_zip.clone()),
+                ("/dep.zip".into(), dep_zip.clone()),
+            ]);
+            let target = addon(
+                "t.root",
+                vec![hosted(&base, "/root.zip", &root_zip, Some(&[("t.dep", "^1")]))],
+            );
+            let dep = addon("t.dep", vec![hosted(&base, "/dep.zip", &dep_zip, Some(&[]))]);
+            let catalog = vec![target.clone(), dep];
+            let switched = std::cell::Cell::new(false);
+            install_in_profile(
+                &store,
+                &catalog,
+                &target,
+                &target.versions[0],
+                "source",
+                &|event| {
+                    if matches!(event, Event::Planned(_)) && !switched.replace(true) {
+                        store.set_active_profile("other").unwrap();
+                        if deleted {
+                            store.delete_profile("source").unwrap();
+                        }
+                    }
+                },
+            )
+            .unwrap();
+            let other = store.profile("other").unwrap();
+            assert!(!other.has("t.root") && !other.has("t.dep"));
+            if deleted {
+                assert!(!store.profile_names().unwrap().iter().any(|name| name == "source"));
+            } else {
+                let source = store.profile("source").unwrap();
+                assert!(source.has("t.root") && source.has("t.dep"));
+            }
+            std::fs::remove_dir_all(&root).ok();
+        }
     }
 
     #[test]

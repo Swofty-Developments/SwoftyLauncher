@@ -562,12 +562,26 @@ impl Store {
     }
 
     pub fn install_addon_for(&self, src: &Path, launcher: &semver::Version) -> Result<AddonManifest> {
+        self.install_addon_target(src, launcher, None)
+    }
+
+    /// Install into a specific existing profile rather than whichever profile is active later.
+    pub fn install_addon_in_profile(&self, src: &Path, profile: &str) -> Result<AddonManifest> {
+        self.install_addon_target(src, &crate::update::current_version(), Some(profile))
+    }
+
+    fn install_addon_target(
+        &self,
+        src: &Path,
+        launcher: &semver::Version,
+        profile: Option<&str>,
+    ) -> Result<AddonManifest> {
         if src.is_file() {
             let scratch = self.scratch_dir();
             let result = self
                 .unpacked_addons(src, &scratch)
                 .and_then(|found| match found.as_slice() {
-                    [one] => self.install_addon_for(one, launcher),
+                    [one] => self.install_addon_target(one, launcher, profile),
                     many => Err(Error::Other(format!(
                         "{} holds {} addons; drop it on the launcher to install them all",
                         src.display(),
@@ -581,7 +595,7 @@ impl Store {
         if src.join(crate::dbedit::package::MARKER).is_file() {
             return crate::dbedit::package::install(self, src).map(|(p, _)| {
                 std::fs::remove_file(self.registry_install_path(&p.manifest.id)).ok();
-                self.add_to_active_profile(&p.manifest.id);
+                self.add_to_install_profile(&p.manifest.id, profile);
                 p.manifest
             });
         }
@@ -634,7 +648,7 @@ impl Store {
         )?;
         std::fs::remove_file(self.registry_install_path(&m.id)).ok();
         if fresh {
-            self.add_to_active_profile(&m.id);
+            self.add_to_install_profile(&m.id, profile);
         }
         Ok(m)
     }
@@ -642,12 +656,34 @@ impl Store {
     /// A new addon goes into the profile it was installed from, off, rather than
     /// every profile; the others add it from their own Addons page. A failure
     /// only leaves it out of the profile, so it doesn't fail the install.
-    fn add_to_active_profile(&self, id: &str) {
-        let name = self.active_profile();
+    fn add_to_install_profile(&self, id: &str, target: Option<&str>) {
+        let name = target.map(str::to_owned).unwrap_or_else(|| self.active_profile());
         if name == profile::VANILLA {
             return;
         }
-        if let Err(e) = self.update_profile(&name, |p| p.add_addon(id)) {
+        if target.is_some() {
+            // Check and write under the same lock as profile deletion, so a
+            // queued install cannot recreate a profile that was just deleted.
+            let _write = profile_write();
+            match self.profile_names() {
+                Ok(names) if !names.contains(&name) => {
+                    warn(format!("couldn't add {id}: profile {name} no longer exists"));
+                    return;
+                }
+                Err(e) => {
+                    warn(format!("couldn't check profile {name} for {id}: {e}"));
+                    return;
+                }
+                _ => {}
+            }
+            let result = self.profile(&name).and_then(|mut profile| {
+                profile.add_addon(id)?;
+                self.save_profile(&profile)
+            });
+            if let Err(e) = result {
+                warn(format!("couldn't add {id} to the {name} profile: {e}"));
+            }
+        } else if let Err(e) = self.update_profile(&name, |p| p.add_addon(id)) {
             warn(format!("couldn't add {id} to the {name} profile: {e}"));
         }
     }

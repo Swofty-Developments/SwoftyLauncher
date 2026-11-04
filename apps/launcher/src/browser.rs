@@ -716,7 +716,7 @@ pub(crate) struct Browser {
     details: HashMap<String, Addon>,
     loading: BTreeSet<String>,
     working: HashMap<String, Job>,
-    queue: crate::download_queue::Queue<(Addon, catalog::Version)>,
+    queue: crate::download_queue::Queue<(Addon, catalog::Version, String)>,
     failed: HashMap<String, String>,
     refused: BTreeSet<String>,
     batch: Option<Batch>,
@@ -1245,11 +1245,11 @@ impl Shell {
             Some(Ok(plan)) => plan.also().iter().map(|s| s.addon.id.clone()).collect(),
             _ => BTreeSet::new(),
         };
-        if self
-            .browser
-            .queue
-            .enqueue(id.to_owned(), (addon, version), claims)
-        {
+        if self.browser.queue.enqueue(
+            id.to_owned(),
+            (addon, version, self.library.profile.name.clone()),
+            claims,
+        ) {
             self.start_queued_downloads(cx);
         }
         true
@@ -1277,6 +1277,19 @@ impl Shell {
                     ),
                     State::Completed => "Completed".to_owned(),
                     State::Failed(error) => format!("Failed: {error}"),
+                };
+                let status = if matches!(job.state, State::Completed | State::Failed(_))
+                    && self
+                        .store
+                        .profile_names()
+                        .is_ok_and(|names| !names.contains(&job.request.2))
+                {
+                    format!(
+                        "{status} · Profile {} no longer exists; nothing was added to another profile.",
+                        job.request.2
+                    )
+                } else {
+                    status
                 };
                 let action = match &job.state {
                     State::Queued => {
@@ -1456,7 +1469,7 @@ impl Shell {
             }
         }
         while let Some(id) = self.browser.queue.start_next() {
-            let (addon, version) = self
+            let (addon, version, profile) = self
                 .browser
                 .queue
                 .jobs()
@@ -1487,12 +1500,18 @@ impl Shell {
                 }
                 continue;
             }
-            self.start_catalog_install(addon, version, cx);
+            self.start_catalog_install(addon, version, profile, cx);
         }
         cx.notify();
     }
 
-    fn start_catalog_install(&mut self, addon: Addon, version: catalog::Version, cx: &mut Context<Self>) {
+    fn start_catalog_install(
+        &mut self,
+        addon: Addon,
+        version: catalog::Version,
+        profile: String,
+        cx: &mut Context<Self>,
+    ) {
         let id = addon.id.as_str();
         let updating = self.installed_version(id).is_some();
         self.browser.failed.remove(id);
@@ -1533,7 +1552,7 @@ impl Shell {
             let result = cx
                 .background_executor()
                 .spawn(async move {
-                    catalog::requires::install(&store, &catalog_now, &target, &v, &|e| {
+                    catalog::requires::install_in_profile(&store, &catalog_now, &target, &v, &profile, &|e| {
                         job.track(&target.id, e)
                     })
                 })
@@ -1676,7 +1695,7 @@ impl Shell {
                     .unwrap_or_else(|| update_identity(&update));
                 self.browser.queue.record_failure(
                     update.id.clone(),
-                    (addon, update.to.clone()),
+                    (addon, update.to.clone(), self.library.profile.name.clone()),
                     error.clone(),
                 );
                 if let Some(batch) = &mut self.browser.batch {
