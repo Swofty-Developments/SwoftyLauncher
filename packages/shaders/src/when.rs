@@ -86,8 +86,16 @@ pub(crate) fn rule_key_doc(key: &str) -> Option<(&'static str, &'static str, &'s
             "Events only: how long one event keeps the rule on. Default 400.",
             "400",
         ),
-        "fade_in_ms" => ("ms", "How long the rule takes to fade in. Default 150.", "150"),
-        "fade_out_ms" => ("ms", "How long the rule takes to fade out. Default 300.", "300"),
+        "fade_in_ms" => (
+            "ms",
+            "How long the rule takes to fade in. Default 150, or 0 for a `from`/`to` ramp.",
+            "150",
+        ),
+        "fade_out_ms" => (
+            "ms",
+            "How long the rule takes to fade out. Default 300, or 0 for a `from`/`to` ramp.",
+            "300",
+        ),
         "priority" => (
             "-100 to 100",
             "Higher wins on a shared option; equal priority: later in the file wins. Default 0.",
@@ -473,8 +481,9 @@ fn check_rule(
     let min_ms = timing(sink, entries, "min_ms", 0.0);
     let hold_ms = timing(sink, entries, "hold_ms", 0.0);
     let for_ms = timing(sink, entries, "for_ms", 400.0);
-    let fade_in_ms = timing(sink, entries, "fade_in_ms", 150.0);
-    let fade_out_ms = timing(sink, entries, "fade_out_ms", 300.0);
+    let ramped = get(entries, "from").is_some() || get(entries, "to").is_some();
+    let fade_in_ms = timing(sink, entries, "fade_in_ms", if ramped { 0.0 } else { 150.0 });
+    let fade_out_ms = timing(sink, entries, "fade_out_ms", if ramped { 0.0 } else { 300.0 });
 
     let mut when = Vec::new();
     let mut ramp = None;

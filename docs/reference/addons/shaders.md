@@ -420,7 +420,7 @@ fade_in_ms = 150   # default 150: 0 to full strength
 fade_out_ms = 300  # default 300: full strength to 0
 ```
 
-A fade of 0 jumps. A ramp rule takes its strength from the signal and ignores the timing keys.
+A fade of 0 jumps. A ramp rule takes its strength from the signal: its fades default to 0, and a fade set on it smooths a signal that jumps. `min_ms`, `hold_ms` and `for_ms` don't apply to a ramp.
 
 ### Priority and overrides
 
