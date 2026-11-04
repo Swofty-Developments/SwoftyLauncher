@@ -636,6 +636,7 @@ pub fn resolve_active(store: &Store, profile: &Profile, catalog: &Catalog) -> Re
             forced_by,
             toggle_key: toggle_key(store),
             instances: Vec::new(),
+            rules: Vec::new(),
         },
         config: config.clone(),
         problem: None,
@@ -652,7 +653,10 @@ pub fn resolve_active(store: &Store, profile: &Profile, catalog: &Catalog) -> Re
     out.active.name = name_of(&text, &r.to_string());
     let lint = swofty_shaders::lint(&text, catalog);
     match &lint.config {
-        Some(config) => out.active.instances = swofty_shaders::resolve(config, catalog),
+        Some(config) => {
+            out.active.instances = swofty_shaders::resolve(config, catalog);
+            out.active.rules = swofty_shaders::resolve_rules(config, catalog);
+        }
         None => {
             let first = lint.diagnostics.iter().find(|d| d.severity == Severity::Error);
             out.problem = Some(match first {
@@ -1208,6 +1212,7 @@ pub(crate) mod tests {
                 label: String::new(),
                 params: vec![2.0],
             }],
+            rules: Vec::new(),
         };
         push_live(&root, &active).unwrap();
         push_live(
