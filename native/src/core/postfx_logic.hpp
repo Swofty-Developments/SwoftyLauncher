@@ -372,15 +372,15 @@ inline constexpr SignalInfo SIGNALS[SIGNAL_COUNT] = {
     {"race.start", SK_EVENT, "", "", true},
     {"session.lap", SK_EVENT, "", "", true},
     {"session.end", SK_EVENT, "", "", true},
-    {"car.speed", SK_NUMBER, "", "km/h", false},
-    {"car.rpm", SK_NUMBER, "", "", false},
-    {"car.gear", SK_NUMBER, "", "", false},
-    {"car.throttle", SK_NUMBER, "", "", false},
-    {"car.brake", SK_NUMBER, "", "", false},
-    {"car.steer", SK_NUMBER, "", "", false},
-    {"car.g_lateral", SK_NUMBER, "", "g", false},
-    {"car.g_long", SK_NUMBER, "", "g", false},
-    {"car.surface", SK_NAME, "tarmac kerb rumble grass gravel sand", "", false},
+    {"car.speed", SK_NUMBER, "", "km/h", true},
+    {"car.rpm", SK_NUMBER, "", "", true},
+    {"car.gear", SK_NUMBER, "", "", true},
+    {"car.throttle", SK_NUMBER, "", "", true},
+    {"car.brake", SK_NUMBER, "", "", true},
+    {"car.steer", SK_NUMBER, "", "", true},
+    {"car.g_lateral", SK_NUMBER, "", "g", true},
+    {"car.g_long", SK_NUMBER, "", "g", true},
+    {"car.surface", SK_NAME, "tarmac kerb rumble grass gravel sand", "", true},
     {"car.impact", SK_EVENT, "", "g", false},
     {"car.damage", SK_EVENT, "", "", false},
     {"car.in_pit_lane", SK_BOOL, "", "", false},
@@ -415,6 +415,23 @@ inline std::string_view signal_value_name(int signal, size_t i)
             return {};
         at = end + 1;
     }
+}
+
+// The game's surface id (UDP m_surfaceType) as a value of car.surface: tarmac 0, kerb 1, rumble 2, grass 3,
+// gravel 4, sand 5; -1 for no value (12 = no contact, or an id past the table).
+inline int surface_value(int game_id)
+{
+    static constexpr int8_t MAP[12] = {0, 1, 0, 4, 4, 4, 5, 3, 0, 0, 0, 2};
+    return game_id >= 0 && game_id < 12 ? MAP[game_id] : -1;
+}
+
+// The game keeps wheels as RL RR FL FR; the contract's order is FL FR RL RR.
+inline void wheels_contract_order(const uint8_t game[4], uint8_t out[4])
+{
+    out[0] = game[2];
+    out[1] = game[3];
+    out[2] = game[0];
+    out[3] = game[1];
 }
 
 enum CondOp : uint8_t { OP_TRUE, OP_IS, OP_ABOVE, OP_BELOW, OP_BETWEEN, OP_EVENT };

@@ -89,7 +89,7 @@ static void own_cases()
         CHECK(std::string(SIGNALS[S_CAR_SURFACE].id) == "car.surface" && SIGNALS[S_SESSION_CHEQUERED].kind == SK_EVENT);
         CHECK(signal_index("session.lap") == S_SESSION_LAP && signal_value_name(S_CAR_SURFACE, 1) == "kerb");
         CHECK(signal_value_name(S_VIEW_CAMERA, 5) == "other" && signal_value_name(S_VIEW_CAMERA, 6).empty());
-        CHECK(!SIGNALS[S_CAR_SPEED].in_game && SIGNALS[S_SESSION_LAP].in_game);
+        CHECK(SIGNALS[S_CAR_SPEED].in_game && !SIGNALS[S_CAR_IMPACT].in_game && SIGNALS[S_SESSION_LAP].in_game);
     }
     {
         Rig r("[" + rule(SPEED_ABOVE, "\"fade_in_ms\":100,\"fade_out_ms\":200,", BLEND1) + "]");
