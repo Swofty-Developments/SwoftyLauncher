@@ -404,19 +404,21 @@ impl ShadersView {
                 cx.background_executor().timer(wait).await;
             }
             let source = text.clone();
-            let (problems, config, instances) = cx
+            let (problems, config, resolved) = cx
                 .background_executor()
                 .spawn(async move {
                     let lint = swofty_shaders::lint(&source, &catalog);
                     let instances = lint.config.as_ref().map(|c| swofty_shaders::resolve(c, &catalog));
+                    let rules = lint
+                        .config
+                        .as_ref()
+                        .map(|c| swofty_shaders::resolve_rules(c, &catalog));
                     let problems: Vec<Problem> = lint.diagnostics.into_iter().map(problem_of).collect();
-                    (problems, lint.config, instances)
+                    (problems, lint.config, instances.zip(rules))
                 })
                 .await;
-            this.update(cx, |v, cx| {
-                v.lint_done(rev, text, problems, config, instances, cx)
-            })
-            .ok();
+            this.update(cx, |v, cx| v.lint_done(rev, text, problems, config, resolved, cx))
+                .ok();
         }));
     }
 
@@ -426,7 +428,7 @@ impl ShadersView {
         text: String,
         problems: Vec<Problem>,
         config: Option<Config>,
-        instances: Option<Vec<ActiveInstance>>,
+        resolved: Option<(Vec<ActiveInstance>, Vec<swofty_shaders::Rule>)>,
         cx: &mut Context<Self>,
     ) {
         if rev != self.editor.lint.rev {
@@ -473,8 +475,8 @@ impl ShadersView {
             done: true,
         };
         if valid {
-            if let Some(instances) = instances {
-                self.preview_instances(instances, cx);
+            if let Some((instances, rules)) = resolved {
+                self.preview_instances(instances, rules, cx);
             }
             self.schedule_save(text, cx);
         }
