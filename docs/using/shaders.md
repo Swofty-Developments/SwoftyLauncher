@@ -95,6 +95,18 @@ The Preview updates as you type. It runs the same effects as the game, so the pi
 
 The clips are dry and wet races at Melbourne: the race start, an onboard camera and a chase camera, plus a wet onboard and a wet chase camera.
 
+## Rules and the triggers strip
+
+A config can react to the game: a rule changes the config's options while a signal is on, such as a car on a kerb, a hit or a yellow flag. Rules are written in the config's text; see [Rules](/reference/addons/shaders#rules).
+
+The triggers strip under the Preview clip has one control per signal the config uses:
+
+- Hold a button for a yes/no signal or a named value.
+- Drag a slider for a number signal.
+- Press **Fire** for an event.
+
+The Preview fades rules with the same timing as the game, so a rule's fade can be tuned by eye. A rule on a signal the game does not read yet only works in the Preview, and the editor warns about it.
+
 ## Documentation
 
 The **Documentation** tab lists every effect a config can use: the core library's and those of your installed addons. Each effect shows its options with their defaults, ranges and what they do. **Copy** puts the effect's table in your clipboard with every option at its default:
