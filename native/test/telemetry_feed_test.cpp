@@ -59,10 +59,16 @@ static void test_seqlock()
     static SwoftyTelemetryFeed shared;
     feed_init(&shared);
     std::atomic<bool> stop{false};
+    std::atomic<uint64_t> completed{0};
     const uint64_t rounds = 2000000;
 
+    // Past `rounds` the writer keeps writing, yielding between frames, until the reader has completed a read
+    // while it writes; a reader thread scheduled only after the writer's burst would otherwise read nothing.
     std::thread writer([&] {
-        for (uint64_t n = 1; n <= rounds; n++) {
+        for (uint64_t n = 1; n <= rounds || (completed.load(std::memory_order_relaxed) == 0 && n <= 4 * rounds);
+             n++) {
+            if (n > rounds)
+                std::this_thread::yield();
             feed_begin(&shared);
             shared.frame = n;
             shared.session.total_laps = uint32_t(n);
@@ -82,6 +88,7 @@ static void test_seqlock()
             continue;
         }
         reads++;
+        completed.store(reads, std::memory_order_relaxed);
         uint32_t tag = uint32_t(out.frame);
         if (out.session.total_laps != tag || out.cars[0].lap != tag || out.cars[23].lap != tag ||
             out.participants[23].lap != tag)
