@@ -30,6 +30,51 @@ fn up(@builtin(global_invocation_id) id: vec3<u32>) {
     textureStore(up_dst, vec2<i32>(id.xy), textureLoad(up_src, vec2<i32>(id.xy), 0));
 }
 
+@group(0) @binding(4) var narrow_src: texture_2d<f32>;
+@group(0) @binding(5) var narrow_dst: texture_storage_2d<rgba16float, write>;
+
+fn narrow_in(id: vec3<u32>) -> bool {
+    let d = textureDimensions(narrow_src);
+    return id.x < d.x && id.y < d.y;
+}
+
+fn narrow_at(id: vec3<u32>) -> vec4<f32> {
+    return textureLoad(narrow_src, vec2<i32>(id.xy), 0);
+}
+
+@compute @workgroup_size(8, 8)
+fn as_rgba8(@builtin(global_invocation_id) id: vec3<u32>) {
+    if (!narrow_in(id)) { return; }
+    let c = clamp(narrow_at(id), vec4<f32>(0.0), vec4<f32>(1.0));
+    textureStore(narrow_dst, vec2<i32>(id.xy), round(c * 255.0) / 255.0);
+}
+
+@compute @workgroup_size(8, 8)
+fn as_rgb10a2(@builtin(global_invocation_id) id: vec3<u32>) {
+    if (!narrow_in(id)) { return; }
+    let c = clamp(narrow_at(id), vec4<f32>(0.0), vec4<f32>(1.0));
+    textureStore(narrow_dst, vec2<i32>(id.xy), vec4<f32>(round(c.rgb * 1023.0) / 1023.0, round(c.a * 3.0) / 3.0));
+}
+
+@compute @workgroup_size(8, 8)
+fn as_rg(@builtin(global_invocation_id) id: vec3<u32>) {
+    if (!narrow_in(id)) { return; }
+    let c = narrow_at(id);
+    textureStore(narrow_dst, vec2<i32>(id.xy), vec4<f32>(c.r, c.g, 0.0, 1.0));
+}
+
+@compute @workgroup_size(8, 8)
+fn as_r(@builtin(global_invocation_id) id: vec3<u32>) {
+    if (!narrow_in(id)) { return; }
+    textureStore(narrow_dst, vec2<i32>(id.xy), vec4<f32>(narrow_at(id).r, 0.0, 0.0, 1.0));
+}
+
+@compute @workgroup_size(8, 8)
+fn as_r11g11b10f(@builtin(global_invocation_id) id: vec3<u32>) {
+    if (!narrow_in(id)) { return; }
+    textureStore(narrow_dst, vec2<i32>(id.xy), vec4<f32>(max(narrow_at(id).rgb, vec3<f32>(0.0)), 1.0));
+}
+
 @compute @workgroup_size(8, 8)
 fn down(@builtin(global_invocation_id) id: vec3<u32>) {
     let d = textureDimensions(down_src);
@@ -95,6 +140,22 @@ fn format_of(_decl: &TextureDecl) -> wgpu::TextureFormat {
     PICTURE
 }
 
+/// Declared textures are all rgba16float here. After a pass writes one declared with another format, the
+/// helper this names gives it the values the game's texture of that format holds: clamped and rounded
+/// for the unorm formats, missing channels as 0 (alpha 1), no negatives for r11g11b10f.
+const NARROW: [&str; 5] = ["as_rgba8", "as_rgb10a2", "as_rg", "as_r", "as_r11g11b10f"];
+
+fn narrow_of(decl: &TextureDecl) -> Option<&'static str> {
+    match decl.format.as_deref()? {
+        "rgba8" => Some(NARROW[0]),
+        "rgb10a2" => Some(NARROW[1]),
+        "rg16f" => Some(NARROW[2]),
+        "r16f" | "r32f" => Some(NARROW[3]),
+        "r11g11b10f" => Some(NARROW[4]),
+        _ => None,
+    }
+}
+
 struct PassPipe {
     pipeline: wgpu::ComputePipeline,
     layout: wgpu::BindGroupLayout,
@@ -111,6 +172,7 @@ struct Slot {
     name: String,
     tex: Tex,
     shadow: Option<Tex>,
+    narrow: Option<(&'static str, Tex)>,
     persistent: bool,
 }
 
@@ -151,6 +213,7 @@ pub struct Preview {
     layout: wgpu::BindGroupLayout,
     up: wgpu::ComputePipeline,
     down: wgpu::ComputePipeline,
+    narrow: HashMap<&'static str, wgpu::ComputePipeline>,
     uniforms: wgpu::Buffer,
     uniform_slots: u64,
     sources: HashMap<String, CompiledEffect>,
@@ -305,6 +368,7 @@ impl Preview {
         };
         let up = helper("up");
         let down = helper("down");
+        let narrow = NARROW.iter().map(|&entry| (entry, helper(entry))).collect();
         let uniforms = Self::uniform_buffer(&device, 32);
         let preview = Self {
             device,
@@ -317,6 +381,7 @@ impl Preview {
             layout,
             up,
             down,
+            narrow,
             uniforms,
             uniform_slots: 32,
             sources: HashMap::new(),
@@ -503,6 +568,8 @@ impl Preview {
                     name: decl.name.clone(),
                     tex: Tex::new(&self.device, &decl.name, w, h, format),
                     shadow: shadow.then(|| Tex::new(&self.device, &decl.name, w, h, format)),
+                    narrow: narrow_of(decl)
+                        .map(|entry| (entry, Tex::new(&self.device, &decl.name, w, h, format))),
                     persistent: decl.persistent,
                 });
             }
@@ -804,6 +871,11 @@ impl Preview {
                 });
                 bind_groups.push((ii, pi, bind, out_w, out_h));
                 steps.push(Step::Pass(bind_groups.len() - 1));
+                if let Some(name) = &decl.output
+                    && slot_of(name).is_some_and(|s| s.narrow.is_some())
+                {
+                    steps.push(Step::Narrow(ii, name.clone()));
+                }
                 if writes_picture {
                     current = if current == Picture::A {
                         Picture::B
@@ -836,6 +908,31 @@ impl Preview {
                     let fx = &self.effects[&self.instances[*ii].effect];
                     let pipe = &fx.passes[*pi];
                     dispatch(&mut encoder, &pipe.pipeline, bind, *w, *h, pipe.threads);
+                }
+                Step::Narrow(ii, name) => {
+                    let slot = self.instances[*ii]
+                        .slots
+                        .iter()
+                        .find(|s| &s.name == name)
+                        .ok_or("missing texture")?;
+                    if let Some((entry, scratch)) = &slot.narrow {
+                        slot.tex.copy_to(&mut encoder, scratch);
+                        let pipe = &self.narrow[entry];
+                        let bind = group(
+                            pipe,
+                            &[
+                                wgpu::BindGroupEntry {
+                                    binding: 4,
+                                    resource: wgpu::BindingResource::TextureView(&scratch.view),
+                                },
+                                wgpu::BindGroupEntry {
+                                    binding: 5,
+                                    resource: wgpu::BindingResource::TextureView(&slot.tex.view),
+                                },
+                            ],
+                        );
+                        dispatch(&mut encoder, pipe, &bind, slot.tex.width, slot.tex.height, (8, 8));
+                    }
                 }
             }
         }
@@ -906,4 +1003,5 @@ impl Preview {
 enum Step {
     Shadow(usize, String),
     Pass(usize),
+    Narrow(usize, String),
 }
