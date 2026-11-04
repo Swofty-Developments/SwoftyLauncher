@@ -1205,7 +1205,10 @@ mod tests {
         assert_eq!(labels(&c), ["car.speed"]);
         assert_eq!(c[0].insert, "\"car.speed\"");
         assert_eq!(&t[c[0].range.clone()], "\"car.sp\"");
-        assert!(c[0].detail.contains("Preview only"));
+        assert!(!c[0].detail.contains("Preview only"));
+        let (_, c) = comp(&with_cursor("[[when]]\non = \"session.we|\"\n"));
+        assert_eq!(labels(&c), ["session.weather", "session.wetness"]);
+        assert!(c[1].detail.contains("Preview only"));
         let (_, c) = comp(&with_cursor("[[when]]\non = |\n"));
         assert_eq!(c.len(), crate::signals::SIGNALS.len());
         let (_, c) = comp(&with_cursor("[[when]]\nall = [{ on = \"view.c|\" }]\n"));
@@ -1275,7 +1278,7 @@ mod tests {
         };
         let on = h("\"car.surface\"", 0).unwrap();
         assert!(on.text.contains("**car.surface**") && on.text.contains("One of: `tarmac`"));
-        assert!(on.text.contains("Not read in game yet"));
+        assert!(!on.text.contains("Not read in game yet"));
         assert_eq!(&t[on.range], "\"car.surface\"");
         let key = h("is =", 0).unwrap();
         assert!(key.text.starts_with("**is**"));

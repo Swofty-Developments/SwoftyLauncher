@@ -1,5 +1,6 @@
 #include "d3d12_hooks.hpp"
 #include "hud_guard.hpp"
+#include "live_car.hpp"
 #include "perf.hpp"
 #include "postfx_logic.hpp"
 #include "runtime.hpp"
@@ -2222,6 +2223,11 @@ std::vector<RuleLog> rule_log;
 ULONGLONG rules_loaded_at, rules_minute_at;
 LARGE_INTEGER rules_clock{};
 std::atomic<unsigned> pending_events[postfx::SIGNAL_COUNT];
+bool rules_live;
+live_car::LiveCar live_now;
+bool live_ok;
+ULONGLONG live_trace_checked, live_trace_until, live_trace_line_at;
+int live_trace_surface[4] = {-2, -2, -2, -2};
 
 std::string rule_name(size_t i)
 {
@@ -2279,6 +2285,13 @@ void rules_reset()
     rules_loaded_at = GetTickCount64();
     rules_minute_at = rules_loaded_at + 120000;
     rules_clock = {};
+    rules_live = false;
+    for (auto &r : active.rules) {
+        auto car_signal = [](int sg) { return sg >= postfx::S_CAR_SPEED && sg <= postfx::S_CAR_SURFACE; };
+        rules_live |= r.has_ramp && car_signal(r.ramp_signal);
+        for (auto &c : r.when)
+            rules_live |= car_signal(c.signal);
+    }
     for (auto &n : pending_events)
         n.store(0);
     for (auto &p : passes)
@@ -2293,6 +2306,73 @@ void rules_reset()
         if (unread >= 0)
             swofty::log("[shaders] rule \"%s\": %.*s isn't read in game yet; it never fires", rule_name(i).c_str(),
                         int(postfx::SIGNALS[unread].id.size()), postfx::SIGNALS[unread].id.data());
+    }
+}
+
+std::string surface_label(int game_id)
+{
+    int v = postfx::surface_value(game_id);
+    if (v < 0)
+        return "none";
+    return std::string(postfx::signal_value_name(postfx::S_CAR_SURFACE, size_t(v)));
+}
+
+void live_trace_tick(ULONGLONG now)
+{
+    if (now - live_trace_checked >= 1000) {
+        live_trace_checked = now;
+        std::wstring file = swofty_root_dir + L"shaders\\live.trace";
+        if (GetFileAttributesW(file.c_str()) != INVALID_FILE_ATTRIBUTES) {
+            std::string text = runtime::read_file(file, 64);
+            DeleteFileW(file.c_str());
+            unsigned secs = unsigned(std::strtoul(text.c_str(), nullptr, 10));
+            live_trace_until = now + 1000ull * std::min(secs ? secs : 30u, 3600u);
+            live_trace_line_at = 0;
+            for (int &s : live_trace_surface)
+                s = -2;
+            swofty::log("[shaders] live car trace for %u s", secs ? secs : 30u);
+        }
+    }
+}
+
+bool live_trace_on(ULONGLONG now)
+{
+    return live_trace_until && now < live_trace_until;
+}
+
+void live_trace_line(ULONGLONG now, const live_car::LiveCar &c)
+{
+    bool changed = false;
+    for (int i = 0; i < 4; i++)
+        if (live_trace_surface[i] != c.surface[i]) {
+            changed = true;
+            live_trace_surface[i] = c.surface[i];
+        }
+    if (!changed && now - live_trace_line_at < 1000)
+        return;
+    live_trace_line_at = now;
+    const uint8_t *r = c.surface;
+    swofty::log("[shaders] live car: speed=%.1f km/h gear=%d rpm=%.0f/%.0f thr=%.2f brk=%.2f steer=%.2f g=%.2f/%.2f "
+                "surface=FL:%s FR:%s RL:%s RR:%s (raw %d %d %d %d) player=%d ai=%d",
+                c.speed_kmh, c.gear, c.rpm, c.max_rpm, c.throttle, c.brake, c.steer, c.g_lateral, c.g_long,
+                surface_label(r[0]).c_str(), surface_label(r[1]).c_str(), surface_label(r[2]).c_str(),
+                surface_label(r[3]).c_str(), r[0], r[1], r[2],
+                r[3], c.player, c.ai ? 1 : 0);
+}
+
+void live_frame(ULONGLONG now)
+{
+    live_trace_tick(now);
+    bool tracing = live_trace_on(now);
+    live_ok = false;
+    if (!rules_live && !tracing)
+        return;
+    live_ok = live_car::read(live_now);
+    if (tracing && live_ok)
+        live_trace_line(now, live_now);
+    else if (tracing && now - live_trace_line_at >= 1000) {
+        live_trace_line_at = now;
+        swofty::log("[shaders] live car: no player car");
     }
 }
 
@@ -2315,6 +2395,31 @@ void rules_frame(const view::State &v, ULONGLONG now)
         sig.set(postfx::S_VIEW_MENU, (v.flags & view::MENU) != 0);
         sig.set(postfx::S_VIEW_CUTSCENE, (v.flags & view::CUTSCENE) != 0);
         sig.set(postfx::S_VIEW_SPECTATING, (v.flags & view::SPECTATING) != 0);
+    }
+    if (live_ok && rules_live) {
+        const live_car::LiveCar &c = live_now;
+        if (c.has_speed)
+            sig.set(postfx::S_CAR_SPEED, c.speed_kmh);
+        if (c.has_rpm)
+            sig.set(postfx::S_CAR_RPM, std::clamp(double(c.rpm) / double(c.max_rpm), 0.0, 1.0));
+        if (c.has_gear)
+            sig.set(postfx::S_CAR_GEAR, c.gear);
+        if (c.has_pedals) {
+            sig.set(postfx::S_CAR_THROTTLE, c.throttle);
+            sig.set(postfx::S_CAR_BRAKE, c.brake);
+        }
+        if (c.has_steer)
+            sig.set(postfx::S_CAR_STEER, c.steer);
+        if (c.has_g) {
+            sig.set(postfx::S_CAR_G_LATERAL, c.g_lateral);
+            sig.set(postfx::S_CAR_G_LONG, c.g_long);
+        }
+        if (c.has_surface) {
+            int w[4];
+            for (int i = 0; i < 4; i++)
+                w[i] = postfx::surface_value(c.surface[i]);
+            sig.set_surface(w);
+        }
     }
     for (int s : {postfx::S_SESSION_START, postfx::S_RACE_START, postfx::S_SESSION_LAP, postfx::S_SESSION_END}) {
         unsigned n = pending_events[s].exchange(0);
@@ -2568,6 +2673,7 @@ void on_present(IDXGISwapChain3 *, const d3d12hooks::Swapchain *known, void *)
     check_trace_file(now);
     poll_toggles();
     check_active(now, false);
+    live_frame(now);
     rules_frame(view::current(), now);
     if (now - live_at >= 250) {
         live_at = now;

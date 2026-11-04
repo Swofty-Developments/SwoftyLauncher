@@ -753,9 +753,7 @@ mod tests {
         clean(&format!("[[when]]\non = \"view.replay\"\n{set}"));
         clean(&format!("[[when]]\non = \"session.start\"\n{set}"));
         for body in ["above = 100\nbelow = 200", "from = 250\nto = 320"] {
-            let m = msgs(&format!("[[when]]\non = \"car.speed\"\n{body}\n{set}"));
-            assert_eq!(m.len(), 1, "{m:?}");
-            assert_eq!(m[0].0, Severity::Warning);
+            clean(&format!("[[when]]\non = \"car.speed\"\n{body}\n{set}"));
         }
         let m = msgs(&format!(
             "[[when]]\non = \"car.impact\"\nabove = 3.0\nfor_ms = 500\n{set}"
@@ -1002,14 +1000,14 @@ mod tests {
     fn signals_that_the_game_does_not_read_warn() {
         let s = "[when.set.grain]\namount = 1\n";
         only(
-            &format!("[[when]]\non = \"car.speed\"\nabove = 3\n{s}"),
+            &format!("[[when]]\non = \"session.wetness\"\nabove = 0.3\n{s}"),
             Severity::Warning,
-            "car.speed isn't read in game yet; this rule only fires in the Preview",
+            "session.wetness isn't read in game yet; this rule only fires in the Preview",
         );
         let m = msgs(&format!("[[when]]\non = \"view.replay\"\n{s}"));
         assert!(m.is_empty(), "{m:?}");
         let both = msgs(&format!(
-            "[[when]]\nall = [{{ on = \"car.speed\", above = 1 }}, {{ on = \"car.speed\", below = 9 }}]\n{s}"
+            "[[when]]\nall = [{{ on = \"session.wetness\", above = 0.1 }}, {{ on = \"session.wetness\", below = 0.9 }}]\n{s}"
         ));
         assert_eq!(both.len(), 1, "{both:?}");
     }

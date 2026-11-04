@@ -7035,7 +7035,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-addon"
-version = "1.8.6"
+version = "1.8.7"
 dependencies = [
  "semver",
  "serde",
@@ -7047,14 +7047,14 @@ dependencies = [
 
 [[package]]
 name = "swofty-builtins"
-version = "1.8.6"
+version = "1.8.7"
 dependencies = [
  "swofty-addon",
 ]
 
 [[package]]
 name = "swofty-cli"
-version = "1.8.6"
+version = "1.8.7"
 dependencies = [
  "anyhow",
  "clap",
@@ -7071,7 +7071,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-core"
-version = "1.8.6"
+version = "1.8.7"
 dependencies = [
  "flate2",
  "libc",
@@ -7101,7 +7101,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-formats"
-version = "1.8.6"
+version = "1.8.7"
 dependencies = [
  "aes 0.9.3",
  "bcdec_rs",
@@ -7112,7 +7112,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-launcher"
-version = "1.8.6"
+version = "1.8.7"
 dependencies = [
  "anyhow",
  "gpui-kit",
@@ -7145,7 +7145,7 @@ dependencies = [
 
 [[package]]
 name = "swofty-preview"
-version = "1.8.6"
+version = "1.8.7"
 dependencies = [
  "image",
  "pollster",
@@ -7161,11 +7161,11 @@ dependencies = [
 
 [[package]]
 name = "swofty-sdk"
-version = "1.8.6"
+version = "1.8.7"
 
 [[package]]
 name = "swofty-shaders"
-version = "1.8.6"
+version = "1.8.7"
 dependencies = [
  "serde",
  "serde_json",
