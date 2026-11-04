@@ -102,6 +102,9 @@ pub struct Config {
     /// The career vault's size cap in MB; 500 when unset.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub vault_cap_mb: Option<u64>,
+    /// Maximum simultaneous Addon Browser install jobs; two when unset.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub download_jobs: Option<usize>,
 }
 
 /// The copies of F1 25 the player added by folder, and the one Play uses.
@@ -126,6 +129,15 @@ impl Games {
 }
 
 impl Config {
+    /// Return a valid limit even if a config was edited by hand.
+    pub fn download_jobs(&self) -> usize {
+        self.download_jobs.unwrap_or(2).clamp(1, 10)
+    }
+
+    pub fn set_download_jobs(&mut self, limit: usize) {
+        self.download_jobs = Some(limit.clamp(1, 10));
+    }
+
     pub fn migrate_games(&mut self) {
         if let Some(dir) = self.game_dir.take() {
             self.games.active.get_or_insert_with(|| dir.clone());
@@ -826,6 +838,22 @@ mod tests {
             with_version_override(Some("versions=n")).as_deref(),
             Some("versions=n;version=n,b")
         );
+    }
+
+    #[test]
+    fn config_remembers_and_clamps_download_job_limit() {
+        let mut config: Config = serde_json::from_str("{}").unwrap();
+        assert_eq!(config.download_jobs(), 2);
+        assert!(!serde_json::to_string(&config).unwrap().contains("download_jobs"));
+        config.set_download_jobs(8);
+        let json = serde_json::to_string(&config).unwrap();
+        assert_eq!(serde_json::from_str::<Config>(&json).unwrap().download_jobs(), 8);
+        config.set_download_jobs(0);
+        assert_eq!(config.download_jobs(), 1);
+        config.set_download_jobs(100);
+        assert_eq!(config.download_jobs(), 10);
+        let edited: Config = serde_json::from_str(r#"{"download_jobs":100}"#).unwrap();
+        assert_eq!(edited.download_jobs(), 10);
     }
 
     #[test]
