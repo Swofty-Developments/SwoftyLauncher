@@ -140,6 +140,9 @@ pub struct SessionAddon {
     /// A track addon: its category is Tracks or it brings a track package, as the launcher shows it.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub track: bool,
+    /// The launcher folder the addon is in, by name; ADDON SETTINGS lists a row per folder.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub folder: Option<String>,
     #[serde(default)]
     pub dlls: Vec<String>,
     pub enable_commands: [String; 2],
@@ -268,6 +271,7 @@ impl SessionSettings {
                 enabled: enabled.contains(&m.id.as_str()),
                 locked: m.is_builtin() || crate::managed::is_managed(&m.id),
                 track: m.category == Some(crate::manifest::Category::Tracks),
+                folder: None,
                 dlls: m
                     .operations
                     .native

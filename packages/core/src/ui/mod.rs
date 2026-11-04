@@ -10,6 +10,7 @@ pub mod mfd;
 pub mod node;
 pub mod pages;
 pub mod patch;
+pub mod rows;
 
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::{Path, PathBuf};
@@ -454,6 +455,11 @@ pub fn build(
         vec![
             (view.0, era::SRV_KIND, view.1),
             (surface.0, era::SURFACE_KIND, surface.1),
+            (
+                rows::O_ROW.to_owned(),
+                "UILayout",
+                vec![rows::row_scene(&read_frag(&flow_options, rows::O_BLOCK, 0)?)?],
+            ),
         ],
     )?;
     for s in &setups {

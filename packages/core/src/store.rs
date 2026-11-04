@@ -989,7 +989,20 @@ impl Store {
     pub fn session_settings(&self, profile: &str) -> Result<SessionSettings> {
         let requests = crate::paths::game_folder_view(&self.requests_path(profile));
         let p = self.profile(profile)?;
-        let mut s = SessionSettings::build(&p, &self.addons()?, Some(requests))?;
+        let installed = self.addons()?;
+        let mut s = SessionSettings::build(&p, &installed, Some(requests))?;
+        // Each addon's folder and track flag, as the launcher's Addons page has them.
+        let folders = self.folders();
+        for a in &mut s.addons {
+            let Some(m) = installed.get(&a.id) else { continue };
+            let builtin = self.is_builtin(&a.id) || a.id == crate::managed::ID;
+            a.track |=
+                !self.is_builtin(&a.id) && crate::tracks::is_track_addon(&self.addons_dir().join(&a.id), m);
+            let category = m
+                .category
+                .or(a.track.then_some(swofty_addon::manifest::Category::Tracks));
+            a.folder = folders.place(&a.id, builtin, category).map(|k| folders.name(&k));
+        }
         let redirect = p.launcher_saves && !crate::launcher_saves::steam_save_pending(&self.root, &p.name);
         s.launcher_saves = redirect.then(|| settings::SessionSaves {
             profile: p.name.clone(),
@@ -1817,6 +1830,9 @@ mod tests {
             )),
         )
         .unwrap();
+        for a in &mut expected.addons {
+            a.folder = plain.is_builtin(&a.id).then(|| "Built In".to_owned());
+        }
         expected.launcher_saves = Some(settings::SessionSaves {
             profile: DEFAULT_PROFILE.into(),
             remote: crate::paths::game_folder_view(&crate::launcher_saves::remote_dir(

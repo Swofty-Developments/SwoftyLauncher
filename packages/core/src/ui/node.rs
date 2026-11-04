@@ -9,6 +9,8 @@ pub const CHILDREN: usize = 1;
 pub const COMMANDS: usize = 2;
 pub const EVENTS: usize = 3;
 pub const LAYOUT: usize = 4;
+/// A node's own component scene, as a block's o_block.
+pub const COMPONENT: usize = 5;
 pub const BEHAVIOURS: usize = 6;
 
 pub const SCREEN_BEHAVIOURS: &[&str] = &[
