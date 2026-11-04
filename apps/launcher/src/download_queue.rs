@@ -102,11 +102,15 @@ impl<T> Queue<T> {
         if self.jobs.iter().filter(|j| j.state == State::Active).count() >= self.limit {
             return None;
         }
-        let index = self.jobs.iter().position(|candidate| {
-            candidate.state == State::Queued
-                && !self.jobs.iter().any(|active| {
-                    active.state == State::Active && !active.claims.is_disjoint(&candidate.claims)
-                })
+        let index = self.jobs.iter().enumerate().find_map(|(index, candidate)| {
+            if candidate.state != State::Queued {
+                return None;
+            }
+            let blocked = self.jobs.iter().enumerate().any(|(other_index, other)| {
+                (other.state == State::Active || (other_index < index && other.state == State::Queued))
+                    && !other.claims.is_disjoint(&candidate.claims)
+            });
+            (!blocked).then_some(index)
         })?;
         self.jobs[index].state = State::Active;
         Some(self.jobs[index].id.clone())
@@ -190,6 +194,24 @@ mod tests {
         assert_eq!(start(&mut q), None);
         assert!(q.finish("a", Ok(())));
         assert_eq!(start(&mut q).as_deref(), Some("b"));
+    }
+
+    #[test]
+    fn later_job_cannot_overtake_an_earlier_queued_shared_dependency() {
+        let mut q = Queue::default();
+        q.set_limit(3);
+        add(&mut q, "a", &["x"]);
+        add(&mut q, "b", &["x", "y"]);
+        add(&mut q, "c", &["y"]);
+        add(&mut q, "d", &[]);
+        assert_eq!(start(&mut q).as_deref(), Some("a"));
+        assert_eq!(start(&mut q).as_deref(), Some("d"));
+        assert_eq!(start(&mut q), None);
+        assert!(q.finish("a", Ok(())));
+        assert_eq!(start(&mut q).as_deref(), Some("b"));
+        assert_eq!(start(&mut q), None);
+        assert!(q.finish("b", Ok(())));
+        assert_eq!(start(&mut q).as_deref(), Some("c"));
     }
 
     #[test]
