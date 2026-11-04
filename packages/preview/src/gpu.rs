@@ -741,8 +741,9 @@ impl Preview {
                 u[6] = 0;
                 u[7] = global_pass;
                 for (i, v) in inst.params.iter().take(32).enumerate() {
-                    u[8 + i] = if i < 16 { v.to_bits() } else { 0 };
-                    if i >= 16 {
+                    if i < 16 {
+                        u[8 + i] = v.to_bits();
+                    } else {
                         u[36 + (i - 16)] = v.to_bits();
                     }
                 }

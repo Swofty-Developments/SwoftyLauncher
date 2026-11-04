@@ -399,3 +399,35 @@ fn raw_passes_write_the_picture() {
     let out = preview.render(&solid(0, 32, 32, [1, 2, 3])).unwrap();
     assert_eq!(&out.rgba[..4], &[255, 127, 64, 255]);
 }
+
+const SLOTS: &str = r#"#include "swofty/postfx.hlsli"
+float4 effect(float2 uv, uint2 pixel) { return float4(option(16), option(19), option(31), 1); }"#;
+
+#[test]
+fn all_32_option_slots_reach_the_shader() {
+    let Some(dxc) = dxc() else {
+        eprintln!("skipping: no dxc");
+        return;
+    };
+    let dir = tempfile::tempdir().unwrap();
+    let compiled = CompiledEffect {
+        effect: effect("slots", Vec::new(), vec![pass("slots", &[], None)]),
+        blobs: vec![spirv(&dxc, dir.path(), "slots", SLOTS)],
+        images: Vec::new(),
+    };
+    let mut preview = match Preview::new() {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("skipping: {e}");
+            return;
+        }
+    };
+    preview.set_effects(vec![compiled]);
+    preview.set_instances(vec![ActiveInstance {
+        effect: "slots".into(),
+        label: String::new(),
+        params: (0..32).map(|i| i as f32 / 40.0).collect(),
+    }]);
+    let out = preview.render(&solid(0, 16, 16, [0, 0, 0])).unwrap();
+    near(&out, [16.0 / 40.0, 19.0 / 40.0, 31.0 / 40.0]);
+}
