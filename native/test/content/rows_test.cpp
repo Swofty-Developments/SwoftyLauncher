@@ -627,6 +627,104 @@ static void twelve_team_tests(const std::string &regs)
     }
 }
 
+// The team and car rows a package's teams are checked against: three team rows inside the table's count and one
+// past it, two cars.
+static void package_team_row_tests()
+{
+    std::map<std::string, std::string> db = {
+        {"entrants.teams._team_instancecount_", "3"},
+        {"entrants.teams.team_0._metadata_", "cs16_mercedes"},
+        {"entrants.teams.team_1._metadata_", "f1_world"},
+        {"entrants.teams.team_2._metadata_", "f1_generic"},
+        {"entrants.teams.team_3._metadata_", "beyond_count"},
+        {"entrants.vehicles._vehicle_instancecount_", "2"},
+        {"entrants.vehicles.vehicle_0._metadata_", "cs16_mercedes"},
+        {"entrants.vehicles.vehicle_1._metadata_", "world_car"},
+    };
+    content::Read read = [&](const std::string &p) -> std::optional<std::string> {
+        auto it = db.find(p);
+        if (it != db.end())
+            return it->second;
+        auto at = p.find("[_metadata_=");
+        if (at == std::string::npos)
+            return std::nullopt;
+        std::string table = p.substr(0, at), want = p.substr(at + 12, p.find(']', at) - at - 12);
+        std::string container = table.substr(0, table.rfind('.')), row = table.substr(table.rfind('.') + 1);
+        auto count = db.find(container + "._" + row + "_instancecount_");
+        int n = count == db.end() ? 0 : std::atoi(count->second.c_str());
+        for (int i = 0; i < n; i++) {
+            auto m = db.find(table + "_" + std::to_string(i) + "._metadata_");
+            if (m != db.end() && m->second == want)
+                return want;
+        }
+        return std::nullopt;
+    };
+    std::map<std::string, Value> vehicles = {{"mod.a/mercedes", Value::object({{"label", "cs16_mercedes"}})}};
+    content::Lookup lookup = [&](const std::string &reg, const std::string &id) -> const Value * {
+        auto it = vehicles.find(id);
+        return reg == "vehicle" && it != vehicles.end() ? &it->second : nullptr;
+    };
+    auto team = [](const char *key, Value identity, const char *vehicle) {
+        return Value::object({{"key", key}, {"team", std::move(identity)}, {"vehicle", vehicle},
+                              {"drivers", Value::array({Value::object({{"driver", "game/d"}, {"number", 9}})})}});
+    };
+    content::ConstructorTeams constructors = {{"world", "mod.b/f1_world"}};
+    auto lower = [&](Value teams, const content::Read &with) {
+        content::Plan plan;
+        Value rec = Value::object({{"entrant_list", "cs_f1_2016"}, {"title", "x"}, {"teams", std::move(teams)}});
+        content::lower_package("mod.a/f1_2016", rec, lookup, plan, {}, nullptr, with, &constructors);
+        return plan;
+    };
+    auto field = [](const content::Plan &p, const std::string &at, const char *name) -> std::string {
+        for (std::size_t i = 0; i < p.ops.size(); i++) {
+            const Value &op = p.ops[i];
+            if (op["op"].as_string() == "set" && op["select"].as_string() == at && op["field"].as_string() == name)
+                return std::string(op["value"].as_string());
+        }
+        return "<none>";
+    };
+    std::string list = std::string(content::LISTS) + "[_metadata_=cs_f1_2016]";
+
+    content::Plan ok = lower(Value::array({team("mercedes", Value(), "mod.a/mercedes"),
+                                           team("f1_world", Value("mod.b/f1_world"), "game/world_car")}),
+                             read);
+    check(!ok.refused && ok.ops.size() > 0, "a package whose team and car rows all exist applies");
+    check(field(ok, list + ".entrant_0", "team") == "cs16_mercedes" && field(ok, list + ".entrant_0", "vehicle") == "cs16_mercedes",
+          "a team with no team record names the row labelled like its car");
+    check(field(ok, list + ".entrant_1", "team") == "f1_world" && field(ok, list + ".entrant_1", "vehicle") == "world_car" &&
+              field(ok, list + ".entrant_1", "_metadata_") == "world_car_driver_01",
+          "a team with a team record names that record's row, and its car stays its own");
+
+    content::Plan no_team = lower(Value::array({team("mercedes", Value(), "mod.a/mercedes"),
+                                                team("f1_world", Value(), "game/world_car")}),
+                                  read);
+    bool said = false;
+    for (auto &l : no_team.lines)
+        said |= l.find("team f1_world names entrants.teams row world_car, which the game database lacks") != std::string::npos;
+    check(no_team.refused == 1 && no_team.ops.size() == 0 && said,
+          "a team whose row the game lacks refuses the whole package and says which row");
+    check(lower(Value::array({team("x", Value("mod.b/beyond_count"), "game/world_car")}), read).refused == 1,
+          "a team row past the table's instance count counts as missing");
+    content::Plan no_car = lower(Value::array({team("x", Value("game/f1_generic"), "game/no_such_car")}), read);
+    bool warned = false;
+    for (auto &l : no_car.lines)
+        warned |= l.find("team x names entrants.vehicles row no_such_car, which the game database lacks") != std::string::npos;
+    check(!no_car.refused && warned, "a car the game database lacks is reported, and the package still applies");
+    content::Plan by_constructor = lower(Value::array({team("w", Value("constructor/world"), "game/world_car")}), read);
+    check(!by_constructor.refused && field(by_constructor, list + ".entrant_0", "team") == "f1_world",
+          "a constructor/ team names the row of the team that provides it");
+    content::Plan fell = lower(Value::array({team("mercedes", Value("mod.b/no_row"), "mod.a/mercedes")}), read);
+    bool noted = false;
+    for (auto &l : fell.lines)
+        noted |= l.find("its team mod.b/no_row gives no entrants.teams row (no_row) the game sees; it uses its car's row cs16_mercedes") !=
+                 std::string::npos;
+    check(!fell.refused && field(fell, list + ".entrant_0", "team") == "cs16_mercedes" && noted,
+          "a team record without a row falls back to its car's row, and says so");
+    content::Read empty = [](const std::string &) -> std::optional<std::string> { return std::nullopt; };
+    check(!lower(Value::array({team("x", Value(), "game/no_such_car")}), empty).refused,
+          "with no teams or vehicles table in the database nothing is checked");
+}
+
 static void garage_tests()
 {
     std::map<std::string, std::string> db = {
@@ -1916,6 +2014,7 @@ int main(int argc, char **argv)
     engine_tests();
     livery_tests();
     garage_tests();
+    package_team_row_tests();
     if (argc > 1)
         variant_tests(argv[1]);
     if (argc > 1)
