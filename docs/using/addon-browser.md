@@ -21,7 +21,20 @@ Select an addon for its description, a 30-day downloads chart, its file size and
 
 ## Install one
 
-Select **Install**. The launcher downloads the newest version that works with your launcher, checks its size and SHA-256, installs it switched off, and opens the **Addons** page with it highlighted. An addon marked **Runs code in the game** includes native code that runs inside F1 25.
+Select **Install**. The launcher queues the newest version that works with your launcher, checks its size and SHA-256, and installs it switched off in the profile you selected. Open **Downloads** in the sidebar to follow the install. An addon marked **Runs code in the game** includes native code that runs inside F1 25.
+
+## Downloads {#downloads}
+
+The **Downloads** page lists Addon Browser installs and updates, including **Update addons** jobs. Each row shows its status and any error. The sidebar badge counts queued and active jobs.
+
+- **Concurrent jobs** sets how many installs can run at once, from 1 to 10. The default is 2. An install occupies a slot while it downloads its required addons, verifies files and installs them. Changing the limit does not interrupt an active job.
+- **Remove** takes a queued job out of the queue. It cannot stop an active install.
+- **Retry** starts a failed job again. If its version is no longer available, **Request current version** queues the current compatible version instead.
+- **Clear finished** removes completed and failed rows. It leaves queued and active jobs alone.
+
+The launcher remembers the concurrency limit, but clears the queue and history when it closes. If you close it while jobs are pending, it warns that active work will be interrupted and queued jobs lost. Launcher updates and other downloads do not appear on this page.
+
+A job keeps the profile it was requested from, even if you switch profiles while it waits. If that profile is deleted, the launcher leaves the installed addon out of other profiles and notes this in the result.
 
 ### Requirements {#requirements}
 
@@ -29,9 +42,9 @@ An addon can require other addons (its manifest's [`requires`](/reference/addons
 
 - A required addon you have at a matching version, or one built into the launcher, stays as it is.
 - A required addon you don't have, or have at a version that doesn't match, comes from the Addon Browser: the newest version that matches and works with your launcher. A required addon's own requirements install the same way.
-- When a required addon isn't on the Addon Browser, no version of it matches, or replacing yours would break another addon you have, nothing installs. The addon shows **Missing requirements**, naming each missing addon and the version it needs.
+- When a required addon isn't on the Addon Browser, no version of it matches, or replacing yours would break another addon you have, the launcher refuses the install and names the unmet requirements. If an install fails after a required addon was installed, that addon stays installed; **Downloads** lists it in the failed result.
 
-The addon's page lists **Also installs** with the other addons the install brings, and its card shows the same line. The progress bar covers every download, and **Activity** records what else was installed. Each version in **Versions** lists what it requires.
+The addon's page lists **Also installs** with the other addons the install brings, and its card shows the same line. **Downloads** shows the current requirement and progress, and **Activity** records what else was installed. Each version in **Versions** lists what it requires.
 
 ### If a download fails {#if-a-download-fails}
 
@@ -41,7 +54,7 @@ When it keeps breaking, the install fails with **the connection kept breaking du
 
 1. Turn off your antivirus's HTTPS or web scanning, or add an exclusion for Swofty Launcher.
 2. Turn off any VPN or proxy.
-3. Install again. If it still fails, try another network, such as a phone hotspot.
+3. Select **Retry** on Downloads. If it still fails, try another network, such as a phone hotspot.
 
 The error's second line holds the network error, and `state/registry.log` in the data folder keeps it.
 

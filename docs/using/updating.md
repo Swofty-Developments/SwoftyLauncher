@@ -61,10 +61,10 @@ These rules are for Team Simplified, who publish the addon at [TeamSimplified/si
 The launcher compares your installed addons with the [Addon Browser](/using/addon-browser) when it opens, then every 30 minutes. When an addon that is on in your active profile has a newer version that works with your launcher, **Play** becomes **Update addons** with the number of updates, and the line next to it lists them. Updates for addons that are off do not change **Play**; they show as an update on the Addons page and in the Addon Browser, and become part of **Update addons** when you turn the addon on.
 
 1. Close F1 25. **Update addons** appears once the game exits.
-2. Select **Update addons**. Each addon downloads, is checked against its SHA-256, and replaces the installed one. Its switch and settings stay as they were in every profile.
-3. A notification lists what updated and anything that failed, with the reason. **Play** comes back.
+2. Select **Update addons**. Each update joins the [Downloads queue](/using/addon-browser#downloads), is checked against its SHA-256, and replaces the installed version. Its switch and settings stay as they were in every profile.
+3. Open **Downloads** to see each update's progress or error. **Play** comes back when the batch finishes.
 
-An addon that fails to update stays at its installed version, and **Play** comes back. The launcher tries again at the next check.
+An addon that fails to update keeps its installed version. Retry it from **Downloads** or use **Try again** beside the update error.
 
 ## Addons and mods
 

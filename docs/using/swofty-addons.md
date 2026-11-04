@@ -18,7 +18,7 @@ Swofty publishes most of these addons in the [Addon Browser](/using/addon-browse
 
 ## Install, update or remove one
 
-- **Install it:** open the **Addon Browser**, find it, and select **Install**. The launcher opens the **Addons** page with the new addon highlighted.
+- **Install it:** open the **Addon Browser**, find it, and select **Install**. Follow its progress on the [Downloads page](/using/addon-browser#downloads).
 - **Turn it on:** on the **Addons** page, toggle its switch in the profile you want it in, then press **Play**. From a terminal: `swofty addons enable <id>`.
 - **Update it:** when Swofty publishes a new version, **Play** becomes **Update addons**. See [Updating](/using/updating#addon-updates).
 - **Remove it:** expand its row on the **Addons** page and select **Remove addon**. Install it again from the Addon Browser to get it back.
