@@ -498,16 +498,21 @@ impl Shell {
         h_flex()
             .px(px(12.))
             .py(px(10.))
-            .gap(px(24.))
+            .flex_wrap()
+            .gap_x(px(24.))
+            .gap_y(px(8.))
             .when(!first, |d| d.border_t_1().border_color(p.border_variant))
             .child(
                 v_flex()
                     .flex_1()
+                    .flex_basis(px(220.))
                     .min_w_0()
                     .gap(px(2.))
                     .child(
                         h_flex()
-                            .gap(px(10.))
+                            .flex_wrap()
+                            .gap_x(px(10.))
+                            .gap_y(px(2.))
                             .items_baseline()
                             .child(
                                 div()
@@ -591,11 +596,13 @@ impl Shell {
             .map_or_else(|| o.text(value), |s| s.text.clone());
         h_flex()
             .w(px(260.))
+            .h(px(28.))
             .gap(px(12.))
             .child(Slider::new(&slot.state).disabled(self.vanilla()).flex_1())
             .child(
                 div()
                     .w(px(48.))
+                    .flex_shrink_0()
                     .flex()
                     .justify_end()
                     .text_size(px(13.))
