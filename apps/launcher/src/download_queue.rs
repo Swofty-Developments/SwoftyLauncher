@@ -80,9 +80,25 @@ impl<T> Queue<T> {
         true
     }
 
+    /// Update an active or queued job's known requirements. A running job may
+    /// discover more requirements after another job has already started; callers
+    /// must still enforce safety in the installer itself.
+    pub(crate) fn update_claims(&mut self, id: &str, mut claims: BTreeSet<String>) -> bool {
+        let Some(job) = self
+            .jobs
+            .iter_mut()
+            .find(|j| j.id == id && matches!(j.state, State::Queued | State::Active))
+        else {
+            return false;
+        };
+        claims.insert(id.to_owned());
+        job.claims = claims;
+        true
+    }
+
     /// Start the earliest eligible job, allowing unrelated jobs past blocked ones.
-    /// Returns its index, which stays valid until a job is removed from the queue.
-    pub(crate) fn start_next(&mut self) -> Option<usize> {
+    /// Return its addon ID, which remains valid when other rows are removed.
+    pub(crate) fn start_next(&mut self) -> Option<String> {
         if self.jobs.iter().filter(|j| j.state == State::Active).count() >= self.limit {
             return None;
         }
@@ -93,7 +109,7 @@ impl<T> Queue<T> {
                 })
         })?;
         self.jobs[index].state = State::Active;
-        Some(index)
+        Some(self.jobs[index].id.clone())
     }
 
     pub(crate) fn finish(&mut self, id: &str, result: Result<(), String>) -> bool {
@@ -160,7 +176,7 @@ mod tests {
     }
 
     fn start(q: &mut Queue<()>) -> Option<String> {
-        q.start_next().map(|i| q.jobs()[i].id.clone())
+        q.start_next()
     }
 
     #[test]
@@ -215,6 +231,46 @@ mod tests {
         assert!(q.finish("a", Ok(())));
         q.clear_finished();
         assert!(q.jobs().is_empty());
+    }
+
+    #[test]
+    fn updated_claims_block_later_starts_and_can_be_refreshed() {
+        let mut q = Queue::default();
+        add(&mut q, "a", &[]);
+        add(&mut q, "b", &["shared"]);
+        assert_eq!(start(&mut q).as_deref(), Some("a"));
+        assert!(q.update_claims("a", BTreeSet::from(["shared".into()])));
+        assert_eq!(start(&mut q), None);
+        assert!(q.update_claims("b", BTreeSet::new()));
+        assert_eq!(start(&mut q).as_deref(), Some("b"));
+        assert!(q.finish("a", Ok(())));
+        assert!(!q.update_claims("a", BTreeSet::new()));
+    }
+
+    #[test]
+    fn completed_history_does_not_block_a_new_request_or_its_completion() {
+        let mut q = Queue::default();
+        assert!(add(&mut q, "a", &[]));
+        assert_eq!(start(&mut q).as_deref(), Some("a"));
+        assert!(q.finish("a", Ok(())));
+        assert!(add(&mut q, "a", &[]));
+        assert_eq!(start(&mut q).as_deref(), Some("a"));
+        assert!(q.finish("a", Err("second attempt".into())));
+        assert_eq!(q.jobs()[0].state, State::Completed);
+        assert_eq!(q.jobs()[1].state, State::Failed("second attempt".into()));
+    }
+
+    #[test]
+    fn retry_joins_the_back_and_cannot_duplicate_a_pending_request() {
+        let mut q = Queue::default();
+        add(&mut q, "a", &[]);
+        start(&mut q);
+        q.finish("a", Err("failed".into()));
+        add(&mut q, "b", &[]);
+        assert!(q.retry("a"));
+        assert!(!q.retry("a"));
+        assert_eq!(start(&mut q).as_deref(), Some("b"));
+        assert_eq!(start(&mut q).as_deref(), Some("a"));
     }
 
     #[test]
