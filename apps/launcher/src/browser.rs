@@ -200,6 +200,12 @@ impl Progress {
     }
 }
 
+/// Whether a held update represents a real failure rather than a successful
+/// install waiting for the asynchronous catalog refresh.
+fn held_failure(error: &str) -> bool {
+    !error.is_empty()
+}
+
 /// An install's downloads so far: every addon it fetches, requirements included.
 #[derive(Default)]
 struct Tally {
@@ -1146,17 +1152,22 @@ impl Shell {
     }
 
     pub(crate) fn install_from_catalog(&mut self, id: &str, cx: &mut Context<Self>) {
+        self.enqueue_catalog(id, cx);
+    }
+
+    /// True when a job was queued or an existing pending job will handle it.
+    fn enqueue_catalog(&mut self, id: &str, cx: &mut Context<Self>) -> bool {
         let Some(addon) = self.browser.find(id).cloned() else {
-            return;
+            return false;
         };
         let Some(version) = addon.offered(&current_version()).cloned() else {
-            return;
+            return false;
         };
         if self.build.as_ref().is_some_and(|b| b.holds(id)) {
             self.browser
                 .toasts
                 .push(Notification::warning(crate::update::BUILDING));
-            return;
+            return false;
         }
         let claims = match self.requirements(&addon) {
             Some(Ok(plan)) => plan.also().iter().map(|s| s.addon.id.clone()).collect(),
@@ -1169,6 +1180,7 @@ impl Shell {
         {
             self.start_queued_downloads(cx);
         }
+        true
     }
 
     pub(crate) fn download_pending(&self) -> usize {
@@ -1441,9 +1453,11 @@ impl Shell {
                         s.reload(cx);
                     }
                 }
-                if in_batch && let Some(to) = s.catalog_update(&addon.id).map(|u| u.to.version.clone()) {
+                if in_batch {
                     let error = s.browser.failed.get(&addon.id).cloned().unwrap_or_default();
-                    s.browser.held.insert(addon.id.clone(), (to, error));
+                    s.browser
+                        .held
+                        .insert(addon.id.clone(), (version.version.clone(), error));
                 }
                 if in_batch && s.browser.batch.as_ref().is_some_and(|b| b.left.is_empty()) {
                     s.finish_addon_updates();
@@ -1510,7 +1524,22 @@ impl Shell {
             ..Batch::default()
         });
         for id in ids {
-            self.install_from_catalog(&id, cx);
+            if !self.enqueue_catalog(&id, cx)
+                && let Some(batch) = &mut self.browser.batch
+            {
+                batch.left.remove(&id);
+                batch
+                    .failed
+                    .push((id, "This update is no longer available.".into()));
+            }
+        }
+        if self
+            .browser
+            .batch
+            .as_ref()
+            .is_some_and(|batch| batch.left.is_empty())
+        {
+            self.finish_addon_updates();
         }
     }
 
@@ -1661,7 +1690,9 @@ impl Shell {
             .browser
             .held
             .iter()
-            .filter(|(id, (v, _))| self.catalog_update(id).is_some_and(|u| u.to.version == *v))
+            .filter(|(id, (v, error))| {
+                held_failure(error) && self.catalog_update(id).is_some_and(|u| u.to.version == *v)
+            })
             .map(|(id, (_, e))| {
                 let name = self.browser.find(id).map_or(id.as_str(), |a| a.name.as_str());
                 format!("{name}: {e}")
@@ -3864,6 +3895,12 @@ mod tests {
         let due = due_updates(&updates, &on, &BTreeMap::new());
         assert_eq!(due.iter().map(|u| u.id.as_str()).collect::<Vec<_>>(), ["on"]);
         assert!(due_updates(&updates, &HashSet::new(), &BTreeMap::new()).is_empty());
+    }
+
+    #[test]
+    fn a_successfully_updated_addon_is_not_reported_as_failed_during_refresh() {
+        assert!(!super::held_failure(""));
+        assert!(super::held_failure("network error"));
     }
 
     #[test]
