@@ -38,6 +38,7 @@ pub enum Page {
     News,
     Addons,
     Browser,
+    Downloads,
     Shaders,
     Importer,
     Tools,
@@ -54,6 +55,7 @@ impl Page {
             Self::News => "News",
             Self::Addons => "Addons",
             Self::Browser => "Addon Browser",
+            Self::Downloads => "Downloads",
             Self::Shaders => "Shaders",
             Self::Importer => "Simplified Importer",
             Self::Tools => "Tools",
@@ -78,6 +80,7 @@ impl Page {
             Self::News => IconName::Newspaper,
             Self::Addons => IconName::Puzzle,
             Self::Browser => IconName::PackageSearch,
+            Self::Downloads => IconName::Download,
             Self::Shaders => IconName::Palette,
             Self::Importer => IconName::FolderInput,
             Self::Tools => IconName::Wrench,
@@ -412,6 +415,34 @@ impl Shell {
         let start_store = config.launch.start_store;
         let developer_mode = config.developer;
         let update_check = config.updates.check;
+        let shell = cx.entity().downgrade();
+        let confirming = Rc::new(std::cell::Cell::new(false));
+        window.on_window_should_close(cx, move |window, cx| {
+            let pending = shell.update(cx, |s, _| s.download_pending()).unwrap_or(0);
+            if pending == 0 {
+                return true;
+            }
+            if confirming.replace(true) {
+                return false;
+            }
+            let answer = window.prompt(
+                PromptLevel::Warning,
+                "Downloads are still in progress",
+                Some("Exiting interrupts active downloads and discards queued jobs."),
+                &["Keep launcher open", "Exit anyway"],
+                cx,
+            );
+            let handle = window.window_handle();
+            let confirming = confirming.clone();
+            cx.spawn(async move |cx| {
+                if answer.await.ok() == Some(1) {
+                    handle.update(cx, |_, window, _| window.remove_window()).ok();
+                }
+                confirming.set(false);
+            })
+            .detach();
+            false
+        });
         let stale = store.clone();
         cx.background_executor()
             .spawn(async move {
@@ -2290,6 +2321,10 @@ impl Shell {
             (Page::News, None),
             (Page::Addons, Some(self.library.listed().count())),
             (Page::Browser, None),
+            (
+                Page::Downloads,
+                (self.download_pending() > 0).then(|| self.download_pending()),
+            ),
             (Page::Shaders, None),
             (Page::Profiles, Some(self.library.profiles.len())),
             (Page::Careers, None),
@@ -2446,6 +2481,7 @@ impl Render for Shell {
             },
             Page::Addons => self.addons_page(p, cx),
             Page::Browser => self.browser_page(p, cx),
+            Page::Downloads => self.downloads_page(p, cx),
             Page::Shaders => self.shaders.clone().into_any_element(),
             Page::Database => self.db_page(p, cx),
             Page::Profiles => self.profiles_page(p, wide, cx),

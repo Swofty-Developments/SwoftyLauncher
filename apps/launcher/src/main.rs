@@ -13,7 +13,6 @@ mod db;
 mod developer;
 mod discord;
 mod donate;
-#[cfg(test)]
 mod download_queue;
 mod ea_app;
 mod game;

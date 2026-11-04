@@ -143,22 +143,22 @@ impl<T> Queue<T> {
         true
     }
 
-    /// Retry the newest failed attempt, unless another request for the addon is pending.
-    pub(crate) fn retry(&mut self, id: &str) -> bool {
-        if self
+    /// Retry a specific failed row, unless another request for its addon is pending.
+    pub(crate) fn retry_at(&mut self, index: usize, id: &str) -> bool {
+        let Some(job) = self
             .jobs
-            .iter()
-            .any(|j| j.id == id && matches!(j.state, State::Queued | State::Active))
-        {
-            return false;
-        }
-        let Some(index) = self
-            .jobs
-            .iter()
-            .rposition(|j| j.id == id && matches!(j.state, State::Failed(_)))
+            .get(index)
+            .filter(|job| job.id == id && matches!(job.state, State::Failed(_)))
         else {
             return false;
         };
+        if self
+            .jobs
+            .iter()
+            .any(|other| other.id == job.id && matches!(other.state, State::Queued | State::Active))
+        {
+            return false;
+        }
         let mut job = self.jobs.remove(index).expect("job index came from the queue");
         job.state = State::Queued;
         self.jobs.push_back(job);
@@ -246,7 +246,7 @@ mod tests {
         start(&mut q);
         assert!(!q.remove_queued("a"));
         assert!(q.finish("a", Err("failed".into())));
-        assert!(q.retry("a"));
+        assert!(q.retry_at(0, "a"));
         assert_eq!(q.jobs()[0].state, State::Queued);
         assert_eq!(q.jobs()[0].request, ());
         start(&mut q);
@@ -289,8 +289,8 @@ mod tests {
         start(&mut q);
         q.finish("a", Err("failed".into()));
         add(&mut q, "b", &[]);
-        assert!(q.retry("a"));
-        assert!(!q.retry("a"));
+        assert!(q.retry_at(0, "a"));
+        assert!(!q.retry_at(1, "a"));
         assert_eq!(start(&mut q).as_deref(), Some("b"));
         assert_eq!(start(&mut q).as_deref(), Some("a"));
     }

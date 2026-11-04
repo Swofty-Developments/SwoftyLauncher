@@ -1175,6 +1175,15 @@ impl Shell {
                     this.install_from_catalog(&target, cx);
                 }))
                 .into_any_element(),
+            Offer::Queued => Button::new(key)
+                .outline()
+                .xsmall()
+                .label("Queued")
+                .on_click(cx.listener(|this, _, _, cx| {
+                    cx.stop_propagation();
+                    this.open_page(crate::shell::Page::Downloads, cx);
+                }))
+                .into_any_element(),
             Offer::Working(progress) => Button::new(key)
                 .primary()
                 .xsmall()

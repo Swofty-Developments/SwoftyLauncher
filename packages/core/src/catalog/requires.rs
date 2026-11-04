@@ -535,6 +535,8 @@ pub enum Event<'a> {
     /// The addon the next stages are about.
     Addon(&'a Addon, &'a Version),
     Stage(Stage),
+    /// A manifest successfully installed by this job.
+    Installed(&'a AddonManifest),
 }
 
 type Zips = RefCell<BTreeMap<(String, semver::Version), PathBuf>>;
@@ -754,6 +756,7 @@ fn install_with(
                     s.addon.id, m.id
                 )));
             }
+            progress(Event::Installed(&m));
             done.push(m);
         }
         return Ok(done);
@@ -1451,15 +1454,18 @@ mod tests {
         let z = addon("t.z", vec![hosted(&base, "/z.zip", &z_zip, None)]);
         let catalog = vec![a.clone(), b, z.clone()];
         let seen = RefCell::new(Vec::new());
+        let installed_events = RefCell::new(Vec::new());
         let done = install(&store, &catalog, &a, &a.versions[0], &|e| match e {
             Event::Planned(p) => seen.borrow_mut().push(format!("plan {}", labels(p).join(" "))),
             Event::Addon(a, _) => seen.borrow_mut().push(a.id.clone()),
             Event::Stage(Stage::Installing) => seen.borrow_mut().push("installing".into()),
+            Event::Installed(m) => installed_events.borrow_mut().push(m.id.clone()),
             Event::Stage(_) => {}
         })
         .unwrap();
         let ids: Vec<&str> = done.iter().map(|m| m.id.as_str()).collect();
         assert_eq!(ids, ["t.b", "t.a"]);
+        assert_eq!(*installed_events.borrow(), ["t.b", "t.a"]);
         assert_eq!(
             *seen.borrow(),
             [
