@@ -12,7 +12,7 @@ These effects are available to every [config](./shaders) with no addon installed
 brightness = 125     # an option: name = value
 ```
 
-Every effect also takes `enabled = false` to switch it off. The comment after each option is its label, what it does and its range.
+Every effect also takes `enabled = false` to switch it off. A config can also change options while something happens in the game; see [Rules](./shaders#rules). The comment after each option is its label, what it does and its range.
 
 ## Ambient Light {#ambient-light}
 
