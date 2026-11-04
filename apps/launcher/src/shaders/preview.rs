@@ -146,6 +146,7 @@ fn work(jobs: Receiver<Job>, done: Sender<Done>) {
     let mut preview: Option<Preview> = None;
     let mut gpu_error: Option<String> = None;
     let mut original: Option<(usize, Arc<RenderImage>)> = None;
+    let mut logged_failure: Option<String> = None;
     while let Ok(first) = jobs.recv() {
         let mut batch = vec![first];
         while let Ok(job) = jobs.try_recv() {
@@ -177,6 +178,7 @@ fn work(jobs: Receiver<Job>, done: Sender<Done>) {
                 }
                 Job::Effects(effects) => match gpu(&mut preview, &mut gpu_error) {
                     Ok(p) => {
+                        crate::app_log::note(&describe(&effects));
                         p.set_effects(effects);
                         Done::Ack
                     }
@@ -198,11 +200,44 @@ fn work(jobs: Receiver<Job>, done: Sender<Done>) {
                     compare,
                 ),
             };
+            if let Done::Failed { message, .. } = &reply
+                && logged_failure.as_ref() != Some(message)
+            {
+                crate::app_log::note(&format!("[shaders] preview: {message}"));
+                logged_failure = Some(message.clone());
+            }
             if done.send(reply).is_err() {
                 return;
             }
         }
     }
+}
+
+/// The effects the preview loads, each with its textures: a declared one's format, or an image's file and size.
+fn describe(effects: &[CompiledEffect]) -> String {
+    let list: Vec<String> = effects
+        .iter()
+        .map(|e| {
+            let textures: Vec<String> = e
+                .effect
+                .textures
+                .iter()
+                .map(|t| match &t.file {
+                    Some(file) => match e.images.iter().find(|i| i.0 == t.name) {
+                        Some((_, w, h, _)) => format!("{} {file} {w}x{h}", t.name),
+                        None => format!("{} {file} not loaded", t.name),
+                    },
+                    None => format!("{} {}", t.name, t.format.as_deref().unwrap_or("rgba16f")),
+                })
+                .collect();
+            if textures.is_empty() {
+                e.effect.id.clone()
+            } else {
+                format!("{} ({})", e.effect.id, textures.join(", "))
+            }
+        })
+        .collect();
+    format!("[shaders] preview effects: {}", list.join("; "))
 }
 
 fn gpu<'a>(preview: &'a mut Option<Preview>, error: &mut Option<String>) -> Result<&'a mut Preview, String> {
@@ -211,8 +246,12 @@ fn gpu<'a>(preview: &'a mut Option<Preview>, error: &mut Option<String>) -> Resu
     }
     if preview.is_none() {
         match Preview::new() {
-            Ok(p) => *preview = Some(p),
+            Ok(p) => {
+                crate::app_log::note(&format!("[shaders] preview runs on {}", p.adapter_name()));
+                *preview = Some(p);
+            }
             Err(e) => {
+                crate::app_log::note(&format!("[shaders] preview has no GPU: {e}"));
                 *error = Some(e.clone());
                 return Err(e);
             }
