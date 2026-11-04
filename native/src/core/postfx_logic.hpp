@@ -3,6 +3,8 @@
 #include "json.hpp"
 
 #include <algorithm>
+#include <array>
+#include <cmath>
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
@@ -335,6 +337,115 @@ inline std::vector<EffectDecl> parse_effects(const std::string &text)
 struct InstanceSpec {
     std::string effect, label;
     std::vector<float> params;
+    int index = 0;
+};
+
+enum SignalKind : uint8_t { SK_BOOL, SK_NAME, SK_NUMBER, SK_EVENT };
+
+struct SignalInfo {
+    std::string_view id;
+    SignalKind kind;
+    std::string_view values;
+    std::string_view unit;
+    bool in_game;
+};
+
+enum Sig : int {
+    S_VIEW_CAMERA, S_VIEW_REPLAY, S_VIEW_PAUSED, S_VIEW_PHOTO, S_VIEW_MENU, S_VIEW_CUTSCENE, S_VIEW_SPECTATING,
+    S_SESSION_START, S_RACE_START, S_SESSION_LAP, S_SESSION_END,
+    S_CAR_SPEED, S_CAR_RPM, S_CAR_GEAR, S_CAR_THROTTLE, S_CAR_BRAKE, S_CAR_STEER, S_CAR_G_LATERAL, S_CAR_G_LONG,
+    S_CAR_SURFACE, S_CAR_IMPACT, S_CAR_DAMAGE, S_CAR_IN_PIT_LANE, S_CAR_OFF_TRACK,
+    S_SESSION_FLAG, S_SESSION_SAFETY_CAR, S_SESSION_WEATHER, S_SESSION_WETNESS, S_SESSION_FLASHBACK,
+    S_SESSION_CHEQUERED,
+    SIGNAL_COUNT
+};
+
+inline constexpr SignalInfo SIGNALS[SIGNAL_COUNT] = {
+    {"view.camera", SK_NAME, "cockpit tcam tcam_offset chase_near chase_far other", "", true},
+    {"view.replay", SK_BOOL, "", "", true},
+    {"view.paused", SK_BOOL, "", "", true},
+    {"view.photo", SK_BOOL, "", "", true},
+    {"view.menu", SK_BOOL, "", "", true},
+    {"view.cutscene", SK_BOOL, "", "", true},
+    {"view.spectating", SK_BOOL, "", "", true},
+    {"session.start", SK_EVENT, "", "", true},
+    {"race.start", SK_EVENT, "", "", true},
+    {"session.lap", SK_EVENT, "", "", true},
+    {"session.end", SK_EVENT, "", "", true},
+    {"car.speed", SK_NUMBER, "", "km/h", false},
+    {"car.rpm", SK_NUMBER, "", "", false},
+    {"car.gear", SK_NUMBER, "", "", false},
+    {"car.throttle", SK_NUMBER, "", "", false},
+    {"car.brake", SK_NUMBER, "", "", false},
+    {"car.steer", SK_NUMBER, "", "", false},
+    {"car.g_lateral", SK_NUMBER, "", "g", false},
+    {"car.g_long", SK_NUMBER, "", "g", false},
+    {"car.surface", SK_NAME, "tarmac kerb rumble grass gravel sand", "", false},
+    {"car.impact", SK_EVENT, "", "g", false},
+    {"car.damage", SK_EVENT, "", "", false},
+    {"car.in_pit_lane", SK_BOOL, "", "", false},
+    {"car.off_track", SK_BOOL, "", "", false},
+    {"session.flag", SK_NAME, "none green blue yellow red", "", false},
+    {"session.safety_car", SK_NAME, "none sc vsc formation", "", false},
+    {"session.weather", SK_NAME, "clear light_cloud overcast light_rain heavy_rain storm", "", false},
+    {"session.wetness", SK_NUMBER, "", "", false},
+    {"session.flashback", SK_EVENT, "", "", false},
+    {"session.chequered", SK_EVENT, "", "", false},
+};
+
+inline int signal_index(std::string_view id)
+{
+    for (int i = 0; i < SIGNAL_COUNT; i++)
+        if (SIGNALS[i].id == id)
+            return i;
+    return -1;
+}
+
+// The name of value i of a name signal ("" past the end).
+inline std::string_view signal_value_name(int signal, size_t i)
+{
+    std::string_view v = SIGNALS[signal].values;
+    size_t at = 0;
+    for (size_t n = 0;; n++) {
+        size_t end = v.find(' ', at);
+        std::string_view word = v.substr(at, end == std::string_view::npos ? end : end - at);
+        if (n == i)
+            return word;
+        if (end == std::string_view::npos)
+            return {};
+        at = end + 1;
+    }
+}
+
+enum CondOp : uint8_t { OP_TRUE, OP_IS, OP_ABOVE, OP_BELOW, OP_BETWEEN, OP_EVENT };
+
+struct RuleCond {
+    int signal = 0;
+    CondOp op = OP_TRUE;
+    uint32_t mask = 0;
+    int wheels = 1;
+    double value = 0, lo = 0, hi = 0;
+};
+
+enum SetMode : uint8_t { SET_OFF, SET_BLEND, SET_ROUND, SET_SWITCH };
+
+struct RuleSet {
+    int instance = 0;
+    int slot = 0;
+    SetMode mode = SET_BLEND;
+    std::vector<float> values;
+};
+
+struct RuleSpec {
+    std::string name;
+    int priority = 0, order = 0;
+    bool event = false;
+    std::vector<RuleCond> when;
+    bool has_ramp = false;
+    int ramp_signal = 0;
+    double ramp_from = 0, ramp_to = 1;
+    double min_ms = 0, hold_ms = 0, for_ms = 400, fade_in_ms = 150, fade_out_ms = 300;
+    std::vector<RuleSet> sets;
 };
 
 // The config swofty/shaders/active.json says runs now.
@@ -342,7 +453,78 @@ struct ActiveSpec {
     uint64_t serial = 0;
     std::string name, source, forced_by, toggle_key;
     std::vector<InstanceSpec> instances;
+    std::vector<RuleSpec> rules;
 };
+
+inline bool parse_rule(const json::Value &r, RuleSpec &out)
+{
+    if (r.type != json::Value::Obj)
+        return false;
+    out = {};
+    out.name = r["name"].str();
+    out.priority = int(r["priority"].num());
+    out.order = int(r["order"].num());
+    out.event = r["event"].type == json::Value::Bool && r["event"].b;
+    auto num = [&](const json::Value &v, double def) { return v.type == json::Value::Num ? v.n : def; };
+    out.min_ms = num(r["min_ms"], 0);
+    out.hold_ms = num(r["hold_ms"], 0);
+    out.for_ms = num(r["for_ms"], 400);
+    out.fade_in_ms = num(r["fade_in_ms"], 150);
+    out.fade_out_ms = num(r["fade_out_ms"], 300);
+    for (auto &w : r["when"].a) {
+        RuleCond c;
+        c.signal = signal_index(w["signal"].str());
+        if (c.signal < 0)
+            return false;
+        std::string op = w["op"].str();
+        c.op = op == "true"      ? OP_TRUE
+               : op == "is"      ? OP_IS
+               : op == "above"   ? OP_ABOVE
+               : op == "below"   ? OP_BELOW
+               : op == "between" ? OP_BETWEEN
+               : op == "event"   ? OP_EVENT
+                                 : OP_TRUE;
+        if (op != "true" && op != "is" && op != "above" && op != "below" && op != "between" && op != "event")
+            return false;
+        for (auto &v : w["values"].a)
+            if (v.type == json::Value::Num && v.n >= 0 && v.n < 32)
+                c.mask |= 1u << unsigned(v.n);
+        c.wheels = w["wheels"].type == json::Value::Num ? int(w["wheels"].n) : 1;
+        c.value = num(w["value"], 0);
+        c.lo = num(w["lo"], 0);
+        c.hi = num(w["hi"], 0);
+        out.when.push_back(c);
+    }
+    const json::Value &ramp = r["ramp"];
+    if (ramp.type == json::Value::Obj) {
+        out.ramp_signal = signal_index(ramp["signal"].str());
+        if (out.ramp_signal < 0)
+            return false;
+        out.has_ramp = true;
+        out.ramp_from = num(ramp["from"], 0);
+        out.ramp_to = num(ramp["to"], 1);
+    }
+    for (auto &s : r["set"].a) {
+        RuleSet x;
+        x.instance = int(s["instance"].num(-1));
+        if (x.instance < 0)
+            continue;
+        if (s["enabled"].type == json::Value::Bool && !s["enabled"].b) {
+            x.mode = SET_OFF;
+            out.sets.push_back(std::move(x));
+            continue;
+        }
+        std::string mode = s["mode"].str();
+        x.mode = mode == "round" ? SET_ROUND : mode == "switch" ? SET_SWITCH : SET_BLEND;
+        x.slot = int(s["slot"].num(-1));
+        for (auto &v : s["values"].a)
+            x.values.push_back(v.type == json::Value::Num ? float(v.n) : 0.0f);
+        if (x.slot < 0 || x.values.empty() || size_t(x.slot) + x.values.size() > SLOTS)
+            continue;
+        out.sets.push_back(std::move(x));
+    }
+    return true;
+}
 
 inline bool parse_active(const std::string &text, ActiveSpec &out)
 {
@@ -361,8 +543,14 @@ inline bool parse_active(const std::string &text, ActiveSpec &out)
         s.label = i["label"].str();
         for (auto &v : i["params"].a)
             s.params.push_back(v.type == json::Value::Num ? float(v.n) : 0.0f);
+        s.index = int(&i - root["instances"].a.data());
         if (!s.effect.empty())
             out.instances.push_back(std::move(s));
+    }
+    for (auto &r : root["rules"].a) {
+        RuleSpec rule;
+        if (parse_rule(r, rule))
+            out.rules.push_back(std::move(rule));
     }
     return true;
 }
@@ -392,6 +580,7 @@ struct PlanPass {
 };
 
 struct PlanInstance {
+    int source = 0;
     std::string effect, label;
     const EffectDecl *decl = nullptr;
     float options[SLOTS] = {};
@@ -486,6 +675,7 @@ inline Plan make_plan(const ActiveSpec &active, const std::vector<EffectDecl> &e
         PlanInstance inst;
         inst.effect = spec.effect;
         inst.label = spec.label;
+        inst.source = spec.index;
         inst.decl = fx;
         pack_slots(spec.params, inst.options);
         plan.instances.push_back(std::move(inst));
@@ -566,5 +756,232 @@ inline void box_scale_rgb(const uint8_t *src, uint32_t sw, uint32_t sh, uint8_t 
         }
     }
 }
+
+// What the signals read at one presented frame. A signal without a value has has[] false: conditions on
+// it fail and its events never occur. Bool signals hold 0 or 1, name signals the index of the value,
+// numbers the number; car.surface holds one index per wheel (FL FR RL RR) in wheel[] (-1 for none). An
+// event holds the magnitude of each occurrence this frame.
+struct Signals {
+    static constexpr size_t MAX_EVENTS = 4;
+    bool has[SIGNAL_COUNT];
+    double num[SIGNAL_COUNT];
+    int wheel[4];
+    uint8_t n_events[SIGNAL_COUNT];
+    double magnitude[SIGNAL_COUNT][MAX_EVENTS];
+
+    Signals() { clear(); }
+
+    void clear()
+    {
+        for (int i = 0; i < SIGNAL_COUNT; i++) {
+            has[i] = false;
+            num[i] = 0;
+            n_events[i] = 0;
+        }
+        for (int &w : wheel)
+            w = -1;
+    }
+
+    void clear_events()
+    {
+        for (int i = 0; i < SIGNAL_COUNT; i++)
+            n_events[i] = 0;
+    }
+
+    void set(int signal, double v)
+    {
+        has[signal] = true;
+        num[signal] = v;
+    }
+
+    void set_surface(const int w[4])
+    {
+        has[S_CAR_SURFACE] = true;
+        for (int i = 0; i < 4; i++)
+            wheel[i] = w[i];
+    }
+
+    void add_event(int signal, double magnitude_ = 0)
+    {
+        if (n_events[signal] < MAX_EVENTS)
+            magnitude[signal][n_events[signal]++] = magnitude_;
+    }
+};
+
+// The rules of an active config, stepped once per presented frame (docs: shader events contract, section
+// 4). reset() puts every rule off with weight 0 and takes the instances' base options; step() moves the
+// rules by dt and leaves the blended options and the instances a rule turned off in options() and off().
+class RuleEngine {
+public:
+    struct State {
+        bool on = false;
+        bool changed = false;
+        double w = 0, a = 0, left = 0, true_for = 0, false_for = 0, target = 0;
+    };
+
+    void reset(const std::vector<RuleSpec> &rules, const Plan &plan)
+    {
+        rules_ = &rules;
+        state_.assign(rules.size(), State{});
+        base_.resize(plan.instances.size());
+        for (size_t i = 0; i < plan.instances.size(); i++)
+            std::copy(plan.instances[i].options, plan.instances[i].options + SLOTS, base_[i].begin());
+        opts_ = base_;
+        off_.assign(plan.instances.size(), 0);
+        plan_of_.assign(rules.size(), {});
+        order_.clear();
+        for (size_t r = 0; r < rules.size(); r++) {
+            for (auto &set : rules[r].sets) {
+                int at = -1;
+                for (size_t i = 0; i < plan.instances.size(); i++)
+                    if (plan.instances[i].source == set.instance)
+                        at = int(i);
+                plan_of_[r].push_back(at);
+            }
+            order_.push_back(r);
+        }
+        std::stable_sort(order_.begin(), order_.end(), [&](size_t x, size_t y) {
+            if (rules[x].priority != rules[y].priority)
+                return rules[x].priority < rules[y].priority;
+            return rules[x].order < rules[y].order;
+        });
+    }
+
+    void step(const Signals &sig, double frame_ms)
+    {
+        if (!rules_)
+            return;
+        double dt = std::clamp(frame_ms, 0.0, 100.0);
+        bool any = false;
+        for (size_t r = 0; r < rules_->size(); r++) {
+            const RuleSpec &rule = (*rules_)[r];
+            State &st = state_[r];
+            bool was = st.on;
+            if (rule.event) {
+                bool hit = false;
+                for (auto &c : rule.when)
+                    hit |= event_passes(c, sig);
+                st.left = hit ? rule.for_ms : std::max(0.0, st.left - dt);
+                st.on = st.left > 0;
+                st.target = st.on ? 1 : 0;
+            } else if (rule.has_ramp) {
+                double t = 0;
+                if (sig.has[rule.ramp_signal] && rule.ramp_to != rule.ramp_from)
+                    t = std::clamp((sig.num[rule.ramp_signal] - rule.ramp_from) / (rule.ramp_to - rule.ramp_from), 0.0,
+                                   1.0);
+                st.target = t;
+                st.on = t > 0;
+            } else {
+                bool cond = true;
+                for (auto &c : rule.when)
+                    cond = cond && holds(c, sig);
+                st.true_for = cond ? st.true_for + dt : 0;
+                st.false_for = cond ? 0 : st.false_for + dt;
+                if (!st.on && cond && st.true_for >= rule.min_ms)
+                    st.on = true;
+                if (st.on && !cond && st.false_for > rule.hold_ms)
+                    st.on = false;
+                st.target = st.on ? 1 : 0;
+            }
+            st.changed = st.on != was;
+            if (st.target > st.w)
+                st.w = rule.fade_in_ms > 0 ? std::min(st.target, st.w + dt / rule.fade_in_ms) : st.target;
+            else if (st.target < st.w)
+                st.w = rule.fade_out_ms > 0 ? std::max(st.target, st.w - dt / rule.fade_out_ms) : st.target;
+            st.a = st.w * st.w * (3 - 2 * st.w);
+            any |= st.a > 0;
+        }
+        opts_ = base_;
+        std::fill(off_.begin(), off_.end(), 0);
+        if (!any)
+            return;
+        for (size_t r : order_) {
+            double a = state_[r].a;
+            if (a <= 0)
+                continue;
+            const RuleSpec &rule = (*rules_)[r];
+            for (size_t k = 0; k < rule.sets.size(); k++) {
+                int at = plan_of_[r][k];
+                if (at < 0)
+                    continue;
+                const RuleSet &set = rule.sets[k];
+                if (set.mode == SET_OFF) {
+                    if (a >= 0.5)
+                        off_[size_t(at)] = 1;
+                    continue;
+                }
+                for (size_t c = 0; c < set.values.size(); c++) {
+                    float &v = opts_[size_t(at)][size_t(set.slot) + c];
+                    float target = set.values[c];
+                    if (set.mode == SET_SWITCH) {
+                        if (a >= 0.5)
+                            v = target;
+                    } else {
+                        v = v + (target - v) * float(a);
+                        if (set.mode == SET_ROUND)
+                            v = std::round(v);
+                    }
+                }
+            }
+        }
+    }
+
+    size_t rules() const { return state_.size(); }
+    const State &state(size_t rule) const { return state_[rule]; }
+    const float *options(size_t instance) const { return opts_[instance].data(); }
+    bool off(size_t instance) const { return off_[instance] != 0; }
+
+private:
+    static bool number_holds(const RuleCond &c, double x)
+    {
+        switch (c.op) {
+        case OP_ABOVE:
+            return x > c.value;
+        case OP_BELOW:
+            return x < c.value;
+        case OP_BETWEEN:
+            return x > c.lo && x < c.hi;
+        default:
+            return false;
+        }
+    }
+
+    static bool holds(const RuleCond &c, const Signals &sig)
+    {
+        if (!sig.has[c.signal])
+            return false;
+        switch (c.op) {
+        case OP_TRUE:
+            return sig.num[c.signal] != 0;
+        case OP_IS: {
+            if (c.signal == S_CAR_SURFACE) {
+                int n = 0;
+                for (int w : sig.wheel)
+                    n += w >= 0 && w < 32 && (c.mask >> w & 1);
+                return n >= c.wheels;
+            }
+            int v = int(sig.num[c.signal]);
+            return v >= 0 && v < 32 && (c.mask >> v & 1);
+        }
+        default:
+            return number_holds(c, sig.num[c.signal]);
+        }
+    }
+
+    static bool event_passes(const RuleCond &c, const Signals &sig)
+    {
+        for (uint8_t i = 0; i < sig.n_events[c.signal]; i++)
+            if (c.op == OP_EVENT || number_holds(c, sig.magnitude[c.signal][i]))
+                return true;
+        return false;
+    }
+
+    const std::vector<RuleSpec> *rules_ = nullptr;
+    std::vector<State> state_;
+    std::vector<std::array<float, SLOTS>> base_, opts_;
+    std::vector<char> off_;
+    std::vector<std::vector<int>> plan_of_;
+    std::vector<size_t> order_;
+};
 
 }
