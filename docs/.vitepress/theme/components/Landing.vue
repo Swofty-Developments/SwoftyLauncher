@@ -69,6 +69,9 @@ const footPaths = footBands.map((b) => ({ color: b.color, d: wave(b, 1440, 420) 
       <a class="lp-btn lp-btn--ink" href="https://publish.f1.swofty.net" aria-label="Publishing">
         <Icon name="upload" /><span class="lp-nav-label">Publishing</span>
       </a>
+      <a class="lp-btn lp-btn--ink" :href="to('/dmca')" aria-label="DMCA" title="Report a copyright infringement">
+        <Icon name="scale" /><span class="lp-nav-label">DMCA</span>
+      </a>
     </nav>
 
     <header class="lp-hero">
