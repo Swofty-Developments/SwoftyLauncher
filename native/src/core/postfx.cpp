@@ -2223,6 +2223,7 @@ std::vector<RuleLog> rule_log;
 ULONGLONG rules_loaded_at, rules_minute_at;
 LARGE_INTEGER rules_clock{};
 std::atomic<unsigned> pending_events[postfx::SIGNAL_COUNT];
+std::atomic<bool> in_session{false};
 bool rules_live;
 live_car::LiveCar live_now;
 bool live_ok;
@@ -2386,16 +2387,14 @@ void rules_frame(const view::State &v, ULONGLONG now)
     double ms = rules_clock.QuadPart ? double(t.QuadPart - rules_clock.QuadPart) * 1000.0 / double(freq.QuadPart) : 0.0;
     rules_clock = t;
     postfx::Signals sig;
-    if (v.valid) {
-        if (v.kind >= 1 && v.kind <= 6)
-            sig.set(postfx::S_VIEW_CAMERA, v.kind - 1);
-        sig.set(postfx::S_VIEW_REPLAY, (v.flags & view::REPLAY) != 0);
-        sig.set(postfx::S_VIEW_PAUSED, (v.flags & view::PAUSED) != 0);
-        sig.set(postfx::S_VIEW_PHOTO, (v.flags & view::PHOTO) != 0);
-        sig.set(postfx::S_VIEW_MENU, (v.flags & view::MENU) != 0);
-        sig.set(postfx::S_VIEW_CUTSCENE, (v.flags & view::CUTSCENE) != 0);
-        sig.set(postfx::S_VIEW_SPECTATING, (v.flags & view::SPECTATING) != 0);
-    }
+    if (v.valid && v.kind >= 1 && v.kind <= 6)
+        sig.set(postfx::S_VIEW_CAMERA, v.kind - 1);
+    sig.set(postfx::S_VIEW_REPLAY, (v.flags & view::REPLAY) != 0);
+    sig.set(postfx::S_VIEW_PAUSED, (v.flags & view::PAUSED) != 0);
+    sig.set(postfx::S_VIEW_PHOTO, (v.flags & view::PHOTO) != 0);
+    sig.set(postfx::S_VIEW_MENU, !in_session.load(std::memory_order_relaxed));
+    sig.set(postfx::S_VIEW_CUTSCENE, (v.flags & view::CUTSCENE) != 0);
+    sig.set(postfx::S_VIEW_SPECTATING, (v.flags & view::SPECTATING) != 0);
     if (live_ok && rules_live) {
         const live_car::LiveCar &c = live_now;
         if (c.has_speed)
@@ -2487,6 +2486,8 @@ void on_rule_event(const SwoftyEvent *ev, void *user)
     int s = int(reinterpret_cast<intptr_t>(user));
     if (s == postfx::S_SESSION_LAP && !player_car(ev->a))
         return;
+    if (s == postfx::S_SESSION_START || s == postfx::S_SESSION_END)
+        in_session.store(s == postfx::S_SESSION_START, std::memory_order_relaxed);
     pending_events[s].fetch_add(1);
 }
 

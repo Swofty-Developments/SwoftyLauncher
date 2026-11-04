@@ -730,7 +730,7 @@ mod tests {
     #[test]
     fn a_full_rule_lints_clean_and_fills_defaults() {
         let text = format!(
-            "{HEAD}[[when]]\nname = \"k\"\non = \"view.camera\"\nis = [\"cockpit\", \"tcam\"]\nmin_ms = 40\npriority = 5\n[when.set.grain]\namount = 0.5\nsize = 3\n[when.set.ambient_light]\nenabled = false\nlens = true\n"
+            "{HEAD}[[when]]\nname = \"k\"\non = \"car.surface\"\nis = [\"kerb\", \"grass\"]\nmin_ms = 40\npriority = 5\n[when.set.grain]\namount = 0.5\nsize = 3\n[when.set.ambient_light]\nenabled = false\nlens = true\n"
         );
         let l = lint(&text, &catalog());
         assert!(l.diagnostics.is_empty(), "{:?}", l.diagnostics);
@@ -761,7 +761,7 @@ mod tests {
         assert_eq!(m.len(), 1);
         assert_eq!(m[0].0, Severity::Warning);
         let m = msgs(&format!(
-            "[[when]]\nall = [\n  {{ on = \"view.camera\", is = \"cockpit\" }},\n  {{ on = \"view.paused\" }},\n]\n{set}"
+            "[[when]]\nall = [\n  {{ on = \"car.surface\", is = \"kerb\" }},\n  {{ on = \"view.paused\" }},\n]\n{set}"
         ));
         assert!(m.is_empty(), "{m:?}");
         clean(&format!("[[when]]\non = \"session.lap\"\n{set}"));
