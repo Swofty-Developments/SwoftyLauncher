@@ -1285,6 +1285,23 @@ pub(crate) mod tests {
         assert_eq!(a.instances.len(), 1);
         assert_eq!(a.instances[0].params, [2.5]);
         assert!(a.serial > 0);
+        assert!(a.rules.is_empty());
+
+        let ruled = create(
+            &store,
+            "Ruled",
+            Some("name = \"Ruled\"\n[spark]\nintensity = 2.5\n[[when]]\nname = \"lap\"\non = \"session.lap\"\n[when.set.spark]\nintensity = 4\n"),
+        )
+        .unwrap();
+        set_active(&store, &mut p, Some(ruled)).unwrap();
+        let a = active_file(&store, &p);
+        assert_eq!(a.rules.len(), 1);
+        assert_eq!(a.rules[0].name, "lap");
+        assert!(a.rules[0].event);
+        assert_eq!(a.rules[0].set[0].slot, Some(0));
+        let json = serde_json::to_value(&a).unwrap();
+        assert_eq!(json["rules"][0]["when"][0]["op"], "event");
+        assert_eq!(json["rules"][0]["set"][0]["mode"], "blend");
 
         let bad = create(&store, "Bad", Some("[nothing]\n")).unwrap();
         set_active(&store, &mut p, Some(bad)).unwrap();
