@@ -143,6 +143,8 @@ fn collects_the_logs_the_developers_need() {
     let mut got = names(&zip);
     if cfg!(windows) {
         got.remove("windows/application-events.txt");
+        // EA App diagnostics come from the host account, not the fake data root.
+        got.retain(|path| !path.starts_with("ea-app/"));
     }
     assert_eq!(got, want);
     let addons: Value = serde_json::from_str(&entry(&zip, "addons.json")).unwrap();
@@ -1706,7 +1708,7 @@ fn the_cores_reports_in_the_data_folder_win_over_the_game_folders() {
 
 #[test]
 fn carries_the_blocked_record_when_there_is_one() {
-    let root = tmp("blocked");
+    let root = tmp("blocked-record");
     let (store, game) = fake_data(&root);
     let bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "20261020-101010");
     assert!(!bundle.entries.iter().any(|e| e.path == "state/blocked.json"));

@@ -278,6 +278,15 @@ impl Job {
         self.tally().also.clone()
     }
 
+    fn failure(&self, error: &str) -> String {
+        let installed = self.tally().installed.clone();
+        if installed.is_empty() {
+            error.to_owned()
+        } else {
+            format!("{error} · Already installed: {}", installed.join(", "))
+        }
+    }
+
     fn track(&self, root: &str, e: Event) {
         let mut t = self.tally();
         match e {
@@ -1473,14 +1482,10 @@ impl Shell {
                 let took = started.elapsed();
                 s.browser.queue.finish(
                     &addon.id,
-                    result.as_ref().map(|_| ()).map_err(|error| {
-                        let installed = tracked.tally().installed.clone();
-                        if installed.is_empty() {
-                            error.to_string()
-                        } else {
-                            format!("{error} · Already installed: {}", installed.join(", "))
-                        }
-                    }),
+                    result
+                        .as_ref()
+                        .map(|_| ())
+                        .map_err(|error| tracked.failure(&error.to_string())),
                 );
                 let in_batch = s.browser.batch.as_mut().is_some_and(|b| b.left.remove(&addon.id));
                 let verb = if updating { "update" } else { "install" };
@@ -3870,6 +3875,33 @@ mod tests {
             version,
             replaces: None,
         }
+    }
+
+    #[test]
+    fn queued_install_reports_partial_failure_and_retries_without_duplication() {
+        use crate::download_queue::{Queue, State};
+        use std::collections::BTreeSet;
+        let mut queue = Queue::default();
+        assert!(queue.enqueue("root".into(), "1.0.0", BTreeSet::new()));
+        assert!(!queue.enqueue("root".into(), "2.0.0", BTreeSet::new()));
+        assert_eq!(queue.start_next().as_deref(), Some("root"));
+        let job = Job::new(100);
+        let dependency: swofty_core::manifest::AddonManifest = serde_json::from_value(serde_json::json!({
+            "schema_version": 1, "id": "dep", "name": "Dependency", "version": "1.0.0",
+            "author": "test", "compat": {"game": "f1_25"}
+        }))
+        .unwrap();
+        job.track("root", Event::Installed(&dependency));
+        assert!(queue.finish("root", Err(job.failure("root failed"))));
+        assert!(matches!(&queue.jobs()[0].state, State::Failed(message)
+            if message.contains("root failed") && message.contains("Dependency 1.0.0")));
+        assert!(queue.retry_at(0, "root"));
+        assert_eq!(queue.jobs()[0].request, "1.0.0");
+        assert!(matches!(queue.jobs()[0].state, State::Queued));
+        assert_eq!(queue.start_next().as_deref(), Some("root"));
+        assert!(queue.finish("root", Ok(())));
+        assert_eq!(queue.pending(), 0);
+        assert!(matches!(queue.jobs()[0].state, State::Completed));
     }
 
     #[test]
