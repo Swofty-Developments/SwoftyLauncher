@@ -212,6 +212,48 @@ fn requested_version_available(addon: Option<&Addon>, requested: &catalog::Versi
     })
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum RetryAction {
+    Retry,
+    RequestCurrent,
+    Unavailable,
+}
+
+fn retry_action(addon: Option<&Addon>, requested: &catalog::Version) -> RetryAction {
+    if requested_version_available(addon, requested) {
+        RetryAction::Retry
+    } else if addon.and_then(|a| a.offered(&current_version())).is_some() {
+        RetryAction::RequestCurrent
+    } else {
+        RetryAction::Unavailable
+    }
+}
+
+/// Minimal identity for an update that disappeared from the current catalog.
+fn update_identity(update: &Update) -> Addon {
+    Addon {
+        id: update.id.clone(),
+        name: update.name.clone(),
+        author: String::new(),
+        summary: String::new(),
+        description: String::new(),
+        category: None,
+        kind: Vec::new(),
+        homepage: None,
+        icon: None,
+        publisher: None,
+        publishers: Vec::new(),
+        downloads: 0,
+        downloads_30d: 0,
+        stars: 0,
+        trend: None,
+        created_at: String::new(),
+        updated_at: String::new(),
+        latest: None,
+        versions: Vec::new(),
+    }
+}
+
 /// Whether a held update represents a real failure rather than a successful
 /// install waiting for the asynchronous catalog refresh.
 fn held_failure(error: &str) -> bool {
@@ -1257,13 +1299,32 @@ impl Shell {
                     }
                     State::Failed(_) => {
                         let target = id.clone();
+                        let action = retry_action(self.browser.find(&id), &job.request.1);
+                        let pending = self.browser.queue.jobs().iter().any(|other| {
+                            other.id == id && matches!(other.state, State::Queued | State::Active)
+                        });
                         Some(
                             Button::new(SharedString::from(format!("retry-{id}-{index}")))
-                                .label("Retry")
-                                .on_click(cx.listener(move |this, _, _, cx| {
-                                    if this.browser.queue.retry_at(index, &target) {
-                                        this.start_queued_downloads(cx);
+                                .label(if pending {
+                                    "Already queued"
+                                } else {
+                                    match action {
+                                        RetryAction::Retry => "Retry",
+                                        RetryAction::RequestCurrent => "Request current version",
+                                        RetryAction::Unavailable => "Version unavailable",
                                     }
+                                })
+                                .disabled(pending || action == RetryAction::Unavailable)
+                                .on_click(cx.listener(move |this, _, _, cx| match action {
+                                    RetryAction::Retry => {
+                                        if this.browser.queue.retry_at(index, &target) {
+                                            this.start_queued_downloads(cx);
+                                        }
+                                    }
+                                    RetryAction::RequestCurrent => {
+                                        this.enqueue_catalog(&target, cx);
+                                    }
+                                    RetryAction::Unavailable => {}
                                 })),
                         )
                     }
@@ -1354,7 +1415,10 @@ impl Shell {
                 job.id == id && matches!(job.state, crate::download_queue::State::Failed(_))
             });
         if let Some(index) = index {
-            if self.browser.queue.retry_at(index, id) {
+            let action = retry_action(self.browser.find(id), &self.browser.queue.jobs()[index].request.1);
+            if action == RetryAction::RequestCurrent {
+                self.enqueue_catalog(id, cx);
+            } else if action == RetryAction::Retry && self.browser.queue.retry_at(index, id) {
                 self.browser.failed.remove(id);
                 self.browser.refused.remove(id);
                 self.start_queued_downloads(cx);
@@ -1584,31 +1648,41 @@ impl Shell {
             return;
         }
         let building = self.build.clone();
-        let (held, ids): (Vec<String>, Vec<String>) = self
+        let (held, updates): (Vec<Update>, Vec<Update>) = self
             .addon_updates()
             .into_iter()
-            .map(|u| u.id.clone())
-            .filter(|id| !self.browser.working.contains_key(id))
-            .partition(|id| building.as_ref().is_some_and(|b| b.holds(id)));
+            .cloned()
+            .partition(|u| building.as_ref().is_some_and(|b| b.holds(&u.id)));
         if !held.is_empty() {
             window.push_notification(Notification::warning(crate::update::BUILDING), cx);
         }
-        if ids.is_empty() || self.updating_addons() {
+        if updates.is_empty() || self.updating_addons() {
             return;
         }
+        let ids: Vec<_> = updates.iter().map(|u| u.id.clone()).collect();
         catalog::log(&self.store.root, &format!("updating addons: {}", ids.join(", ")));
         self.browser.batch = Some(Batch {
-            left: ids.iter().cloned().collect(),
+            left: ids.into_iter().collect(),
             ..Batch::default()
         });
-        for id in ids {
-            if !self.enqueue_catalog(&id, cx)
-                && let Some(batch) = &mut self.browser.batch
-            {
-                batch.left.remove(&id);
-                batch
-                    .failed
-                    .push((id, "This update is no longer available.".into()));
+        for update in updates {
+            if !self.enqueue_catalog(&update.id, cx) {
+                let error =
+                    "This update is no longer available or another version is already queued.".to_owned();
+                let addon = self
+                    .browser
+                    .find(&update.id)
+                    .cloned()
+                    .unwrap_or_else(|| update_identity(&update));
+                self.browser.queue.record_failure(
+                    update.id.clone(),
+                    (addon, update.to.clone()),
+                    error.clone(),
+                );
+                if let Some(batch) = &mut self.browser.batch {
+                    batch.left.remove(&update.id);
+                    batch.failed.push((update.name, error));
+                }
             }
         }
         if self
@@ -3902,6 +3976,31 @@ mod tests {
         assert!(queue.finish("root", Ok(())));
         assert_eq!(queue.pending(), 0);
         assert!(matches!(queue.jobs()[0].state, State::Completed));
+    }
+
+    #[test]
+    fn retry_action_distinguishes_original_and_current_versions() {
+        use super::RetryAction;
+        let old = step("test.addon", 100);
+        let mut addon = old.addon.clone();
+        addon.versions = vec![old.version.clone()];
+        assert_eq!(
+            super::retry_action(Some(&addon), &old.version),
+            RetryAction::Retry
+        );
+        addon.versions[0].yanked = true;
+        assert_eq!(
+            super::retry_action(Some(&addon), &old.version),
+            RetryAction::Unavailable
+        );
+        let mut newer = old.version.clone();
+        newer.version = "2.0.0".parse().unwrap();
+        addon.versions.push(newer);
+        assert_eq!(
+            super::retry_action(Some(&addon), &old.version),
+            RetryAction::RequestCurrent
+        );
+        assert_eq!(super::retry_action(None, &old.version), RetryAction::Unavailable);
     }
 
     #[test]

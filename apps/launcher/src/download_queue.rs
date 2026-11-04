@@ -80,6 +80,16 @@ impl<T> Queue<T> {
         true
     }
 
+    /// Record a request that could not be queued, without disturbing pending jobs.
+    pub(crate) fn record_failure(&mut self, id: String, request: T, error: String) {
+        self.jobs.push_back(Job {
+            claims: BTreeSet::from([id.clone()]),
+            id,
+            request,
+            state: State::Failed(error),
+        });
+    }
+
     /// Update an active or queued job's known requirements. A running job may
     /// discover more requirements after another job has already started; callers
     /// must still enforce safety in the installer itself.
@@ -267,6 +277,25 @@ mod tests {
         assert_eq!(start(&mut q).as_deref(), Some("b"));
         assert!(q.finish("a", Ok(())));
         assert!(!q.update_claims("a", BTreeSet::new()));
+    }
+
+    #[test]
+    fn rejected_batch_request_is_visible_without_disturbing_existing_job() {
+        let mut q = Queue::default();
+        assert!(q.enqueue("a".into(), "1.0", BTreeSet::new()));
+        q.record_failure("a".into(), "2.0", "another version is queued".into());
+        assert_eq!(q.pending(), 1);
+        assert_eq!(q.jobs()[0].state, State::Queued);
+        assert_eq!(q.jobs()[1].request, "2.0");
+        assert_eq!(
+            q.jobs()[1].state,
+            State::Failed("another version is queued".into())
+        );
+        assert!(!q.retry_at(1, "a"));
+        assert_eq!(q.start_next().as_deref(), Some("a"));
+        assert!(q.finish("a", Ok(())));
+        assert!(q.retry_at(1, "a"));
+        assert_eq!(q.jobs()[1].request, "2.0");
     }
 
     #[test]
