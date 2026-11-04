@@ -462,11 +462,10 @@ Every signal is for the player's car. The `car.*` signals read the player's own 
 
 ```text
 in game now
-view.camera         name     cockpit tcam tcam_offset chase_near chase_far other
 view.replay         yes/no
 view.paused         yes/no
 view.photo          yes/no
-view.menu           yes/no
+view.menu           yes/no   in the menus and on loading screens: no session is running
 view.cutscene       yes/no
 view.spectating     yes/no
 session.start       event    the session loads
@@ -484,6 +483,7 @@ car.g_long          number   g, -6 to 6, braking negative
 car.surface         name     tarmac kerb rumble grass gravel sand, per wheel
 
 not read in game yet (works in the Preview)
+view.camera         name     cockpit tcam tcam_offset chase_near chase_far other
 car.impact          event    collision g
 car.damage          event    part damage increase, 0-1
 car.in_pit_lane     yes/no
@@ -499,6 +499,22 @@ session.chequered   event    the player takes the flag
 `car.surface` groups the game's surfaces: `kerb` is its rumble strips, `rumble` its ridged strips, `gravel` takes gravel, rock and mud, `tarmac` takes tarmac, concrete, cobbles, metal and standing water, and `grass` and `sand` are themselves. A wheel in the air has no surface.
 
 A signal the game does not read, or one with no live session, has no value: its conditions are false and its events never occur.
+
+### Only on track
+
+A config that should leave the menus and loading screens alone turns each of its instances off while `view.menu` is on:
+
+```toml
+[[when]]
+name = "menus"
+on = "view.menu"
+fade_in_ms = 0
+fade_out_ms = 0
+[when.set.rewind_video]
+enabled = false
+[when.set.rewind_cadence]
+enabled = false
+```
 
 ### Limits
 

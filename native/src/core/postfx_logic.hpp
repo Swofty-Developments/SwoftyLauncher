@@ -361,7 +361,7 @@ enum Sig : int {
 };
 
 inline constexpr SignalInfo SIGNALS[SIGNAL_COUNT] = {
-    {"view.camera", SK_NAME, "cockpit tcam tcam_offset chase_near chase_far other", "", true},
+    {"view.camera", SK_NAME, "cockpit tcam tcam_offset chase_near chase_far other", "", false},
     {"view.replay", SK_BOOL, "", "", true},
     {"view.paused", SK_BOOL, "", "", true},
     {"view.photo", SK_BOOL, "", "", true},
