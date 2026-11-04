@@ -5,7 +5,9 @@ use std::ops::Range;
 
 use crate::config::{self, RawEntry};
 use crate::lint::bounds;
+use crate::signals::{SIGNALS, Signal, SignalKind, signal};
 use crate::text::{line_at, number};
+use crate::when::{INLINE_KEYS, RULE_KEYS, rule_key_doc};
 use crate::{Catalog, Completion, CompletionKind, Effect, Hover, Param, ParamKind, Token, TokenKind, Value};
 
 fn skip_ws(s: &str, mut i: usize) -> usize {
@@ -66,7 +68,11 @@ fn scan_values(line: &str, mut i: usize, start: usize, out: &mut Vec<Token>) {
                     .map_or(line.len(), |k| i + k)
                     .max(i + c.len_utf8());
                 let word = &line[i..end];
-                if word == "true" || word == "false" {
+                if line[skip_ws(line, end)..].starts_with('=')
+                    && word.chars().all(|d| d.is_ascii_alphanumeric() || d == '_')
+                {
+                    push(out, TokenKind::Key, start, i..end);
+                } else if word == "true" || word == "false" {
                     push(out, TokenKind::Bool, start, i..end);
                 } else if word.starts_with(|d: char| d.is_ascii_digit() || matches!(d, '+' | '-' | '.')) {
                     push(out, TokenKind::Number, start, i..end);
@@ -110,6 +116,8 @@ pub fn tokens(text: &str) -> Vec<Token> {
                 push(&mut out, TokenKind::Punct, start, c..end);
                 scan_values(line, end, start, &mut out);
             }
+        } else if line[i..].starts_with(['{', '}', ']', ',', '"', '\'']) {
+            scan_values(line, i, start, &mut out);
         } else {
             let key_end = line[i..]
                 .find([' ', '\t', '=', '#'])
@@ -140,18 +148,44 @@ fn in_comment(prefix: &str) -> bool {
     false
 }
 
-fn header_effect(line: &str) -> Option<String> {
+#[derive(Debug, Clone, PartialEq)]
+enum Section {
+    Top,
+    Effect(String),
+    Rule,
+    Set(String),
+}
+
+fn header_section(line: &str) -> Option<Section> {
     let t = line.trim_start_matches([' ', '\t']);
-    let t = t.strip_prefix('[')?;
-    if t.starts_with('[') {
-        return None;
+    let rest = t.strip_prefix('[')?;
+    if let Some(inner) = rest.strip_prefix('[') {
+        let word: String = inner
+            .trim_start()
+            .chars()
+            .take_while(|c| c.is_ascii_alphanumeric() || *c == '_' || *c == '-')
+            .collect();
+        return Some(if word == "when" {
+            Section::Rule
+        } else {
+            Section::Effect(String::new())
+        });
     }
-    let id: String = t
-        .trim_start()
+    let inner = rest.split(']').next().unwrap_or("");
+    let mut parts = inner.split('.').map(str::trim);
+    let id: String = parts
+        .next()
+        .unwrap_or("")
         .chars()
         .take_while(|c| c.is_ascii_alphanumeric() || *c == '_' || *c == '-')
         .collect();
-    Some(id)
+    if id == "when" {
+        if parts.next() == Some("set") {
+            return Some(Section::Set(parts.next().unwrap_or("").to_owned()));
+        }
+        return Some(Section::Effect(id));
+    }
+    Some(Section::Effect(id))
 }
 
 fn key_of(line: &str) -> Option<String> {
@@ -167,18 +201,17 @@ fn key_of(line: &str) -> Option<String> {
     (!key.is_empty() && rest.starts_with('=')).then_some(key)
 }
 
-/// The effect table the line at `line_start` belongs to (`None` at top level) and the keys that
-/// table already sets on other lines.
-fn table_context(text: &str, line_start: usize) -> (Option<String>, HashSet<String>) {
-    let mut tables: Vec<(Option<String>, HashSet<String>)> = vec![(None, HashSet::new())];
+/// The table the line at `line_start` belongs to and the keys that table already sets on other lines.
+fn table_context(text: &str, line_start: usize) -> (Section, HashSet<String>) {
+    let mut tables: Vec<(Section, HashSet<String>)> = vec![(Section::Top, HashSet::new())];
     let mut found = None;
     let mut offset = 0;
     for raw in text.split_inclusive('\n') {
         let start = offset;
         offset += raw.len();
         let line = raw.trim_end_matches(['\n', '\r']);
-        if let Some(id) = header_effect(line) {
-            tables.push((Some(id), HashSet::new()));
+        if let Some(section) = header_section(line) {
+            tables.push((section, HashSet::new()));
             if start == line_start {
                 found = Some(tables.len() - 1);
             }
@@ -323,28 +356,232 @@ fn value_completions(p: &Param, range: Range<usize>, typed: &str) -> Vec<Complet
     }
 }
 
-pub fn completions(text: &str, offset: usize, catalog: &Catalog) -> Vec<Completion> {
-    let mut offset = offset.min(text.len());
-    while !text.is_char_boundary(offset) {
-        offset -= 1;
+fn signal_completion(sig: &Signal, range: &Range<usize>) -> Completion {
+    let mut detail = match sig.kind {
+        SignalKind::Bool => "yes/no".to_owned(),
+        SignalKind::Name => "name".to_owned(),
+        SignalKind::Number if sig.unit.is_empty() => "number".to_owned(),
+        SignalKind::Number => format!("number, {}", sig.unit),
+        SignalKind::Event => "event".to_owned(),
+    };
+    if !sig.in_game {
+        detail.push_str(" · Preview only");
     }
-    let line = line_at(text, offset);
+    Completion {
+        label: sig.id.to_owned(),
+        kind: CompletionKind::Value,
+        detail,
+        doc: sig.doc.to_owned(),
+        range: range.clone(),
+        insert: format!("\"{}\"", sig.id),
+    }
+}
+
+fn find_on(segment: &str) -> Option<String> {
+    let mut from = 0;
+    while let Some(i) = segment[from..].find("on") {
+        let at = from + i;
+        from = at + 2;
+        let before_ok = segment[..at]
+            .chars()
+            .next_back()
+            .is_none_or(|c| !(c.is_ascii_alphanumeric() || c == '_'));
+        let rest = segment[at + 2..].trim_start();
+        if before_ok && let Some(r) = rest.strip_prefix('=') {
+            let r = r.trim_start();
+            if let Some(q) = r.strip_prefix('"') {
+                return q.find('"').map(|k| q[..k].to_owned());
+            }
+        }
+    }
+    None
+}
+
+fn rule_value(text: &str, line: &Range<usize>, offset: usize) -> Option<Vec<Completion>> {
     let prefix = &text[line.start..offset];
-    let comment = in_comment(prefix);
-    if comment {
+    let (mut quote, mut escaped) = (None, false);
+    let (mut last_eq, mut sep, mut open_brace) = (None, 0, None);
+    for (i, c) in prefix.char_indices() {
+        match quote {
+            Some('"') if escaped => escaped = false,
+            Some('"') if c == '\\' => escaped = true,
+            Some(q) if c == q => quote = None,
+            Some(_) => {}
+            None => match c {
+                '"' | '\'' => quote = Some(c),
+                '=' => {
+                    last_eq = Some(i);
+                    sep = i;
+                }
+                '[' | ',' => sep = i,
+                '{' => open_brace = Some(i),
+                _ => {}
+            },
+        }
+    }
+    let eq = last_eq?;
+    if open_brace.is_some_and(|b| b > eq) {
+        return None;
+    }
+    let (mut in_array, mut quote2) = (false, None);
+    for c in prefix[eq + 1..].chars() {
+        match quote2 {
+            Some(q) if c == q => quote2 = None,
+            Some(_) => {}
+            None => match c {
+                '"' | '\'' => quote2 = Some(c),
+                '}' | ']' => return None,
+                '[' => in_array = true,
+                ',' if !in_array => return None,
+                _ => {}
+            },
+        }
+    }
+    let key = prefix[..eq]
+        .trim_end()
+        .rsplit(|c: char| !(c.is_ascii_alphanumeric() || c == '_'))
+        .next()
+        .unwrap_or("");
+    let lead = prefix[sep + 1..].len() - prefix[sep + 1..].trim_start().len();
+    let vstart = line.start + sep + 1 + lead;
+    let quoted = text[vstart..line.end].starts_with('"');
+    let end = if quoted {
+        let tail = &text[vstart + 1..line.end];
+        tail.find('"')
+            .map_or(line.end, |k| vstart + 1 + k + 1)
+            .max(offset)
+    } else {
+        let tail = &text[offset..line.end];
+        offset + tail.find([' ', '\t', ',', ']', '}', '#']).unwrap_or(tail.len())
+    };
+    let range = vstart..end;
+    let typed = text[vstart..offset].trim_matches('"').to_ascii_lowercase();
+    let item = |label: String, insert: String, detail: String, doc: String| Completion {
+        label,
+        kind: CompletionKind::Value,
+        detail,
+        doc,
+        range: range.clone(),
+        insert,
+    };
+    Some(match key {
+        "on" => SIGNALS
+            .iter()
+            .filter(|s| s.id.contains(&typed))
+            .map(|s| signal_completion(s, &range))
+            .collect(),
+        "is" => {
+            let segment_start = open_brace.unwrap_or(0);
+            let id = find_on(&prefix[segment_start..]).or_else(|| {
+                let doc = config::parse(text);
+                let rule = doc
+                    .rules
+                    .iter()
+                    .find(|r| r.span.start <= line.start && line.start <= r.span.end)?;
+                match &rule.entries.iter().find(|e| e.key == "on")?.value.lit {
+                    config::Lit::Str(s) => Some(s.clone()),
+                    _ => None,
+                }
+            });
+            let Some((_, sig)) = id.as_deref().and_then(signal) else {
+                return Some(Vec::new());
+            };
+            sig.values
+                .iter()
+                .filter(|v| v.starts_with(&typed))
+                .map(|v| {
+                    item(
+                        (*v).to_owned(),
+                        format!("\"{v}\""),
+                        sig.id.to_owned(),
+                        sig.doc.to_owned(),
+                    )
+                })
+                .collect()
+        }
+        "wheels" => ["1", "2", "3", "4"]
+            .into_iter()
+            .filter(|v| v.starts_with(&typed))
+            .map(|v| {
+                item(
+                    v.to_owned(),
+                    v.to_owned(),
+                    "wheels".into(),
+                    "How many wheels must match.".into(),
+                )
+            })
+            .collect(),
+        _ => Vec::new(),
+    })
+}
+
+fn rule_key_completions(
+    keys: &[&str],
+    present: impl Fn(&str) -> bool,
+    typed: &str,
+    range: Range<usize>,
+    full_line: bool,
+) -> Vec<Completion> {
+    let typed = typed.to_ascii_lowercase();
+    keys.iter()
+        .filter(|k| !present(k) && k.starts_with(&typed))
+        .filter_map(|k| {
+            let (ty, doc, default) = rule_key_doc(k)?;
+            Some(Completion {
+                label: (*k).to_owned(),
+                kind: CompletionKind::Keyword,
+                detail: ty.to_owned(),
+                doc: doc.to_owned(),
+                range: range.clone(),
+                insert: if full_line {
+                    format!("{k} = {default}")
+                } else {
+                    (*k).to_owned()
+                },
+            })
+        })
+        .collect()
+}
+
+fn header_completions(
+    text: &str,
+    body: &str,
+    offset: usize,
+    line: &Range<usize>,
+    catalog: &Catalog,
+) -> Vec<Completion> {
+    let after = &body[1..];
+    let end = word_end(text, offset);
+    if let Some(inner) = after.strip_prefix('[') {
+        if inner.contains(']') {
+            return Vec::new();
+        }
+        let typed = inner.trim_start();
+        let closed = text[end..line.end].trim_start().starts_with("]]");
+        return if "when".starts_with(&typed.to_ascii_lowercase()) {
+            vec![Completion {
+                label: "when".into(),
+                kind: CompletionKind::Keyword,
+                detail: "Shader event rule".into(),
+                doc: "A rule that changes the config's options while a signal is on.".into(),
+                range: offset - typed.len()..end,
+                insert: if closed { "when".into() } else { "when]]".into() },
+            }]
+        } else {
+            Vec::new()
+        };
+    }
+    if after.contains(']') {
         return Vec::new();
     }
-    let lead = prefix.len() - prefix.trim_start_matches([' ', '\t']).len();
-    let body = &prefix[lead..];
-
-    if let Some(after) = body.strip_prefix('[') {
-        if after.starts_with('[') || body.contains([']', '.']) {
+    let closed = text[end..line.end].trim_start().starts_with(']');
+    let segments: Vec<&str> = after.split('.').map(str::trim_start).collect();
+    if segments.first().map(|s| s.trim_end()) != Some("when") {
+        if after.contains('.') {
             return Vec::new();
         }
         let typed = after.trim_start();
         let from = offset - typed.len();
-        let end = word_end(text, offset);
-        let closed = text[end..line.end].trim_start().starts_with(']');
         let t = typed.to_ascii_lowercase();
         return catalog
             .effects
@@ -364,16 +601,86 @@ pub fn completions(text: &str, offset: usize, catalog: &Catalog) -> Vec<Completi
             })
             .collect();
     }
+    let typed = segments.last().copied().unwrap_or("");
+    let from = offset - typed.len();
+    let t = typed.to_ascii_lowercase();
+    let keyword = |label: &str, doc: &str, insert: String| Completion {
+        label: label.to_owned(),
+        kind: CompletionKind::Keyword,
+        detail: "rule override".into(),
+        doc: doc.to_owned(),
+        range: from..end,
+        insert,
+    };
+    match segments.len() {
+        2 if "set".starts_with(&t) => vec![keyword(
+            "set",
+            "Options this rule overrides: `[when.set.<effect>]`.",
+            "set.".into(),
+        )],
+        3 if segments[1].trim_end() == "set" => {
+            let doc = config::parse(text);
+            let mut names: Vec<String> = Vec::new();
+            for tbl in doc.tables.iter().filter(|t| !t.bad && !t.effect.is_empty()) {
+                let name = match &tbl.label {
+                    Some(l) => format!("{}.{l}", tbl.effect),
+                    None => tbl.effect.clone(),
+                };
+                if !names.contains(&name) {
+                    names.push(name);
+                }
+            }
+            names
+                .into_iter()
+                .filter(|n| n.starts_with(&t))
+                .map(|n| Completion {
+                    label: n.clone(),
+                    kind: CompletionKind::Effect,
+                    detail: "instance of this config".into(),
+                    doc: String::new(),
+                    range: from..end,
+                    insert: if closed { n } else { format!("{n}]") },
+                })
+                .collect()
+        }
+        _ => Vec::new(),
+    }
+}
 
-    if let Some(eq) = body.find('=')
+pub fn completions(text: &str, offset: usize, catalog: &Catalog) -> Vec<Completion> {
+    let mut offset = offset.min(text.len());
+    while !text.is_char_boundary(offset) {
+        offset -= 1;
+    }
+    let line = line_at(text, offset);
+    let prefix = &text[line.start..offset];
+    let comment = in_comment(prefix);
+    if comment {
+        return Vec::new();
+    }
+    let lead = prefix.len() - prefix.trim_start_matches([' ', '\t']).len();
+    let body = &prefix[lead..];
+
+    if body.starts_with('[') {
+        return header_completions(text, body, offset, &line, catalog);
+    }
+
+    let (section, set) = table_context(text, line.start);
+    if section == Section::Rule
+        && let Some(done) = rule_value(text, &line, offset)
+    {
+        return done;
+    }
+
+    if section != Section::Rule
+        && let Some(eq) = body.find('=')
         && !body[..eq].contains(['"', '\''])
     {
         let key = body[..eq].trim();
         let abs_eq = line.start + lead + eq;
         let after = &text[abs_eq + 1..];
         let vstart = (abs_eq + 1 + after.len() - after.trim_start_matches([' ', '\t']).len()).min(offset);
-        let (effect, _) = table_context(text, line.start);
-        let Some(p) = effect.and_then(|id| catalog.get(&id)?.params.iter().find(|p| p.id == key)) else {
+        let (Section::Effect(id) | Section::Set(id)) = &section else {
             return Vec::new();
         };
         if text[vstart..offset].starts_with('[') {
@@ -389,7 +696,54 @@ pub fn completions(text: &str, offset: usize, catalog: &Catalog) -> Vec<Completi
             let tail = &text[offset..line.end];
             offset + tail.find([' ', '\t', ',', ']', '#']).unwrap_or(tail.len())
         };
+        if matches!(section, Section::Set(_)) && key == "enabled" {
+            return ["false"]
+                .into_iter()
+                .filter(|v| v.starts_with(text[vstart..offset].trim()))
+                .map(|v| Completion {
+                    label: v.to_owned(),
+                    kind: CompletionKind::Value,
+                    detail: "bool".into(),
+                    doc: "A rule can only turn an instance off.".into(),
+                    range: vstart..end,
+                    insert: v.to_owned(),
+                })
+                .collect();
+        }
+        let Some(p) = catalog
+            .get(id)
+            .and_then(|e| e.params.iter().find(|p| p.id == key))
+        else {
+            return Vec::new();
+        };
         return value_completions(p, vstart..end, &text[vstart..offset]);
+    }
+
+    if section == Section::Rule
+        && let Some(brace) = body.rfind('{')
+        && !body[brace..].contains('}')
+    {
+        let seg = &body[brace + 1..];
+        let typed_len = seg
+            .chars()
+            .rev()
+            .take_while(|c| c.is_ascii_alphanumeric() || *c == '_')
+            .count();
+        let before = seg[..seg.len() - typed_len].trim_end();
+        if before.is_empty() || before.ends_with(',') {
+            let typed = &seg[seg.len() - typed_len..];
+            let from = offset - typed.len();
+            let end = word_end(text, offset);
+            let full_line = !text[end..line.end].trim_start().starts_with('=');
+            return rule_key_completions(
+                &INLINE_KEYS,
+                |k| seg.contains(&format!("{k} =")),
+                typed,
+                from..end,
+                full_line,
+            );
+        }
+        return Vec::new();
     }
 
     if body
@@ -399,12 +753,15 @@ pub fn completions(text: &str, offset: usize, catalog: &Catalog) -> Vec<Completi
         let from = offset - body.len();
         let end = word_end(text, offset);
         let full_line = !text[end..line.end].trim_start().starts_with('=');
-        let (effect, set) = table_context(text, line.start);
-        let in_table = text[..line.start].lines().any(|l| header_effect(l).is_some());
-        if effect.is_none() && in_table {
-            return Vec::new();
-        }
-        return key_completions(catalog, effect.as_deref(), &set, body, from..end, full_line);
+        return match &section {
+            Section::Rule => {
+                rule_key_completions(&RULE_KEYS, |k| set.contains(k), body, from..end, full_line)
+            }
+            Section::Top => key_completions(catalog, None, &set, body, from..end, full_line),
+            Section::Effect(id) | Section::Set(id) => {
+                key_completions(catalog, Some(id), &set, body, from..end, full_line)
+            }
+        };
     }
     Vec::new()
 }
@@ -472,8 +829,108 @@ fn entry_hover(e: &RawEntry, offset: usize, effect: Option<&Effect>) -> Option<H
     }
 }
 
+fn signal_hover(sig: &Signal, range: Range<usize>) -> Hover {
+    let mut text = format!(
+        "**{}** ({})\n\n{}",
+        sig.id,
+        sig.kind_word().trim_start_matches("a "),
+        sig.doc
+    );
+    match sig.kind {
+        SignalKind::Name => text.push_str(&format!(
+            "\n\nOne of: {}",
+            sig.values
+                .iter()
+                .map(|v| format!("`{v}`"))
+                .collect::<Vec<_>>()
+                .join(", ")
+        )),
+        SignalKind::Number => {
+            let unit = if sig.unit.is_empty() {
+                String::new()
+            } else {
+                format!(" {}", sig.unit)
+            };
+            text.push_str(&format!(
+                "\n\nRange: {} to {}{unit}",
+                number(sig.min, false),
+                number(sig.max, false)
+            ));
+        }
+        SignalKind::Event => {
+            if let Some((lo, hi)) = sig.magnitude {
+                let unit = if sig.unit.is_empty() {
+                    String::new()
+                } else {
+                    format!(" {}", sig.unit)
+                };
+                text.push_str(&format!(
+                    "\n\nMagnitude: {} to {}{unit}; `above` and `below` compare against it.",
+                    number(lo, false),
+                    number(hi, false)
+                ));
+            }
+        }
+        SignalKind::Bool => {}
+    }
+    if !sig.in_game {
+        text.push_str("\n\nNot read in game yet; a rule on it only fires in the Preview.");
+    }
+    Hover { text, range }
+}
+
+fn rule_key_hover(key: &str, range: Range<usize>) -> Option<Hover> {
+    let (ty, doc, _) = rule_key_doc(key)?;
+    Some(Hover {
+        text: format!("**{key}** ({ty})\n\n{doc}"),
+        range,
+    })
+}
+
+fn rule_entry_hover(e: &RawEntry, offset: usize) -> Option<Hover> {
+    if e.key_range.start <= offset && offset <= e.key_range.end {
+        return rule_key_hover(&e.key, e.key_range.clone());
+    }
+    match (&e.key[..], &e.value.lit) {
+        ("on", config::Lit::Str(id)) => signal(id).map(|(_, s)| signal_hover(s, e.value.range.clone())),
+        ("all", config::Lit::Tables(list)) => list
+            .iter()
+            .flat_map(|t| &t.entries)
+            .find(|x| {
+                (x.key_range.start <= offset && offset <= x.key_range.end)
+                    || (x.key == "on" && x.value.range.start <= offset && offset <= x.value.range.end)
+            })
+            .and_then(|x| rule_entry_hover(x, offset)),
+        _ => None,
+    }
+}
+
 pub fn hover(text: &str, offset: usize, catalog: &Catalog) -> Option<Hover> {
     let doc = config::parse(text);
+    for r in &doc.rules {
+        if r.header.start <= offset && offset <= r.header.end {
+            return Some(Hover {
+                text: "**Rule** (`[[when]]`)\n\nChanges the config's options while a signal is on. Each `[when.set.<effect>]` table below it lists the overrides.".into(),
+                range: r.header.clone(),
+            });
+        }
+        for t in r.sets.iter().filter(|t| !t.bad) {
+            if t.header.start <= offset && offset <= t.header.end {
+                let e = catalog.get(&t.effect)?;
+                return Some(effect_hover(e, t.effect_range.clone()));
+            }
+            for e in &t.entries {
+                if e.range.start <= offset && offset <= e.range.end {
+                    return entry_hover(e, offset, catalog.get(&t.effect));
+                }
+            }
+        }
+        for e in &r.entries {
+            if e.range.start <= offset && offset <= e.range.end {
+                return rule_entry_hover(e, offset);
+            }
+        }
+    }
     if let Some(t) = doc
         .tables
         .iter()
@@ -707,5 +1164,143 @@ mod tests {
         );
         assert!(hover("[nope]\nx = 1\n", 2, &cat).is_none());
         assert!(hover("# c\n", 1, &cat).is_none());
+    }
+
+    const RULED: &str = "name = \"a\"\n[grain]\namount = 0.1\n[grain.heavy]\n[[when]]\nname = \"k\"\non = \"car.surface\"\nis = \"kerb\"\n[when.set.grain]\namount = 1\n";
+
+    fn with_cursor(extra: &str) -> String {
+        format!("{RULED}{extra}")
+    }
+
+    #[test]
+    fn rule_headers_and_multi_line_arrays_tokenise() {
+        let text =
+            "[[when]]\nall = [\n  { on = \"car.speed\", above = 150 }, # c\n]\n[when.set.grain.heavy]\n";
+        let k = kinds(text);
+        use TokenKind::*;
+        assert!(k.contains(&(Header, "when".into())));
+        assert!(k.contains(&(Header, "when.set.grain.heavy".into())));
+        assert!(k.contains(&(Key, "all".into())));
+        assert!(k.contains(&(Key, "on".into())));
+        assert!(k.contains(&(Key, "above".into())));
+        assert!(k.contains(&(String, "\"car.speed\"".into())));
+        assert!(k.contains(&(Number, "150".into())));
+        assert!(k.contains(&(Comment, "# c".into())));
+        assert!(!k.iter().any(|(kind, t)| *kind == Key && t == "{"));
+    }
+
+    #[test]
+    fn rule_keys_complete_inside_a_rule_and_skip_the_ones_set() {
+        let (_, c) = comp(&with_cursor("[[when]]\non = \"view.replay\"\nfade|"));
+        assert_eq!(labels(&c), ["fade_in_ms", "fade_out_ms"]);
+        assert_eq!(c[0].insert, "fade_in_ms = 150");
+        let (_, c) = comp(&with_cursor("[[when]]\non = \"view.replay\"\n|"));
+        let l = labels(&c);
+        assert!(l.contains(&"priority") && l.contains(&"all") && !l.contains(&"on"));
+    }
+
+    #[test]
+    fn signal_ids_complete_for_on_with_the_quoted_token_replaced() {
+        let (t, c) = comp(&with_cursor("[[when]]\non = \"car.sp|\"\n"));
+        assert_eq!(labels(&c), ["car.speed"]);
+        assert_eq!(c[0].insert, "\"car.speed\"");
+        assert_eq!(&t[c[0].range.clone()], "\"car.sp\"");
+        assert!(c[0].detail.contains("Preview only"));
+        let (_, c) = comp(&with_cursor("[[when]]\non = |\n"));
+        assert_eq!(c.len(), crate::signals::SIGNALS.len());
+        let (_, c) = comp(&with_cursor("[[when]]\nall = [{ on = \"view.c|\" }]\n"));
+        assert_eq!(labels(&c), ["view.camera", "view.cutscene"]);
+    }
+
+    #[test]
+    fn is_completes_the_values_of_the_rules_signal() {
+        let (_, c) = comp(&with_cursor("[[when]]\non = \"car.surface\"\nis = \"|\"\n"));
+        assert_eq!(
+            labels(&c),
+            ["tarmac", "kerb", "rumble", "grass", "gravel", "sand"]
+        );
+        let (_, c) = comp(&with_cursor(
+            "[[when]]\non = \"car.surface\"\nis = [\"kerb\", \"gr|\"]\n",
+        ));
+        assert_eq!(labels(&c), ["grass", "gravel"]);
+        let (_, c) = comp(&with_cursor(
+            "[[when]]\nall = [{ on = \"view.camera\", is = \"ch|\" }]\n",
+        ));
+        assert_eq!(labels(&c), ["chase_near", "chase_far"]);
+        let (_, c) = comp(&with_cursor("[[when]]\non = \"car.speed\"\nis = |\n"));
+        assert!(c.is_empty());
+    }
+
+    #[test]
+    fn inline_table_keys_complete_inside_braces() {
+        let (_, c) = comp(&with_cursor("[[when]]\nall = [{ on = \"car.speed\", ab|"));
+        assert_eq!(labels(&c), ["above"]);
+        let (_, c) = comp(&with_cursor("[[when]]\nall = [{ |"));
+        assert_eq!(labels(&c), ["on", "is", "above", "below", "wheels"]);
+        let (_, c) = comp(&with_cursor("[[when]]\nall = [\n  { on = \"car.surface\", w|"));
+        assert_eq!(labels(&c), ["wheels"]);
+    }
+
+    #[test]
+    fn set_tables_complete_instances_options_and_values() {
+        let (_, c) = comp(&with_cursor("[[when]]\non = \"view.replay\"\n[when.|"));
+        assert_eq!(labels(&c), ["set"]);
+        let (t, c) = comp(&with_cursor("[[when]]\non = \"view.replay\"\n[when.set.|"));
+        assert_eq!(labels(&c), ["grain", "grain.heavy"]);
+        assert_eq!(c[0].insert, "grain]");
+        assert_eq!(&t[c[0].range.clone()], "");
+        let (_, c) = comp(&with_cursor("[[when]]\non = \"view.replay\"\n[when.set.grain.|"));
+        assert!(c.is_empty() || c.iter().all(|x| x.label.starts_with("grain")));
+        let (_, c) = comp(&with_cursor(
+            "[[when]]\non = \"view.replay\"\n[when.set.grain]\nam|",
+        ));
+        assert_eq!(labels(&c), ["amount"]);
+        let (_, c) = comp(&with_cursor(
+            "[[when]]\non = \"view.replay\"\n[when.set.grain]\nenabled = |",
+        ));
+        assert_eq!(labels(&c), ["false"]);
+        let (_, c) = comp(&with_cursor("[[when]]\n|"));
+        assert!(labels(&c).contains(&"name"));
+        let (_, c) = comp("[[wh|");
+        assert_eq!(labels(&c), ["when"]);
+        assert_eq!(c[0].insert, "when]]");
+    }
+
+    #[test]
+    fn hover_describes_signals_and_rule_keys() {
+        let t = RULED;
+        let h = |needle: &str, nth: usize| {
+            let i = t.match_indices(needle).nth(nth).unwrap().0 + 1;
+            hover(t, i, &catalog())
+        };
+        let on = h("\"car.surface\"", 0).unwrap();
+        assert!(on.text.contains("**car.surface**") && on.text.contains("One of: `tarmac`"));
+        assert!(on.text.contains("Not read in game yet"));
+        assert_eq!(&t[on.range], "\"car.surface\"");
+        let key = h("is =", 0).unwrap();
+        assert!(key.text.starts_with("**is**"));
+        assert!(h("[[when]]", 0).unwrap().text.contains("Rule"));
+        let set = h("[when.set.grain]", 0).unwrap();
+        assert!(set.text.contains("grain") || set.text.contains("Grain"));
+        let opt = h("amount = 1", 0).unwrap();
+        assert!(opt.text.contains("amount"));
+        let all = "[[when]]\nall = [{ on = \"car.speed\", above = 1 }]\n";
+        let i = all.find("car.speed").unwrap() + 1;
+        assert!(hover(all, i, &catalog()).unwrap().text.contains("**car.speed**"));
+    }
+
+    #[test]
+    fn nothing_panics_on_any_prefix_of_a_ruled_config() {
+        let text = format!(
+            "{RULED}[[when]]\nall = [\n  {{ on = \"car.speed\", above = 150 }},\n]\n[when.set.grain]\nsize = 3\n"
+        );
+        for i in 0..=text.len() {
+            if !text.is_char_boundary(i) {
+                continue;
+            }
+            let _ = completions(&text, i, &catalog());
+            let _ = hover(&text, i, &catalog());
+            let _ = tokens(&text[..i]);
+        }
     }
 }

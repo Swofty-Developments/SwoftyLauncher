@@ -14,13 +14,17 @@ mod editor;
 mod effect;
 mod lint;
 mod pack;
+pub mod rules;
+pub mod signals;
 mod text;
+mod when;
 
 pub use compile::{CompileError, CompiledEffect, PassEntry, compile, compile_pass};
 pub use editor::{completions, hover, tokens};
 pub use effect::{params_hlsl, parse_effect};
 pub use lint::lint;
-pub use pack::{pack, resolve};
+pub use pack::{pack, resolve, resolve_rules};
+pub use rules::Rule;
 
 /// The most float slots one effect's params may take (`option(0..31)`).
 pub const MAX_SLOTS: usize = 32;
@@ -167,12 +171,68 @@ pub struct Instance {
     pub span: Range<usize>,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub enum CondOp {
+    True,
+    Is { values: Vec<String>, wheels: u8 },
+    Above(f64),
+    Below(f64),
+    Between(f64, f64),
+    Event,
+}
+
+/// One condition of a rule: a signal and what it must do.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Cond {
+    pub signal: String,
+    pub op: CondOp,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Ramp {
+    pub signal: String,
+    pub from: f64,
+    pub to: f64,
+}
+
+/// A `[when.set.<effect>]` table: the overrides one rule applies to one instance.
+#[derive(Debug, Clone, PartialEq)]
+pub struct RuleSet {
+    /// Index into [`Config::instances`].
+    pub instance: usize,
+    pub values: BTreeMap<String, Value>,
+    /// `enabled = false`: the rule turns the instance off.
+    pub off: bool,
+    pub span: Range<usize>,
+}
+
+/// A parsed `[[when]]` rule with its defaults filled in.
+#[derive(Debug, Clone, PartialEq)]
+pub struct WhenRule {
+    pub name: Option<String>,
+    pub priority: i32,
+    /// Position in the file.
+    pub order: usize,
+    pub event: bool,
+    pub when: Vec<Cond>,
+    pub ramp: Option<Ramp>,
+    pub min_ms: f64,
+    pub hold_ms: f64,
+    pub for_ms: f64,
+    pub fade_in_ms: f64,
+    pub fade_out_ms: f64,
+    pub sets: Vec<RuleSet>,
+    /// The rule's tables in the text, `[[when]]` to the last line of its last `set`.
+    pub span: Range<usize>,
+}
+
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Config {
     pub name: String,
     pub author: Option<String>,
     pub description: Option<String>,
     pub instances: Vec<Instance>,
+    pub rules: Vec<WhenRule>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -284,6 +344,8 @@ pub struct Active {
     pub forced_by: String,
     pub toggle_key: String,
     pub instances: Vec<ActiveInstance>,
+    #[serde(default)]
+    pub rules: Vec<Rule>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
