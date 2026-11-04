@@ -1328,8 +1328,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     let record_ui = record_ui_lists(&ui_maps, &tracks, &recorded, &resolve, &mut built.warnings);
     let mut caches = Vec::new();
     let mut session = store.session_settings(profile)?;
-    session.set_maps(maps.iter().map(|(_, pkg)| pkg));
-    session.mark_tracks(tracks.iter().map(|(_, _, origin)| origin.addon.as_str()));
+    session.set_maps(tracks.iter().map(|(_, pkg, origin)| (pkg, origin.addon.as_str())));
     session.set_mods(mods.into_iter());
     hasher.update(serde_json::to_vec(&session).expect("serialisable"));
     let menus = loader_dir().is_some();

@@ -90,6 +90,8 @@ pub struct Entry<'a> {
     pub id: &'a str,
     /// A track addon or a track package's page.
     pub track: bool,
+    /// The track packages an addon brings, shown on its page.
+    pub maps: Vec<&'a SessionMap>,
     pub options: Vec<Opt<'a>>,
     /// Every option of the addon, hidden ones too, for its career setup page.
     pub all: Vec<Opt<'a>>,
@@ -232,12 +234,15 @@ pub fn entries<'a>(
             description: &m.description,
             id: &m.id,
             track: m.track,
+            maps: maps.iter().filter(|mp| mp.addon == m.id).collect(),
             options,
             all,
             setup: m.career_setup.as_ref(),
         });
     }
-    for (j, mp) in maps.iter().enumerate() {
+    // A track package an enabled addon brings is on that addon's tile; the rest get their own.
+    let brought = |mp: &SessionMap| addons.iter().any(|a| a.enabled && a.id == mp.addon);
+    for (j, mp) in maps.iter().enumerate().filter(|(_, mp)| !brought(mp)) {
         out.push(Entry {
             kind: Kind::Map,
             index: j,
@@ -248,6 +253,7 @@ pub fn entries<'a>(
             description: &mp.description,
             id: &mp.code,
             track: true,
+            maps: Vec::new(),
             options: Vec::new(),
             all: Vec::new(),
             setup: None,
@@ -264,6 +270,7 @@ pub fn entries<'a>(
             description: &md.description,
             id: &md.id,
             track: false,
+            maps: Vec::new(),
             options: Vec::new(),
             all: Vec::new(),
             setup: None,
@@ -451,14 +458,46 @@ enum RowKind<'a> {
 }
 
 fn addon_rows<'a>(e: &'a Entry<'a>) -> Vec<Row<'a>> {
+    let mut rows = track_rows(e);
+    rows.extend(option_rows(e));
+    rows
+}
+
+// A track addon's track packages: their codes, to pick in any mode.
+fn track_rows<'a>(e: &Entry) -> Vec<Row<'a>> {
+    let several = e.maps.len() > 1;
+    e.maps
+        .iter()
+        .enumerate()
+        .map(|(j, mp)| {
+            let label = match several {
+                true => format!("Track Code: {}", mp.name),
+                false => "Track Code".to_owned(),
+            };
+            Row {
+                key: format!("row_code_{j}"),
+                kind: RowKind::Info(mp.code.clone()),
+                title: label.to_uppercase(),
+                label,
+                body: "Pick this track in any mode to race on it.".into(),
+            }
+        })
+        .collect()
+}
+
+fn option_rows<'a>(e: &'a Entry<'a>) -> Vec<Row<'a>> {
     if e.options.is_empty() {
+        let none = match e.maps.is_empty() {
+            true => "This addon has no options.",
+            false => "",
+        };
         return vec![
             Row {
                 key: "row_id".into(),
                 kind: RowKind::Info(e.id.into()),
                 label: "Addon ID".into(),
                 title: "ADDON ID".into(),
-                body: "This addon has no options.".into(),
+                body: none.into(),
             },
             Row {
                 key: "row_version".into(),
@@ -1186,6 +1225,7 @@ pub fn build_options_page(src: &Sources, e: &Entry, screen: &str) -> Result<Vec<
         description: e.description,
         id: e.id,
         track: e.track,
+        maps: e.maps.clone(),
         options: e
             .options
             .iter()
@@ -1232,6 +1272,7 @@ fn setup_entry<'a>(e: &Entry<'a>, setup: &'a CareerSetup) -> Entry<'a> {
         description: e.description,
         id: e.id,
         track: e.track,
+        maps: e.maps.clone(),
         options: setup
             .options
             .iter()
@@ -1429,6 +1470,7 @@ mod tests {
         SessionMap {
             code: code.into(),
             name: name.into(),
+            addon: String::new(),
             version: "1.0".into(),
             author: "a".into(),
             description: String::new(),
@@ -1560,5 +1602,45 @@ mod tests {
         assert_eq!(Kind::Mod.tag(), "MOD");
         assert_eq!((flow[1].name, flow[1].id), ("Sauber", "ts.sauber"));
         assert!(flow[1].options.is_empty());
+    }
+
+    fn track_addon(id: &str, enabled: bool) -> SessionAddon {
+        serde_json::from_value(serde_json::json!({
+            "id": id, "name": "Mugello", "version": "0.58.1", "author": "t", "enabled": enabled,
+            "locked": false, "enable_commands": ["", ""]
+        }))
+        .unwrap()
+    }
+
+    #[test]
+    fn a_track_an_addon_brings_is_on_that_addons_tile_only() {
+        let mut brought = map("mugello", "Mugello");
+        brought.addon = "track.mugello".into();
+        let mut off = map("istanbul", "Istanbul Park");
+        off.addon = "ts.istanbul".into();
+        let loose = map("imola", "Imola");
+        let maps = [brought, off, loose];
+        let addons = [
+            track_addon("track.mugello", true),
+            track_addon("ts.istanbul", false),
+        ];
+        let flow = entries(&addons, &maps, &[]);
+        let shape: Vec<(Kind, &str)> = flow.iter().map(|e| (e.kind, e.screen.as_str())).collect();
+        assert_eq!(
+            shape,
+            [
+                (Kind::Addon, "swofty_addon_0"),
+                (Kind::Map, "swofty_map_1"),
+                (Kind::Map, "swofty_map_2"),
+            ],
+            "the enabled addon's track has no tile of its own; a disabled addon's and a loose one keep theirs"
+        );
+        let codes: Vec<&str> = flow[0].maps.iter().map(|m| m.code.as_str()).collect();
+        assert_eq!(codes, ["mugello"]);
+        let rows = addon_rows(&flow[0]);
+        let keys: Vec<&str> = rows.iter().map(|r| r.key.as_str()).collect();
+        assert_eq!(keys, ["row_code_0", "row_id", "row_version"]);
+        assert!(matches!(&rows[0].kind, RowKind::Info(code) if code == "mugello"));
+        assert_eq!(rows[1].body, "", "a track addon's page has more than its id");
     }
 }
