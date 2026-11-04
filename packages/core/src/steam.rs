@@ -22,7 +22,20 @@ impl GameInstall {
     }
 }
 
+/// An explicit isolation root suppresses registry, default-location and drive scans.
+/// This is useful for sandboxed tools and tests that must never inspect host saves.
+fn isolated_root() -> Option<PathBuf> {
+    std::env::var_os("SWOFTY_STEAM_ROOT_ONLY").map(PathBuf::from)
+}
+
 pub fn steam_roots() -> Vec<PathBuf> {
+    if let Some(root) = isolated_root() {
+        return if root.join("steamapps").is_dir() {
+            vec![root]
+        } else {
+            Vec::new()
+        };
+    }
     let mut out: Vec<PathBuf> = Vec::new();
     if let Some(dir) = std::env::var_os("SWOFTY_STEAM_ROOT") {
         out.push(dir.into());
@@ -573,6 +586,9 @@ pub struct SaveSearch {
 /// default folders, the registry and a running steam.exe, and last from the usual folders on every
 /// drive.
 pub fn search_save(game: Option<&Path>) -> SaveSearch {
+    if isolated_root().is_some() {
+        return search_save_in(game, &steam_roots(), &[], None);
+    }
     search_save_in(game, &steam_roots(), &drive_roots(&drives()), active_user())
 }
 

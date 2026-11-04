@@ -41,6 +41,10 @@ cargo build -p swofty-launcher
 
 In a debug build, `SWOFTY_TEST_GITHUB=http://127.0.0.1:<port>` sends the launcher's and `swofty update`'s GitHub requests to a local server instead: `https://github.com/<path>` and `https://api.github.com/<path>` both become `<server>/<path>`. Release builds ignore it. Combine it with `SWOFTY_UPDATE_PRETEND_VERSION` and a `SWOFTY_DATA_DIR` of your own to run an update end to end.
 
+## Isolate Steam discovery
+
+For tests or sandboxed runs, set `SWOFTY_STEAM_ROOT_ONLY` to a Steam root to restrict Steam and save discovery to that folder. Unlike `SWOFTY_STEAM_ROOT`, this disables fallback to registered installations, default locations and drive scans. A missing or invalid root produces no Steam roots; it does not fall back to the host.
+
 ## Test with game files
 
 Point `F1_25_DIR` at your game files to run these tests; leave it unset and they're skipped. The tests only read the files.
