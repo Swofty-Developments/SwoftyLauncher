@@ -458,7 +458,7 @@ several rules, one option   applied in priority order, each blending over the re
 
 ### Signals
 
-Every signal is for the player's car, or for the car the camera follows in replays and spectating.
+Every signal is for the player's car. The `car.*` signals read the player's own car, also in replays and while spectating.
 
 ```text
 in game now
@@ -473,8 +473,6 @@ session.start       event    the session loads
 race.start          event    lights out
 session.lap         event    the player completes a lap
 session.end         event    the session ends
-
-not read in game yet (works in the Preview)
 car.speed           number   km/h, 0-400
 car.rpm             number   0-1 of the limiter
 car.gear            number   -1 reverse, 0 neutral, 1-8
@@ -484,6 +482,8 @@ car.steer           number   -1 to 1
 car.g_lateral       number   g, -6 to 6
 car.g_long          number   g, -6 to 6, braking negative
 car.surface         name     tarmac kerb rumble grass gravel sand, per wheel
+
+not read in game yet (works in the Preview)
 car.impact          event    collision g
 car.damage          event    part damage increase, 0-1
 car.in_pit_lane     yes/no
@@ -495,6 +495,8 @@ session.wetness     number   0-1 track water
 session.flashback   event
 session.chequered   event    the player takes the flag
 ```
+
+`car.surface` groups the game's surfaces: `kerb` is its rumble strips, `rumble` its ridged strips, `gravel` takes gravel, rock and mud, `tarmac` takes tarmac, concrete, cobbles, metal and standing water, and `grass` and `sand` are themselves. A wheel in the air has no surface.
 
 A signal the game does not read, or one with no live session, has no value: its conditions are false and its events never occur.
 

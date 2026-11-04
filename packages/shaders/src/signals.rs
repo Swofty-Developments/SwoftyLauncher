@@ -88,7 +88,14 @@ const fn name(id: &'static str, values: &'static [&'static str], in_game: bool, 
     }
 }
 
-const fn number(id: &'static str, unit: &'static str, min: f64, max: f64, doc: &'static str) -> Signal {
+const fn number(
+    id: &'static str,
+    unit: &'static str,
+    min: f64,
+    max: f64,
+    in_game: bool,
+    doc: &'static str,
+) -> Signal {
     Signal {
         id,
         kind: SignalKind::Number,
@@ -97,7 +104,7 @@ const fn number(id: &'static str, unit: &'static str, min: f64, max: f64, doc: &
         min,
         max,
         magnitude: None,
-        in_game: false,
+        in_game,
         doc,
     }
 }
@@ -146,24 +153,39 @@ pub static SIGNALS: [Signal; 30] = [
         "Fires when the player completes a lap.",
     ),
     event("session.end", "", None, true, "Fires when the session ends."),
-    number("car.speed", "km/h", 0.0, 400.0, "The car's speed in km/h."),
-    number("car.rpm", "", 0.0, 1.0, "Engine revs, 0-1 of the limiter."),
-    number("car.gear", "", -1.0, 8.0, "The gear: -1 reverse, 0 neutral, 1-8."),
-    number("car.throttle", "", 0.0, 1.0, "Throttle pedal, 0-1."),
-    number("car.brake", "", 0.0, 1.0, "Brake pedal, 0-1."),
-    number("car.steer", "", -1.0, 1.0, "Steering, -1 left to 1 right."),
-    number("car.g_lateral", "g", -6.0, 6.0, "Lateral acceleration in g."),
+    number("car.speed", "km/h", 0.0, 400.0, true, "The car's speed in km/h."),
+    number("car.rpm", "", 0.0, 1.0, true, "Engine revs, 0-1 of the limiter."),
+    number(
+        "car.gear",
+        "",
+        -1.0,
+        8.0,
+        true,
+        "The gear: -1 reverse, 0 neutral, 1-8.",
+    ),
+    number("car.throttle", "", 0.0, 1.0, true, "Throttle pedal, 0-1."),
+    number("car.brake", "", 0.0, 1.0, true, "Brake pedal, 0-1."),
+    number("car.steer", "", -1.0, 1.0, true, "Steering, -1 left to 1 right."),
+    number(
+        "car.g_lateral",
+        "g",
+        -6.0,
+        6.0,
+        true,
+        "Lateral acceleration in g.",
+    ),
     number(
         "car.g_long",
         "g",
         -6.0,
         6.0,
+        true,
         "Longitudinal acceleration in g, braking negative.",
     ),
     name(
         "car.surface",
         SURFACES,
-        false,
+        true,
         "The surface under each wheel: tarmac, kerb, rumble, grass, gravel or sand. `wheels` sets how many wheels must match.",
     ),
     event(
@@ -199,7 +221,7 @@ pub static SIGNALS: [Signal; 30] = [
         false,
         "clear, light_cloud, overcast, light_rain, heavy_rain or storm.",
     ),
-    number("session.wetness", "", 0.0, 1.0, "Track water, 0-1."),
+    number("session.wetness", "", 0.0, 1.0, false, "Track water, 0-1."),
     event(
         "session.flashback",
         "",
