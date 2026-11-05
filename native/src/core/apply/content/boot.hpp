@@ -471,6 +471,25 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
     auto worn = wearers(st);
     WearCtx wear = wear_context(st, lookup);
     TeamRefs refs = refs_of(st, lookup);
+    std::map<std::string, std::pair<std::string, std::string>> vehicle_tower;
+    for (auto &pid : in_load_order(st, "content.package")) {
+        const Value *pkg = lookup("content.package", pid);
+        if (!pkg)
+            continue;
+        const Value &entries = (*pkg)["teams"];
+        for (std::size_t t = 0; t < entries.size(); t++) {
+            if (!entries[t]["vehicle"].is_string() || !entries[t]["team"].is_string())
+                continue;
+            std::string team(entries[t]["team"].as_string());
+            const Value *ident = lookup("team.identity", team);
+            if (!ident)
+                continue;
+            const Value *logo = (*ident)["logo"].is_string() ? lookup("team.logo", std::string((*ident)["logo"].as_string())) : nullptr;
+            TowerBadge badge = tower_badge(logo, label_of(lookup, "team.identity", team));
+            if (!badge.key.empty())
+                vehicle_tower.emplace(std::string(entries[t]["vehicle"].as_string()), std::make_pair(team, badge.key));
+        }
+    }
     int slot = 0;
     for (const char *reg : ROW_REGISTRIES) {
         auto &lines = x.lines[reg];
@@ -489,7 +508,11 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
                 lower_vehicle_package(id, *rec, plan, stat);
             else if (r == "vehicle") {
                 lower_vehicle(id, *rec, lookup, source, plan, stat);
-                lower_vehicle_team(*rec, read, plan);
+                auto linked = vehicle_tower.find(id);
+                if (linked == vehicle_tower.end())
+                    lower_vehicle_team(*rec, read, plan);
+                else
+                    lower_vehicle_team(*rec, read, plan, linked->second.first, linked->second.second);
             }
             else if (r == "livery")
                 lower_livery(id, *rec, worn[id], lookup, read, plan, stat, &slot);

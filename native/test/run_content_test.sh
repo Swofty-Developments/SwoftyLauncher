@@ -15,6 +15,7 @@ pids=()
 "${PIN[@]}" "${CXX[@]}" -o "$OUT/lower_tool" content/lower_tool.cpp "${SRC[@]}" & pids+=($!)
 "${PIN[@]}" "${CXX[@]}" -o "$OUT/rows_tool" content/rows_tool.cpp ../src/core/apply/ids.cpp "${SRC[@]}" & pids+=($!)
 "${PIN[@]}" "${CXX[@]}" -o "$OUT/rows_test" content/rows_test.cpp ../src/core/apply/ids.cpp ../src/core/apply/scheduler.cpp "${SRC[@]}" & pids+=($!)
+"${PIN[@]}" "${CXX[@]}" -o "$OUT/vehicle_tower_test" content/vehicle_tower_test.cpp ../src/core/apply/ids.cpp "${SRC[@]}" & pids+=($!)
 "${PIN[@]}" "${CXX[@]}" -o "$OUT/wear_test" content/wear_test.cpp ../src/core/apply/ids.cpp "${SRC[@]}" & pids+=($!)
 "${PIN[@]}" zig c++ -target x86_64-windows-gnu -std=c++23 -O2 -Wall -Wextra -I../../packages/sdk/include -I../include -I../third_party/zstd \
     -c ../src/core/apply/content/appliers.cpp -o "$OUT/appliers.windows.o" & pids+=($!)
@@ -47,6 +48,7 @@ for p in "${pids[@]}"; do wait "$p"; done
 "$OUT/garage_test"
 python3 content/check_logo_build.py content/bc7 "$OUT/logo_out"
 "$OUT/rows_test" ../../packages/sdk/std/registries
+"$OUT/vehicle_tower_test"
 "$OUT/wear_test" ../../packages/sdk/std/registries
 python3 content/check_lowering.py "$OUT/lower_tool"
 GAMEDB="/mnt/gaming/SteamLibrary/steamapps/common/F1 25/game_package/gamedatabases/gamedatabases.2025.bin"
