@@ -32,8 +32,9 @@ int main()
 
     for (int s = S_CAR_SPEED; s <= S_CAR_SURFACE; s++)
         CHECK(SIGNALS[s].in_game);
+    CHECK(SIGNALS[S_SESSION_WETNESS].in_game && SIGNALS[S_CAR_WETNESS].in_game);
     for (int s : {S_CAR_IMPACT, S_CAR_DAMAGE, S_CAR_IN_PIT_LANE, S_CAR_OFF_TRACK, S_SESSION_FLAG, S_SESSION_SAFETY_CAR,
-                  S_SESSION_WEATHER, S_SESSION_WETNESS, S_SESSION_FLASHBACK, S_SESSION_CHEQUERED})
+                  S_SESSION_WEATHER, S_SESSION_FLASHBACK, S_SESSION_CHEQUERED})
         CHECK(!SIGNALS[s].in_game);
 
     if (failures)

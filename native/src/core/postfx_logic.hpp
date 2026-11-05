@@ -357,6 +357,7 @@ enum Sig : int {
     S_CAR_SURFACE, S_CAR_IMPACT, S_CAR_DAMAGE, S_CAR_IN_PIT_LANE, S_CAR_OFF_TRACK,
     S_SESSION_FLAG, S_SESSION_SAFETY_CAR, S_SESSION_WEATHER, S_SESSION_WETNESS, S_SESSION_FLASHBACK,
     S_SESSION_CHEQUERED,
+    S_CAR_WETNESS,
     SIGNAL_COUNT
 };
 
@@ -388,9 +389,10 @@ inline constexpr SignalInfo SIGNALS[SIGNAL_COUNT] = {
     {"session.flag", SK_NAME, "none green blue yellow red", "", false},
     {"session.safety_car", SK_NAME, "none sc vsc formation", "", false},
     {"session.weather", SK_NAME, "clear light_cloud overcast light_rain heavy_rain storm", "", false},
-    {"session.wetness", SK_NUMBER, "", "", false},
+    {"session.wetness", SK_NUMBER, "", "", true},
     {"session.flashback", SK_EVENT, "", "", false},
     {"session.chequered", SK_EVENT, "", "", false},
+    {"car.wetness", SK_NUMBER, "", "", true},
 };
 
 inline int signal_index(std::string_view id)

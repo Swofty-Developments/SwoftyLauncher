@@ -1000,14 +1000,14 @@ mod tests {
     fn signals_that_the_game_does_not_read_warn() {
         let s = "[when.set.grain]\namount = 1\n";
         only(
-            &format!("[[when]]\non = \"session.wetness\"\nabove = 0.3\n{s}"),
+            &format!("[[when]]\non = \"session.weather\"\nis = \"storm\"\n{s}"),
             Severity::Warning,
-            "session.wetness isn't read in game yet; this rule only fires in the Preview",
+            "session.weather isn't read in game yet; this rule only fires in the Preview",
         );
         let m = msgs(&format!("[[when]]\non = \"view.replay\"\n{s}"));
         assert!(m.is_empty(), "{m:?}");
         let both = msgs(&format!(
-            "[[when]]\nall = [{{ on = \"session.wetness\", above = 0.1 }}, {{ on = \"session.wetness\", below = 0.9 }}]\n{s}"
+            "[[when]]\nall = [{{ on = \"session.weather\", is = \"storm\" }}, {{ on = \"session.weather\", is = \"heavy_rain\" }}]\n{s}"
         ));
         assert_eq!(both.len(), 1, "{both:?}");
     }
