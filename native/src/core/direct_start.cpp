@@ -381,6 +381,11 @@ void link_mid(safetyhook::Context &c)
             swofty::log("[direct] state %08x: link %08x replaced by %08x", hash, link, out);
     }
     if (driver.phase == ds::Phase::left) {
+        static bool scene_tried = false;
+        if (!scene_tried && driver.target.name == "session") {
+            scene_tried = true;
+            despawn_frontend_scene("as the front end is left");
+        }
         describe_state(state, hash, out);
         if (flow_root && driver.target.name == "session")
             for (uint8_t *n = flow_root; n && runtime::readable(n, STATE_PARENT + 8);
