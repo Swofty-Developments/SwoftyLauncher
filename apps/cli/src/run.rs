@@ -975,7 +975,7 @@ fn play(
     let via_ea = ea.is_some();
     let (code, unread) = match ea {
         Some(started) => {
-            crate::ea::wait(game, &copies_before, started, tick);
+            crate::ea::wait(game, &dir, &copies_before, started, tick);
             (None, EA_UNREAD.to_owned())
         }
         None => {
@@ -988,7 +988,13 @@ fn play(
     {
         verdict(w.ended(Instant::now()));
     }
-    wait_relaunched(game, &copies_before, code, launched.elapsed().unwrap_or_default());
+    wait_relaunched(
+        game,
+        &dir,
+        &copies_before,
+        code,
+        launched.elapsed().unwrap_or_default(),
+    );
     keep_game_logs(&store.root, game, &fallback, &dir, before.as_ref(), launched);
     let loader = std::fs::read(dir.join("loader.log"))
         .ok()
@@ -1072,7 +1078,7 @@ const RELAUNCH_CAP: Duration = Duration::from_secs(12 * 3600);
 /// game files are rolled back. A launch that failed quickly gets longer for
 /// the relaunch to appear. Another copy's game is not waited for, and only
 /// a game that is this copy's is closed.
-fn wait_relaunched(game: &Path, before: &[u32], code: Option<i32>, ran: Duration) {
+fn wait_relaunched(game: &Path, dir: &Path, before: &[u32], code: Option<i32>, ran: Duration) {
     let settle = if code.is_some_and(|c| c != 0) && ran < SHORT_RUN {
         RELAUNCH_AFTER_FAILURE
     } else {
@@ -1107,7 +1113,14 @@ fn wait_relaunched(game: &Path, before: &[u32], code: Option<i32>, ran: Duration
             );
             return;
         }
-        if !asked && ending() && !others.is_empty() {
+        let phase = session_stop(dir);
+        if phase == StopPhase::GiveUp && !others.is_empty() {
+            info(
+                "the F1 25 started outside this session is still open after Stop; rolling the game files back now",
+            );
+            return;
+        }
+        if !asked && phase != StopPhase::Running && !others.is_empty() {
             asked = true;
             info(
                 "asked to stop: closing the F1 25 started outside this session, then rolling its game files back",
@@ -2067,6 +2080,39 @@ pub(crate) fn ending() -> bool {
     ENDING.load(std::sync::atomic::Ordering::Relaxed)
 }
 
+pub(crate) const STOP_GRACE: Duration = Duration::from_secs(20);
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum StopPhase {
+    Running,
+    Closing,
+    GiveUp,
+}
+
+pub(crate) fn stop_phase(requested: Option<f64>, now: f64, signalled: bool) -> StopPhase {
+    match requested {
+        Some(at) if now - at > STOP_GRACE.as_secs_f64() => StopPhase::GiveUp,
+        Some(_) => StopPhase::Closing,
+        None if signalled => StopPhase::Closing,
+        None => StopPhase::Running,
+    }
+}
+
+pub(crate) fn stop_requested_at(dir: &Path) -> Option<f64> {
+    let file = dir.join(STOP_FILE);
+    if !file.exists() {
+        return None;
+    }
+    let at = std::fs::read_to_string(&file)
+        .ok()
+        .and_then(|s| s.trim().parse().ok());
+    Some(at.unwrap_or_else(now_secs))
+}
+
+pub(crate) fn session_stop(dir: &Path) -> StopPhase {
+    stop_phase(stop_requested_at(dir), now_secs(), ending())
+}
+
 #[cfg(target_os = "linux")]
 fn set_affinity(cpus: &[usize]) {
     unsafe {
@@ -2123,6 +2169,31 @@ mod tests {
         std::env::temp_dir()
             .join(format!("swofty-run-{}-{name}", std::process::id()))
             .join(WRAPPER_LOG)
+    }
+
+    #[test]
+    fn a_stop_request_closes_the_game_then_gives_up_waiting_for_it() {
+        assert_eq!(stop_phase(None, 100.0, false), StopPhase::Running);
+        assert_eq!(stop_phase(None, 100.0, true), StopPhase::Closing);
+        assert_eq!(stop_phase(Some(90.0), 100.0, false), StopPhase::Closing);
+        assert_eq!(stop_phase(Some(80.0), 100.0, false), StopPhase::Closing);
+        assert_eq!(stop_phase(Some(79.0), 100.0, false), StopPhase::GiveUp);
+        assert_eq!(stop_phase(Some(79.0), 100.0, true), StopPhase::GiveUp);
+    }
+
+    #[test]
+    fn reads_when_the_launcher_asked_the_session_to_stop() {
+        let dir = std::env::temp_dir().join(format!("swofty-stop-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(&dir).unwrap();
+        assert_eq!(stop_requested_at(&dir), None);
+        assert_eq!(session_stop(&dir), StopPhase::Running);
+        std::fs::write(dir.join(STOP_FILE), "12.5\n").unwrap();
+        assert_eq!(stop_requested_at(&dir), Some(12.5));
+        assert_eq!(session_stop(&dir), StopPhase::GiveUp);
+        std::fs::write(dir.join(STOP_FILE), "garbage").unwrap();
+        assert_eq!(session_stop(&dir), StopPhase::Closing);
+        std::fs::remove_dir_all(&dir).ok();
     }
 
     #[test]
