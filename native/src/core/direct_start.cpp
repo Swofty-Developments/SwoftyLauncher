@@ -11,6 +11,7 @@
 #include <map>
 #include <mutex>
 
+#include "apply/moments.hpp"
 #include "direct_start_logic.hpp"
 #include "json.hpp"
 #include "room_cover.hpp"
@@ -508,6 +509,19 @@ std::string weekend_text(uint8_t *wk)
     return head + ids;
 }
 
+bool set_weekend_track(void *modes, uint8_t id, const char *track_name, const char *when)
+{
+    uint8_t *wk = current_weekend(modes);
+    if (!wk)
+        return false;
+    if (wk[WK_TRACK] != id) {
+        swofty::log("[direct] Grand Prix: the weekend's track stat id %u -> %u (%s) %s", unsigned(wk[WK_TRACK]),
+                    unsigned(id), track_name, when);
+        wk[WK_TRACK] = id;
+    }
+    return true;
+}
+
 // The requested session (the CLI's session=, a game session name or practice1..3, qualifying, race) made the
 // weekend's current one. A Grand Prix the profile already holds keeps its season (the season build only runs for a
 // mode with no season), so the weekend is the saved one: its first session becomes the requested one and the
@@ -825,6 +839,7 @@ ds::Setup new_grand_prix(std::string &why)
     }
     *reinterpret_cast<void **>(e + ENTITY_LIST) = list;
     swofty::log("[direct] Grand Prix: entrant list %s (stat id %u) is %p", list_name.c_str(), unsigned(id), list);
+    swofty_core::apply::moments::box_picked(list_name.c_str());
     // 3. The track by name in E's track system: 16-byte entries at +0x28..+0x30, the record at +8, its name at +0x78.
     uint8_t *tracks = *reinterpret_cast<uint8_t **>(e + ENTITY_TRACKS);
     uint8_t *track = nullptr;
@@ -861,6 +876,7 @@ ds::Setup new_grand_prix(std::string &why)
     *reinterpret_cast<void **>(holder + 0x18) = track;
     *reinterpret_cast<void **>(stub + 0x298) = holder;
     at_rva<void(void *)>(RVA_BUILD_SEASON)(stub);
+    set_weekend_track(modes, track[1], track_name.c_str(), "after the season build");
     // 5. E's components attached again, as the track select confirm does after its rounds, then the sessions.
     reinterpret_cast<void (*)(void *)>(evt[0xe8 / 8])(e);
     weekend_structure(e, static_cast<uint8_t *>(rounds));
@@ -878,14 +894,7 @@ ds::Setup new_grand_prix(std::string &why)
     seat_player(e, mgr);
     swofty::log("[direct] Grand Prix: new weekend: setup mode %s, list %s (%p), track %s (%p), rounds %p, %zu entrant(s)",
                 setup_name.c_str(), list_name.c_str(), list, track_name.c_str(), track, rounds, entrants);
-    if (uint8_t *wk = current_weekend(modes)) {
-        uint8_t id = track[1];
-        if (wk[WK_TRACK] != id) {
-            swofty::log("[direct] Grand Prix: the weekend's track stat id %u -> %u (%s)", unsigned(wk[WK_TRACK]),
-                        unsigned(id), track_name.c_str());
-            wk[WK_TRACK] = id;
-        }
-    }
+    set_weekend_track(modes, track[1], track_name.c_str(), "after the entrants");
     choose_session(modes, "built");
     return ds::Setup::done;
 }
