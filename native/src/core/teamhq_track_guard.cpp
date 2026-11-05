@@ -29,6 +29,13 @@ std::string hook_error(const safetyhook::MidHook::Error &e);
 // Each load is followed by the game's own test of rax with the empty node handle (r13) as the fallback, so a null record
 // or track resumes after the load with rax 0 and the event shows no track. Each track is logged once.
 //
+// Career_TeamHqAdvanceVM_Initialise (0x1422bc710) has a fourth load of the same kind at site_Career_TeamHqAdvanceVMRecordNode:
+// it takes the record for the event's track (event +0xb0) straight from the TrackDataSystem item vector and reads
+// [rax+0x2c0] with no check, so an event whose track has no record faults reading 0x2c0 at F1_25.exe+0x22bf18d as the
+// second Team HQ entry opens. The code after the load is lea rcx,[rax+8]; test rax,rax; lea rdx,[empty node]; cmovne
+// rdx,rcx, so a null record resumes after the load with rax 0 and the node is the game's own empty node. That site logs
+// once per track as well.
+//
 // The sites are found by byte scan (the KB rows are L1: subsystem career is owned by career-re).
 //
 // SWOFTY_TEAMHQ_TRACK_GUARD=0 turns it off.
@@ -44,15 +51,20 @@ const runtime::Sig S_RECORD_NODE{"site_Career_TeamHqAdvanceRecordNode", "E8 ?? ?
 const runtime::Sig S_TRACK_LOAD{"site_Career_TeamHqAdvanceTrackLoad", "E8 ?? ?? ?? ?? 49 8B 46 30 48 8D 48 08", 0x19b47ab,
                                 runtime::Sig::addr, 0, 5, 0};
 
+const runtime::Sig S_VM_RECORD_NODE{"site_Career_TeamHqAdvanceVMRecordNode",
+                                    "48 8B 8F 58 0F 00 00 48 8B 49 28 48 C1 E0 04 48 8B 44 01 08 48 8B 80 C0 02 00 00",
+                                    0x22bf18d, runtime::Sig::addr, 0, 0x14, 0};
+
+constexpr size_t VM_EVENT_TRACK = 0xb0;
 constexpr size_t EVENT_TRACK = 0x18;
 constexpr size_t RECORD_INDEX = 0x1;
 constexpr size_t RECORD_LOAD_LEN = 7;
 constexpr size_t TRACK_LOAD_LEN = 0xf;
 
-uintptr_t handle_next = 0, node_next = 0, track_next = 0;
-runtime::track_record::Seen seen;
+uintptr_t handle_next = 0, node_next = 0, track_next = 0, vm_next = 0;
+runtime::track_record::Seen seen, vm_seen;
 std::mutex seen_lock;
-safetyhook::MidHook h_handle, h_node, h_track;
+safetyhook::MidHook h_handle, h_node, h_track, h_vm;
 
 using runtime::teamhq_track::Load;
 
@@ -65,6 +77,27 @@ void say(Load load, uint64_t record, uint64_t track_ref, uint8_t id)
     }
     if (first)
         swofty::log("[career] teamhq: track %u has no track data; the event shows no track", unsigned(id));
+}
+
+void say_vm(uint64_t record, uint8_t id)
+{
+    bool first;
+    {
+        std::lock_guard<std::mutex> hold(seen_lock);
+        first = runtime::teamhq_track::says(Load::record, record, 0, vm_seen, id);
+    }
+    if (first)
+        swofty::log("[career] teamhq: advance view model track %u has no track data; the event shows no track", unsigned(id));
+}
+
+void vm_record_node(safetyhook::Context &c)
+{
+    if (!runtime::teamhq_track::skips(Load::record, c.rax, 0))
+        return;
+    c.rip = vm_next;
+    uint8_t id = 0;
+    if (mem::read(c.r15 + VM_EVENT_TRACK, id))
+        say_vm(c.rax, id);
 }
 
 void record_handle(safetyhook::Context &c)
@@ -124,13 +157,14 @@ void setup()
     }
     uintptr_t track = arm(h_track, S_TRACK_LOAD, track_load, track_next, TRACK_LOAD_LEN),
               handle = arm(h_handle, S_RECORD_HANDLE, record_handle, handle_next, RECORD_LOAD_LEN),
-              node = arm(h_node, S_RECORD_NODE, record_node, node_next, RECORD_LOAD_LEN);
-    if (track && handle && node)
+              node = arm(h_node, S_RECORD_NODE, record_node, node_next, RECORD_LOAD_LEN),
+              vm = arm(h_vm, S_VM_RECORD_NODE, vm_record_node, vm_next, RECORD_LOAD_LEN);
+    if (track && handle && node && vm)
         swofty::log("[career] teamhq track guard armed: a Team HQ event whose track has no track data shows no track "
                     "instead of faulting");
     else
-        swofty::log("[career] teamhq track guard: not hooked: %s%s%s", track ? "" : "track load ", handle ? "" : "record handle ",
-                    node ? "" : "record node");
+        swofty::log("[career] teamhq track guard: not hooked: %s%s%s%s", track ? "" : "track load ", handle ? "" : "record handle ",
+                    node ? "" : "record node ", vm ? "" : "view model record node");
 }
 
 }
