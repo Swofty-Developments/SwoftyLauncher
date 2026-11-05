@@ -351,6 +351,7 @@ EOF
         once "teamhq: the guard is armed" '\[career\] teamhq track guard armed'
         once "teamhq: an event whose track has no track data is skipped and logged once" '\[career\] teamhq: track 6 has no track data; the event shows no track'
         once "teamhq: an event whose track has no record is skipped and logged once" '\[career\] teamhq: track 1 has no track data; the event shows no track'
+        once "teamhq: a view model event whose track has no record is skipped and logged once" '\[career\] teamhq: advance view model track 1 has no track data; the event shows no track'
         once "activity: the guard is armed" '\[career\] activity resume guard armed'
         once "activity: a championship without race length fields is skipped and logged once" '\[career\] activity resume: the championship has no race length fields'
         once "pairs: the guard is armed" '\[strategy\] teammate pairs guard armed'
@@ -760,6 +761,8 @@ for guard in on off; do
         once "teamhq on: the event is skipped and logged" '\[career\] teamhq: track 6 has no track data; the event shows no track'
         grep -q 'teamhq: the event returned e3e7\b' "$OUT/teamhq.out" && echo "ok  : teamhq on: the event took the game's empty node path" ||
             { echo "FAIL: teamhq on: the event did not take the game's empty node path"; status=1; }
+        grep -q 'teamhq: the view model event took the empty node 1' "$OUT/teamhq.out" && echo "ok  : teamhq on: the view model event took the game's empty node path" ||
+            { echo "FAIL: teamhq on: the view model event did not take the game's empty node path"; status=1; }
         count "teamhq on: no unhandled fault" 0 '\[crash\] unhandled '
         compgen -G "$SW/crash-*.txt" >/dev/null && { echo "FAIL: teamhq on: a crash report was written"; status=1; } ||
             echo "ok  : teamhq on: no crash report"
