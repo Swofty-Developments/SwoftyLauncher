@@ -1441,6 +1441,38 @@ __asm__(
 void fake_teamhq_vm(void *career, void *event, uint64_t *out);
 extern uint8_t fake_teamhq_empty[];
 
+// The unchecked record load of Career_TeamHqMyTeamVM_Initialise, with the bytes around it copied from the Steam build
+// (0x1423296ad..0x1423296e4), in a small frame taking the career entity (rbx, TrackDataSystem at +0xf58) in rcx, the
+// calendar event (rdi, track byte at +0xb0) in rdx and a one-slot result in r8. The result holds rdx after the read, the
+// game's own fallback for an empty node (fake_teamhq_empty). Core's Team HQ track guard finds the load by its byte
+// pattern, the record read at +0x2b.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_teamhq_myteam\n"
+    ".def fake_teamhq_myteam; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_teamhq_myteam\n"
+    "fake_teamhq_myteam:\n"
+    ".byte 0x53\n.seh_pushreg %rbx\n"
+    ".byte 0x57\n.seh_pushreg %rdi\n"
+    ".seh_endprologue\n"
+    ".byte 0x48,0x89,0xCB,0x48,0x89,0xD7\n"
+    ".byte 0x0F,0xB6,0x87,0xB0,0x00,0x00,0x00\n"
+    ".byte 0x48,0x8B,0x8B,0x58,0x0F,0x00,0x00\n"
+    ".byte 0x48,0x8B,0x49,0x28\n"
+    ".byte 0x48,0xC1,0xE0,0x04\n"
+    ".byte 0x48,0x8B,0x44,0x01,0x08\n"
+    ".byte 0x48,0x8B,0x80,0xC0,0x02,0x00,0x00\n"
+    ".byte 0x48,0x8D,0x48,0x08,0x48,0x85,0xC0\n"
+    "leaq fake_teamhq_empty(%rip), %rdx\n"
+    ".byte 0x48,0x0F,0x45,0xD1\n"
+    ".byte 0x49,0x89,0x10\n"
+    ".byte 0x5F,0x5B,0xC3\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_teamhq_myteam\"\n"
+    ".text\n");
+void fake_teamhq_myteam(void *career, void *event, uint64_t *out);
+
 static uint8_t vm_career[0x1000], vm_system[0x40], vm_event[0xc0], vm_record[0x2c8];
 static uint8_t *vm_items[4];
 
@@ -1489,6 +1521,12 @@ static void test_teamhq(void)
     teamhq_vm_setup(1, 0);
     fake_teamhq_vm(vm_career, vm_event, &vm);
     expect(vm == (uint64_t)(uintptr_t)fake_teamhq_empty, "teamhq: a view model event whose track has no record takes the empty node");
+    teamhq_vm_setup(1, 1);
+    fake_teamhq_myteam(vm_career, vm_event, &vm);
+    expect(vm == 0x2c0c0de + 8, "teamhq: a my team view model event with a record reads it as the game does");
+    teamhq_vm_setup(1, 0);
+    fake_teamhq_myteam(vm_career, vm_event, &vm);
+    expect(vm == (uint64_t)(uintptr_t)fake_teamhq_empty, "teamhq: a my team view model event whose track has no record takes the empty node");
     fake_teamhq_vm(vm_career, vm_event, &vm);
 }
 
@@ -1508,6 +1546,13 @@ static void crash_teamhq(void)
     fflush(stdout);
     fake_teamhq_vm(vm_career, vm_event, &vm);
     printf("      teamhq: the view model event took the empty node %d\n", vm == (uint64_t)(uintptr_t)fake_teamhq_empty);
+    fflush(stdout);
+    vm = 0;
+    teamhq_vm_setup(1, 0);
+    printf("      teamhq: reading a my team view model event whose track has no record\n");
+    fflush(stdout);
+    fake_teamhq_myteam(vm_career, vm_event, &vm);
+    printf("      teamhq: the my team view model event took the empty node %d\n", vm == (uint64_t)(uintptr_t)fake_teamhq_empty);
     fflush(stdout);
 }
 
