@@ -282,8 +282,31 @@ An effect's `textures` and `passes` are the [post-process passes](./postfx) cont
 - No `output` writes the picture. A pass that writes a texture is sized by it.
 - A `persistent` texture keeps its contents from frame to frame. The ambient light effect stores its eye adaptation in one.
 - A `file` texture is an image from the effect's folder, read-only.
+- A texture with `mips` carries a mip chain, described below.
 - The pass order is the order in the file. Passes of the next instance start where this one ends.
 - A pass that reads `previous` sees the picture after all the instances, so it lags one frame behind.
+
+### Mipmapped textures
+
+`mips` is the number of levels of a texture, including the full-size one: 1 (the default) up to 12, and no more than floor(log2(max(width, height))) + 1.
+
+```json
+"textures": [
+  { "name": "lens", "width": 1920, "height": 1080, "format": "rgba16f", "mips": 5 },
+  { "name": "stats", "width": 64, "height": 32, "format": "rg16f", "mips": 7 }
+]
+```
+
+- `mips` works with every `format`, with `scale`, `width` and `height`, and with `persistent`. A `file` texture takes no mips. A `mips` above what the size allows is lowered to it, with a warning.
+- A pass writes level 0 only. After every pass that writes the texture, the core rebuilds levels 1 and up, each the 2x2 average of the level above (an odd size rounds down, at least 1x1).
+- A pass that reads the texture sees the chain as of the last write.
+- `input(i, uv)` reads level 0. These read any level:
+
+```hlsl
+float4 input_lod(uint i, float2 uv, float lod);        // linear within and between levels, clamped to the edge
+float4 input_lod_point(uint i, float2 uv, float lod);  // the nearest texel of the nearest level
+uint2  input_size_lod(uint i, uint lod);               // the size of a level
+```
 
 ## Rules
 
