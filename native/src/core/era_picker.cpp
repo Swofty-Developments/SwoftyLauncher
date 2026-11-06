@@ -20,6 +20,7 @@
 #include "era_logic.hpp"
 
 std::string settings_addon(const void *from, std::string &dll);
+int settings_get(const char *id, uint32_t type, SwoftySettingValue *out);
 
 // Era picker addon row (swofty/era.hpp). The Grand Prix, Time Trial and split-screen category picker
 // (the DynamicEraSelectTabViewModel, VM dynamic_era_select) shows its stock boxes in the VM tiles list;
@@ -74,6 +75,9 @@ std::string settings_addon(const void *from, std::string &dll);
 // The three hooks are one core mixin set, offered at the first mixin commit after a box was registered,
 // so a game without registered boxes runs none of them.
 //
+// SwoftyMod's split_season_picker off: the launcher's UI build leaves the screen with its single stock row,
+// so the era picker is off from the start. available() says so and every box is refused as unavailable.
+//
 // Time Trial guard (era_logic.hpp): a stock box pressed on a Time Trial picker leaves swofty_f1 offering
 // only its lists of at most 23 cars, none when no list fits; each Time Trial load counts the distinct cars of
 // every list of the selected list's leaderboard that the Time Trial fill takes (era_logic.hpp) and leaves whole
@@ -100,6 +104,7 @@ using swofty::game::Vm_Set_Bool_t;
 using swofty::game::Vm_Set_NodeRef_t;
 
 constexpr const char *MIXIN = "swofty_core.dll (era picker)";
+constexpr const char *SPLIT_OPTION = "split_season_picker";
 constexpr uint32_t LOG_FIRST = 6;
 
 constexpr size_t MODE_NAME = 0x278;
@@ -1030,8 +1035,30 @@ std::string text(const char *s)
     return s ? s : "";
 }
 
+// SwoftyMod's split_season_picker, read once settings.json has it: off turns the era picker off before any
+// box registers. Without the option (an older settings.json) the picker stays split.
+bool split_off()
+{
+    static std::atomic<int> split{-1};
+    if (split < 0) {
+        SwoftySettingValue v{};
+        if (settings_get(SPLIT_OPTION, SWOFTY_SETTING_TOGGLE, &v))
+            split = v.toggle ? 1 : 0;
+    }
+    if (split != 0 || off)
+        return off;
+    std::lock_guard<std::mutex> g(lock);
+    if (!off) {
+        off_why = "SwoftyMod's Split the season picker is off, so the picker keeps the game's single row";
+        off = true;
+        swofty::log("[era] addon row off: %s", off_why.c_str());
+    }
+    return true;
+}
+
 int api_available()
 {
+    split_off();
     return !off.load();
 }
 
@@ -1043,6 +1070,7 @@ int api_add_box(const SwoftyEraBox *desc)
                     desc ? desc->size : 0, BOX_TIME_TRIAL);
         return SWOFTY_ASSET_INVALID;
     }
+    split_off();
     logic::Box box{text(desc->entrant_list), text(desc->title), text(desc->image), desc->order, who, 0, {}};
     if (desc->size >= sizeof(SwoftyEraBox))
         box.time_trial = text(desc->time_trial_entrant_list);
@@ -1469,7 +1497,7 @@ void era_session_unloaded(const char *state, int to)
 std::vector<CoreMixins> era_mixins()
 {
     std::vector<CoreMixins> out;
-    if (offered || off || !code_ready())
+    if (offered || split_off() || off || !code_ready())
         return out;
     {
         std::lock_guard<std::mutex> g(lock);

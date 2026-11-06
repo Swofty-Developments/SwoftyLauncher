@@ -294,10 +294,13 @@ pub fn request(
     head: bool,
     timeout: Option<Duration>,
 ) -> std::result::Result<ureq::http::Response<ureq::Body>, Failure> {
-    let response = builder(url, head, timeout)
-        .call()
-        .map_err(|e| Failure::Failed(format!("{url}: {e}")))?;
-    answered(url, response)
+    let (result, attempts) = transfer::send(|| builder(url, head, timeout).call());
+    let note = transfer::attempts_note(attempts);
+    let response = result.map_err(|e| Failure::Failed(format!("{url}: {e}{note}")))?;
+    answered(url, response).map_err(|f| match f {
+        Failure::Failed(text) => Failure::Failed(format!("{text}{note}")),
+        wait => wait,
+    })
 }
 
 pub fn get(url: &str, timeout: Option<Duration>) -> Result<ureq::Body> {
@@ -352,16 +355,26 @@ pub fn download(asset: &Asset, to: &Path, progress: &dyn Fn(u64)) -> Result<(u64
     let mut open = |from: u64| {
         let left = asset.size.saturating_sub(from);
         let body_timeout = crate::catalog::body_timeout(left);
-        let mut request = builder(url, false, None)
-            .config()
-            .timeout_recv_body(Some(body_timeout))
-            .build()
-            .header("Accept-Encoding", "identity");
-        if from > 0 {
-            request = request.header("Range", format!("bytes={from}-"));
-        }
-        let response = request.call().map_err(transfer::Opening::Call)?;
-        answered(url, response).map_err(|f| transfer::Opening::Refused(f.into()))
+        let request = || {
+            let mut request = builder(url, false, None)
+                .config()
+                .timeout_recv_body(Some(body_timeout))
+                .build()
+                .header("Accept-Encoding", "identity");
+            if from > 0 {
+                request = request.header("Range", format!("bytes={from}-"));
+            }
+            request.call()
+        };
+        let (result, attempts) = transfer::send(request);
+        let note = transfer::attempts_note(attempts);
+        let response = result.map_err(transfer::Opening::Call)?;
+        answered(url, response).map_err(|f| {
+            transfer::Opening::Refused(match f {
+                Failure::Failed(text) => Error::Other(format!("{text}{note}")),
+                wait => wait.into(),
+            })
+        })
     };
     transfer::fetch(&fetch, to, &mut open, progress)
 }

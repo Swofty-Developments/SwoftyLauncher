@@ -11,6 +11,7 @@
 #include <string>
 
 #include "career_state.hpp"
+#include "view_flow_logic.hpp"
 
 namespace runtime {
 std::string hook_error(const safetyhook::MidHook::Error &e);
@@ -18,10 +19,15 @@ std::string hook_error(const safetyhook::MidHook::Error &e);
 
 namespace {
 
-constexpr uint32_t djb2(const char *s)
-{
-    return runtime::career::djb2(s);
-}
+using view_flow::G_CUTSCENE;
+using view_flow::G_DRIVING;
+using view_flow::G_PAUSE;
+using view_flow::G_REPLAY;
+using view_flow::G_SESSION;
+using view_flow::G_SPECTATE;
+using view_flow::TRACKED;
+using view_flow::TRACKED_N;
+using view_flow::GROUP_MASK_ALL;
 
 const runtime::Sig S_PHOTO_ON{"site_Game_PhotoModeActiveSet",
                               "C5 F8 29 85 80 03 00 00 C6 85 94 03 00 00 01", 0x2bdba77, runtime::Sig::addr, 0, 8};
@@ -31,53 +37,6 @@ const runtime::Sig S_CAMERA{"site_Game_UseCameraSettingCall", "48 89 F1 B2 0F E8
                             0x2424bbd};
 const runtime::Sig S_PAUSE{"Game_App_SetPauseReason", "41 57 41 56 41 54 56 57 53 48 83 EC 28 89 D3 48 89 CE 84 D2",
                            0x80e110};
-
-enum Group : uint32_t { G_DRIVING = 1, G_PAUSE = 2, G_REPLAY = 4, G_CUTSCENE = 8, G_SPECTATE = 16, G_SESSION = 32 };
-
-struct Tracked {
-    uint32_t hash;
-    uint32_t group;
-};
-
-constexpr Tracked TRACKED[] = {
-    {djb2("StateSession"), G_SESSION},
-    {djb2("SessionStateInGame"), G_DRIVING},
-    {djb2("SessionStateInGamePlaying"), G_DRIVING},
-    {djb2("SessionStateTimeTrialInGamePlaying"), G_DRIVING},
-    {djb2("SessionStateInGamePQ"), G_DRIVING},
-    {djb2("SessionStatePause"), G_PAUSE},
-    {djb2("SessionStateViewReplay"), G_REPLAY},
-    {djb2("SessionStateViewInstantReplay"), G_REPLAY},
-    {djb2("SessionStateViewTerminalReplay"), G_REPLAY},
-    {djb2("SessionStateLoadReplaySession"), G_REPLAY},
-    {djb2("SessionStateReplaySessionLoaded"), G_REPLAY},
-    {djb2("SessionStateQuitReplayHighlights"), G_REPLAY},
-    {djb2("SessionStateLoadSnapshot"), G_REPLAY},
-    {djb2("SessionStateIntroCameras"), G_CUTSCENE},
-    {djb2("SessionStateCameraSequence"), G_CUTSCENE},
-    {djb2("SessionStatePlayCutScene"), G_CUTSCENE},
-    {djb2("SessionStateCutScene"), G_CUTSCENE},
-    {djb2("SessionStateIntroVideo"), G_CUTSCENE},
-    {djb2("SessionStateGridRundown"), G_CUTSCENE},
-    {djb2("SessionStateDoughnutSequence"), G_CUTSCENE},
-    {djb2("SessionStateRetirementSequence"), G_CUTSCENE},
-    {djb2("SessionStateWinnerSequence"), G_CUTSCENE},
-    {djb2("SessionStateStoryWinnerSequence"), G_CUTSCENE},
-    {djb2("SessionStatePostRaceCutscene"), G_CUTSCENE},
-    {djb2("SessionStateStoryModeCinematic"), G_CUTSCENE},
-    {djb2("SessionStateZoomToMonitorCutscene"), G_CUTSCENE},
-    {djb2("SessionStateMidSessionSaveCutscene"), G_CUTSCENE},
-    {djb2("SessionStateCinFormationLap"), G_CUTSCENE},
-    {djb2("SessionStateRewardSequence"), G_CUTSCENE},
-    {djb2("SessionStateVideo"), G_CUTSCENE},
-    {djb2("SessionStateInGameSpectating"), G_SPECTATE},
-    {djb2("SessionStateSpectatorPausable"), G_SPECTATE},
-};
-
-constexpr size_t TRACKED_N = sizeof TRACKED / sizeof TRACKED[0];
-static_assert(TRACKED_N <= 64, "the active set is one word");
-
-constexpr uint32_t GROUP_MASK_ALL = G_DRIVING | G_PAUSE | G_REPLAY | G_CUTSCENE | G_SPECTATE | G_SESSION;
 
 const char *const CAMERA_NAMES[8] = {"unknown",  "nose_cam", "nose_cam_alt", "cockpit_cam",
                                      "tv_pod", "tv_pod_offset", "near_chase", "far_chase"};

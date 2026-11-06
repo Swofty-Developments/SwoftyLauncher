@@ -389,16 +389,28 @@ fn unbuilt<'a>(ops: impl IntoIterator<Item = &'a AssetOp>) -> Option<&'static st
 }
 
 fn hash_sources(hasher: &mut Sha256, store: &Store, addon: &str, ops: &[AssetOp]) -> Result<()> {
+    // Many resource edits read the same archive or directory. Inspect each source
+    // once per batch, but feed every occurrence into the digest in its original order.
+    // Keep this local: a helper can change cache/data sources before the next batch.
+    let mut stamps = HashMap::<PathBuf, Vec<u8>>::new();
     for src in ops.iter().flat_map(AssetOp::sources) {
         let path = src.resolve(&source_dir(store, addon, src.root))?;
-        let meta = std::fs::metadata(&path).map_err(io_err(&path))?;
-        hasher.update(format!("{}|{}|{:?}", src.path, meta.len(), meta.modified().ok()));
-        if meta.is_dir() {
-            for (rel, p) in loader_files(&path)? {
-                let meta = std::fs::metadata(&p).map_err(io_err(&p))?;
-                hasher.update(format!("{rel}|{}|{:?}", meta.len(), meta.modified().ok()));
+        if !stamps.contains_key(&path) {
+            let meta = std::fs::metadata(&path).map_err(io_err(&path))?;
+            let mut stamp = format!("{}|{:?}", meta.len(), meta.modified().ok()).into_bytes();
+            if meta.is_dir() {
+                for (rel, p) in loader_files(&path)? {
+                    let meta = std::fs::metadata(&p).map_err(io_err(&p))?;
+                    stamp.extend_from_slice(
+                        format!("{rel}|{}|{:?}", meta.len(), meta.modified().ok()).as_bytes(),
+                    );
+                }
             }
+            stamps.insert(path.clone(), stamp);
         }
+        hasher.update(src.path.as_bytes());
+        hasher.update(b"|");
+        hasher.update(&stamps[&path]);
     }
     Ok(())
 }
@@ -691,17 +703,12 @@ pub fn refused_fix(data: &Path, game: &Path, e: &Error) -> Option<String> {
     else {
         return None;
     };
-    let refused = source.kind() == std::io::ErrorKind::PermissionDenied
-        || (cfg!(windows) && source.raw_os_error() == Some(32));
-    if !refused {
+    let in_use = cfg!(windows) && source.raw_os_error() == Some(32);
+    if !in_use && source.kind() != std::io::ErrorKind::PermissionDenied {
         return None;
     }
     if path.starts_with(game) {
-        return Some(format!(
-            "Windows refused to let Swofty change files in {}; run Swofty Launcher as administrator, or move F1 25 \
-             to a folder outside Program Files",
-            game.display()
-        ));
+        return Some(game_refused_text(data, game, in_use));
     }
     path.starts_with(data).then(|| {
         format!(
@@ -711,6 +718,25 @@ pub fn refused_fix(data: &Path, game: &Path, e: &Error) -> Option<String> {
             game = game.display()
         )
     })
+}
+
+/// What to tell the player when Windows refused a write in the game folder; `in_use` is a sharing
+/// violation (os error 32): another program has the file open, which no administrator right fixes.
+fn game_refused_text(data: &Path, game: &Path, in_use: bool) -> String {
+    if in_use {
+        return format!(
+            "another program has a file in {game} open, so Swofty can't change it: close F1 25 if it's still \
+             running (look for F1_25.exe in Task Manager), let any Steam update or file check of F1 25 finish, \
+             and add {game} and {data} as exclusions in your antivirus, then try again",
+            game = game.display(),
+            data = data.display()
+        );
+    }
+    format!(
+        "Windows refused to let Swofty change files in {}; run Swofty Launcher as administrator, or move F1 25 \
+         to a folder outside Program Files",
+        game.display()
+    )
 }
 
 /// The names of the addons in `order` the core has registry records of to apply at boot (data
@@ -3051,10 +3077,124 @@ mod tests {
     use std::sync::Arc;
 
     use super::*;
+
+    #[test]
+    fn a_file_another_program_holds_gets_its_own_hint() {
+        let (data, game) = (Path::new("/data/Swofty"), Path::new("/games/F1 25"));
+        let held = game_refused_text(data, game, true);
+        assert!(
+            held.starts_with("another program has a file in /games/F1 25 open"),
+            "{held}"
+        );
+        assert!(
+            held.contains("F1_25.exe") && held.contains("/data/Swofty"),
+            "{held}"
+        );
+        assert!(!held.contains("administrator"), "{held}");
+        assert!(game_refused_text(data, game, false).contains("run Swofty Launcher as administrator"));
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn a_sharing_violation_in_the_game_folder_is_not_an_administrator_problem() {
+        let (data, game) = (
+            Path::new("C:/data/Swofty"),
+            Path::new("E:/SteamLibrary/steamapps/common/F1 25"),
+        );
+        let held = Error::Io {
+            path: game.join("2025_asset_groups/animation_package/scenes/incardriver/cs16/incardriver_f1.erp"),
+            source: std::io::Error::from_raw_os_error(32),
+        };
+        let text = refused_fix(data, game, &held).unwrap();
+        assert!(text.starts_with("another program has a file in"), "{text}");
+    }
     use crate::asset::{AssetBatch, Op, Origin};
     use crate::asset::{FileOp, Root, Source};
     use crate::baseline::Identity;
     use crate::launcher::{Addon, Builtin};
+
+    fn uncached_source_hash(hasher: &mut Sha256, store: &Store, ops: &[AssetOp]) {
+        for src in ops.iter().flat_map(AssetOp::sources) {
+            let path = src.resolve(&source_dir(store, "test.pack", src.root)).unwrap();
+            let meta = std::fs::metadata(&path).unwrap();
+            hasher.update(format!("{}|{}|{:?}", src.path, meta.len(), meta.modified().ok()));
+            if meta.is_dir() {
+                for (rel, p) in loader_files(&path).unwrap() {
+                    let meta = std::fs::metadata(&p).unwrap();
+                    hasher.update(format!("{rel}|{}|{:?}", meta.len(), meta.modified().ok()));
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn source_stamp_cache_preserves_digest_and_rechecks_each_batch() {
+        let root = std::env::temp_dir().join(format!("swofty-source-stamps-{}", std::process::id()));
+        let store = Store::new(&root);
+        let dir = store.addon_data_dir("test.pack").join("assets");
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join("a.bin"), b"a").unwrap();
+        let ops: Vec<_> = ["assets", "assets/a.bin", "assets"]
+            .into_iter()
+            .map(|path| {
+                AssetOp::File(FileOp::Put {
+                    source: Source {
+                        root: Root::Data,
+                        path: path.into(),
+                    },
+                    target: "out.bin".into(),
+                })
+            })
+            .collect();
+        let digest = || {
+            let mut cached = Sha256::new();
+            hash_sources(&mut cached, &store, "test.pack", &ops).unwrap();
+            let mut old = Sha256::new();
+            uncached_source_hash(&mut old, &store, &ops);
+            let cached = cached.finalize();
+            assert_eq!(cached, old.finalize());
+            cached
+        };
+        let before = digest();
+        std::fs::write(dir.join("a.bin"), b"changed by helper").unwrap();
+        assert_ne!(before, digest());
+        let before = digest();
+        std::fs::write(dir.join("new.bin"), b"new").unwrap();
+        assert_ne!(before, digest());
+        std::fs::remove_file(dir.join("a.bin")).unwrap();
+        assert!(hash_sources(&mut Sha256::new(), &store, "test.pack", &ops).is_err());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    #[ignore = "manual repeated-source build fingerprint benchmark"]
+    fn benchmark_repeated_build_sources() {
+        let root = std::env::temp_dir().join(format!("swofty-source-bench-{}", std::process::id()));
+        let store = Store::new(&root);
+        let dir = store.addons_dir().join("test.pack/assets");
+        std::fs::create_dir_all(&dir).unwrap();
+        for i in 0..512 {
+            std::fs::write(dir.join(format!("{i}.bin")), b"asset").unwrap();
+        }
+        let ops: Vec<_> = (0..128)
+            .map(|i| {
+                AssetOp::File(FileOp::Put {
+                    source: Source::addon("assets"),
+                    target: format!("out/{i}"),
+                })
+            })
+            .collect();
+        let start = std::time::Instant::now();
+        let mut old = Sha256::new();
+        uncached_source_hash(&mut old, &store, &ops);
+        println!("128 references / 512 files, uncached: {:?}", start.elapsed());
+        let start = std::time::Instant::now();
+        let mut cached = Sha256::new();
+        hash_sources(&mut cached, &store, "test.pack", &ops).unwrap();
+        println!("128 references / 512 files, cached: {:?}", start.elapsed());
+        assert_eq!(cached.finalize(), old.finalize());
+        std::fs::remove_dir_all(root).unwrap();
+    }
 
     #[test]
     fn only_a_core_with_the_rows_feature_takes_the_replaced_operations_of_addons_with_data_files() {

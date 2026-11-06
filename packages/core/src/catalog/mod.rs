@@ -620,27 +620,31 @@ pub fn download(v: &Version, to: &Path, progress: &dyn Fn(Stage)) -> Result<()> 
         too_long: &too_long,
     };
     let mut open = |from: u64| {
-        let mut request = ureq::get(url)
-            .header("User-Agent", agent_name())
-            .header("Accept-Encoding", "identity");
-        if from > 0 {
-            request = request.header("Range", format!("bytes={from}-"));
-        }
-        let response = request
-            .config()
-            .timeout_resolve(Some(Duration::from_secs(15)))
-            .timeout_connect(Some(Duration::from_secs(15)))
-            .timeout_send_request(Some(Duration::from_secs(30)))
-            .timeout_recv_response(Some(Duration::from_secs(60)))
-            .timeout_recv_body(Some(body_timeout(v.size - from)))
-            .http_status_as_error(false)
-            .build()
-            .call()
-            .map_err(transfer::Opening::Call)?;
+        let request = || {
+            let mut request = ureq::get(url)
+                .header("User-Agent", agent_name())
+                .header("Accept-Encoding", "identity");
+            if from > 0 {
+                request = request.header("Range", format!("bytes={from}-"));
+            }
+            request
+                .config()
+                .timeout_resolve(Some(Duration::from_secs(15)))
+                .timeout_connect(Some(Duration::from_secs(15)))
+                .timeout_send_request(Some(Duration::from_secs(30)))
+                .timeout_recv_response(Some(Duration::from_secs(60)))
+                .timeout_recv_body(Some(body_timeout(v.size - from)))
+                .http_status_as_error(false)
+                .build()
+                .call()
+        };
+        let (result, attempts) = transfer::send(request);
+        let response = result.map_err(transfer::Opening::Call)?;
         let status = response.status().as_u16();
         if status >= 400 {
             return Err(transfer::Opening::Refused(Error::Other(format!(
-                "{url}: HTTP {status}"
+                "{url}: HTTP {status}{}",
+                transfer::attempts_note(attempts)
             ))));
         }
         Ok(response)

@@ -670,6 +670,18 @@ static void replay_frames()
     expect(calls == 2, "a game reset of a fuel entry re-runs the mix once for the car, not once per entry");
 }
 
+static void replay_hold()
+{
+    using W = Ops::What;
+    expect(!Ops::skip_in_replay(W::replayed, false) && !Ops::resume_due(false), "live frames apply and have nothing to resume");
+    expect(!Ops::skip_in_replay(W::built, true) && !Ops::resume_due(true), "a built car applies even in a replay");
+    expect(Ops::skip_in_replay(W::replayed, true), "a replayed car is held while the replay shows");
+    expect(Ops::skip_in_replay(W::reset, true) && Ops::skip_in_replay(W::setup, true), "a reset or setup is held too");
+    expect(!Ops::resume_due(true), "nothing resumes while the replay still shows");
+    expect(Ops::resume_due(false), "the first live frame re-applies every car");
+    expect(!Ops::resume_due(false), "and only once");
+}
+
 int main()
 {
     core_ops();
@@ -684,6 +696,7 @@ int main()
     v2_refit();
     v3_fuel();
     replay_frames();
+    replay_hold();
     if (fails) {
         printf("car_live_test: %d failure(s)\n", fails);
         return 1;

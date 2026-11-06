@@ -18,6 +18,7 @@
 #define EXPECTED_STAMP 1789118616UL
 #define WINDOW_TIMEOUT_MS 1800000
 #define POLL_MS 50
+#define FOREIGN_WINDOW_GRACE_MS 30000
 
 static const char *const fwd_names[] = {
     "GetFileVersionInfoA", "GetFileVersionInfoByHandle", "GetFileVersionInfoExA", "GetFileVersionInfoExW",
@@ -573,18 +574,39 @@ static void note_dialog(HWND h)
         slog("dialog shown: %s: %s", t.text, body.text);
 }
 
+static int foreign_noted;
+
+static int foreign_window(HWND h, const wchar_t *cls)
+{
+    HMODULE inst = (HMODULE)GetWindowLongPtrW(h, GWLP_HINSTANCE);
+    if (!inst || inst == GetModuleHandleW(NULL) || GetTickCount() - attach_tick > FOREIGN_WINDOW_GRACE_MS)
+        return 0;
+    if (!foreign_noted) {
+        foreign_noted = 1;
+        wchar_t mod[MAX_PATH] = {0};
+        if (!GetModuleFileNameW(inst, mod, MAX_PATH))
+            wcscpy(mod, L"a module outside the game");
+        slog("fallback watcher: window class '%ls' belongs to %ls, not the game; it is not taken as the main window "
+             "for the first %d s",
+             cls, mod, FOREIGN_WINDOW_GRACE_MS / 1000);
+    }
+    return 1;
+}
+
 static BOOL CALLBACK find_window(HWND h, LPARAM out)
 {
     DWORD pid = 0;
     GetWindowThreadProcessId(h, &pid);
     if (pid != GetCurrentProcessId() || !IsWindowVisible(h) || GetWindow(h, GW_OWNER))
         return TRUE;
-    wchar_t cls[16] = {0};
-    GetClassNameW(h, cls, 16);
+    wchar_t cls[128] = {0};
+    GetClassNameW(h, cls, 128);
     if (!wcscmp(cls, L"#32770")) {
         note_dialog(h);
         return TRUE;
     }
+    if (foreign_window(h, cls))
+        return TRUE;
     *(HWND *)out = h;
     return FALSE;
 }

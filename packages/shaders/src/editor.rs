@@ -1208,7 +1208,7 @@ mod tests {
         assert!(!c[0].detail.contains("Preview only"));
         let (_, c) = comp(&with_cursor("[[when]]\non = \"session.we|\"\n"));
         assert_eq!(labels(&c), ["session.weather", "session.wetness"]);
-        assert!(c[1].detail.contains("Preview only"));
+        assert!(c[0].detail.contains("Preview only") && !c[1].detail.contains("Preview only"));
         let (_, c) = comp(&with_cursor("[[when]]\non = |\n"));
         assert_eq!(c.len(), crate::signals::SIGNALS.len());
         let (_, c) = comp(&with_cursor("[[when]]\nall = [{ on = \"view.c|\" }]\n"));

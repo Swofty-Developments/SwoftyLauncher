@@ -90,6 +90,8 @@ Built In   [F1 2026] [F1 2025] [F2 2025] ...     the game's own boxes
 Addons     [2016] [2017] [2018] ...              boxes addons register; this row scrolls on its own
 ```
 
+Players who don't want the split turn off **Split the season picker** in SwoftyMod's settings (`split_season_picker`). The picker then keeps the game's single row from the next Play, with no Addons row, and the era picker is off: `available()` is false and `add_box()` returns `unavailable`.
+
 **Up** and **Down** move between the rows. The core builds your box every time the picker is built and presses it like a stock box. When it is pressed, the core narrows the host setup mode to the box's entrant list, so Time Trial loads only that list's cars. The data side (the entrant list, its teams and drivers, and its place in the host setup mode) comes from your addon's [database operations](/reference/ops/database).
 
 ## Registering a box
@@ -116,7 +118,7 @@ swofty::era::add_box({
 |---|---|
 | `ok` | The box is queued for the next mixin commit, or live from the next build of the picker if the hooks are already installed |
 | `invalid` | A bad entrant list name, an over-long string or a second box for the same entrant list (the log says which) |
-| `unavailable` | An older core, or the era picker hooks could not be installed on this build |
+| `unavailable` | An older core, the era picker hooks could not be installed on this build, or the player turned off SwoftyMod's Split the season picker |
 
 A refused box logs the reason:
 

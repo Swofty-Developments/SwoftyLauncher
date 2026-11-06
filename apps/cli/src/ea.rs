@@ -14,7 +14,7 @@ use swofty_core::recovery::Scope;
 use swofty_core::steam_client;
 use swofty_core::store::Store;
 
-use crate::run::{StageFile, ending, say};
+use crate::run::{StageFile, StopPhase, ending, say, session_stop};
 
 const APP_START_TIMEOUT: Duration = Duration::from_secs(90);
 // A link handed over while the EA app is still starting can be dropped:
@@ -489,7 +489,7 @@ pub struct Started {
 /// the game the EA app started for the session, and games that are this
 /// copy's, are closed on a stop. The EA app owns the game's process, so its
 /// exit code is not the session's to read.
-pub fn wait(game: &Path, before: &[u32], started: Started, mut tick: impl FnMut()) {
+pub fn wait(game: &Path, dir: &Path, before: &[u32], started: Started, mut tick: impl FnMut()) {
     let mut asked = false;
     loop {
         let running: Vec<GameProcess> = game_processes()
@@ -500,7 +500,15 @@ pub fn wait(game: &Path, before: &[u32], started: Started, mut tick: impl FnMut(
             break;
         }
         tick();
-        if !asked && ending() {
+        let phase = session_stop(dir);
+        if phase == StopPhase::GiveUp {
+            say(
+                "info",
+                "F1 25 is still open 20 s after Stop; rolling the game files back without waiting for it",
+            );
+            break;
+        }
+        if !asked && phase != StopPhase::Running {
             asked = true;
             say(
                 "info",

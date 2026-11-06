@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "apply/moments.hpp"
 #include "direct_start_tt.hpp"
 #include "direct_start_tt_logic.hpp"
 #include "era_logic.hpp"
@@ -403,6 +404,7 @@ Setup place(uint8_t *e, const json::Value &request, std::string &why)
         st.list = hit.list;
         swofty::log("[direct] Time Trial: setup mode %s (%p), entrant setup mode %p, list %s (%p)%s", setup_name.c_str(),
                     gsm, hit.esm, want.c_str(), hit.list, want == box ? "" : (" for box " + box).c_str());
+        swofty_core::apply::moments::box_picked(want.c_str());
     } else
         st.list = at<uint8_t *>(e, ENTITY_LIST);
     if (!track.empty()) {

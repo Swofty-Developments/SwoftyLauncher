@@ -312,6 +312,8 @@ PY
     fallback)
         once "loader: a dialog before the window is logged with its text" 'dialog shown: Error: Game launch error\. Error code: 0x00000004[[:space:]]*$'
         count "loader: a dialog is not taken as the main window" 0 "main window visible.*class '#32770'"
+        once "loader: another module's window is logged and skipped" "fallback watcher: window class 'F125TuneStatus' belongs to .*kernel32\\.dll, not the game"
+        count "loader: another module's window is not taken as the main window" 0 "main window visible.*class 'F125TuneStatus'"
         check "scan cache: the second run reads the saved addresses" '\[core\] scan cache: [1-9][0-9]* address\(es\) for this exe \(key [0-9a-f]{16}\), each checked'
         check "scan cache: a cached address is checked against the pattern and used without a scan" 'scan \.xtls \[.*\] -> 1 hit at 0x[0-9a-f]+ \(base\+0x[0-9a-f]+\), the address cached for this exe'
         count "scan cache: with every address cached, no pattern needs a full scan" 0 'scan \.xtls \[.*\] -> 1 hit at 0x[0-9a-f]+ \(base\+0x[0-9a-f]+\)[[:space:]]*$'
@@ -349,6 +351,8 @@ EOF
         once "teamhq: the guard is armed" '\[career\] teamhq track guard armed'
         once "teamhq: an event whose track has no track data is skipped and logged once" '\[career\] teamhq: track 6 has no track data; the event shows no track'
         once "teamhq: an event whose track has no record is skipped and logged once" '\[career\] teamhq: track 1 has no track data; the event shows no track'
+        once "teamhq: a view model event whose track has no record is skipped and logged once" '\[career\] teamhq: advance view model track 1 has no track data; the event shows no track'
+        once "teamhq: a my team view model event whose track has no record is skipped and logged once" '\[career\] teamhq: my team view model track 1 has no track data; the event shows no track'
         once "activity: the guard is armed" '\[career\] activity resume guard armed'
         once "activity: a championship without race length fields is skipped and logged once" '\[career\] activity resume: the championship has no race length fields'
         once "pairs: the guard is armed" '\[strategy\] teammate pairs guard armed'
@@ -758,6 +762,10 @@ for guard in on off; do
         once "teamhq on: the event is skipped and logged" '\[career\] teamhq: track 6 has no track data; the event shows no track'
         grep -q 'teamhq: the event returned e3e7\b' "$OUT/teamhq.out" && echo "ok  : teamhq on: the event took the game's empty node path" ||
             { echo "FAIL: teamhq on: the event did not take the game's empty node path"; status=1; }
+        grep -q 'teamhq: the view model event took the empty node 1' "$OUT/teamhq.out" && echo "ok  : teamhq on: the view model event took the game's empty node path" ||
+            { echo "FAIL: teamhq on: the view model event did not take the game's empty node path"; status=1; }
+        grep -q 'teamhq: the my team view model event took the empty node 1' "$OUT/teamhq.out" && echo "ok  : teamhq on: the my team view model event took the game's empty node path" ||
+            { echo "FAIL: teamhq on: the my team view model event did not take the game's empty node path"; status=1; }
         count "teamhq on: no unhandled fault" 0 '\[crash\] unhandled '
         compgen -G "$SW/crash-*.txt" >/dev/null && { echo "FAIL: teamhq on: a crash report was written"; status=1; } ||
             echo "ok  : teamhq on: no crash report"
