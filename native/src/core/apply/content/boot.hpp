@@ -491,6 +491,7 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
         }
     }
     int slot = 0;
+    Dropped dropped;
     for (const char *reg : ROW_REGISTRIES) {
         auto &lines = x.lines[reg];
         for (auto &id : in_load_order(st, reg)) {
@@ -507,7 +508,7 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
             else if (r == "vehicle.package")
                 lower_vehicle_package(id, *rec, plan, stat);
             else if (r == "vehicle") {
-                lower_vehicle(id, *rec, lookup, source, plan, stat);
+                lower_vehicle(id, *rec, lookup, source, plan, stat, &dropped);
                 auto linked = vehicle_tower.find(id);
                 if (linked == vehicle_tower.end())
                     lower_vehicle_team(*rec, read, plan);
@@ -553,6 +554,8 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
             bool nothing = plan.ops.size() == 0 && plan.groups.empty() && plan.folders.empty();
             if (!why.empty() || (plan.refused && nothing)) {
                 x.engine.rollback(mark);
+                if (r == "vehicle.package")
+                    dropped.insert(id);
                 x.refused[reg]++;
                 lines.push_back(std::string(reg) + " " + id + ": not applied: " +
                                 (why.empty() ? (plan.lines.empty() ? std::string("it lowers to nothing")

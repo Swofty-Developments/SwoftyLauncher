@@ -9,6 +9,7 @@
 #include <functional>
 #include <map>
 #include <optional>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -176,6 +177,8 @@ inline std::optional<int64_t> stat_of(const StatIds &stat, const char *registry,
     return got >= 0 ? std::optional<int64_t>(got) : std::nullopt;
 }
 
+inline constexpr int64_t VEHICLE_PACKAGE_MAX = 254;
+
 inline std::string text(const Value &v)
 {
     if (v.is_string())
@@ -300,6 +303,15 @@ inline void lower_vehicle_package(const std::string &id, const Value &rec, Plan 
     if (rec["aero_2026"].is_bool())
         set["is_26_aero_regulations"] = text(rec["aero_2026"]);
     auto sid = stat_of(stat, "vehicle.package", id, pin_of(rec));
+    if ((!sid && stat) || (sid && *sid > VEHICLE_PACKAGE_MAX)) {
+        plan.lines.push_back("vehicle.package " + id + ": " +
+                             (sid ? "stat id " + std::to_string(*sid) : std::string("no stat id")) + " is outside 0-" +
+                             std::to_string(VEHICLE_PACKAGE_MAX) +
+                             ", which is all the game keeps for a vehicle package; the package is left out and its "
+                             "cars use " + donor);
+        plan.refused++;
+        return;
+    }
     if (sid)
         set["stat_id"] = std::to_string(*sid);
     push_row(plan, "entrants.vehicles.vehicle_packages", std::string(PACKAGES) + "[_metadata_=" + donor + "]",
@@ -310,8 +322,10 @@ inline void lower_vehicle_package(const std::string &id, const Value &rec, Plan 
                          (sid ? ", stat id " + std::to_string(*sid) : std::string()));
 }
 
+using Dropped = std::set<std::string>;
+
 inline void lower_vehicle(const std::string &id, const Value &rec, const Lookup &lookup, const Source &source,
-                          Plan &plan, const StatIds &stat = {})
+                          Plan &plan, const StatIds &stat = {}, const Dropped *dropped = nullptr)
 {
     plan.owner = addon_of(id);
     std::string label = rec["label"].is_string() ? std::string(rec["label"].as_string()) : key_of(id);
@@ -326,8 +340,13 @@ inline void lower_vehicle(const std::string &id, const Value &rec, const Lookup 
         set["performance_tier"] = text(rec["performance_tier"]);
     if (rec["tyre_wear_scale"].is_number())
         set["tyre_wear_scale"] = text(rec["tyre_wear_scale"]);
-    if (rec["package"].is_string())
-        set["vehicle_package"] = key_of(rec["package"].as_string());
+    std::string left_out;
+    if (rec["package"].is_string()) {
+        if (dropped && dropped->count(std::string(rec["package"].as_string())))
+            left_out = std::string(rec["package"].as_string());
+        else
+            set["vehicle_package"] = key_of(rec["package"].as_string());
+    }
     if (rec["drs_capable"].is_bool())
         set["drs_capable"] = text(rec["drs_capable"]);
     if (rec["engine"].is_string())
@@ -341,6 +360,8 @@ inline void lower_vehicle(const std::string &id, const Value &rec, const Lookup 
     push_row(plan, "entrants.vehicles", std::string(VEHICLES) + "[_metadata_=" + donor + "]", std::move(set));
     std::string line = "vehicle " + id + ": row " + label + " from " + donor +
                        (sid ? ", stat id " + std::to_string(*sid) : std::string());
+    if (!left_out.empty())
+        line += ", package " + left_out + " has no stat id and is left out, so it keeps the package of " + donor;
     const Value &sound_id = rec["engine_sound"];
     if (sound_id.is_string() && rec["audio_switch"].is_string() && rec["audio_from"].is_string()) {
         const Value *sound = lookup("engine_sound", std::string(sound_id.as_string()));
@@ -688,7 +709,7 @@ struct PoolSpec {
 // vehicle.package and scenario ids stop at 254: the game keeps them in a byte, and the launcher stops 1.5 operations there too.
 inline constexpr PoolSpec POOLS[] = {
     {"vehicle", "entrants.vehicles", "vehicle", "stat_id", 1023},
-    {"vehicle.package", "entrants.vehicles.vehicle_packages", "vehicle_package", "stat_id", 254},
+    {"vehicle.package", "entrants.vehicles.vehicle_packages", "vehicle_package", "stat_id", VEHICLE_PACKAGE_MAX},
     {"content.package", "entrants.entrant_lists", "entrant_list", "stat_id", 255},
     {SCENARIO_IDS, "game_setup.scenarios", "scenario", "statId", 254},
     {LEADERBOARD_IDS, LEADERBOARD_TABLE, "leaderboard_descriptor", "stat_id", 255},

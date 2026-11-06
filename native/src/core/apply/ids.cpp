@@ -219,6 +219,8 @@ std::string Store::pool_text_locked(const std::string &registry) const
     auto it = pools_.find(registry);
     if (it == pools_.end())
         return "no pool";
+    if (it->second.ranges.empty())
+        return "pool (no id above the highest the game database holds)";
     std::string s = "pool ";
     bool first = true;
     for (auto &[lo, hi] : it->second.ranges) {
@@ -292,7 +294,8 @@ Result Store::allocate(const std::string &registry, const std::string &record, c
     if (r.id < 0) {
         r.how = "full";
         r.line = "[registry] stat ids: " + registry + " " + record + " refused: the " + pool_text_locked(registry) +
-                 " is full (every id is held by a record or used by a career)";
+                 (pit->second.ranges.empty() ? " leaves no id to give"
+                                             : " is full (every id is held by a record or used by a career)");
         return r;
     }
     ids_[registry][record] = Entry{r.id, today};
