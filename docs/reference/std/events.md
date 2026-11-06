@@ -150,7 +150,7 @@ swofty::events::on_frame(tick, nullptr, &token);
 // ok and fills token; unavailable once the setup found no frame tick on this build
 ```
 
-`on_frame` callbacks run on the first flow-thread update after each rendered frame, and at least every 33 ms when no frame is rendered, as on loading screens. Only one thread runs them at a time. The core logs the first two ticks:
+`on_frame` callbacks run on the first flow-thread update after each rendered frame, and at least every 33 ms when no frame is rendered, as on loading screens. Only one thread runs them at a time. They keep running in the pause menu, with the real seconds since the last frame, so an addon that counts game time needs its own [pause check](/std/systems/failures#pausing). The core logs the first two ticks:
 
 ```text
 [events] flow tick 1 observed, dt 0.000000; onFrame is live

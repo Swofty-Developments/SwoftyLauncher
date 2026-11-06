@@ -150,6 +150,8 @@ typedef struct SwoftyParticipant {
 
 Each struct carries `version` = `SWOFTY_TELEMETRY_VERSION` (1), also `swofty::telemetry::version`, and ends in a `reserved` block so fields can be added without changing its size.
 
+`SwoftySessionState.flag`, `SwoftyCarState.flags` and `SwoftyParticipant.flags` have no defined values yet: the core doesn't write them, so they stay zero. See [Availability](#availability).
+
 ## Shared-memory feed
 
 `shared_memory(&name)` turns on the feed for external tools. It opens a named file mapping, `Local\SwoftyTelemetry`, and writes its name. The name stays valid for the lifetime of the process.
@@ -245,12 +247,14 @@ The core logs the first packet of each format and id whose length differs from t
 
 `telemetry` is experimental, and `experimental_features` in a manifest doesn't accept it yet; see [feature gates](/design/native-libraries#feature-gates). The core turns it on only when `features` in `swofty/assets.json` lists `telemetry`, and the build writes that list from the addons' `experimental_features`. So on current builds every call returns `unavailable`.
 
-With the feature on, the core hooks the frame tick, the session start and the results finalise. A session is live from `Game_GameModule_OnSessionEnter` until the results are finalised; in it the feed's `frame` and `session.session_time` advance. The per-car struct is not catalogued yet, so the car and participant fields stay zero:
+With the feature on, the core hooks the frame tick, the session start and the results finalise. A session is live from `Game_GameModule_OnSessionEnter` until the results are finalised; in it the feed's `frame` and `session.session_time` advance. Those two, with `version`, are all the core writes. The per-car struct is not catalogued yet, so the car and participant fields and the other session fields stay zero:
 
 ```text
 [telemetry] on; frame tick hooked, session witnesses on/on; car and participant fields are not populated yet (per-car struct uncatalogued)
 [telemetry] session started (Game_GameModule_OnSessionEnter); frame 18342
 [telemetry] session ended (Game_SessionStateFinaliseResultsSync_OnResultsFinalised); frame 52817
 ```
+
+For a car's speed without UDP in the meantime, see [Car speed without UDP](/std/systems/failures#car-speed-without-udp).
 
 See [the native-libraries design](/design/native-libraries#_3-telemetry).

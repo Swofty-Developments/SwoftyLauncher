@@ -409,6 +409,8 @@ refit_tyres            returns unavailable until a car-to-tyre-component lookup 
 
 Credit: the front wing damage, suspension damage, fuel ECU and ERS layouts were cross-checked against findings shared by Will (william09leo), the author of Heavier Damage.
 
+The author of Terminal Damage reports four `f1_suspension_damage.*` layers working in game; see [Suspension damage layers](/std/systems/failures#suspension-damage-layers). That report isn't an independent verification.
+
 ## Fuel mixes
 
 Each car's FuelECU holds four values per mix (lean, standard, rich, max): fuel flow, engine power, a rev factor and a temperature factor. The `fuel_ecu.*` fields above write one value; the core then runs the car's active mix again so the engine and the fuel flow follow. Which mixes the MFD offers is the game's own: a mix is selectable while its availability entry is 0.

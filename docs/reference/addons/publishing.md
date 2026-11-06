@@ -101,7 +101,7 @@ swofty: my-addons.zip holds 3 addons; drop it on the launcher to install them al
 
 Before you zip:
 
-1. Set `id`, `name`, `version`, `author` and `description` in [`swofty.json`](./manifest).
+1. Set `id`, `name`, `version`, `author` and `description` in [`swofty.json`](./manifest). If your source code is public, set `repository` too, so players can find it.
 2. Set `compat.game_builds` and `compat.seasons` to the builds and seasons your addon was made for.
 3. Remove every file that none of your operations name. Leave out build folders such as `target/`.
 4. Ship your compiled binaries: the engine plugin DLL and one launcher plugin binary per OS in `launcher.program`.
@@ -115,6 +115,16 @@ Before you zip:
 4. Attach the `.swoftyaddon` to your release.
 
 To list the addon in the [Addon Browser](/using/addon-browser), publish the addons it [requires](./manifest#requires-conflicts-load-after) there first.
+
+### On publish.f1.swofty.net
+
+Creators with the [Addon Creator role](/using/addon-browser#publish-your-own) publish at [publish.f1.swofty.net](https://publish.f1.swofty.net):
+
+- **Confirmation:** a required checkbox confirms that everything in the addon is your own work. **Publish** turns on once it's ticked.
+- **Changelog:** Markdown, shown when the launcher offers the version. You can't edit it once the version is approved, so put a correction in the next version's changelog.
+- **Description:** Markdown, and the preview shows it as the launcher does. Images don't show there, so link a picture instead.
+- **Review:** the version shows **Pending review**, and Swofty sends a Discord message when it's reviewed.
+- **Yank:** **Stop offering this version to players** yanks a version, and **Unyank** undoes it. It's the only action on a version.
 
 ## Reference
 

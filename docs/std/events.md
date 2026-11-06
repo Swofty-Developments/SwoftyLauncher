@@ -97,7 +97,7 @@ game
 ├─ flow.state                      notify    any front-end flow state changes
 ├─ menu.route                      cancel    a front-end route runs; replace = it doesn't
 ├─ menu.screen                     notify    a screen opens
-├─ game.pause / game.resume        notify
+├─ game.pause / game.resume        notify    not fired yet
 ├─ game.saving                     modify    the profile is about to be written
 ├─ mode.select                     cancel    the player picks a mode
 ├─ content.select                  notify    a GP/TT box or a career tile is pressed
@@ -186,7 +186,7 @@ team.logo.resolve / team.name.resolve
 wearable.catalogue.build         swofty/systems/wearables.hpp wearables::events::CatalogueBuild
 ```
 
-`ai.controller.update` and `car.controllers.rebuilt` need the in-game checks T145 and T144. `session.lap` fires from the core's ERS new-lap site (see [Sessions](/std/systems/sessions#a-cars-lap)). `car.built` and `car.reset` fire once per built or re-read car on the next frame (see [Car physics](/std/systems/car-physics#changing-a-car-live)); `car.vtf.read` and `car.upgrades.fit` are not fired yet. `car.parts.register`, `car.damage`, `session.pit` and `session.pit_stop` fire from the game ([Car physics](/std/systems/car-physics#events)). `session.end` and `session.unload` fire from the flow hook: `session.end` when the session state exits (or on a restart), `session.unload` when unloading begins (see [Events reference](/reference/std/events)). The other points in the tree (`session.state.enter`, `session.weather.setup`, `session.safety_car.deploy`, `session.results.finalise`, `career.season.process` and the rest of the session group) are the design for later headers; addons made for 1.5 and earlier subscribe to some of these moments by shorter names, which still work: see [Compatibility](/std/compatibility#events).
+`ai.controller.update` and `car.controllers.rebuilt` need the in-game checks T145 and T144. `session.lap` fires from the core's ERS new-lap site (see [Sessions](/std/systems/sessions#a-cars-lap)). `car.built` and `car.reset` fire once per built or re-read car on the next frame (see [Car physics](/std/systems/car-physics#changing-a-car-live)); `car.vtf.read` and `car.upgrades.fit` are not fired yet. `car.parts.register`, `car.damage`, `session.pit` and `session.pit_stop` fire from the game ([Car physics](/std/systems/car-physics#events)). `session.end` and `session.unload` fire from the flow hook: `session.end` when the session state exits (or on a restart), `session.unload` when unloading begins (see [Events reference](/reference/std/events)). `game.pause` and `game.resume` aren't fired yet, and `on_frame` keeps running in the pause menu ([Pausing](/std/systems/failures#pausing)). The other points in the tree (`session.state.enter`, `session.weather.setup`, `session.safety_car.deploy`, `session.results.finalise`, `career.season.process` and the rest of the session group) are the design for later headers; addons made for 1.5 and earlier subscribe to some of these moments by shorter names, which still work: see [Compatibility](/std/compatibility#events).
 
 **Every start has one end.** The core keeps a lifecycle stack. If the player quits from the pause menu, the core fires the missing ends itself, with `reason = abandoned`:
 

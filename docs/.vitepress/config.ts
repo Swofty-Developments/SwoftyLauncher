@@ -432,6 +432,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
               { text: "Seasons and GP/TT content", link: "/std/content", icon: "file" },
               { text: "Cars", link: "/std/systems/cars", icon: "file" },
               { text: "Car physics and handling", link: "/std/systems/car-physics", icon: "file" },
+              { text: "Failures, damage and retiring", link: "/std/systems/failures", icon: "file" },
               { text: "Liveries", link: "/std/systems/liveries", icon: "file" },
               { text: "Teams", link: "/std/systems/teams", icon: "file" },
               { text: "Garage art", link: "/std/systems/garage", icon: "file" },

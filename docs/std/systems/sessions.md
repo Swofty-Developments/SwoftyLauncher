@@ -488,6 +488,7 @@ sessions::issue_penalty(car, sessions::PenaltyKind::grid, 3.0f);
 ## Readiness and limits
 
 - **Ready:** the entrant, grid, result and safety car handlers are L2, used by Custom Grid Size and F1 1990.
+- **Not in the headers yet:** `issue_penalty` and `PenaltyKind` above are the design. To retire or disqualify a car today, see [Failures, damage and retiring](/std/systems/failures), which also covers what **Restart Session** fires.
 - **Partial:** points and penalties. The data is ready, and the runtime code is L1. A box's points apply through the standings lookup, which still needs reverse engineering; until then they come from the setup mode.
 - **A box's DRS rule (`rules.drs`) applies from 1.6.4:** the box press points `swofty_f1`'s DRS group at the rule's group. See [DRS per box](./power-units#drs-per-box).
 - **Unknown:** flags and red flags, the knockout cut writer, red-flag restarts, penalty decision thresholds at run time, the difficulty preset selector.
