@@ -777,9 +777,18 @@ fn compile_loaded(store: &Store, loaded: &Loaded, target: Target) -> (Vec<Compil
             Some(Home::Addon(dir)) => dir.clone(),
             Some(Home::Library) => match &library_dir {
                 Some(d) => d.clone(),
-                None => continue,
+                None => {
+                    warnings.push(format!(
+                        "the effect {} was skipped: the effect library did not unpack",
+                        effect.id
+                    ));
+                    continue;
+                }
             },
-            None => continue,
+            None => {
+                warnings.push(format!("the effect {} has no source to compile", effect.id));
+                continue;
+            }
         };
         let blobs = match swofty_shaders::compile(effect, &dir, target, &dxc, crate::postfx::HEADER, &cache) {
             Ok(b) => b,

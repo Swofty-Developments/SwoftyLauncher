@@ -99,6 +99,15 @@ fn hex(bytes: &[u8]) -> String {
     bytes.iter().map(|b| format!("{b:02x}")).collect()
 }
 
+fn unique() -> String {
+    static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    format!(
+        "{}-{}",
+        std::process::id(),
+        NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+    )
+}
+
 fn signed(dxil: &[u8]) -> bool {
     dxil.len() >= 20 && dxil.starts_with(b"DXBC") && dxil[4..20].iter().any(|&b| b != 0)
 }
@@ -215,12 +224,12 @@ pub fn compile_pass(
         std::fs::create_dir_all(path.parent().expect("has parent"))
             .map_err(|e| format!("{}: {e}", path.display()))?;
         if std::fs::read_to_string(&path).ok().as_deref() != Some(*content) {
-            let tmp = path.with_extension(format!("tmp{}", std::process::id()));
+            let tmp = path.with_extension(format!("tmp{}", unique()));
             std::fs::write(&tmp, content).map_err(|e| format!("{}: {e}", tmp.display()))?;
             std::fs::rename(&tmp, &path).map_err(|e| format!("{}: {e}", path.display()))?;
         }
     }
-    let out = cache.join(format!("{key}.tmp{}", std::process::id()));
+    let out = cache.join(format!("{key}.tmp{}", unique()));
     let run = Command::new(dxc)
         .args(target_args(target))
         .args(entry.args())
@@ -443,5 +452,13 @@ float4 apply(float2 uv, uint2 pixel)
         let args = target_args(Target::Spirv).join(" ");
         assert!(args.contains("-spirv -fspv-target-env=vulkan1.1 -fvk-use-dx-layout -fvk-b-shift 0 0 -fvk-t-shift 10 0 -fvk-u-shift 30 0 -fvk-s-shift 40 0"), "{args}");
         assert!(!target_args(Target::Dxil).join(" ").contains("spirv"));
+    }
+}
+
+#[cfg(test)]
+mod unique_tests {
+    #[test]
+    fn temp_names_differ_within_one_process() {
+        assert_ne!(super::unique(), super::unique());
     }
 }

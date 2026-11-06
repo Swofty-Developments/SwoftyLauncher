@@ -96,6 +96,8 @@ pub(super) struct PreviewState {
     area: Rc<Cell<Size<Pixels>>>,
     status: Status,
     effects: Effects,
+    recompile: bool,
+    unavailable: Vec<String>,
     instances: Vec<ActiveInstance>,
     pub(super) triggers: Triggers,
     slider: Entity<SliderState>,
@@ -127,6 +129,8 @@ impl PreviewState {
             area: Rc::new(Cell::new(Size::default())),
             status: Status::Idle,
             effects: Effects::NotStarted,
+            recompile: false,
+            unavailable: Vec::new(),
             instances: Vec::new(),
             triggers: Triggers::default(),
             slider: cx.new(|_| SliderState::new().min(0.).max(1.).step(1.)),
@@ -452,16 +456,44 @@ fn render(
 /// Library and addon effects compiled to SPIR-V for the preview.
 fn compile_effects(
     store: &swofty_core::store::Store,
-    _catalog: &Catalog,
-) -> Result<Vec<CompiledEffect>, String> {
+    catalog: &Catalog,
+) -> Result<(Vec<CompiledEffect>, Vec<String>), String> {
     let (effects, warnings) = swofty_core::shaders::compile_all(store, Target::Spirv);
+    for warning in &warnings {
+        crate::app_log::note(&format!("[shaders] preview: {warning}"));
+    }
     if effects.is_empty() {
         return Err(warnings
             .into_iter()
             .next()
             .unwrap_or_else(|| "There are no effects to preview".into()));
     }
-    Ok(effects)
+    let unavailable = unavailable_effects(catalog.effects.iter().map(|e| e.id.as_str()), &effects);
+    if !unavailable.is_empty() {
+        crate::app_log::note(&format!(
+            "[shaders] preview: not available in the preview: {}",
+            unavailable.join(", ")
+        ));
+    }
+    Ok((effects, unavailable))
+}
+
+fn unavailable_effects<'a>(
+    catalog: impl Iterator<Item = &'a str>,
+    compiled: &[CompiledEffect],
+) -> Vec<String> {
+    catalog
+        .filter(|id| !compiled.iter().any(|c| c.effect.id == *id))
+        .map(str::to_owned)
+        .collect()
+}
+
+fn previewable(instances: &[ActiveInstance], unavailable: &[String]) -> Vec<ActiveInstance> {
+    instances
+        .iter()
+        .filter(|i| !unavailable.contains(&i.effect))
+        .cloned()
+        .collect()
 }
 
 /// Shows `next` in `slot` and frees the image it replaces from the window's texture atlas.
@@ -711,6 +743,10 @@ impl ShadersView {
     }
 
     pub(super) fn preview_catalog_changed(&mut self, cx: &mut Context<Self>) {
+        if self.preview.effects == Effects::Compiling {
+            self.preview.recompile = true;
+            return;
+        }
         self.preview.effects = Effects::NotStarted;
         if self.preview.scanned {
             self.preview_compile(cx);
@@ -731,8 +767,14 @@ impl ShadersView {
                 .await;
             this.update(cx, |v, cx| {
                 match compiled {
-                    Ok(effects) => {
+                    _ if v.preview.recompile => {
+                        v.preview.recompile = false;
+                        v.preview.effects = Effects::NotStarted;
+                        v.preview_compile(cx);
+                    }
+                    Ok((effects, unavailable)) => {
                         v.preview.effects = Effects::Ready;
+                        v.preview.unavailable = unavailable;
                         let rules = v.preview.triggers.rules.len();
                         v.send(Job::Effects(effects, rules), cx);
                         v.preview_send_instances(cx);
@@ -758,7 +800,7 @@ impl ShadersView {
             return;
         }
         self.preview.instances = instances;
-        if self.preview.worker.is_some() {
+        if self.preview.worker.is_some() && self.preview.effects == Effects::Ready {
             self.preview_send_instances(cx);
             self.preview_render(cx);
         }
@@ -768,7 +810,10 @@ impl ShadersView {
         let rules = self.preview.triggers.rules.clone();
         self.send(Job::Rules(rules), cx);
         self.preview_send_triggers(cx);
-        let instances = self.preview.instances.clone();
+        if self.preview.effects != Effects::Ready {
+            return;
+        }
+        let instances = previewable(&self.preview.instances, &self.preview.unavailable);
         self.send(Job::Instances(instances), cx);
     }
 
@@ -963,10 +1008,29 @@ impl ShadersView {
             .into_any_element()
     }
 
+    fn unavailable_note(&self) -> Option<String> {
+        let used: Vec<&str> = self
+            .preview
+            .instances
+            .iter()
+            .map(|i| i.effect.as_str())
+            .filter(|id| self.preview.unavailable.iter().any(|u| u == id))
+            .collect();
+        (!used.is_empty()).then(|| {
+            format!(
+                "Not shown in the preview, still applied in game: {}.",
+                used.join(", ")
+            )
+        })
+    }
+
     fn preview_notes(&self, p: Palette) -> Option<AnyElement> {
         let line = match (&self.preview.effects, &self.preview.render_error) {
             (Effects::Failed(e), _) => Some((IconName::TriangleAlert, p.warning, e.clone())),
             (_, Some(e)) => Some((IconName::TriangleAlert, p.warning, e.clone())),
+            _ if self.unavailable_note().is_some() => {
+                self.unavailable_note().map(|n| (IconName::Info, p.text_muted, n))
+            }
             _ if self.editor.lint.errors() > 0 => Some((
                 IconName::Info,
                 p.text_muted,
@@ -1304,4 +1368,45 @@ fn wipe_label(text: &'static str, left: bool, p: Palette) -> Div {
         .font_weight(FontWeight::MEDIUM)
         .text_color(p.text)
         .child(text)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{previewable, unavailable_effects};
+    use swofty_core::shaders::CompiledEffect;
+    use swofty_preview::ActiveInstance;
+    use swofty_shaders::{Origin, parse_effect};
+
+    fn compiled(id: &str) -> CompiledEffect {
+        let json = format!(
+            r#"{{"id":"{id}","name":"x","params":[],"passes":[{{"name":"a","shader":"{id}.hlsl"}}]}}"#
+        );
+        CompiledEffect {
+            effect: parse_effect(&json, Origin::Library).unwrap(),
+            blobs: vec![Vec::new()],
+            images: Vec::new(),
+        }
+    }
+
+    fn instance(effect: &str) -> ActiveInstance {
+        ActiveInstance {
+            effect: effect.into(),
+            label: String::new(),
+            params: Vec::new(),
+        }
+    }
+
+    #[test]
+    fn effects_that_did_not_compile_are_listed() {
+        let ids = ["ambient_light", "grain", "rewind_video"];
+        let missing = unavailable_effects(ids.into_iter(), &[compiled("grain")]);
+        assert_eq!(missing, ["ambient_light", "rewind_video"]);
+    }
+
+    #[test]
+    fn instances_of_missing_effects_stay_out_of_the_preview() {
+        let instances = [instance("ambient_light"), instance("grain")];
+        let kept = previewable(&instances, &["ambient_light".to_owned()]);
+        assert_eq!(kept, [instance("grain")]);
+    }
 }
