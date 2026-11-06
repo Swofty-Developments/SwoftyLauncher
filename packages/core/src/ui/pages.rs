@@ -139,11 +139,14 @@ impl Entry<'_> {
 
 /// The game's strings hold at most 255 bytes: a longer one is cut at a character and ends with "…".
 fn fit(s: String) -> String {
-    const MAX: usize = 255;
-    if s.len() <= MAX {
+    fit_to(s, 255)
+}
+
+fn fit_to(s: String, max: usize) -> String {
+    if s.len() <= max {
         return s;
     }
-    let mut end = MAX - '…'.len_utf8();
+    let mut end = max - '…'.len_utf8();
     while !s.is_char_boundary(end) {
         end -= 1;
     }
@@ -568,8 +571,8 @@ fn track_rows<'a>(e: &Entry) -> Vec<Row<'a>> {
             Row {
                 key: format!("row_code_{j}"),
                 kind: RowKind::Info(mp.code.clone()),
-                title: label.to_uppercase(),
-                label,
+                title: fit(label.to_uppercase()),
+                label: fit(label),
                 body: "Pick this track in any mode to race on it.".into(),
             }
         })
@@ -687,7 +690,7 @@ fn build_page(src: &Sources, e: &Entry, rows: &[Row], adjustable: bool) -> Resul
         fr.tooltips.slot_mut(CHILDREN)?.retain(|x| x.name() != "select");
     }
     let mut kids = vec![
-        src.title(sname, "settings_edit_screen", &e.upper())?,
+        src.title(sname, "settings_edit_screen", &fit(e.upper()))?,
         hidden("hide_filter", &["filter"]),
         hidden("hide_scroll_bar", &["scroll_bar"]),
     ];
@@ -908,11 +911,11 @@ fn vm_page(scr: &mut Node, e: &Entry) -> Result<()> {
 }
 
 fn tile(src: &Sources, style: &TileStyle, parent: &str, name: &str, row: usize, e: &Entry) -> Result<Node> {
-    let title = tagged(&e.upper(), e.kind.tag(), TAG_STYLE);
+    let title = tagged(&fit_to(e.upper(), 200), e.kind.tag(), TAG_STYLE);
     let description = fit(e.description.to_owned());
     let text = TileText {
         title: &title,
-        by: &e.details(),
+        by: &fit(e.details()),
         description: &description,
     };
     tile_with(
@@ -1141,7 +1144,7 @@ fn build_home(src: &Sources, style: &TileStyle, flow: &[Entry], page: &HomePage)
         // The folder's name over its row: a copy of the screen title that the block stacks as an
         // item of its own, as the career content select stacks its Built In and Addons labels.
         let lname = format!("label_{r}");
-        let mut name = src.title(home, "settings_home_screen", &label.to_uppercase())?;
+        let mut name = src.title(home, "settings_home_screen", &fit(label.to_uppercase()))?;
         rename_refs(
             &mut name,
             &format!("{home}.screen_title"),
@@ -1672,6 +1675,19 @@ mod tests {
         assert!(cut.len() <= 255, "{}", cut.len());
         assert!(cut.ends_with('…'));
         assert_eq!(fit("short".into()), "short");
+    }
+
+    #[test]
+    fn a_long_folder_name_is_cut_to_fit_the_games_strings() {
+        let name = format!("{}ü🏁", "é".repeat(300)).to_uppercase();
+        let cut = fit(name.clone());
+        assert!(name.len() > 255);
+        assert!(cut.len() <= 255, "{}", cut.len());
+        assert!(cut.ends_with('…'));
+        let emoji = fit("🏁".repeat(100));
+        assert!(emoji.len() <= 255 && emoji.ends_with('…'));
+        let tagged_title = tagged(&fit_to(name, 200), "ADDON", TAG_STYLE);
+        assert!(tagged_title.len() <= 255, "{}", tagged_title.len());
     }
 
     fn map(code: &str, name: &str) -> SessionMap {
