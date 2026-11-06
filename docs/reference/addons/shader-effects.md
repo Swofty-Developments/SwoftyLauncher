@@ -63,6 +63,29 @@ source_hdr_white_level_nits = 80  # HDR source white (nits): The brightness the 
 tonemapper_white_level = 2.67  # Expansion white: How many times brighter than white the expansion takes the brightest part of the picture. Range 1 to 8.
 ```
 
+## Broadcast Camera {#broadcast-camera}
+
+A broadcast camera's tone chain: exposure and white balance in linear light, then black level, gamma, contrast, a colour-keeping highlight knee and saturation on the camera signal. An optional auto mode meters the picture and eases the knee and the blacks towards bright-and-contrasty or flat-and-overcast scenes.
+
+```toml
+[broadcast_camera]
+exposure = 0  # Exposure: Exposure in stops; 0 leaves it as it is. Range -3 to 3.
+temperature = 0  # Temperature: A gentle white balance shift: negative is cooler, positive is warmer. Range -1 to 1.
+tint = 0  # Tint: A gentle shift between green (negative) and magenta (positive). Range -1 to 1.
+pedestal = 0  # Pedestal: Lifts the black floor while white stays white; 0 is none. Range 0 to 0.2.
+black_stretch = 0  # Black stretch: Contrast near black: positive deepens and separates the shadows, negative opens them up. Range -1 to 1.
+gamma = 1  # Gamma: The camera curve's gamma: above 1 brightens the midtones, below 1 darkens them; 1 leaves them as they are. Range 0.5 to 2.
+contrast = 1  # Contrast: Contrast around mid grey; 1 leaves it as it is. Range 0.5 to 1.5.
+knee_point = 1  # Knee point: The signal level above which highlights start to compress; 1 turns the knee off. Range 0.4 to 1.
+knee_slope = 0.35  # Knee slope: How much of the highlight gain is left at the knee point: 1 does not compress, lower rolls the highlights off harder. Range 0.05 to 1.
+white_clip = 1  # White clip: The level the compressed highlights approach and never pass, in linear light where 1 is SDR white. Range 0.5 to 4.
+knee_saturation = 1  # Knee saturation: How much colour the compressed highlights keep: 1 keeps their hue and colour, 0 turns them towards grey, 2 pushes them further. Range 0 to 2.
+saturation = 1  # Saturation: The picture's colour, from grey at 0 to the picture's own at 1. Range 0 to 2.
+auto_strength = 0  # Auto strength: How far the automatic knee and blacks take over from the fixed values: bright, contrasty scenes lower the knee and deepen the blacks, flat, overcast ones raise the knee and lift the blacks; 0 is fixed. Range 0 to 1.
+auto_speed = 1.5  # Auto speed: The time in seconds the automatic knee and blacks take to follow a change in the scene. Range 0.1 to 10.
+view = "normal"  # View: Normal shows the picture; meter adds bars for the metered brightness, contrast, highlight share and the automatic push. One of "normal", "meter".
+```
+
 ## Colour Balance {#cbs}
 
 Exposure, contrast, brightness, saturation, vibrance, tint, per-hue saturation and dither, applied in display brightness (gamma 2.2) with optional far values that fade in with distance.
@@ -165,6 +188,32 @@ amount = 0.15  # Amount: How strong the grain is. Range 0 to 1.
 size = 1.5  # Size: The size of a grain in pixels. Range 1 to 4.
 colored = false  # Coloured grain: Gives each colour channel its own grain instead of one grey grain.
 luma_response = 0.5  # Brightness response: 0 spreads the grain evenly, 1 keeps it to the midtones and away from black and white. Range 0 to 1.
+```
+
+## Hue Target {#hue-target}
+
+Pulls two bands of colour towards targets: each band picks colours by hue, saturation, brightness and height in the picture, then moves their hue and saturation towards a target while keeping their luminance. Band A is aimed at a sky blue in the upper picture, band B at grass green anywhere.
+
+```toml
+[hue_target]
+a_enabled = true  # Band A enabled: Turns band A on or off.
+a_hue = 210  # Band A hue: The centre hue of the colours band A picks up, in degrees round the colour wheel. Range 0 to 360.
+a_width = 70  # Band A width: How wide a slice of the colour wheel band A picks up, in degrees; the edges fade out. Range 5 to 180.
+a_min_saturation = 0.1  # Band A minimum saturation: How colourful a pixel has to be to count; greys and washed-out colours below it are left alone. Range 0 to 1.
+a_min_brightness = 0.4  # Band A minimum brightness: How bright a pixel has to be to count; dark areas such as asphalt below it are left alone. Range 0 to 1.
+a_vertical = "top"  # Band A position: Where in the picture the band counts: top fades out towards the bottom (sky), bottom fades out towards the top, none counts the whole picture. One of "top", "bottom", "none".
+a_target_hue = 210  # Band A target hue: The hue the picked-up colours are pulled towards, in degrees, along the shortest way round the wheel. Range 0 to 360.
+a_target_saturation = 0.5  # Band A target saturation: The saturation the picked-up colours are pulled towards. Range 0 to 1.
+a_pull = 0  # Band A pull: How far the picked-up colours move to the target: 0 leaves them untouched, 1 puts them exactly on the target; brightness is kept. Range 0 to 1.
+b_enabled = true  # Band B enabled: Turns band B on or off.
+b_hue = 95  # Band B hue: The centre hue of the colours band B picks up, in degrees round the colour wheel. Range 0 to 360.
+b_width = 90  # Band B width: How wide a slice of the colour wheel band B picks up, in degrees; the edges fade out. Range 5 to 180.
+b_min_saturation = 0.2  # Band B minimum saturation: How colourful a pixel has to be to count; greys and washed-out colours below it are left alone. Range 0 to 1.
+b_min_brightness = 0.15  # Band B minimum brightness: How bright a pixel has to be to count; dark areas such as asphalt below it are left alone. Range 0 to 1.
+b_vertical = "none"  # Band B position: Where in the picture the band counts: top fades out towards the bottom (sky), bottom fades out towards the top, none counts the whole picture. One of "top", "bottom", "none".
+b_target_hue = 100  # Band B target hue: The hue the picked-up colours are pulled towards, in degrees, along the shortest way round the wheel. Range 0 to 360.
+b_target_saturation = 0.55  # Band B target saturation: The saturation the picked-up colours are pulled towards. Range 0 to 1.
+b_pull = 0  # Band B pull: How far the picked-up colours move to the target: 0 leaves them untouched, 1 puts them exactly on the target; brightness is kept. Range 0 to 1.
 ```
 
 ## Look {#look}
