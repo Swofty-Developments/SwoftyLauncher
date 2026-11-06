@@ -5,7 +5,9 @@ use std::collections::HashSet;
 use serde::Deserialize;
 
 use crate::text::is_ident;
-use crate::{Effect, MAX_SLOTS, Origin, Param, ParamKind, PassDecl, TextureDecl, Value};
+use crate::{
+    Effect, MAX_MIPS, MAX_SLOTS, Origin, Param, ParamKind, PassDecl, TextureDecl, Value, mip_levels,
+};
 
 #[derive(Deserialize)]
 struct RawEffect {
@@ -200,7 +202,7 @@ fn build_param(raw: RawParam, slot: usize, effect: &str) -> Result<Param, String
 
 /// Reads an `<id>.effect.json` (DESIGN.md §3).
 pub fn parse_effect(json: &str, origin: Origin) -> Result<Effect, String> {
-    let raw: RawEffect = serde_json::from_str(json).map_err(|e| format!("effect: {e}"))?;
+    let mut raw: RawEffect = serde_json::from_str(json).map_err(|e| format!("effect: {e}"))?;
     let id = raw.id;
     if !is_ident(&id) {
         return Err(format!("effect id `{id}` must match [a-z][a-z0-9_]*"));
@@ -229,6 +231,29 @@ pub fn parse_effect(json: &str, origin: Origin) -> Result<Effect, String> {
         return Err(format!(
             "effect `{id}` needs {slot} param slots; the limit is {MAX_SLOTS}"
         ));
+    }
+
+    let mut warnings = Vec::new();
+    for t in &mut raw.textures {
+        let who = format!("effect `{id}` texture `{}`", t.name);
+        if let Some(mips) = t.mips {
+            if t.file.is_some() && mips > 1 {
+                return Err(format!("{who}: a file texture takes no mips"));
+            }
+            if mips == 0 {
+                return Err(format!("{who}: mips must be at least 1"));
+            }
+            let limit = match (t.width, t.height) {
+                (Some(w), Some(h)) => mip_levels(w, h, MAX_MIPS),
+                _ => MAX_MIPS,
+            };
+            if mips > limit {
+                warnings.push(format!(
+                    "{who}: mips {mips} is more than the texture allows; using {limit}"
+                ));
+                t.mips = Some(limit);
+            }
+        }
     }
 
     let mut textures = HashSet::new();
@@ -291,6 +316,7 @@ pub fn parse_effect(json: &str, origin: Origin) -> Result<Effect, String> {
         passes: raw.passes,
         slots: slot,
         origin,
+        warnings,
     })
 }
 
@@ -486,6 +512,40 @@ float2 param_offset() { return float2(option(7), option(8)); }
         let file_out =
             r#""textures":[{"name":"d","file":"d.png"}],"passes":[{"name":"a","shader":"s","output":"d"}]"#;
         assert!(err(&with("", file_out)).contains("file texture"));
+    }
+
+    #[test]
+    fn mips_are_checked_and_clamped() {
+        let passes = r#""passes":[{"name":"a","shader":"s"}]"#;
+        let tex = |t: &str| with("", &format!(r#""textures":[{t}],{passes}"#));
+        let ok = parse_effect(
+            &tex(r#"{"name":"m","width":64,"height":32,"mips":7}"#),
+            Origin::Library,
+        )
+        .unwrap();
+        assert_eq!(ok.textures[0].mips, Some(7));
+        assert!(ok.warnings.is_empty());
+        let big = parse_effect(
+            &tex(r#"{"name":"m","width":64,"height":32,"mips":9}"#),
+            Origin::Library,
+        )
+        .unwrap();
+        assert_eq!(big.textures[0].mips, Some(7));
+        assert_eq!(big.warnings.len(), 1);
+        let huge = parse_effect(&tex(r#"{"name":"m","scale":0.5,"mips":20}"#), Origin::Library).unwrap();
+        assert_eq!(huge.textures[0].mips, Some(12));
+        assert!(err(&tex(r#"{"name":"m","mips":0}"#)).contains("at least 1"));
+        assert!(err(&tex(r#"{"name":"m","file":"a.png","mips":3}"#)).contains("no mips"));
+    }
+
+    #[test]
+    fn mip_levels_follow_the_size() {
+        assert_eq!(mip_levels(4, 4, 3), 3);
+        assert_eq!(mip_levels(4, 4, 9), 3);
+        assert_eq!(mip_levels(1920, 1080, 12), 11);
+        assert_eq!(mip_levels(1, 1, 5), 1);
+        assert_eq!(mip_levels(64, 32, 0), 1);
+        assert_eq!(mip_levels(1 << 20, 1, 99), 12);
     }
 
     #[test]

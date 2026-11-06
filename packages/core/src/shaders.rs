@@ -144,6 +144,8 @@ fn load(store: &Store) -> Loaded {
                     ));
                     return;
                 }
+                out.warnings
+                    .extend(effect.warnings.iter().map(|w| format!("{what}: {w}")));
                 out.homes.insert(effect.id.clone(), home);
                 out.catalog.effects.push(effect);
             }
@@ -910,6 +912,9 @@ pub fn build_files(store: &Store, profile: &Profile) -> BuildFiles {
                 }
                 if t.persistent {
                     o.insert("persistent".into(), true.into());
+                }
+                if let Some(m) = t.mips.filter(|&m| m > 1) {
+                    o.insert("mips".into(), m.into());
                 }
             }
             if let Some(f) = file {

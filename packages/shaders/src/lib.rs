@@ -104,6 +104,18 @@ pub struct TextureDecl {
     pub persistent: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub file: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mips: Option<u32>,
+}
+
+/// The most mip levels a texture may declare.
+pub const MAX_MIPS: u32 = 12;
+
+/// The levels a texture of this size can carry: the declared count, at least 1, at most `MAX_MIPS` and
+/// floor(log2(max(w, h))) + 1.
+pub fn mip_levels(width: u32, height: u32, declared: u32) -> u32 {
+    let size = width.max(height).max(1);
+    declared.clamp(1, MAX_MIPS.min(32 - size.leading_zeros()))
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -143,6 +155,8 @@ pub struct Effect {
     /// Float slots the params take.
     pub slots: usize,
     pub origin: Origin,
+    /// Things the checker fixed up while parsing.
+    pub warnings: Vec<String>,
 }
 
 #[derive(Debug, Clone, Default)]
