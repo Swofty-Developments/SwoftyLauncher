@@ -5,7 +5,7 @@ use std::sync::{Arc, Mutex};
 /// The most frames playback may skip between two renders and still count as continuing.
 const STEP: usize = 8;
 
-use swofty_shaders::{ActiveInstance, TextureDecl};
+use swofty_shaders::{ActiveInstance, TextureDecl, mip_levels};
 
 use crate::{ClipInfo, CompiledEffect, Frame};
 
@@ -28,6 +28,22 @@ fn up(@builtin(global_invocation_id) id: vec3<u32>) {
     let d = textureDimensions(up_src);
     if (id.x >= d.x || id.y >= d.y) { return; }
     textureStore(up_dst, vec2<i32>(id.xy), textureLoad(up_src, vec2<i32>(id.xy), 0));
+}
+
+@group(0) @binding(6) var mip_src: texture_2d<f32>;
+@group(0) @binding(7) var mip_dst: texture_storage_2d<rgba16float, write>;
+
+@compute @workgroup_size(8, 8)
+fn mip(@builtin(global_invocation_id) id: vec3<u32>) {
+    let d = textureDimensions(mip_dst);
+    if (id.x >= d.x || id.y >= d.y) { return; }
+    let m = vec2<i32>(textureDimensions(mip_src)) - vec2<i32>(1);
+    let b = vec2<i32>(id.xy) * 2;
+    let sum = textureLoad(mip_src, min(b, m), 0)
+        + textureLoad(mip_src, min(b + vec2<i32>(1, 0), m), 0)
+        + textureLoad(mip_src, min(b + vec2<i32>(0, 1), m), 0)
+        + textureLoad(mip_src, min(b + vec2<i32>(1, 1), m), 0);
+    textureStore(mip_dst, vec2<i32>(id.xy), sum * 0.25);
 }
 
 @group(0) @binding(4) var narrow_src: texture_2d<f32>;
@@ -87,12 +103,26 @@ fn down(@builtin(global_invocation_id) id: vec3<u32>) {
 struct Tex {
     texture: wgpu::Texture,
     view: wgpu::TextureView,
+    store: wgpu::TextureView,
+    levels: Vec<wgpu::TextureView>,
     width: u32,
     height: u32,
+    mips: u32,
 }
 
 impl Tex {
     fn new(device: &wgpu::Device, label: &str, width: u32, height: u32, format: wgpu::TextureFormat) -> Self {
+        Self::with_mips(device, label, width, height, format, 1)
+    }
+
+    fn with_mips(
+        device: &wgpu::Device,
+        label: &str,
+        width: u32,
+        height: u32,
+        format: wgpu::TextureFormat,
+        mips: u32,
+    ) -> Self {
         let texture = device.create_texture(&wgpu::TextureDescriptor {
             label: Some(label),
             size: wgpu::Extent3d {
@@ -100,7 +130,7 @@ impl Tex {
                 height,
                 depth_or_array_layers: 1,
             },
-            mip_level_count: 1,
+            mip_level_count: mips,
             sample_count: 1,
             dimension: wgpu::TextureDimension::D2,
             format,
@@ -111,24 +141,51 @@ impl Tex {
             view_formats: &[],
         });
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
+        let level = |mip: u32| {
+            texture.create_view(&wgpu::TextureViewDescriptor {
+                base_mip_level: mip,
+                mip_level_count: Some(1),
+                ..Default::default()
+            })
+        };
+        let store = level(0);
+        let levels = if mips > 1 {
+            (0..mips).map(level).collect()
+        } else {
+            Vec::new()
+        };
         Self {
             texture,
             view,
+            store,
+            levels,
             width,
             height,
+            mips,
         }
     }
 
     fn copy_to(&self, encoder: &mut wgpu::CommandEncoder, to: &Tex) {
-        encoder.copy_texture_to_texture(
-            self.texture.as_image_copy(),
-            to.texture.as_image_copy(),
-            wgpu::Extent3d {
-                width: self.width,
-                height: self.height,
-                depth_or_array_layers: 1,
-            },
-        );
+        for mip in 0..self.mips.min(to.mips) {
+            encoder.copy_texture_to_texture(
+                level_of(&self.texture, mip),
+                level_of(&to.texture, mip),
+                wgpu::Extent3d {
+                    width: (self.width >> mip).max(1),
+                    height: (self.height >> mip).max(1),
+                    depth_or_array_layers: 1,
+                },
+            );
+        }
+    }
+}
+
+fn level_of(texture: &wgpu::Texture, mip_level: u32) -> wgpu::TexelCopyTextureInfo<'_> {
+    wgpu::TexelCopyTextureInfo {
+        texture,
+        mip_level,
+        origin: wgpu::Origin3d::ZERO,
+        aspect: wgpu::TextureAspect::All,
     }
 }
 
@@ -213,6 +270,7 @@ pub struct Preview {
     layout: wgpu::BindGroupLayout,
     up: wgpu::ComputePipeline,
     down: wgpu::ComputePipeline,
+    mip: wgpu::ComputePipeline,
     narrow: HashMap<&'static str, wgpu::ComputePipeline>,
     uniforms: wgpu::Buffer,
     uniform_slots: u64,
@@ -234,7 +292,10 @@ fn sampler(device: &wgpu::Device, filter: wgpu::FilterMode, address: wgpu::Addre
         address_mode_w: address,
         mag_filter: filter,
         min_filter: filter,
-        mipmap_filter: wgpu::MipmapFilterMode::Nearest,
+        mipmap_filter: match filter {
+            wgpu::FilterMode::Linear => wgpu::MipmapFilterMode::Linear,
+            _ => wgpu::MipmapFilterMode::Nearest,
+        },
         ..Default::default()
     })
 }
@@ -368,6 +429,7 @@ impl Preview {
         };
         let up = helper("up");
         let down = helper("down");
+        let mip = helper("mip");
         let narrow = NARROW.iter().map(|&entry| (entry, helper(entry))).collect();
         let uniforms = Self::uniform_buffer(&device, 32);
         let preview = Self {
@@ -381,6 +443,7 @@ impl Preview {
             layout,
             up,
             down,
+            mip,
             narrow,
             uniforms,
             uniform_slots: 32,
@@ -561,13 +624,14 @@ impl Preview {
                     _ => (width, height),
                 };
                 let format = format_of(decl);
+                let mips = mip_levels(w, h, decl.mips.unwrap_or(1));
                 let shadow = fx.effect.passes.iter().any(|p| {
                     p.output.as_deref() == Some(decl.name.as_str()) && p.inputs.contains(&decl.name)
                 });
                 slots.push(Slot {
                     name: decl.name.clone(),
-                    tex: Tex::new(&self.device, &decl.name, w, h, format),
-                    shadow: shadow.then(|| Tex::new(&self.device, &decl.name, w, h, format)),
+                    tex: Tex::with_mips(&self.device, &decl.name, w, h, format, mips),
+                    shadow: shadow.then(|| Tex::with_mips(&self.device, &decl.name, w, h, format, mips)),
                     narrow: narrow_of(decl)
                         .map(|entry| (entry, Tex::new(&self.device, &decl.name, w, h, format))),
                     persistent: decl.persistent,
@@ -750,7 +814,7 @@ impl Preview {
                         &slot_of(name)
                             .ok_or_else(|| format!("effect {}: no texture {name}", inst.effect))?
                             .tex
-                            .view
+                            .store
                     }
                 };
                 let (out_w, out_h) = match &decl.output {
@@ -876,6 +940,11 @@ impl Preview {
                 {
                     steps.push(Step::Narrow(ii, name.clone()));
                 }
+                if let Some(name) = &decl.output
+                    && slot_of(name).is_some_and(|s| s.tex.mips > 1)
+                {
+                    steps.push(Step::Mips(ii, name.clone()));
+                }
                 if writes_picture {
                     current = if current == Picture::A {
                         Picture::B
@@ -909,6 +978,36 @@ impl Preview {
                     let pipe = &fx.passes[*pi];
                     dispatch(&mut encoder, &pipe.pipeline, bind, *w, *h, pipe.threads);
                 }
+                Step::Mips(ii, name) => {
+                    let slot = self.instances[*ii]
+                        .slots
+                        .iter()
+                        .find(|s| &s.name == name)
+                        .ok_or("missing texture")?;
+                    for level in 1..slot.tex.mips as usize {
+                        let bind = group(
+                            &self.mip,
+                            &[
+                                wgpu::BindGroupEntry {
+                                    binding: 6,
+                                    resource: wgpu::BindingResource::TextureView(&slot.tex.levels[level - 1]),
+                                },
+                                wgpu::BindGroupEntry {
+                                    binding: 7,
+                                    resource: wgpu::BindingResource::TextureView(&slot.tex.levels[level]),
+                                },
+                            ],
+                        );
+                        dispatch(
+                            &mut encoder,
+                            &self.mip,
+                            &bind,
+                            (slot.tex.width >> level).max(1),
+                            (slot.tex.height >> level).max(1),
+                            (8, 8),
+                        );
+                    }
+                }
                 Step::Narrow(ii, name) => {
                     let slot = self.instances[*ii]
                         .slots
@@ -927,7 +1026,7 @@ impl Preview {
                                 },
                                 wgpu::BindGroupEntry {
                                     binding: 5,
-                                    resource: wgpu::BindingResource::TextureView(&slot.tex.view),
+                                    resource: wgpu::BindingResource::TextureView(&slot.tex.store),
                                 },
                             ],
                         );
@@ -1001,6 +1100,7 @@ impl Preview {
 }
 
 enum Step {
+    Mips(usize, String),
     Shadow(usize, String),
     Pass(usize),
     Narrow(usize, String),
