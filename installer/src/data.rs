@@ -16,6 +16,7 @@ const CHECKING: &str = "Checking the copied data folder";
 pub struct Data {
     pub default: PathBuf,
     pub env: Option<PathBuf>,
+    pub install: Option<PathBuf>,
 }
 
 impl Data {
@@ -23,7 +24,28 @@ impl Data {
         Self {
             default: swofty_core::paths::platform_data_dir(),
             env: std::env::var_os(ENV).filter(|v| !v.is_empty()).map(PathBuf::from),
+            install: None,
         }
+    }
+
+    pub fn apart(&self, to: &Path) -> Result<(), String> {
+        let Some(root) = &self.install else {
+            return Ok(());
+        };
+        let within = |inner: &Path, outer: &Path| inner.ancestors().any(|a| same_path(a, outer));
+        if within(to, root) {
+            return Err(format!(
+                "Updates cannot install when the data folder is inside the install folder. Choose a data folder outside {}.",
+                root.display()
+            ));
+        }
+        if within(root, to) {
+            return Err(format!(
+                "Updates cannot install when the install folder is inside the data folder. Choose a data folder that does not contain {}.",
+                root.display()
+            ));
+        }
+        Ok(())
     }
 
     pub fn link(&self) -> Option<PathBuf> {
@@ -92,6 +114,7 @@ pub struct DataMove {
 }
 
 pub fn plan(data: &Data, to: &Path) -> Result<Option<DataMove>, String> {
+    data.apart(to)?;
     let linked = data.link();
     let (from, record) = match (&data.env, &linked) {
         (Some(env), _) if same_folder(env, to) => return Ok(None),
@@ -551,6 +574,7 @@ mod tests {
         Data {
             default: default.to_path_buf(),
             env: None,
+            install: None,
         }
     }
 
@@ -771,6 +795,49 @@ mod tests {
     static SET: Mutex<Option<PathBuf>> = Mutex::new(None);
 
     #[test]
+    fn refuses_a_data_folder_inside_or_around_the_install_folder() {
+        let dir = temp("apart");
+        let (install, default) = (dir.join("Games/Swofty Launcher"), dir.join("Local/Swofty"));
+        let d = Data {
+            install: Some(install.clone()),
+            ..data(&default)
+        };
+        for inside in [install.clone(), install.join("Swofty"), install.join("a/b")] {
+            let e = plan(&d, &inside).unwrap_err();
+            assert!(e.contains("inside the install folder"), "{e}");
+            assert!(d.describe(&inside).is_err());
+            assert!(d.apart(&inside).is_err());
+        }
+        let e = plan(&d, &dir.join("Games")).unwrap_err();
+        assert!(
+            e.contains("does not contain") || e.contains("inside the data folder"),
+            "{e}"
+        );
+        assert!(plan(&d, &dir.join("Games/Swofty Launcher Data")).is_ok());
+        assert!(plan(&d, &dir.join("Elsewhere/Swofty")).is_ok());
+        assert!(d.apart(&default).is_ok());
+        assert!(data(&default).apart(&install).is_ok());
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn data_that_stays_inside_the_install_folder_is_refused_too() {
+        let dir = temp("apart-stay");
+        let install = dir.join("Install");
+        let d = Data {
+            install: Some(install.clone()),
+            ..data(&install.join("Swofty"))
+        };
+        assert!(plan(&d, &install.join("Swofty")).is_err());
+        let env = Data {
+            env: Some(install.join("Swofty")),
+            ..d
+        };
+        assert!(env.apart(&env.current()).is_err());
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
     fn follows_swofty_data_dir_and_updates_it() {
         let dir = temp("env");
         let (default, old, new) = (dir.join("Local/Swofty"), dir.join("D/Old"), dir.join("E/New"));
@@ -778,6 +845,7 @@ mod tests {
         let d = Data {
             default: default.clone(),
             env: Some(old.clone()),
+            install: None,
         };
         assert_eq!(d.current(), old);
         assert_eq!(plan(&d, &old).unwrap(), None);

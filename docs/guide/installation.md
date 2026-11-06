@@ -101,6 +101,8 @@ Your addons, mods, profiles, backups and session logs live here, apart from the 
 
 ### Moving the data folder
 
+Keep the data folder outside the install folder. The installer refuses a data folder that is, or is inside, the install folder, and a launcher whose install folder holds its data folder cannot install updates. If yours does, run the installer again and pick a data folder outside the install folder.
+
 Run the [installer](#install-with-the-installer), choose an empty or new folder under **Keep addons, profiles and backups in**, or select **Browse…** next to it, then select **Install**. Under the folder, the installer shows what **Install** does with your data. **Install** moves the data folder there, then updates the launcher.
 
 - On Windows, the installer moves `%LOCALAPPDATA%\Swofty` to the new folder and leaves a junction at `%LOCALAPPDATA%\Swofty` that points to it. The launcher, the `swofty` command and the in-game code keep using `%LOCALAPPDATA%\Swofty`.

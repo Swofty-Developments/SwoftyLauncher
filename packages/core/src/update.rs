@@ -496,7 +496,14 @@ pub struct Install {
 impl Install {
     pub fn current() -> std::result::Result<Self, String> {
         let exe = std::env::current_exe().map_err(|e| e.to_string())?;
-        Self::locate(&exe)
+        Self::locate(&exe)?.apart_from(&crate::paths::data_dir())
+    }
+
+    pub fn apart_from(self, data: &Path) -> std::result::Result<Self, String> {
+        if holds_data(&self.root, data) {
+            return Err(DATA_IN_INSTALL.into());
+        }
+        Ok(self)
     }
 
     pub fn locate(exe: &Path) -> std::result::Result<Self, String> {
@@ -673,10 +680,15 @@ fn roll_back(done: &[Swap]) {
     }
 }
 
-pub fn refuse_data_root(root: &Path, data: &Path) -> Result<()> {
+pub const DATA_IN_INSTALL: &str = "the install folder holds the data folder, so updates cannot install. Run the installer again and pick a data folder outside the install folder";
+
+fn holds_data(root: &Path, data: &Path) -> bool {
     let resolve = |p: &Path| std::fs::canonicalize(p).unwrap_or_else(|_| p.to_path_buf());
-    let (root_abs, data_abs) = (resolve(root), resolve(data));
-    let why = if data_abs.starts_with(&root_abs) {
+    resolve(data).starts_with(resolve(root))
+}
+
+pub fn refuse_data_root(root: &Path, data: &Path) -> Result<()> {
+    let why = if holds_data(root, data) {
         Some(format!(
             "the install folder {} is or contains the data folder {}",
             root.display(),
@@ -1055,6 +1067,23 @@ mod tests {
         std::fs::remove_dir_all(dir.join("loader")).unwrap();
         assert!(Install::locate(&launcher).is_err());
         std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn an_install_that_holds_the_data_folder_cannot_update() {
+        let dir = temp("apart");
+        release_tree(&dir, "v1");
+        let launcher = dir.join("bin").join(exe("swofty-launcher"));
+        let install = || Install::locate(&launcher).unwrap();
+        assert_eq!(
+            install().apart_from(&dir.join("Swofty")).unwrap_err(),
+            DATA_IN_INSTALL
+        );
+        assert!(install().apart_from(&dir).is_err());
+        let outside = temp("apart-data");
+        assert!(install().apart_from(&outside).is_ok());
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::remove_dir_all(&outside).ok();
     }
 
     #[test]

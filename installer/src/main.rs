@@ -103,11 +103,29 @@ impl Installer {
         }
     }
 
+    fn data_for(&self) -> data::Data {
+        data::Data {
+            install: resolve(&self.folder).ok(),
+            ..self.data.clone()
+        }
+    }
+
     fn data_move(&self) -> Result<Option<data::DataMove>, String> {
-        if !self.data.movable() {
+        let data = self.data_for();
+        if !data.movable() {
+            data.apart(&data.current())?;
             return Ok(None);
         }
-        resolve(&self.data_folder).and_then(|to| data::plan(&self.data, &to))
+        resolve(&self.data_folder).and_then(|to| data::plan(&data, &to))
+    }
+
+    fn describe_data(&self) -> Result<String, String> {
+        let data = self.data_for();
+        let to = resolve(&self.data_folder)?;
+        if !data.movable() {
+            data.apart(&data.current())?;
+        }
+        data.describe(&to)
     }
 
     fn start(&mut self, ctx: &egui::Context) {
@@ -252,7 +270,7 @@ impl eframe::App for Installer {
                         });
                     });
                     ui.add_space(4.0);
-                    match resolve(&self.data_folder).and_then(|to| self.data.describe(&to)) {
+                    match self.describe_data() {
                         Ok(text) => ui.label(RichText::new(text).color(MUTED)),
                         Err(e) => ui.label(RichText::new(e).color(ERROR)),
                     };
