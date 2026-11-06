@@ -143,6 +143,53 @@ float4 input_at(uint i, int2 pixel)
     default: return swofty_input7.Load(int3(p, 0));
     }
 }
+
+float4 input_lod(uint i, float2 uv, float lod)
+{
+    switch (i)
+    {
+    case 0: return swofty_input0.SampleLevel(swofty_linear, uv, lod);
+    case 1: return swofty_input1.SampleLevel(swofty_linear, uv, lod);
+    case 2: return swofty_input2.SampleLevel(swofty_linear, uv, lod);
+    case 3: return swofty_input3.SampleLevel(swofty_linear, uv, lod);
+    case 4: return swofty_input4.SampleLevel(swofty_linear, uv, lod);
+    case 5: return swofty_input5.SampleLevel(swofty_linear, uv, lod);
+    case 6: return swofty_input6.SampleLevel(swofty_linear, uv, lod);
+    default: return swofty_input7.SampleLevel(swofty_linear, uv, lod);
+    }
+}
+
+float4 input_lod_point(uint i, float2 uv, float lod)
+{
+    switch (i)
+    {
+    case 0: return swofty_input0.SampleLevel(swofty_point, uv, lod);
+    case 1: return swofty_input1.SampleLevel(swofty_point, uv, lod);
+    case 2: return swofty_input2.SampleLevel(swofty_point, uv, lod);
+    case 3: return swofty_input3.SampleLevel(swofty_point, uv, lod);
+    case 4: return swofty_input4.SampleLevel(swofty_point, uv, lod);
+    case 5: return swofty_input5.SampleLevel(swofty_point, uv, lod);
+    case 6: return swofty_input6.SampleLevel(swofty_point, uv, lod);
+    default: return swofty_input7.SampleLevel(swofty_point, uv, lod);
+    }
+}
+
+uint2 input_size_lod(uint i, uint lod)
+{
+    uint w, h, n;
+    switch (i)
+    {
+    case 0: swofty_input0.GetDimensions(lod, w, h, n); break;
+    case 1: swofty_input1.GetDimensions(lod, w, h, n); break;
+    case 2: swofty_input2.GetDimensions(lod, w, h, n); break;
+    case 3: swofty_input3.GetDimensions(lod, w, h, n); break;
+    case 4: swofty_input4.GetDimensions(lod, w, h, n); break;
+    case 5: swofty_input5.GetDimensions(lod, w, h, n); break;
+    case 6: swofty_input6.GetDimensions(lod, w, h, n); break;
+    default: swofty_input7.GetDimensions(lod, w, h, n); break;
+    }
+    return uint2(w, h);
+}
 #else
 float4 input(uint i, float2 uv)
 {
@@ -160,6 +207,23 @@ uint2 input_size(uint i)
 {
     uint w, h;
     swofty_inputs[i].GetDimensions(w, h);
+    return uint2(w, h);
+}
+
+float4 input_lod(uint i, float2 uv, float lod)
+{
+    return swofty_inputs[i].SampleLevel(swofty_linear, uv, lod);
+}
+
+float4 input_lod_point(uint i, float2 uv, float lod)
+{
+    return swofty_inputs[i].SampleLevel(swofty_point, uv, lod);
+}
+
+uint2 input_size_lod(uint i, uint lod)
+{
+    uint w, h, n;
+    swofty_inputs[i].GetDimensions(lod, w, h, n);
     return uint2(w, h);
 }
 #endif
