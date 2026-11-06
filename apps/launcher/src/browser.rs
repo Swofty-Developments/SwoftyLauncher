@@ -211,6 +211,18 @@ impl Progress {
     }
 }
 
+fn install_failure_title(name: &str, verb: &str, refused: bool) -> String {
+    if refused {
+        format!("Can't {verb} {name}: missing requirements")
+    } else {
+        format!("Could not {verb} {name}")
+    }
+}
+
+fn install_failure_toast(name: &str, verb: &str, refused: bool, error: String) -> Notification {
+    Notification::error(error).title(install_failure_title(name, verb, refused))
+}
+
 fn requested_version_available(addon: Option<&Addon>, requested: &catalog::Version) -> bool {
     addon.is_some_and(|addon| {
         addon.listed().iter().any(|version| {
@@ -1504,6 +1516,11 @@ impl Shell {
                     && batch.left.remove(&id)
                 {
                     batch.failed.push((addon.name.clone(), error));
+                } else {
+                    let verb = if self.installed_version(&id).is_some() { "update" } else { "install" };
+                    self.browser
+                        .toasts
+                        .push(install_failure_toast(&addon.name, verb, false, error));
                 }
                 if self
                     .browser
@@ -1604,8 +1621,15 @@ impl Shell {
                         }
                         s.record(Op::Install, true, title.clone(), detail, took);
                         s.reload(cx);
-                        if in_batch && let Some(b) = s.browser.batch.as_mut() {
-                            b.updated.push(format!("{} {}", m.name, m.version));
+                        if in_batch {
+                            if let Some(b) = s.browser.batch.as_mut() {
+                                b.updated.push(format!("{} {}", m.name, m.version));
+                            }
+                        } else if !also.is_empty() {
+                            s.browser.toasts.push(
+                                Notification::success(format!("Also installed {}", also.join(", ")))
+                                    .title(title),
+                            );
                         }
                     }
                     Err(e) => {
@@ -1623,8 +1647,12 @@ impl Shell {
                         if refused {
                             s.browser.refused.insert(addon.id.clone());
                         }
-                        if in_batch && let Some(b) = s.browser.batch.as_mut() {
-                            b.failed.push((addon.name.clone(), error));
+                        if in_batch {
+                            if let Some(b) = s.browser.batch.as_mut() {
+                                b.failed.push((addon.name.clone(), error));
+                            }
+                        } else {
+                            s.browser.toasts.push(install_failure_toast(&addon.name, verb, refused, error));
                         }
                         s.reload(cx);
                     }
@@ -1740,6 +1768,16 @@ impl Shell {
         };
         let summary = b.summary();
         catalog::log(&self.store.root, &summary.replace('\n', "; "));
+        let title = format!(
+            "Updated {} of {}",
+            b.updated.len(),
+            plural(b.total(), "addon", "addons")
+        );
+        self.browser.toasts.push(if b.failed.is_empty() {
+            Notification::success(summary).title(title)
+        } else {
+            Notification::warning(summary).title(title)
+        });
     }
 
     fn batch_progress(&self) -> Option<(f32, String)> {
@@ -4336,6 +4374,15 @@ mod tests {
     fn a_successfully_updated_addon_is_not_reported_as_failed_during_refresh() {
         assert!(!super::held_failure(""));
         assert!(super::held_failure("network error"));
+    }
+
+    #[test]
+    fn failed_install_toast_title_names_the_addon() {
+        assert_eq!(super::install_failure_title("Foo", "install", false), "Could not install Foo");
+        assert_eq!(
+            super::install_failure_title("Foo", "update", true),
+            "Can't update Foo: missing requirements"
+        );
     }
 
     #[test]
