@@ -1049,6 +1049,24 @@ template <class Tag> struct Ops {
 
     static std::vector<Pending> take_frame() { return coalesce(take()); }
 
+    static inline bool replay_deferred = false;
+
+    static bool skip_in_replay(What what, bool in_replay)
+    {
+        if (!in_replay || what == What::built)
+            return false;
+        replay_deferred = true;
+        return true;
+    }
+
+    static bool resume_due(bool in_replay)
+    {
+        if (in_replay || !replay_deferred)
+            return false;
+        replay_deferred = false;
+        return true;
+    }
+
     static inline std::mutex unlock_lock;
     static inline std::vector<std::pair<std::string, uint32_t>> unlocks;
 

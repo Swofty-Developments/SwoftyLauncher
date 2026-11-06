@@ -586,6 +586,13 @@ impl<'a> Installer<'a> {
     /// open journal accounts for: a session that lost its journal left them.
     /// Only files that still hold exactly the recorded bytes are touched.
     pub fn sweep(&self) -> Result<Vec<String>> {
+        let mut hashes = Hashes::load(self.data);
+        let result = self.sweep_with(&mut hashes);
+        hashes.save();
+        result
+    }
+
+    fn sweep_with(&self, hashes: &mut Hashes) -> Result<Vec<String>> {
         let mut placed = Placed::load(self.data)?;
         if placed.files.is_empty() && placed.registry.is_none() {
             return Ok(Vec::new());
@@ -617,11 +624,12 @@ impl<'a> Installer<'a> {
                 continue;
             }
             let path = self.path(&f.path);
-            if sha256_opt(&path)?.as_deref() == Some(f.sha256.as_str()) {
+            if hashes.sha256_opt(&path)?.as_deref() == Some(f.sha256.as_str()) {
                 if f.replaced {
                     match baseline.files.get(&f.path) {
                         Some(rec) if self.objects().has(&rec.sha256) => {
                             self.restore_original(&rec.sha256, &path)?;
+                            hashes.wrote(&path, &rec.sha256);
                             notes.push(format!("put the original {} back", f.path));
                         }
                         _ => {
@@ -1163,12 +1171,15 @@ impl<'a> Installer<'a> {
             self.objects().put_file(reg)?;
             std::fs::write(reg, out).map_err(io_err(reg))?;
         }
+        let mut hashes = Hashes::load(self.data);
         for (rel, rec) in &baseline.files {
             let path = self.path(rel);
-            if sha256_opt(&path)?.as_deref() != Some(rec.sha256.as_str()) {
+            if hashes.sha256_opt(&path)?.as_deref() != Some(rec.sha256.as_str()) {
                 self.objects().restore_to(&rec.sha256, &path)?;
+                hashes.wrote(&path, &rec.sha256);
             }
         }
+        hashes.save();
         report.extend(self.verify()?);
         Ok(report)
     }

@@ -33,5 +33,10 @@ int main()
     CHECK(!says(Load::record, 0, 0, seen, 1), "track 1 again is not logged");
     CHECK(!says(Load::record, 0x1000, 0, seen, 2), "a record that exists is not logged");
     CHECK(!says(Load::track, 0x1000, 0x2000, seen, 3), "a track that exists is not logged");
+
+    runtime::track_record::Seen vm_seen;
+    CHECK(says(Load::record, 0, 0, vm_seen, 6), "the view model site logs track 6 on its own once");
+    CHECK(!says(Load::record, 0, 0, vm_seen, 6), "the view model site does not log track 6 twice");
+    CHECK(!says(Load::record, 0x1000, 0, vm_seen, 7), "the view model site does not log a record that exists");
     return failures ? 1 : 0;
 }

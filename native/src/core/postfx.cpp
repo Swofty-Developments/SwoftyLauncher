@@ -2288,7 +2288,10 @@ void rules_reset()
     rules_clock = {};
     rules_live = false;
     for (auto &r : active.rules) {
-        auto car_signal = [](int sg) { return sg >= postfx::S_CAR_SPEED && sg <= postfx::S_CAR_SURFACE; };
+        auto car_signal = [](int sg) {
+            return (sg >= postfx::S_CAR_SPEED && sg <= postfx::S_CAR_SURFACE) || sg == postfx::S_SESSION_WETNESS ||
+                   sg == postfx::S_CAR_WETNESS;
+        };
         rules_live |= r.has_ramp && car_signal(r.ramp_signal);
         for (auto &c : r.when)
             rules_live |= car_signal(c.signal);
@@ -2354,11 +2357,12 @@ void live_trace_line(ULONGLONG now, const live_car::LiveCar &c)
     live_trace_line_at = now;
     const uint8_t *r = c.surface;
     swofty::log("[shaders] live car: speed=%.1f km/h gear=%d rpm=%.0f/%.0f thr=%.2f brk=%.2f steer=%.2f g=%.2f/%.2f "
-                "surface=FL:%s FR:%s RL:%s RR:%s (raw %d %d %d %d) player=%d ai=%d",
+                "surface=FL:%s FR:%s RL:%s RR:%s (raw %d %d %d %d) player=%d ai=%d wetness=%.3f wheels_wet=%.3f",
                 c.speed_kmh, c.gear, c.rpm, c.max_rpm, c.throttle, c.brake, c.steer, c.g_lateral, c.g_long,
                 surface_label(r[0]).c_str(), surface_label(r[1]).c_str(), surface_label(r[2]).c_str(),
                 surface_label(r[3]).c_str(), r[0], r[1], r[2],
-                r[3], c.player, c.ai ? 1 : 0);
+                r[3], c.player, c.ai ? 1 : 0, c.has_wetness ? double(c.wetness) : -1.0,
+                c.has_wheel_wetness ? double(c.wheel_wetness) : -1.0);
 }
 
 void live_frame(ULONGLONG now)
@@ -2373,7 +2377,7 @@ void live_frame(ULONGLONG now)
         live_trace_line(now, live_now);
     else if (tracing && now - live_trace_line_at >= 1000) {
         live_trace_line_at = now;
-        swofty::log("[shaders] live car: no player car");
+        swofty::log("[shaders] live car: no player car; wetness=%.3f", live_now.has_wetness ? double(live_now.wetness) : -1.0);
     }
 }
 
@@ -2420,6 +2424,10 @@ void rules_frame(const view::State &v, ULONGLONG now)
             sig.set_surface(w);
         }
     }
+    if (rules_live && live_now.has_wetness)
+        sig.set(postfx::S_SESSION_WETNESS, live_now.wetness);
+    if (live_ok && rules_live && live_now.has_wheel_wetness)
+        sig.set(postfx::S_CAR_WETNESS, live_now.wheel_wetness);
     for (int s : {postfx::S_SESSION_START, postfx::S_RACE_START, postfx::S_SESSION_LAP, postfx::S_SESSION_END}) {
         unsigned n = pending_events[s].exchange(0);
         for (unsigned i = 0; i < n && i < postfx::Signals::MAX_EVENTS; i++)

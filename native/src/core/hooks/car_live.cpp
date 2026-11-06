@@ -17,6 +17,7 @@
 #include "context.hpp"
 #include "core_events.hpp"
 #include "hooks.hpp"
+#include "../view_state.hpp"
 #include "session_points.hpp"
 
 // The live car operations on the running game (car_live.hpp): g_Sess_VehicleTable and g_Sess_VehicleCount
@@ -362,16 +363,29 @@ void frame(double, void *)
         Ops::unlock_tick();
         Ops::racecraft_tick();
     }
+    const view::State view_now = view::current();
+    const bool in_replay = view_now.valid && (view_now.flags & view::REPLAY);
+    if (Ops::resume_due(in_replay)) {
+        uint32_t n = 0;
+        if (Ops::op_count(&n) == SWOFTY_ASSET_OK) {
+            mem::Trust trust(runtime::HEAP_TRUST_MS);
+            for (uint32_t i = 0; i < n; i++) {
+                apply_profiles(i, true);
+                Ops::apply_car(i);
+            }
+        }
+    }
     uint32_t profiled = 0, applied = 0;
     for (const auto &p : Ops::take_frame()) {
         swofty::cars::live::Car car(p.index, reinterpret_cast<void *>(p.car));
         uint32_t bit = 1u << p.index;
+        const bool hold = Ops::skip_in_replay(p.what, in_replay);
         bool rebuilt = p.what == Ops::What::built || p.what == Ops::What::reset;
-        if (p.what != Ops::What::setup && (rebuilt || !(profiled & bit))) {
+        if (!hold && p.what != Ops::What::setup && (rebuilt || !(profiled & bit))) {
             profiled |= bit;
             apply_profiles(p.index, rebuilt);
         }
-        if (!(applied & bit)) {
+        if (!hold && !(applied & bit)) {
             applied |= bit;
             mem::Trust trust(runtime::HEAP_TRUST_MS);
             perf::Scope scope(apply_probe);

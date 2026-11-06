@@ -130,7 +130,7 @@ const fn event(
 }
 
 /// Every signal; the position is the signal's index.
-pub static SIGNALS: [Signal; 30] = [
+pub static SIGNALS: [Signal; 31] = [
     name(
         "view.camera",
         CAMERAS,
@@ -225,7 +225,14 @@ pub static SIGNALS: [Signal; 30] = [
         false,
         "clear, light_cloud, overcast, light_rain, heavy_rain or storm.",
     ),
-    number("session.wetness", "", 0.0, 1.0, false, "Track water, 0-1."),
+    number(
+        "session.wetness",
+        "",
+        0.0,
+        1.0,
+        true,
+        "How wet the track is, 0 dry to 1 soaked.",
+    ),
     event(
         "session.flashback",
         "",
@@ -239,6 +246,14 @@ pub static SIGNALS: [Signal; 30] = [
         None,
         false,
         "Fires when the player takes the chequered flag.",
+    ),
+    number(
+        "car.wetness",
+        "",
+        0.0,
+        1.0,
+        true,
+        "Water on the track under the car's wheels, 0-1: the wettest of the four.",
     ),
 ];
 

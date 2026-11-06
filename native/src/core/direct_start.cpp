@@ -10,7 +10,9 @@
 #include <cstring>
 #include <map>
 #include <mutex>
+#include <thread>
 
+#include "apply/moments.hpp"
 #include "direct_start_logic.hpp"
 #include "json.hpp"
 #include "room_cover.hpp"
@@ -23,6 +25,10 @@
 // or a room (netplay_drive.cpp). The title engages by itself (title_skip.cpp), which loads the profile;
 // the target sets itself up on the flow thread; then the flow leaves the front end from StateFTUE, whose
 // finished link is held until then and replaced by its exit link, so StateFrontend (the menu) never starts.
+// StateFTUE leaves with the game's interrupt exit (kind 0xe, written on the empty front of the interrupt queue
+// at +0xbf8): its onStateExit (0x1436d8390) then despawns the front end's main scene and blocks until the
+// scene's flags and component set are clear, so the front end's PhysicsTerrain is gone before the track's
+// is created. The kind is cleared as that exit finishes, because the queue is shared with the parents.
 // StateFrontendWorld, with no child left, then takes the target's link ('session' leads to StateLaunch's
 // path and StateLoadSession).
 //
@@ -51,6 +57,10 @@ const runtime::Sig SIG_MODE_BY_PREDICATE{"game.game_modes_find_by_predicate",
 const runtime::Sig SIG_GP_PREDICATE{"game.grand_prix_mode_predicate",
                                     "48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 E8 ?? ?? ?? ?? 48 85 C0 74 22",
                                     0x77cff0, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig SIG_FTUE_EXIT{"game.state_ftue_on_state_exit",
+                                 "56 48 83 EC 30 48 89 CE 48 8B 81 F8 0B 00 00 48 8B 48 18 48 8D 50 30 48 39 48 20 48 0F "
+                                 "45 D1 83 7A 10 0E 0F 85 0D 02 00 00 48 8B 8E 88 0C 00 00 48 8B 41 40",
+                                 0x36d8390};
 const runtime::Sig SIG_BUILD_SETTINGS{"game.championship_game_mode_build_session_settings",
                                       "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 68 00", 0x7b7b90};
 
@@ -135,6 +145,8 @@ template <class T> bool rd(const void *p, size_t off, T &out);
 constexpr uintptr_t RVA_GAME_ROOT = 0x601db08;
 constexpr uint32_t FADE_FRONTEND = 1u << 1;
 bool fade_released = false;
+constexpr uint32_t FADE_EXIT_REQUEST = 1u << 0;
+std::atomic<bool> ftue_interrupt_raised{false};
 
 void release_frontend_fade()
 {
@@ -145,11 +157,12 @@ void release_frontend_fade()
     auto &mask = *reinterpret_cast<uint32_t *>(owner + 0x7b8);
     uint32_t was = mask, state = *reinterpret_cast<uint32_t *>(owner + 0x7bc);
     fade_released = true;
-    if (!(was & FADE_FRONTEND)) {
+    uint32_t release = FADE_FRONTEND | (ftue_interrupt_raised.load() ? FADE_EXIT_REQUEST : 0);
+    if (!(was & release)) {
         swofty::log("[direct] fade owner %p: mask %08x, state %u; FrontEnd is not held", owner, was, state);
         return;
     }
-    mask = was & ~FADE_FRONTEND;
+    mask = was & ~release;
     if (mask == 0) {
         *reinterpret_cast<uint32_t *>(owner + 0x7bc) = 3;
         owner[0x7cc] = 0;
@@ -245,6 +258,148 @@ void despawn_frontend_scene(const char *when)
     reinterpret_cast<void (*)(void *)>(swofty::api->module_base() + RVA_DESPAWN_MAIN_SCENE)(mgr);
     swofty::log("[direct] despawned the front end's main scene %s (manager %p)", when, mgr);
 }
+
+bool env_flag(const char *name)
+{
+    char v[8];
+    DWORD n = GetEnvironmentVariableA(name, v, sizeof v);
+    return n > 0 && n < sizeof v && v[0] != '0';
+}
+
+constexpr uintptr_t RVA_TERRAIN_COUNT = 0x6cb5d50, FTUE_EXIT_GATE = 0xc18, FTUE_INTERRUPT_SEEN = 0xc90,
+                    INTERRUPT_QUEUE = 0xbf8, INTERRUPT_EMPTY_FRONT = 0x30;
+constexpr uint32_t INTERRUPT_EXIT = 0xe;
+const bool diag_on = env_flag("SWOFTY_DIRECT_DIAG");
+bool ftue_interrupt_on = true;
+std::atomic<bool> diag_started{false}, diag_load_told{false}, ftue_interrupt_cleared{false};
+uint8_t *ftue_interrupt_queue = nullptr;
+
+uint32_t terrain_count()
+{
+    uint32_t v = 0xffffffffu;
+    rd(reinterpret_cast<const void *>(swofty::api->module_base() + RVA_TERRAIN_COUNT), 0, v);
+    return v;
+}
+
+struct SceneProbe {
+    uint8_t *mgr = nullptr, *scenes = nullptr;
+    uint8_t f48 = 0xff, f49 = 0xff, f4b = 0xff;
+    unsigned occupied = 0, flagged = 0;
+    uint64_t count = 0;
+    size_t cap = 0;
+    bool clear() const { return scenes && f48 == 0 && f49 == 0 && flagged == 0; }
+};
+
+SceneProbe probe_scene()
+{
+    SceneProbe p;
+    uint8_t *node = flow_node(STATE_FRONTEND);
+    if (node)
+        rd(node, FRONTEND_SCENES, p.mgr);
+    if (p.mgr)
+        rd(p.mgr, SCENES_MAIN, p.scenes);
+    if (!p.scenes)
+        return p;
+    rd(p.scenes, MAIN_SPAWNED, p.f48);
+    rd(p.scenes, MAIN_SPAWNED + 1, p.f49);
+    rd(p.scenes, 0x104b, p.f4b);
+    rd(p.scenes, 0x100, p.count);
+    uint8_t *data = nullptr, *ctrl = nullptr;
+    if (!rd(p.scenes, 0xf0, data) || !rd(p.scenes, 0xf8, ctrl) || !data || ctrl <= data || (ctrl - data) / 0x18 > 8192)
+        return p;
+    p.cap = size_t(ctrl - data) / 0x18;
+    for (size_t i = 0; i < p.cap; i++) {
+        uint8_t c = 0;
+        if (!rd(ctrl, i, c) || !(c & 1))
+            continue;
+        p.occupied++;
+        uint8_t *v = nullptr;
+        uint8_t a = 0, b = 0;
+        if (rd(data, i * 0x18 + 0x10, v) && v && rd(v, 0xa1, a) && rd(v, 0xa2, b) && (a || b))
+            p.flagged++;
+    }
+    return p;
+}
+
+void diag_snapshot(const char *tag)
+{
+    SceneProbe p = probe_scene();
+    int32_t trans = -1, o790 = -1;
+    if (p.mgr) {
+        rd(p.mgr, 0x20, trans);
+        uint8_t *m58 = nullptr, *obj = nullptr;
+        if (rd(p.mgr, 0x58, m58) && m58 && rd(m58, 0x790, obj) && obj)
+            rd(obj, 0x50, o790);
+    }
+    uint8_t *ftue = flow_node(ds::STATE_FTUE);
+    int32_t gate = -1;
+    uint8_t seen = 0xff;
+    if (ftue) {
+        rd(ftue, FTUE_EXIT_GATE, gate);
+        rd(ftue, FTUE_INTERRUPT_SEEN, seen);
+    }
+    swofty::log("[direct] diag %s: scene %p flags 1048=%u 1049=%u 104b=%u set count=%llu cap=%zu occupied=%u flagged=%u "
+                "transition=%d obj790_50=%d ftue_gate=%d ftue_seen=%u terrain=%u",
+                tag, p.scenes, p.f48, p.f49, p.f4b, (unsigned long long)p.count, p.cap, p.occupied, p.flagged, trans,
+                o790, gate, seen, terrain_count());
+}
+
+void diag_start()
+{
+    if (!diag_on || diag_started.exchange(true))
+        return;
+    std::thread([] {
+        uint32_t last = ~0u;
+        uint64_t t0 = GetTickCount64();
+        for (int i = 0; i < 960; i++) {
+            uint64_t ms = GetTickCount64() - t0;
+            char tag[48];
+            snprintf(tag, sizeof tag, "+%llums", (unsigned long long)ms);
+            uint32_t now = terrain_count();
+            if (i < 40 || now != last || i % 8 == 0)
+                diag_snapshot(tag);
+            last = now;
+            Sleep(250);
+        }
+    }).detach();
+}
+
+bool raise_ftue_interrupt(uint8_t *ftue)
+{
+    uint8_t *queue = nullptr;
+    uint64_t begin = 0, end = 0, cap = 0;
+    if (!rd(ftue, INTERRUPT_QUEUE, queue) || !queue || !rd(queue, 0x18, begin) || !rd(queue, 0x20, end) ||
+        !rd(queue, 0x28, cap) || !runtime::readable(queue + INTERRUPT_EMPTY_FRONT, 0x20)) {
+        swofty::log("[direct] FTUE interrupt: the interrupt queue is not readable");
+        return false;
+    }
+    auto *type = reinterpret_cast<uint32_t *>(queue + INTERRUPT_EMPTY_FRONT + 0x10);
+    swofty::log("[direct] FTUE interrupt: queue %p begin %llx end %llx +28 %llx front type %u", queue,
+                (unsigned long long)begin, (unsigned long long)end, (unsigned long long)cap, *type);
+    if (begin != end || *type != 0) {
+        swofty::log("[direct] FTUE interrupt: the queue is not empty; leaving by the link instead");
+        return false;
+    }
+    *type = INTERRUPT_EXIT;
+    ftue_interrupt_queue = queue;
+    swofty::log("[direct] FTUE interrupt: raised eInterruptExit (kind %u) on the empty front of %p", INTERRUPT_EXIT, queue);
+    return true;
+}
+safetyhook::InlineHook h_ftue_exit;
+
+uint64_t ftue_exit_detour(void *state)
+{
+    uint64_t r = h_ftue_exit.call<uint64_t>(state);
+    if ((r & 0xffffffffu) == 1 && ftue_interrupt_raised.load() && !ftue_interrupt_cleared.exchange(true)) {
+        auto *type = reinterpret_cast<uint32_t *>(ftue_interrupt_queue + INTERRUPT_EMPTY_FRONT + 0x10);
+        if (*type == INTERRUPT_EXIT)
+            *type = 0;
+        swofty::log("[direct] FTUE interrupt: StateFTUE::onStateExit finished (the main scene is unloaded); eInterruptExit "
+                    "cleared");
+    }
+    return r;
+}
+
 bool load_sync_done = false;
 int load_sync_tries = 0;
 
@@ -373,7 +528,21 @@ void link_mid(safetyhook::Context &c)
     }
     if (session_at.load())
         note_fade();
-    uint32_t link = *slot, out = driver.on_update(hash, link, child);
+    uint32_t link = *slot, out;
+    if (ftue_interrupt_on && hash == ds::STATE_FTUE && driver.phase == ds::Phase::leave && link != ds::LINK_STAY &&
+        !driver.exited && !ftue_interrupt_raised.load() && raise_ftue_interrupt(state)) {
+        ftue_interrupt_raised = true;
+        out = ds::LINK_STAY;
+        if (diag_on) {
+            diag_snapshot("interrupt raised");
+            diag_start();
+        }
+    } else
+        out = driver.on_update(hash, link, child);
+    if (diag_on && hash == STATE_LOAD_SESSION && !diag_load_told.exchange(true))
+        diag_snapshot("StateLoadSession enters");
+    if (diag_on && driver.phase == ds::Phase::left)
+        diag_start();
     if (out != link) {
         *slot = out;
         if (out != ds::LINK_STAY)
@@ -506,6 +675,19 @@ std::string weekend_text(uint8_t *wk)
     snprintf(head, sizeof head, "weekend %p, track stat id %u, current session %u of: ", wk,
              unsigned(wk[WK_TRACK]), cur);
     return head + ids;
+}
+
+bool set_weekend_track(void *modes, uint8_t id, const char *track_name, const char *when)
+{
+    uint8_t *wk = current_weekend(modes);
+    if (!wk)
+        return false;
+    if (wk[WK_TRACK] != id) {
+        swofty::log("[direct] Grand Prix: the weekend's track stat id %u -> %u (%s) %s", unsigned(wk[WK_TRACK]),
+                    unsigned(id), track_name, when);
+        wk[WK_TRACK] = id;
+    }
+    return true;
 }
 
 // The requested session (the CLI's session=, a game session name or practice1..3, qualifying, race) made the
@@ -825,6 +1007,7 @@ ds::Setup new_grand_prix(std::string &why)
     }
     *reinterpret_cast<void **>(e + ENTITY_LIST) = list;
     swofty::log("[direct] Grand Prix: entrant list %s (stat id %u) is %p", list_name.c_str(), unsigned(id), list);
+    swofty_core::apply::moments::box_picked(list_name.c_str());
     // 3. The track by name in E's track system: 16-byte entries at +0x28..+0x30, the record at +8, its name at +0x78.
     uint8_t *tracks = *reinterpret_cast<uint8_t **>(e + ENTITY_TRACKS);
     uint8_t *track = nullptr;
@@ -861,6 +1044,7 @@ ds::Setup new_grand_prix(std::string &why)
     *reinterpret_cast<void **>(holder + 0x18) = track;
     *reinterpret_cast<void **>(stub + 0x298) = holder;
     at_rva<void(void *)>(RVA_BUILD_SEASON)(stub);
+    set_weekend_track(modes, track[1], track_name.c_str(), "after the season build");
     // 5. E's components attached again, as the track select confirm does after its rounds, then the sessions.
     reinterpret_cast<void (*)(void *)>(evt[0xe8 / 8])(e);
     weekend_structure(e, static_cast<uint8_t *>(rounds));
@@ -878,14 +1062,7 @@ ds::Setup new_grand_prix(std::string &why)
     seat_player(e, mgr);
     swofty::log("[direct] Grand Prix: new weekend: setup mode %s, list %s (%p), track %s (%p), rounds %p, %zu entrant(s)",
                 setup_name.c_str(), list_name.c_str(), list, track_name.c_str(), track, rounds, entrants);
-    if (uint8_t *wk = current_weekend(modes)) {
-        uint8_t id = track[1];
-        if (wk[WK_TRACK] != id) {
-            swofty::log("[direct] Grand Prix: the weekend's track stat id %u -> %u (%s)", unsigned(wk[WK_TRACK]),
-                        unsigned(id), track_name.c_str());
-            wk[WK_TRACK] = id;
-        }
-    }
+    set_weekend_track(modes, track[1], track_name.c_str(), "after the entrants");
     choose_session(modes, "built");
     return ds::Setup::done;
 }
@@ -976,6 +1153,21 @@ void direct_start_setup()
     if (!runtime::title::why().empty()) {
         swofty::log("[direct] off: the title can't pass by itself (%s)", runtime::title::why().c_str());
         return;
+    }
+    if (ftue_interrupt_on) {
+        uintptr_t at = runtime::same_build() ? runtime::find(SIG_FTUE_EXIT, "StateFTUE exit", "direct") : 0;
+        bool hooked = false;
+        if (at) {
+            auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(ftue_exit_detour));
+            if (h) {
+                h_ftue_exit = std::move(*h);
+                hooked = true;
+            }
+        }
+        if (!hooked) {
+            ftue_interrupt_on = false;
+            swofty::log("[direct] FTUE interrupt off: StateFTUE::onStateExit did not hook; leaving by the link");
+        }
     }
     if (t.exit_state || t.from_state) {
         uintptr_t at = runtime::same_build() ? runtime::find(SIG_FLOW_LINK, "flow link", "direct") : 0;

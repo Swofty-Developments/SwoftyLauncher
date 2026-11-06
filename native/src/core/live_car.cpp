@@ -19,8 +19,13 @@ constexpr size_t CAR_IS_AI = 0x124, CAR_ENGINE = 0x530, CAR_GEARBOX = 0x538, CAR
 constexpr size_t GEARBOX_INDEX = 0x680, ENGINE_RATE = 0x2538, ENGINE_LIMIT = 0x2528;
 constexpr size_t CHASSIS_G_LATERAL = 0x320, CHASSIS_G_LONG = 0x324, CHASSIS_BODY = 0x340, BODY_STATE = 0x18,
                  BODY_VELOCITY = 0x220;
+constexpr size_t WHEEL_WETNESS = 0x280;
 constexpr size_t STEER_ANGLE = 0xe8, STEER_LOCK = 0x28, SUSPENSION_WHEELS = 0x70, WHEEL_SURFACE = 0x200,
                  SURFACE_ID = 0x78;
+// g_Game_WeatherSurfaceState: the track surface state; +0x3f0a38 is the track's wetness, 0 to 1, rewritten every frame
+// by Game_TrackInformationSystem_Update. The pointer is null while no session world is loaded.
+constexpr uintptr_t RVA_WEATHER_SURFACE_STATE = 0x6ce91d8;
+constexpr size_t SURFACE_STATE_WETNESS = 0x3f0a38;
 constexpr int MAX_CARS = 26;
 constexpr float RAD_S_TO_RPM = 60.0f / 6.2831855f;
 
@@ -132,11 +137,15 @@ void read_surface(uintptr_t car, LiveCar &out)
     if (!susp)
         return;
     uint8_t game[4];
+    float wettest = -1;
     for (int i = 0; i < 4; i++) {
         game[i] = 12;
         uintptr_t wheel = ptr(susp, SUSPENSION_WHEELS + 8 * size_t(i));
         if (!wheel)
             return;
+        float w = 0;
+        if (mem::read(wheel + WHEEL_WETNESS, w) && real(w) && w > wettest)
+            wettest = w;
         uintptr_t rec = ptr(wheel, WHEEL_SURFACE);
         uint8_t id = 0;
         uint32_t wide = 0;
@@ -147,8 +156,24 @@ void read_surface(uintptr_t car, LiveCar &out)
     }
     postfx::wheels_contract_order(game, out.surface);
     out.has_surface = true;
+    if (wettest >= 0) {
+        out.wheel_wetness = wettest > 1 ? 1 : wettest;
+        out.has_wheel_wetness = true;
+    }
 }
 
+}
+
+void read_wetness(LiveCar &out)
+{
+    if (!swofty::api)
+        return;
+    uintptr_t state = ptr(swofty::api->module_base() + RVA_WEATHER_SURFACE_STATE, 0);
+    float w = 0;
+    if (state && mem::read(state + SURFACE_STATE_WETNESS, w) && real(w)) {
+        out.wetness = w < 0 ? 0 : w > 1 ? 1 : w;
+        out.has_wetness = true;
+    }
 }
 
 bool read(LiveCar &out)
@@ -158,6 +183,7 @@ bool read(LiveCar &out)
         resolve();
     if (!table || !count)
         return false;
+    read_wetness(out);
     uintptr_t car = 0;
     bool ai = false;
     int player = find_player(car, ai);

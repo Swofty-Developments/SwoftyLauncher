@@ -2503,6 +2503,13 @@ impl Shell {
 
     fn addon_detail(&mut self, id: &str, inline: bool, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let changes = self.changes_of(id);
+        let changelog = self
+            .library
+            .addons
+            .iter()
+            .find(|a| a.manifest.id == id && a.source != Source::Builtin)
+            .map(|a| a.manifest.version.clone())
+            .and_then(|v| self.changelog_section(id, &v, p, cx));
         let Some(m) = self.library.addons.iter().find(|a| a.manifest.id == id) else {
             return div().into_any_element();
         };
@@ -2825,6 +2832,7 @@ impl Shell {
             })
             .child(facts)
             .children(self.registry_section(id, p, cx))
+            .children(changelog)
             .child(what)
             .child(conflicts)
             .children(settings)

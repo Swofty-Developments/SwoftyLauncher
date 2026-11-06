@@ -17,6 +17,15 @@
       "default": true,
       "binds": "native",
       "multiplayer": "cosmetic"
+    },
+    {
+      "id": "split_season_picker",
+      "type": "toggle",
+      "label": "Split the season picker",
+      "description": "Split the Grand Prix, Time Trial and split-screen season picker into Built In and Addons rows. Off keeps the game's single row, without addon seasons. Applies the next time you press Play.",
+      "default": true,
+      "binds": "native",
+      "multiplayer": "cosmetic"
     }
   ],
   "operations": {

@@ -268,6 +268,77 @@ fn resumes_at(range: Option<&str>, size: u64) -> Option<u64> {
     (whole && last + 1 == size && first <= last).then_some(first)
 }
 
+const RETRY_DELAYS: [Duration; 3] = [
+    Duration::from_secs(1),
+    Duration::from_secs(3),
+    Duration::from_secs(8),
+];
+
+/// A server answer worth asking again for: a 5xx or a rate limit.
+pub(crate) fn retryable_status(status: u16) -> bool {
+    status == 429 || (500..600).contains(&status)
+}
+
+/// A call that never got an answer for want of time or a connection.
+pub(crate) fn retryable_error(e: &ureq::Error) -> bool {
+    matches!(
+        e,
+        ureq::Error::Timeout(_) | ureq::Error::ConnectionFailed | ureq::Error::Io(_)
+    )
+}
+
+/// How long to wait before the attempt after `attempt` (counted from 1), or
+/// none when the retries are used up.
+pub(crate) fn retry_delay(attempt: u32) -> Option<Duration> {
+    RETRY_DELAYS.get(attempt.checked_sub(1)? as usize).copied()
+}
+
+fn transient(result: &std::result::Result<ureq::http::Response<ureq::Body>, ureq::Error>) -> bool {
+    match result {
+        Ok(r) => retryable_status(r.status().as_u16()),
+        Err(e) => retryable_error(e),
+    }
+}
+
+/// Runs `call` again after a transient failure, with [`RETRY_DELAYS`]
+/// between, and returns the last result with the number of attempts made.
+pub(crate) fn retrying<T, E>(
+    mut call: impl FnMut() -> std::result::Result<T, E>,
+    transient: impl Fn(&std::result::Result<T, E>) -> bool,
+    sleep: impl Fn(Duration),
+) -> (std::result::Result<T, E>, u32) {
+    let mut attempt = 1;
+    loop {
+        let result = call();
+        match retry_delay(attempt).filter(|_| transient(&result)) {
+            Some(delay) => {
+                sleep(delay);
+                attempt += 1;
+            }
+            None => return (result, attempt),
+        }
+    }
+}
+
+/// [`retrying`] for a ureq call made with `http_status_as_error(false)`.
+pub(crate) fn send(
+    call: impl FnMut() -> std::result::Result<ureq::http::Response<ureq::Body>, ureq::Error>,
+) -> (
+    std::result::Result<ureq::http::Response<ureq::Body>, ureq::Error>,
+    u32,
+) {
+    retrying(call, transient, std::thread::sleep)
+}
+
+/// " (after N attempts)" when more than one was made.
+pub(crate) fn attempts_note(attempts: u32) -> String {
+    if attempts > 1 {
+        format!(" (after {attempts} attempts)")
+    } else {
+        String::new()
+    }
+}
+
 /// A failure of the connection or its TLS, as opposed to an answer from the
 /// server.
 pub(crate) fn transport(e: &ureq::Error) -> bool {
@@ -295,6 +366,65 @@ pub(crate) fn broken(e: &std::io::Error) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn retries_only_server_trouble() {
+        for s in [429, 500, 502, 503, 504] {
+            assert!(retryable_status(s), "{s}");
+        }
+        for s in [200, 301, 400, 401, 403, 404, 410, 416] {
+            assert!(!retryable_status(s), "{s}");
+        }
+        assert!(retryable_error(&ureq::Error::Timeout(ureq::Timeout::Connect)));
+        assert!(retryable_error(&ureq::Error::Timeout(
+            ureq::Timeout::RecvResponse
+        )));
+        assert!(retryable_error(&ureq::Error::ConnectionFailed));
+        assert!(!retryable_error(&ureq::Error::StatusCode(404)));
+        assert!(!retryable_error(&ureq::Error::HostNotFound));
+        assert!(!retryable_error(&ureq::Error::BodyExceedsLimit(10)));
+    }
+
+    #[test]
+    fn backs_off_then_gives_up() {
+        assert_eq!(retry_delay(0), None);
+        assert_eq!(retry_delay(1), Some(Duration::from_secs(1)));
+        assert_eq!(retry_delay(2), Some(Duration::from_secs(3)));
+        assert_eq!(retry_delay(3), Some(Duration::from_secs(8)));
+        assert_eq!(retry_delay(4), None);
+    }
+
+    #[test]
+    fn counts_attempts() {
+        let slept = std::cell::RefCell::new(Vec::new());
+        let mut n = 0;
+        let (result, attempts) = retrying(
+            || {
+                n += 1;
+                if n < 3 { Err(504) } else { Ok(n) }
+            },
+            |r: &std::result::Result<i32, i32>| r.is_err(),
+            |d| slept.borrow_mut().push(d),
+        );
+        assert_eq!((result, attempts), (Ok(3), 3));
+        assert_eq!(*slept.borrow(), [Duration::from_secs(1), Duration::from_secs(3)]);
+
+        let (result, attempts) = retrying(|| Err::<i32, i32>(504), |r| r.is_err(), |_| {});
+        assert_eq!((result, attempts), (Err(504), 4));
+
+        let mut calls = 0;
+        let (result, attempts) = retrying(
+            || {
+                calls += 1;
+                Err::<i32, i32>(404)
+            },
+            |_| false,
+            |_| panic!("no wait for a permanent failure"),
+        );
+        assert_eq!((result, attempts, calls), (Err(404), 1, 1));
+        assert_eq!(attempts_note(1), "");
+        assert_eq!(attempts_note(4), " (after 4 attempts)");
+    }
 
     #[test]
     fn counts_tls_and_connection_failures_as_transport() {

@@ -19,6 +19,58 @@ const MAP_FILES: &[&str] = &[
 ];
 const REG: &str = "WINE REGISTRY Version 2\n;; All keys relative to \\\\User\n\n[Software\\\\Wine] 1700000000\n\"Version\"=\"win10\"\n";
 
+#[test]
+fn sweep_rechecks_changed_cached_files_and_preserves_user_edits() {
+    use swofty_core::baseline::Hashes;
+    use swofty_core::placed::Placed;
+    let f = Fixture::new("sweep-cache-edits");
+    let mut placed = Placed::default();
+    let mut hashes = Hashes::load(&f.data);
+    for rel in ["addon/unchanged.bin", "addon/edited.bin"] {
+        write(&f.game.join(rel), "mod bytes");
+        let sha = hashes.sha256(&f.game.join(rel)).unwrap();
+        placed.insert(rel, sha, false);
+    }
+    placed.save(&f.data).unwrap();
+    hashes.save();
+    write(&f.game.join("addon/edited.bin"), "user changed these bytes");
+    let game = f.game("1");
+    Installer::new(&f.data, &game).sweep().unwrap();
+    assert!(!f.game.join("addon/unchanged.bin").exists());
+    assert_eq!(f.read("addon/edited.bin"), "user changed these bytes");
+}
+
+#[test]
+#[ignore = "manual large-profile sweep benchmark"]
+fn benchmark_large_profile_sweep_hash_cache() {
+    use swofty_core::baseline::Hashes;
+    use swofty_core::placed::Placed;
+    for warm in [false, true] {
+        let f = Fixture::new(if warm { "bench-warm" } else { "bench-cold" });
+        let bytes = vec![42u8; 256 * 1024];
+        let sha = sha256_bytes(&bytes);
+        let mut placed = Placed::default();
+        let mut hashes = Hashes::load(&f.data);
+        for i in 0..512 {
+            let rel = format!("mods/assets/{i}.bin");
+            let path = f.game.join(&rel);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(&path, &bytes).unwrap();
+            placed.insert(&rel, sha.clone(), false);
+            if warm {
+                hashes.wrote(&path, &sha);
+            }
+        }
+        placed.save(&f.data).unwrap();
+        hashes.save();
+        let game = f.game("1");
+        let start = std::time::Instant::now();
+        let removed = Installer::new(&f.data, &game).sweep().unwrap();
+        assert_eq!(removed.len(), 512);
+        println!("512 files / 128 MiB; cached={warm}: {:?}", start.elapsed());
+    }
+}
+
 struct Fixture {
     root: PathBuf,
     game: PathBuf,

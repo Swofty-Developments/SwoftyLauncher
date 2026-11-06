@@ -458,7 +458,7 @@ several rules, one option   applied in priority order, each blending over the re
 
 ### Signals
 
-Every signal is for the player's car. The `car.*` signals read the player's own car, also in replays and while spectating.
+Every signal is for the player's car. The `car.*` signals read the player's own car, also in replays and while spectating. The `car.*` signals and `session.wetness` are read from the Steam copy of F1 25; on the EA app copy they have no value yet.
 
 ```text
 in game now
@@ -481,6 +481,8 @@ car.steer           number   -1 to 1
 car.g_lateral       number   g, -6 to 6
 car.g_long          number   g, -6 to 6, braking negative
 car.surface         name     tarmac kerb rumble grass gravel sand, per wheel
+car.wetness         number   0-1 water under the car's wheels: the wettest of the four
+session.wetness     number   0 dry to 1 soaked: how wet the track is
 
 not read in game yet (works in the Preview)
 view.camera         name     cockpit tcam tcam_offset chase_near chase_far other
@@ -491,7 +493,6 @@ car.off_track       yes/no   all four wheels off the track
 session.flag        name     none green blue yellow red
 session.safety_car  name     none sc vsc formation
 session.weather     name     clear light_cloud overcast light_rain heavy_rain storm
-session.wetness     number   0-1 track water
 session.flashback   event
 session.chequered   event    the player takes the flag
 ```
