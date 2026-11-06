@@ -834,6 +834,7 @@ mod tests {
             category: None,
             kind: Vec::new(),
             homepage: None,
+            repository: None,
             icon: None,
             publisher: None,
             publishers: Vec::new(),

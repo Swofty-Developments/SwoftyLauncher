@@ -64,6 +64,8 @@ pub struct Addon {
     #[serde(default)]
     pub homepage: Option<String>,
     #[serde(default)]
+    pub repository: Option<String>,
+    #[serde(default)]
     pub icon: Option<String>,
     #[serde(default)]
     pub publisher: Option<Publisher>,
@@ -140,6 +142,11 @@ impl Version {
 }
 
 impl Addon {
+    /// The link to the addon's source code, when the catalog names one the launcher may open.
+    pub fn source_url(&self) -> Option<&str> {
+        self.repository.as_deref().and_then(crate::manifest::https_url)
+    }
+
     /// Every listed version once, newest first, yanked ones left out.
     pub fn listed(&self) -> Vec<&Version> {
         let mut out: Vec<&Version> = Vec::new();
@@ -798,6 +805,7 @@ mod tests {
             category: None,
             kind: Vec::new(),
             homepage: None,
+            repository: None,
             icon: None,
             publisher: None,
             publishers: Vec::new(),
@@ -1276,6 +1284,24 @@ mod tests {
         assert_eq!(addons[0].kind_labels(), ["Code"]);
         assert_eq!(addons[0].stars, 0);
         assert!(parse("<html>").is_none());
+    }
+
+    #[test]
+    fn source_url_is_the_listed_repository_when_it_is_https() {
+        let listed = |repository: &str| {
+            let text = format!(r#"{{"addons":[{{"id":"a.b","name":"B","repository":{repository}}}]}}"#);
+            parse(&text).unwrap().remove(0)
+        };
+        assert_eq!(
+            listed(r#""https://github.com/me/b""#).source_url(),
+            Some("https://github.com/me/b")
+        );
+        assert_eq!(listed(r#""http://example.com/b""#).source_url(), None);
+        assert_eq!(listed("null").source_url(), None);
+        let without = parse(r#"{"addons":[{"id":"a.b","name":"B"}]}"#)
+            .unwrap()
+            .remove(0);
+        assert_eq!(without.source_url(), None);
     }
 
     #[test]

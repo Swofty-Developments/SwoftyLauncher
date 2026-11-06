@@ -142,6 +142,25 @@ impl Facet {
 /// They make up Built In, and nothing is placed above them.
 const PINNED: [&str; 2] = [swofty_core::builtin::CORE_ID, swofty_core::managed::ID];
 
+/// The value of the Source code row: a link to the addon's source, or a note that it names none.
+fn source_code(url: Option<&str>, p: Palette) -> AnyElement {
+    let Some(url) = url else {
+        return div()
+            .text_color(p.text_muted)
+            .child("Not listed")
+            .into_any_element();
+    };
+    let target = url.to_owned();
+    div()
+        .id("detail-source-code")
+        .cursor_pointer()
+        .text_color(p.accent)
+        .hover(|s| s.underline())
+        .child(url.to_owned())
+        .on_click(move |_, _, cx| cx.open_url(&target))
+        .into_any_element()
+}
+
 /// The experimental features an addon turns on, as "Overlay".
 fn experimental_labels(m: &AddonItem) -> String {
     m.manifest
@@ -2676,7 +2695,10 @@ impl Shell {
                 d.child(fact("Requires", div().text_color(color).child(text), p))
             })
             .when_some(man.license.clone(), |d, l| d.child(fact("License", l, p)))
-            .when_some(man.homepage.clone(), |d, h| d.child(fact("Homepage", h, p)));
+            .when_some(man.homepage.clone(), |d, h| d.child(fact("Homepage", h, p)))
+            .when(m.source == Source::Installed || man.source_url().is_some(), |d| {
+                d.child(fact("Source code", source_code(man.source_url(), p), p))
+            });
         let advanced_open = self.addons.advanced;
         let advanced = v_flex()
             .child(

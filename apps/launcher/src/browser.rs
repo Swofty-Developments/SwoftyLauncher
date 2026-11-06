@@ -263,6 +263,7 @@ fn update_identity(update: &Update) -> Addon {
         category: None,
         kind: Vec::new(),
         homepage: None,
+        repository: None,
         icon: None,
         publisher: None,
         publishers: Vec::new(),
@@ -3806,6 +3807,14 @@ impl Shell {
                     .label("Homepage")
                     .on_click(move |_, _, cx| cx.open_url(&url))
             });
+        let source_code = a.source_url().map(str::to_owned).map(|url| {
+            Button::new("browser-source-code")
+                .ghost()
+                .small()
+                .icon(IconName::ExternalLink)
+                .label("Source code")
+                .on_click(move |_, _, cx| cx.open_url(&url))
+        });
         let hero = h_flex()
             .gap(px(16.))
             .items_start()
@@ -3844,6 +3853,7 @@ impl Shell {
                     .flex_shrink_0()
                     .child(self.star_button(listed, "browser-detail-star".into(), true, p, cx))
                     .children(homepage)
+                    .children(source_code)
                     .child(self.offer_button(listed, "browser-detail-offer".into(), cx)),
             );
         let working = self.browser.working.get(&a.id).map(|job| {

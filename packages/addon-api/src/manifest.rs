@@ -25,6 +25,9 @@ pub struct AddonManifest {
     pub license: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub homepage: Option<String>,
+    /// Where the addon's source code is published.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub repository: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub icon: Option<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -828,7 +831,20 @@ pub fn valid_screen_name(name: &str) -> bool {
             .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'_')
 }
 
+/// `url` when it is a link the launcher may open: `https://` with something after it.
+pub fn https_url(url: &str) -> Option<&str> {
+    let url = url.trim();
+    url.strip_prefix("https://")
+        .filter(|rest| !rest.is_empty())
+        .map(|_| url)
+}
+
 impl AddonManifest {
+    /// The link to the addon's source code, when it names one the launcher may open.
+    pub fn source_url(&self) -> Option<&str> {
+        self.repository.as_deref().and_then(https_url)
+    }
+
     pub fn load(dir: &Path) -> Result<Self> {
         let path = dir.join(MANIFEST_FILE);
         let data = std::fs::read(&path).map_err(|source| Error::Io {
@@ -1298,6 +1314,26 @@ mod tests {
                     "values": ["titlesponsor", { "value": "tier01", "label": "Tier 1" }, "replica"], "binds": "db" }],
       "operations": { "database": ["db/grid24.json"] }
     }"#;
+
+    #[test]
+    fn source_url_is_the_repository_when_it_is_https() {
+        let with = |value: &str| {
+            let field = format!(r#""repository": {value}, "operations":"#);
+            AddonManifest::parse(&GRID24.replace(r#""operations":"#, &field)).unwrap()
+        };
+        let m = with(r#""https://github.com/me/my-addon""#);
+        assert_eq!(m.source_url(), Some("https://github.com/me/my-addon"));
+        for not_a_link in [r#""http://example.com/a""#, r#""javascript:alert(1)""#, r#""  ""#] {
+            assert_eq!(with(not_a_link).source_url(), None, "{not_a_link}");
+        }
+        assert_eq!(AddonManifest::parse(GRID24).unwrap().source_url(), None);
+    }
+
+    #[test]
+    fn a_manifest_without_a_repository_writes_no_repository_field() {
+        let m = AddonManifest::parse(GRID24).unwrap();
+        assert!(!serde_json::to_string(&m).unwrap().contains("repository"));
+    }
 
     #[test]
     fn hud_mfd_rows_name_toggle_or_choice_options() {
