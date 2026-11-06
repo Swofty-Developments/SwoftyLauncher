@@ -1517,7 +1517,11 @@ impl Shell {
                 {
                     batch.failed.push((addon.name.clone(), error));
                 } else {
-                    let verb = if self.installed_version(&id).is_some() { "update" } else { "install" };
+                    let verb = if self.installed_version(&id).is_some() {
+                        "update"
+                    } else {
+                        "install"
+                    };
                     self.browser
                         .toasts
                         .push(install_failure_toast(&addon.name, verb, false, error));
@@ -1652,7 +1656,9 @@ impl Shell {
                                 b.failed.push((addon.name.clone(), error));
                             }
                         } else {
-                            s.browser.toasts.push(install_failure_toast(&addon.name, verb, refused, error));
+                            s.browser
+                                .toasts
+                                .push(install_failure_toast(&addon.name, verb, refused, error));
                         }
                         s.reload(cx);
                     }
@@ -4378,7 +4384,10 @@ mod tests {
 
     #[test]
     fn failed_install_toast_title_names_the_addon() {
-        assert_eq!(super::install_failure_title("Foo", "install", false), "Could not install Foo");
+        assert_eq!(
+            super::install_failure_title("Foo", "install", false),
+            "Could not install Foo"
+        );
         assert_eq!(
             super::install_failure_title("Foo", "update", true),
             "Can't update Foo: missing requirements"
