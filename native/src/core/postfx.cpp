@@ -9,6 +9,7 @@
 #include <swofty/mixin.hpp>
 
 #include <d3d12.h>
+#include <d3dcompiler.h>
 
 #include <algorithm>
 #include <array>
@@ -62,6 +63,7 @@ constexpr wchar_t BACKBUFFER_NAME[] = L"BackBuffer";
 constexpr wchar_t HUDLESS_NAME[] = L"eaid://ego_package/hudless_backbuffer.image";
 constexpr wchar_t DEPTH_NAME[] = L"eaid://ego_package/gbuffer_depth_stencil.image";
 constexpr wchar_t UI_PREFIX[] = L"eaid://ui_package/";
+constexpr UINT MIP_STEPS = 512;
 constexpr UINT FRAMES = 8, MAX_PASSES = 64, CONSTANTS = postfx::CONSTANT_COUNT, BUDGET_FRAMES = 120, INPUTS = 8, TABLE = 2 + INPUTS + 1;
 constexpr D3D12_RESOURCE_STATES HOME = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 constexpr D3D12_RESOURCE_STATES READ_STATES =
@@ -101,6 +103,7 @@ struct Tex {
     UINT width = 0, height = 0;
     DXGI_FORMAT format = DXGI_FORMAT_R16G16B16A16_FLOAT;
     bool persistent = false;
+    uint32_t mips = 1;
     ID3D12Resource *res = nullptr, *upload = nullptr;
     UINT w = 0, h = 0;
     std::string pixels;
@@ -399,6 +402,9 @@ std::wstring off_file, trace_file, swofty_root_dir;
 
 ID3D12Device *device;
 ID3D12RootSignature *root;
+ID3D12PipelineState *mip_pso;
+UINT levels_of(const Tex &t);
+bool make_mip_pso();
 Slot slots[FRAMES];
 // Counts the times the core made its heap or textures, so slots know their descriptor tables are old.
 unsigned textures_made;
@@ -508,14 +514,14 @@ ID3D12Resource *buffer(D3D12_HEAP_TYPE type, UINT64 size, D3D12_RESOURCE_STATES 
                : nullptr;
 }
 
-ID3D12Resource *texture(UINT w, UINT h, DXGI_FORMAT f, bool uav)
+ID3D12Resource *texture(UINT w, UINT h, DXGI_FORMAT f, bool uav, UINT mips = 1)
 {
     D3D12_RESOURCE_DESC td{};
     td.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
     td.Width = w;
     td.Height = h;
     td.DepthOrArraySize = 1;
-    td.MipLevels = 1;
+    td.MipLevels = UINT16(mips);
     td.Format = f;
     td.SampleDesc = {1, 0};
     td.Flags = uav ? D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS : D3D12_RESOURCE_FLAG_NONE;
@@ -595,6 +601,7 @@ bool init(ID3D12Resource *res)
         swofty::log("[postfx] could not make the passes' root signature; post-processing is off");
         return false;
     }
+    make_mip_pso();
     for (auto &s : slots) {
         if (FAILED(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&s.fence))) ||
             FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&s.alloc))) ||
@@ -669,11 +676,16 @@ bool read_tex_file(Tex &t)
     return true;
 }
 
+UINT mip_base()
+{
+    return FRAMES * MAX_PASSES * TABLE + UINT(textures.size()) * (FRAMES + 1) + 1;
+}
+
 bool make_heaps()
 {
     D3D12_DESCRIPTOR_HEAP_DESC hd{};
     hd.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    hd.NumDescriptors = FRAMES * MAX_PASSES * TABLE + UINT(textures.size()) * (FRAMES + 1) + 1;
+    hd.NumDescriptors = mip_base() + FRAMES * MIP_STEPS * TABLE;
     hd.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
     D3D12_DESCRIPTOR_HEAP_DESC cd = hd;
     cd.NumDescriptors = UINT(textures.size()) * (FRAMES + 1) + 1;
@@ -716,7 +728,7 @@ bool make_frame(const D3D12_RESOURCE_DESC &d)
         if (!t.persistent && t.file.empty())
             continue;
         old.push_back(t.res);
-        t.res = texture(t.w, t.h, t.format, t.file.empty());
+        t.res = texture(t.w, t.h, t.format, t.file.empty(), levels_of(t));
         t.clear = t.file.empty();
         if (!t.res) {
             swofty::log("[postfx] texture %s (%ux%u, format %d) could not be made; post-processing is off",
@@ -740,6 +752,11 @@ bool make_frame(const D3D12_RESOURCE_DESC &d)
     return true;
 }
 
+UINT levels_of(const Tex &t)
+{
+    return t.file.empty() ? postfx::mip_levels(t.w, t.h, t.mips) : 1;
+}
+
 bool shared(const Tex &t)
 {
     return t.persistent || !t.file.empty();
@@ -760,7 +777,7 @@ bool ensure_work(int k)
     bool ok = wk.orig && wk.pic[0] && wk.pic[1];
     for (size_t i = 0; i < textures.size() && ok; i++)
         if (!shared(textures[i]))
-            ok = (wk.tex[i] = texture(textures[i].w, textures[i].h, textures[i].format, true)) != nullptr;
+            ok = (wk.tex[i] = texture(textures[i].w, textures[i].h, textures[i].format, true, levels_of(textures[i]))) != nullptr;
     wk.clear = true;
     if (!ok)
         swofty::log("[postfx] the working textures of slot %d could not be made; post-processing is off", k);
@@ -782,22 +799,97 @@ D3D12_GPU_DESCRIPTOR_HANDLE gpu_at(ID3D12DescriptorHeap *h, UINT i)
     return {h->GetGPUDescriptorHandleForHeapStart().ptr + UINT64(i) * frame.stride};
 }
 
-void srv(ID3D12Resource *r, DXGI_FORMAT f, D3D12_CPU_DESCRIPTOR_HANDLE at)
+void srv(ID3D12Resource *r, DXGI_FORMAT f, D3D12_CPU_DESCRIPTOR_HANDLE at, UINT first = 0, UINT count = 0)
 {
     D3D12_SHADER_RESOURCE_VIEW_DESC sv{};
     sv.Format = f;
     sv.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
     sv.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    sv.Texture2D.MipLevels = 1;
+    sv.Texture2D.MostDetailedMip = first;
+    sv.Texture2D.MipLevels = count ? count : r ? UINT(r->GetDesc().MipLevels) : 1;
     device->CreateShaderResourceView(r, &sv, at);
 }
 
-void uav(ID3D12Resource *r, DXGI_FORMAT f, D3D12_CPU_DESCRIPTOR_HANDLE at)
+void uav(ID3D12Resource *r, DXGI_FORMAT f, D3D12_CPU_DESCRIPTOR_HANDLE at, UINT mip = 0)
 {
     D3D12_UNORDERED_ACCESS_VIEW_DESC uv{};
     uv.Format = f;
     uv.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+    uv.Texture2D.MipSlice = mip;
     device->CreateUnorderedAccessView(r, nullptr, &uv, at);
+}
+
+void transition_level(ID3D12GraphicsCommandList *list, ID3D12Resource *r, UINT level, D3D12_RESOURCE_STATES from,
+                      D3D12_RESOURCE_STATES to)
+{
+    D3D12_RESOURCE_BARRIER b{};
+    b.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    b.Transition.pResource = r;
+    b.Transition.Subresource = level;
+    b.Transition.StateBefore = from;
+    b.Transition.StateAfter = to;
+    d3d12hooks::barrier_original(list, 1u, &b);
+}
+
+UINT mip_steps_used;
+
+bool make_mip_pso()
+{
+    HMODULE compiler = LoadLibraryA("d3dcompiler_47.dll");
+    auto compile = compiler ? reinterpret_cast<pD3DCompile>(GetProcAddress(compiler, "D3DCompile")) : nullptr;
+    if (!compile) {
+        swofty::log("[postfx] d3dcompiler_47.dll!D3DCompile is unavailable; mipmapped textures keep only their first level");
+        return false;
+    }
+    static const char hlsl[] =
+        "Texture2D<float4> src:register(t2);RWTexture2D<float4> dst:register(u0);"
+        "[numthreads(8,8,1)]void CS(uint3 id:SV_DispatchThreadID){uint w,h;dst.GetDimensions(w,h);"
+        "if(id.x>=w||id.y>=h)return;uint sw,sh;src.GetDimensions(sw,sh);int2 m=int2(sw,sh)-1;int2 b=int2(id.xy)*2;"
+        "dst[id.xy]=0.25*(src.Load(int3(min(b,m),0))+src.Load(int3(min(b+int2(1,0),m),0))"
+        "+src.Load(int3(min(b+int2(0,1),m),0))+src.Load(int3(min(b+int2(1,1),m),0)));}";
+    ID3DBlob *code = nullptr, *err = nullptr;
+    HRESULT hr = compile(hlsl, sizeof hlsl - 1, nullptr, nullptr, nullptr, "CS", "cs_5_0", 0, 0, &code, &err);
+    if (err) {
+        if (FAILED(hr))
+            swofty::log("[postfx] mip downsample: %.*s", int(err->GetBufferSize()),
+                        static_cast<const char *>(err->GetBufferPointer()));
+        err->Release();
+    }
+    if (SUCCEEDED(hr) && code) {
+        D3D12_COMPUTE_PIPELINE_STATE_DESC pd{};
+        pd.pRootSignature = root;
+        pd.CS = {code->GetBufferPointer(), code->GetBufferSize()};
+        hr = device->CreateComputePipelineState(&pd, IID_PPV_ARGS(&mip_pso));
+    }
+    release(code);
+    if (FAILED(hr))
+        swofty::log("[postfx] the mip downsample pipeline could not be made (0x%08lx); mipmapped textures keep only their first level", hr);
+    return SUCCEEDED(hr);
+}
+
+// Fills levels 1.. of r from level 0, which the caller has left in HOME: each level is written as a UAV, then
+// moved to HOME before the next one reads it.
+void build_mips(ID3D12GraphicsCommandList *l, ID3D12Resource *r, DXGI_FORMAT f, UINT w, UINT h, UINT levels, int k)
+{
+    if (!mip_pso || levels < 2)
+        return;
+    l->SetPipelineState(mip_pso);
+    for (UINT level = 1; level < levels; level++) {
+        if (mip_steps_used >= MIP_STEPS)
+            return;
+        UINT at = mip_base() + (UINT(k) * MIP_STEPS + mip_steps_used++) * TABLE;
+        for (UINT i = 0; i < 2 + INPUTS; i++)
+            if (i == 2)
+                srv(r, f, cpu_at(frame.heap, at + i), level - 1, 1);
+            else
+                srv(nullptr, f, cpu_at(frame.heap, at + i));
+        uav(r, f, cpu_at(frame.heap, at + TABLE - 1), level);
+        postfx::Size to = postfx::mip_size(w, h, level);
+        transition_level(l, r, level, HOME, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+        l->SetComputeRootDescriptorTable(1, gpu_at(frame.heap, at));
+        l->Dispatch(postfx::groups(to.w, 8), postfx::groups(to.h, 8), 1);
+        transition_level(l, r, level, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, HOME);
+    }
 }
 
 DXGI_FORMAT depth_view(DXGI_FORMAT f)
@@ -1310,6 +1402,7 @@ bool record(const Where &w, int k)
             upload(l, t);
     l->SetComputeRootSignature(root);
     l->SetDescriptorHeaps(1, &frame.heap);
+    mip_steps_used = 0;
     UINT clear_at = FRAMES * MAX_PASSES * TABLE, ntex = UINT(textures.size());
     for (size_t i = 0; i < textures.size(); i++) {
         Tex &t = textures[i];
@@ -1324,6 +1417,8 @@ bool record(const Where &w, int k)
         const float zero[4] = {};
         l->ClearUnorderedAccessViewFloat(gpu_at(frame.heap, clear_at + at), cpu_at(frame.cpu, at), r, zero, 0, nullptr);
         transition(l, r, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, HOME);
+        if (levels_of(t) > 1)
+            build_mips(l, r, t.format, t.w, t.h, levels_of(t), k);
         if (!own)
             t.clear = false;
     }
@@ -1405,6 +1500,8 @@ bool record(const Where &w, int k)
         if (timed)
             l->EndQuery(queries, D3D12_QUERY_TYPE_TIMESTAMP, qbase + s.passes * 2 + 1);
         transition(l, out, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, HOME);
+        if (p.output >= 0 && levels_of(textures[size_t(p.output)]) > 1)
+            build_mips(l, out, of, ow, oh, levels_of(textures[size_t(p.output)]), k);
         s.pass_of[s.passes++] = index;
         if (p.output < 0) {
             cur = out;
@@ -2098,6 +2195,7 @@ Tex fresh_texture(const postfx::PlanTex &pt)
     t.width = pt.decl.width;
     t.height = pt.decl.height;
     t.persistent = pt.decl.persistent;
+    t.mips = pt.decl.mips;
     t.format = DXGI_FORMAT(pt.decl.format);
     if (!t.file.empty() && !read_tex_file(t)) {
         swofty::log("[shaders] texture %s is left out: %s is missing or not a texture", t.name.c_str(), t.file.c_str());
@@ -2117,7 +2215,7 @@ bool fit_frame()
         t.w = sz.w;
         t.h = sz.h;
         if (shared(t) && !t.res) {
-            t.res = texture(t.w, t.h, t.format, t.file.empty());
+            t.res = texture(t.w, t.h, t.format, t.file.empty(), levels_of(t));
             t.clear = t.file.empty();
             if (!t.res)
                 return false;
@@ -2127,7 +2225,7 @@ bool fit_frame()
         if (!wk.orig)
             continue;
         for (size_t i = 0; i < textures.size(); i++)
-            if (!shared(textures[i]) && !wk.tex[i] && !(wk.tex[i] = texture(textures[i].w, textures[i].h, textures[i].format, true)))
+            if (!shared(textures[i]) && !wk.tex[i] && !(wk.tex[i] = texture(textures[i].w, textures[i].h, textures[i].format, true, levels_of(textures[i]))))
                 return false;
         wk.clear = true;
     }

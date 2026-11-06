@@ -120,6 +120,26 @@ struct Size {
     uint32_t w = 0, h = 0;
 };
 
+inline constexpr uint32_t MAX_MIPS = 12;
+
+// The levels a w x h texture carries for a declared count: at least 1, at most MAX_MIPS and
+// floor(log2(max(w, h))) + 1.
+inline uint32_t mip_levels(uint32_t w, uint32_t h, uint32_t declared)
+{
+    uint32_t most = 1;
+    for (uint32_t m = w > h ? w : h; m > 1; m >>= 1)
+        most++;
+    uint32_t cap = most < MAX_MIPS ? most : MAX_MIPS;
+    return declared < 1 ? 1 : declared > cap ? cap : declared;
+}
+
+// The size of a level: each step halves, rounding down, at least 1.
+inline Size mip_size(uint32_t w, uint32_t h, uint32_t level)
+{
+    uint32_t sw = level < 32 ? w >> level : 0, sh = level < 32 ? h >> level : 0;
+    return {sw ? sw : 1u, sh ? sh : 1u};
+}
+
 // A texture's size for a picture: its own width and height, or the picture's scaled, at least 1x1.
 inline Size texture_size(double scale, uint32_t width, uint32_t height, uint32_t pic_w, uint32_t pic_h)
 {
@@ -260,11 +280,12 @@ struct TexDecl {
     uint32_t width = 0, height = 0;
     int format = 10;
     bool persistent = false;
+    uint32_t mips = 1;
 
     bool operator==(const TexDecl &o) const
     {
         return name == o.name && file == o.file && scale == o.scale && width == o.width && height == o.height &&
-               format == o.format && persistent == o.persistent;
+               format == o.format && persistent == o.persistent && mips == o.mips;
     }
 };
 
@@ -307,6 +328,8 @@ inline std::vector<EffectDecl> parse_effects(const std::string &text)
                 x.height = uint32_t(t["height"].n);
             }
             x.persistent = t["persistent"].type == json::Value::Bool && t["persistent"].b;
+            if (t["mips"].type == json::Value::Num && t["mips"].n >= 1)
+                x.mips = t["mips"].n > MAX_MIPS ? MAX_MIPS : uint32_t(t["mips"].n);
             int f = format_of(t["format"].str("rgba16f"));
             x.format = f ? f : 10;
             d.textures.push_back(std::move(x));

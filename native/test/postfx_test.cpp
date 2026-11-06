@@ -58,6 +58,14 @@ int main()
     Size fixed = texture_size(0.5, 256, 128, 1920, 1080);
     CHECK(fixed.w == 256 && fixed.h == 128);
 
+    CHECK(mip_levels(4, 4, 3) == 3 && mip_levels(4, 4, 9) == 3 && mip_levels(4, 4, 0) == 1 && mip_levels(4, 4, 1) == 1);
+    CHECK(mip_levels(1920, 1080, 12) == 11 && mip_levels(2048, 1, 99) == 12 && mip_levels(1 << 20, 1, 99) == 12);
+    CHECK(mip_levels(1, 1, 5) == 1 && mip_levels(5, 3, 9) == 3 && mip_levels(64, 32, 7) == 7 && mip_levels(64, 32, 8) == 7);
+    Size l1 = mip_size(5, 3, 1), l2 = mip_size(5, 3, 2), l9 = mip_size(5, 3, 9), l0 = mip_size(5, 3, 0);
+    CHECK(l0.w == 5 && l0.h == 3 && l1.w == 2 && l1.h == 1 && l2.w == 1 && l2.h == 1 && l9.w == 1 && l9.h == 1);
+    Size big = mip_size(1920, 1080, 5);
+    CHECK(big.w == 60 && big.h == 33);
+
     float v = -1;
     CHECK(option_value("true", v) && v == 1);
     CHECK(option_value("false", v) && v == 0);
@@ -160,6 +168,13 @@ int main()
     CHECK(effects[0].textures[0].scale == 0.5 && effects[0].textures[0].format == 10);
     CHECK(effects[0].textures[1].persistent && effects[0].textures[1].width == 1);
     CHECK(effects[0].textures[2].format == 28 && effects[0].textures[2].file == "shaders/tex/ambient_light-dirt.tex");
+    std::vector<EffectDecl> chained = parse_effects(
+        R"({"effects":[{"id":"m","slots":1,"textures":[{"name":"a","width":64,"height":32,"mips":7},{"name":"b","mips":99},{"name":"c","mips":0},{"name":"d"}],
+        "passes":[{"name":"p","dxil":"p.dxil","output":"a"}]}]})");
+    CHECK(chained.size() == 1 && chained[0].textures.size() == 4);
+    CHECK(chained[0].textures[0].mips == 7 && chained[0].textures[1].mips == MAX_MIPS && chained[0].textures[2].mips == 1 &&
+          chained[0].textures[3].mips == 1);
+    CHECK(effects[0].textures[0].mips == 1 && !(chained[0].textures[0] == effects[0].textures[0]));
     CHECK(effects[0].passes[1].inputs.size() == 5 && effects[0].passes[1].threads[0] == 8);
     CHECK(parse_effects("not json").empty() && parse_effects("{}").empty());
 
