@@ -645,6 +645,24 @@ int main()
         auto sel = era::time_trial_budget({big_selected, f1_2025});
         expect(sel.dropped == std::vector<size_t>{1} && sel.cars == 24,
                "the selected list always stays; the others are left out when it fills the table by itself");
+        {
+            era::TtList prev{"cs_f1_2020", true, false, refs(3000, 20)};
+            std::vector<era::ListCars> esm = {{"bdx_s5_2012", 24}, {"bdx_s5_2012_tt", 12}, {"cs_f1_2020", 20}};
+            era::ListCars session{"cs_f1_2020", 20}, first{"bdx_s5_2012", 24};
+            int64_t loaded = era::time_trial_loaded(session, first, esm, {"f1_2025", "bdx_s5_2012_tt"});
+            expect(loaded == 1 && esm[size_t(loaded)].name == "bdx_s5_2012_tt",
+                   "after a previous session on cs_f1_2020, a 24-car first list swaps to its _tt list, which is what loads");
+            expect(era::time_trial_loaded({"cs_f1_2020", 20}, {"cs_f1_2020", 20}, esm, {}) == -1,
+                   "no swap while the selected and first lists fit: the selected list is what loads");
+            era::TtList tt{"bdx_s5_2012_tt", true, true, refs(700, 12)};
+            era::TtList stock_a{"cs_f1_2021", false, false, refs(3100, 10)}, stock_b{"cs_f1_2022", false, false, refs(3200, 10)};
+            auto fresh = era::time_trial_budget({tt, stock_a, stock_b});
+            expect(fresh.cars + era::TT_OWN_ENTRIES <= era::TT_TABLE && fresh.dropped == std::vector<size_t>{2},
+                   "the budget built for the list that loads (12 cars) keeps the table within 26 and leaves out what does not fit");
+            auto wrong = era::time_trial_budget({prev, stock_a});
+            expect(wrong.cars + era::TT_OWN_ENTRIES + 12 > era::TT_TABLE,
+                   "a budget built for the pre-swap list leaves room that the swapped list's 12 cars then overflow");
+        }
         era::TtList empty_refs{"ex_empty", false, true, {0x3fff0000u, 0x3fff0000u}};
         expect(era::time_trial_budget({custom, empty_refs}).dropped.empty() && era::distinct_cars(empty_refs.refs) == 0,
                "entrants without a vehicle ref (0x3fff) take no slot");

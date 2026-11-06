@@ -388,6 +388,16 @@ inline int64_t time_trial_fallback(const std::vector<ListCars> &lists, const std
     return -1;
 }
 
+// The index in lists of the list a Time Trial session loads after the 24-car guard, -1 while the session's own
+// selected list stays. The leaderboard budget is computed for this list, not for the one selected before the swap.
+inline int64_t time_trial_loaded(const ListCars &selected, const ListCars &first, const std::vector<ListCars> &lists,
+                                 const std::vector<std::string> &prefer)
+{
+    if (!oversized(selected.cars) && !oversized(first.cars))
+        return -1;
+    return time_trial_fallback(lists, prefer);
+}
+
 constexpr size_t ENTRANT_SETUP_MAX_ENTRANTS = 0x268;
 
 struct GridLimit {

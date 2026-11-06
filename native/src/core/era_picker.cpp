@@ -1334,9 +1334,10 @@ void era_session_load()
                     selected.name.empty() ? "?" : selected.name.c_str(), (long long)selected.cars, setup_mode.c_str(),
                     last_press.empty() ? "none" : last_press.c_str());
     last_seen = seen;
-    time_trial_budget(reinterpret_cast<void *>(ctx), setup);
-    if (!logic::oversized(selected.cars) && !logic::oversized(first.cars))
+    if (!logic::oversized(selected.cars) && !logic::oversized(first.cars)) {
+        time_trial_budget(reinterpret_cast<void *>(ctx), setup);
         return;
+    }
     logic::ListCars bad = logic::oversized(selected.cars) ? selected : first;
     std::vector<std::string> prefer{last_press};
     {
@@ -1345,7 +1346,7 @@ void era_session_load()
             if (box.entrant_list == last_press)
                 prefer.push_back(logic::list_for(box, true));
     }
-    int64_t i = logic::time_trial_fallback(lists, prefer);
+    int64_t i = logic::time_trial_loaded(selected, first, lists, prefer);
     auto *esm = reinterpret_cast<uint8_t *>(entrant_setup);
     held = {esm, 0, 0, nullptr, nullptr};
     if (i >= 0) {
@@ -1365,6 +1366,7 @@ void era_session_load()
         ref<int32_t>(esm, ENTRANT_SETUP_MAX_ENTRANTS) = logic::time_trial_limit(limit);
     }
     holding = held.first || held.limit_was;
+    time_trial_budget(reinterpret_cast<void *>(ctx), setup);
     if (swapped++ < LOG_FIRST * 2)
         swofty::log("[era] %s", logic::time_trial_swap(bad.name, bad.cars, setup_mode, i >= 0 ? lists[size_t(i)].name : "",
                                                        held.limit_was)
