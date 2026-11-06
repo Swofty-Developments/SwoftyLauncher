@@ -63,6 +63,23 @@ source_hdr_white_level_nits = 80  # HDR source white (nits): The brightness the 
 tonemapper_white_level = 2.67  # Expansion white: How many times brighter than white the expansion takes the brightest part of the picture. Range 1 to 8.
 ```
 
+## Broadcast Lens {#broadcast-lens}
+
+The optics and head of a broadcast camera: the picture rebuilt from a set broadcast resolution, a soft lens with colour fringes towards the edges, the edge enhancer, sensor noise and a vignette.
+
+```toml
+[broadcast_lens]
+resolution = "native"  # Broadcast resolution: The number of lines the picture is reduced to before it is rebuilt at screen size; native leaves the picture at screen size. One of "native", "1080", "720", "576".
+resample = "smooth"  # Rebuild filter: How the reduced picture is rebuilt at screen size: smooth blends neighbouring lines, sharp keeps edges crisper with a slight overshoot. One of "smooth", "sharp".
+softness = 0  # Softness: The optical blur radius in broadcast pixels; 0 adds no blur. Range 0 to 2.
+aberration = 0  # Chromatic aberration: How far red and blue part at the corners, as a share of the picture width; the fringe grows from none at the centre towards the edges. Range 0 to 0.005.
+detail = 0  # Detail: How strongly the edge enhancer boosts mid-frequency edges; 0 is off. Range 0 to 2.
+detail_limit = 0.08  # Detail limit: The most the edge enhancer may change a pixel, in display colour; keeps the halos small. Range 0 to 0.5.
+noise = 0  # Sensor noise: How much noise the sensor adds, more in the shadows than in the highlights; 0 is none. Range 0 to 1.
+noise_size = 1  # Noise size: The size of a noise speck in broadcast pixels. Range 1 to 4.
+vignette = 0  # Vignette: How far the lens darkens the corners; 0 is none. Range 0 to 1.
+```
+
 ## Colour Balance {#cbs}
 
 Exposure, contrast, brightness, saturation, vibrance, tint, per-hue saturation and dither, applied in display brightness (gamma 2.2) with optional far values that fade in with distance.
@@ -206,6 +223,21 @@ Contrast-adaptive sharpening on the picture's perceptual brightness: edges sharp
 [sharpen]
 sharpness = 0.5  # Sharpness: How strongly edges are sharpened. Range 0 to 1.
 limit = 0.1  # Limit: The most a pixel may change, in display colour; keeps strong edges from overshooting. Range 0 to 0.5.
+```
+
+## Stream Encoder {#stream-encoder}
+
+An approximation of a compressed video stream: macroblock averaging and a smear towards the last frame that grow where the picture moves, banding in smooth gradients and chroma at half resolution.
+
+```toml
+[stream_encoder]
+strength = 0  # Strength: How much of the encoder's damage is applied; 0 leaves the picture as it is. Range 0 to 1.
+blocking = 0.5  # Blocking: How strongly the picture is averaged within macroblocks; it grows with the motion in each block. Range 0 to 1.
+block_size = "8x8"  # Block size: The size of a macroblock in screen pixels. One of "8x8", "16x16".
+banding = 0.5  # Banding: How coarsely smooth gradients, such as sky, are quantised into visible steps. Range 0 to 1.
+smear = 0.5  # Motion smear: How far moving areas blend towards the last frame. Range 0 to 1.
+motion_sensitivity = 0.5  # Motion sensitivity: How little change between frames counts as motion for the blocking and the smear. Range 0 to 1.
+chroma = true  # Chroma subsampling: Keeps colour at half the picture's resolution, as 4:2:0 video does.
 ```
 
 ## Vignette {#vignette}
