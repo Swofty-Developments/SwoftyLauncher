@@ -683,8 +683,24 @@ fn roll_back(done: &[Swap]) {
 pub const DATA_IN_INSTALL: &str = "the install folder holds the data folder, so updates cannot install. Run the installer again and pick a data folder outside the install folder";
 
 fn holds_data(root: &Path, data: &Path) -> bool {
-    let resolve = |p: &Path| std::fs::canonicalize(p).unwrap_or_else(|_| p.to_path_buf());
-    resolve(data).starts_with(resolve(root))
+    resolved(data).starts_with(resolved(root))
+}
+
+fn resolved(path: &Path) -> PathBuf {
+    let mut rest = Vec::new();
+    let mut at = path;
+    loop {
+        if let Ok(real) = std::fs::canonicalize(at) {
+            return rest.iter().rev().fold(real, |p, part| p.join(part));
+        }
+        match (at.parent(), at.file_name()) {
+            (Some(parent), Some(name)) => {
+                rest.push(name.to_owned());
+                at = parent;
+            }
+            _ => return path.to_path_buf(),
+        }
+    }
 }
 
 pub fn refuse_data_root(root: &Path, data: &Path) -> Result<()> {
