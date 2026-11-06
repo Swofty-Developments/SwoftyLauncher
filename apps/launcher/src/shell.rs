@@ -189,6 +189,8 @@ pub struct Shell {
     pub(crate) short: bool,
     pub(crate) ticking: bool,
     painted: Instant,
+    pub(crate) dock: crate::download_dock::Dock,
+    pub(crate) dock_wake: bool,
     pub(crate) live_n: u64,
     /// The addon the Addons page highlights, and since when.
     pub(crate) highlight: Option<(String, Instant)>,
@@ -636,6 +638,8 @@ impl Shell {
             short: false,
             ticking: false,
             painted: Instant::now(),
+            dock: crate::download_dock::Dock::default(),
+            dock_wake: false,
             live_n: 0,
             highlight: None,
             addons: crate::addons::AddonsPage::new(window, cx),
@@ -2363,16 +2367,12 @@ impl Shell {
             (Page::News, None),
             (Page::Addons, Some(self.library.listed().count())),
             (Page::Browser, None),
-            (
-                Page::Downloads,
-                (self.download_pending() > 0).then(|| self.download_pending()),
-            ),
             (Page::Shaders, None),
             (Page::Profiles, Some(self.library.profiles.len())),
             (Page::Careers, None),
         ];
         if self.developer_mode {
-            big.insert(4, (Page::Tools, None));
+            big.insert(3, (Page::Tools, None));
         }
         if self.mp_allowed() {
             big.push((Page::Multiplayer, None));
@@ -2575,6 +2575,7 @@ impl Render for Shell {
             .children(self.update_bar(p))
             .child(self.play_bar(p, wide, cx))
             .children(self.progress_card(p))
+            .children(self.download_dock(p, window, cx))
             .children(self.task_dialog(p, window, cx))
             .children(self.crash_overlay(p, cx))
             .when(self.dropping, |d| d.child(self.drop_overlay(p)));

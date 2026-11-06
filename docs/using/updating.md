@@ -62,7 +62,7 @@ The launcher compares your installed addons with the [Addon Browser](/using/addo
 
 1. Close F1 25. **Update addons** appears once the game exits.
 2. Select **Update addons**. Each update joins the [Downloads queue](/using/addon-browser#downloads), is checked against its SHA-256, and replaces the installed version. Its switch and settings stay as they were in every profile.
-3. Open **Downloads** to see each update's progress or error. **Play** comes back when the batch finishes.
+3. Select the download card above the Play bar to open **Downloads** and see each update's progress or error. **Play** comes back when the batch finishes.
 
 An addon that fails to update keeps its installed version. Retry it from **Downloads** or use **Try again** beside the update error.
 

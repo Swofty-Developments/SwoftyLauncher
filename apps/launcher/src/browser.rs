@@ -1286,6 +1286,68 @@ impl Shell {
         self.browser.queue.pending()
     }
 
+    pub(crate) fn dock_input(&self) -> crate::download_dock::Input {
+        crate::download_dock::Input {
+            pending: self.browser.queue.pending(),
+            failed: self
+                .browser
+                .queue
+                .jobs()
+                .iter()
+                .filter(|job| matches!(job.state, crate::download_queue::State::Failed(_)))
+                .count(),
+            on_downloads: self.page == Page::Downloads,
+        }
+    }
+
+    pub(crate) fn dock_line(&self) -> Option<crate::download_dock::Line> {
+        use crate::download_queue::State;
+        let jobs = self.browser.queue.jobs();
+        let pending = self.browser.queue.pending();
+        if pending > 0 {
+            let job = jobs
+                .iter()
+                .find(|job| job.state == State::Active)
+                .or_else(|| jobs.iter().find(|job| job.state == State::Queued))?;
+            let working = self.browser.working.get(&job.id);
+            return Some(crate::download_dock::Line {
+                name: job.request.0.name.clone(),
+                status: match (&job.state, working) {
+                    (State::Active, Some(w)) => w.progress().short(),
+                    (State::Active, None) => "Starting…".to_owned(),
+                    _ => "Queued".to_owned(),
+                },
+                fraction: working.map(|w| w.progress().fraction()),
+                more: pending - 1,
+                failed: false,
+            });
+        }
+        let failed = jobs
+            .iter()
+            .rev()
+            .find(|job| matches!(job.state, State::Failed(_)));
+        let (Some(job), true) = (failed, self.dock.failure_shown(self.dock_input().failed)) else {
+            let job = jobs.iter().rev().find(|job| job.state == State::Completed)?;
+            return Some(crate::download_dock::Line {
+                name: job.request.0.name.clone(),
+                status: "Installed".to_owned(),
+                fraction: Some(1.),
+                more: 0,
+                failed: false,
+            });
+        };
+        let State::Failed(error) = &job.state else {
+            return None;
+        };
+        Some(crate::download_dock::Line {
+            name: job.request.0.name.clone(),
+            status: format!("Failed: {error}"),
+            fraction: None,
+            more: 0,
+            failed: true,
+        })
+    }
+
     pub(crate) fn downloads_page(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         use crate::download_queue::State;
         let rows = self

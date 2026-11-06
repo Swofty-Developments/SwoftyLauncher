@@ -21,11 +21,13 @@ Select an addon for its description, a 30-day downloads chart, its file size and
 
 ## Install one
 
-Select **Install**. The launcher queues the newest version that works with your launcher, checks its size and SHA-256, and installs it switched off in the profile you selected. Open **Downloads** in the sidebar to follow the install. An addon marked **Runs code in the game** includes native code that runs inside F1 25.
+Select **Install**. The launcher queues the newest version that works with your launcher, checks its size and SHA-256, and installs it switched off in the profile you selected. A download card slides up above the Play bar while the install runs. Select it to open **Downloads**. An addon marked **Runs code in the game** includes native code that runs inside F1 25.
 
 ## Downloads {#downloads}
 
-The **Downloads** page lists Addon Browser installs and updates, including **Update addons** jobs. Each row shows its status and any error. The sidebar badge counts queued and active jobs.
+The **Downloads** page lists Addon Browser installs and updates, including **Update addons** jobs. Each row shows its status and any error.
+
+The download card sits at the bottom right of every page while a job is queued or active. It names the addon being installed, shows its progress and adds **+N more** when other jobs wait. It slides away a few seconds after the queue empties and stays hidden on the **Downloads** page. A failed install keeps the card visible in a warning colour until you select **X** or open **Downloads**. There is no Downloads entry in the sidebar; open the page from the card or from the links in the Addon Browser.
 
 - **Concurrent jobs** sets how many installs can run at once, from 1 to 10. The default is 2. An install occupies a slot while it downloads its required addons, verifies files and installs them. Changing the limit does not interrupt an active job.
 - **Remove** takes a queued job out of the queue. It cannot stop an active install.

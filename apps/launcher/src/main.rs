@@ -13,6 +13,7 @@ mod db;
 mod developer;
 mod discord;
 mod donate;
+mod download_dock;
 mod download_queue;
 mod ea_app;
 mod game;
