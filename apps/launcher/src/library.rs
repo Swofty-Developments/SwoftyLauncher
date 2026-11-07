@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Instant;
+use swofty_i18n::trn;
 
 use gpui_kit::{Image, ImageFormat};
 use swofty_core::asset::AssetOp;
@@ -129,17 +130,17 @@ impl Changes {
     /// Each non-zero count as "3 database values", in a fixed order.
     pub fn parts(&self) -> Vec<String> {
         [
-            (self.database, "database value", "database values"),
-            (self.resources, "game asset", "game assets"),
-            (self.text, "text entry", "text entries"),
-            (self.files, "file", "files"),
-            (self.tracks, "track", "tracks"),
-            (self.screens, "UI screen", "UI screens"),
-            (self.plugins, "code plugin", "code plugins"),
+            (self.database, "{count} database value", "{count} database values"),
+            (self.resources, "{count} game asset", "{count} game assets"),
+            (self.text, "{count} text entry", "{count} text entries"),
+            (self.files, "{count} file", "{count} files"),
+            (self.tracks, "{count} track", "{count} tracks"),
+            (self.screens, "{count} UI screen", "{count} UI screens"),
+            (self.plugins, "{count} code plugin", "{count} code plugins"),
         ]
         .into_iter()
         .filter(|(n, ..)| *n > 0)
-        .map(|(n, one, many)| plural(n, one, many))
+        .map(|(n, one, many)| trn(n, one, many))
         .collect()
     }
 }

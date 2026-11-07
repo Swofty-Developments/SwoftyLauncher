@@ -20,10 +20,11 @@ use swofty_core::profile::Profile;
 use swofty_core::registry::{Host, Registry};
 use swofty_core::store::Store;
 use swofty_core::view::{self, Art, Block, Body, ButtonKind, Control, Effect, Event, Row, Style, Tone, View};
+use swofty_i18n::trn;
 
 use crate::blocks::{At, search_id};
 use crate::game::Install;
-use crate::library::{AddonIcon, SectionItem, plural};
+use crate::library::{AddonIcon, SectionItem};
 use crate::pages::{GUTTER, badge, chevron, fact, label, monogram, names, stat, tag, tile};
 use crate::scroll::SmoothScroll;
 use crate::shell::{Page, Shell};
@@ -423,7 +424,7 @@ impl Shell {
         let install = self.install.clone();
         let shared: Shared = Arc::new(Mutex::new(Some((
             0.,
-            format!("Importing {}", plural(paths.len(), "item", "items")),
+            format!("Importing {}", trn(paths.len(), "{count} item", "{count} items")),
         ))));
         let reporter = Reporter(shared.clone());
         self.follow_progress(shared, cx);
@@ -452,7 +453,7 @@ impl Shell {
                     0,
                     format!(
                         "Installed {}; Addons highlights the newest",
-                        plural(fresh.len(), "addon", "addons")
+                        trn(fresh.len(), "{count} addon", "{count} addons")
                     ),
                 );
             }

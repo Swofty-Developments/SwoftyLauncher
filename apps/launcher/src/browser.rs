@@ -2,6 +2,7 @@
 //! sort, filter, star, read about, and install or update in one click.
 
 mod authors;
+mod rows;
 
 pub(crate) use authors::View;
 
@@ -49,10 +50,6 @@ const CARD_W: f32 = 300.;
 const GAP: f32 = 14.;
 const SIDE_W: f32 = 340.;
 const AUTHORS_SHOWN: usize = 8;
-const TILE_MIN: f32 = 220.;
-const TILE_ART: f32 = 96.;
-const TILE_FACES: usize = 4;
-const FACE: f32 = 40.;
 const HELMET: &[u8] = include_bytes!("../assets/helmet.svg");
 const NATIVE: &str = "Runs code in the game";
 const VERIFYING: u8 = 1;
@@ -130,6 +127,25 @@ fn took_text(d: Duration) -> String {
         ms @ 0..1000 => format!("{ms} ms"),
         ms => format!("{:.1} s", ms as f64 / 1000.),
     }
+}
+
+fn card_border(failed: bool, updating: bool, p: Palette) -> Hsla {
+    if failed {
+        p.error.opacity(0.6)
+    } else if updating {
+        p.accent.opacity(0.6)
+    } else {
+        p.border
+    }
+}
+
+fn progress_bar(fraction: f32, p: Palette) -> Div {
+    div()
+        .h(px(3.))
+        .w_full()
+        .rounded(px(2.))
+        .bg(p.border_variant)
+        .child(div().h_full().rounded(px(2.)).bg(p.accent).w(relative(fraction)))
 }
 
 fn native_badge(id: String, p: Palette) -> Stateful<Div> {
@@ -500,7 +516,7 @@ fn tab_label(tab: Tab) -> &'static str {
     }
 }
 
-/// The categories the landing shows a tile for, Other last.
+/// The categories, Other last.
 fn shelves() -> impl Iterator<Item = Tab> {
     Category::ALL
         .into_iter()
@@ -558,34 +574,6 @@ fn shelf_glyph(tab: Tab, size: f32, color: Hsla) -> AnyElement {
         .size(px(size))
         .text_color(color)
         .into_any_element()
-}
-
-/// How many tiles a landing row of `width` holds: 5, 2 or 1, so the rows come out even.
-fn shelf_columns(width: f32) -> usize {
-    [5, 2]
-        .into_iter()
-        .find(|&n| n as f32 * TILE_MIN + (n - 1) as f32 * GAP <= width)
-        .unwrap_or(1)
-}
-
-/// How many icons fit on a tile `width` wide, beside its glyph and a count of the rest.
-fn tile_faces(width: f32) -> usize {
-    let room = width - 28. - 64. - 40.;
-    (1 + ((room - FACE) / (FACE - 8.)).floor().max(0.) as usize).min(TILE_FACES)
-}
-
-/// The addons in `tab`, most starred first.
-fn shelved(addons: &[Addon], tab: Tab, stars: impl Fn(&Addon) -> u64) -> Vec<&Addon> {
-    let mut found: Vec<&Addon> = addons
-        .iter()
-        .filter(|a| tab.is_none_or(|t| a.category() == t))
-        .collect();
-    found.sort_by(|a, b| {
-        stars(b)
-            .cmp(&stars(a))
-            .then_with(|| a.name.to_lowercase().cmp(&b.name.to_lowercase()))
-    });
-    found
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -733,6 +721,7 @@ pub(crate) struct Browser {
     scroll: ScrollHandle,
     grid_scroll: ListState,
     grid_cache: Option<GridCache>,
+    rows: rows::Rows,
     catalog_revision: u64,
     facet_counts: RefCell<HashMap<Facet, usize>>,
     needs_cache: RefCell<HashMap<String, AddonNeeds>>,
@@ -755,7 +744,6 @@ pub(crate) struct Browser {
     star_gen: u64,
     sort: Sort,
     search_sort: Option<Sort>,
-    landing: bool,
     tab: Tab,
     facets: BTreeSet<Facet>,
     hide_code: bool,
@@ -798,6 +786,7 @@ impl Browser {
             scroll: ScrollHandle::new(),
             grid_scroll: ListState::new(0, ListAlignment::Top, px(200.)),
             grid_layout: Default::default(),
+            rows: Default::default(),
             grid_cache: None,
             catalog_revision: 0,
             facet_counts: RefCell::default(),
@@ -824,7 +813,6 @@ impl Browser {
             star_gen: 0,
             sort: Sort::Stars,
             search_sort: None,
-            landing: true,
             tab: None,
             facets: BTreeSet::new(),
             hide_code: false,
@@ -887,11 +875,6 @@ impl Browser {
                 })
                 .ok();
         });
-    }
-
-    /// Whether the category tiles show: nothing chosen, searched or filtered.
-    fn on_landing(&self, searching: bool) -> bool {
-        self.landing && self.tab.is_none() && !searching && self.facets.is_empty() && !self.hide_code
     }
 }
 
@@ -1249,6 +1232,9 @@ impl Shell {
 
     /// True when a job was queued or an existing pending job will handle it.
     fn enqueue_catalog(&mut self, id: &str, cx: &mut Context<Self>) -> bool {
+        if self.data_move_locked() {
+            return false;
+        }
         let Some(addon) = self.browser.find(id).cloned() else {
             return false;
         };
@@ -1774,7 +1760,7 @@ impl Shell {
     fn update_addons(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if matches!(
             self.play_state(),
-            PlayState::Running | PlayState::Elsewhere(_) | PlayState::Launching
+            PlayState::Running | PlayState::Elsewhere(_) | PlayState::Launching | PlayState::Preparing
         ) {
             window.push_notification(Notification::error("Close F1 25 before updating addons."), cx);
             return;
@@ -2278,28 +2264,17 @@ impl Shell {
 
     fn shelve(&mut self, tab: Tab, cx: &mut Context<Self>) {
         let b = &mut self.browser;
-        if b.landing || b.tab != tab {
+        if b.tab != tab {
             b.smooth.cancel();
             b.scroll.set_offset(Point::default());
             b.grid_scroll.scroll_to(ListOffset::default());
         }
-        b.landing = false;
         b.tab = tab;
         cx.notify();
     }
 
     pub(crate) fn show_shader_addons(&mut self, cx: &mut Context<Self>) {
         self.shelve(Some(Some(Category::Shaders)), cx);
-    }
-
-    fn show_categories(&mut self, cx: &mut Context<Self>) {
-        let b = &mut self.browser;
-        b.landing = true;
-        b.tab = None;
-        b.smooth.cancel();
-        b.scroll.set_offset(Point::default());
-        b.grid_scroll.scroll_to(ListOffset::default());
-        self.clear_filters(cx);
     }
 
     pub(crate) fn browser_page(&mut self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
@@ -2751,36 +2726,7 @@ impl Shell {
                     .into_any_element()
             })
             .collect();
-        let back = h_flex()
-            .id("browser-categories")
-            .h(px(28.))
-            .px(px(8.))
-            .ml(px(-8.))
-            .gap(px(6.))
-            .flex_shrink_0()
-            .rounded(px(5.))
-            .cursor_pointer()
-            .text_size(px(13.))
-            .text_color(p.text_muted)
-            .hover(move |s| s.bg(p.hover).text_color(p.text))
-            .child(Icon::new(IconName::ArrowLeft).size(px(14.)))
-            .child("Categories")
-            .tooltip(|window, cx| Tooltip::new("Back to the category tiles").build(window, cx))
-            .on_click(cx.listener(|this, _, _, cx| this.show_categories(cx)));
-        h_flex()
-            .gap(px(6.))
-            .flex_wrap()
-            .child(back)
-            .child(
-                div()
-                    .flex_shrink_0()
-                    .w(px(1.))
-                    .h(px(14.))
-                    .mx(px(4.))
-                    .my(px(7.))
-                    .bg(p.border),
-            )
-            .children(pills)
+        h_flex().gap(px(6.)).flex_wrap().children(pills)
     }
 
     fn sort_button(&self, sort: Sort, searching: bool, cx: &mut Context<Self>) -> impl IntoElement + use<> {
@@ -2926,13 +2872,8 @@ impl Shell {
         } else {
             plural(shown.len(), "addon", "addons")
         };
-        let landing = !self.browser.addons.is_empty() && self.browser.on_landing(!query.is_empty());
         let width = self.content_width - FILTERS_W - 20.;
-        if landing {
-            let filters = self.filter_column(p, cx);
-            let body = self.virtual_cards(shown, query, width, true, count, sort, p, cx);
-            return self.browser_columns(filters, div(), body);
-        }
+        let rows = !self.browser.addons.is_empty() && !filtering;
         let bar = h_flex()
             .pb(px(14.))
             .gap(px(12.))
@@ -2977,6 +2918,8 @@ impl Shell {
             .into_any_element()
         } else if shown.is_empty() && bare && !self.browser.addons.is_empty() && self.browser.tab.is_some() {
             self.empty_shelf(self.browser.tab, p, cx)
+        } else if rows && !shown.is_empty() {
+            self.category_rows(shown, width, p, cx)
         } else if shown.is_empty() {
             let (title, body, action) = if self.browser.addons.is_empty() {
                 (
@@ -3008,7 +2951,7 @@ impl Shell {
             };
             self.empty(IconName::PackageSearch, title, body, action, p)
         } else {
-            self.virtual_cards(shown, query, width, false, count, sort, p, cx)
+            self.virtual_cards(shown, query, width, p, cx)
         };
         self.browser_columns(filters, bar, body)
     }
@@ -3033,215 +2976,8 @@ impl Shell {
             .into_any_element()
     }
 
-    fn landing_bar(&self) -> Div {
-        h_flex()
-            .h(px(28.))
-            .flex_shrink_0()
-            .items_center()
-            .text_size(px(15.))
-            .font_weight(FontWeight::SEMIBOLD)
-            .child("Browse by category")
-    }
-
-    fn all_heading(&self, count: String, sort: Sort, width: f32, p: Palette, cx: &mut Context<Self>) -> Div {
-        h_flex()
-            .w(px(width - 1.))
-            .pt(px(10.))
-            .gap(px(12.))
-            .flex_shrink_0()
-            .items_center()
-            .child(
-                div()
-                    .flex_1()
-                    .min_w_0()
-                    .text_size(px(15.))
-                    .font_weight(FontWeight::SEMIBOLD)
-                    .child("All addons"),
-            )
-            .child(
-                div()
-                    .text_size(px(12.))
-                    .text_color(p.text_placeholder)
-                    .child(count.clone()),
-            )
-            .child(self.sort_button(sort, false, cx))
-    }
-
-    fn landing_row(&self, row: usize, width: f32, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        if row == 0 {
-            return self.landing_bar().pb(px(GAP)).into_any_element();
-        }
-        let columns = shelf_columns(width);
-        let tile_w = ((width - GAP * (columns - 1) as f32) / columns as f32).floor() - 1.;
-        h_flex()
-            .pb(px(GAP))
-            .gap(px(GAP))
-            .children(
-                shelves()
-                    .skip((row - 1) * columns)
-                    .take(columns)
-                    .map(|tab| self.shelf_tile(tab, tile_w, p, cx)),
-            )
-            .into_any_element()
-    }
-
-    fn has_icon(&self, a: &Addon) -> bool {
-        a.icon
-            .as_ref()
-            .is_some_and(|u| self.browser.icons.contains_key(u))
-    }
-
     /// Up to `n` of `addons`' icons, overlapping, ringed in `ring`; the ones with
     /// an icon of their own first, then a count of the rest.
-    fn faces(&self, addons: &[&Addon], n: usize, ring: Hsla, p: Palette) -> Div {
-        let mut picked: Vec<&Addon> = addons.to_vec();
-        picked.sort_by_key(|a| !self.has_icon(a));
-        let rest = addons.len().saturating_sub(n);
-        h_flex()
-            .flex_shrink_0()
-            .items_center()
-            .children(picked.into_iter().take(n).enumerate().map(|(i, a)| {
-                div()
-                    .p(px(2.))
-                    .rounded(px(FACE * 0.22 + 2.))
-                    .bg(ring)
-                    .when(i > 0, |d| d.ml(px(-12.)))
-                    .child(self.catalog_icon(a, FACE, p))
-            }))
-            .when(rest > 0, |d| {
-                d.child(
-                    div()
-                        .ml(px(6.))
-                        .h(px(24.))
-                        .px(px(8.))
-                        .flex()
-                        .items_center()
-                        .rounded(px(12.))
-                        .bg(ring.blend(p.text.opacity(0.07)))
-                        .text_size(px(12.))
-                        .font_weight(FontWeight::MEDIUM)
-                        .text_color(p.text_muted)
-                        .child(format!("+{rest}")),
-                )
-            })
-    }
-
-    fn shelf_tile(&self, tab: Tab, width: f32, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        let addons = shelved(&self.browser.addons, tab, |a| self.browser.stars_of(a));
-        let n = addons.len();
-        let empty = n == 0;
-        let tint = shelf_tint(tab, p);
-        let band = if empty {
-            p.surface
-        } else {
-            p.surface.blend(tint.opacity(0.13))
-        };
-        let slot = div()
-            .size(px(FACE + 4.))
-            .rounded(px(10.))
-            .border_1()
-            .border_dashed()
-            .border_color(p.border)
-            .flex()
-            .items_center()
-            .justify_center()
-            .child(shelf_glyph(tab, 20., p.text_placeholder));
-        let art = h_flex()
-            .relative()
-            .h(px(TILE_ART))
-            .w_full()
-            .px(px(14.))
-            .flex_shrink_0()
-            .items_center()
-            .overflow_hidden()
-            .rounded_t(px(11.))
-            .bg(band)
-            .border_b_1()
-            .border_color(if empty {
-                p.border_variant
-            } else {
-                tint.opacity(0.18)
-            })
-            .child(
-                div()
-                    .absolute()
-                    .right(px(-10.))
-                    .bottom(px(-18.))
-                    .child(shelf_glyph(
-                        tab,
-                        TILE_ART + 8.,
-                        if empty {
-                            p.text_placeholder.opacity(0.1)
-                        } else {
-                            tint.opacity(0.22)
-                        },
-                    )),
-            )
-            .map(|d| {
-                if empty {
-                    d.child(slot)
-                } else {
-                    d.child(self.faces(&addons, tile_faces(width), band, p))
-                }
-            });
-        v_flex()
-            .id(SharedString::from(format!("browser-shelf-{}", tab_label(tab))))
-            .w(px(width))
-            .flex_none()
-            .rounded(px(12.))
-            .border_1()
-            .border_color(if empty { p.border_variant } else { p.border })
-            .bg(p.surface)
-            .cursor_pointer()
-            .hover(move |s| {
-                if empty {
-                    s.bg(p.hover)
-                } else {
-                    s.bg(p.hover).border_color(tint.opacity(0.75))
-                }
-            })
-            .child(art)
-            .child(
-                h_flex()
-                    .px(px(14.))
-                    .py(px(12.))
-                    .gap(px(10.))
-                    .items_center()
-                    .child(
-                        v_flex()
-                            .flex_1()
-                            .min_w_0()
-                            .gap(px(2.))
-                            .child(
-                                div()
-                                    .text_size(px(15.))
-                                    .font_weight(FontWeight::SEMIBOLD)
-                                    .text_color(if empty { p.text_muted } else { p.text })
-                                    .truncate()
-                                    .child(tab_label(tab)),
-                            )
-                            .child(
-                                div()
-                                    .text_size(px(12.))
-                                    .text_color(p.text_placeholder)
-                                    .truncate()
-                                    .child(if empty {
-                                        "No addons yet".to_owned()
-                                    } else {
-                                        plural(n, "addon", "addons")
-                                    }),
-                            ),
-                    )
-                    .child(
-                        Icon::new(IconName::ChevronRight)
-                            .size(px(16.))
-                            .text_color(p.text_placeholder),
-                    ),
-            )
-            .on_click(cx.listener(move |this, _, _, cx| this.shelve(tab, cx)))
-            .into_any_element()
-    }
-
     fn empty_shelf(&self, tab: Tab, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         v_flex()
             .flex_1()
@@ -3267,25 +3003,14 @@ impl Shell {
                     .child("Addons published in this category show here."),
             )
             .child(
-                h_flex()
-                    .pt(px(8.))
-                    .gap(px(8.))
-                    .child(
-                        Button::new("browser-shelf-empty-all")
-                            .outline()
-                            .small()
-                            .icon(IconName::LayoutGrid)
-                            .label("All addons")
-                            .on_click(cx.listener(|this, _, _, cx| this.shelve(None, cx))),
-                    )
-                    .child(
-                        Button::new("browser-shelf-empty-back")
-                            .ghost()
-                            .small()
-                            .icon(IconName::ArrowLeft)
-                            .label("Categories")
-                            .on_click(cx.listener(|this, _, _, cx| this.show_categories(cx))),
-                    ),
+                h_flex().pt(px(8.)).gap(px(8.)).child(
+                    Button::new("browser-shelf-empty-all")
+                        .outline()
+                        .small()
+                        .icon(IconName::LayoutGrid)
+                        .label("All addons")
+                        .on_click(cx.listener(|this, _, _, cx| this.shelve(None, cx))),
+                ),
             )
             .into_any_element()
     }
@@ -3313,27 +3038,19 @@ impl Shell {
             .collect()
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn virtual_cards(
         &mut self,
         indices: Arc<[usize]>,
         query: Arc<Query>,
         width: f32,
-        landing: bool,
-        count: String,
-        sort: Sort,
         p: Palette,
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let columns = ((width + GAP) / (CARD_W + GAP)).floor().max(1.) as usize;
         let card_w = ((width - GAP * (columns - 1) as f32) / columns as f32).floor() - 1.;
         let rows = indices.len().div_ceil(columns);
-        let header_rows = if landing {
-            shelves().count().div_ceil(shelf_columns(width)) + 2
-        } else {
-            1
-        };
-        let layout = (indices.clone(), columns, landing, width.to_bits());
+        let header_rows = 1;
+        let layout = (indices.clone(), columns, false, width.to_bits());
         if self.browser.grid_layout != layout {
             let offset = self.browser.grid_scroll.logical_scroll_top();
             // Give unvisited rows height so scrolling is not clamped to only the measured content.
@@ -3347,19 +3064,9 @@ impl Shell {
             self.browser.grid_scroll.clone(),
             cx.processor(move |this, row: usize, _, cx| {
                 if row < header_rows {
-                    return if landing {
-                        if row + 1 == header_rows {
-                            this.all_heading(count.clone(), sort, width, p, cx)
-                                .pb(px(GAP))
-                                .into_any_element()
-                        } else {
-                            this.landing_row(row, width, p, cx)
-                        }
-                    } else {
-                        v_flex()
-                            .children(this.creators_found(&query, p, cx))
-                            .into_any_element()
-                    };
+                    return v_flex()
+                        .children(this.creators_found(&query, p, cx))
+                        .into_any_element();
                 }
                 let start = (row - header_rows) * columns;
                 let end = (start + columns).min(indices.len());
@@ -3480,13 +3187,7 @@ impl Shell {
             .gap(px(10.))
             .rounded(px(10.))
             .border_1()
-            .border_color(if failed.is_some() {
-                p.error.opacity(0.6)
-            } else if updating {
-                p.accent.opacity(0.6)
-            } else {
-                p.border
-            })
+            .border_color(card_border(failed.is_some(), updating, p))
             .bg(p.surface)
             .cursor_pointer()
             .hover(move |s| s.border_color(p.accent).bg(p.hover))
@@ -3556,22 +3257,7 @@ impl Shell {
                     })
                     .child(self.offer_button(a, format!("browser-offer-{}", a.id), cx)),
             )
-            .when_some(progress, |d, pr| {
-                d.child(
-                    div()
-                        .h(px(3.))
-                        .w_full()
-                        .rounded(px(2.))
-                        .bg(p.border_variant)
-                        .child(
-                            div()
-                                .h_full()
-                                .rounded(px(2.))
-                                .bg(p.accent)
-                                .w(relative(pr.fraction())),
-                        ),
-                )
-            })
+            .when_some(progress, |d, pr| d.child(progress_bar(pr.fraction(), p)))
             .when_some(failed, |d, e| {
                 let tip = e.clone();
                 d.child(
@@ -4238,14 +3924,10 @@ mod tests {
         assert_eq!(shown(&["1.3.0", "1.2.0"], "2.0.0"), 2);
     }
 
-    use super::{
-        Event, Job, Progress, Stage, compact, due_updates, host, shelf_columns, shelved, shelves,
-        shown_versions, size_text, tile_faces,
-    };
+    use super::{Event, Job, Progress, Stage, compact, due_updates, host, shown_versions, size_text};
     use std::collections::{BTreeMap, HashSet};
     use swofty_core::catalog::requires::{Plan, Step};
     use swofty_core::catalog::{Addon, Version};
-    use swofty_core::manifest::Category;
 
     fn step(id: &str, size: u64) -> Step {
         let addon: Addon =
@@ -4369,52 +4051,6 @@ mod tests {
         job.track("root", Event::Stage(Stage::Installing));
         assert_eq!(job.item(), None);
         assert_eq!(job.progress().long(None), "Installing…");
-    }
-
-    #[test]
-    fn shelves_addons_by_category_most_starred_first() {
-        let addon = |id: &str, category: Option<&str>, stars: u64| -> Addon {
-            serde_json::from_value(serde_json::json!({
-                "id": id, "name": id, "category": category, "stars": stars
-            }))
-            .unwrap()
-        };
-        let addons = [
-            addon("a", Some("seasons"), 1),
-            addon("b", Some("seasons"), 9),
-            addon("c", None, 3),
-            addon("d", Some("gameplay"), 5),
-            addon("e", Some("liveries"), 0),
-        ];
-        let ids = |tab| -> Vec<String> {
-            shelved(&addons, tab, |a| a.stars)
-                .into_iter()
-                .map(|a| a.id.clone())
-                .collect()
-        };
-        assert_eq!(ids(Some(Some(Category::Seasons))), ["b", "a"]);
-        assert_eq!(ids(Some(Some(Category::Cars))), ["e"]);
-        assert_eq!(ids(Some(None)), ["d", "c"]);
-        assert!(ids(Some(Some(Category::Tracks))).is_empty());
-        assert_eq!(ids(None), ["b", "d", "c", "a", "e"]);
-    }
-
-    #[test]
-    fn lays_out_even_rows_of_tiles() {
-        assert_eq!(shelf_columns(2000.), 5);
-        assert_eq!(shelf_columns(1156.), 5);
-        assert_eq!(shelf_columns(1155.), 2);
-        assert_eq!(shelf_columns(454.), 2);
-        assert_eq!(shelf_columns(453.), 1);
-        let tiles = shelves().count();
-        assert_eq!(tiles, 10);
-        for columns in [5, 2, 1] {
-            assert_eq!(tiles % columns, 0, "{columns}");
-        }
-        assert_eq!(tile_faces(329.), 4);
-        assert_eq!(tile_faces(299.), 4);
-        assert_eq!(tile_faces(247.), 3);
-        assert_eq!(tile_faces(120.), 1);
     }
 
     #[test]

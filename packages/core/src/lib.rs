@@ -14,6 +14,7 @@ pub mod conflicts;
 pub mod copies;
 pub mod crash;
 pub mod crash_report;
+pub mod data_move;
 pub mod data_usage;
 pub mod dbedit;
 pub mod disk;

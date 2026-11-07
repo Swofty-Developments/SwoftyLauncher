@@ -11,9 +11,9 @@ use gpui_kit::component::{Disableable, Icon, Sizable, WindowExt, h_flex, v_flex}
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::dbedit::{Catalog, Edit, NodeId, NodeKind, Origin, RowCopy};
+use swofty_i18n::trn;
 
 use super::{ADDABLE, Nav, hex, type_name};
-use crate::library::plural;
 use crate::pages::label;
 use crate::shell::Shell;
 use crate::theme::{Palette, palette, scrollbar_x};
@@ -193,15 +193,15 @@ impl Shell {
                 "{} records · {} named · {}",
                 catalog.records(),
                 catalog.named(),
-                plural(kids, "top-level part", "top-level parts")
+                trn(kids, "{count} top-level part", "{count} top-level parts")
             ),
             NodeKind::Table { rows, .. } => {
                 let fields = catalog.fields(node).len();
                 let meaning = catalog.table_meaning(node).unwrap_or_default();
                 let mut s = format!(
                     "Table · {} × {}",
-                    plural(*rows as usize, "row", "rows"),
-                    plural(fields, "field", "fields")
+                    trn(*rows as usize, "{count} row", "{count} rows"),
+                    trn(fields, "{count} field", "{count} fields")
                 );
                 if !meaning.is_empty() {
                     s.push_str(&format!(" · {meaning}"));
@@ -216,9 +216,9 @@ impl Shell {
                 if let Some(d) = &n.display {
                     s.push_str(&format!(" · {d}"));
                 }
-                format!("{s} · {}", plural(kids, "entry", "entries"))
+                format!("{s} · {}", trn(kids, "{count} entry", "{count} entries"))
             }
-            _ => plural(kids, "entry", "entries"),
+            _ => trn(kids, "{count} entry", "{count} entries"),
         };
         let add = Button::new("db-add-key")
             .outline()
@@ -367,7 +367,7 @@ impl Shell {
         let mut edited = false;
         let detail = match &n.kind {
             NodeKind::Table { rows, .. } => {
-                let mut s = format!("Table · {}", plural(*rows as usize, "row", "rows"));
+                let mut s = format!("Table · {}", trn(*rows as usize, "{count} row", "{count} rows"));
                 if let Some(m) = catalog.table_meaning(child).filter(|m| !m.is_empty()) {
                     s.push_str(&format!(" · {m}"));
                 }
@@ -377,7 +377,7 @@ impl Shell {
                 (Some(d), Some(l)) => format!("{d} · {l}"),
                 (Some(d), None) => d.clone(),
                 (None, Some(l)) => l.clone(),
-                (None, None) => plural(catalog.children(child).len(), "entry", "entries"),
+                (None, None) => trn(catalog.children(child).len(), "{count} entry", "{count} entries"),
             },
             NodeKind::Key => {
                 let r = n.record.map(|r| catalog.record(r));
@@ -393,7 +393,7 @@ impl Shell {
                 }
             }
             NodeKind::Unnamed => "Records no known name reaches".into(),
-            _ => plural(catalog.children(child).len(), "entry", "entries"),
+            _ => trn(catalog.children(child).len(), "{count} entry", "{count} entries"),
         };
         let title = if named {
             n.name.clone()
@@ -647,7 +647,7 @@ impl Shell {
         let count = if filtered {
             format!("{} of {total}", rows.len())
         } else {
-            plural(total, "record", "records")
+            trn(total, "{count} record", "{count} records")
         };
         let list = if rows.is_empty() {
             self.empty(
@@ -861,10 +861,14 @@ impl Shell {
                 IconName::ListChecks,
                 "Changes",
                 &match self.db.draft.unsaved() {
-                    0 => format!("{} in {}", plural(n, "change", "changes"), self.db_draft_name()),
+                    0 => format!(
+                        "{} in {}",
+                        trn(n, "{count} change", "{count} changes"),
+                        self.db_draft_name()
+                    ),
                     k => format!(
                         "{} in {} · {k} not saved yet",
-                        plural(n, "change", "changes"),
+                        trn(n, "{count} change", "{count} changes"),
                         self.db_draft_name()
                     ),
                 },

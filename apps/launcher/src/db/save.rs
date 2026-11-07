@@ -16,9 +16,9 @@ use swofty_core::dbedit::draft::Details;
 use swofty_core::dbedit::package::{self, Package};
 use swofty_core::manifest::Category;
 use swofty_core::store::Store;
+use swofty_i18n::trn;
 
 use super::{Then, guarded, text};
-use crate::library::plural;
 use crate::shell::Shell;
 use crate::theme::{Palette, palette};
 
@@ -162,7 +162,7 @@ impl Shell {
         } else {
             format!(
                 "{} {} an addon, turned on in {}.",
-                plural(n, "change", "changes"),
+                trn(n, "{count} change", "{count} changes"),
                 if n == 1 { "becomes" } else { "become" },
                 self.library.profile.name
             )
@@ -305,7 +305,7 @@ impl Shell {
             alert
                 .title(format!(
                     "Discard {}?",
-                    plural(n, "unsaved change", "unsaved changes")
+                    trn(n, "{count} unsaved change", "{count} unsaved changes")
                 ))
                 .description(format!("{body} This can't be undone."))
                 .ok_text("Discard changes")
@@ -378,7 +378,7 @@ impl Shell {
                 .title(format!("Save changes to {name}?"))
                 .description(format!(
                     "You have {}.",
-                    plural(n, "unsaved change", "unsaved changes")
+                    trn(n, "{count} unsaved change", "{count} unsaved changes")
                 ))
                 .footer(footer)
         });
@@ -533,7 +533,7 @@ impl Shell {
                             if unsaved > 0 {
                                 body.push_str(&format!(
                                     "\n{} aren't in it; save, then export again to include them.",
-                                    plural(unsaved, "unsaved change", "unsaved changes")
+                                    trn(unsaved, "{count} unsaved change", "{count} unsaved changes")
                                 ));
                             }
                             window.push_notification(
@@ -651,7 +651,7 @@ impl Shell {
                     "db-ge-one",
                     !all,
                     "The changes in the DB Editor".to_owned(),
-                    format!("{}, saved or not", plural(n, "change", "changes")),
+                    format!("{}, saved or not", trn(n, "{count} change", "{count} changes")),
                     true,
                     p,
                 )
@@ -668,7 +668,10 @@ impl Shell {
                     all,
                     format!("Every DB Editor addon on in {profile}"),
                     if enabled {
-                        format!("{} in load order", plural(stack.len(), "addon", "addons"))
+                        format!(
+                            "{} in load order",
+                            trn(stack.len(), "{count} addon", "{count} addons")
+                        )
                     } else {
                         format!("No DB Editor addons are on in {profile}")
                     },
@@ -767,9 +770,9 @@ impl Shell {
                 cx.update(|window, cx| match result {
                     Ok(done) => {
                         let mut body = format!(
-                            "{} · {:.1} MB · saved to {}",
-                            plural(done.changes, "change", "changes"),
-                            done.bytes as f64 / 1_048_576.,
+                            "{} · {} · saved to {}",
+                            trn(done.changes, "{count} change", "{count} changes"),
+                            crate::format::size(done.bytes),
                             out.display()
                         );
                         if !done.skipped.is_empty() {

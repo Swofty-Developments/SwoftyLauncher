@@ -95,6 +95,12 @@ pub struct Config {
     /// The code of the language the launcher shows; `None` is English.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub language: Option<String>,
+    /// The version of the welcome wizard the player last finished or skipped.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub onboarding: Option<u32>,
+    /// Set by "Don't ask again" on the prompt that offers addons and saves found in another folder.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub no_find_prompt: bool,
     #[serde(default)]
     pub data_version: u32,
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
@@ -133,7 +139,15 @@ impl UiMode {
     }
 }
 
+/// The version of the welcome wizard. Raise it to show the wizard once more to everyone.
+pub const ONBOARDING_VERSION: u32 = 1;
+
 impl Config {
+    /// Whether the welcome wizard is due: never seen, or an older version.
+    pub fn needs_onboarding(&self) -> bool {
+        self.onboarding.is_none_or(|seen| seen < ONBOARDING_VERSION)
+    }
+
     /// The layout in use: what the player chose, PC until they do.
     pub fn ui_mode_or_default(&self) -> UiMode {
         self.ui_mode.unwrap_or_default()
@@ -897,6 +911,21 @@ mod tests {
         assert!(!serde_json::to_string(&config).unwrap().contains("ui_mode"));
         let old: Config = serde_json::from_str(r#"{ "developer": true }"#).unwrap();
         assert_eq!(old.ui_mode, None);
+    }
+
+    #[test]
+    fn onboarding_is_due_until_the_current_version_is_seen() {
+        let mut config = Config::default();
+        assert!(config.needs_onboarding());
+        assert!(!serde_json::to_string(&config).unwrap().contains("onboarding"));
+        config.onboarding = Some(ONBOARDING_VERSION - 1);
+        assert!(config.needs_onboarding());
+        config.onboarding = Some(ONBOARDING_VERSION);
+        assert!(!config.needs_onboarding());
+        let back: Config = serde_json::from_str(&serde_json::to_string(&config).unwrap()).unwrap();
+        assert_eq!(back.onboarding, Some(ONBOARDING_VERSION));
+        let old: Config = serde_json::from_str(r#"{ "ui_mode": "tv" }"#).unwrap();
+        assert!(old.needs_onboarding());
     }
 
     #[test]

@@ -10,10 +10,10 @@ use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::dbedit::{HitKind, Kind, LinkSpec, Module};
+use swofty_i18n::trn;
 
 use super::fields::{curve_rating, detail_shell, hex_rgb, is_on, list_items, swatch};
 use super::{LinkState, Load, Nav, bool_text, clean, icon_named, kind_of, swap_field};
-use crate::library::plural;
 use crate::pages::{GUTTER, badge, label};
 use crate::shell::Shell;
 use crate::theme::{Palette, SCROLLBAR_GAP, ScrollArea, palette};
@@ -820,7 +820,7 @@ impl Shell {
             });
             let total = slot.view.rows.len();
             let count = if slot.shown.len() == total {
-                plural(total, "row", "rows")
+                trn(total, "{count} row", "{count} rows")
             } else {
                 format!("{} of {total} rows", slot.shown.len())
             };
@@ -1146,7 +1146,7 @@ impl Shell {
                 .filter(|n| !n.is_empty())
                 .or_else(|| cell.text.as_deref().map(clean))
                 .unwrap_or_else(|| cell.value.clone()),
-            Kind::RefList => plural(list_items(&cell.value).len(), "item", "items"),
+            Kind::RefList => trn(list_items(&cell.value).len(), "{count} item", "{count} items"),
             Kind::Curve => curve_rating(&cell.value).unwrap_or_else(|| "curve".into()),
             Kind::Color => hex_rgb(&cell.value).unwrap_or_else(|| cell.value.clone()),
             _ => cell

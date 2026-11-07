@@ -3,7 +3,7 @@
 
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::path::PathBuf;
-use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, UNIX_EPOCH};
 
 use crate::scale::px;
 use gpui_kit::assets::IconName;
@@ -20,8 +20,9 @@ use swofty_core::import::{self, Route};
 use swofty_core::manifest::{Category, Kind, MANIFEST_FILE};
 use swofty_core::order;
 use swofty_core::profile::VANILLA;
+use swofty_i18n::trn;
 
-use crate::library::{AddonItem, Changes, Source, plural};
+use crate::library::{AddonItem, Changes, Source};
 use crate::pages::{GUTTER, addon_icon, badge, chevron, fact, label, logo, tag, track_badge};
 use crate::shell::{Page, Prompt, Shell};
 use crate::theme::{Palette, SCROLLBAR_GAP, ScrollArea, palette};
@@ -375,17 +376,17 @@ fn matches_query(m: &AddonItem, query: &str) -> bool {
 fn pair_counts(pair: &Pair) -> String {
     let strings = pair.strings;
     let parts: Vec<String> = [
-        (pair.database, "database value", "database values"),
-        (pair.resources, "game asset", "game assets"),
-        (pair.files, "file", "files"),
-        (strings, "text string", "text strings"),
+        (pair.database, "{count} database value", "{count} database values"),
+        (pair.resources, "{count} game asset", "{count} game assets"),
+        (pair.files, "{count} file", "{count} files"),
+        (strings, "{count} text string", "{count} text strings"),
     ]
     .into_iter()
     .filter(|(n, ..)| *n > 0)
-    .map(|(n, one, many)| plural(n, one, many))
+    .map(|(n, one, many)| trn(n, one, many))
     .collect();
     match parts.as_slice() {
-        [] => plural(pair.items.len(), "item", "items"),
+        [] => trn(pair.items.len(), "{count} item", "{count} items"),
         [one] => one.clone(),
         [rest @ .., last] => format!("{} and {last}", rest.join(", ")),
     }
@@ -464,18 +465,7 @@ fn item_group(item: &str) -> (String, String) {
     (format!("Files in {dir}"), file.to_owned())
 }
 
-pub(crate) fn ago(seconds: f64) -> String {
-    let now = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map_or(0., |d| d.as_secs_f64());
-    let mins = ((now - seconds).max(0.) / 60.) as u64;
-    match mins {
-        0 => "just now".to_owned(),
-        1..60 => format!("{} ago", plural(mins as usize, "minute", "minutes")),
-        60..1440 => format!("{} ago", plural((mins / 60) as usize, "hour", "hours")),
-        _ => format!("{} ago", plural((mins / 1440) as usize, "day", "days")),
-    }
-}
+pub(crate) use crate::format::ago_since as ago;
 
 pub(crate) fn checkbox(on: bool, p: Palette) -> Div {
     div()
@@ -547,7 +537,7 @@ pub(crate) fn facet_row_with(
 fn stock_removals_text(n: usize) -> String {
     format!(
         "{} of stock database records skipped. The game crashes when a record it reads is missing.",
-        plural(n, "removal", "removals")
+        trn(n, "{count} removal", "{count} removals")
     )
 }
 
@@ -1185,7 +1175,7 @@ impl Shell {
             off.iter().try_for_each(|id| registry.set_enabled(p, id, false))
         });
         let shell = cx.entity().downgrade();
-        let text = format!("Turned off {}", plural(off.len(), "addon", "addons"));
+        let text = format!("Turned off {}", trn(off.len(), "{count} addon", "{count} addons"));
         let note = Notification::success(text)
             .action(move |_, _, cx| {
                 let (shell, before) = (shell.clone(), before.clone());
@@ -1227,8 +1217,11 @@ impl Shell {
     }
 
     fn launching(&self) -> bool {
-        use crate::shell::PlayState::{Building, Launching, Restoring, Running};
-        matches!(self.play_state(), Launching | Restoring | Running | Building)
+        use crate::shell::PlayState::{Building, Launching, Preparing, Restoring, Running};
+        matches!(
+            self.play_state(),
+            Preparing | Launching | Restoring | Running | Building
+        )
     }
 
     fn check_conflicts(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -1254,7 +1247,7 @@ impl Shell {
                     Ok(report) => {
                         let text = match report.pairs.len() {
                             0 => "No conflicts between addons".to_owned(),
-                            n => format!("Found {}", plural(n, "conflict", "conflicts")),
+                            n => format!("Found {}", trn(n, "{count} conflict", "{count} conflicts")),
                         };
                         window.push_notification(Notification::success(text), cx);
                         if report.profile == s.library.profile.name {
@@ -1281,10 +1274,10 @@ impl Shell {
         let flagged = self.problem_banner(p, cx);
         let mut query = self.addons.search.read(cx).value().trim().to_lowercase();
         let highlight = self.sync_highlight(&mut query, cx);
-        let installed = plural(
+        let installed = trn(
             self.library.listed().count(),
-            "addon installed",
-            "addons installed",
+            "{count} addon installed",
+            "{count} addons installed",
         );
         let subtitle = if self.vanilla() {
             format!("{installed} · {VANILLA} plays the game without them")
@@ -1319,10 +1312,10 @@ impl Shell {
                 )
                 .child(format!(
                     "{} changed since the last build · the next launch rebuilds {}",
-                    plural(
+                    trn(
                         self.library.rebuild.len(),
-                        "database setting",
-                        "database settings"
+                        "{count} database setting",
+                        "{count} database settings"
                     ),
                     self.library.profile.name
                 ))
@@ -1347,7 +1340,7 @@ impl Shell {
                 .child(Icon::new(IconName::Map).size(px(14.)))
                 .child(format!(
                     "{} {} on the Tracks page",
-                    plural(hidden, "track addon", "track addons"),
+                    trn(hidden, "{count} track addon", "{count} track addons"),
                     if hidden == 1 { "is" } else { "are" }
                 ))
                 .child(
@@ -1981,8 +1974,8 @@ impl Shell {
         };
         let summary = match count {
             0 => "Empty · drag addons here".to_owned(),
-            n if vanilla => plural(n, "addon", "addons"),
-            n => format!("{} · {on} on", plural(n, "addon", "addons")),
+            n if vanilla => trn(n, "{count} addon", "{count} addons"),
+            n => format!("{} · {on} on", trn(n, "{count} addon", "{count} addons")),
         };
         let tag = key.text();
         let actions = own.map(|id| {
@@ -2441,7 +2434,7 @@ impl Shell {
                         d.child(
                             pill(
                                 IconName::TriangleAlert,
-                                format!("{} skipped", plural(kept, "removal", "removals")),
+                                format!("{} skipped", trn(kept, "{count} removal", "{count} removals")),
                                 p.warning,
                             )
                             .id(SharedString::from(format!("kept-{id}")))
@@ -2457,7 +2450,7 @@ impl Shell {
                                 .tooltip(move |window, cx| {
                                     Tooltip::new(format!(
                                         "{} lower in the load order {} some of what this addon changes",
-                                        plural(lost, "addon", "addons"),
+                                        trn(lost, "{count} addon", "{count} addons"),
                                         if lost == 1 { "replaces" } else { "replace" }
                                     ))
                                     .build(window, cx)
@@ -2471,7 +2464,7 @@ impl Shell {
                                 .tooltip(move |window, cx| {
                                     Tooltip::new(format!(
                                         "Replaces some of what {} higher in the load order {}",
-                                        plural(won, "addon", "addons"),
+                                        trn(won, "{count} addon", "{count} addons"),
                                         if won == 1 { "changes" } else { "change" }
                                     ))
                                     .build(window, cx)
@@ -3463,13 +3456,13 @@ impl Shell {
         let text = match (red, amber) {
             (r, 0) => format!(
                 "{} to fix before these addons work together",
-                plural(r, "problem", "problems")
+                trn(r, "{count} problem", "{count} problems")
             ),
-            (0, a) => format!("{} worth a look", plural(a, "warning", "warnings")),
+            (0, a) => format!("{} worth a look", trn(a, "{count} warning", "{count} warnings")),
             (r, a) => format!(
                 "{} to fix, and {}",
-                plural(r, "problem", "problems"),
-                plural(a, "warning", "warnings")
+                trn(r, "{count} problem", "{count} problems"),
+                trn(a, "{count} warning", "{count} warnings")
             ),
         };
         let first = all

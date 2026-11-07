@@ -680,7 +680,7 @@ fn roll_back(done: &[Swap]) {
     }
 }
 
-pub const DATA_IN_INSTALL: &str = "the install folder holds the data folder, so updates cannot install. Run the installer again and pick a data folder outside the install folder";
+pub const DATA_IN_INSTALL: &str = "your addons and saves are in the same folder as the launcher, so updates cannot install. Move them out in Settings, under Your addons and saves, or run the installer again";
 
 fn holds_data(root: &Path, data: &Path) -> bool {
     resolved(data).starts_with(resolved(root))

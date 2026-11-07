@@ -7,12 +7,12 @@ use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{Disableable, Icon, Side, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_i18n::{tr, trf};
+use swofty_i18n::{tr, trf, trn};
 
-use crate::game::{self, Owner, ago, duration};
+use crate::format::{ago, duration};
+use crate::game::{self, Owner};
 
 pub(crate) const HEIGHT: f32 = 72.;
-use crate::library::plural;
 use crate::pages::avatar;
 use crate::shell::{Page, PlayState, Shell};
 use crate::theme::Palette;
@@ -169,7 +169,11 @@ impl Shell {
             .tooltip(tr("Switch the copy of F1 25 Play uses"))
             .disabled(matches!(
                 self.play_state(),
-                PlayState::Running | PlayState::Launching | PlayState::Restoring | PlayState::Building
+                PlayState::Running
+                    | PlayState::Preparing
+                    | PlayState::Launching
+                    | PlayState::Restoring
+                    | PlayState::Building
             ))
             .dropdown_menu_with_anchor(Anchor::BottomLeft, move |mut menu, _, _| {
                 menu = menu
@@ -430,16 +434,17 @@ impl Shell {
             ),
             PlayState::Detecting => row.text_color(p.text_muted).child(tr("Detecting F1 25…")),
             PlayState::Checking => row.text_color(p.text_muted).child(tr("Checking conflicts…")),
+            PlayState::Preparing => row.child(dot(p.warning)).child(tr("Checking addons…")),
             PlayState::Ready => {
                 if rebuild {
                     return row.text_color(p.text_muted).child(dot(p.warning)).child(
                         div().min_w_0().truncate().child(trf!(
                             "Ready · rebuilds {profile} for {changes} on launch",
                             profile = self.library.profile.name,
-                            changes = plural(
+                            changes = trn(
                                 self.library.rebuild.len(),
-                                tr("changed setting"),
-                                tr("changed settings")
+                                "{count} changed setting",
+                                "{count} changed settings"
                             )
                         )),
                     );
@@ -545,7 +550,11 @@ impl Shell {
             .dropdown_caret(true)
             .disabled(matches!(
                 self.play_state(),
-                PlayState::Running | PlayState::Launching | PlayState::Restoring | PlayState::Building
+                PlayState::Running
+                    | PlayState::Preparing
+                    | PlayState::Launching
+                    | PlayState::Restoring
+                    | PlayState::Building
             ))
             .dropdown_menu_with_anchor(Anchor::BottomRight, move |mut menu, _, _| {
                 menu = menu.min_w(px(300.)).label(tr("Profile"));
@@ -708,7 +717,7 @@ impl Shell {
             PlayState::Ready | PlayState::Crashed(_) => {
                 (IconName::Play, tr("Play"), p.accent, p.on_accent, true)
             }
-            PlayState::Launching => (
+            PlayState::Preparing | PlayState::Launching => (
                 IconName::LoaderCircle,
                 tr("Launching…"),
                 p.elevated,

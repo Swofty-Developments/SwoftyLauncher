@@ -26,7 +26,7 @@ const RESTART_DELAY: Duration = Duration::from_millis(1500);
 pub(crate) const BUILDING: &str =
     "Swofty is still building your mods. Update when it finishes, or cancel the build.";
 pub const BUTTON_WIDTH: f32 = 204.;
-const MOVE_DOCS: &str = "https://f1.swofty.net/guide/installation#moving-the-data-folder";
+const MOVE_DOCS: &str = "https://f1.swofty.net/guide/installation#moving-your-addons-and-saves";
 
 pub struct Updates {
     pub copy: Result<Install, String>,
@@ -266,6 +266,7 @@ impl Shell {
             PlayState::Running
                 | PlayState::Elsewhere(_)
                 | PlayState::Launching
+                | PlayState::Preparing
                 | PlayState::Restoring
                 | PlayState::Detecting
                 | PlayState::Checking
@@ -281,7 +282,7 @@ impl Shell {
         }
         if matches!(
             self.play_state(),
-            PlayState::Running | PlayState::Elsewhere(_) | PlayState::Launching
+            PlayState::Running | PlayState::Elsewhere(_) | PlayState::Launching | PlayState::Preparing
         ) {
             window.push_notification(Notification::error("Close F1 25 before updating."), cx);
             return;
@@ -529,7 +530,7 @@ impl Shell {
             Gate::Installing => (
                 IconName::LoaderCircle,
                 match progress {
-                    Some(done) => format!("Updating {:.0}%", done * 100.),
+                    Some(done) => format!("Updating {}", crate::format::percent(done)),
                     None => "Updating…".into(),
                 },
                 detail,
@@ -656,7 +657,7 @@ impl Shell {
             )))
             .when(fix, |d| {
                 d.child(
-                    link("update-move-data", "Moving the data folder", p)
+                    link("update-move-data", "Moving your addons and saves", p)
                         .flex_shrink_0()
                         .on_click(|_, _, cx| cx.open_url(MOVE_DOCS)),
                 )

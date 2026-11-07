@@ -9,6 +9,7 @@ mod career_saves;
 mod colour;
 mod console;
 mod crash_modal;
+mod data_move;
 mod db;
 mod developer;
 mod discord;
@@ -16,14 +17,21 @@ mod donate;
 mod download_dock;
 mod download_queue;
 mod ea_app;
+mod form;
+mod format;
+mod found_data;
 mod game;
 mod game_edited;
 mod importer;
 mod library;
+mod lock_overlay;
 mod multiplayer;
 mod news;
+mod onboarding;
+mod overlay;
 mod pages;
 mod play_bar;
+mod play_checks;
 mod reveal;
 mod scale;
 mod scroll;
@@ -36,6 +44,7 @@ mod shell;
 mod tasks;
 mod theme;
 mod tools;
+mod ui;
 mod ui_mode;
 mod update;
 
@@ -43,6 +52,7 @@ use gpui_kit::component::{TitleBar, v_flex};
 use gpui_kit::*;
 
 fn main() {
+    swofty_core::data_move::recover_at_start();
     app_log::start();
     app_log::step("starting the app runtime");
     let app = gpui_kit::application().with_assets(gpui_kit::assets::AllAssets);
@@ -97,6 +107,8 @@ impl Launcher {
                 shell.update(cx, |s, cx| {
                     s.restore_console(cx);
                     s.run_startup(window, cx);
+                    s.show_data_move_result(window, cx);
+                    s.scan_for_lost_data(window, cx);
                     s.start_ui_mode(window, cx);
                 });
                 this.shell = Some(shell);
