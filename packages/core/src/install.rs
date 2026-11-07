@@ -1232,6 +1232,7 @@ impl<'a> Installer<'a> {
         crate::now_doing("copying the mods to the game drive");
         let mut told = std::time::Instant::now();
         let synced = crate::link_cache::sync(&self.game.dir, &srcs, self.free_space, &mut |done, total| {
+            (self.progress)(done, total);
             if told.elapsed() >= PROGRESS_EVERY {
                 (self.out)(&format!(
                     "installing: {done} of {total} file(s) copied into the link cache"
@@ -1408,6 +1409,55 @@ mod tests {
             Source::Steam
         );
         assert_eq!(Source::detect(&root.join("bare/F1 25")), Source::Unknown);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn the_link_cache_copy_reports_its_progress() {
+        let root = std::env::temp_dir().join(format!("swofty-link-progress-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let built = root.join("built");
+        let outside = root.join("outside");
+        std::fs::create_dir_all(&outside).unwrap();
+        let game = Game {
+            dir: root.join("game"),
+            user_reg: None,
+            identity: Identity {
+                build_id: "1".into(),
+                exe_sha256: String::new(),
+            },
+        };
+        std::fs::create_dir_all(&game.dir).unwrap();
+        let mut entries = Vec::new();
+        let mut files = Vec::new();
+        for n in 0..3u32 {
+            let src = outside.join(format!("f{n}.bin"));
+            std::fs::write(&src, [n as u8; 8]).unwrap();
+            entries.push(crate::journal::Entry {
+                seq: n,
+                op: Op::CreateFile,
+                path: format!("mods/f{n}.bin"),
+                before: None,
+                after: None,
+                state: crate::journal::State::Pending,
+            });
+            files.push(src);
+        }
+        let sources: BTreeMap<&str, &PathBuf> = entries
+            .iter()
+            .map(|e| e.path.as_str())
+            .zip(files.iter())
+            .collect();
+        let seen = std::cell::RefCell::new(Vec::new());
+        let progress = |done: usize, total: usize| seen.borrow_mut().push((done, total));
+        let inst = Installer {
+            progress: &progress,
+            free_space: |_| None,
+            ..Installer::new(&root, &game)
+        };
+        let cache = inst.link_cache(&built, &entries, &sources);
+        assert_eq!(cache.synced, Some((3, 0)), "{:?}", cache.failure);
+        assert_eq!(seen.into_inner(), [(1, 3), (2, 3), (3, 3)]);
         std::fs::remove_dir_all(&root).ok();
     }
 
