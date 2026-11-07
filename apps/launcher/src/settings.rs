@@ -4,6 +4,7 @@
 
 use std::time::SystemTime;
 
+use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariant};
 use gpui_kit::component::notification::Notification;
@@ -13,6 +14,7 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::data_usage::{self, KEEP_FOR, KEEP_SESSIONS, Pruned, Usage};
 use swofty_core::install::Source;
+use swofty_core::session::UiMode;
 
 use crate::pages::GUTTER;
 use crate::shell::{Page, Shell};
@@ -376,9 +378,25 @@ impl Shell {
             .on_click(
                 cx.listener(|this, on: &bool, window, cx| this.set_clear_old_session_logs(*on, window, cx)),
             );
+        let tv = Switch::new("settings-tv-mode")
+            .checked(self.ui_mode.is_some_and(UiMode::is_tv))
+            .small()
+            .on_click(cx.listener(|this, on: &bool, window, cx| {
+                this.set_ui_mode(if *on { UiMode::Tv } else { UiMode::Pc }, window, cx)
+            }));
         card(
             "General",
             vec![
+                row(
+                    "TV mode",
+                    muted(
+                        "Scales the whole launcher up and widens the scrollbars, for handhelds and couch play"
+                            .to_owned(),
+                        p,
+                    ),
+                    Some(tv.into_any_element()),
+                    p,
+                ),
                 row(
                     start_label,
                     muted("When you press Play".to_owned(), p),

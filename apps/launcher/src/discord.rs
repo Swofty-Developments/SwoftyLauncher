@@ -1,5 +1,6 @@
 use std::sync::{Arc, LazyLock};
 
+use crate::scale::px;
 use gpui_kit::component::{h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;

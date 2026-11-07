@@ -5,6 +5,7 @@
 use std::path::PathBuf;
 use std::process::Command;
 
+use crate::scale::px;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::notification::Notification;
 use gpui_kit::component::{Disableable, Sizable, WindowExt, h_flex, v_flex};

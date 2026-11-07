@@ -1,6 +1,7 @@
 //! The Documentation tab: every effect a config can use, from the core library and installed addons,
 //! with its options, ranges and defaults.
 
+use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{ActiveTheme, Sizable, h_flex, v_flex};

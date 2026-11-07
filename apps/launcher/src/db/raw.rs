@@ -2,6 +2,7 @@ use std::cell::Cell;
 use std::ops::Range;
 use std::sync::Arc;
 
+use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::{Input, InputState};

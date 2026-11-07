@@ -2,6 +2,7 @@ use std::cell::Cell;
 use std::path::PathBuf;
 use std::rc::Rc;
 
+use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariant, ButtonVariants};
 use gpui_kit::component::dialog::DialogFooter;

@@ -1,6 +1,7 @@
 use std::rc::Rc;
 use std::sync::{Arc, LazyLock};
 
+use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariant, ButtonVariants};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};

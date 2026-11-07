@@ -25,6 +25,7 @@ mod news;
 mod pages;
 mod play_bar;
 mod reveal;
+mod scale;
 mod scroll;
 mod sections;
 mod send_logs;
@@ -35,6 +36,7 @@ mod shell;
 mod tasks;
 mod theme;
 mod tools;
+mod ui_mode;
 mod update;
 
 use gpui_kit::component::{TitleBar, v_flex};
@@ -95,6 +97,7 @@ impl Launcher {
                 shell.update(cx, |s, cx| {
                     s.restore_console(cx);
                     s.run_startup(window, cx);
+                    s.start_ui_mode(window, cx);
                 });
                 this.shell = Some(shell);
                 app_log::step("launcher shell built");

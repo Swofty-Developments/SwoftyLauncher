@@ -6,9 +6,10 @@ use gpui_kit::assets::IconName;
 use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::{
     Context, FontWeight, InteractiveElement, IntoElement, ParentElement, StatefulInteractiveElement, Styled,
-    Window, div, px, relative,
+    Window, div, relative,
 };
 
+use crate::scale::px;
 use crate::shell::{Page, Shell};
 use crate::theme::Palette;
 

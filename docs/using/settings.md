@@ -37,6 +37,7 @@ When you press **Play** with less than 3 GB free on F1 25's own drive (the drive
 
 | Switch | What it does |
 |---|---|
+| **TV mode** | Scales the whole launcher up by 30% and widens the scrollbars, for handhelds and couch play. Off is PC mode, the normal layout. The first time the launcher opens it asks "PC or TV mode?" and saves the answer here. |
 | **Start Steam automatically** (or the EA app) | Starts your game's store when you press **Play**, as the same item in the **Play** menu does |
 | **Developer mode** | Shows the [Tools](/using/tools) page with the `swofty dev` actions, as the same item in the **Play** menu does |
 | **Clear old logs** | Off by default. On: clears old session logs when the launcher starts, as **Clear old** does, without asking. Off keeps every log |

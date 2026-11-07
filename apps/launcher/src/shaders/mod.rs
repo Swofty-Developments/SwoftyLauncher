@@ -8,6 +8,7 @@ mod triggers;
 use std::path::PathBuf;
 use std::sync::Arc;
 
+use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};

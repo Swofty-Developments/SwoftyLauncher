@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Icon, TITLE_BAR_HEIGHT, h_flex, v_flex};

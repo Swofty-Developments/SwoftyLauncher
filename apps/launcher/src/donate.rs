@@ -4,6 +4,7 @@
 use std::f32::consts::TAU;
 use std::time::Duration;
 
+use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::{Icon, h_flex};
 use gpui_kit::*;

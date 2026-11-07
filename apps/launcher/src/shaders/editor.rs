@@ -4,6 +4,7 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::time::Duration;
 
+use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::base::input::{TextDecoration, TextDecorationCollection};
 use gpui_kit::component::button::Button;

@@ -4,6 +4,7 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::time::{Duration, Instant, SystemTime};
 
+use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariant, ButtonVariants};
 use gpui_kit::component::dialog::{AlertDialog, DialogFooter};
@@ -21,7 +22,7 @@ use swofty_core::process::{GameProcess, stop_game_in};
 use swofty_core::quarantine;
 use swofty_core::recovery::{self, Blocked, Notice};
 use swofty_core::saves::{self, SavesWarning};
-use swofty_core::session::{LaunchMode, SessionRecord};
+use swofty_core::session::{LaunchMode, SessionRecord, UiMode};
 use swofty_core::stock;
 use swofty_core::store::Store;
 use swofty_core::view::View;
@@ -160,6 +161,7 @@ pub struct Shell {
     pub(crate) dropping: bool,
     pub(crate) vr_profiles: BTreeSet<String>,
     pub(crate) start_store: bool,
+    pub(crate) ui_mode: Option<UiMode>,
     pub(crate) developer_mode: bool,
     /// `clear_old_session_logs` from config.json: opt-in, old session logs are cleared at start.
     pub(crate) clear_old_session_logs: bool,
@@ -422,6 +424,7 @@ impl Shell {
         } = prepared;
         let vr_profiles = config.vr_profiles;
         let start_store = config.launch.start_store;
+        let ui_mode = config.ui_mode;
         let developer_mode = config.developer;
         let clear_old_session_logs = config.clear_old_session_logs;
         let update_check = config.updates.check;
@@ -618,6 +621,7 @@ impl Shell {
             dropping: false,
             vr_profiles,
             start_store,
+            ui_mode,
             developer_mode,
             clear_old_session_logs,
             reload_generation: 0,

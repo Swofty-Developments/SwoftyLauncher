@@ -89,6 +89,9 @@ pub struct Config {
     pub clear_old_session_logs: bool,
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub sidebar_list: bool,
+    /// The layout the player chose on first run; `None` until they choose.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ui_mode: Option<UiMode>,
     #[serde(default)]
     pub data_version: u32,
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
@@ -109,6 +112,29 @@ pub struct Config {
     /// Maximum simultaneous Addon Browser install jobs; two when unset.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub download_jobs: Option<usize>,
+}
+
+/// The launcher's two layouts: the desktop one, and TV mode for handhelds and
+/// couch play, which scales the interface up and widens the scrollbars.
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum UiMode {
+    #[default]
+    Pc,
+    Tv,
+}
+
+impl UiMode {
+    pub fn is_tv(self) -> bool {
+        self == Self::Tv
+    }
+}
+
+impl Config {
+    /// The layout in use: what the player chose, PC until they do.
+    pub fn ui_mode_or_default(&self) -> UiMode {
+        self.ui_mode.unwrap_or_default()
+    }
 }
 
 /// The copies of F1 25 the player added by folder, and the one Play uses.
@@ -858,6 +884,33 @@ mod tests {
         assert_eq!(config.download_jobs(), 10);
         let edited: Config = serde_json::from_str(r#"{"download_jobs":100}"#).unwrap();
         assert_eq!(edited.download_jobs(), 10);
+    }
+
+    #[test]
+    fn ui_mode_is_unchosen_until_the_player_picks() {
+        let config = Config::default();
+        assert_eq!(config.ui_mode, None);
+        assert_eq!(config.ui_mode_or_default(), UiMode::Pc);
+        assert!(!serde_json::to_string(&config).unwrap().contains("ui_mode"));
+        let old: Config = serde_json::from_str(r#"{ "developer": true }"#).unwrap();
+        assert_eq!(old.ui_mode, None);
+    }
+
+    #[test]
+    fn ui_mode_round_trips() {
+        for mode in [UiMode::Pc, UiMode::Tv] {
+            let config = Config {
+                ui_mode: Some(mode),
+                ..Config::default()
+            };
+            let json = serde_json::to_string(&config).unwrap();
+            let back: Config = serde_json::from_str(&json).unwrap();
+            assert_eq!(back.ui_mode, Some(mode));
+            assert_eq!(back.ui_mode_or_default(), mode);
+        }
+        let tv: Config = serde_json::from_str(r#"{ "ui_mode": "tv" }"#).unwrap();
+        assert!(tv.ui_mode_or_default().is_tv());
+        assert!(!UiMode::Pc.is_tv());
     }
 
     #[test]
