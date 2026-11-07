@@ -30,6 +30,7 @@ mod onboarding;
 mod overlay;
 mod pages;
 mod play_bar;
+mod play_checks;
 mod reveal;
 mod scale;
 mod scroll;

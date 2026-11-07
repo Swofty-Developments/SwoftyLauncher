@@ -1760,7 +1760,7 @@ impl Shell {
     fn update_addons(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if matches!(
             self.play_state(),
-            PlayState::Running | PlayState::Elsewhere(_) | PlayState::Launching
+            PlayState::Running | PlayState::Elsewhere(_) | PlayState::Launching | PlayState::Preparing
         ) {
             window.push_notification(Notification::error("Close F1 25 before updating addons."), cx);
             return;

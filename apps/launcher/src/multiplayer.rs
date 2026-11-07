@@ -521,6 +521,13 @@ impl Shell {
             window,
             cx,
         );
+        if !started {
+            self.mp_room_launch_result(false);
+        }
+        cx.notify();
+    }
+
+    pub(crate) fn mp_room_launch_result(&mut self, started: bool) {
         let Some(session) = &self.mp_page.session else {
             return;
         };
@@ -530,7 +537,6 @@ impl Shell {
             self.mp_page.room_launching = false;
             session.launch_failed("see the notice, finish what it asks, then try again");
         }
-        cx.notify();
     }
 
     /// The launch `mp_room_launch` started ended without the game: `why` says what stopped it.

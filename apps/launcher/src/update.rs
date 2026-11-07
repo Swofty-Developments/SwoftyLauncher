@@ -266,6 +266,7 @@ impl Shell {
             PlayState::Running
                 | PlayState::Elsewhere(_)
                 | PlayState::Launching
+                | PlayState::Preparing
                 | PlayState::Restoring
                 | PlayState::Detecting
                 | PlayState::Checking
@@ -281,7 +282,7 @@ impl Shell {
         }
         if matches!(
             self.play_state(),
-            PlayState::Running | PlayState::Elsewhere(_) | PlayState::Launching
+            PlayState::Running | PlayState::Elsewhere(_) | PlayState::Launching | PlayState::Preparing
         ) {
             window.push_notification(Notification::error("Close F1 25 before updating."), cx);
             return;

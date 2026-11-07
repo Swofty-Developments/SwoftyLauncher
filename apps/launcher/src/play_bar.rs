@@ -169,7 +169,11 @@ impl Shell {
             .tooltip(tr("Switch the copy of F1 25 Play uses"))
             .disabled(matches!(
                 self.play_state(),
-                PlayState::Running | PlayState::Launching | PlayState::Restoring | PlayState::Building
+                PlayState::Running
+                    | PlayState::Preparing
+                    | PlayState::Launching
+                    | PlayState::Restoring
+                    | PlayState::Building
             ))
             .dropdown_menu_with_anchor(Anchor::BottomLeft, move |mut menu, _, _| {
                 menu = menu
@@ -430,6 +434,7 @@ impl Shell {
             ),
             PlayState::Detecting => row.text_color(p.text_muted).child(tr("Detecting F1 25…")),
             PlayState::Checking => row.text_color(p.text_muted).child(tr("Checking conflicts…")),
+            PlayState::Preparing => row.child(dot(p.warning)).child(tr("Checking addons…")),
             PlayState::Ready => {
                 if rebuild {
                     return row.text_color(p.text_muted).child(dot(p.warning)).child(
@@ -545,7 +550,11 @@ impl Shell {
             .dropdown_caret(true)
             .disabled(matches!(
                 self.play_state(),
-                PlayState::Running | PlayState::Launching | PlayState::Restoring | PlayState::Building
+                PlayState::Running
+                    | PlayState::Preparing
+                    | PlayState::Launching
+                    | PlayState::Restoring
+                    | PlayState::Building
             ))
             .dropdown_menu_with_anchor(Anchor::BottomRight, move |mut menu, _, _| {
                 menu = menu.min_w(px(300.)).label(tr("Profile"));
@@ -708,7 +717,7 @@ impl Shell {
             PlayState::Ready | PlayState::Crashed(_) => {
                 (IconName::Play, tr("Play"), p.accent, p.on_accent, true)
             }
-            PlayState::Launching => (
+            PlayState::Preparing | PlayState::Launching => (
                 IconName::LoaderCircle,
                 tr("Launching…"),
                 p.elevated,

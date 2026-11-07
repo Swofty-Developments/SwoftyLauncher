@@ -3,7 +3,7 @@
   "admin_needed.rs": 5,
   "app_log.rs": 8,
   "blocks.rs": 4,
-  "browser.rs": 95,
+  "browser.rs": 91,
   "browser/authors.rs": 21,
   "career_saves.rs": 43,
   "console.rs": 6,
@@ -24,6 +24,7 @@
   "news.rs": 10,
   "pages.rs": 2,
   "play_bar.rs": 2,
+  "play_checks.rs": 6,
   "sections.rs": 15,
   "send_logs.rs": 11,
   "setup.rs": 16,
@@ -33,9 +34,8 @@
   "shaders/mod.rs": 10,
   "shaders/preview.rs": 7,
   "shaders/triggers.rs": 1,
-  "shell.rs": 56,
+  "shell.rs": 48,
   "tasks.rs": 1,
   "tools.rs": 5,
-  "ui_mode.rs": 2,
   "update.rs": 13
 }

@@ -1217,8 +1217,11 @@ impl Shell {
     }
 
     fn launching(&self) -> bool {
-        use crate::shell::PlayState::{Building, Launching, Restoring, Running};
-        matches!(self.play_state(), Launching | Restoring | Running | Building)
+        use crate::shell::PlayState::{Building, Launching, Preparing, Restoring, Running};
+        matches!(
+            self.play_state(),
+            Preparing | Launching | Restoring | Running | Building
+        )
     }
 
     fn check_conflicts(&mut self, window: &mut Window, cx: &mut Context<Self>) {

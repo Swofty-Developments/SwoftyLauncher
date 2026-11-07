@@ -33,6 +33,7 @@ use crate::game::{self, Install, Launch, Owner, Probe};
 use crate::game_edited::Edited;
 use crate::library::{AddonIcon, Library, SectionItem};
 use crate::pages::{addon_icon, label};
+use crate::play_checks;
 use crate::theme::{Palette, SCROLLBAR_GAP, ScrollArea, palette};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -107,6 +108,7 @@ pub enum PlayState {
     Running,
     Elsewhere(Owner),
     Checking,
+    Preparing,
     Crashed(SessionRecord),
     Building,
 }
@@ -137,6 +139,7 @@ pub struct Shell {
     pub(crate) launch: Option<Launch>,
     pub(crate) notice: Option<String>,
     play_anyway: bool,
+    play_pending: play_checks::Pending,
     pub(crate) blocked: Option<Blocked>,
     pub(crate) game_edited: Option<Edited>,
     pub(crate) recovered_seen: f64,
@@ -603,6 +606,7 @@ impl Shell {
             launch: None,
             notice: None,
             play_anyway: false,
+            play_pending: play_checks::Pending::default(),
             blocked: None,
             game_edited: None,
             recovered_seen,
@@ -1086,6 +1090,9 @@ impl Shell {
         if self.build.is_some() {
             return PlayState::Building;
         }
+        if self.play_pending.is_active() {
+            return PlayState::Preparing;
+        }
         if let Some(launch) = &self.launch {
             return if launch.saw_game {
                 PlayState::Restoring
@@ -1125,14 +1132,15 @@ impl Shell {
     }
 
     /// Play, or Play for a room: armed to go straight to the room's lobby, with the host's row ids for the
-    /// build when `room` has them. Whether the launch started.
+    /// build when `room` has them. Whether Play was taken up: the pre-launch checks run off the UI thread
+    /// and the launch follows when they pass.
     pub(crate) fn play_for(
         &mut self,
         room: Option<crate::multiplayer::RoomLaunch>,
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> bool {
-        if self.data_move_locked() {
+        if self.data_move_locked() || self.play_pending.is_active() {
             return false;
         }
         let Some(install) = self.install.clone() else {
@@ -1150,19 +1158,67 @@ impl Shell {
             self.show_ea_moved(moved, window, cx);
             return false;
         }
-        if swofty_core::compat::write_blocker(&install.dir).is_some() {
+        let Some(generation) = self.play_pending.begin() else {
+            return false;
+        };
+        let inputs = play_checks::Inputs {
+            store: self.store.clone(),
+            profile: self.library.profile.name.clone(),
+            game: install.dir.clone(),
+            anyway: std::mem::take(&mut self.play_anyway),
+        };
+        cx.notify();
+        let is_room = room.is_some();
+        cx.spawn_in(window, async move |this, cx| {
+            let checked = cx
+                .background_executor()
+                .spawn(async move { play_checks::run(inputs) })
+                .await;
+            this.update_in(cx, |s, window, cx| {
+                if !s.play_pending.finish(generation) {
+                    return;
+                }
+                let started = s.play_checked(checked, room, window, cx);
+                if is_room {
+                    s.mp_room_launch_result(started);
+                }
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
+        true
+    }
+
+    fn play_checked(
+        &mut self,
+        checked: play_checks::Checked,
+        room: Option<crate::multiplayer::RoomLaunch>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> bool {
+        crate::app_log::note(&checked.timings.line());
+        let stale = self.library.profile.name != checked.profile
+            || self.install.as_ref().map(|i| &i.dir) != Some(&checked.game);
+        let Some(install) = self.install.clone().filter(|_| !stale) else {
+            crate::app_log::note("[play] dropped: the profile or game copy changed during the checks");
+            self.steam_saves_once = false;
+            return false;
+        };
+        let gate = checked.gate;
+        if gate.write_blocked {
             self.show_admin_needed(&install, window, cx);
             return false;
         }
-        if !swofty_core::setup::done(&self.store.root) {
+        if !gate.setup_done {
             self.open_setup(window, cx);
             return false;
         }
-        if !swofty_core::offline::is_accepted(&self.store.root) {
+        if !gate.offline_accepted {
             self.confirm_offline_play(window, cx);
             return false;
         }
-        if swofty_core::setup::first_launch(&self.store.root) {
+        if gate.first_launch {
             self.first_launch_notice(window, cx);
             return false;
         }
@@ -1172,18 +1228,26 @@ impl Shell {
         Blocked::clear(&self.store.root).ok();
         self.blocked_seen = game::blocked_at(&self.store.root).unwrap_or(0.0);
         self.dismissed = self.session.as_ref().map(|s| s.dir.clone());
-        self.note_lonely_bases(window, cx);
-        if !self.registry_check(window, cx) {
-            cx.notify();
-            return false;
+        for note in &checked.notes {
+            window.push_notification(note_notification(note), cx);
+        }
+        match checked.verdict {
+            play_checks::Verdict::Go => {}
+            play_checks::Verdict::Stop(stop) => {
+                self.notice = Some(stop);
+                self.steam_saves_once = false;
+                return false;
+            }
+            play_checks::Verdict::Confirm(text) => {
+                self.confirm_missing_rows(text, window, cx);
+                self.steam_saves_once = false;
+                return false;
+            }
         }
         if let Some(d) = swofty_core::known_problems::outdated_exe(install.version().as_deref()) {
             window.push_notification(Notification::warning(d.text()).title(d.title).autohide(false), cx);
         }
-        // Warn only: F1 25 does its own 2 GB check, and Play must never be
-        // blocked by a reading that is wrong.
-        let space = swofty_core::data_usage::Room::now(&self.store.root);
-        if let Some(short) = crate::settings::low_space_warning(space) {
+        if let Some(short) = crate::settings::low_space_warning(checked.room) {
             let text = format!("{short} Settings shows what takes the room and clears old logs.");
             crate::app_log::note(&format!("play: {text}"));
             window.push_notification(
@@ -1199,7 +1263,7 @@ impl Shell {
                 .mp_allowed()
                 .then_some(swofty_core::multiplayer::bridge::ARMED),
         };
-        let started = match Launch::start(
+        match Launch::start(
             &self.store,
             &self.library.profile.name,
             &install,
@@ -1223,132 +1287,6 @@ impl Shell {
                 );
                 false
             }
-        };
-        cx.notify();
-        started
-    }
-
-    /// The 1.6 dependency check before Play, as the build runs it: a stop shows as an error and
-    /// Play doesn't start; warnings and hints show as notifications and Play goes on. Before a
-    /// vanilla session it names the careers that use addons. Returns whether Play goes on.
-    fn registry_check(&mut self, window: &mut Window, cx: &mut Context<Self>) -> bool {
-        use swofty_core::stdlib::deps::{self, Level};
-        let anyway = std::mem::take(&mut self.play_anyway);
-        let (Ok(profile), Ok(installed)) = (
-            self.store.profile(&self.library.profile.name),
-            self.store.addons(),
-        ) else {
-            return true;
-        };
-        if profile.is_vanilla() {
-            let game = self.install.as_ref().map(|i| i.dir.clone());
-            let careers = swofty_core::stdlib::careers::sync(&self.store.root, game.as_deref(), None)
-                .unwrap_or_default();
-            let using = careers.iter().filter(|c| !c.addons.is_empty()).count();
-            if using > 0 {
-                let text = match using {
-                    1 => format!(
-                        "1 career uses addons; loading it in {} can lose its progress.",
-                        swofty_core::profile::VANILLA
-                    ),
-                    n => format!(
-                        "{n} careers use addons; loading them in {} can lose their progress.",
-                        swofty_core::profile::VANILLA
-                    ),
-                };
-                window.push_notification(
-                    Notification::warning(text)
-                        .title("Careers that need addons")
-                        .autohide(false),
-                    cx,
-                );
-            }
-            return true;
-        }
-        let Ok(plan) = swofty_core::resolver::resolve(&profile, &installed) else {
-            return true;
-        };
-        let all = deps::read_all(&self.store, &installed);
-        let report = deps::for_order(&profile.name, &plan.order, &installed, &all);
-        let careers =
-            swofty_core::stdlib::careers::read(&swofty_core::stdlib::careers::data_path(&self.store.root));
-        let scoped: Vec<_> =
-            swofty_core::stdlib::careers::in_save_of(&careers, &self.store.root, &profile.name)
-                .into_iter()
-                .cloned()
-                .collect();
-        if let Some(stop) = swofty_core::stdlib::careers::stop_line(&scoped, &plan.order, &installed) {
-            if anyway {
-                window.push_notification(
-                    Notification::warning(stop)
-                        .title("Careers that need addons")
-                        .autohide(false),
-                    cx,
-                );
-            } else {
-                self.confirm_missing_rows(stop, window, cx);
-                return false;
-            }
-        }
-        if let Some(line) = swofty_core::stdlib::careers::play_line(&careers, &plan.order, &installed) {
-            window.push_notification(
-                Notification::warning(line)
-                    .title("Careers that need addons")
-                    .autohide(false),
-                cx,
-            );
-        }
-        for f in &report.findings {
-            let body = f.detail.join(" ");
-            let n = match f.level {
-                Level::Stop => Notification::error(body).autohide(false),
-                Level::Warn => Notification::warning(body).autohide(false),
-                Level::Hint => Notification::info(body),
-            };
-            window.push_notification(n.title(f.headline.clone()), cx);
-        }
-        match report.stop_text() {
-            Some(stop) => {
-                self.notice = Some(stop);
-                false
-            }
-            None => true,
-        }
-    }
-
-    /// A base addon on with none of the addons that build on it, such as
-    /// Classic Seasons with no season: say which to install. Play goes on.
-    fn note_lonely_bases(&self, window: &mut Window, cx: &mut Context<Self>) {
-        let (Ok(profile), Ok(installed)) = (
-            self.store.profile(&self.library.profile.name),
-            self.store.addons(),
-        ) else {
-            return;
-        };
-        let catalog = swofty_core::catalog::cached(&self.store.root).unwrap_or_default();
-        for (base, family) in swofty_core::resolver::lonely_bases(&profile, &installed, &catalog) {
-            if installed
-                .values()
-                .any(|m| m.name == base && self.store.is_builtin(&m.id))
-            {
-                continue;
-            }
-            let shown = family.iter().take(4).cloned().collect::<Vec<_>>().join(", ");
-            let more = family.len().saturating_sub(4);
-            let more = if more > 0 {
-                format!(" and {more} more")
-            } else {
-                String::new()
-            };
-            window.push_notification(
-                Notification::warning(format!(
-                    "{base} is on, but none of its addons are, so it adds nothing to pick on its own. Install at \
-                     least one in the Addon Browser, such as {shown}{more}, and turn it on."
-                ))
-                .title(format!("{base} needs one of its addons"))
-                .autohide(false),
-                cx,
-            );
         }
     }
 
@@ -1362,8 +1300,7 @@ impl Shell {
 
     pub(crate) fn play_with_steam_saves(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.steam_saves_once = true;
-        self.play(window, cx);
-        if self.launch.is_none() {
+        if !self.play_for(None, window, cx) {
             self.steam_saves_once = false;
         }
     }
@@ -1433,6 +1370,7 @@ impl Shell {
 
     /// The game switcher: play another copy of F1 25.
     pub(crate) fn use_copy(&mut self, dir: PathBuf, window: &mut Window, cx: &mut Context<Self>) {
+        self.play_pending.cancel();
         let mut config = self.store.config();
         swofty_core::copies::set_active(&mut config, &dir);
         if let Err(e) = self.store.save_config(&config) {
@@ -1942,6 +1880,7 @@ impl Shell {
     }
 
     pub(crate) fn switch_profile(&mut self, name: &str, window: &mut Window, cx: &mut Context<Self>) {
+        self.play_pending.cancel();
         if let Err(e) = self.store.set_active_profile(name) {
             crate::app_log::action("switch profile").failed(&e);
             window.push_notification(Notification::error(e.to_string()), cx);
@@ -2718,4 +2657,15 @@ fn saves_alert(alert: AlertDialog, w: &SavesWarning, then: Option<&'static str>,
         )
         .ok_variant(ButtonVariant::Danger)
         .show_cancel(true)
+}
+
+fn note_notification(note: &play_checks::Note) -> Notification {
+    use play_checks::NoteLevel;
+    let n = match note.level {
+        NoteLevel::Info => Notification::info(note.body.clone()),
+        NoteLevel::Warning => Notification::warning(note.body.clone()),
+        NoteLevel::Error => Notification::error(note.body.clone()),
+    };
+    let n = if note.sticky { n.autohide(false) } else { n };
+    n.title(note.title.clone())
 }
