@@ -107,7 +107,7 @@ impl Shell {
             _ => None,
         };
         let summary = match count {
-            0 => "Empty · drag addons here".to_owned(),
+            0 => tr("Empty · drag addons here").to_owned(),
             n if vanilla => trn(n, "{count} addon", "{count} addons"),
             n => trf!(
                 "{amount} · {on} on",
@@ -116,33 +116,7 @@ impl Shell {
             ),
         };
         let tag = key.text();
-        let actions = own.map(|id| {
-            let (rename, remove) = (id.clone(), id);
-            h_flex()
-                .gap(px(2.))
-                .child(
-                    Button::new(SharedString::from(format!("folder-rename-{tag}")))
-                        .ghost()
-                        .xsmall()
-                        .icon(IconName::Pencil)
-                        .tooltip(tr("Rename folder"))
-                        .on_click(cx.listener(move |this, _, window, cx| {
-                            cx.stop_propagation();
-                            this.rename_folder(&rename, window, cx)
-                        })),
-                )
-                .child(
-                    Button::new(SharedString::from(format!("folder-remove-{tag}")))
-                        .ghost()
-                        .xsmall()
-                        .icon(IconName::Trash)
-                        .tooltip(tr("Remove folder. Its addons go back to their own folders."))
-                        .on_click(cx.listener(move |this, _, window, cx| {
-                            cx.stop_propagation();
-                            this.remove_folder(&remove, window, cx)
-                        })),
-                )
-        });
+        let actions = own.map(|id| self.folder_actions(id, &tag, cx));
         let toggle = key.clone();
         let row = h_flex()
             .id(SharedString::from(format!("folder-{tag}")))
@@ -219,5 +193,35 @@ impl Shell {
             }
             false => row.into_any_element(),
         }
+    }
+}
+
+impl Shell {
+    fn folder_actions(&self, id: String, tag: &str, cx: &mut Context<Self>) -> Div {
+        let (rename, remove) = (id.clone(), id);
+        h_flex()
+            .gap(px(2.))
+            .child(
+                Button::new(SharedString::from(format!("folder-rename-{tag}")))
+                    .ghost()
+                    .xsmall()
+                    .icon(IconName::Pencil)
+                    .tooltip(tr("Rename folder"))
+                    .on_click(cx.listener(move |this, _, window, cx| {
+                        cx.stop_propagation();
+                        this.rename_folder(&rename, window, cx)
+                    })),
+            )
+            .child(
+                Button::new(SharedString::from(format!("folder-remove-{tag}")))
+                    .ghost()
+                    .xsmall()
+                    .icon(IconName::Trash)
+                    .tooltip(tr("Remove folder. Its addons go back to their own folders."))
+                    .on_click(cx.listener(move |this, _, window, cx| {
+                        cx.stop_propagation();
+                        this.remove_folder(&remove, window, cx)
+                    })),
+            )
     }
 }

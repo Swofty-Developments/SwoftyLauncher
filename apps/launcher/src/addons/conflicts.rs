@@ -334,111 +334,7 @@ impl Shell {
                 counts = pair_counts(pair)
             )
         };
-        let items = open.then(|| {
-            let mut groups: Vec<(String, Vec<String>)> = Vec::new();
-            for item in &pair.items {
-                let (group, name) = item_group(item);
-                match groups.iter_mut().find(|(g, _)| *g == group) {
-                    Some((_, names)) => names.push(name),
-                    None => groups.push((group, vec![name])),
-                }
-            }
-            let details = self.addons.details.contains(&key);
-            let all = self.addons.all_items.contains(&key);
-            let total = pair.items.len();
-            let unlisted = pair.database + pair.resources + pair.files + pair.strings;
-            let link =
-                |id: String, text: String, cx: &mut Context<Self>, f: fn(&mut Self, (String, String))| {
-                    let key = key.clone();
-                    div()
-                        .id(SharedString::from(id))
-                        .text_size(px(12.))
-                        .text_color(p.accent)
-                        .cursor_pointer()
-                        .hover(move |s| s.text_color(p.accent_hover))
-                        .child(text)
-                        .on_click(cx.listener(move |this, _, _, cx| {
-                            f(this, key.clone());
-                            cx.notify();
-                        }))
-                };
-            let tag_id = format!("{}-{}", pair.winner, pair.loser);
-            let raw = details.then(|| {
-                let mut left = if all { usize::MAX } else { ITEMS_SHOWN };
-                let mut out = Vec::new();
-                for (g, names) in &groups {
-                    if left == 0 {
-                        break;
-                    }
-                    out.push(
-                        div()
-                            .pt(px(6.))
-                            .text_size(px(11.))
-                            .text_color(p.text_placeholder)
-                            .child(g.clone()),
-                    );
-                    out.extend(names.iter().take(left).map(|n| {
-                        div()
-                            .text_size(px(12.))
-                            .line_height(px(17.))
-                            .text_color(p.text_muted)
-                            .child(n.clone())
-                    }));
-                    left = left.saturating_sub(names.len());
-                }
-                v_flex().gap(px(1.)).children(out).when(total > ITEMS_SHOWN, |d| {
-                    d.child(div().pt(px(4.)).child(link(
-                        format!("pair-all-{tag_id}"),
-                        if all {
-                            "Show fewer".to_owned()
-                        } else {
-                            trf!("Show all {total}", total = total)
-                        },
-                        cx,
-                        |this, key| {
-                            if !this.addons.all_items.remove(&key) {
-                                this.addons.all_items.insert(key);
-                            }
-                        },
-                    )))
-                })
-            });
-            v_flex()
-                .px(px(12.))
-                .pb(px(10.))
-                .pl(px(34.))
-                .gap(px(4.))
-                .children(groups.iter().map(|(g, names)| {
-                    h_flex()
-                        .gap(px(6.))
-                        .text_size(px(12.))
-                        .child(div().text_color(p.text).child(g.clone()))
-                        .child(
-                            div()
-                                .text_color(p.text_placeholder)
-                                .child(names.len().to_string()),
-                        )
-                }))
-                .when(unlisted > total, |d| {
-                    d.child(
-                        div()
-                            .text_size(px(12.))
-                            .text_color(p.text_placeholder)
-                            .child(trf!("{total} more not listed", total = unlisted - total)),
-                    )
-                })
-                .child(link(
-                    format!("pair-details-{tag_id}"),
-                    if details { "Hide details" } else { "Details" }.to_owned(),
-                    cx,
-                    |this, key| {
-                        if !this.addons.details.remove(&key) {
-                            this.addons.details.insert(key);
-                        }
-                    },
-                ))
-                .children(raw)
-        });
+        let items = open.then(|| self.pair_items(pair, &key, p, cx));
         v_flex()
             .when(!first, |d| d.border_t_1().border_color(p.border_variant))
             .child(
@@ -478,5 +374,113 @@ impl Shell {
             )
             .children(items)
             .into_any_element()
+    }
+}
+
+impl Shell {
+    fn pair_items(&self, pair: &Pair, key: &(String, String), p: Palette, cx: &mut Context<Self>) -> Div {
+        let key = key.clone();
+        let mut groups: Vec<(String, Vec<String>)> = Vec::new();
+        for item in &pair.items {
+            let (group, name) = item_group(item);
+            match groups.iter_mut().find(|(g, _)| *g == group) {
+                Some((_, names)) => names.push(name),
+                None => groups.push((group, vec![name])),
+            }
+        }
+        let details = self.addons.details.contains(&key);
+        let all = self.addons.all_items.contains(&key);
+        let total = pair.items.len();
+        let unlisted = pair.database + pair.resources + pair.files + pair.strings;
+        let link = |id: String, text: String, cx: &mut Context<Self>, f: fn(&mut Self, (String, String))| {
+            let key = key.clone();
+            div()
+                .id(SharedString::from(id))
+                .text_size(px(12.))
+                .text_color(p.accent)
+                .cursor_pointer()
+                .hover(move |s| s.text_color(p.accent_hover))
+                .child(text)
+                .on_click(cx.listener(move |this, _, _, cx| {
+                    f(this, key.clone());
+                    cx.notify();
+                }))
+        };
+        let tag_id = format!("{}-{}", pair.winner, pair.loser);
+        let raw = details.then(|| {
+            let mut left = if all { usize::MAX } else { ITEMS_SHOWN };
+            let mut out = Vec::new();
+            for (g, names) in &groups {
+                if left == 0 {
+                    break;
+                }
+                out.push(
+                    div()
+                        .pt(px(6.))
+                        .text_size(px(11.))
+                        .text_color(p.text_placeholder)
+                        .child(g.clone()),
+                );
+                out.extend(names.iter().take(left).map(|n| {
+                    div()
+                        .text_size(px(12.))
+                        .line_height(px(17.))
+                        .text_color(p.text_muted)
+                        .child(n.clone())
+                }));
+                left = left.saturating_sub(names.len());
+            }
+            v_flex().gap(px(1.)).children(out).when(total > ITEMS_SHOWN, |d| {
+                d.child(div().pt(px(4.)).child(link(
+                    format!("pair-all-{tag_id}"),
+                    if all {
+                        "Show fewer".to_owned()
+                    } else {
+                        trf!("Show all {total}", total = total)
+                    },
+                    cx,
+                    |this, key| {
+                        if !this.addons.all_items.remove(&key) {
+                            this.addons.all_items.insert(key);
+                        }
+                    },
+                )))
+            })
+        });
+        v_flex()
+            .px(px(12.))
+            .pb(px(10.))
+            .pl(px(34.))
+            .gap(px(4.))
+            .children(groups.iter().map(|(g, names)| {
+                h_flex()
+                    .gap(px(6.))
+                    .text_size(px(12.))
+                    .child(div().text_color(p.text).child(g.clone()))
+                    .child(
+                        div()
+                            .text_color(p.text_placeholder)
+                            .child(names.len().to_string()),
+                    )
+            }))
+            .when(unlisted > total, |d| {
+                d.child(
+                    div()
+                        .text_size(px(12.))
+                        .text_color(p.text_placeholder)
+                        .child(trf!("{total} more not listed", total = unlisted - total)),
+                )
+            })
+            .child(link(
+                format!("pair-details-{tag_id}"),
+                if details { "Hide details" } else { "Details" }.to_owned(),
+                cx,
+                |this, key| {
+                    if !this.addons.details.remove(&key) {
+                        this.addons.details.insert(key);
+                    }
+                },
+            ))
+            .children(raw)
     }
 }

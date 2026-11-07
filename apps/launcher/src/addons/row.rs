@@ -119,28 +119,8 @@ impl Shell {
                 (None, true) => d.bg(p.selected),
                 (None, false) => d.hover(move |s| s.bg(p.hover)),
             })
-            .when_some(fade, |d, k| {
-                d.child(
-                    div()
-                        .absolute()
-                        .left_0()
-                        .top_0()
-                        .bottom_0()
-                        .w(px(3.))
-                        .bg(p.warning.opacity(k)),
-                )
-            })
-            .when(selected && fade.is_none(), |d| {
-                d.child(
-                    div()
-                        .absolute()
-                        .left_0()
-                        .top_0()
-                        .bottom_0()
-                        .w(px(3.))
-                        .bg(p.accent),
-                )
-            })
+            .when_some(fade, |d, k| d.child(accent_bar(p.warning.opacity(k))))
+            .when(selected && fade.is_none(), |d| d.child(accent_bar(p.accent)))
             .child(grip)
             .child(
                 div()
@@ -156,27 +136,7 @@ impl Shell {
                     .flex_1()
                     .min_w_0()
                     .gap(px(2.))
-                    .child(
-                        h_flex()
-                            .gap(px(8.))
-                            .items_baseline()
-                            .child(
-                                div()
-                                    .min_w_0()
-                                    .text_size(px(14.))
-                                    .font_weight(FontWeight::MEDIUM)
-                                    .when(off, |d| d.text_color(p.text_muted))
-                                    .truncate()
-                                    .child(man.name.clone()),
-                            )
-                            .child(
-                                div()
-                                    .flex_shrink_0()
-                                    .text_size(px(12.))
-                                    .text_color(p.text_placeholder)
-                                    .child(man.version.to_string()),
-                            ),
-                    )
+                    .child(row_title(m, off, p))
                     .child(self.row_tags(m, p)),
             )
             .child(self.row_pills(m, p))
@@ -448,4 +408,31 @@ impl Shell {
                 )
             })
     }
+}
+
+fn accent_bar(color: Hsla) -> Div {
+    div().absolute().left_0().top_0().bottom_0().w(px(3.)).bg(color)
+}
+
+fn row_title(m: &AddonItem, off: bool, p: Palette) -> Div {
+    let man = &m.manifest;
+    h_flex()
+        .gap(px(8.))
+        .items_baseline()
+        .child(
+            div()
+                .min_w_0()
+                .text_size(px(14.))
+                .font_weight(FontWeight::MEDIUM)
+                .when(off, |d| d.text_color(p.text_muted))
+                .truncate()
+                .child(man.name.clone()),
+        )
+        .child(
+            div()
+                .flex_shrink_0()
+                .text_size(px(12.))
+                .text_color(p.text_placeholder)
+                .child(man.version.to_string()),
+        )
 }

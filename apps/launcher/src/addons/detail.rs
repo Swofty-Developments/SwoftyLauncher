@@ -288,32 +288,7 @@ impl Shell {
                 div().text_color(compat_color).child(compat),
                 p,
             ))
-            .when(!man.requires.is_empty(), |d| {
-                let needs = self.needs(m);
-                let text = man
-                    .requires
-                    .iter()
-                    .map(|r| {
-                        let named = format!("{} {}", self.addon_name(&r.id), r.version);
-                        match needs.iter().find(|n| n.id == r.id).map(|n| &n.kind) {
-                            Some(NeedKind::Missing) => trf!("{named} (not installed)", named = named),
-                            Some(NeedKind::Off) => trf!("{named} (off)", named = named),
-                            Some(NeedKind::Version { found, .. }) => {
-                                trf!("{named} ({found} installed)", named = named, found = found)
-                            }
-                            Some(NeedKind::Below) => trf!("{named} (loads first)", named = named),
-                            None => named,
-                        }
-                    })
-                    .collect::<Vec<_>>()
-                    .join(", ");
-                let color = if needs.iter().any(Need::blocks) {
-                    p.warning
-                } else {
-                    p.text
-                };
-                d.child(fact(tr("Requires"), div().text_color(color).child(text), p))
-            })
+            .when(!man.requires.is_empty(), |d| d.child(self.requires_fact(m, p)))
             .when_some(man.license.clone(), |d, l| d.child(fact(tr("License"), l, p)))
             .when_some(man.homepage.clone(), |d, h| d.child(fact(tr("Homepage"), h, p)))
             .when(m.source == Source::Installed || man.source_url().is_some(), |d| {
@@ -460,4 +435,34 @@ fn detail_what(m: &AddonItem, changes: &Changes, p: Palette) -> Div {
                 )
                 .child(div().flex_1().min_w_0().child(why.clone()))
         }))
+}
+
+impl Shell {
+    fn requires_fact(&self, m: &AddonItem, p: Palette) -> Div {
+        let man = &m.manifest;
+        let needs = self.needs(m);
+        let text = man
+            .requires
+            .iter()
+            .map(|r| {
+                let named = format!("{} {}", self.addon_name(&r.id), r.version);
+                match needs.iter().find(|n| n.id == r.id).map(|n| &n.kind) {
+                    Some(NeedKind::Missing) => trf!("{named} (not installed)", named = named),
+                    Some(NeedKind::Off) => trf!("{named} (off)", named = named),
+                    Some(NeedKind::Version { found, .. }) => {
+                        trf!("{named} ({found} installed)", named = named, found = found)
+                    }
+                    Some(NeedKind::Below) => trf!("{named} (loads first)", named = named),
+                    None => named,
+                }
+            })
+            .collect::<Vec<_>>()
+            .join(", ");
+        let color = if needs.iter().any(Need::blocks) {
+            p.warning
+        } else {
+            p.text
+        };
+        fact(tr("Requires"), div().text_color(color).child(text), p)
+    }
 }

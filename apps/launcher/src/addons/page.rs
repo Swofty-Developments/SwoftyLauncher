@@ -297,55 +297,7 @@ impl Shell {
     pub(super) fn install_cards(&self, p: Palette, cx: &mut Context<Self>) -> impl IntoElement {
         let roomy = self.content_width >= 900. && !self.short;
         let short = self.short;
-        let card =
-            |id: &'static str, icon: IconName, color: Hsla, title: &'static str, body: &'static str| {
-                let text = v_flex()
-                    .flex_1()
-                    .min_w_0()
-                    .gap(px(2.))
-                    .child(
-                        div()
-                            .text_size(px(if short { 13. } else { 14. }))
-                            .font_weight(FontWeight::SEMIBOLD)
-                            .text_color(p.text)
-                            .child(title),
-                    )
-                    .when(!short, |d| {
-                        d.child(
-                            div()
-                                .text_size(px(13.))
-                                .line_height(px(18.))
-                                .text_color(p.text_muted)
-                                .child(body),
-                        )
-                    });
-                v_flex()
-                    .id(id)
-                    .flex_1()
-                    .flex_basis(px(280.))
-                    .min_w_0()
-                    .items_start()
-                    .px(px(if short { 12. } else { 16. }))
-                    .py(px(if short { 10. } else { 12. }))
-                    .gap(px(if short { 8. } else { 12. }))
-                    .rounded(px(8.))
-                    .border_1()
-                    .bg(p.surface)
-                    .child(
-                        h_flex()
-                            .flex_1()
-                            .w_full()
-                            .items_start()
-                            .gap(px(10.))
-                            .child(
-                                Icon::new(icon)
-                                    .size(px(if short { 15. } else { 19. }))
-                                    .flex_shrink_0()
-                                    .text_color(color),
-                            )
-                            .child(text),
-                    )
-            };
+        let card = |id, icon, color, title, body| install_card(short, p, id, icon, color, title, body);
         let folder = div()
             .id("install-folder")
             .flex_shrink_0()
@@ -362,11 +314,11 @@ impl Shell {
             "install-addon",
             IconName::Upload,
             p.accent,
-            "Installing a Swofty Addon?",
+            tr("Installing a Swofty Addon?"),
             if short {
-                "Drop it here or click to choose"
+                tr("Drop it here or click to choose")
             } else {
-                "Drag and drop it here or click to choose a file"
+                tr("Drag and drop it here or click to choose a file")
             },
         )
         .border_dashed()
@@ -379,11 +331,11 @@ impl Shell {
             "install-mod",
             IconName::FolderInput,
             p.success,
-            "Installing a mod?",
+            tr("Installing a mod?"),
             if short {
-                "Mods convert into addons"
+                tr("Mods convert into addons")
             } else {
-                "Mods convert into Swofty addons using the Simplified Importer."
+                tr("Mods convert into Swofty addons using the Simplified Importer.")
             },
         )
         .border_color(p.border_variant)
@@ -392,9 +344,9 @@ impl Shell {
                 .outline()
                 .small()
                 .label(if roomy {
-                    "Go to Simplified Importer"
+                    tr("Go to Simplified Importer")
                 } else {
-                    "Simplified Importer"
+                    tr("Simplified Importer")
                 })
                 .on_click(cx.listener(|this, _, _, cx| this.open_page(Page::Importer, cx))),
         );
@@ -402,8 +354,8 @@ impl Shell {
             "install-browse",
             IconName::PackageSearch,
             p.warning,
-            "Looking for a Swofty Addon?",
-            "Browse addons published by the community",
+            tr("Looking for a Swofty Addon?"),
+            tr("Browse addons published by the community"),
         )
         .border_color(p.border_variant)
         .child(
@@ -411,9 +363,9 @@ impl Shell {
                 .outline()
                 .small()
                 .label(if roomy {
-                    "Open Addon Browser"
+                    tr("Open Addon Browser")
                 } else {
-                    "Addon Browser"
+                    tr("Addon Browser")
                 })
                 .on_click(cx.listener(|this, _, _, cx| this.open_page(Page::Browser, cx))),
         );
@@ -444,4 +396,61 @@ impl Shell {
             .child(label(title, p))
             .into_any_element()
     }
+}
+
+fn install_card(
+    short: bool,
+    p: Palette,
+    id: &'static str,
+    icon: IconName,
+    color: Hsla,
+    title: &'static str,
+    body: &'static str,
+) -> Stateful<Div> {
+    let text = v_flex()
+        .flex_1()
+        .min_w_0()
+        .gap(px(2.))
+        .child(
+            div()
+                .text_size(px(if short { 13. } else { 14. }))
+                .font_weight(FontWeight::SEMIBOLD)
+                .text_color(p.text)
+                .child(title),
+        )
+        .when(!short, |d| {
+            d.child(
+                div()
+                    .text_size(px(13.))
+                    .line_height(px(18.))
+                    .text_color(p.text_muted)
+                    .child(body),
+            )
+        });
+    v_flex()
+        .id(id)
+        .flex_1()
+        .flex_basis(px(280.))
+        .min_w_0()
+        .items_start()
+        .px(px(if short { 12. } else { 16. }))
+        .py(px(if short { 10. } else { 12. }))
+        .gap(px(if short { 8. } else { 12. }))
+        .rounded(px(8.))
+        .border_1()
+        .bg(p.surface)
+        .child(
+            h_flex()
+                .flex_1()
+                .w_full()
+                .items_start()
+                .gap(px(10.))
+                .child(
+                    Icon::new(icon)
+                        .size(px(if short { 15. } else { 19. }))
+                        .flex_shrink_0()
+                        .text_color(color),
+                )
+                .child(text),
+        )
 }
