@@ -16,6 +16,7 @@ mod donate;
 mod download_dock;
 mod download_queue;
 mod ea_app;
+mod form;
 mod game;
 mod game_edited;
 mod importer;
