@@ -23,8 +23,8 @@ use swofty_core::dbedit::{
 };
 use swofty_core::store::Store;
 use swofty_core::view::{Block, Body};
+use swofty_i18n::trn;
 
-use crate::library::plural;
 use crate::shell::{Page, Shell};
 
 pub(crate) use fields::Slots;
@@ -1568,7 +1568,11 @@ impl Shell {
             return;
         };
         let n = self.db_listed(field);
-        let title = format!("Set {} to {shown} on {}?", f.label, plural(n, "row", "rows"));
+        let title = format!(
+            "Set {} to {shown} on {}?",
+            f.label,
+            trn(n, "{count} row", "{count} rows")
+        );
         let rows = if slot.shown.len() < slot.view.rows.len() {
             "Every row the search lists"
         } else {
@@ -1624,7 +1628,7 @@ impl Shell {
                 self.db.slots = Slots::default();
                 self.db.toasts.push(Notification::success(format!(
                     "{label}: changed {}",
-                    plural(n, "row", "rows")
+                    trn(n, "{count} row", "{count} rows")
                 )));
                 self.db_changed(None, true, cx);
             }

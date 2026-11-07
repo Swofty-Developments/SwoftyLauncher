@@ -529,7 +529,7 @@ impl Shell {
             Gate::Installing => (
                 IconName::LoaderCircle,
                 match progress {
-                    Some(done) => format!("Updating {:.0}%", done * 100.),
+                    Some(done) => format!("Updating {}", crate::format::percent(done)),
                     None => "Updating…".into(),
                 },
                 detail,

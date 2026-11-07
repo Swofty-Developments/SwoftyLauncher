@@ -17,9 +17,9 @@ use swofty_core::vault::career_names;
 use swofty_core::vault::careers::{self, Brief, Diff, Listed, Row, State as CareerState};
 use swofty_core::vault::restore::Running;
 use swofty_core::vault::{self, Location, Notice, Reason, Snapshot, Vault};
+use swofty_i18n::trn;
 
-use crate::addons::ago;
-use crate::library::plural;
+use crate::format::{ago_since as ago, size};
 use crate::pages::{GUTTER, label};
 use crate::shell::{Page, Prompt, Shell};
 use crate::theme::{Palette, ScrollArea};
@@ -266,14 +266,6 @@ fn row_name(r: &Row) -> String {
     out
 }
 
-fn mb(bytes: u64) -> String {
-    format!("{:.1} MB", bytes as f64 / (1024.0 * 1024.0))
-}
-
-fn mb_whole(bytes: u64) -> String {
-    format!("{} MB", (bytes as f64 / (1024.0 * 1024.0)).round() as u64)
-}
-
 fn list(items: &[Brief]) -> String {
     items
         .iter()
@@ -311,7 +303,7 @@ fn reason_label(r: Reason) -> &'static str {
 }
 
 fn careers_held(held: &[String]) -> String {
-    plural(held.len(), "career", "careers")
+    trn(held.len(), "{count} career", "{count} careers")
 }
 
 fn imported_from(snaps: &[Snapshot]) -> Imported {
@@ -1709,7 +1701,7 @@ impl Shell {
                             .text_right()
                             .text_size(px(13.))
                             .text_color(p.text_muted)
-                            .child(mb(s.total())),
+                            .child(size(s.total())),
                     )
                     .child(
                         h_flex()
@@ -1771,11 +1763,7 @@ impl Shell {
             .border_color(p.border_variant)
             .text_size(px(13.))
             .text_color(p.text_muted)
-            .child(format!(
-                "Versions use {} of {}",
-                mb(view.usage),
-                mb_whole(view.cap)
-            ))
+            .child(format!("Versions use {} of {}", size(view.usage), size(view.cap)))
             .child("·")
             .child(
                 Button::new("saves-storage-change")

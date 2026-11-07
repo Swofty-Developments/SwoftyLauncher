@@ -7,12 +7,12 @@ use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{Disableable, Icon, Side, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_i18n::{tr, trf};
+use swofty_i18n::{tr, trf, trn};
 
-use crate::game::{self, Owner, ago, duration};
+use crate::format::{ago, duration};
+use crate::game::{self, Owner};
 
 pub(crate) const HEIGHT: f32 = 72.;
-use crate::library::plural;
 use crate::pages::avatar;
 use crate::shell::{Page, PlayState, Shell};
 use crate::theme::Palette;
@@ -436,10 +436,10 @@ impl Shell {
                         div().min_w_0().truncate().child(trf!(
                             "Ready · rebuilds {profile} for {changes} on launch",
                             profile = self.library.profile.name,
-                            changes = plural(
+                            changes = trn(
                                 self.library.rebuild.len(),
-                                tr("changed setting"),
-                                tr("changed settings")
+                                "{count} changed setting",
+                                "{count} changed settings"
                             )
                         )),
                     );

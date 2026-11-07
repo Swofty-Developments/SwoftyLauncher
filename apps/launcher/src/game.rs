@@ -599,24 +599,6 @@ pub fn now_secs() -> f64 {
         .unwrap_or(0.0)
 }
 
-pub fn ago(secs: f64) -> String {
-    let s = secs.max(0.0) as u64;
-    match s {
-        0..60 => "just now".into(),
-        60..3600 => format!("{} min ago", s / 60),
-        3600..86_400 => format!("{} h ago", s / 3600),
-        _ => format!("{} d ago", s / 86_400),
-    }
-}
-
-pub fn duration(secs: u64) -> String {
-    match secs {
-        0..60 => format!("{secs} s"),
-        60..3600 => format!("{} min", secs / 60),
-        _ => format!("{} h {} min", secs / 3600, secs % 3600 / 60),
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use std::path::Path;

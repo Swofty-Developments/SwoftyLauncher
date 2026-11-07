@@ -23,8 +23,8 @@ use swofty_core::multiplayer::session::{
     Local, MemberState, Phase, RoomContent, Session, SessionState, Setup,
 };
 use swofty_core::store::Store;
+use swofty_i18n::trn;
 
-use crate::library::plural;
 use crate::pages::{GUTTER, badge, label, monogram, tag};
 use crate::shell::{Page, Shell};
 use crate::theme::{Palette, ScrollArea};
@@ -1157,22 +1157,21 @@ impl Shell {
             .outline()
             .small()
             .w(px(160.))
-            .label(plural(usize::from(m.max), "player", "players"))
+            .label(trn(usize::from(m.max), "{count} player", "{count} players"))
             .dropdown_caret(true)
             .dropdown_menu_with_anchor(Anchor::TopLeft, move |mut menu, _, _| {
                 for n in MIN_PLAYERS..=MAX_PLAYERS {
                     let shell = shell.clone();
                     menu = menu.item(
-                        PopupMenuItem::new(plural(usize::from(n), "player", "players")).on_click(
-                            move |_, _, cx| {
+                        PopupMenuItem::new(trn(usize::from(n), "{count} player", "{count} players"))
+                            .on_click(move |_, _, cx| {
                                 shell
                                     .update(cx, |s, cx| {
                                         s.mp_page.max = n;
                                         cx.notify();
                                     })
                                     .ok();
-                            },
-                        ),
+                            }),
                     );
                 }
                 menu
@@ -1320,7 +1319,7 @@ impl Shell {
             format!(
                 "You are missing or have off {} of {}.",
                 lacking,
-                plural(checks.len(), "addon", "addons")
+                trn(checks.len(), "{count} addon", "{count} addons")
             )
         };
         let rows: Vec<AnyElement> = checks
