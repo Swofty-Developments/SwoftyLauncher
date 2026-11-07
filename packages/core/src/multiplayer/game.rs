@@ -223,6 +223,21 @@ pub struct GameStatus {
     /// Why the game's own room start (the direct start) failed, when it did.
     #[serde(default)]
     pub room_failed: Option<String>,
+    /// The game content the session's cars come from (`f1_2025`, `f1_2026`), while in a LAN session.
+    #[serde(default)]
+    pub content: Option<String>,
+}
+
+/// The F1 2026 season content's entitlement name.
+pub const F1_2026: &str = "f1_2026";
+/// Where, under the game folder, the core writes what the player owns once the game knows.
+pub const ENTITLEMENTS_FILE: &str = "swofty/entitlements.json";
+
+/// Whether the player owns the F1 2026 content, from the game's last answer in the game folder; `None` before
+/// a game with the core has answered.
+pub fn owns_f1_2026(game_dir: &Path) -> Option<bool> {
+    let text = std::fs::read_to_string(game_dir.join(ENTITLEMENTS_FILE)).ok()?;
+    serde_json::from_str::<Value>(&text).ok()?.get(F1_2026)?.as_bool()
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -250,7 +265,7 @@ pub enum Error {
     Refused {
         op: String,
         why: String,
-        status: GameStatus,
+        status: Box<GameStatus>,
     },
 }
 
@@ -339,7 +354,7 @@ pub fn send(game_dir: &Path, cmd: &Command, timeout: Duration) -> Result<Reply, 
             Err(Error::Refused {
                 op: reply.op,
                 why: reply.error.unwrap_or_else(|| "no reason given".into()),
-                status: reply.status,
+                status: Box::new(reply.status),
             })
         }
     });
@@ -451,6 +466,24 @@ pub fn last_status(game_dir: &Path) -> Option<GameStatus> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn f1_2026_ownership_comes_from_the_game_folder() {
+        let dir = std::env::temp_dir().join(format!("swofty-owns-{}", std::process::id()));
+        std::fs::create_dir_all(dir.join("swofty")).unwrap();
+        assert_eq!(
+            owns_f1_2026(&dir),
+            None,
+            "no answer before the game has given one"
+        );
+        std::fs::write(dir.join(ENTITLEMENTS_FILE), "{\"f1_2026\": false}\n").unwrap();
+        assert_eq!(owns_f1_2026(&dir), Some(false));
+        std::fs::write(dir.join(ENTITLEMENTS_FILE), "{\"f1_2026\": true}\n").unwrap();
+        assert_eq!(owns_f1_2026(&dir), Some(true));
+        std::fs::write(dir.join(ENTITLEMENTS_FILE), "not json").unwrap();
+        assert_eq!(owns_f1_2026(&dir), None);
+        std::fs::remove_dir_all(&dir).ok();
+    }
 
     fn temp_game(name: &str) -> PathBuf {
         let dir = std::env::temp_dir().join(format!("swofty-mp-game-{name}-{}", std::process::id()));

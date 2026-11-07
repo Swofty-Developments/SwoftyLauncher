@@ -26,7 +26,7 @@ use super::diag;
 use super::direct::DirectUdp;
 use super::fingerprint::{self, Fingerprint, Mismatch, MismatchKind};
 use super::game::{self, Category, Command, GameStatus, Screen};
-use super::progress::{self, MemberStage, OPENS_LOBBY};
+use super::progress::{self, MemberStage, NEEDS_F1_2026, OPENS_LOBBY};
 use super::rooms::{Api, ApiError, Lobby, RoomKey, RoomSettings, User};
 use super::transport::Transport;
 use super::turn::TurnTransport;
@@ -54,6 +54,8 @@ const RELAY_BACKOFF: Duration = Duration::from_secs(5);
 const RELAY_BACKOFF_MAX: Duration = Duration::from_secs(60);
 const JOIN_SLOW: Duration = Duration::from_secs(30);
 const LOBBY_SLOW: &str = "the game hasn't reached the LAN lobby yet";
+/// How often the session rereads the game folder's ownership answer.
+const OWNS_EVERY: Duration = Duration::from_secs(5);
 const NOT_ANSWERING: &str = "the game isn't answering";
 /// How long a game that adopted its room configuration may sit on the main menu before the session
 /// treats its own start as failed.
@@ -419,6 +421,23 @@ pub struct SessionState {
     pub game: Option<GameStatus>,
     pub last_error: Option<String>,
     pub launch: Option<LaunchAsk>,
+    pub content: RoomContent,
+}
+
+/// The game content the host's cars come from, and which members own the F1 2026 content.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
+pub struct RoomContent {
+    /// `f1_2025` or `f1_2026`, once the host's game is in its lobby.
+    pub host: Option<String>,
+    /// Whether each member owns the F1 2026 content, by member id, from their game's last answer.
+    pub owns_f1_2026: BTreeMap<String, bool>,
+}
+
+impl RoomContent {
+    /// The host picked the F1 2026 cars.
+    pub fn needs_f1_2026(&self) -> bool {
+        self.host.as_deref() == Some(game::F1_2026)
+    }
 }
 
 impl SessionState {
@@ -437,6 +456,7 @@ impl SessionState {
             game: None,
             last_error: None,
             launch: None,
+            content: RoomContent::default(),
         }
     }
 }
@@ -773,6 +793,9 @@ struct Worker {
     launched: Option<Instant>,
     refreshed: bool,
     stage_sent: Option<MemberStage>,
+    owns: Option<bool>,
+    owns_at: Option<Instant>,
+    content_sent: Option<(Option<String>, Option<bool>)>,
     ready_sent: Option<(bool, Instant)>,
 }
 
@@ -828,6 +851,9 @@ impl Worker {
             launched: None,
             refreshed: false,
             stage_sent: None,
+            owns: None,
+            owns_at: None,
+            content_sent: None,
             ready_sent: None,
         }
     }
@@ -1014,6 +1040,47 @@ impl Worker {
         self.seen_in_session = false;
     }
 
+    /// The car content of this player's game session, while it is in one.
+    fn own_content(&self) -> Option<String> {
+        self.game_status
+            .as_ref()
+            .filter(|s| s.in_session)
+            .and_then(|s| s.content.clone())
+    }
+
+    /// The car content the host picked: this game's own when hosting, else the host's announcement.
+    fn host_content(&self) -> Option<String> {
+        if self.hosting() {
+            return self.own_content();
+        }
+        let host = self.lobby.as_ref()?.host_member()?;
+        self.prints
+            .get(&host.id)?
+            .get("room_content")?
+            .as_str()
+            .map(str::to_owned)
+    }
+
+    /// Whether a member owns the F1 2026 content: this player's from the game folder, others' from their
+    /// announcement.
+    fn member_owns(&self, id: &str, is_me: bool) -> Option<bool> {
+        if is_me {
+            return self.owns;
+        }
+        self.prints.get(id)?.get("owns")?.get(game::F1_2026)?.as_bool()
+    }
+
+    /// A joiner whose game says it doesn't own the F1 2026 content isn't started for a host who picked the
+    /// F1 2026 cars: the game refuses that join.
+    fn content_missing(&self) -> Option<String> {
+        if self.hosting() || self.host_content().as_deref() != Some(game::F1_2026) || self.owns != Some(false)
+        {
+            return None;
+        }
+        let host = self.lobby.as_ref()?.host_member()?;
+        Some(format!("{}{NEEDS_F1_2026}", host.name))
+    }
+
     /// A joiner's game starts only once the host's game is in its lobby: the host stops on the Car Category
     /// screen first, and a join the game sends before the host's session exists finds nobody. The host's
     /// stage comes with its fingerprint; a host whose fingerprint carries no stage holds nothing up.
@@ -1035,6 +1102,10 @@ impl Worker {
         if let Some(wait) = self.host_not_in_lobby() {
             self.launch = None;
             return Err(Halt::Game(wait));
+        }
+        if let Some(missing) = self.content_missing() {
+            self.launch = None;
+            return Err(Halt::Game(missing));
         }
         let row_ids = self.host_ids()?;
         let self_member = self
@@ -1186,6 +1257,12 @@ impl Worker {
             && let Some(doc) = blob.as_object_mut()
         {
             doc.insert("room_stage".into(), json!(self.own_stage().as_str()));
+            if let Some(content) = self.own_content() {
+                doc.insert("room_content".into(), json!(content));
+            }
+            if let Some(owns) = self.owns {
+                doc.insert("owns".into(), json!({ game::F1_2026: owns }));
+            }
         }
         json!({
             "type": "fingerprint",
@@ -1211,6 +1288,17 @@ impl Worker {
         }
         let stage = self.own_stage();
         let now = Instant::now();
+        if self.owns_at.is_none_or(|at| now.duration_since(at) >= OWNS_EVERY) {
+            self.owns_at = Some(now);
+            self.owns = game::owns_f1_2026(&self.setup.game_dir);
+        }
+        let content = (self.own_content(), self.owns);
+        if self.stage_sent == Some(stage) && self.content_sent.as_ref() != Some(&content) {
+            self.content_sent = Some(content);
+            self.announce(&self.fingerprint_message());
+            return;
+        }
+        self.content_sent = Some(content);
         if self.stage_sent != Some(stage) {
             self.stage_sent = Some(stage);
             diag::line(format!("stage: this player's game is {}", stage.as_str()));
@@ -2068,6 +2156,20 @@ impl Worker {
             game: self.game_status.clone(),
             last_error: self.last_error.clone(),
             launch: self.launch.clone(),
+            content: RoomContent {
+                host: self.host_content(),
+                owns_f1_2026: lobby
+                    .map(|l| {
+                        l.members
+                            .iter()
+                            .filter_map(|m| {
+                                let owns = self.member_owns(&m.id, Some(m.id.as_str()) == me)?;
+                                Some((m.id.clone(), owns))
+                            })
+                            .collect()
+                    })
+                    .unwrap_or_default(),
+            },
         };
         let mut logged = self.logged.borrow_mut();
         if logged.as_ref() != Some(&state) {
@@ -2443,7 +2545,7 @@ fn final_close(code: Option<u16>) -> Option<&'static str> {
 
 fn refused(e: game::Error) -> (String, Option<GameStatus>) {
     match e {
-        game::Error::Refused { why, status, .. } => (why, Some(status)),
+        game::Error::Refused { why, status, .. } => (why, Some(*status)),
         e => (e.to_string(), None),
     }
 }
@@ -2512,6 +2614,7 @@ mod tests {
                     base: 0,
                     cover: None,
                     room_failed: None,
+                    content: None,
                 }),
                 log: Mutex::new(Vec::new()),
                 host_delay: Mutex::new(Duration::ZERO),
@@ -2541,7 +2644,7 @@ mod tests {
             game::Error::Refused {
                 op: op.into(),
                 why: why.into(),
-                status: lock(&self.status).clone(),
+                status: Box::new(lock(&self.status).clone()),
             }
         }
 
@@ -3175,6 +3278,7 @@ mod tests {
             self_member: 2,
             base: 50000,
             room_failed: None,
+            content: None,
             cover: cover.then(|| super::super::game::Cover {
                 step: "Reaching the host".into(),
                 percent: 80,
@@ -3286,6 +3390,56 @@ mod tests {
             "{:?}",
             guest_game.log()
         );
+    }
+
+    #[test]
+    fn a_joiner_without_the_f1_2026_content_is_not_started_for_a_2026_host() {
+        let server = server();
+        let (host_game, guest_game) = (FakeGame::new("content-h1"), FakeGame::new("content-g1"));
+        let same = built_print("aa", &[("t/x", 512)]);
+        {
+            let mut s = lock(&host_game.status);
+            s.configured = true;
+            s.in_session = true;
+            s.screen = Screen::LanLobby;
+            s.content = Some("f1_2026".into());
+        }
+        let host = create(
+            launching(setup(&server.url, "host-token", &host_game, same.clone()), None),
+            RoomSettings::default(),
+        );
+        host.launched();
+        let code = wait_until(&host, "the host's 2026 lobby", |s| s.content.needs_f1_2026())
+            .room
+            .unwrap()
+            .code;
+        std::fs::create_dir_all(guest_game.dir.join("swofty")).unwrap();
+        std::fs::write(
+            guest_game.dir.join(game::ENTITLEMENTS_FILE),
+            "{\"f1_2026\": false}\n",
+        )
+        .unwrap();
+        guest_game.closed.store(true, Ordering::Relaxed);
+        let guest = join(
+            launching(setup(&server.url, "guest-token", &guest_game, same), None),
+            &code,
+        );
+        let refused = wait_until(
+            &guest,
+            "the missing content",
+            |s| matches!(&s.phase, Phase::WaitingForGame(w) if w.ends_with(NEEDS_F1_2026)),
+        );
+        assert!(refused.launch.is_none(), "{:?}", refused.launch);
+        assert!(refused.content.needs_f1_2026());
+        assert!(
+            refused.content.owns_f1_2026.values().any(|owns| !owns),
+            "{:?}",
+            refused.content
+        );
+        let host_view = wait_until(&host, "the guest's answer", |s| {
+            s.content.owns_f1_2026.values().any(|owns| !owns)
+        });
+        assert!(host_view.content.needs_f1_2026());
     }
 
     #[test]

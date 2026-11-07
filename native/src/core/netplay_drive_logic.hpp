@@ -270,6 +270,7 @@ struct State {
     std::string cover_step;
     int cover_percent = -1;
     std::string room_failed;
+    std::string content;
 
     Screen screen() const
     {
@@ -358,6 +359,10 @@ inline std::string status_json(const State &s)
     if (!s.room_failed.empty()) {
         out += ",\"room_failed\":";
         quote(out, s.room_failed);
+    }
+    if (s.in_session() && !s.content.empty()) {
+        out += ",\"content\":";
+        quote(out, s.content);
     }
     out += '}';
     return out;

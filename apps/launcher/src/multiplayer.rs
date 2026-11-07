@@ -19,7 +19,9 @@ use swofty_core::multiplayer::diag;
 use swofty_core::multiplayer::game::{self as mp_game, Command, GameStatus, Screen};
 use swofty_core::multiplayer::progress::{self, MemberStage, Problem, Progress, Step};
 use swofty_core::multiplayer::rooms::{Api, RoomAddon, RoomSettings, RoomSummary};
-use swofty_core::multiplayer::session::{Local, MemberState, Phase, Session, SessionState, Setup};
+use swofty_core::multiplayer::session::{
+    Local, MemberState, Phase, RoomContent, Session, SessionState, Setup,
+};
 use swofty_core::store::Store;
 
 use crate::library::plural;
@@ -213,6 +215,30 @@ pub(crate) fn member_word(m: &MemberState) -> (&'static str, Tone) {
         Some(stage) => (stage.word(), Tone::Working),
         None => ("Joining\u{2026}", Tone::Working),
     }
+}
+
+/// A member's word when the host picked the F1 2026 cars and their game says it doesn't have that content.
+pub(crate) fn content_word(content: &RoomContent, m: &MemberState) -> Option<(&'static str, Tone)> {
+    (m.connected && content.needs_f1_2026() && content.owns_f1_2026.get(&m.id) == Some(&false))
+        .then_some(("No F1 2026 content", Tone::Blocked))
+}
+
+/// This player's row for the host's F1 2026 cars: whether their game has the content, `None` until the host
+/// picked them.
+pub(crate) fn content_check(state: &SessionState) -> Option<(Option<bool>, &'static str)> {
+    if !state.content.needs_f1_2026() {
+        return None;
+    }
+    let me = state.members.iter().find(|m| m.me)?;
+    let owns = state.content.owns_f1_2026.get(&me.id).copied();
+    Some((
+        owns,
+        match owns {
+            Some(true) => "You have the F1 2026 content",
+            Some(false) => "Your copy of F1 25 doesn't have the F1 2026 content",
+            None => "F1 25 hasn't said yet whether you have it",
+        },
+    ))
 }
 
 pub(crate) fn joined(state: &SessionState) -> usize {
@@ -1572,8 +1598,45 @@ impl Shell {
             .members
             .iter()
             .enumerate()
-            .map(|(i, member)| self.member_row(member, i == 0, p))
+            .map(|(i, member)| self.member_row(member, &state.content, i == 0, p))
             .collect();
+        let cars = content_check(state).map(|(owns, text)| {
+            v_flex()
+                .gap(px(8.))
+                .child(self.section_head("CARS".to_owned(), p))
+                .child(
+                    h_flex()
+                        .px(px(16.))
+                        .py(px(10.))
+                        .gap(px(12.))
+                        .items_center()
+                        .rounded(px(6.))
+                        .border_1()
+                        .border_color(p.border)
+                        .child(
+                            Icon::new(match owns {
+                                Some(true) => IconName::Check,
+                                Some(false) => IconName::X,
+                                None => IconName::Info,
+                            })
+                            .size(px(16.))
+                            .text_color(match owns {
+                                Some(true) => p.success,
+                                Some(false) => p.error,
+                                None => p.text_muted,
+                            }),
+                        )
+                        .child(
+                            div()
+                                .flex_1()
+                                .min_w_0()
+                                .truncate()
+                                .text_size(px(14.))
+                                .child("F1 2026 cars"),
+                        )
+                        .child(div().text_size(px(13.)).text_color(p.text_muted).child(text)),
+                )
+        });
         v_flex()
             .size_full()
             .child(self.header(title, subtitle, actions, p))
@@ -1587,6 +1650,7 @@ impl Shell {
                     .pb(px(24.))
                     .gap(px(24.))
                     .child(status)
+                    .children(cars)
                     .child(
                         v_flex()
                             .gap(px(8.))
@@ -1611,8 +1675,8 @@ impl Shell {
             .into_any_element()
     }
 
-    fn member_row(&self, m: &MemberState, first: bool, p: Palette) -> AnyElement {
-        let (word, tone) = member_word(m);
+    fn member_row(&self, m: &MemberState, content: &RoomContent, first: bool, p: Palette) -> AnyElement {
+        let (word, tone) = content_word(content, m).unwrap_or_else(|| member_word(m));
         h_flex()
             .px(px(16.))
             .py(px(12.))
@@ -1658,8 +1722,9 @@ mod tests {
     use swofty_core::multiplayer::session::{MemberState, Phase, PrintMatch, RelayStatus, SessionState};
 
     use super::{
-        GameState, RoomStatus, Start, Tone, addon_checks, card_addons, exit_leaves, exit_notice, joined,
-        member_word, missing, restart_ok_text, room_meta, room_status, step_number,
+        GameState, RoomContent, RoomStatus, Start, Tone, addon_checks, card_addons, content_check,
+        content_word, exit_leaves, exit_notice, joined, member_word, missing, restart_ok_text, room_meta,
+        room_status, step_number,
     };
 
     fn status(screen: Screen) -> GameStatus {
@@ -1672,6 +1737,7 @@ mod tests {
             base: 0,
             cover: None,
             room_failed: None,
+            content: None,
         }
     }
 
@@ -1723,6 +1789,7 @@ mod tests {
             game: None,
             last_error: None,
             launch: None,
+            content: RoomContent::default(),
         }
     }
 
@@ -1935,5 +2002,48 @@ mod tests {
             "Create room and join"
         );
         assert_eq!(restart_ok_text(&Start::Join("F1-ABC123".into())), "Join room");
+    }
+
+    #[test]
+    fn a_member_without_the_f1_2026_content_is_marked_once_the_host_picked_it() {
+        let max = member(true, Some(MemberStage::InLobby));
+        let mut content = RoomContent::default();
+        content.owns_f1_2026.insert("u2".into(), false);
+        assert_eq!(
+            content_word(&content, &max),
+            None,
+            "nothing before the host picked the 2026 cars"
+        );
+        content.host = Some("f1_2026".into());
+        assert_eq!(
+            content_word(&content, &max),
+            Some(("No F1 2026 content", Tone::Blocked))
+        );
+        content.owns_f1_2026.insert("u2".into(), true);
+        assert_eq!(content_word(&content, &max), None);
+        content.owns_f1_2026.insert("u2".into(), false);
+        assert_eq!(
+            content_word(&content, &member(false, None)),
+            None,
+            "a disconnected member stays Disconnected"
+        );
+    }
+
+    #[test]
+    fn the_cars_row_shows_this_players_f1_2026_answer() {
+        let mut s = session(Phase::InLobby, false);
+        let mut me = member(true, Some(MemberStage::InLobby));
+        me.me = true;
+        s.members = vec![me];
+        assert_eq!(content_check(&s), None);
+        s.content.host = Some("f1_2025".into());
+        assert_eq!(content_check(&s), None, "the 2025 cars need no content");
+        s.content.host = Some("f1_2026".into());
+        assert_eq!(content_check(&s).map(|(owns, _)| owns), Some(None));
+        s.content.owns_f1_2026.insert("u2".into(), false);
+        assert_eq!(
+            content_check(&s),
+            Some((Some(false), "Your copy of F1 25 doesn't have the F1 2026 content"))
+        );
     }
 }

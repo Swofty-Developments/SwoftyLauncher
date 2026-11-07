@@ -130,6 +130,11 @@ struct Category {
     std::string addon;
 };
 
+inline const char *preset_content(uint16_t preset)
+{
+    return preset == PRESET_2026 ? "f1_2026" : preset == PRESET_2025 ? "f1_2025" : "";
+}
+
 inline Category stock_2025() { return {PRESET_2025, {}}; }
 inline Category stock_2026() { return {PRESET_2026, {}}; }
 inline Category addon(const std::string &value) { return {PRESET_2025, value}; }

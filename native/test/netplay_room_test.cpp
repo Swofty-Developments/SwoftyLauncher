@@ -568,6 +568,10 @@ int main()
         expect(!room::container_facts(c.memory(), CT).ready, "a tab list byte of 0 makes it not ready");
     }
 
+    expect(std::string(room::preset_content(room::PRESET_2026)) == "f1_2026" &&
+               std::string(room::preset_content(room::PRESET_2025)) == "f1_2025" && !*room::preset_content(0),
+           "the Car Category domain names the car content");
+
     printf(fails ? "netplay room test: FAILED\n" : "netplay room test: ALL PASSED\n");
     return fails ? 1 : 0;
 }

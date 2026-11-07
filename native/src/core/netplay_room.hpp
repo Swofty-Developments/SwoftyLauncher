@@ -57,6 +57,9 @@ bool provide_context(void *registry, void *context);
 void set_category(const Category &category);
 Status status();
 std::string last_error();
+// The game content the session's cars come from, from the domain Car Category sets (network subsystem
+// +0x4f4): "f1_2025", "f1_2026", or empty when the network subsystem or the domain is unknown.
+std::string session_content();
 enum class CoverSignal { waiting, shown, failed };
 CoverSignal cover_signal();
 void tick();

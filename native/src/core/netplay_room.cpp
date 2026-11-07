@@ -762,6 +762,17 @@ std::string last_error()
     return error_now;
 }
 
+std::string session_content()
+{
+    std::lock_guard<std::mutex> g(lock);
+    resolve_once();
+    void *ns = network_now();
+    uint16_t preset = 0;
+    if (!ns || !read_memory(reinterpret_cast<uint64_t>(ns) + room::NS_PRESET, &preset, sizeof preset, nullptr))
+        return {};
+    return room::preset_content(preset);
+}
+
 namespace {
 
 void home_join_tick()

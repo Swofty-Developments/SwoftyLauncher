@@ -93,6 +93,14 @@ int main()
     expect(drive::status_json(main_menu(false, false)) ==
                R"({"screen":"main_menu","in_session":false,"role":"none","armed":false,"configured":false,"self":0,"base":0})",
            "status JSON on the main menu");
+    auto picked = lobby;
+    picked.content = "f1_2026";
+    expect(drive::status_json(picked) ==
+               R"({"screen":"lan_lobby","in_session":true,"role":"host","armed":true,"configured":true,"self":2,"base":40000,"content":"f1_2026"})",
+           "status JSON names the session's car content in a lobby");
+    auto off = main_menu();
+    off.content = "f1_2026";
+    expect(drive::status_json(off).find("content") == std::string::npos, "no car content outside a session");
 
     auto loading = main_menu();
     loading.frontend = false;
