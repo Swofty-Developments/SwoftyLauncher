@@ -1,5 +1,5 @@
 use crate::crash_modal::{self, CrashView};
-use crate::game::{self, Install, Owner, Probe};
+use crate::game::{self, Copies, Install, Owner, Probe};
 use crate::game_edited::Edited;
 use gpui_kit::component::WindowExt;
 use gpui_kit::component::notification::Notification;
@@ -7,6 +7,7 @@ use gpui_kit::*;
 use std::time::{Duration, Instant};
 use swofty_core::quarantine;
 use swofty_core::recovery::{self, Blocked};
+use swofty_core::session::SessionRecord;
 
 use super::dialogs::{show_launch_failed, show_mods_blocked};
 use super::{Page, Shell};
@@ -39,16 +40,16 @@ impl Shell {
         }
     }
 
-    pub(super) fn apply_probe(&mut self, probe: Probe, window: &mut Window, cx: &mut Context<Self>) {
+    pub(super) fn apply_probe(&mut self, mut probe: Probe, window: &mut Window, cx: &mut Context<Self>) {
         let before = (self.requests, self.processes.clone(), self.session.clone());
         let was_live = self.launch.is_some();
         self.requests = probe.requests;
         let root = self.store.root.clone();
-        if let Some(banner) = probe.banner
+        if let Some(banner) = probe.banner.take()
             && probe.banner_profile == self.library.profile.name
         {
             self.saves.banner = banner;
-            self.saves.banner_profile = probe.banner_profile;
+            self.saves.banner_profile = probe.banner_profile.clone();
         }
         self.saves.game_running = !probe.processes.is_empty();
         if self
@@ -60,7 +61,35 @@ impl Shell {
         if probe.saves_marker && self.saves.take_notice(&root) {
             self.show_saves_notice(window, cx);
         }
-        if let Some(n) = probe.recovered.filter(|n| n.at > self.seen.recovered) {
+        self.announce_reports(&probe, window, cx);
+        self.apply_install(probe.install.take(), probe.merged, cx);
+        if self.cancelling && probe.busy.is_none() && self.build.is_some() {
+            self.cancelling = false;
+            window.push_notification(
+                Notification::info("The game files are back as they were. Press Play to build again.")
+                    .title("Build cancelled"),
+                cx,
+            );
+        }
+        self.build = probe.busy.take();
+        self.processes = std::mem::take(&mut probe.processes);
+        self.sync_shaders(false, cx);
+        self.attribute();
+        self.finish_launch(&probe);
+        self.watch_session(probe.session.as_ref(), cx);
+        self.session = probe.session;
+        self.db_poll(cx);
+        let live = was_live || self.launch.is_some();
+        if live
+            || before != (self.requests, self.processes.clone(), self.session.clone())
+            || self.painted.elapsed() >= REPAINT
+        {
+            cx.notify();
+        }
+    }
+
+    fn announce_reports(&mut self, probe: &Probe, window: &mut Window, cx: &mut Context<Self>) {
+        if let Some(n) = probe.recovered.as_ref().filter(|n| n.at > self.seen.recovered) {
             self.seen.recovered = n.at;
             let mut text: Vec<String> = n.lines.iter().take(4).cloned().collect();
             if n.lines.len() > text.len() {
@@ -103,40 +132,34 @@ impl Shell {
             self.notice = Some(f.headline().to_owned());
             show_launch_failed(f, window, cx);
         }
-        if let Some(found) = probe.install {
+    }
+
+    fn apply_install(&mut self, found: Option<Copies>, merged: bool, cx: &mut Context<Self>) {
+        if let Some(found) = found {
             let changed = !self.detected || self.install != found.active || self.copies != found.all;
             self.install = found.active;
             crate::app_log::set_game(self.install.as_ref().map(|i| i.dir.as_path()));
             self.copies = found.all;
             self.missing_copies = found.missing;
             self.detected = true;
-            if self.page == Page::Careers && (changed || probe.merged) {
+            if self.page == Page::Careers && (changed || merged) {
                 self.refresh_saves_in_background(cx);
             }
-            if probe.merged {
+            if merged {
                 self.reload(cx);
             } else if changed {
                 self.refresh_views(cx);
                 self.db_profile_changed(cx);
             }
-        } else if probe.merged {
+        } else if merged {
             self.reload(cx);
         }
-        if self.cancelling && probe.busy.is_none() && self.build.is_some() {
-            self.cancelling = false;
-            window.push_notification(
-                Notification::info("The game files are back as they were. Press Play to build again.")
-                    .title("Build cancelled"),
-                cx,
-            );
-        }
-        self.build = probe.busy;
-        self.processes = probe.processes;
-        self.sync_shaders(false, cx);
-        self.attribute();
+    }
+
+    fn finish_launch(&mut self, probe: &Probe) {
         if let Some(launch) = self.launch.as_mut() {
             launch.saw_game |= self.owners.iter().any(|o| !matches!(o, Owner::Other(_)));
-            launch.stage = probe.launch_stage;
+            launch.stage = probe.launch_stage.clone();
             if let Some(ok) = launch.finished() {
                 if !ok && !launch.saw_game {
                     self.blocked = Blocked::read(&self.store.root);
@@ -175,7 +198,10 @@ impl Shell {
                 self.launch = None;
             }
         }
-        if let Some(s) = probe.session.as_ref().filter(|s| s.crashed() || s.end.is_some())
+    }
+
+    fn watch_session(&mut self, session: Option<&SessionRecord>, cx: &mut Context<Self>) {
+        if let Some(s) = session.filter(|s| s.crashed() || s.end.is_some())
             && self.crash.as_ref().is_none_or(|(d, _)| *d != s.dir)
         {
             let session = s.clone();
@@ -227,15 +253,6 @@ impl Shell {
                 .ok();
             })
             .detach();
-        }
-        self.session = probe.session;
-        self.db_poll(cx);
-        let live = was_live || self.launch.is_some();
-        if live
-            || before != (self.requests, self.processes.clone(), self.session.clone())
-            || self.painted.elapsed() >= REPAINT
-        {
-            cx.notify();
         }
     }
 
