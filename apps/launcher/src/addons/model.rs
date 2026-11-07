@@ -10,6 +10,7 @@ use swofty_core::conflicts::Report;
 use swofty_core::folders::Key;
 use swofty_core::manifest::{Category, Kind};
 use swofty_core::order;
+use swofty_i18n::tr;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(crate) enum Type {
@@ -181,7 +182,7 @@ impl AddonsPage {
     }
 
     pub(crate) fn new(window: &mut Window, cx: &mut Context<Shell>) -> Self {
-        let search = cx.new(|cx| InputState::new(window, cx).placeholder("Search addons"));
+        let search = cx.new(|cx| InputState::new(window, cx).placeholder(tr("Search addons")));
         let changed = cx.subscribe(&search, |_, _, e: &InputEvent, cx| {
             if matches!(e, InputEvent::Change) {
                 cx.notify();

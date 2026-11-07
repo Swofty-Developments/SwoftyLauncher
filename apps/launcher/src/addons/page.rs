@@ -12,7 +12,7 @@ use gpui_kit::*;
 use std::path::PathBuf;
 use swofty_core::import::{self, Route};
 use swofty_core::profile::VANILLA;
-use swofty_i18n::trn;
+use swofty_i18n::{tr, trf, trn};
 
 impl Shell {
     pub(crate) fn pick_addons(&mut self, folder: bool, window: &mut Window, cx: &mut Context<Self>) {
@@ -79,11 +79,11 @@ impl Shell {
                 for r in results {
                     match r {
                         Ok((left_out, m)) => {
-                            let text = format!("Installed {} {}", m.name, m.version);
+                            let text = trf!("Installed {name} {version}", name = m.name, version = m.version);
                             window.push_notification(Notification::success(text), cx);
                             if !left_out.is_empty() {
                                 let note = Notification::warning(left_out.join("\n"))
-                                    .title("Track can't be used")
+                                    .title(tr("Track can't be used"))
                                     .autohide(false);
                                 window.push_notification(note, cx);
                             }
@@ -122,7 +122,10 @@ impl Shell {
             off.iter().try_for_each(|id| registry.set_enabled(p, id, false))
         });
         let shell = cx.entity().downgrade();
-        let text = format!("Turned off {}", trn(off.len(), "{count} addon", "{count} addons"));
+        let text = trf!(
+            "Turned off {value}",
+            value = trn(off.len(), "{count} addon", "{count} addons")
+        );
         let note = Notification::success(text)
             .action(move |_, _, cx| {
                 let (shell, before) = (shell.clone(), before.clone());
@@ -130,7 +133,7 @@ impl Shell {
                 Button::new("undo-turn-off-all")
                     .outline()
                     .small()
-                    .label("Undo")
+                    .label(tr("Undo"))
                     .on_click(move |_, window, cx| {
                         let before = before.clone();
                         shell
@@ -154,9 +157,9 @@ impl Shell {
         window.push_notification(note, cx);
         if !kept.is_empty() {
             window.push_notification(
-                Notification::info(format!(
-                    "Left on: {}. Turning it off warns about your saves, so use its own switch.",
-                    kept.join(", ")
+                Notification::info(trf!(
+                    "Left on: {kept}. Turning it off warns about your saves, so use its own switch.",
+                    kept = kept.join(", ")
                 )),
                 cx,
             );
@@ -175,10 +178,19 @@ impl Shell {
             "{count} addons installed",
         );
         let subtitle = if self.vanilla() {
-            format!("{installed} · {VANILLA} plays the game without them")
+            trf!(
+                "{installed} · {vanilla} plays the game without them",
+                installed = installed,
+                vanilla = VANILLA
+            )
         } else {
             let on = self.library.listed().filter(|m| self.addon_on(m)).count();
-            format!("{installed} · {on} on in {}", self.library.profile.name)
+            trf!(
+                "{installed} · {on} on in {name}",
+                installed = installed,
+                on = on,
+                name = self.library.profile.name
+            )
         };
         let actions = (!self.vanilla()).then(|| {
             h_flex()
@@ -188,7 +200,7 @@ impl Shell {
                     Button::new("turn-off-all")
                         .outline()
                         .icon(IconName::PowerOff)
-                        .label("Turn off all")
+                        .label(tr("Turn off all"))
                         .on_click(cx.listener(|this, _, window, cx| this.turn_off_all(window, cx))),
                 )
         });
@@ -205,14 +217,14 @@ impl Shell {
                         .size(px(14.))
                         .text_color(p.warning),
                 )
-                .child(format!(
-                    "{} changed since the last build · the next launch rebuilds {}",
-                    trn(
+                .child(trf!(
+                    "{value} changed since the last build · the next launch rebuilds {name}",
+                    value = trn(
                         self.library.rebuild.len(),
                         "{count} database setting",
                         "{count} database settings"
                     ),
-                    self.library.profile.name
+                    name = self.library.profile.name
                 ))
         });
         let saves = self.saves_banner(false, p, cx);
@@ -233,16 +245,16 @@ impl Shell {
                 .text_size(px(13.))
                 .text_color(p.text_muted)
                 .child(Icon::new(IconName::Map).size(px(14.)))
-                .child(format!(
-                    "{} {} on the Tracks page",
-                    trn(hidden, "{count} track addon", "{count} track addons"),
-                    if hidden == 1 { "is" } else { "are" }
+                .child(trf!(
+                    "{amount} {value} on the Tracks page",
+                    amount = trn(hidden, "{count} track addon", "{count} track addons"),
+                    value = if hidden == 1 { "is" } else { "are" }
                 ))
                 .child(
                     Button::new("open-tracks")
                         .ghost()
                         .small()
-                        .label("Open Tracks")
+                        .label(tr("Open Tracks"))
                         .on_click(cx.listener(move |this, _, _, cx| this.open_page(Page::Section(i), cx))),
                 )
         });
@@ -341,7 +353,7 @@ impl Shell {
             .text_color(p.text_muted)
             .cursor_pointer()
             .hover(move |s| s.text_color(p.text))
-            .child("Choose a folder…")
+            .child(tr("Choose a folder…"))
             .on_click(cx.listener(|this, _, window, cx| {
                 cx.stop_propagation();
                 this.pick_addons(true, window, cx)
@@ -420,7 +432,10 @@ impl Shell {
     pub(super) fn list_heading(&self, p: Palette) -> AnyElement {
         let title = match self.vanilla() {
             true => "INSTALLED".to_owned(),
-            false => format!("LOAD ORDER IN {}", self.library.profile.name.to_uppercase()),
+            false => trf!(
+                "LOAD ORDER IN {name}",
+                name = self.library.profile.name.to_uppercase()
+            ),
         };
         div()
             .px(px(12.))

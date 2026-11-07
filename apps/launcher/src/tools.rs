@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, LazyLock};
 use std::time::Duration;
+use swofty_i18n::{tr, trf};
 
 use crate::scale::px;
 use gpui_kit::assets::IconName;
@@ -186,16 +187,16 @@ impl Shell {
             Action::Get(url) => Button::new(id("get"))
                 .primary()
                 .icon(IconName::ExternalLink)
-                .label("Get")
+                .label(tr("Get"))
                 .on_click(move |_, _, cx| cx.open_url(&url)),
             Action::Go(page) => Button::new(id("open"))
                 .primary()
-                .label("Open")
+                .label(tr("Open"))
                 .on_click(cx.listener(move |this, _, _, cx| this.go(page, cx))),
             Action::TurnOn(addon) => Button::new(id("on"))
                 .primary()
                 .icon(IconName::Power)
-                .label("Turn on")
+                .label(tr("Turn on"))
                 .on_click(
                     cx.listener(move |this, _, window, cx| this.set_addon_enabled(&addon, true, window, cx)),
                 ),
@@ -203,7 +204,7 @@ impl Shell {
                 let name = tool.name.clone();
                 Button::new(id("run"))
                     .primary()
-                    .label("Open")
+                    .label(tr("Open"))
                     .on_click(move |_, window, cx| {
                         let mut command = std::process::Command::new(&path);
                         if let Some(dir) = path.parent() {
@@ -211,7 +212,7 @@ impl Shell {
                         }
                         match command.spawn() {
                             Ok(_) => window.push_notification(
-                                Notification::info(format!("{name} opens in your browser")),
+                                Notification::info(trf!("{name} opens in your browser", name = name)),
                                 cx,
                             ),
                             Err(e) => {
@@ -221,7 +222,7 @@ impl Shell {
                                         Some(b) => Notification::error(b.text()).autohide(false),
                                         None => Notification::error(e.to_string()),
                                     }
-                                    .title(format!("Could not start {name}")),
+                                    .title(trf!("Could not start {name}", name = name)),
                                     cx,
                                 )
                             }
@@ -304,7 +305,7 @@ impl Shell {
                                 div()
                                     .text_size(px(13.))
                                     .text_color(p.text_placeholder)
-                                    .child(format!("by {}", tool.maker)),
+                                    .child(trf!("by {maker}", maker = tool.maker)),
                             ),
                     )
                     .child(
@@ -486,7 +487,7 @@ impl Shell {
                     div()
                         .px(px(GUTTER))
                         .text_color(p.text_muted)
-                        .child("No tools listed"),
+                        .child(tr("No tools listed")),
                 )
             })
             .child(

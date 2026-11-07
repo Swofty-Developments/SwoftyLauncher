@@ -11,6 +11,7 @@ use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::manifest::Category;
+use swofty_i18n::tr;
 
 pub(super) fn matches_query(m: &AddonItem, query: &str) -> bool {
     if query.is_empty() {
@@ -156,7 +157,7 @@ impl Shell {
                 .text_color(p.accent)
                 .cursor_pointer()
                 .hover(move |s| s.text_color(p.accent_hover))
-                .child("Clear")
+                .child(tr("Clear"))
                 .on_click(cx.listener(|this, _, _, cx| {
                     this.addons.facets.clear();
                     this.addons.clear_search(cx);
@@ -191,7 +192,7 @@ impl Shell {
                                 div()
                                     .text_size(px(13.))
                                     .font_weight(FontWeight::MEDIUM)
-                                    .child("Filters"),
+                                    .child(tr("Filters")),
                             ),
                     )
                     .children(clear),

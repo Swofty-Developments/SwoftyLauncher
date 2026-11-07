@@ -9,7 +9,7 @@ use gpui_kit::component::{Icon, Sizable, WindowExt, h_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::folders::{Entry, Key};
-use swofty_i18n::trn;
+use swofty_i18n::{tr, trf, trn};
 
 impl Shell {
     pub(super) fn toggle_folder(&mut self, key: &Key, window: &mut Window, cx: &mut Context<Self>) {
@@ -40,7 +40,7 @@ impl Shell {
                 f.check_name(name, None)?;
                 f.create(name);
                 store.save_folders(&f).map_err(|e| e.to_string())?;
-                Ok(format!("Made the folder {name}"))
+                Ok(trf!("Made the folder {name}", name = name))
             }),
         };
         self.prompt(prompt, window, cx);
@@ -66,7 +66,7 @@ impl Shell {
                 f.check_name(name, Some(&id))?;
                 f.rename(&id, name);
                 store.save_folders(&f).map_err(|e| e.to_string())?;
-                Ok(format!("Renamed the folder to {name}"))
+                Ok(trf!("Renamed the folder to {name}", name = name))
             }),
         };
         self.prompt(prompt, window, cx);
@@ -109,7 +109,11 @@ impl Shell {
         let summary = match count {
             0 => "Empty · drag addons here".to_owned(),
             n if vanilla => trn(n, "{count} addon", "{count} addons"),
-            n => format!("{} · {on} on", trn(n, "{count} addon", "{count} addons")),
+            n => trf!(
+                "{amount} · {on} on",
+                amount = trn(n, "{count} addon", "{count} addons"),
+                on = on
+            ),
         };
         let tag = key.text();
         let actions = own.map(|id| {
@@ -121,7 +125,7 @@ impl Shell {
                         .ghost()
                         .xsmall()
                         .icon(IconName::Pencil)
-                        .tooltip("Rename folder")
+                        .tooltip(tr("Rename folder"))
                         .on_click(cx.listener(move |this, _, window, cx| {
                             cx.stop_propagation();
                             this.rename_folder(&rename, window, cx)
@@ -132,7 +136,7 @@ impl Shell {
                         .ghost()
                         .xsmall()
                         .icon(IconName::Trash)
-                        .tooltip("Remove folder. Its addons go back to their own folders.")
+                        .tooltip(tr("Remove folder. Its addons go back to their own folders."))
                         .on_click(cx.listener(move |this, _, window, cx| {
                             cx.stop_propagation();
                             this.remove_folder(&remove, window, cx)

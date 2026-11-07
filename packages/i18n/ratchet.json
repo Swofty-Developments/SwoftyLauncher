@@ -1,5 +1,7 @@
 {
-  "addons.rs": 93,
+  "addons/detail.rs": 1,
+  "addons/page.rs": 2,
+  "addons/problems.rs": 1,
   "admin_needed.rs": 5,
   "app_log.rs": 8,
   "browser.rs": 91,
@@ -11,11 +13,10 @@
   "ea_app.rs": 5,
   "game.rs": 8,
   "game_edited.rs": 18,
-  "importer.rs": 12,
+  "importer.rs": 4,
   "main.rs": 1,
   "multiplayer.rs": 32,
-  "news.rs": 10,
-  "pages.rs": 2,
+  "news/view.rs": 1,
   "play_bar.rs": 2,
   "play_checks.rs": 6,
   "send_logs.rs": 11,
@@ -23,6 +24,6 @@
   "shaders/preview.rs": 2,
   "shell.rs": 48,
   "tasks.rs": 1,
-  "tools.rs": 5,
+  "tools.rs": 1,
   "update.rs": 13
 }

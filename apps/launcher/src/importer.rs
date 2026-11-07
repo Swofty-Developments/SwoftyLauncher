@@ -2,6 +2,7 @@
 //! as a big section of its own.
 
 use std::time::{Duration, Instant};
+use swofty_i18n::{tr, trf};
 
 use crate::scale::px;
 use gpui_kit::assets::IconName;
@@ -44,7 +45,7 @@ impl Shell {
         let adding = self.updates.adding;
         let (title, body, button) = if !installed {
             (
-                format!("Install {}", managed::NAME),
+                trf!("Install {name}", name = managed::NAME),
                 format!(
                     "{} is an addon by Team Simplified. Its Simplified Importer turns mods made for the game \
                      folder into Swofty addons. The launcher downloads it from GitHub.",
@@ -60,12 +61,16 @@ impl Shell {
             )
         } else {
             (
-                format!("Turn on {}", managed::NAME),
-                format!("{} is off in {}.", managed::NAME, self.library.profile.name),
+                trf!("Turn on {name}", name = managed::NAME),
+                trf!(
+                    "{name} is off in {name2}.",
+                    name = managed::NAME,
+                    name2 = self.library.profile.name
+                ),
                 Button::new("importer-on")
                     .primary()
                     .icon(IconName::Power)
-                    .label("Turn on")
+                    .label(tr("Turn on"))
                     .on_click(cx.listener(|this, _, window, cx| {
                         this.set_addon_enabled(managed::ID, true, window, cx)
                     })),
@@ -89,19 +94,18 @@ impl Shell {
             Some(name) => Button::new("importer-use-profile")
                 .primary()
                 .icon(IconName::Layers)
-                .label(format!("Use {name}"))
+                .label(trf!("Use {name}", name = name))
                 .on_click(cx.listener(move |this, _, window, cx| this.switch_profile(&name, window, cx))),
             None => Button::new("importer-profiles")
                 .outline()
                 .icon(IconName::Layers)
-                .label("Profiles")
+                .label(tr("Profiles"))
                 .on_click(cx.listener(|this, _, _, cx| this.go(Page::Profiles, cx))),
         };
         let action = v_flex().items_center().gap(px(12.)).child(button).child(
-            div()
-                .text_size(px(12.))
-                .text_color(p.text_placeholder)
-                .child("Imported mods are listed here once a modded profile is active."),
+            div().text_size(px(12.)).text_color(p.text_placeholder).child(tr(
+                "Imported mods are listed here once a modded profile is active.",
+            )),
         );
         v_flex()
             .size_full()
@@ -149,7 +153,11 @@ impl Shell {
                             s.set_addon_enabled(managed::ID, true, window, cx);
                         }
                         window.push_notification(
-                            Notification::success(format!("Installed {} {version}", managed::NAME)),
+                            Notification::success(trf!(
+                                "Installed {name} {version}",
+                                name = managed::NAME,
+                                version = version
+                            )),
                             cx,
                         );
                     }
@@ -158,7 +166,8 @@ impl Shell {
                             .addon(managed::ID)
                             .failed(&e);
                         window.push_notification(
-                            Notification::error(e).title(format!("Could not install {}", managed::NAME)),
+                            Notification::error(e)
+                                .title(trf!("Could not install {name}", name = managed::NAME)),
                             cx,
                         )
                     }

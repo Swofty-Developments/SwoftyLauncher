@@ -10,6 +10,7 @@ use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{ActiveTheme, Disableable, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
+use swofty_i18n::{tr, trf};
 
 pub(super) const TEXT: f32 = 15.;
 
@@ -28,7 +29,7 @@ pub(super) fn news_tag(p: Palette) -> Div {
         .font_weight(FontWeight::SEMIBOLD)
         .text_color(p.accent)
         .whitespace_nowrap()
-        .child("News")
+        .child(tr("News"))
 }
 
 pub(super) fn rich(id: String, spans: &[Span], p: Palette, mono: &SharedString) -> AnyElement {
@@ -206,14 +207,14 @@ pub(super) fn changelog_header(count: usize, p: Palette) -> Div {
             div()
                 .text_size(px(14.))
                 .font_weight(FontWeight::SEMIBOLD)
-                .child("Changelogs"),
+                .child(tr("Changelogs")),
         )
         .child(div().flex_1())
         .child(
             div()
                 .text_size(px(12.))
                 .text_color(p.text_placeholder)
-                .child(format!("{count} releases")),
+                .child(trf!("{count} releases", count = count)),
         )
 }
 
@@ -257,7 +258,7 @@ pub(super) fn changelog_row(post: &Post, first: bool, p: Palette) -> AnyElement 
                             .text_size(px(11.))
                             .font_weight(FontWeight::SEMIBOLD)
                             .text_color(p.accent_hover)
-                            .child("Installed"),
+                            .child(tr("Installed")),
                     )
                 })
                 .child(div().flex_1())
@@ -301,7 +302,7 @@ impl Shell {
             .ghost()
             .small()
             .icon(IconName::RefreshCw)
-            .label("Refresh")
+            .label(tr("Refresh"))
             .disabled(self.news.fetching)
             .on_click(cx.listener(|this, _, _, cx| this.fetch_news(cx)));
         let stacked = self.content_width < STACK_BELOW;
@@ -360,7 +361,7 @@ impl Shell {
         if self.news_scroll.rows.is_empty() {
             return frame
                 .flex_1()
-                .child(empty("No news yet.", p).p(px(32.)))
+                .child(empty(tr("No news yet."), p).p(px(32.)))
                 .into_any_element();
         }
         let scroll = &self.news_scroll.articles;
@@ -503,7 +504,7 @@ impl Shell {
                     .flex_1()
                     .min_h_0()
                     .when(count == 0, |d| {
-                        d.child(empty("No release notes yet.", p).px(px(16.)).py(px(12.)))
+                        d.child(empty(tr("No release notes yet."), p).px(px(16.)).py(px(12.)))
                     })
                     .child(
                         list(
@@ -552,7 +553,7 @@ impl Shell {
                                 .rounded_t(px(10.))
                                 .border_t_1()
                                 .pt(px(28.))
-                                .when(news == 0, |d| d.child(empty("No news yet.", p).px(px(32.))))
+                                .when(news == 0, |d| d.child(empty(tr("No news yet."), p).px(px(32.))))
                                 .into_any_element(),
                             StackedRow::Article(row) => panel()
                                 .px(px(32.))
@@ -569,7 +570,7 @@ impl Shell {
                                 .border_t_1()
                                 .child(changelog_header(releases, p))
                                 .when(releases == 0, |d| {
-                                    d.child(empty("No release notes yet.", p).px(px(16.)).py(px(12.)))
+                                    d.child(empty(tr("No release notes yet."), p).px(px(16.)).py(px(12.)))
                                 })
                                 .into_any_element(),
                             StackedRow::Release(ri) => {

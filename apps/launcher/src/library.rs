@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Instant;
-use swofty_i18n::trn;
+use swofty_i18n::{trf, trn};
 
 use gpui_kit::{Image, ImageFormat};
 use swofty_core::asset::AssetOp;
@@ -240,7 +240,7 @@ impl ProfileItem {
         if self.vanilla() {
             return "No addons".into();
         }
-        format!("{} on", self.addons.len())
+        trf!("{count} on", count = self.addons.len())
     }
 }
 

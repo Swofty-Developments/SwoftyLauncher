@@ -14,7 +14,7 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::conflicts::{self, Pair};
 use swofty_core::profile::VANILLA;
-use swofty_i18n::trn;
+use swofty_i18n::{tr, trf, trn};
 
 pub(super) fn pair_counts(pair: &Pair) -> String {
     let strings = pair.strings;
@@ -31,7 +31,7 @@ pub(super) fn pair_counts(pair: &Pair) -> String {
     match parts.as_slice() {
         [] => trn(pair.items.len(), "{count} item", "{count} items"),
         [one] => one.clone(),
-        [rest @ .., last] => format!("{} and {last}", rest.join(", ")),
+        [rest @ .., last] => trf!("{rest} and {last}", rest = rest.join(", "), last = last),
     }
 }
 
@@ -61,7 +61,7 @@ pub(super) fn item_group(item: &str) -> (String, String) {
     if let Some((erp, uri)) = item.split_once(".erp:") {
         let archive = erp.rsplit('/').next().unwrap_or(erp);
         let uri = uri.trim_start_matches("eaid://");
-        return (format!("{archive}.erp archive"), uri.to_owned());
+        return (trf!("{archive}.erp archive", archive = archive), uri.to_owned());
     }
     if let Some((select, field)) = item.rsplit_once("].") {
         let row = select.rsplit_once('=').map_or(select, |(_, l)| l);
@@ -80,7 +80,7 @@ pub(super) fn item_group(item: &str) -> (String, String) {
         }
         let table = rows.split('.').next().unwrap_or(&rows);
         return (
-            format!("{} table", title_case(table)),
+            trf!("{name} table", name = title_case(table)),
             format!("{} · {field}", title_case(row)),
         );
     }
@@ -89,10 +89,10 @@ pub(super) fn item_group(item: &str) -> (String, String) {
     }
     if !item.contains('/') {
         let table = item.split('.').next().unwrap_or(item);
-        return (format!("{} table", title_case(table)), item.to_owned());
+        return (trf!("{name} table", name = title_case(table)), item.to_owned());
     }
     let (dir, file) = item.rsplit_once('/').unwrap_or(("", item));
-    (format!("Files in {dir}"), file.to_owned())
+    (trf!("Files in {dir}", dir = dir), file.to_owned())
 }
 
 impl Shell {
@@ -151,7 +151,10 @@ impl Shell {
                     Ok(report) => {
                         let text = match report.pairs.len() {
                             0 => "No conflicts between addons".to_owned(),
-                            n => format!("Found {}", trn(n, "{count} conflict", "{count} conflicts")),
+                            n => trf!(
+                                "Found {amount}",
+                                amount = trn(n, "{count} conflict", "{count} conflicts")
+                            ),
                         };
                         window.push_notification(Notification::success(text), cx);
                         if report.profile == s.library.profile.name {
@@ -160,8 +163,10 @@ impl Shell {
                     }
                     Err(e) => {
                         crate::app_log::action("check conflicts").failed(&e);
-                        window
-                            .push_notification(Notification::error(e).title("Could not check conflicts"), cx)
+                        window.push_notification(
+                            Notification::error(e).title(tr("Could not check conflicts")),
+                            cx,
+                        )
                     }
                 }
                 cx.notify();
@@ -182,7 +187,7 @@ impl Shell {
             } else {
                 "Check conflicts"
             })
-            .tooltip("Plans this profile's build without installing it")
+            .tooltip(tr("Plans this profile's build without installing it"))
             .loading(self.addons.checking)
             .disabled(self.vanilla() || self.addons.checking || self.launching())
             .on_click(cx.listener(|this, _, window, cx| this.check_conflicts(window, cx)))
@@ -198,17 +203,17 @@ impl Shell {
             .map_or(0, |m| self.stock_removals(m));
         let check = self.check_button("check-conflicts", true, cx);
         let note = match report {
-            _ if self.vanilla() => format!("{VANILLA} has no addons to conflict"),
+            _ if self.vanilla() => trf!("{vanilla} has no addons to conflict", vanilla = VANILLA),
             None => "Not checked yet. Checking plans this profile's build without installing it.".to_owned(),
-            Some(r) if !r.is_current(&self.library.profile) => format!(
-                "Checked {}, before addons were turned on, off or moved. Check again to update it.",
-                ago_since(r.built_at)
+            Some(r) if !r.is_current(&self.library.profile) => trf!(
+                "Checked {ago}, before addons were turned on, off or moved. Check again to update it.",
+                ago = ago_since(r.built_at)
             ),
-            Some(r) if self.changed_since(id, r.built_at) => format!(
-                "Checked {}, before this addon last changed. Check again to include it.",
-                ago_since(r.built_at)
+            Some(r) if self.changed_since(id, r.built_at) => trf!(
+                "Checked {ago}, before this addon last changed. Check again to include it.",
+                ago = ago_since(r.built_at)
             ),
-            Some(r) => format!("Checked {}", ago_since(r.built_at)),
+            Some(r) => trf!("Checked {ago}", ago = ago_since(r.built_at)),
         };
         let stale = report
             .is_some_and(|r| !r.is_current(&self.library.profile) || self.changed_since(id, r.built_at));
@@ -233,7 +238,7 @@ impl Shell {
                 h_flex()
                     .justify_between()
                     .items_center()
-                    .child(label("CONFLICTS", p))
+                    .child(label(tr("CONFLICTS"), p))
                     .child(check),
             )
             .child(
@@ -268,7 +273,7 @@ impl Shell {
                                 .size(px(14.))
                                 .text_color(p.success),
                         )
-                        .child("No conflicts with other addons"),
+                        .child(tr("No conflicts with other addons")),
                 )
             })
             .when(!rows.is_empty(), |d| {
@@ -286,7 +291,7 @@ impl Shell {
                     div()
                         .text_size(px(12.))
                         .text_color(p.text_placeholder)
-                        .child("In game, as of your last session"),
+                        .child(tr("In game, as of your last session")),
                 )
                 .children(registry.into_iter().map(|line| {
                     h_flex()
@@ -317,12 +322,16 @@ impl Shell {
         let key = (pair.winner.clone(), pair.loser.clone());
         let open = self.addons.open_pairs.contains(&key);
         let text = if wins {
-            format!("Overrides {} on {}", self.addon_name(other), pair_counts(pair))
+            trf!(
+                "Overrides {addon} on {counts}",
+                addon = self.addon_name(other),
+                counts = pair_counts(pair)
+            )
         } else {
-            format!(
-                "Overridden by {} on {}",
-                self.addon_name(other),
-                pair_counts(pair)
+            trf!(
+                "Overridden by {addon} on {counts}",
+                addon = self.addon_name(other),
+                counts = pair_counts(pair)
             )
         };
         let items = open.then(|| {
@@ -383,7 +392,7 @@ impl Shell {
                         if all {
                             "Show fewer".to_owned()
                         } else {
-                            format!("Show all {total}")
+                            trf!("Show all {total}", total = total)
                         },
                         cx,
                         |this, key| {
@@ -415,7 +424,7 @@ impl Shell {
                         div()
                             .text_size(px(12.))
                             .text_color(p.text_placeholder)
-                            .child(format!("{} more not listed", unlisted - total)),
+                            .child(trf!("{total} more not listed", total = unlisted - total)),
                     )
                 })
                 .child(link(

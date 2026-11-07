@@ -4,6 +4,7 @@ use std::hash::{DefaultHasher, Hash, Hasher};
 use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
+use swofty_i18n::{tr, trf};
 
 pub const FEED_URL: &str = "https://f1.swofty.net/news.json";
 
@@ -158,7 +159,7 @@ pub(super) enum Trouble {
 pub(super) fn download() -> Result<String, (Trouble, String)> {
     let mut response = ureq::get(FEED_URL)
         .header(
-            "User-Agent",
+            tr("User-Agent"),
             concat!("swofty-launcher/", env!("CARGO_PKG_VERSION")),
         )
         .config()
@@ -169,7 +170,10 @@ pub(super) fn download() -> Result<String, (Trouble, String)> {
         .map_err(|e| (Trouble::Offline, format!("{FEED_URL}: {e}")))?;
     let status = response.status().as_u16();
     if status >= 400 {
-        return Err((Trouble::Failed, format!("{FEED_URL}: HTTP {status}")));
+        return Err((
+            Trouble::Failed,
+            trf!("{feed_url}: HTTP {status}", feed_url = FEED_URL, status = status),
+        ));
     }
     response
         .body_mut()
@@ -188,9 +192,12 @@ pub(super) struct Fetched {
 pub(super) fn fetch(root: &Path, shown: Vec<Post>) -> Fetched {
     let dir = root.join(CACHE_DIR);
     let remote = download().and_then(|text| {
-        parse(&text)
-            .map(|p| (text, p))
-            .ok_or_else(|| (Trouble::Failed, format!("{FEED_URL}: not a news feed")))
+        parse(&text).map(|p| (text, p)).ok_or_else(|| {
+            (
+                Trouble::Failed,
+                trf!("{feed_url}: not a news feed", feed_url = FEED_URL),
+            )
+        })
     });
     let (posts, error) = match remote {
         Ok((text, posts)) => {

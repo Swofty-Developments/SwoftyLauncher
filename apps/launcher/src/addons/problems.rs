@@ -9,7 +9,7 @@ use gpui_kit::component::{Icon, Sizable, WindowExt, h_flex, v_flex};
 use gpui_kit::*;
 use std::collections::HashSet;
 use swofty_core::order;
-use swofty_i18n::trn;
+use swofty_i18n::{tr, trf, trn};
 
 impl Shell {
     pub(super) fn installed_manifests(
@@ -129,7 +129,7 @@ impl Shell {
             order::Kind::Missing => {
                 let id = other.clone();
                 out.push(
-                    button(key("install"), format!("Install {}", name(&other)))
+                    button(key("install"), trf!("Install {name}", name = name(&other)))
                         .on_click(cx.listener(move |this, _, _, cx| this.install_missing(&id, cx)))
                         .into_any_element(),
                 );
@@ -137,7 +137,7 @@ impl Shell {
             order::Kind::Off => {
                 let id = other.clone();
                 out.push(
-                    button(key("on"), format!("Turn {} on", name(&other)))
+                    button(key("on"), trf!("Turn {name} on", name = name(&other)))
                         .on_click(cx.listener(move |this, _, window, cx| {
                             this.set_addon_enabled(&id, true, window, cx)
                         }))
@@ -151,7 +151,7 @@ impl Shell {
             } => {
                 let (dep, at) = (other.clone(), addon.clone());
                 out.push(
-                    button(key("above"), format!("Move {} above", name(&other)))
+                    button(key("above"), trf!("Move {name} above", name = name(&other)))
                         .on_click(cx.listener(move |this, _, window, cx| {
                             this.move_dependency_above(&dep, &at, window, cx)
                         }))
@@ -168,7 +168,7 @@ impl Shell {
             order::Kind::Conflict | order::Kind::Clash { .. } => {
                 let id = other.clone();
                 out.push(
-                    button(key("off"), format!("Turn {} off", name(&other)))
+                    button(key("off"), trf!("Turn {name} off", name = name(&other)))
                         .on_click(cx.listener(move |this, _, window, cx| {
                             this.set_addon_enabled(&id, false, window, cx)
                         }))
@@ -180,12 +180,12 @@ impl Shell {
                 let id = addon.clone();
                 match &**why {
                     order::Kind::Missing => out.push(
-                        button(key("install"), format!("Install {}", name(&addon)))
+                        button(key("install"), trf!("Install {name}", name = name(&addon)))
                             .on_click(cx.listener(move |this, _, _, cx| this.install_missing(&id, cx)))
                             .into_any_element(),
                     ),
                     order::Kind::Off => out.push(
-                        button(key("on"), format!("Turn {} on", name(&addon)))
+                        button(key("on"), trf!("Turn {name} on", name = name(&addon)))
                             .on_click(cx.listener(move |this, _, window, cx| {
                                 this.set_addon_enabled(&id, true, window, cx)
                             }))
@@ -259,8 +259,10 @@ impl Shell {
                 .small()
                 .outline()
                 .icon(IconName::ArrowUpDown)
-                .label("Order for me")
-                .tooltip("Reorders the whole profile so every addon loads below what it needs")
+                .label(tr("Order for me"))
+                .tooltip(tr(
+                    "Reorders the whole profile so every addon loads below what it needs",
+                ))
                 .on_click(cx.listener(|this, _, window, cx| this.order_for_me(window, cx)))
         });
         let cycle = ordering.then(|| self.addons.cycle.clone()).flatten();
@@ -303,15 +305,18 @@ impl Shell {
             },
         );
         let text = match (red, amber) {
-            (r, 0) => format!(
-                "{} to fix before these addons work together",
-                trn(r, "{count} problem", "{count} problems")
+            (r, 0) => trf!(
+                "{amount} to fix before these addons work together",
+                amount = trn(r, "{count} problem", "{count} problems")
             ),
-            (0, a) => format!("{} worth a look", trn(a, "{count} warning", "{count} warnings")),
-            (r, a) => format!(
-                "{} to fix, and {}",
-                trn(r, "{count} problem", "{count} problems"),
-                trn(a, "{count} warning", "{count} warnings")
+            (0, a) => trf!(
+                "{amount} worth a look",
+                amount = trn(a, "{count} warning", "{count} warnings")
+            ),
+            (r, a) => trf!(
+                "{amount} to fix, and {amount2}",
+                amount = trn(r, "{count} problem", "{count} problems"),
+                amount2 = trn(a, "{count} warning", "{count} warnings")
             ),
         };
         let first = all
@@ -328,7 +333,7 @@ impl Shell {
                 .small()
                 .outline()
                 .icon(IconName::ArrowUpDown)
-                .label("Order for me")
+                .label(tr("Order for me"))
                 .on_click(cx.listener(|this, _, window, cx| this.order_for_me(window, cx)))
         });
         Some(

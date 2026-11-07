@@ -148,8 +148,8 @@ impl Shell {
             let name = from.clone().unwrap_or_default();
             window.open_alert_dialog(cx, move |alert, _, _| {
                 alert
-                    .title(format!("Can't rename {name}"))
-                    .description("Close F1 25 before renaming a profile.".to_owned())
+                    .title(trf!("Can't rename {name}", name = name))
+                    .description(tr("Close F1 25 before renaming a profile.").to_owned())
             });
             return;
         }

@@ -8,6 +8,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Arc;
 use std::time::Instant;
+use swofty_i18n::trf;
 
 pub(super) const STACK_BELOW: f32 = 680.;
 
@@ -199,8 +200,8 @@ impl News {
             "showing the news that came with this version"
         };
         match self.trouble {
-            Some(Trouble::Failed) => format!("Couldn't load the latest news · {shown}"),
-            _ => format!("Offline · {shown}"),
+            Some(Trouble::Failed) => trf!("Couldn't load the latest news · {shown}", shown = shown),
+            _ => trf!("Offline · {shown}", shown = shown),
         }
     }
 }
