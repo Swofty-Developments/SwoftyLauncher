@@ -40,6 +40,6 @@ pub(super) fn download(root: &Path, first_only: bool, progress: &dyn Fn(f32, &st
             progress(base + f.min(1.) / count, label);
         })?;
     }
-    progress(1., "Done");
+    progress(1., tr("Done"));
     Ok(())
 }

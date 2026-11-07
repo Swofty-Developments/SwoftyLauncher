@@ -379,10 +379,10 @@ impl Shell {
                 );
             alert
                 .width(px(480.))
-                .title(format!("Save changes to {name}?"))
-                .description(format!(
-                    "You have {}.",
-                    trn(n, "{count} unsaved change", "{count} unsaved changes")
+                .title(trf!("Save changes to {name}?", name = name))
+                .description(trf!(
+                    "You have {changes}.",
+                    changes = trn(n, "{count} unsaved change", "{count} unsaved changes")
                 ))
                 .footer(footer)
         });

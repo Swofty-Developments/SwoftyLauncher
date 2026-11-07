@@ -1000,10 +1000,10 @@ impl Shell {
 
     fn debounced(&mut self, which: Which, window: &mut Window, cx: &mut Context<Self>) -> Debounced {
         let placeholder = match which {
-            Which::Search => "Search drivers, teams, tracks, keys and values",
-            Which::Filter => "Filter rows",
-            Which::Unnamed => "Filter by key or value",
-            Which::Raw => "Filter this level",
+            Which::Search => tr("Search drivers, teams, tracks, keys and values"),
+            Which::Filter => tr("Filter rows"),
+            Which::Unnamed => tr("Filter by key or value"),
+            Which::Raw => tr("Filter this level"),
         };
         let input = cx.new(|cx| InputState::new(window, cx).placeholder(placeholder));
         let sub = cx.subscribe_in(&input, window, move |this, state, ev: &InputEvent, window, cx| {

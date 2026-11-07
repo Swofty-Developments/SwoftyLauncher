@@ -115,8 +115,6 @@ fn title_case(word: &str) -> String {
         .join(" ")
 }
 
-const COPIED: &str = "Copied rows";
-
 pub(crate) struct ChangeItem {
     pub group: Option<String>,
     pub edit: Option<Edit>,
@@ -146,7 +144,7 @@ impl Shell {
             .flex_wrap()
             .children(chain.into_iter().enumerate().map(|(i, id)| {
                 let name = if id == catalog.root() {
-                    "All tables".to_owned()
+                    tr("All tables").to_owned()
                 } else {
                     catalog.node(id).name.clone()
                 };
@@ -231,16 +229,16 @@ impl Shell {
         let content = match n.kind {
             _ if rows.is_empty() && filtered => self.empty(
                 IconName::Search,
-                "No matches",
-                "Nothing at this level matches the filter.",
+                tr("No matches"),
+                tr("Nothing at this level matches the filter."),
                 div(),
                 p,
             ),
             NodeKind::Table { .. } => self.db_grid(node, rows.clone(), &catalog, p, cx),
             _ if kids == 0 => self.empty(
                 IconName::Folder,
-                "Empty",
-                "Nothing is stored under this part.",
+                tr("Empty"),
+                tr("Nothing is stored under this part."),
                 div(),
                 p,
             ),
@@ -396,7 +394,7 @@ impl Shell {
                     format!("{tag} · {meaning}")
                 }
             }
-            NodeKind::Unnamed => "Records no known name reaches".into(),
+            NodeKind::Unnamed => tr("Records no known name reaches").into(),
             _ => trn(catalog.children(child).len(), "{count} entry", "{count} entries"),
         };
         let title = if named {
@@ -656,8 +654,8 @@ impl Shell {
         let list = if rows.is_empty() {
             self.empty(
                 IconName::Search,
-                "No matching keys",
-                "No unnamed record has that key or value.",
+                tr("No matching keys"),
+                tr("No unnamed record has that key or value."),
                 div(),
                 p,
             )
@@ -759,7 +757,7 @@ impl Shell {
             })
             .collect();
         if !rows.is_empty() {
-            groups.push((COPIED.to_owned(), rows));
+            groups.push((tr("Copied rows").to_owned(), rows));
         }
         for e in &self.db.draft.edits.edits {
             let node = catalog.node_of_key(e.key);
@@ -797,7 +795,7 @@ impl Shell {
                         None if catalog.node(catalog.node(n).parent.unwrap_or(0)).kind
                             == NodeKind::Unnamed =>
                         {
-                            "Unnamed keys".to_owned()
+                            tr("Unnamed keys").to_owned()
                         }
                         None => catalog.path(catalog.node(n).parent.unwrap_or(0)),
                     };
@@ -806,11 +804,11 @@ impl Shell {
                 _ if e.is_copied() => (
                     self.db_cell_name(e.key)
                         .unwrap_or_else(|| e.path.clone().unwrap_or_else(|| hex(e.key))),
-                    COPIED.to_owned(),
+                    tr("Copied rows").to_owned(),
                 ),
                 _ => (
                     e.path.clone().unwrap_or_else(|| hex(e.key)),
-                    "Added keys".to_owned(),
+                    tr("Added keys").to_owned(),
                 ),
             };
             let item = ChangeItem {
@@ -880,8 +878,8 @@ impl Shell {
                 .child(head)
                 .child(self.empty(
                     IconName::ListChecks,
-                    "No changes yet",
-                    "Values you change in the modules or the table browser show up here. Save them as an addon to use them in the game.",
+                    tr("No changes yet"),
+                    tr("Values you change in the modules or the table browser show up here. Save them as an addon to use them in the game."),
                     div(),
                     p,
                 ))

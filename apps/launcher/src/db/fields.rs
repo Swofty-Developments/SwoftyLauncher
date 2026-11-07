@@ -317,7 +317,7 @@ impl Shell {
             key: Some(key),
             tag: record.tag,
             kind: kind_of(None, record.tag),
-            label: "Value".into(),
+            label: tr("Value").into(),
             section: None,
             help: None,
             text: name
@@ -503,7 +503,7 @@ impl Shell {
                 0,
                 Choice {
                     value: String::new(),
-                    title: "Game default".into(),
+                    title: tr("Game default").into(),
                 },
             );
         }
@@ -858,7 +858,7 @@ impl Shell {
                             .small()
                             .w_full()
                             .menu_max_h(px(320.))
-                            .search_placeholder("Search")
+                            .search_placeholder(tr("Search"))
                             .placeholder(tr("Copy from…"))
                             .disabled(locked)
                     });
@@ -883,9 +883,9 @@ impl Shell {
                                     .mt(px(2.))
                                     .text_color(p.text_muted),
                             )
-                            .child(div().flex_1().min_w_0().child(
+                            .child(div().flex_1().min_w_0().child(tr(
                                 "These values come from the game default. Copy someone's row to edit them.",
-                            )),
+                            ))),
                     )
                     .children(picker)
                     .into_any_element()
@@ -957,9 +957,9 @@ impl Shell {
                 )
                 .child(div().text_size(px(13.)).text_color(p.text_placeholder).child(
                     match (&f.row, f.optional) {
-                        (Some((_, Backing::Copied(_))), _) => "Not in the copied row",
-                        (_, true) => "Inherited",
-                        (_, false) => "Not in this row",
+                        (Some((_, Backing::Copied(_))), _) => tr("Not in the copied row"),
+                        (_, true) => tr("Inherited"),
+                        (_, false) => tr("Not in this row"),
                     },
                 ))
                 .into_any_element();
@@ -1151,7 +1151,7 @@ impl Shell {
                         div()
                             .text_size(px(13.))
                             .text_color(if on { p.text } else { p.text_muted })
-                            .child(if on { "On" } else { "Off" }),
+                            .child(if on { tr("On") } else { tr("Off") }),
                     )
                     .into_any_element()
             }
@@ -1169,7 +1169,7 @@ impl Shell {
                         .small()
                         .w_full()
                         .menu_max_h(px(320.))
-                        .search_placeholder("Search")
+                        .search_placeholder(tr("Search"))
                         .placeholder(shown)
                         .disabled(locked)
                         .into_any_element()
@@ -1283,7 +1283,7 @@ impl Shell {
                 .small()
                 .w_full()
                 .menu_max_h(px(320.))
-                .search_placeholder("Search")
+                .search_placeholder(tr("Search"))
                 .placeholder(tr("Add…"))
                 .disabled(locked)
         });

@@ -108,9 +108,43 @@ pub(crate) fn nav_row(
 
 impl Shell {
     fn db_header(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+        let title = div()
+            .text_size(px(18.))
+            .font_weight(FontWeight::SEMIBOLD)
+            .child(tr("DB Editor"));
+        let line = self.db_header_line(p, cx);
+        let actions = self.db_header_actions(cx);
+        if self.content_width < NARROW {
+            return v_flex()
+                .px(px(GUTTER))
+                .pt(px(22.))
+                .pb(px(16.))
+                .gap(px(10.))
+                .flex_shrink_0()
+                .child(
+                    h_flex()
+                        .gap(px(16.))
+                        .items_center()
+                        .child(title.flex_1())
+                        .child(actions),
+                )
+                .child(line)
+                .into_any_element();
+        }
+        h_flex()
+            .px(px(GUTTER))
+            .pt(px(22.))
+            .pb(px(16.))
+            .gap(px(16.))
+            .items_end()
+            .flex_shrink_0()
+            .child(v_flex().flex_1().min_w_0().gap(px(8.)).child(title).child(line))
+            .child(h_flex().gap(px(8.)).pb(px(2.)).child(actions))
+            .into_any_element()
+    }
+
+    fn db_header_line(&self, p: Palette, cx: &mut Context<Self>) -> Div {
         let profile = self.library.profile.name.clone();
-        let ready = self.db.catalog().is_some();
-        let n = self.db.draft.edits.len();
         let unsaved = self.db.draft.unsaved();
         let bound = self.db.draft.addon.clone();
         let info = self.db_bound().cloned();
@@ -182,45 +216,7 @@ impl Shell {
                 .label(tr("Discard changes"))
                 .on_click(cx.listener(|this, _, window, cx| this.db_discard(window, cx)))
         });
-        let save = match &bound {
-            Some(_) => Button::new("db-save")
-                .primary()
-                .icon(IconName::Save)
-                .label(tr("Save"))
-                .disabled(!ready || broken || unsaved == 0),
-            None => Button::new("db-save")
-                .primary()
-                .icon(IconName::PackagePlus)
-                .label(tr("Save as Addon"))
-                .disabled(!ready || n == 0),
-        }
-        .on_click(cx.listener(|this, _, window, cx| this.db_save(window, cx)));
-        let actions = h_flex()
-            .gap(px(8.))
-            .child(
-                Button::new("db-import")
-                    .outline()
-                    .icon(IconName::FileDown)
-                    .label(tr("Import…"))
-                    .loading(self.db.importing)
-                    .disabled(!ready || self.db.importing)
-                    .on_click(cx.listener(|this, _, window, cx| this.db_import(window, cx))),
-            )
-            .child(self.db_export_menu(cx))
-            .child(
-                Button::new("db-changes")
-                    .outline()
-                    .icon(IconName::ListChecks)
-                    .label(trf!("All changes ({n})", n = n))
-                    .disabled(!ready)
-                    .on_click(cx.listener(|this, _, _, cx| this.db_go(Nav::Changes, cx))),
-            )
-            .child(save);
-        let title = div()
-            .text_size(px(18.))
-            .font_weight(FontWeight::SEMIBOLD)
-            .child(tr("DB Editor"));
-        let line = h_flex()
+        h_flex()
             .gap(px(10.))
             .min_w_0()
             .child(
@@ -252,34 +248,49 @@ impl Shell {
             .children(turn_on)
             .children(discard)
             .children(details)
-            .children(fresh);
-        if self.content_width < NARROW {
-            return v_flex()
-                .px(px(GUTTER))
-                .pt(px(22.))
-                .pb(px(16.))
-                .gap(px(10.))
-                .flex_shrink_0()
-                .child(
-                    h_flex()
-                        .gap(px(16.))
-                        .items_center()
-                        .child(title.flex_1())
-                        .child(actions),
-                )
-                .child(line)
-                .into_any_element();
+            .children(fresh)
+    }
+
+    fn db_header_actions(&self, cx: &mut Context<Self>) -> Div {
+        let ready = self.db.catalog().is_some();
+        let n = self.db.draft.edits.len();
+        let unsaved = self.db.draft.unsaved();
+        let bound = self.db.draft.addon.clone();
+        let broken = self.db_locked();
+        let save = match &bound {
+            Some(_) => Button::new("db-save")
+                .primary()
+                .icon(IconName::Save)
+                .label(tr("Save"))
+                .disabled(!ready || broken || unsaved == 0),
+            None => Button::new("db-save")
+                .primary()
+                .icon(IconName::PackagePlus)
+                .label(tr("Save as Addon"))
+                .disabled(!ready || n == 0),
         }
+        .on_click(cx.listener(|this, _, window, cx| this.db_save(window, cx)));
         h_flex()
-            .px(px(GUTTER))
-            .pt(px(22.))
-            .pb(px(16.))
-            .gap(px(16.))
-            .items_end()
-            .flex_shrink_0()
-            .child(v_flex().flex_1().min_w_0().gap(px(8.)).child(title).child(line))
-            .child(h_flex().gap(px(8.)).pb(px(2.)).child(actions))
-            .into_any_element()
+            .gap(px(8.))
+            .child(
+                Button::new("db-import")
+                    .outline()
+                    .icon(IconName::FileDown)
+                    .label(tr("Import…"))
+                    .loading(self.db.importing)
+                    .disabled(!ready || self.db.importing)
+                    .on_click(cx.listener(|this, _, window, cx| this.db_import(window, cx))),
+            )
+            .child(self.db_export_menu(cx))
+            .child(
+                Button::new("db-changes")
+                    .outline()
+                    .icon(IconName::ListChecks)
+                    .label(trf!("All changes ({n})", n = n))
+                    .disabled(!ready)
+                    .on_click(cx.listener(|this, _, _, cx| this.db_go(Nav::Changes, cx))),
+            )
+            .child(save)
     }
 
     pub(crate) fn db_page(&mut self, p: Palette, cx: &mut Context<Self>) -> AnyElement {

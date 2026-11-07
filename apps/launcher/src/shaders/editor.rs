@@ -814,7 +814,7 @@ impl ShadersView {
                             .text_size(px(11.))
                             .font_weight(FontWeight::MEDIUM)
                             .text_color(p.text_placeholder)
-                            .child("PROBLEMS"),
+                            .child(tr("PROBLEMS")),
                     )
                     .children(counts),
             )
@@ -859,9 +859,9 @@ impl ShadersView {
             .border_1()
             .border_color(p.border)
             .bg(p.surface)
-            .child(seg(Mode::Editor, "Editor", IconName::SquarePen))
-            .child(seg(Mode::Preview, "Preview", IconName::Play))
-            .child(seg(Mode::Documentation, "Documentation", IconName::BookOpen))
+            .child(seg(Mode::Editor, tr("Editor"), IconName::SquarePen))
+            .child(seg(Mode::Preview, tr("Preview"), IconName::Play))
+            .child(seg(Mode::Documentation, tr("Documentation"), IconName::BookOpen))
             .into_any_element()
     }
 }
@@ -881,10 +881,10 @@ fn squiggle_range(text: &str, range: &Range<usize>) -> Option<Range<usize>> {
 
 fn severity_label(s: Severity) -> &'static str {
     match s {
-        Severity::Error => "Error",
-        Severity::Warning => "Warning",
-        Severity::Info => "Info",
-        Severity::Hint => "Hint",
+        Severity::Error => tr("Error"),
+        Severity::Warning => tr("Warning"),
+        Severity::Info => tr("Info"),
+        Severity::Hint => tr("Hint"),
     }
 }
 

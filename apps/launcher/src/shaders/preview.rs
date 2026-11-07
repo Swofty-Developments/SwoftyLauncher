@@ -1285,7 +1285,7 @@ impl ShadersView {
         let current = titles
             .get(self.preview.clip)
             .cloned()
-            .unwrap_or_else(|| "Clip".into());
+            .unwrap_or_else(|| tr("Clip").into());
         let shaders = cx.entity().downgrade();
         let at = self.preview.clip;
         let picker = Button::new("shaders-clip")
@@ -1337,7 +1337,7 @@ impl ShadersView {
                     .small()
                     .map(|b| if compare { b } else { b.outline() })
                     .icon(IconName::ArrowRightLeft)
-                    .label("Compare")
+                    .label(tr("Compare"))
                     .disabled(!ready)
                     .on_click(cx.listener(|this, _, _, cx| this.toggle_compare(cx))),
             )
