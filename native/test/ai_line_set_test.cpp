@@ -99,6 +99,44 @@ int main()
         expect(r.ran && r.filled == 0 && r.missing == 1 && slot(m, 0, 0x58) == 0, "with no donor the slot stays empty and is counted");
     }
     {
+        Memory m = build(6);
+        for (unsigned i = 0; i < 3; i++)
+            for (uint64_t s : al::SLOTS)
+                m.words[RECORDS + i * al::RECORD_SIZE + s] = 0;
+        al::Repair r = al::repair(read, write, &m, BUILDER);
+        expect(r.filled == 0 && r.backfilled == 3, "first-slot cars with no pointers are backfilled when a later record has them");
+        expect(slot(m, 0, 0x58) == slot(m, 3, 0x58) && slot(m, 2, 0x80) == slot(m, 3, 0x80), "they borrow the first record that has pointers");
+        expect(slot(m, 3, 0x58) == 0x1000000 + 3 * 0x1000 + 0x58, "the donor is untouched");
+    }
+    {
+        Memory m = build(3);
+        for (unsigned i = 0; i < 3; i++)
+            for (uint64_t s : al::SLOTS)
+                m.words[RECORDS + i * al::RECORD_SIZE + s] = 0;
+        al::Repair r = al::repair(read, write, &m, BUILDER);
+        expect(r.ran && r.filled == 0 && r.missing == 6 && r.backfilled == 0, "with every car missing nothing is written");
+        bool clean = true;
+        for (unsigned i = 0; i < 3; i++)
+            for (uint64_t s : al::SLOTS)
+                clean = clean && slot(m, i, s) == 0;
+        expect(clean, "all records stay zero");
+    }
+    {
+        Memory m = build(6);
+        for (unsigned i : {0u, 1u, 4u, 5u})
+            for (uint64_t s : al::SLOTS)
+                m.words[RECORDS + i * al::RECORD_SIZE + s] = 0;
+        al::Repair r = al::repair(read, write, &m, BUILDER);
+        expect(r.filled == 6 && r.backfilled == 3, "a mixed vector fills the last record and the earlier empty ones");
+        expect(slot(m, 0, 0x60) == slot(m, 2, 0x60) && slot(m, 5, 0x60) == slot(m, 2, 0x60), "both borrow the earliest car that has pointers");
+    }
+    {
+        Memory m = build(4);
+        m.words[RECORDS + 1 * al::RECORD_SIZE + 0x78] = 0;
+        al::Repair r = al::repair(read, write, &m, BUILDER);
+        expect(r.backfilled == 0 && slot(m, 1, 0x78) == 0, "an earlier listed car's empty optional table stays empty");
+    }
+    {
         Memory m = build(3);
         m.words[BUILDER + al::RECORDS_END_AT] = RECORDS + 3 * al::RECORD_SIZE + 8;
         expect(!al::repair(read, write, &m, BUILDER).ran, "a vector whose size is not a whole number of records is ignored");

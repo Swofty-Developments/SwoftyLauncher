@@ -25,6 +25,7 @@ struct Repair {
     uint32_t index = 0;
     uint32_t filled = 0;
     uint32_t missing = 0;
+    uint32_t backfilled = 0;
 };
 
 inline bool user_pointer(uint64_t p)
@@ -35,6 +36,30 @@ inline bool user_pointer(uint64_t p)
 inline bool word(Read read, void *user, uint64_t address, uint64_t *out)
 {
     return read(address, out, sizeof *out, user);
+}
+
+inline void fill_record(Read read, Write write, void *user, uint64_t begin, uint64_t last, uint64_t target,
+                        uint32_t *filled, uint32_t *missing)
+{
+    uint64_t line_cache = 0;
+    bool unlisted = word(read, user, target + LINE_CACHE_SLOT, &line_cache) && line_cache == 0;
+    for (uint64_t slot : SLOTS) {
+        uint64_t value = 0;
+        if (!word(read, user, target + slot, &value) || value != 0)
+            continue;
+        if (slot == OPTIONAL_SLOT && !unlisted)
+            continue;
+        uint64_t donor = 0;
+        for (uint64_t at = begin; at <= last && donor == 0; at += RECORD_SIZE) {
+            uint64_t candidate = 0;
+            if (at != target && word(read, user, at + slot, &candidate) && user_pointer(candidate))
+                donor = candidate;
+        }
+        if (donor && write(target + slot, &donor, sizeof donor, user))
+            (*filled)++;
+        else if (target == last)
+            (*missing)++;
+    }
 }
 
 inline Repair repair(Read read, Write write, void *user, uint64_t builder)
@@ -50,24 +75,15 @@ inline Repair repair(Read read, Write write, void *user, uint64_t builder)
     uint64_t last = end - RECORD_SIZE;
     r.ran = true;
     r.index = static_cast<uint32_t>((last - begin) / RECORD_SIZE);
-    uint64_t line_cache = 0;
-    bool unlisted = word(read, user, last + LINE_CACHE_SLOT, &line_cache) && line_cache == 0;
-    for (uint64_t slot : SLOTS) {
-        uint64_t value = 0;
-        if (!word(read, user, last + slot, &value) || value != 0)
-            continue;
-        if (slot == OPTIONAL_SLOT && !unlisted)
-            continue;
-        uint64_t donor = 0;
-        for (uint64_t at = begin; at < last && donor == 0; at += RECORD_SIZE) {
-            uint64_t candidate = 0;
-            if (word(read, user, at + slot, &candidate) && user_pointer(candidate))
-                donor = candidate;
+    for (uint64_t at = begin; at <= last; at += RECORD_SIZE) {
+        uint32_t filled = 0, missing = 0;
+        fill_record(read, write, user, begin, last, at, &filled, &missing);
+        if (at == last) {
+            r.filled = filled;
+            r.missing = missing;
+        } else if (filled) {
+            r.backfilled++;
         }
-        if (donor && write(last + slot, &donor, sizeof donor, user))
-            r.filled++;
-        else
-            r.missing++;
     }
     return r;
 }

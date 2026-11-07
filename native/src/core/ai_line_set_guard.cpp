@@ -23,8 +23,9 @@
 //
 // site_Ai_BuildSystem_RecordPushed is the join after the record was appended (inc bpl, builder in rbx, both the in
 // place and the regrown path land here). The last record is [rbx + 0xb0] - 0x508. For each of its six pointers that is
-// 0, the guard copies the pointer of the earliest record that has one, so the car races on that car's line and tables
-// instead of faulting. +0x78 is the one table the update checks for 0 itself, so it is borrowed only when +0x58 was
+// 0, the guard copies the pointer of the earliest other record that has one, so the car races on that car's line and
+// tables instead of faulting. Records pushed before any record has pointers (the first cars of a session) are backfilled
+// the same way on the push that supplies the first donor; with no donor in the vector nothing is written. +0x78 is the one table the update checks for 0 itself, so it is borrowed only when +0x58 was
 // empty too (a name no map lists); a listed car's empty +0x78 stays empty. The pointers are shared, read only objects the maps own, and every car keeps its own cursors in
 // its record. A record with all six pointers runs the game's code unchanged.
 //
@@ -59,14 +60,14 @@ bool write_memory(uint64_t address, const void *in, size_t n, void *)
 void record_pushed(SwoftyContext *c)
 {
     al::Repair r = al::repair(read_memory, write_memory, nullptr, c->rbx);
-    if (!r.ran || (r.filled == 0 && r.missing == 0))
+    if (!r.ran || (r.filled == 0 && r.missing == 0 && r.backfilled == 0))
         return;
     int n = ++logged;
     if (n > al::LOG_FIRST)
         return;
     swofty::log("[ai] vehicle slot %u has no AI line or tables of its own (its name is in none of the AI maps); %u of its "
-                "pointers borrow the first car's, %u have no donor%s",
-                r.index, r.filled, r.missing, n == al::LOG_FIRST ? " (further fixes are not logged)" : "");
+                "pointers borrow another car's, %u have no donor, %u earlier cars backfilled%s",
+                r.index, r.filled, r.missing, r.backfilled, n == al::LOG_FIRST ? " (further fixes are not logged)" : "");
 }
 
 }
@@ -99,7 +100,7 @@ void ai_line_set_commit()
         return;
     settled = true;
     swofty::log("[ai] line set guard %s",
-                core_mixins_active(MIXIN) ? "armed: a car no AI map lists borrows the first car's line and tables"
+                core_mixins_active(MIXIN) ? "armed: a car no AI map lists borrows another car's line and tables"
                                           : "did not install (see the [core] lines)");
 }
 
