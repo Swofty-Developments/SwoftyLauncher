@@ -181,6 +181,5 @@
   "{removed} Installed addons stay on the Addons page, and other profiles don't change.": "{removed} Установленные аддоны останутся на странице «Аддоны», а другие профили не изменятся.",
   "{short} Clear old logs, remove addons you don't use, or move the data folder.": "{short} Очистите старые журналы, удалите неиспользуемые аддоны или перенесите папку данных.",
   "{size} free on this drive": "На этом диске свободно {size}",
-  "{total} in total · {free}": "Всего {total} · {free}",
   "{to} becomes active first, and Play uses it from now on.": "Сначала активным станет {to}, и теперь кнопка «Играть» будет использовать его."
 }

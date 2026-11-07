@@ -181,6 +181,5 @@
   "{removed} Installed addons stay on the Addons page, and other profiles don't change.": "{removed} 已安装的插件仍保留在“插件”页面，其他配置不受影响。",
   "{short} Clear old logs, remove addons you don't use, or move the data folder.": "{short} 请清除旧日志、移除不用的插件或移动数据文件夹。",
   "{size} free on this drive": "此磁盘可用 {size}",
-  "{total} in total · {free}": "共 {total} · {free}",
   "{to} becomes active first, and Play uses it from now on.": "{to} 将先变为当前配置，此后“开始游戏”将使用它。"
 }
