@@ -26,7 +26,7 @@ use swofty_core::session::{LaunchMode, SessionRecord, UiMode};
 use swofty_core::stock;
 use swofty_core::store::Store;
 use swofty_core::view::View;
-use swofty_i18n::tr;
+use swofty_i18n::{tr, trn};
 
 use crate::crash_modal::{self, CrashView};
 use crate::game::{self, Install, Launch, Owner, Probe};
@@ -1880,7 +1880,7 @@ impl Shell {
             let (shell, store, profile) = (shell.clone(), store.clone(), profile.clone());
             let ok = match picked.len() {
                 0 => "Add".to_owned(),
-                n => format!("Add {}", crate::library::plural(n, "addon", "addons")),
+                n => format!("Add {}", trn(n, "{count} addon", "{count} addons")),
             };
             alert
                 .width(px(520.))
@@ -1905,7 +1905,7 @@ impl Shell {
                         Ok(()) => {
                             let text = format!(
                                 "Added {} to {profile}",
-                                crate::library::plural(picked.len(), "addon", "addons")
+                                trn(picked.len(), "{count} addon", "{count} addons")
                             );
                             window.push_notification(Notification::success(text), cx);
                         }
@@ -2457,7 +2457,7 @@ impl Shell {
         }
         big.push((Page::Settings, None));
         v_flex()
-            .w(px(220.))
+            .w(px(crate::scale::SIDEBAR_WIDTH))
             .h_full()
             .flex_shrink_0()
             .px(px(10.))
@@ -2576,8 +2576,7 @@ impl Render for Shell {
         let short = window.viewport_size().height < px(760.);
         self.short = short;
         self.content_width =
-            (f32::from(window.viewport_size().width) / f32::from(px(1.)) - 220. - 2. * crate::pages::GUTTER)
-                .max(320.);
+            crate::scale::content_width(f32::from(window.viewport_size().width), crate::scale::current());
         self.sync_sliders(window, cx);
         self.sync_blocks(window, cx);
         self.db_pending_tab(window, cx);
