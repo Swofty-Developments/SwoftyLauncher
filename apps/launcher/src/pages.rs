@@ -742,6 +742,15 @@ impl Shell {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
+        if rename && self.game_busy() {
+            let name = from.clone().unwrap_or_default();
+            window.open_alert_dialog(cx, move |alert, _, _| {
+                alert
+                    .title(format!("Can't rename {name}"))
+                    .description("Close F1 25 before renaming a profile.".to_owned())
+            });
+            return;
+        }
         let (title, ok, initial) = match (&from, rename) {
             (Some(f), true) => ("Rename profile", "Rename", f.clone()),
             (Some(f), false) => ("Duplicate profile", "Duplicate", format!("{f}-copy")),

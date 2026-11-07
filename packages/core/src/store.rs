@@ -10,7 +10,7 @@ use crate::manifest::{AddonManifest, MANIFEST_FILE};
 use crate::profile::{self, Profile};
 use crate::session::Config;
 use crate::settings::{self, Merge, Requests, SessionSettings};
-use crate::{Error, Result, io_err};
+use crate::{Error, Result, io_err, with_retry};
 
 pub const DEFAULT_PROFILE: &str = "default";
 pub const DATA_VERSION: u32 = 4;
@@ -825,15 +825,26 @@ impl Store {
         Ok(names)
     }
 
-    pub fn create_profile(&self, name: &str, from: Option<&str>) -> Result<Profile> {
+    /// Refuses a name that isn't valid, or that another profile holds. Windows ignores
+    /// capitals in file names, so `Grid` and `grid` would be one profile's files.
+    fn check_new_profile_name(&self, name: &str) -> Result<()> {
         if !profile::valid_name(name) {
             return Err(Error::Other(format!(
                 "{name:?} is not a valid profile name (letters, digits, - and _)"
             )));
         }
-        if self.profile_names()?.iter().any(|n| n == name) {
-            return Err(Error::Other(format!("a profile named {name} already exists")));
+        if let Some(taken) = self
+            .profile_names()?
+            .iter()
+            .find(|n| n.eq_ignore_ascii_case(name))
+        {
+            return Err(Error::Other(format!("a profile named {taken} already exists")));
         }
+        Ok(())
+    }
+
+    pub fn create_profile(&self, name: &str, from: Option<&str>) -> Result<Profile> {
+        self.check_new_profile_name(name)?;
         let mut p = match from {
             Some(src) => self.profile(src)?,
             None => Profile::new(name),
@@ -850,14 +861,53 @@ impl Store {
         if from == profile::VANILLA {
             return Err(Error::Other("the vanilla profile cannot be renamed".into()));
         }
-        let p = self.create_profile(to, Some(from))?;
-        let old = self.profiles_dir().join(format!("{from}.json"));
-        if old.is_file() {
-            std::fs::remove_file(&old).map_err(io_err(&old))?;
+        // The running game keeps writing to the saves folder this would move.
+        if let Some(j) = crate::journal::Journal::open(&self.root)?
+            .into_iter()
+            .find(|j| j.profile == from)
+        {
+            return Err(Error::Other(format!(
+                "{from} is installed in the game folder (journal {}); close F1 25 or run \
+                 swofty restore, then rename it",
+                j.id
+            )));
         }
+        if from != to && from.eq_ignore_ascii_case(to) {
+            return self.rename_profile_capitals(from, to);
+        }
+        self.check_new_profile_name(to)?;
         let saves = self.saves_dir(from);
-        if saves.is_dir() {
-            std::fs::rename(&saves, self.saves_dir(to)).map_err(io_err(&saves))?;
+        let saves_to = self.saves_dir(to);
+        let has_saves = saves.is_dir();
+        if has_saves {
+            if std::fs::read_dir(&saves_to).is_ok_and(|mut rd| rd.next().is_some()) {
+                return Err(Error::Other(format!(
+                    "{} already holds saves; move them away, then rename {from}",
+                    saves_to.display()
+                )));
+            }
+            std::fs::remove_dir(&saves_to).ok();
+        }
+        let p = self.create_profile(to, Some(from))?;
+        // The saves move first: they fail most often, and until the old profile is
+        // gone everything can still go back to how it was.
+        let undo = || {
+            std::fs::remove_file(self.profiles_dir().join(format!("{to}.json"))).ok();
+            crate::addon_storage::profile_deleted(&self.root, to).ok();
+        };
+        if has_saves && let Err(e) = with_retry(&saves, || std::fs::rename(&saves, &saves_to)) {
+            undo();
+            return Err(e);
+        }
+        let old = self.profiles_dir().join(format!("{from}.json"));
+        if old.is_file()
+            && let Err(e) = with_retry(&old, || std::fs::remove_file(&old))
+        {
+            if has_saves {
+                std::fs::rename(&saves_to, &saves).ok();
+            }
+            undo();
+            return Err(e);
         }
         crate::launcher_saves::rename_vaults(&self.root, from, to)?;
         crate::launcher_saves::rename_in_marker(&self.root, from, to)?;
@@ -872,6 +922,25 @@ impl Store {
             self.save_config(&config)?;
         }
         Ok(p)
+    }
+
+    /// `from` and `to` differ only in capitals. On Windows they name the same files, so going
+    /// straight across would write over the profile and then delete it: it goes by way of
+    /// another name.
+    fn rename_profile_capitals(&self, from: &str, to: &str) -> Result<Profile> {
+        if !profile::valid_name(to) {
+            return Err(Error::Other(format!(
+                "{to:?} is not a valid profile name (letters, digits, - and _)"
+            )));
+        }
+        if self.profile_names()?.iter().any(|n| n == to) {
+            return Err(Error::Other(format!("a profile named {to} already exists")));
+        }
+        let between = format!("renaming-{}", std::process::id());
+        self.rename_profile(from, &between)?;
+        self.rename_profile(&between, to).inspect_err(|_| {
+            self.rename_profile(&between, from).ok();
+        })
     }
 
     pub fn plan_profile_deletion(&self, name: &str) -> Result<ProfileDeletion> {
@@ -2134,6 +2203,122 @@ mod tests {
 
         assert_eq!(store.delete_profile("zeta").unwrap().switch_to, None);
         assert_eq!(store.active_profile(), "alpha");
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_name_that_differs_only_in_capitals_is_taken() {
+        let root = tmp("create-capitals");
+        let store = Store::new(&root);
+        store.create_profile("grid", None).unwrap();
+        for name in ["Grid", "GRID", "Vanilla"] {
+            let err = store.create_profile(name, None).unwrap_err();
+            assert!(err.to_string().contains("already exists"), "{name}: {err}");
+        }
+        assert!(!store.profile_names().unwrap().contains(&"Grid".to_owned()));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn renames_a_profile_to_other_capitals() {
+        let root = tmp("rename-capitals");
+        let store = Store::new(&root);
+        store.create_profile("grid", None).unwrap();
+        store.set_active_profile("grid").unwrap();
+        touch(&store.saves_dir("grid").join("remote/save"));
+
+        assert_eq!(store.rename_profile("grid", "Grid").unwrap().name, "Grid");
+
+        let names = store.profile_names().unwrap();
+        assert!(names.contains(&"Grid".to_owned()), "{names:?}");
+        assert!(!names.contains(&"grid".to_owned()), "{names:?}");
+        assert!(!names.iter().any(|n| n.starts_with("renaming")), "{names:?}");
+        assert_eq!(store.profile("Grid").unwrap().name, "Grid");
+        assert_eq!(store.active_profile(), "Grid");
+        assert!(store.saves_dir("Grid").join("remote/save").is_file());
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_rename_to_the_capitals_of_a_profile_that_exists_changes_nothing() {
+        let root = tmp("rename-both");
+        let store = Store::new(&root);
+        store.create_profile("grid", None).unwrap();
+        // Only a case-sensitive folder from before names were compared this way holds both.
+        store.save_profile(&Profile::new("Grid")).unwrap();
+
+        let err = store.rename_profile("grid", "Grid").unwrap_err();
+        assert!(err.to_string().contains("already exists"), "{err}");
+        let names = store.profile_names().unwrap();
+        assert!(names.contains(&"grid".to_owned()) && names.contains(&"Grid".to_owned()));
+        assert!(!names.iter().any(|n| n.starts_with("renaming")), "{names:?}");
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn refuses_renaming_a_profile_installed_in_the_game_folder() {
+        let root = tmp("rename-applied");
+        let store = Store::new(&root);
+        store.create_profile("grid", None).unwrap();
+        store.set_active_profile("grid").unwrap();
+        touch(&store.saves_dir("grid").join("remote/save"));
+        let j = crate::journal::Journal::create(&root, "grid", "build-1", true).unwrap();
+
+        let err = store.rename_profile("grid", "main").unwrap_err();
+        assert!(err.to_string().contains("installed in the game folder"), "{err}");
+        assert!(err.to_string().contains(&j.id), "{err}");
+        assert!(store.profiles_dir().join("grid.json").is_file());
+        assert!(!store.profiles_dir().join("main.json").exists());
+        assert!(store.saves_dir("grid").join("remote/save").is_file());
+        assert_eq!(store.active_profile(), "grid");
+
+        j.close().unwrap();
+        store.rename_profile("grid", "main").unwrap();
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_rename_onto_saves_left_behind_changes_nothing() {
+        let root = tmp("rename-orphan");
+        let store = Store::new(&root);
+        store.create_profile("grid", None).unwrap();
+        store.set_active_profile("grid").unwrap();
+        touch(&store.saves_dir("grid").join("remote/save"));
+        touch(&store.saves_dir("main").join("remote/old"));
+
+        let err = store.rename_profile("grid", "main").unwrap_err();
+        assert!(err.to_string().contains("already holds saves"), "{err}");
+        assert!(store.profiles_dir().join("grid.json").is_file());
+        assert!(!store.profiles_dir().join("main.json").exists());
+        assert!(store.saves_dir("grid").join("remote/save").is_file());
+        assert!(store.saves_dir("main").join("remote/old").is_file());
+        assert_eq!(store.active_profile(), "grid");
+
+        // An empty folder holds nothing to lose, and doesn't stop the rename.
+        std::fs::remove_dir_all(store.saves_dir("main")).unwrap();
+        std::fs::create_dir_all(store.saves_dir("main")).unwrap();
+        store.rename_profile("grid", "main").unwrap();
+        assert!(store.saves_dir("main").join("remote/save").is_file());
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    // A file in the saves' way makes the move fail here; Windows may not fail the same way.
+    #[cfg(unix)]
+    #[test]
+    fn a_rename_that_cannot_move_the_saves_puts_the_profile_back() {
+        let root = tmp("rename-undo");
+        let store = Store::new(&root);
+        store.create_profile("grid", None).unwrap();
+        store.set_active_profile("grid").unwrap();
+        touch(&store.saves_dir("grid").join("remote/save"));
+        touch(&store.saves_dir("main"));
+
+        assert!(store.rename_profile("grid", "main").is_err());
+
+        assert!(store.profiles_dir().join("grid.json").is_file());
+        assert!(!store.profiles_dir().join("main.json").exists());
+        assert!(store.saves_dir("grid").join("remote/save").is_file());
+        assert_eq!(store.active_profile(), "grid");
         std::fs::remove_dir_all(&root).ok();
     }
 
