@@ -98,7 +98,7 @@ fn is_root() -> bool {
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
-        std::fs::set_permissions(&file, std::fs::Permissions::from_mode(0)).unwrap();
+        std::fs::set_permissions(&file, std::fs::Permissions::from_mode(0o000)).unwrap();
         let readable = std::fs::read(&file).is_ok();
         std::fs::remove_dir_all(&probe).ok();
         readable
@@ -441,7 +441,7 @@ fn a_failure_part_way_through_the_copy_keeps_the_old_folder_whole() {
     seed(&default);
     let stuck = default.join("state/session.json");
     let p = plan(&loc(&default), &to, &OTHER_DRIVE).unwrap();
-    std::fs::set_permissions(&stuck, std::fs::Permissions::from_mode(0)).unwrap();
+    std::fs::set_permissions(&stuck, std::fs::Permissions::from_mode(0o000)).unwrap();
     let err = move_data(&p, &OTHER_DRIVE, &Quiet, &no_cancel()).unwrap_err();
     std::fs::set_permissions(&stuck, std::fs::Permissions::from_mode(0o644)).unwrap();
     assert!(matches!(err, Error::Io(_)), "{err:?}");

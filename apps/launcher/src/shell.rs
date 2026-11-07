@@ -159,6 +159,7 @@ pub struct Shell {
     pub(crate) open_row: Option<String>,
     pub(crate) progress: Option<(f32, String)>,
     pub(crate) tasks: Option<crate::tasks::TaskDialog>,
+    pub(crate) moving: Option<crate::data_move::Moving>,
     pub(crate) dropping: bool,
     pub(crate) vr_profiles: BTreeSet<String>,
     pub(crate) start_store: bool,
@@ -434,6 +435,9 @@ impl Shell {
         let shell = cx.entity().downgrade();
         let confirming = Rc::new(std::cell::Cell::new(false));
         window.on_window_should_close(cx, move |window, cx| {
+            if shell.update(cx, |s, _| s.data_move_locked()).unwrap_or(false) {
+                return false;
+            }
             let pending = shell.update(cx, |s, _| s.download_pending()).unwrap_or(0);
             if pending == 0 {
                 return true;
@@ -621,6 +625,7 @@ impl Shell {
             open_row: None,
             progress: None,
             tasks: None,
+            moving: None,
             dropping: false,
             vr_profiles,
             start_store,
@@ -1127,6 +1132,9 @@ impl Shell {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> bool {
+        if self.data_move_locked() {
+            return false;
+        }
         let Some(install) = self.install.clone() else {
             return false;
         };
@@ -2659,6 +2667,7 @@ impl Render for Shell {
             .children(self.download_dock(p, window, cx))
             .children(self.task_dialog(p, window, cx))
             .children(self.crash_overlay(p, cx))
+            .children(self.data_move_overlay(p, cx))
             .when(self.dropping, |d| d.child(self.drop_overlay(p)));
         self.note_slow("render", page, started);
         tree

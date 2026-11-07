@@ -1232,6 +1232,9 @@ impl Shell {
 
     /// True when a job was queued or an existing pending job will handle it.
     fn enqueue_catalog(&mut self, id: &str, cx: &mut Context<Self>) -> bool {
+        if self.data_move_locked() {
+            return false;
+        }
         let Some(addon) = self.browser.find(id).cloned() else {
             return false;
         };

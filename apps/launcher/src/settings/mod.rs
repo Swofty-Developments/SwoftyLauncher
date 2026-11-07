@@ -3,7 +3,6 @@
 //! folder's size by part, the room left on its drive and on the drive F1 25
 //! needs, and clearing old game session logs.
 
-mod data_move_stub;
 mod sections;
 mod usage;
 
