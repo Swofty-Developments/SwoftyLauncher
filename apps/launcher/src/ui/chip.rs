@@ -6,6 +6,8 @@ use super::tokens::{radius, text};
 use crate::scale::px;
 use crate::theme::palette;
 
+type Click = Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>;
+
 /// A small clickable toggle button: outlined when off, tinted when on, accent-filled
 /// when `filled`.
 #[derive(IntoElement)]
@@ -14,7 +16,7 @@ pub(crate) struct Chip {
     label: SharedString,
     on: bool,
     filled: bool,
-    on_click: Option<Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>>,
+    on_click: Option<Click>,
 }
 
 impl Chip {
