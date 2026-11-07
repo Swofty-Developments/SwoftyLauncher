@@ -364,7 +364,7 @@ std::string track_id(int stat_id)
     }
     std::string id = facts::track_of(stat_id, track_label(stat_id), records);
     if (id.empty())
-        once("track stat id " + std::to_string(stat_id) + " has no tracks row or track record");
+        once("track stat id " + std::to_string(stat_id) + " has no tracks row or track record; its track addon is off or not installed, and a saved Grand Prix or career that races it crashes at the session load");
     return id;
 }
 

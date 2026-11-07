@@ -215,8 +215,8 @@ pub fn kept_rows(data: &Path, addon: &str) -> Result<Vec<Kept>> {
         .collect())
 }
 
-/// The addons the store in `data` keeps vehicle, engine, team, driver or head rows for: the rows a
-/// save names, so a career saved with one on can't load with it off.
+/// The addons the store in `data` keeps vehicle, engine, team, driver, head or track rows for: the
+/// rows a save names, so a career saved with one on can't load with it off.
 pub fn save_owners(data: &Path) -> BTreeSet<String> {
     let file: File = match crate::load_json(&path(data)) {
         Ok(Loaded::Found(f)) => f,
@@ -225,6 +225,7 @@ pub fn save_owners(data: &Path) -> BTreeSet<String> {
     let held = |table: &str| {
         (table.starts_with("entrants.") && !table.starts_with("entrants.entrant_lists"))
             || table.contains("engine")
+            || table == TRACK_TABLE
     };
     file.rows
         .keys()
@@ -2268,7 +2269,7 @@ mod tests {
     }
 
     #[test]
-    fn save_owners_are_the_addons_with_vehicle_team_engine_or_head_rows() {
+    fn save_owners_are_the_addons_with_vehicle_team_engine_head_or_track_rows() {
         let data = data_dir("owners");
         put(
             &path(&data),
@@ -2280,7 +2281,7 @@ mod tests {
               "profiles":{"p":{"rows":{"e.teams/entrants.teams.team/t":{"id":5,"from":"next"}}}}}"#,
         );
         let owners: Vec<String> = save_owners(&data).into_iter().collect();
-        assert_eq!(owners, ["a.engines", "b.heads", "e.teams"]);
+        assert_eq!(owners, ["a.engines", "b.heads", "c.tracks", "e.teams"]);
         assert!(save_owners(&data_dir("none")).is_empty());
         std::fs::remove_dir_all(&data).ok();
     }

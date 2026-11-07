@@ -263,7 +263,7 @@ pub fn in_save_of<'a>(list: &'a [Career], data: &Path, profile: &str) -> Vec<&'a
 }
 
 /// Records on every career in the save of `profile` saved at or after `since_ms` (or with no save time) each
-/// addon of `on` that owns vehicle, engine, team, driver or head rows, since the game reads those
+/// addon of `on` that owns vehicle, engine, team, driver, head or track rows, since the game reads those
 /// rows when it loads the save. Returns whether any career changed.
 pub fn record_rows(
     list: &mut [Career],
@@ -677,6 +677,31 @@ mod tests {
             .extra
             .insert("status".into(), Value::String("missing".into()));
         assert_eq!(stop_line(&list, &[], &installed), None);
+    }
+
+    #[test]
+    fn a_saved_grand_prix_that_races_a_track_addon_stops_play_when_it_is_off() {
+        let installed = installed_of(&["track.mza26"]);
+        let owners: BTreeSet<String> = ["track.mza26".to_owned()].into();
+        let on: Vec<String> = vec!["track.mza26".into()];
+        let mut list = parse(
+            r#"[{"career":"gp-1","profile":"p","label":"Grand Prix","mode":"grand_prix","last_saved":2000,"addons":[]}]"#,
+        );
+        assert!(record_rows(
+            &mut list,
+            &|c| c.profile.as_deref() == Some("p"),
+            0,
+            &on,
+            &owners,
+            &installed
+        ));
+        assert_eq!(list[0].addons[0].id, "track.mza26");
+        assert_eq!(stop_line(&list, &on, &installed), None);
+        let off = stop_line(&list, &[], &installed).unwrap();
+        assert!(off.contains("N track.mza26 (off)"), "{off}");
+        assert!(off.contains("(Grand Prix)"), "{off}");
+        let gone = stop_line(&list, &on, &BTreeMap::new()).unwrap();
+        assert!(gone.contains("track.mza26 (not installed)"), "{gone}");
     }
 
     #[test]
