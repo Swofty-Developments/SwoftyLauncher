@@ -163,6 +163,7 @@ pub struct Shell {
     pub(crate) vr_profiles: BTreeSet<String>,
     pub(crate) start_store: bool,
     pub(crate) ui_mode: Option<UiMode>,
+    pub(crate) onboarding: Option<crate::onboarding::Onboarding>,
     pub(crate) developer_mode: bool,
     /// `clear_old_session_logs` from config.json: opt-in, old session logs are cleared at start.
     pub(crate) clear_old_session_logs: bool,
@@ -624,6 +625,7 @@ impl Shell {
             vr_profiles,
             start_store,
             ui_mode,
+            onboarding: None,
             developer_mode,
             clear_old_session_logs,
             reload_generation: 0,
@@ -2567,6 +2569,9 @@ impl Render for Shell {
         let started = Instant::now();
         self.painted = Instant::now();
         let p = palette(cx);
+        if let Some(wizard) = self.onboarding_view(p, cx) {
+            return wizard;
+        }
         let wide = window.viewport_size().width > px(1500.);
         let short = window.viewport_size().height < px(760.);
         self.short = short;

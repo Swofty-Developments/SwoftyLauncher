@@ -23,7 +23,7 @@ description: Settings holds the launcher's own options in five categories, shows
 
 ## Display
 
-**Display mode** switches between **PC mode**, the normal layout, and **TV mode**, which scales the whole launcher up by 30% and widens the scrollbars, for handhelds and couch play. The first time the launcher opens it asks which one you want, and you can change it here at any time.
+**Display mode** switches between **PC mode**, the normal layout, and **TV mode**, which scales the whole launcher up by 30% and widens the scrollbars, for handhelds and couch play. The welcome wizard asks for it, with your language, the first time the launcher opens and once after an update that changes the wizard. Each choice applies as you pick it, Esc or **Skip** closes the wizard, and you can change both here at any time.
 
 ## Storage
 

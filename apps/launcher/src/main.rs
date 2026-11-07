@@ -23,6 +23,8 @@ mod importer;
 mod library;
 mod multiplayer;
 mod news;
+mod onboarding;
+mod overlay;
 mod pages;
 mod play_bar;
 mod reveal;
