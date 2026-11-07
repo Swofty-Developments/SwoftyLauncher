@@ -1151,7 +1151,7 @@ impl Shell {
         let profile = &self.library.profile;
         let (mut off, mut kept) = (Vec::new(), Vec::new());
         for m in self.library.listed().filter(|m| m.enabled && !m.locked) {
-            match registry.turn_off_warning(profile, &m.manifest.id) {
+            match self.turn_off_warning(&m.manifest.id) {
                 Some(_) => kept.push(m.manifest.name.clone()),
                 None => off.push(m.manifest.id.clone()),
             }

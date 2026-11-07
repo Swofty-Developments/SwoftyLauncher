@@ -1253,6 +1253,16 @@ impl Shell {
         let report = deps::for_order(&profile.name, &plan.order, &installed, &all);
         let careers =
             swofty_core::stdlib::careers::read(&swofty_core::stdlib::careers::data_path(&self.store.root));
+        if let Some(stop) = swofty_core::stdlib::careers::stop_line(&careers, &plan.order, &installed) {
+            window.push_notification(
+                Notification::error(stop.clone())
+                    .title("Careers that need addons")
+                    .autohide(false),
+                cx,
+            );
+            self.notice = Some(stop);
+            return false;
+        }
         if let Some(line) = swofty_core::stdlib::careers::play_line(&careers, &plan.order, &installed) {
             window.push_notification(
                 Notification::warning(line)
@@ -1539,6 +1549,32 @@ impl Shell {
         });
     }
 
+    pub(crate) fn saves_warning(&self, id: &str, of: Option<SavesWarning>) -> Option<SavesWarning> {
+        let careers =
+            swofty_core::stdlib::careers::read(&swofty_core::stdlib::careers::data_path(&self.store.root));
+        let name = self
+            .library
+            .addons
+            .iter()
+            .find(|a| a.manifest.id == id)
+            .map_or_else(|| id.to_owned(), |a| a.manifest.name.clone());
+        SavesWarning::with_careers(
+            of,
+            id,
+            &name,
+            &swofty_core::stdlib::careers::needing(&careers, id),
+        )
+    }
+
+    pub(crate) fn turn_off_warning(&self, id: &str) -> Option<SavesWarning> {
+        let of = self.library.registry.turn_off_warning(&self.library.profile, id);
+        let on = self.library.profile.enabled().any(|e| e == id);
+        match on {
+            true => self.saves_warning(id, of),
+            false => of,
+        }
+    }
+
     pub(crate) fn set_addon_enabled(
         &mut self,
         id: &str,
@@ -1547,9 +1583,7 @@ impl Shell {
         cx: &mut Context<Self>,
     ) {
         let registry = self.library.registry.clone();
-        let warning = (!on)
-            .then(|| registry.turn_off_warning(&self.library.profile, id))
-            .flatten();
+        let warning = (!on).then(|| self.turn_off_warning(id)).flatten();
         let Some(warning) = warning else {
             self.update_profile(window, cx, |p| registry.set_enabled(p, id, on));
             return;
@@ -1588,12 +1622,14 @@ impl Shell {
         let store = self.store.clone();
         let id = id.to_owned();
         let name = name.to_owned();
-        let warning = self
-            .library
-            .addons
-            .iter()
-            .find(|a| a.manifest.id == id)
-            .and_then(|a| SavesWarning::of(&a.manifest));
+        let warning = self.saves_warning(
+            &id,
+            self.library
+                .addons
+                .iter()
+                .find(|a| a.manifest.id == id)
+                .and_then(|a| SavesWarning::of(&a.manifest)),
+        );
         let p = palette(cx);
         window.open_alert_dialog(cx, move |alert, _, _| {
             let (shell, store, id, name) = (shell.clone(), store.clone(), id.clone(), name.clone());
@@ -1652,13 +1688,12 @@ impl Shell {
     ) {
         const KEEPS: &str = "It stays installed for your other profiles, and you can add it back \
                              with Add addons.";
-        let registry = self.library.registry.clone();
         let warning = self
             .library
             .profile
             .enabled()
             .any(|e| e == id)
-            .then(|| registry.turn_off_warning(&self.library.profile, id))
+            .then(|| self.turn_off_warning(id))
             .flatten();
         let Some(warning) = warning else {
             self.take_out_of_profile(id, name, window, cx);

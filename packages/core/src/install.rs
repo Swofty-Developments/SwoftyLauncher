@@ -455,6 +455,14 @@ impl<'a> Installer<'a> {
             addon_storage::save_current(self.data, id)?;
         }
         crate::stdlib::careers::sync(self.data, Some(&self.game.dir), Some(&j.profile)).ok();
+        if j.session {
+            let started =
+                j.id.split('-')
+                    .next()
+                    .and_then(|n| u128::from_str_radix(n, 16).ok());
+            let since_ms = started.map_or(0, |n| (n / 1_000_000) as i64);
+            crate::stdlib::careers::record_session(self.data, &j.profile, since_ms).ok();
+        }
         let mut report = Vec::new();
         let same_build = j.build_id == self.game.identity.build_id;
         for e in j.entries.iter().rev() {

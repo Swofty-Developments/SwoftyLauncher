@@ -374,6 +374,7 @@ Missing content
 ```
 
 - **What stops Play:** a missing `requires` entry, or a `breaks` on an installed addon, with a message naming the fix.
+- **Database rows stop Play too:** after each session the launcher adds every enabled addon that owns vehicle, engine, team, driver or head rows (`registry/row-ids.json`) to the addon list of each career of that profile saved in the session. The game reads every career in the save when it starts, so while one of those addons is off or uninstalled, Play stops and names the addon and the careers. Turn the addon back on, or restore a save from before.
 - **What warns:** a `conflicts` entry, and a reference inside a record. An unresolved record hides its era box or tile, or guards it.
 - **Where the launcher gets records:** each enabled addon's `registry.lock.json`, data files and `registry.json`, plus the core's `registry/catalog.json` from the last session for what actually loaded.
 - **Install buttons** appear when the Addon Browser knows a published addon that provides the record.
@@ -387,6 +388,8 @@ Sochi Autodrom is in 1 career
   Autodrom is back on. Your other careers aren't affected.
   [Turn off]  [Cancel]
 ```
+
+Turning an addon off, removing it from a profile or uninstalling it in the launcher shows the same warning, with the careers that need it, when a career lists it.
 
 `swofty addons disable mod.sochi` prints the same text and needs `--yes`. `swofty careers` lists every career and what it needs, checked against a profile.
 

@@ -215,6 +215,28 @@ pub fn kept_rows(data: &Path, addon: &str) -> Result<Vec<Kept>> {
         .collect())
 }
 
+/// The addons the store in `data` keeps vehicle, engine, team, driver or head rows for: the rows a
+/// save names, so a career saved with one on can't load with it off.
+pub fn save_owners(data: &Path) -> BTreeSet<String> {
+    let file: File = match crate::load_json(&path(data)) {
+        Ok(Loaded::Found(f)) => f,
+        _ => File::default(),
+    };
+    let held = |table: &str| {
+        (table.starts_with("entrants.") && !table.starts_with("entrants.entrant_lists"))
+            || table.contains("engine")
+    };
+    file.rows
+        .keys()
+        .chain(file.profiles.values().flat_map(|p| p.rows.keys()))
+        .filter_map(|key| {
+            let mut parts = key.splitn(3, '/');
+            let (addon, table) = (parts.next()?, parts.next()?);
+            held(table).then(|| addon.to_owned())
+        })
+        .collect()
+}
+
 pub fn path(data: &Path) -> PathBuf {
     reports::path(data, FILE)
 }
@@ -2242,6 +2264,24 @@ mod tests {
             Overrides::read(&data.join("none.json")).unwrap(),
             Overrides::default()
         );
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn save_owners_are_the_addons_with_vehicle_team_engine_or_head_rows() {
+        let data = data_dir("owners");
+        put(
+            &path(&data),
+            r#"{"version":2,"rows":{
+              "a.engines/entrants.vehicles.vehicle/v1":{"id":1,"from":"next"},
+              "b.heads/entrants.animation.driver_heads.driver_head/h":{"id":2,"from":"next"},
+              "c.tracks/tracks.Track/t":{"id":3,"from":"next"},
+              "d.lists/entrants.entrant_lists.entrant_list/l":{"id":4,"from":"next"}},
+              "profiles":{"p":{"rows":{"e.teams/entrants.teams.team/t":{"id":5,"from":"next"}}}}}"#,
+        );
+        let owners: Vec<String> = save_owners(&data).into_iter().collect();
+        assert_eq!(owners, ["a.engines", "b.heads", "e.teams"]);
+        assert!(save_owners(&data_dir("none")).is_empty());
         std::fs::remove_dir_all(&data).ok();
     }
 }
