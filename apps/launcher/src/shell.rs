@@ -134,6 +134,7 @@ pub struct Shell {
     pub(crate) steam_saves_once: bool,
     pub(crate) launch: Option<Launch>,
     pub(crate) notice: Option<String>,
+    play_anyway: bool,
     pub(crate) blocked: Option<Blocked>,
     pub(crate) game_edited: Option<Edited>,
     pub(crate) recovered_seen: f64,
@@ -591,6 +592,7 @@ impl Shell {
             steam_saves_once: false,
             launch: None,
             notice: None,
+            play_anyway: false,
             blocked: None,
             game_edited: None,
             recovered_seen,
@@ -1215,6 +1217,7 @@ impl Shell {
     /// vanilla session it names the careers that use addons. Returns whether Play goes on.
     fn registry_check(&mut self, window: &mut Window, cx: &mut Context<Self>) -> bool {
         use swofty_core::stdlib::deps::{self, Level};
+        let anyway = std::mem::take(&mut self.play_anyway);
         let (Ok(profile), Ok(installed)) = (
             self.store.profile(&self.library.profile.name),
             self.store.addons(),
@@ -1253,15 +1256,23 @@ impl Shell {
         let report = deps::for_order(&profile.name, &plan.order, &installed, &all);
         let careers =
             swofty_core::stdlib::careers::read(&swofty_core::stdlib::careers::data_path(&self.store.root));
-        if let Some(stop) = swofty_core::stdlib::careers::stop_line(&careers, &plan.order, &installed) {
-            window.push_notification(
-                Notification::error(stop.clone())
-                    .title("Careers that need addons")
-                    .autohide(false),
-                cx,
-            );
-            self.notice = Some(stop);
-            return false;
+        let scoped: Vec<_> =
+            swofty_core::stdlib::careers::in_save_of(&careers, &self.store.root, &profile.name)
+                .into_iter()
+                .cloned()
+                .collect();
+        if let Some(stop) = swofty_core::stdlib::careers::stop_line(&scoped, &plan.order, &installed) {
+            if anyway {
+                window.push_notification(
+                    Notification::warning(stop)
+                        .title("Careers that need addons")
+                        .autohide(false),
+                    cx,
+                );
+            } else {
+                self.confirm_missing_rows(stop, window, cx);
+                return false;
+            }
         }
         if let Some(line) = swofty_core::stdlib::careers::play_line(&careers, &plan.order, &installed) {
             window.push_notification(
@@ -1436,6 +1447,30 @@ impl Shell {
 
     /// First launch: the offline play terms, shown as a dialog on Play.
     /// Accepting records consent and launches; declining changes nothing.
+    fn confirm_missing_rows(&mut self, text: String, window: &mut Window, cx: &mut Context<Self>) {
+        let shell = cx.entity().downgrade();
+        window.open_alert_dialog(cx, move |alert, _, _| {
+            let shell = shell.clone();
+            alert
+                .width(px(520.))
+                .title("Careers that need addons")
+                .description(text.clone())
+                .ok_text("Play anyway")
+                .ok_variant(ButtonVariant::Danger)
+                .show_cancel(true)
+                .on_ok(move |_, window, cx| {
+                    window.close_dialog(cx);
+                    shell
+                        .update(cx, |s, cx| {
+                            s.play_anyway = true;
+                            s.play(window, cx);
+                        })
+                        .ok();
+                    false
+                })
+        });
+    }
+
     pub(crate) fn confirm_offline_play(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let shell = cx.entity().downgrade();
         let store = self.store.clone();

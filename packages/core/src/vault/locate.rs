@@ -206,6 +206,19 @@ impl Location {
         (loc, tried)
     }
 
+    /// The save source a profile boots: its own launcher save with Use launcher saves on, else the
+    /// Steam save (also for Vanilla).
+    pub fn source_of_profile(data: &Path, profile: &str) -> Option<String> {
+        let steam = profile == crate::profile::VANILLA
+            || !crate::store::Store::new(data.to_path_buf())
+                .profile(profile)
+                .map_or(true, |p| p.launcher_saves);
+        match steam {
+            true => Self::active(data).map(|l| l.source),
+            false => Some(Self::launcher(data, profile).source),
+        }
+    }
+
     /// The save of the copy Play uses.
     pub fn active(data: &Path) -> Option<Self> {
         Self::active_search(data).0

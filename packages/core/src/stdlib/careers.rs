@@ -244,12 +244,30 @@ fn saved_ms(c: &Career) -> Option<i64> {
     n("last_saved").or_else(|| n("last_played").map(|s| s * 1000))
 }
 
-/// Records on every career of `profile` saved at or after `since_ms` (or with no save time) each
+/// The careers of `list` in the save `profile` boots: the ones made under a profile that boots the
+/// same save (its own launcher save, or the shared Steam save), and the ones with no profile yet.
+pub fn in_save_of<'a>(list: &'a [Career], data: &Path, profile: &str) -> Vec<&'a Career> {
+    let mut sources: BTreeMap<&str, Option<String>> = BTreeMap::new();
+    let mine = crate::vault::Location::source_of_profile(data, profile);
+    list.iter()
+        .filter(|c| match c.profile.as_deref() {
+            None => true,
+            Some(p) => {
+                *sources
+                    .entry(p)
+                    .or_insert_with(|| crate::vault::Location::source_of_profile(data, p))
+                    == mine
+            }
+        })
+        .collect()
+}
+
+/// Records on every career in the save of `profile` saved at or after `since_ms` (or with no save time) each
 /// addon of `on` that owns vehicle, engine, team, driver or head rows, since the game reads those
 /// rows when it loads the save. Returns whether any career changed.
 pub fn record_rows(
     list: &mut [Career],
-    profile: &str,
+    in_save: &dyn Fn(&Career) -> bool,
     since_ms: i64,
     on: &[String],
     owners: &BTreeSet<String>,
@@ -257,8 +275,7 @@ pub fn record_rows(
 ) -> bool {
     let mut changed = false;
     for c in list.iter_mut() {
-        let mine = c.profile.as_deref().is_none_or(|p| p == profile);
-        if !mine || c.status() == "missing" || saved_ms(c).is_some_and(|t| t < since_ms) {
+        if !in_save(c) || c.status() == "missing" || saved_ms(c).is_some_and(|t| t < since_ms) {
             continue;
         }
         for id in on.iter().filter(|id| owners.contains(*id)) {
@@ -292,7 +309,18 @@ pub fn record_session(data: &Path, profile: &str, since_ms: i64) -> crate::Resul
         return Ok(());
     };
     let owners = crate::row_ids::save_owners(data);
-    if record_rows(&mut list, profile, since_ms, &plan.order, &owners, &installed) {
+    let ids: BTreeSet<String> = in_save_of(&list, data, profile)
+        .into_iter()
+        .map(|c| c.career.clone())
+        .collect();
+    if record_rows(
+        &mut list,
+        &|c| ids.contains(&c.career),
+        since_ms,
+        &plan.order,
+        &owners,
+        &installed,
+    ) {
         crate::write_json_shared(
             &data_path(data),
             &serde_json::json!({ "version": 1, "careers": list }),
@@ -559,17 +587,66 @@ mod tests {
         let owners: BTreeSet<String> = ["x.engines".to_owned(), "x.liveries".to_owned()].into();
         let on: Vec<String> = vec!["x.engines".into(), "x.skin".into()];
         let mut list = my_team(2_000);
-        assert!(record_rows(&mut list, "p", 1_000, &on, &owners, &installed));
+        assert!(record_rows(
+            &mut list,
+            &|c| c.profile.as_deref() == Some("p"),
+            1_000,
+            &on,
+            &owners,
+            &installed
+        ));
         assert_eq!(list[0].addons.len(), 1);
         assert_eq!(list[0].addons[0].id, "x.engines");
         assert_eq!(list[0].addons[0].version.as_deref(), Some("1.0.0"));
         assert_eq!(list[0].addons[0].why.as_deref(), Some(ROWS_WHY));
         assert!(list[1].addons.is_empty(), "another profile's career");
         assert!(list[2].addons.is_empty(), "a career gone from the save");
-        assert!(!record_rows(&mut list, "p", 1_000, &on, &owners, &installed));
+        assert!(!record_rows(
+            &mut list,
+            &|c| c.profile.as_deref() == Some("p"),
+            1_000,
+            &on,
+            &owners,
+            &installed
+        ));
         let mut older = my_team(500);
-        assert!(!record_rows(&mut older, "p", 1_000, &on, &owners, &installed));
+        assert!(!record_rows(
+            &mut older,
+            &|c| c.profile.as_deref() == Some("p"),
+            1_000,
+            &on,
+            &owners,
+            &installed
+        ));
         assert!(older[0].addons.is_empty());
+    }
+
+    #[test]
+    fn a_profile_boots_only_the_careers_of_its_own_save() {
+        let root = std::env::temp_dir().join(format!("swofty-careers-scope-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        for (name, launcher_saves) in [("a", true), ("b", true), ("s1", false), ("s2", false)] {
+            let dir = root.join("profiles");
+            std::fs::create_dir_all(&dir).unwrap();
+            std::fs::write(
+                dir.join(format!("{name}.json")),
+                format!(r#"{{"name":"{name}","launcher_saves":{launcher_saves}}}"#),
+            )
+            .ok();
+        }
+        let list = parse(
+            r#"[{"career":"1","profile":"a"},{"career":"2","profile":"b"},{"career":"3"},
+                {"career":"4","profile":"s1"},{"career":"5","profile":"s2"}]"#,
+        );
+        let ids = |p: &str| -> Vec<String> {
+            in_save_of(&list, &root, p)
+                .iter()
+                .map(|c| c.career.clone())
+                .collect()
+        };
+        assert_eq!(ids("a"), ["1", "3"]);
+        assert_eq!(ids("b"), ["2", "3"]);
+        std::fs::remove_dir_all(&root).ok();
     }
 
     #[test]
@@ -578,7 +655,14 @@ mod tests {
         let owners: BTreeSet<String> = ["x.engines".to_owned()].into();
         let mut list = my_team(2_000);
         let on: Vec<String> = vec!["x.engines".into()];
-        record_rows(&mut list, "p", 0, &on, &owners, &installed);
+        record_rows(
+            &mut list,
+            &|c| c.profile.as_deref() == Some("p"),
+            0,
+            &on,
+            &owners,
+            &installed,
+        );
         assert_eq!(stop_line(&list, &on, &installed), None);
         let stop = stop_line(&list, &[], &installed).unwrap();
         assert!(stop.contains("N x.engines (off)"), "{stop}");

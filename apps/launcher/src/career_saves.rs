@@ -215,14 +215,7 @@ pub(crate) fn steam_save_in(folder: &Path) -> Option<Location> {
 }
 
 pub(crate) fn source_of_profile(root: &Path, profile: &str) -> Option<String> {
-    let steam_saves = profile == VANILLA
-        || !Store::new(root.to_path_buf())
-            .profile(profile)
-            .map_or(true, |p| p.launcher_saves);
-    match steam_saves {
-        true => Location::active(root).map(|l| l.source),
-        false => Some(Location::launcher(root, profile).source),
-    }
+    Location::source_of_profile(root, profile)
 }
 
 fn profile_of_source(source: &str) -> String {
