@@ -853,9 +853,10 @@ impl Shell {
 
     fn install_picked(&mut self, paths: Vec<PathBuf>, window: &mut Window, cx: &mut Context<Self>) {
         let registry = self.library.registry.clone();
+        let profile = self.library.profile.clone();
         let (addons, other): (Vec<PathBuf>, Vec<PathBuf>) = paths
             .into_iter()
-            .partition(|p| import::route(&registry, p) == Some(Route::Addon));
+            .partition(|p| import::route(&registry, &profile, p) == Some(Route::Addon));
         if !other.is_empty() {
             self.drop_paths(other, window, cx);
         }

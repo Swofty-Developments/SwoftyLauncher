@@ -1374,7 +1374,7 @@ fn import_all(
     paths: &[PathBuf],
     progress: &Reporter,
 ) -> (Vec<String>, Vec<String>, Vec<PathBuf>) {
-    let (batches, unclaimed) = import::route_all(registry, paths);
+    let (batches, unclaimed) = import::route_all(registry, profile, paths);
     let mut done = Vec::new();
     let mut failed = Vec::new();
     let mut game_files = None;

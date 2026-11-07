@@ -748,6 +748,7 @@ mod tests {
 
     use super::*;
     use crate::import::{Route, route};
+    use crate::profile::Profile;
     use crate::store::Store;
 
     const MANIFEST: &str = r#"{"schema_version":1,"id":"t.helper","name":"Helper","version":"1.0.0","author":"t",
@@ -1391,6 +1392,33 @@ read -r l
     }
 
     #[test]
+    fn a_helper_only_runs_for_a_drop_while_it_is_on() {
+        let root = tmp("off-claims");
+        let store = Store::new(root.join("data"));
+        let dir = store.addons_dir().join("t.helper");
+        let ran = root.join("ran");
+        addon(&dir, &format!("touch '{}'\necho yes", ran.display()));
+        let manifest = MANIFEST.replace(r#""imports":["exmod"]"#, r#""imports":["exmod"],"claims":true"#);
+        std::fs::write(dir.join("swofty.json"), manifest).unwrap();
+        let car = root.join("car.exmod");
+        std::fs::write(&car, "x").unwrap();
+        let reg = store.registry().unwrap();
+
+        let mut off = Profile::new("t");
+        off.set_enabled("t.helper", false).unwrap();
+        for profile in [&off, &Profile::new("absent"), &Profile::vanilla()] {
+            assert_eq!(route(&reg, profile, &car), None);
+            assert!(!ran.exists(), "{} ran the helper", profile.name);
+        }
+
+        let mut on = Profile::new("t");
+        on.set_enabled("t.helper", true).unwrap();
+        assert_eq!(route(&reg, &on, &car), Some(Route::Importer("t.helper".into())));
+        assert!(ran.exists());
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
     fn routes_drops_to_a_helper_without_starting_it() {
         let root = tmp("routes");
         let store = Store::new(root.join("data"));
@@ -1401,11 +1429,13 @@ read -r l
         let entry = reg.get("t.helper").unwrap();
         assert!(entry.helper && !entry.declared);
         assert_eq!(entry.addon.sections()[0].id, "items");
+        let mut profile = Profile::new("t");
+        profile.set_enabled("t.helper", true).unwrap();
         assert_eq!(
-            route(&reg, &root.join("car.exmod")),
+            route(&reg, &profile, &root.join("car.exmod")),
             Some(Route::Importer("t.helper".into()))
         );
-        assert_eq!(route(&reg, &root.join("car.txt")), None);
+        assert_eq!(route(&reg, &profile, &root.join("car.txt")), None);
         let again = store.registry().unwrap();
         assert!(std::ptr::addr_eq(
             Arc::as_ptr(&entry.addon),
