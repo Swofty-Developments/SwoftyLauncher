@@ -7111,6 +7111,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "swofty-i18n"
+version = "1.8.20"
+dependencies = [
+ "serde_json",
+]
+
+[[package]]
 name = "swofty-launcher"
 version = "1.8.20"
 dependencies = [
@@ -7124,6 +7131,7 @@ dependencies = [
  "serde_json",
  "swofty-builtins",
  "swofty-core",
+ "swofty-i18n",
  "swofty-preview",
  "swofty-shaders",
  "ureq",

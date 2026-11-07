@@ -6,7 +6,7 @@ use std::time::SystemTime;
 
 use crate::scale::px;
 use gpui_kit::assets::IconName;
-use gpui_kit::component::button::{Button, ButtonVariant};
+use gpui_kit::component::button::{Button, ButtonVariant, ButtonVariants};
 use gpui_kit::component::notification::Notification;
 use gpui_kit::component::switch::Switch;
 use gpui_kit::component::{Disableable, Sizable, WindowExt, h_flex, v_flex};
@@ -15,6 +15,7 @@ use gpui_kit::*;
 use swofty_core::data_usage::{self, KEEP_FOR, KEEP_SESSIONS, Pruned, Usage};
 use swofty_core::install::Source;
 use swofty_core::session::UiMode;
+use swofty_i18n::{tr, trf};
 
 use crate::pages::GUTTER;
 use crate::shell::{Page, Shell};
@@ -69,23 +70,25 @@ pub fn low_space_warning(room: data_usage::Room) -> Option<String> {
     let need = size(data_usage::GAME_NEEDS);
     let game = room.game_low().map(|free| {
         if free < data_usage::GAME_NEEDS {
-            format!(
-                "Only {} free on {}. F1 25 won't start with less than {need} free there.",
-                size(free),
-                data_usage::GAME_DRIVE
+            trf!(
+                "Only {free} free on {drive}. F1 25 won't start with less than {need} free there.",
+                free = size(free),
+                drive = data_usage::GAME_DRIVE,
+                need = need
             )
         } else {
-            format!(
-                "Only {} free on {}, and F1 25 needs {need} to start.",
-                size(free),
-                data_usage::GAME_DRIVE
+            trf!(
+                "Only {free} free on {drive}, and F1 25 needs {need} to start.",
+                free = size(free),
+                drive = data_usage::GAME_DRIVE,
+                need = need
             )
         }
     });
     let data = room.data_low().map(|free| {
-        format!(
-            "Only {} free on the drive with the data folder: installing or building addons may fail.",
-            size(free)
+        trf!(
+            "Only {free} free on the drive with the data folder: installing or building addons may fail.",
+            free = size(free)
         )
     });
     let lines: Vec<String> = game.into_iter().chain(data).collect();
@@ -93,6 +96,19 @@ pub fn low_space_warning(room: data_usage::Room) -> Option<String> {
 }
 
 impl Shell {
+    /// Shows the launcher in `code` from now on, and remembers it.
+    pub(crate) fn set_language(&mut self, code: &'static str, window: &mut Window, cx: &mut Context<Self>) {
+        let mut config = self.store.config();
+        config.language = (code != swofty_i18n::ENGLISH).then(|| code.to_owned());
+        if let Err(e) = self.store.save_config(&config) {
+            crate::app_log::action("save settings").failed(&e);
+            window.push_notification(Notification::error(e.to_string()), cx);
+        }
+        swofty_i18n::set_language(Some(code));
+        window.refresh();
+        cx.notify();
+    }
+
     /// Measures the data folder again, off the UI thread.
     pub(crate) fn settings_measure(&mut self, cx: &mut Context<Self>) {
         if self.settings.measuring {
@@ -139,7 +155,7 @@ impl Shell {
     fn confirm_clear_logs(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if !self.processes.is_empty() {
             window.push_notification(
-                Notification::error("Close F1 25 first: it may still be writing its session log"),
+                Notification::error(tr("Close F1 25 first: it may still be writing its session log")),
                 cx,
             );
             return;
@@ -153,12 +169,13 @@ impl Shell {
             let shell = shell.clone();
             alert
                 .width(px(480.))
-                .title(format!("Delete {} old sessions ({})?", old.sessions, size(old.bytes)))
-                .description(format!(
-                    "Their logs are deleted for good. The newest {KEEP_SESSIONS} sessions and everything from the last {} days stay.",
-                    KEEP_FOR.as_secs() / 86_400
+                .title(trf!("Delete {count} old sessions ({size})?", count = old.sessions, size = size(old.bytes)))
+                .description(trf!(
+                    "Their logs are deleted for good. The newest {sessions} sessions and everything from the last {days} days stay.",
+                    sessions = KEEP_SESSIONS,
+                    days = KEEP_FOR.as_secs() / 86_400
                 ))
-                .ok_text("Delete sessions")
+                .ok_text(tr("Delete sessions"))
                 .ok_variant(ButtonVariant::Danger)
                 .show_cancel(true)
                 .on_ok(move |_, window, cx| {
@@ -170,7 +187,7 @@ impl Shell {
 
     fn settings_clear_cache(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if !self.processes.is_empty() {
-            window.push_notification(Notification::error("Close F1 25 first"), cx);
+            window.push_notification(Notification::error(tr("Close F1 25 first")), cx);
             return;
         }
         let Some(game) = self.install.as_ref().map(|i| i.dir.clone()) else {
@@ -189,7 +206,10 @@ impl Shell {
                     size(freed)
                 ));
                 window.push_notification(
-                    Notification::success(format!("Cleared the game drive copy and freed {}", size(freed))),
+                    Notification::success(trf!(
+                        "Cleared the game drive copy and freed {size}",
+                        size = size(freed)
+                    )),
                     cx,
                 );
                 s.settings_measure(cx);
@@ -203,7 +223,7 @@ impl Shell {
     fn settings_clear_logs(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if !self.processes.is_empty() {
             window.push_notification(
-                Notification::error("Close F1 25 first: it may still be writing its session log"),
+                Notification::error(tr("Close F1 25 first: it may still be writing its session log")),
                 cx,
             );
             return;
@@ -225,10 +245,10 @@ impl Shell {
                     size(done.bytes)
                 ));
                 window.push_notification(
-                    Notification::success(format!(
-                        "Cleared {} old session logs and freed {}",
-                        done.sessions,
-                        size(done.bytes)
+                    Notification::success(trf!(
+                        "Cleared {count} old session logs and freed {size}",
+                        count = done.sessions,
+                        size = size(done.bytes)
                     )),
                     cx,
                 );
@@ -247,14 +267,14 @@ impl Shell {
         let refresh = Button::new("settings-refresh")
             .outline()
             .icon(IconName::RefreshCw)
-            .label("Refresh")
+            .label(tr("Refresh"))
             .disabled(self.settings.measuring)
             .on_click(cx.listener(|this, _, _, cx| this.settings_measure(cx)));
         v_flex()
             .size_full()
             .child(self.header(
                 Page::Settings.label(),
-                "Launcher options, and where Swofty keeps its files".to_owned(),
+                tr("Launcher options, and where Swofty keeps its files").to_owned(),
                 refresh,
                 p,
             ))
@@ -286,25 +306,35 @@ impl Shell {
                 .outline()
                 .small()
                 .icon(IconName::FolderOpen)
-                .label("Open")
+                .label(tr("Open"))
                 .on_click(move |_, _, cx| cx.open_with_system(&crate::reveal::real_path(&root)))
         };
         rows.push(row(
-            "Data folder",
+            tr("Data folder"),
             muted(root.display().to_string(), p),
             Some(open.into_any_element()),
             p,
         ));
         match &self.settings.usage {
-            None => rows.push(row("Size", muted("Measuring…".to_owned(), p), None, p)),
+            None => rows.push(row(tr("Size"), muted(tr("Measuring…").to_owned(), p), None, p)),
             Some(u) => {
-                let mut free = format!("{} free on this drive", u.free.map_or("?".to_owned(), size));
+                let mut free = trf!(
+                    "{size} free on this drive",
+                    size = u.free.map_or("?".to_owned(), size)
+                );
                 if let Some(pf) = u.profile_free.filter(|pf| Some(*pf) != u.free) {
-                    free += &format!(", {} on {}", size(pf), data_usage::GAME_DRIVE);
+                    free += &trf!(
+                        ", {size} on {drive}",
+                        size = size(pf),
+                        drive = data_usage::GAME_DRIVE
+                    );
                 }
                 rows.push(row(
-                    "Size",
-                    muted(format!("{} in total · {free}", size(u.total)), p),
+                    tr("Size"),
+                    muted(
+                        trf!("{total} in total · {free}", total = size(u.total), free = free),
+                        p,
+                    ),
                     None,
                     p,
                 ));
@@ -321,15 +351,16 @@ impl Shell {
                             .border_color(p.border_variant)
                             .text_size(px(13.))
                             .text_color(p.warning)
-                            .child(format!(
-                                "{short} Clear old logs, remove addons you don't use, or move the data folder."
+                            .child(trf!(
+                                "{short} Clear old logs, remove addons you don't use, or move the data folder.",
+                                short = short
                             ))
                             .into_any_element(),
                     );
                 }
                 let mut parts: Vec<(String, u64)> =
                     u.parts.iter().map(|x| (x.name.to_owned(), x.bytes)).collect();
-                parts.push(("Other".to_owned(), u.other));
+                parts.push((tr("Other").to_owned(), u.other));
                 parts.sort_by_key(|x| std::cmp::Reverse(x.1));
                 let max = parts.first().map_or(1, |x| x.1.max(1));
                 for (name, bytes) in parts.into_iter().filter(|x| x.1 > 0) {
@@ -366,20 +397,24 @@ impl Shell {
                     .small()
                     .icon(IconName::Eraser)
                     .label(if old.sessions == 0 {
-                        "Nothing to clear".to_owned()
+                        tr("Nothing to clear").to_owned()
                     } else {
-                        format!("Clear {} old ({})", old.sessions, size(old.bytes))
+                        trf!(
+                            "Clear {count} old ({size})",
+                            count = old.sessions,
+                            size = size(old.bytes)
+                        )
                     })
                     .disabled(old.sessions == 0 || self.settings.clearing)
                     .on_click(cx.listener(|this, _, window, cx| this.confirm_clear_logs(window, cx)));
                 rows.push(row(
-                    "Session logs",
+                    tr("Session logs"),
                     muted(
-                        format!(
-                            "{} game sessions kept. Clearing keeps the newest {KEEP_SESSIONS} and everything from the \
-                             last {} days.",
-                            u.sessions,
-                            KEEP_FOR.as_secs() / 86_400
+                        trf!(
+                            "{count} game sessions kept. Clearing keeps the newest {sessions} and everything from the last {days} days.",
+                            count = u.sessions,
+                            sessions = KEEP_SESSIONS,
+                            days = KEEP_FOR.as_secs() / 86_400
                         ),
                         p,
                     ),
@@ -394,17 +429,20 @@ impl Shell {
                 .outline()
                 .small()
                 .icon(IconName::Eraser)
-                .label("Clear")
+                .label(tr("Clear"))
                 .disabled(cache.bytes == 0 || self.settings.clearing)
                 .on_click(cx.listener(|this, _, window, cx| this.settings_clear_cache(window, cx)));
-            let text = format!(
-                "Play keeps a copy of your {} on F1 25's drive and links the game's files to it, which keeps Play fast \
-                 ({}). Press Play to rebuild it after clearing.",
-                if cache.apart { "mods" } else { "addon files" },
-                size(cache.bytes)
+            let text = trf!(
+                "Play keeps a copy of your {what} on F1 25's drive and links the game's files to it, which keeps Play fast ({size}). Press Play to rebuild it after clearing.",
+                what = if cache.apart {
+                    tr("mods")
+                } else {
+                    tr("addon files")
+                },
+                size = size(cache.bytes)
             );
             rows.push(row(
-                "Game drive copy",
+                tr("Game drive copy"),
                 muted(text, p),
                 Some(clear.into_any_element()),
                 p,
@@ -414,28 +452,27 @@ impl Shell {
             .outline()
             .small()
             .icon(IconName::ExternalLink)
-            .label("How to move it")
+            .label(tr("How to move it"))
             .on_click(|_, _, cx| cx.open_url(MOVE_DOCS));
         rows.push(row(
-            "Another drive",
+            tr("Another drive"),
             muted(
-                format!(
-                    "To keep addons {}, run the Swofty installer again and pick a folder under \"Keep addons, \
-                     profiles and backups in\". It moves everything and the game keeps finding it.",
-                    if cfg!(windows) { "off drive C" } else { "on another drive" }
+                trf!(
+                    "To keep addons {place}, run the Swofty installer again and pick a folder under \"Keep addons, profiles and backups in\". It moves everything and the game keeps finding it.",
+                    place = if cfg!(windows) { tr("off drive C") } else { tr("on another drive") }
                 ),
                 p,
             ),
             Some(how.into_any_element()),
             p,
         ));
-        card("Storage", rows, p)
+        card(tr("Storage"), rows, p)
     }
 
     fn settings_general(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let start_label = match self.install.as_ref().map(|i| i.source) {
-            Some(Source::EaApp) => "Start the EA app automatically",
-            _ => "Start Steam automatically",
+            Some(Source::EaApp) => tr("Start the EA app automatically"),
+            _ => tr("Start Steam automatically"),
         };
         let start = Switch::new("settings-start-store")
             .checked(self.start_store)
@@ -457,13 +494,36 @@ impl Shell {
             .on_click(cx.listener(|this, on: &bool, window, cx| {
                 this.set_ui_mode(if *on { UiMode::Tv } else { UiMode::Pc }, window, cx)
             }));
+        let languages = h_flex()
+            .gap(px(6.))
+            .flex_wrap()
+            .children(swofty_i18n::languages().into_iter().map(|l| {
+                let code = l.code;
+                let button = Button::new(SharedString::from(format!("settings-language-{code}")))
+                    .small()
+                    .label(l.name)
+                    .on_click(cx.listener(move |this, _, window, cx| this.set_language(code, window, cx)));
+                match swofty_i18n::language() == code {
+                    true => button.primary(),
+                    false => button.outline(),
+                }
+            }));
         card(
-            "General",
+            tr("General"),
             vec![
                 row(
-                    "TV mode",
+                    tr("Language"),
                     muted(
-                        "Scales the whole launcher up and widens the scrollbars, for handhelds and couch play"
+                        tr("The launcher's own text. Text that isn't translated yet stays in English, and addons and F1 25 keep their own").to_owned(),
+                        p,
+                    ),
+                    Some(languages.into_any_element()),
+                    p,
+                ),
+                row(
+                    tr("TV mode"),
+                    muted(
+                        tr("Scales the whole launcher up and widens the scrollbars, for handhelds and couch play")
                             .to_owned(),
                         p,
                     ),
@@ -472,23 +532,23 @@ impl Shell {
                 ),
                 row(
                     start_label,
-                    muted("When you press Play".to_owned(), p),
+                    muted(tr("When you press Play").to_owned(), p),
                     Some(start.into_any_element()),
                     p,
                 ),
                 row(
-                    "Developer mode",
-                    muted("Shows the Tools page with the swofty dev actions".to_owned(), p),
+                    tr("Developer mode"),
+                    muted(tr("Shows the Tools page with the swofty dev actions").to_owned(), p),
                     Some(developer.into_any_element()),
                     p,
                 ),
                 row(
-                    "Clear old logs",
+                    tr("Clear old logs"),
                     muted(
-                        format!(
-                            "Off by default. When on, the launcher clears old logs as it starts, as Clear old does: keeps the newest {KEEP_SESSIONS} sessions \
-                             and the last {} days",
-                            KEEP_FOR.as_secs() / 86_400
+                        trf!(
+                            "Off by default. When on, the launcher clears old logs as it starts, as Clear old does: keeps the newest {sessions} sessions and the last {days} days",
+                            sessions = KEEP_SESSIONS,
+                            days = KEEP_FOR.as_secs() / 86_400
                         ),
                         p,
                     ),

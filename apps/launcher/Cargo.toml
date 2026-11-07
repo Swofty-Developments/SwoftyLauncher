@@ -22,6 +22,7 @@ serde.workspace = true
 serde_json.workspace = true
 swofty-builtins.workspace = true
 swofty-core.workspace = true
+swofty-i18n.workspace = true
 swofty-preview.workspace = true
 swofty-shaders.workspace = true
 ureq.workspace = true

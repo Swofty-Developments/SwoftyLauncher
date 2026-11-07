@@ -7,6 +7,7 @@ use gpui_kit::component::{Icon, TITLE_BAR_HEIGHT, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::known_problems::Diagnosis;
+use swofty_i18n::{tr, trf};
 
 use crate::discord::{BLURPLE, BLURPLE_HOVER, INVITE, LOGO};
 use crate::send_logs;
@@ -16,10 +17,6 @@ use crate::theme::Palette;
 /// A crash newer than this opens the modal by itself; an older one only shows
 /// in the play bar.
 pub(crate) const FRESH_SECS: f64 = 15. * 60.;
-
-const UNKNOWN: &str = "We couldn't tell why it crashed";
-const UNKNOWN_WHAT: &str = "Swofty Launcher looked at what the game left behind and didn't recognise this crash. \
-     Send your logs to the developers, then join the Swofty Developments Discord so they can get back to you.";
 
 /// What the crash modal shows for one crashed session, or one that ended stuck.
 #[derive(Debug, Clone, PartialEq)]
@@ -104,7 +101,7 @@ fn discord_button() -> Stateful<Div> {
         .font_weight(FontWeight::SEMIBOLD)
         .text_color(white)
         .child(svg().data(LOGO).size(px(16.)).text_color(white))
-        .child("Join the support Discord")
+        .child(tr("Join the support Discord"))
         .on_click(|_, _, cx| cx.open_url(INVITE))
 }
 
@@ -116,14 +113,14 @@ impl Shell {
         let (title, what, steps) = match &view.diagnosis {
             Some(d) => (d.title.clone(), d.what.clone(), d.steps.clone()),
             None => (
-                UNKNOWN.to_owned(),
-                UNKNOWN_WHAT.to_owned(),
+                tr("We couldn't tell why it crashed").to_owned(),
+                tr("Swofty Launcher looked at what the game left behind and didn't recognise this crash. Send your logs to the developers, then join the Swofty Developments Discord so they can get back to you.").to_owned(),
                 vec![
-                    format!(
-                        "Press {} and say what you were doing when it crashed.",
-                        send_logs::label()
+                    trf!(
+                        "Press {button} and say what you were doing when it crashed.",
+                        button = send_logs::label()
                     ),
-                    "Join the support Discord, so the developers can reply to you there.".to_owned(),
+                    tr("Join the support Discord, so the developers can reply to you there.").to_owned(),
                 ],
             ),
         };
@@ -151,7 +148,7 @@ impl Shell {
                             .primary()
                             .h(px(38.))
                             .px(px(18.))
-                            .label("Got it")
+                            .label(tr("Got it"))
                             .on_click(close),
                     )
                 } else {
@@ -167,7 +164,7 @@ impl Shell {
                         Button::new("crash-close")
                             .ghost()
                             .h(px(38.))
-                            .label("Close")
+                            .label(tr("Close"))
                             .on_click(close),
                     )
                 }
@@ -188,9 +185,9 @@ impl Shell {
                             .font_weight(FontWeight::SEMIBOLD)
                             .text_color(p.error)
                             .child(if view.crashed {
-                                "F1 25 crashed"
+                                tr("F1 25 crashed")
                             } else {
-                                "F1 25 got stuck"
+                                tr("F1 25 got stuck")
                             }),
                     )
                     .child(
@@ -225,7 +222,11 @@ impl Shell {
                             .text_size(px(11.))
                             .font_weight(FontWeight::SEMIBOLD)
                             .text_color(p.text_muted)
-                            .child(if known { "HOW TO FIX IT" } else { "WHAT TO DO" }),
+                            .child(if known {
+                                tr("HOW TO FIX IT")
+                            } else {
+                                tr("WHAT TO DO")
+                            }),
                     )
                     .children(steps.into_iter().enumerate().map(|(i, s)| step(i + 1, s, p))),
             )

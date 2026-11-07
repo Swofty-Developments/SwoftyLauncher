@@ -92,6 +92,9 @@ pub struct Config {
     /// The layout the player chose on first run; `None` until they choose.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ui_mode: Option<UiMode>,
+    /// The code of the language the launcher shows; `None` is English.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub language: Option<String>,
     #[serde(default)]
     pub data_version: u32,
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
@@ -911,6 +914,16 @@ mod tests {
         let tv: Config = serde_json::from_str(r#"{ "ui_mode": "tv" }"#).unwrap();
         assert!(tv.ui_mode_or_default().is_tv());
         assert!(!UiMode::Pc.is_tv());
+    }
+
+    #[test]
+    fn config_remembers_the_language() {
+        let mut config = Config::default();
+        assert!(!serde_json::to_string(&config).unwrap().contains("language"));
+        config.language = Some("ru".into());
+        let json = serde_json::to_string(&config).unwrap();
+        let loaded = serde_json::from_str::<Config>(&json).unwrap();
+        assert_eq!(loaded.language.as_deref(), Some("ru"));
     }
 
     #[test]

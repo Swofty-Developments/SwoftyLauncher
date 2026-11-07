@@ -15,6 +15,7 @@ use gpui_kit::*;
 use swofty_core::manifest::{AddonManifest, AddonOption, Binds, OptionType};
 use swofty_core::profile::VANILLA;
 use swofty_core::store::ProfileDeletion;
+use swofty_i18n::{tr, trf};
 
 use crate::library::{AddonIcon, ProfileItem, plural};
 use crate::shell::{Page, Prompt, Shell, SliderSlot};
@@ -189,14 +190,15 @@ pub(crate) fn chevron(open: bool, p: Palette) -> Icon {
 fn deletion_summary(plan: &ProfileDeletion, p: Palette) -> impl IntoElement {
     let name = &plan.name;
     let removed = if plan.saves {
-        "Its choice of addons, their settings, its build cache and its saves are deleted."
+        tr("Its choice of addons, their settings, its build cache and its saves are deleted.")
     } else {
-        "Its choice of addons, their settings and its build cache are deleted."
+        tr("Its choice of addons, their settings and its build cache are deleted.")
     };
     v_flex()
         .gap(px(12.))
-        .child(div().text_size(px(13.)).text_color(p.text).child(format!(
-            "{removed} Installed addons stay on the Addons page, and other profiles don't change."
+        .child(div().text_size(px(13.)).text_color(p.text).child(trf!(
+            "{removed} Installed addons stay on the Addons page, and other profiles don't change.",
+            removed = removed
         )))
         .when_some(plan.switch_to.clone(), |d, to| {
             d.child(
@@ -221,10 +223,11 @@ fn deletion_summary(plan: &ProfileDeletion, p: Palette) -> impl IntoElement {
                                     .text_size(px(13.))
                                     .font_weight(FontWeight::SEMIBOLD)
                                     .text_color(p.text)
-                                    .child(format!("{name} is the active profile")),
+                                    .child(trf!("{name} is the active profile", name = name)),
                             )
-                            .child(div().text_size(px(13.)).text_color(p.text_muted).child(format!(
-                                "{to} becomes active first, and Play uses it from now on."
+                            .child(div().text_size(px(13.)).text_color(p.text_muted).child(trf!(
+                                "{to} becomes active first, and Play uses it from now on.",
+                                to = to
                             ))),
                     ),
             )
@@ -233,18 +236,18 @@ fn deletion_summary(plan: &ProfileDeletion, p: Palette) -> impl IntoElement {
             div()
                 .text_size(px(13.))
                 .text_color(p.text_muted)
-                .child("This can't be undone."),
+                .child(tr("This can't be undone.")),
         )
 }
 
 pub(crate) fn names(title: impl Into<SharedString>, items: &[String], p: Palette) -> Div {
     const SHOWN: usize = 6;
     let text = if items.is_empty() {
-        "None".to_owned()
+        tr("None").to_owned()
     } else {
         let mut t = items.iter().take(SHOWN).cloned().collect::<Vec<_>>().join(", ");
         if items.len() > SHOWN {
-            t.push_str(&format!(" and {} more", items.len() - SHOWN));
+            t.push_str(&trf!(" and {count} more", count = items.len() - SHOWN));
         }
         t
     };
@@ -400,18 +403,18 @@ impl Shell {
         Button::new("install-addon")
             .outline()
             .icon(IconName::Plus)
-            .label("Install addon…")
+            .label(tr("Install addon…"))
             .dropdown_menu_with_anchor(Anchor::TopRight, move |menu, _, _| {
                 let (file, folder) = (shell.clone(), shell.clone());
                 menu.item(
-                    PopupMenuItem::new("Choose a file…")
+                    PopupMenuItem::new(tr("Choose a file…"))
                         .icon(IconName::File)
                         .on_click(move |_, window, cx| {
                             file.update(cx, |s, cx| s.pick_addons(false, window, cx)).ok();
                         }),
                 )
                 .item(
-                    PopupMenuItem::new("Choose a folder…")
+                    PopupMenuItem::new(tr("Choose a folder…"))
                         .icon(IconName::FolderOpen)
                         .on_click(move |_, window, cx| {
                             folder.update(cx, |s, cx| s.pick_addons(true, window, cx)).ok();
@@ -435,7 +438,7 @@ impl Shell {
                 .text_size(px(12.))
                 .text_color(p.text_muted)
                 .hover(move |s| s.text_color(p.text))
-                .child("Reset to defaults")
+                .child(tr("Reset to defaults"))
                 .on_click(cx.listener(move |this, _, window, cx| {
                     this.update_profile(window, cx, |p| p.reset_options(&man).map(drop))
                 }))
@@ -452,7 +455,7 @@ impl Shell {
                 h_flex()
                     .max_w(px(760.))
                     .justify_between()
-                    .child(label("SETTINGS", p))
+                    .child(label(tr("SETTINGS"), p))
                     .children(reset),
             )
             .child(
@@ -476,9 +479,9 @@ impl Shell {
         let key = format!("{}.{}", man.id, o.id);
         let pending = !self.vanilla() && self.library.rebuild.contains(&key);
         let (hint, hint_color) = match o.binds {
-            Binds::Native => ("Applies live", p.text_placeholder),
-            Binds::Db if pending => ("Rebuilds on next launch", p.warning),
-            Binds::Db => ("Applies after a rebuild", p.text_placeholder),
+            Binds::Native => (tr("Applies live"), p.text_placeholder),
+            Binds::Db if pending => (tr("Rebuilds on next launch"), p.warning),
+            Binds::Db => (tr("Applies after a rebuild"), p.text_placeholder),
         };
         let value = self.library.profile.option(man, o);
         let control = match o.kind {
@@ -668,11 +671,12 @@ impl Shell {
     }
 
     pub(crate) fn profiles_page(&mut self, p: Palette, wide: bool, cx: &mut Context<Self>) -> AnyElement {
-        let subtitle = "Each profile is its own set of addons. Play starts F1 25 with the active one.".into();
+        let subtitle =
+            tr("Each profile is its own set of addons. Play starts F1 25 with the active one.").into();
         let actions = Button::new("new-profile")
             .outline()
             .icon(IconName::Plus)
-            .label("New profile")
+            .label(tr("New profile"))
             .on_click(cx.listener(|this, _, window, cx| this.profile_prompt(None, false, window, cx)));
         let active = self.library.profile.name.clone();
         let deletable = self.library.profiles.iter().filter(|i| !i.vanilla()).count() > 1;
@@ -702,13 +706,13 @@ impl Shell {
                         .pt(px(6.))
                         .text_size(px(14.))
                         .font_weight(FontWeight::MEDIUM)
-                        .child("New profile"),
+                        .child(tr("New profile")),
                 )
                 .child(
                     div()
                         .text_size(px(13.))
                         .text_color(p.text_placeholder)
-                        .child("Starts with SwoftyMod and the Simplified Importer"),
+                        .child(tr("Starts with SwoftyMod and the Simplified Importer")),
                 )
                 .on_click(cx.listener(|this, _, window, cx| this.profile_prompt(None, false, window, cx)))
                 .into_any_element(),
@@ -743,14 +747,15 @@ impl Shell {
         cx: &mut Context<Self>,
     ) {
         let (title, ok, initial) = match (&from, rename) {
-            (Some(f), true) => ("Rename profile", "Rename", f.clone()),
-            (Some(f), false) => ("Duplicate profile", "Duplicate", format!("{f}-copy")),
-            (None, _) => ("New profile", "Create", String::new()),
+            (Some(f), true) => (tr("Rename profile"), tr("Rename"), f.clone()),
+            (Some(f), false) => (tr("Duplicate profile"), tr("Duplicate"), format!("{f}-copy")),
+            (None, _) => (tr("New profile"), tr("Create"), String::new()),
         };
         self.prompt(
             Prompt {
                 title,
-                description: "Letters, digits, - and _. Each profile keeps its own addons and saves.".into(),
+                description: tr("Letters, digits, - and _. Each profile keeps its own addons and saves.")
+                    .into(),
                 initial,
                 placeholder: "my-profile",
                 ok,
@@ -761,7 +766,7 @@ impl Shell {
                         (f, _) => store.create_profile(name, f.as_deref()),
                     };
                     result.map_err(|e| e.to_string())?;
-                    Ok(format!("Saved profile {name}"))
+                    Ok(trf!("Saved profile {name}", name = name))
                 }),
             },
             window,
@@ -776,7 +781,7 @@ impl Shell {
     fn confirm_delete_profile(&mut self, name: &str, window: &mut Window, cx: &mut Context<Self>) {
         let name = name.to_owned();
         let plan = if self.game_busy() {
-            Err("Close F1 25 before deleting a profile.".to_owned())
+            Err(tr("Close F1 25 before deleting a profile.").to_owned())
         } else {
             self.store.plan_profile_deletion(&name).map_err(|e| e.to_string())
         };
@@ -785,7 +790,7 @@ impl Shell {
             Err(reason) => {
                 window.open_alert_dialog(cx, move |alert, _, _| {
                     alert
-                        .title(format!("Can't delete {name}"))
+                        .title(trf!("Can't delete {name}", name = name))
                         .description(reason.clone())
                 });
                 return;
@@ -798,23 +803,27 @@ impl Shell {
             let (shell, store, name) = (shell.clone(), store.clone(), name.clone());
             alert
                 .width(px(480.))
-                .title(format!("Delete profile {name}?"))
+                .title(trf!("Delete profile {name}?", name = name))
                 .child(deletion_summary(&plan, p))
-                .ok_text("Delete profile")
+                .ok_text(tr("Delete profile"))
                 .ok_variant(ButtonVariant::Danger)
                 .show_cancel(true)
                 .on_ok(move |_, window, cx| {
                     let busy = shell.upgrade().is_some_and(|s| s.read(cx).game_busy());
                     let result = if busy {
-                        Err("Close F1 25 before deleting a profile.".to_owned())
+                        Err(tr("Close F1 25 before deleting a profile.").to_owned())
                     } else {
                         store.delete_profile(&name).map_err(|e| e.to_string())
                     };
                     match result {
                         Ok(done) => {
                             let text = match &done.switch_to {
-                                Some(to) => format!("Deleted profile {name}. {to} is now active."),
-                                None => format!("Deleted profile {name}"),
+                                Some(to) => trf!(
+                                    "Deleted profile {name}. {to} is now active.",
+                                    name = name,
+                                    to = to
+                                ),
+                                None => trf!("Deleted profile {name}", name = name),
                             };
                             window.push_notification(Notification::success(text), cx);
                         }
@@ -842,18 +851,23 @@ impl Shell {
         let contents = if vanilla {
             v_flex()
                 .gap(px(3.))
-                .child(label("CONTENTS", p))
-                .child(div().text_size(px(13.)).line_height(px(19.)).child("No addons"))
+                .child(label(tr("CONTENTS"), p))
+                .child(
+                    div()
+                        .text_size(px(13.))
+                        .line_height(px(19.))
+                        .child(tr("No addons")),
+                )
                 .child(
                     div()
                         .text_size(px(13.))
                         .text_color(p.text_muted)
-                        .child("Plays F1 25 exactly as shipped."),
+                        .child(tr("Plays F1 25 exactly as shipped.")),
                 )
         } else {
             v_flex()
                 .gap(px(12.))
-                .child(names("ADDONS", &item.addons, p))
+                .child(names(tr("ADDONS"), &item.addons, p))
                 .children(
                     item.summaries
                         .iter()
@@ -877,14 +891,14 @@ impl Shell {
                             .size(px(14.))
                             .text_color(p.accent),
                     )
-                    .child("Used when you press Play")
+                    .child(tr("Used when you press Play"))
                     .into_any_element()
             } else {
                 button("use")
                     .outline()
                     .small()
                     .icon(IconName::ArrowRightLeft)
-                    .label("Use this profile")
+                    .label(tr("Use this profile"))
                     .on_click(
                         cx.listener(move |this, _, window, cx| this.switch_profile(&switch, window, cx)),
                     )
@@ -897,7 +911,7 @@ impl Shell {
                         .ghost()
                         .small()
                         .icon(IconName::Pencil)
-                        .tooltip("Rename")
+                        .tooltip(tr("Rename"))
                         .on_click(cx.listener(move |this, _, window, cx| {
                             this.profile_prompt(Some(rename.clone()), true, window, cx)
                         })),
@@ -907,7 +921,7 @@ impl Shell {
                         .ghost()
                         .small()
                         .icon(IconName::Copy)
-                        .tooltip("Duplicate")
+                        .tooltip(tr("Duplicate"))
                         .on_click(cx.listener(move |this, _, window, cx| {
                             this.profile_prompt(Some(duplicate.clone()), false, window, cx)
                         })),
@@ -918,9 +932,9 @@ impl Shell {
                         .small()
                         .icon(IconName::Trash)
                         .tooltip(if deletable {
-                            "Delete"
+                            tr("Delete")
                         } else {
-                            "Your only profile can't be deleted"
+                            tr("Your only profile can't be deleted")
                         })
                         .disabled(!deletable)
                         .on_click(cx.listener(move |this, _, window, cx| {
@@ -957,7 +971,10 @@ impl Shell {
                                     .child(if vanilla {
                                         item.summary()
                                     } else {
-                                        format!("{} on", plural(item.addons.len(), "addon", "addons"))
+                                        trf!(
+                                            "{addons} on",
+                                            addons = plural(item.addons.len(), tr("addon"), tr("addons"))
+                                        )
                                     }),
                             ),
                     )
@@ -969,7 +986,7 @@ impl Shell {
                                 .font_weight(FontWeight::MEDIUM)
                                 .text_color(p.accent)
                                 .child(div().size(px(6.)).rounded_full().bg(p.accent))
-                                .child("Active"),
+                                .child(tr("Active")),
                         )
                     }),
             )

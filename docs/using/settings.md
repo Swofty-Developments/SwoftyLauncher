@@ -47,6 +47,8 @@ When you press **Play** with less than 3 GB free on F1 25's own drive (the drive
 
 ## General
 
+**Language** sets the language of the launcher's own text: English, Русский or 简体中文. It changes straight away. The sidebar, the **Play** bar, **Profiles**, **Settings** and the crash screen are translated so far, and everything else stays in English, including the causes the crash screen names. Addons and F1 25 keep their own language.
+
 | Switch | What it does |
 |---|---|
 | **TV mode** | Scales the whole launcher up by 30% and widens the scrollbars, for handhelds and couch play. Off is PC mode, the normal layout. The first time the launcher opens it asks "PC or TV mode?" and saves the answer here. |

@@ -26,6 +26,7 @@ use swofty_core::session::{LaunchMode, SessionRecord, UiMode};
 use swofty_core::stock;
 use swofty_core::store::Store;
 use swofty_core::view::View;
+use swofty_i18n::tr;
 
 use crate::crash_modal::{self, CrashView};
 use crate::game::{self, Install, Launch, Owner, Probe};
@@ -54,18 +55,18 @@ pub enum Page {
 impl Page {
     pub fn label(self) -> &'static str {
         match self {
-            Self::News => "News",
-            Self::Addons => "Addons",
-            Self::Browser => "Addon Browser",
-            Self::Downloads => "Downloads",
-            Self::Shaders => "Shaders",
-            Self::Importer => "Simplified Importer",
-            Self::Tools => "Tools",
-            Self::Profiles => "Profiles",
-            Self::Careers => "Saves",
-            Self::Database => "DB Editor",
-            Self::Multiplayer => "Multiplayer",
-            Self::Settings => "Settings",
+            Self::News => tr("News"),
+            Self::Addons => tr("Addons"),
+            Self::Browser => tr("Addon Browser"),
+            Self::Downloads => tr("Downloads"),
+            Self::Shaders => tr("Shaders"),
+            Self::Importer => tr("Simplified Importer"),
+            Self::Tools => tr("Tools"),
+            Self::Profiles => tr("Profiles"),
+            Self::Careers => tr("Saves"),
+            Self::Database => tr("DB Editor"),
+            Self::Multiplayer => tr("Multiplayer"),
+            Self::Settings => tr("Settings"),
             Self::Section(_) => "",
         }
     }
@@ -73,7 +74,7 @@ impl Page {
     /// The sidebar's name for the page: the importer is just Importer there.
     pub fn nav_label(self) -> &'static str {
         match self {
-            Self::Importer => "Importer",
+            Self::Importer => tr("Importer"),
             _ => self.label(),
         }
     }
@@ -424,6 +425,7 @@ impl Shell {
         } = prepared;
         let vr_profiles = config.vr_profiles;
         let start_store = config.launch.start_store;
+        swofty_i18n::set_language(config.language.as_deref());
         let ui_mode = config.ui_mode;
         let developer_mode = config.developer;
         let clear_old_session_logs = config.clear_old_session_logs;
@@ -2496,7 +2498,7 @@ impl Shell {
                                 .flex_shrink_0()
                                 .pt(px(if short { 4. } else { 12. }))
                                 .gap(px(6.))
-                                .child(label("ADDON PANELS", p).px(px(8.)))
+                                .child(label(tr("ADDON PANELS"), p).px(px(8.)))
                                 .child(v_flex().gap(px(1.)).children(self.panels(p, cx))),
                         ),
                 ),
@@ -2510,7 +2512,7 @@ impl Shell {
                     .pt(px(4.))
                     .pb(px(2.))
                     .children((self.page == Page::Careers).then(|| self.profile_pointer(p)))
-                    .child(label("ACTIVE PROFILE", p).px(px(4.)))
+                    .child(label(tr("ACTIVE PROFILE"), p).px(px(4.)))
                     .child(self.profile_picker(p, cx)),
             )
     }
