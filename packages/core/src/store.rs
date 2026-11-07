@@ -2239,6 +2239,8 @@ mod tests {
         std::fs::remove_dir_all(&root).ok();
     }
 
+    // Both names can only exist where file names are case-sensitive.
+    #[cfg(target_os = "linux")]
     #[test]
     fn a_rename_to_the_capitals_of_a_profile_that_exists_changes_nothing() {
         let root = tmp("rename-both");
