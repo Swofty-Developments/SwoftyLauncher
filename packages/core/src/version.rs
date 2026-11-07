@@ -39,7 +39,10 @@ mod tests {
         assert!(ok("*", "1.0.0"));
         assert!(ok("*", "0.2.8-native-radius-base"));
         assert!(satisfies(&VersionReq::STAR, &Version::parse("0.0.1-a").unwrap()));
-        assert!(satisfies(&VersionReq::default(), &Version::parse("3.0.0-rc.1").unwrap()));
+        assert!(satisfies(
+            &VersionReq::default(),
+            &Version::parse("3.0.0-rc.1").unwrap()
+        ));
     }
 
     #[test]
