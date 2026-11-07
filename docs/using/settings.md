@@ -15,6 +15,7 @@ description: The Settings page shows where Swofty keeps its files and how much r
 | **Size** | The folder's total size and the free space on its drive. When F1 25's own drive is another one, also the free space there: the drive with your Windows profile, or on Linux the drive with the game's Proton prefix (its Steam library). |
 | The parts | How much each part takes, largest first: addons, the game backup, session logs, the cache, the career vault, save snapshots, addon data and the rest. |
 | **Session logs** | How many game sessions are kept. **Clear old** removes the old ones (see below). |
+| **Game drive copy** | Shown when the data folder and F1 25 are on different drives, or while a copy is left over. The size of the copy of your mods that Play keeps on F1 25's drive (see below). **Clear** deletes it. |
 | **Another drive** | How to move the data folder. **How to move it** opens [Moving the data folder](/guide/installation#moving-the-data-folder). |
 
 When either drive has less than 3 GB free, the card says so: F1 25 won't start with less than 2 GB free on its `C:` drive, which under Proton is the prefix.
@@ -28,6 +29,12 @@ A moved data folder is measured where it really is, through the junction or symb
 Every game session leaves its logs in `sessions` in the data folder, and nothing removed them before. **Clear old** keeps the newest 20 sessions and every session from the last 2 days, and removes the rest. It doesn't run while F1 25 is open. The button names how many sessions it would remove and how much room that frees; it reads **Nothing to clear** when every session is new enough to keep.
 
 **Clear old** asks you to confirm before it deletes anything. The launcher keeps every log unless you turn on **Clear old logs** under General: with it on, the launcher clears old logs by the same rule each time it starts, without asking. It is off by default, so updating never deletes logs.
+
+### The game drive copy
+
+A hard link joins two names for one file and only works inside one drive. When the data folder is on another drive than F1 25, Play keeps a copy of the built mods in `swofty-cache/overlay` in the game folder and hard-links the game's files to that copy. The first Play copies every file; later Plays copy only files that are new or whose size or modified time changed, and delete files the build no longer has.
+
+The copy stays when the game goes back to stock. It needs the size of the built mods on F1 25's drive plus 2 GB to spare; with less room, Play copies each file straight into the game folder and the Play log says why. Play removes the copy when the data folder is on F1 25's drive again. **Clear** removes it at any time and doesn't run while F1 25 is open; the next Play rebuilds it.
 
 ### Low space when you press Play
 

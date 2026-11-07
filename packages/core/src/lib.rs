@@ -33,6 +33,7 @@ pub mod journal;
 pub mod known_problems;
 pub mod launch;
 pub mod launcher_saves;
+pub mod link_cache;
 pub mod loader_check;
 pub mod managed;
 pub mod map;

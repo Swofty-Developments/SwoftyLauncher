@@ -27,6 +27,15 @@ pub struct Settings {
     pub prunable: Pruned,
     pub measuring: bool,
     pub clearing: bool,
+    pub cache: GameCopy,
+}
+
+/// The link cache Play keeps in the game folder when the data folder is on
+/// another drive.
+#[derive(Default, Clone, Copy)]
+pub struct GameCopy {
+    pub bytes: u64,
+    pub apart: bool,
 }
 
 /// `bytes` the way Explorer shows them: GB from one gigabyte, else MB.
@@ -89,8 +98,9 @@ impl Shell {
         }
         self.settings.measuring = true;
         let root = self.store.root.clone();
+        let game = self.install.as_ref().map(|i| i.dir.clone());
         cx.spawn(async move |this, cx| {
-            let (usage, prunable) = cx
+            let (usage, prunable, cache) = cx
                 .background_executor()
                 .spawn(async move {
                     let usage = data_usage::measure(&root);
@@ -100,12 +110,21 @@ impl Shell {
                         KEEP_FOR,
                         SystemTime::now(),
                     );
-                    (usage, old)
+                    let cache = game.map_or_else(GameCopy::default, |g| GameCopy {
+                        bytes: swofty_core::link_cache::size(&g),
+                        apart: swofty_core::link_cache::apart(
+                            swofty_core::disk::volume(&swofty_core::store::overlay_root(&root)),
+                            swofty_core::disk::volume(&g),
+                        )
+                        .unwrap_or(false),
+                    });
+                    (usage, old, cache)
                 })
                 .await;
             this.update(cx, |s, cx| {
                 s.settings.usage = Some(usage);
                 s.settings.prunable = prunable;
+                s.settings.cache = cache;
                 s.settings.measuring = false;
                 cx.notify();
             })
@@ -145,6 +164,38 @@ impl Shell {
                     true
                 })
         });
+    }
+
+    fn settings_clear_cache(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if !self.processes.is_empty() {
+            window.push_notification(Notification::error("Close F1 25 first"), cx);
+            return;
+        }
+        let Some(game) = self.install.as_ref().map(|i| i.dir.clone()) else {
+            return;
+        };
+        self.settings.clearing = true;
+        cx.spawn_in(window, async move |this, cx| {
+            let freed = cx
+                .background_executor()
+                .spawn(async move { swofty_core::link_cache::remove(&game) })
+                .await;
+            this.update_in(cx, |s, window, cx| {
+                s.settings.clearing = false;
+                crate::app_log::note(&format!(
+                    "settings: cleared the game drive copy ({})",
+                    size(freed)
+                ));
+                window.push_notification(
+                    Notification::success(format!("Cleared the game drive copy and freed {}", size(freed))),
+                    cx,
+                );
+                s.settings_measure(cx);
+            })
+            .ok();
+        })
+        .detach();
+        cx.notify();
     }
 
     fn settings_clear_logs(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -334,6 +385,34 @@ impl Shell {
                     p,
                 ));
             }
+        }
+        let cache = self.settings.cache;
+        if cache.apart || cache.bytes > 0 {
+            let clear = Button::new("settings-clear-cache")
+                .outline()
+                .small()
+                .icon(IconName::Eraser)
+                .label("Clear")
+                .disabled(cache.bytes == 0 || self.settings.clearing)
+                .on_click(cx.listener(|this, _, window, cx| this.settings_clear_cache(window, cx)));
+            let text = if cache.apart {
+                format!(
+                    "The data folder and F1 25 are on different drives, so Play keeps a copy of your mods on F1 25's \
+                     drive to stay fast ({}). Press Play to rebuild it after clearing.",
+                    size(cache.bytes)
+                )
+            } else {
+                format!(
+                    "A copy of your mods on F1 25's drive, no longer used ({}).",
+                    size(cache.bytes)
+                )
+            };
+            rows.push(row(
+                "Game drive copy",
+                muted(text, p),
+                Some(clear.into_any_element()),
+                p,
+            ));
         }
         let how = Button::new("settings-move-data")
             .outline()

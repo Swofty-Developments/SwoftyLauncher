@@ -184,6 +184,9 @@ pub struct Installer<'a> {
     /// Files copied so far, of how many, after each one.
     pub progress: &'a dyn Fn(usize, usize),
     pub free_space: fn(&Path) -> Option<u64>,
+    /// The volume a folder is on; tells Play whether the build output and the
+    /// game folder are on different drives.
+    pub volume: fn(&Path) -> Option<crate::disk::Volume>,
     /// Copy every file instead of hard-linking build outputs; set by
     /// `SWOFTY_INSTALL_COPY=1`.
     pub copy_only: bool,
@@ -194,6 +197,15 @@ const PROGRESS_EVERY: std::time::Duration = std::time::Duration::from_secs(10);
 /// journal, `placed.json` and the hash cache, each rewritten through a
 /// temporary copy.
 const STATE_PER_FILE: u64 = 2048;
+
+/// Where each build output is in the link cache, how many files the sync
+/// copied and reused, and why there is no cache when it failed.
+#[derive(Default)]
+struct LinkCache {
+    via: BTreeMap<PathBuf, PathBuf>,
+    synced: Option<(usize, usize)>,
+    failure: Option<String>,
+}
 
 fn quiet(_: &str) {}
 
@@ -218,7 +230,7 @@ fn link_replacing(src: &Path, path: &Path) -> std::io::Result<()> {
     renamed
 }
 
-fn copy_replacing(src: &Path, path: &Path) -> std::io::Result<()> {
+pub(crate) fn copy_replacing(src: &Path, path: &Path) -> std::io::Result<()> {
     let tmp = path.with_file_name(format!(
         ".{}.swofty-copy",
         path.file_name().unwrap_or_default().to_string_lossy()
@@ -355,6 +367,7 @@ impl<'a> Installer<'a> {
             out: &quiet,
             progress: &unwatched,
             free_space: crate::disk::free_space,
+            volume: crate::disk::volume,
             copy_only: std::env::var_os("SWOFTY_INSTALL_COPY").is_some_and(|v| v == "1"),
         }
     }
@@ -1042,6 +1055,15 @@ impl<'a> Installer<'a> {
         let built = crate::store::overlay_root(self.data);
         let mut linking = !self.copy_only;
         let (mut linked, mut link_failure) = (0usize, None::<String>);
+        let LinkCache {
+            via,
+            synced: cached,
+            failure: cache_failure,
+        } = if linking {
+            self.link_cache(&built, &j.entries, &sources)
+        } else {
+            LinkCache::default()
+        };
         for i in 0..j.entries.len() {
             self.step(&mut n)?;
             let e = &j.entries[i];
@@ -1050,6 +1072,7 @@ impl<'a> Installer<'a> {
                 if !linking || !src.starts_with(&built) {
                     return false;
                 }
+                let src = via.get(src).map_or(src, |p| p.as_path());
                 let made = if replacing {
                     link_replacing(src, &path)
                 } else {
@@ -1120,6 +1143,17 @@ impl<'a> Installer<'a> {
         }
         let mode = match (&link_failure, self.copy_only) {
             (_, true) => "copy (SWOFTY_INSTALL_COPY=1)".to_owned(),
+            (Some(why), _) if cached.is_some() => format!("copy (link cache link failed: {why})"),
+            (None, _) if linked > 0 && cached.is_some() => {
+                let (made, kept) = cached.unwrap_or_default();
+                format!("link cache on the game drive ({made} copied into the cache, {kept} reused)")
+            }
+            (None, _) if linked == 0 && cache_failure.is_some() => {
+                format!(
+                    "copy (link cache unavailable: {})",
+                    cache_failure.as_deref().unwrap_or_default()
+                )
+            }
             (Some(why), _) => format!("copy (hard link failed: {why})"),
             (None, _) if linked == 0 => "copy (no build output to link)".to_owned(),
             (None, _) => "hard links".to_owned(),
@@ -1146,6 +1180,73 @@ impl<'a> Installer<'a> {
             }
         }
         j.commit()
+    }
+
+    /// When the build output and the game folder are on different drives,
+    /// brings the link cache on the game's drive up to date and returns where
+    /// each build output is in it, what the sync did, and why there is no
+    /// cache when it could not be made. On one drive, removes any cache.
+    fn link_cache(
+        &self,
+        built: &Path,
+        entries: &[crate::journal::Entry],
+        sources: &BTreeMap<&str, &PathBuf>,
+    ) -> LinkCache {
+        match crate::link_cache::apart((self.volume)(built), (self.volume)(&self.game.dir)) {
+            Some(false) => {
+                if crate::link_cache::dir(&self.game.dir).exists() {
+                    let freed = crate::link_cache::remove(&self.game.dir);
+                    (self.out)(&format!(
+                        "installing: removed the link cache from the game drive, the data folder is on the same drive now ({} MB)",
+                        freed >> 20
+                    ));
+                }
+                return LinkCache::default();
+            }
+            None => return LinkCache::default(),
+            Some(true) => {}
+        }
+        let srcs: Vec<&Path> = entries
+            .iter()
+            .filter(|e| matches!(e.op, Op::ReplaceFile | Op::CreateFile))
+            .map(|e| sources[e.path.as_str()].as_path())
+            .filter(|s| s.starts_with(built))
+            .collect();
+        if srcs.is_empty() {
+            return LinkCache::default();
+        }
+        crate::now_doing("copying the mods to the game drive");
+        let mut told = std::time::Instant::now();
+        let synced = crate::link_cache::sync(
+            built,
+            &self.game.dir,
+            &srcs,
+            self.free_space,
+            &mut |done, total| {
+                if told.elapsed() >= PROGRESS_EVERY {
+                    (self.out)(&format!(
+                        "installing: {done} of {total} file(s) copied into the link cache"
+                    ));
+                    told = std::time::Instant::now();
+                }
+            },
+        );
+        match synced {
+            Ok(s) => LinkCache {
+                via: s.files,
+                synced: Some((s.copied, s.reused)),
+                failure: None,
+            },
+            Err(why) => {
+                (self.out)(&format!(
+                    "installing: link cache unavailable ({why}); copying instead"
+                ));
+                LinkCache {
+                    failure: Some(why),
+                    ..LinkCache::default()
+                }
+            }
+        }
     }
 
     pub fn restore(&self) -> Result<Vec<Drift>> {

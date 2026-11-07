@@ -683,15 +683,145 @@ fn a_build_output_on_another_volume_than_the_game_is_copied() {
     applied.unwrap();
     assert_eq!(read, "db-B");
     assert!(
-        lines
-            .borrow()
-            .iter()
-            .any(|l| l.starts_with("installing: copy (hard link failed")
-                && l.ends_with("0 file(s) linked, 6 copied")),
+        lines.borrow().iter().any(|l| l.starts_with(
+            "installing: link cache on the game drive (2 copied into the cache, 0 reused); 2 file(s) linked"
+        )),
         "{:?}",
         lines.borrow()
     );
     assert_eq!(std::fs::read_to_string(&plan.data[GVDB]).unwrap(), "db-B");
+}
+
+fn two_drives(p: &Path) -> Option<swofty_core::disk::Volume> {
+    let id = if p.components().any(|c| c.as_os_str() == "overlay") {
+        "data"
+    } else {
+        "game"
+    };
+    Some(swofty_core::disk::Volume {
+        id: id.into(),
+        name: id.into(),
+    })
+}
+
+fn one_drive(_: &Path) -> Option<swofty_core::disk::Volume> {
+    two_drives(Path::new("elsewhere"))
+}
+
+fn without_cache(mut s: BTreeMap<String, String>) -> BTreeMap<String, String> {
+    s.retain(|k, _| !k.starts_with("swofty-cache"));
+    s
+}
+
+#[cfg(unix)]
+#[test]
+fn another_drive_links_the_game_folder_to_a_cache_that_survives_a_restore() {
+    let f = Fixture::new("cache-links");
+    let game = f.game("1");
+    let original = without_cache(f.snapshot());
+    let mut plan = f.plan("b");
+    f.built(&mut plan);
+    let (lines,) = logged();
+    let out = |l: &str| lines.borrow_mut().push(l.to_owned());
+    let inst = Installer {
+        out: &out,
+        volume: two_drives,
+        ..Installer::new(&f.data, &game)
+    };
+    inst.apply(&plan).unwrap();
+    let cached = f.game.join("swofty-cache/overlay").join(
+        plan.data[GVDB]
+            .strip_prefix(f.data.join("cache/overlay"))
+            .unwrap(),
+    );
+    assert_eq!(f.read(GVDB), "db-B");
+    assert_eq!(inode(&f.game.join(GVDB)), inode(&cached));
+    assert_ne!(inode(&f.game.join(GVDB)), inode(&plan.data[GVDB]));
+    assert!(
+        lines.borrow().iter().any(|l| l
+            == "installing: link cache on the game drive (2 copied into the cache, 0 reused); 2 file(s) linked, 4 copied"),
+        "{:?}",
+        lines.borrow()
+    );
+
+    inst.apply(&Plan::vanilla()).unwrap();
+    assert_eq!(without_cache(f.snapshot()), original);
+    assert_eq!(f.read(GVDB), "db-v1");
+    assert_eq!(std::fs::read_to_string(&cached).unwrap(), "db-B");
+    assert_eq!(inst.verify().unwrap(), []);
+
+    inst.apply(&plan).unwrap();
+    assert_eq!(f.read(GVDB), "db-B");
+    assert!(
+        lines.borrow().iter().any(|l| l
+            == "installing: link cache on the game drive (0 copied into the cache, 2 reused); 2 file(s) linked, 4 copied"),
+        "{:?}",
+        lines.borrow()
+    );
+}
+
+#[test]
+fn a_game_drive_without_room_for_the_cache_gets_direct_copies() {
+    let f = Fixture::new("cache-space");
+    let game = f.game("1");
+    let mut plan = f.plan("b");
+    f.built(&mut plan);
+    let (lines,) = logged();
+    let out = |l: &str| lines.borrow_mut().push(l.to_owned());
+    let inst = Installer {
+        out: &out,
+        volume: two_drives,
+        free_space: |_| Some(1 << 20),
+        ..Installer::new(&f.data, &game)
+    };
+    inst.apply(&plan).unwrap();
+    assert_eq!(f.read(GVDB), "db-B");
+    assert!(
+        !f.game
+            .join("swofty-cache/overlay")
+            .join("0123456789abcdef")
+            .exists()
+    );
+    let lines = lines.borrow();
+    assert!(
+        lines
+            .iter()
+            .any(|l| l.starts_with("installing: link cache unavailable (the game drive has")),
+        "{lines:?}"
+    );
+    assert!(!f.game.join("swofty-cache/overlay").exists());
+}
+
+#[test]
+fn the_cache_goes_when_the_data_folder_is_on_the_game_drive() {
+    let f = Fixture::new("cache-gone");
+    let game = f.game("1");
+    let mut plan = f.plan("b");
+    f.built(&mut plan);
+    let apart = Installer {
+        volume: two_drives,
+        ..Installer::new(&f.data, &game)
+    };
+    apart.apply(&plan).unwrap();
+    apart.apply(&Plan::vanilla()).unwrap();
+    assert!(f.game.join("swofty-cache").is_dir());
+    let (lines,) = logged();
+    let out = |l: &str| lines.borrow_mut().push(l.to_owned());
+    let together = Installer {
+        out: &out,
+        volume: one_drive,
+        ..Installer::new(&f.data, &game)
+    };
+    together.apply(&plan).unwrap();
+    assert!(!f.game.join("swofty-cache").exists());
+    assert!(
+        lines
+            .borrow()
+            .iter()
+            .any(|l| l.starts_with("installing: removed the link cache")),
+        "{:?}",
+        lines.borrow()
+    );
 }
 
 #[cfg(unix)]
