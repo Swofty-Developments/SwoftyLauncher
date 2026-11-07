@@ -1,4 +1,3 @@
-use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{Icon, h_flex, v_flex};
@@ -9,13 +8,13 @@ use swofty_core::catalog::search::Query;
 use swofty_core::update::current_version;
 use swofty_i18n::{tr, trf, trn};
 
+use super::*;
 use crate::format;
 use crate::pages::{badge, tag};
+use crate::scale::px;
 use crate::shell::Shell;
 use crate::theme::Palette;
 use crate::ui::ProgressBar;
-
-use super::*;
 
 pub(super) fn card_border(failed: bool, updating: bool, p: Palette) -> Hsla {
     if failed {
@@ -25,6 +24,24 @@ pub(super) fn card_border(failed: bool, updating: bool, p: Palette) -> Hsla {
     } else {
         p.border
     }
+}
+
+fn highlighted_name(a: &Addon, query: &Query, p: Palette) -> StyledText {
+    let marks: Vec<(std::ops::Range<usize>, HighlightStyle)> = query
+        .marks(&a.name)
+        .into_iter()
+        .map(|r| {
+            (
+                r,
+                HighlightStyle {
+                    color: Some(p.accent),
+                    background_color: Some(p.accent.opacity(0.12)),
+                    ..HighlightStyle::default()
+                },
+            )
+        })
+        .collect();
+    StyledText::new(a.name.clone()).with_highlights(marks)
 }
 
 fn card_stats(a: &Addon) -> Vec<AnyElement> {
@@ -207,21 +224,7 @@ impl Shell {
         let blocked = blocked.filter(|_| failed.is_none());
         let progress = self.browser.working.get(&a.id).map(Job::progress);
         let id = a.id.clone();
-        let marks: Vec<(std::ops::Range<usize>, HighlightStyle)> = query
-            .marks(&a.name)
-            .into_iter()
-            .map(|r| {
-                (
-                    r,
-                    HighlightStyle {
-                        color: Some(p.accent),
-                        background_color: Some(p.accent.opacity(0.12)),
-                        ..HighlightStyle::default()
-                    },
-                )
-            })
-            .collect();
-        let name = StyledText::new(a.name.clone()).with_highlights(marks);
+        let name = highlighted_name(a, query, p);
         let author = self.byline(a, format!("browser-card-by-{}", a.id), 12., p, cx);
         v_flex()
             .id(SharedString::from(format!("browser-card-{}", a.id)))

@@ -2,7 +2,7 @@
   "addons/problems.rs": 1,
   "admin_needed.rs": 5,
   "app_log.rs": 8,
-  "browser/authors.rs": 2,
+  "browser/authors.rs": 1,
   "browser/jobs.rs": 1,
   "browser/sync.rs": 2,
   "console.rs": 6,

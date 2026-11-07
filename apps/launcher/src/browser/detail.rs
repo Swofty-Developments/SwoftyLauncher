@@ -1,4 +1,3 @@
-use crate::scale::px;
 use gpui_kit::component::{ActiveTheme, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
@@ -6,13 +5,13 @@ use swofty_core::catalog::{self, Addon};
 use swofty_core::update::current_version;
 use swofty_i18n::{tr, trf, trn};
 
-use crate::format;
-use crate::pages::{GUTTER, label, tag};
-use crate::shell::Shell;
-use crate::theme::Palette;
-
 use super::detail_cards::detail_about;
 use super::*;
+use crate::format;
+use crate::pages::{GUTTER, label, tag};
+use crate::scale::px;
+use crate::shell::Shell;
+use crate::theme::Palette;
 
 /// How many of `versions`, newest first, the Addons page shows before its older-versions toggle.
 pub(super) fn shown_versions(versions: &[&catalog::Version], installed: &semver::Version) -> usize {
@@ -23,6 +22,20 @@ pub(super) fn shown_versions(versions: &[&catalog::Version], installed: &semver:
             i + usize::from(versions[i].version == *installed)
         });
     through.max(2).min(versions.len())
+}
+
+fn changelog_summary(loading: bool, newer: usize, total: usize) -> String {
+    if loading {
+        tr("Loading…").to_owned()
+    } else if newer > 0 {
+        trn(
+            newer,
+            "{count} new version since yours",
+            "{count} new versions since yours",
+        )
+    } else {
+        trn(total, "{count} version", "{count} versions")
+    }
 }
 
 impl Shell {
@@ -155,17 +168,7 @@ impl Shell {
                 )
             })
             .collect();
-        let summary = if loading {
-            tr("Loading…").to_owned()
-        } else if newer > 0 {
-            trn(
-                newer,
-                "{count} new version since yours",
-                "{count} new versions since yours",
-            )
-        } else {
-            trn(versions.len(), "{count} version", "{count} versions")
-        };
+        let summary = changelog_summary(loading, newer, versions.len());
         let toggle = (older > 0).then(|| {
             let target = id.to_owned();
             h_flex()

@@ -1,15 +1,13 @@
-use crate::scale::px;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::*;
-
 use swofty_i18n::{tr, trf};
 
+use super::*;
 use crate::download_queue::State;
+use crate::scale::px;
 use crate::shell::{Page, Shell};
 use crate::theme::{Palette, ScrollArea};
-
-use super::*;
 
 impl Shell {
     pub(crate) fn download_pending(&self) -> usize {

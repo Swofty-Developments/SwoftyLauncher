@@ -1,13 +1,11 @@
 //! The All addons view: one row of cards per category, each scrolling sideways.
 
 use std::cell::{Cell, RefCell};
-use std::rc::Rc;
-
 use std::collections::HashMap;
+use std::rc::Rc;
 use std::sync::Arc;
 use std::time::Instant;
 
-use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
@@ -18,6 +16,7 @@ use swofty_i18n::{tr, trf, trn};
 
 use super::*;
 use crate::pages::tile;
+use crate::scale::px;
 use crate::shell::Shell;
 use crate::theme::Palette;
 use crate::ui::ProgressBar;

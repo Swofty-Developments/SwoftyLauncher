@@ -1,6 +1,3 @@
-use swofty_i18n::tr;
-
-use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::input::Input;
@@ -9,13 +6,14 @@ use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::manifest::Category;
+use swofty_i18n::tr;
 
+use super::*;
 use crate::pages::{TRACK, label};
+use crate::scale::px;
 use crate::shell::Shell;
 use crate::theme::{Palette, SCROLLBAR_GAP, ScrollArea};
 use crate::ui::facet::{FILTERS_W, facet_row};
-
-use super::*;
 
 pub(super) fn shelf_tint(tab: Tab, p: Palette) -> Hsla {
     let hue = match tab {
@@ -70,61 +68,36 @@ pub(super) fn shelf_glyph(tab: Tab, size: f32, color: Hsla) -> AnyElement {
 }
 
 impl Shell {
-    pub(super) fn filter_column(&self, p: Palette, cx: &mut Context<Self>) -> Div {
+    fn facet_count(&self, f: &Facet) -> usize {
         let b = &self.browser;
-        let query = b.search.read(cx).value().trim().to_owned();
-        let active = !b.facets.is_empty() || b.hide_code || !query.is_empty();
-        let count = |f: &Facet| {
-            if let Some(&count) = b.facet_counts.borrow().get(f) {
-                return count;
-            }
-            let count = b
-                .addons
-                .iter()
-                .zip(&b.grid_cache.as_ref().unwrap().scores)
-                .filter(|(a, s)| {
-                    self.catalog_passes(a, s.is_some(), Some(f.group())) && self.catalog_facet(a, f)
-                })
-                .count();
-            b.facet_counts.borrow_mut().insert(f.clone(), count);
-            count
-        };
-        let row = |f: Facet, cx: &mut Context<Self>| {
-            let n = count(&f);
-            let on = b.facets.contains(&f);
-            let key = f.clone();
-            facet_row(format!("browser-filter-{f:?}"), on, f.label(), n, p)
-                .on_click(cx.listener(move |this, _, _, cx| {
-                    if !this.browser.facets.remove(&key) {
-                        this.browser.facets.insert(key.clone());
-                    }
-                    cx.notify();
-                }))
-                .into_any_element()
-        };
-        let group = |title: &'static str, rows: Vec<AnyElement>| {
-            v_flex()
-                .gap(px(1.))
-                .child(div().pb(px(4.)).child(label(title, p)))
-                .children(rows)
-        };
-        let cache = b.grid_cache.as_ref().unwrap();
-        let types = cache.types.iter().cloned().map(|f| row(f, cx)).collect();
-        let states = Want::ALL.into_iter().map(|w| row(Facet::State(w), cx)).collect();
-        let authors: Vec<_> = cache.authors.iter().cloned().map(|f| row(f, cx)).collect();
-        let natives = cache.natives;
-        let code = facet_row(
-            "browser-filter-code",
-            b.hide_code,
-            tr("Hide addons that run code"),
-            natives,
-            p,
-        )
-        .on_click(cx.listener(|this, _, _, cx| {
-            this.browser.hide_code = !this.browser.hide_code;
-            cx.notify();
-        }))
-        .into_any_element();
+        if let Some(&count) = b.facet_counts.borrow().get(f) {
+            return count;
+        }
+        let count = b
+            .addons
+            .iter()
+            .zip(&b.grid_cache.as_ref().unwrap().scores)
+            .filter(|(a, s)| self.catalog_passes(a, s.is_some(), Some(f.group())) && self.catalog_facet(a, f))
+            .count();
+        b.facet_counts.borrow_mut().insert(f.clone(), count);
+        count
+    }
+
+    fn facet_filter_row(&self, f: Facet, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+        let n = self.facet_count(&f);
+        let on = self.browser.facets.contains(&f);
+        let key = f.clone();
+        facet_row(format!("browser-filter-{f:?}"), on, f.label(), n, p)
+            .on_click(cx.listener(move |this, _, _, cx| {
+                if !this.browser.facets.remove(&key) {
+                    this.browser.facets.insert(key.clone());
+                }
+                cx.notify();
+            }))
+            .into_any_element()
+    }
+
+    fn filters_header(&self, active: bool, p: Palette, cx: &mut Context<Self>) -> Div {
         let clear = active.then(|| {
             div()
                 .id("browser-filters-clear")
@@ -135,6 +108,66 @@ impl Shell {
                 .child(tr("Clear filters"))
                 .on_click(cx.listener(|this, _, _, cx| this.clear_filters(cx)))
         });
+        h_flex()
+            .pb(px(8.))
+            .mb(px(-6.))
+            .border_b_1()
+            .border_color(p.border_variant)
+            .justify_between()
+            .child(
+                h_flex()
+                    .gap(px(6.))
+                    .text_color(p.text_muted)
+                    .child(Icon::new(IconName::Funnel).size(px(13.)))
+                    .child(
+                        div()
+                            .text_size(px(13.))
+                            .font_weight(FontWeight::MEDIUM)
+                            .child(tr("Filters")),
+                    ),
+            )
+            .children(clear)
+    }
+
+    pub(super) fn filter_column(&self, p: Palette, cx: &mut Context<Self>) -> Div {
+        let b = &self.browser;
+        let query = b.search.read(cx).value().trim().to_owned();
+        let active = !b.facets.is_empty() || b.hide_code || !query.is_empty();
+        let group = |title: &'static str, rows: Vec<AnyElement>| {
+            v_flex()
+                .gap(px(1.))
+                .child(div().pb(px(4.)).child(label(title, p)))
+                .children(rows)
+        };
+        let cache = b.grid_cache.as_ref().unwrap();
+        let types = cache
+            .types
+            .iter()
+            .cloned()
+            .map(|f| self.facet_filter_row(f, p, cx))
+            .collect();
+        let states = Want::ALL
+            .into_iter()
+            .map(|w| self.facet_filter_row(Facet::State(w), p, cx))
+            .collect();
+        let authors: Vec<_> = cache
+            .authors
+            .iter()
+            .cloned()
+            .map(|f| self.facet_filter_row(f, p, cx))
+            .collect();
+        let code = facet_row(
+            "browser-filter-code",
+            b.hide_code,
+            tr("Hide addons that run code"),
+            cache.natives,
+            p,
+        )
+        .on_click(cx.listener(|this, _, _, cx| {
+            this.browser.hide_code = !this.browser.hide_code;
+            cx.notify();
+        }))
+        .into_any_element();
         v_flex()
             .w(px(FILTERS_W))
             .flex_shrink_0()
@@ -147,27 +180,7 @@ impl Shell {
                         .text_color(p.text_placeholder),
                 ),
             )
-            .child(
-                h_flex()
-                    .pb(px(8.))
-                    .mb(px(-6.))
-                    .border_b_1()
-                    .border_color(p.border_variant)
-                    .justify_between()
-                    .child(
-                        h_flex()
-                            .gap(px(6.))
-                            .text_color(p.text_muted)
-                            .child(Icon::new(IconName::Funnel).size(px(13.)))
-                            .child(
-                                div()
-                                    .text_size(px(13.))
-                                    .font_weight(FontWeight::MEDIUM)
-                                    .child(tr("Filters")),
-                            ),
-                    )
-                    .children(clear),
-            )
+            .child(self.filters_header(active, p, cx))
             .child(
                 v_flex()
                     .flex_1()

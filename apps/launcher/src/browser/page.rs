@@ -1,16 +1,14 @@
-use swofty_i18n::tr;
-
-use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Disableable, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-
-use crate::shell::{Page, Shell};
-use crate::theme::Palette;
+use swofty_i18n::tr;
 
 use super::authors::View;
+use crate::scale::px;
+use crate::shell::{Page, Shell};
+use crate::theme::Palette;
 
 impl Shell {
     pub(crate) fn browser_page(&mut self, p: Palette, cx: &mut Context<Self>) -> AnyElement {

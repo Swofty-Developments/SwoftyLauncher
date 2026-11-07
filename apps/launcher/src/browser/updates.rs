@@ -1,6 +1,5 @@
 use std::collections::{BTreeMap, HashSet};
 
-use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::notification::Notification;
 use gpui_kit::component::spinner::Spinner;
@@ -11,11 +10,11 @@ use gpui_kit::*;
 use swofty_core::catalog::{self, Addon, Update};
 use swofty_i18n::{fill, tr, trf, trn};
 
+use super::*;
 use crate::play_bar::link;
+use crate::scale::px;
 use crate::shell::{PlayState, Shell};
 use crate::theme::Palette;
-
-use super::*;
 
 /// The updates for addons in `on` that haven't failed at the version offered in `held`.
 pub(super) fn due_updates<'a>(
@@ -61,8 +60,6 @@ pub(super) fn update_identity(update: &Update) -> Addon {
 pub(super) fn held_failure(error: &str) -> bool {
     !error.is_empty()
 }
-
-/// An install's downloads so far: every addon it fetches, requirements included.
 
 impl Shell {
     /// The addon updates the play bar offers: every outdated registry addon that's on in the active

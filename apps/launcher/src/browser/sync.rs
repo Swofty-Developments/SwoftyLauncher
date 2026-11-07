@@ -10,11 +10,10 @@ use swofty_core::catalog::{self, Addon, Trouble, Update};
 use swofty_core::update::current_version;
 use swofty_i18n::{tr, trf, trn};
 
-use crate::library::Source;
-use crate::shell::Shell;
-
 use super::authors::View;
 use super::*;
+use crate::library::Source;
+use crate::shell::Shell;
 
 pub(super) struct Fetched {
     pub(super) addons: Option<Vec<Addon>>,

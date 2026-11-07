@@ -1,21 +1,28 @@
 use std::collections::BTreeSet;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use gpui_kit::component::WindowExt;
 use gpui_kit::component::notification::Notification;
 use gpui_kit::*;
 use swofty_core::catalog::{self, Addon};
+use swofty_core::manifest::AddonManifest;
 use swofty_core::update::current_version;
-
 use swofty_i18n::trf;
 
+use super::*;
 use crate::format;
 use crate::shell::Shell;
 
-use super::*;
-
 pub(super) fn install_failure_toast(name: &str, verb: Verb, refused: bool, error: String) -> Notification {
     Notification::error(error).title(verb.failure_title(name, refused))
+}
+
+struct Finished<'a> {
+    addon: &'a Addon,
+    version: &'a catalog::Version,
+    verb: Verb,
+    took: Duration,
+    in_batch: bool,
 }
 
 pub(super) fn requested_version_available(addon: Option<&Addon>, requested: &catalog::Version) -> bool {
@@ -244,63 +251,16 @@ impl Shell {
                 );
                 let in_batch = s.browser.batch.as_mut().is_some_and(|b| b.left.remove(&addon.id));
                 let verb = Verb::of(updating);
+                let finished = Finished {
+                    addon: &addon,
+                    version: &version,
+                    verb,
+                    took,
+                    in_batch,
+                };
                 match result {
-                    Ok(done) => {
-                        let (m, also) = done.split_last().expect("an install ends with its addon");
-                        let title = verb.done(&m.name, &m.version);
-                        let also: Vec<String> =
-                            also.iter().map(|d| format!("{} {}", d.name, d.version)).collect();
-                        let mut detail = format!("{} · {}", format::size(version.size), addon.id);
-                        if !also.is_empty() {
-                            detail.push_str(&format!(
-                                " · {}",
-                                trf!("also installed {names}", names = also.join(", "))
-                            ));
-                        }
-                        s.record(Op::Install, true, title.clone(), detail, took);
-                        s.reload(cx);
-                        if in_batch {
-                            if let Some(b) = s.browser.batch.as_mut() {
-                                b.updated.push(format!("{} {}", m.name, m.version));
-                            }
-                        } else if !also.is_empty() {
-                            s.browser.toasts.push(
-                                Notification::success(trf!(
-                                    "Also installed {names}",
-                                    names = also.join(", ")
-                                ))
-                                .title(title),
-                            );
-                        }
-                    }
-                    Err(e) => {
-                        let refused = matches!(e, swofty_core::Error::Requires(_));
-                        let error = e.to_string();
-                        crate::app_log::action(verb.action())
-                            .addon(&addon.id)
-                            .failed(&error);
-                        s.record(
-                            Op::Install,
-                            false,
-                            verb.failed(&addon.name, &version.version),
-                            error.clone(),
-                            took,
-                        );
-                        s.browser.failed.insert(addon.id.clone(), error.clone());
-                        if refused {
-                            s.browser.refused.insert(addon.id.clone());
-                        }
-                        if in_batch {
-                            if let Some(b) = s.browser.batch.as_mut() {
-                                b.failed.push((addon.name.clone(), error));
-                            }
-                        } else {
-                            s.browser
-                                .toasts
-                                .push(install_failure_toast(&addon.name, verb, refused, error));
-                        }
-                        s.reload(cx);
-                    }
+                    Ok(done) => s.install_succeeded(&finished, &done, cx),
+                    Err(e) => s.install_failed(&finished, e, cx),
                 }
                 if in_batch {
                     let error = s.browser.failed.get(&addon.id).cloned().unwrap_or_default();
@@ -319,5 +279,58 @@ impl Shell {
         .detach();
         self.tick_browser(cx);
         cx.notify();
+    }
+
+    fn install_succeeded(&mut self, f: &Finished<'_>, done: &[AddonManifest], cx: &mut Context<Self>) {
+        let (m, also) = done.split_last().expect("an install ends with its addon");
+        let title = f.verb.done(&m.name, &m.version);
+        let also: Vec<String> = also.iter().map(|d| format!("{} {}", d.name, d.version)).collect();
+        let mut detail = format!("{} · {}", format::size(f.version.size), f.addon.id);
+        if !also.is_empty() {
+            detail.push_str(&format!(
+                " · {}",
+                trf!("also installed {names}", names = also.join(", "))
+            ));
+        }
+        self.record(Op::Install, true, title.clone(), detail, f.took);
+        self.reload(cx);
+        if f.in_batch {
+            if let Some(b) = self.browser.batch.as_mut() {
+                b.updated.push(format!("{} {}", m.name, m.version));
+            }
+        } else if !also.is_empty() {
+            self.browser.toasts.push(
+                Notification::success(trf!("Also installed {names}", names = also.join(", "))).title(title),
+            );
+        }
+    }
+
+    fn install_failed(&mut self, f: &Finished<'_>, e: swofty_core::Error, cx: &mut Context<Self>) {
+        let refused = matches!(e, swofty_core::Error::Requires(_));
+        let error = e.to_string();
+        crate::app_log::action(f.verb.action())
+            .addon(&f.addon.id)
+            .failed(&error);
+        self.record(
+            Op::Install,
+            false,
+            f.verb.failed(&f.addon.name, &f.version.version),
+            error.clone(),
+            f.took,
+        );
+        self.browser.failed.insert(f.addon.id.clone(), error.clone());
+        if refused {
+            self.browser.refused.insert(f.addon.id.clone());
+        }
+        if f.in_batch {
+            if let Some(b) = self.browser.batch.as_mut() {
+                b.failed.push((f.addon.name.clone(), error));
+            }
+        } else {
+            self.browser
+                .toasts
+                .push(install_failure_toast(&f.addon.name, f.verb, refused, error));
+        }
+        self.reload(cx);
     }
 }

@@ -4,7 +4,6 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::{Instant, SystemTime};
 
-use crate::scale::px;
 use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::component::notification::Notification;
 use gpui_kit::*;
@@ -13,10 +12,10 @@ use swofty_core::catalog::stars::Stars;
 use swofty_core::catalog::{self, Addon, Trouble, Update};
 use swofty_i18n::{tr, trf, trn};
 
-use crate::shell::Shell;
-
 use super::authors::View;
 use super::*;
+use crate::scale::px;
+use crate::shell::Shell;
 
 pub(crate) struct Browser {
     pub(crate) addons: Vec<Addon>,

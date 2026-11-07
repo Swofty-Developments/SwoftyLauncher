@@ -1,4 +1,3 @@
-use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::scroll::ScrollableElement;
@@ -9,11 +8,11 @@ use gpui_kit::*;
 use swofty_core::catalog::{self, Trouble};
 use swofty_i18n::{tr, trf, trn};
 
+use super::*;
 use crate::pages::GUTTER;
+use crate::scale::px;
 use crate::shell::Shell;
 use crate::theme::Palette;
-
-use super::*;
 
 fn activity_row(i: usize, e: &Activity, p: Palette) -> AnyElement {
     let color = if e.ok { p.text_muted } else { p.error };

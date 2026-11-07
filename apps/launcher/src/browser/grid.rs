@@ -1,7 +1,6 @@
 use std::collections::BTreeSet;
 use std::sync::Arc;
 
-use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::{Disableable, Sizable, h_flex, v_flex};
@@ -12,13 +11,13 @@ use swofty_core::catalog::search::Query;
 use swofty_core::update::current_version;
 use swofty_i18n::{tr, trf, trn};
 
+use super::*;
 use crate::library::Type;
 use crate::pages::{GUTTER, tile};
+use crate::scale::px;
 use crate::shell::Shell;
 use crate::theme::Palette;
 use crate::ui::facet::FILTERS_W;
-
-use super::*;
 
 pub(super) type GridKey = (String, Sort, Tab, BTreeSet<Facet>, bool, u64);
 

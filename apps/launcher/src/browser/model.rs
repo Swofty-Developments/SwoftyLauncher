@@ -5,12 +5,10 @@ use std::time::{Duration, Instant, SystemTime};
 use gpui_kit::assets::IconName;
 use swofty_core::catalog::requires::Event;
 use swofty_core::catalog::{self, Addon, Stage};
-
 use swofty_i18n::{tr, trf};
 
-use crate::format;
-
 use super::*;
+use crate::format;
 
 /// An addon, the version to install and the profile to add it to.
 pub(super) type Request = (Addon, catalog::Version, String);

@@ -3,7 +3,6 @@ use swofty_core::catalog::Addon;
 use swofty_core::catalog::search::Query;
 use swofty_core::manifest::Category;
 use swofty_core::update::current_version;
-
 use swofty_i18n::tr;
 
 use crate::library::Type;

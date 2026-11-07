@@ -7,13 +7,11 @@ use gpui_kit::*;
 use swofty_core::catalog::Addon;
 use swofty_core::catalog::requires::{self, Have, Plan};
 use swofty_core::update::current_version;
-
 use swofty_i18n::{tr, trf};
 
+use super::*;
 use crate::library::Source;
 use crate::shell::{Page, Shell};
-
-use super::*;
 
 impl Shell {
     pub(super) fn offer(&self, a: &Addon) -> Offer {
