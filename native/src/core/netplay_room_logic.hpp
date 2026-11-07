@@ -723,4 +723,53 @@ private:
     uint64_t deadline = 0, taken_at = 0;
 };
 
+constexpr uint64_t HOME_SETTLE_MS = 2000, HOME_WAIT_MS = 120000;
+
+enum class HomeDo { nothing, join, fail };
+
+// A room boot's join. The game's join request owner only exists once the main menu is up, and the direct
+// start holds the flow before the main menu until the set-up is done, so a join written before home never
+// finds the owner. The boot instead switches to LAN mode, lets the flow reach the main menu under the cover,
+// and starts the join from there once home has been up for HOME_SETTLE_MS.
+class HomeJoin {
+public:
+    void arm(uint64_t now)
+    {
+        waiting_ = true;
+        home_at_ = 0;
+        deadline_ = now + HOME_WAIT_MS;
+    }
+
+    void disarm() { waiting_ = false; }
+
+    bool waiting() const { return waiting_; }
+
+    HomeDo tick(bool home, bool lobby, uint64_t now)
+    {
+        if (!waiting_)
+            return HomeDo::nothing;
+        if (lobby) {
+            waiting_ = false;
+            return HomeDo::nothing;
+        }
+        if (!home)
+            home_at_ = 0;
+        else if (!home_at_)
+            home_at_ = now;
+        if (home_at_ && now - home_at_ >= HOME_SETTLE_MS) {
+            waiting_ = false;
+            return HomeDo::join;
+        }
+        if (now >= deadline_) {
+            waiting_ = false;
+            return HomeDo::fail;
+        }
+        return HomeDo::nothing;
+    }
+
+private:
+    bool waiting_ = false;
+    uint64_t home_at_ = 0, deadline_ = 0;
+};
+
 }

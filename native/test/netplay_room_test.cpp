@@ -356,6 +356,34 @@ int main()
     run.tick(f, 4);
     expect(run.done(), "the host session role finishes a host");
 
+    run = {};
+    f = {};
+    f.lan_mode = true;
+    run.start(room::Role::join, 0, false, true);
+    run.tick(f, 0);
+    run.tick(f, 1);
+    expect(run.done(), "a room boot's join stops after the switch to LAN mode");
+
+    {
+        room::HomeJoin hj;
+        expect(hj.tick(true, false, 0) == room::HomeDo::nothing, "an unarmed home join does nothing");
+        hj.arm(0);
+        expect(hj.waiting() && hj.tick(false, false, 10000) == room::HomeDo::nothing, "it waits for the main menu");
+        expect(hj.tick(true, false, 20000) == room::HomeDo::nothing, "the main menu first has to settle");
+        expect(hj.tick(false, false, 20500) == room::HomeDo::nothing, "leaving home restarts the settle");
+        hj.tick(true, false, 21000);
+        expect(hj.tick(true, false, 21000 + room::HOME_SETTLE_MS - 1) == room::HomeDo::nothing,
+               "nothing just before the settle ends");
+        expect(hj.tick(true, false, 21000 + room::HOME_SETTLE_MS) == room::HomeDo::join && !hj.waiting(),
+               "the join starts once home has settled, once");
+        expect(hj.tick(true, false, 30000) == room::HomeDo::nothing, "and not again");
+        hj.arm(0);
+        expect(hj.tick(false, false, room::HOME_WAIT_MS) == room::HomeDo::fail && !hj.waiting(),
+               "a main menu that never comes is a failure");
+        hj.arm(0);
+        expect(hj.tick(false, true, 5) == room::HomeDo::nothing && !hj.waiting(), "a lobby already open ends the wait");
+    }
+
 
     constexpr uint64_t MGR = 0xa10000, MAP = 0xa20000, ITEMS = 0xa30000, CTRL_END = 0xa31000, VT = 0xa40000, KEY = 0x1460bed80,
                        NS2 = 0xa50000, SYS = 0xa60000, MODES = 0xa70000, ENTRIES = 0xa80000, ENTRY = 0xa90000,

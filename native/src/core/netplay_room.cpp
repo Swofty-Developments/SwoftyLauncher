@@ -135,6 +135,7 @@ std::string network_note;
 bool resolved, asked, host_headless, host_ui, ui_started;
 std::atomic<bool> ui_rewrite{false};
 room::HostUi host_ui_run;
+room::HomeJoin home_join;
 std::string ui_logged_error;
 room::UiStep ui_logged_step = room::UiStep::idle;
 safetyhook::MidHook h_add_tabs;
@@ -613,17 +614,25 @@ bool begin(Role r, const char *host_ip, bool from_home, std::string &why)
         return refuse("the game already has a session (role " + std::to_string(now) + ")");
     error_now.clear();
     host_ui = r == Role::host && !host_headless;
+    bool join_at_home = r == Role::join && !from_home;
     ui_started = false;
     ui_logged_step = UiStep::idle;
     ui_logged_error.clear();
-    run.start(r, GetTickCount64(), from_home, host_ui);
+    uint64_t now = GetTickCount64();
+    run.start(r, now, from_home, host_ui || join_at_home);
+    if (join_at_home)
+        home_join.arm(now);
+    else
+        home_join.disarm();
     state = {Phase::running, "mode switch"};
-    runtime::room_cover::step("Switching the game mode", 0.6f, 0.72f);
+    if (!from_home)
+        runtime::room_cover::step("Switching the game mode", 0.6f, 0.72f);
     swofty::log("[netplay] room %s: set-up started %s (plan checked: %s)", role_name(r),
                 from_home ? "from the main menu" : "before the main menu",
-                host_ui ? "the network subsystem, then the front end's custom game state and the Car Category tab"
+                host_ui        ? "the network subsystem, then the front end's custom game state and the Car Category tab"
                 : r == Role::host ? "GameSessionUI, session settings, invite manager, request clear"
-                                  : "the network subsystem, invite handler, ip address");
+                : join_at_home ? "the network subsystem, invite handler, ip address; the join itself runs from the main menu"
+                               : "the network subsystem, invite handler, ip address");
     return true;
 }
 
@@ -729,10 +738,36 @@ std::string last_error()
     return error_now;
 }
 
+namespace {
+
+void home_join_tick()
+{
+    if (run.active())
+        return;
+    switch (home_join.tick(bind::on_home(), bind::in_lobby(), GetTickCount64())) {
+    case room::HomeDo::join: {
+        std::string ip = join_ip, why;
+        swofty::log("[netplay] room join: the main menu is up under the cover; the join runs from it");
+        runtime::room_cover::step("Reaching the host", 0.74f, 0.8f);
+        if (!begin(Role::join, ip.c_str(), true, why))
+            finish(Phase::failed, why);
+        break;
+    }
+    case room::HomeDo::fail:
+        finish(Phase::failed, "the game did not reach its main menu after the switch to LAN mode");
+        break;
+    default:
+        break;
+    }
+}
+
+}
+
 void tick()
 {
     std::lock_guard<std::mutex> g(lock);
     ui_tick();
+    home_join_tick();
     if (!run.active())
         return;
     Facts f;
@@ -765,10 +800,14 @@ void tick()
         finish(Phase::done, "the game is in LAN mode; the Car Category tab is next");
         host_ui_run.start(GetTickCount64());
         ui_started = true;
-    } else if (run.done())
+    } else if (run.done() && home_join.waiting())
+        finish(Phase::done, "the game is in LAN mode; the join runs once the main menu is up");
+    else if (run.done())
         finish(Phase::done, run.by_hand ? "the session is established (join requested by hand)" : "the session is established");
-    else if (run.failed())
+    else if (run.failed()) {
+        home_join.disarm();
         finish(Phase::failed, run.error);
+    }
 }
 
 CoverSignal cover_signal()
@@ -780,6 +819,8 @@ CoverSignal cover_signal()
         return CoverSignal::failed;
     if (host_ui)
         return host_ui_run.sent() ? CoverSignal::shown : CoverSignal::waiting;
+    if (home_join.waiting())
+        return CoverSignal::waiting;
     return state.phase == Phase::done ? CoverSignal::shown : CoverSignal::waiting;
 }
 

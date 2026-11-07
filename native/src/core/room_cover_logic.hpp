@@ -9,7 +9,7 @@
 namespace runtime::room_cover {
 
 constexpr uint64_t FADE_MS = 300;
-constexpr uint64_t CAP_MS = 60000;
+constexpr uint64_t CAP_MS = 150000;
 constexpr uint64_t SESSION_CAP_MS = 180000;
 constexpr uint64_t SETTLE_MS = 1500;
 
