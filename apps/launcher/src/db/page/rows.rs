@@ -3,24 +3,20 @@ use std::ops::Range;
 use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::input::Input;
+use gpui_kit::component::input::{Input, InputState};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
 use gpui_kit::component::switch::Switch;
 use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::dbedit::{Kind, Module};
+use swofty_core::dbedit::{Cell, FieldSpec, Kind, Module, ModuleRow};
 use swofty_i18n::{tr, trf, trn};
 
+use super::{MOVE_W, NAME_W, ROW_H};
 use crate::db::fields::{curve_rating, detail_shell, hex_rgb, is_on, list_items, swatch};
-use crate::db::{Nav, bool_text, clean, kind_of, swap_field};
+use crate::db::{Nav, ViewSlot, bool_text, clean, kind_of, swap_field};
 use crate::shell::Shell;
 use crate::theme::{Palette, ScrollArea, palette};
-
-const ROW_H: f32 = 40.;
-const NAME_W: f32 = 220.;
-const MOVE_W: f32 = 56.;
-const NARROW: f32 = 1100.;
 
 impl Shell {
     pub(super) fn db_rows(
@@ -66,45 +62,7 @@ impl Shell {
                             d.hover(move |s| s.bg(p.hover))
                         }
                     })
-                    .child(
-                        h_flex()
-                            .w(px(NAME_W))
-                            .flex_shrink_0()
-                            .gap(px(8.))
-                            .child(
-                                v_flex().flex_1().min_w_0().child(
-                                    div()
-                                        .text_size(px(13.))
-                                        .font_weight(FontWeight::MEDIUM)
-                                        .truncate()
-                                        .child(if r.name.is_empty() {
-                                            r.label.clone()
-                                        } else {
-                                            r.name.clone()
-                                        }),
-                                ),
-                            )
-                            .when(shared, |d| {
-                                d.child(
-                                    div()
-                                        .id(SharedString::from(format!("db-row-shared-{ri}")))
-                                        .size(px(7.))
-                                        .flex_shrink_0()
-                                        .rounded_full()
-                                        .border_1()
-                                        .border_color(p.warning)
-                                        .tooltip(|window, cx| {
-                                            gpui_kit::component::tooltip::Tooltip::new(tr(
-                                                "Another DB Editor addon on in this profile changes this row",
-                                            ))
-                                            .build(window, cx)
-                                        }),
-                                )
-                            })
-                            .when(edited, |d| {
-                                d.child(div().size(px(6.)).flex_shrink_0().rounded_full().bg(p.accent))
-                            }),
-                    )
+                    .child(row_name(r, ri, shared, edited, p))
                     .children(columns.iter().map(|&f| {
                         div()
                             .flex_1()
@@ -112,39 +70,7 @@ impl Shell {
                             .min_w_0()
                             .child(self.db_cell(module, ri, f, p, cx))
                     }))
-                    .when(moves, |d| {
-                        let (up, down) = (label.clone(), label.clone());
-                        d.child(
-                            h_flex()
-                                .w(px(MOVE_W))
-                                .flex_shrink_0()
-                                .justify_end()
-                                .child(
-                                    Button::new(SharedString::from(format!("db-up-{ri}")))
-                                        .ghost()
-                                        .xsmall()
-                                        .icon(IconName::ArrowUp)
-                                        .tooltip(tr("Move up"))
-                                        .disabled(ri == 0)
-                                        .on_click(cx.listener(move |this, _, _, cx| {
-                                            cx.stop_propagation();
-                                            this.db_move(&up, false, cx);
-                                        })),
-                                )
-                                .child(
-                                    Button::new(SharedString::from(format!("db-down-{ri}")))
-                                        .ghost()
-                                        .xsmall()
-                                        .icon(IconName::ArrowDown)
-                                        .tooltip(tr("Move down"))
-                                        .disabled(ri + 1 == total)
-                                        .on_click(cx.listener(move |this, _, _, cx| {
-                                            cx.stop_propagation();
-                                            this.db_move(&down, true, cx);
-                                        })),
-                                ),
-                        )
-                    })
+                    .when(moves, |d| d.child(Self::db_row_moves(&label, ri, total, cx)))
                     .on_click(cx.listener(move |this, _, _, cx| {
                         this.db.row = (this.db.row.as_ref() != Some(&label)).then(|| label.clone());
                         this.db.cell = None;
@@ -153,6 +79,39 @@ impl Shell {
                     .into_any_element()
             })
             .collect()
+    }
+
+    fn db_row_moves(label: &str, ri: usize, total: usize, cx: &mut Context<Self>) -> Div {
+        let (up, down) = (label.to_owned(), label.to_owned());
+
+        h_flex()
+            .w(px(MOVE_W))
+            .flex_shrink_0()
+            .justify_end()
+            .child(
+                Button::new(SharedString::from(format!("db-up-{ri}")))
+                    .ghost()
+                    .xsmall()
+                    .icon(IconName::ArrowUp)
+                    .tooltip(tr("Move up"))
+                    .disabled(ri == 0)
+                    .on_click(cx.listener(move |this, _, _, cx| {
+                        cx.stop_propagation();
+                        this.db_move(&up, false, cx);
+                    })),
+            )
+            .child(
+                Button::new(SharedString::from(format!("db-down-{ri}")))
+                    .ghost()
+                    .xsmall()
+                    .icon(IconName::ArrowDown)
+                    .tooltip(tr("Move down"))
+                    .disabled(ri + 1 == total)
+                    .on_click(cx.listener(move |this, _, _, cx| {
+                        cx.stop_propagation();
+                        this.db_move(&down, true, cx);
+                    })),
+            )
     }
 
     fn db_cell(
@@ -189,64 +148,11 @@ impl Shell {
             p.text
         };
         if let Some(edit) = self.db.cell.as_ref().filter(|c| c.key == key) {
-            let input = edit.input.clone();
-            return div()
-                .id(SharedString::from(format!("db-cell-edit-{key:x}")))
-                .w_full()
-                .on_click(|_, _, cx| cx.stop_propagation())
-                .capture_key_down(cx.listener(|this, ev: &KeyDownEvent, _, cx| {
-                    if ev.keystroke.key == "escape" {
-                        this.db.cell = None;
-                        cx.notify();
-                    }
-                }))
-                .child(Input::new(&input).xsmall())
-                .into_any_element();
+            return Self::db_cell_input(key, edit.input.clone(), cx);
         }
-        let choices: Vec<(String, String)> = match kind {
-            Kind::Choice => spec
-                .options
-                .iter()
-                .map(|o| (o.value.clone(), o.label.clone()))
-                .collect(),
-            Kind::Ref | Kind::RefList => slot.choices.get(&f).cloned().unwrap_or_default(),
-            _ => Vec::new(),
-        };
-        let shown = match kind {
-            Kind::Choice | Kind::Ref => choices
-                .iter()
-                .find(|(v, _)| *v == cell.value)
-                .map(|(_, n)| n.clone())
-                .filter(|n| !n.is_empty())
-                .or_else(|| cell.text.as_deref().map(clean))
-                .unwrap_or_else(|| cell.value.clone()),
-            Kind::RefList => trn(list_items(&cell.value).len(), "{count} item", "{count} items"),
-            Kind::Curve => curve_rating(&cell.value).unwrap_or_else(|| "curve".into()),
-            Kind::Color => hex_rgb(&cell.value).unwrap_or_else(|| cell.value.clone()),
-            _ => cell
-                .text
-                .as_deref()
-                .map(clean)
-                .unwrap_or_else(|| cell.value.clone()),
-        };
-        let revert = (cell.edited && !self.db_locked()).then(|| {
-            div()
-                .id(SharedString::from(format!("db-cell-revert-{key:x}")))
-                .flex_shrink_0()
-                .p(px(3.))
-                .rounded(px(4.))
-                .cursor_pointer()
-                .text_color(p.text_placeholder)
-                .hover(move |s| s.bg(p.hover).text_color(p.text))
-                .child(Icon::new(IconName::Undo2).size(px(12.)))
-                .tooltip(move |window, cx| {
-                    gpui_kit::component::tooltip::Tooltip::new(tr("Revert to stock")).build(window, cx)
-                })
-                .on_click(cx.listener(move |this, _, _, cx| {
-                    cx.stop_propagation();
-                    this.db_revert(key, cx);
-                }))
-        });
+        let choices = cell_choices(kind, spec, slot, f);
+        let shown = cell_shown(kind, cell, &choices);
+        let revert = (cell.edited && !self.db_locked()).then(|| Self::db_cell_revert(key, p, cx));
         let text = div()
             .min_w_0()
             .truncate()
@@ -279,36 +185,7 @@ impl Shell {
                 .child(text)
                 .into_any_element(),
             Kind::Choice | Kind::Ref if !locked && !choices.is_empty() => {
-                let shell = cx.entity().downgrade();
-                let current = cell.value.clone();
-                let pick = Button::new(SharedString::from(format!("db-cell-pick-{key:x}")))
-                    .ghost()
-                    .xsmall()
-                    .icon(IconName::ChevronDown)
-                    .dropdown_menu_with_anchor(Anchor::TopLeft, move |mut menu, _, _| {
-                        menu = menu.max_h(px(320.)).scrollable(true).min_w(px(220.));
-                        for (v, n) in &choices {
-                            let (shell, v2) = (shell.clone(), v.clone());
-                            let t = if n.is_empty() { v.clone() } else { n.clone() };
-                            menu = menu.item(PopupMenuItem::new(t).checked(*v == current).on_click(
-                                move |_, _, cx| {
-                                    shell.update(cx, |s, cx| s.db_set(key, &v2, cx)).ok();
-                                },
-                            ));
-                        }
-                        menu
-                    });
-                h_flex()
-                    .gap(px(2.))
-                    .min_w_0()
-                    .child(text)
-                    .child(
-                        div()
-                            .flex_shrink_0()
-                            .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
-                            .child(pick),
-                    )
-                    .into_any_element()
+                Self::db_cell_choice(key, cell.value.clone(), choices, text, cx)
             }
             Kind::Int | Kind::Float | Kind::Text | Kind::Time | Kind::List | Kind::Vector if !locked => {
                 let value = cell.value.clone();
@@ -335,6 +212,78 @@ impl Shell {
             .min_w_0()
             .child(div().min_w_0().child(body))
             .children(revert)
+            .into_any_element()
+    }
+
+    fn db_cell_input(key: u64, input: Entity<InputState>, cx: &mut Context<Self>) -> AnyElement {
+        div()
+            .id(SharedString::from(format!("db-cell-edit-{key:x}")))
+            .w_full()
+            .on_click(|_, _, cx| cx.stop_propagation())
+            .capture_key_down(cx.listener(|this, ev: &KeyDownEvent, _, cx| {
+                if ev.keystroke.key == "escape" {
+                    this.db.cell = None;
+                    cx.notify();
+                }
+            }))
+            .child(Input::new(&input).xsmall())
+            .into_any_element()
+    }
+
+    fn db_cell_revert(key: u64, p: Palette, cx: &mut Context<Self>) -> Stateful<Div> {
+        div()
+            .id(SharedString::from(format!("db-cell-revert-{key:x}")))
+            .flex_shrink_0()
+            .p(px(3.))
+            .rounded(px(4.))
+            .cursor_pointer()
+            .text_color(p.text_placeholder)
+            .hover(move |s| s.bg(p.hover).text_color(p.text))
+            .child(Icon::new(IconName::Undo2).size(px(12.)))
+            .tooltip(move |window, cx| {
+                gpui_kit::component::tooltip::Tooltip::new(tr("Revert to stock")).build(window, cx)
+            })
+            .on_click(cx.listener(move |this, _, _, cx| {
+                cx.stop_propagation();
+                this.db_revert(key, cx);
+            }))
+    }
+
+    fn db_cell_choice(
+        key: u64,
+        current: String,
+        choices: Choices,
+        text: Div,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        let shell = cx.entity().downgrade();
+        let pick = Button::new(SharedString::from(format!("db-cell-pick-{key:x}")))
+            .ghost()
+            .xsmall()
+            .icon(IconName::ChevronDown)
+            .dropdown_menu_with_anchor(Anchor::TopLeft, move |mut menu, _, _| {
+                menu = menu.max_h(px(320.)).scrollable(true).min_w(px(220.));
+                for (v, n) in &choices {
+                    let (shell, v2) = (shell.clone(), v.clone());
+                    let t = if n.is_empty() { v.clone() } else { n.clone() };
+                    menu = menu.item(PopupMenuItem::new(t).checked(*v == current).on_click(
+                        move |_, _, cx| {
+                            shell.update(cx, |s, cx| s.db_set(key, &v2, cx)).ok();
+                        },
+                    ));
+                }
+                menu
+            });
+        h_flex()
+            .gap(px(2.))
+            .min_w_0()
+            .child(text)
+            .child(
+                div()
+                    .flex_shrink_0()
+                    .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+                    .child(pick),
+            )
             .into_any_element()
     }
 
@@ -425,4 +374,78 @@ impl Shell {
         )
         .into_any_element()
     }
+}
+
+type Choices = Vec<(String, String)>;
+
+fn cell_choices(kind: Kind, spec: &FieldSpec, slot: &ViewSlot, field: usize) -> Choices {
+    match kind {
+        Kind::Choice => spec
+            .options
+            .iter()
+            .map(|o| (o.value.clone(), o.label.clone()))
+            .collect(),
+        Kind::Ref | Kind::RefList => slot.choices.get(&field).cloned().unwrap_or_default(),
+        _ => Vec::new(),
+    }
+}
+
+fn cell_shown(kind: Kind, cell: &Cell, choices: &Choices) -> String {
+    match kind {
+        Kind::Choice | Kind::Ref => choices
+            .iter()
+            .find(|(v, _)| *v == cell.value)
+            .map(|(_, n)| n.clone())
+            .filter(|n| !n.is_empty())
+            .or_else(|| cell.text.as_deref().map(clean))
+            .unwrap_or_else(|| cell.value.clone()),
+        Kind::RefList => trn(list_items(&cell.value).len(), "{count} item", "{count} items"),
+        Kind::Curve => curve_rating(&cell.value).unwrap_or_else(|| "curve".into()),
+        Kind::Color => hex_rgb(&cell.value).unwrap_or_else(|| cell.value.clone()),
+        _ => cell
+            .text
+            .as_deref()
+            .map(clean)
+            .unwrap_or_else(|| cell.value.clone()),
+    }
+}
+
+fn row_name(r: &ModuleRow, ri: usize, shared: bool, edited: bool, p: Palette) -> Div {
+    h_flex()
+        .w(px(NAME_W))
+        .flex_shrink_0()
+        .gap(px(8.))
+        .child(
+            v_flex().flex_1().min_w_0().child(
+                div()
+                    .text_size(px(13.))
+                    .font_weight(FontWeight::MEDIUM)
+                    .truncate()
+                    .child(if r.name.is_empty() {
+                        r.label.clone()
+                    } else {
+                        r.name.clone()
+                    }),
+            ),
+        )
+        .when(shared, |d| {
+            d.child(
+                div()
+                    .id(SharedString::from(format!("db-row-shared-{ri}")))
+                    .size(px(7.))
+                    .flex_shrink_0()
+                    .rounded_full()
+                    .border_1()
+                    .border_color(p.warning)
+                    .tooltip(|window, cx| {
+                        gpui_kit::component::tooltip::Tooltip::new(tr(
+                            "Another DB Editor addon on in this profile changes this row",
+                        ))
+                        .build(window, cx)
+                    }),
+            )
+        })
+        .when(edited, |d| {
+            d.child(div().size(px(6.)).flex_shrink_0().rounded_full().bg(p.accent))
+        })
 }

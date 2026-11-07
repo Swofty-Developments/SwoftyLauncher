@@ -12,11 +12,6 @@ use crate::pages::label;
 use crate::shell::Shell;
 use crate::theme::{Palette, SCROLLBAR_GAP, ScrollArea};
 
-const ROW_H: f32 = 40.;
-const NAME_W: f32 = 220.;
-const MOVE_W: f32 = 56.;
-const NARROW: f32 = 1100.;
-
 pub(crate) fn nav_row(
     id: impl Into<SharedString>,
     icon: IconName,

@@ -11,16 +11,11 @@ use gpui_kit::*;
 use swofty_core::dbedit::Module;
 use swofty_i18n::{tr, trf, trn};
 
-use super::notice;
+use super::{MOVE_W, NAME_W, notice};
 use crate::db::{icon_named, swap_field};
 use crate::shell::Shell;
 use crate::theme::Palette;
 use crate::ui::SectionHead;
-
-const ROW_H: f32 = 40.;
-const NAME_W: f32 = 220.;
-const MOVE_W: f32 = 56.;
-const NARROW: f32 = 1100.;
 
 impl Shell {
     pub(super) fn db_module(&mut self, id: &str, p: Palette, cx: &mut Context<Self>) -> AnyElement {

@@ -11,11 +11,6 @@ use crate::pages::{GUTTER, label};
 use crate::shell::Shell;
 use crate::theme::{Palette, ScrollArea};
 
-const ROW_H: f32 = 40.;
-const NAME_W: f32 = 220.;
-const MOVE_W: f32 = 56.;
-const NARROW: f32 = 1100.;
-
 fn hit_group(kind: HitKind) -> &'static str {
     match kind {
         HitKind::ModuleRow => tr("Drivers, teams and tracks"),
