@@ -14,6 +14,7 @@ use swofty_core::view::{Effect, Shown};
 
 use crate::shell::Shell;
 use crate::theme::Palette;
+use crate::ui::{Overlay, ProgressBar};
 
 pub(crate) type Feed = Arc<Mutex<Option<TaskList>>>;
 
@@ -253,18 +254,7 @@ impl Shell {
             0 => 1.,
             n => counts.settled() as f32 / n as f32,
         };
-        let bar = div()
-            .h(px(4.))
-            .w_full()
-            .rounded_full()
-            .bg(p.border_variant)
-            .child(
-                div()
-                    .h_full()
-                    .w(relative(fraction))
-                    .rounded_full()
-                    .bg(if running { p.accent } else { tint }),
-            );
+        let bar = ProgressBar::new(fraction).color(if running { p.accent } else { tint });
         let note = match &d.outcome {
             Some(Outcome::Notice(text)) => Some((text.clone(), if failed { p.warning } else { p.success })),
             Some(Outcome::Error(e)) => Some((e.clone(), p.error)),
@@ -335,13 +325,7 @@ impl Shell {
                     })),
             );
         Some(
-            div()
-                .absolute()
-                .inset_0()
-                .flex()
-                .items_center()
-                .justify_center()
-                .bg(hsla(0., 0., 0., 0.42))
+            Overlay::new("task-overlay")
                 .child(
                     v_flex()
                         .id("task-dialog")

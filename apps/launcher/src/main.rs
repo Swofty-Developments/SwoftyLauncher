@@ -17,6 +17,7 @@ mod download_dock;
 mod download_queue;
 mod ea_app;
 mod form;
+mod format;
 mod game;
 mod game_edited;
 mod importer;
@@ -39,6 +40,7 @@ mod shell;
 mod tasks;
 mod theme;
 mod tools;
+mod ui;
 mod ui_mode;
 mod update;
 

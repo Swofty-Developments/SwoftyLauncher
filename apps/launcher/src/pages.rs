@@ -8,35 +8,23 @@ use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
 use gpui_kit::component::notification::Notification;
 use gpui_kit::component::scroll::Scrollable;
 use gpui_kit::component::slider::{Slider, SliderEvent, SliderState};
-use gpui_kit::component::switch::Switch;
 use gpui_kit::component::{Disableable, Icon, Sizable, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::manifest::{AddonManifest, AddonOption, Binds, OptionType};
 use swofty_core::profile::VANILLA;
 use swofty_core::store::ProfileDeletion;
-use swofty_i18n::{tr, trf};
+use swofty_i18n::{tr, trf, trn};
 
-use crate::library::{AddonIcon, ProfileItem, plural};
+use crate::library::{AddonIcon, ProfileItem};
 use crate::shell::{Page, Prompt, Shell, SliderSlot};
 use crate::theme::{Palette, ScrollArea, palette};
+use crate::ui::{EmptyState, PageHeader, Pill, Toggle, row, row_head};
 
-pub(crate) const GUTTER: f32 = 28.;
+pub(crate) const GUTTER: f32 = crate::ui::tokens::space::GUTTER;
 
-pub(crate) fn tag(label: impl Into<SharedString>, p: Palette) -> Div {
-    div()
-        .px(px(6.))
-        .h(px(20.))
-        .flex()
-        .items_center()
-        .rounded(px(4.))
-        .border_1()
-        .border_color(p.border)
-        .text_size(px(11.))
-        .font_weight(FontWeight::MEDIUM)
-        .text_color(p.text_muted)
-        .whitespace_nowrap()
-        .child(label.into())
+pub(crate) fn tag(label: impl Into<SharedString>, _: Palette) -> Pill {
+    Pill::new(label)
 }
 
 pub(crate) fn tile(size: f32, p: Palette) -> Div {
@@ -270,32 +258,12 @@ impl Shell {
         title: impl Into<SharedString>,
         subtitle: String,
         actions: impl IntoElement,
-        p: Palette,
+        _: Palette,
     ) -> impl IntoElement {
-        h_flex()
-            .px(px(GUTTER))
-            .pt(px(22.))
-            .pb(px(16.))
-            .gap(px(16.))
-            .items_end()
-            .flex_shrink_0()
-            .child(
-                v_flex()
-                    .flex_1()
-                    .min_w_0()
-                    .gap(px(3.))
-                    .child(
-                        div()
-                            .text_size(px(18.))
-                            .font_weight(FontWeight::SEMIBOLD)
-                            .child(title.into()),
-                    )
-                    .child(div().text_size(px(13.)).text_color(p.text_muted).child(subtitle))
-                    .when_some(self.library.error.clone(), |d, e| {
-                        d.child(div().text_size(px(13.)).text_color(p.error).child(e))
-                    }),
-            )
-            .child(h_flex().gap(px(8.)).pb(px(2.)).child(actions))
+        PageHeader::new(title)
+            .subtitle(subtitle)
+            .error(self.library.error.clone())
+            .actions(actions)
     }
 
     pub(crate) fn list(
@@ -328,50 +296,20 @@ impl Shell {
         title: impl Into<SharedString>,
         body: impl Into<SharedString>,
         action: impl IntoElement,
-        p: Palette,
+        _: Palette,
     ) -> AnyElement {
-        v_flex()
-            .flex_1()
-            .items_center()
-            .justify_center()
-            .gap(px(8.))
-            .pb(px(48.))
-            .child(badge(icon, 44., p))
-            .child(
-                div()
-                    .pt(px(8.))
-                    .text_size(px(15.))
-                    .font_weight(FontWeight::SEMIBOLD)
-                    .child(title.into()),
-            )
-            .child(
-                div()
-                    .max_w(px(400.))
-                    .text_center()
-                    .text_size(px(13.))
-                    .line_height(px(19.))
-                    .text_color(p.text_muted)
-                    .child(body.into()),
-            )
-            .child(div().pt(px(8.)).child(action))
+        EmptyState::new(icon, title)
+            .body(body)
+            .action(action)
             .into_any_element()
     }
 
     pub(crate) fn row(&self, first: bool, open: bool, p: Palette) -> Div {
-        v_flex()
-            .flex_shrink_0()
-            .when(!first, |d| d.border_t_1().border_color(p.border_variant))
-            .when(open, |d| d.bg(p.surface))
+        row(first, open, p)
     }
 
     pub(crate) fn row_head(&self, id: String, open: bool, p: Palette) -> Stateful<Div> {
-        h_flex()
-            .id(SharedString::from(id))
-            .h(px(54.))
-            .px(px(14.))
-            .gap(px(12.))
-            .cursor_pointer()
-            .when(!open, |d| d.hover(move |s| s.bg(p.hover)))
+        row_head(id, open, p)
     }
 
     pub(crate) fn toggle(
@@ -381,15 +319,9 @@ impl Shell {
         cx: &mut Context<Self>,
         change: impl Fn(&mut Self, bool, &mut Window, &mut Context<Self>) + 'static,
     ) -> AnyElement {
-        let switch = Switch::new(SharedString::from(id.clone()))
-            .checked(on)
-            .small()
+        Toggle::new(id, on)
             .disabled(self.vanilla())
-            .on_change(cx.listener(move |this, on: &bool, window, cx| change(this, *on, window, cx)));
-        div()
-            .id(SharedString::from(format!("{id}-hold")))
-            .on_click(|_, _, cx| cx.stop_propagation())
-            .child(switch)
+            .on_change(cx.listener(move |this, on: &bool, window, cx| change(this, *on, window, cx)))
             .into_any_element()
     }
 
@@ -982,7 +914,8 @@ impl Shell {
                                     } else {
                                         trf!(
                                             "{addons} on",
-                                            addons = plural(item.addons.len(), tr("addon"), tr("addons"))
+                                            addons =
+                                                trn(item.addons.len(), "{count} addon", "{count} addons")
                                         )
                                     }),
                             ),

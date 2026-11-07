@@ -23,6 +23,7 @@ use crate::game_edited::discord_link;
 use crate::pages::{game_art, label};
 use crate::shell::Shell;
 use crate::theme::{Palette, palette};
+use crate::ui::Callout;
 
 pub(crate) const RISK: &str = "Because of how Swofty Launcher hooks the game's engine, which lets addons run \
                                their own engine code, it is highly risky to change the game with any outside \
@@ -636,30 +637,8 @@ fn step(n: u32, title: &'static str, body: &'static str, p: Palette) -> impl Int
         )
 }
 
-fn callout(icon: IconName, text: impl Into<SharedString>, p: Palette) -> impl IntoElement {
-    h_flex()
-        .gap(px(10.))
-        .items_start()
-        .p(px(12.))
-        .rounded(px(6.))
-        .bg(p.warning.opacity(0.08))
-        .border_1()
-        .border_color(p.warning.opacity(0.4))
-        .child(
-            Icon::new(icon)
-                .size(px(15.))
-                .flex_shrink_0()
-                .text_color(p.warning),
-        )
-        .child(
-            div()
-                .flex_1()
-                .min_w_0()
-                .text_size(px(13.))
-                .line_height(px(19.))
-                .text_color(p.text)
-                .child(text.into()),
-        )
+fn callout(icon: IconName, text: impl Into<SharedString>, _: Palette) -> impl IntoElement {
+    Callout::warning(text).icon(icon)
 }
 
 fn choice(
