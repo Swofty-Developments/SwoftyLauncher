@@ -259,7 +259,7 @@ impl Shell {
             .child(div().flex_1().min_w_0().truncate().child(if vanilla {
                 trf!("Switch away from {vanilla} to use addons", vanilla = VANILLA)
             } else {
-                "Lower in the list wins when two addons change the same thing".to_owned()
+                tr("Lower in the list wins when two addons change the same thing").to_owned()
             }))
             .when(matched != total, |d| {
                 d.child(div().flex_shrink_0().text_color(p.text_placeholder).child(trf!(

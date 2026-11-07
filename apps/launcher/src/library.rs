@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Instant;
-use swofty_i18n::{trf, trn};
+use swofty_i18n::{tr, trf, trn};
 
 use gpui_kit::{Image, ImageFormat};
 use swofty_core::asset::AssetOp;
@@ -52,10 +52,10 @@ impl Source {
 
     pub fn label(self) -> &'static str {
         match self {
-            Self::Builtin => "Built in",
-            Self::DbEditor => "DB Editor",
-            Self::Importer => "Imported",
-            Self::Installed => "Installed",
+            Self::Builtin => tr("Built in"),
+            Self::DbEditor => tr("DB Editor"),
+            Self::Importer => tr("Imported"),
+            Self::Installed => tr("Installed"),
         }
     }
 
@@ -238,7 +238,7 @@ impl ProfileItem {
 
     pub fn summary(&self) -> String {
         if self.vanilla() {
-            return "No addons".into();
+            return tr("No addons").into();
         }
         trf!("{count} on", count = self.addons.len())
     }

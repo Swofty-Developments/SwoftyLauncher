@@ -310,7 +310,7 @@ impl Shell {
 
     pub(super) fn list_heading(&self, p: Palette) -> AnyElement {
         let title = match self.vanilla() {
-            true => "INSTALLED".to_owned(),
+            true => tr("INSTALLED").to_owned(),
             false => trf!(
                 "LOAD ORDER IN {name}",
                 name = self.library.profile.name.to_uppercase()

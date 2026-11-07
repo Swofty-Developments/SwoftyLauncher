@@ -45,12 +45,12 @@ impl Type {
 
     pub(crate) fn label(self) -> &'static str {
         match self {
-            Self::Database => "Database",
-            Self::Archives => "Archives",
-            Self::Text => "Text & UI",
-            Self::Simplified => "Simplified",
-            Self::Files => "Files",
-            Self::Code => "Code",
+            Self::Database => tr("Database"),
+            Self::Archives => tr("Archives"),
+            Self::Text => tr("Text & UI"),
+            Self::Simplified => tr("Simplified"),
+            Self::Files => tr("Files"),
+            Self::Code => tr("Code"),
         }
     }
 
@@ -75,9 +75,9 @@ impl State {
     pub(super) fn label(self) -> &'static str {
         match self {
             Self::On => "On",
-            Self::Off => "Off",
-            Self::Conflicts => "Has conflicts",
-            Self::Update => "Update available",
+            Self::Off => tr("Off"),
+            Self::Conflicts => tr("Has conflicts"),
+            Self::Update => tr("Update available"),
         }
     }
 }
@@ -111,7 +111,7 @@ impl Facet {
     pub(super) fn label(self) -> &'static str {
         match self {
             Self::Category(Some(c)) => c.label(),
-            Self::Category(None) => "Uncategorised",
+            Self::Category(None) => tr("Uncategorised"),
             Self::Type(t) => t.label(),
             Self::Source(s) => s.label(),
             Self::State(s) => s.label(),

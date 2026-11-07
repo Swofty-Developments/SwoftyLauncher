@@ -205,10 +205,10 @@ impl Shell {
                     .gap(px(16.))
                     .pr(px(SCROLLBAR_GAP))
                     .pb(px(8.))
-                    .child(group("CATEGORY", categories, cx))
-                    .child(group("TYPE", types, cx))
-                    .child(group("SOURCE", sources, cx))
-                    .child(group("STATE", states, cx)),
+                    .child(group(tr("CATEGORY"), categories, cx))
+                    .child(group(tr("TYPE"), types, cx))
+                    .child(group(tr("SOURCE"), sources, cx))
+                    .child(group(tr("STATE"), states, cx)),
             )
     }
 

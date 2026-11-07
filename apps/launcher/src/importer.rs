@@ -54,7 +54,11 @@ impl Shell {
                 Button::new("importer-install")
                     .primary()
                     .icon(IconName::Download)
-                    .label(if adding { "Installing…" } else { "Install" })
+                    .label(if adding {
+                        tr("Installing…")
+                    } else {
+                        tr("Install")
+                    })
                     .loading(adding)
                     .disabled(adding)
                     .on_click(cx.listener(|this, _, window, cx| this.install_importer(window, cx))),
@@ -78,7 +82,7 @@ impl Shell {
         };
         v_flex()
             .size_full()
-            .child(self.header(Page::Importer.label(), "Team Simplified".to_owned(), div(), p))
+            .child(self.header(Page::Importer.label(), tr("Team Simplified").to_owned(), div(), p))
             .child(self.empty(IconName::FolderInput, title, body, button, p))
             .into_any_element()
     }
@@ -109,7 +113,7 @@ impl Shell {
         );
         v_flex()
             .size_full()
-            .child(self.header(Page::Importer.label(), "Team Simplified".to_owned(), div(), p))
+            .child(self.header(Page::Importer.label(), tr("Team Simplified").to_owned(), div(), p))
             .child(self.empty(
                 IconName::ShieldCheck,
                 "Vanilla stays stock",

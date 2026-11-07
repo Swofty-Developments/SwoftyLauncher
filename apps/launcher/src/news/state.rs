@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Arc;
 use std::time::Instant;
-use swofty_i18n::trf;
+use swofty_i18n::{tr, trf};
 
 pub(super) const STACK_BELOW: f32 = 680.;
 
@@ -189,15 +189,15 @@ impl News {
 
     pub(super) fn subtitle(&self) -> String {
         if self.fetching {
-            return "Checking for news…".into();
+            return tr("Checking for news…").into();
         }
         if self.live {
-            return "From f1.swofty.net".into();
+            return tr("From f1.swofty.net").into();
         }
         let shown = if self.saved {
-            "showing the news saved last time"
+            tr("showing the news saved last time")
         } else {
-            "showing the news that came with this version"
+            tr("showing the news that came with this version")
         };
         match self.trouble {
             Some(Trouble::Failed) => trf!("Couldn't load the latest news · {shown}", shown = shown),

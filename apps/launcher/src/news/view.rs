@@ -474,9 +474,9 @@ impl Shell {
                         .small()
                         .icon(IconName::ExternalLink)
                         .label(if on_site {
-                            "Read on f1.swofty.net"
+                            tr("Read on f1.swofty.net")
                         } else {
-                            "Open in browser"
+                            tr("Open in browser")
                         })
                         .on_click(move |_, _, cx| cx.open_url(&url)),
                 )

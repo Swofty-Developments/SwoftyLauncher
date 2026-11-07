@@ -160,7 +160,7 @@ impl Shell {
             }
             order::Kind::Version { .. } => {
                 out.push(
-                    button(key("update"), "Open Addon Browser".to_owned())
+                    button(key("update"), tr("Open Addon Browser").to_owned())
                         .on_click(cx.listener(|this, _, _, cx| this.open_page(Page::Browser, cx)))
                         .into_any_element(),
                 );
@@ -192,7 +192,7 @@ impl Shell {
                             .into_any_element(),
                     ),
                     _ => out.push(
-                        button(key("update"), "Open Addon Browser".to_owned())
+                        button(key("update"), tr("Open Addon Browser").to_owned())
                             .on_click(cx.listener(|this, _, _, cx| this.open_page(Page::Browser, cx)))
                             .into_any_element(),
                     ),

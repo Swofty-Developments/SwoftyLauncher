@@ -206,7 +206,7 @@ impl Shell {
                 .child(if self.vanilla() {
                     trf!("Off in {vanilla}", vanilla = VANILLA)
                 } else {
-                    "Always on".to_owned()
+                    tr("Always on").to_owned()
                 })
                 .into_any_element()
         } else {
@@ -242,7 +242,7 @@ impl Shell {
         let category = match m.category() {
             Some(c) => Some(c.label()),
             None if m.source == Source::Builtin => None,
-            None => Some("Uncategorised"),
+            None => Some(tr("Uncategorised")),
         };
         let types = Type::list(m);
         h_flex()
@@ -347,7 +347,7 @@ impl Shell {
                                 Some(v) => {
                                     trf!("{v} is available. Update addons from the play bar.", v = v)
                                 }
-                                None => "Update available".to_owned(),
+                                None => tr("Update available").to_owned(),
                             })
                             .build(window, cx)
                         }),

@@ -140,7 +140,7 @@ impl Shell {
                 .background_executor()
                 .spawn(async move {
                     let game = crate::sections::game(&store, install.as_ref()).ok_or_else(|| {
-                        "Locate F1 25 first. Checking conflicts reads its files.".to_owned()
+                        tr("Locate F1 25 first. Checking conflicts reads its files.").to_owned()
                     })?;
                     conflicts::check(&store, &profile, &game).map_err(|e| e.to_string())
                 })
@@ -150,7 +150,7 @@ impl Shell {
                 match result {
                     Ok(report) => {
                         let text = match report.pairs.len() {
-                            0 => "No conflicts between addons".to_owned(),
+                            0 => tr("No conflicts between addons").to_owned(),
                             n => trn(n, "Found {count} conflict", "Found {count} conflicts"),
                         };
                         window.push_notification(Notification::success(text), cx);
@@ -180,9 +180,9 @@ impl Shell {
             .when(small, |b| b.xsmall())
             .icon(IconName::RefreshCw)
             .label(if self.addons.checking {
-                "Checking…"
+                tr("Checking…")
             } else {
-                "Check conflicts"
+                tr("Check conflicts")
             })
             .tooltip(tr("Plans this profile's build without installing it"))
             .loading(self.addons.checking)
@@ -201,7 +201,9 @@ impl Shell {
         let check = self.check_button("check-conflicts", true, cx);
         let note = match report {
             _ if self.vanilla() => trf!("{vanilla} has no addons to conflict", vanilla = VANILLA),
-            None => "Not checked yet. Checking plans this profile's build without installing it.".to_owned(),
+            None => {
+                tr("Not checked yet. Checking plans this profile's build without installing it.").to_owned()
+            }
             Some(r) if !r.is_current(&self.library.profile) => trf!(
                 "Checked {ago}, before addons were turned on, off or moved. Check again to update it.",
                 ago = ago_since(r.built_at)
@@ -431,7 +433,7 @@ impl Shell {
                 d.child(div().pt(px(4.)).child(link(
                     format!("pair-all-{tag_id}"),
                     if all {
-                        "Show fewer".to_owned()
+                        tr("Show fewer").to_owned()
                     } else {
                         trf!("Show all {total}", total = total)
                     },
@@ -470,7 +472,12 @@ impl Shell {
             })
             .child(link(
                 format!("pair-details-{tag_id}"),
-                if details { "Hide details" } else { "Details" }.to_owned(),
+                if details {
+                    tr("Hide details")
+                } else {
+                    tr("Details")
+                }
+                .to_owned(),
                 cx,
                 |this, key| {
                     if !this.addons.details.remove(&key) {

@@ -478,7 +478,7 @@ impl Shell {
             .size_full()
             .child(self.header(
                 Page::Tools.label(),
-                "Tools that make or edit Swofty addons".to_owned(),
+                tr("Tools that make or edit Swofty addons").to_owned(),
                 arrows,
                 p,
             ))

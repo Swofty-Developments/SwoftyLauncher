@@ -166,44 +166,8 @@ impl Shell {
     fn detail_facts(&self, m: &AddonItem, p: Palette, cx: &mut Context<Self>) -> Div {
         let man = &m.manifest;
         let id = man.id.as_str();
-        let made_for = man
-            .compat
-            .game_builds
-            .iter()
-            .map(|b| {
-                b.to_string()
-                    .trim_start_matches(['>', '<', '=', '^', '~'])
-                    .to_owned()
-            })
-            .collect::<Vec<_>>()
-            .join(", ");
-        let (compat, compat_color) = match self.install.as_ref().and_then(|i| i.build_id) {
-            _ if man.compat.game_builds.is_empty() => ("Works with any game version".to_owned(), p.text),
-            Some(b) if man.compat.accepts_build(b) => ("Works with this game version".to_owned(), p.success),
-            Some(b) => (
-                trf!(
-                    "Made for game build {made_for} (yours: {b})",
-                    made_for = made_for,
-                    b = b
-                ),
-                p.warning,
-            ),
-            None => (
-                trf!("Made for game build {made_for}", made_for = made_for),
-                p.text,
-            ),
-        };
-        let on = self.addon_on(m);
-        let (status, status_color) = if self.vanilla() {
-            (
-                trf!("Switch away from {vanilla} to use addons", vanilla = VANILLA),
-                p.warning,
-            )
-        } else if on {
-            ("On".to_owned(), p.success)
-        } else {
-            ("Off".to_owned(), p.text_muted)
-        };
+        let (compat, compat_color) = self.compat_line(man, p);
+        let (status, status_color) = self.status_line(m, p);
         let (positions, loaded) = self.positions();
         let position = positions.get(id).copied();
         let movable = self.movable(m);
@@ -259,7 +223,11 @@ impl Shell {
             ))
             .when_some(order_line, |d, line| d.child(fact(tr("Load order"), line, p)))
             .when(!self.vanilla(), |d| {
-                d.child(fact(tr("Folder"), folder.unwrap_or_else(|| "None".to_owned()), p))
+                d.child(fact(
+                    tr("Folder"),
+                    folder.unwrap_or_else(|| tr("None").to_owned()),
+                    p,
+                ))
             })
             .when(m.category().is_some() || m.source != Source::Builtin, |d| {
                 d.child(fact(
@@ -403,9 +371,9 @@ fn detail_what(m: &AddonItem, changes: &Changes, p: Palette) -> Div {
                 .text_size(px(13.))
                 .text_color(p.text_placeholder)
                 .child(if man.launcher.is_some() {
-                    "Adds pages and tools to the launcher"
+                    tr("Adds pages and tools to the launcher")
                 } else {
-                    "Nothing listed in its manifest"
+                    tr("Nothing listed in its manifest")
                 })
                 .into_any_element()
         } else {
@@ -464,5 +432,53 @@ impl Shell {
             p.text
         };
         fact(tr("Requires"), div().text_color(color).child(text), p)
+    }
+}
+
+impl Shell {
+    fn compat_line(&self, man: &AddonManifest, p: Palette) -> (String, Hsla) {
+        let made_for = man
+            .compat
+            .game_builds
+            .iter()
+            .map(|b| {
+                b.to_string()
+                    .trim_start_matches(['>', '<', '=', '^', '~'])
+                    .to_owned()
+            })
+            .collect::<Vec<_>>()
+            .join(", ");
+        match self.install.as_ref().and_then(|i| i.build_id) {
+            _ if man.compat.game_builds.is_empty() => (tr("Works with any game version").to_owned(), p.text),
+            Some(b) if man.compat.accepts_build(b) => {
+                (tr("Works with this game version").to_owned(), p.success)
+            }
+            Some(b) => (
+                trf!(
+                    "Made for game build {made_for} (yours: {b})",
+                    made_for = made_for,
+                    b = b
+                ),
+                p.warning,
+            ),
+            None => (
+                trf!("Made for game build {made_for}", made_for = made_for),
+                p.text,
+            ),
+        }
+    }
+
+    fn status_line(&self, m: &AddonItem, p: Palette) -> (String, Hsla) {
+        let on = self.addon_on(m);
+        if self.vanilla() {
+            (
+                trf!("Switch away from {vanilla} to use addons", vanilla = VANILLA),
+                p.warning,
+            )
+        } else if on {
+            (tr("On").to_owned(), p.success)
+        } else {
+            (tr("Off").to_owned(), p.text_muted)
+        }
     }
 }

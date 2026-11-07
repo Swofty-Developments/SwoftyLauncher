@@ -27,13 +27,13 @@ impl Shell {
 
     pub(super) fn new_folder(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let prompt = Prompt {
-            title: "New folder",
+            title: tr("New folder"),
             description: "Drag addons onto the folder to put them in it. Its addons load together, \
                           and dragging the folder moves them all."
                 .to_owned(),
             initial: String::new(),
-            placeholder: "Folder name",
-            ok: "Make folder",
+            placeholder: tr("Folder name"),
+            ok: tr("Make folder"),
             browse: None,
             action: std::rc::Rc::new(|store, name| {
                 let mut f = store.folders();
@@ -55,11 +55,11 @@ impl Shell {
             .unwrap_or_default();
         let id = id.to_owned();
         let prompt = Prompt {
-            title: "Rename folder",
-            description: "Its addons stay where they are.".to_owned(),
+            title: tr("Rename folder"),
+            description: tr("Its addons stay where they are.").to_owned(),
             initial,
-            placeholder: "Folder name",
-            ok: "Rename",
+            placeholder: tr("Folder name"),
+            ok: tr("Rename"),
             browse: None,
             action: std::rc::Rc::new(move |store, name| {
                 let mut f = store.folders();
