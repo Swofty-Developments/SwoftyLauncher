@@ -71,7 +71,7 @@ pub fn candidates_on(
         measure(&mut found);
         out.push(found);
     }
-    out.sort_by_key(|f| std::cmp::Reverse(f.newest));
+    out.sort_by_key(|f| (std::cmp::Reverse(f.newest), std::cmp::Reverse(f.addons)));
     out
 }
 
