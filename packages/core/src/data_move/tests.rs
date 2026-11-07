@@ -511,6 +511,7 @@ fn recover_finishes_a_rename_that_crashed_before_the_link() {
         linked: false,
         aside: dir.join("Swofty.old"),
         to_existed: false,
+        kind: Kind::Move,
     };
     journal.save().unwrap();
     std::fs::create_dir_all(to.parent().unwrap()).unwrap();
@@ -533,6 +534,7 @@ fn recover_rolls_back_a_copy_that_no_longer_matches() {
         linked: false,
         aside: dir.join("Swofty.old"),
         to_existed: false,
+        kind: Kind::Move,
     };
     journal.save().unwrap();
     std::fs::create_dir_all(&to).unwrap();
@@ -722,3 +724,6 @@ mod windows {
         assert!(!first.exists());
     }
 }
+
+mod adopt;
+mod find;

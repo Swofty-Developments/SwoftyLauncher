@@ -13,7 +13,10 @@
 //! startup, when nothing has the old folder open, and it also finishes or
 //! undoes a move that a crash cut short.
 
+mod adopt;
 mod copy;
+pub mod find;
+pub mod history;
 pub mod link;
 
 use std::path::{Path, PathBuf};
@@ -26,6 +29,7 @@ use crate::launcher::Progress;
 use crate::process::same_path;
 use crate::{disk, paths};
 
+pub use adopt::{Adoption, adopt};
 pub use copy::{Listing, listing, totals};
 
 pub const ENV: &str = paths::ENV;
@@ -73,6 +77,10 @@ pub enum Error {
     Cancelled(PathBuf),
     #[error("The copy does not match your data: {reason}. Your data stays in {}.", .from.display())]
     Mismatch { from: PathBuf, reason: String },
+    #[error("{} is a whole drive. Choose a folder on it.", .0.display())]
+    DriveRoot(PathBuf),
+    #[error("{} does not hold any addons of yours.", .0.display())]
+    NoAddons(PathBuf),
     #[error("{0}")]
     Io(String),
 }
@@ -168,6 +176,14 @@ pub struct Recovered {
     pub leftover: Option<PathBuf>,
 }
 
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
+enum Kind {
+    #[default]
+    Move,
+    Adopt,
+    Relocate,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 struct Journal {
     from: PathBuf,
@@ -176,6 +192,8 @@ struct Journal {
     linked: bool,
     aside: PathBuf,
     to_existed: bool,
+    #[serde(default)]
+    kind: Kind,
 }
 
 impl Journal {
@@ -270,6 +288,9 @@ pub fn plan(loc: &Location, to: &Path, ops: &Ops) -> Result<Plan, Error> {
     }
     if !to.is_absolute() {
         return Err(Error::NotAbsolute);
+    }
+    if to.parent().is_none() {
+        return Err(Error::DriveRoot(to.to_path_buf()));
     }
     let linked = link::target(&loc.default);
     if let Some(target) = &linked
@@ -380,8 +401,10 @@ pub fn move_data(
         linked: plan.linked,
         aside: aside(&plan.default),
         to_existed: plan.to_existed,
+        kind: Kind::Move,
     };
     journal.save()?;
+    history::record(&plan.default, &plan.from, "moved the data folder");
     if plan.same_volume && renamed(&journal, ops) {
         progress.report(1.0, "");
         return match finish(&journal, ops, 1) {
@@ -483,6 +506,9 @@ fn finish(j: &Journal, ops: &Ops, tries: u32) -> Result<Recovered, Error> {
 }
 
 fn switch(j: &Journal, ops: &Ops) -> Result<Recovered, Error> {
+    if j.kind != Kind::Move {
+        return adopt::switch(j, ops);
+    }
     let state = spot(&j.default);
     if matches!(&state, Spot::Link(t) if same_path(t, &j.to)) {
         return Ok(cleanup(j));
@@ -560,6 +586,10 @@ fn cleanup(j: &Journal) -> Recovered {
 
 /// Puts everything back as it was before the move and removes the partial copy.
 fn abort(j: &Journal, ops: &Ops) {
+    if j.kind != Kind::Move {
+        j.clear();
+        return;
+    }
     if !j.linked && !exists(&j.default) {
         if exists(&j.aside) {
             std::fs::rename(&j.aside, &j.default).ok();

@@ -247,6 +247,7 @@ impl DataMove {
         if let Some(why) = (ops.blocked)() {
             return Err(why);
         }
+        swofty_core::data_move::history::record(&self.default, &self.from, "moved by the installer");
         progress.report(0.0, MOVING);
         match self.record {
             Record::Link => self.relink(ops, progress),
