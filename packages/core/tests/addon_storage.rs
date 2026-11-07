@@ -128,6 +128,7 @@ impl Fixture {
     fn snapshot(&self) -> BTreeMap<String, String> {
         let mut out = BTreeMap::new();
         walk(&self.game, &self.game, &mut out);
+        out.retain(|k, _| !k.starts_with("swofty-cache"));
         out
     }
 }

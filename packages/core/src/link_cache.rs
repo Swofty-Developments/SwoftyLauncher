@@ -28,7 +28,7 @@ pub struct Synced {
     pub copied: usize,
     pub reused: usize,
     pub removed: usize,
-    pub files: BTreeMap<PathBuf, PathBuf>,
+    pub files: BTreeMap<String, PathBuf>,
 }
 
 pub fn dir(game: &Path) -> PathBuf {
@@ -57,14 +57,22 @@ fn stamp(path: &Path) -> Option<Stamp> {
     })
 }
 
-fn load(game: &Path) -> BTreeMap<String, Stamp> {
+/// A cached file: the source it was copied from, and the copy as written. A
+/// copy the game wrote through its link no longer matches.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+struct Kept {
+    source: Stamp,
+    copy: Stamp,
+}
+
+fn load(game: &Path) -> BTreeMap<String, Kept> {
     std::fs::read(index_path(game))
         .ok()
         .and_then(|b| serde_json::from_slice(&b).ok())
         .unwrap_or_default()
 }
 
-fn save(game: &Path, index: &BTreeMap<String, Stamp>) -> std::io::Result<()> {
+fn save(game: &Path, index: &BTreeMap<String, Kept>) -> std::io::Result<()> {
     let path = index_path(game);
     std::fs::create_dir_all(dir(game))?;
     let tmp = path.with_extension("json.tmp");
@@ -92,51 +100,46 @@ fn prune_empty(dir: &Path) {
     }
 }
 
-fn key(built: &Path, src: &Path) -> Option<String> {
-    let rel = src.strip_prefix(built).ok()?;
-    Some(rel.to_string_lossy().replace('\\', "/"))
-}
-
-/// Brings the cache in `game` up to date with `sources` (files under
-/// `built`): copies the files that are new or whose size or modified time
+/// Brings the cache in `game` up to date with `sources`, each a game path and
+/// the file that goes there: copies the files that are new or whose size or modified time
 /// changed, leaves the rest, and deletes what the overlay no longer has. Fails
 /// with the reason when the game's drive hasn't room for what is left to copy
 /// plus `MARGIN`, or a copy fails; the cache then holds what was copied.
 pub fn sync(
-    built: &Path,
     game: &Path,
-    sources: &[&Path],
+    sources: &[(&str, &Path)],
     free_space: fn(&Path) -> Option<u64>,
     progress: &mut dyn FnMut(usize, usize),
 ) -> Result<Synced, String> {
     let cache = root(game);
-    let wanted: BTreeMap<String, &Path> = sources
-        .iter()
-        .filter_map(|s| key(built, s).map(|k| (k, *s)))
-        .collect();
+    let wanted: BTreeMap<&str, &Path> = sources.iter().copied().collect();
     let mut out = Synced::default();
     let mut present = Vec::new();
     files(&cache, &mut present);
     for path in present {
-        let known = key(&cache, &path).is_some_and(|k| wanted.contains_key(&k));
+        let known = path
+            .strip_prefix(&cache)
+            .is_ok_and(|r| wanted.contains_key(r.to_string_lossy().replace('\\', "/").as_str()));
         if !known && std::fs::remove_file(&path).is_ok() {
             out.removed += 1;
         }
     }
     prune_empty(&cache);
     let mut index = load(game);
-    index.retain(|k, _| wanted.contains_key(k));
+    index.retain(|k, _| wanted.contains_key(k.as_str()));
     let mut todo = Vec::new();
     for (k, src) in &wanted {
         let now = stamp(src).ok_or_else(|| format!("cannot read {}", src.display()))?;
         let at = cache.join(k);
-        let kept = index.get(k) == Some(&now) && stamp(&at).is_some_and(|s| s.len == now.len);
+        let kept = index
+            .get(*k)
+            .is_some_and(|i| i.source == now && stamp(&at) == Some(i.copy));
         if kept {
             out.reused += 1;
-            out.files.insert((*src).to_path_buf(), at);
+            out.files.insert((*k).to_owned(), at);
         } else {
-            index.remove(k);
-            todo.push((k, *src, now));
+            index.remove(*k);
+            todo.push((*k, *src, now));
         }
     }
     let need: u64 = todo.iter().map(|(_, _, s)| s.len).sum();
@@ -158,12 +161,14 @@ pub fn sync(
             .parent()
             .map_or(Ok(()), std::fs::create_dir_all)
             .and_then(|()| crate::install::copy_replacing(src, &at));
-        if let Err(e) = made {
+        let copy = stamp(&at);
+        let Some(copy) = copy.filter(|_| made.is_ok()) else {
             save(game, &index).ok();
-            return Err(format!("cannot copy {}: {e}", src.display()));
-        }
-        index.insert(k.clone(), now);
-        out.files.insert(src.to_path_buf(), at);
+            let why = made.err().map_or("it is missing".to_owned(), |e| e.to_string());
+            return Err(format!("cannot copy {}: {why}", src.display()));
+        };
+        index.insert(k.to_owned(), Kept { source: now, copy });
+        out.files.insert(k.to_owned(), at);
         out.copied += 1;
         progress(n + 1, total);
     }
@@ -219,8 +224,12 @@ mod tests {
 
     fn run(built: &Path, game: &Path, rels: &[&str]) -> Result<Synced, String> {
         let srcs: Vec<PathBuf> = rels.iter().map(|r| built.join(r)).collect();
-        let refs: Vec<&Path> = srcs.iter().map(|p| p.as_path()).collect();
-        sync(built, game, &refs, roomy, &mut |_, _| {})
+        let refs: Vec<(&str, &Path)> = rels
+            .iter()
+            .copied()
+            .zip(srcs.iter().map(|p| p.as_path()))
+            .collect();
+        sync(game, &refs, roomy, &mut |_, _| {})
     }
 
     #[test]
@@ -233,7 +242,7 @@ mod tests {
         assert_eq!((first.copied, first.reused, first.removed), (2, 0, 0));
         let again = run(&built, &game, &["a.bin", "sub/b.bin"]).unwrap();
         assert_eq!((again.copied, again.reused), (0, 2));
-        let at = &again.files[&built.join("sub/b.bin")];
+        let at = &again.files["sub/b.bin"];
         assert_eq!(at, &root_of(&game).join("sub/b.bin"));
         assert_eq!(std::fs::read_to_string(at).unwrap(), "two");
         std::fs::remove_dir_all(&root).ok();
@@ -276,6 +285,23 @@ mod tests {
     }
 
     #[test]
+    fn a_cache_file_the_game_wrote_through_its_link_is_copied_again() {
+        let root = tmp("written");
+        let (built, game) = (root.join("built"), root.join("game"));
+        put(&built.join("a.bin"), "one");
+        run(&built, &game, &["a.bin"]).unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(30));
+        put(&root_of(&game).join("a.bin"), "two");
+        let s = run(&built, &game, &["a.bin"]).unwrap();
+        assert_eq!((s.copied, s.reused), (1, 0));
+        assert_eq!(
+            std::fs::read_to_string(root_of(&game).join("a.bin")).unwrap(),
+            "one"
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
     fn a_damaged_cache_file_is_copied_again() {
         let root = tmp("damaged");
         let (built, game) = (root.join("built"), root.join("game"));
@@ -292,12 +318,12 @@ mod tests {
         let root = tmp("space");
         let (built, game) = (root.join("built"), root.join("game"));
         put(&built.join("a.bin"), "one");
-        let srcs = [built.join("a.bin")];
-        let refs: Vec<&Path> = srcs.iter().map(|p| p.as_path()).collect();
-        let err = sync(&built, &game, &refs, |_| Some(MARGIN), &mut |_, _| {}).unwrap_err();
+        let src = built.join("a.bin");
+        let refs = [("a.bin", src.as_path())];
+        let err = sync(&game, &refs, |_| Some(MARGIN), &mut |_, _| {}).unwrap_err();
         assert!(err.contains("game drive"), "{err}");
         assert!(!root_of(&game).join("a.bin").exists());
-        let ok = sync(&built, &game, &refs, |_| Some(MARGIN + 3), &mut |_, _| {}).unwrap();
+        let ok = sync(&game, &refs, |_| Some(MARGIN + 3), &mut |_, _| {}).unwrap();
         assert_eq!(ok.copied, 1);
         std::fs::remove_dir_all(&root).ok();
     }

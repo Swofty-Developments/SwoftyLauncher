@@ -395,18 +395,12 @@ impl Shell {
                 .label("Clear")
                 .disabled(cache.bytes == 0 || self.settings.clearing)
                 .on_click(cx.listener(|this, _, window, cx| this.settings_clear_cache(window, cx)));
-            let text = if cache.apart {
-                format!(
-                    "The data folder and F1 25 are on different drives, so Play keeps a copy of your mods on F1 25's \
-                     drive to stay fast ({}). Press Play to rebuild it after clearing.",
-                    size(cache.bytes)
-                )
-            } else {
-                format!(
-                    "A copy of your mods on F1 25's drive, no longer used ({}).",
-                    size(cache.bytes)
-                )
-            };
+            let text = format!(
+                "Play keeps a copy of your {} on F1 25's drive and links the game's files to it, which keeps Play fast \
+                 ({}). Press Play to rebuild it after clearing.",
+                if cache.apart { "mods" } else { "addon files" },
+                size(cache.bytes)
+            );
             rows.push(row(
                 "Game drive copy",
                 muted(text, p),

@@ -109,7 +109,7 @@ Run the [installer](#install-with-the-installer), choose an empty or new folder 
 - On Linux and Steam Deck, the installer leaves a symbolic link at the folder in the table above.
 - On the same drive, the installer renames the folder. On another drive, it copies the folder, checks the copy against the original, then deletes the original. When the other drive has too little free space, it moves nothing.
 - Choosing another folder later moves the data again and points the junction or link there. Choosing the folder in the table above moves the data back and removes the junction or link.
-- When the data folder is on another drive than F1 25, Play keeps a copy of your built mods in `swofty-cache/overlay` in the game folder and links the game's files to it, which takes the size of the built mods on F1 25's drive. The first Play copies every file; later Plays copy only what changed. See [The game drive copy](/using/settings#the-game-drive-copy).
+- Play keeps a copy of your mods in `swofty-cache/overlay` in the game folder and links the game's files to it, which takes the size of those files on F1 25's drive. With the data folder on another drive, that is every file Play places; on F1 25's own drive, the loose addon files. The first Play copies every file; later Plays copy only what changed. See [The game drive copy](/using/settings#the-game-drive-copy).
 - While Swofty Launcher, Swofty UI, the `swofty` command line or F1 25 is open, the installer doesn't move the data and names what to close; close it, then select **Try again**.
 - When a step fails, the installer names the step and doesn't update the launcher. Your data stays in the old folder, or in the new one when only deleting the old copy failed.
 

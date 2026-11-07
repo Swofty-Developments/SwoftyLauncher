@@ -15,7 +15,7 @@ description: The Settings page shows where Swofty keeps its files and how much r
 | **Size** | The folder's total size and the free space on its drive. When F1 25's own drive is another one, also the free space there: the drive with your Windows profile, or on Linux the drive with the game's Proton prefix (its Steam library). |
 | The parts | How much each part takes, largest first: addons, the game backup, session logs, the cache, the career vault, save snapshots, addon data and the rest. |
 | **Session logs** | How many game sessions are kept. **Clear old** removes the old ones (see below). |
-| **Game drive copy** | Shown when the data folder and F1 25 are on different drives, or while a copy is left over. The size of the copy of your mods that Play keeps on F1 25's drive (see below). **Clear** deletes it. |
+| **Game drive copy** | The size of the copy of your mods that Play keeps on F1 25's drive (see below). **Clear** deletes it. |
 | **Another drive** | How to move the data folder. **How to move it** opens [Moving the data folder](/guide/installation#moving-the-data-folder). |
 
 When either drive has less than 3 GB free, the card says so: F1 25 won't start with less than 2 GB free on its `C:` drive, which under Proton is the prefix.
@@ -32,9 +32,14 @@ Every game session leaves its logs in `sessions` in the data folder, and nothing
 
 ### The game drive copy
 
-A hard link joins two names for one file and only works inside one drive. When the data folder is on another drive than F1 25, Play keeps a copy of the built mods in `swofty-cache/overlay` in the game folder and hard-links the game's files to that copy. The first Play copies every file; later Plays copy only files that are new or whose size or modified time changed, and delete files the build no longer has.
+A hard link joins two names for one file and only works inside one drive. Play keeps copies in `swofty-cache/overlay` in the game folder and hard-links the game's files to them. Which files it keeps there depends on where the data folder is:
 
-The copy stays when the game goes back to stock. It needs the size of the built mods on F1 25's drive plus 2 GB to spare; with less room, Play copies each file straight into the game folder and the Play log says why. Play removes the copy when the data folder is on F1 25's drive again. **Clear** removes it at any time and doesn't run while F1 25 is open; the next Play rebuilds it.
+- On another drive than F1 25, every file Play places.
+- On F1 25's drive, the loose files that Play would otherwise copy, such as addon files. Built output still links straight from the data folder. A game that writes to a linked file changes the cached copy and never the addon's original.
+
+The first Play copies every file; later Plays copy only files that are new or whose size or modified time changed, and delete files that are no longer placed. A cached copy the game wrote to is copied again.
+
+The copy stays when the game goes back to stock. It needs the size of those files on F1 25's drive plus 2 GB to spare; with less room, Play copies each file straight into the game folder and the Play log says why. **Clear** removes the copy at any time and doesn't run while F1 25 is open; the next Play rebuilds it.
 
 ### Low space when you press Play
 

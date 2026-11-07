@@ -133,6 +133,7 @@ impl Fixture {
     fn snapshot(&self) -> BTreeMap<String, String> {
         let mut out = BTreeMap::new();
         walk(&self.game, &self.game, &mut out);
+        out.retain(|k, _| !k.starts_with("swofty-cache"));
         out.insert(
             "<user.reg>".into(),
             sha256_bytes(&std::fs::read(&self.reg).unwrap()),
@@ -159,6 +160,7 @@ impl Fixture {
     fn snapshot_of(&self, game: &Path) -> BTreeMap<String, String> {
         let mut out = BTreeMap::new();
         walk(game, game, &mut out);
+        out.retain(|k, _| !k.starts_with("swofty-cache"));
         out.insert(
             "<user.reg>".into(),
             sha256_bytes(&std::fs::read(&self.reg).unwrap()),
