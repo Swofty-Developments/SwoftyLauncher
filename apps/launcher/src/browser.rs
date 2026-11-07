@@ -129,6 +129,25 @@ fn took_text(d: Duration) -> String {
     }
 }
 
+fn card_border(failed: bool, updating: bool, p: Palette) -> Hsla {
+    if failed {
+        p.error.opacity(0.6)
+    } else if updating {
+        p.accent.opacity(0.6)
+    } else {
+        p.border
+    }
+}
+
+fn progress_bar(fraction: f32, p: Palette) -> Div {
+    div()
+        .h(px(3.))
+        .w_full()
+        .rounded(px(2.))
+        .bg(p.border_variant)
+        .child(div().h_full().rounded(px(2.)).bg(p.accent).w(relative(fraction)))
+}
+
 fn native_badge(id: String, p: Palette) -> Stateful<Div> {
     h_flex()
         .id(SharedString::from(id))
@@ -2897,7 +2916,7 @@ impl Shell {
         } else if shown.is_empty() && bare && !self.browser.addons.is_empty() && self.browser.tab.is_some() {
             self.empty_shelf(self.browser.tab, p, cx)
         } else if rows && !shown.is_empty() {
-            self.category_rows(shown, query, width, p, cx)
+            self.category_rows(shown, width, p, cx)
         } else if shown.is_empty() {
             let (title, body, action) = if self.browser.addons.is_empty() {
                 (
@@ -3165,13 +3184,7 @@ impl Shell {
             .gap(px(10.))
             .rounded(px(10.))
             .border_1()
-            .border_color(if failed.is_some() {
-                p.error.opacity(0.6)
-            } else if updating {
-                p.accent.opacity(0.6)
-            } else {
-                p.border
-            })
+            .border_color(card_border(failed.is_some(), updating, p))
             .bg(p.surface)
             .cursor_pointer()
             .hover(move |s| s.border_color(p.accent).bg(p.hover))
@@ -3241,22 +3254,7 @@ impl Shell {
                     })
                     .child(self.offer_button(a, format!("browser-offer-{}", a.id), cx)),
             )
-            .when_some(progress, |d, pr| {
-                d.child(
-                    div()
-                        .h(px(3.))
-                        .w_full()
-                        .rounded(px(2.))
-                        .bg(p.border_variant)
-                        .child(
-                            div()
-                                .h_full()
-                                .rounded(px(2.))
-                                .bg(p.accent)
-                                .w(relative(pr.fraction())),
-                        ),
-                )
-            })
+            .when_some(progress, |d, pr| d.child(progress_bar(pr.fraction(), p)))
             .when_some(failed, |d, e| {
                 let tip = e.clone();
                 d.child(

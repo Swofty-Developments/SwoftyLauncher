@@ -8,7 +8,10 @@ use swofty_i18n::{tr, trf};
 use super::*;
 
 const ROW_CAP: usize = 24;
-const ROW_HEIGHT: f32 = 340.;
+const ROW_HEIGHT: f32 = 310.;
+const POSTER_W: f32 = 216.;
+const POSTER_ART: f32 = 128.;
+const POSTER_ICON: f32 = 76.;
 const END_W: f32 = 168.;
 const FADE_W: f32 = 64.;
 const GLIDE_SECONDS: f32 = 0.32;
@@ -112,7 +115,6 @@ impl Shell {
     pub(super) fn category_rows(
         &mut self,
         shown: Arc<[usize]>,
-        query: Arc<Query>,
         width: f32,
         p: Palette,
         cx: &mut Context<Self>,
@@ -130,7 +132,7 @@ impl Shell {
         let content = list(
             self.browser.grid_scroll.clone(),
             cx.processor(move |this, index: usize, _, cx| match groups.get(index) {
-                Some((tab, found)) => this.category_row(*tab, found, &query, width, p, cx),
+                Some((tab, found)) => this.category_row(*tab, found, width, p, cx),
                 None => div().into_any_element(),
             }),
         )
@@ -145,7 +147,6 @@ impl Shell {
         &self,
         tab: Tab,
         found: &[usize],
-        query: &Query,
         width: f32,
         p: Palette,
         cx: &mut Context<Self>,
@@ -156,7 +157,7 @@ impl Shell {
             .iter()
             .take(ROW_CAP)
             .filter_map(|&i| self.browser.addons.get(i))
-            .map(|a| self.browser_card(a, query, CARD_W, p, cx));
+            .map(|a| self.poster_card(a, tab, p, cx));
         let at = f32::from(row.scroll.offset().x);
         let max = f32::from(row.scroll.max_offset().x).abs();
         let measured = row.scroll.bounds().size.width > px(0.);
@@ -173,8 +174,22 @@ impl Shell {
             .when(found.len() > ROW_CAP, |d| {
                 d.child(self.row_end(tab, found.len(), p, cx))
             });
+        let keyed = row.clone();
         v_flex()
+            .id(SharedString::from(format!("browser-row-box-{name}")))
             .pb(px(26.))
+            .on_key_down(cx.listener(move |this, e: &KeyDownEvent, window, cx| {
+                let way = match e.keystroke.key.as_str() {
+                    "left" => Way::Back,
+                    "right" => Way::Forward,
+                    _ => return,
+                };
+                if e.keystroke.modifiers.modified() {
+                    return;
+                }
+                cx.stop_propagation();
+                this.page_row(&keyed, way, window, cx);
+            }))
             .child(self.row_heading(tab, found.len(), &row, (at, max, measured), p, cx))
             .child(
                 div()
@@ -250,7 +265,7 @@ impl Shell {
     }
 
     fn page_row(&self, row: &Row, way: Way, window: &mut Window, cx: &mut Context<Self>) {
-        let unit = f32::from(px(CARD_W + GAP));
+        let unit = f32::from(px(POSTER_W + GAP));
         let viewport = f32::from(row.scroll.bounds().size.width);
         let max = f32::from(row.scroll.max_offset().x).abs();
         let from = row
@@ -260,6 +275,102 @@ impl Shell {
             .unwrap_or_else(|| f32::from(row.scroll.offset().x));
         let group = (viewport / unit).floor() as usize;
         glide(row, paged(from, unit, group, max, way), cx.entity_id(), window);
+    }
+
+    fn poster_card(&self, a: &Addon, tab: Tab, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+        let id = a.id.clone();
+        let tint = shelf_tint(tab, p);
+        let offer = self.offer(a);
+        let failed = self.browser.failed.contains_key(&a.id);
+        let updating = self.catalog_update(&a.id).is_some();
+        let progress = self.browser.working.get(&a.id).map(Job::progress);
+        let state = match &offer {
+            Offer::Installed(_) => Some((IconName::Check, tr("Installed"), p.success)),
+            Offer::Update(..) => Some((IconName::CircleArrowUp, tr("Update"), p.warning)),
+            _ => None,
+        };
+        let art = div()
+            .relative()
+            .h(px(POSTER_ART))
+            .w_full()
+            .flex_shrink_0()
+            .flex()
+            .items_center()
+            .justify_center()
+            .bg(p.surface.blend(tint.opacity(0.16)))
+            .child(self.catalog_icon(a, POSTER_ICON, p))
+            .child(div().absolute().top(px(8.)).right(px(8.)).child(self.star_button(
+                a,
+                format!("browser-poster-star-{}", a.id),
+                false,
+                p,
+                cx,
+            )))
+            .when_some(state, |d, (icon, text, color)| {
+                d.child(
+                    h_flex()
+                        .absolute()
+                        .top(px(8.))
+                        .left(px(8.))
+                        .h(px(22.))
+                        .px(px(7.))
+                        .gap(px(4.))
+                        .items_center()
+                        .rounded(px(11.))
+                        .bg(p.background.opacity(0.8))
+                        .text_size(px(11.))
+                        .font_weight(FontWeight::MEDIUM)
+                        .text_color(color)
+                        .child(Icon::new(icon).size(px(12.)).text_color(color))
+                        .child(text),
+                )
+            });
+        let action = match offer {
+            Offer::Installed(v) => div()
+                .h(px(28.))
+                .flex()
+                .items_center()
+                .text_size(px(12.))
+                .text_color(p.text_placeholder)
+                .child(format!("v{v}")),
+            _ => div().w_full().overflow_hidden().child(
+                self.offer_button(a, format!("browser-poster-offer-{}", a.id), cx)
+                    .w_full(),
+            ),
+        };
+        v_flex()
+            .id(SharedString::from(format!("browser-poster-{}", a.id)))
+            .focusable()
+            .w(px(POSTER_W))
+            .flex_none()
+            .rounded(px(10.))
+            .border_1()
+            .border_color(card_border(failed, updating, p))
+            .bg(p.surface)
+            .overflow_hidden()
+            .cursor_pointer()
+            .hover(move |s| s.border_color(p.accent).bg(p.hover))
+            .focus_visible(move |s| s.border_color(p.accent))
+            .on_click(cx.listener(move |this, _, _, cx| this.open_details(&id, cx)))
+            .child(art)
+            .child(
+                v_flex()
+                    .flex_1()
+                    .p(px(12.))
+                    .gap(px(4.))
+                    .child(
+                        div()
+                            .text_size(px(14.))
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .truncate()
+                            .child(a.name.clone()),
+                    )
+                    .child(self.byline(a, format!("browser-poster-by-{}", a.id), 12., p, cx))
+                    .child(div().flex_1().min_h(px(6.)))
+                    .child(action)
+                    .when_some(progress, |d, pr| d.child(progress_bar(pr.fraction(), p))),
+            )
+            .into_any_element()
     }
 
     fn row_end(&self, tab: Tab, count: usize, p: Palette, cx: &mut Context<Self>) -> AnyElement {
