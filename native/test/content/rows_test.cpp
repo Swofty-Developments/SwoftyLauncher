@@ -659,7 +659,8 @@ static void package_team_row_tests()
         }
         return std::nullopt;
     };
-    std::map<std::string, Value> vehicles = {{"mod.a/mercedes", Value::object({{"label", "cs16_mercedes"}})}};
+    std::map<std::string, Value> vehicles = {{"mod.a/mercedes", Value::object({{"label", "cs16_mercedes"}})},
+                                                  {"mod.a/haas", Value::object({{"label", "cs16_haas"}})}};
     content::Lookup lookup = [&](const std::string &reg, const std::string &id) -> const Value * {
         auto it = vehicles.find(id);
         return reg == "vehicle" && it != vehicles.end() ? &it->second : nullptr;
@@ -705,6 +706,15 @@ static void package_team_row_tests()
           "a team whose row the game lacks refuses the whole package and says which row");
     check(lower(Value::array({team("x", Value("mod.b/beyond_count"), "game/world_car")}), read).refused == 1,
           "a team row past the table's instance count counts as missing");
+    content::Plan season = lower(Value::array({team("mercedes", Value(), "mod.a/mercedes"), team("haas", Value(), "mod.a/haas")}), read);
+    bool expected = false;
+    for (auto &l : season.lines)
+        expected |= l.find("team haas names entrants.teams row cs16_haas, which the game database does not hold yet") != std::string::npos;
+    check(!season.refused && season.ops.size() > 0 && expected &&
+              field(season, list + ".entrant_1", "team") == "cs16_haas" && field(season, list + ".entrant_1", "vehicle") == "cs16_haas",
+          "a Classic Seasons style package applies when its own car's team row is one its addon's database operations add");
+    check(lower(Value::array({team("x", Value("mod.b/no_such_team"), "mod.a/haas")}), read).refused == 1,
+          "a team record that names no row the game sees, with no row for its car either, refuses the package");
     content::Plan no_car = lower(Value::array({team("x", Value("game/f1_generic"), "game/no_such_car")}), read);
     bool warned = false;
     for (auto &l : no_car.lines)

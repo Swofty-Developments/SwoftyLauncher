@@ -403,7 +403,9 @@ inline std::string package_team_record_label(const Value &team, const Constructo
 // teams do, and so does a team whose record's row the game can't see while its car's row is there. The game reads an
 // entrant's team row without checking it exists, so a team with neither row would crash the entrant list parser at
 // boot: those teams refuse the package, in one line that names them all, since a refused record logs only its last
-// line. A car without its row is only reported. A row past its table's instance count counts as missing, and each
+// line. A team with no team record whose car is an addon's own is only reported when its row is missing: the addon's
+// database operations add rows like that (Classic Seasons' cs<year>_ rows), after or outside what the core can see.
+// A car without its row is only reported. A row past its table's instance count counts as missing, and each
 // table is checked only when the database holds it.
 struct PackageTeams {
     std::vector<std::string> labels, missing, notes;
@@ -430,7 +432,11 @@ inline PackageTeams package_teams(const Value &teams, const Lookup &lookup, cons
                                 (own.empty() ? std::string() : " (" + own + ")") + " the game sees; it uses its car's row " + vehicle);
             label = vehicle;
         }
-        if (!seen(label))
+        bool addons_car = !named && team["vehicle"].is_string() && team["vehicle"].as_string().rfind("game/", 0) != 0;
+        if (addons_car && !seen(label))
+            out.notes.push_back(head + " names entrants.teams row " + label +
+                                ", which the game database does not hold yet; its addon's database operations are expected to add it");
+        else if (!seen(label))
             out.missing.push_back(head + (label.empty() ? std::string(" names no entrants.teams row")
                                                         : " names entrants.teams row " + label + ", which the game database lacks"));
         if (have_vehicles && !vehicle.empty() && !read(std::string(VEHICLES) + "[_metadata_=" + vehicle + "]._metadata_"))
