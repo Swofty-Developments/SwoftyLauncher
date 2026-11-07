@@ -12,7 +12,7 @@ use gpui_kit::*;
 use std::path::PathBuf;
 use swofty_core::import::{self, Route};
 use swofty_core::profile::VANILLA;
-use swofty_i18n::{tr, trf, trn};
+use swofty_i18n::{fill, tr, trf, trn};
 
 impl Shell {
     pub(crate) fn pick_addons(&mut self, folder: bool, window: &mut Window, cx: &mut Context<Self>) {
@@ -122,10 +122,7 @@ impl Shell {
             off.iter().try_for_each(|id| registry.set_enabled(p, id, false))
         });
         let shell = cx.entity().downgrade();
-        let text = trf!(
-            "Turned off {value}",
-            value = trn(off.len(), "{count} addon", "{count} addons")
-        );
+        let text = trn(off.len(), "Turned off {count} addon", "Turned off {count} addons");
         let note = Notification::success(text)
             .action(move |_, _, cx| {
                 let (shell, before) = (shell.clone(), before.clone());
@@ -172,26 +169,7 @@ impl Shell {
         let flagged = self.problem_banner(p, cx);
         let mut query = self.addons.search.read(cx).value().trim().to_lowercase();
         let highlight = self.sync_highlight(&mut query, cx);
-        let installed = trn(
-            self.library.listed().count(),
-            "{count} addon installed",
-            "{count} addons installed",
-        );
-        let subtitle = if self.vanilla() {
-            trf!(
-                "{installed} · {vanilla} plays the game without them",
-                installed = installed,
-                vanilla = VANILLA
-            )
-        } else {
-            let on = self.library.listed().filter(|m| self.addon_on(m)).count();
-            trf!(
-                "{installed} · {on} on in {name}",
-                installed = installed,
-                on = on,
-                name = self.library.profile.name
-            )
-        };
+        let subtitle = self.addons_subtitle();
         let actions = (!self.vanilla()).then(|| {
             h_flex()
                 .gap(px(8.))
@@ -204,60 +182,9 @@ impl Shell {
                         .on_click(cx.listener(|this, _, window, cx| this.turn_off_all(window, cx))),
                 )
         });
-        let pending = (!self.vanilla() && !self.library.rebuild.is_empty()).then(|| {
-            h_flex()
-                .px(px(GUTTER))
-                .pb(px(12.))
-                .gap(px(8.))
-                .flex_shrink_0()
-                .text_size(px(13.))
-                .text_color(p.text_muted)
-                .child(
-                    Icon::new(IconName::CircleAlert)
-                        .size(px(14.))
-                        .text_color(p.warning),
-                )
-                .child(trf!(
-                    "{value} changed since the last build · the next launch rebuilds {name}",
-                    value = trn(
-                        self.library.rebuild.len(),
-                        "{count} database setting",
-                        "{count} database settings"
-                    ),
-                    name = self.library.profile.name
-                ))
-        });
+        let pending = self.pending_note(p);
         let saves = self.saves_banner(false, p, cx);
-        let hidden = self
-            .library
-            .addons
-            .iter()
-            .filter(|m| m.in_profile && m.track)
-            .count()
-            - self.library.listed().filter(|m| m.track).count();
-        let tracks = self.library.tracks_page.filter(|_| hidden > 0).map(|i| {
-            h_flex()
-                .px(px(GUTTER))
-                .pb(px(12.))
-                .gap(px(8.))
-                .flex_shrink_0()
-                .items_center()
-                .text_size(px(13.))
-                .text_color(p.text_muted)
-                .child(Icon::new(IconName::Map).size(px(14.)))
-                .child(trf!(
-                    "{amount} {value} on the Tracks page",
-                    amount = trn(hidden, "{count} track addon", "{count} track addons"),
-                    value = if hidden == 1 { "is" } else { "are" }
-                ))
-                .child(
-                    Button::new("open-tracks")
-                        .ghost()
-                        .small()
-                        .label(tr("Open Tracks"))
-                        .on_click(cx.listener(move |this, _, _, cx| this.open_page(Page::Section(i), cx))),
-                )
-        });
+        let tracks = self.tracks_note(p, cx);
         let split = self.content_width >= SPLIT_AT;
         let selected = self.open_addon.clone().filter(|id| {
             self.library
@@ -453,4 +380,85 @@ fn install_card(
                 )
                 .child(text),
         )
+}
+
+impl Shell {
+    fn addons_subtitle(&self) -> String {
+        let installed = trn(
+            self.library.listed().count(),
+            "{count} addon installed",
+            "{count} addons installed",
+        );
+        if self.vanilla() {
+            trf!(
+                "{installed} · {vanilla} plays the game without them",
+                installed = installed,
+                vanilla = VANILLA
+            )
+        } else {
+            let on = self.library.listed().filter(|m| self.addon_on(m)).count();
+            trf!(
+                "{installed} · {on} on in {name}",
+                installed = installed,
+                on = on,
+                name = self.library.profile.name
+            )
+        }
+    }
+
+    fn pending_note(&self, p: Palette) -> Option<Div> {
+        (!self.vanilla() && !self.library.rebuild.is_empty()).then(|| {
+            let note = trn(
+                self.library.rebuild.len(),
+                "{count} database setting changed since the last build · the next launch rebuilds {name}",
+                "{count} database settings changed since the last build · the next launch rebuilds {name}",
+            );
+            h_flex()
+                .px(px(GUTTER))
+                .pb(px(12.))
+                .gap(px(8.))
+                .flex_shrink_0()
+                .text_size(px(13.))
+                .text_color(p.text_muted)
+                .child(
+                    Icon::new(IconName::CircleAlert)
+                        .size(px(14.))
+                        .text_color(p.warning),
+                )
+                .child(fill(&note, &[("name", self.library.profile.name.to_string())]))
+        })
+    }
+
+    fn tracks_note(&self, p: Palette, cx: &mut Context<Self>) -> Option<Div> {
+        let hidden = self
+            .library
+            .addons
+            .iter()
+            .filter(|m| m.in_profile && m.track)
+            .count()
+            - self.library.listed().filter(|m| m.track).count();
+        self.library.tracks_page.filter(|_| hidden > 0).map(|i| {
+            h_flex()
+                .px(px(GUTTER))
+                .pb(px(12.))
+                .gap(px(8.))
+                .flex_shrink_0()
+                .items_center()
+                .text_size(px(13.))
+                .text_color(p.text_muted)
+                .child(Icon::new(IconName::Map).size(px(14.)))
+                .child(trn(
+                    hidden,
+                    "{count} track addon is on the Tracks page",
+                    "{count} track addons are on the Tracks page",
+                ))
+                .child(
+                    Button::new("open-tracks")
+                        .ghost()
+                        .small()
+                        .label(tr("Open Tracks"))
+                        .on_click(cx.listener(move |this, _, _, cx| this.open_page(Page::Section(i), cx))),
+                )
+        })
+    }
 }

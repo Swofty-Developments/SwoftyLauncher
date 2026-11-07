@@ -151,10 +151,7 @@ impl Shell {
                     Ok(report) => {
                         let text = match report.pairs.len() {
                             0 => "No conflicts between addons".to_owned(),
-                            n => trf!(
-                                "Found {amount}",
-                                amount = trn(n, "{count} conflict", "{count} conflicts")
-                            ),
+                            n => trn(n, "Found {count} conflict", "Found {count} conflicts"),
                         };
                         window.push_notification(Notification::success(text), cx);
                         if report.profile == s.library.profile.name {

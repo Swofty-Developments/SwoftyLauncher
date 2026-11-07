@@ -255,35 +255,107 @@ impl Shell {
     ) -> AnyElement {
         let name = item.name.clone();
         let vanilla = item.vanilla();
-        let contents = if vanilla {
-            v_flex()
-                .gap(px(3.))
-                .child(label(tr("CONTENTS"), p))
-                .child(
-                    div()
-                        .text_size(px(13.))
-                        .line_height(px(19.))
-                        .child(tr("No addons")),
-                )
-                .child(
-                    div()
-                        .text_size(px(13.))
-                        .text_color(p.text_muted)
-                        .child(tr("Plays F1 25 exactly as shipped.")),
-                )
-        } else {
-            v_flex()
-                .gap(px(12.))
-                .child(names(tr("ADDONS"), &item.addons, p))
-                .children(
-                    item.summaries
-                        .iter()
-                        .map(|s| names(s.label.to_uppercase(), &s.items, p)),
-                )
-        };
+        let contents = profile_contents(item, p);
+        let footer = self.profile_footer(item, active, deletable, p, cx);
+        v_flex()
+            .size_full()
+            .p(px(16.))
+            .gap(px(14.))
+            .rounded(px(6.))
+            .border_1()
+            .border_color(if active { p.accent } else { p.border })
+            .child(
+                h_flex()
+                    .gap(px(10.))
+                    .child(avatar(&name, 32., p))
+                    .child(
+                        v_flex()
+                            .flex_1()
+                            .min_w_0()
+                            .child(
+                                div()
+                                    .text_size(px(14.))
+                                    .font_weight(FontWeight::SEMIBOLD)
+                                    .truncate()
+                                    .child(name.clone()),
+                            )
+                            .child(
+                                div()
+                                    .text_size(px(12.))
+                                    .text_color(p.text_muted)
+                                    .child(if vanilla {
+                                        item.summary()
+                                    } else {
+                                        trf!(
+                                            "{addons} on",
+                                            addons =
+                                                trn(item.addons.len(), "{count} addon", "{count} addons")
+                                        )
+                                    }),
+                            ),
+                    )
+                    .when(active, |d| {
+                        d.child(
+                            h_flex()
+                                .gap(px(6.))
+                                .text_size(px(12.))
+                                .font_weight(FontWeight::MEDIUM)
+                                .text_color(p.accent)
+                                .child(div().size(px(6.)).rounded_full().bg(p.accent))
+                                .child(tr("Active")),
+                        )
+                    }),
+            )
+            .child(div().flex_1().child(contents))
+            .child(footer)
+            .into_any_element()
+    }
+}
+
+fn profile_contents(item: &ProfileItem, p: Palette) -> Div {
+    let vanilla = item.vanilla();
+    if vanilla {
+        v_flex()
+            .gap(px(3.))
+            .child(label(tr("CONTENTS"), p))
+            .child(
+                div()
+                    .text_size(px(13.))
+                    .line_height(px(19.))
+                    .child(tr("No addons")),
+            )
+            .child(
+                div()
+                    .text_size(px(13.))
+                    .text_color(p.text_muted)
+                    .child(tr("Plays F1 25 exactly as shipped.")),
+            )
+    } else {
+        v_flex()
+            .gap(px(12.))
+            .child(names(tr("ADDONS"), &item.addons, p))
+            .children(
+                item.summaries
+                    .iter()
+                    .map(|s| names(s.label.to_uppercase(), &s.items, p)),
+            )
+    }
+}
+
+impl Shell {
+    fn profile_footer(
+        &self,
+        item: &ProfileItem,
+        active: bool,
+        deletable: bool,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> Div {
+        let name = item.name.clone();
+        let vanilla = item.vanilla();
         let button = |id: &str| Button::new(SharedString::from(format!("{id}-{name}")));
         let (rename, duplicate, switch, delete) = (name.clone(), name.clone(), name.clone(), name.clone());
-        let footer = h_flex()
+        h_flex()
             .gap(px(2.))
             .pt(px(12.))
             .border_t_1()
@@ -348,58 +420,6 @@ impl Shell {
                             this.confirm_delete_profile(&delete, window, cx)
                         })),
                 )
-            });
-        v_flex()
-            .size_full()
-            .p(px(16.))
-            .gap(px(14.))
-            .rounded(px(6.))
-            .border_1()
-            .border_color(if active { p.accent } else { p.border })
-            .child(
-                h_flex()
-                    .gap(px(10.))
-                    .child(avatar(&name, 32., p))
-                    .child(
-                        v_flex()
-                            .flex_1()
-                            .min_w_0()
-                            .child(
-                                div()
-                                    .text_size(px(14.))
-                                    .font_weight(FontWeight::SEMIBOLD)
-                                    .truncate()
-                                    .child(name.clone()),
-                            )
-                            .child(
-                                div()
-                                    .text_size(px(12.))
-                                    .text_color(p.text_muted)
-                                    .child(if vanilla {
-                                        item.summary()
-                                    } else {
-                                        trf!(
-                                            "{addons} on",
-                                            addons =
-                                                trn(item.addons.len(), "{count} addon", "{count} addons")
-                                        )
-                                    }),
-                            ),
-                    )
-                    .when(active, |d| {
-                        d.child(
-                            h_flex()
-                                .gap(px(6.))
-                                .text_size(px(12.))
-                                .font_weight(FontWeight::MEDIUM)
-                                .text_color(p.accent)
-                                .child(div().size(px(6.)).rounded_full().bg(p.accent))
-                                .child(tr("Active")),
-                        )
-                    }),
-            )
-            .child(div().flex_1().child(contents))
-            .child(footer)
-            .into_any_element()
+            })
     }
 }
