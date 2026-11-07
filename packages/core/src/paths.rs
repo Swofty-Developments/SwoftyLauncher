@@ -1,7 +1,9 @@
 use std::path::PathBuf;
 
+pub const ENV: &str = "SWOFTY_DATA_DIR";
+
 pub fn data_dir() -> PathBuf {
-    if let Some(dir) = std::env::var_os("SWOFTY_DATA_DIR") {
+    if let Some(dir) = std::env::var_os(ENV) {
         return PathBuf::from(dir);
     }
     platform_data_dir()

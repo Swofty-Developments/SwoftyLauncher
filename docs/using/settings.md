@@ -39,7 +39,7 @@ Storage has three sections.
 
 When either drive has less than 3 GB free, **Usage** says so: F1 25 won't start with less than 2 GB free on its `C:` drive, which under Proton is the prefix.
 
-A moved data folder is measured where it really is, through the junction or symbolic link the installer leaves.
+A moved data folder is measured where it really is, through the junction or symbolic link that records the move.
 
 **Refresh**, in the **Usage** heading, measures the folder again. Measuring walks every file, so a large addon collection takes a few seconds. Storage measures when you open it.
 
@@ -48,6 +48,21 @@ A moved data folder is measured where it really is, through the junction or symb
 Every game session leaves its logs in `sessions` in the data folder, and nothing removed them before. **Clear old** keeps the newest 20 sessions and every session from the last 2 days, and removes the rest. It doesn't run while F1 25 is open. The button names how many sessions it would remove and how much room that frees; it reads **Nothing to clear** when every session is new enough to keep.
 
 **Clear old** asks you to confirm before it deletes anything. The launcher keeps every log unless you turn on **Clear old logs** under Advanced: with it on, the launcher clears old logs by the same rule each time it starts, without asking. It is off by default, so updating never deletes logs.
+
+### Moving the data folder
+
+**Move…** next to **Data folder** moves your addons, profiles, backups and logs to another folder or drive without the installer.
+
+1. Select **Move…** and choose a folder. A folder that has files in it gets a `Swofty` folder inside it.
+2. The launcher shows where the data is now, where it will go, its size and the free space there. Select **Move** to start.
+3. A full-window screen shows the progress and the file being copied. **Cancel** stops the copy and removes it; your data stays where it was. Nothing else in the launcher works while it runs, and the window doesn't close.
+4. When the copy checks out, the launcher restarts, links the old location to the new folder, deletes the old copy and shows a message.
+
+On the same drive the folder is renamed and nothing is copied. A copy is checked by size, and by content for the small files.
+
+The launcher refuses to start the move while F1 25 is open, a build is running or downloads are queued. It refuses a folder inside or around the install folder, inside or around the F1 25 folder, inside the current data folder, one that isn't empty, one it can't write to, and one on a drive without room for the data plus a margin. When `SWOFTY_DATA_DIR` sets the data folder, it refuses and says so: change the variable instead.
+
+If the launcher or the computer stops during a move, the next start finishes it or puts everything back. When the old copy can't be deleted, the message names it so you can delete it yourself.
 
 ### The game drive copy
 

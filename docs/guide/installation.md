@@ -103,11 +103,13 @@ Your addons, mods, profiles, backups and session logs live here, apart from the 
 
 Keep the data folder outside the install folder. The installer refuses a data folder that is, or is inside, the install folder, and a launcher whose install folder holds its data folder cannot install updates. If yours does, run the installer again and pick a data folder outside the install folder.
 
-Run the [installer](#install-with-the-installer), choose an empty or new folder under **Keep addons, profiles and backups in**, or select **Browse…** next to it, then select **Install**. Under the folder, the installer shows what **Install** does with your data. **Install** moves the data folder there, then updates the launcher.
+In the launcher, open **Settings**, select **Move…** next to **Data folder** and choose a folder; see [Moving the data folder](/using/settings#moving-the-data-folder). You don't need the installer for it.
+
+The installer does the same: run it, choose an empty or new folder under **Keep addons, profiles and backups in**, or select **Browse…** next to it, then select **Install**. Under the folder, the installer shows what **Install** does with your data. **Install** moves the data folder there, then updates the launcher.
 
 - On Windows, the installer moves `%LOCALAPPDATA%\Swofty` to the new folder and leaves a junction at `%LOCALAPPDATA%\Swofty` that points to it. The launcher, the `swofty` command and the in-game code keep using `%LOCALAPPDATA%\Swofty`.
 - On Linux and Steam Deck, the installer leaves a symbolic link at the folder in the table above.
-- On the same drive, the installer renames the folder. On another drive, it copies the folder, checks the copy against the original, then deletes the original. When the other drive has too little free space, it moves nothing.
+- On the same drive, the installer and the launcher rename the folder. On another drive, it copies the folder, checks the copy against the original, then deletes the original. When the other drive has too little free space, it moves nothing.
 - Choosing another folder later moves the data again and points the junction or link there. Choosing the folder in the table above moves the data back and removes the junction or link.
 - Play keeps a copy of your mods in `swofty-cache/overlay` in the game folder and links the game's files to it, which takes the size of those files on F1 25's drive. With the data folder on another drive, that is every file Play places; on F1 25's own drive, the loose addon files. The first Play copies every file; later Plays copy only what changed. See [The game drive copy](/using/settings#the-game-drive-copy).
 - While Swofty Launcher, Swofty UI, the `swofty` command line or F1 25 is open, the installer doesn't move the data and names what to close; close it, then select **Try again**.
