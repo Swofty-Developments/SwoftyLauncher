@@ -105,7 +105,11 @@ fn counts() -> BTreeMap<String, usize> {
         .into_iter()
         .filter_map(|path| {
             let count = unwrapped(&std::fs::read_to_string(&path).unwrap());
-            let name = path.strip_prefix(root).unwrap().to_string_lossy().into_owned();
+            let name = path
+                .strip_prefix(root)
+                .unwrap()
+                .to_string_lossy()
+                .replace('\\', "/");
             (count > 0).then_some((name, count))
         })
         .collect()
