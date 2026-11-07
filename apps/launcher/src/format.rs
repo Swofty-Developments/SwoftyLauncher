@@ -18,6 +18,15 @@ pub fn size(bytes: u64) -> String {
     }
 }
 
+/// `bytes` for disk space: GB from one gigabyte, else MB.
+pub fn size_coarse(bytes: u64) -> String {
+    if bytes >= 1 << 30 {
+        format!("{} GB", swofty_core::disk::gb(bytes))
+    } else {
+        format!("{} MB", bytes.div_ceil(1 << 20))
+    }
+}
+
 /// A fraction (0 to 1) as a whole percent: `0.42` is `42%`.
 pub fn percent(fraction: f32) -> String {
     format!("{:.0}%", fraction * 100.)
@@ -75,6 +84,14 @@ mod tests {
         assert_eq!(size(2048), "2 KB");
         assert_eq!(size(5 << 20), "5.0 MB");
         assert_eq!(size(3 << 30), "3.00 GB");
+    }
+
+    #[test]
+    fn disk_sizes_are_coarse() {
+        assert_eq!(size_coarse(0), "0 MB");
+        assert_eq!(size_coarse(1), "1 MB");
+        assert_eq!(size_coarse(5 << 20), "5 MB");
+        assert_eq!(size_coarse(3 << 29), "1.5 GB");
     }
 
     #[test]

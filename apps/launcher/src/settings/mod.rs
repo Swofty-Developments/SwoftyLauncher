@@ -13,12 +13,12 @@ use gpui_kit::*;
 use swofty_core::data_usage::Usage;
 use swofty_i18n::tr;
 
-use crate::ui::form::side_nav_item;
 use crate::pages::GUTTER;
 use crate::shell::{Page, Shell};
 use crate::theme::Palette;
+use crate::ui::form::side_nav_item;
 
-pub use usage::{GameCopy, clear_logs_at_start, low_space_warning, size};
+pub use usage::{GameCopy, clear_logs_at_start, low_space_warning};
 
 const NAV_WIDTH: f32 = 200.;
 const CONTENT_WIDTH: f32 = 760.;

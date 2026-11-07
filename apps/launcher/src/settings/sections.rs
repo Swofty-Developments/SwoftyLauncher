@@ -14,10 +14,10 @@ use swofty_core::update;
 use swofty_core::updater;
 use swofty_i18n::{tr, trf};
 
-use super::size;
-use crate::ui::form::{Choice, Notice, SettingRow, SettingsSection, ValuePill, segmented, select, usage_bar};
+use crate::format::size_coarse as size;
 use crate::shell::Shell;
 use crate::theme::Palette;
+use crate::ui::form::{Choice, Notice, SettingRow, SettingsSection, ValuePill, segmented, select, usage_bar};
 
 const DOCS: &str = "https://f1.swofty.net";
 

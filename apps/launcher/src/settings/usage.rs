@@ -11,6 +11,7 @@ use gpui_kit::*;
 use swofty_core::data_usage::{self, KEEP_FOR, KEEP_SESSIONS};
 use swofty_i18n::{tr, trf};
 
+use crate::format::size_coarse as size;
 use crate::shell::Shell;
 
 /// The link cache Play keeps in the game folder when the data folder is on
@@ -19,15 +20,6 @@ use crate::shell::Shell;
 pub struct GameCopy {
     pub bytes: u64,
     pub apart: bool,
-}
-
-/// `bytes` the way Explorer shows them: GB from one gigabyte, else MB.
-pub fn size(bytes: u64) -> String {
-    if bytes >= 1 << 30 {
-        format!("{} GB", swofty_core::disk::gb(bytes))
-    } else {
-        format!("{} MB", bytes.div_ceil(1 << 20))
-    }
 }
 
 /// Clears old session logs when the launcher starts, when the player turned
@@ -243,18 +235,10 @@ impl Shell {
 
 #[cfg(test)]
 mod tests {
-    use super::{low_space_warning, size};
+    use super::low_space_warning;
     use swofty_core::data_usage::{GAME_DRIVE, Room};
 
     const GB: u64 = 1 << 30;
-
-    #[test]
-    fn sizes_read_like_explorer() {
-        assert_eq!(size(0), "0 MB");
-        assert_eq!(size(1), "1 MB");
-        assert_eq!(size(5 << 20), "5 MB");
-        assert_eq!(size(3 << 29), "1.5 GB");
-    }
 
     #[test]
     fn play_warns_only_when_a_drive_is_short() {

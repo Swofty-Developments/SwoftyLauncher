@@ -9,7 +9,7 @@ use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::notification::Notification;
 use gpui_kit::component::spinner::Spinner;
-use gpui_kit::component::{Icon, Sizable, TITLE_BAR_HEIGHT, WindowExt, h_flex, v_flex};
+use gpui_kit::component::{Icon, Sizable, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::builtin::CORE_ID;
@@ -23,6 +23,7 @@ use crate::data_move::install_folder;
 use crate::format::{ago_since, size};
 use crate::shell::Shell;
 use crate::theme::Palette;
+use crate::ui::Overlay;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Stage {
@@ -202,24 +203,17 @@ impl Shell {
             Stage::Asking => self.found_data_card(prompt, p, cx).into_any_element(),
         };
         Some(
-            div()
-                .id("found-data-modal")
-                .absolute()
-                .top(TITLE_BAR_HEIGHT)
-                .left_0()
-                .right_0()
-                .bottom_0()
-                .occlude()
-                .bg(p.background)
-                .overflow_y_scroll()
+            Overlay::new("found-data-modal")
+                .opaque(p.background)
+                .below_title_bar()
+                .scrolls()
                 .child(
                     v_flex()
-                        .min_h_full()
-                        .w_full()
-                        .items_center()
-                        .justify_center()
+                        .w(px(668.))
+                        .max_w_full()
                         .px(px(24.))
                         .py(px(32.))
+                        .items_center()
                         .child(body),
                 ),
         )
@@ -272,12 +266,12 @@ impl Shell {
                                 .text_color(p.text)
                                 .child(f.path.display().to_string()),
                         )
-                        .child(
-                            div()
-                                .text_size(px(12.))
-                                .text_color(p.text_muted)
-                                .child(format!("{count}, {total}, {used}")),
-                        )
+                        .child(div().text_size(px(12.)).text_color(p.text_muted).child(trf!(
+                            "{count}, {total}, {used}",
+                            count = count,
+                            total = total,
+                            used = used
+                        )))
                         .when(!names.is_empty(), |c| {
                             c.child(div().text_size(px(12.)).text_color(p.text_muted).child(names))
                         }),

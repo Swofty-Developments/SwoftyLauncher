@@ -17,10 +17,10 @@ use swofty_core::data_move::{self, Location, Moved, Ops, Plan};
 use swofty_core::launcher::Progress;
 use swofty_i18n::{tr, trf};
 
-use crate::ui::LockPanel;
-use crate::settings::size;
+use crate::format::size_coarse as size;
 use crate::shell::Shell;
 use crate::theme::Palette;
+use crate::ui::LockPanel;
 
 const POLL: Duration = Duration::from_millis(120);
 
