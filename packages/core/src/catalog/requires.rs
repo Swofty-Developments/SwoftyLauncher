@@ -483,6 +483,25 @@ struct Head {
     requires: Vec<Requirement>,
 }
 
+/// An archive entry's path as a filesystem resolves it, on any platform: `.` and
+/// `..` applied, either slash, no case, and without what Windows ignores, an NTFS
+/// stream or a trailing dot or space.
+fn entry_key(name: &str) -> String {
+    let mut parts: Vec<String> = Vec::new();
+    for part in name.split(['/', '\\']) {
+        if part == ".." {
+            parts.pop();
+            continue;
+        }
+        let part = part.split(':').next().unwrap_or_default();
+        let part = part.trim_end_matches(['.', ' ']);
+        if !part.is_empty() {
+            parts.push(part.to_uppercase());
+        }
+    }
+    parts.join("/")
+}
+
 fn zip_manifest(path: &Path) -> Result<Head> {
     let mut zip = zip::ZipArchive::new(std::fs::File::open(path).map_err(crate::io_err(path))?)?;
     let names: Vec<String> = zip
@@ -508,6 +527,20 @@ fn zip_manifest(path: &Path) -> Result<Head> {
             )));
         }
     };
+    // Unpacking resolves these spellings to one file, and the last one wins, so
+    // the manifest read here must be the only one that can end up installed.
+    let (chosen, root) = (entry_key(&name), entry_key(MANIFEST_FILE));
+    let manifests = names
+        .iter()
+        .map(|n| entry_key(n))
+        .filter(|key| *key == chosen || *key == root)
+        .count();
+    if manifests > 1 {
+        return Err(Error::Other(format!(
+            "{} has more than one {MANIFEST_FILE}",
+            path.display()
+        )));
+    }
     let mut text = String::new();
     zip.by_name(&name)?
         .take(MANIFEST_LIMIT)
@@ -748,10 +781,8 @@ fn install_with(
                     continue;
                 }
                 progress(Event::Stage(Stage::Installing));
-                let installed = match profile {
-                    Some(profile) => store.install_addon_in_profile(&path, profile),
-                    None => store.install_addon(&path),
-                };
+                let installed = requires_in(&path, &s.addon, &s.version)
+                    .and_then(|_| store.install_listed(&path, profile, &s.addon.id, &s.version.version));
                 if let Ok(m) = &installed
                     && m.id == s.addon.id
                     && let Err(e) = super::record_install(store, &m.id, &s.version)
@@ -891,6 +922,66 @@ mod tests {
             .iter()
             .map(|s| format!("{}@{}", s.addon.id, s.version.version))
             .collect()
+    }
+
+    /// A zip with the listed manifest under each of `manifests`.
+    fn package(path: &Path, manifests: &[&str]) {
+        let text = r#"{"schema_version":1,"id":"t.a","name":"a","version":"1.0.0","author":"a","compat":{"game":"f1_25"}}"#;
+        let mut z = zip::ZipWriter::new(std::fs::File::create(path).unwrap());
+        for name in manifests {
+            z.start_file(*name, zip::write::SimpleFileOptions::default())
+                .unwrap();
+            std::io::Write::write_all(&mut z, text.as_bytes()).unwrap();
+        }
+        z.finish().unwrap();
+    }
+
+    fn checked(name: &str, manifests: &[&str]) -> Result<Vec<Requirement>> {
+        let dir = std::env::temp_dir().join(format!("swofty-requires-{name}-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("t.a.swoftyaddon");
+        package(&path, manifests);
+        let a = addon("t.a", vec![version("1.0.0", &[])]);
+        let result = requires_in(&path, &a, &a.versions[0]);
+        std::fs::remove_dir_all(&dir).ok();
+        result
+    }
+
+    #[test]
+    fn a_download_with_two_spellings_of_its_manifest_is_refused() {
+        for alias in [
+            "x/../swofty.json",
+            "./swofty.json",
+            "x\\..\\swofty.json",
+            "SWOFTY.JSON",
+            "swofty.json.",
+            "swofty.json ",
+            "swofty.json::$DATA",
+        ] {
+            let err = checked("alias", &["swofty.json", alias]).unwrap_err();
+            assert!(
+                err.to_string().contains("more than one swofty.json"),
+                "{alias}: {err}"
+            );
+        }
+        for names in [
+            &["pack/swofty.json", "SWOFTY.JSON"],
+            &["pack/swofty.json", "x/../PACK/swofty.json"],
+        ] {
+            let err = checked("nested", names).unwrap_err();
+            assert!(
+                err.to_string().contains("more than one swofty.json"),
+                "{names:?}: {err}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_download_with_one_manifest_passes_the_check() {
+        checked("root", &["swofty.json"]).unwrap();
+        checked("wrapped", &["pack/swofty.json"]).unwrap();
+        checked("other-folder", &["swofty.json", "templates/swofty.json"]).unwrap();
     }
 
     fn refusal(result: Result<Plan>) -> Refusal {

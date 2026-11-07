@@ -152,6 +152,17 @@ fn profile_write() -> MutexGuard<'static, ()> {
     PROFILE_WRITE.lock().unwrap_or_else(|e| e.into_inner())
 }
 
+/// Where an addon being installed came from, which decides what it may be.
+#[derive(Debug, Clone, Copy)]
+enum InstallFrom<'a> {
+    /// A file the player chose, or one a helper asked to install.
+    Other,
+    /// A download the catalog lists as this id and version.
+    Catalog(&'a str, &'a semver::Version),
+    /// A release of the addon the launcher manages.
+    ManagedRelease,
+}
+
 #[derive(Debug, Clone)]
 pub struct Store {
     pub root: PathBuf,
@@ -562,12 +573,42 @@ impl Store {
     }
 
     pub fn install_addon_for(&self, src: &Path, launcher: &semver::Version) -> Result<AddonManifest> {
-        self.install_addon_target(src, launcher, None)
+        self.install_addon_target(src, launcher, None, InstallFrom::Other)
     }
 
     /// Install into a specific existing profile rather than whichever profile is active later.
     pub fn install_addon_in_profile(&self, src: &Path, profile: &str) -> Result<AddonManifest> {
-        self.install_addon_target(src, &crate::update::current_version(), Some(profile))
+        self.install_addon_target(
+            src,
+            &crate::update::current_version(),
+            Some(profile),
+            InstallFrom::Other,
+        )
+    }
+
+    /// Install what the catalog lists as `id` at `version`, into `profile` when one is named.
+    pub(crate) fn install_listed(
+        &self,
+        src: &Path,
+        profile: Option<&str>,
+        id: &str,
+        version: &semver::Version,
+    ) -> Result<AddonManifest> {
+        self.install_addon_target(
+            src,
+            &crate::update::current_version(),
+            profile,
+            InstallFrom::Catalog(id, version),
+        )
+    }
+
+    /// Install a release of the addon the launcher manages.
+    pub(crate) fn install_managed_release(
+        &self,
+        src: &Path,
+        launcher: &semver::Version,
+    ) -> Result<AddonManifest> {
+        self.install_addon_target(src, launcher, None, InstallFrom::ManagedRelease)
     }
 
     fn install_addon_target(
@@ -575,13 +616,14 @@ impl Store {
         src: &Path,
         launcher: &semver::Version,
         profile: Option<&str>,
+        from: InstallFrom,
     ) -> Result<AddonManifest> {
         if src.is_file() {
             let scratch = self.scratch_dir();
             let result = self
                 .unpacked_addons(src, &scratch)
                 .and_then(|found| match found.as_slice() {
-                    [one] => self.install_addon_target(one, launcher, profile),
+                    [one] => self.install_addon_target(one, launcher, profile, from),
                     many => Err(Error::Other(format!(
                         "{} holds {} addons; drop it on the launcher to install them all",
                         src.display(),
@@ -609,6 +651,20 @@ impl Store {
         })?;
         if self.is_builtin(&m.id) {
             return Err(Error::Other(format!("{} is built in", m.id)));
+        }
+        if let InstallFrom::Catalog(id, version) = from
+            && (m.id != id || m.version != *version)
+        {
+            return Err(Error::Other(format!(
+                "the registry lists {id} {version}, the download holds {} {}",
+                m.id, m.version
+            )));
+        }
+        if crate::managed::is_managed(&m.id) && !matches!(from, InstallFrom::ManagedRelease) {
+            return Err(Error::Other(format!(
+                "{} is managed by the launcher, which installs and updates it itself",
+                m.id
+            )));
         }
         let prefix = crate::dbedit::package::ID_PREFIX;
         if crate::dbedit::package::is_package(self, &m.id) {
@@ -1582,6 +1638,58 @@ mod tests {
     }
 
     #[test]
+    fn only_a_managed_release_installs_under_the_managed_id() {
+        let root = tmp("managed-claimed");
+        let store = Store::new(root.join("data"));
+        let fake = root.join("fake");
+        write_addon(&fake, crate::managed::ID);
+
+        for err in [
+            store.install_addon(&fake).unwrap_err(),
+            store.install_addons(&fake).remove(0).unwrap_err(),
+            store.install_addon_in_profile(&fake, "default").unwrap_err(),
+        ] {
+            assert!(err.to_string().contains("managed by the launcher"), "{err}");
+        }
+        assert!(!store.addons_dir().join(crate::managed::ID).exists());
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_listed_install_refuses_anything_else_before_replacing_an_addon() {
+        let root = tmp("listed");
+        let store = Store::new(root.join("data"));
+        let one = root.join("one");
+        write_addon(&one, "t.one");
+        store.install_addon(&one).unwrap();
+        let v1 = semver::Version::new(1, 0, 0);
+
+        let other = root.join("other");
+        write_addon(&other, "t.other");
+        let err = store.install_listed(&other, None, "t.one", &v1).unwrap_err();
+        assert!(
+            err.to_string().contains("the registry lists t.one 1.0.0"),
+            "{err}"
+        );
+        assert!(!store.addons_dir().join("t.other").exists());
+
+        // A listed id that isn't what the download holds can't replace the addon it names, either.
+        let err = store
+            .install_listed(&one, None, "t.one", &semver::Version::new(2, 0, 0))
+            .unwrap_err();
+        assert!(
+            err.to_string().contains("the download holds t.one 1.0.0"),
+            "{err}"
+        );
+
+        assert_eq!(
+            store.install_listed(&one, None, "t.one", &v1).unwrap().id,
+            "t.one"
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
     fn manages_the_team_simplified_addon() {
         let root = tmp("managed-addon");
         let store = Store::new(root.join("data"));
@@ -1594,7 +1702,9 @@ mod tests {
         z.start_file("bin/helper", opts).unwrap();
         z.finish().unwrap();
 
-        let m = store.install_addon(&pkg).unwrap();
+        let m = store
+            .install_managed_release(&pkg, &crate::update::current_version())
+            .unwrap();
         assert_eq!(m.id, crate::managed::ID);
         assert!(store.addons().unwrap().contains_key(crate::managed::ID));
 
