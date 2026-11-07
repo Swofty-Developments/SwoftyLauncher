@@ -212,7 +212,7 @@ swofty::events::subscribe(tel::event::overtake, [](const SwoftyEvent *e, void *)
 
 The events need the `events` feature and the game's UDP telemetry output on.
 
-`SwoftySessionState.flag`, `SwoftyCarState.flags` and `SwoftyParticipant.flags` have no defined values yet: the core doesn't write them, so they stay zero. See [Availability](#availability).
+`SwoftySessionState.flag` takes the `SWOFTY_FLAG_*` values and `SwoftyCarState.flags` the `SWOFTY_CAR_FLAG_*` bits listed above; both come from the game's UDP packets, so they stay zero while its UDP telemetry output is off. See [Availability](#availability).
 
 ## Shared-memory feed
 
