@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
@@ -240,23 +242,7 @@ impl ShadersView {
             .bg(p.chrome)
             .border_1()
             .border_color(p.border)
-            .child(match config {
-                Some(image) => img(image)
-                    .size_full()
-                    .object_fit(ObjectFit::Fill)
-                    .into_any_element(),
-                None => div()
-                    .size_full()
-                    .flex()
-                    .items_center()
-                    .justify_center()
-                    .child(
-                        Icon::new(IconName::LoaderCircle)
-                            .size(px(20.))
-                            .text_color(p.text_placeholder),
-                    )
-                    .into_any_element(),
-            })
+            .child(frame_image(config, p))
             .child(
                 canvas(move |b, _, _| bounds.set(b), |_, _, _, _| {})
                     .absolute()
@@ -268,57 +254,11 @@ impl ShadersView {
                 this.wipe_to(e.position.x, cx);
             });
             frame
-                .child(
-                    div()
-                        .absolute()
-                        .top_0()
-                        .left_0()
-                        .h_full()
-                        .w(relative(split))
-                        .overflow_hidden()
-                        .when_some(original, |d, image| {
-                            d.child(
-                                img(image)
-                                    .h_full()
-                                    .w(relative(1. / split))
-                                    .flex_shrink_0()
-                                    .object_fit(ObjectFit::Fill),
-                            )
-                        }),
-                )
-                .child(
-                    div()
-                        .absolute()
-                        .top_0()
-                        .bottom_0()
-                        .left(relative(split))
-                        .w(px(2.))
-                        .ml(px(-1.))
-                        .bg(p.on_accent),
-                )
-                .child(
-                    div()
-                        .absolute()
-                        .top(relative(0.5))
-                        .left(relative(split))
-                        .size(px(28.))
-                        .ml(px(-14.))
-                        .mt(px(-14.))
-                        .rounded_full()
-                        .bg(p.accent)
-                        .border_2()
-                        .border_color(p.on_accent)
-                        .flex()
-                        .items_center()
-                        .justify_center()
-                        .child(
-                            Icon::new(IconName::ChevronsUpDown)
-                                .size(px(14.))
-                                .text_color(p.on_accent),
-                        ),
-                )
-                .child(wipe_label("Original", true, p))
-                .child(wipe_label("Config", false, p))
+                .child(original_half(original, split))
+                .child(wipe_bar(split, p))
+                .child(wipe_knob(split, p))
+                .child(wipe_label(tr("Original"), true, p))
+                .child(wipe_label(tr("Config"), false, p))
                 .cursor_col_resize()
                 .on_mouse_down(MouseButton::Left, drag_start)
                 .on_mouse_move(cx.listener(|this, e: &MouseMoveEvent, _, cx| {
@@ -434,4 +374,76 @@ pub(super) fn wipe_label(text: &'static str, left: bool, p: Palette) -> Div {
         .font_weight(FontWeight::MEDIUM)
         .text_color(p.text)
         .child(text)
+}
+
+fn frame_image(config: Option<Arc<RenderImage>>, p: Palette) -> AnyElement {
+    match config {
+        Some(image) => img(image)
+            .size_full()
+            .object_fit(ObjectFit::Fill)
+            .into_any_element(),
+        None => div()
+            .size_full()
+            .flex()
+            .items_center()
+            .justify_center()
+            .child(
+                Icon::new(IconName::LoaderCircle)
+                    .size(px(20.))
+                    .text_color(p.text_placeholder),
+            )
+            .into_any_element(),
+    }
+}
+
+fn original_half(original: Option<Arc<RenderImage>>, split: f32) -> Div {
+    div()
+        .absolute()
+        .top_0()
+        .left_0()
+        .h_full()
+        .w(relative(split))
+        .overflow_hidden()
+        .when_some(original, |d, image| {
+            d.child(
+                img(image)
+                    .h_full()
+                    .w(relative(1. / split))
+                    .flex_shrink_0()
+                    .object_fit(ObjectFit::Fill),
+            )
+        })
+}
+
+fn wipe_bar(split: f32, p: Palette) -> Div {
+    div()
+        .absolute()
+        .top_0()
+        .bottom_0()
+        .left(relative(split))
+        .w(px(2.))
+        .ml(px(-1.))
+        .bg(p.on_accent)
+}
+
+fn wipe_knob(split: f32, p: Palette) -> Div {
+    div()
+        .absolute()
+        .top(relative(0.5))
+        .left(relative(split))
+        .size(px(28.))
+        .ml(px(-14.))
+        .mt(px(-14.))
+        .rounded_full()
+        .bg(p.accent)
+        .border_2()
+        .border_color(p.on_accent)
+        .flex()
+        .items_center()
+        .justify_center()
+        .child(
+            Icon::new(IconName::ChevronsUpDown)
+                .size(px(14.))
+                .text_color(p.on_accent),
+        )
 }
