@@ -303,9 +303,10 @@ fn erp_target(op: &ErpOp) -> Option<(Target, bool)> {
             rename,
             ..
         } => Some((resource(erp, rename.as_deref().unwrap_or(r)), false)),
-        ErpOp::AddResource { erp, resource: r, .. }
-        | ErpOp::PatchPkg { erp, resource: r, .. }
-        | ErpOp::SetMaterial { erp, resource: r, .. } => Some((resource(erp, r), false)),
+        ErpOp::AddResource { erp, resource: r, .. } => Some((resource(erp, r), true)),
+        ErpOp::PatchPkg { erp, resource: r, .. } | ErpOp::SetMaterial { erp, resource: r, .. } => {
+            Some((resource(erp, r), false))
+        }
         ErpOp::AddMipmaps { target, .. } => {
             Some((Target::File(target.trim_end_matches('/').to_owned()), true))
         }

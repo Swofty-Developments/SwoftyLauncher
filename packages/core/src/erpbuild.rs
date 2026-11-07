@@ -540,6 +540,17 @@ impl<'a> ErpBuild<'a> {
             });
             return Ok(());
         }
+        if let ErpOp::AddResource { erp, resource, .. } = op
+            && self.owns(erp, resource)
+        {
+            let earlier = self
+                .writers
+                .get(&(erp.clone(), resource.clone()))
+                .map_or("an earlier addon", String::as_str);
+            self.notes.push(format!(
+                "{erp}: {resource} was already written by {earlier}; the add-resource from {origin} replaces it"
+            ));
+        }
         self.apply(op, resolve)?;
         if let ErpOp::AppendSlices { erp, resource, .. } = op {
             self.appended
@@ -582,6 +593,15 @@ impl<'a> ErpBuild<'a> {
             }
         }
         Ok(())
+    }
+
+    fn owns(&self, erp: &str, resource: &str) -> bool {
+        self.erps.get(erp).is_some_and(|a| {
+            a.position(resource)
+                .ok()
+                .flatten()
+                .is_some_and(|i| matches!(a.slots[i], Slot::Owned(_)))
+        })
     }
 
     pub fn origins(&self) -> &[String] {
@@ -758,16 +778,14 @@ impl<'a> ErpBuild<'a> {
     fn add(&mut self, erp: &str, name: &str, kind: &str, data: &[Vec<u8>]) -> Result<()> {
         let wanted = erp::kind(kind).map_err(|e| fail(format!("add-resource {name}: {e}")))?;
         let target = self.erp(erp)?;
-        if let Some(i) = target.position(name).map_err(|e| fail(format!("{erp}: {e}")))? {
-            return Err(fail(match target.slots[i] {
-                Slot::Stock(_) => format!(
-                    "{erp} in the game folder already has {name}, so something outside the launcher probably changed this file \
-                     (a hand-installed mod or a leftover). \
-                     Remove hand-installed mods, then Repair F1 25 in the EA app (Steam: Verify integrity of game files), then Play. \
-                     (Addon authors: if the stock file has it, use put-resource.)"
-                ),
-                Slot::Owned(_) => format!("{erp}: {name} already exists; put-resource replaces a resource"),
-            }));
+        let existing = target.position(name).map_err(|e| fail(format!("{erp}: {e}")))?;
+        if existing.is_some_and(|i| matches!(target.slots[i], Slot::Stock(_))) {
+            return Err(fail(format!(
+                "{erp} in the game folder already has {name}, so something outside the launcher probably changed this file \
+                 (a hand-installed mod or a leftover). \
+                 Remove hand-installed mods, then Repair F1 25 in the EA app (Steam: Verify integrity of game files), then Play. \
+                 (Addon authors: if the stock file has it, use put-resource.)"
+            )));
         }
         let like = target
             .slots
@@ -781,7 +799,10 @@ impl<'a> ErpBuild<'a> {
                 ))
             })?;
         let res = Resource::like(name, like, data).map_err(|e| fail(format!("{erp}: {e}")))?;
-        target.slots.push(Slot::Owned(res));
+        match existing {
+            Some(i) => target.slots[i] = Slot::Owned(res),
+            None => target.slots.push(Slot::Owned(res)),
+        }
         Ok(())
     }
 
@@ -2300,13 +2321,6 @@ mod tests {
                  (Addon authors: if the stock file has it, use put-resource.)"
             )
         );
-        let added = format!(
-            r#"{{"op":"add-resource","erp":"ui/a.erp","resource":"{z}","type":"GfxSurfaceRes","sources":["raw/head.bin","raw/z.bin"]}}"#
-        );
-        assert_eq!(
-            fails(&format!("{added},{added}")),
-            format!("ui/a.erp: {z} already exists; put-resource replaces a resource")
-        );
         assert!(
             fails(&format!(
                 r#"{{"op":"add-resource","erp":"ui/a.erp","resource":"{z}","type":"GfxSurfaceRes","sources":["raw/head.bin"]}}"#
@@ -2325,6 +2339,89 @@ mod tests {
             ))
             .contains("is not a resource type")
         );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn an_add_resource_and_a_put_resource_of_one_name_replace_in_load_order() {
+        let root = std::env::temp_dir().join(format!("swofty-erpaddput-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let (game, addon) = (root.join("game"), root.join("addon"));
+        std::fs::create_dir_all(game.join("ui")).unwrap();
+        std::fs::create_dir_all(addon.join("raw")).unwrap();
+        std::fs::create_dir_all(addon.join("erp")).unwrap();
+        let (x, z, other) = (
+            "eaid://ui_package/x.tif.image",
+            "eaid://ui_package/z.tif.image",
+            "eaid://ui_package/w.tif.image",
+        );
+        std::fs::write(
+            game.join("ui/a.erp"),
+            archive(vec![surface(x, b"HEADER-X", b"PIXELS-X")]),
+        )
+        .unwrap();
+        std::fs::write(
+            addon.join("erp/put.erp"),
+            archive(vec![surface(z, b"HEADER-P", b"PIXELS-P")]),
+        )
+        .unwrap();
+        std::fs::write(addon.join("raw/head.bin"), b"HEADER-A").unwrap();
+        std::fs::write(addon.join("raw/pixels.bin"), b"PIXELS-A").unwrap();
+        let put = erp_ops(&format!(
+            r#"{{"schema_version":1,"ops":[{{"op":"put-resource","source":"erp/put.erp","erp":"ui/a.erp","resource":"{z}"}}]}}"#
+        ))
+        .remove(0);
+        let add = |name: &str| {
+            erp_ops(&format!(
+                r#"{{"schema_version":1,"ops":[{{"op":"add-resource","erp":"ui/a.erp","resource":"{name}","type":"GfxSurfaceRes","sources":["raw/head.bin","raw/pixels.bin"]}}]}}"#
+            ))
+            .remove(0)
+        };
+        let original = |rel: &str| game.join(rel);
+        let resolve = |s: &Source| Ok(s.resolve(&addon)?);
+        let built = |b: ErpBuild, name: &str| {
+            let out = root.join(name);
+            b.write(&out).unwrap();
+            let written = Erp::parse(&std::fs::read(out.join("ui/a.erp")).unwrap()).unwrap();
+            written
+                .resources
+                .iter()
+                .map(|r| (r.name.clone(), data(r)))
+                .collect::<Vec<_>>()
+        };
+        let put_data = vec![b"HEADER-P".to_vec(), b"PIXELS-P".to_vec()];
+        let add_data = vec![b"HEADER-A".to_vec(), b"PIXELS-A".to_vec()];
+
+        let mut b = ErpBuild::new(&original);
+        b.apply_for(&put, "first.addon", &resolve).unwrap();
+        b.apply_for(&add(z), "second.addon", &resolve).unwrap();
+        assert_eq!(
+            b.take_notes(),
+            [format!(
+                "ui/a.erp: {z} was already written by first.addon; the add-resource from second.addon replaces it"
+            )]
+        );
+        let resources = built(b, "put-then-add");
+        assert_eq!(resources.len(), 2);
+        assert_eq!(resources[1], (z.to_owned(), add_data.clone()));
+
+        let mut b = ErpBuild::new(&original);
+        b.apply_for(&add(z), "first.addon", &resolve).unwrap();
+        b.apply_for(&put, "second.addon", &resolve).unwrap();
+        assert!(b.take_notes().is_empty());
+        let resources = built(b, "add-then-put");
+        assert_eq!(resources.len(), 2);
+        assert_eq!(resources[1], (z.to_owned(), put_data.clone()));
+
+        let mut b = ErpBuild::new(&original);
+        b.apply_for(&put, "first.addon", &resolve).unwrap();
+        b.apply_for(&add(other), "second.addon", &resolve).unwrap();
+        assert!(b.take_notes().is_empty());
+        let resources = built(b, "unrelated");
+        assert_eq!(resources.len(), 3);
+        assert_eq!(resources[1], (z.to_owned(), put_data));
+        assert_eq!(resources[2], (other.to_owned(), add_data));
+
         std::fs::remove_dir_all(&root).ok();
     }
 
