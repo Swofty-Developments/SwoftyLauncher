@@ -8,7 +8,7 @@ use gpui_kit::*;
 use std::collections::BTreeSet;
 use std::rc::Rc;
 use swofty_core::saves::SavesWarning;
-use swofty_i18n::trn;
+use swofty_i18n::{tr, trf, trn};
 
 use super::Shell;
 use super::dialogs::saves_alert;
@@ -58,7 +58,7 @@ impl Shell {
         window.open_alert_dialog(cx, move |alert, _, _| {
             let (shell, id) = (shell.clone(), warning.id.clone());
             saves_alert(alert, &warning, None, p)
-                .ok_text("Turn off anyway")
+                .ok_text(tr("Turn off anyway"))
                 .on_ok(move |_, window, cx| {
                     shell
                         .update(cx, |s, cx| {
@@ -73,16 +73,18 @@ impl Shell {
     }
 
     pub(crate) fn remove_addon(&mut self, id: &str, name: &str, window: &mut Window, cx: &mut Context<Self>) {
-        const REMOVES: &str = "Its files are deleted and it is taken out of every profile. \
-                               You can install it again later.";
-        const REMOVES_DB: &str = "Your DB Editor changes are deleted and it is taken out of every profile. \
-                                  To keep them, use Share addon (.zip) in the DB Editor's Export menu first.";
+        let removes_plain = tr("Its files are deleted and it is taken out of every profile. \
+                               You can install it again later.");
+        let removes_db = tr(
+            "Your DB Editor changes are deleted and it is taken out of every profile. \
+                                  To keep them, use Share addon (.zip) in the DB Editor's Export menu first.",
+        );
         let db_editor = self
             .library
             .addons
             .iter()
             .any(|a| a.manifest.id == id && a.source == crate::library::Source::DbEditor);
-        let removes = if db_editor { REMOVES_DB } else { REMOVES };
+        let removes = if db_editor { removes_db } else { removes_plain };
         let shell = cx.entity().downgrade();
         let store = self.store.clone();
         let id = id.to_owned();
@@ -99,11 +101,11 @@ impl Shell {
         window.open_alert_dialog(cx, move |alert, _, _| {
             let (shell, store, id, name) = (shell.clone(), store.clone(), id.clone(), name.clone());
             let alert = match &warning {
-                Some(w) => saves_alert(alert, w, Some(removes), p).ok_text("Remove anyway"),
+                Some(w) => saves_alert(alert, w, Some(removes), p).ok_text(tr("Remove anyway")),
                 None => alert
-                    .title(format!("Uninstall {name}?"))
+                    .title(trf!("Uninstall {name}?", name = name))
                     .description(removes)
-                    .ok_text("Uninstall"),
+                    .ok_text(tr("Uninstall")),
             };
             alert
                 .ok_variant(ButtonVariant::Danger)
@@ -120,7 +122,7 @@ impl Shell {
                             cx.update(|window, cx| match removed {
                                 Ok(()) => {
                                     window.push_notification(
-                                        Notification::success(format!("Removed {name}")),
+                                        Notification::success(trf!("Removed {name}", name = name)),
                                         cx,
                                     );
                                     shell
@@ -151,8 +153,10 @@ impl Shell {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
-        const KEEPS: &str = "It stays installed for your other profiles, and you can add it back \
-                             with Add addons.";
+        let keeps = tr(
+            "It stays installed for your other profiles, and you can add it back \
+                             with Add addons.",
+        );
         let warning = self
             .library
             .profile
@@ -169,8 +173,8 @@ impl Shell {
         let p = palette(cx);
         window.open_alert_dialog(cx, move |alert, _, _| {
             let (shell, id, name) = (shell.clone(), id.clone(), name.clone());
-            saves_alert(alert, &warning, Some(KEEPS), p)
-                .ok_text("Remove anyway")
+            saves_alert(alert, &warning, Some(keeps), p)
+                .ok_text(tr("Remove anyway"))
                 .on_ok(move |_, window, cx| {
                     shell
                         .update(cx, |s, cx| s.take_out_of_profile(&id, &name, window, cx))
@@ -199,7 +203,11 @@ impl Shell {
             Ok(()) => {
                 self.open_addon = None;
                 window.push_notification(
-                    Notification::success(format!("Removed {name} from {profile}")),
+                    Notification::success(trf!(
+                        "Removed {name} from {profile}",
+                        name = name,
+                        profile = profile
+                    )),
                     cx,
                 );
             }
@@ -222,14 +230,14 @@ impl Shell {
                 let man = &m.manifest;
                 let detail = match man.author.trim() {
                     "" | "Unknown" => man.version.to_string(),
-                    author => format!("{} · by {author}", man.version),
+                    author => trf!("{version} · by {author}", version = man.version, author = author),
                 };
                 (man.id.clone(), man.name.clone(), detail)
             })
             .collect();
         offered.sort_by_cached_key(|(_, name, _)| name.to_lowercase());
         let profile = self.library.profile.name.clone();
-        let search = cx.new(|cx| InputState::new(window, cx).placeholder("Search installed addons"));
+        let search = cx.new(|cx| InputState::new(window, cx).placeholder(tr("Search installed addons")));
         let chosen: Rc<std::cell::RefCell<BTreeSet<String>>> = Rc::default();
         let shell = cx.entity().downgrade();
         let store = self.store.clone();
@@ -287,9 +295,9 @@ impl Shell {
                     .text_color(p.text_muted)
                     .text_center()
                     .child(if offered.is_empty() {
-                        "Every installed addon is already in this profile"
+                        tr("Every installed addon is already in this profile")
                     } else {
-                        "No installed addons match"
+                        tr("No installed addons match")
                     })
                     .into_any_element(),
                 false => v_flex()
@@ -307,14 +315,14 @@ impl Shell {
                 .collect();
             let (shell, store, profile) = (shell.clone(), store.clone(), profile.clone());
             let ok = match picked.len() {
-                0 => "Add".to_owned(),
-                n => format!("Add {}", trn(n, "{count} addon", "{count} addons")),
+                0 => tr("Add").to_owned(),
+                n => trf!("Add {addons}", addons = trn(n, "{count} addon", "{count} addons")),
             };
             alert
                 .width(px(520.))
-                .title(format!("Add addons to {profile}"))
+                .title(trf!("Add addons to {profile}", profile = profile))
                 .description(
-                    "Installed addons this profile doesn't have. They're added off, at the end of the load order.",
+                    tr("Installed addons this profile doesn't have. They're added off, at the end of the load order."),
                 )
                 .child(
                     v_flex()
@@ -331,9 +339,10 @@ impl Shell {
                     }
                     match store.update_profile(&profile, |p| picked.iter().try_for_each(|id| p.add_addon(id))) {
                         Ok(()) => {
-                            let text = format!(
-                                "Added {} to {profile}",
-                                trn(picked.len(), "{count} addon", "{count} addons")
+                            let text = trf!(
+                                "Added {addons} to {profile}",
+                                addons = trn(picked.len(), "{count} addon", "{count} addons"),
+                                profile = profile
                             );
                             window.push_notification(Notification::success(text), cx);
                         }

@@ -11,6 +11,7 @@ use swofty_core::session::SessionRecord;
 
 use super::dialogs::{show_launch_failed, show_mods_blocked};
 use super::{Page, Shell};
+use swofty_i18n::{tr, trf, trn};
 
 /// Times shown as "5 min ago" stay current without a repaint every probe.
 const REPAINT: Duration = Duration::from_secs(30);
@@ -66,8 +67,10 @@ impl Shell {
         if self.cancelling && probe.busy.is_none() && self.build.is_some() {
             self.cancelling = false;
             window.push_notification(
-                Notification::info("The game files are back as they were. Press Play to build again.")
-                    .title("Build cancelled"),
+                Notification::info(tr(
+                    "The game files are back as they were. Press Play to build again.",
+                ))
+                .title(tr("Build cancelled")),
                 cx,
             );
         }
@@ -93,9 +96,9 @@ impl Shell {
             self.seen.recovered = n.at;
             let mut text: Vec<String> = n.lines.iter().take(4).cloned().collect();
             if n.lines.len() > text.len() {
-                text.push(format!(
-                    "and {} more; the launch log has them all",
-                    n.lines.len() - text.len()
+                text.push(trf!(
+                    "and {count} more; the launch log has them all",
+                    count = n.lines.len() - text.len()
                 ));
             }
             window.push_notification(Notification::info(text.join("\n")).title(recovery::HEADLINE), cx);
@@ -178,14 +181,14 @@ impl Shell {
                         .filter(|f| f.at >= launch.at)
                         .map(|f| f.headline().to_owned());
                     self.notice = Some(match &self.blocked {
-                        _ if refused => "an antivirus removed mod files, so F1 25 was not started".to_owned(),
-                        _ if not_stock.is_some() => not_stock.unwrap_or_default(),
-                        Some(b) if b.files.len() == 1 => {
-                            "a file Swofty did not put in the game folder is in the way".to_owned()
+                        _ if refused => {
+                            tr("an antivirus removed mod files, so F1 25 was not started").to_owned()
                         }
-                        Some(b) => format!(
-                            "{} files Swofty did not put in the game folder are in the way",
-                            b.files.len()
+                        _ if not_stock.is_some() => not_stock.unwrap_or_default(),
+                        Some(b) => trn(
+                            b.files.len(),
+                            "a file Swofty did not put in the game folder is in the way",
+                            "{count} files Swofty did not put in the game folder are in the way",
                         ),
                         None => failed.unwrap_or_else(|| launch.failure()),
                     })

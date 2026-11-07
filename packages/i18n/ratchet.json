@@ -19,7 +19,8 @@
   "send_logs.rs": 11,
   "setup.rs": 16,
   "shaders/preview.rs": 2,
-  "shell.rs": 48,
+  "shell/mod.rs": 6,
+  "shell/title_bar.rs": 2,
   "tasks.rs": 1,
   "update.rs": 13
 }

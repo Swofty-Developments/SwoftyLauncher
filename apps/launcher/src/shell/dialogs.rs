@@ -13,6 +13,7 @@ use swofty_core::quarantine;
 use swofty_core::saves::{self, SavesWarning};
 
 use super::Shell;
+use swofty_i18n::tr;
 
 pub(super) fn section_label(title: &'static str, p: Palette) -> impl IntoElement {
     div()
@@ -41,14 +42,14 @@ pub(super) fn terms_box(p: Palette) -> impl IntoElement {
                         .text_size(px(13.))
                         .font_weight(FontWeight::SEMIBOLD)
                         .text_color(p.text)
-                        .child("Outside EA's terms of service"),
+                        .child(tr("Outside EA's terms of service")),
                 ),
         )
-        .child(div().text_size(px(13.)).text_color(p.text).child(
+        .child(div().text_size(px(13.)).text_color(p.text).child(tr(
             "EA's terms don't cover playing without EA AntiCheat, even offline. We know of \
                  no action taken against players for offline modding, but EA can still act on \
                  accounts under its terms.",
-        ))
+        )))
 }
 
 /// The loader files an antivirus took: before the launch they stopped the
@@ -68,7 +69,7 @@ pub(super) fn show_mods_blocked(
     window.open_alert_dialog(cx, move |alert, _, _| {
         let alert = alert.width(px(560.)).title(title).description(text.clone());
         if !unexplained {
-            return alert.ok_text("OK");
+            return alert.ok_text(tr("OK"));
         }
         let shell = shell.clone();
         alert.footer(
@@ -78,7 +79,7 @@ pub(super) fn show_mods_blocked(
                 .child(
                     Button::new("blocked-discord")
                         .outline()
-                        .label("Join the support Discord")
+                        .label(tr("Join the support Discord"))
                         .on_click(|_, _, cx| cx.open_url(crate::discord::INVITE)),
                 )
                 .child(
@@ -93,7 +94,7 @@ pub(super) fn show_mods_blocked(
                 .child(
                     Button::new("blocked-ok")
                         .ghost()
-                        .label("OK")
+                        .label(tr("OK"))
                         .on_click(|_, window, cx| window.close_dialog(cx)),
                 ),
         )
@@ -109,33 +110,30 @@ pub(super) fn show_launch_failed(f: &launch::Failure, window: &mut Window, cx: &
             .width(px(560.))
             .title(title)
             .description(text.clone())
-            .ok_text("OK")
+            .ok_text(tr("OK"))
     });
 }
 
 pub(super) fn offline_terms(p: Palette) -> impl IntoElement {
     v_flex()
         .gap(px(14.))
-        .child(div().text_size(px(13.)).text_color(p.text_muted).child(
+        .child(div().text_size(px(13.)).text_color(p.text_muted).child(tr(
             "Modded sessions run F1 25 without EA AntiCheat so the loader \
                  and addons can work. Everything is undone when the game exits.",
-        ))
+        )))
         .child(terms_box(p))
         .child(
             v_flex()
                 .gap(px(7.))
-                .child(section_label("OFFLINE ONLY", p))
-                .child(div().text_size(px(13.)).text_color(p.text).child(
+                .child(section_label(tr("OFFLINE ONLY"), p))
+                .child(div().text_size(px(13.)).text_color(p.text).child(tr(
                     "Multiplayer is unavailable and cannot be enabled. The component is \
                          downloaded automatically and verified against pinned SHA-256 digests.",
-                )),
+                ))),
         )
-        .child(
-            div()
-                .text_size(px(12.))
-                .text_color(p.text_muted)
-                .child("We may collect anonymised usage data from your use of the launcher."),
-        )
+        .child(div().text_size(px(12.)).text_color(p.text_muted).child(tr(
+            "We may collect anonymised usage data from your use of the launcher.",
+        )))
 }
 
 pub(super) fn saves_alert(

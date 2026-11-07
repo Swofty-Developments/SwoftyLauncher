@@ -4,6 +4,7 @@ use gpui_kit::*;
 use swofty_core::session::LaunchMode;
 
 use super::Shell;
+use swofty_i18n::trf;
 
 impl Shell {
     pub(crate) fn set_launcher_saves(&mut self, on: bool, window: &mut Window, cx: &mut Context<Self>) {
@@ -20,8 +21,8 @@ impl Shell {
                 self.library.profile.launcher_saves = on;
                 window.push_notification(
                     Notification::info(match on {
-                        true => format!("{name} plays on its own launcher saves."),
-                        false => format!("{name} plays on your Steam saves."),
+                        true => trf!("{name} plays on its own launcher saves.", name = name),
+                        false => trf!("{name} plays on your Steam saves.", name = name),
                     }),
                     cx,
                 );

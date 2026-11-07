@@ -10,6 +10,7 @@ use swofty_core::session::{LaunchMode, SessionRecord};
 
 use super::dialogs::note_notification;
 use super::{PlayState, Shell};
+use swofty_i18n::{tr, trf};
 
 impl Shell {
     pub(crate) fn play_state(&self) -> PlayState {
@@ -80,7 +81,10 @@ impl Shell {
             return false;
         }
         if self.addons.checking {
-            window.push_notification(Notification::info("Play when the conflict check finishes."), cx);
+            window.push_notification(
+                Notification::info(tr("Play when the conflict check finishes.")),
+                cx,
+            );
             return false;
         }
         if let Some(moved) = install.moved.clone() {
@@ -177,11 +181,14 @@ impl Shell {
             window.push_notification(Notification::warning(d.text()).title(d.title).autohide(false), cx);
         }
         if let Some(short) = crate::settings::low_space_warning(checked.room) {
-            let text = format!("{short} Settings shows what takes the room and clears old logs.");
+            let text = trf!(
+                "{short} Settings shows what takes the room and clears old logs.",
+                short = short
+            );
             crate::app_log::note(&format!("play: {text}"));
             window.push_notification(
                 Notification::warning(text)
-                    .title("Low on disk space")
+                    .title(tr("Low on disk space"))
                     .autohide(false),
                 cx,
             );
@@ -210,7 +217,7 @@ impl Shell {
                 self.seen.launch_failed = game::now_secs();
                 window.push_notification(
                     Notification::error(e)
-                        .title("Could not launch F1 25")
+                        .title(tr("Could not launch F1 25"))
                         .autohide(false),
                     cx,
                 );

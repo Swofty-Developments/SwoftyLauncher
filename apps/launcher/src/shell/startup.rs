@@ -10,6 +10,7 @@ use std::time::{Duration, Instant};
 use swofty_core::store::Store;
 
 use super::{Page, Seen, Shell};
+use swofty_i18n::tr;
 
 pub(crate) struct Prepared {
     store: Store,
@@ -200,9 +201,11 @@ impl Shell {
             }
             let answer = window.prompt(
                 PromptLevel::Warning,
-                "Downloads are still in progress",
-                Some("Exiting interrupts active downloads and discards queued jobs."),
-                &["Keep launcher open", "Exit anyway"],
+                tr("Downloads are still in progress"),
+                Some(tr(
+                    "Exiting interrupts active downloads and discards queued jobs.",
+                )),
+                &[tr("Keep launcher open"), tr("Exit anyway")],
                 cx,
             );
             let handle = window.window_handle();
@@ -348,10 +351,10 @@ impl Shell {
                     .await;
                 if elevated {
                     let note = Notification::warning(
-                        "Windows blocks dragging files onto a program that runs as administrator. Choose files \
-                         with the launcher's buttons instead, or open Swofty Launcher normally to drag and drop.",
+                        tr("Windows blocks dragging files onto a program that runs as administrator. Choose files \
+                         with the launcher's buttons instead, or open Swofty Launcher normally to drag and drop."),
                     )
-                    .title("Running as administrator");
+                    .title(tr("Running as administrator"));
                     cx.update(|window, cx| window.push_notification(note, cx)).ok();
                 }
             })

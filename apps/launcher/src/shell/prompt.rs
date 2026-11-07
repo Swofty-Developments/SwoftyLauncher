@@ -11,6 +11,7 @@ use swofty_core::install::Source;
 use swofty_core::store::Store;
 
 use super::Shell;
+use swofty_i18n::{tr, trf};
 
 pub type Action = Rc<dyn Fn(&Store, &str) -> Result<String, String>>;
 
@@ -29,10 +30,10 @@ impl Shell {
         let adding = !self.copies.is_empty();
         self.prompt(
             Prompt {
-                title: if adding { "Add another folder" } else { "Locate F1 25" },
-                description: format!(
-                    "The folder that contains {}, from Steam, the EA app or a copy of your own. Play uses it once it's added.",
-                    swofty_core::GAME_EXE
+                title: if adding { tr("Add another folder") } else { tr("Locate F1 25") },
+                description: trf!(
+                    "The folder that contains {exe}, from Steam, the EA app or a copy of your own. Play uses it once it's added.",
+                    exe = swofty_core::GAME_EXE
                 ),
                 initial: String::new(),
                 placeholder: if cfg!(windows) {
@@ -40,21 +41,21 @@ impl Shell {
                 } else {
                     "/path/to/F1 25"
                 },
-                ok: "Add and play this copy",
+                ok: tr("Add and play this copy"),
                 browse: Some(PathPromptOptions {
                     files: false,
                     directories: true,
                     multiple: false,
-                    prompt: Some("Use folder".into()),
+                    prompt: Some(tr("Use folder").into()),
                 }),
                 action: Rc::new(|store, value| {
                     let dir = PathBuf::from(value);
                     let mut config = store.config();
                     swofty_core::copies::add(&mut config, &dir)?;
                     store.save_config(&config).map_err(|e| e.to_string())?;
-                    Ok(format!(
-                        "Added the {} copy",
-                        swofty_core::copies::store_name(Source::detect(&dir))
+                    Ok(trf!(
+                        "Added the {store} copy",
+                        store = swofty_core::copies::store_name(Source::detect(&dir))
                     ))
                 }),
             },
@@ -80,7 +81,7 @@ impl Shell {
             let browse = prompt.browse.clone().map(|options| {
                 Button::new("browse")
                     .icon(IconName::FolderOpen)
-                    .label("Browse…")
+                    .label(tr("Browse…"))
                     .on_click(move |_, window, cx| {
                         let rx = cx.prompt_for_paths(options.clone());
                         let field = field.clone();

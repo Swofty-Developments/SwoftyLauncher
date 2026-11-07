@@ -125,7 +125,7 @@ impl Shell {
                     div()
                         .flex_1()
                         .min_w_0()
-                        .child("Switch profiles here to see their saves"),
+                        .child(tr("Switch profiles here to see their saves")),
                 ),
         )
     }
@@ -362,7 +362,7 @@ impl Shell {
                                 .flex_shrink_0()
                                 .pt(px(if short { 4. } else { 12. }))
                                 .gap(px(6.))
-                                .child(label("SIMPLIFIED FOR SWOFTY", p).px(px(8.)))
+                                .child(label(tr("SIMPLIFIED FOR SWOFTY"), p).px(px(8.)))
                                 .children(self.simplified(p, cx)),
                         )
                         .child(
