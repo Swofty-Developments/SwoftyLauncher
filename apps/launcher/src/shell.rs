@@ -177,24 +177,7 @@ pub struct Shell {
     /// `updates.check` from config.json, read when the library loads.
     pub(crate) update_check: bool,
     pub(crate) updates: crate::update::Updates,
-    pub(crate) forms: HashMap<String, crate::blocks::FormSlot>,
-    pub(crate) searches: HashMap<String, crate::blocks::SearchSlot>,
-    pub(crate) sorts: HashMap<String, (String, bool)>,
-    /// User-resized table column widths, keyed by `(table_key, column_key)`.
-    pub(crate) column_widths: HashMap<(String, String), f32>,
-    /// Measured header widths from the last frame, keyed by `(table_key, column_key)`.
-    pub(crate) column_bounds: Rc<std::cell::RefCell<HashMap<(String, String), f32>>>,
-    pub(crate) column_drag: Option<crate::blocks::ColumnDrag>,
-    /// The row whose detail panel is open, by table.
-    pub(crate) table_rows: HashMap<String, String>,
-    /// The scroll position and wheel motion of each addon page of blocks, by addon/section.
-    pub(crate) section_scrolls: HashMap<String, (ScrollHandle, crate::scroll::SmoothScroll)>,
-    /// Where each table's rows start in its page's scrolled content, from the last frame, so
-    /// a long table draws only the rows in view.
-    pub(crate) table_tops: Rc<std::cell::RefCell<HashMap<String, f32>>>,
-    pub(crate) cell: Option<crate::blocks::CellEdit>,
-    pub(crate) colour: Option<crate::blocks::ColourEdit>,
-    pub(crate) pending_cells: HashMap<String, String>,
+    pub(crate) blocks: crate::blocks::Blocks,
     pub(crate) content_width: f32,
     pub(crate) short: bool,
     pub(crate) ticking: bool,
@@ -643,18 +626,7 @@ impl Shell {
             slow_logged: false,
             update_check,
             updates: crate::update::Updates::new(),
-            forms: HashMap::new(),
-            searches: HashMap::new(),
-            sorts: HashMap::new(),
-            column_widths: HashMap::new(),
-            column_bounds: Rc::default(),
-            column_drag: None,
-            table_rows: HashMap::new(),
-            section_scrolls: HashMap::new(),
-            table_tops: Rc::default(),
-            cell: None,
-            colour: None,
-            pending_cells: HashMap::new(),
+            blocks: crate::blocks::Blocks::default(),
             content_width: 900.,
             short: false,
             ticking: false,
