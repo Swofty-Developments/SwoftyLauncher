@@ -452,6 +452,7 @@ Some operation types are still in development. Check [Current status](/design/#c
 | `overlay` | [Overlay](/reference/std/overlay) | Draws over the game | 1.3.7 or later |
 | `shaders` | [Shader packs](./shader-packs) | Changes the picture | 1.4.0 or later |
 | `postfx` | [Post-process passes](./postfx) | Changes the picture | 1.5.4 or later |
+| `telemetry` | [Telemetry](/reference/std/telemetry) | Reads live race data | 1.8.19 or later |
 
 An earlier launcher rejects the manifest.
 

@@ -7302,6 +7302,58 @@ mod tests {
     }
 
     #[test]
+    fn telemetry_is_on_only_for_an_addon_that_lists_it() {
+        if loader_dir().is_some() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("swofty-build-telemetry-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir,
+            user_reg: None,
+        };
+        let store = Store::new(root.join("data"));
+        for (id, extra) in [
+            ("t.timing", r#", "experimental_features": ["telemetry"]"#),
+            ("t.plain", ""),
+        ] {
+            let src = root.join(id);
+            std::fs::create_dir_all(&src).unwrap();
+            std::fs::write(
+                src.join("swofty.json"),
+                format!(
+                    r#"{{ "schema_version": 1, "id": "{id}", "name": "{id}", "version": "1.0.0", "author": "t",
+                         "compat": {{ "game": "f1_25" }}{extra} }}"#
+                ),
+            )
+            .unwrap();
+            store.install_addon(&src).unwrap();
+        }
+        let assets = |built: &Built| {
+            built
+                .plan
+                .loader
+                .get("swofty/assets.json")
+                .map(|p| serde_json::from_slice::<serde_json::Value>(&std::fs::read(p).unwrap()).unwrap())
+        };
+        store
+            .update_profile("default", |p| p.set_enabled("t.plain", true))
+            .unwrap();
+        assert_eq!(assets(&build(&store, "default", &game).unwrap()), None);
+        store
+            .update_profile("default", |p| p.set_enabled("t.timing", true))
+            .unwrap();
+        let on = build(&store, "default", &game).unwrap();
+        assert_eq!(assets(&on).unwrap()["features"], serde_json::json!(["telemetry"]));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
     fn an_enabled_addon_for_a_newer_launcher_is_left_out_with_a_warning() {
         if loader_dir().is_some() {
             return;

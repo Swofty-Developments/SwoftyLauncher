@@ -406,6 +406,8 @@ pub enum ExperimentalFeature {
     Shaders,
     /// Running [`PostFx`] passes on the game's picture.
     Postfx,
+    /// Reading live car and session state with `swofty/telemetry.hpp`.
+    Telemetry,
 }
 
 impl ExperimentalFeature {
@@ -415,6 +417,7 @@ impl ExperimentalFeature {
             Self::Overlay => "overlay",
             Self::Shaders => "shaders",
             Self::Postfx => "postfx",
+            Self::Telemetry => "telemetry",
         }
     }
 
@@ -423,6 +426,7 @@ impl ExperimentalFeature {
             Self::Overlay => "Overlay",
             Self::Shaders => "Shaders",
             Self::Postfx => "Post-processing",
+            Self::Telemetry => "Telemetry",
         }
     }
 
@@ -432,6 +436,7 @@ impl ExperimentalFeature {
             Self::Overlay => "Draws over the game",
             Self::Shaders => "Changes the picture",
             Self::Postfx => "Changes the picture",
+            Self::Telemetry => "Reads live race data",
         }
     }
 }

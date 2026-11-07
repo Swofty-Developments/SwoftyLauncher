@@ -307,7 +307,13 @@ The core logs the first packet of each format and id whose length differs from t
 
 ## Availability
 
-`telemetry` is experimental, and `experimental_features` in a manifest doesn't accept it yet; see [feature gates](/design/native-libraries#feature-gates). The core turns it on only when `features` in `swofty/assets.json` lists `telemetry`, and the build writes that list from the addons' `experimental_features`. So on current builds every call returns `unavailable`.
+`telemetry` is experimental and off unless an addon asks for it. List it in the addon's `swofty.json`; while the addon is enabled, the build writes `telemetry` into `features` in `swofty/assets.json`, and the core turns the feature on. Addons that don't list it leave it off, and every call returns `unavailable`.
+
+```json [swofty.json]
+"experimental_features": ["telemetry"]
+```
+
+The game's UDP telemetry output must also be on in its settings for the car, participant and session fields to fill (see below).
 
 With the feature on, the core hooks the frame tick, the session start and the results finalise. A session is live from `Game_GameModule_OnSessionEnter` until the results are finalised; in it the feed's `frame` and `session.session_time` advance.
 

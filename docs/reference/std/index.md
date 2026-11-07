@@ -209,7 +209,7 @@ A feature is a switch in the core. A stable feature is always on. An experimenta
 ```
 
 - **Stable:** `events`, `storage`, `db`, `lang`, `career`, `popup`.
-- **Experimental:** `overlay`, `telemetry`. An addon turns `overlay` on with `"experimental_features": ["overlay"]` in its [manifest](/reference/addons/manifest).
+- **Experimental:** `overlay`, `telemetry`. An addon turns `overlay` on with `"experimental_features": ["overlay"]` and `telemetry` with `"experimental_features": ["telemetry"]` in its [manifest](/reference/addons/manifest).
 - `hook`, `options` and `log` name the mixin, settings and logging members of `SwoftyApi`. No switch turns them off.
 
 ## Threads
