@@ -17,6 +17,16 @@ constexpr uint64_t ENTITIES_LISTS_END = 0x568;
 // from registration until its unlock task completes, and no pending state or loaded flag was found. So
 // not_owned needs a long unbroken run of zeros (about a minute of flow ticks) once the context is wired.
 constexpr int NOT_OWNED_AFTER = 3600;
+// An entrant whose unlock item isn't registered yet is skipped, and a list whose items are all skipped reads as
+// usable, so a read before the unlock items are in would latch owned. The game has registered them by the time
+// its front end state (StateFrontend) runs; reads start FRONTEND_SETTLE_MS after it first does.
+constexpr uint32_t STATE_FRONTEND = 0x957880c6;
+constexpr uint64_t FRONTEND_SETTLE_MS = 5000;
+
+inline bool frontend_settled(uint64_t frontend_at, uint64_t now)
+{
+    return frontend_at && now >= frontend_at && now - frontend_at >= FRONTEND_SETTLE_MS;
+}
 
 inline bool tracked(const char *name)
 {

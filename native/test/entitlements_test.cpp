@@ -69,6 +69,11 @@ int main()
         late.read(false);
     CHECK(late.read(true) && late.state() == ent::OWNED);
 
+    CHECK(!ent::frontend_settled(0, 100000));
+    CHECK(!ent::frontend_settled(1000, 1000 + ent::FRONTEND_SETTLE_MS - 1));
+    CHECK(ent::frontend_settled(1000, 1000 + ent::FRONTEND_SETTLE_MS));
+    CHECK(!ent::frontend_settled(5000, 4000));
+
     CHECK(ent::json(ent::UNKNOWN).empty());
     CHECK(ent::json(ent::OWNED) == "{\"f1_2026\": true}\n");
     CHECK(ent::json(ent::NOT_OWNED) == "{\"f1_2026\": false}\n");

@@ -146,6 +146,7 @@ std::vector<CoreMixins> career_content_mixins();
 void career_content_commit();
 void career_content_tick();
 void entitlements_tick();
+void entitlements_flow(uint32_t hash, uint32_t to);
 void hub_tick();
 const SwoftyEra *era_table();
 const SwoftyRegistry *registry_table();

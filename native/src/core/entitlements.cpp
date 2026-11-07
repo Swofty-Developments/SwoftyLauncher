@@ -23,6 +23,7 @@ struct Game {
 };
 
 std::atomic<int> f1_2026{ent::UNKNOWN};
+std::atomic<uint64_t> frontend_at{0};
 ent::Settle settle;
 bool reported_missing = false;
 
@@ -45,11 +46,19 @@ void publish(int state)
 
 namespace runtime {
 
+void entitlements_flow(uint32_t hash, uint32_t to)
+{
+    uint64_t none = 0;
+    if (hash == ent::STATE_FRONTEND && (to == 1 || to == 2))
+        frontend_at.compare_exchange_strong(none, GetTickCount64());
+}
+
 void entitlements_tick()
 {
     static unsigned recheck = 0;
     int now = f1_2026.load();
-    if (now == ent::OWNED || !code_ready() || (now == ent::NOT_OWNED && ++recheck % 600))
+    if (now == ent::OWNED || !code_ready() || !ent::frontend_settled(frontend_at.load(), GetTickCount64()) ||
+        (now == ent::NOT_OWNED && ++recheck % 600))
         return;
     uintptr_t slot = swofty::api->resolve("g_FeTile_Ctx");
     if (!slot || !swofty::game::FeTile_Check_EntrantListUsable.address()) {
