@@ -1,7 +1,7 @@
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
-use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::profile::VANILLA;
@@ -13,6 +13,11 @@ use crate::pages::GUTTER;
 use crate::scale::px;
 use crate::shell::Shell;
 use crate::theme::{Palette, ScrollArea};
+use crate::ui::{Callout, EmptyState};
+
+fn notice(callout: Callout) -> Div {
+    div().mx(px(GUTTER)).mb(px(8.)).child(callout)
+}
 
 impl Shell {
     pub(crate) fn careers_page(&mut self, p: Palette, _wide: bool, cx: &mut Context<Self>) -> AnyElement {
@@ -21,20 +26,19 @@ impl Shell {
         let loading = self.saves.loading && self.saves.view.as_ref().is_none_or(|v| v.profile != current);
         let Some(view) = self.saves.view.as_ref().filter(|_| !loading) else {
             let empty = match loading {
-                true => tr("Loading saves…"),
-                false => tr("No F1 25 save found yet."),
+                true => div()
+                    .px(px(GUTTER))
+                    .text_size(px(13.))
+                    .text_color(p.text_muted)
+                    .child(tr("Loading saves…"))
+                    .into_any_element(),
+                false => EmptyState::new(IconName::Save, tr("No F1 25 save found yet.")).into_any_element(),
             };
             return v_flex()
                 .size_full()
                 .child(self.header(tr("Saves"), String::new(), div(), p))
                 .children(banner)
-                .child(
-                    div()
-                        .px(px(GUTTER))
-                        .text_size(px(13.))
-                        .text_color(p.text_muted)
-                        .child(empty),
-                )
+                .child(empty)
                 .into_any_element();
         };
         let title = match view.vanilla() {
@@ -76,7 +80,7 @@ impl Shell {
     pub(super) fn empty_save_notice(
         &self,
         view: &SavesView,
-        p: Palette,
+        _: Palette,
         cx: &mut Context<Self>,
     ) -> Option<Div> {
         if !view.awaiting_import {
@@ -85,88 +89,50 @@ impl Shell {
         let steam = view.steam.clone()?;
         let name = view.profile.clone();
         let blocked = self.saves.game_running;
-        Some(
-            h_flex()
-                .mx(px(GUTTER))
-                .mb(px(8.))
-                .px(px(12.))
-                .py(px(8.))
-                .gap(px(12.))
-                .items_center()
-                .rounded(px(8.))
-                .border_1()
-                .border_color(p.border)
-                .text_size(px(13.))
-                .text_color(p.text_muted)
-                .child(Icon::new(IconName::Info).size(px(15.)))
-                .child(div().flex_1().min_w_0().child(empty_save()))
-                .child(
-                    Button::new("saves-empty-import")
-                        .small()
-                        .icon(IconName::Download)
-                        .label(tr("Import from Steam"))
-                        .disabled(blocked)
-                        .when(blocked, |b| b.tooltip(close_game_first()))
-                        .on_click(cx.listener(move |this, _, window, cx| {
-                            this.ask_copy(steam.clone(), VANILLA.to_owned(), name.clone(), window, cx);
-                        })),
-                ),
-        )
+        let import = Button::new("saves-empty-import")
+            .small()
+            .icon(IconName::Download)
+            .label(tr("Import from Steam"))
+            .disabled(blocked)
+            .when(blocked, |b| b.tooltip(close_game_first()))
+            .on_click(cx.listener(move |this, _, window, cx| {
+                this.ask_copy(steam.clone(), VANILLA.to_owned(), name.clone(), window, cx);
+            }));
+        Some(notice(Callout::info(empty_save()).actions(import)))
     }
 
     pub(super) fn steam_warning_notice(
         &self,
         view: &SavesView,
-        p: Palette,
+        _: Palette,
         cx: &mut Context<Self>,
     ) -> Option<Div> {
         if !view.steam_warning {
             return None;
         }
         let turn_on = !view.has_save;
-        Some(
-            h_flex()
-                .mx(px(GUTTER))
-                .mb(px(8.))
-                .px(px(12.))
-                .py(px(8.))
-                .gap(px(8.))
-                .items_center()
-                .flex_wrap()
-                .rounded(px(8.))
-                .border_1()
-                .border_color(p.border)
-                .text_size(px(13.))
-                .text_color(p.text_muted)
-                .child(
-                    Icon::new(IconName::CircleAlert)
-                        .size(px(15.))
-                        .text_color(p.warning),
-                )
-                .child(
-                    div()
-                        .flex_1()
-                        .min_w(px(240.))
-                        .child(swofty_core::vault::guard::STEAM_SAVE_WARNING),
-                )
-                .when(turn_on, |row| {
-                    row.child(
-                        Button::new("saves-warning-launcher-saves")
-                            .small()
-                            .label(tr("Use launcher saves"))
-                            .on_click(cx.listener(|this, _, window, cx| {
-                                this.set_launcher_saves(true, window, cx);
-                                this.refresh_saves_in_background(cx);
-                            })),
-                    )
-                }),
-        )
+        let actions = h_flex().gap(px(8.)).flex_wrap().when(turn_on, |row| {
+            row.child(
+                Button::new("saves-warning-launcher-saves")
+                    .small()
+                    .label(tr("Use launcher saves"))
+                    .on_click(cx.listener(|this, _, window, cx| {
+                        this.set_launcher_saves(true, window, cx);
+                        this.refresh_saves_in_background(cx);
+                    })),
+            )
+        });
+        let callout = Callout::warning(swofty_core::vault::guard::STEAM_SAVE_WARNING);
+        Some(notice(match turn_on {
+            true => callout.actions(actions),
+            false => callout,
+        }))
     }
 
     pub(super) fn steam_missing_notice(
         &self,
         view: &SavesView,
-        p: Palette,
+        _: Palette,
         cx: &mut Context<Self>,
     ) -> Option<Div> {
         if !view.steam_missing {
@@ -175,54 +141,41 @@ impl Shell {
         let blocked = self.saves.game_running;
         let name = view.profile.clone();
         let on = self.library.profile.launcher_saves;
-        Some(
-            h_flex()
-                .mx(px(GUTTER))
-                .mb(px(8.))
-                .px(px(12.))
-                .py(px(8.))
-                .gap(px(8.))
-                .items_center()
-                .flex_wrap()
-                .rounded(px(8.))
-                .border_1()
-                .border_color(p.border)
-                .text_size(px(13.))
-                .text_color(p.text_muted)
-                .child(Icon::new(IconName::Info).size(px(15.)))
-                .child(div().flex_1().min_w(px(240.)).child(steam_save_missing_text()))
-                .when(on, |row| {
-                    row.child(
-                        Button::new("saves-missing-steam")
-                            .small()
-                            .label(tr("Play with your Steam saves"))
-                            .on_click(cx.listener(|this, _, window, cx| {
-                                this.set_launcher_saves(false, window, cx);
-                                this.refresh_saves_in_background(cx);
-                            })),
-                    )
-                })
-                .child(
-                    Button::new("saves-missing-retry")
+        let actions = h_flex()
+            .gap(px(8.))
+            .flex_wrap()
+            .when(on, |row| {
+                row.child(
+                    Button::new("saves-missing-steam")
                         .small()
-                        .icon(IconName::Download)
-                        .label(tr("Import from Steam"))
-                        .disabled(blocked)
-                        .when(blocked, |b| b.tooltip(close_game_first()))
-                        .on_click(cx.listener(|this, _, window, cx| this.retry_steam_import(window, cx))),
-                )
-                .child(
-                    Button::new("saves-missing-pick")
-                        .small()
-                        .outline()
-                        .icon(IconName::Folder)
-                        .label(tr("Choose the folder…"))
-                        .disabled(blocked)
-                        .on_click(cx.listener(move |this, _, window, cx| {
-                            this.pick_steam_save(name.clone(), window, cx);
+                        .label(tr("Play with your Steam saves"))
+                        .on_click(cx.listener(|this, _, window, cx| {
+                            this.set_launcher_saves(false, window, cx);
+                            this.refresh_saves_in_background(cx);
                         })),
-                ),
-        )
+                )
+            })
+            .child(
+                Button::new("saves-missing-retry")
+                    .small()
+                    .icon(IconName::Download)
+                    .label(tr("Import from Steam"))
+                    .disabled(blocked)
+                    .when(blocked, |b| b.tooltip(close_game_first()))
+                    .on_click(cx.listener(|this, _, window, cx| this.retry_steam_import(window, cx))),
+            )
+            .child(
+                Button::new("saves-missing-pick")
+                    .small()
+                    .outline()
+                    .icon(IconName::Folder)
+                    .label(tr("Choose the folder…"))
+                    .disabled(blocked)
+                    .on_click(cx.listener(move |this, _, window, cx| {
+                        this.pick_steam_save(name.clone(), window, cx);
+                    })),
+            );
+        Some(notice(Callout::info(steam_save_missing_text()).actions(actions)))
     }
 
     pub(super) fn saves_actions(&self, view: &SavesView, cx: &mut Context<Self>) -> impl IntoElement + use<> {
