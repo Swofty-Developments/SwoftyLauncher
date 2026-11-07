@@ -65,7 +65,7 @@ fn finds_a_swofty_folder_on_another_drive_root_but_not_a_folder_without_addons()
     write(&drive.join("Swofty Launcher/bin/swofty-launcher"), "x");
     write(&drive.join("Swofty2/profiles/default.json"), "{}");
     data_with(&drive.join("Other/Swofty"), &["deep.one"]);
-    let found = find(&loc(&default), &[], &[drive.clone()]);
+    let found = find(&loc(&default), &[], std::slice::from_ref(&drive));
     let got = paths(&found);
     assert_eq!(got.len(), 2, "{got:?}");
     assert!(got.contains(&drive.join("SwoftyData")));
@@ -115,7 +115,7 @@ fn a_folder_inside_or_around_the_current_one_is_not_offered() {
     let default = dir.join("Swofty");
     data_with(&default, &["a.one"]);
     data_with(&default.join("backup"), &["a.nine", "a.ten"]);
-    assert!(find(&loc(&default), &[dir.clone()], &[]).is_empty());
+    assert!(find(&loc(&default), std::slice::from_ref(&dir), &[]).is_empty());
 }
 
 #[test]

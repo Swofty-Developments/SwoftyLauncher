@@ -440,7 +440,7 @@ fn a_failure_part_way_through_the_copy_keeps_the_old_folder_whole() {
     let err = move_data(&p, &OTHER_DRIVE, &Quiet, &no_cancel()).unwrap_err();
     std::fs::set_permissions(&stuck, std::fs::Permissions::from_mode(0o644)).unwrap();
     assert!(matches!(err, Error::Io(_)), "{err:?}");
-    assert!(err.to_string().contains("stays in"));
+    assert!(err.to_string().contains("stay in"));
     whole(&default);
     assert!(!to.exists());
     assert!(!journal_left(&default));

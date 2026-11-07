@@ -994,7 +994,7 @@ mod tests {
         let found = finder(&data(&default), &[]);
         assert_eq!(
             found.iter().map(|f| f.path.clone()).collect::<Vec<_>>(),
-            [old.clone()]
+            vec![old.clone()]
         );
         write(&default.join("addons/mine.two/swofty.json"), "{}");
         assert!(finder(&data(&default), &[]).is_empty());
