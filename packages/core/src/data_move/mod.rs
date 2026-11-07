@@ -174,6 +174,7 @@ pub struct Moved {
 pub struct Recovered {
     pub to: PathBuf,
     pub leftover: Option<PathBuf>,
+    pub adopted: bool,
 }
 
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
@@ -581,6 +582,7 @@ fn cleanup(j: &Journal) -> Recovered {
     Recovered {
         to: j.to.clone(),
         leftover,
+        adopted: false,
     }
 }
 

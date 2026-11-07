@@ -371,7 +371,8 @@ fn a_copy_changes_nothing_until_recover_switches_it() {
         done,
         Recovered {
             to: to.clone(),
-            leftover: None
+            leftover: None,
+            adopted: false
         }
     );
     assert_eq!(link::target(&default), Some(to.clone()));

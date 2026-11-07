@@ -50,7 +50,7 @@ pub(crate) struct Moving {
     stage: Stage,
 }
 
-fn install_folder() -> Option<PathBuf> {
+pub(crate) fn install_folder() -> Option<PathBuf> {
     let exe = std::env::current_exe().ok()?;
     let bin = exe
         .parent()
@@ -59,7 +59,7 @@ fn install_folder() -> Option<PathBuf> {
 }
 
 impl Shell {
-    fn move_refusal(&self) -> Option<String> {
+    pub(crate) fn move_refusal(&self) -> Option<String> {
         if self.moving.is_some() {
             return Some(tr("Your data folder is already moving").to_owned());
         }
@@ -132,7 +132,7 @@ impl Shell {
         .detach();
     }
 
-    fn data_move_failed(&mut self, why: &str, window: &mut Window, cx: &mut Context<Self>) {
+    pub(crate) fn data_move_failed(&mut self, why: &str, window: &mut Window, cx: &mut Context<Self>) {
         crate::app_log::note(&format!("data move: {why}"));
         let why = why.to_owned();
         window.open_alert_dialog(cx, move |alert, _, _| {
@@ -258,7 +258,7 @@ impl Shell {
         }
     }
 
-    fn relaunch_for_move(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+    pub(crate) fn relaunch_for_move(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let started = std::env::current_exe().and_then(|exe| std::process::Command::new(exe).spawn());
         match started {
             Ok(_) => cx.quit(),
@@ -322,6 +322,12 @@ impl Shell {
             Ok(done) => {
                 crate::app_log::note(&format!("data move: now in {}", done.to.display()));
                 let text = match &done.leftover {
+                    None if done.adopted => {
+                        trf!(
+                            "Your addons and saves are back. They are in {to}",
+                            to = done.to.display()
+                        )
+                    }
                     Some(old) => trf!(
                         "Moved your data folder to {to}, but could not delete the old copy in {old}. Delete it yourself.",
                         to = done.to.display(),

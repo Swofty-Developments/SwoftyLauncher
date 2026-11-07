@@ -113,12 +113,26 @@ impl Shell {
             .icon(IconName::FolderInput)
             .label(tr("Move…"))
             .on_click(cx.listener(|this, _, window, cx| this.open_data_move(window, cx)));
-        SettingsSection::new(tr("Location")).row(
-            SettingRow::new(tr("Data folder"))
-                .description(self.store.root.display().to_string())
-                .control(open)
-                .control(moving),
-        )
+        let find = Button::new("settings-find-data")
+            .outline()
+            .small()
+            .icon(IconName::Search)
+            .label(tr("Find"))
+            .on_click(cx.listener(|this, _, window, cx| this.scan_for_data(true, window, cx)));
+        SettingsSection::new(tr("Location"))
+            .row(
+                SettingRow::new(tr("Data folder"))
+                    .description(self.store.root.display().to_string())
+                    .control(open)
+                    .control(moving),
+            )
+            .row(
+                SettingRow::new(tr("Find my addons"))
+                    .description(tr(
+                        "Look in other folders and drives for addons and saves you used before",
+                    ))
+                    .control(find),
+            )
     }
 
     fn storage_usage(&self, p: Palette, cx: &mut Context<Self>) -> SettingsSection {

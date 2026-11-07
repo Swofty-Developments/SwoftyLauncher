@@ -98,6 +98,9 @@ pub struct Config {
     /// The version of the welcome wizard the player last finished or skipped.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub onboarding: Option<u32>,
+    /// Set by "Don't ask again" on the prompt that offers addons and saves found in another folder.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub no_find_prompt: bool,
     #[serde(default)]
     pub data_version: u32,
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]

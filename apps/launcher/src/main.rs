@@ -19,6 +19,7 @@ mod download_queue;
 mod ea_app;
 mod form;
 mod format;
+mod found_data;
 mod game;
 mod game_edited;
 mod importer;
@@ -107,6 +108,7 @@ impl Launcher {
                     s.restore_console(cx);
                     s.run_startup(window, cx);
                     s.show_data_move_result(window, cx);
+                    s.scan_for_lost_data(window, cx);
                     s.start_ui_mode(window, cx);
                 });
                 this.shell = Some(shell);

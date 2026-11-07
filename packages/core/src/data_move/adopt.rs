@@ -217,5 +217,6 @@ fn done(j: &Journal) -> Recovered {
     Recovered {
         to: j.to.clone(),
         leftover: None,
+        adopted: true,
     }
 }

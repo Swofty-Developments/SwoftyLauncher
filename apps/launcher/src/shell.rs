@@ -163,6 +163,7 @@ pub struct Shell {
     pub(crate) progress: Option<(f32, String)>,
     pub(crate) tasks: Option<crate::tasks::TaskDialog>,
     pub(crate) moving: Option<crate::data_move::Moving>,
+    pub(crate) found_data: Option<crate::found_data::FoundPrompt>,
     pub(crate) dropping: bool,
     pub(crate) vr_profiles: BTreeSet<String>,
     pub(crate) start_store: bool,
@@ -630,6 +631,7 @@ impl Shell {
             progress: None,
             tasks: None,
             moving: None,
+            found_data: None,
             dropping: false,
             vr_profiles,
             start_store,
@@ -2607,6 +2609,7 @@ impl Render for Shell {
             .children(self.task_dialog(p, window, cx))
             .children(self.crash_overlay(p, cx))
             .children(self.data_move_overlay(p, cx))
+            .children(self.found_data_overlay(p, cx))
             .when(self.dropping, |d| d.child(self.drop_overlay(p)));
         self.note_slow("render", page, started);
         tree
