@@ -17,9 +17,9 @@ mod rows;
 mod sidebar;
 mod state;
 mod sync;
-mod tiles;
 #[cfg(test)]
 mod tests;
+mod tiles;
 mod updates;
 
 pub(crate) use state::Browser;

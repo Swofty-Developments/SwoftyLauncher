@@ -1,8 +1,15 @@
 //! The category tiles above the Addon Browser: All and one tile per category.
 
+use gpui_kit::component::{h_flex, v_flex};
+use gpui_kit::prelude::FluentBuilder;
+use gpui_kit::*;
 use swofty_i18n::tr;
 
 use super::*;
+use crate::scale::px;
+use crate::shell::Shell;
+use crate::theme::Palette;
+use crate::ui::tile;
 
 const TILE_W: f32 = 122.;
 const TILE_H: f32 = 70.;
