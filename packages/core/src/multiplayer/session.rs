@@ -26,7 +26,7 @@ use super::diag;
 use super::direct::DirectUdp;
 use super::fingerprint::{self, Fingerprint, Mismatch, MismatchKind};
 use super::game::{self, Category, Command, GameStatus, Screen};
-use super::progress::{self, MemberStage};
+use super::progress::{self, MemberStage, OPENS_LOBBY};
 use super::rooms::{Api, ApiError, Lobby, RoomKey, RoomSettings, User};
 use super::transport::Transport;
 use super::turn::TurnTransport;
@@ -1014,7 +1014,28 @@ impl Worker {
         self.seen_in_session = false;
     }
 
+    /// A joiner's game starts only once the host's game is in its lobby: the host stops on the Car Category
+    /// screen first, and a join the game sends before the host's session exists finds nobody. The host's
+    /// stage comes with its fingerprint; a host whose fingerprint carries no stage holds nothing up.
+    fn host_not_in_lobby(&self) -> Option<String> {
+        if self.hosting() || !self.setup.room_launch {
+            return None;
+        }
+        let host = self.lobby.as_ref()?.host_member()?;
+        let waiting = !host.ready
+            && (!self.prints.contains_key(&host.id)
+                || matches!(
+                    self.member_stage(host, false),
+                    Some(MemberStage::Starting | MemberStage::Loading)
+                ));
+        waiting.then(|| format!("waiting for {}{OPENS_LOBBY}", host.name))
+    }
+
     fn ask_launch(&mut self, restart: bool, why: &str) -> Result<(), Halt> {
+        if let Some(wait) = self.host_not_in_lobby() {
+            self.launch = None;
+            return Err(Halt::Game(wait));
+        }
         let row_ids = self.host_ids()?;
         let self_member = self
             .self_number()
@@ -3265,6 +3286,47 @@ mod tests {
             "{:?}",
             guest_game.log()
         );
+    }
+
+    #[test]
+    fn a_joiners_game_waits_for_the_host_to_open_the_lobby() {
+        let server = server();
+        let (host_game, guest_game) = (FakeGame::new("launch-h10"), FakeGame::new("launch-g10"));
+        let same = built_print("aa", &[("t/x", 512)]);
+        host_game.closed.store(true, Ordering::Relaxed);
+        let host = create(
+            launching(setup(&server.url, "host-token", &host_game, same.clone()), None),
+            RoomSettings::default(),
+        );
+        let code = wait_until(&host, "the host's launch ask", asked)
+            .room
+            .unwrap()
+            .code;
+        guest_game.closed.store(true, Ordering::Relaxed);
+        let guest = join(
+            launching(setup(&server.url, "guest-token", &guest_game, same), None),
+            &code,
+        );
+        let waiting = wait_until(
+            &guest,
+            "the wait for the host",
+            |s| matches!(&s.phase, Phase::WaitingForGame(w) if w.ends_with(OPENS_LOBBY)),
+        );
+        assert!(waiting.launch.is_none(), "{:?}", waiting.launch);
+        assert!(
+            progress::progress(&waiting).label.starts_with("Waiting for "),
+            "{:?}",
+            progress::progress(&waiting)
+        );
+        {
+            let mut s = lock(&host_game.status);
+            s.configured = true;
+            s.in_session = true;
+            s.screen = Screen::LanLobby;
+        }
+        host.launched();
+        host_game.closed.store(false, Ordering::Relaxed);
+        wait_until(&guest, "the launch ask", asked);
     }
 
     #[test]

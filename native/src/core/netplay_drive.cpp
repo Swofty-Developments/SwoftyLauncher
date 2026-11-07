@@ -657,19 +657,31 @@ void run_job()
         if (error.empty())
             role = int(c.op == drive::Op::host ? drive::Role::host : drive::Role::client);
     }
+    if (!c.seq) {
+        runtime::netplay_room::home_join_done(error);
+        if (!error.empty())
+            swofty::log("[netplay] join for the room boot failed: %s", error.c_str());
+        return;
+    }
     reply(c, error, detail);
 }
 
-bool start_headless(const drive::Command &c)
+// A room boot's join, once the main menu is up under the cover: the same LAN screen steps as the launcher's join
+// command, with no launcher command to answer.
+bool start_home_join()
 {
-    namespace room = runtime::netplay_room;
-    if (c.op != drive::Op::join)
+    std::string ip;
+    if (!runtime::netplay_room::take_home_join(ip))
         return false;
-    std::string why;
-    bool started = room::set_up_from_home(room::Role::join, c.ip.c_str(), why);
-    if (!started)
-        swofty::log("[netplay] join: taking the screen-driven steps instead (%s)", why.c_str());
-    return started;
+    drive::Command c;
+    c.op = drive::Op::join;
+    c.ip = ip;
+    std::lock_guard<std::mutex> g(job_lock);
+    job.start(c, GetTickCount64());
+    job_ip = c.ip;
+    answer_fn = answer_ctx = nullptr;
+    swofty::log("[netplay] join: started (screens) for the room boot, host %s", ip.c_str());
+    return true;
 }
 
 void netplay_tick()
@@ -686,6 +698,8 @@ void netplay_tick()
     }
     if (running)
         run_job();
+    else if (start_home_join())
+        return;
     drive::Command c;
     {
         std::lock_guard<std::mutex> g(queue_lock);
@@ -712,15 +726,11 @@ void netplay_tick()
             break;
         case drive::Op::host:
         case drive::Op::join: {
-            bool headless = start_headless(c);
             std::lock_guard<std::mutex> g(job_lock);
-            if (headless)
-                job.start_headless(c, GetTickCount64());
-            else
-                job.start(c, GetTickCount64());
+            job.start(c, GetTickCount64());
             job_ip = c.ip;
             answer_fn = answer_ctx = nullptr;
-            swofty::log("[netplay] %s: started%s", drive::op_name(c.op), headless ? " (headless)" : " (screens)");
+            swofty::log("[netplay] %s: started (screens)", drive::op_name(c.op));
             return;
         }
         case drive::Op::leave: error = run_leave(c); break;

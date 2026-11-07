@@ -109,11 +109,25 @@ fn connecting(step: &str, host: bool) -> Progress {
     }
 }
 
+/// The end of the session's reason while a joiner waits for the host's game to reach its lobby.
+pub const OPENS_LOBBY: &str = " to open the lobby";
+
 /// The one step the room page shows, from the session's phase and, once the game runs, the game's cover.
 pub fn progress(state: &SessionState) -> Progress {
     let game = state.game.as_ref();
     match &state.phase {
         Phase::Connecting(step) => connecting(step, state.host),
+        Phase::WaitingForGame(why) if game.is_none() && why.ends_with(OPENS_LOBBY) => {
+            let mut label = why.clone();
+            if let Some(first) = label.get_mut(..1) {
+                first.make_ascii_uppercase();
+            }
+            Progress {
+                step: Step::StartingGame,
+                label,
+                percent: STARTING,
+            }
+        }
         Phase::InLobby | Phase::Racing => Progress {
             step: Step::InLobby,
             label: "In the lobby".into(),

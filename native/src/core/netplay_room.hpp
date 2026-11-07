@@ -22,7 +22,12 @@
 // SWOFTY_ROOM_HOST=screens makes a host stop after the LAN mode switch and report done, for the Car Category
 // screen to take over.
 //
-// set_up_from_home is the same run started from the main menu, for netplay_drive's join command.
+// set_up_from_home is the same run started from the main menu.
+//
+// A room boot's join switches to LAN mode before the main menu and reports done, so the flow reaches the main
+// menu under the cover. Once home has settled, take_home_join hands netplay_drive the host's address once, and
+// netplay_drive joins through the LAN screens (the steps its join command takes). home_join_done reports how
+// that join ended; the cover stays up until the LAN lobby opens or the join fails.
 
 namespace runtime::netplay_room {
 
@@ -46,6 +51,8 @@ Setup room_poll(std::string &why);
 bool room_requested();
 
 bool set_up_from_home(Role role, const char *host_ip, std::string &why);
+bool take_home_join(std::string &host_ip);
+void home_join_done(const std::string &error);
 bool provide_context(void *registry, void *context);
 void set_category(const Category &category);
 Status status();

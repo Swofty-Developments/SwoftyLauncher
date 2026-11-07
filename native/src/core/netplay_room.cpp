@@ -136,6 +136,7 @@ bool resolved, asked, host_headless, host_ui, ui_started;
 std::atomic<bool> ui_rewrite{false};
 room::HostUi host_ui_run;
 room::HomeJoin home_join;
+bool home_join_due, screen_join;
 std::string ui_logged_error;
 room::UiStep ui_logged_step = room::UiStep::idle;
 safetyhook::MidHook h_add_tabs;
@@ -690,6 +691,29 @@ Setup set_up(Role r, const char *host_ip, std::string &why)
     return state.phase == Phase::done ? Setup::done : state.phase == Phase::failed ? Setup::failed : Setup::pending;
 }
 
+bool take_home_join(std::string &host_ip)
+{
+    std::lock_guard<std::mutex> g(lock);
+    if (!home_join_due)
+        return false;
+    home_join_due = false;
+    host_ip = join_ip;
+    return true;
+}
+
+void home_join_done(const std::string &error)
+{
+    std::lock_guard<std::mutex> g(lock);
+    if (!screen_join)
+        return;
+    if (error.empty()) {
+        finish(Phase::done, "the session is established (joined through the LAN screens)");
+        return;
+    }
+    screen_join = false;
+    finish(Phase::failed, error);
+}
+
 void set_room_request(Role r, const std::string &host_ip)
 {
     std::lock_guard<std::mutex> g(lock);
@@ -745,14 +769,12 @@ void home_join_tick()
     if (run.active())
         return;
     switch (home_join.tick(bind::on_home(), bind::in_lobby(), GetTickCount64())) {
-    case room::HomeDo::join: {
-        std::string ip = join_ip, why;
-        swofty::log("[netplay] room join: the main menu is up under the cover; the join runs from it");
+    case room::HomeDo::join:
+        swofty::log("[netplay] room join: the main menu is up under the cover; joining %s through the LAN screens",
+                    join_ip.c_str());
         runtime::room_cover::step("Reaching the host", 0.74f, 0.8f);
-        if (!begin(Role::join, ip.c_str(), true, why))
-            finish(Phase::failed, why);
+        home_join_due = screen_join = true;
         break;
-    }
     case room::HomeDo::fail:
         finish(Phase::failed, "the game did not reach its main menu after the switch to LAN mode");
         break;
@@ -821,6 +843,8 @@ CoverSignal cover_signal()
         return host_ui_run.sent() ? CoverSignal::shown : CoverSignal::waiting;
     if (home_join.waiting())
         return CoverSignal::waiting;
+    if (screen_join)
+        return bind::in_lobby() ? CoverSignal::shown : CoverSignal::waiting;
     return state.phase == Phase::done ? CoverSignal::shown : CoverSignal::waiting;
 }
 
