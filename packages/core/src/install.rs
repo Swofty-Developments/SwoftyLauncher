@@ -461,7 +461,9 @@ impl<'a> Installer<'a> {
                     .next()
                     .and_then(|n| u128::from_str_radix(n, 16).ok());
             let since_ms = started.map_or(0, |n| (n / 1_000_000) as i64);
-            crate::stdlib::careers::record_session(self.data, &j.profile, since_ms).ok();
+            let log =
+                std::fs::read_to_string(self.game.dir.join(crate::session::LOADER_LOG)).unwrap_or_default();
+            crate::stdlib::careers::record_session(self.data, &j.profile, since_ms, &log).ok();
         }
         let mut report = Vec::new();
         let same_build = j.build_id == self.game.identity.build_id;

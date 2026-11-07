@@ -23,6 +23,13 @@ pub const DATA_PATH: &str = "careers/index.json";
 /// The `why` of an addon recorded because its database rows were on when the career was saved.
 pub const ROWS_WHY: &str = "database rows in the save";
 
+/// The `why` of an addon recorded because a session of the career's save loaded one of its tracks.
+pub const TRACK_WHY: &str = "a track its sessions loaded";
+
+fn holds_rows(a: &CareerAddon) -> bool {
+    matches!(a.why.as_deref(), Some(ROWS_WHY | TRACK_WHY))
+}
+
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct CareerAddon {
     pub id: String,
@@ -133,7 +140,7 @@ pub fn sync(data: &Path, game: Option<&Path>, stamp: Option<&str>) -> crate::Res
         match kept.iter_mut().find(|k| k.career == c.career) {
             Some(k) => {
                 c.profile = c.profile.or_else(|| k.profile.clone());
-                for a in k.addons.iter().filter(|a| a.why.as_deref() == Some(ROWS_WHY)) {
+                for a in k.addons.iter().filter(|a| holds_rows(a)) {
                     if !c.addons.iter().any(|o| o.id == a.id) {
                         c.addons.push(a.clone());
                     }
@@ -263,7 +270,7 @@ pub fn in_save_of<'a>(list: &'a [Career], data: &Path, profile: &str) -> Vec<&'a
 }
 
 /// Records on every career in the save of `profile` saved at or after `since_ms` (or with no save time) each
-/// addon of `on` that owns vehicle, engine, team, driver, head or track rows, since the game reads those
+/// addon of `on` that owns vehicle, engine, team, driver or head rows, since the game reads those
 /// rows when it loads the save. Returns whether any career changed.
 pub fn record_rows(
     list: &mut [Career],
@@ -273,20 +280,46 @@ pub fn record_rows(
     owners: &BTreeSet<String>,
     installed: &BTreeMap<String, AddonManifest>,
 ) -> bool {
+    let ids: Vec<&String> = on.iter().filter(|id| owners.contains(*id)).collect();
+    record(list, in_save, since_ms, &ids, ROWS_WHY, installed)
+}
+
+/// The addons whose tracks a session loaded, from the `[apply] facts` lines of its loader.log
+/// (`track <addon>/<code>`; the game's own tracks name no addon).
+pub fn session_tracks(loader_log: &str) -> BTreeSet<String> {
+    loader_log
+        .lines()
+        .filter_map(|l| {
+            let rest = l.split("[apply] facts: ").nth(1)?;
+            let track = rest.rsplit_once(", track ")?.1.trim();
+            let (addon, _) = track.split_once('/')?;
+            (addon != "game" && !addon.is_empty()).then(|| addon.to_owned())
+        })
+        .collect()
+}
+
+fn record(
+    list: &mut [Career],
+    in_save: &dyn Fn(&Career) -> bool,
+    since_ms: i64,
+    ids: &[&String],
+    why: &str,
+    installed: &BTreeMap<String, AddonManifest>,
+) -> bool {
     let mut changed = false;
     for c in list.iter_mut() {
         if !in_save(c) || c.status() == "missing" || saved_ms(c).is_some_and(|t| t < since_ms) {
             continue;
         }
-        for id in on.iter().filter(|id| owners.contains(*id)) {
-            if c.addons.iter().any(|a| &a.id == id) {
+        for id in ids {
+            if c.addons.iter().any(|a| &a.id == *id) {
                 continue;
             }
             c.addons.push(CareerAddon {
-                id: id.clone(),
-                version: installed.get(id).map(|m| m.version.to_string()),
+                id: (*id).clone(),
+                version: installed.get(*id).map(|m| m.version.to_string()),
                 need: None,
-                why: Some(ROWS_WHY.to_owned()),
+                why: Some(why.to_owned()),
             });
             changed = true;
         }
@@ -295,8 +328,9 @@ pub fn record_rows(
 }
 
 /// After a session of `profile` that started at `since_ms`: records the database addons that were on
-/// ([`record_rows`]) in the data folder's career index.
-pub fn record_session(data: &Path, profile: &str, since_ms: i64) -> crate::Result<()> {
+/// ([`record_rows`]) and the addons whose tracks the session loaded ([`session_tracks`]) in the
+/// data folder's career index.
+pub fn record_session(data: &Path, profile: &str, since_ms: i64, loader_log: &str) -> crate::Result<()> {
     let mut list = read(&data_path(data));
     if list.is_empty() {
         return Ok(());
@@ -313,14 +347,21 @@ pub fn record_session(data: &Path, profile: &str, since_ms: i64) -> crate::Resul
         .into_iter()
         .map(|c| c.career.clone())
         .collect();
-    if record_rows(
+    let in_save = |c: &Career| ids.contains(&c.career);
+    let tracks: Vec<String> = session_tracks(loader_log)
+        .into_iter()
+        .filter(|id| installed.contains_key(id))
+        .collect();
+    let mut changed = record_rows(&mut list, &in_save, since_ms, &plan.order, &owners, &installed);
+    changed |= record(
         &mut list,
-        &|c| ids.contains(&c.career),
+        &in_save,
         since_ms,
-        &plan.order,
-        &owners,
+        &tracks.iter().collect::<Vec<_>>(),
+        TRACK_WHY,
         &installed,
-    ) {
+    );
+    if changed {
         crate::write_json_shared(
             &data_path(data),
             &serde_json::json!({ "version": 1, "careers": list }),
@@ -343,7 +384,7 @@ pub fn stop_line(
         let gone: Vec<&CareerAddon> = c
             .addons
             .iter()
-            .filter(|a| a.why.as_deref() == Some(ROWS_WHY))
+            .filter(|a| holds_rows(a))
             .filter(|a| !order.contains(&a.id) || !installed.contains_key(&a.id))
             .collect();
         if gone.is_empty() {
@@ -680,24 +721,35 @@ mod tests {
     }
 
     #[test]
-    fn a_saved_grand_prix_that_races_a_track_addon_stops_play_when_it_is_off() {
-        let installed = installed_of(&["track.mza26"]);
-        let owners: BTreeSet<String> = ["track.mza26".to_owned()].into();
-        let on: Vec<String> = vec!["track.mza26".into()];
+    fn a_career_records_only_the_track_addons_its_sessions_loaded() {
+        let log = "[apply] facts: mode grand_prix, session race, track track.mza26/mza26\n\
+                   [apply] facts: mode grand_prix, session race, track game/Bahrain\n\
+                   [apply] facts: mode unknown, session none, track none\n";
+        assert_eq!(
+            session_tracks(log).into_iter().collect::<Vec<_>>(),
+            ["track.mza26"]
+        );
+        let installed = installed_of(&["track.mza26", "track.other"]);
         let mut list = parse(
             r#"[{"career":"gp-1","profile":"p","label":"Grand Prix","mode":"grand_prix","last_saved":2000,"addons":[]}]"#,
         );
-        assert!(record_rows(
+        let tracks: Vec<String> = session_tracks(log).into_iter().collect();
+        let ids: Vec<&String> = tracks.iter().collect();
+        assert!(record(
             &mut list,
             &|c| c.profile.as_deref() == Some("p"),
             0,
-            &on,
-            &owners,
+            &ids,
+            TRACK_WHY,
             &installed
         ));
+        assert_eq!(list[0].addons.len(), 1);
         assert_eq!(list[0].addons[0].id, "track.mza26");
+        let on: Vec<String> = vec!["track.mza26".into()];
         assert_eq!(stop_line(&list, &on, &installed), None);
-        let off = stop_line(&list, &[], &installed).unwrap();
+        let unrelated: Vec<String> = vec!["track.mza26".into(), "track.other".into()];
+        assert_eq!(stop_line(&list, &unrelated, &installed), None);
+        let off = stop_line(&list, &["track.other".into()], &installed).unwrap();
         assert!(off.contains("N track.mza26 (off)"), "{off}");
         assert!(off.contains("(Grand Prix)"), "{off}");
         let gone = stop_line(&list, &on, &BTreeMap::new()).unwrap();
