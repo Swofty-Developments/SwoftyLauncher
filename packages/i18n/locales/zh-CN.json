@@ -249,5 +249,6 @@
   "Your addons and saves were not moved. They are where they were. {error}": "你的插件和存档未被移动，仍在原处。{error}",
   "at least {size}": "至少 {size}",
   "last used {ago}": "上次使用 {ago}",
-  "{from} to {to}": "{from} → {to}"
+  "{from} to {to}": "{from} → {to}",
+  "{count}, {total}, {used}": "{count}，{total}，{used}"
 }

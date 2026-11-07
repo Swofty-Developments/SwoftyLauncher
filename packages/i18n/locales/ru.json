@@ -249,5 +249,6 @@
   "Your addons and saves were not moved. They are where they were. {error}": "Аддоны и сохранения не перенесены. Они остались на прежнем месте. {error}",
   "at least {size}": "не менее {size}",
   "last used {ago}": "использовано {ago}",
-  "{from} to {to}": "{from} → {to}"
+  "{from} to {to}": "{from} → {to}",
+  "{count}, {total}, {used}": "{count}, {total}, {used}"
 }
