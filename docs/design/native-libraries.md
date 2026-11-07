@@ -179,10 +179,12 @@ Reads run on the flow thread and give you the most recent frame's values. You ca
 Hooks: session and participant data come from the session witnesses `Sess_Veh_UpdateWheelMap`
 0x142e90560, `Sess_ParticipantVec_PushBack` 0x140af2ab0, `Sess_Select_Entrants` 0x1424a2350,
 `Sess_Startup_VehicleAiLoop` 0x142505f30 and `Game_GameModule_OnSessionEnter` 0x14080c300. The
-per-car physics/telemetry struct isn't catalogued yet, so you'll need to find it to implement this
-library.
+per-car physics/telemetry struct isn't catalogued. The car, participant and session fields are decoded
+from the game's own UDP packets in the `sendto` hook (`native/src/core/udp_ids.cpp`,
+`native/src/core/udp_telemetry_logic.hpp`), so they fill while the game's UDP telemetry output is on.
 
-Status: stub. `native/src/core/telemetry.cpp` returns `unavailable` from every call.
+Status: implemented for the session clock, the UDP-fed fields and the overtake, collision and retirement events;
+see the [telemetry reference](/reference/std/telemetry).
 
 ## 4. Database read
 

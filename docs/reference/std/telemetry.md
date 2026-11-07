@@ -78,10 +78,10 @@ tel::session(&s); // ok and fills s; unavailable outside a session; invalid for 
 
 ```c
 typedef struct SwoftySessionState {
-    uint32_t version;            // SWOFTY_TELEMETRY_VERSION (1)
+    uint32_t version;            // SWOFTY_TELEMETRY_VERSION (2)
     uint32_t session_type;
     uint32_t track;
-    uint32_t flag;
+    uint32_t flag;               // SWOFTY_FLAG_*: 0 none, 1 green, 2 blue, 3 yellow, 4 red
     uint32_t weather;
     uint32_t total_laps;
     uint32_t participant_count;
@@ -89,7 +89,14 @@ typedef struct SwoftySessionState {
     float session_time;
     float session_time_left;
     float track_temp, air_temp;
-    float reserved[8];           // room for new fields without changing the size
+    // version 2, filled from the UDP packets
+    uint32_t safety_car_status;  // 0 none, 1 safety car, 2 virtual safety car, 3 formation lap
+    uint32_t track_length;       // metres
+    uint32_t udp_format;         // 2024, 2025 or 2026 once a packet has been decoded; 0 before
+    uint32_t packets_seen;       // bit n set once packet id n has been decoded
+    uint32_t pit_speed_limit;    // km/h
+    uint32_t red_flag;           // 1 from a red flag event until the next lights out
+    uint32_t reserved[2];
 } SwoftySessionState;            // 80 bytes
 ```
 
@@ -122,9 +129,43 @@ typedef struct SwoftyCarState {
     float lap_distance;
     float world_pos[3];
     float world_vel[3];
-    float reserved[8];
+    // version 2
+    uint8_t tyre_compound;                // actual compound id: 16 C5, 17 C4, 18 C3, 19 C2, 20 C1, 21 C0, 22 C6, 7 inter, 8 wet
+    uint8_t tyre_visual;                  // visual compound id: 16 soft, 17 medium, 18 hard, 7 inter, 8 wet
+    uint8_t tyre_age_laps;
+    uint8_t pit_status;                   // 0 on track, 1 pitting, 2 in the pit area
+    uint8_t result_status;                // 0 invalid, 1 inactive, 2 active, 3 finished, 4 did not finish, 5 disqualified, 6 not classified, 7 retired
+    uint8_t driver_status;                // 0 in garage, 1 flying lap, 2 in lap, 3 out lap, 4 on track
+    uint8_t pit_stops;
+    uint8_t warnings;                     // total warnings
+    uint8_t penalty_seconds;
+    uint8_t drs;                          // 1 while open
+    uint8_t grid_position;
+    uint8_t ai_controlled;
+    uint8_t drive_through_pens, stop_go_pens, corner_cut_warnings;
+    int8_t fia_flag;                      // -1 invalid, 0 none, 1 green, 2 blue, 3 yellow
+    uint32_t gap_front_ms;                // to the car in front
+    uint32_t gap_leader_ms;
+    float ers_store;                      // joules
+    float reserved;
 } SwoftyCarState;                         // 192 bytes
 ```
+
+`flags` carries `SWOFTY_CAR_FLAG_*` bits:
+
+| Bit | Name | Set when |
+|---|---|---|
+| 0 | `LAP_DATA` | a Lap Data packet has filled the car |
+| 1 | `STATUS` | a Car Status packet has filled the car |
+| 2 | `IN_PIT_LANE` | `pit_status` is 1 or 2 |
+| 3 | `RETIRED` | `result_status` is 4 or 7 |
+| 4 | `DISQUALIFIED` | `result_status` is 5 |
+| 5 | `FINISHED` | `result_status` is 3 |
+| 6 | `IN_GARAGE` | `driver_status` is 0 |
+| 7 | `DRS_ALLOWED` | the game allows DRS |
+| 8 | `LAP_INVALID` | the current lap is invalid |
+
+`tyre_temp`, `tyre_wear` and `brake_temp` use the game's wheel order: rear left, rear right, front left, front right. `tyre_temp` is the surface temperature in degrees, `tyre_wear` is percent, `speed` is m/s, `clutch` is 0 to 1.
 
 ## participant
 
@@ -144,11 +185,32 @@ typedef struct SwoftyParticipant {
     uint32_t lap;
     float lap_distance;
     float best_lap_time;
-    float reserved[4];
+    // version 2
+    uint32_t driver_id;           // the game's driver id
+    uint8_t race_number, ai_controlled, nationality, my_team;
+    float reserved[2];
 } SwoftyParticipant;          // 92 bytes
 ```
 
-Each struct carries `version` = `SWOFTY_TELEMETRY_VERSION` (1), also `swofty::telemetry::version`, and ends in a `reserved` block so fields can be added without changing its size.
+Each struct carries `version` = `SWOFTY_TELEMETRY_VERSION` (2), also `swofty::telemetry::version`, and ends in a `reserved` block so fields can be added without changing its size. Version 2 fills part of each `reserved` block; the sizes and every version 1 offset are unchanged, so a version 1 reader keeps working.
+
+## Events
+
+The core fires these on the flow thread, from the game's own Event packets. Subscribe with [`swofty::events::subscribe`](./events); `a` and `b` are participant indices, and there is no `data`.
+
+```cpp
+swofty::events::subscribe(tel::event::overtake, [](const SwoftyEvent *e, void *) {
+    swofty::log("[my-addon] car %lld passed car %lld", (long long)e->a, (long long)e->b);
+});
+```
+
+| Constant | Event | `a` | `b` |
+|---|---|---|---|
+| `SWOFTY_EVENT_TELEMETRY_OVERTAKE` | `telemetry.overtake` | the overtaking car | the overtaken car |
+| `SWOFTY_EVENT_TELEMETRY_COLLISION` | `telemetry.collision` | first car | second car |
+| `SWOFTY_EVENT_TELEMETRY_RETIREMENT` | `telemetry.retirement` | the car | the retirement reason from the packet (0 when the format has none) |
+
+The events need the `events` feature and the game's UDP telemetry output on.
 
 `SwoftySessionState.flag`, `SwoftyCarState.flags` and `SwoftyParticipant.flags` have no defined values yet: the core doesn't write them, so they stay zero. See [Availability](#availability).
 
@@ -247,11 +309,29 @@ The core logs the first packet of each format and id whose length differs from t
 
 `telemetry` is experimental, and `experimental_features` in a manifest doesn't accept it yet; see [feature gates](/design/native-libraries#feature-gates). The core turns it on only when `features` in `swofty/assets.json` lists `telemetry`, and the build writes that list from the addons' `experimental_features`. So on current builds every call returns `unavailable`.
 
-With the feature on, the core hooks the frame tick, the session start and the results finalise. A session is live from `Game_GameModule_OnSessionEnter` until the results are finalised; in it the feed's `frame` and `session.session_time` advance. Those two, with `version`, are all the core writes. The per-car struct is not catalogued yet, so the car and participant fields and the other session fields stay zero:
+With the feature on, the core hooks the frame tick, the session start and the results finalise. A session is live from `Game_GameModule_OnSessionEnter` until the results are finalised; in it the feed's `frame` and `session.session_time` advance.
+
+The car, participant and session fields come from the packets the game builds for its UDP telemetry, read in the `sendto` hook before the id rewrite. The game sends them only while UDP telemetry output is on in its settings; with it off the fields stay zero, `session.udp_format` stays 0 and no event fires. The decode does not use the UDP port and does not change the packet.
 
 ```text
-[telemetry] on; frame tick hooked, session witnesses on/on; car and participant fields are not populated yet (per-car struct uncatalogued)
+Session (1)        2024, 2025 753 B: weather, temperatures, laps, track length, marshal zone flags, safety car status
+Lap Data (2)       2024 1131 B, 2025 1285 B, 2026 1399 B: times, gaps, position, pit and result status, penalties
+Event (3)          45 B in all three formats: OVTK, COLL, RTMT, RDFL, GLGT
+Participants (4)   2024 1350 B, 2025 1284 B: names, team, driver id; 2026 1470 B: team and driver id only
+Car Telemetry (6)  2024, 2025 1352 B: speed, pedals, steer, gear, rpm, brake and tyre temperatures
+Car Status (7)     2024, 2025 1239 B: fuel, tyre compound and age, ERS store, DRS allowed
+Car Damage (10)    2024, 2025 1041 B: tyre wear
+```
+
+A packet whose size is not the listed one is ignored. In the 2026 format the Session, Car Telemetry, Car Status and Car Damage packets have other sizes whose field offsets are not catalogued, so only Lap Data, Event and the ids from Participants fill; compound, fuel, speed and wear stay zero there.
+
+`session.flag` is the highest flag in any marshal zone (yellow over blue over green), or red from a red flag event until the next lights out. The safety car's vehicle index is not in the game's packets, and neither are the per-lap best times.
+
+```text
+[telemetry] on; frame tick hooked, session witnesses on/on; car, participant and session fields fill from the game's UDP packets while its UDP telemetry output is on
+[udp] sendto hooked for the telemetry feed, 2 slot(s); no id rewrite
 [telemetry] session started (Game_GameModule_OnSessionEnter); frame 18342
+[telemetry] first UDP packet 2 decoded: format 2025, 1285 bytes
 [telemetry] session ended (Game_SessionStateFinaliseResultsSync_OnResultsFinalised); frame 52817
 ```
 

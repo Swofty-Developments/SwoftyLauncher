@@ -280,6 +280,8 @@ void grade_setup();
 void srv_clamp_setup();
 void postfx_setup();
 void telemetry_setup();
+bool telemetry_wants_udp();
+void telemetry_udp(const uint8_t *buf, size_t len);
 void placed_record_setup();
 void placed_record_crash_text(char *out, size_t cap);
 void netplay_setup();

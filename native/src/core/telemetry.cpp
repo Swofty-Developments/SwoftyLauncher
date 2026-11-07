@@ -1,11 +1,13 @@
 #include "runtime.hpp"
 #include "telemetry_feed.hpp"
+#include "udp_telemetry_logic.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mixin.hpp>
 
 #include <atomic>
 #include <mutex>
+#include <vector>
 
 namespace runtime {
 std::string hook_error(const safetyhook::MidHook::Error &e);
@@ -14,11 +16,15 @@ std::string hook_error(const safetyhook::MidHook::Error &e);
 // Typed read access to live session and car state, and the shared-memory feed external tools
 // read. The table stays unavailable until the telemetry feature is on (experimental) and a
 // session is live. The per-frame tick, the session start and the results finalise are observed
-// with mid hooks so the feed's frame counter and session clock advance in a running game; the
-// per-car physics/telemetry struct is not catalogued yet, so the car and participant fields
-// stay zero until that struct is reverse-engineered (see re subsystems/session.md inbox).
+// with mid hooks so the feed's frame counter and session clock advance in a running game. The
+// car, participant and session fields come from the game's own UDP packets, decoded in the sendto
+// hook (udp_ids.cpp, udp_telemetry_logic.hpp), so they fill only while the game's UDP telemetry
+// output is on. Overtake, collision and retirement events are queued there and fired on the flow
+// thread by the frame tick.
 
 namespace {
+
+namespace udp_tel = runtime::udp_tel;
 
 using swofty::tel::feed_begin;
 using swofty::tel::feed_copy;
@@ -46,6 +52,9 @@ std::atomic<bool> feed_on;
 HANDLE map_handle;
 SwoftyTelemetryFeed *view;
 
+std::vector<udp_tel::Event> pending;
+std::atomic<uint64_t> first_seen[3];
+
 safetyhook::MidHook h_flow, h_onsess, h_results;
 LARGE_INTEGER qpc_freq, qpc_last;
 
@@ -67,13 +76,19 @@ void publish()
 void on_flow(safetyhook::Context &)
 {
     double dt = tick_seconds();
-    std::lock_guard<std::mutex> g(write_lock);
-    feed_begin(&master);
-    master.frame++;
-    if (g_live.load(std::memory_order_relaxed))
-        master.session.session_time += float(dt);
-    feed_end(&master);
-    publish();
+    std::vector<udp_tel::Event> fire;
+    {
+        std::lock_guard<std::mutex> g(write_lock);
+        feed_begin(&master);
+        master.frame++;
+        if (g_live.load(std::memory_order_relaxed))
+            master.session.session_time += float(dt);
+        feed_end(&master);
+        publish();
+        fire.swap(pending);
+    }
+    for (auto &e : fire)
+        runtime::events_fire(e.name, e.a, e.b, nullptr);
 }
 
 void set_live(bool live, const char *why)
@@ -89,6 +104,10 @@ void set_live(bool live, const char *why)
         }
         feed_end(&master);
         publish();
+    }
+    if (!live) {
+        std::lock_guard<std::mutex> g(write_lock);
+        pending.clear();
     }
     if (was != live)
         swofty::log("[telemetry] session %s (%s); frame %llu", live ? "started" : "ended", why,
@@ -184,6 +203,18 @@ int tel_shared_memory(const char **name)
     return SWOFTY_ASSET_OK;
 }
 
+void udp_first(const udp_tel::Spec *sp)
+{
+    if (sp->id > 15)
+        return;
+    uint64_t bit = uint64_t(1) << sp->id;
+    if (first_seen[sp->format - 2024].fetch_or(bit) & bit)
+        return;
+    DWORD err = GetLastError();
+    swofty::log("[telemetry] first UDP packet %d decoded: format %d, %zu bytes", sp->id, sp->format, sp->size);
+    SetLastError(err);
+}
+
 const SwoftyTelemetry table = {tel_available, tel_session, tel_car, tel_participant, tel_shared_memory};
 
 void hook(safetyhook::MidHook &slot, const runtime::Sig &sig, safetyhook::MidHookFn fn)
@@ -212,14 +243,40 @@ void setup()
     hook(h_onsess, S_ONSESS, on_sess);
     hook(h_results, S_RESULTS, on_results);
     g_on = true;
-    swofty::log("[telemetry] on; frame tick %s, session witnesses %s/%s; car and participant fields are not populated "
-                "yet (per-car struct uncatalogued)",
+    swofty::log("[telemetry] on; frame tick %s, session witnesses %s/%s; car, participant and session fields fill from "
+                "the game's UDP packets while its UDP telemetry output is on",
                 h_flow ? "hooked" : "unresolved", h_onsess ? "on" : "off", h_results ? "on" : "off");
 }
 
 }
 
 namespace runtime {
+
+bool telemetry_wants_udp()
+{
+    return g_on;
+}
+
+void telemetry_udp(const uint8_t *buf, size_t len)
+{
+    if (!g_on || !g_live.load(std::memory_order_acquire))
+        return;
+    if (!udp_tel::identify(buf, len))
+        return;
+    std::vector<udp_tel::Event> events;
+    const udp_tel::Spec *sp;
+    {
+        std::lock_guard<std::mutex> g(write_lock);
+        feed_begin(&master);
+        sp = udp_tel::decode(buf, len, master, &events);
+        feed_end(&master);
+        publish();
+        if (pending.size() < 256)
+            pending.insert(pending.end(), events.begin(), events.end());
+    }
+    if (sp)
+        udp_first(sp);
+}
 
 const SwoftyTelemetry *telemetry_table()
 {

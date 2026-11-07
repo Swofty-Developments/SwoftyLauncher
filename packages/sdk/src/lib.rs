@@ -51,7 +51,7 @@ pub const DB_ENUM: u8 = 3;
 pub const DB_ID: u8 = 4;
 pub const DB_BOOL: u8 = 5;
 
-pub const TELEMETRY_VERSION: u32 = 1;
+pub const TELEMETRY_VERSION: u32 = 2;
 pub const CAREER_SAVES_VERSION: u32 = 1;
 pub const TOO_SMALL: c_int = 4;
 pub const REFUSED: c_int = 5;
@@ -262,7 +262,26 @@ pub struct SwoftyCarState {
     pub lap_distance: f32,
     pub world_pos: [f32; 3],
     pub world_vel: [f32; 3],
-    pub reserved: [f32; 8],
+    pub tyre_compound: u8,
+    pub tyre_visual: u8,
+    pub tyre_age_laps: u8,
+    pub pit_status: u8,
+    pub result_status: u8,
+    pub driver_status: u8,
+    pub pit_stops: u8,
+    pub warnings: u8,
+    pub penalty_seconds: u8,
+    pub drs: u8,
+    pub grid_position: u8,
+    pub ai_controlled: u8,
+    pub drive_through_pens: u8,
+    pub stop_go_pens: u8,
+    pub corner_cut_warnings: u8,
+    pub fia_flag: i8,
+    pub gap_front_ms: u32,
+    pub gap_leader_ms: u32,
+    pub ers_store: f32,
+    pub reserved: f32,
 }
 
 #[repr(C)]
@@ -280,7 +299,13 @@ pub struct SwoftySessionState {
     pub session_time_left: f32,
     pub track_temp: f32,
     pub air_temp: f32,
-    pub reserved: [f32; 8],
+    pub safety_car_status: u32,
+    pub track_length: u32,
+    pub udp_format: u32,
+    pub packets_seen: u32,
+    pub pit_speed_limit: u32,
+    pub red_flag: u32,
+    pub reserved: [u32; 2],
 }
 
 #[repr(C)]
@@ -294,7 +319,12 @@ pub struct SwoftyParticipant {
     pub lap: u32,
     pub lap_distance: f32,
     pub best_lap_time: f32,
-    pub reserved: [f32; 4],
+    pub driver_id: u32,
+    pub race_number: u8,
+    pub ai_controlled: u8,
+    pub nationality: u8,
+    pub my_team: u8,
+    pub reserved: [f32; 2],
 }
 
 #[repr(C)]
@@ -496,6 +526,9 @@ pub struct SwoftyLang {
 }
 
 pub const EVENT_CAREER_CONTENT_PRESSED: &str = "career.content.pressed";
+pub const EVENT_TELEMETRY_OVERTAKE: &str = "telemetry.overtake";
+pub const EVENT_TELEMETRY_COLLISION: &str = "telemetry.collision";
+pub const EVENT_TELEMETRY_RETIREMENT: &str = "telemetry.retirement";
 pub const CAREER_CONTENT_MODEL_2026: u32 = 0;
 pub const CAREER_CONTENT_MODEL_2025: u32 = 1;
 pub const CAREER_CONTENT_DRIVER: u32 = 1;
@@ -873,7 +906,8 @@ mod tests {
             "#define SWOFTY_EVENT_CAREER_HUB \"career.hub\"",
             "} SwoftyCareerState;",
             "#define SWOFTY_EVENT_SESSION_START \"session.start\"",
-            "#define SWOFTY_TELEMETRY_VERSION 1",
+            "#define SWOFTY_TELEMETRY_VERSION 2",
+            "#define SWOFTY_EVENT_TELEMETRY_OVERTAKE \"telemetry.overtake\"",
             "#define SWOFTY_OVERLAY_VERSION 3",
             "} SwoftyInput;",
             "} SwoftyTextStyle;",

@@ -17,7 +17,8 @@
 // (both import descriptors, like the other socket hooks). This hook copies a buffer that parses as an F1
 // packet (udp_ids_logic.hpp), replaces the ids swofty/udp_ids.json maps, and sends the copy; every other
 // call passes through with its arguments. Datagrams to the LAN game port 21414 and to 10.77.0.0/16 are
-// never looked at. SWOFTY_UDP_STOCK_IDS=0 turns it off.
+// never looked at. SWOFTY_UDP_STOCK_IDS=0 turns it off. With the telemetry feature on, the same hook also hands every
+// such packet to the telemetry decoder (telemetry.cpp) before any rewrite.
 
 namespace {
 
@@ -32,6 +33,7 @@ void *detour_target;
 void *orig_sendto;
 ids::Map map;
 std::atomic<bool> armed;
+std::atomic<bool> rewriting;
 std::atomic<unsigned> said;
 std::atomic<int> seen_formats;
 std::atomic<uint64_t> odd_sizes[4];
@@ -98,6 +100,9 @@ int WSAAPI h_sendto(SOCKET s, const char *buf, int len, int flags, const sockadd
     if (!armed.load(std::memory_order_relaxed) || !buf || len < int(ids::HEADER) + 1 || len > int(ids::MAX_PACKET) ||
         lan_traffic(to, tolen))
         return real(s, buf, len, flags, to, tolen);
+    runtime::telemetry_udp(reinterpret_cast<const uint8_t *>(buf), size_t(len));
+    if (!rewriting.load(std::memory_order_relaxed))
+        return real(s, buf, len, flags, to, tolen);
     if (!ids::identify(reinterpret_cast<const uint8_t *>(buf), size_t(len))) {
         if (const ids::Layout *l = ids::misfit(reinterpret_cast<const uint8_t *>(buf), size_t(len)))
             odd(l, len);
@@ -129,17 +134,18 @@ bool wanted_off()
 
 void setup()
 {
-    if (wanted_off())
-        return;
-    std::string text = runtime::read_file(runtime::swofty_root() + L"udp_ids.json", size_t(4) << 20);
-    if (text.empty())
-        return;
-    std::string why;
-    if (!ids::load(text, map, why)) {
-        swofty::log("[udp] swofty\\udp_ids.json is unusable (%s); telemetry ids stay as the game sends them", why.c_str());
-        return;
+    bool tel = runtime::telemetry_wants_udp();
+    bool rewrite = false;
+    if (!wanted_off()) {
+        std::string text = runtime::read_file(runtime::swofty_root() + L"udp_ids.json", size_t(4) << 20);
+        std::string why;
+        if (!text.empty() && !ids::load(text, map, why))
+            swofty::log("[udp] swofty\\udp_ids.json is unusable (%s); telemetry ids stay as the game sends them",
+                        why.c_str());
+        else
+            rewrite = !text.empty() && map.any;
     }
-    if (!map.any)
+    if (!rewrite && !tel)
         return;
     HMODULE ws = LoadLibraryW(L"ws2_32.dll");
     detour_target = ws ? reinterpret_cast<void *>(GetProcAddress(ws, "sendto")) : nullptr;
@@ -164,10 +170,16 @@ void setup()
             slots++;
         });
     if (!slots) {
-        swofty::log("[udp] no game import slot for sendto; telemetry ids stay as the game sends them");
+        swofty::log("[udp] no game import slot for sendto; telemetry ids stay as the game sends them%s",
+                    tel ? " and the telemetry feed gets no car data" : "");
         return;
     }
     armed = true;
+    rewriting = rewrite;
+    if (!rewrite) {
+        swofty::log("[udp] sendto hooked for the telemetry feed, %d slot(s); no id rewrite", slots);
+        return;
+    }
     std::string head = std::to_string(map.teams.size()) + " team id(s), " + std::to_string(map.drivers.size()) +
                        " driver id(s)";
     swofty::log("[udp] stock ids on: %s, %d sendto slot(s)", head.c_str(), slots);

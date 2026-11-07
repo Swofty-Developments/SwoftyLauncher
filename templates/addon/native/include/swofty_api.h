@@ -104,6 +104,9 @@ typedef struct SwoftyAssets {
 #define SWOFTY_EVENT_CAREER_UNLOADED "career.unloaded"
 #define SWOFTY_EVENT_CAREER_HUB "career.hub"
 #define SWOFTY_EVENT_CAREER_STARTING "career.starting"
+#define SWOFTY_EVENT_TELEMETRY_OVERTAKE "telemetry.overtake"
+#define SWOFTY_EVENT_TELEMETRY_COLLISION "telemetry.collision"
+#define SWOFTY_EVENT_TELEMETRY_RETIREMENT "telemetry.retirement"
 
 typedef struct SwoftyEvent {
     const char *name;
@@ -256,7 +259,25 @@ typedef struct SwoftyOverlay {
     int (*focus)(int on);
 } SwoftyOverlay;
 
-#define SWOFTY_TELEMETRY_VERSION 1
+#define SWOFTY_TELEMETRY_VERSION 2
+
+/* SwoftyCarState.flags. Bits 0 and 1 say which UDP packets have filled the car. */
+#define SWOFTY_CAR_FLAG_LAP_DATA (1u << 0)
+#define SWOFTY_CAR_FLAG_STATUS (1u << 1)
+#define SWOFTY_CAR_FLAG_IN_PIT_LANE (1u << 2)
+#define SWOFTY_CAR_FLAG_RETIRED (1u << 3)
+#define SWOFTY_CAR_FLAG_DISQUALIFIED (1u << 4)
+#define SWOFTY_CAR_FLAG_FINISHED (1u << 5)
+#define SWOFTY_CAR_FLAG_IN_GARAGE (1u << 6)
+#define SWOFTY_CAR_FLAG_DRS_ALLOWED (1u << 7)
+#define SWOFTY_CAR_FLAG_LAP_INVALID (1u << 8)
+
+/* SwoftySessionState.flag. */
+#define SWOFTY_FLAG_NONE 0u
+#define SWOFTY_FLAG_GREEN 1u
+#define SWOFTY_FLAG_BLUE 2u
+#define SWOFTY_FLAG_YELLOW 3u
+#define SWOFTY_FLAG_RED 4u
 
 typedef struct SwoftyCarState {
     uint32_t version;
@@ -279,7 +300,15 @@ typedef struct SwoftyCarState {
     float lap_distance;
     float world_pos[3];
     float world_vel[3];
-    float reserved[8];
+    /* version 2 */
+    uint8_t tyre_compound, tyre_visual, tyre_age_laps, pit_status;
+    uint8_t result_status, driver_status, pit_stops, warnings;
+    uint8_t penalty_seconds, drs, grid_position, ai_controlled;
+    uint8_t drive_through_pens, stop_go_pens, corner_cut_warnings;
+    int8_t fia_flag;
+    uint32_t gap_front_ms, gap_leader_ms;
+    float ers_store;
+    float reserved;
 } SwoftyCarState;
 
 typedef struct SwoftySessionState {
@@ -294,7 +323,14 @@ typedef struct SwoftySessionState {
     float session_time;
     float session_time_left;
     float track_temp, air_temp;
-    float reserved[8];
+    /* version 2 */
+    uint32_t safety_car_status;
+    uint32_t track_length;
+    uint32_t udp_format;
+    uint32_t packets_seen;
+    uint32_t pit_speed_limit;
+    uint32_t red_flag;
+    uint32_t reserved[2];
 } SwoftySessionState;
 
 typedef struct SwoftyParticipant {
@@ -306,7 +342,10 @@ typedef struct SwoftyParticipant {
     uint32_t lap;
     float lap_distance;
     float best_lap_time;
-    float reserved[4];
+    /* version 2 */
+    uint32_t driver_id;
+    uint8_t race_number, ai_controlled, nationality, my_team;
+    float reserved[2];
 } SwoftyParticipant;
 
 typedef struct SwoftyTelemetryFeed {

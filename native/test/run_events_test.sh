@@ -67,5 +67,8 @@ mkdir -p "$OUT"
     -o "$OUT/udp_ids_test" udp_ids_test.cpp
 "$OUT/udp_ids_test"
 "${PIN[@]}" zig c++ -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../../packages/sdk/include \
+    -o "$OUT/udp_telemetry_test" udp_telemetry_test.cpp
+"$OUT/udp_telemetry_test"
+"${PIN[@]}" zig c++ -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../../packages/sdk/include \
     -o "$OUT/view_flow_test" view_flow_test.cpp
 "$OUT/view_flow_test"
