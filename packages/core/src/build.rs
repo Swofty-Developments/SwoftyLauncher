@@ -1991,8 +1991,21 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                     }
                 }
                 AssetOp::Erp(erp) => {
-                    erps.apply_for(erp, &op.origin.to_string(), &resolve)
-                        .map_err(|e| Error::Other(format!("applying {}: {e}", op.origin)))?;
+                    match erps.apply_for(erp, &op.origin.to_string(), &resolve) {
+                        Ok(()) => {}
+                        Err(Error::ResourceMissing { erp, resource }) if puts.contains_key(&erp) => {
+                            built.warnings.push(missing_resource(
+                                &name(&op.origin.to_string()),
+                                &erp,
+                                &resource,
+                                &name(&puts[&erp].origin.to_string()),
+                            ));
+                            continue;
+                        }
+                        Err(e) => {
+                            return Err(Error::Other(format!("applying {}: {e}", op.origin)));
+                        }
+                    }
                     for m in erps.take_merges() {
                         record_merge(&mut built, &mut planner, &op.origin, m);
                     }
@@ -2713,6 +2726,14 @@ fn missing_archives(name: &str, rels: &BTreeSet<String>) -> String {
     };
     format!(
         "{name}: archive changes skipped; {what}. Turn {name} off if it doesn't work, and tell its author"
+    )
+}
+
+/// The warning for an addon's change a build skips because the archive
+/// another addon provides has no such resource.
+fn missing_resource(name: &str, erp: &str, resource: &str, provider: &str) -> String {
+    format!(
+        "{name}: change skipped; {resource} is not in {erp}, which {provider} provides. Turn {name} off if it doesn't work, and tell its author"
     )
 }
 
@@ -6860,6 +6881,121 @@ mod tests {
         assert_eq!(
             stray_asset_group_line("Mod", "character_package", 1),
             "Mod: 1 file(s) under character_package/ land at the game root, where the game never reads them; the folder belongs under 2025_asset_groups/ - re-import it with that path"
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    fn missing_resource_game(tag: &str) -> (PathBuf, Game, Store, String, String) {
+        let root = std::env::temp_dir().join(format!("swofty-build-{tag}-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::create_dir_all(dir.join("2025_asset_groups")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        std::fs::write(dir.join(GVDB), Gvdb::default().to_bytes()).unwrap();
+        let provided = "2025_asset_groups/p.erp".to_owned();
+        let stock = "2025_asset_groups/s.erp".to_owned();
+        std::fs::write(dir.join(&stock), archive(&["eaid://s/a.idf"], 0)).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir,
+            user_reg: None,
+        };
+        let store = Store::new(root.join("data"));
+        (root, game, store, provided, stock)
+    }
+
+    fn install_ops(store: &Store, root: &Path, id: &str, name: &str, ops: &str, files: &[(&str, Vec<u8>)]) {
+        let src = root.join("src").join(id);
+        std::fs::create_dir_all(&src).unwrap();
+        std::fs::write(
+            src.join("swofty.json"),
+            format!(
+                r#"{{ "schema_version": 1, "id": "{id}", "name": "{name}", "version": "1.0.0", "author": "t",
+                     "compat": {{ "game": "f1_25" }}, "operations": {{ "assets": ["ops.json"] }} }}"#
+            ),
+        )
+        .unwrap();
+        std::fs::write(
+            src.join("ops.json"),
+            format!(r#"{{ "schema_version": 1, "ops": [{ops}] }}"#),
+        )
+        .unwrap();
+        for (file, bytes) in files {
+            std::fs::write(src.join(file), bytes).unwrap();
+        }
+        store.install_addon(&src).unwrap();
+        store
+            .update_profile("default", |p| p.set_enabled(id, true))
+            .unwrap();
+    }
+
+    #[test]
+    fn an_edit_of_a_resource_another_addons_archive_lacks_is_skipped() {
+        if loader_dir().is_some() {
+            return;
+        }
+        let (root, game, store, provided, _) = missing_resource_game("missing-resource");
+        let have = "eaid://p/have.idf";
+        let lack = "eaid://p/lack.idf";
+        install_ops(
+            &store,
+            &root,
+            "t.base",
+            "Base",
+            &format!(r#"{{"op":"file.put","source":"p.erp","target":"{provided}"}}"#),
+            &[("p.erp", archive_of("Material", &[have], 1))],
+        );
+        install_ops(
+            &store,
+            &root,
+            "t.edit",
+            "Edit",
+            &format!(
+                r#"{{"op":"erp.replace-resource","erp":"{provided}","resource":"{lack}","fragment":0,"source":"x.bin"}},
+                   {{"op":"erp.replace-resource","erp":"{provided}","resource":"{have}","fragment":0,"source":"x.bin"}}"#
+            ),
+            &[("x.bin", vec![9; 4])],
+        );
+        let built = build(&store, "default", &game).unwrap();
+        let warning = format!(
+            "Edit: change skipped; {lack} is not in {provided}, which Base provides. Turn Edit off if it doesn't work, and tell its author"
+        );
+        assert!(built.warnings.contains(&warning), "{:?}", built.warnings);
+        let file = swofty_formats::erp::ErpFile::open(&built.plan.added[&provided]).unwrap();
+        let res = file.erp.find(have).unwrap();
+        assert_eq!(file.load(res).unwrap().fragments[0].data().unwrap(), vec![9; 4]);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn an_edit_of_a_resource_a_stock_archive_lacks_still_fails() {
+        if loader_dir().is_some() {
+            return;
+        }
+        let (root, game, store, provided, stock) = missing_resource_game("missing-resource-stock");
+        install_ops(
+            &store,
+            &root,
+            "t.base",
+            "Base",
+            &format!(r#"{{"op":"file.put","source":"p.erp","target":"{provided}"}}"#),
+            &[("p.erp", archive(&["eaid://p/have.idf"], 1))],
+        );
+        install_ops(
+            &store,
+            &root,
+            "t.edit",
+            "Edit",
+            &format!(
+                r#"{{"op":"erp.replace-resource","erp":"{stock}","resource":"eaid://s/lack.idf","fragment":0,"source":"x.bin"}}"#
+            ),
+            &[("x.bin", vec![9; 4])],
+        );
+        let err = build(&store, "default", &game).unwrap_err().to_string();
+        assert!(
+            err.contains(&format!("applying t.edit: {stock}: eaid://s/lack.idf: not found")),
+            "{err}"
         );
         std::fs::remove_dir_all(&root).ok();
     }

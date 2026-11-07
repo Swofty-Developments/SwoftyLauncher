@@ -112,6 +112,8 @@ pub enum Error {
     Map(String),
     #[error("{0}")]
     Resolve(String),
+    #[error("{erp}: {resource}: not found")]
+    ResourceMissing { erp: String, resource: String },
     #[error("{}", leftovers(.0))]
     Leftovers(Vec<install::Conflict>),
     #[error(

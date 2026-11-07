@@ -60,9 +60,13 @@ impl Archive {
         }
     }
 
-    fn find(&self, name: &str) -> Result<usize> {
-        self.position(name)?
-            .ok_or_else(|| fail(format!("{name}: not found")))
+    fn find(&self, erp: &str, name: &str) -> Result<usize> {
+        self.position(name)
+            .map_err(|err| fail(format!("{erp}: {err}")))?
+            .ok_or_else(|| Error::ResourceMissing {
+                erp: erp.to_owned(),
+                resource: name.to_owned(),
+            })
     }
 
     // Read for a stock copy only: every slot still the game's, in its place.
@@ -668,7 +672,7 @@ impl<'a> ErpBuild<'a> {
                 params,
             } => {
                 let e = self.erp(erp)?;
-                let i = e.find(resource).map_err(|err| fail(format!("{erp}: {err}")))?;
+                let i = e.find(erp, resource)?;
                 let res = e.owned(i)?;
                 let mut body = res
                     .fragments
@@ -693,7 +697,7 @@ impl<'a> ErpBuild<'a> {
             } => {
                 let data = read(&resolve(source)?)?;
                 let e = self.erp(erp)?;
-                let i = e.find(resource).map_err(|err| fail(format!("{erp}: {err}")))?;
+                let i = e.find(erp, resource)?;
                 let res = e.owned(i)?;
                 if res.kind() == SCENE && *fragment == 0 {
                     check_scene(resource, &data).map_err(|err| fail(format!("{erp}: {resource}: {err}")))?;
@@ -1121,7 +1125,7 @@ impl<'a> ErpBuild<'a> {
         edit: impl FnOnce(&mut Node) -> Result<usize>,
     ) -> Result<()> {
         let e = self.erp(erp)?;
-        let i = e.find(resource).map_err(|err| fail(format!("{erp}: {err}")))?;
+        let i = e.find(erp, resource)?;
         let res = e.owned(i)?;
         let body = res
             .fragments
@@ -1178,7 +1182,7 @@ impl<'a> ErpBuild<'a> {
         let Some(e) = self.erps.get(erp) else {
             return Ok(None);
         };
-        let i = e.find(resource).map_err(|err| fail(format!("{erp}: {err}")))?;
+        let i = e.find(erp, resource)?;
         let loaded;
         let res = match &e.slots[i] {
             Slot::Owned(r) => r,

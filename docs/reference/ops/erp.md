@@ -54,6 +54,8 @@ These ops are trimmed from Classic Seasons, the R&D Tyres addon and the docs' li
 
 The build skips an operation whose `erp` archive isn't in the game folder and no earlier addon adds, and warns `<addon>: archive changes skipped; <path> is not a file in F1 25`. Check each `erp` path against the game folder, such as `2025_asset_groups/environment_package/tracks/...`.
 
+An operation on a resource that is missing from an archive another addon puts is skipped too, and warns `<addon>: change skipped; <resource> is not in <path>, which <provider> provides`. The same operation on a resource missing from the game's own archive fails the build.
+
 ## Operations
 
 ### replace-resource
