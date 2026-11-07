@@ -29,6 +29,7 @@ mod onboarding;
 mod pages;
 mod play_bar;
 mod play_checks;
+mod profiles;
 mod reveal;
 mod scale;
 mod scroll;

@@ -5,6 +5,7 @@
 // Pages adopt these one at a time, so part of the set has no caller yet.
 #![allow(dead_code, unused_imports)]
 
+mod atoms;
 mod callout;
 mod card;
 mod chip;
@@ -19,6 +20,7 @@ mod row;
 mod section;
 pub mod tokens;
 
+pub(crate) use atoms::*;
 pub(crate) use callout::Callout;
 pub(crate) use card::Card;
 pub(crate) use chip::Chip;

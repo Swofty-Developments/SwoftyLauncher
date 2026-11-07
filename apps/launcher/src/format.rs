@@ -74,6 +74,20 @@ fn now_secs() -> f64 {
         .map_or(0., |d| d.as_secs_f64())
 }
 
+/// An id as words: `team_simplified` becomes `Team Simplified`.
+pub fn title_case(word: &str) -> String {
+    word.split(['_', '-'])
+        .filter(|w| !w.is_empty())
+        .map(|w| {
+            let mut c = w.chars();
+            c.next()
+                .map(|f| f.to_uppercase().chain(c).collect::<String>())
+                .unwrap_or_default()
+        })
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
