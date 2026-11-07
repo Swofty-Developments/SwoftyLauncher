@@ -10,13 +10,14 @@ use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::dbedit::{HitKind, Kind, LinkSpec, Module};
-use swofty_i18n::trn;
+use swofty_i18n::{tr, trf, trn};
 
 use super::fields::{curve_rating, detail_shell, hex_rgb, is_on, list_items, swatch};
 use super::{LinkState, Load, Nav, bool_text, clean, icon_named, kind_of, swap_field};
-use crate::pages::{GUTTER, badge, label};
+use crate::pages::{GUTTER, label};
 use crate::shell::Shell;
 use crate::theme::{Palette, SCROLLBAR_GAP, ScrollArea, palette};
+use crate::ui::SectionHead;
 
 const ROW_H: f32 = 40.;
 const NAME_W: f32 = 220.;
@@ -47,13 +48,13 @@ pub(crate) fn notice(
 
 fn hit_group(kind: HitKind) -> &'static str {
     match kind {
-        HitKind::ModuleRow => "Drivers, teams and tracks",
-        HitKind::Added => "Driver Manager drivers",
-        HitKind::Table => "Tables",
-        HitKind::Row => "Rows",
-        HitKind::Key => "Keys",
-        HitKind::Value => "Values",
-        HitKind::Text => "English text",
+        HitKind::ModuleRow => tr("Drivers, teams and tracks"),
+        HitKind::Added => tr("Driver Manager drivers"),
+        HitKind::Table => tr("Tables"),
+        HitKind::Row => tr("Rows"),
+        HitKind::Key => tr("Keys"),
+        HitKind::Value => tr("Values"),
+        HitKind::Text => tr("English text"),
     }
 }
 
@@ -67,33 +68,6 @@ fn hit_icon(kind: HitKind) -> IconName {
         HitKind::Value => IconName::Hash,
         HitKind::Text => IconName::Languages,
     }
-}
-
-pub(crate) fn section_head(icon: IconName, title: &str, subtitle: &str, p: Palette) -> Div {
-    h_flex()
-        .flex_1()
-        .min_w_0()
-        .gap(px(12.))
-        .child(badge(icon, 36., p))
-        .child(
-            v_flex()
-                .flex_1()
-                .min_w_0()
-                .gap(px(2.))
-                .child(
-                    div()
-                        .text_size(px(15.))
-                        .font_weight(FontWeight::SEMIBOLD)
-                        .child(title.to_owned()),
-                )
-                .child(
-                    div()
-                        .text_size(px(13.))
-                        .text_color(p.text_muted)
-                        .truncate()
-                        .child(subtitle.to_owned()),
-                ),
-        )
 }
 
 pub(crate) fn nav_row(
@@ -145,19 +119,19 @@ impl Shell {
         let target = match (&bound, &info) {
             (Some(_), Some(i)) => format!("{} {}", i.name, i.version),
             (Some(id), None) => id.clone(),
-            (None, _) => "New addon".to_owned(),
+            (None, _) => tr("New addon").to_owned(),
         };
         let place = match &bound {
-            Some(_) if broken => Some("Could not be read".to_owned()),
-            Some(_) if on => Some(format!("on in {profile}")),
-            Some(_) => Some(format!("off in {profile}")),
+            Some(_) if broken => Some(tr("Could not be read").to_owned()),
+            Some(_) if on => Some(trf!("on in {profile}", profile = profile)),
+            Some(_) => Some(trf!("off in {profile}", profile = profile)),
             None => None,
         };
         let (state, color) = match (unsaved, &bound) {
-            (0, Some(_)) => ("Saved".to_owned(), p.success),
-            (0, None) => ("No changes yet".to_owned(), p.text_placeholder),
-            (k, Some(_)) => (format!("{k} not saved to the addon"), p.warning),
-            (k, None) => (format!("{k} not saved yet"), p.warning),
+            (0, Some(_)) => (tr("Saved").to_owned(), p.success),
+            (0, None) => (tr("No changes yet").to_owned(), p.text_placeholder),
+            (k, Some(_)) => (trf!("{k} not saved to the addon", k = k), p.warning),
+            (k, None) => (trf!("{k} not saved yet", k = k), p.warning),
         };
         let pill = h_flex()
             .h(px(22.))
@@ -176,8 +150,8 @@ impl Shell {
                 .ghost()
                 .xsmall()
                 .icon(IconName::Power)
-                .label("Turn on")
-                .when(self.vanilla(), |b| b.tooltip("Vanilla stays stock"))
+                .label(tr("Turn on"))
+                .when(self.vanilla(), |b| b.tooltip(tr("Vanilla stays stock")))
                 .disabled(self.vanilla())
                 .on_click(
                     cx.listener(move |this, _, window, cx| this.set_addon_enabled(&id, true, window, cx)),
@@ -188,7 +162,7 @@ impl Shell {
                 .ghost()
                 .xsmall()
                 .icon(IconName::SquarePen)
-                .label("Details…")
+                .label(tr("Details…"))
                 .on_click(cx.listener(|this, _, window, cx| this.db_details(window, cx)))
         });
         let fresh = bound.as_ref().map(|_| {
@@ -196,8 +170,8 @@ impl Shell {
                 .ghost()
                 .xsmall()
                 .icon(IconName::Plus)
-                .label("New addon")
-                .tooltip("Start a new addon from the game's stock values")
+                .label(tr("New addon"))
+                .tooltip(tr("Start a new addon from the game's stock values"))
                 .on_click(cx.listener(|this, _, window, cx| this.db_new_draft(window, cx)))
         });
         let discard = (unsaved > 0 && !broken).then(|| {
@@ -205,19 +179,19 @@ impl Shell {
                 .ghost()
                 .xsmall()
                 .icon(IconName::Undo2)
-                .label("Discard changes")
+                .label(tr("Discard changes"))
                 .on_click(cx.listener(|this, _, window, cx| this.db_discard(window, cx)))
         });
         let save = match &bound {
             Some(_) => Button::new("db-save")
                 .primary()
                 .icon(IconName::Save)
-                .label("Save")
+                .label(tr("Save"))
                 .disabled(!ready || broken || unsaved == 0),
             None => Button::new("db-save")
                 .primary()
                 .icon(IconName::PackagePlus)
-                .label("Save as Addon")
+                .label(tr("Save as Addon"))
                 .disabled(!ready || n == 0),
         }
         .on_click(cx.listener(|this, _, window, cx| this.db_save(window, cx)));
@@ -227,7 +201,7 @@ impl Shell {
                 Button::new("db-import")
                     .outline()
                     .icon(IconName::FileDown)
-                    .label("Import…")
+                    .label(tr("Import…"))
                     .loading(self.db.importing)
                     .disabled(!ready || self.db.importing)
                     .on_click(cx.listener(|this, _, window, cx| this.db_import(window, cx))),
@@ -237,7 +211,7 @@ impl Shell {
                 Button::new("db-changes")
                     .outline()
                     .icon(IconName::ListChecks)
-                    .label(format!("All changes ({n})"))
+                    .label(trf!("All changes ({n})", n = n))
                     .disabled(!ready)
                     .on_click(cx.listener(|this, _, _, cx| this.db_go(Nav::Changes, cx))),
             )
@@ -245,7 +219,7 @@ impl Shell {
         let title = div()
             .text_size(px(18.))
             .font_weight(FontWeight::SEMIBOLD)
-            .child("DB Editor");
+            .child(tr("DB Editor"));
         let line = h_flex()
             .gap(px(10.))
             .min_w_0()
@@ -311,16 +285,15 @@ impl Shell {
     pub(crate) fn db_page(&mut self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let career = Self::career_link();
         let career_label = match self.db_link_state(&career) {
-            LinkState::Open => "Open Career Mode Editor".to_owned(),
-            LinkState::Off(_) => "Turn on Career Mode Editor".to_owned(),
-            LinkState::Missing => "Get Career Mode Editor".to_owned(),
+            LinkState::Open => tr("Open Career Mode Editor").to_owned(),
+            LinkState::Off(_) => tr("Turn on Career Mode Editor").to_owned(),
+            LinkState::Missing => tr("Get Career Mode Editor").to_owned(),
         };
         let strip = notice(
             "db-career-notice",
             IconName::Info,
             p.accent,
-            "Changes apply when you press Play, to careers you start afterwards. To edit a career in \
-             progress, use Career Mode Editor."
+            tr("Changes apply when you press Play, to careers you start afterwards. To edit a career in progress, use Career Mode Editor.")
                 .into(),
             p,
         )
@@ -342,7 +315,7 @@ impl Shell {
                 "db-vanilla-notice",
                 IconName::Lock,
                 p.warning,
-                "Vanilla stays stock. You can still edit and save addons here; turn them on in another profile."
+                tr("Vanilla stays stock. You can still edit and save addons here; turn them on in another profile.")
                     .into(),
                 p,
             )
@@ -354,7 +327,7 @@ impl Shell {
                 "db-addon-error",
                 IconName::CircleAlert,
                 p.error,
-                format!("This addon could not be read, so it can't be edited: {e}"),
+                trf!("This addon could not be read, so it can't be edited: {e}", e = e),
                 p,
             )
             .mx(px(GUTTER))
@@ -364,21 +337,21 @@ impl Shell {
                     .outline()
                     .small()
                     .icon(IconName::RefreshCw)
-                    .label("Try again")
+                    .label(tr("Try again"))
                     .on_click(cx.listener(|this, _, _, cx| this.db_retry(cx))),
             )
         });
         let body = match &self.db.load {
             Load::Ready(_) => self.db_body(p, cx),
-            Load::Loading => self.db_loading("Reading the game database…", p),
+            Load::Loading => self.db_loading(tr("Reading the game database…"), p),
             Load::Failed(e) => self.empty(
                 IconName::CircleAlert,
-                "The database could not be read",
+                tr("The database could not be read"),
                 e.clone(),
                 Button::new("db-retry")
                     .outline()
                     .icon(IconName::RefreshCw)
-                    .label("Try again")
+                    .label(tr("Try again"))
                     .on_click(cx.listener(|this, _, _, cx| {
                         this.db.load = Load::Idle;
                         this.db.game = None;
@@ -386,15 +359,15 @@ impl Shell {
                     })),
                 p,
             ),
-            Load::Idle if !self.detected => self.db_loading("Looking for F1 25…", p),
+            Load::Idle if !self.detected => self.db_loading(tr("Looking for F1 25…"), p),
             Load::Idle => self.empty(
                 IconName::Database,
-                "F1 25 not found",
-                "The DB Editor reads the game's database. Show the launcher where F1 25 is installed.",
+                tr("F1 25 not found"),
+                tr("The DB Editor reads the game's database. Show the launcher where F1 25 is installed."),
                 Button::new("db-locate")
                     .outline()
                     .icon(IconName::FolderOpen)
-                    .label("Locate F1 25…")
+                    .label(tr("Locate F1 25…"))
                     .on_click(cx.listener(|this, _, window, cx| this.locate_game(window, cx))),
                 p,
             ),
@@ -434,7 +407,7 @@ impl Shell {
                     "db-newer-draft",
                     IconName::TriangleAlert,
                     p.warning,
-                    "Another launcher window saved a newer draft. Changes here are not saved until you pick one."
+                    tr("Another launcher window saved a newer draft. Changes here are not saved until you pick one.")
                         .into(),
                     p,
                 )
@@ -444,14 +417,14 @@ impl Shell {
                     Button::new("db-take-newer")
                         .outline()
                         .small()
-                        .label("Load the newer draft")
+                        .label(tr("Load the newer draft"))
                         .on_click(cx.listener(|this, _, _, cx| this.db_take_newer(cx))),
                 )
                 .child(
                     Button::new("db-keep-mine")
                         .ghost()
                         .small()
-                        .label("Keep this window's changes")
+                        .label(tr("Keep this window's changes"))
                         .on_click(cx.listener(|this, _, _, cx| this.db_keep_mine(cx))),
                 )
             }))
@@ -555,7 +528,7 @@ impl Shell {
                     .py(px(14.))
                     .text_size(px(13.))
                     .text_color(p.text_muted)
-                    .child(format!("Nothing matches “{query}”"))
+                    .child(trf!("Nothing matches “{query}”", query = query))
             });
             deferred(
                 v_flex()
@@ -616,7 +589,7 @@ impl Shell {
                 div()
                     .text_size(px(12.))
                     .text_color(p.text_placeholder)
-                    .child("Ctrl+F or / to search"),
+                    .child(tr("Ctrl+F or / to search")),
             )
             .into_any_element()
     }
@@ -674,7 +647,7 @@ impl Shell {
             item(
                 "db-nav-raw".into(),
                 IconName::FolderTree,
-                "All tables".into(),
+                tr("All tables").into(),
                 None,
                 Nav::Raw(root),
                 cx,
@@ -682,7 +655,7 @@ impl Shell {
             item(
                 "db-nav-unnamed".into(),
                 IconName::Binary,
-                "Unnamed keys".into(),
+                tr("Unnamed keys").into(),
                 unnamed.map(|n| n.to_string()),
                 Nav::Unnamed,
                 cx,
@@ -690,7 +663,7 @@ impl Shell {
             item(
                 "db-nav-changes".into(),
                 IconName::ListChecks,
-                "Changes".into(),
+                tr("Changes").into(),
                 Some(self.db.draft.edits.len().to_string()),
                 Nav::Changes,
                 cx,
@@ -699,7 +672,7 @@ impl Shell {
         sections.push(
             v_flex()
                 .gap(px(2.))
-                .child(label("ADVANCED", p).px(px(10.)).pb(px(4.)))
+                .child(label(tr("ADVANCED"), p).px(px(10.)).pb(px(4.)))
                 .children(advanced)
                 .into_any_element(),
         );
@@ -718,7 +691,7 @@ impl Shell {
         let state = self.db_link_state(link);
         let label = match &state {
             LinkState::Open | LinkState::Missing => link.label.clone(),
-            LinkState::Off(name) => format!("Turn on {name}"),
+            LinkState::Off(name) => trf!("Turn on {name}", name = name),
         };
         let link = link.clone();
         Button::new(SharedString::from(format!("db-link-{i}")))
@@ -752,11 +725,10 @@ impl Shell {
         let head = h_flex()
             .gap(px(12.))
             .flex_shrink_0()
-            .child(section_head(
+            .child(SectionHead::new(
                 icon_named(&module.icon),
-                &module.title,
-                &module.summary,
-                p,
+                module.title.clone(),
+                module.summary.clone(),
             ))
             .children(links);
         let notes = module.notes.iter().enumerate().map(|(i, n)| {
@@ -822,7 +794,7 @@ impl Shell {
             let count = if slot.shown.len() == total {
                 trn(total, "{count} row", "{count} rows")
             } else {
-                format!("{} of {total} rows", slot.shown.len())
+                trf!("{shown} of {total} rows", shown = slot.shown.len(), total = total)
             };
             h_flex()
                 .gap(px(16.))
@@ -847,8 +819,14 @@ impl Shell {
         });
         let has_slot = slot.is_some();
         let content = match (has_slot, self.db.view_error.clone()) {
-            (_, Some(e)) => self.empty(IconName::CircleAlert, "This module could not load", e, div(), p),
-            (false, None) => self.db_loading("Loading rows…", p),
+            (_, Some(e)) => self.empty(
+                IconName::CircleAlert,
+                tr("This module could not load"),
+                e,
+                div(),
+                p,
+            ),
+            (false, None) => self.db_loading(tr("Loading rows…"), p),
             (true, None) => self.db_table(module, p, cx),
         };
         let detail = self
@@ -884,11 +862,15 @@ impl Shell {
             let filtered = !slot.view.rows.is_empty();
             return self.empty(
                 IconName::Search,
-                if filtered { "No matching rows" } else { "No rows" },
                 if filtered {
-                    "Nothing in this list matches the filter."
+                    tr("No matching rows")
                 } else {
-                    "This table has no rows in the stock database."
+                    tr("No rows")
+                },
+                if filtered {
+                    tr("Nothing in this list matches the filter.")
+                } else {
+                    tr("This table has no rows in the stock database.")
                 },
                 div(),
                 p,
@@ -912,7 +894,7 @@ impl Shell {
             .text_size(px(11.))
             .font_weight(FontWeight::MEDIUM)
             .text_color(p.text_placeholder)
-            .child(div().w(px(NAME_W)).flex_shrink_0().child("NAME"))
+            .child(div().w(px(NAME_W)).flex_shrink_0().child(tr("NAME")))
             .children(columns.iter().map(|(f, l)| {
                 let editable = module.fields.get(*f).is_some_and(|s| !s.readonly);
                 h_flex()
@@ -1020,9 +1002,9 @@ impl Shell {
                                         .border_1()
                                         .border_color(p.warning)
                                         .tooltip(|window, cx| {
-                                            gpui_kit::component::tooltip::Tooltip::new(
+                                            gpui_kit::component::tooltip::Tooltip::new(tr(
                                                 "Another DB Editor addon on in this profile changes this row",
-                                            )
+                                            ))
                                             .build(window, cx)
                                         }),
                                 )
@@ -1050,7 +1032,7 @@ impl Shell {
                                         .ghost()
                                         .xsmall()
                                         .icon(IconName::ArrowUp)
-                                        .tooltip("Move up")
+                                        .tooltip(tr("Move up"))
                                         .disabled(ri == 0)
                                         .on_click(cx.listener(move |this, _, _, cx| {
                                             cx.stop_propagation();
@@ -1062,7 +1044,7 @@ impl Shell {
                                         .ghost()
                                         .xsmall()
                                         .icon(IconName::ArrowDown)
-                                        .tooltip("Move down")
+                                        .tooltip(tr("Move down"))
                                         .disabled(ri + 1 == total)
                                         .on_click(cx.listener(move |this, _, _, cx| {
                                             cx.stop_propagation();
@@ -1101,7 +1083,7 @@ impl Shell {
                 .text_color(p.text_placeholder)
                 .whitespace_nowrap()
                 .truncate()
-                .child(if spec.optional { "Default" } else { "—" })
+                .child(if spec.optional { tr("Default") } else { "—" })
                 .into_any_element();
         };
         let kind = kind_of(spec.kind, cell.tag);
@@ -1166,7 +1148,7 @@ impl Shell {
                 .hover(move |s| s.bg(p.hover).text_color(p.text))
                 .child(Icon::new(IconName::Undo2).size(px(12.)))
                 .tooltip(move |window, cx| {
-                    gpui_kit::component::tooltip::Tooltip::new("Revert to stock").build(window, cx)
+                    gpui_kit::component::tooltip::Tooltip::new(tr("Revert to stock")).build(window, cx)
                 })
                 .on_click(cx.listener(move |this, _, _, cx| {
                     cx.stop_propagation();
@@ -1286,7 +1268,7 @@ impl Shell {
         };
         let edited = r.cells.iter().filter(|c| c.edited).count();
         let subtitle = if edited > 0 {
-            format!("{} · {} edited", r.label, edited)
+            trf!("{label} · {edited} edited", label = r.label, edited = edited)
         } else {
             r.label.clone()
         };
@@ -1322,7 +1304,7 @@ impl Shell {
                                     .outline()
                                     .small()
                                     .icon(IconName::ArrowUp)
-                                    .label("Move up")
+                                    .label(tr("Move up"))
                                     .on_click(
                                         cx.listener(move |this, _, _, cx| this.db_move(&up, false, cx)),
                                     ),
@@ -1332,7 +1314,7 @@ impl Shell {
                                     .outline()
                                     .small()
                                     .icon(IconName::ArrowDown)
-                                    .label("Move down")
+                                    .label(tr("Move down"))
                                     .on_click(
                                         cx.listener(move |this, _, _, cx| this.db_move(&down, true, cx)),
                                     ),
@@ -1344,7 +1326,7 @@ impl Shell {
                                 .ghost()
                                 .small()
                                 .icon(IconName::FolderTree)
-                                .label("Show in All tables")
+                                .label(tr("Show in All tables"))
                                 .on_click(cx.listener(move |this, _, _, cx| this.db_go(Nav::Raw(raw), cx))),
                         ),
                 ),

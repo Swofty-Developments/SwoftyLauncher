@@ -12,11 +12,13 @@ use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::dbedit::{Backing, Kind, NodeId};
+use swofty_i18n::{tr, trf};
 
 use super::{Nav, bool_text, clean, hex, kind_of, type_name};
 use crate::pages::{fact, label};
 use crate::shell::Shell;
 use crate::theme::{Palette, ScrollArea};
+use crate::ui::Callout;
 
 #[derive(Clone)]
 pub(crate) struct Choice {
@@ -227,6 +229,14 @@ pub(crate) fn list_items(v: &str) -> Vec<String> {
         .collect()
 }
 
+struct SelectSpec<'a> {
+    id: &'a str,
+    key: u64,
+    value: &'a str,
+    whole: &'a str,
+    options: &'a [(String, String)],
+}
+
 impl Shell {
     pub(crate) fn db_row_fields(&self) -> Vec<FieldModel> {
         let (Some(slot), Some(row)) = (self.db.view.as_ref(), self.db.row.as_ref()) else {
@@ -396,7 +406,17 @@ impl Shell {
                     self.sync_color(&f.id, key, &f.value, window, cx);
                 }
                 Kind::Choice | Kind::Ref => {
-                    self.sync_select(&f.id, key, &f.value, &f.value, &f.options, window, cx);
+                    self.sync_select(
+                        SelectSpec {
+                            id: &f.id,
+                            key,
+                            value: &f.value,
+                            whole: &f.value,
+                            options: &f.options,
+                        },
+                        window,
+                        cx,
+                    );
                 }
                 Kind::RefList => {
                     let have = list_items(&f.value);
@@ -406,7 +426,17 @@ impl Shell {
                         .filter(|(v, _)| !have.contains(v))
                         .cloned()
                         .collect();
-                    self.sync_select(&format!("{}/add", f.id), key, "", &f.value, &rest, window, cx);
+                    self.sync_select(
+                        SelectSpec {
+                            id: &format!("{}/add", f.id),
+                            key,
+                            value: "",
+                            whole: &f.value,
+                            options: &rest,
+                        },
+                        window,
+                        cx,
+                    );
                 }
                 Kind::Curve => match parse_curve(&f.value) {
                     Some(c) => {
@@ -542,17 +572,14 @@ impl Shell {
         );
     }
 
-    #[allow(clippy::too_many_arguments)]
-    fn sync_select(
-        &mut self,
-        id: &str,
-        key: u64,
-        value: &str,
-        whole: &str,
-        options: &[(String, String)],
-        window: &mut Window,
-        cx: &mut Context<Self>,
-    ) {
+    fn sync_select(&mut self, spec: SelectSpec, window: &mut Window, cx: &mut Context<Self>) {
+        let SelectSpec {
+            id,
+            key,
+            value,
+            whole,
+            options,
+        } = spec;
         let synced = format!("{whole}\u{0}{}", options.len());
         if let Some(slot) = self.db.slots.selects.get_mut(id) {
             slot.seen = true;
@@ -708,7 +735,7 @@ impl Shell {
             if let Some(v) = edited(&format!("{base}/y{i}")) {
                 match stored_y(&stock, &v) {
                     Some(stored) => *y = stored,
-                    None => bad = Some(format!("{v} is not a number")),
+                    None => bad = Some(trf!("{v} is not a number", v = v)),
                 }
             }
         }
@@ -808,14 +835,14 @@ impl Shell {
                             .text_size(px(12.))
                             .text_color(p.text_muted)
                             .truncate()
-                            .child(format!("Copied from {from}")),
+                            .child(trf!("Copied from {from}", from = from)),
                     )
                     .child(
                         Button::new(SharedString::from(format!("db-row-remove-{spec}")))
                             .ghost()
                             .xsmall()
                             .icon(IconName::Trash)
-                            .label("Remove own row")
+                            .label(tr("Remove own row"))
                             .disabled(locked)
                             .on_click(cx.listener(move |this, _, _, cx| this.db_remove_row(spec, cx))),
                     )
@@ -832,7 +859,7 @@ impl Shell {
                             .w_full()
                             .menu_max_h(px(320.))
                             .search_placeholder("Search")
-                            .placeholder("Copy from…")
+                            .placeholder(tr("Copy from…"))
                             .disabled(locked)
                     });
                 v_flex()
@@ -875,12 +902,16 @@ impl Shell {
         let mut picks: Vec<(String, String, String)> = Vec::new();
         if !f.value.is_empty() {
             let shown = shown_value(f, &f.value);
-            picks.push((format!("Set all {n} to {shown}"), f.value.clone(), shown));
+            picks.push((
+                trf!("Set all {n} to {shown}", n = n, shown = shown),
+                f.value.clone(),
+                shown,
+            ));
         }
-        for (end, limit) in [("max", f.max), ("min", f.min)] {
+        for (end, limit) in [(tr("max"), f.max), (tr("min"), f.min)] {
             if let Some(v) = limit {
                 picks.push((
-                    format!("Set all {n} to the {end}, {v}"),
+                    trf!("Set all {n} to the {end}, {v}", n = n, end = end, v = v),
                     format!("{v}"),
                     format!("{v}"),
                 ));
@@ -895,7 +926,7 @@ impl Shell {
                 .ghost()
                 .xsmall()
                 .icon(IconName::ListChecks)
-                .label("All rows")
+                .label(tr("All rows"))
                 .dropdown_menu_with_anchor(Anchor::TopRight, move |mut menu, _, _| {
                     for (text, value, shown) in &picks {
                         let (shell, value, shown) = (shell.clone(), value.clone(), shown.clone());
@@ -940,7 +971,7 @@ impl Shell {
                 .ghost()
                 .xsmall()
                 .icon(IconName::Undo2)
-                .label("Revert")
+                .label(tr("Revert"))
                 .disabled(self.db_locked())
                 .on_click(cx.listener(move |this, _, _, cx| this.db_revert(key, cx)))
         });
@@ -1016,8 +1047,8 @@ impl Shell {
                         .truncate()
                         .flex_shrink_0()
                         .child(match &f.row {
-                            Some((_, Backing::Copied(_))) => format!("Copied: {s}"),
-                            _ => format!("Stock: {s}"),
+                            Some((_, Backing::Copied(_))) => trf!("Copied: {s}", s = s),
+                            _ => trf!("Stock: {s}", s = s),
                         }),
                 )
             })
@@ -1040,25 +1071,7 @@ impl Shell {
             })
             .when_some(f.help.clone(), |d, h| {
                 if f.shared {
-                    d.child(
-                        h_flex()
-                            .gap(px(8.))
-                            .items_start()
-                            .px(px(10.))
-                            .py(px(7.))
-                            .rounded(px(6.))
-                            .bg(p.warning.opacity(0.1))
-                            .text_size(px(12.))
-                            .line_height(px(17.))
-                            .text_color(p.text)
-                            .child(
-                                Icon::new(IconName::TriangleAlert)
-                                    .size(px(13.))
-                                    .mt(px(2.))
-                                    .text_color(p.warning),
-                            )
-                            .child(div().flex_1().min_w_0().child(h)),
-                    )
+                    d.child(Callout::warning(h))
                 } else {
                     d.child(
                         div()
@@ -1271,7 +1284,7 @@ impl Shell {
                 .w_full()
                 .menu_max_h(px(320.))
                 .search_placeholder("Search")
-                .placeholder("Add…")
+                .placeholder(tr("Add…"))
                 .disabled(locked)
         });
         v_flex()
@@ -1290,7 +1303,7 @@ impl Shell {
                                 .py(px(8.))
                                 .text_size(px(13.))
                                 .text_color(p.text_placeholder)
-                                .child("Empty"),
+                                .child(tr("Empty")),
                         )
                     }),
             )
@@ -1415,12 +1428,12 @@ impl Shell {
                     .text_size(px(11.))
                     .text_color(p.text_placeholder)
                     .child(div().w(px(18.)))
-                    .child(div().flex_1().child("X"))
-                    .child(
-                        div()
-                            .flex_1()
-                            .child(format!("VALUE {}–{}", num(c.span().0), num(c.span().1))),
-                    )
+                    .child(div().flex_1().child(tr("X")))
+                    .child(div().flex_1().child(trf!(
+                        "VALUE {min}–{max}",
+                        min = num(c.span().0),
+                        max = num(c.span().1)
+                    )))
                     .child(div().w(px(22.))),
             )
             .children(rows)
@@ -1432,7 +1445,7 @@ impl Shell {
                             .ghost()
                             .xsmall()
                             .icon(IconName::Plus)
-                            .label("Add point")
+                            .label(tr("Add point"))
                             .disabled(locked)
                             .on_click(cx.listener(move |this, _, _, cx| {
                                 this.db_curve_edit(
@@ -1591,7 +1604,7 @@ pub(crate) fn detail_shell(
                         .ghost()
                         .small()
                         .icon(IconName::X)
-                        .tooltip("Close")
+                        .tooltip(tr("Close"))
                         .on_click(close),
                 ),
         )

@@ -11,12 +11,13 @@ use gpui_kit::component::{Disableable, Icon, Sizable, WindowExt, h_flex, v_flex}
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::dbedit::{Catalog, Edit, NodeId, NodeKind, Origin, RowCopy};
-use swofty_i18n::trn;
+use swofty_i18n::{tr, trf, trn};
 
 use super::{ADDABLE, Nav, hex, type_name};
 use crate::pages::label;
 use crate::shell::Shell;
 use crate::theme::{Palette, palette, scrollbar_x};
+use crate::ui::{Field, SectionHead};
 
 const LIST_H: f32 = 44.;
 const GRID_COL: f32 = 150.;
@@ -189,19 +190,19 @@ impl Shell {
         let rows = self.db_raw_rows(node, &catalog);
         let filtered = rows.len() != kids;
         let summary = match &n.kind {
-            NodeKind::Root => format!(
-                "{} records · {} named · {}",
-                catalog.records(),
-                catalog.named(),
-                trn(kids, "{count} top-level part", "{count} top-level parts")
+            NodeKind::Root => trf!(
+                "{records} records · {named} named · {parts}",
+                records = catalog.records(),
+                named = catalog.named(),
+                parts = trn(kids, "{count} top-level part", "{count} top-level parts")
             ),
             NodeKind::Table { rows, .. } => {
                 let fields = catalog.fields(node).len();
                 let meaning = catalog.table_meaning(node).unwrap_or_default();
-                let mut s = format!(
-                    "Table · {} × {}",
-                    trn(*rows as usize, "{count} row", "{count} rows"),
-                    trn(fields, "{count} field", "{count} fields")
+                let mut s = trf!(
+                    "Table · {rows} × {fields}",
+                    rows = trn(*rows as usize, "{count} row", "{count} rows"),
+                    fields = trn(fields, "{count} field", "{count} fields")
                 );
                 if !meaning.is_empty() {
                     s.push_str(&format!(" · {meaning}"));
@@ -209,7 +210,7 @@ impl Shell {
                 s
             }
             NodeKind::Row { index } => {
-                let mut s = format!("Row {index}");
+                let mut s = trf!("Row {index}", index = index);
                 if let Some(l) = &n.label {
                     s.push_str(&format!(" · {l}"));
                 }
@@ -224,7 +225,7 @@ impl Shell {
             .outline()
             .small()
             .icon(IconName::Plus)
-            .label("Add key…")
+            .label(tr("Add key…"))
             .disabled(self.db_locked())
             .on_click(cx.listener(move |this, _, window, cx| this.db_add_dialog(node, window, cx)));
         let content = match n.kind {
@@ -367,7 +368,10 @@ impl Shell {
         let mut edited = false;
         let detail = match &n.kind {
             NodeKind::Table { rows, .. } => {
-                let mut s = format!("Table · {}", trn(*rows as usize, "{count} row", "{count} rows"));
+                let mut s = trf!(
+                    "Table · {rows}",
+                    rows = trn(*rows as usize, "{count} row", "{count} rows")
+                );
                 if let Some(m) = catalog.table_meaning(child).filter(|m| !m.is_empty()) {
                     s.push_str(&format!(" · {m}"));
                 }
@@ -489,7 +493,7 @@ impl Shell {
             .text_size(px(11.))
             .font_weight(FontWeight::MEDIUM)
             .text_color(p.text_placeholder)
-            .child(div().w(px(GRID_LABEL)).flex_shrink_0().child("ROW"))
+            .child(div().w(px(GRID_LABEL)).flex_shrink_0().child(tr("ROW")))
             .children(fields.iter().map(|f| {
                 div()
                     .w(px(GRID_COL))
@@ -688,17 +692,11 @@ impl Shell {
         v_flex()
             .size_full()
             .gap(px(14.))
-            .child(
-                h_flex()
-                    .gap(px(12.))
-                    .flex_shrink_0()
-                    .child(super::page::section_head(
-                        IconName::Binary,
-                        "Unnamed keys",
-                        "Records whose names aren't known yet. Their values still edit.",
-                        p,
-                    )),
-            )
+            .child(h_flex().gap(px(12.)).flex_shrink_0().child(SectionHead::new(
+                IconName::Binary,
+                tr("Unnamed keys"),
+                tr("Records whose names aren't known yet. Their values still edit."),
+            )))
             .child(
                 h_flex()
                     .gap(px(16.))
@@ -755,7 +753,7 @@ impl Shell {
                 group: None,
                 edit: None,
                 row: Some(r.clone()),
-                name: format!("{} › Own row", self.db_row_name(&r.to)),
+                name: trf!("{name} › Own row", name = self.db_row_name(&r.to)),
                 path: Some(r.select()),
                 node: None,
             })
@@ -850,29 +848,29 @@ impl Shell {
                 .outline()
                 .small()
                 .icon(IconName::Undo2)
-                .label("Revert all changes")
+                .label(tr("Revert all changes"))
                 .disabled(n == 0 || self.db_locked())
                 .on_click(cx.listener(|this, _, window, cx| this.db_revert_all(window, cx))),
         );
         let head = h_flex()
             .gap(px(12.))
             .flex_shrink_0()
-            .child(super::page::section_head(
+            .child(SectionHead::new(
                 IconName::ListChecks,
-                "Changes",
-                &match self.db.draft.unsaved() {
-                    0 => format!(
-                        "{} in {}",
-                        trn(n, "{count} change", "{count} changes"),
-                        self.db_draft_name()
+                tr("Changes"),
+                match self.db.draft.unsaved() {
+                    0 => trf!(
+                        "{changes} in {name}",
+                        changes = trn(n, "{count} change", "{count} changes"),
+                        name = self.db_draft_name()
                     ),
-                    k => format!(
-                        "{} in {} · {k} not saved yet",
-                        trn(n, "{count} change", "{count} changes"),
-                        self.db_draft_name()
+                    k => trf!(
+                        "{changes} in {name} · {k} not saved yet",
+                        changes = trn(n, "{count} change", "{count} changes"),
+                        name = self.db_draft_name(),
+                        k = k
                     ),
                 },
-                p,
             ))
             .child(actions);
         if n == 0 {
@@ -959,11 +957,11 @@ impl Shell {
         let new = match &e.value {
             Some(v) if v.is_empty() => "empty".to_owned(),
             Some(v) => v.clone(),
-            None => "removed".to_owned(),
+            None => tr("removed").to_owned(),
         };
         let origin = match &e.origin {
             Origin::Typed => None,
-            Origin::Imported(f) => Some(format!("Imported from {f}")),
+            Origin::Imported(f) => Some(trf!("Imported from {f}", f = f)),
         };
         h_flex()
             .id(SharedString::from(format!("db-change-{key:x}")))
@@ -1037,7 +1035,7 @@ impl Shell {
                     .ghost()
                     .xsmall()
                     .icon(IconName::Undo2)
-                    .tooltip("Revert")
+                    .tooltip(tr("Revert"))
                     .disabled(self.db_locked())
                     .on_click(cx.listener(move |this, _, _, cx| {
                         cx.stop_propagation();
@@ -1082,8 +1080,8 @@ impl Shell {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let from = match &r.from {
-            Some(l) => format!("copy of {}", self.db_row_name(l)),
-            None => "copy of the game default".to_owned(),
+            Some(l) => trf!("copy of {name}", name = self.db_row_name(l)),
+            None => tr("copy of the game default").to_owned(),
         };
         let (table, field, to) = (r.table.clone(), r.field.clone(), r.to.clone());
         h_flex()
@@ -1120,7 +1118,7 @@ impl Shell {
                     .flex_shrink_0()
                     .gap(px(8.))
                     .text_size(px(13.))
-                    .child(div().text_color(p.text_muted).child("none"))
+                    .child(div().text_color(p.text_muted).child(tr("none")))
                     .child(
                         Icon::new(IconName::ArrowRight)
                             .size(px(12.))
@@ -1140,7 +1138,7 @@ impl Shell {
                     .ghost()
                     .xsmall()
                     .icon(IconName::Undo2)
-                    .tooltip("Remove own row")
+                    .tooltip(tr("Remove own row"))
                     .disabled(self.db_locked())
                     .on_click(cx.listener(move |this, _, _, cx| {
                         cx.stop_propagation();
@@ -1164,7 +1162,7 @@ impl Shell {
                 .placeholder("tracks.Track_3.my_new_key")
                 .default_value(base)
         });
-        let value = cx.new(|cx| InputState::new(window, cx).placeholder("Value"));
+        let value = cx.new(|cx| InputState::new(window, cx).placeholder(tr("Value")));
         let tag = std::rc::Rc::new(Cell::new(0u8));
         let shell = cx.entity().downgrade();
         let p = palette(cx);
@@ -1194,32 +1192,25 @@ impl Shell {
                         menu
                     })
             };
-            let field = |title: &'static str, el: AnyElement| {
-                v_flex()
-                    .gap(px(6.))
-                    .child(div().text_size(px(12.)).font_weight(FontWeight::MEDIUM).text_color(p.text_muted).child(title))
-                    .child(el)
-            };
             alert
                 .width(px(560.))
-                .title("Add key")
+                .title(tr("Add key"))
                 .child(
                     v_flex()
                         .gap(px(14.))
                         .child(div().text_size(px(13.)).text_color(p.text_muted).child(
-                            "Adds a key the stock database doesn't have. The game only reads keys it knows, so \
-                             this is for paths you've confirmed.",
+                            tr("Adds a key the stock database doesn't have. The game only reads keys it knows, so this is for paths you've confirmed."),
                         ))
-                        .child(field("PATH", Input::new(&path).small().into_any_element()))
+                        .child(Field::new(tr("PATH"), Input::new(&path).small()))
                         .child(
                             h_flex()
                                 .gap(px(12.))
                                 .items_start()
-                                .child(field("TYPE", picker.into_any_element()))
-                                .child(div().flex_1().child(field("VALUE", Input::new(&value).small().into_any_element()))),
+                                .child(Field::new(tr("TYPE"), picker))
+                                .child(div().flex_1().child(Field::new(tr("VALUE"), Input::new(&value).small()))),
                         ),
                 )
-                .ok_text("Add key")
+                .ok_text(tr("Add key"))
                 .show_cancel(true)
                 .on_ok(move |_, window, cx| {
                     let p = path.read(cx).value().trim().to_owned();
@@ -1230,7 +1221,7 @@ impl Shell {
                     match result {
                         Ok(()) => {
                             window.push_notification(
-                                gpui_kit::component::notification::Notification::success(format!("Added {p}")),
+                                gpui_kit::component::notification::Notification::success(trf!("Added {p}", p = p)),
                                 cx,
                             );
                             true
@@ -1238,7 +1229,7 @@ impl Shell {
                         Err(e) => {
                             crate::app_log::action("db editor: add a key").failed(&e);
                             window.push_notification(
-                                gpui_kit::component::notification::Notification::error(e).title("Could not add the key"),
+                                gpui_kit::component::notification::Notification::error(e).title(tr("Could not add the key")),
                                 cx,
                             );
                             false

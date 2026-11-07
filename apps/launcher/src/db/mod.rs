@@ -23,7 +23,7 @@ use swofty_core::dbedit::{
 };
 use swofty_core::store::Store;
 use swofty_core::view::{Block, Body};
-use swofty_i18n::trn;
+use swofty_i18n::{tr, trf, trn};
 
 use crate::shell::{Page, Shell};
 
@@ -394,25 +394,29 @@ pub(crate) fn debug_path(var: &str) -> Option<PathBuf> {
 
 fn report_text(r: &ImportReport) -> String {
     let format = match r.format {
-        "ego" => "EGO GameDatabases Editor export",
-        "package" | "zip" => "DB Editor addon",
-        "bin" => "Modded game database",
-        _ => "DB Editor export",
+        "ego" => tr("EGO GameDatabases Editor export"),
+        "package" | "zip" => tr("DB Editor addon"),
+        "bin" => tr("Modded game database"),
+        _ => tr("DB Editor export"),
     };
     if r.format == "bin" {
-        let mut lines = vec![format.to_owned(), format!("{} imported", r.imported)];
+        let mut lines = vec![format.to_owned(), trf!("{count} imported", count = r.imported)];
         lines.extend(r.skipped.iter().cloned());
         return lines.join("\n");
     }
     let mut lines = vec![
         format.to_owned(),
-        format!("{} imported · {} unchanged", r.imported, r.unchanged),
+        trf!(
+            "{imported} imported · {unchanged} unchanged",
+            imported = r.imported,
+            unchanged = r.unchanged
+        ),
     ];
     if !r.skipped.is_empty() {
-        lines.push(format!("{} skipped:", r.skipped.len()));
+        lines.push(trf!("{count} skipped:", count = r.skipped.len()));
         lines.extend(r.skipped.iter().take(4).cloned());
         if r.skipped.len() > 4 {
-            lines.push(format!("and {} more", r.skipped.len() - 4));
+            lines.push(trf!("and {count} more", count = r.skipped.len() - 4));
         }
     }
     lines.join("\n")
@@ -537,12 +541,15 @@ impl Shell {
                 self.db.draft = d;
                 None
             }
-            Ok(Opened::SetAside { error, kept }) => {
-                Some(format!("{error}\nIt was kept as {}", kept.display()))
-            }
+            Ok(Opened::SetAside { error, kept }) => Some(trf!(
+                "{error}\nIt was kept as {path}",
+                error = error,
+                path = kept.display()
+            )),
             Ok(Opened::Stuck { error }) => {
-                self.db.save_error = Some(format!(
-                    "Your changes are not saved to the draft until the damaged draft file is moved: {error}"
+                self.db.save_error = Some(trf!(
+                    "Your changes are not saved to the draft until the damaged draft file is moved: {error}",
+                    error = error
                 ));
                 Some(error)
             }
@@ -551,7 +558,7 @@ impl Shell {
         if let Some(body) = body {
             self.db.toasts.push(
                 Notification::error(body)
-                    .title("The DB Editor draft could not be read")
+                    .title(tr("The DB Editor draft could not be read"))
                     .autohide(false),
             );
         }
@@ -606,7 +613,7 @@ impl Shell {
             }
             Err(e) => {
                 self.db.unwritten = true;
-                self.db.save_error = Some(format!("Your changes could not be saved to the draft: {e}"));
+                self.db.save_error = Some(trf!("Your changes could not be saved to the draft: {e}", e = e));
                 cx.notify();
                 return;
             }
@@ -677,9 +684,9 @@ impl Shell {
         let store = self.store.clone();
         if guarded(|| Ok(lock(&self.db.file).is_newer(&store))).unwrap_or(false) {
             self.db_take_newer(cx);
-            self.db.toasts.push(Notification::info(
+            self.db.toasts.push(Notification::info(tr(
                 "Another launcher window changed the draft, so it was reloaded.",
-            ));
+            )));
         }
     }
 
@@ -699,8 +706,9 @@ impl Shell {
                 self.db.draft.clear();
                 self.db.draft.edits = edits;
                 self.db.draft.name = Some(name.clone());
-                self.db.toasts.push(Notification::warning(format!(
-                    "{name} was removed. Your unsaved changes stay in the DB Editor as a new addon."
+                self.db.toasts.push(Notification::warning(trf!(
+                    "{name} was removed. Your unsaved changes stay in the DB Editor as a new addon.",
+                    name = name
                 )));
             } else {
                 self.db.draft.clear();
@@ -729,11 +737,12 @@ impl Shell {
                 if reload && !quiet {
                     let name = self.db_draft_name();
                     self.db.toasts.push(Notification::info(if dirty {
-                        format!(
-                            "{name} changed on disk and was reloaded. Your unsaved changes are kept on top."
+                        trf!(
+                            "{name} changed on disk and was reloaded. Your unsaved changes are kept on top.",
+                            name = name
                         )
                     } else {
-                        format!("{name} changed on disk and was reloaded.")
+                        trf!("{name} changed on disk and was reloaded.", name = name)
                     }));
                 }
             }
@@ -823,8 +832,9 @@ impl Shell {
                 } else {
                     Notification::success(report_text(&report))
                 };
-                toast = Some(note.title(format!(
-                    "Opened {file} as a new addon. Review it, then Save as Addon."
+                toast = Some(note.title(trf!(
+                    "Opened {file} as a new addon. Review it, then Save as Addon.",
+                    file = file
                 )));
                 self.db_go(Nav::Changes, cx);
             }
@@ -866,13 +876,13 @@ impl Shell {
             None => true,
         };
         let wins = if mine && later {
-            Some("your change wins".to_owned())
+            Some(tr("your change wins").to_owned())
         } else if mine || others.len() > 1 {
-            Some(format!("{} wins", name(&last.0)))
+            Some(trf!("{name} wins", name = name(&last.0)))
         } else {
             None
         };
-        let mut text = format!("Also changed by {}", list.join(", "));
+        let mut text = trf!("Also changed by {names}", names = list.join(", "));
         if let Some(w) = wins {
             text.push_str(&format!(" · {w}"));
         }
@@ -1055,9 +1065,9 @@ impl Shell {
                 .spawn(async move {
                     let catalog = guarded(|| {
                         let game = crate::sections::game(&store, Some(&install))
-                            .ok_or("The game folder could not be read.")?;
+                            .ok_or(tr("The game folder could not be read."))?;
                         Catalog::open(&store, &game)
-                            .map_err(|e| format!("The game database could not be read: {e}"))
+                            .map_err(|e| trf!("The game database could not be read: {e}", e = e))
                     })?;
                     guarded(|| Ok(catalog.search("x", 1))).ok();
                     let modules = guarded(|| Ok(swofty_core::dbedit::modules())).unwrap_or(&[]);
@@ -1568,18 +1578,20 @@ impl Shell {
             return;
         };
         let n = self.db_listed(field);
-        let title = format!(
-            "Set {} to {shown} on {}?",
-            f.label,
-            trn(n, "{count} row", "{count} rows")
+        let title = trf!(
+            "Set {label} to {shown} on {rows}?",
+            label = f.label,
+            shown = shown,
+            rows = trn(n, "{count} row", "{count} rows")
         );
         let rows = if slot.shown.len() < slot.view.rows.len() {
-            "Every row the search lists"
+            tr("Every row the search lists")
         } else {
-            "Every row of this page"
+            tr("Every row of this page")
         };
-        let description = format!(
-            "{rows} gets this value, held inside the field's range. It saves to the addon like any other change."
+        let description = trf!(
+            "{rows} gets this value, held inside the field's range. It saves to the addon like any other change.",
+            rows = rows
         );
         let shell = cx.entity().downgrade();
         window.open_alert_dialog(cx, move |alert, _, _| {
@@ -1587,7 +1599,7 @@ impl Shell {
             alert
                 .title(title.clone())
                 .description(description.clone())
-                .ok_text("Set all")
+                .ok_text(tr("Set all"))
                 .show_cancel(true)
                 .on_ok(move |_, _, cx| {
                     shell.update(cx, |s, cx| s.db_set_all(field, &value, cx)).ok();
@@ -1619,16 +1631,18 @@ impl Shell {
         let edits = &mut self.db.draft.edits;
         match guarded(|| module.set_all(&catalog, edits, &view, &rows, field, value)) {
             Ok(0) => {
-                self.db.toasts.push(Notification::info(format!(
-                    "Every listed row already has that {label}"
+                self.db.toasts.push(Notification::info(trf!(
+                    "Every listed row already has that {label}",
+                    label = label
                 )));
                 cx.notify();
             }
             Ok(n) => {
                 self.db.slots = Slots::default();
-                self.db.toasts.push(Notification::success(format!(
-                    "{label}: changed {}",
-                    trn(n, "{count} row", "{count} rows")
+                self.db.toasts.push(Notification::success(trf!(
+                    "{label}: changed {rows}",
+                    label = label,
+                    rows = trn(n, "{count} row", "{count} rows")
                 )));
                 self.db_changed(None, true, cx);
             }
@@ -1661,11 +1675,11 @@ impl Shell {
         window.open_alert_dialog(cx, move |alert, _, _| {
             let shell = shell.clone();
             alert
-                .title(format!("Revert all {n} changes?"))
-                .description(
+                .title(trf!("Revert all {n} changes?", n = n))
+                .description(tr(
                     "Every value goes back to the game's stock value. Save afterwards to keep that in the addon.",
-                )
-                .ok_text("Revert all")
+                ))
+                .ok_text(tr("Revert all"))
                 .ok_variant(gpui_kit::component::button::ButtonVariant::Danger)
                 .show_cancel(true)
                 .on_ok(move |_, _, cx| {
@@ -1721,7 +1735,7 @@ impl Shell {
             return;
         }
         self.db.importing = true;
-        window.push_notification(Notification::info(format!("Importing {file}…")), cx);
+        window.push_notification(Notification::info(trf!("Importing {file}…", file = file)), cx);
         cx.notify();
         let (store, path) = (self.store.clone(), path.to_path_buf());
         cx.spawn_in(window, async move |this, cx| {
@@ -1751,17 +1765,18 @@ impl Shell {
             Ok(Incoming::Addon(done)) => {
                 let mut body = report_text(&done.report);
                 if let Some(from) = &done.renamed_from {
-                    body.push_str(&format!(
-                        "\n{from} was already installed; this copy is {}",
-                        done.package.id
+                    body.push_str(&trf!(
+                        "\n{from} was already installed; this copy is {id}",
+                        from = from,
+                        id = done.package.id
                     ));
                 }
                 let id = done.package.id.clone();
                 let profile = self.library.profile.name.clone();
                 if !self.vanilla() && self.db_turn_on(&id).is_ok() {
-                    body.push_str(&format!("\nTurned on in {profile}"));
+                    body.push_str(&trf!("\nTurned on in {profile}", profile = profile));
                 }
-                let title = format!("Imported {}", done.package.name);
+                let title = trf!("Imported {name}", name = done.package.name);
                 window.push_notification(Notification::success(body).title(title), cx);
                 self.reload(cx);
                 self.show_addon(&id, cx);
@@ -1780,7 +1795,7 @@ impl Shell {
                     .file(std::path::Path::new(&file))
                     .failed(&e);
                 window.push_notification(
-                    Notification::error(e).title(format!("Could not import {file}")),
+                    Notification::error(e).title(trf!("Could not import {file}", file = file)),
                     cx,
                 )
             }
