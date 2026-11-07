@@ -24,6 +24,7 @@ use crate::pages::{game_art, label};
 use crate::shell::Shell;
 use crate::theme::{Palette, palette};
 use crate::ui::Callout;
+use swofty_i18n::tr;
 
 pub(crate) const RISK: &str = "Because of how Swofty Launcher hooks the game's engine, which lets addons run \
                                their own engine code, it is highly risky to change the game with any outside \
@@ -220,7 +221,7 @@ impl SetupWizard {
             .gap(px(12.))
             .child(illustration(IconName::FolderSearch, p))
             .child(heading(
-                "Are there other mods in your game folder?",
+                tr("Are there other mods in your game folder?"),
                 "Mods copied into the F1 25 folder by hand, or put there by another mod manager or tool, \
                  that Swofty Launcher didn't add.",
                 p,
@@ -296,7 +297,7 @@ impl SetupWizard {
         };
         let first = match self.install.source {
             Source::Steam => (
-                "Verify game files in Steam",
+                tr("Verify game files in Steam"),
                 "Select Verify game files in Steam below. It's also in Steam > right-click F1 25 > \
                  Properties > Installed Files.",
             ),
@@ -314,7 +315,7 @@ impl SetupWizard {
             .child(
                 v_flex()
                     .gap(px(9.))
-                    .child(label("WHAT TO DO", p))
+                    .child(label(tr("WHAT TO DO"), p))
                     .child(step(1, first.0, first.1, p))
                     .when(self.install.source != Source::Unknown, |d| {
                         d.child(step(
@@ -359,7 +360,7 @@ impl SetupWizard {
                         div()
                             .flex_1()
                             .min_w_0()
-                            .child("Putting back the files Swofty changed…"),
+                            .child(tr("Putting back the files Swofty changed…")),
                     ),
             );
         }
@@ -384,7 +385,7 @@ impl SetupWizard {
             .ghost()
             .h(px(36.))
             .px(px(14.))
-            .label("Not now")
+            .label(tr("Not now"))
             .disabled(self.working)
             .on_click(|_, window, cx| window.close_dialog(cx));
         let buttons = h_flex().gap(px(8.)).child(not_now);
@@ -395,7 +396,7 @@ impl SetupWizard {
                     .h(px(36.))
                     .px(px(14.))
                     .icon(IconName::ArrowRight)
-                    .label("Get started")
+                    .label(tr("Get started"))
                     .on_click(move |_, _, cx| {
                         wizard.update(cx, |w, cx| {
                             w.step = Step::Mods;
@@ -427,7 +428,7 @@ impl SetupWizard {
                             .h(px(36.))
                             .px(px(14.))
                             .icon(IconName::Check)
-                            .label("I understand")
+                            .label(tr("I understand"))
                             .loading(self.working)
                             .disabled(self.working || self.other_mods.is_none())
                             .on_click(move |_, window, cx| {
@@ -452,7 +453,7 @@ impl SetupWizard {
                                 .h(px(36.))
                                 .px(px(14.))
                                 .icon(IconName::ShieldCheck)
-                                .label("Verify game files in Steam")
+                                .label(tr("Verify game files in Steam"))
                                 .on_click(move |_, _, cx| {
                                     cx.open_url(stock::STEAM_VERIFY_URL);
                                     opened.update(cx, |w, cx| {
@@ -517,7 +518,7 @@ fn welcome(p: Palette) -> Div {
         .gap(px(12.))
         .child(illustration(IconName::Gamepad2, p))
         .child(heading(
-            "Welcome to Swofty Launcher",
+            tr("Welcome to Swofty Launcher"),
             "Thanks for installing Swofty Launcher! Just a few things so we can get you sorted before your \
              first modded session.",
             p,
@@ -525,7 +526,7 @@ fn welcome(p: Palette) -> Div {
         .child(
             v_flex()
                 .gap(px(9.))
-                .child(label("ONE-TIME SETUP", p))
+                .child(label(tr("ONE-TIME SETUP"), p))
                 .child(step(
                     1,
                     "Tell us about your game folder",

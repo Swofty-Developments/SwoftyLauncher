@@ -14,7 +14,7 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::session::{LOADER_LOG, SessionRecord};
 use swofty_core::store::Store;
-use swofty_i18n::trn;
+use swofty_i18n::{tr, trn};
 
 use crate::pages::badge;
 use crate::play_bar::link;
@@ -394,7 +394,7 @@ impl Console {
                     .ghost()
                     .small()
                     .icon(IconName::Copy)
-                    .label("Copy all")
+                    .label(tr("Copy all"))
                     .disabled(empty)
                     .on_click(cx.listener(|this, _, window, cx| this.copy_all(window, cx))),
             )
@@ -403,7 +403,7 @@ impl Console {
                     .ghost()
                     .small()
                     .icon(IconName::Eraser)
-                    .label("Clear view")
+                    .label(tr("Clear view"))
                     .disabled(empty)
                     .on_click(cx.listener(|this, _, _, cx| {
                         this.feeds[this.source.index()].clear();
@@ -415,8 +415,8 @@ impl Console {
                     .ghost()
                     .small()
                     .icon(IconName::FolderOpen)
-                    .label("Open file")
-                    .tooltip("Show the log in the file manager")
+                    .label(tr("Open file"))
+                    .tooltip(tr("Show the log in the file manager"))
                     .disabled(path.is_none())
                     .on_click(move |_, _, cx| {
                         if let Some(path) = &path {
@@ -528,12 +528,14 @@ impl Console {
                 ),
             )
             .when(paused, |d| {
-                d.child(link("follow", "Paused · jump to latest", p).on_click(cx.listener(
-                    |this, _, _, cx| {
-                        this.scroll.scroll_to_bottom();
-                        cx.notify();
-                    },
-                )))
+                d.child(
+                    link("follow", tr("Paused · jump to latest"), p).on_click(cx.listener(
+                        |this, _, _, cx| {
+                            this.scroll.scroll_to_bottom();
+                            cx.notify();
+                        },
+                    )),
+                )
             })
             .child(trn(feed.lines.len(), "{count} line", "{count} lines"))
     }

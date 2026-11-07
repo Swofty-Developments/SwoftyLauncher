@@ -20,6 +20,7 @@ use crate::play_bar::link;
 use crate::sections::{Reporter, Shared};
 use crate::shell::{PlayState, Shell};
 use crate::theme::Palette;
+use swofty_i18n::tr;
 
 const TICK: Duration = Duration::from_secs(5);
 const RESTART_DELAY: Duration = Duration::from_millis(1500);
@@ -284,7 +285,7 @@ impl Shell {
             self.play_state(),
             PlayState::Running | PlayState::Elsewhere(_) | PlayState::Launching | PlayState::Preparing
         ) {
-            window.push_notification(Notification::error("Close F1 25 before updating."), cx);
+            window.push_notification(Notification::error(tr("Close F1 25 before updating.")), cx);
             return;
         }
         let plan = self.updates.plan();
@@ -297,7 +298,7 @@ impl Shell {
             this.update_in(cx, |s, window, cx| {
                 if let Some(e) = s.finish_updates(ran, cx) {
                     crate::app_log::action("update").failed(&e);
-                    window.push_notification(Notification::error(e).title("Update failed"), cx);
+                    window.push_notification(Notification::error(e).title(tr("Update failed")), cx);
                 }
             })
             .ok();

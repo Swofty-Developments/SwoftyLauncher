@@ -18,6 +18,8 @@ use swofty_core::store::Store;
 use crate::reveal;
 use crate::shell::Shell;
 use crate::theme::{Palette, palette};
+use crate::ui::Callout;
+use swofty_i18n::tr;
 
 pub const LABEL: &str = "Send Logs to Developers";
 pub const SAVE_LABEL: &str = "Save Logs";
@@ -37,9 +39,6 @@ pub fn icon() -> IconName {
 const WHAT_IS_SENT: &str = "Your launcher and game logs. They can include folder paths with your computer's \
                             user name, your hardware, and your installed mods and profiles. Passwords and \
                             tokens in the launcher's settings are left out.";
-
-const NO_SESSION: &str = "We don't see a game launch in your logs yet. Press Play and reproduce the problem \
-                          first, then send logs.";
 
 #[derive(Clone, PartialEq)]
 enum Phase {
@@ -74,12 +73,12 @@ impl SendLogs {
         let remembered = store.config().discord_username.unwrap_or_default();
         let name = cx.new(|cx| {
             InputState::new(window, cx)
-                .placeholder("e.g. swofty")
+                .placeholder(tr("e.g. swofty"))
                 .default_value(remembered)
         });
         let message = cx.new(|cx| {
             TextareaState::new(window, cx)
-                .placeholder("What happened? What were you doing when it went wrong?")
+                .placeholder(tr("What happened? What were you doing when it went wrong?"))
                 .rows(4)
         });
         cx.subscribe(&name, |_, _, e: &InputEvent, cx| {
@@ -315,7 +314,7 @@ fn manual(zip: &Path, also: bool, p: Palette) -> Div {
         .pl(px(23.))
         .text_size(px(13.))
         .child(div().text_color(p.text_muted).child(if also {
-            "You can also send your logs manually for debugging."
+            tr("You can also send your logs manually for debugging.")
         } else {
             "You can send your logs manually for debugging."
         }))
@@ -338,21 +337,12 @@ fn field(title: &'static str, hint: Option<SharedString>, p: Palette) -> Div {
         .children(hint.map(|h| div().text_size(px(12.)).text_color(p.text_placeholder).child(h)))
 }
 
-fn no_session(p: Palette) -> Div {
-    h_flex()
-        .gap(px(10.))
-        .items_start()
-        .p(px(12.))
-        .rounded(px(6.))
-        .bg(p.warning.opacity(0.08))
-        .border_1()
-        .border_color(p.warning.opacity(0.4))
-        .child(
-            Icon::new(IconName::TriangleAlert)
-                .size(px(15.))
-                .text_color(p.warning),
-        )
-        .child(div().flex_1().min_w_0().text_size(px(13.)).child(NO_SESSION))
+fn no_session() -> Callout {
+    Callout::warning(tr(
+        "We don't see a game launch in your logs yet. Press Play and reproduce the problem \
+         first, then send logs.",
+    ))
+    .icon(IconName::TriangleAlert)
 }
 
 impl Render for SendLogs {
@@ -371,12 +361,12 @@ impl Render for SendLogs {
         };
         v_flex()
             .gap(px(14.))
-            .when(!self.session && !self.phase.done(), |d| d.child(no_session(p)))
+            .when(!self.session && !self.phase.done(), |d| d.child(no_session()))
             .child(
                 v_flex()
                     .gap(px(6.))
                     .child(field(
-                        "Your Discord username",
+                        tr("Your Discord username"),
                         Some("So the developers can reply".into()),
                         p,
                     ))
@@ -387,7 +377,7 @@ impl Render for SendLogs {
                 v_flex()
                     .gap(px(6.))
                     .child(field(
-                        "What went wrong?",
+                        tr("What went wrong?"),
                         Some(format!("{count}/{MESSAGE_MAX}").into()),
                         p,
                     ))
@@ -413,7 +403,7 @@ impl Render for SendLogs {
                                 div()
                                     .text_size(px(13.))
                                     .font_weight(FontWeight::SEMIBOLD)
-                                    .child("What gets sent"),
+                                    .child(tr("What gets sent")),
                             )
                             .child(
                                 div()
@@ -455,7 +445,7 @@ impl Shell {
                 .width(px(560.))
                 .title(label())
                 .description(if send_logs::available() {
-                    "Sends your logs to the developers on Discord, so they can see what went wrong."
+                    tr("Sends your logs to the developers on Discord, so they can see what went wrong.")
                 } else {
                     "Saves your logs to a zip you can send yourself. Sending them to the developers isn't available in this build."
                 })

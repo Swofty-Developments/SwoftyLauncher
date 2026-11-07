@@ -15,6 +15,7 @@ use crate::discord::{BLURPLE, INVITE, LOGO};
 use crate::pages::{game_art, label};
 use crate::shell::{Page, Shell};
 use crate::theme::{Palette, palette};
+use swofty_i18n::tr;
 
 const TITLE: &str = "Your game files have been edited";
 const MISSING_TITLE: &str = "Some game files are missing";
@@ -335,7 +336,7 @@ fn steps(edited: &Edited, repair: &Repair, p: Palette) -> AnyElement {
         };
         return v_flex()
             .gap(px(9.))
-            .child(label("WHAT TO DO", p))
+            .child(label(tr("WHAT TO DO"), p))
             .map(|d| match fix {
                 stock::Fix::Update => d.child(update),
                 stock::Fix::Verify => d.child(verify(1)),
@@ -347,7 +348,7 @@ fn steps(edited: &Edited, repair: &Repair, p: Palette) -> AnyElement {
     let first = if leftovers { 2 } else { 1 };
     v_flex()
         .gap(px(9.))
-        .child(label("WHAT TO DO", p))
+        .child(label(tr("WHAT TO DO"), p))
         .when(leftovers, |d| {
             d.child(step(
                 1,
@@ -372,7 +373,7 @@ fn steps(edited: &Edited, repair: &Repair, p: Palette) -> AnyElement {
             d.child(step(
                 4,
                 "Or restore the game folder",
-                "Restore game folder below moves the files aside and puts the game's own files back.",
+                tr("Restore game folder below moves the files aside and puts the game's own files back."),
                 p,
             ))
         })
@@ -392,7 +393,7 @@ pub(crate) fn discord_link(id: &'static str, p: Palette) -> Stateful<Div> {
         .text_color(p.text_muted)
         .hover(|s| s.bg(p.hover).text_color(p.text))
         .child(svg().data(LOGO).size(px(15.)).text_color(rgb(BLURPLE)))
-        .child("Get help on Discord")
+        .child(tr("Get help on Discord"))
         .on_click(|_, _, cx| cx.open_url(INVITE))
 }
 
@@ -418,7 +419,7 @@ fn footer(
                             .outline()
                             .h(px(36.))
                             .px(px(14.))
-                            .label("Go to Simplified Importer")
+                            .label(tr("Go to Simplified Importer"))
                             .on_click(move |_, window, cx| {
                                 window.close_dialog(cx);
                                 importer.update(cx, |s, cx| s.open_page(Page::Importer, cx)).ok();
@@ -432,7 +433,7 @@ fn footer(
                             .h(px(36.))
                             .px(px(14.))
                             .icon(IconName::RotateCcw)
-                            .label("Restore game folder")
+                            .label(tr("Restore game folder"))
                             .on_click(move |_, window, cx| {
                                 window.close_dialog(cx);
                                 restore.update(cx, |s, cx| s.restore_game_folder(window, cx)).ok();
@@ -451,8 +452,8 @@ fn footer(
                                 cx.open_url(open.url);
                                 window.close_dialog(cx);
                                 window.push_notification(
-                                    Notification::info("Press Play again when Steam has finished.")
-                                        .title("Steam is verifying F1 25"),
+                                    Notification::info(tr("Press Play again when Steam has finished."))
+                                        .title(tr("Steam is verifying F1 25")),
                                     cx,
                                 );
                             }),

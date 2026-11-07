@@ -4,6 +4,7 @@ use crate::scale::px;
 use gpui_kit::component::{h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
+use swofty_i18n::tr;
 
 pub const INVITE: &str = "https://discord.gg/STWsgyJKZS";
 pub const LABEL: &str = "Join the Discord";
@@ -71,13 +72,13 @@ pub(crate) fn banner(compact: bool) -> Stateful<Div> {
                         .font_weight(FontWeight::SEMIBOLD)
                         .text_color(white(0.8))
                         .child(svg().data(LOGO).size(px(13.)).text_color(white(0.8)))
-                        .child("DISCORD SERVER"),
+                        .child(tr("DISCORD SERVER")),
                 )
                 .child(
                     div()
                         .text_size(px(if compact { 17. } else { 20. }))
                         .font_weight(FontWeight::BOLD)
-                        .child("Swofty Developments"),
+                        .child(tr("Swofty Developments")),
                 )
                 .when(!compact, |d| {
                     d.child(

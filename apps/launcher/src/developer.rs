@@ -15,6 +15,7 @@ use gpui_kit::*;
 use crate::pages::label;
 use crate::shell::Shell;
 use crate::theme::Palette;
+use swofty_i18n::tr;
 
 #[derive(Default)]
 pub struct Developer {
@@ -72,7 +73,7 @@ impl Shell {
             return;
         };
         let Some(cli) = crate::game::cli_path(&self.store) else {
-            window.push_notification(Notification::error("The swofty command isn't installed"), cx);
+            window.push_notification(Notification::error(tr("The swofty command isn't installed")), cx);
             return;
         };
         self.developer.running = Some(verb);
@@ -127,7 +128,7 @@ impl Shell {
                 .outline()
                 .small()
                 .label(if has_folder {
-                    "Link another folder…"
+                    tr("Link another folder…")
                 } else {
                     "Link a folder…"
                 })

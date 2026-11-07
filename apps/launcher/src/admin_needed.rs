@@ -12,6 +12,7 @@ use swofty_core::{compat, copies};
 use crate::app_log;
 use crate::game::Install;
 use crate::shell::Shell;
+use swofty_i18n::tr;
 
 const TITLE: &str = "F1 25 needs administrator rights";
 
@@ -65,7 +66,7 @@ const ELEVATED_SETTLE: Duration = Duration::from_secs(6);
 fn not_restarted(text: String, window: &mut Window, cx: &mut App) {
     window.push_notification(
         Notification::warning(text)
-            .title("Not restarted as administrator")
+            .title(tr("Not restarted as administrator"))
             .autohide(false),
         cx,
     );
