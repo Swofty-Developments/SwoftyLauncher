@@ -124,6 +124,13 @@ pub fn plan(data: &Data, to: &Path) -> Result<Option<DataMove>, String> {
                 .into(),
         );
     }
+    if to.is_absolute() && to.parent().is_none() {
+        return Err(format!(
+            "{} is a whole drive. Choose a folder on it, such as {}.",
+            to.display(),
+            to.join(FOLDER).display()
+        ));
+    }
     data.apart(to)?;
     let linked = data.link();
     let (from, record) = match (&data.env, &linked) {
@@ -810,6 +817,19 @@ mod tests {
         assert!(plan(&d, &dir.join("Elsewhere/Swofty")).is_ok());
         assert!(d.apart(&default).is_ok());
         assert!(data(&default).apart(&install).is_ok());
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn a_drive_root_is_refused_as_a_data_folder() {
+        let dir = temp("drive-root");
+        let root = if cfg!(windows) {
+            Path::new(r"D:\")
+        } else {
+            Path::new("/")
+        };
+        let e = plan(&data(&dir.join("Local/Swofty")), root).unwrap_err();
+        assert!(e.contains("whole drive"), "{e}");
         std::fs::remove_dir_all(&dir).ok();
     }
 

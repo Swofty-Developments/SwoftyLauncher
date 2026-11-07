@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 use std::io::ErrorKind;
-use std::path::{Component, Path, PathBuf};
+use std::path::{Path, PathBuf};
 
 use eframe::egui::{self, RichText};
 use swofty_core::process::same_folder;
@@ -17,6 +17,16 @@ const RELEASE: [&str; 8] = [
     "LICENSE",
     "README.md",
     "THIRD_PARTY.md",
+];
+
+const DATA_ENTRIES: [&str; 7] = [
+    "addons",
+    "config.json",
+    "profiles",
+    "saves",
+    "state",
+    "cache",
+    "baseline",
 ];
 
 pub fn is_install(dir: &Path) -> bool {
@@ -366,17 +376,13 @@ pub fn plan(from: &Path, to: &Path, data: &Path) -> Result<Move, String> {
     if is_install(to) {
         return Err(format!("{} already holds an install.", to.display()));
     }
-    let mut entries: Vec<PathBuf> = RELEASE
+    let owned = data_inside(from, data);
+    let entries: Vec<PathBuf> = RELEASE
         .iter()
+        .filter(|e| !(owned && DATA_ENTRIES.contains(e)))
         .map(PathBuf::from)
         .filter(|e| from.join(e).symlink_metadata().is_ok())
         .collect();
-    if let Some(rel) = carried(data)
-        && from.join(&rel).is_dir()
-        && !entries.iter().any(|e| rel.starts_with(e))
-    {
-        entries.push(rel);
-    }
     for rel in &entries {
         let (src, dst) = (from.join(rel), to.join(rel));
         if to.starts_with(&src) {
@@ -396,16 +402,11 @@ pub fn plan(from: &Path, to: &Path, data: &Path) -> Result<Move, String> {
     })
 }
 
-fn carried(data: &Path) -> Option<PathBuf> {
-    let mut rel = PathBuf::new();
-    for c in data.components() {
-        match c {
-            Component::CurDir => {}
-            Component::Normal(n) => rel.push(n),
-            _ => return None,
-        }
+fn data_inside(from: &Path, data: &Path) -> bool {
+    same_folder(from, data) || {
+        let resolved = |p: &Path| p.canonicalize().unwrap_or_else(|_| p.to_path_buf());
+        resolved(data).starts_with(resolved(from))
     }
-    (!rel.as_os_str().is_empty()).then_some(rel)
 }
 
 impl Move {
@@ -755,7 +756,7 @@ mod tests {
     }
 
     #[test]
-    fn plans_the_release_files_and_a_data_folder_that_follows_the_install() {
+    fn plans_the_release_files_and_never_carries_a_data_folder() {
         let dir = temp("plan");
         let (from, to) = (dir.join("old"), dir.join("new"));
         release(&from);
@@ -770,7 +771,7 @@ mod tests {
             release_only
         );
         let relative = plan(&from, &to, Path::new("./Swofty")).unwrap();
-        assert_eq!(names(&relative), [&release_only[..], &["Swofty"]].concat());
+        assert_eq!(names(&relative), release_only);
         std::fs::remove_dir_all(&dir).ok();
     }
 
@@ -797,12 +798,10 @@ mod tests {
         let dir = temp("move");
         let (from, to) = (dir.join("old"), dir.join("deeper/new"));
         release(&from);
-        write(&from.join("data/swofty/settings.json"), "{\"a\":1}");
-        let m = plan(&from, &to, Path::new("data/swofty")).unwrap();
+        let m = plan(&from, &to, Path::new("/elsewhere/swofty")).unwrap();
         m.relocate(|a, b| std::fs::rename(a, b)).unwrap();
         assert!(is_install(&to));
         assert_eq!(read(&to.join("loader/swofty_core.dll")), "core");
-        assert_eq!(read(&to.join("data/swofty/settings.json")), "{\"a\":1}");
         assert!(!from.exists());
         std::fs::remove_dir_all(&dir).ok();
     }
@@ -864,6 +863,89 @@ mod tests {
         assert!(is_install(&from));
         assert_eq!(read(&from.join("loader/version.dll")), "proxy");
         assert!(!to.exists());
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    fn with_user_data(root: &Path) {
+        release(root);
+        write(&root.join("addons/swofty.progressive/swofty.json"), "{}");
+        write(&root.join("profiles/default.json"), "{}");
+        write(&root.join("saves/a.sav"), "save");
+        write(&root.join("config.json"), "{}");
+    }
+
+    fn kept(root: &Path) {
+        for rel in [
+            "addons/swofty.progressive/swofty.json",
+            "profiles/default.json",
+            "saves/a.sav",
+            "config.json",
+        ] {
+            assert!(root.join(rel).is_file(), "{rel} left {}", root.display());
+        }
+    }
+
+    #[test]
+    fn moving_the_install_leaves_addons_when_the_data_folder_is_the_install_root() {
+        let dir = temp("same-root");
+        let (from, to) = (dir.join("shared"), dir.join("new"));
+        with_user_data(&from);
+        for data in [from.clone(), from.join("."), PathBuf::from(&from)] {
+            let m = plan(&from, &to, &data).unwrap();
+            assert!(
+                !m.entries.iter().any(|e| e == Path::new("addons")),
+                "{:?}",
+                m.entries
+            );
+        }
+        plan(&from, &to, &from)
+            .unwrap()
+            .relocate(|a, b| std::fs::rename(a, b))
+            .unwrap();
+        assert!(is_install(&to));
+        assert!(!to.join("addons").exists());
+        kept(&from);
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn moving_the_install_with_data_in_a_subfolder_leaves_it_in_place() {
+        let dir = temp("subfolder");
+        let (from, to) = (dir.join("old"), dir.join("new"));
+        release(&from);
+        write(&from.join("Swofty/addons/swofty.progressive/swofty.json"), "{}");
+        write(&from.join("Swofty/profiles/default.json"), "{}");
+        plan(&from, &to, &from.join("Swofty"))
+            .unwrap()
+            .relocate(|a, b| std::fs::rename(a, b))
+            .unwrap();
+        assert!(is_install(&to));
+        assert!(
+            from.join("Swofty/addons/swofty.progressive/swofty.json")
+                .is_file()
+        );
+        assert!(from.join("Swofty/profiles/default.json").is_file());
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn an_absolute_data_path_is_not_carried() {
+        let dir = temp("absolute");
+        let (from, to) = (dir.join("old"), dir.join("new"));
+        release(&from);
+        let m = plan(&from, &to, &from.join("Swofty")).unwrap();
+        assert!(!m.entries.iter().any(|e| e == Path::new("Swofty")));
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn data_elsewhere_still_moves_the_bundled_addons_with_the_install() {
+        let dir = temp("bundled");
+        let (from, to) = (dir.join("old"), dir.join("new"));
+        release(&from);
+        write(&from.join("addons/swofty.bundled/swofty.json"), "{}");
+        let m = plan(&from, &to, &dir.join("data")).unwrap();
+        assert!(m.entries.iter().any(|e| e == Path::new("addons")));
         std::fs::remove_dir_all(&dir).ok();
     }
 }
