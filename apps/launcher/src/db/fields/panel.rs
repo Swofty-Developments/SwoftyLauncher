@@ -64,85 +64,96 @@ impl Shell {
     ) -> AnyElement {
         let locked = self.db_locked();
         match backing {
-            Backing::Copied(from) => {
-                let from = match from {
-                    Some(l) => self
-                        .db
-                        .view
-                        .as_ref()
-                        .and_then(|v| v.view.rows.iter().find(|r| r.label == *l))
-                        .map(|r| r.name.clone())
-                        .filter(|n| !n.is_empty())
-                        .unwrap_or_else(|| l.clone()),
-                    None => "the game default".into(),
-                };
+            Backing::Copied(from) => self.db_copied_strip(spec, from.as_deref(), locked, p, cx),
+            _ => self.db_default_strip(spec, locked, p),
+        }
+    }
+
+    fn db_copied_strip(
+        &self,
+        spec: usize,
+        from: Option<&str>,
+        locked: bool,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        let from = match from {
+            Some(l) => self
+                .db
+                .view
+                .as_ref()
+                .and_then(|v| v.view.rows.iter().find(|r| r.label == l))
+                .map(|r| r.name.clone())
+                .filter(|n| !n.is_empty())
+                .unwrap_or_else(|| l.to_owned()),
+            None => "the game default".into(),
+        };
+        h_flex()
+            .gap(px(8.))
+            .min_h(px(22.))
+            .child(Icon::new(IconName::Copy).size(px(13.)).text_color(p.accent))
+            .child(
+                div()
+                    .flex_1()
+                    .min_w_0()
+                    .text_size(px(12.))
+                    .text_color(p.text_muted)
+                    .truncate()
+                    .child(trf!("Copied from {from}", from = from)),
+            )
+            .child(
+                Button::new(SharedString::from(format!("db-row-remove-{spec}")))
+                    .ghost()
+                    .xsmall()
+                    .icon(IconName::Trash)
+                    .label(tr("Remove own row"))
+                    .disabled(locked)
+                    .on_click(cx.listener(move |this, _, _, cx| this.db_remove_row(spec, cx))),
+            )
+            .into_any_element()
+    }
+
+    fn db_default_strip(&self, spec: usize, locked: bool, p: Palette) -> AnyElement {
+        let picker = self
+            .copy_id(spec)
+            .and_then(|id| self.db.slots.copies.get(&id))
+            .map(|s| {
+                Select::new(&s.state)
+                    .id(SharedString::from(format!("db-row-copy-{spec}")))
+                    .small()
+                    .w_full()
+                    .menu_max_h(px(320.))
+                    .search_placeholder(tr("Search"))
+                    .placeholder(tr("Copy from…"))
+                    .disabled(locked)
+            });
+        v_flex()
+            .gap(px(8.))
+            .px(px(10.))
+            .py(px(9.))
+            .rounded(px(6.))
+            .border_1()
+            .border_color(p.border_variant)
+            .bg(p.surface)
+            .child(
                 h_flex()
                     .gap(px(8.))
-                    .min_h(px(22.))
-                    .child(Icon::new(IconName::Copy).size(px(13.)).text_color(p.accent))
+                    .items_start()
+                    .text_size(px(12.))
+                    .line_height(px(17.))
+                    .text_color(p.text)
                     .child(
-                        div()
-                            .flex_1()
-                            .min_w_0()
-                            .text_size(px(12.))
-                            .text_color(p.text_muted)
-                            .truncate()
-                            .child(trf!("Copied from {from}", from = from)),
+                        Icon::new(IconName::Info)
+                            .size(px(13.))
+                            .mt(px(2.))
+                            .text_color(p.text_muted),
                     )
-                    .child(
-                        Button::new(SharedString::from(format!("db-row-remove-{spec}")))
-                            .ghost()
-                            .xsmall()
-                            .icon(IconName::Trash)
-                            .label(tr("Remove own row"))
-                            .disabled(locked)
-                            .on_click(cx.listener(move |this, _, _, cx| this.db_remove_row(spec, cx))),
-                    )
-                    .into_any_element()
-            }
-            _ => {
-                let picker = self
-                    .copy_id(spec)
-                    .and_then(|id| self.db.slots.copies.get(&id))
-                    .map(|s| {
-                        Select::new(&s.state)
-                            .id(SharedString::from(format!("db-row-copy-{spec}")))
-                            .small()
-                            .w_full()
-                            .menu_max_h(px(320.))
-                            .search_placeholder(tr("Search"))
-                            .placeholder(tr("Copy from…"))
-                            .disabled(locked)
-                    });
-                v_flex()
-                    .gap(px(8.))
-                    .px(px(10.))
-                    .py(px(9.))
-                    .rounded(px(6.))
-                    .border_1()
-                    .border_color(p.border_variant)
-                    .bg(p.surface)
-                    .child(
-                        h_flex()
-                            .gap(px(8.))
-                            .items_start()
-                            .text_size(px(12.))
-                            .line_height(px(17.))
-                            .text_color(p.text)
-                            .child(
-                                Icon::new(IconName::Info)
-                                    .size(px(13.))
-                                    .mt(px(2.))
-                                    .text_color(p.text_muted),
-                            )
-                            .child(div().flex_1().min_w_0().child(tr(
-                                "These values come from the game default. Copy someone's row to edit them.",
-                            ))),
-                    )
-                    .children(picker)
-                    .into_any_element()
-            }
-        }
+                    .child(div().flex_1().min_w_0().child(tr(
+                        "These values come from the game default. Copy someone's row to edit them.",
+                    ))),
+            )
+            .children(picker)
+            .into_any_element()
     }
 
     pub(super) fn db_set_all_menu(
@@ -203,23 +214,7 @@ impl Shell {
 
     pub(crate) fn db_field(&self, f: &FieldModel, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let Some(key) = f.key else {
-            return v_flex()
-                .gap(px(4.))
-                .child(
-                    div()
-                        .text_size(px(12.))
-                        .font_weight(FontWeight::MEDIUM)
-                        .text_color(p.text_muted)
-                        .child(f.label.clone()),
-                )
-                .child(div().text_size(px(13.)).text_color(p.text_placeholder).child(
-                    match (&f.row, f.optional) {
-                        (Some((_, Backing::Copied(_))), _) => tr("Not in the copied row"),
-                        (_, true) => tr("Inherited"),
-                        (_, false) => tr("Not in this row"),
-                    },
-                ))
-                .into_any_element();
+            return missing_field(f, p);
         };
         let locked = f.readonly || self.db_locked();
         let error = self.db.errors.get(&key).cloned();
@@ -238,32 +233,7 @@ impl Shell {
         v_flex()
             .flex_shrink_0()
             .gap(px(6.))
-            .child(
-                h_flex()
-                    .gap(px(6.))
-                    .min_h(px(22.))
-                    .child(
-                        div()
-                            .text_size(px(12.))
-                            .font_weight(FontWeight::MEDIUM)
-                            .text_color(if f.edited { p.accent } else { p.text_muted })
-                            .truncate()
-                            .child(f.label.clone()),
-                    )
-                    .when(f.edited, |d| {
-                        d.child(div().size(px(6.)).flex_shrink_0().rounded_full().bg(p.accent))
-                    })
-                    .when(f.readonly, |d| {
-                        d.child(
-                            Icon::new(IconName::Lock)
-                                .size(px(11.))
-                                .text_color(p.text_placeholder),
-                        )
-                    })
-                    .child(div().flex_1())
-                    .children(all)
-                    .children(revert),
-            )
+            .child(field_head(f, all, revert, p))
             .child(control)
             .when_some(
                 f.text
@@ -341,4 +311,54 @@ impl Shell {
             })
             .into_any_element()
     }
+}
+
+fn missing_field(f: &FieldModel, p: Palette) -> AnyElement {
+    v_flex()
+        .gap(px(4.))
+        .child(
+            div()
+                .text_size(px(12.))
+                .font_weight(FontWeight::MEDIUM)
+                .text_color(p.text_muted)
+                .child(f.label.clone()),
+        )
+        .child(
+            div()
+                .text_size(px(13.))
+                .text_color(p.text_placeholder)
+                .child(match (&f.row, f.optional) {
+                    (Some((_, Backing::Copied(_))), _) => tr("Not in the copied row"),
+                    (_, true) => tr("Inherited"),
+                    (_, false) => tr("Not in this row"),
+                }),
+        )
+        .into_any_element()
+}
+
+fn field_head(f: &FieldModel, all: Option<AnyElement>, revert: Option<Button>, p: Palette) -> Div {
+    h_flex()
+        .gap(px(6.))
+        .min_h(px(22.))
+        .child(
+            div()
+                .text_size(px(12.))
+                .font_weight(FontWeight::MEDIUM)
+                .text_color(if f.edited { p.accent } else { p.text_muted })
+                .truncate()
+                .child(f.label.clone()),
+        )
+        .when(f.edited, |d| {
+            d.child(div().size(px(6.)).flex_shrink_0().rounded_full().bg(p.accent))
+        })
+        .when(f.readonly, |d| {
+            d.child(
+                Icon::new(IconName::Lock)
+                    .size(px(11.))
+                    .text_color(p.text_placeholder),
+            )
+        })
+        .child(div().flex_1())
+        .children(all)
+        .children(revert)
 }
