@@ -7,14 +7,15 @@ use gpui_kit::component::button::Button;
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
 use gpui_kit::component::slider::{Slider, SliderEvent, SliderState};
 use gpui_kit::component::{Sizable, h_flex, v_flex};
-use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::shaders::ConfigRef;
+use swofty_i18n::{tr, trf};
 use swofty_shaders::rules::{Op, Rule, Signals};
 use swofty_shaders::signals::{Signal, SignalKind, signal};
 
 use super::ShadersView;
 use crate::theme::Palette;
+use crate::ui::Chip;
 
 const FADE_TICK: Duration = Duration::from_millis(33);
 const SLIDER_WIDTH: f32 = 120.;
@@ -67,30 +68,6 @@ fn used_by(rules: &[Rule]) -> Vec<Used> {
 
 fn clamp_to(sig: &Signal, x: f64) -> f64 {
     x.clamp(sig.min, sig.max)
-}
-
-fn chip(id: String, label: &str, on: bool, filled: bool, p: Palette) -> Stateful<Div> {
-    h_flex()
-        .id(SharedString::from(id))
-        .h(px(24.))
-        .min_w(px(28.))
-        .px(px(9.))
-        .justify_center()
-        .items_center()
-        .rounded(px(5.))
-        .border_1()
-        .cursor_pointer()
-        .text_size(px(12.))
-        .font_weight(FontWeight::MEDIUM)
-        .map(|d| match (on, filled) {
-            (true, true) => d.bg(p.accent).border_color(p.accent).text_color(p.on_accent),
-            (true, false) => d.bg(p.selected).border_color(p.border).text_color(p.text),
-            _ => d
-                .border_color(p.border)
-                .text_color(p.text_muted)
-                .hover(move |s| s.text_color(p.text).bg(p.hover)),
-        })
-        .child(label.to_owned())
 }
 
 fn smooth(w: f64) -> f64 {
@@ -283,7 +260,7 @@ impl ShadersView {
             .map(|(i, r)| {
                 let a = smooth(t.weights.get(i).copied().unwrap_or(0.0).clamp(0.0, 1.0));
                 let name = if r.name.is_empty() {
-                    format!("rule {}", i + 1)
+                    trf!("rule {n}", n = i + 1)
                 } else {
                     r.name.clone()
                 };
@@ -344,7 +321,9 @@ impl ShadersView {
         let control: AnyElement = match u.sig.kind {
             SignalKind::Bool => {
                 let on = t.on.get(id).copied().unwrap_or(false);
-                chip(format!("trig-{id}"), if on { "yes" } else { "no" }, on, true, p)
+                Chip::new(format!("trig-{id}"), if on { tr("yes") } else { tr("no") })
+                    .on(on)
+                    .filled(true)
                     .on_click(cx.listener(move |this, _, _, cx| {
                         let now = this.preview.triggers.on.get(id).copied().unwrap_or(false);
                         this.preview.triggers.on.insert(id, !now);
@@ -353,7 +332,7 @@ impl ShadersView {
                     .into_any_element()
             }
             SignalKind::Name => {
-                let current = t.name.get(id).map_or("none", |&i| u.sig.values[i]);
+                let current = t.name.get(id).map_or_else(|| tr("none"), |&i| u.sig.values[i]);
                 let sig = u.sig;
                 let picker = Button::new(SharedString::from(format!("trig-{id}")))
                     .outline()
@@ -362,7 +341,7 @@ impl ShadersView {
                     .dropdown_caret(true)
                     .dropdown_menu_with_anchor(Anchor::BottomLeft, move |mut menu, _, _| {
                         let w = weak.clone();
-                        menu = menu.item(PopupMenuItem::new("none").on_click(move |_, _, cx| {
+                        menu = menu.item(PopupMenuItem::new(tr("none")).on_click(move |_, _, cx| {
                             w.update(cx, |v, cx| {
                                 v.preview.triggers.name.remove(id);
                                 v.trigger_changed(cx);
@@ -384,12 +363,12 @@ impl ShadersView {
                 if u.sig.per_wheel() {
                     let n = t.wheels.clamp(1, 4);
                     let segments = (1..=4usize).map(|k| {
-                        chip(format!("trig-{id}-w{k}"), &k.to_string(), k == n, false, p).on_click(
-                            cx.listener(move |this, _, _, cx| {
+                        Chip::new(format!("trig-{id}-w{k}"), k.to_string())
+                            .on(k == n)
+                            .on_click(cx.listener(move |this, _, _, cx| {
                                 this.preview.triggers.wheels = k;
                                 this.trigger_changed(cx);
-                            }),
-                        )
+                            }))
                     });
                     h_flex()
                         .gap(px(6.))
@@ -399,7 +378,12 @@ impl ShadersView {
                             h_flex()
                                 .gap(px(3.))
                                 .items_center()
-                                .child(div().text_size(px(11.)).text_color(p.text_muted).child("wheels"))
+                                .child(
+                                    div()
+                                        .text_size(px(11.))
+                                        .text_color(p.text_muted)
+                                        .child(tr("wheels")),
+                                )
                                 .children(segments),
                         )
                         .into_any_element()
@@ -436,7 +420,7 @@ impl ShadersView {
                     .outline()
                     .small()
                     .icon(IconName::Zap)
-                    .label("Fire")
+                    .label(tr("Fire"))
                     .on_click(cx.listener(move |this, _, _, cx| this.trigger_fire(id, cx)));
                 let slider = t
                     .sliders

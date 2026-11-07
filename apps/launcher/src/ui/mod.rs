@@ -7,6 +7,7 @@
 
 mod callout;
 mod card;
+mod chip;
 mod empty;
 pub mod form;
 mod header;
@@ -15,14 +16,17 @@ mod overlay;
 mod pill;
 mod progress;
 mod row;
+mod section;
 pub mod tokens;
 
 pub(crate) use callout::Callout;
 pub(crate) use card::Card;
+pub(crate) use chip::Chip;
 pub(crate) use empty::EmptyState;
 pub(crate) use header::PageHeader;
 pub(crate) use lock::LockPanel;
 pub(crate) use overlay::{Overlay, takeover, title_bar};
 pub(crate) use pill::Pill;
 pub(crate) use progress::ProgressBar;
-pub(crate) use row::{Toggle, row, row_head};
+pub(crate) use row::{Toggle, row, row_head, selectable_row};
+pub(crate) use section::{Field, SectionHead};

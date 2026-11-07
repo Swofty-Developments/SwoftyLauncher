@@ -1,5 +1,6 @@
 use std::path::Path;
 
+use swofty_i18n::tr;
 use swofty_preview::{CachedClip, ClipStore};
 
 pub(super) type ClipItem = CachedClip;
@@ -15,7 +16,7 @@ pub(super) fn scan(root: &Path) -> Vec<ClipItem> {
 /// Downloads clips from the CDN index that aren't cached yet, reporting `(fraction, label)`: only the
 /// first missing one with `first_only`, so the preview can start while the rest come in.
 pub(super) fn download(root: &Path, first_only: bool, progress: &dyn Fn(f32, &str)) -> Result<(), String> {
-    progress(0., "Looking for clips");
+    progress(0., tr("Looking for clips"));
     let clips = store(root);
     let cached: Vec<String> = clips.cached().into_iter().map(|c| c.id).collect();
     let mut todo: Vec<_> = clips

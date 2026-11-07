@@ -1,3 +1,4 @@
+mod actions;
 mod clips;
 mod docs;
 mod editor;
@@ -17,10 +18,12 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::shaders::{self, ConfigEntry, ConfigRef};
 use swofty_core::store::Store;
+use swofty_i18n::{tr, trf};
 use swofty_shaders::Catalog;
 
 use crate::pages::GUTTER;
 use crate::theme::{Palette, palette};
+use crate::ui::PageHeader;
 
 pub(crate) const KEYS: [&str; 10] = [
     "B",
@@ -287,7 +290,7 @@ impl ShadersView {
         let editable = self.entry_of(&r).is_some_and(|e| e.editable);
         let (text, error) = match text {
             Ok(t) => (t, None),
-            Err(e) => (String::new(), Some(format!("Couldn't open the config: {e}"))),
+            Err(e) => (String::new(), Some(trf!("Couldn't open the config: {e}", e = e))),
         };
         self.error = error;
         self.editor.loaded = Some(r);
@@ -307,24 +310,24 @@ impl ShadersView {
     fn subtitle(&self) -> String {
         let name_of = |r: &ConfigRef| self.entry_of(r).map(|e| (e.name.clone(), e.source.clone()));
         if let Some((r, addon)) = &self.forced {
-            let name = name_of(r).map_or_else(|| "A config".to_owned(), |n| n.0);
-            return format!("{name} \u{00b7} forced by {addon}");
+            let name = name_of(r).map_or_else(|| tr("A config").to_owned(), |n| n.0);
+            return trf!("{name} · forced by {addon}", name = name, addon = addon);
         }
         match self.active.as_ref().and_then(name_of) {
-            Some((name, source)) if source == "Personal" => format!("{name} \u{00b7} yours"),
-            Some((name, source)) => format!("{name} \u{00b7} from {source}"),
-            None => "Off".to_owned(),
+            Some((name, source)) if source == "Personal" => trf!("{name} · yours", name = name),
+            Some((name, source)) => trf!("{name} · from {source}", name = name, source = source),
+            None => tr("Off").to_owned(),
         }
     }
 
-    fn header(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+    fn header(&self, cx: &mut Context<Self>) -> AnyElement {
         let shaders = cx.entity().downgrade();
         let current = self.key.clone();
         let keys = Button::new("shaders-key")
             .outline()
             .small()
             .icon(IconName::Power)
-            .label(format!("In-game key: {current}"))
+            .label(trf!("In-game key: {current}", current = current))
             .dropdown_caret(true)
             .dropdown_menu_with_anchor(Anchor::TopRight, move |mut menu, _, _| {
                 for key in KEYS {
@@ -337,45 +340,16 @@ impl ShadersView {
                 }
                 menu
             });
-        h_flex()
-            .px(px(GUTTER))
-            .pt(px(22.))
-            .pb(px(16.))
-            .gap(px(16.))
-            .items_end()
-            .flex_shrink_0()
-            .child(
-                v_flex()
-                    .flex_1()
-                    .min_w_0()
-                    .gap(px(3.))
-                    .child(
-                        div()
-                            .text_size(px(18.))
-                            .font_weight(FontWeight::SEMIBOLD)
-                            .child("Shaders"),
-                    )
-                    .child(
-                        div()
-                            .truncate()
-                            .text_size(px(13.))
-                            .text_color(p.text_muted)
-                            .child(self.subtitle()),
-                    )
-                    .when_some(self.error.clone(), |d, e| {
-                        d.child(div().text_size(px(13.)).text_color(p.error).child(e))
-                    }),
-            )
-            .child(
-                h_flex().gap(px(8.)).pb(px(2.)).child(keys).child(
-                    Button::new("shaders-browse")
-                        .outline()
-                        .small()
-                        .icon(IconName::PackageSearch)
-                        .label("Browse shaders")
-                        .on_click(cx.listener(|_, _, _, cx| cx.emit(Event::Browse))),
-                ),
-            )
+        let browse = Button::new("shaders-browse")
+            .outline()
+            .small()
+            .icon(IconName::PackageSearch)
+            .label(tr("Browse shaders"))
+            .on_click(cx.listener(|_, _, _, cx| cx.emit(Event::Browse)));
+        PageHeader::new(tr("Shaders"))
+            .subtitle(self.subtitle())
+            .error(self.error.clone())
+            .actions(h_flex().gap(px(8.)).child(keys).child(browse))
             .into_any_element()
     }
 
@@ -401,7 +375,7 @@ impl ShadersView {
                 })
                 .await;
             this.update(cx, |v, cx| {
-                v.error = done.err().map(|e| format!("Couldn't change the key: {e}"));
+                v.error = done.err().map(|e| trf!("Couldn't change the key: {e}", e = e));
                 v.refresh(cx);
                 cx.notify();
             })
@@ -438,13 +412,13 @@ impl ShadersView {
                             div()
                                 .text_size(px(13.))
                                 .font_weight(FontWeight::SEMIBOLD)
-                                .child("You have an addon which forces this shader configuration"),
+                                .child(tr("You have an addon which forces this shader configuration")),
                         )
                         .child(
                             div()
                                 .text_size(px(12.))
                                 .text_color(p.text_muted)
-                                .child(format!("{addon} chooses the shaders while it is on.")),
+                                .child(trf!("{addon} chooses the shaders while it is on.", addon = addon)),
                         ),
                 )
                 .when_some(id, |d, id| {
@@ -452,7 +426,7 @@ impl ShadersView {
                         Button::new("shaders-forced-addon")
                             .outline()
                             .small()
-                            .label("View addon")
+                            .label(tr("View addon"))
                             .on_click(cx.listener(move |_, _, _, cx| cx.emit(Event::OpenAddon(id.clone())))),
                     )
                 })
@@ -474,7 +448,7 @@ impl Render for ShadersView {
         };
         v_flex()
             .size_full()
-            .child(self.header(p, cx))
+            .child(self.header(cx))
             .children(self.forced_banner(p, cx))
             .child(
                 h_flex()

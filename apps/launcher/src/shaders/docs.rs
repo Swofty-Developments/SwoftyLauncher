@@ -7,6 +7,7 @@ use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{ActiveTheme, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
+use swofty_i18n::{tr, trf, trn};
 use swofty_shaders::{Effect, Origin, Param, ParamKind, Value};
 
 use super::ShadersView;
@@ -35,8 +36,8 @@ fn value(v: &Value) -> String {
 fn bounds(min: &Option<f64>, max: &Option<f64>) -> String {
     match (min, max) {
         (Some(a), Some(b)) => format!("{} … {}", number(*a), number(*b)),
-        (Some(a), None) => format!("{} or more", number(*a)),
-        (None, Some(b)) => format!("up to {}", number(*b)),
+        (Some(a), None) => trf!("{min} or more", min = number(*a)),
+        (None, Some(b)) => trf!("up to {max}", max = number(*b)),
         (None, None) => String::new(),
     }
 }
@@ -44,23 +45,23 @@ fn bounds(min: &Option<f64>, max: &Option<f64>) -> String {
 /// The kind and range of a param, as one short line.
 fn kind(p: &Param) -> String {
     let (name, range) = match &p.kind {
-        ParamKind::Float { min, max, .. } => ("number", bounds(min, max)),
+        ParamKind::Float { min, max, .. } => (tr("number"), bounds(min, max)),
         ParamKind::Int { min, max } => (
-            "whole number",
+            tr("whole number"),
             bounds(&min.map(|v| v as f64), &max.map(|v| v as f64)),
         ),
-        ParamKind::Bool => ("true or false", String::new()),
+        ParamKind::Bool => (tr("true or false"), String::new()),
         ParamKind::Enum { values } => (
-            "one of",
+            tr("one of"),
             values
                 .iter()
                 .map(|v| format!("{v:?}"))
                 .collect::<Vec<_>>()
                 .join(" · "),
         ),
-        ParamKind::Float2 { min, max } => ("2 numbers", bounds(min, max)),
-        ParamKind::Color3 { min, max } => ("r, g, b", bounds(min, max)),
-        ParamKind::Color4 { min, max } => ("r, g, b, a", bounds(min, max)),
+        ParamKind::Float2 { min, max } => (tr("2 numbers"), bounds(min, max)),
+        ParamKind::Color3 { min, max } => (tr("r, g, b"), bounds(min, max)),
+        ParamKind::Color4 { min, max } => (tr("r, g, b, a"), bounds(min, max)),
     };
     if range.is_empty() {
         name.to_owned()
@@ -99,13 +100,13 @@ impl ShadersView {
         }
         let mut body = v_flex().gap(px(14.)).pr(px(10.)).pb(px(16.));
         if !library.is_empty() {
-            body = body.child(label("CORE LIBRARY", p));
+            body = body.child(label(tr("CORE LIBRARY"), p));
             for e in library {
-                body = body.child(self.effect_card(e, "Core", &mono, p, cx));
+                body = body.child(self.effect_card(e, tr("Core"), &mono, p, cx));
             }
         }
         for (name, list) in addons {
-            body = body.child(label(format!("FROM {}", name.to_uppercase()), p));
+            body = body.child(label(trf!("FROM {name}", name = name.to_uppercase()), p));
             for e in list {
                 body = body.child(self.effect_card(e, &name, &mono, p, cx));
             }
@@ -124,17 +125,16 @@ impl ShadersView {
                             .flex_1()
                             .min_w_0()
                             .gap(px(3.))
-                            .child(div().text_size(px(15.)).font_weight(FontWeight::SEMIBOLD).child("Effect library"))
+                            .child(div().text_size(px(15.)).font_weight(FontWeight::SEMIBOLD).child(tr("Effect library")))
                             .child(div().text_size(px(13.)).text_color(p.text_muted).child(
-                                "Every effect a config can use, with its options. Copy puts the effect's table in \
-                                 your clipboard with every option at its default, ready to paste into a config.",
+                                tr("Every effect a config can use, with its options. Copy puts the effect's table in your clipboard with every option at its default, ready to paste into a config."),
                             )),
                     )
                     .child(
                         Button::new("shaders-docs-web")
                             .small()
                             .icon(IconName::ExternalLink)
-                            .label("Full documentation")
+                            .label(tr("Full documentation"))
                             .on_click(|_, _, cx| cx.open_url(DOCS_URL)),
                     ),
             )
@@ -234,11 +234,10 @@ impl ShadersView {
                         div()
                             .text_size(px(12.))
                             .text_color(p.text_placeholder)
-                            .child(format!(
-                                "{} option{} · {passes} pass{}",
-                                e.params.len(),
-                                if e.params.len() == 1 { "" } else { "s" },
-                                if passes == 1 { "" } else { "es" }
+                            .child(trf!(
+                                "{options} · {passes}",
+                                options = trn(e.params.len(), "{count} option", "{count} options"),
+                                passes = trn(passes, "{count} pass", "{count} passes")
                             )),
                     )
                     .child(
@@ -246,7 +245,7 @@ impl ShadersView {
                             .xsmall()
                             .ghost()
                             .icon(if copied { IconName::Check } else { IconName::Copy })
-                            .label(if copied { "Copied" } else { "Copy" })
+                            .label(if copied { tr("Copied") } else { tr("Copy") })
                             .on_click(cx.listener(move |this, _, _, cx| {
                                 cx.write_to_clipboard(ClipboardItem::new_string(text.clone()));
                                 this.docs_copied = Some(id.clone());

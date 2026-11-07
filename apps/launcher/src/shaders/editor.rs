@@ -19,11 +19,14 @@ use lsp_types::{
     CodeAction, CodeActionKind, CompletionContext, CompletionItem, CompletionItemKind, CompletionResponse,
     CompletionTextEdit, Documentation, HoverContents, MarkupContent, MarkupKind, TextEdit,
 };
-use swofty_i18n::trn;
+use swofty_core::shaders::ConfigEntry;
+use swofty_i18n::{tr, trf, trn};
 use swofty_shaders::{ActiveInstance, Catalog, CompletionKind, Config, Severity, TokenKind};
 
 use super::{Mode, ShadersView};
 use crate::theme::{Palette, ScrollArea, palette};
+use crate::ui::EmptyState;
+use crate::ui::tokens::radius;
 
 const LINT_DEBOUNCE: Duration = Duration::from_millis(120);
 const SAVE_DEBOUNCE: Duration = Duration::from_millis(500);
@@ -528,7 +531,7 @@ impl ShadersView {
                         v.error = None;
                         v.refresh(cx);
                     }
-                    Err(e) => v.error = Some(format!("Couldn't save the config: {e}")),
+                    Err(e) => v.error = Some(trf!("Couldn't save the config: {e}", e = e)),
                 }
                 cx.notify();
             })
@@ -563,47 +566,39 @@ impl ShadersView {
             return self.empty_editor(p, cx);
         };
         let editable = entry.editable;
-        let errors = self.editor.lint.errors();
-        let warnings = self.editor.lint.warnings();
+        let header = self.editor_header(&entry, p, cx);
+        v_flex()
+            .size_full()
+            .min_h_0()
+            .gap(px(10.))
+            .child(header)
+            .child(
+                div()
+                    .flex_1()
+                    .min_h_0()
+                    .rounded(px(6.))
+                    .border_1()
+                    .border_color(p.border)
+                    .bg(p.surface)
+                    .overflow_hidden()
+                    .child(
+                        Editor::new(&self.editor.state)
+                            .bordered(false)
+                            .h(relative(1.))
+                            .readonly(!editable),
+                    ),
+            )
+            .child(self.problems_strip(p, cx))
+            .into_any_element()
+    }
+
+    fn editor_header(&self, entry: &ConfigEntry, p: Palette, cx: &mut Context<Self>) -> Div {
+        let editable = entry.editable;
         let live = self.is_live(&entry.r#ref);
-        let (pill_text, pill_color, pill_icon) = if !self.editor.lint.done {
-            ("Checking".to_owned(), p.text_muted, IconName::LoaderCircle)
-        } else if errors > 0 {
-            (
-                format!(
-                    "{} · not applied",
-                    trn(errors, "{count} problem", "{count} problems")
-                ),
-                p.error,
-                IconName::CircleAlert,
-            )
-        } else if live {
-            (
-                "Valid · live in game".to_owned(),
-                p.success,
-                IconName::CircleCheck,
-            )
-        } else if warnings > 0 {
-            (
-                format!("Valid · {}", trn(warnings, "{count} warning", "{count} warnings")),
-                p.warning,
-                IconName::TriangleAlert,
-            )
-        } else {
-            ("Valid".to_owned(), p.success, IconName::CircleCheck)
-        };
-        let source = if editable {
-            if self.editor.saving {
-                "Saving"
-            } else {
-                "Saved automatically"
-            }
-            .to_owned()
-        } else {
-            format!("From {} · read-only", entry.source)
-        };
+        let (pill_text, pill_color, pill_icon) = self.lint_status(live, p);
+        let source = self.source_line(entry);
         let copy_id = entry.r#ref.clone();
-        let header = h_flex()
+        h_flex()
             .gap(px(10.))
             .items_center()
             .child(
@@ -630,7 +625,7 @@ impl ShadersView {
                         .outline()
                         .small()
                         .icon(IconName::Copy)
-                        .label("Copy to personal to edit")
+                        .label(tr("Copy to personal to edit"))
                         .on_click(cx.listener(move |this, _, window, cx| {
                             this.copy_to_personal(copy_id.clone(), window, cx)
                         })),
@@ -651,68 +646,74 @@ impl ShadersView {
                     .text_color(pill_color)
                     .child(Icon::new(pill_icon).size(px(13.)))
                     .child(pill_text),
-            );
-        v_flex()
-            .size_full()
-            .min_h_0()
-            .gap(px(10.))
-            .child(header)
-            .child(
-                div()
-                    .flex_1()
-                    .min_h_0()
-                    .rounded(px(6.))
-                    .border_1()
-                    .border_color(p.border)
-                    .bg(p.surface)
-                    .overflow_hidden()
-                    .child(
-                        Editor::new(&self.editor.state)
-                            .bordered(false)
-                            .h(relative(1.))
-                            .readonly(!editable),
-                    ),
             )
-            .child(self.problems_strip(p, cx))
-            .into_any_element()
+    }
+
+    fn lint_status(&self, live: bool, p: Palette) -> (String, Hsla, IconName) {
+        let errors = self.editor.lint.errors();
+        let warnings = self.editor.lint.warnings();
+        if !self.editor.lint.done {
+            (tr("Checking").to_owned(), p.text_muted, IconName::LoaderCircle)
+        } else if errors > 0 {
+            (
+                trf!(
+                    "{problems} · not applied",
+                    problems = trn(errors, "{count} problem", "{count} problems")
+                ),
+                p.error,
+                IconName::CircleAlert,
+            )
+        } else if live {
+            (
+                tr("Valid · live in game").to_owned(),
+                p.success,
+                IconName::CircleCheck,
+            )
+        } else if warnings > 0 {
+            (
+                trf!(
+                    "Valid · {warnings}",
+                    warnings = trn(warnings, "{count} warning", "{count} warnings")
+                ),
+                p.warning,
+                IconName::TriangleAlert,
+            )
+        } else {
+            (tr("Valid").to_owned(), p.success, IconName::CircleCheck)
+        }
+    }
+
+    fn source_line(&self, entry: &ConfigEntry) -> String {
+        if entry.editable {
+            if self.editor.saving {
+                tr("Saving")
+            } else {
+                tr("Saved automatically")
+            }
+            .to_owned()
+        } else {
+            trf!("From {source} · read-only", source = entry.source)
+        }
     }
 
     fn empty_editor(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         v_flex()
             .size_full()
-            .items_center()
-            .justify_center()
-            .gap(px(6.))
-            .rounded(px(6.))
+            .rounded(radius::md())
             .border_1()
             .border_dashed()
             .border_color(p.border)
             .child(
-                Icon::new(IconName::Palette)
-                    .size(px(22.))
-                    .text_color(p.text_placeholder),
-            )
-            .child(
-                div()
-                    .text_size(px(15.))
-                    .font_weight(FontWeight::SEMIBOLD)
-                    .child("No config selected"),
-            )
-            .child(
-                div()
-                    .text_size(px(13.))
-                    .text_color(p.text_muted)
-                    .child("Pick one on the right, or start a new one."),
-            )
-            .child(
-                div().pt(px(6.)).child(
-                    Button::new("shaders-empty-new")
-                        .outline()
-                        .icon(IconName::Plus)
-                        .label("New config")
-                        .disabled(self.busy)
-                        .on_click(cx.listener(|this, _, window, cx| this.new_config(window, cx))),
-                ),
+                EmptyState::new(IconName::Palette, tr("No config selected"))
+                    .body(tr("Pick one on the right, or start a new one."))
+                    .action(
+                        Button::new("shaders-empty-new")
+                            .outline()
+                            .icon(IconName::Plus)
+                            .label(tr("New config"))
+                            .disabled(self.busy)
+                            .on_click(cx.listener(|this, _, window, cx| this.new_config(window, cx))),
+                    ),
             )
             .into_any_element()
     }

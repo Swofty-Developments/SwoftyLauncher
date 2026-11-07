@@ -14,6 +14,7 @@ use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::shaders::CompiledEffect;
+use swofty_i18n::{tr, trf};
 use swofty_preview::{ActiveInstance, Clip, ClipInfo, Frame, Preview};
 use swofty_shaders::rules::{Engine, Signals};
 use swofty_shaders::{Catalog, Rule, Target};
@@ -22,6 +23,7 @@ use super::clips::{self, ClipItem};
 use super::triggers::Triggers;
 use super::{Mode, ShadersView};
 use crate::theme::Palette;
+use crate::ui::ProgressBar;
 
 const POLL: Duration = Duration::from_millis(30);
 
@@ -150,14 +152,15 @@ impl PreviewState {
 fn image_of(frame: &Frame) -> Result<Arc<RenderImage>, String> {
     let (w, h) = (frame.width as usize, frame.height as usize);
     if frame.rgba.len() < w * h * 4 || w == 0 || h == 0 {
-        return Err("The frame is empty".into());
+        return Err(tr("The frame is empty").into());
     }
     let mut bgra = frame.rgba[..w * h * 4].to_vec();
     for px in bgra.chunks_exact_mut(4) {
         px.swap(0, 2);
         px[3] = 255;
     }
-    let buffer = image::RgbaImage::from_raw(frame.width, frame.height, bgra).ok_or("The frame is empty")?;
+    let buffer =
+        image::RgbaImage::from_raw(frame.width, frame.height, bgra).ok_or(tr("The frame is empty"))?;
     Ok(Arc::new(RenderImage::new(vec![image::Frame::new(buffer)])))
 }
 
@@ -395,7 +398,7 @@ fn gpu<'a>(preview: &'a mut Option<Preview>, error: &mut Option<String>) -> Resu
             }
         }
     }
-    preview.as_mut().ok_or_else(|| "No GPU".to_owned())
+    preview.as_mut().ok_or_else(|| tr("No GPU").to_owned())
 }
 
 fn render(
@@ -413,7 +416,7 @@ fn render(
     } = want;
     let Some(clip) = clip.as_ref() else {
         return Done::Failed {
-            message: "No clip is open".into(),
+            message: tr("No clip is open").into(),
             gpu: false,
         };
     };
@@ -467,7 +470,7 @@ fn compile_effects(
         return Err(warnings
             .into_iter()
             .next()
-            .unwrap_or_else(|| "There are no effects to preview".into()));
+            .unwrap_or_else(|| tr("There are no effects to preview").into()));
     }
     let unavailable = unavailable_effects(catalog.effects.iter().map(|e| e.id.as_str()), &effects);
     if !unavailable.is_empty() {
@@ -528,7 +531,7 @@ impl ShadersView {
         if self.worker().jobs.send(job).is_err() {
             self.preview.worker = None;
             self.preview.status =
-                Status::Failed("The preview stopped. Reopen the page to restart it.".into());
+                Status::Failed(tr("The preview stopped. Reopen the page to restart it.").into());
             return;
         }
         self.preview.pending += 1;
@@ -587,7 +590,7 @@ impl ShadersView {
                 }
             }
             Done::Opened(Err(e)) => {
-                self.preview.status = Status::Failed(format!("Couldn't open the clip: {e}"))
+                self.preview.status = Status::Failed(trf!("Couldn't open the clip: {e}", e = e))
             }
             Done::Frame {
                 index,
@@ -667,7 +670,7 @@ impl ShadersView {
         let root = self.store.root.clone();
         let progress = self.preview.progress.clone();
         if let Ok(mut p) = progress.lock() {
-            *p = (0., "Looking for clips".into());
+            *p = (0., tr("Looking for clips").into());
         }
         let ticker = cx.spawn(async move |this, cx| {
             loop {
@@ -703,7 +706,7 @@ impl ShadersView {
                         v.preview.clips = found;
                         v.preview_pick(0, cx);
                     }
-                    Ok(_) => v.preview.status = Status::DownloadFailed("The clip index is empty.".into()),
+                    Ok(_) => v.preview.status = Status::DownloadFailed(tr("The clip index is empty.").into()),
                     Err(e) => v.preview.status = Status::DownloadFailed(e),
                 }
                 cx.notify();
@@ -942,31 +945,31 @@ impl ShadersView {
         let status = self.preview.status.clone();
         let body = match &status {
             Status::Idle | Status::Opening => {
-                self.preview_message(Icon::new(IconName::LoaderCircle), "Opening the clip", None, p)
+                self.preview_message(Icon::new(IconName::LoaderCircle), tr("Opening the clip"), None, p)
             }
             Status::Downloading => self.download_card(p),
             Status::DownloadFailed(e) => {
                 let retry = Button::new("shaders-clips-retry")
                     .outline()
                     .icon(IconName::RotateCw)
-                    .label("Try again")
+                    .label(tr("Try again"))
                     .on_click(cx.listener(|this, _, _, cx| this.preview_download(cx)));
                 self.preview_message(
                     Icon::new(IconName::CloudOff),
-                    "The preview clips couldn't be downloaded",
+                    tr("The preview clips couldn't be downloaded"),
                     Some((e.clone(), retry.into_any_element())),
                     p,
                 )
             }
             Status::NoGpu(e) => self.preview_message(
                 Icon::new(IconName::Cpu),
-                "The preview can't use the graphics card",
+                tr("The preview can't use the graphics card"),
                 Some((e.clone(), div().into_any_element())),
                 p,
             ),
             Status::Failed(e) => self.preview_message(
                 Icon::new(IconName::CircleAlert),
-                "The preview can't run",
+                tr("The preview can't run"),
                 Some((e.clone(), div().into_any_element())),
                 p,
             ),
@@ -1018,9 +1021,9 @@ impl ShadersView {
             .filter(|id| self.preview.unavailable.iter().any(|u| u == id))
             .collect();
         (!used.is_empty()).then(|| {
-            format!(
-                "Not shown in the preview, still applied in game: {}.",
-                used.join(", ")
+            trf!(
+                "Not shown in the preview, still applied in game: {effects}.",
+                effects = used.join(", ")
             )
         })
     }
@@ -1035,7 +1038,7 @@ impl ShadersView {
             _ if self.editor.lint.errors() > 0 => Some((
                 IconName::Info,
                 p.text_muted,
-                "The preview shows the last config without problems.".to_owned(),
+                tr("The preview shows the last config without problems.").to_owned(),
             )),
             _ => None,
         }?;
@@ -1113,29 +1116,16 @@ impl ShadersView {
                 div()
                     .text_size(px(15.))
                     .font_weight(FontWeight::SEMIBOLD)
-                    .child("Getting the preview clips"),
+                    .child(tr("Getting the preview clips")),
             )
-            .child(
-                div()
-                    .text_size(px(13.))
-                    .text_color(p.text_muted)
-                    .child("A few seconds of F1 25 footage to try your shaders on. This happens once."),
-            )
+            .child(div().text_size(px(13.)).text_color(p.text_muted).child(tr(
+                "A few seconds of F1 25 footage to try your shaders on. This happens once.",
+            )))
             .child(
                 div()
                     .mt(px(8.))
                     .w(px(280.))
-                    .h(px(6.))
-                    .rounded(px(3.))
-                    .bg(p.elevated)
-                    .overflow_hidden()
-                    .child(
-                        div()
-                            .h_full()
-                            .w(relative(fraction.clamp(0.02, 1.)))
-                            .rounded(px(3.))
-                            .bg(p.accent),
-                    ),
+                    .child(ProgressBar::new(fraction.clamp(0.02, 1.)).height(6.)),
             )
             .child(
                 div()

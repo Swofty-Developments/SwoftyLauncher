@@ -25,6 +25,26 @@ pub(crate) fn row_head(id: impl Into<SharedString>, open: bool, p: Palette) -> S
         .when(!open, |d| d.hover(move |s| s.bg(p.hover)))
 }
 
+/// A compact row in a selectable list: outlined and tinted while `selected`.
+pub(crate) fn selectable_row(id: impl Into<ElementId>, selected: bool, p: Palette) -> Stateful<Div> {
+    h_flex()
+        .id(id)
+        .min_h(px(44.))
+        .px(px(8.))
+        .py(px(6.))
+        .gap(px(8.))
+        .items_center()
+        .rounded(px(5.))
+        .border_1()
+        .map(|d| {
+            if selected {
+                d.bg(p.selected).border_color(p.border)
+            } else {
+                d.border_color(gpui_kit::transparent_black())
+            }
+        })
+}
+
 type Change = Box<dyn Fn(&bool, &mut Window, &mut App) + 'static>;
 
 /// A switch that doesn't pass its clicks on to a clickable row around it.
