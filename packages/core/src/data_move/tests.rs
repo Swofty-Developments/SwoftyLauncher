@@ -1,6 +1,7 @@
 use std::io::ErrorKind;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::time::Duration;
 
 use super::*;
 
@@ -91,23 +92,16 @@ fn journal_left(default: &Path) -> bool {
     Journal::path(default).exists()
 }
 
+#[cfg(unix)]
 fn is_root() -> bool {
+    use std::os::unix::fs::PermissionsExt;
     let probe = temp("root-probe");
     let file = probe.join("f");
     write(&file, "x");
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::PermissionsExt;
-        std::fs::set_permissions(&file, std::fs::Permissions::from_mode(0o000)).unwrap();
-        let readable = std::fs::read(&file).is_ok();
-        std::fs::remove_dir_all(&probe).ok();
-        readable
-    }
-    #[cfg(not(unix))]
-    {
-        std::fs::remove_dir_all(&probe).ok();
-        true
-    }
+    std::fs::set_permissions(&file, std::fs::Permissions::from_mode(0o000)).unwrap();
+    let readable = std::fs::read(&file).is_ok();
+    std::fs::remove_dir_all(&probe).ok();
+    readable
 }
 
 fn refused(loc: &Location, to: &Path) -> Error {
@@ -643,4 +637,88 @@ fn choose_uses_the_picked_folder_when_it_is_new_empty_or_named_for_swofty() {
     assert_eq!(choose(&named), named);
     write(&dir.join("other/file"), "a");
     assert_eq!(choose(&dir.join("other")), dir.join("other").join(FOLDER));
+}
+
+#[test]
+fn a_copy_keeps_each_files_modified_time() {
+    let dir = temp("mtime");
+    let (a, b) = (dir.join("a"), dir.join("b"));
+    seed(&a);
+    let old = std::time::SystemTime::now() - Duration::from_secs(86_400 * 30);
+    let file = a.join("profiles/default.json");
+    std::fs::OpenOptions::new()
+        .write(true)
+        .open(&file)
+        .unwrap()
+        .set_modified(old)
+        .unwrap();
+    copy::sync(&a, &b, &no_cancel(), &mut |_, _| {}).ok();
+    let copied = std::fs::metadata(b.join("profiles/default.json"))
+        .unwrap()
+        .modified()
+        .unwrap();
+    let gap = copied
+        .duration_since(old)
+        .or_else(|_| old.duration_since(copied))
+        .unwrap();
+    assert!(gap <= Duration::from_secs(2), "{gap:?}");
+}
+
+#[cfg(windows)]
+mod windows {
+    use super::*;
+
+    #[test]
+    fn a_junction_can_be_made_read_and_removed_without_touching_its_target() {
+        let dir = temp("junction");
+        let (target, at) = (dir.join("D/Data"), dir.join("Swofty"));
+        write(&target.join("state/session.json"), "{}");
+        link::create(&target, &at).unwrap();
+        let read = link::target(&at).expect("a junction reads back as a link");
+        assert!(same_path(&read, &target), "{read:?}");
+        assert_eq!(read_to(&at.join("state/session.json")), "{}");
+        assert!(link::target(&target).is_none());
+        link::remove(&at).unwrap();
+        assert!(at.symlink_metadata().is_err());
+        assert_eq!(read_to(&target.join("state/session.json")), "{}");
+    }
+
+    fn read_to(path: &Path) -> String {
+        std::fs::read_to_string(path).unwrap()
+    }
+
+    #[test]
+    fn an_open_file_stops_the_rename_and_the_move_still_ends_whole() {
+        let dir = temp("open-handle");
+        let (default, to) = (dir.join("Local/Swofty"), dir.join("D/Data"));
+        seed(&default);
+        let held = std::fs::File::open(default.join("state/session.json")).unwrap();
+        let p = plan(&loc(&default), &to, &SAME_VOLUME).unwrap();
+        let moved = move_data(&p, &SAME_VOLUME, &Quiet, &no_cancel()).unwrap();
+        drop(held);
+        if !moved.switched {
+            assert_eq!(moved.method, Method::Copied);
+            whole(&default);
+            recover(&default, &SAME_VOLUME).unwrap().unwrap();
+        }
+        assert!(same_path(&link::target(&default).unwrap(), &to));
+        whole(&default);
+        whole(&to);
+        assert!(!dir.join("Local/Swofty.old").exists());
+        assert!(!journal_left(&default));
+    }
+
+    #[test]
+    fn a_junction_to_a_second_place_is_retargeted_by_a_copy_and_recover() {
+        let dir = temp("junction-copy");
+        let (default, first, second) = (dir.join("Swofty"), dir.join("D/Data"), dir.join("E/Data"));
+        seed(&first);
+        link::create(&first, &default).unwrap();
+        let p = plan(&loc(&default), &second, &OTHER_DRIVE).unwrap();
+        move_data(&p, &OTHER_DRIVE, &Quiet, &no_cancel()).unwrap();
+        recover(&default, &OTHER_DRIVE).unwrap().unwrap();
+        assert!(same_path(&link::target(&default).unwrap(), &second));
+        whole(&default);
+        assert!(!first.exists());
+    }
 }

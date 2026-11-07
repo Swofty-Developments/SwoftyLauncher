@@ -2,6 +2,10 @@ use std::collections::BTreeMap;
 use std::io::{self, ErrorKind};
 use std::path::{Path, PathBuf};
 
+use swofty_core::data_move::{
+    journal_pending,
+    link::{create as link, remove as unlink, target as link_target},
+};
 use swofty_core::disk;
 use swofty_core::launcher::Progress;
 use swofty_core::process::{same_folder, same_path};
@@ -114,6 +118,12 @@ pub struct DataMove {
 }
 
 pub fn plan(data: &Data, to: &Path) -> Result<Option<DataMove>, String> {
+    if journal_pending(&data.default) {
+        return Err(
+            "A data folder move from the launcher is not finished. Open Swofty Launcher to finish it, then run the installer again."
+                .into(),
+        );
+    }
     data.apart(to)?;
     let linked = data.link();
     let (from, record) = match (&data.env, &linked) {
@@ -414,36 +424,6 @@ fn aside(default: &Path) -> PathBuf {
         .expect("an unused name")
 }
 
-pub fn link_target(at: &Path) -> Option<PathBuf> {
-    at.symlink_metadata()
-        .ok()
-        .filter(|m| m.file_type().is_symlink())?;
-    let target = std::fs::read_link(at).ok()?;
-    let target = match target.to_str().and_then(|s| s.strip_prefix(r"\\?\")) {
-        Some(plain) => PathBuf::from(plain),
-        None => target,
-    };
-    if target.is_absolute() {
-        Some(target)
-    } else {
-        Some(at.parent()?.join(target))
-    }
-}
-
-#[cfg(windows)]
-fn link(target: &Path, at: &Path) -> io::Result<()> {
-    crate::win32::junction(target, at)
-}
-
-#[cfg(not(windows))]
-fn link(target: &Path, at: &Path) -> io::Result<()> {
-    std::os::unix::fs::symlink(target, at)
-}
-
-fn unlink(at: &Path) -> io::Result<()> {
-    std::fs::remove_dir(at).or_else(|_| std::fs::remove_file(at))
-}
-
 #[cfg(windows)]
 fn set_env(to: &Path) -> io::Result<()> {
     crate::win32::set_user_env(ENV, to)
@@ -514,7 +494,7 @@ fn copy_tree(src: &Path, dst: &Path, copied: &mut dyn FnMut(u64)) -> io::Result<
 fn copy_link(src: &Path, dst: &Path) -> io::Result<()> {
     let target = std::fs::read_link(src)?;
     if std::fs::metadata(src).is_ok_and(|m| m.is_dir()) {
-        crate::win32::junction(&target, dst)
+        link(&target, dst)
     } else {
         std::os::windows::fs::symlink_file(&target, dst)
     }
@@ -597,6 +577,19 @@ mod tests {
         );
         assert_eq!(read(&to.join("profiles/default.json")), "{}");
         assert_eq!(read(&to.join("state/session.json")), "{\"a\":1}");
+    }
+
+    #[test]
+    fn refuses_to_move_while_a_launcher_move_is_unfinished() {
+        let dir = temp("journal");
+        let (default, to) = (dir.join("Local/Swofty"), dir.join("D/SwoftyData"));
+        seed(&default);
+        write(&dir.join("Local/swofty-data-move.json"), "{}");
+        let err = plan(&data(&default), &to).unwrap_err();
+        assert!(err.contains("Open Swofty Launcher to finish it"), "{err}");
+        std::fs::remove_file(dir.join("Local/swofty-data-move.json")).unwrap();
+        assert!(plan(&data(&default), &to).unwrap().is_some());
+        std::fs::remove_dir_all(&dir).ok();
     }
 
     #[test]

@@ -193,6 +193,11 @@ impl Journal {
     }
 }
 
+/// Whether a move that was started has not finished at `default`.
+pub fn journal_pending(default: &Path) -> bool {
+    Journal::path(default).exists()
+}
+
 fn resolved(path: &Path) -> PathBuf {
     let mut rest = Vec::new();
     let mut at = path;
