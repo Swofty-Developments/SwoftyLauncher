@@ -94,7 +94,7 @@ pub fn resolve(profile: &Profile, installed: &BTreeMap<String, AddonManifest>) -
                         m.name, r.id, m.name
                     )));
                 }
-                (Some(dep), _) if !r.version.matches(&dep.version) => {
+                (Some(dep), _) if !crate::version::satisfies(&r.version, &dep.version) => {
                     return Err(Error::Resolve(format!(
                         "{} needs {} {}, and {} is installed. Update {} in the Addon Browser, or turn {} off",
                         m.name, dep.name, r.version, dep.version, dep.name, m.name

@@ -280,7 +280,7 @@ impl<'w> Walk<'w> {
             return Ok(());
         }
         if let Some(at) = self.decided.get(id).cloned() {
-            if r.version.matches(&at) {
+            if crate::version::satisfies(&r.version, &at) {
                 self.needs.entry(id.to_owned()).or_default().push(need);
                 return Ok(());
             }
@@ -305,7 +305,7 @@ impl<'w> Walk<'w> {
             needs.extend(self.dependents(id, &m.version));
         }
         needs.push(need);
-        let fits = |v: &semver::Version| needs.iter().all(|n| n.version.matches(v));
+        let fits = |v: &semver::Version| needs.iter().all(|n| crate::version::satisfies(&n.version, v));
         if let Some(m) = installed {
             if fits(&m.version) {
                 self.decided.insert(id.to_owned(), m.version.clone());
@@ -365,7 +365,7 @@ impl<'w> Walk<'w> {
             .flat_map(|m| {
                 m.requires
                     .iter()
-                    .filter(|r| r.id == id && r.version.matches(at))
+                    .filter(|r| r.id == id && crate::version::satisfies(&r.version, at))
                     .map(|r| Need {
                         by: m.name.clone(),
                         version: r.version.clone(),
@@ -425,7 +425,7 @@ pub fn plan(
             let needs: Vec<_> = walk
                 .dependents(&addon.id, &installed.version)
                 .into_iter()
-                .filter(|need| !need.version.matches(&v.version))
+                .filter(|need| !crate::version::satisfies(&need.version, &v.version))
                 .collect();
             if !needs.is_empty() {
                 walk.unmet(&addon.id, needs, Why::Installing(v.version.clone()));
@@ -1504,7 +1504,7 @@ mod tests {
             consumer
                 .requires
                 .iter()
-                .any(|r| r.id == "t.c" && r.version.matches(dep))
+                .any(|r| r.id == "t.c" && crate::version::satisfies(&r.version, dep))
         );
         assert_ne!(installed.contains_key("t.a"), installed.contains_key("t.b"));
         std::fs::remove_dir_all(&root).ok();

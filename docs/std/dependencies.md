@@ -54,7 +54,7 @@ SWOFTY_REGISTER
 - **`requires`:** Play stops while one is missing, with a message naming the fix, the same way it stops for a missing addon.
 - **`recommends`:** optional. It never stops Play. The Addon Browser offers it at install, and the launcher names it before Play when something is skipped because of it.
 - **`for`:** shown to players. Keep it short and concrete.
-- **A `record` entry** means "some enabled addon provides this record". Its `version` is a range on the providing addon's version.
+- **A `record` entry** means "some enabled addon provides this record". Its `version` is a range on the providing addon's version. Ranges treat a pre-release as its base version, `*` accepts every version, and `=` pins are exact (see [`requires`](/reference/addons/manifest)).
 
 ## Addons that break others
 

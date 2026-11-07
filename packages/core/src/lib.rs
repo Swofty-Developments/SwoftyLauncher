@@ -81,6 +81,7 @@ pub mod updater;
 pub mod usage;
 pub mod vault;
 pub mod vdf;
+pub mod version;
 
 pub const STEAM_APP_ID: u32 = 3_059_520;
 pub const GAME_EXE: &str = "F1_25.exe";

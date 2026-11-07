@@ -678,7 +678,7 @@ impl Shell {
                 if !dep.enabled {
                     return Some(need(NeedKind::Off));
                 }
-                if !r.version.matches(&dep.manifest.version) {
+                if !swofty_core::version::satisfies(&r.version, &dep.manifest.version) {
                     return Some(need(NeedKind::Version {
                         found: dep.manifest.version.to_string(),
                     }));

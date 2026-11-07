@@ -225,7 +225,7 @@ Only a range the launcher is above counts as a cap: every comparator the launche
 "load_after": ["swofty.track.*"]
 ```
 
-- **`requires`** (`[{ id, version }]`): the addons that must be installed. `version` is a semver range and defaults to `*`.
+- **`requires`** (`[{ id, version }]`): the addons that must be installed. `version` is a semver range and defaults to `*`. `*` and an empty range accept every version, pre-releases included. For any other range a pre-release counts as its base version, so `>=1.0.0` accepts `1.1.0-beta` and `<1.1.0` rejects it. An `=` pin is exact: `=1.0.0` rejects `1.0.0-beta`.
 - **`conflicts`** (`[{ id, touches? }]`): the addons that must not be enabled together. Use `touches` to narrow the conflict to a shared target; `id` may be `*`.
 - **`load_after`** (string array): addon ids or `*` patterns to build before your addon.
 
