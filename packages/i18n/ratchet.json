@@ -16,7 +16,7 @@
   "play_checks.rs": 6,
   "send_logs.rs": 4,
   "setup.rs": 7,
-  "shaders/preview.rs": 2,
+  "shaders/preview/worker.rs": 2,
   "shell/mod.rs": 6,
   "shell/title_bar.rs": 2,
   "tasks.rs": 1,

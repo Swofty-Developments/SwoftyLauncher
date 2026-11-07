@@ -425,8 +425,6 @@ pub(super) fn previewable(instances: &[ActiveInstance], unavailable: &[String]) 
         .collect()
 }
 
-/// Shows `next` in `slot` and frees the image it replaces from the window's texture atlas.
-
 #[cfg(test)]
 mod tests {
     use super::{previewable, unavailable_effects};
