@@ -152,13 +152,105 @@ impl Rig {
     }
 }
 
+#[derive(Default)]
+struct Session {
+    clip: Option<Clip>,
+    preview: Option<Preview>,
+    gpu_error: Option<String>,
+    original: Option<(usize, Arc<RenderImage>)>,
+    rig: Rig,
+}
+
+impl Session {
+    fn handle(&mut self, job: Job) -> Done {
+        match job {
+            Job::Open(dir) => self.open(&dir),
+            Job::Effects(effects, rules) => self.set_effects(effects, rules),
+            Job::Rules(rules) => {
+                self.rig.set_rules(rules);
+                Done::Ack
+            }
+            Job::Triggers(signals) => {
+                self.rig.signals = signals;
+                self.rig.touched();
+                Done::Ack
+            }
+            Job::Fire(id, magnitude) => {
+                self.rig.pending.push((id, magnitude));
+                self.rig.touched();
+                Done::Ack
+            }
+            Job::Instances(instances) => self.set_instances(instances),
+            Job::Render {
+                frame,
+                compare,
+                settle,
+            } => render(
+                &mut self.clip,
+                &mut self.preview,
+                &mut self.gpu_error,
+                &mut self.original,
+                &mut self.rig,
+                Want {
+                    index: frame,
+                    compare,
+                    settle,
+                },
+            ),
+        }
+    }
+
+    fn open(&mut self, dir: &std::path::Path) -> Done {
+        self.original = None;
+        self.rig.last = None;
+        match Clip::open(dir) {
+            Ok(opened) => {
+                let info = opened.info.clone();
+                self.clip = Some(opened);
+                match gpu(&mut self.preview, &mut self.gpu_error) {
+                    Ok(p) => {
+                        p.set_clip(&info);
+                        Done::Opened(Ok(info))
+                    }
+                    Err(message) => Done::Failed { message, gpu: true },
+                }
+            }
+            Err(e) => {
+                self.clip = None;
+                Done::Opened(Err(e))
+            }
+        }
+    }
+
+    fn set_effects(&mut self, effects: Vec<CompiledEffect>, rules: usize) -> Done {
+        match gpu(&mut self.preview, &mut self.gpu_error) {
+            Ok(p) => {
+                crate::app_log::note(&describe(&effects, rules));
+                p.set_effects(effects);
+                Done::Ack
+            }
+            Err(message) => Done::Failed { message, gpu: true },
+        }
+    }
+
+    fn set_instances(&mut self, instances: Vec<ActiveInstance>) -> Done {
+        match gpu(&mut self.preview, &mut self.gpu_error) {
+            Ok(p) => {
+                self.rig.applied = None;
+                if self.rig.engine.is_none() {
+                    p.set_instances(instances.clone());
+                }
+                self.rig.base = instances;
+                Done::Ack
+            }
+            Err(message) => Done::Failed { message, gpu: true },
+        }
+    }
+}
+
 pub(super) fn work(jobs: Receiver<Job>, done: Sender<Done>) {
-    let mut clip: Option<Clip> = None;
-    let mut preview: Option<Preview> = None;
-    let mut gpu_error: Option<String> = None;
-    let mut original: Option<(usize, Arc<RenderImage>)> = None;
+    let mut session = Session::default();
     let mut logged_failure: Option<String> = None;
-    let mut rig = Rig::default();
     while let Ok(first) = jobs.recv() {
         let mut batch = vec![first];
         while let Ok(job) = jobs.try_recv() {
@@ -166,78 +258,10 @@ pub(super) fn work(jobs: Receiver<Job>, done: Sender<Done>) {
         }
         let last_render = batch.iter().rposition(|j| matches!(j, Job::Render { .. }));
         for (i, job) in batch.into_iter().enumerate() {
-            let reply = match job {
-                Job::Render { .. } if Some(i) != last_render => Done::Skipped,
-                Job::Open(dir) => {
-                    original = None;
-                    rig.last = None;
-                    match Clip::open(&dir) {
-                        Ok(opened) => {
-                            let info = opened.info.clone();
-                            clip = Some(opened);
-                            match gpu(&mut preview, &mut gpu_error) {
-                                Ok(p) => {
-                                    p.set_clip(&info);
-                                    Done::Opened(Ok(info))
-                                }
-                                Err(message) => Done::Failed { message, gpu: true },
-                            }
-                        }
-                        Err(e) => {
-                            clip = None;
-                            Done::Opened(Err(e))
-                        }
-                    }
-                }
-                Job::Effects(effects, rules) => match gpu(&mut preview, &mut gpu_error) {
-                    Ok(p) => {
-                        crate::app_log::note(&describe(&effects, rules));
-                        p.set_effects(effects);
-                        Done::Ack
-                    }
-                    Err(message) => Done::Failed { message, gpu: true },
-                },
-                Job::Rules(rules) => {
-                    rig.set_rules(rules);
-                    Done::Ack
-                }
-                Job::Triggers(signals) => {
-                    rig.signals = signals;
-                    rig.touched();
-                    Done::Ack
-                }
-                Job::Fire(id, magnitude) => {
-                    rig.pending.push((id, magnitude));
-                    rig.touched();
-                    Done::Ack
-                }
-                Job::Instances(instances) => match gpu(&mut preview, &mut gpu_error) {
-                    Ok(p) => {
-                        rig.applied = None;
-                        if rig.engine.is_none() {
-                            p.set_instances(instances.clone());
-                        }
-                        rig.base = instances;
-                        Done::Ack
-                    }
-                    Err(message) => Done::Failed { message, gpu: true },
-                },
-                Job::Render {
-                    frame,
-                    compare,
-                    settle,
-                } => render(
-                    &mut clip,
-                    &mut preview,
-                    &mut gpu_error,
-                    &mut original,
-                    &mut rig,
-                    Want {
-                        index: frame,
-                        compare,
-                        settle,
-                    },
-                ),
+            let reply = if matches!(job, Job::Render { .. }) && Some(i) != last_render {
+                Done::Skipped
+            } else {
+                session.handle(job)
             };
             if let Done::Failed { message, .. } = &reply
                 && logged_failure.as_ref() != Some(message)
