@@ -26,7 +26,7 @@ const RESTART_DELAY: Duration = Duration::from_millis(1500);
 pub(crate) const BUILDING: &str =
     "Swofty is still building your mods. Update when it finishes, or cancel the build.";
 pub const BUTTON_WIDTH: f32 = 204.;
-const MOVE_DOCS: &str = "https://f1.swofty.net/guide/installation#moving-the-data-folder";
+const MOVE_DOCS: &str = "https://f1.swofty.net/guide/installation#moving-your-addons-and-saves";
 
 pub struct Updates {
     pub copy: Result<Install, String>,
