@@ -32,14 +32,13 @@ pub fn percent(fraction: f32) -> String {
     format!("{:.0}%", fraction * 100.)
 }
 
-/// A count in short form: `950`, `1.2k`, `3.4M`. The browser keeps its own copy until
-/// it moves to this one.
-#[allow(dead_code)]
+/// A count in short form: `950`, `1.2k`, `41k`, `3.4M`.
 pub fn compact(n: u64) -> String {
     match n {
         0..1000 => n.to_string(),
-        1000..1_000_000 => format!("{:.1}k", n as f64 / 1000.),
-        _ => format!("{:.1}M", n as f64 / 1_000_000.),
+        1000..10_000 => format!("{:.1}k", n as f64 / 1000.),
+        10_000..1_000_000 => format!("{}k", n / 1000),
+        _ => format!("{:.1}M", n as f64 / 1e6),
     }
 }
 

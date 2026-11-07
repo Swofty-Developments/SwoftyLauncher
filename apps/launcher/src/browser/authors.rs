@@ -1,7 +1,28 @@
 //! The people behind the addons: publisher profiles, the Creators list, "more
 //! from" lists, and the trail of views the browser walks back along.
 
+use std::collections::BTreeSet;
+use std::time::Instant;
+
+use crate::scale::px;
+use gpui_kit::assets::IconName;
+use gpui_kit::component::button::{Button, ButtonVariants};
+use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
+use gpui_kit::component::spinner::Spinner;
+use gpui_kit::component::tooltip::Tooltip;
+use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
+use gpui_kit::prelude::FluentBuilder;
+use gpui_kit::*;
+use swofty_core::catalog::Addon;
+use swofty_core::catalog::publishers::{self, Creator};
+use swofty_core::catalog::search::Query;
+use swofty_i18n::trn;
+
 use super::*;
+use crate::format;
+use crate::pages::{GUTTER, label, tag};
+use crate::shell::{Page, Shell};
+use crate::theme::Palette;
 
 const MORE_SHOWN: usize = 4;
 const MORE_INSTALLED: usize = 3;
@@ -72,19 +93,19 @@ fn stats_line(addons: u64, downloads: u64, stars: u64, p: Palette) -> Div {
             h_flex()
                 .gap(px(4.))
                 .child(Icon::new(IconName::Package).size(px(12.)))
-                .child(plural(addons as usize, "addon", "addons")),
+                .child(trn(addons as usize, "{count} addon", "{count} addons")),
         )
         .child(
             h_flex()
                 .gap(px(4.))
                 .child(Icon::new(IconName::Download).size(px(12.)))
-                .child(compact(downloads)),
+                .child(format::compact(downloads)),
         )
         .child(
             h_flex()
                 .gap(px(4.))
                 .child(Icon::new(IconName::Star).size(px(12.)))
-                .child(compact(stars)),
+                .child(format::compact(stars)),
         )
 }
 
@@ -258,8 +279,8 @@ impl Shell {
                     Ok(pr) => {
                         let detail = format!(
                             "{} · {}",
-                            plural(pr.addons.len(), "addon", "addons"),
-                            plural(pr.links.len(), "link", "links")
+                            trn(pr.addons.len(), "{count} addon", "{count} addons"),
+                            trn(pr.links.len(), "{count} link", "{count} links")
                         );
                         s.record(
                             Op::Profile,
@@ -669,7 +690,7 @@ impl Shell {
                                 .text_size(px(12.))
                                 .text_color(p.text_placeholder)
                                 .whitespace_nowrap()
-                                .child(format!("{} this month", compact(c.downloads_30d))),
+                                .child(format!("{} this month", format::compact(c.downloads_30d))),
                         )
                     }),
             )
@@ -723,7 +744,7 @@ impl Shell {
                     )
                     .child(div().text_size(px(13.)).text_color(p.text_muted).child(format!(
                         "{} publishing to the registry, most downloaded first",
-                        plural(creators.len(), "creator", "creators")
+                        trn(creators.len(), "{count} creator", "{count} creators")
                     ))),
             )
             .children(rows)
@@ -908,9 +929,12 @@ impl Shell {
                     .border_t_1()
                     .border_color(p.border_variant)
                     .child(figure("ADDONS", totals.addons.to_string()))
-                    .child(figure("DOWNLOADS", compact(totals.downloads)))
-                    .child(figure("DOWNLOADS THIS MONTH", compact(totals.downloads_30d)))
-                    .child(figure("STARS", compact(totals.stars))),
+                    .child(figure("DOWNLOADS", format::compact(totals.downloads)))
+                    .child(figure(
+                        "DOWNLOADS THIS MONTH",
+                        format::compact(totals.downloads_30d),
+                    ))
+                    .child(figure("STARS", format::compact(totals.stars))),
             );
         let mut addons = b.author_addons(id);
         let sort = b.author_sort;
@@ -1095,13 +1119,13 @@ impl Shell {
                             .gap(px(3.))
                             .when(self.browser.stars.has(&a.id), |d| d.text_color(p.warning))
                             .child(Icon::new(IconName::Star).size(px(11.)))
-                            .child(compact(self.browser.stars_of(a))),
+                            .child(format::compact(self.browser.stars_of(a))),
                     )
                     .child(
                         h_flex()
                             .gap(px(3.))
                             .child(Icon::new(IconName::Download).size(px(11.)))
-                            .child(compact(a.downloads)),
+                            .child(format::compact(a.downloads)),
                     ),
             )
             .on_click(cx.listener(move |this, _, _, cx| this.open_details(&target, cx)))
@@ -1325,10 +1349,10 @@ impl Shell {
                             h_flex()
                                 .gap(px(4.))
                                 .child(Icon::new(IconName::Download).size(px(12.)))
-                                .child(plural(a.downloads as usize, "download", "downloads")),
+                                .child(trn(a.downloads as usize, "{count} download", "{count} downloads")),
                         )
                         .when(a.downloads_30d > 0, |d| {
-                            d.child(format!("{} this month", compact(a.downloads_30d)))
+                            d.child(format!("{} this month", format::compact(a.downloads_30d)))
                         }),
                 )
                 .children(more)

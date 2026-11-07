@@ -1,5 +1,5 @@
 use super::drag::DropAt;
-use crate::library::{AddonItem, Changes, Source};
+use crate::library::{Changes, Source, Type};
 use crate::scale::px;
 use crate::shell::Shell;
 use gpui_kit::component::input::{InputEvent, InputState};
@@ -8,58 +8,9 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use std::time::Instant;
 use swofty_core::conflicts::Report;
 use swofty_core::folders::Key;
-use swofty_core::manifest::{Category, Kind};
+use swofty_core::manifest::Category;
 use swofty_core::order;
 use swofty_i18n::tr;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub(crate) enum Type {
-    Database,
-    Archives,
-    Text,
-    Simplified,
-    Files,
-    Code,
-}
-
-impl Type {
-    pub(crate) const ALL: [Type; 6] = [
-        Self::Database,
-        Self::Archives,
-        Self::Text,
-        Self::Simplified,
-        Self::Files,
-        Self::Code,
-    ];
-
-    pub(super) fn of(kind: Kind) -> Self {
-        match kind {
-            Kind::Database => Self::Database,
-            Kind::Erp => Self::Archives,
-            Kind::Text | Kind::Ui => Self::Text,
-            Kind::Simplified => Self::Simplified,
-            Kind::Files => Self::Files,
-            Kind::Native => Self::Code,
-        }
-    }
-
-    pub(crate) fn label(self) -> &'static str {
-        match self {
-            Self::Database => tr("Database"),
-            Self::Archives => tr("Archives"),
-            Self::Text => tr("Text & UI"),
-            Self::Simplified => tr("Simplified"),
-            Self::Files => tr("Files"),
-            Self::Code => tr("Code"),
-        }
-    }
-
-    /// An addon's types in [`Type::ALL`] order, as "Database, Archives".
-    pub(super) fn list(m: &AddonItem) -> String {
-        let types: BTreeSet<Type> = m.manifest.kind.iter().map(|k| Self::of(*k)).collect();
-        types.into_iter().map(Self::label).collect::<Vec<_>>().join(", ")
-    }
-}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(super) enum State {

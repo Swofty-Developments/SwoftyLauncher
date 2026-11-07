@@ -1,0 +1,326 @@
+use std::collections::BTreeSet;
+use std::time::Instant;
+
+use gpui_kit::component::WindowExt;
+use gpui_kit::component::notification::Notification;
+use gpui_kit::*;
+use swofty_core::catalog::{self, Addon};
+use swofty_core::update::current_version;
+
+use crate::format;
+use crate::shell::Shell;
+
+use super::*;
+
+pub(super) fn install_failure_title(name: &str, verb: &str, refused: bool) -> String {
+    if refused {
+        format!("Can't {verb} {name}: missing requirements")
+    } else {
+        format!("Could not {verb} {name}")
+    }
+}
+
+pub(super) fn install_failure_toast(name: &str, verb: &str, refused: bool, error: String) -> Notification {
+    Notification::error(error).title(install_failure_title(name, verb, refused))
+}
+
+pub(super) fn requested_version_available(addon: Option<&Addon>, requested: &catalog::Version) -> bool {
+    addon.is_some_and(|addon| {
+        addon.listed().iter().any(|version| {
+            version.version == requested.version
+                && version.accepts(&current_version())
+                && version.sha256 == requested.sha256
+                && version.size == requested.size
+                && version.url == requested.url
+        })
+    })
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum RetryAction {
+    Retry,
+    RequestCurrent,
+    Unavailable,
+}
+
+pub(super) fn retry_action(addon: Option<&Addon>, requested: &catalog::Version) -> RetryAction {
+    if requested_version_available(addon, requested) {
+        RetryAction::Retry
+    } else if addon.and_then(|a| a.offered(&current_version())).is_some() {
+        RetryAction::RequestCurrent
+    } else {
+        RetryAction::Unavailable
+    }
+}
+
+impl Shell {
+    /// Adds an installed addon to this profile, off, from the Addon Browser.
+    pub(crate) fn add_one_to_profile(&mut self, id: &str, window: &mut Window, cx: &mut Context<Self>) {
+        let profile = self.library.profile.name.clone();
+        match self.store.update_profile(&profile, |p| p.add_addon(id)) {
+            Ok(()) => {
+                let name = self
+                    .library
+                    .addons
+                    .iter()
+                    .find(|m| m.manifest.id == id)
+                    .map_or(id, |m| m.manifest.name.as_str());
+                window.push_notification(Notification::success(format!("Added {name} to {profile}")), cx);
+            }
+            Err(e) => {
+                crate::app_log::action("add addon to profile")
+                    .addon(id)
+                    .failed(&e);
+                window.push_notification(Notification::error(e.to_string()), cx);
+            }
+        }
+        self.reload(cx);
+    }
+
+    pub(crate) fn install_from_catalog(&mut self, id: &str, cx: &mut Context<Self>) {
+        self.enqueue_catalog(id, cx);
+    }
+
+    /// True when a job was queued or an existing pending job will handle it.
+    pub(super) fn enqueue_catalog(&mut self, id: &str, cx: &mut Context<Self>) -> bool {
+        if self.data_move_locked() {
+            return false;
+        }
+        let Some(addon) = self.browser.find(id).cloned() else {
+            return false;
+        };
+        let Some(version) = addon.offered(&current_version()).cloned() else {
+            return false;
+        };
+        if self.build.as_ref().is_some_and(|b| b.holds(id)) {
+            self.browser
+                .toasts
+                .push(Notification::warning(crate::update::BUILDING));
+            return false;
+        }
+        if let Some(existing) = self.browser.queue.jobs().iter().find(|job| {
+            job.id == id
+                && matches!(
+                    job.state,
+                    crate::download_queue::State::Queued | crate::download_queue::State::Active
+                )
+        }) {
+            return existing.request.1 == version;
+        }
+        let claims = match self.requirements(&addon) {
+            Some(Ok(plan)) => plan.also().iter().map(|s| s.addon.id.clone()).collect(),
+            _ => BTreeSet::new(),
+        };
+        if self.browser.queue.enqueue(
+            id.to_owned(),
+            (addon, version, self.library.profile.name.clone()),
+            claims,
+        ) {
+            self.start_queued_downloads(cx);
+        }
+        true
+    }
+
+    pub(super) fn start_queued_downloads(&mut self, cx: &mut Context<Self>) {
+        let queued: Vec<_> = self
+            .browser
+            .queue
+            .jobs()
+            .iter()
+            .filter(|job| job.state == crate::download_queue::State::Queued)
+            .map(|job| (job.id.clone(), job.request.0.clone()))
+            .collect();
+        for (id, addon) in queued {
+            if let Some(Ok(plan)) = self.requirements(&addon) {
+                self.browser
+                    .queue
+                    .update_claims(&id, plan.also().iter().map(|s| s.addon.id.clone()).collect());
+            }
+        }
+        while let Some(id) = self.browser.queue.start_next() {
+            let (addon, version, profile) = self
+                .browser
+                .queue
+                .jobs()
+                .iter()
+                .find(|job| job.id == id && job.state == crate::download_queue::State::Active)
+                .expect("the scheduler just activated this job")
+                .request
+                .clone();
+            if !requested_version_available(self.browser.find(&id), &version) {
+                let error = format!(
+                    "{} {} is no longer available or compatible; request it again.",
+                    addon.name, version.version
+                );
+                self.browser.queue.finish(&id, Err(error.clone()));
+                self.browser.failed.insert(id.clone(), error.clone());
+                if let Some(batch) = &mut self.browser.batch
+                    && batch.left.remove(&id)
+                {
+                    batch.failed.push((addon.name.clone(), error));
+                } else {
+                    let verb = if self.installed_version(&id).is_some() {
+                        "update"
+                    } else {
+                        "install"
+                    };
+                    self.browser
+                        .toasts
+                        .push(install_failure_toast(&addon.name, verb, false, error));
+                }
+                if self
+                    .browser
+                    .batch
+                    .as_ref()
+                    .is_some_and(|batch| batch.left.is_empty())
+                {
+                    self.finish_addon_updates();
+                }
+                continue;
+            }
+            self.start_catalog_install(addon, version, profile, cx);
+        }
+        cx.notify();
+    }
+
+    pub(super) fn start_catalog_install(
+        &mut self,
+        addon: Addon,
+        version: catalog::Version,
+        profile: String,
+        cx: &mut Context<Self>,
+    ) {
+        let id = addon.id.as_str();
+        let updating = self.installed_version(id).is_some();
+        self.browser.failed.remove(id);
+        self.browser.refused.remove(id);
+        let job = Job::new(version.size);
+        let preview: Vec<String> = match self.requirements(&addon) {
+            Some(Ok(plan)) => plan.also().iter().map(|s| s.addon.id.clone()).collect(),
+            _ => Vec::new(),
+        };
+        let riders: Vec<String> = preview
+            .into_iter()
+            .filter(|d| {
+                !self.browser.working.contains_key(d)
+                    && !self.browser.batch.as_ref().is_some_and(|b| b.left.contains(d))
+            })
+            .collect();
+        for d in &riders {
+            self.browser.working.insert(d.clone(), job.clone());
+        }
+        self.browser.working.insert(addon.id.clone(), job.clone());
+        catalog::log(
+            &self.store.root,
+            &format!(
+                "{} {} {} ({}) from {}",
+                if updating { "updating" } else { "installing" },
+                addon.id,
+                version.version,
+                format::size(version.size),
+                version.url
+            ),
+        );
+        let store = self.store.clone();
+        let catalog_now = self.browser.addons.clone();
+        let started = Instant::now();
+        let tracked = job.clone();
+        cx.spawn(async move |this, cx| {
+            let (target, v) = (addon.clone(), version.clone());
+            let result = cx
+                .background_executor()
+                .spawn(async move {
+                    catalog::requires::install_in_profile(&store, &catalog_now, &target, &v, &profile, &|e| {
+                        job.track(&target.id, e)
+                    })
+                })
+                .await;
+            this.update(cx, |s, cx| {
+                s.browser.working.remove(&addon.id);
+                for d in &riders {
+                    s.browser.working.remove(d);
+                }
+                let took = started.elapsed();
+                s.browser.queue.finish(
+                    &addon.id,
+                    result
+                        .as_ref()
+                        .map(|_| ())
+                        .map_err(|error| tracked.failure(&error.to_string())),
+                );
+                let in_batch = s.browser.batch.as_mut().is_some_and(|b| b.left.remove(&addon.id));
+                let verb = if updating { "update" } else { "install" };
+                match result {
+                    Ok(done) => {
+                        let (m, also) = done.split_last().expect("an install ends with its addon");
+                        let title = format!(
+                            "{} {} {}",
+                            if updating { "Updated" } else { "Installed" },
+                            m.name,
+                            m.version
+                        );
+                        let also: Vec<String> =
+                            also.iter().map(|d| format!("{} {}", d.name, d.version)).collect();
+                        let mut detail = format!("{} · {}", format::size(version.size), addon.id);
+                        if !also.is_empty() {
+                            detail.push_str(&format!(" · also installed {}", also.join(", ")));
+                        }
+                        s.record(Op::Install, true, title.clone(), detail, took);
+                        s.reload(cx);
+                        if in_batch {
+                            if let Some(b) = s.browser.batch.as_mut() {
+                                b.updated.push(format!("{} {}", m.name, m.version));
+                            }
+                        } else if !also.is_empty() {
+                            s.browser.toasts.push(
+                                Notification::success(format!("Also installed {}", also.join(", ")))
+                                    .title(title),
+                            );
+                        }
+                    }
+                    Err(e) => {
+                        let refused = matches!(e, swofty_core::Error::Requires(_));
+                        let error = e.to_string();
+                        crate::app_log::action(verb).addon(&addon.id).failed(&error);
+                        s.record(
+                            Op::Install,
+                            false,
+                            format!("Couldn't {verb} {} {}", addon.name, version.version),
+                            error.clone(),
+                            took,
+                        );
+                        s.browser.failed.insert(addon.id.clone(), error.clone());
+                        if refused {
+                            s.browser.refused.insert(addon.id.clone());
+                        }
+                        if in_batch {
+                            if let Some(b) = s.browser.batch.as_mut() {
+                                b.failed.push((addon.name.clone(), error));
+                            }
+                        } else {
+                            s.browser
+                                .toasts
+                                .push(install_failure_toast(&addon.name, verb, refused, error));
+                        }
+                        s.reload(cx);
+                    }
+                }
+                if in_batch {
+                    let error = s.browser.failed.get(&addon.id).cloned().unwrap_or_default();
+                    s.browser
+                        .held
+                        .insert(addon.id.clone(), (version.version.clone(), error));
+                }
+                if in_batch && s.browser.batch.as_ref().is_some_and(|b| b.left.is_empty()) {
+                    s.finish_addon_updates();
+                }
+                s.start_queued_downloads(cx);
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
+        self.tick_browser(cx);
+        cx.notify();
+    }
+}

@@ -1,6 +1,5 @@
 use super::drag::{Dragged, Dragging, NESTED};
-use super::model::Type;
-use crate::library::{AddonItem, Source};
+use crate::library::{AddonItem, Source, Type};
 use crate::pages::{addon_icon, badge, logo, track_badge};
 use crate::scale::px;
 use crate::shell::Shell;

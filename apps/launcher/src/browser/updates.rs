@@ -1,0 +1,336 @@
+use std::collections::{BTreeMap, HashSet};
+
+use crate::scale::px;
+use gpui_kit::assets::IconName;
+use gpui_kit::component::notification::Notification;
+use gpui_kit::component::spinner::Spinner;
+use gpui_kit::component::tooltip::Tooltip;
+use gpui_kit::component::{Icon, Sizable, WindowExt, v_flex};
+use gpui_kit::prelude::FluentBuilder;
+use gpui_kit::*;
+use swofty_core::catalog::{self, Addon, Update};
+use swofty_i18n::trn;
+
+use crate::play_bar::link;
+use crate::shell::{PlayState, Shell};
+use crate::theme::Palette;
+
+use super::*;
+
+/// The updates for addons in `on` that haven't failed at the version offered in `held`.
+pub(super) fn due_updates<'a>(
+    updates: &'a [Update],
+    on: &HashSet<&str>,
+    held: &BTreeMap<String, (semver::Version, String)>,
+) -> Vec<&'a Update> {
+    updates
+        .iter()
+        .filter(|u| on.contains(u.id.as_str()))
+        .filter(|u| held.get(&u.id).is_none_or(|(v, _)| *v != u.to.version))
+        .collect()
+}
+
+/// Minimal identity for an update that disappeared from the current catalog.
+pub(super) fn update_identity(update: &Update) -> Addon {
+    Addon {
+        id: update.id.clone(),
+        name: update.name.clone(),
+        author: String::new(),
+        summary: String::new(),
+        description: String::new(),
+        category: None,
+        kind: Vec::new(),
+        homepage: None,
+        repository: None,
+        icon: None,
+        publisher: None,
+        publishers: Vec::new(),
+        downloads: 0,
+        downloads_30d: 0,
+        stars: 0,
+        trend: None,
+        created_at: String::new(),
+        updated_at: String::new(),
+        latest: None,
+        versions: Vec::new(),
+    }
+}
+
+/// Whether a held update represents a real failure rather than a successful
+/// install waiting for the asynchronous catalog refresh.
+pub(super) fn held_failure(error: &str) -> bool {
+    !error.is_empty()
+}
+
+/// An install's downloads so far: every addon it fetches, requirements included.
+
+impl Shell {
+    /// The addon updates the play bar offers: every outdated registry addon that's on in the active
+    /// profile, except the ones that failed at this version.
+    pub(super) fn addon_updates(&self) -> Vec<&Update> {
+        let on: HashSet<&str> = if self.vanilla() {
+            HashSet::new()
+        } else {
+            self.library
+                .addons
+                .iter()
+                .filter(|a| a.enabled || a.locked)
+                .map(|a| a.manifest.id.as_str())
+                .collect()
+        };
+        due_updates(&self.browser.updates, &on, &self.browser.held)
+    }
+
+    pub(super) fn updating_addons(&self) -> bool {
+        self.browser.batch.as_ref().is_some_and(|b| !b.left.is_empty())
+    }
+
+    pub(crate) fn addon_update_takes_play(&self, state: &PlayState) -> bool {
+        self.updating_addons()
+            || (matches!(state, PlayState::Ready | PlayState::Crashed(_)) && !self.addon_updates().is_empty())
+    }
+
+    pub(super) fn update_addons(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if matches!(
+            self.play_state(),
+            PlayState::Running | PlayState::Elsewhere(_) | PlayState::Launching | PlayState::Preparing
+        ) {
+            window.push_notification(Notification::error("Close F1 25 before updating addons."), cx);
+            return;
+        }
+        let building = self.build.clone();
+        let (held, updates): (Vec<Update>, Vec<Update>) = self
+            .addon_updates()
+            .into_iter()
+            .cloned()
+            .partition(|u| building.as_ref().is_some_and(|b| b.holds(&u.id)));
+        if !held.is_empty() {
+            window.push_notification(Notification::warning(crate::update::BUILDING), cx);
+        }
+        if updates.is_empty() || self.updating_addons() {
+            return;
+        }
+        let ids: Vec<_> = updates.iter().map(|u| u.id.clone()).collect();
+        catalog::log(&self.store.root, &format!("updating addons: {}", ids.join(", ")));
+        self.browser.batch = Some(Batch {
+            left: ids.into_iter().collect(),
+            ..Batch::default()
+        });
+        for update in updates {
+            if !self.enqueue_catalog(&update.id, cx) {
+                let error =
+                    "This update is no longer available or another version is already queued.".to_owned();
+                let addon = self
+                    .browser
+                    .find(&update.id)
+                    .cloned()
+                    .unwrap_or_else(|| update_identity(&update));
+                self.browser.queue.record_failure(
+                    update.id.clone(),
+                    (addon, update.to.clone(), self.library.profile.name.clone()),
+                    error.clone(),
+                );
+                if let Some(batch) = &mut self.browser.batch {
+                    batch.left.remove(&update.id);
+                    batch.failed.push((update.name, error));
+                }
+            }
+        }
+        if self
+            .browser
+            .batch
+            .as_ref()
+            .is_some_and(|batch| batch.left.is_empty())
+        {
+            self.finish_addon_updates();
+        }
+    }
+
+    pub(super) fn retry_addon_updates(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.browser.held.clear();
+        self.update_addons(window, cx);
+    }
+
+    pub(super) fn finish_addon_updates(&mut self) {
+        let Some(b) = self.browser.batch.take() else {
+            return;
+        };
+        let summary = b.summary();
+        catalog::log(&self.store.root, &summary.replace('\n', "; "));
+        let title = format!(
+            "Updated {} of {}",
+            b.updated.len(),
+            trn(b.total(), "{count} addon", "{count} addons")
+        );
+        self.browser.toasts.push(if b.failed.is_empty() {
+            Notification::success(summary).title(title)
+        } else {
+            Notification::warning(summary).title(title)
+        });
+    }
+
+    pub(super) fn batch_progress(&self) -> Option<(f32, String)> {
+        let b = self.browser.batch.as_ref()?;
+        let total = b.total().max(1) as f32;
+        let mut done = (b.updated.len() + b.failed.len()) as f32;
+        let mut detail = None;
+        for id in &b.left {
+            if let Some(job) = self.browser.working.get(id) {
+                let pr = job.progress();
+                done += pr.fraction();
+                if detail.is_none() {
+                    let name = self.browser.find(id).map_or(id.as_str(), |a| a.name.as_str());
+                    detail = Some(format!("{name} · {}", pr.short()));
+                }
+            }
+        }
+        Some((done / total, detail.unwrap_or_else(|| "Starting…".into())))
+    }
+
+    pub(crate) fn addon_update_button(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+        let running = self.updating_addons();
+        let due = self.addon_updates();
+        let (label, sub, progress) = match self.batch_progress().filter(|_| running) {
+            Some((done, detail)) => (format!("Updating {:.0}%", done * 100.), detail, Some(done)),
+            None => (
+                format!("Update addons ({})", due.len()),
+                match due.as_slice() {
+                    [one] => format!("{} {} → {}", one.name, one.installed, one.to.version),
+                    many => trn(many.len(), "{count} addon update", "{count} addon updates"),
+                },
+                None,
+            ),
+        };
+        div()
+            .id("play")
+            .relative()
+            .overflow_hidden()
+            .h(px(52.))
+            .w(px(crate::update::BUTTON_WIDTH))
+            .flex_shrink_0()
+            .rounded(px(9.))
+            .bg(if running { p.elevated } else { p.accent })
+            .text_color(if running { p.text } else { p.on_accent })
+            .flex()
+            .items_center()
+            .gap(px(10.))
+            .px(px(14.))
+            .when(running, |d| d.border_1().border_color(p.border))
+            .when(!running, |d| {
+                d.cursor_pointer()
+                    .hover(move |s| s.bg(p.accent_hover))
+                    .on_click(cx.listener(|this, _, window, cx| this.update_addons(window, cx)))
+            })
+            .map(|d| {
+                if running {
+                    d.child(Spinner::new().icon(IconName::LoaderCircle).with_size(px(18.)))
+                } else {
+                    d.child(Icon::new(IconName::CircleArrowUp).size(px(18.)))
+                }
+            })
+            .child(
+                v_flex()
+                    .flex_1()
+                    .min_w_0()
+                    .child(
+                        div()
+                            .text_size(px(15.))
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .child(label),
+                    )
+                    .child(
+                        div()
+                            .text_size(px(11.))
+                            .truncate()
+                            .text_color(if running { p.text_muted } else { p.on_accent })
+                            .when(!running, |d| d.opacity(0.85))
+                            .child(sub),
+                    ),
+            )
+            .when_some(progress, |d, done| {
+                d.child(
+                    div()
+                        .absolute()
+                        .left_0()
+                        .bottom_0()
+                        .h(px(4.))
+                        .w(relative(done.clamp(0., 1.)))
+                        .bg(p.accent),
+                )
+            })
+            .into_any_element()
+    }
+
+    pub(crate) fn addon_update_status(
+        &self,
+        state: &PlayState,
+        row: Div,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> Option<Div> {
+        let dot = |c: Hsla| div().size(px(7.)).rounded_full().bg(c).flex_shrink_0();
+        let text = |t: String| div().min_w_0().truncate().child(t);
+        if let Some(b) = self.browser.batch.as_ref().filter(|_| self.updating_addons()) {
+            let names: Vec<String> = b
+                .left
+                .iter()
+                .map(|id| {
+                    self.browser
+                        .find(id)
+                        .map_or_else(|| id.clone(), |a| a.name.clone())
+                })
+                .collect();
+            return Some(
+                row.child(dot(p.warning))
+                    .child(text(format!("Updating {}.", names.join(", ")))),
+            );
+        }
+        if !matches!(state, PlayState::Ready | PlayState::Crashed(_)) {
+            return None;
+        }
+        let due = self.addon_updates();
+        if !due.is_empty() {
+            let changes: Vec<String> = due
+                .iter()
+                .map(|u| format!("{} {} → {}", u.name, u.installed, u.to.version))
+                .collect();
+            return Some(
+                row.child(dot(p.accent))
+                    .child(text(format!("Addon updates: {}.", changes.join(", ")))),
+            );
+        }
+        let failed: Vec<String> = self
+            .browser
+            .held
+            .iter()
+            .filter(|(id, (v, error))| {
+                held_failure(error) && self.catalog_update(id).is_some_and(|u| u.to.version == *v)
+            })
+            .map(|(id, (_, e))| {
+                let name = self.browser.find(id).map_or(id.as_str(), |a| a.name.as_str());
+                format!("{name}: {e}")
+            })
+            .collect();
+        if failed.is_empty() {
+            return None;
+        }
+        let tip = SharedString::from(failed.join("\n"));
+        Some(
+            row.text_color(p.error)
+                .child(Icon::new(IconName::CircleAlert).size(px(16.)))
+                .child(
+                    div()
+                        .id("addon-updates-failed")
+                        .min_w_0()
+                        .truncate()
+                        .child(format!("Couldn't update {}", failed.join("; ")))
+                        .tooltip(move |window, cx| Tooltip::new(tip.clone()).build(window, cx)),
+                )
+                .child(
+                    link("addon-updates-again", "Try again", p)
+                        .flex_shrink_0()
+                        .on_click(cx.listener(|this, _, window, cx| this.retry_addon_updates(window, cx))),
+                ),
+        )
+    }
+}

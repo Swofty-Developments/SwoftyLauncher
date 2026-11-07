@@ -10,6 +10,7 @@ mod callout;
 mod card;
 mod chip;
 mod empty;
+pub(crate) mod facet;
 pub mod form;
 mod header;
 mod lock;

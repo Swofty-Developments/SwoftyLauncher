@@ -3,9 +3,24 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
-use swofty_i18n::{tr, trf};
+use std::collections::HashMap;
+use std::sync::Arc;
+use std::time::Instant;
+
+use crate::scale::px;
+use gpui_kit::assets::IconName;
+use gpui_kit::component::button::{Button, ButtonVariants};
+use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
+use gpui_kit::prelude::FluentBuilder;
+use gpui_kit::*;
+use swofty_core::catalog::Addon;
+use swofty_i18n::{tr, trf, trn};
 
 use super::*;
+use crate::pages::tile;
+use crate::shell::Shell;
+use crate::theme::Palette;
+use crate::ui::ProgressBar;
 
 const ROW_CAP: usize = 24;
 const ROW_HEIGHT: f32 = 310.;
@@ -406,7 +421,7 @@ impl Shell {
                     .truncate()
                     .text_size(px(12.))
                     .text_color(p.text_placeholder)
-                    .child(plural(count, "addon", "addons")),
+                    .child(trn(count, "{count} addon", "{count} addons")),
             )
             .child(
                 Button::new(SharedString::from(format!("browser-row-{name}-all")))
@@ -533,7 +548,9 @@ impl Shell {
                     .child(self.byline(a, format!("browser-poster-by-{}", a.id), 12., p, cx))
                     .child(div().flex_1().min_h(px(6.)))
                     .child(action)
-                    .when_some(progress, |d, pr| d.child(progress_bar(pr.fraction(), p))),
+                    .when_some(progress, |d, pr| {
+                        d.child(ProgressBar::new(pr.fraction()).height(3.))
+                    }),
             )
             .into_any_element()
     }
@@ -584,7 +601,8 @@ fn edge_fade(left: bool, p: Palette) -> Div {
 
 #[cfg(test)]
 mod tests {
-    use super::{Addon, Category, Lane, Tab, Way, dragged, fling_target, group_rows, lane_of, paged};
+    use super::{Addon, Lane, Tab, Way, dragged, fling_target, group_rows, lane_of, paged};
+    use swofty_core::manifest::Category;
 
     fn addon(id: &str, category: Option<&str>) -> Addon {
         serde_json::from_value(serde_json::json!({

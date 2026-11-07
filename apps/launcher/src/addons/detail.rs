@@ -1,8 +1,7 @@
 use super::DETAIL_W;
-use super::model::Type;
 use super::needs::{Need, NeedKind};
 use super::row::{experimental_labels, fallback_icon};
-use crate::library::{AddonItem, Changes, Source};
+use crate::library::{AddonItem, Changes, Source, Type};
 use crate::pages::{addon_icon, chevron, fact, label, logo, tag};
 use crate::scale::px;
 use crate::shell::Shell;
