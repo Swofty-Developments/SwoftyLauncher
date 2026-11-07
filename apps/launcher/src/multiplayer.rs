@@ -187,6 +187,14 @@ pub(crate) fn exit_leaves(seen: bool, running: bool, busy: bool) -> bool {
     seen && !running && !busy
 }
 
+/// The restart dialog's button: what pressing it does.
+fn restart_ok_text(start: &Start) -> &'static str {
+    match start {
+        Start::Create(_) => "Create room and join",
+        Start::Join(_) => "Join room",
+    }
+}
+
 pub(crate) fn exit_notice(host: bool) -> &'static str {
     if host {
         "F1 25 closed, so your room closed."
@@ -582,18 +590,19 @@ impl Shell {
             return;
         }
         let shell = cx.entity().downgrade();
-        let start = std::cell::RefCell::new(Some(start));
+        let ok = restart_ok_text(&start);
+        // The dialog's builder runs on every frame it draws, so each run gets its own copy of the start.
         window.open_alert_dialog(cx, move |alert, _, _| {
-            let (shell, pending) = (shell.clone(), start.borrow_mut().take());
+            let (shell, start) = (shell.clone(), start.clone());
             alert
                 .title("Restart F1 25?")
-                .description("F1 25 will restart for this session. Unsaved progress is lost.")
-                .ok_text("Restart and play")
+                .description("F1 25 is open, so it restarts for this room. Unsaved progress is lost.")
+                .ok_text(ok)
                 .show_cancel(true)
                 .on_ok(move |_, window, cx| {
-                    if let Some(start) = pending.clone() {
-                        shell.update(cx, |s, cx| s.mp_begin(start, window, cx)).ok();
-                    }
+                    shell
+                        .update(cx, |s, cx| s.mp_begin(start.clone(), window, cx))
+                        .ok();
                     true
                 })
         });
@@ -1649,8 +1658,8 @@ mod tests {
     use swofty_core::multiplayer::session::{MemberState, Phase, PrintMatch, RelayStatus, SessionState};
 
     use super::{
-        GameState, RoomStatus, Tone, addon_checks, card_addons, exit_leaves, exit_notice, joined,
-        member_word, missing, room_meta, room_status, step_number,
+        GameState, RoomStatus, Start, Tone, addon_checks, card_addons, exit_leaves, exit_notice, joined,
+        member_word, missing, restart_ok_text, room_meta, room_status, step_number,
     };
 
     fn status(screen: Screen) -> GameStatus {
@@ -1916,5 +1925,15 @@ mod tests {
         );
         assert_eq!(exit_notice(false), "F1 25 closed, so you left the room.");
         assert_eq!(exit_notice(true), "F1 25 closed, so your room closed.");
+    }
+
+    #[test]
+    fn the_restart_button_says_what_it_does() {
+        use swofty_core::multiplayer::rooms::RoomSettings;
+        assert_eq!(
+            restart_ok_text(&Start::Create(RoomSettings::default())),
+            "Create room and join"
+        );
+        assert_eq!(restart_ok_text(&Start::Join("F1-ABC123".into())), "Join room");
     }
 }
