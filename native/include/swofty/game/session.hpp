@@ -511,7 +511,8 @@ inline constexpr address<"Sess_Rules_ApplyBlackFlag"> Sess_Rules_ApplyBlackFlag{
 inline constexpr address<"Sess_Rules_ApplyPostSessionPenalties"> Sess_Rules_ApplyPostSessionPenalties{}; // L2 experimental
 inline constexpr address<"Sess_Rules_ClearVehicleRuleFlags"> Sess_Rules_ClearVehicleRuleFlags{}; // L2 experimental
 inline constexpr address<"Sess_Rules_CornerCuttingTimeGained_2"> Sess_Rules_CornerCuttingTimeGained_2{}; // L2 experimental
-inline constexpr address<"Sess_Rules_Disqualify"> Sess_Rules_Disqualify{}; // L2 experimental
+using Sess_Rules_Disqualify_t = void(void *rules, uint32_t vehicle);
+inline constexpr fn<"Sess_Rules_Disqualify", Sess_Rules_Disqualify_t> Sess_Rules_Disqualify{}; // L2 experimental
 inline constexpr address<"Sess_Rules_DisqualifyForPenaltyPoints"> Sess_Rules_DisqualifyForPenaltyPoints{}; // L2 experimental
 inline constexpr address<"Sess_Rules_GetBlackFlagSecondsLeft"> Sess_Rules_GetBlackFlagSecondsLeft{}; // L2 experimental
 using Sess_Rules_IsPracticeQualifying_t = bool(void *owner_with_session_at_0x1b8);

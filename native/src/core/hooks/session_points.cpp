@@ -51,6 +51,7 @@ const SwoftySessionOps g_ops = {
     Points::op_spectator_follow,
     Points::op_spectator_set_camera,
     Points::op_spectator_current,
+    Points::op_disqualify,
 };
 
 session_points::Env make_env()

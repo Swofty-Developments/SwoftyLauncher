@@ -921,8 +921,12 @@ typedef struct SwoftyCareerSaves {
    work on the session's spectator director: spectator_set_active turns the director and its HUD on or
    off; spectator_follow moves it to the car; spectator_set_camera takes 1 (TV pod) or 2 (broadcast);
    spectator_current reads the car (index, or -1 for none) and the camera (-1 for none) while the director
-   is active, else SWOFTY_ASSET_LATE. */
-#define SWOFTY_SESSION_OPS_VERSION 1
+   is active, else SWOFTY_ASSET_LATE. Version 2 adds disqualify: it calls the game's Sess_Rules_Disqualify for the
+   car on the session's rules object, which the core captures when the game initialises its rule manager; the
+   car goes to the AI with the DISQUALIFIED reason. SWOFTY_ASSET_LATE before the session has a rule manager or
+   while the car has no controller set, SWOFTY_ASSET_UNAVAILABLE when the binding does not resolve; queued to the
+   next frame like set_control. Version 1 is the members before it and keeps its layout. */
+#define SWOFTY_SESSION_OPS_VERSION 2
 
 typedef struct SwoftySessionOps {
     uint32_t version;
@@ -933,6 +937,7 @@ typedef struct SwoftySessionOps {
     int (*spectator_follow)(uint32_t car);
     int (*spectator_set_camera)(int32_t camera);
     int (*spectator_current)(int32_t *car, int32_t *camera);
+    int (*disqualify)(uint32_t car);
 } SwoftySessionOps;
 
 /* Live car operations (standard library 1.6, experimental), from the core export SwoftyCoreCarOps; not a SwoftyApi

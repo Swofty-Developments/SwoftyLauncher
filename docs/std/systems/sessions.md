@@ -10,7 +10,7 @@ With the session system you set what a race weekend looks like: its sessions, ho
 A **setup mode** is the game's row that a weekend runs under: its format, length, rules and grid all hang off it. Every Grand Prix and Time Trial box shares one setup mode, `swofty_f1`, and each box's own points, DRS, tyre class and rules apply when a session loads in that box. A box gets a setup mode of its own only when it needs a different shape at boot, such as F1 1990's two qualifying sessions.
 
 ::: info In 1.6.0
-The header `swofty/systems/sessions.hpp` has `sessions::Rules` (the `rules` of a `content::Package`), `sessions::set_control`, the `session.player.control` payload `sessions::events::PlayerControl` and the `session.lap` payload `sessions::events::Lap`; `swofty/systems/control.hpp` has `Control` and `ControlState`. The registries on this page (`modes`, `formats`, `lengths`, `points`, `rules_profiles`, `safety_car`, `grids`) and the penalty, results and weekend events ship later; those sections describe that design.
+The header `swofty/systems/sessions.hpp` has `sessions::Rules` (the `rules` of a `content::Package`), `sessions::set_control`, `sessions::disqualify`, the `session.player.control` payload `sessions::events::PlayerControl` and the `session.lap` payload `sessions::events::Lap`; `swofty/systems/control.hpp` has `Control` and `ControlState`. The registries on this page (`modes`, `formats`, `lengths`, `points`, `rules_profiles`, `safety_car`, `grids`) and the penalty, results and weekend events ship later; those sections describe that design.
 :::
 
 ## The header
@@ -400,6 +400,7 @@ struct ControlState {                          // read fresh each time; never ke
 enum class Result { ok, late, unavailable, invalid, blocked };
 
 Result set_control(live::Car car, Control mode);   // applied at the next safe moment, never during a rebuild
+Result disqualify(live::Car car);                  // Sess_Rules_Disqualify on the session's rules object
 
 namespace events {
 
@@ -435,6 +436,7 @@ events::on<cars::events::ControllersRebuilt>().after([](const cars::events::Cont
 
 - **`car.control()`** returns the mode and flags, or nothing while the car's controllers are being rebuilt.
 - **`sessions::set_control`** works on any car and goes through the game's own switch, so `session.player.control` fires for it. It sets a controller flag of its own (DEV, 6; the config key `session_control_flag` picks another) to hold a car on the AI and clears it to give the car back. Handing a car back to its human fails with `Result::blocked` while any other flag is set (the pit-lane flag is the usual one) and the game is not called. A call made while the game rebuilds its controller sets, or from inside a `session.player.control` handler, is queued and applies on the next frame. `Result::late` means the controllers have not been built yet, or the call came from another thread. Handing a car to the AI resets the car's vehicle systems, which the player sees as a hitch.
+- **`sessions::disqualify`** calls `Sess_Rules_Disqualify` (`void (void *rules, uint32_t vehicle)`, L2) for the car, which hands it to the AI with the DISQUALIFIED controller reason and sets the disqualified bit in its result flags. It needs session operations version 2. The core takes the `rules` object from `Sess_RuleManager_Initialise` (`rcx`, hooked from the window stage) and uses it while its vtable pointer is unchanged. `Result::late` means no rule manager has initialised yet, the car has no controller set or the call came from another thread; `Result::invalid` is an index with no controller set or above 254; `Result::unavailable` is a core without version 2 or a build where the binding does not resolve. A call made while the game rebuilds its controller sets or from inside a `session.player.control` handler is queued and applies on the next frame. The race ruleset requests DNF at the session end for every car short of the classification distance without checking for a disqualification, so a disqualified car can show as DNF in the results.
 - **`reason`** is the flag index the game passes as the fourth argument of `Game_Set_VehicleController`: the switch sets bit `reason` when `to` is `ai` and clears it when `to` is `human`. A `before` handler may change `to` and `reason`.
 - **`car.controllers.rebuilt`** fires after a flashback or a Return to Garage has rebuilt a car's controllers (see [Cars](./cars)).
 

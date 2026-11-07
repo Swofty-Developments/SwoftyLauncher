@@ -34,6 +34,18 @@ inline Result set_control(cars::live::Car car, Control mode)
     return swofty::detail::session_result(t->set_control(car.index(), mode == Control::ai ? 1u : 0u));
 }
 
+// Disqualifies a car through the game's own rules (standard library 1.8, experimental): the car goes to the AI
+// with the DISQUALIFIED reason and the session result marks it disqualified. late before the session has a rule
+// manager or while the car has no controller set, unavailable on a core without session operations version 2 or
+// when the game call does not resolve. Called while the game swaps controllers it is queued to the next frame.
+inline Result disqualify(cars::live::Car car)
+{
+    auto t = swofty::detail::live_session_ops();
+    if (!t || t->version < 2 || !t->disqualify)
+        return Result::unavailable;
+    return swofty::detail::session_result(t->disqualify(car.index()));
+}
+
 namespace events {
 
 struct PlayerControl {
