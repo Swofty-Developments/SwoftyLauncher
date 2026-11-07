@@ -486,6 +486,41 @@ fn drift_from_outside_is_reported_and_restored() {
 }
 
 #[test]
+fn a_restore_leaves_an_upscaler_drop_in_alone() {
+    let f = Fixture::new("upscaler");
+    write(&f.game.join("amd_fidelityfx_dx12.dll"), "steam's loader");
+    let game = f.game("1");
+    let inst = Installer::new(&f.data, &game);
+    inst.apply(&f.plan("a")).unwrap();
+    write(&f.game.join("amd_fidelityfx_dx12.dll"), "a drop-in fsr 4 loader");
+    assert_eq!(inst.restore().unwrap(), []);
+    assert_eq!(f.read("amd_fidelityfx_dx12.dll"), "a drop-in fsr 4 loader");
+    inst.apply(&f.plan("b")).unwrap();
+    inst.apply(&Plan::vanilla()).unwrap();
+    assert_eq!(f.read("amd_fidelityfx_dx12.dll"), "a drop-in fsr 4 loader");
+    assert_eq!(inst.verify().unwrap(), []);
+}
+
+#[test]
+fn a_plan_cannot_replace_an_upscaler_drop_in() {
+    let f = Fixture::new("upscaler-plan");
+    write(&f.game.join("amd_fidelityfx_dx12.dll"), "a drop-in fsr 4 loader");
+    let game = f.game("1");
+    let inst = Installer::new(&f.data, &game);
+    let mut plan = f.plan("a");
+    plan.data
+        .insert("amd_fidelityfx_dx12.dll".into(), f.src.join("dbB"));
+    let err = inst.apply(&plan).unwrap_err();
+    assert!(err.to_string().contains("upscaler drop-in"), "{err}");
+    assert_eq!(f.read("amd_fidelityfx_dx12.dll"), "a drop-in fsr 4 loader");
+    let mut plan = f.plan("a");
+    plan.added
+        .insert("AMD_FidelityFX_DX12.dll".into(), f.src.join("dbB"));
+    assert!(inst.apply(&plan).is_err());
+    assert_eq!(f.read("amd_fidelityfx_dx12.dll"), "a drop-in fsr 4 loader");
+}
+
+#[test]
 fn map_files_in_new_folders_are_removed_by_switches_and_restore() {
     let f = Fixture::new("maps");
     let original = f.snapshot();

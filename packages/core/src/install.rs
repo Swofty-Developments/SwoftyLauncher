@@ -842,6 +842,17 @@ impl<'a> Installer<'a> {
 
     fn place(&self, plan: &Plan, hashes: &mut Hashes, loaded: Baseline) -> Result<()> {
         crate::now_doing("checking the game files");
+        if let Some(rel) = plan
+            .data
+            .keys()
+            .chain(plan.added.keys())
+            .chain(plan.loader.keys())
+            .find(|rel| crate::stock::is_upscaler_drop_in(rel))
+        {
+            return Err(Error::Resolve(format!(
+                "{rel} is an upscaler drop-in file and stays as the player put it; no addon or profile can replace it"
+            )));
+        }
         let objects = self.objects();
         let mut baseline = loaded.clone();
         let mut placed = Placed::load(self.data)?;

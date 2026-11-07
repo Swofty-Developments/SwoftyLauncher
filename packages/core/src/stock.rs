@@ -51,6 +51,19 @@ fn is_vr_runtime(rel: &str) -> bool {
         .is_some_and(|name| name.eq_ignore_ascii_case(VR_RUNTIME))
 }
 
+/// Upscaler drop-ins (FSR 4 builds such as HelixSR) replace the game's
+/// `amd_fidelityfx_dx12.dll` in the game folder. A replaced one is logged and
+/// never blocks, and the launcher never writes or restores it.
+pub const UPSCALER_DROP_INS: &[&str] = &["amd_fidelityfx_dx12.dll"];
+
+pub(crate) fn is_upscaler_drop_in(rel: &str) -> bool {
+    !rel.contains('/')
+        && !rel.contains('\\')
+        && UPSCALER_DROP_INS
+            .iter()
+            .any(|name| name.eq_ignore_ascii_case(rel))
+}
+
 fn modified_secs(path: &Path) -> Option<f64> {
     std::fs::metadata(path)
         .and_then(|m| m.modified())
@@ -298,14 +311,15 @@ pub struct EacDrift {
 }
 
 /// What `check` found: the files that are not Steam's, the EA AntiCheat files
-/// and the VR runtime that drifted without blocking, and what it did to the
-/// baseline on the way.
+/// the VR runtime and the upscaler drop-in that drifted without blocking, and
+/// what it did to the baseline on the way.
 #[derive(Debug, Default, PartialEq)]
 pub struct Checked {
     pub foreign: Vec<String>,
     pub detail: Vec<Foreign>,
     pub eac: Vec<EacDrift>,
     pub vr: Vec<EacDrift>,
+    pub upscaler: Vec<EacDrift>,
     pub missing: Vec<String>,
     pub proven: usize,
     pub rerecorded: Vec<String>,
@@ -363,6 +377,12 @@ pub fn check(data: &Path, game: &Game, depots: &Depots) -> Result<Checked> {
                 steam: e.size,
                 rel,
             });
+        } else if is_upscaler_drop_in(&rel) {
+            out.upscaler.push(EacDrift {
+                size: std::fs::metadata(&live).ok().map(|m| m.len()),
+                steam: e.size,
+                rel,
+            });
         } else {
             let size = std::fs::metadata(&live).ok().map(|m| m.len());
             out.detail.push(Foreign {
@@ -406,6 +426,14 @@ pub fn check(data: &Path, game: &Game, depots: &Depots) -> Result<Checked> {
                 });
                 continue;
             }
+            if is_upscaler_drop_in(rel) {
+                out.upscaler.push(EacDrift {
+                    rel: rel.clone(),
+                    size,
+                    steam: e.size,
+                });
+                continue;
+            }
             out.detail.push(Foreign {
                 rel: rel.clone(),
                 measured: rel.clone(),
@@ -423,6 +451,7 @@ pub fn check(data: &Path, game: &Game, depots: &Depots) -> Result<Checked> {
     out.detail.sort_by(|a, b| a.rel.cmp(&b.rel));
     out.eac.sort_by(|a, b| a.rel.cmp(&b.rel));
     out.vr.sort_by(|a, b| a.rel.cmp(&b.rel));
+    out.upscaler.sort_by(|a, b| a.rel.cmp(&b.rel));
     if baseline != loaded {
         baseline.save(data)?;
     }
@@ -635,5 +664,36 @@ pub fn names(files: &[String]) -> String {
         [a, b] => format!("{a} and {b}"),
         [a, b, c] => format!("{a}, {b} and {c}"),
         [a, b, c, rest @ ..] => format!("{a}, {b}, {c} and {} more files", rest.len()),
+    }
+}
+
+#[cfg(test)]
+mod upscaler_tests {
+    use super::*;
+
+    #[test]
+    fn the_drop_in_names_are_root_level_and_case_insensitive() {
+        assert!(is_upscaler_drop_in("amd_fidelityfx_dx12.dll"));
+        assert!(is_upscaler_drop_in("AMD_FidelityFX_DX12.DLL"));
+        assert!(!is_upscaler_drop_in("bin/amd_fidelityfx_dx12.dll"));
+        assert!(!is_upscaler_drop_in("bin\\amd_fidelityfx_dx12.dll"));
+        assert!(!is_upscaler_drop_in("amd_fidelityfx_dx12.dll.bak"));
+        assert!(!is_upscaler_drop_in("amd_fidelityfx_upscaler_dx12.dll"));
+    }
+
+    #[test]
+    fn the_protected_files_are_never_drop_ins() {
+        for name in [
+            crate::GAME_EXE,
+            crate::entitlement::STEAM_API,
+            crate::install::PROXY,
+        ] {
+            assert!(!is_upscaler_drop_in(name), "{name}");
+            assert!(
+                !UPSCALER_DROP_INS.iter().any(|n| n.eq_ignore_ascii_case(name)),
+                "{name}"
+            );
+        }
+        assert!(!is_upscaler_drop_in("swofty/addons/core/swofty_core.dll"));
     }
 }

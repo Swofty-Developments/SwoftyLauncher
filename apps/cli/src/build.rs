@@ -483,6 +483,14 @@ fn check_stock(store: &Store, g: &Game, out: &dyn Fn(&str)) -> Result<Option<Dep
             d.steam
         ));
     }
+    for d in &checked.upscaler {
+        out(&format!(
+            "[stock] {} differs from Steam's copy (size {}, Steam {}); an upscaler drop-in replaces it, continuing",
+            d.rel,
+            d.size.map_or("missing".to_owned(), |n| n.to_string()),
+            d.steam
+        ));
+    }
     if let Some(n) = checked.swept {
         out(&format!("[stock] {n} game file(s) checked against Steam's list"));
     }

@@ -193,6 +193,58 @@ fn a_replaced_vr_runtime_is_reported_without_blocking() {
     );
 }
 
+const FFX: &str = "amd_fidelityfx_dx12.dll";
+
+#[test]
+fn a_replaced_upscaler_dll_is_reported_without_blocking() {
+    let f = Fixture::new("upscaler");
+    f.write(FFX, b"a drop-in fsr 4 loader");
+    f.write("F1_25.exe", b"stock exe bytes");
+    let d = depots(&[(FFX, b"stock fsr 3.1 loader"), ("F1_25.exe", b"stock exe bytes")]);
+    let c = stock::check(&f.data, &f.game, &d).unwrap();
+    assert!(c.foreign.is_empty(), "{:?}", c.foreign);
+    assert_eq!(c.upscaler.len(), 1);
+    assert_eq!(c.upscaler[0].rel, FFX);
+    assert!(f.baseline().stock_checked);
+    let again = stock::check(&f.data, &f.game, &d).unwrap();
+    assert!(again.foreign.is_empty());
+}
+
+#[test]
+fn a_replaced_upscaler_dll_matches_its_name_in_any_case() {
+    let f = Fixture::new("upscaler-case");
+    f.write("AMD_FidelityFX_DX12.dll", b"a drop-in fsr 4 loader");
+    let d = depots(&[("AMD_FidelityFX_DX12.dll", b"stock fsr 3.1 loader")]);
+    let c = stock::check(&f.data, &f.game, &d).unwrap();
+    assert!(c.foreign.is_empty(), "{:?}", c.foreign);
+    assert_eq!(c.upscaler.len(), 1);
+}
+
+#[test]
+fn a_replaced_upscaler_dll_in_a_first_sight_record_is_reported() {
+    let f = Fixture::new("upscaler-first-sight");
+    f.write(FFX, b"a drop-in fsr 4 loader");
+    f.record_first_sight(FFX);
+    let d = depots(&[(FFX, b"stock fsr 3.1 loader")]);
+    let c = stock::check(&f.data, &f.game, &d).unwrap();
+    assert!(c.foreign.is_empty(), "{:?}", c.foreign);
+    assert_eq!(c.upscaler.len(), 1);
+}
+
+#[test]
+fn protected_files_still_block_when_the_upscaler_is_replaced() {
+    for name in ["F1_25.exe", "steam_api64.dll", "version.dll", UI] {
+        let f = Fixture::new(&format!("upscaler-and-{}", name.replace(['/', '.'], "-")));
+        f.write(FFX, b"a drop-in fsr 4 loader");
+        f.write(name, b"modded bytes");
+        let d = depots(&[(FFX, b"stock fsr 3.1 loader"), (name, b"stock bytes, longer")]);
+        let c = stock::check(&f.data, &f.game, &d).unwrap();
+        assert_eq!(c.foreign, vec![name.to_owned()], "{name}");
+        assert_eq!(c.upscaler.len(), 1);
+        assert!(!f.baseline().stock_checked);
+    }
+}
+
 #[test]
 fn a_stock_launcher_exe_with_a_stale_backup_is_not_foreign() {
     let f = Fixture::new("eac-stale-bak");

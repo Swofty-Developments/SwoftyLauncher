@@ -276,6 +276,19 @@ mod tests {
     }
 
     #[test]
+    fn an_upscaler_drop_in_changes_nothing_here_and_a_swapped_steam_api_still_shows() {
+        let root = scratch("upscaler");
+        let data = root.join("data");
+        let dir = steam_copy(&root);
+        std::fs::write(dir.join("amd_fidelityfx_dx12.dll"), b"a drop-in fsr 4 loader").unwrap();
+        assert!(changed_files(&data, &dir, &depots()).unwrap().is_empty());
+        assert!(crack_files(&dir, None).unwrap().is_empty());
+        std::fs::write(dir.join(STEAM_API), b"MZ emulator!").unwrap();
+        assert_eq!(changed_files(&data, &dir, &depots()).unwrap(), [STEAM_API]);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
     fn a_same_size_swap_is_caught_after_a_match_was_remembered() {
         let root = scratch("cache");
         let data = root.join("data");
