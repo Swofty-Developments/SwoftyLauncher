@@ -308,7 +308,7 @@ fn record(
 ) -> bool {
     let mut changed = false;
     for c in list.iter_mut() {
-        if !in_save(c) || c.status() == "missing" || saved_ms(c).is_some_and(|t| t < since_ms) {
+        if !in_save(c) || c.is_gone() || saved_ms(c).is_some_and(|t| t < since_ms) {
             continue;
         }
         for id in ids {
@@ -380,7 +380,7 @@ pub fn stop_line(
 ) -> Option<String> {
     let mut addons: BTreeMap<&str, String> = BTreeMap::new();
     let mut careers: Vec<&str> = Vec::new();
-    for c in list.iter().filter(|c| c.status() != "missing") {
+    for c in list.iter().filter(|c| !c.is_gone()) {
         let gone: Vec<&CareerAddon> = c
             .addons
             .iter()
@@ -427,7 +427,7 @@ pub fn stop_line(
 /// the careers turning `addon` off would stop from loading.
 pub fn needing<'a>(list: &'a [Career], addon: &str) -> Vec<&'a Career> {
     list.iter()
-        .filter(|c| c.status() != "missing")
+        .filter(|c| !c.is_gone())
         .filter(|c| c.addons.iter().any(|a| a.id == addon))
         .collect()
 }
@@ -441,7 +441,7 @@ pub fn play_line(
 ) -> Option<String> {
     let short: Vec<(&Career, Vec<String>)> = list
         .iter()
-        .filter(|c| c.status() != "missing")
+        .filter(|c| !c.is_gone())
         .map(|c| (c, missing(c, order, installed)))
         .filter(|(_, m)| !m.is_empty())
         .collect();
@@ -477,6 +477,11 @@ pub fn play_line(
 }
 
 impl Career {
+    /// Whether the career is gone from the save: missing from the last profile load or deleted in game.
+    pub fn is_gone(&self) -> bool {
+        matches!(self.status(), "missing" | "deleted")
+    }
+
     /// `present` unless the core marked the career missing from the last profile load.
     pub fn status(&self) -> &str {
         self.extra
@@ -606,6 +611,41 @@ mod tests {
                 "2 careers won't load in this profile: L a needs N x.one (x.one), which is off; L c needs N x.two (x.two), which is off"
             )
         );
+    }
+
+    #[test]
+    fn careers_deleted_in_game_are_left_out_of_the_play_line_and_stop_line() {
+        let record = |id: &str, status: &str| {
+            format!(
+                r#"{{"career":"{id}","label":"L {id}","status":"{status}","addons":[{{"id":"x.one","why":"{ROWS_WHY}"}}]}}"#
+            )
+        };
+        let installed = installed_of(&["x.one"]);
+        let list_of = |status: &str| parse(&format!("[{}]", record("a", status)));
+
+        assert!(play_line(&list_of("present"), &[], &installed).is_some());
+        assert!(needing(&list_of("present"), "x.one").len() == 1);
+
+        let deleted = list_of("deleted");
+        assert_eq!(play_line(&deleted, &[], &installed), None);
+        assert_eq!(stop_line(&deleted, &[], &installed), None);
+        assert!(needing(&deleted, "x.one").is_empty());
+
+        let missing = list_of("missing");
+        assert_eq!(play_line(&missing, &[], &installed), None);
+        assert_eq!(stop_line(&missing, &[], &installed), None);
+        assert!(needing(&missing, "x.one").is_empty());
+    }
+
+    #[test]
+    fn deleted_careers_do_not_record_addons() {
+        let installed = installed_of(&["x.one"]);
+        let mut list =
+            parse(r#"[{"career":"a","profile":"p","status":"deleted","last_saved":2000,"addons":[]}]"#);
+        let ids = ["x.one".to_owned()];
+        let ids: Vec<&String> = ids.iter().collect();
+        assert!(!record(&mut list, &|_| true, 0, &ids, "why", &installed));
+        assert!(list[0].addons.is_empty());
     }
 
     fn installed_of(ids: &[&str]) -> BTreeMap<String, AddonManifest> {

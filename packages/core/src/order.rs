@@ -202,7 +202,7 @@ pub fn careers(
     }
     let order: Vec<String> = profile.enabled().map(str::to_owned).collect();
     let mut out = Vec::new();
-    for c in list.iter().filter(|c| c.status() != "missing") {
+    for c in list.iter().filter(|c| !c.is_gone()) {
         if c.profile.as_deref().is_some_and(|p| p != profile.name) {
             continue;
         }
