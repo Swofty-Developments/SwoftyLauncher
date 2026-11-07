@@ -114,9 +114,8 @@ impl Browser {
             .unwrap_or_else(|| "Creator".to_owned())
     }
 
-    fn view_label(&self, v: &View, searching: bool) -> String {
+    fn view_label(&self, v: &View) -> String {
         match v {
-            View::Grid if self.on_landing(searching) => "Categories".to_owned(),
             View::Grid => match self.tab {
                 None => "All addons".to_owned(),
                 tab => tab_label(tab).to_owned(),
@@ -394,14 +393,13 @@ impl Shell {
 
     pub(super) fn back_bar(&self, p: Palette, cx: &mut Context<Self>) -> Div {
         let b = &self.browser;
-        let searching = !b.search.read(cx).value().trim().is_empty();
         let mut crumbs: Vec<(Option<usize>, String)> = b
             .trail
             .iter()
             .enumerate()
-            .map(|(i, (v, _))| (Some(i), b.view_label(v, searching)))
+            .map(|(i, (v, _))| (Some(i), b.view_label(v)))
             .collect();
-        crumbs.push((None, b.view_label(&b.view, searching)));
+        crumbs.push((None, b.view_label(&b.view)));
         let cut = crumbs.len().saturating_sub(CRUMBS_SHOWN);
         let mut parts: Vec<AnyElement> = Vec::new();
         if cut > 0 {

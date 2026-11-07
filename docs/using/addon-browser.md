@@ -9,13 +9,16 @@ The **Addon Browser** page lists the addons creators publish to Swofty Launcher.
 
 ## Find an addon
 
-The page opens on a tile for each category: Seasons, Tracks, Cars, Helmets, Shaders, Career, AI, Performance, Utility and Other. Each tile shows how many addons the category holds and the icons of its most starred addons. Other holds the addons without a category. A category with no addons yet shows **No addons yet**.
+The page opens on **All**: one row per category, in the order of the category bar (Seasons, Tracks, Cars, Helmets, Shaders, Career, AI, Performance, Utility, Other). A category with no addons has no row. Each row shows the category's addon cards in the chosen sort order, up to 24, with its count at the top.
 
-Every addon is listed under the tiles, with its count and the sort order. Select a tile for that category's addons. Above the addons, the category bar switches between All and each category, and **Categories** goes back to the tiles and clears the search and filters.
+- Scroll a row sideways with the mouse wheel while holding Shift, with a trackpad swipe, or with the arrow buttons at the top right of the row. The arrows move by whole cards and stop at the ends. A fade at the edge of a row shows there are more cards past it.
+- **See all** opens that category's addons as a grid. A row with more than 24 addons ends in a **See all** card.
 
-- **Search:** matches names, ids, creators, categories, types and descriptions, and tolerates one typo in longer words. `author:<name>` and `category:<name>` narrow it down. Creators that match show above the addons. A search from the tiles covers every category, and a search inside a category covers that category.
+Above the rows, the category bar switches between All and each category. Searching, choosing a filter or picking a category replaces the rows with a grid of the matching addons.
+
+- **Search:** matches names, ids, creators, categories, types and descriptions, and tolerates one typo in longer words. `author:<name>` and `category:<name>` narrow it down. Creators that match show above the addons. A search from All covers every category, and a search inside a category covers that category.
 - **Sort:** Most stars, Most downloads, Trending (downloads in the last 30 days), Recently updated, Newest and Name. While you search, the order is Best match.
-- **Filters:** type, state (installed, not installed, update available, starred by you, works with this launcher), creator, and **Hide addons that run code**. A filter chosen on the tiles applies to every category.
+- **Filters:** type, state (installed, not installed, update available, starred by you, works with this launcher), creator, and **Hide addons that run code**. A filter chosen on All applies to every category.
 
 Select an addon for its description, a 30-day downloads chart, its file size and checksum, the launcher version it needs, and every version's changelog. When the creator lists the addon's source code, a **Source code** button opens it; an addon without one has no button, and an installed addon's page shows **Not listed** under **Source code**. **More from** lists the same creator's other addons.
 

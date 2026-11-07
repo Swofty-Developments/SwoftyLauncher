@@ -2576,7 +2576,8 @@ impl Render for Shell {
         let short = window.viewport_size().height < px(760.);
         self.short = short;
         self.content_width =
-            (f32::from(window.viewport_size().width) - 220. - 2. * crate::pages::GUTTER).max(320.);
+            (f32::from(window.viewport_size().width) / f32::from(px(1.)) - 220. - 2. * crate::pages::GUTTER)
+                .max(320.);
         self.sync_sliders(window, cx);
         self.sync_blocks(window, cx);
         self.db_pending_tab(window, cx);
