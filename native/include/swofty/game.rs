@@ -14236,6 +14236,11 @@ pub mod bindings {
         kind: "data",
         status: Status::Experimental,
     };
+    pub const g_FeTile_Ctx: Binding = Binding {
+        id: "g_FeTile_Ctx",
+        kind: "data",
+        status: Status::Experimental,
+    };
     pub const g_FeTile_CustomisationSystem: Binding = Binding {
         id: "g_FeTile_CustomisationSystem",
         kind: "data",

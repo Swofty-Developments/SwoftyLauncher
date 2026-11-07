@@ -39,7 +39,14 @@ int main()
     m.words[0x2000 + 0x568] = 0x3000;
     CHECK(!ent::ctx_ready(m, 0x1000));
     m.words[0x2000 + 0x568] = 0x3010;
+    CHECK(!ent::ctx_ready(m, 0x1000));
+    m.words[0x1000 + 0x238] = 0;
+    CHECK(!ent::ctx_ready(m, 0x1000));
+    m.words[0x1000 + 0x238] = 0x4000;
     CHECK(ent::ctx_ready(m, 0x1000));
+    m.words[0x1000 + 0x238] = 0;
+    CHECK(!ent::ctx_ready(m, 0x1000));
+    m.words[0x1000 + 0x238] = 0x4000;
     m.words[0x1000 + 0x228] = 0;
     CHECK(!ent::ctx_ready(m, 0x1000));
 
@@ -55,8 +62,10 @@ int main()
     CHECK(!none.read(false) && none.state() == ent::NOT_OWNED);
     CHECK(none.read(true) && none.state() == ent::OWNED);
 
+    CHECK(ent::NOT_OWNED_AFTER >= 3600);
+
     ent::Settle late;
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < ent::NOT_OWNED_AFTER - 1; i++)
         late.read(false);
     CHECK(late.read(true) && late.state() == ent::OWNED);
 

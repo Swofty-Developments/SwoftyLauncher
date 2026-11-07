@@ -74,6 +74,7 @@ using FeTile_Press_EraTile_t = char *(void *view_model, void *command);
 inline constexpr fn<"FeTile_Press_EraTile", FeTile_Press_EraTile_t> FeTile_Press_EraTile{}; // L2 experimental
 using FeTile_Route_CareerItem_t = Action *(HomeItem *item, Action *out);
 inline constexpr fn<"FeTile_Route_CareerItem", FeTile_Route_CareerItem_t> FeTile_Route_CareerItem{}; // L2 experimental
+inline constexpr data<"g_FeTile_Ctx", void *> g_FeTile_Ctx{}; // L2 experimental
 inline constexpr data<"g_FeTile_CustomisationSystem", void *> g_FeTile_CustomisationSystem{}; // L2 experimental
 inline constexpr data<"g_FeTile_SelectedCareerContent", uint32_t> g_FeTile_SelectedCareerContent{}; // L2 experimental
 inline constexpr site<"site_FeTile_CareerContentEnd"> site_FeTile_CareerContentEnd{}; // L2 experimental
