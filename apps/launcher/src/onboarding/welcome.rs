@@ -11,6 +11,8 @@ use crate::scale::px;
 use crate::theme::Palette;
 
 const INTRO: Duration = Duration::from_millis(1500);
+/// The product name, which stays the same in every language.
+const PRODUCT: &str = "Swofty Launcher";
 const RING_CYCLE: Duration = Duration::from_millis(3200);
 const LOGO_SIZE: f32 = 112.;
 const STAGE: f32 = 260.;
@@ -201,7 +203,7 @@ pub(super) fn view(p: Palette) -> Div {
         .text_size(px(46.))
         .font_weight(FontWeight::BOLD)
         .text_color(p.text)
-        .child("Swofty Launcher");
+        .child(PRODUCT);
     let tagline = div()
         .max_w(px(460.))
         .text_center()
