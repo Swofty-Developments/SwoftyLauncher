@@ -57,10 +57,11 @@ fn stamp(path: &Path) -> Option<Stamp> {
     })
 }
 
-/// A cached file: the source it was copied from, and the copy as written. A
-/// copy the game wrote through its link no longer matches.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+/// A cached file: the source it was copied from, that source's stamp, and the
+/// copy as written. A copy the game wrote through its link no longer matches.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct Kept {
+    from: PathBuf,
     source: Stamp,
     copy: Stamp,
 }
@@ -101,8 +102,9 @@ fn prune_empty(dir: &Path) {
 }
 
 /// Brings the cache in `game` up to date with `sources`, each a game path and
-/// the file that goes there: copies the files that are new or whose size or modified time
-/// changed, leaves the rest, and deletes what the overlay no longer has. Fails
+/// the file that goes there: copies the files that are new, come from another
+/// source, or whose size or modified time changed, leaves the rest, and deletes
+/// what the overlay no longer has. Fails
 /// with the reason when the game's drive hasn't room for what is left to copy
 /// plus `MARGIN`, or a copy fails; the cache then holds what was copied.
 pub fn sync(
@@ -133,7 +135,7 @@ pub fn sync(
         let at = cache.join(k);
         let kept = index
             .get(*k)
-            .is_some_and(|i| i.source == now && stamp(&at) == Some(i.copy));
+            .is_some_and(|i| i.from == *src && i.source == now && stamp(&at) == Some(i.copy));
         if kept {
             out.reused += 1;
             out.files.insert((*k).to_owned(), at);
@@ -167,7 +169,14 @@ pub fn sync(
             let why = made.err().map_or("it is missing".to_owned(), |e| e.to_string());
             return Err(format!("cannot copy {}: {why}", src.display()));
         };
-        index.insert(k.to_owned(), Kept { source: now, copy });
+        index.insert(
+            k.to_owned(),
+            Kept {
+                from: src.to_path_buf(),
+                source: now,
+                copy,
+            },
+        );
         out.files.insert(k.to_owned(), at);
         out.copied += 1;
         progress(n + 1, total);
@@ -265,6 +274,30 @@ mod tests {
         assert_eq!(
             std::fs::read_to_string(root_of(&game).join("a.bin")).unwrap(),
             "three"
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_file_from_another_source_is_copied_again() {
+        let root = tmp("source");
+        let game = root.join("game");
+        let (a, b) = (root.join("a/db.bin"), root.join("b/db.bin"));
+        put(&a, "db-A");
+        put(&b, "db-B");
+        let when = std::fs::metadata(&a).unwrap().modified().unwrap();
+        std::fs::File::options()
+            .write(true)
+            .open(&b)
+            .unwrap()
+            .set_modified(when)
+            .unwrap();
+        sync(&game, &[("db.bin", a.as_path())], roomy, &mut |_, _| {}).unwrap();
+        let s = sync(&game, &[("db.bin", b.as_path())], roomy, &mut |_, _| {}).unwrap();
+        assert_eq!((s.copied, s.reused), (1, 0));
+        assert_eq!(
+            std::fs::read_to_string(root_of(&game).join("db.bin")).unwrap(),
+            "db-B"
         );
         std::fs::remove_dir_all(&root).ok();
     }
