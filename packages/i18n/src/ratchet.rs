@@ -103,7 +103,7 @@ fn counts() -> BTreeMap<String, usize> {
     let root = Path::new(LAUNCHER_SRC);
     rust_files(root)
         .into_iter()
-        .filter(|path| !path.file_name().is_some_and(|n| n == "tests.rs"))
+        .filter(|path| path.file_name().is_none_or(|n| n != "tests.rs"))
         .filter_map(|path| {
             let count = unwrapped(&std::fs::read_to_string(&path).unwrap());
             let name = path
