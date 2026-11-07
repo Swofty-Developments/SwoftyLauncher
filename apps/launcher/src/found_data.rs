@@ -15,6 +15,7 @@ use gpui_kit::*;
 use swofty_core::builtin::CORE_ID;
 use swofty_core::data_move::find::{self, Found};
 use swofty_core::data_move::{self, Location};
+use swofty_core::managed;
 use swofty_core::session::Config;
 use swofty_i18n::{tr, trf, trn};
 
@@ -48,12 +49,16 @@ impl Shell {
     fn user_addon_count(&self) -> usize {
         self.store
             .addons()
-            .map(|all| all.keys().filter(|id| !self.store.is_builtin(id)).count())
+            .map(|all| {
+                all.keys()
+                    .filter(|id| !self.store.is_builtin(id) && !managed::is_managed(id))
+                    .count()
+            })
             .unwrap_or(0)
     }
 
     fn bundled_ids(&self) -> Vec<String> {
-        let mut ids = vec![CORE_ID.to_owned()];
+        let mut ids = vec![CORE_ID.to_owned(), managed::ID.to_owned()];
         ids.extend(
             self.store
                 .builtins()

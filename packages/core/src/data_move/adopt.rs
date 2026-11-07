@@ -37,7 +37,7 @@ pub fn adopt(
     }
     if super::journal_pending(&loc.default) {
         return Err(Error::Io(
-            "A data folder move is not finished. Restart Swofty Launcher to finish it.".into(),
+            "A move of your addons and saves is not finished. Restart Swofty Launcher to finish it.".into(),
         ));
     }
     if super::find::looks_like_data(found, bundled).is_none() {
@@ -123,7 +123,7 @@ fn clear_default(j: &Journal) -> Result<(), Error> {
         Spot::Folder if !exists(&j.aside) => std::fs::rename(&j.default, &j.aside)
             .map_err(|e| Error::io(format!("Could not set {} aside", j.default.display()), e)),
         Spot::Link(_) => link::remove(&j.default)
-            .map_err(|e| Error::io(format!("Could not remove the link at {}", j.default.display()), e)),
+            .map_err(|e| Error::io(format!("Could not replace {}", j.default.display()), e)),
         _ => Ok(()),
     }
 }
@@ -153,7 +153,7 @@ fn point(j: &Journal, ops: &Ops) -> Result<Recovered, Error> {
     if let Err(e) = (ops.link)(&j.to, &j.default) {
         restore(j, ops);
         return Err(Error::io(
-            format!("Could not link {} to {}", j.default.display(), j.to.display()),
+            format!("Could not point {} to {}", j.default.display(), j.to.display()),
             e,
         ));
     }

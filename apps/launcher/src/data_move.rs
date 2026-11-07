@@ -61,17 +61,19 @@ pub(crate) fn install_folder() -> Option<PathBuf> {
 impl Shell {
     pub(crate) fn move_refusal(&self) -> Option<String> {
         if self.moving.is_some() {
-            return Some(tr("Your data folder is already moving").to_owned());
+            return Some(tr("Your addons and saves are already moving").to_owned());
         }
         let skip_game = cfg!(debug_assertions) && std::env::var_os("SWOFTY_DEBUG_MOVE_TO").is_some();
         if !skip_game && (!self.processes.is_empty() || swofty_core::process::game_running()) {
-            return Some(tr("Close F1 25 before moving your data folder").to_owned());
+            return Some(tr("Close F1 25 before moving your addons and saves").to_owned());
         }
         if self.build.is_some() || Busy::live(&self.store.root).is_some() {
-            return Some(tr("Wait for the build to finish before moving your data folder").to_owned());
+            return Some(tr("Wait for the build to finish before moving your addons and saves").to_owned());
         }
         if self.download_pending() > 0 {
-            return Some(tr("Wait for the downloads to finish before moving your data folder").to_owned());
+            return Some(
+                tr("Wait for the downloads to finish before moving your addons and saves").to_owned(),
+            );
         }
         None
     }
@@ -138,7 +140,7 @@ impl Shell {
         window.open_alert_dialog(cx, move |alert, _, _| {
             alert
                 .width(px(500.))
-                .title(tr("Your data folder was not moved"))
+                .title(tr("Your addons and saves were not moved"))
                 .description(why.clone())
                 .ok_text(tr("OK"))
         });
@@ -164,11 +166,11 @@ impl Shell {
             let note = if plan.same_volume {
                 tr("It is on the same drive, so it moves in a moment. Swofty Launcher restarts when it is done.")
             } else {
-                tr("Swofty Launcher locks while it copies and restarts when it is done. Your data stays where it is until the copy checks out.")
+                tr("Swofty Launcher locks while it copies and restarts when it is done. Your addons and saves stay where they are until the copy checks out.")
             };
             alert
                 .width(px(560.))
-                .title(tr("Move your data folder?"))
+                .title(tr("Move your addons and saves?"))
                 .child(
                     v_flex()
                         .gap(px(8.))
@@ -267,7 +269,7 @@ impl Shell {
                 cx.notify();
                 self.data_move_failed(
                     &trf!(
-                        "Your data is copied. Close Swofty Launcher and open it again to finish the move. ({error})",
+                        "Your addons and saves are copied. Close Swofty Launcher and open it again to finish the move. ({error})",
                         error = e
                     ),
                     window,
@@ -288,7 +290,7 @@ impl Shell {
     pub(crate) fn data_move_overlay(&self, p: Palette, cx: &mut Context<Self>) -> Option<impl IntoElement> {
         let m = self.moving.as_ref()?;
         let (done, file) = m.feed.lock().map(|f| f.clone()).unwrap_or_default();
-        let overlay = LockOverlay::new(tr("Moving your data folder")).detail(trf!(
+        let overlay = LockOverlay::new(tr("Moving your addons and saves")).detail(trf!(
             "{from} to {to}",
             from = m.plan.from.display(),
             to = m.plan.to.display()
@@ -329,11 +331,11 @@ impl Shell {
                         )
                     }
                     Some(old) => trf!(
-                        "Moved your data folder to {to}, but could not delete the old copy in {old}. Delete it yourself.",
+                        "Your addons and saves moved to {to}, but the old copy in {old} could not be deleted. You can delete it yourself.",
                         to = done.to.display(),
                         old = old.display()
                     ),
-                    None => trf!("Moved your data folder to {to}", to = done.to.display()),
+                    None => trf!("Your addons and saves moved to {to}", to = done.to.display()),
                 };
                 let note = if done.leftover.is_some() {
                     Notification::warning(text)
@@ -346,7 +348,7 @@ impl Shell {
                 crate::app_log::note(&format!("data move: not finished: {e}"));
                 window.push_notification(
                     Notification::error(trf!(
-                        "Your data folder was not moved. Your data is where it was. {error}",
+                        "Your addons and saves were not moved. They are where they were. {error}",
                         error = e
                     )),
                     cx,

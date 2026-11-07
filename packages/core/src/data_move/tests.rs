@@ -459,7 +459,7 @@ fn a_link_that_cannot_be_made_restores_the_default_folder() {
     let p = plan(&loc(&default), &to, &failing).unwrap();
     move_data(&p, &failing, &Quiet, &no_cancel()).unwrap();
     let err = recover(&default, &failing).unwrap().unwrap_err();
-    assert!(err.to_string().contains("Could not link"), "{err}");
+    assert!(err.to_string().contains("Could not point"), "{err}");
     assert!(spot_is_folder(&default));
     whole(&default);
     assert!(!to.exists());

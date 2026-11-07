@@ -657,7 +657,7 @@ impl Shell {
             )))
             .when(fix, |d| {
                 d.child(
-                    link("update-move-data", "Moving the data folder", p)
+                    link("update-move-data", "Moving your addons and saves", p)
                         .flex_shrink_0()
                         .on_click(|_, _, cx| cx.open_url(MOVE_DOCS)),
                 )

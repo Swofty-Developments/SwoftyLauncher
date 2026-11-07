@@ -46,7 +46,7 @@
   "Crashed {when}": "Сбой: {when}",
   "Create": "Создать",
   "DB Editor": "Редактор БД",
-  "Data folder": "Папка данных",
+  "Your addons and saves": "Ваши аддоны и сохранения",
   "Delete": "Удалить",
   "Delete profile": "Удалить профиль",
   "Delete profile {name}?": "Удалить профиль {name}?",
@@ -106,7 +106,7 @@
   "Not in Steam or the EA app": "Нет в Steam и приложении EA",
   "Nothing to clear": "Нечего очищать",
   "Off by default. When on, the launcher clears old logs as it starts, as Clear old does: keeps the newest {sessions} sessions and the last {days} days": "По умолчанию выключено. Если включено, лаунчер очищает старые журналы при запуске: сохраняются последние сессии ({sessions}) и последние дни ({days})",
-  "Only {free} free on the drive with the data folder: installing or building addons may fail.": "На диске с папкой данных свободно всего {free}: установка или сборка аддонов может не удаться.",
+  "Only {free} free on the drive with your addons and saves: installing or building addons may fail.": "На диске с вашими аддонами и сохранениями свободно всего {free}: установка или сборка аддонов может не удаться.",
   "Only {free} free on {drive}, and F1 25 needs {need} to start.": "На {drive} свободно всего {free}, а для запуска F1 25 нужно {need}.",
   "Only {free} free on {drive}. F1 25 won't start with less than {need} free there.": "На {drive} свободно всего {free}. F1 25 не запустится, если там свободно меньше {need}.",
   "Open": "Открыть",
@@ -185,7 +185,7 @@
   "{count} game sessions kept. Clearing keeps the newest {sessions} and everything from the last {days} days.": "Сохранено игровых сессий: {count}. При очистке останутся последние сессии ({sessions}) и всё за последние дни ({days}).",
   "{name} is the active profile": "{name} — активный профиль",
   "{removed} Installed addons stay on the Addons page, and other profiles don't change.": "{removed} Установленные аддоны останутся на странице «Аддоны», а другие профили не изменятся.",
-  "{short} Clear old logs, remove addons you don't use, or move the data folder.": "{short} Очистите старые журналы, удалите неиспользуемые аддоны или перенесите папку данных.",
+  "{short} Clear old logs, remove addons you don't use, or move your addons and saves.": "{short} Очистите старые журналы, удалите неиспользуемые аддоны или перенесите ваши аддоны и сохранения.",
   "{size} free on this drive": "На этом диске свободно {size}",
   "{to} becomes active first, and Play uses it from now on.": "Сначала активным станет {to}, и теперь кнопка «Играть» будет использовать его."
 }

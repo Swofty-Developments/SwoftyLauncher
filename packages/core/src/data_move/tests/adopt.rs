@@ -86,7 +86,7 @@ fn adopt_rolls_back_when_the_link_cannot_be_made() {
         ..SAME_VOLUME
     };
     let err = recover(&default, &failing).unwrap().unwrap_err();
-    assert!(err.to_string().contains("Could not link"), "{err}");
+    assert!(err.to_string().contains("Could not point"), "{err}");
     assert!(!journal_left(&default));
     assert_eq!(read(&default.join("config.json")), "{\"fresh\":true}");
     assert!(fresh_of(&dir).is_empty());

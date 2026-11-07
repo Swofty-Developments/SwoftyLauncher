@@ -41,21 +41,21 @@ const RETRY_AFTER: Duration = Duration::from_millis(250);
 
 #[derive(Debug, Clone, PartialEq, thiserror::Error)]
 pub enum Error {
-    #[error("{ENV} sets the data folder to {}. Change that variable to move it.", .0.display())]
+    #[error("{ENV} sets where your addons and saves are, to {}. Change that variable to move them.", .0.display())]
     EnvSet(PathBuf),
-    #[error("Choose a full path for the data folder.")]
+    #[error("Choose a full path.")]
     NotAbsolute,
-    #[error("The data folder is already in {}.", .0.display())]
+    #[error("Your addons and saves are already in {}.", .0.display())]
     AlreadyThere(PathBuf),
-    #[error("There is no data folder to move yet.")]
+    #[error("There are no addons and saves to move yet.")]
     NothingToMove,
-    #[error("Choose a folder outside {}, where your data is now.", .0.display())]
+    #[error("Choose a folder outside {}, where your addons and saves are now.", .0.display())]
     InsideCurrent(PathBuf),
-    #[error("Choose a folder that does not contain {}, where your data is now.", .0.display())]
+    #[error("Choose a folder that does not contain {}, where your addons and saves are now.", .0.display())]
     ContainsCurrent(PathBuf),
-    #[error("Updates cannot install when the data folder is inside the install folder. Choose a folder outside {}.", .0.display())]
+    #[error("Updates cannot install when your addons and saves are inside the launcher folder. Choose a folder outside {}.", .0.display())]
     InsideInstall(PathBuf),
-    #[error("Choose a folder that does not contain the install folder {}.", .0.display())]
+    #[error("Choose a folder that does not contain the launcher folder {}.", .0.display())]
     ContainsInstall(PathBuf),
     #[error("Choose a folder outside the F1 25 folder {}.", .0.display())]
     InsideGame(PathBuf),
@@ -69,13 +69,13 @@ pub enum Error {
     NotWritable(PathBuf, String),
     #[error("Not enough free space in {}: it needs {} GB and {} GB is free.", .path.display(), disk::gb(*.need), disk::gb(*.free))]
     NotEnoughSpace { path: PathBuf, need: u64, free: u64 },
-    #[error("{} links to {}, which is missing. Reconnect that drive or folder before moving your data.", .default.display(), .target.display())]
+    #[error("{} points to {}, which is missing. Reconnect that drive or folder before moving your addons and saves.", .default.display(), .target.display())]
     LinkBroken { default: PathBuf, target: PathBuf },
-    #[error("Choose a folder other than {}. It is where the launcher looks for its data now.", .0.display())]
+    #[error("Choose a folder other than {}. It is where the launcher looks for your addons and saves now.", .0.display())]
     IsDefault(PathBuf),
-    #[error("The move was cancelled. Your data stays in {}.", .0.display())]
+    #[error("The move was cancelled. Your addons and saves stay in {}.", .0.display())]
     Cancelled(PathBuf),
-    #[error("The copy does not match your data: {reason}. Your data stays in {}.", .from.display())]
+    #[error("The copy does not match: {reason}. Your addons and saves stay in {}.", .from.display())]
     Mismatch { from: PathBuf, reason: String },
     #[error("{} is a whole drive. Choose a folder on it.", .0.display())]
     DriveRoot(PathBuf),
@@ -436,7 +436,7 @@ pub fn move_data(
             }),
         Err(copy::Stop::Cancelled) => Some(Error::Cancelled(plan.from.clone())),
         Err(copy::Stop::Io(e)) => Some(Error::Io(format!(
-            "Could not copy {} to {}: {e}. Your data stays in {}.",
+            "Could not copy {} to {}: {e}. Your addons and saves stay in {}.",
             plan.from.display(),
             plan.to.display(),
             plan.from.display()
@@ -538,13 +538,13 @@ fn switch(j: &Journal, ops: &Ops) -> Result<Recovered, Error> {
             })?;
         }
         None if exists(&j.to) => {}
-        None => return Err(Error::Io("The data folder to move is missing.".into())),
+        None => return Err(Error::Io("The folder to move is missing.".into())),
     }
     match state {
         Spot::Folder => std::fs::rename(&j.default, &j.aside)
             .map_err(|e| Error::io(format!("Could not set {} aside", j.default.display()), e))?,
         Spot::Link(_) => link::remove(&j.default)
-            .map_err(|e| Error::io(format!("Could not remove the link at {}", j.default.display()), e))?,
+            .map_err(|e| Error::io(format!("Could not replace {}", j.default.display()), e))?,
         Spot::Missing => {}
     }
     if let Some(parent) = j.default.parent() {
@@ -553,7 +553,7 @@ fn switch(j: &Journal, ops: &Ops) -> Result<Recovered, Error> {
     if let Err(e) = (ops.link)(&j.to, &j.default) {
         undo_switch(j, ops, source.is_some());
         return Err(Error::io(
-            format!("Could not link {} to {}", j.default.display(), j.to.display()),
+            format!("Could not point {} to {}", j.default.display(), j.to.display()),
             e,
         ));
     }

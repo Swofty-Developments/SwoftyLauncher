@@ -11,7 +11,7 @@ description: Settings holds the launcher's own options in five categories, shows
 |---|---|
 | **General** | Language and starting your game's store |
 | **Display** | PC or TV mode |
-| **Storage** | The data folder, its size, and cleanup |
+| **Storage** | Where your addons and saves are, finding them again, their size, and cleanup |
 | **Advanced** | Developer mode and clearing old logs automatically |
 | **About** | The launcher's version, update status and links |
 
@@ -27,11 +27,12 @@ description: Settings holds the launcher's own options in five categories, shows
 
 ## Storage
 
-Storage has three sections.
+Storage has three sections. Moving the launcher to another drive never moves your addons and saves.
 
 | Section | Row | What it shows |
 |---|---|---|
-| **Location** | **Data folder** | The [data folder](/guide/installation#where-your-files-are-stored), where your addons, profiles, backups and logs live. **Open** opens it in File Explorer, or your file manager on Linux. **Move…** moves it to another folder or drive. |
+| **Location** | **Your addons and saves** | The folder where your addons, profiles, backups and logs live, shown with its path (see [where your files are stored](/guide/installation#where-your-files-are-stored)). **Open** opens it in File Explorer, or your file manager on Linux. **Move…** moves it to another folder or drive. |
+| | **Find my addons** | **Find** looks in the places an old copy may be and offers to use one (see below). It says **Nothing found** when there is none. |
 | **Usage** | **Size** | The folder's total size and the free space on its drive. When F1 25's own drive is another one, also the free space there: the drive with your Windows profile, or on Linux the drive with the game's Proton prefix (its Steam library). |
 | | **Breakdown** | How much each part takes, largest first: addons, the game backup, session logs, the cache, the career vault, save snapshots, addon data and the rest. |
 | **Cleanup** | **Session logs** | How many game sessions are kept. **Clear old** removes the old ones (see below). |
@@ -39,7 +40,7 @@ Storage has three sections.
 
 When either drive has less than 3 GB free, **Usage** says so: F1 25 won't start with less than 2 GB free on its `C:` drive, which under Proton is the prefix.
 
-A moved data folder is measured where it really is, through the junction or symbolic link that records the move.
+Moved addons and saves are measured where they really are.
 
 **Refresh**, in the **Usage** heading, measures the folder again. Measuring walks every file, so a large addon collection takes a few seconds. Storage measures when you open it.
 
@@ -49,27 +50,39 @@ Every game session leaves its logs in `sessions` in the data folder, and nothing
 
 **Clear old** asks you to confirm before it deletes anything. The launcher keeps every log unless you turn on **Clear old logs** under Advanced: with it on, the launcher clears old logs by the same rule each time it starts, without asking. It is off by default, so updating never deletes logs.
 
-### Moving the data folder
+### Moving your addons and saves
 
-**Move…** next to **Data folder** moves your addons, profiles, backups and logs to another folder or drive without the installer.
+**Move…** next to **Your addons and saves** moves your addons, profiles, backups and logs to another folder or drive without the installer.
 
 1. Select **Move…** and choose a folder. A folder that has files in it gets a `Swofty` folder inside it.
 2. The launcher shows where the data is now, where it will go, its size and the free space there. Select **Move** to start.
-3. A full-window screen shows the progress and the file being copied. **Cancel** stops the copy and removes it; your data stays where it was. Nothing else in the launcher works while it runs, and the window doesn't close.
-4. When the copy checks out, the launcher restarts, links the old location to the new folder, deletes the old copy and shows a message.
+3. A full-window screen shows the progress and the file being copied. **Cancel** stops the copy and removes it; your addons and saves stay where they were. Nothing else in the launcher works while it runs, and the window doesn't close.
+4. When the copy checks out, the launcher restarts, switches to the new folder, deletes the old copy and shows a message. The old location keeps working: Swofty finds your addons and saves at the same path as before.
 
 On the same drive the folder is renamed and nothing is copied. A copy is checked by size, and by content for the small files.
 
-The launcher refuses to start the move while F1 25 is open, a build is running or downloads are queued. It refuses a folder inside or around the install folder, inside or around the F1 25 folder, inside the current data folder, one that isn't empty, one it can't write to, and one on a drive without room for the data plus a margin. When `SWOFTY_DATA_DIR` sets the data folder, it refuses and says so: change the variable instead.
+The launcher refuses to start the move while F1 25 is open, a build is running or downloads are queued. It refuses a whole drive, a folder inside or around the launcher's own folder, inside or around the F1 25 folder, inside the folder they are in now, one that isn't empty, one it can't write to, and one on a drive without room for the data plus a margin. When `SWOFTY_DATA_DIR` sets the folder, it refuses and says so: change the variable instead.
 
 If the launcher or the computer stops during a move, the next start finishes it or puts everything back. When the old copy can't be deleted, the message names it so you can delete it yourself.
 
+### Finding your addons and saves
+
+When the launcher starts with none of your own addons, it looks in a fixed list of places, and a prompt appears when it finds a folder that has addons of yours and a config, profiles or saves: **We found your addons and saves in** the folder, with the number of addons, its size and when it was last used. Several finds are listed newest first.
+
+- **Use them** points Swofty at that folder and restarts the launcher. The empty folder it made is kept beside it as `Swofty.fresh-<date>`, and the launcher never deletes it. A folder inside the launcher's own folder is moved out to the usual place instead.
+- **Not now** closes the prompt until the next start.
+- **Don't ask again** turns the prompt off. **Find** under **Find my addons** still works.
+
+The places are the folders next to your Swofty folder called `Swofty.old`, `Swofty.old-2` and `Swofty.fresh-…`, the places your addons and saves were moved from (recorded in `swofty-data-history.json` beside the Swofty folder), the launcher's folder and the `Swofty` and `SwoftyData` folders in it, and on Windows the folders on each drive whose name starts with `Swofty`, in the drive's top folder and in `Games` and `Program Files`. It doesn't search inside other folders. Addons that ship with the launcher don't count.
+
+When `SWOFTY_DATA_DIR` sets the folder, **Use them** refuses and says so.
+
 ### The game drive copy
 
-A hard link joins two names for one file and only works inside one drive. Play keeps copies in `swofty-cache/overlay` in the game folder and hard-links the game's files to them. Which files it keeps there depends on where the data folder is:
+A hard link joins two names for one file and only works inside one drive. Play keeps copies in `swofty-cache/overlay` in the game folder and hard-links the game's files to them. Which files it keeps there depends on where your addons and saves are:
 
 - On another drive than F1 25, every file Play places.
-- On F1 25's drive, the loose files that Play would otherwise copy, such as addon files. Built output still links straight from the data folder. A game that writes to a linked file changes the cached copy and never the addon's original.
+- On F1 25's drive, the loose files that Play would otherwise copy, such as addon files. Built output still links straight from your addons and saves. A game that writes to a linked file changes the cached copy and never the addon's original.
 
 The first Play copies every file; later Plays copy only files that are new or whose size or modified time changed, and delete files that are no longer placed. A cached copy the game wrote to is copied again.
 
@@ -77,7 +90,7 @@ The copy stays when the game goes back to stock. It needs the size of those file
 
 ### Low space when you press Play
 
-When you press **Play** with less than 3 GB free on F1 25's own drive (the drive with your Windows profile, or on Linux the drive with the game's Proton prefix) or on the data folder's drive, the launcher shows a warning. The game still starts: under 2 GB, F1 25 refuses on its own with "cannot run with less than 2048 free storage space".
+When you press **Play** with less than 3 GB free on F1 25's own drive (the drive with your Windows profile, or on Linux the drive with the game's Proton prefix) or on the drive with your addons and saves, the launcher shows a warning. The game still starts: under 2 GB, F1 25 refuses on its own with "cannot run with less than 2048 free storage space".
 
 ## Advanced
 

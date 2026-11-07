@@ -46,7 +46,7 @@
   "Crashed {when}": "已崩溃 {when}",
   "Create": "创建",
   "DB Editor": "数据库编辑器",
-  "Data folder": "数据文件夹",
+  "Your addons and saves": "你的插件和存档",
   "Delete": "删除",
   "Delete profile": "删除配置",
   "Delete profile {name}?": "要删除配置 {name} 吗？",
@@ -106,7 +106,7 @@
   "Not in Steam or the EA app": "不在 Steam 或 EA app 中",
   "Nothing to clear": "没有可清除的内容",
   "Off by default. When on, the launcher clears old logs as it starts, as Clear old does: keeps the newest {sessions} sessions and the last {days} days": "默认关闭。开启后，启动器会在启动时清除旧日志：保留最新的 {sessions} 个会话和最近 {days} 天的内容",
-  "Only {free} free on the drive with the data folder: installing or building addons may fail.": "数据文件夹所在磁盘仅剩 {free}：安装或构建插件可能会失败。",
+  "Only {free} free on the drive with your addons and saves: installing or building addons may fail.": "你的插件和存档所在磁盘仅剩 {free}：安装或构建插件可能会失败。",
   "Only {free} free on {drive}, and F1 25 needs {need} to start.": "{drive} 仅剩 {free}，而 F1 25 启动需要 {need}。",
   "Only {free} free on {drive}. F1 25 won't start with less than {need} free there.": "{drive} 仅剩 {free}。可用空间少于 {need} 时 F1 25 无法启动。",
   "Open": "打开",
@@ -185,7 +185,7 @@
   "{count} game sessions kept. Clearing keeps the newest {sessions} and everything from the last {days} days.": "已保留 {count} 个游戏会话。清除时会保留最新的 {sessions} 个以及最近 {days} 天的内容。",
   "{name} is the active profile": "{name} 是当前配置",
   "{removed} Installed addons stay on the Addons page, and other profiles don't change.": "{removed} 已安装的插件仍保留在“插件”页面，其他配置不受影响。",
-  "{short} Clear old logs, remove addons you don't use, or move the data folder.": "{short} 请清除旧日志、移除不用的插件或移动数据文件夹。",
+  "{short} Clear old logs, remove addons you don't use, or move your addons and saves.": "{short} 请清除旧日志、移除不用的插件，或移动你的插件和存档。",
   "{size} free on this drive": "此磁盘可用 {size}",
   "{to} becomes active first, and Play uses it from now on.": "{to} 将先变为当前配置，此后“开始游戏”将使用它。"
 }

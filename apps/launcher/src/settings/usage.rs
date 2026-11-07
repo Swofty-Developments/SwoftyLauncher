@@ -67,7 +67,7 @@ pub fn low_space_warning(room: data_usage::Room) -> Option<String> {
     });
     let data = room.data_low().map(|free| {
         trf!(
-            "Only {free} free on the drive with the data folder: installing or building addons may fail.",
+            "Only {free} free on the drive with your addons and saves: installing or building addons may fail.",
             free = size(free)
         )
     });
@@ -269,14 +269,14 @@ mod tests {
             "{refused}"
         );
         assert!(
-            !refused.contains("data folder"),
+            !refused.contains("addons and saves"),
             "one drive is named once: {refused}"
         );
         let tight = low_space_warning(room(Some(5 * GB / 2), Some(50 * GB))).unwrap();
         assert!(tight.contains("and F1 25 needs 2.0 GB to start"), "{tight}");
         let data = low_space_warning(room(Some(50 * GB), Some(GB))).unwrap();
         assert!(
-            data.starts_with("Only 1.0 GB free on the drive with the data folder"),
+            data.starts_with("Only 1.0 GB free on the drive with your addons and saves"),
             "{data}"
         );
     }

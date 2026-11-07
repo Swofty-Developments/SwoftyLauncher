@@ -121,7 +121,7 @@ impl Shell {
             .on_click(cx.listener(|this, _, window, cx| this.scan_for_data(true, window, cx)));
         SettingsSection::new(tr("Location"))
             .row(
-                SettingRow::new(tr("Data folder"))
+                SettingRow::new(tr("Your addons and saves"))
                     .description(self.store.root.display().to_string())
                     .control(open)
                     .control(moving),
@@ -180,7 +180,7 @@ impl Shell {
             )
             .when_some(short, |s, short| {
                 s.row(Notice::warning(trf!(
-                    "{short} Clear old logs, remove addons you don't use, or move the data folder.",
+                    "{short} Clear old logs, remove addons you don't use, or move your addons and saves.",
                     short = short
                 )))
             })
