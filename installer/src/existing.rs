@@ -45,7 +45,7 @@ pub fn default_root() -> PathBuf {
 pub struct Existing {
     found: Vec<PathBuf>,
     picked: usize,
-    moving: bool,
+    keep: bool,
 }
 
 impl Existing {
@@ -53,8 +53,12 @@ impl Existing {
         Self {
             found: find(),
             picked: 0,
-            moving: true,
+            keep: false,
         }
+    }
+
+    pub fn roots(&self) -> &[PathBuf] {
+        &self.found
     }
 
     pub fn root(&self) -> Option<&Path> {
@@ -97,28 +101,36 @@ impl Existing {
             ui.label(RichText::new("Updates your install in place.").color(MUTED));
             return;
         }
-        ui.checkbox(
-            &mut self.moving,
-            format!(
-                "Move your existing install from {} to {}",
-                from.display(),
-                target.display()
-            ),
+        ui.label(
+            RichText::new(if self.keep {
+                format!("Installs a second copy and keeps the one in {}.", from.display())
+            } else {
+                format!(
+                    "Moves your install from {} to {}.",
+                    from.display(),
+                    target.display()
+                )
+            })
+            .color(MUTED),
         );
-        if !self.moving {
-            ui.label(
-                RichText::new(format!(
-                    "Installs a second copy and keeps the one in {}.",
-                    from.display()
-                ))
-                .color(MUTED),
-            );
+    }
+
+    pub fn differs_from(&self, target: &Path) -> bool {
+        self.root().is_some_and(|from| !same_folder(from, target))
+    }
+
+    pub fn advanced(&mut self, ui: &mut egui::Ui, folder: &str) {
+        let Ok(target) = crate::resolve(folder) else {
+            return;
+        };
+        if self.differs_from(&target) {
+            ui.checkbox(&mut self.keep, "Keep a second copy of the launcher");
         }
     }
 
     pub fn planned(&self, target: &Path) -> Result<Option<Move>, String> {
         match self.root() {
-            Some(from) if self.moving && is_install(from) && !same_folder(from, target) => {
+            Some(from) if !self.keep && is_install(from) && !same_folder(from, target) => {
                 plan(from, target, &swofty_core::paths::data_dir()).map(Some)
             }
             _ => Ok(None),
@@ -946,6 +958,24 @@ mod tests {
         write(&from.join("addons/swofty.bundled/swofty.json"), "{}");
         let m = plan(&from, &to, &dir.join("data")).unwrap();
         assert!(m.entries.iter().any(|e| e == Path::new("addons")));
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn an_existing_install_is_always_moved_unless_a_second_copy_is_asked_for() {
+        let dir = temp("always-moves");
+        let (from, to) = (dir.join("old"), dir.join("new"));
+        release(&from);
+        let mut existing = Existing {
+            found: vec![from.clone()],
+            picked: 0,
+            keep: false,
+        };
+        assert!(existing.planned(&to).unwrap().is_some());
+        assert!(existing.planned(&from).unwrap().is_none());
+        assert!(existing.differs_from(&to));
+        existing.keep = true;
+        assert!(existing.planned(&to).unwrap().is_none());
         std::fs::remove_dir_all(&dir).ok();
     }
 }
