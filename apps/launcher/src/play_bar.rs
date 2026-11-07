@@ -495,7 +495,7 @@ impl Shell {
                         div()
                             .min_w_0()
                             .truncate()
-                            .child(crate::career_saves::EMPTY_SAVE_SHORT),
+                            .child(crate::career_saves::empty_save_short()),
                     );
                 }
                 row
