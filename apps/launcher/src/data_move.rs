@@ -17,7 +17,7 @@ use swofty_core::data_move::{self, Location, Moved, Ops, Plan};
 use swofty_core::launcher::Progress;
 use swofty_i18n::{tr, trf};
 
-use crate::lock_overlay::LockOverlay;
+use crate::ui::LockPanel;
 use crate::settings::size;
 use crate::shell::Shell;
 use crate::theme::Palette;
@@ -290,7 +290,7 @@ impl Shell {
     pub(crate) fn data_move_overlay(&self, p: Palette, cx: &mut Context<Self>) -> Option<impl IntoElement> {
         let m = self.moving.as_ref()?;
         let (done, file) = m.feed.lock().map(|f| f.clone()).unwrap_or_default();
-        let overlay = LockOverlay::new(tr("Moving your addons and saves")).detail(trf!(
+        let overlay = LockPanel::new(tr("Moving your addons and saves")).detail(trf!(
             "{from} to {to}",
             from = m.plan.from.display(),
             to = m.plan.to.display()

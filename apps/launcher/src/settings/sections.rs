@@ -15,7 +15,7 @@ use swofty_core::updater;
 use swofty_i18n::{tr, trf};
 
 use super::size;
-use crate::form::{Choice, Notice, SettingRow, SettingsSection, ValuePill, segmented, select, usage_bar};
+use crate::ui::form::{Choice, Notice, SettingRow, SettingsSection, ValuePill, segmented, select, usage_bar};
 use crate::shell::Shell;
 use crate::theme::Palette;
 

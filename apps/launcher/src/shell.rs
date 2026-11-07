@@ -2124,7 +2124,7 @@ impl Shell {
                 .on_click(cx.listener(|this, _, window, cx| this.mp_sign_in(window, cx)))
                 .into_any_element(),
         };
-        crate::overlay::title_bar(p).child(
+        crate::ui::title_bar(p).child(
             h_flex()
                 .flex_1()
                 .justify_end()

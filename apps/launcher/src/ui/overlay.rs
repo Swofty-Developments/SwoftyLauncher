@@ -1,6 +1,9 @@
-use gpui_kit::component::{TITLE_BAR_HEIGHT, h_flex};
+use gpui_kit::component::{TITLE_BAR_HEIGHT, TitleBar, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
+
+use crate::scale::px;
+use crate::theme::Palette;
 
 type Dismiss = Box<dyn Fn(&mut Window, &mut App) + 'static>;
 
@@ -80,4 +83,21 @@ impl RenderOnce for Overlay {
             .when_some(dismiss, |d, f| d.on_click(move |_, window, cx| f(window, cx)))
             .child(panel)
     }
+}
+
+/// The root of a page-replacing screen (the welcome wizard): opaque, full size,
+/// with the app's text defaults. Its title bar comes from [`title_bar`].
+pub(crate) fn takeover(id: impl Into<ElementId>, p: Palette) -> Stateful<Div> {
+    v_flex()
+        .id(id)
+        .relative()
+        .size_full()
+        .overflow_hidden()
+        .bg(p.background)
+        .text_color(p.text)
+        .text_size(px(14.))
+}
+
+pub(crate) fn title_bar(p: Palette) -> TitleBar {
+    TitleBar::new().bg(p.chrome)
 }

@@ -156,13 +156,13 @@ impl Shell {
             .justify_center()
             .child(steps::enter(step, body));
         Some(
-            crate::overlay::takeover("onboarding", p)
+            crate::ui::takeover("onboarding", p)
                 .track_focus(&wizard.focus)
                 .on_key_down(cx.listener(|this, ev: &KeyDownEvent, window, cx| {
                     this.onboarding_key(ev.keystroke.key.as_str(), window, cx);
                 }))
                 .child(welcome::backdrop(step, p))
-                .child(crate::overlay::title_bar(p))
+                .child(crate::ui::title_bar(p))
                 .child(stage)
                 .child(self.footer(step, p, cx)),
         )
