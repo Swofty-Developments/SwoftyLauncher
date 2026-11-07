@@ -43,6 +43,21 @@ pub(crate) fn notice(
         .child(div().flex_1().min_w_0().text_color(p.text).child(text))
 }
 
+fn state_pill(state: String, color: Hsla) -> Div {
+    h_flex()
+        .h(px(22.))
+        .px(px(8.))
+        .gap(px(5.))
+        .flex_shrink_0()
+        .rounded(px(11.))
+        .bg(color.opacity(0.13))
+        .text_size(px(12.))
+        .font_weight(FontWeight::MEDIUM)
+        .text_color(color)
+        .child(div().size(px(6.)).rounded_full().bg(color))
+        .child(state)
+}
+
 impl Shell {
     fn db_header(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let title = div()
@@ -104,18 +119,51 @@ impl Shell {
             (k, Some(_)) => (trf!("{k} not saved to the addon", k = k), p.warning),
             (k, None) => (trf!("{k} not saved yet", k = k), p.warning),
         };
-        let pill = h_flex()
-            .h(px(22.))
-            .px(px(8.))
-            .gap(px(5.))
-            .flex_shrink_0()
-            .rounded(px(11.))
-            .bg(color.opacity(0.13))
-            .text_size(px(12.))
-            .font_weight(FontWeight::MEDIUM)
-            .text_color(color)
-            .child(div().size(px(6.)).rounded_full().bg(color))
-            .child(state);
+        let pill = state_pill(state, color);
+        let (turn_on, discard, details, fresh) = self.db_header_buttons(&bound, on, broken, unsaved, cx);
+        h_flex()
+            .gap(px(10.))
+            .min_w_0()
+            .child(
+                Icon::new(if bound.is_some() {
+                    IconName::Pencil
+                } else {
+                    IconName::PackagePlus
+                })
+                .size(px(14.))
+                .text_color(p.text_muted),
+            )
+            .child(
+                div()
+                    .min_w(px((target.chars().count() as f32 * 7.).min(160.)))
+                    .flex_shrink(1.)
+                    .text_size(px(13.))
+                    .font_weight(FontWeight::MEDIUM)
+                    .truncate()
+                    .child(target),
+            )
+            .children(place.map(|t| {
+                div()
+                    .text_size(px(13.))
+                    .flex_shrink_0()
+                    .text_color(if broken { p.error } else { p.text_muted })
+                    .child(t)
+            }))
+            .when(!broken, |d| d.child(pill))
+            .children(turn_on)
+            .children(discard)
+            .children(details)
+            .children(fresh)
+    }
+
+    fn db_header_buttons(
+        &self,
+        bound: &Option<String>,
+        on: bool,
+        broken: bool,
+        unsaved: usize,
+        cx: &mut Context<Self>,
+    ) -> (Option<Button>, Option<Button>, Option<Button>, Option<Button>) {
         let turn_on = bound.clone().filter(|_| !on && !broken).map(|id| {
             Button::new("db-turn-on")
                 .ghost()
@@ -153,39 +201,7 @@ impl Shell {
                 .label(tr("Discard changes"))
                 .on_click(cx.listener(|this, _, window, cx| this.db_discard(window, cx)))
         });
-        h_flex()
-            .gap(px(10.))
-            .min_w_0()
-            .child(
-                Icon::new(if bound.is_some() {
-                    IconName::Pencil
-                } else {
-                    IconName::PackagePlus
-                })
-                .size(px(14.))
-                .text_color(p.text_muted),
-            )
-            .child(
-                div()
-                    .min_w(px((target.chars().count() as f32 * 7.).min(160.)))
-                    .flex_shrink(1.)
-                    .text_size(px(13.))
-                    .font_weight(FontWeight::MEDIUM)
-                    .truncate()
-                    .child(target),
-            )
-            .children(place.map(|t| {
-                div()
-                    .text_size(px(13.))
-                    .flex_shrink_0()
-                    .text_color(if broken { p.error } else { p.text_muted })
-                    .child(t)
-            }))
-            .when(!broken, |d| d.child(pill))
-            .children(turn_on)
-            .children(discard)
-            .children(details)
-            .children(fresh)
+        (turn_on, discard, details, fresh)
     }
 
     fn db_header_actions(&self, cx: &mut Context<Self>) -> Div {
@@ -230,14 +246,14 @@ impl Shell {
             .child(save)
     }
 
-    pub(crate) fn db_page(&mut self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+    fn db_career_strip(&self, p: Palette, cx: &mut Context<Self>) -> Stateful<Div> {
         let career = Self::career_link();
         let career_label = match self.db_link_state(&career) {
             LinkState::Open => tr("Open Career Mode Editor").to_owned(),
             LinkState::Off(_) => tr("Turn on Career Mode Editor").to_owned(),
             LinkState::Missing => tr("Get Career Mode Editor").to_owned(),
         };
-        let strip = notice(
+        notice(
             "db-career-notice",
             IconName::Info,
             p.accent,
@@ -257,7 +273,62 @@ impl Shell {
                 })
                 .disabled(self.vanilla() && matches!(self.db_link_state(&career), LinkState::Off(_)))
                 .on_click(cx.listener(move |this, _, window, cx| this.db_follow(&career, window, cx))),
-        );
+        )
+    }
+
+    fn db_load_state(&mut self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+        match &self.db.load {
+            Load::Ready(_) => self.db_body(p, cx),
+            Load::Loading => self.db_loading(tr("Reading the game database…"), p),
+            Load::Failed(e) => self.empty(
+                IconName::CircleAlert,
+                tr("The database could not be read"),
+                e.clone(),
+                Button::new("db-retry")
+                    .outline()
+                    .icon(IconName::RefreshCw)
+                    .label(tr("Try again"))
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.db.load = Load::Idle;
+                        this.db.game = None;
+                        cx.notify();
+                    })),
+                p,
+            ),
+            Load::Idle if !self.detected => self.db_loading(tr("Looking for F1 25…"), p),
+            Load::Idle => self.empty(
+                IconName::Database,
+                tr("F1 25 not found"),
+                tr("The DB Editor reads the game's database. Show the launcher where F1 25 is installed."),
+                Button::new("db-locate")
+                    .outline()
+                    .icon(IconName::FolderOpen)
+                    .label(tr("Locate F1 25…"))
+                    .on_click(cx.listener(|this, _, window, cx| this.locate_game(window, cx))),
+                p,
+            ),
+        }
+    }
+
+    fn db_page_keys(&mut self, ev: &KeyDownEvent, window: &mut Window, cx: &mut Context<Self>) {
+        let k = &ev.keystroke;
+        let ctrl = k.modifiers.control || k.modifiers.platform;
+        let typing = self
+            .db
+            .focus
+            .as_ref()
+            .is_some_and(|f| !f.is_focused(window) && f.contains_focused(window, cx));
+        if (ctrl && k.key == "f") || (k.key == "/" && !typing) {
+            self.db_focus_search(window, cx);
+            cx.stop_propagation();
+        } else if k.key == "escape" && self.db.hits_open {
+            self.db.hits_open = false;
+            cx.notify();
+        }
+    }
+
+    pub(crate) fn db_page(&mut self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+        let strip = self.db_career_strip(p, cx);
         let vanilla = self.vanilla().then(|| {
             notice(
                 "db-vanilla-notice",
@@ -289,58 +360,13 @@ impl Shell {
                     .on_click(cx.listener(|this, _, _, cx| this.db_retry(cx))),
             )
         });
-        let body = match &self.db.load {
-            Load::Ready(_) => self.db_body(p, cx),
-            Load::Loading => self.db_loading(tr("Reading the game database…"), p),
-            Load::Failed(e) => self.empty(
-                IconName::CircleAlert,
-                tr("The database could not be read"),
-                e.clone(),
-                Button::new("db-retry")
-                    .outline()
-                    .icon(IconName::RefreshCw)
-                    .label(tr("Try again"))
-                    .on_click(cx.listener(|this, _, _, cx| {
-                        this.db.load = Load::Idle;
-                        this.db.game = None;
-                        cx.notify();
-                    })),
-                p,
-            ),
-            Load::Idle if !self.detected => self.db_loading(tr("Looking for F1 25…"), p),
-            Load::Idle => self.empty(
-                IconName::Database,
-                tr("F1 25 not found"),
-                tr("The DB Editor reads the game's database. Show the launcher where F1 25 is installed."),
-                Button::new("db-locate")
-                    .outline()
-                    .icon(IconName::FolderOpen)
-                    .label(tr("Locate F1 25…"))
-                    .on_click(cx.listener(|this, _, window, cx| this.locate_game(window, cx))),
-                p,
-            ),
-        };
+        let body = self.db_load_state(p, cx);
         let focus = self.db.focus.clone();
         v_flex()
             .id("db-page")
             .size_full()
             .when_some(focus, |d, f| d.track_focus(&f))
-            .capture_key_down(cx.listener(|this, ev: &KeyDownEvent, window, cx| {
-                let k = &ev.keystroke;
-                let ctrl = k.modifiers.control || k.modifiers.platform;
-                let typing = this
-                    .db
-                    .focus
-                    .as_ref()
-                    .is_some_and(|f| !f.is_focused(window) && f.contains_focused(window, cx));
-                if (ctrl && k.key == "f") || (k.key == "/" && !typing) {
-                    this.db_focus_search(window, cx);
-                    cx.stop_propagation();
-                } else if k.key == "escape" && this.db.hits_open {
-                    this.db.hits_open = false;
-                    cx.notify();
-                }
-            }))
+            .capture_key_down(cx.listener(Self::db_page_keys))
             .child(self.db_header(p, cx))
             .child(strip)
             .children(vanilla)

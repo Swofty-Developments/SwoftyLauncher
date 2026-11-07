@@ -8,11 +8,11 @@ use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
 use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::dbedit::Module;
+use swofty_core::dbedit::{Module, Scope};
 use swofty_i18n::{tr, trf, trn};
 
 use super::{MOVE_W, NAME_W, notice};
-use crate::db::{icon_named, swap_field};
+use crate::db::{ViewSlot, icon_named, swap_field};
 use crate::shell::Shell;
 use crate::theme::Palette;
 use crate::ui::SectionHead;
@@ -58,76 +58,7 @@ impl Shell {
                     .into_any_element()
             })
             .collect();
-        let toolbar = slot.map(|slot| {
-            let scope = module.scope.as_ref().map(|sc| {
-                let current = slot.scope.clone().unwrap_or_default();
-                let scopes = slot.view.scopes.clone();
-                let shown = scopes
-                    .iter()
-                    .find(|(l, _)| *l == current)
-                    .map(|(l, n)| if n.is_empty() { l.clone() } else { n.clone() })
-                    .unwrap_or_else(|| current.clone());
-                let shell = cx.entity().downgrade();
-                h_flex()
-                    .gap(px(8.))
-                    .child(
-                        div()
-                            .text_size(px(12.))
-                            .text_color(p.text_muted)
-                            .child(sc.title.clone()),
-                    )
-                    .child(
-                        Button::new("db-scope")
-                            .outline()
-                            .small()
-                            .min_w(px(200.))
-                            .label(shown)
-                            .dropdown_caret(true)
-                            .dropdown_menu_with_anchor(Anchor::TopLeft, move |mut menu, _, _| {
-                                menu = menu.max_h(px(360.)).scrollable(true).min_w(px(260.));
-                                for (l, n) in &scopes {
-                                    let (shell, value) = (shell.clone(), l.clone());
-                                    let text = if n.is_empty() { l.clone() } else { n.clone() };
-                                    menu =
-                                        menu.item(PopupMenuItem::new(text).checked(*l == current).on_click(
-                                            move |_, _, cx| {
-                                                shell
-                                                    .update(cx, |s, cx| s.db_set_scope(value.clone(), cx))
-                                                    .ok();
-                                            },
-                                        ));
-                                }
-                                menu
-                            }),
-                    )
-            });
-            let total = slot.view.rows.len();
-            let count = if slot.shown.len() == total {
-                trn(total, "{count} row", "{count} rows")
-            } else {
-                trf!("{shown} of {total} rows", shown = slot.shown.len(), total = total)
-            };
-            h_flex()
-                .gap(px(16.))
-                .flex_shrink_0()
-                .children(scope)
-                .children(self.db.filter.as_ref().map(|f| {
-                    div().w(px(280.)).child(
-                        Input::new(&f.input).small().cleanable(true).prefix(
-                            Icon::new(IconName::ListFilter)
-                                .size(px(14.))
-                                .text_color(p.text_placeholder),
-                        ),
-                    )
-                }))
-                .child(div().flex_1())
-                .child(
-                    div()
-                        .text_size(px(12.))
-                        .text_color(p.text_placeholder)
-                        .child(count),
-                )
-        });
+        let toolbar = slot.map(|slot| self.db_module_toolbar(module, slot, p, cx));
         let has_slot = slot.is_some();
         let content = match (has_slot, self.db.view_error.clone()) {
             (_, Some(e)) => self.empty(
@@ -163,6 +94,86 @@ impl Shell {
                     .children(detail),
             )
             .into_any_element()
+    }
+
+    fn db_module_toolbar(
+        &self,
+        module: &'static Module,
+        slot: &ViewSlot,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> Div {
+        let total = slot.view.rows.len();
+        let count = if slot.shown.len() == total {
+            trn(total, "{count} row", "{count} rows")
+        } else {
+            trf!("{shown} of {total} rows", shown = slot.shown.len(), total = total)
+        };
+        h_flex()
+            .gap(px(16.))
+            .flex_shrink_0()
+            .children(
+                module
+                    .scope
+                    .as_ref()
+                    .map(|sc| Self::db_scope_picker(sc, slot, p, cx)),
+            )
+            .children(self.db.filter.as_ref().map(|f| {
+                div().w(px(280.)).child(
+                    Input::new(&f.input).small().cleanable(true).prefix(
+                        Icon::new(IconName::ListFilter)
+                            .size(px(14.))
+                            .text_color(p.text_placeholder),
+                    ),
+                )
+            }))
+            .child(div().flex_1())
+            .child(
+                div()
+                    .text_size(px(12.))
+                    .text_color(p.text_placeholder)
+                    .child(count),
+            )
+    }
+
+    fn db_scope_picker(sc: &Scope, slot: &ViewSlot, p: Palette, cx: &mut Context<Self>) -> Div {
+        let current = slot.scope.clone().unwrap_or_default();
+        let scopes = slot.view.scopes.clone();
+        let shown = scopes
+            .iter()
+            .find(|(l, _)| *l == current)
+            .map(|(l, n)| if n.is_empty() { l.clone() } else { n.clone() })
+            .unwrap_or_else(|| current.clone());
+        let shell = cx.entity().downgrade();
+        h_flex()
+            .gap(px(8.))
+            .child(
+                div()
+                    .text_size(px(12.))
+                    .text_color(p.text_muted)
+                    .child(sc.title.clone()),
+            )
+            .child(
+                Button::new("db-scope")
+                    .outline()
+                    .small()
+                    .min_w(px(200.))
+                    .label(shown)
+                    .dropdown_caret(true)
+                    .dropdown_menu_with_anchor(Anchor::TopLeft, move |mut menu, _, _| {
+                        menu = menu.max_h(px(360.)).scrollable(true).min_w(px(260.));
+                        for (l, n) in &scopes {
+                            let (shell, value) = (shell.clone(), l.clone());
+                            let text = if n.is_empty() { l.clone() } else { n.clone() };
+                            menu = menu.item(PopupMenuItem::new(text).checked(*l == current).on_click(
+                                move |_, _, cx| {
+                                    shell.update(cx, |s, cx| s.db_set_scope(value.clone(), cx)).ok();
+                                },
+                            ));
+                        }
+                        menu
+                    }),
+            )
     }
 
     fn db_table(&mut self, module: &'static Module, p: Palette, cx: &mut Context<Self>) -> AnyElement {
