@@ -602,7 +602,8 @@ case Ownership::unknown:   /* the game has no answer yet: ask again later */ bre
 ```
 
 - **The answer is the game's own.** The core reads it with `FeTile_Check_EntrantListUsable` on the `f1_2026` entrant list, the same call the game uses to fill its session information. It runs on the flow thread; `owned` reads the cached result and is safe from any thread.
-- **`unknown`** is returned before the game has built its front-end context, for every name other than `f1_2026`, and on a build where the core does not resolve the game binding. `not_owned` is reported only after the check has returned false for about five seconds of front-end ticks, so an early `unknown` never turns into a false `not_owned`.
+- **`unknown`** is returned until the game's front end has run for five seconds, for every name other than `f1_2026`, and on a build where the core does not resolve the game bindings.
+- **`not_owned`** is reported once the check has returned false for about a minute in a row. Until then the answer stays `unknown`.
 - **`owned` is final** for the session. `not_owned` is rechecked every ten seconds or so and becomes `owned` if the content is installed later.
 - **The core logs the answer once** as `[entitlements] f1_2026: owned` or `not owned`.
 - **`swofty/entitlements.json`** is written in the game folder when the answer is known: `{"f1_2026": true}` or `{"f1_2026": false}`.
@@ -616,4 +617,4 @@ case Ownership::unknown:   /* the game has no answer yet: ask again later */ bre
 - **Sound rows: boot.** When the game reads `audio.audio_car_data` after boot needs reverse engineering. A team's `engine_sound` applies at boot, to its car everywhere. To change one box only, give the box its own vehicle variant.
 - **The box's track list: partial.** The list builder behind the track select screen (`ui.track_select.build`) needs reverse engineering. A guard covers tracks that don't fit.
 - **Scale:** one season is about 700 records. Classic Seasons 2017, as an addon for 1.5, builds its season with about 700 operations: 99 add-row, 170 set and 430 put-record. They cover its car packages, `file.put`s for the `cs17_*.bdl` bundles, 430 raw audio records, and the rows for the entrant list, teams and pit times.
-- **Content ownership: experimental.** `content::owned` returns `unknown` until the game bindings it needs (`g_FeTile_Ctx`, `FeTile_Check_EntrantListUsable`) are exported for the running build.
+- **Content ownership: experimental.** `content::owned` uses the experimental bindings `g_FeTile_Ctx` and `FeTile_Check_EntrantListUsable`, and returns `unknown` on a build where they don't resolve.
