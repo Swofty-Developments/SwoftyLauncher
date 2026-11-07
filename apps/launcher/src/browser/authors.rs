@@ -16,7 +16,7 @@ use gpui_kit::*;
 use swofty_core::catalog::Addon;
 use swofty_core::catalog::publishers::{self, Creator};
 use swofty_core::catalog::search::Query;
-use swofty_i18n::trn;
+use swofty_i18n::{tr, trf, trn};
 
 use super::*;
 use crate::format;
@@ -57,7 +57,11 @@ pub(crate) enum View {
 fn joined(iso: &str) -> Option<String> {
     let year = iso.get(..4)?.parse::<u32>().ok()?;
     let month = iso.get(5..7)?.parse::<usize>().ok()?;
-    Some(format!("Joined {} {year}", MONTHS.get(month.checked_sub(1)?)?))
+    Some(trf!(
+        "Joined {month} {year}",
+        month = tr(MONTHS.get(month.checked_sub(1)?)?),
+        year = year
+    ))
 }
 
 fn face_color(id: &str, p: Palette) -> Hsla {
@@ -132,19 +136,19 @@ impl Browser {
             .map(|pr| pr.name.clone())
             .or_else(|| self.creator(id).map(|c| c.name))
             .filter(|n| !n.trim().is_empty())
-            .unwrap_or_else(|| "Creator".to_owned())
+            .unwrap_or_else(|| tr("Creator").to_owned())
     }
 
     fn view_label(&self, v: &View) -> String {
         match v {
             View::Grid => match self.tab {
-                None => "All addons".to_owned(),
+                None => tr("All addons").to_owned(),
                 tab => tab_label(tab).to_owned(),
             },
-            View::Creators => "Creators".to_owned(),
+            View::Creators => tr("Creators").to_owned(),
             View::Addon(id) => self.find(id).map_or_else(|| id.clone(), |a| a.name.clone()),
             View::Author(id) => self.publisher_name(id),
-            View::Installed(_) => "Addons".to_owned(),
+            View::Installed(_) => tr("Addons").to_owned(),
         }
     }
 
@@ -285,7 +289,7 @@ impl Shell {
                         s.record(
                             Op::Profile,
                             true,
-                            format!("Fetched {}'s profile", pr.name),
+                            trf!("Fetched {name}'s profile", name = pr.name),
                             detail,
                             took,
                         );
@@ -296,7 +300,7 @@ impl Shell {
                         s.record(
                             Op::Profile,
                             false,
-                            format!("Couldn't fetch publisher {id}"),
+                            trf!("Couldn't fetch publisher {id}", id = id),
                             e.to_string(),
                             took,
                         );
@@ -390,20 +394,24 @@ impl Shell {
         let Some(owner) = a.owner() else {
             return row.child(div().truncate().child(match a.author_name() {
                 "" => a.id.clone(),
-                name => format!("by {name}"),
+                name => trf!("by {name}", name = name),
             }));
         };
         let credit = a.credit().map(|credit| {
-            let tip = format!("{} published it. Its manifest credits {credit}.", owner.name);
+            let tip = trf!(
+                "{name} published it. Its manifest credits {credit}.",
+                name = owner.name,
+                credit = credit
+            );
             div()
                 .id(SharedString::from(format!("{key}-credit")))
                 .min_w_0()
                 .truncate()
                 .text_color(p.text_placeholder)
-                .child(format!("· credited to {credit}"))
+                .child(format!("· {}", trf!("credited to {credit}", credit = credit)))
                 .tooltip(move |window, cx| Tooltip::new(tip.clone()).build(window, cx))
         });
-        row.child(div().flex_shrink_0().child("by"))
+        row.child(div().flex_shrink_0().child(tr("by")))
             .child(
                 self.author_link(key, &owner.id, &owner.name, size, p, cx)
                     .flex_shrink_0()
@@ -472,7 +480,7 @@ impl Shell {
                     .cursor_pointer()
                     .hover(move |s| s.bg(p.hover).text_color(p.text))
                     .child(Icon::new(IconName::ArrowLeft).size(px(14.)))
-                    .child("Back")
+                    .child(tr("Back"))
                     .on_click(cx.listener(|this, _, _, cx| this.browse_back(cx))),
             )
             .child(div().w(px(1.)).h(px(14.)).bg(p.border))
@@ -490,7 +498,7 @@ impl Shell {
             })
             .small()
             .icon(IconName::Users)
-            .label("Creators")
+            .label(tr("Creators"))
             .on_click(cx.listener(|this, _, _, cx| this.browse_creators(cx)))
     }
 
@@ -568,8 +576,12 @@ impl Shell {
             .map(|(c, _)| self.creator_chip(c, query, p, cx))
             .collect();
         let more = (total > CREATORS_FOUND).then(|| {
-            text_link("browser-found-all".into(), format!("All {total} creators"), p)
-                .on_click(cx.listener(|this, _, _, cx| this.browse_creators(cx)))
+            text_link(
+                "browser-found-all".into(),
+                trf!("All {count} creators", count = total),
+                p,
+            )
+            .on_click(cx.listener(|this, _, _, cx| this.browse_creators(cx)))
         });
         Some(
             v_flex()
@@ -579,7 +591,7 @@ impl Shell {
                     h_flex()
                         .gap(px(8.))
                         .items_center()
-                        .child(label("CREATORS", p))
+                        .child(label(tr("CREATORS"), p))
                         .child(
                             div()
                                 .text_size(px(11.))
@@ -595,7 +607,7 @@ impl Shell {
                         .pt(px(10.))
                         .border_t_1()
                         .border_color(p.border_variant)
-                        .child(label("ADDONS", p)),
+                        .child(label(tr("ADDONS"), p)),
                 ),
         )
     }
@@ -650,7 +662,7 @@ impl Shell {
                                     .text_size(px(12.))
                                     .text_color(p.text_placeholder)
                                     .truncate()
-                                    .child(joined(&c.joined).unwrap_or_else(|| "Publisher".to_owned())),
+                                    .child(joined(&c.joined).unwrap_or_else(|| tr("Publisher").to_owned())),
                             ),
                     )
                     .child(
@@ -675,7 +687,7 @@ impl Shell {
                     .line_clamp(2)
                     .text_ellipsis()
                     .child(if bio.is_empty() {
-                        "No bio yet.".to_owned()
+                        tr("No bio yet.").to_owned()
                     } else {
                         bio
                     }),
@@ -724,7 +736,7 @@ impl Shell {
             div()
                 .text_size(px(13.))
                 .text_color(p.text_placeholder)
-                .child("No creators to show yet.")
+                .child(tr("No creators to show yet."))
         });
         let body = v_flex()
             .id("browser-creators-page")
@@ -740,11 +752,12 @@ impl Shell {
                         div()
                             .text_size(px(20.))
                             .font_weight(FontWeight::BOLD)
-                            .child("Creators"),
+                            .child(tr("Creators")),
                     )
-                    .child(div().text_size(px(13.)).text_color(p.text_muted).child(format!(
-                        "{} publishing to the registry, most downloaded first",
-                        trn(creators.len(), "{count} creator", "{count} creators")
+                    .child(div().text_size(px(13.)).text_color(p.text_muted).child(trn(
+                        creators.len(),
+                        "{count} creator publishing to the registry, most downloaded first",
+                        "{count} creators publishing to the registry, most downloaded first",
                     ))),
             )
             .children(rows)
@@ -831,7 +844,7 @@ impl Shell {
                     .text_size(px(12.))
                     .text_color(p.text_placeholder)
                     .child(Spinner::new().icon(IconName::LoaderCircle).with_size(px(12.)))
-                    .child("Loading the profile…")
+                    .child(tr("Loading the profile…"))
                     .into_any_element(),
             )
         } else {
@@ -843,9 +856,9 @@ impl Shell {
                     .text_size(px(12.))
                     .text_color(p.warning)
                     .child(Icon::new(IconName::CircleAlert).size(px(13.)))
-                    .child("Couldn't load the full profile")
+                    .child(tr("Couldn't load the full profile"))
                     .child(
-                        text_link("browser-author-retry".into(), "Retry", p)
+                        text_link("browser-author-retry".into(), tr("Retry"), p)
                             .on_click(cx.listener(move |this, _, _, cx| this.fetch_profile(&target, cx))),
                     )
                     .tooltip(move |window, cx| Tooltip::new(tip.clone()).build(window, cx))
@@ -912,7 +925,7 @@ impl Shell {
                                     } else {
                                         p.text.opacity(0.84)
                                     })
-                                    .when(paragraphs.is_empty() && !loading, |d| d.child("No bio yet."))
+                                    .when(paragraphs.is_empty() && !loading, |d| d.child(tr("No bio yet.")))
                                     .children(paragraphs),
                             )
                             .when(!links.is_empty(), |d| {
@@ -928,13 +941,13 @@ impl Shell {
                     .gap(px(24.))
                     .border_t_1()
                     .border_color(p.border_variant)
-                    .child(figure("ADDONS", totals.addons.to_string()))
-                    .child(figure("DOWNLOADS", format::compact(totals.downloads)))
+                    .child(figure(tr("ADDONS"), totals.addons.to_string()))
+                    .child(figure(tr("DOWNLOADS"), format::compact(totals.downloads)))
                     .child(figure(
-                        "DOWNLOADS THIS MONTH",
+                        tr("DOWNLOADS THIS MONTH"),
                         format::compact(totals.downloads_30d),
                     ))
-                    .child(figure("STARS", format::compact(totals.stars))),
+                    .child(figure(tr("STARS"), format::compact(totals.stars))),
             );
         let mut addons = b.author_addons(id);
         let sort = b.author_sort;
@@ -953,9 +966,9 @@ impl Shell {
                 .text_size(px(13.))
                 .text_color(p.text_placeholder)
                 .child(if loading {
-                    "Loading their addons…"
+                    tr("Loading their addons…")
                 } else {
-                    "No listed addons right now."
+                    tr("No listed addons right now.")
                 })
         });
         let body = v_flex()
@@ -975,7 +988,7 @@ impl Shell {
                         div()
                             .text_size(px(16.))
                             .font_weight(FontWeight::SEMIBOLD)
-                            .child(format!("Addons by {name}")),
+                            .child(trf!("Addons by {name}", name = name)),
                     )
                     .child(
                         div()
@@ -1026,7 +1039,7 @@ impl Shell {
                 .border_1()
                 .border_color(p.border)
                 .bg(p.surface)
-                .child(label("PUBLISHED BY", p))
+                .child(label(tr("PUBLISHED BY"), p))
                 .child(
                     h_flex()
                         .gap(px(12.))
@@ -1062,10 +1075,10 @@ impl Shell {
                     )
                 })
                 .when(!others.is_empty(), |d| {
-                    d.child(v_flex().gap(px(6.)).child(label("WITH", p)).children(others))
+                    d.child(v_flex().gap(px(6.)).child(label(tr("WITH"), p)).children(others))
                 })
                 .child(
-                    text_link("browser-publisher-profile".into(), "View profile", p)
+                    text_link("browser-publisher-profile".into(), tr("View profile"), p)
                         .child(Icon::new(IconName::ArrowRight).size(px(12.)))
                         .on_click(
                             cx.listener(move |this, _, _, cx| this.browse(View::Author(target.clone()), cx)),
@@ -1159,10 +1172,10 @@ impl Shell {
                                 .truncate()
                                 .text_size(px(14.))
                                 .font_weight(FontWeight::SEMIBOLD)
-                                .child(format!("More from {}", owner.name)),
+                                .child(trf!("More from {name}", name = owner.name)),
                         )
                         .child(
-                            text_link("browser-more-all".into(), "See all", p)
+                            text_link("browser-more-all".into(), tr("See all"), p)
                                 .child(Icon::new(IconName::ArrowRight).size(px(12.)))
                                 .on_click(cx.listener(move |this, _, _, cx| {
                                     this.browse(View::Author(target.clone()), cx)
@@ -1181,7 +1194,7 @@ impl Shell {
                 .primary()
                 .xsmall()
                 .icon(IconName::Download)
-                .label("Install")
+                .label(tr("Install"))
                 .on_click(cx.listener(move |this, _, _, cx| {
                     cx.stop_propagation();
                     this.install_from_catalog(&target, cx);
@@ -1191,7 +1204,7 @@ impl Shell {
                 .danger()
                 .xsmall()
                 .icon(IconName::RotateCw)
-                .label("Retry")
+                .label(tr("Retry"))
                 .on_click(cx.listener(move |this, _, _, cx| {
                     cx.stop_propagation();
                     this.retry_download(&target, cx);
@@ -1200,7 +1213,7 @@ impl Shell {
             Offer::Queued => Button::new(key)
                 .outline()
                 .xsmall()
-                .label("Queued")
+                .label(tr("Queued"))
                 .on_click(cx.listener(|this, _, _, cx| {
                     cx.stop_propagation();
                     this.open_page(crate::shell::Page::Downloads, cx);
@@ -1217,17 +1230,17 @@ impl Shell {
                 .primary()
                 .xsmall()
                 .icon(IconName::Plus)
-                .label("Add")
+                .label(tr("Add"))
                 .on_click(cx.listener(move |this, _, window, cx| {
                     cx.stop_propagation();
                     this.add_one_to_profile(&target, window, cx);
                 }))
                 .into_any_element(),
             Offer::Installed(_) | Offer::Update(..) => {
-                tag("Installed", p).text_color(p.success).into_any_element()
+                tag(tr("Installed"), p).text_color(p.success).into_any_element()
             }
-            Offer::TooOld => tag("Needs a newer launcher", p).into_any_element(),
-            Offer::Blocked => tag("Missing requirements", p)
+            Offer::TooOld => tag(tr("Needs a newer launcher"), p).into_any_element(),
+            Offer::Blocked => tag(tr("Missing requirements"), p)
                 .text_color(p.warning)
                 .into_any_element(),
         }
@@ -1251,7 +1264,7 @@ impl Shell {
                 .text_size(px(13.))
                 .text_color(p.text_muted)
                 .child(self.publisher_avatar(&o.id, &o.name, o.avatar.as_deref(), 24., p))
-                .child(div().flex_shrink_0().child("by"))
+                .child(div().flex_shrink_0().child(tr("by")))
                 .child(
                     div()
                         .id("addon-registry-author")
@@ -1310,19 +1323,21 @@ impl Shell {
             })
             .collect();
         let more = (!rows.is_empty()).then(|| {
-            let name = a.owner().map_or("this author", |o| o.name.as_str());
+            let name = a
+                .owner()
+                .map_or_else(|| tr("this author").to_owned(), |o| o.name.clone());
             v_flex()
                 .gap(px(2.))
                 .child(
                     div()
                         .pb(px(4.))
-                        .child(label(format!("MORE FROM {}", name.to_uppercase()), p)),
+                        .child(label(trf!("MORE FROM {name}", name = name.to_uppercase()), p)),
                 )
                 .children(rows)
         });
         let view = {
             let from = from.clone();
-            text_link("addon-registry-view".into(), "View in Addon Browser", p)
+            text_link("addon-registry-view".into(), tr("View in Addon Browser"), p)
                 .child(Icon::new(IconName::ArrowRight).size(px(12.)))
                 .on_click(cx.listener(move |this, _, _, cx| {
                     this.browse_from_addons(&from, View::Addon(from.clone()), cx)
@@ -1331,7 +1346,7 @@ impl Shell {
         Some(
             v_flex()
                 .gap(px(10.))
-                .child(label("FROM THE ADDON BROWSER", p))
+                .child(label(tr("FROM THE ADDON BROWSER"), p))
                 .child(
                     h_flex()
                         .gap(px(10.))

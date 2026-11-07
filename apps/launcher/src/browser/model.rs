@@ -3,12 +3,19 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant, SystemTime};
 
 use gpui_kit::assets::IconName;
-use swofty_core::catalog::Stage;
 use swofty_core::catalog::requires::Event;
+use swofty_core::catalog::{self, Addon, Stage};
+
+use swofty_i18n::{tr, trf};
 
 use crate::format;
 
 use super::*;
+
+/// An addon, the version to install and the profile to add it to.
+pub(super) type Request = (Addon, catalog::Version, String);
+
+pub(super) type QueuedJob = crate::download_queue::Job<Request>;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub(super) enum Progress {
@@ -28,10 +35,13 @@ impl Progress {
 
     pub(super) fn short(self) -> String {
         match self {
-            Self::Downloading { size: 0, .. } => "Downloading…".into(),
-            Self::Downloading { .. } => format!("Downloading {:.0}%", self.fraction() * 100.),
-            Self::Verifying => "Verifying…".into(),
-            Self::Installing => "Installing…".into(),
+            Self::Downloading { size: 0, .. } => tr("Downloading…").to_owned(),
+            Self::Downloading { .. } => trf!(
+                "Downloading {percent}",
+                percent = format::percent(self.fraction())
+            ),
+            Self::Verifying => tr("Verifying…").to_owned(),
+            Self::Installing => tr("Installing…").to_owned(),
         }
     }
 
@@ -39,32 +49,33 @@ impl Progress {
     pub(super) fn long(self, item: Option<&str>) -> String {
         match self {
             Self::Downloading { done, size, rate } => {
-                let mut text = match item {
-                    Some(item) => format!("Downloading {item} · "),
-                    None => "Downloading ".to_owned(),
-                };
-                if size == 0 {
-                    text.push_str(&format::size(done));
+                let amount = if size == 0 {
+                    format::size(done)
                 } else {
-                    text.push_str(&format!(
-                        "{} of {} · {:.0}%",
-                        format::size(done),
-                        format::size(size),
-                        self.fraction() * 100.
-                    ));
-                }
+                    trf!(
+                        "{done} of {size} · {percent}",
+                        done = format::size(done),
+                        size = format::size(size),
+                        percent = format::percent(self.fraction())
+                    )
+                };
+                let text = match item {
+                    Some(item) => trf!("Downloading {item} · {amount}", item = item, amount = amount),
+                    None => trf!("Downloading {amount}", amount = amount),
+                };
                 if rate > 0. {
-                    text.push_str(&format!(" · {}/s", format::size(rate as u64)));
+                    trf!("{text} · {rate}/s", text = text, rate = format::size(rate as u64))
+                } else {
+                    text
                 }
-                text
             }
             Self::Verifying => match item {
-                Some(item) => format!("Verifying {item}'s size and SHA-256…"),
-                None => "Verifying the download's size and SHA-256…".into(),
+                Some(item) => trf!("Verifying {item}'s size and SHA-256…", item = item),
+                None => tr("Verifying the download's size and SHA-256…").to_owned(),
             },
             Self::Installing => match item {
-                Some(item) => format!("Installing {item}…"),
-                None => "Installing…".into(),
+                Some(item) => trf!("Installing {item}…", item = item),
+                None => tr("Installing…").to_owned(),
             },
         }
     }
@@ -135,7 +146,11 @@ impl Job {
         if installed.is_empty() {
             error.to_owned()
         } else {
-            format!("{error} · Already installed: {}", installed.join(", "))
+            trf!(
+                "{error} · Already installed: {names}",
+                error = error,
+                names = installed.join(", ")
+            )
         }
     }
 
@@ -221,13 +236,59 @@ impl Batch {
     pub(super) fn summary(&self) -> String {
         let mut lines = Vec::new();
         if !self.updated.is_empty() {
-            lines.push(format!("Updated {}", self.updated.join(", ")));
+            lines.push(trf!("Updated {names}", names = self.updated.join(", ")));
         }
         lines.extend(
             self.failed
                 .iter()
-                .map(|(name, e)| format!("Couldn't update {name}: {e}")),
+                .map(|(name, e)| trf!("Couldn't update {name}: {error}", name = name, error = e)),
         );
         lines.join("\n")
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum Verb {
+    Install,
+    Update,
+}
+
+impl Verb {
+    pub(super) fn of(updating: bool) -> Self {
+        if updating { Self::Update } else { Self::Install }
+    }
+
+    pub(super) fn action(self) -> &'static str {
+        match self {
+            Self::Install => "install",
+            Self::Update => "update",
+        }
+    }
+
+    pub(super) fn done(self, name: &str, version: &semver::Version) -> String {
+        match self {
+            Self::Install => trf!("Installed {name} {version}", name = name, version = version),
+            Self::Update => trf!("Updated {name} {version}", name = name, version = version),
+        }
+    }
+
+    pub(super) fn failed(self, name: &str, version: &semver::Version) -> String {
+        match self {
+            Self::Install => trf!(
+                "Couldn't install {name} {version}",
+                name = name,
+                version = version
+            ),
+            Self::Update => trf!("Couldn't update {name} {version}", name = name, version = version),
+        }
+    }
+
+    pub(super) fn failure_title(self, name: &str, refused: bool) -> String {
+        match (self, refused) {
+            (Self::Install, true) => trf!("Can't install {name}: missing requirements", name = name),
+            (Self::Update, true) => trf!("Can't update {name}: missing requirements", name = name),
+            (Self::Install, false) => trf!("Could not install {name}", name = name),
+            (Self::Update, false) => trf!("Could not update {name}", name = name),
+        }
     }
 }

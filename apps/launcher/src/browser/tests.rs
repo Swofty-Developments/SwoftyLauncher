@@ -5,8 +5,8 @@ use swofty_core::catalog::{Addon, Stage, Update, Version};
 
 use super::detail::shown_versions;
 use super::host;
-use super::jobs::{RetryAction, install_failure_title, requested_version_available, retry_action};
-use super::model::{Job, Progress};
+use super::jobs::{RetryAction, requested_version_available, retry_action};
+use super::model::{Job, Progress, Verb};
 use super::updates::{due_updates, held_failure};
 use crate::format;
 
@@ -190,12 +190,9 @@ fn a_successfully_updated_addon_is_not_reported_as_failed_during_refresh() {
 
 #[test]
 fn failed_install_toast_title_names_the_addon() {
+    assert_eq!(Verb::Install.failure_title("Foo", false), "Could not install Foo");
     assert_eq!(
-        install_failure_title("Foo", "install", false),
-        "Could not install Foo"
-    );
-    assert_eq!(
-        install_failure_title("Foo", "update", true),
+        Verb::Update.failure_title("Foo", true),
         "Can't update Foo: missing requirements"
     );
 }

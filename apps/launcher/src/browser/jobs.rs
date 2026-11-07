@@ -7,21 +7,15 @@ use gpui_kit::*;
 use swofty_core::catalog::{self, Addon};
 use swofty_core::update::current_version;
 
+use swofty_i18n::trf;
+
 use crate::format;
 use crate::shell::Shell;
 
 use super::*;
 
-pub(super) fn install_failure_title(name: &str, verb: &str, refused: bool) -> String {
-    if refused {
-        format!("Can't {verb} {name}: missing requirements")
-    } else {
-        format!("Could not {verb} {name}")
-    }
-}
-
-pub(super) fn install_failure_toast(name: &str, verb: &str, refused: bool, error: String) -> Notification {
-    Notification::error(error).title(install_failure_title(name, verb, refused))
+pub(super) fn install_failure_toast(name: &str, verb: Verb, refused: bool, error: String) -> Notification {
+    Notification::error(error).title(verb.failure_title(name, refused))
 }
 
 pub(super) fn requested_version_available(addon: Option<&Addon>, requested: &catalog::Version) -> bool {
@@ -65,7 +59,10 @@ impl Shell {
                     .iter()
                     .find(|m| m.manifest.id == id)
                     .map_or(id, |m| m.manifest.name.as_str());
-                window.push_notification(Notification::success(format!("Added {name} to {profile}")), cx);
+                window.push_notification(
+                    Notification::success(trf!("Added {name} to {profile}", name = name, profile = profile)),
+                    cx,
+                );
             }
             Err(e) => {
                 crate::app_log::action("add addon to profile")
@@ -148,9 +145,10 @@ impl Shell {
                 .request
                 .clone();
             if !requested_version_available(self.browser.find(&id), &version) {
-                let error = format!(
-                    "{} {} is no longer available or compatible; request it again.",
-                    addon.name, version.version
+                let error = trf!(
+                    "{name} {version} is no longer available or compatible; request it again.",
+                    name = addon.name,
+                    version = version.version
                 );
                 self.browser.queue.finish(&id, Err(error.clone()));
                 self.browser.failed.insert(id.clone(), error.clone());
@@ -159,11 +157,7 @@ impl Shell {
                 {
                     batch.failed.push((addon.name.clone(), error));
                 } else {
-                    let verb = if self.installed_version(&id).is_some() {
-                        "update"
-                    } else {
-                        "install"
-                    };
+                    let verb = Verb::of(self.installed_version(&id).is_some());
                     self.browser
                         .toasts
                         .push(install_failure_toast(&addon.name, verb, false, error));
@@ -249,21 +243,19 @@ impl Shell {
                         .map_err(|error| tracked.failure(&error.to_string())),
                 );
                 let in_batch = s.browser.batch.as_mut().is_some_and(|b| b.left.remove(&addon.id));
-                let verb = if updating { "update" } else { "install" };
+                let verb = Verb::of(updating);
                 match result {
                     Ok(done) => {
                         let (m, also) = done.split_last().expect("an install ends with its addon");
-                        let title = format!(
-                            "{} {} {}",
-                            if updating { "Updated" } else { "Installed" },
-                            m.name,
-                            m.version
-                        );
+                        let title = verb.done(&m.name, &m.version);
                         let also: Vec<String> =
                             also.iter().map(|d| format!("{} {}", d.name, d.version)).collect();
                         let mut detail = format!("{} · {}", format::size(version.size), addon.id);
                         if !also.is_empty() {
-                            detail.push_str(&format!(" · also installed {}", also.join(", ")));
+                            detail.push_str(&format!(
+                                " · {}",
+                                trf!("also installed {names}", names = also.join(", "))
+                            ));
                         }
                         s.record(Op::Install, true, title.clone(), detail, took);
                         s.reload(cx);
@@ -273,19 +265,24 @@ impl Shell {
                             }
                         } else if !also.is_empty() {
                             s.browser.toasts.push(
-                                Notification::success(format!("Also installed {}", also.join(", ")))
-                                    .title(title),
+                                Notification::success(trf!(
+                                    "Also installed {names}",
+                                    names = also.join(", ")
+                                ))
+                                .title(title),
                             );
                         }
                     }
                     Err(e) => {
                         let refused = matches!(e, swofty_core::Error::Requires(_));
                         let error = e.to_string();
-                        crate::app_log::action(verb).addon(&addon.id).failed(&error);
+                        crate::app_log::action(verb.action())
+                            .addon(&addon.id)
+                            .failed(&error);
                         s.record(
                             Op::Install,
                             false,
-                            format!("Couldn't {verb} {} {}", addon.name, version.version),
+                            verb.failed(&addon.name, &version.version),
                             error.clone(),
                             took,
                         );

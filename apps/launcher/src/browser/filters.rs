@@ -4,6 +4,8 @@ use swofty_core::catalog::search::Query;
 use swofty_core::manifest::Category;
 use swofty_core::update::current_version;
 
+use swofty_i18n::tr;
+
 use crate::library::Type;
 use crate::shell::Shell;
 
@@ -31,13 +33,13 @@ impl Sort {
 
     pub(super) fn label(self) -> &'static str {
         match self {
-            Self::Match => "Best match",
-            Self::Stars => "Most stars",
-            Self::Downloads => "Most downloads",
-            Self::Trending => "Trending",
-            Self::Updated => "Recently updated",
-            Self::Newest => "Newest",
-            Self::Name => "Name A–Z",
+            Self::Match => tr("Best match"),
+            Self::Stars => tr("Most stars"),
+            Self::Downloads => tr("Most downloads"),
+            Self::Trending => tr("Trending"),
+            Self::Updated => tr("Recently updated"),
+            Self::Newest => tr("Newest"),
+            Self::Name => tr("Name A–Z"),
         }
     }
 }
@@ -62,11 +64,11 @@ impl Want {
 
     pub(super) fn label(self) -> &'static str {
         match self {
-            Self::Installed => "Installed",
-            Self::NotInstalled => "Not installed",
-            Self::Update => "Update available",
-            Self::Starred => "Starred by you",
-            Self::Works => "Works with this launcher",
+            Self::Installed => tr("Installed"),
+            Self::NotInstalled => tr("Not installed"),
+            Self::Update => tr("Update available"),
+            Self::Starred => tr("Starred by you"),
+            Self::Works => tr("Works with this launcher"),
         }
     }
 }
@@ -110,9 +112,9 @@ pub(super) type Tab = Option<Option<Category>>;
 
 pub(super) fn tab_label(tab: Tab) -> &'static str {
     match tab {
-        None => "All",
+        None => tr("All"),
         Some(Some(c)) => c.label(),
-        Some(None) => "Other",
+        Some(None) => tr("Other"),
     }
 }
 

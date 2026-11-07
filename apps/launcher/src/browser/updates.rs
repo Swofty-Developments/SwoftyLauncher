@@ -9,7 +9,7 @@ use gpui_kit::component::{Icon, Sizable, WindowExt, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::catalog::{self, Addon, Update};
-use swofty_i18n::trn;
+use swofty_i18n::{fill, tr, trf, trn};
 
 use crate::play_bar::link;
 use crate::shell::{PlayState, Shell};
@@ -95,7 +95,7 @@ impl Shell {
             self.play_state(),
             PlayState::Running | PlayState::Elsewhere(_) | PlayState::Launching | PlayState::Preparing
         ) {
-            window.push_notification(Notification::error("Close F1 25 before updating addons."), cx);
+            window.push_notification(Notification::error(tr("Close F1 25 before updating addons.")), cx);
             return;
         }
         let building = self.build.clone();
@@ -119,7 +119,7 @@ impl Shell {
         for update in updates {
             if !self.enqueue_catalog(&update.id, cx) {
                 let error =
-                    "This update is no longer available or another version is already queued.".to_owned();
+                    tr("This update is no longer available or another version is already queued.").to_owned();
                 let addon = self
                     .browser
                     .find(&update.id)
@@ -157,10 +157,13 @@ impl Shell {
         };
         let summary = b.summary();
         catalog::log(&self.store.root, &summary.replace('\n', "; "));
-        let title = format!(
-            "Updated {} of {}",
-            b.updated.len(),
-            trn(b.total(), "{count} addon", "{count} addons")
+        let title = fill(
+            &trn(
+                b.total(),
+                "Updated {done} of {count} addon",
+                "Updated {done} of {count} addons",
+            ),
+            &[("done", b.updated.len().to_string())],
         );
         self.browser.toasts.push(if b.failed.is_empty() {
             Notification::success(summary).title(title)
@@ -184,16 +187,20 @@ impl Shell {
                 }
             }
         }
-        Some((done / total, detail.unwrap_or_else(|| "Starting…".into())))
+        Some((done / total, detail.unwrap_or_else(|| tr("Starting…").to_owned())))
     }
 
     pub(crate) fn addon_update_button(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let running = self.updating_addons();
         let due = self.addon_updates();
         let (label, sub, progress) = match self.batch_progress().filter(|_| running) {
-            Some((done, detail)) => (format!("Updating {:.0}%", done * 100.), detail, Some(done)),
+            Some((done, detail)) => (
+                trf!("Updating {percent}", percent = format::percent(done)),
+                detail,
+                Some(done),
+            ),
             None => (
-                format!("Update addons ({})", due.len()),
+                trf!("Update addons ({count})", count = due.len()),
                 match due.as_slice() {
                     [one] => format!("{} {} → {}", one.name, one.installed, one.to.version),
                     many => trn(many.len(), "{count} addon update", "{count} addon updates"),
@@ -282,7 +289,7 @@ impl Shell {
                 .collect();
             return Some(
                 row.child(dot(p.warning))
-                    .child(text(format!("Updating {}.", names.join(", ")))),
+                    .child(text(trf!("Updating {names}.", names = names.join(", ")))),
             );
         }
         if !matches!(state, PlayState::Ready | PlayState::Crashed(_)) {
@@ -294,10 +301,10 @@ impl Shell {
                 .iter()
                 .map(|u| format!("{} {} → {}", u.name, u.installed, u.to.version))
                 .collect();
-            return Some(
-                row.child(dot(p.accent))
-                    .child(text(format!("Addon updates: {}.", changes.join(", ")))),
-            );
+            return Some(row.child(dot(p.accent)).child(text(trf!(
+                "Addon updates: {changes}.",
+                changes = changes.join(", ")
+            ))));
         }
         let failed: Vec<String> = self
             .browser
@@ -323,11 +330,11 @@ impl Shell {
                         .id("addon-updates-failed")
                         .min_w_0()
                         .truncate()
-                        .child(format!("Couldn't update {}", failed.join("; ")))
+                        .child(trf!("Couldn't update {names}", names = failed.join("; ")))
                         .tooltip(move |window, cx| Tooltip::new(tip.clone()).build(window, cx)),
                 )
                 .child(
-                    link("addon-updates-again", "Try again", p)
+                    link("addon-updates-again", tr("Try again"), p)
                         .flex_shrink_0()
                         .on_click(cx.listener(|this, _, window, cx| this.retry_addon_updates(window, cx))),
                 ),

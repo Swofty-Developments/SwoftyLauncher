@@ -1,3 +1,5 @@
+use swofty_i18n::tr;
+
 use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
@@ -30,7 +32,7 @@ impl Shell {
                     })
                     .small()
                     .icon(IconName::Activity)
-                    .label("Activity")
+                    .label(tr("Activity"))
                     .on_click(cx.listener(|this, _, _, cx| {
                         this.browser.activity_open = !this.browser.activity_open;
                         cx.notify();
@@ -41,7 +43,7 @@ impl Shell {
                     .ghost()
                     .small()
                     .icon(IconName::RefreshCw)
-                    .label("Refresh")
+                    .label(tr("Refresh"))
                     .loading(self.browser.fetching)
                     .disabled(self.browser.fetching)
                     .on_click(cx.listener(|this, _, _, cx| this.fetch_catalog(cx))),

@@ -8,6 +8,8 @@ use swofty_core::catalog::Addon;
 use swofty_core::catalog::requires::{self, Have, Plan};
 use swofty_core::update::current_version;
 
+use swofty_i18n::{tr, trf};
+
 use crate::library::Source;
 use crate::shell::{Page, Shell};
 
@@ -105,26 +107,30 @@ impl Shell {
                 }
             })
             .collect();
-        format!("Requires {}", named.join(", "))
+        trf!("Requires {names}", names = named.join(", "))
     }
 
     pub(crate) fn offer_button(&self, a: &Addon, id: String, cx: &mut Context<Self>) -> Button {
         let target = a.id.clone();
         let button = Button::new(SharedString::from(id)).small();
         let button = match self.offer(a) {
-            Offer::Install => button.primary().icon(IconName::Download).label("Install"),
+            Offer::Install => button.primary().icon(IconName::Download).label(tr("Install")),
             Offer::Update(from, to) => {
                 return button
                     .outline()
                     .icon(IconName::CircleArrowUp)
-                    .label(format!("Installed v{from} · v{to} in the play bar"))
+                    .label(trf!(
+                        "Installed v{from} · v{to} in the play bar",
+                        from = from,
+                        to = to
+                    ))
                     .disabled(true);
             }
             Offer::Failed => {
                 return button
                     .danger()
                     .icon(IconName::RotateCw)
-                    .label("Failed – Retry")
+                    .label(tr("Failed – Retry"))
                     .on_click(cx.listener(move |this, _, _, cx| {
                         cx.stop_propagation();
                         this.retry_download(&target, cx);
@@ -134,11 +140,11 @@ impl Shell {
                 return button
                     .outline()
                     .icon(IconName::Check)
-                    .label(format!("Installed v{v}"))
+                    .label(trf!("Installed v{version}", version = v))
                     .disabled(true);
             }
             Offer::Elsewhere => {
-                let label = format!("Add to {}", self.library.profile.name);
+                let label = trf!("Add to {profile}", profile = self.library.profile.name);
                 return button
                     .primary()
                     .icon(IconName::Plus)
@@ -149,19 +155,22 @@ impl Shell {
                     }));
             }
             Offer::TooOld => {
-                return button.outline().label("Needs a newer launcher").disabled(true);
+                return button
+                    .outline()
+                    .label(tr("Needs a newer launcher"))
+                    .disabled(true);
             }
             Offer::Blocked => {
                 return button
                     .outline()
                     .icon(IconName::TriangleAlert)
-                    .label("Missing requirements")
+                    .label(tr("Missing requirements"))
                     .disabled(true);
             }
             Offer::Queued => {
                 return button
                     .outline()
-                    .label("Queued · View downloads")
+                    .label(tr("Queued · View downloads"))
                     .on_click(cx.listener(|this, _, _, cx| {
                         cx.stop_propagation();
                         this.open_page(Page::Downloads, cx);

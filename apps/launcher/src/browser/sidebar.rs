@@ -1,3 +1,5 @@
+use swofty_i18n::tr;
+
 use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
@@ -114,7 +116,7 @@ impl Shell {
         let code = facet_row(
             "browser-filter-code",
             b.hide_code,
-            "Hide addons that run code",
+            tr("Hide addons that run code"),
             natives,
             p,
         )
@@ -130,7 +132,7 @@ impl Shell {
                 .text_color(p.accent)
                 .cursor_pointer()
                 .hover(move |s| s.text_color(p.accent_hover))
-                .child("Clear filters")
+                .child(tr("Clear filters"))
                 .on_click(cx.listener(|this, _, _, cx| this.clear_filters(cx)))
         });
         v_flex()
@@ -161,7 +163,7 @@ impl Shell {
                                 div()
                                     .text_size(px(13.))
                                     .font_weight(FontWeight::MEDIUM)
-                                    .child("Filters"),
+                                    .child(tr("Filters")),
                             ),
                     )
                     .children(clear),
@@ -174,10 +176,10 @@ impl Shell {
                     .gap(px(16.))
                     .pr(px(SCROLLBAR_GAP))
                     .pb(px(8.))
-                    .child(group("TYPE", types))
-                    .child(group("STATE", states))
-                    .child(group("RUNS CODE IN THE GAME", vec![code]))
-                    .when(!authors.is_empty(), |d| d.child(group("AUTHOR", authors))),
+                    .child(group(tr("TYPE"), types))
+                    .child(group(tr("STATE"), states))
+                    .child(group(tr("RUNS CODE IN THE GAME"), vec![code]))
+                    .when(!authors.is_empty(), |d| d.child(group(tr("AUTHOR"), authors))),
             )
     }
 

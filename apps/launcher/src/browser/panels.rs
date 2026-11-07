@@ -7,7 +7,7 @@ use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::catalog::{self, Trouble};
-use swofty_i18n::trn;
+use swofty_i18n::{tr, trf, trn};
 
 use crate::pages::GUTTER;
 use crate::shell::Shell;
@@ -15,44 +15,111 @@ use crate::theme::Palette;
 
 use super::*;
 
+fn activity_row(i: usize, e: &Activity, p: Palette) -> AnyElement {
+    let color = if e.ok { p.text_muted } else { p.error };
+    h_flex()
+        .px(px(14.))
+        .py(px(9.))
+        .gap(px(10.))
+        .items_start()
+        .when(i > 0, |d| d.border_t_1().border_color(p.border_variant))
+        .child(
+            div().pt(px(2.)).child(
+                Icon::new(if e.ok { e.op.icon() } else { IconName::CircleAlert })
+                    .size(px(14.))
+                    .text_color(color),
+            ),
+        )
+        .child(
+            v_flex()
+                .flex_1()
+                .min_w_0()
+                .gap(px(2.))
+                .child(
+                    h_flex()
+                        .gap(px(8.))
+                        .child(
+                            div()
+                                .flex_1()
+                                .min_w_0()
+                                .truncate()
+                                .text_size(px(13.))
+                                .font_weight(FontWeight::MEDIUM)
+                                .text_color(if e.ok { p.text } else { p.error })
+                                .child(e.title.clone()),
+                        )
+                        .child(
+                            div()
+                                .flex_shrink_0()
+                                .text_size(px(11.))
+                                .text_color(p.text_placeholder)
+                                .child(format!("{} · {}", since_time(e.at), took_text(e.took))),
+                        ),
+                )
+                .when(!e.detail.is_empty(), |d| {
+                    d.child(
+                        div()
+                            .text_size(px(12.))
+                            .line_height(px(17.))
+                            .text_color(p.text_muted)
+                            .child(e.detail.clone()),
+                    )
+                }),
+        )
+        .into_any_element()
+}
+
 impl Shell {
     pub(super) fn stars_status(&self, p: Palette, cx: &mut Context<Self>) -> Stateful<Div> {
         let s = &self.browser.stars;
         let waiting = s.pending.len();
         let (icon, color, text) = if self.browser.syncing {
-            (IconName::RefreshCw, p.text_muted, "Syncing stars…".to_owned())
+            (IconName::RefreshCw, p.text_muted, tr("Syncing stars…").to_owned())
         } else if s.error.is_some() {
             (
                 IconName::CircleAlert,
                 p.warning,
                 match waiting {
-                    0 => "Stars not synced".to_owned(),
-                    n => format!("Stars not synced · {n} waiting"),
+                    0 => tr("Stars not synced").to_owned(),
+                    n => trf!("Stars not synced · {count} waiting", count = n),
                 },
             )
         } else if waiting > 0 {
             (
                 IconName::Clock,
                 p.text_muted,
-                format!(
-                    "{} waiting",
-                    trn(waiting, "{count} star change", "{count} star changes")
+                trn(
+                    waiting,
+                    "{count} star change waiting",
+                    "{count} star changes waiting",
                 ),
             )
         } else if let Some(at) = s.synced_at.as_deref().and_then(since) {
-            (IconName::Star, p.text_muted, format!("Stars synced {at}"))
+            (
+                IconName::Star,
+                p.text_muted,
+                trf!("Stars synced {when}", when = at),
+            )
         } else {
-            (IconName::Star, p.text_muted, "Stars not synced yet".to_owned())
+            (
+                IconName::Star,
+                p.text_muted,
+                tr("Stars not synced yet").to_owned(),
+            )
         };
         let tip = match (&s.error, &s.synced_at) {
-            (Some(e), last) => format!(
-                "The last sync failed: {e}\nLast synced: {}\nClick to try again.",
-                last.as_deref().and_then(since).unwrap_or_else(|| "never".into())
+            (Some(e), last) => trf!(
+                "The last sync failed: {error}\nLast synced: {when}\nClick to try again.",
+                error = e,
+                when = last
+                    .as_deref()
+                    .and_then(since)
+                    .unwrap_or_else(|| tr("never").to_owned())
             ),
-            (None, _) => format!(
-                "{} starred by you · client {}…\nClick to sync now.",
-                s.starred.len(),
-                &s.client[..8.min(s.client.len())]
+            (None, _) => trf!(
+                "{count} starred by you · client {client}…\nClick to sync now.",
+                count = s.starred.len(),
+                client = &s.client[..8.min(s.client.len())]
             ),
         };
         h_flex()
@@ -73,9 +140,13 @@ impl Shell {
 
     pub(super) fn trouble_banner(&self, p: Palette, cx: &mut Context<Self>) -> Option<Div> {
         let trouble = self.browser.trouble.as_ref()?;
-        let what = match trouble {
-            Trouble::Offline(_) => "Couldn't reach the registry",
-            Trouble::Failed(_) => "The registry answered with an error",
+        let what = match (trouble, self.browser.saved) {
+            (Trouble::Offline(_), true) => tr("Couldn't reach the registry · showing the saved catalog"),
+            (Trouble::Offline(_), false) => tr("Couldn't reach the registry · nothing saved to show"),
+            (Trouble::Failed(_), true) => {
+                tr("The registry answered with an error · showing the saved catalog")
+            }
+            (Trouble::Failed(_), false) => tr("The registry answered with an error · nothing saved to show"),
         };
         Some(
             h_flex()
@@ -99,14 +170,7 @@ impl Shell {
                             div()
                                 .text_size(px(13.))
                                 .font_weight(FontWeight::SEMIBOLD)
-                                .child(format!(
-                                    "{what} · {}",
-                                    if self.browser.saved {
-                                        "showing the saved catalog"
-                                    } else {
-                                        "nothing saved to show"
-                                    }
-                                )),
+                                .child(what),
                         )
                         .child(
                             div()
@@ -121,7 +185,7 @@ impl Shell {
                         .outline()
                         .small()
                         .icon(IconName::RefreshCw)
-                        .label("Retry")
+                        .label(tr("Retry"))
                         .loading(self.browser.fetching)
                         .disabled(self.browser.fetching)
                         .on_click(cx.listener(|this, _, _, cx| this.fetch_catalog(cx))),
@@ -135,66 +199,16 @@ impl Shell {
             .activity
             .iter()
             .enumerate()
-            .map(|(i, e)| {
-                let color = if e.ok { p.text_muted } else { p.error };
-                h_flex()
-                    .px(px(14.))
-                    .py(px(9.))
-                    .gap(px(10.))
-                    .items_start()
-                    .when(i > 0, |d| d.border_t_1().border_color(p.border_variant))
-                    .child(
-                        div().pt(px(2.)).child(
-                            Icon::new(if e.ok { e.op.icon() } else { IconName::CircleAlert })
-                                .size(px(14.))
-                                .text_color(color),
-                        ),
-                    )
-                    .child(
-                        v_flex()
-                            .flex_1()
-                            .min_w_0()
-                            .gap(px(2.))
-                            .child(
-                                h_flex()
-                                    .gap(px(8.))
-                                    .child(
-                                        div()
-                                            .flex_1()
-                                            .min_w_0()
-                                            .truncate()
-                                            .text_size(px(13.))
-                                            .font_weight(FontWeight::MEDIUM)
-                                            .text_color(if e.ok { p.text } else { p.error })
-                                            .child(e.title.clone()),
-                                    )
-                                    .child(
-                                        div()
-                                            .flex_shrink_0()
-                                            .text_size(px(11.))
-                                            .text_color(p.text_placeholder)
-                                            .child(format!("{} · {}", since_time(e.at), took_text(e.took))),
-                                    ),
-                            )
-                            .when(!e.detail.is_empty(), |d| {
-                                d.child(
-                                    div()
-                                        .text_size(px(12.))
-                                        .line_height(px(17.))
-                                        .text_color(p.text_muted)
-                                        .child(e.detail.clone()),
-                                )
-                            }),
-                    )
-                    .into_any_element()
-            })
+            .map(|(i, e)| activity_row(i, e, p))
             .collect();
         let empty = rows.is_empty().then(|| {
             div()
                 .p(px(16.))
                 .text_size(px(13.))
                 .text_color(p.text_placeholder)
-                .child("Nothing yet. Catalog fetches, star syncs and installs show here.")
+                .child(tr(
+                    "Nothing yet. Catalog fetches, star syncs and installs show here.",
+                ))
         });
         v_flex()
             .id("browser-activity-panel")
@@ -228,16 +242,16 @@ impl Shell {
                             .flex_1()
                             .text_size(px(14.))
                             .font_weight(FontWeight::SEMIBOLD)
-                            .child("Activity"),
+                            .child(tr("Activity")),
                     )
                     .child(
                         div()
                             .text_size(px(12.))
                             .text_color(p.text_placeholder)
-                            .child(format!(
-                                "last {} · {}",
-                                self.browser.activity.len(),
-                                catalog::LOG_FILE
+                            .child(trf!(
+                                "last {count} · {file}",
+                                count = self.browser.activity.len(),
+                                file = catalog::LOG_FILE
                             )),
                     )
                     .child(

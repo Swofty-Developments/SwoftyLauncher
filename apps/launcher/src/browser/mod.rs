@@ -4,6 +4,7 @@
 mod authors;
 mod card;
 mod detail;
+mod detail_cards;
 mod downloads;
 mod filters;
 mod grid;
@@ -26,6 +27,7 @@ pub(crate) use state::Browser;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use swofty_core::catalog;
+use swofty_i18n::trf;
 
 use crate::format;
 use crate::news::format_date;
@@ -49,7 +51,6 @@ const GAP: f32 = 14.;
 const SIDE_W: f32 = 340.;
 const AUTHORS_SHOWN: usize = 8;
 const HELMET: &[u8] = include_bytes!("../../assets/helmet.svg");
-const NATIVE: &str = "Runs code in the game";
 const VERIFYING: u8 = 1;
 const INSTALLING: u8 = 2;
 
@@ -75,8 +76,8 @@ fn web_url(url: &str) -> bool {
 
 fn took_text(d: Duration) -> String {
     match d.as_millis() {
-        ms @ 0..1000 => format!("{ms} ms"),
-        ms => format!("{:.1} s", ms as f64 / 1000.),
+        ms @ 0..1000 => trf!("{count} ms", count = ms),
+        ms => trf!("{seconds} s", seconds = format!("{:.1}", ms as f64 / 1000.)),
     }
 }
 

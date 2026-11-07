@@ -10,7 +10,7 @@ use swofty_core::catalog::Addon;
 use swofty_core::catalog::publishers::{self};
 use swofty_core::catalog::search::Query;
 use swofty_core::update::current_version;
-use swofty_i18n::trn;
+use swofty_i18n::{tr, trf, trn};
 
 use crate::library::Type;
 use crate::pages::{GUTTER, tile};
@@ -34,6 +34,93 @@ pub(super) struct GridCache {
 }
 
 impl Shell {
+    fn rebuild_grid_cache(&mut self, key: GridKey, query: &Arc<Query>, sort: Sort) {
+        let scores: Vec<_> = self.browser.addons.iter().map(|a| query.score(a)).collect();
+        let names: Vec<_> = self
+            .browser
+            .addons
+            .iter()
+            .map(|a| a.name.to_lowercase())
+            .collect();
+        let mut shown: Vec<usize> = self
+            .browser
+            .addons
+            .iter()
+            .enumerate()
+            .filter(|(i, a)| self.catalog_passes(a, scores[*i].is_some(), None))
+            .map(|(i, _)| i)
+            .collect();
+        shown.sort_by(|&ai, &bi| {
+            let a = &self.browser.addons[ai];
+            let b = &self.browser.addons[bi];
+            let first = match sort {
+                Sort::Match => scores[bi]
+                    .cmp(&scores[ai])
+                    .then_with(|| self.browser.stars_of(b).cmp(&self.browser.stars_of(a))),
+                Sort::Stars => self.browser.stars_of(b).cmp(&self.browser.stars_of(a)),
+                Sort::Downloads => b.downloads.cmp(&a.downloads),
+                Sort::Trending => b.downloads_30d.cmp(&a.downloads_30d),
+                Sort::Updated => b.updated_at.cmp(&a.updated_at),
+                Sort::Newest => b.created_at.cmp(&a.created_at),
+                Sort::Name => std::cmp::Ordering::Equal,
+            };
+            first.then_with(|| names[ai].cmp(&names[bi]))
+        });
+        let types = Type::ALL
+            .into_iter()
+            .map(Facet::Type)
+            .filter(|f| {
+                self.browser.facets.contains(f)
+                    || self.browser.addons.iter().any(|a| self.catalog_facet(a, f))
+            })
+            .collect();
+        let authors = publishers::by_publisher(&self.browser.addons)
+            .into_iter()
+            .map(|(pb, _)| Facet::Author {
+                id: pb.id,
+                name: pb.name,
+            })
+            .enumerate()
+            .filter(|(i, f)| *i < AUTHORS_SHOWN || self.browser.facets.contains(f))
+            .map(|(_, f)| f)
+            .collect();
+        let natives = self
+            .browser
+            .addons
+            .iter()
+            .zip(&scores)
+            .filter(|(a, score)| {
+                a.native(&current_version()) && self.catalog_passes(a, score.is_some(), Some(Group::Code))
+            })
+            .count();
+        let categories = [None]
+            .into_iter()
+            .chain(shelves())
+            .map(|tab| {
+                self.browser
+                    .addons
+                    .iter()
+                    .zip(&scores)
+                    .filter(|(a, score)| {
+                        self.catalog_passes(a, score.is_some(), Some(Group::Category))
+                            && tab.is_none_or(|t| a.category() == t)
+                    })
+                    .count()
+            })
+            .collect();
+        self.browser.grid_cache = Some(GridCache {
+            key,
+            query: query.clone(),
+            scores,
+            shown: shown.into(),
+            types,
+            authors,
+            natives,
+            categories,
+        });
+        self.browser.facet_counts.borrow_mut().clear();
+    }
+
     pub(super) fn browser_grid(&mut self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let text = self.browser.search.read(cx).value().trim().to_owned();
         if text.is_empty() {
@@ -54,96 +141,13 @@ impl Shell {
             self.browser.hide_code,
             self.browser.catalog_revision,
         );
-        if self
+        let stale = self
             .browser
             .grid_cache
             .as_ref()
-            .is_none_or(|cache| cache.key != key)
-        {
-            let scores: Vec<_> = self.browser.addons.iter().map(|a| query.score(a)).collect();
-            let names: Vec<_> = self
-                .browser
-                .addons
-                .iter()
-                .map(|a| a.name.to_lowercase())
-                .collect();
-            let mut shown: Vec<usize> = self
-                .browser
-                .addons
-                .iter()
-                .enumerate()
-                .filter(|(i, a)| self.catalog_passes(a, scores[*i].is_some(), None))
-                .map(|(i, _)| i)
-                .collect();
-            shown.sort_by(|&ai, &bi| {
-                let a = &self.browser.addons[ai];
-                let b = &self.browser.addons[bi];
-                let first = match sort {
-                    Sort::Match => scores[bi]
-                        .cmp(&scores[ai])
-                        .then_with(|| self.browser.stars_of(b).cmp(&self.browser.stars_of(a))),
-                    Sort::Stars => self.browser.stars_of(b).cmp(&self.browser.stars_of(a)),
-                    Sort::Downloads => b.downloads.cmp(&a.downloads),
-                    Sort::Trending => b.downloads_30d.cmp(&a.downloads_30d),
-                    Sort::Updated => b.updated_at.cmp(&a.updated_at),
-                    Sort::Newest => b.created_at.cmp(&a.created_at),
-                    Sort::Name => std::cmp::Ordering::Equal,
-                };
-                first.then_with(|| names[ai].cmp(&names[bi]))
-            });
-            let types = Type::ALL
-                .into_iter()
-                .map(Facet::Type)
-                .filter(|f| {
-                    self.browser.facets.contains(f)
-                        || self.browser.addons.iter().any(|a| self.catalog_facet(a, f))
-                })
-                .collect();
-            let authors = publishers::by_publisher(&self.browser.addons)
-                .into_iter()
-                .map(|(pb, _)| Facet::Author {
-                    id: pb.id,
-                    name: pb.name,
-                })
-                .enumerate()
-                .filter(|(i, f)| *i < AUTHORS_SHOWN || self.browser.facets.contains(f))
-                .map(|(_, f)| f)
-                .collect();
-            let natives = self
-                .browser
-                .addons
-                .iter()
-                .zip(&scores)
-                .filter(|(a, score)| {
-                    a.native(&current_version()) && self.catalog_passes(a, score.is_some(), Some(Group::Code))
-                })
-                .count();
-            let categories = [None]
-                .into_iter()
-                .chain(shelves())
-                .map(|tab| {
-                    self.browser
-                        .addons
-                        .iter()
-                        .zip(&scores)
-                        .filter(|(a, score)| {
-                            self.catalog_passes(a, score.is_some(), Some(Group::Category))
-                                && tab.is_none_or(|t| a.category() == t)
-                        })
-                        .count()
-                })
-                .collect();
-            self.browser.grid_cache = Some(GridCache {
-                key,
-                query: query.clone(),
-                scores,
-                shown: shown.into(),
-                types,
-                authors,
-                natives,
-                categories,
-            });
-            self.browser.facet_counts.borrow_mut().clear();
+            .is_none_or(|cache| cache.key != key);
+        if stale {
+            self.rebuild_grid_cache(key, &query, sort);
         }
         let cache = self.browser.grid_cache.as_ref().unwrap();
         let shown = cache.shown.clone();
@@ -158,25 +162,7 @@ impl Shell {
         };
         let width = self.content_width - FILTERS_W - 20.;
         let rows = !self.browser.addons.is_empty() && !filtering;
-        let bar = v_flex()
-            .pb(px(14.))
-            .gap(px(10.))
-            .flex_shrink_0()
-            .child(self.category_tiles(p, cx))
-            .child(
-                h_flex()
-                    .gap(px(10.))
-                    .items_center()
-                    .justify_end()
-                    .h(px(28.))
-                    .child(
-                        div()
-                            .text_size(px(12.))
-                            .text_color(p.text_placeholder)
-                            .child(count.clone()),
-                    )
-                    .child(self.sort_button(sort, !query.is_empty(), cx)),
-            );
+        let bar = self.grid_bar(&count, sort, !query.is_empty(), p, cx);
         let filters = self.filter_column(p, cx);
         let found = shown
             .is_empty()
@@ -194,7 +180,7 @@ impl Shell {
                         div()
                             .text_size(px(13.))
                             .text_color(p.text_placeholder)
-                            .child("No addons match this search and these filters."),
+                            .child(tr("No addons match this search and these filters.")),
                     ),
                 cx,
             )
@@ -204,39 +190,67 @@ impl Shell {
         } else if rows && !shown.is_empty() {
             self.category_rows(shown, width, p, cx)
         } else if shown.is_empty() {
-            let (title, body, action) = if self.browser.addons.is_empty() {
-                (
-                    "No addons to show yet",
-                    if self.browser.fetching {
-                        "Checking the registry for addons…"
-                    } else {
-                        "The registry couldn't be reached. Retry to check again."
-                    },
-                    Button::new("browser-empty-retry")
-                        .outline()
-                        .small()
-                        .icon(IconName::RefreshCw)
-                        .label("Retry")
-                        .disabled(self.browser.fetching)
-                        .on_click(cx.listener(|this, _, _, cx| this.fetch_catalog(cx))),
-                )
-            } else {
-                (
-                    "No addons match",
-                    "Nothing matches this search and these filters. Check the spelling, or try author: or category:.",
-                    Button::new("browser-empty-clear")
-                        .outline()
-                        .small()
-                        .icon(IconName::X)
-                        .label("Clear search and filters")
-                        .on_click(cx.listener(|this, _, _, cx| this.clear_filters(cx))),
-                )
-            };
-            self.empty(IconName::PackageSearch, title, body, action, p)
+            self.grid_empty(p, cx)
         } else {
             self.virtual_cards(shown, query, width, p, cx)
         };
         self.browser_columns(filters, bar, body)
+    }
+
+    fn grid_bar(&self, count: &str, sort: Sort, searching: bool, p: Palette, cx: &mut Context<Self>) -> Div {
+        v_flex()
+            .pb(px(14.))
+            .gap(px(10.))
+            .flex_shrink_0()
+            .child(self.category_tiles(p, cx))
+            .child(
+                h_flex()
+                    .gap(px(10.))
+                    .items_center()
+                    .justify_end()
+                    .h(px(28.))
+                    .child(
+                        div()
+                            .text_size(px(12.))
+                            .text_color(p.text_placeholder)
+                            .child(count.to_owned()),
+                    )
+                    .child(self.sort_button(sort, searching, cx)),
+            )
+    }
+
+    fn grid_empty(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+        let (title, body, action) = if self.browser.addons.is_empty() {
+            (
+                tr("No addons to show yet"),
+                if self.browser.fetching {
+                    tr("Checking the registry for addons…")
+                } else {
+                    tr("The registry couldn't be reached. Retry to check again.")
+                },
+                Button::new("browser-empty-retry")
+                    .outline()
+                    .small()
+                    .icon(IconName::RefreshCw)
+                    .label(tr("Retry"))
+                    .disabled(self.browser.fetching)
+                    .on_click(cx.listener(|this, _, _, cx| this.fetch_catalog(cx))),
+            )
+        } else {
+            (
+                tr("No addons match"),
+                tr(
+                    "Nothing matches this search and these filters. Check the spelling, or try author: or category:.",
+                ),
+                Button::new("browser-empty-clear")
+                    .outline()
+                    .small()
+                    .icon(IconName::X)
+                    .label(tr("Clear search and filters"))
+                    .on_click(cx.listener(|this, _, _, cx| this.clear_filters(cx))),
+            )
+        };
+        self.empty(IconName::PackageSearch, title, body, action, p)
     }
 
     pub(super) fn browser_columns(&self, filters: Div, bar: Div, body: impl IntoElement) -> AnyElement {
@@ -259,8 +273,6 @@ impl Shell {
             .into_any_element()
     }
 
-    /// Up to `n` of `addons`' icons, overlapping, ringed in `ring`; the ones with
-    /// an icon of their own first, then a count of the rest.
     pub(super) fn empty_shelf(&self, tab: Tab, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         v_flex()
             .flex_1()
@@ -274,7 +286,7 @@ impl Shell {
                     .pt(px(8.))
                     .text_size(px(15.))
                     .font_weight(FontWeight::SEMIBOLD)
-                    .child(format!("Nothing in {} yet", tab_label(tab))),
+                    .child(trf!("Nothing in {category} yet", category = tab_label(tab))),
             )
             .child(
                 div()
@@ -283,7 +295,7 @@ impl Shell {
                     .text_size(px(13.))
                     .line_height(px(19.))
                     .text_color(p.text_muted)
-                    .child("Addons published in this category show here."),
+                    .child(tr("Addons published in this category show here.")),
             )
             .child(
                 h_flex().pt(px(8.)).gap(px(8.)).child(
@@ -291,7 +303,7 @@ impl Shell {
                         .outline()
                         .small()
                         .icon(IconName::LayoutGrid)
-                        .label("All addons")
+                        .label(tr("All addons"))
                         .on_click(cx.listener(|this, _, _, cx| this.shelve(None, cx))),
                 ),
             )

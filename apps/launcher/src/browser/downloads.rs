@@ -3,6 +3,9 @@ use gpui_kit::component::button::Button;
 use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::*;
 
+use swofty_i18n::{tr, trf};
+
+use crate::download_queue::State;
 use crate::shell::{Page, Shell};
 use crate::theme::{Palette, ScrollArea};
 
@@ -28,7 +31,6 @@ impl Shell {
     }
 
     pub(crate) fn dock_line(&self) -> Option<crate::download_dock::Line> {
-        use crate::download_queue::State;
         let jobs = self.browser.queue.jobs();
         let pending = self.browser.queue.pending();
         if pending > 0 {
@@ -41,8 +43,8 @@ impl Shell {
                 name: job.request.0.name.clone(),
                 status: match (&job.state, working) {
                     (State::Active, Some(w)) => w.progress().short(),
-                    (State::Active, None) => "Starting…".to_owned(),
-                    _ => "Queued".to_owned(),
+                    (State::Active, None) => tr("Starting…").to_owned(),
+                    _ => tr("Queued").to_owned(),
                 },
                 fraction: working.map(|w| w.progress().fraction()),
                 more: pending - 1,
@@ -57,7 +59,7 @@ impl Shell {
             let job = jobs.iter().rev().find(|job| job.state == State::Completed)?;
             return Some(crate::download_dock::Line {
                 name: job.request.0.name.clone(),
-                status: "Installed".to_owned(),
+                status: tr("Installed").to_owned(),
                 fraction: Some(1.),
                 more: 0,
                 failed: false,
@@ -68,7 +70,7 @@ impl Shell {
         };
         Some(crate::download_dock::Line {
             name: job.request.0.name.clone(),
-            status: format!("Failed: {error}"),
+            status: trf!("Failed: {error}", error = error),
             fraction: None,
             more: 0,
             failed: true,
@@ -76,154 +78,30 @@ impl Shell {
     }
 
     pub(crate) fn downloads_page(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        use crate::download_queue::State;
         let rows = self
             .browser
             .queue
             .jobs()
             .iter()
             .enumerate()
-            .map(|(index, job)| {
-                let id = job.id.clone();
-                let status = match &job.state {
-                    State::Queued => "Queued".to_owned(),
-                    State::Active => self.browser.working.get(&id).map_or_else(
-                        || "Starting…".to_owned(),
-                        |progress| progress.progress().long(progress.item().as_deref()),
-                    ),
-                    State::Completed => "Completed".to_owned(),
-                    State::Failed(error) => format!("Failed: {error}"),
-                };
-                let status = if matches!(job.state, State::Completed | State::Failed(_))
-                    && self
-                        .store
-                        .profile_names()
-                        .is_ok_and(|names| !names.contains(&job.request.2))
-                {
-                    format!(
-                        "{status} · Profile {} no longer exists; nothing was added to another profile.",
-                        job.request.2
-                    )
-                } else {
-                    status
-                };
-                let action = match &job.state {
-                    State::Queued => {
-                        let target = id.clone();
-                        Some(
-                            Button::new(SharedString::from(format!("remove-{id}-{index}")))
-                                .label("Remove")
-                                .on_click(cx.listener(move |this, _, _, cx| {
-                                    if this.browser.queue.remove_queued(&target) {
-                                        if let Some(batch) = &mut this.browser.batch {
-                                            batch.left.remove(&target);
-                                        }
-                                        if this.browser.batch.as_ref().is_some_and(|b| b.left.is_empty()) {
-                                            this.finish_addon_updates();
-                                        }
-                                        this.start_queued_downloads(cx);
-                                    }
-                                })),
-                        )
-                    }
-                    State::Failed(_) => {
-                        let target = id.clone();
-                        let action = retry_action(self.browser.find(&id), &job.request.1);
-                        let pending = self.browser.queue.jobs().iter().any(|other| {
-                            other.id == id && matches!(other.state, State::Queued | State::Active)
-                        });
-                        Some(
-                            Button::new(SharedString::from(format!("retry-{id}-{index}")))
-                                .label(if pending {
-                                    "Already queued"
-                                } else {
-                                    match action {
-                                        RetryAction::Retry => "Retry",
-                                        RetryAction::RequestCurrent => "Request current version",
-                                        RetryAction::Unavailable => "Version unavailable",
-                                    }
-                                })
-                                .disabled(pending || action == RetryAction::Unavailable)
-                                .on_click(cx.listener(move |this, _, _, cx| match action {
-                                    RetryAction::Retry => {
-                                        if this.browser.queue.retry_at(index, &target) {
-                                            this.start_queued_downloads(cx);
-                                        }
-                                    }
-                                    RetryAction::RequestCurrent => {
-                                        this.enqueue_catalog(&target, cx);
-                                    }
-                                    RetryAction::Unavailable => {}
-                                })),
-                        )
-                    }
-                    _ => None,
-                };
-                v_flex()
-                    .gap(px(4.))
-                    .p(px(12.))
-                    .bg(p.surface)
-                    .child(
-                        h_flex()
-                            .justify_between()
-                            .child(format!("{} {}", job.request.0.name, job.request.1.version))
-                            .children(action),
-                    )
-                    .child(div().text_color(p.text_muted).child(status))
-            })
+            .map(|(index, job)| self.download_row(index, job, p, cx))
             .collect::<Vec<_>>();
         v_flex()
             .size_full()
             .p(px(24.))
             .gap(px(12.))
             .child(
-                h_flex().justify_between().child("Downloads").child(
+                h_flex().justify_between().child(tr("Downloads")).child(
                     Button::new("clear-downloads")
-                        .label("Clear finished")
-                        .on_click(cx.listener(|this, _, _, cx| {
-                            let finished: Vec<_> = this
-                                .browser
-                                .queue
-                                .jobs()
-                                .iter()
-                                .filter(|job| matches!(job.state, crate::download_queue::State::Failed(_)))
-                                .map(|job| job.id.clone())
-                                .collect();
-                            this.browser.queue.clear_finished();
-                            for id in finished {
-                                if !this.browser.queue.jobs().iter().any(|job| job.id == id) {
-                                    this.browser.failed.remove(&id);
-                                    this.browser.refused.remove(&id);
-                                }
-                            }
-                            cx.notify();
-                        })),
+                        .label(tr("Clear finished"))
+                        .on_click(cx.listener(|this, _, _, cx| this.clear_finished_downloads(cx))),
                 ),
             )
-            .child(
-                h_flex()
-                    .gap(px(8.))
-                    .child("Concurrent jobs")
-                    .child(
-                        Button::new("download-limit-minus")
-                            .label("−")
-                            .on_click(cx.listener(|this, _, _, cx| {
-                                this.change_download_limit(this.browser.queue.limit().saturating_sub(1), cx);
-                            })),
-                    )
-                    .child(self.browser.queue.limit().to_string())
-                    .child(
-                        Button::new("download-limit-plus")
-                            .label("+")
-                            .on_click(cx.listener(|this, _, _, cx| {
-                                this.change_download_limit(this.browser.queue.limit() + 1, cx);
-                            })),
-                    ),
-            )
+            .child(self.download_limit_row(cx))
             .children(rows.is_empty().then(|| {
-                v_flex().gap(px(8.)).child("No downloads yet").child(
+                v_flex().gap(px(8.)).child(tr("No downloads yet")).child(
                     Button::new("open-addon-browser")
-                        .label("Browse addons")
+                        .label(tr("Browse addons"))
                         .on_click(cx.listener(|this, _, _, cx| this.open_page(Page::Browser, cx))),
                 )
             }))
@@ -236,6 +114,142 @@ impl Shell {
                     .children(rows),
             )
             .into_any_element()
+    }
+
+    fn download_limit_row(&self, cx: &mut Context<Self>) -> Div {
+        h_flex()
+            .gap(px(8.))
+            .child(tr("Concurrent jobs"))
+            .child(
+                Button::new("download-limit-minus")
+                    .label("−")
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.change_download_limit(this.browser.queue.limit().saturating_sub(1), cx);
+                    })),
+            )
+            .child(self.browser.queue.limit().to_string())
+            .child(
+                Button::new("download-limit-plus")
+                    .label("+")
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.change_download_limit(this.browser.queue.limit() + 1, cx);
+                    })),
+            )
+    }
+
+    fn clear_finished_downloads(&mut self, cx: &mut Context<Self>) {
+        let finished: Vec<_> = self
+            .browser
+            .queue
+            .jobs()
+            .iter()
+            .filter(|job| matches!(job.state, State::Failed(_)))
+            .map(|job| job.id.clone())
+            .collect();
+        self.browser.queue.clear_finished();
+        for id in finished {
+            if !self.browser.queue.jobs().iter().any(|job| job.id == id) {
+                self.browser.failed.remove(&id);
+                self.browser.refused.remove(&id);
+            }
+        }
+        cx.notify();
+    }
+
+    fn download_row(&self, index: usize, job: &QueuedJob, p: Palette, cx: &mut Context<Self>) -> Div {
+        v_flex()
+            .gap(px(4.))
+            .p(px(12.))
+            .bg(p.surface)
+            .child(
+                h_flex()
+                    .justify_between()
+                    .child(format!("{} {}", job.request.0.name, job.request.1.version))
+                    .children(self.download_action(index, job, cx)),
+            )
+            .child(div().text_color(p.text_muted).child(self.download_status(job)))
+    }
+
+    fn download_status(&self, job: &QueuedJob) -> String {
+        let status = match &job.state {
+            State::Queued => tr("Queued").to_owned(),
+            State::Active => self.browser.working.get(&job.id).map_or_else(
+                || tr("Starting…").to_owned(),
+                |progress| progress.progress().long(progress.item().as_deref()),
+            ),
+            State::Completed => tr("Completed").to_owned(),
+            State::Failed(error) => trf!("Failed: {error}", error = error),
+        };
+        let gone = matches!(job.state, State::Completed | State::Failed(_))
+            && self
+                .store
+                .profile_names()
+                .is_ok_and(|names| !names.contains(&job.request.2));
+        if gone {
+            trf!(
+                "{status} · Profile {profile} no longer exists; nothing was added to another profile.",
+                status = status,
+                profile = job.request.2
+            )
+        } else {
+            status
+        }
+    }
+
+    fn download_action(&self, index: usize, job: &QueuedJob, cx: &mut Context<Self>) -> Option<Button> {
+        let id = job.id.clone();
+        match &job.state {
+            State::Queued => Some(
+                Button::new(SharedString::from(format!("remove-{id}-{index}")))
+                    .label(tr("Remove"))
+                    .on_click(cx.listener(move |this, _, _, cx| {
+                        if this.browser.queue.remove_queued(&id) {
+                            if let Some(batch) = &mut this.browser.batch {
+                                batch.left.remove(&id);
+                            }
+                            if this.browser.batch.as_ref().is_some_and(|b| b.left.is_empty()) {
+                                this.finish_addon_updates();
+                            }
+                            this.start_queued_downloads(cx);
+                        }
+                    })),
+            ),
+            State::Failed(_) => {
+                let action = retry_action(self.browser.find(&id), &job.request.1);
+                let pending = self
+                    .browser
+                    .queue
+                    .jobs()
+                    .iter()
+                    .any(|other| other.id == id && matches!(other.state, State::Queued | State::Active));
+                let label = if pending {
+                    tr("Already queued")
+                } else {
+                    match action {
+                        RetryAction::Retry => tr("Retry"),
+                        RetryAction::RequestCurrent => tr("Request current version"),
+                        RetryAction::Unavailable => tr("Version unavailable"),
+                    }
+                };
+                Some(
+                    Button::new(SharedString::from(format!("retry-{id}-{index}")))
+                        .label(label)
+                        .disabled(pending || action == RetryAction::Unavailable)
+                        .on_click(cx.listener(move |this, _, _, cx| match action {
+                            RetryAction::Retry => {
+                                if this.browser.queue.retry_at(index, &id) {
+                                    this.start_queued_downloads(cx);
+                                }
+                            }
+                            RetryAction::RequestCurrent => {
+                                this.enqueue_catalog(&id, cx);
+                            }
+                            RetryAction::Unavailable => {}
+                        })),
+                )
+            }
+            _ => None,
+        }
     }
 
     pub(super) fn retry_download(&mut self, id: &str, cx: &mut Context<Self>) {

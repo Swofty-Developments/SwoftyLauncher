@@ -8,7 +8,7 @@ use swofty_core::catalog::publishers::{self, Creator};
 use swofty_core::catalog::stars::{self};
 use swofty_core::catalog::{self, Addon, Trouble, Update};
 use swofty_core::update::current_version;
-use swofty_i18n::trn;
+use swofty_i18n::{tr, trf, trn};
 
 use crate::library::Source;
 use crate::shell::Shell;
@@ -141,17 +141,18 @@ impl Shell {
                     (Some(e), _) => s.record(
                         Op::Catalog,
                         false,
-                        format!("Couldn't fetch the catalog from {from}"),
+                        trf!("Couldn't fetch the catalog from {host}", host = from),
                         e.to_string(),
                         took,
                     ),
                     (None, Some(addons)) => s.record(
                         Op::Catalog,
                         true,
-                        "Fetched the catalog".to_owned(),
-                        format!(
-                            "{} from {from}",
-                            trn(addons.len(), "{count} addon", "{count} addons")
+                        tr("Fetched the catalog").to_owned(),
+                        trf!(
+                            "{addons} from {host}",
+                            addons = trn(addons.len(), "{count} addon", "{count} addons"),
+                            host = from
                         ),
                         took,
                     ),
@@ -160,10 +161,7 @@ impl Shell {
                 match &fetched.creators {
                     Ok(creators) => catalog::log(
                         &s.store.root,
-                        &format!(
-                            "ok fetched {} from {from}",
-                            trn(creators.len(), "{count} publisher", "{count} publishers")
-                        ),
+                        &format!("ok fetched {} publishers from {from}", creators.len()),
                     ),
                     Err(e) => catalog::log(&s.store.root, &format!("failed to fetch the publishers: {e}")),
                 }
@@ -217,22 +215,27 @@ impl Shell {
                         let b = &mut s.browser;
                         b.stars.synced(&sent, reply, catalog::iso_now());
                         b.catalog_revision = b.catalog_revision.wrapping_add(1);
-                        let detail = format!(
-                            "{} sent, {applied} applied · {} starred · {}",
-                            trn(sent.len(), "{count} change", "{count} changes"),
-                            b.stars.starred.len(),
-                            b.stars.user.as_deref().unwrap_or("no user yet")
+                        let detail = trf!(
+                            "{sent}, {applied} applied · {starred} starred · {user}",
+                            sent = trn(sent.len(), "{count} change sent", "{count} changes sent"),
+                            applied = applied,
+                            starred = b.stars.starred.len(),
+                            user = b.stars.user.as_deref().unwrap_or(tr("no user yet"))
                         );
-                        s.record(Op::Stars, true, "Synced stars".to_owned(), detail, took);
+                        s.record(Op::Stars, true, tr("Synced stars").to_owned(), detail, took);
                     }
                     Err(e) => {
                         s.browser.stars.failed(e.to_string());
-                        let waiting = trn(s.browser.stars.pending.len(), "{count} change", "{count} changes");
+                        let waiting = trn(
+                            s.browser.stars.pending.len(),
+                            "{count} change waiting",
+                            "{count} changes waiting",
+                        );
                         s.record(
                             Op::Stars,
                             false,
-                            "Couldn't sync stars".to_owned(),
-                            format!("{e} · {waiting} waiting"),
+                            tr("Couldn't sync stars").to_owned(),
+                            trf!("{error} · {waiting}", error = e, waiting = waiting),
                             took,
                         );
                     }
@@ -262,11 +265,7 @@ impl Shell {
             &format!(
                 "{} {id}, {} waiting",
                 if on { "starred" } else { "unstarred" },
-                trn(
-                    self.browser.stars.pending.len(),
-                    "{count} change",
-                    "{count} changes"
-                )
+                self.browser.stars.pending.len()
             ),
         );
         self.browser.catalog_revision = self.browser.catalog_revision.wrapping_add(1);
@@ -357,22 +356,28 @@ impl Shell {
                 let took = started.elapsed();
                 match result {
                     Ok(a) => {
-                        let detail = format!(
-                            "{} · {}",
-                            trn(a.versions.len(), "{count} version", "{count} versions"),
-                            if a.trend.is_some() {
-                                "30-day trend"
+                        let detail = trf!(
+                            "{versions} · {trend}",
+                            versions = trn(a.versions.len(), "{count} version", "{count} versions"),
+                            trend = if a.trend.is_some() {
+                                tr("30-day trend")
                             } else {
-                                "no trend"
+                                tr("no trend")
                             }
                         );
-                        s.record(Op::Details, true, format!("Fetched {}", a.name), detail, took);
+                        s.record(
+                            Op::Details,
+                            true,
+                            trf!("Fetched {name}", name = a.name),
+                            detail,
+                            took,
+                        );
                         s.browser.details.insert(id, a);
                     }
                     Err(e) => s.record(
                         Op::Details,
                         false,
-                        format!("Couldn't fetch {id}"),
+                        trf!("Couldn't fetch {id}", id = id),
                         e.to_string(),
                         took,
                     ),

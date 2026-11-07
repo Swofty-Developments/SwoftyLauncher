@@ -11,7 +11,7 @@ use gpui_kit::*;
 use swofty_core::catalog::publishers::{self, Creator, Profile};
 use swofty_core::catalog::stars::Stars;
 use swofty_core::catalog::{self, Addon, Trouble, Update};
-use swofty_i18n::trn;
+use swofty_i18n::{tr, trf, trn};
 
 use crate::shell::Shell;
 
@@ -47,7 +47,7 @@ pub(crate) struct Browser {
     pub(super) asked: HashSet<String>,
     pub(super) history: HashSet<String>,
     pub(super) working: HashMap<String, Job>,
-    pub(super) queue: crate::download_queue::Queue<(Addon, catalog::Version, String)>,
+    pub(super) queue: crate::download_queue::Queue<Request>,
     pub(super) failed: HashMap<String, String>,
     pub(super) refused: BTreeSet<String>,
     pub(super) batch: Option<Batch>,
@@ -75,8 +75,9 @@ pub(crate) struct Browser {
 
 impl Browser {
     pub(crate) fn new(root: &Path, window: &mut Window, cx: &mut Context<Shell>) -> Self {
-        let search = cx
-            .new(|cx| InputState::new(window, cx).placeholder("Search names, authors, author: or category:"));
+        let search = cx.new(|cx| {
+            InputState::new(window, cx).placeholder(tr("Search names, authors, author: or category:"))
+        });
         let changed = cx.subscribe(&search, |_, _, e: &InputEvent, cx| {
             if matches!(e, InputEvent::Change) {
                 cx.notify();
@@ -149,22 +150,31 @@ impl Browser {
 
     pub(super) fn subtitle(&self) -> String {
         let base = catalog::base_url();
-        let n = trn(self.addons.len(), "{count} addon", "{count} addons");
-        let age = self.fetched_at.map(since_time);
+        let host = host(&base);
+        let count = self.addons.len();
+        let addons = trn(count, "{count} addon", "{count} addons");
         if self.fetching && self.fetched_at.is_none() {
-            return format!("Checking {}…", host(&base));
+            return trf!("Checking {host}…", host = host);
         }
         let mut text = match (&self.trouble, self.saved) {
-            (None, _) => format!("{n} from {}", host(&base)),
-            (Some(_), true) if !self.live => format!("Offline · showing the {n} saved last time"),
-            (Some(_), true) => format!("Offline · showing {n} from {}", host(&base)),
-            (Some(_), false) => "Offline · no addons saved yet".to_owned(),
+            (None, _) => trf!("{addons} from {host}", addons = addons, host = host),
+            (Some(_), true) if !self.live => trn(
+                count,
+                "Offline · showing the {count} addon saved last time",
+                "Offline · showing the {count} addons saved last time",
+            ),
+            (Some(_), true) => trf!(
+                "Offline · showing {addons} from {host}",
+                addons = addons,
+                host = host
+            ),
+            (Some(_), false) => tr("Offline · no addons saved yet").to_owned(),
         };
-        if let Some(age) = age.filter(|_| self.saved) {
-            text.push_str(&format!(" · updated {age}"));
+        if let Some(age) = self.fetched_at.map(since_time).filter(|_| self.saved) {
+            text.push_str(&format!(" · {}", trf!("updated {when}", when = age)));
         }
         if self.fetching {
-            text.push_str(" · checking…");
+            text.push_str(&format!(" · {}", tr("checking…")));
         }
         text
     }

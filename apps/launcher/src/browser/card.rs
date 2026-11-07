@@ -7,7 +7,7 @@ use gpui_kit::*;
 use swofty_core::catalog::Addon;
 use swofty_core::catalog::search::Query;
 use swofty_core::update::current_version;
-use swofty_i18n::trn;
+use swofty_i18n::{tr, trf, trn};
 
 use crate::format;
 use crate::pages::{badge, tag};
@@ -27,6 +27,68 @@ pub(super) fn card_border(failed: bool, updating: bool, p: Palette) -> Hsla {
     }
 }
 
+fn card_stats(a: &Addon) -> Vec<AnyElement> {
+    let mut stats = vec![
+        h_flex()
+            .gap(px(4.))
+            .child(Icon::new(IconName::Download).size(px(12.)))
+            .child(format::compact(a.downloads))
+            .into_any_element(),
+    ];
+    if a.downloads_30d > 0 {
+        stats.push(
+            div()
+                .child(trf!(
+                    "{count} this month",
+                    count = format::compact(a.downloads_30d)
+                ))
+                .into_any_element(),
+        );
+    }
+    if let Some(when) = since(&a.updated_at) {
+        stats.push(
+            div()
+                .child(trf!("Updated {when}", when = when))
+                .into_any_element(),
+        );
+    }
+    stats
+}
+
+fn card_version_line(
+    a: &Addon,
+    version: Option<&semver::Version>,
+    also: &[String],
+    p: Palette,
+) -> Stateful<Div> {
+    let version = version.map(|v| format!("v{v}")).unwrap_or_default();
+    let line = div()
+        .id(SharedString::from(format!("browser-card-also-{}", a.id)))
+        .flex_1()
+        .min_w_0()
+        .truncate()
+        .text_size(px(12.))
+        .text_color(p.text_placeholder);
+    if also.is_empty() {
+        return line.child(version);
+    }
+    let tip = trf!("Also installs: {names}", names = also.join(", "));
+    line.child(format!("{version} · {tip}"))
+        .tooltip(move |window, cx| Tooltip::new(tip.clone()).build(window, cx))
+}
+
+fn card_note(id: String, icon: IconName, color: Hsla, text: String) -> Stateful<Div> {
+    let tip = text.clone();
+    h_flex()
+        .id(SharedString::from(id))
+        .gap(px(6.))
+        .text_size(px(12.))
+        .text_color(color)
+        .child(Icon::new(icon).size(px(12.)))
+        .child(div().flex_1().min_w_0().truncate().child(text))
+        .tooltip(move |window, cx| Tooltip::new(tip.clone()).build(window, cx))
+}
+
 pub(super) fn native_badge(id: String, p: Palette) -> Stateful<Div> {
     h_flex()
         .id(SharedString::from(id))
@@ -41,9 +103,9 @@ pub(super) fn native_badge(id: String, p: Palette) -> Stateful<Div> {
         .font_weight(FontWeight::SEMIBOLD)
         .whitespace_nowrap()
         .child(Icon::new(IconName::Cpu).size(px(11.)))
-        .child(NATIVE)
+        .child(tr("Runs code in the game"))
         .tooltip(|window, cx| {
-            Tooltip::new("It ships native code that runs inside F1 25 while it's on.").build(window, cx)
+            Tooltip::new(tr("It ships native code that runs inside F1 25 while it's on.")).build(window, cx)
         })
 }
 
@@ -76,7 +138,7 @@ impl Shell {
             .font_weight(FontWeight::MEDIUM)
             .text_color(color)
             .child(Icon::new(IconName::Star).size(px(13.)).text_color(color))
-            .when(big, |d| d.child(if on { "Starred" } else { "Star" }))
+            .when(big, |d| d.child(if on { tr("Starred") } else { tr("Star") }))
             .child(
                 div()
                     .text_color(if on { p.text } else { p.text_muted })
@@ -84,9 +146,9 @@ impl Shell {
             )
             .tooltip(move |window, cx| {
                 Tooltip::new(if on {
-                    "You starred this. Click to unstar it."
+                    tr("You starred this. Click to unstar it.")
                 } else {
-                    "Star it. Stars sync to every launcher you use."
+                    tr("Star it. Stars sync to every launcher you use.")
                 })
                 .build(window, cx)
             })
@@ -160,23 +222,6 @@ impl Shell {
             })
             .collect();
         let name = StyledText::new(a.name.clone()).with_highlights(marks);
-        let mut stats = vec![
-            h_flex()
-                .gap(px(4.))
-                .child(Icon::new(IconName::Download).size(px(12.)))
-                .child(format::compact(a.downloads))
-                .into_any_element(),
-        ];
-        if a.downloads_30d > 0 {
-            stats.push(
-                div()
-                    .child(format!("{} this month", format::compact(a.downloads_30d)))
-                    .into_any_element(),
-            );
-        }
-        if let Some(when) = since(&a.updated_at) {
-            stats.push(div().child(format!("Updated {when}")).into_any_element());
-        }
         let author = self.byline(a, format!("browser-card-by-{}", a.id), 12., p, cx);
         v_flex()
             .id(SharedString::from(format!("browser-card-{}", a.id)))
@@ -231,59 +276,33 @@ impl Shell {
                     .text_color(p.text_placeholder)
                     .overflow_hidden()
                     .whitespace_nowrap()
-                    .children(stats),
+                    .children(card_stats(a)),
             )
             .child(
                 h_flex()
                     .gap(px(10.))
                     .items_center()
-                    .child({
-                        let version = offered.map(|v| format!("v{}", v.version)).unwrap_or_default();
-                        let line = div()
-                            .id(SharedString::from(format!("browser-card-also-{}", a.id)))
-                            .flex_1()
-                            .min_w_0()
-                            .truncate()
-                            .text_size(px(12.))
-                            .text_color(p.text_placeholder);
-                        if also.is_empty() {
-                            line.child(version)
-                        } else {
-                            let tip = format!("Also installs: {}", also.join(", "));
-                            line.child(format!("{version} · Also installs: {}", also.join(", ")))
-                                .tooltip(move |window, cx| Tooltip::new(tip.clone()).build(window, cx))
-                        }
-                    })
+                    .child(card_version_line(a, offered.map(|v| &v.version), &also, p))
                     .child(self.offer_button(a, format!("browser-offer-{}", a.id), cx)),
             )
             .when_some(progress, |d, pr| {
                 d.child(ProgressBar::new(pr.fraction()).height(3.))
             })
             .when_some(failed, |d, e| {
-                let tip = e.clone();
-                d.child(
-                    h_flex()
-                        .id(SharedString::from(format!("browser-failed-{}", a.id)))
-                        .gap(px(6.))
-                        .text_size(px(12.))
-                        .text_color(p.error)
-                        .child(Icon::new(IconName::CircleAlert).size(px(12.)))
-                        .child(div().flex_1().min_w_0().truncate().child(e))
-                        .tooltip(move |window, cx| Tooltip::new(tip.clone()).build(window, cx)),
-                )
+                d.child(card_note(
+                    format!("browser-failed-{}", a.id),
+                    IconName::CircleAlert,
+                    p.error,
+                    e,
+                ))
             })
             .when_some(blocked, |d, e| {
-                let tip = e.clone();
-                d.child(
-                    h_flex()
-                        .id(SharedString::from(format!("browser-blocked-{}", a.id)))
-                        .gap(px(6.))
-                        .text_size(px(12.))
-                        .text_color(p.warning)
-                        .child(Icon::new(IconName::TriangleAlert).size(px(12.)))
-                        .child(div().flex_1().min_w_0().truncate().child(e))
-                        .tooltip(move |window, cx| Tooltip::new(tip.clone()).build(window, cx)),
-                )
+                d.child(card_note(
+                    format!("browser-blocked-{}", a.id),
+                    IconName::TriangleAlert,
+                    p.warning,
+                    e,
+                ))
             })
             .into_any_element()
     }
@@ -298,9 +317,10 @@ impl Shell {
             .enumerate()
             .map(|(i, n)| {
                 let when = trend.days.get(i).map(|d| day(d)).unwrap_or_default();
-                let tip = format!(
-                    "{when}: {}",
-                    trn(*n as usize, "{count} download", "{count} downloads")
+                let tip = trf!(
+                    "{when}: {downloads}",
+                    when = when,
+                    downloads = trn(*n as usize, "{count} download", "{count} downloads")
                 );
                 div()
                     .id(SharedString::from(format!("browser-trend-{i}")))
@@ -336,7 +356,7 @@ impl Shell {
                                 .flex_1()
                                 .text_size(px(14.))
                                 .font_weight(FontWeight::SEMIBOLD)
-                                .child("Downloads, last 30 days"),
+                                .child(tr("Downloads, last 30 days")),
                         )
                         .child(div().text_size(px(12.)).text_color(p.text_placeholder).child(trn(
                             total as usize,
