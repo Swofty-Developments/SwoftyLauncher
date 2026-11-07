@@ -1,427 +1,21 @@
-//! The News page: the Discord banner, the news posts in full, and the list of
-//! release notes beside them.
-
-mod markdown;
-
-use std::collections::HashMap;
-use std::hash::{DefaultHasher, Hash, Hasher};
-use std::path::Path;
-use std::sync::Arc;
-use std::time::{Duration, Instant};
-
+use super::feed::{Post, format_date};
+use super::markdown::{Block, SITE, Span, safe_url};
+use super::state::{NewsPane, NewsRow, STACK_BELOW, StackedRow};
+use crate::pages::GUTTER;
 use crate::scale::px;
+use crate::shell::{Page, Shell};
+use crate::theme::{Palette, ScrollArea};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{ActiveTheme, Disableable, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use serde::Deserialize;
 
-use crate::pages::GUTTER;
-use crate::shell::{Page, Shell};
-use crate::theme::{Palette, ScrollArea};
-use markdown::{Block, SITE, Span, safe_url};
+pub(super) const TEXT: f32 = 15.;
 
-pub const FEED_URL: &str = "https://f1.swofty.net/news.json";
-const EMBEDDED: &str = include_str!(concat!(env!("OUT_DIR"), "/news.json"));
-const CACHE_DIR: &str = "cache/news";
-const FEED_FILE: &str = "feed.json";
-const TIMEOUT: Duration = Duration::from_secs(10);
-const STALE: Duration = Duration::from_secs(30 * 60);
-const IMAGES: usize = 8;
-const IMAGE_LIMIT: u64 = 8 * 1024 * 1024;
-const FEED_LIMIT: u64 = 4 * 1024 * 1024;
-const STACK_BELOW: f32 = 680.;
-const TEXT: f32 = 15.;
-const LINE: f32 = 24.;
+pub(super) const LINE: f32 = 24.;
 
-#[derive(Clone, Debug, PartialEq, Deserialize)]
-pub struct Post {
-    pub id: String,
-    #[serde(default)]
-    pub kind: String,
-    pub title: String,
-    #[serde(default)]
-    pub date: String,
-    #[serde(default)]
-    pub summary: String,
-    #[serde(default)]
-    pub image: Option<String>,
-    #[serde(default)]
-    pub url: Option<String>,
-    #[serde(default)]
-    pub body: String,
-}
-
-impl Post {
-    fn release(&self) -> bool {
-        self.kind == "release"
-    }
-
-    fn version(&self) -> &str {
-        self.title.strip_prefix("Swofty Launcher ").unwrap_or(&self.title)
-    }
-}
-
-#[derive(Deserialize)]
-struct Feed {
-    posts: Vec<Post>,
-}
-
-pub fn parse(text: &str) -> Option<Vec<Post>> {
-    serde_json::from_str::<Feed>(text).ok().map(|f| f.posts)
-}
-
-fn version(id: &str) -> Vec<u64> {
-    let slug = id.rsplit('/').next().unwrap_or(id);
-    slug.split('.').map(|n| n.parse().unwrap_or(0)).collect()
-}
-
-/// Every post of `base` and `newer` once, `newer`'s copy where both have it
-/// (keeping `base`'s body when `newer`'s has none), newest first.
-pub fn merge(mut base: Vec<Post>, newer: Vec<Post>) -> Vec<Post> {
-    let mut posts = Vec::with_capacity(base.len() + newer.len());
-    for mut post in newer {
-        if let Some(at) = base.iter().position(|b| b.id == post.id) {
-            let old = base.swap_remove(at);
-            if post.body.is_empty() {
-                post.body = old.body;
-            }
-        }
-        posts.push(post);
-    }
-    posts.extend(base);
-    posts.sort_by(|a, b| {
-        b.date
-            .cmp(&a.date)
-            .then(a.release().cmp(&b.release()))
-            .then_with(|| version(&b.id).cmp(&version(&a.id)))
-    });
-    posts
-}
-
-pub fn embedded() -> Vec<Post> {
-    merge(parse(EMBEDDED).unwrap_or_default(), Vec::new())
-}
-
-pub fn format_date(date: &str) -> String {
-    const MONTHS: [&str; 12] = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-    ];
-    let mut parts = date.splitn(3, '-').map(|n| n.parse::<usize>().ok());
-    match (
-        parts.next().flatten(),
-        parts.next().flatten(),
-        parts.next().flatten(),
-    ) {
-        (Some(y), Some(m), Some(d)) if (1..=12).contains(&m) => format!("{d} {} {y}", MONTHS[m - 1]),
-        _ => date.to_owned(),
-    }
-}
-
-pub(crate) fn image_format(bytes: &[u8]) -> Option<ImageFormat> {
-    match bytes {
-        [0x89, b'P', b'N', b'G', ..] => Some(ImageFormat::Png),
-        [0xff, 0xd8, ..] => Some(ImageFormat::Jpeg),
-        [b'G', b'I', b'F', ..] => Some(ImageFormat::Gif),
-        [b'R', b'I', b'F', b'F', _, _, _, _, b'W', b'E', b'B', b'P', ..] => Some(ImageFormat::Webp),
-        _ => None,
-    }
-}
-
-pub(crate) fn image(dir: &Path, url: &str) -> Option<Arc<Image>> {
-    let mut hasher = DefaultHasher::new();
-    url.hash(&mut hasher);
-    let path = dir.join(format!("{:016x}", hasher.finish()));
-    let bytes = match std::fs::read(&path) {
-        Ok(bytes) => bytes,
-        Err(_) => {
-            let bytes = swofty_core::update::get(url, Some(TIMEOUT))
-                .ok()?
-                .with_config()
-                .limit(IMAGE_LIMIT)
-                .read_to_vec()
-                .ok()?;
-            std::fs::create_dir_all(dir).ok();
-            std::fs::write(&path, &bytes).ok();
-            bytes
-        }
-    };
-    Some(Arc::new(Image::from_bytes(image_format(&bytes)?, bytes)))
-}
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-enum Trouble {
-    Offline,
-    Failed,
-}
-
-fn download() -> Result<String, (Trouble, String)> {
-    let mut response = ureq::get(FEED_URL)
-        .header(
-            "User-Agent",
-            concat!("swofty-launcher/", env!("CARGO_PKG_VERSION")),
-        )
-        .config()
-        .timeout_global(Some(TIMEOUT))
-        .http_status_as_error(false)
-        .build()
-        .call()
-        .map_err(|e| (Trouble::Offline, format!("{FEED_URL}: {e}")))?;
-    let status = response.status().as_u16();
-    if status >= 400 {
-        return Err((Trouble::Failed, format!("{FEED_URL}: HTTP {status}")));
-    }
-    response
-        .body_mut()
-        .with_config()
-        .limit(FEED_LIMIT)
-        .read_to_string()
-        .map_err(|e| (Trouble::Failed, format!("{FEED_URL}: {e}")))
-}
-
-struct Fetched {
-    posts: Option<Vec<Post>>,
-    images: Vec<(String, Arc<Image>)>,
-    error: Option<(Trouble, String)>,
-}
-
-fn fetch(root: &Path, shown: Vec<Post>) -> Fetched {
-    let dir = root.join(CACHE_DIR);
-    let remote = download().and_then(|text| {
-        parse(&text)
-            .map(|p| (text, p))
-            .ok_or_else(|| (Trouble::Failed, format!("{FEED_URL}: not a news feed")))
-    });
-    let (posts, error) = match remote {
-        Ok((text, posts)) => {
-            std::fs::create_dir_all(&dir).ok();
-            if let Err(e) = std::fs::write(dir.join(FEED_FILE), text) {
-                eprintln!("swofty-launcher: could not save the news: {e}");
-            }
-            (Some(merge(embedded(), posts)), None)
-        }
-        Err(e) => (None, Some(e)),
-    };
-    let images = posts
-        .as_ref()
-        .unwrap_or(&shown)
-        .iter()
-        .filter(|p| !p.release())
-        .take(IMAGES)
-        .filter_map(|p| p.image.clone())
-        .filter(|url| url.starts_with("https://"))
-        .filter_map(|url| image(&dir, &url).map(|i| (url, i)))
-        .collect();
-    Fetched { posts, images, error }
-}
-
-pub struct News {
-    pub posts: Vec<Post>,
-    images: HashMap<String, Arc<Image>>,
-    blocks: Vec<Vec<Block>>,
-    revision: u64,
-    checked: Option<Instant>,
-    live: bool,
-    saved: bool,
-    fetching: bool,
-    trouble: Option<Trouble>,
-}
-
-#[derive(Clone, Copy)]
-enum NewsRow {
-    Header(usize, bool),
-    Block(usize, usize),
-    Link(usize),
-    Separator,
-}
-
-#[derive(Clone, Copy)]
-enum StackedRow {
-    Banner,
-    ArticlesTop,
-    Article(usize),
-    ArticlesBottom,
-    ReleasesHeader,
-    Release(usize),
-    ReleasesBottom,
-}
-
-#[derive(Clone, Copy)]
-enum NewsPane {
-    Articles,
-    Releases,
-    Stacked,
-}
-
-pub(crate) struct NewsScroll {
-    articles: ListState,
-    releases: ListState,
-    stacked: ListState,
-    rows: Vec<NewsRow>,
-    stacked_rows: Vec<StackedRow>,
-    release_indices: Vec<usize>,
-    revision: Option<u64>,
-    short: bool,
-    stacked_layout: bool,
-    motion: [crate::scroll::SmoothScroll; 3],
-}
-
-impl Default for NewsScroll {
-    fn default() -> Self {
-        Self {
-            articles: ListState::new(0, ListAlignment::Top, px(200.)),
-            releases: ListState::new(0, ListAlignment::Top, px(100.)),
-            stacked: ListState::new(0, ListAlignment::Top, px(200.)),
-            rows: Vec::new(),
-            stacked_rows: Vec::new(),
-            release_indices: Vec::new(),
-            revision: None,
-            short: false,
-            stacked_layout: false,
-            motion: Default::default(),
-        }
-    }
-}
-
-impl NewsScroll {
-    pub(crate) fn cancel(&self) {
-        for motion in &self.motion {
-            motion.cancel();
-        }
-    }
-
-    fn list(&self, pane: NewsPane) -> &ListState {
-        match pane {
-            NewsPane::Articles => &self.articles,
-            NewsPane::Releases => &self.releases,
-            NewsPane::Stacked => &self.stacked,
-        }
-    }
-
-    fn sync(&mut self, news: &News, short: bool, stacked: bool) {
-        if self.stacked_layout != stacked {
-            self.stacked_layout = stacked;
-            self.cancel();
-        }
-        if self.short != short {
-            self.short = short;
-            if self.stacked.item_count() > 0 {
-                self.stacked.remeasure_items(0..1);
-            }
-        }
-        if self.revision == Some(news.revision) {
-            return;
-        }
-        self.cancel();
-        let first = self.revision.is_none();
-        self.revision = Some(news.revision);
-        self.rows.clear();
-        self.release_indices.clear();
-        for (i, post) in news.posts.iter().enumerate() {
-            if post.release() {
-                self.release_indices.push(i);
-                continue;
-            }
-            let first = self.rows.is_empty();
-            if !first {
-                self.rows.push(NewsRow::Separator);
-            }
-            self.rows.push(NewsRow::Header(i, first));
-            self.rows
-                .extend((0..news.blocks[i].len()).map(|b| NewsRow::Block(i, b)));
-            if post.url.as_deref().and_then(safe_url).is_some() {
-                self.rows.push(NewsRow::Link(i));
-            }
-        }
-        self.stacked_rows.clear();
-        self.stacked_rows
-            .extend([StackedRow::Banner, StackedRow::ArticlesTop]);
-        self.stacked_rows
-            .extend((0..self.rows.len()).map(StackedRow::Article));
-        self.stacked_rows
-            .extend([StackedRow::ArticlesBottom, StackedRow::ReleasesHeader]);
-        self.stacked_rows
-            .extend((0..self.release_indices.len()).map(StackedRow::Release));
-        self.stacked_rows.push(StackedRow::ReleasesBottom);
-        // Preserve the current item and its offset while remeasuring refreshed content.
-        for (state, count) in [
-            (&self.articles, self.rows.len()),
-            (&self.releases, self.release_indices.len()),
-            (&self.stacked, self.stacked_rows.len()),
-        ] {
-            if first {
-                state.reset_with_uniform_height(count, px(64.));
-                continue;
-            }
-            let old = state.item_count();
-            if count > old {
-                state.splice(old..old, count - old);
-            } else if count < old {
-                state.splice(count..old, 0);
-            }
-            state.remeasure_items(0..count);
-        }
-    }
-}
-
-impl News {
-    pub fn load(root: &Path) -> Self {
-        let cached = std::fs::read_to_string(root.join(CACHE_DIR).join(FEED_FILE))
-            .ok()
-            .and_then(|t| parse(&t))
-            .unwrap_or_default();
-        let saved = !cached.is_empty();
-        let posts = merge(embedded(), cached);
-        let blocks = posts.iter().map(parsed_body).collect();
-        Self {
-            saved,
-            posts,
-            blocks,
-            revision: 0,
-            images: HashMap::new(),
-            checked: None,
-            live: false,
-            fetching: false,
-            trouble: None,
-        }
-    }
-
-    fn stale(&self) -> bool {
-        !self.fetching && self.checked.is_none_or(|t| t.elapsed() >= STALE)
-    }
-
-    fn subtitle(&self) -> String {
-        if self.fetching {
-            return "Checking for news…".into();
-        }
-        if self.live {
-            return "From f1.swofty.net".into();
-        }
-        let shown = if self.saved {
-            "showing the news saved last time"
-        } else {
-            "showing the news that came with this version"
-        };
-        match self.trouble {
-            Some(Trouble::Failed) => format!("Couldn't load the latest news · {shown}"),
-            _ => format!("Offline · {shown}"),
-        }
-    }
-}
-
-fn news_tag(p: Palette) -> Div {
+pub(super) fn news_tag(p: Palette) -> Div {
     div()
         .px(px(7.))
         .h(px(20.))
@@ -437,7 +31,7 @@ fn news_tag(p: Palette) -> Div {
         .child("News")
 }
 
-fn rich(id: String, spans: &[Span], p: Palette, mono: &SharedString) -> AnyElement {
+pub(super) fn rich(id: String, spans: &[Span], p: Palette, mono: &SharedString) -> AnyElement {
     let mut text = String::new();
     let mut highlights = Vec::new();
     let mut fonts = Vec::new();
@@ -489,19 +83,24 @@ fn rich(id: String, spans: &[Span], p: Palette, mono: &SharedString) -> AnyEleme
         .into_any_element()
 }
 
-fn parsed_body(post: &Post) -> Vec<Block> {
+pub(super) fn parsed_body(post: &Post) -> Vec<Block> {
     if post.body.trim().is_empty() {
-        vec![Block::Paragraph(markdown::inline(&post.summary))]
+        vec![Block::Paragraph(super::markdown::inline(&post.summary))]
     } else {
-        markdown::parse(&post.body)
+        super::markdown::parse(&post.body)
     }
 }
 
 pub(crate) fn render_markdown(id: &str, text: &str, p: Palette, mono: &SharedString) -> Vec<AnyElement> {
-    blocks_view(id, &markdown::parse(text), p, mono)
+    blocks_view(id, &super::markdown::parse(text), p, mono)
 }
 
-fn blocks_view(prefix: &str, blocks: &[Block], p: Palette, mono: &SharedString) -> Vec<AnyElement> {
+pub(super) fn blocks_view(
+    prefix: &str,
+    blocks: &[Block],
+    p: Palette,
+    mono: &SharedString,
+) -> Vec<AnyElement> {
     blocks
         .iter()
         .enumerate()
@@ -509,7 +108,7 @@ fn blocks_view(prefix: &str, blocks: &[Block], p: Palette, mono: &SharedString) 
         .collect()
 }
 
-fn block_view(
+pub(super) fn block_view(
     prefix: &str,
     i: usize,
     block: &Block,
@@ -594,7 +193,7 @@ fn block_view(
     div().pt(px(top)).child(el).into_any_element()
 }
 
-fn changelog_header(count: usize, p: Palette) -> Div {
+pub(super) fn changelog_header(count: usize, p: Palette) -> Div {
     h_flex()
         .flex_shrink_0()
         .px(px(16.))
@@ -618,7 +217,7 @@ fn changelog_header(count: usize, p: Palette) -> Div {
         )
 }
 
-fn changelog_row(post: &Post, first: bool, p: Palette) -> AnyElement {
+pub(super) fn changelog_row(post: &Post, first: bool, p: Palette) -> AnyElement {
     let url = post.url.as_deref().and_then(safe_url);
     let current = post.version() == env!("CARGO_PKG_VERSION");
     v_flex()
@@ -685,7 +284,7 @@ fn changelog_row(post: &Post, first: bool, p: Palette) -> AnyElement {
         .into_any_element()
 }
 
-fn empty(text: &'static str, p: Palette) -> Div {
+pub(super) fn empty(text: &'static str, p: Palette) -> Div {
     div()
         .py(px(4.))
         .text_size(px(13.))
@@ -694,47 +293,6 @@ fn empty(text: &'static str, p: Palette) -> Div {
 }
 
 impl Shell {
-    pub(crate) fn fetch_news(&mut self, cx: &mut Context<Self>) {
-        if self.news.fetching {
-            return;
-        }
-        self.news.fetching = true;
-        let root = self.store.root.clone();
-        let shown = self.news.posts.clone();
-        cx.spawn(async move |this, cx| {
-            let fetched = cx
-                .background_executor()
-                .spawn(async move { fetch(&root, shown) })
-                .await;
-            this.update(cx, |s, cx| {
-                let news = &mut s.news;
-                news.fetching = false;
-                news.checked = Some(Instant::now());
-                news.trouble = fetched.error.as_ref().map(|(t, _)| *t);
-                if let Some((_, e)) = &fetched.error {
-                    eprintln!("swofty-launcher: could not check for news: {e}");
-                }
-                let mut changed = !fetched.images.is_empty();
-                if let Some(posts) = fetched.posts {
-                    if news.posts != posts {
-                        changed = true;
-                        news.blocks = posts.iter().map(parsed_body).collect();
-                        news.posts = posts;
-                    }
-                    news.live = true;
-                }
-                news.images.extend(fetched.images);
-                if changed {
-                    news.revision = news.revision.wrapping_add(1);
-                }
-                cx.notify();
-            })
-            .ok();
-        })
-        .detach();
-        cx.notify();
-    }
-
     pub(crate) fn news_page(&mut self, p: Palette, short: bool, cx: &mut Context<Self>) -> AnyElement {
         if self.news.stale() {
             self.fetch_news(cx);
@@ -787,11 +345,11 @@ impl Shell {
             .into_any_element()
     }
 
-    fn news_scrollbar(&self, pane: NewsPane, cx: &Context<Self>) -> Div {
+    pub(super) fn news_scrollbar(&self, pane: NewsPane, cx: &Context<Self>) -> Div {
         self.news_scroll.motion[pane as usize].overlay(self.news_scroll.list(pane), cx)
     }
 
-    fn news_posts(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+    pub(super) fn news_posts(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let frame = v_flex()
             .relative()
             .rounded(px(10.))
@@ -834,7 +392,7 @@ impl Shell {
             .into_any_element()
     }
 
-    fn news_row(&self, i: usize, p: Palette, mono: &SharedString) -> AnyElement {
+    pub(super) fn news_row(&self, i: usize, p: Palette, mono: &SharedString) -> AnyElement {
         let Some(row) = self.news_scroll.rows.get(i) else {
             return div().into_any_element();
         };
@@ -869,7 +427,7 @@ impl Shell {
         div().w_full().max_w(px(780.)).child(content).into_any_element()
     }
 
-    fn article_header(&self, post: &Post, first: bool, p: Palette) -> AnyElement {
+    pub(super) fn article_header(&self, post: &Post, first: bool, p: Palette) -> AnyElement {
         let image = post.image.as_ref().and_then(|u| self.news.images.get(u)).cloned();
         v_flex()
             .flex_shrink_0()
@@ -903,7 +461,7 @@ impl Shell {
             .into_any_element()
     }
 
-    fn article_link(&self, post: &Post) -> Option<AnyElement> {
+    pub(super) fn article_link(&self, post: &Post) -> Option<AnyElement> {
         let url = post.url.as_deref().and_then(safe_url)?;
         let on_site = url.starts_with(SITE);
         Some(
@@ -925,7 +483,7 @@ impl Shell {
         )
     }
 
-    fn changelogs(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+    pub(super) fn changelogs(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let scroll = &self.news_scroll.releases;
         let count = self.news_scroll.release_indices.len();
         v_flex()
@@ -968,7 +526,7 @@ impl Shell {
             .into_any_element()
     }
 
-    fn stacked_news(&self, short: bool, cx: &mut Context<Self>) -> AnyElement {
+    pub(super) fn stacked_news(&self, short: bool, cx: &mut Context<Self>) -> AnyElement {
         let scroll = &self.news_scroll.stacked;
         div()
             .relative()
@@ -1040,104 +598,5 @@ impl Shell {
             )
             .child(self.news_scrollbar(NewsPane::Stacked, cx))
             .into_any_element()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{News, Post, Trouble, embedded, format_date, image_format, merge, parse};
-
-    fn post(id: &str, date: &str) -> Post {
-        Post {
-            id: id.into(),
-            kind: id.split('/').next().unwrap_or_default().into(),
-            title: id.into(),
-            date: date.into(),
-            summary: String::new(),
-            image: None,
-            url: None,
-            body: String::new(),
-        }
-    }
-
-    #[test]
-    fn embeds_the_posts_in_full_and_the_release_notes_newest_first() {
-        let posts = embedded();
-        let news = posts.iter().find(|p| p.id == "news/1.3.0").unwrap();
-        assert_eq!(news.kind, "news");
-        assert!(
-            news.body
-                .starts_with("Swofty Launcher 1.3.0 makes everything an addon.")
-        );
-        assert!(news.body.contains("## Thank you, Team Simplified"));
-        assert!(posts.windows(2).all(|w| w[0].date >= w[1].date));
-        let notes = posts.iter().find(|p| p.id == "release/1.2.5").unwrap();
-        assert_eq!(notes.title, "Swofty Launcher 1.2.5");
-        assert_eq!(notes.version(), "1.2.5");
-        assert_eq!(notes.url.as_deref(), Some("https://f1.swofty.net/releases/1.2.5"));
-        assert!(!notes.summary.is_empty() && !notes.date.is_empty() && notes.body.is_empty());
-    }
-
-    #[test]
-    fn merges_by_id_and_sorts_by_date_then_version() {
-        let mut base = vec![
-            post("release/1.2.9", "2026-10-21"),
-            post("release/1.2.10", "2026-10-21"),
-            post("news/hello", "2026-10-21"),
-        ];
-        base[2].body = "kept".into();
-        let mut newer = vec![
-            post("release/1.2.9", "2026-10-21"),
-            post("news/hello", "2026-10-21"),
-        ];
-        newer[0].summary = "fresh".into();
-        let merged = merge(base, newer);
-        let ids: Vec<&str> = merged.iter().map(|p| p.id.as_str()).collect();
-        assert_eq!(ids, ["news/hello", "release/1.2.10", "release/1.2.9"]);
-        assert_eq!(merged[2].summary, "fresh");
-        assert_eq!(merged[0].body, "kept");
-    }
-
-    #[test]
-    fn reads_new_and_old_feeds() {
-        let posts = parse(r#"{"posts":[{"id":"news/a","title":"A","extra":1}],"version":2}"#).unwrap();
-        assert_eq!(posts[0].title, "A");
-        assert!(posts[0].body.is_empty());
-        let posts =
-            parse(r###"{"posts":[{"id":"news/b","kind":"news","title":"B","body":"## Hi\n\n- one"}]}"###)
-                .unwrap();
-        assert_eq!(posts[0].body, "## Hi\n\n- one");
-        assert!(parse("<html>").is_none());
-    }
-
-    #[test]
-    fn says_why_the_latest_news_is_missing() {
-        let mut news = News::load(std::path::Path::new("/nonexistent"));
-        assert_eq!(
-            news.subtitle(),
-            "Offline · showing the news that came with this version"
-        );
-        news.trouble = Some(Trouble::Failed);
-        assert_eq!(
-            news.subtitle(),
-            "Couldn't load the latest news · showing the news that came with this version"
-        );
-        news.saved = true;
-        news.trouble = Some(Trouble::Offline);
-        assert_eq!(news.subtitle(), "Offline · showing the news saved last time");
-        news.live = true;
-        assert_eq!(news.subtitle(), "From f1.swofty.net");
-    }
-
-    #[test]
-    fn formats_dates() {
-        assert_eq!(format_date("2026-10-22"), "22 October 2026");
-        assert_eq!(format_date("soon"), "soon");
-    }
-
-    #[test]
-    fn knows_image_formats() {
-        assert!(image_format(b"\x89PNG\r\n").is_some());
-        assert!(image_format(b"<svg").is_none());
     }
 }
