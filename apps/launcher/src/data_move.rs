@@ -63,7 +63,8 @@ impl Shell {
         if self.moving.is_some() {
             return Some(tr("Your data folder is already moving").to_owned());
         }
-        if !self.processes.is_empty() || swofty_core::process::game_running() {
+        let skip_game = cfg!(debug_assertions) && std::env::var_os("SWOFTY_DEBUG_MOVE_TO").is_some();
+        if !skip_game && (!self.processes.is_empty() || swofty_core::process::game_running()) {
             return Some(tr("Close F1 25 before moving your data folder").to_owned());
         }
         if self.build.is_some() || Busy::live(&self.store.root).is_some() {
@@ -82,6 +83,11 @@ impl Shell {
     pub(crate) fn open_data_move(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if let Some(why) = self.move_refusal() {
             window.push_notification(Notification::error(why), cx);
+            return;
+        }
+        #[cfg(debug_assertions)]
+        if let Some(picked) = std::env::var_os("SWOFTY_DEBUG_MOVE_TO") {
+            self.plan_data_move(PathBuf::from(picked), window, cx);
             return;
         }
         let rx = cx.prompt_for_paths(PathPromptOptions {
