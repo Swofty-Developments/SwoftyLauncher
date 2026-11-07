@@ -165,5 +165,5 @@ fn a_junction_default_is_not_offered_as_its_own_target() {
     assert!(find(&loc(&default), &[], &[]).is_empty());
     let mut with_env = loc(&default);
     with_env.env = Some(dir.join("Elsewhere"));
-    assert_eq!(paths(&find(&with_env, &[], &[])), [default.clone()]);
+    assert_eq!(paths(&find(&with_env, &[], &[])), [default]);
 }
