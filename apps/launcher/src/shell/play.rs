@@ -1,9 +1,7 @@
 use crate::game::{self, Launch, Owner};
 use crate::play_checks;
 use gpui_kit::component::WindowExt;
-use gpui_kit::component::button::ButtonVariants;
 use gpui_kit::component::notification::Notification;
-use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::path::PathBuf;
 use swofty_core::install::Source;
@@ -157,7 +155,7 @@ impl Shell {
         self.blocked = None;
         self.game_edited = None;
         Blocked::clear(&self.store.root).ok();
-        self.blocked_seen = game::blocked_at(&self.store.root).unwrap_or(0.0);
+        self.seen.blocked = game::blocked_at(&self.store.root).unwrap_or(0.0);
         self.dismissed = self.session.as_ref().map(|s| s.dir.clone());
         for note in &checked.notes {
             window.push_notification(note_notification(note), cx);
@@ -209,7 +207,7 @@ impl Shell {
                 true
             }
             Err(e) => {
-                self.launch_failed_seen = game::now_secs();
+                self.seen.launch_failed = game::now_secs();
                 window.push_notification(
                     Notification::error(e)
                         .title("Could not launch F1 25")

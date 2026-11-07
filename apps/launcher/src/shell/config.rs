@@ -1,5 +1,4 @@
 use gpui_kit::component::WindowExt;
-use gpui_kit::component::button::ButtonVariants;
 use gpui_kit::component::notification::Notification;
 use gpui_kit::*;
 use swofty_core::session::LaunchMode;

@@ -3,7 +3,6 @@ use crate::pages::{addon_icon, label};
 use crate::scale::px;
 use crate::theme::{Palette, SCROLLBAR_GAP, ScrollArea};
 use gpui_kit::assets::IconName;
-use gpui_kit::component::button::ButtonVariants;
 use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;

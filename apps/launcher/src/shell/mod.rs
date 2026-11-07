@@ -3,7 +3,6 @@ use crate::game::{Install, Launch, Owner};
 use crate::game_edited::Edited;
 use crate::library::Library;
 use crate::play_checks;
-use gpui_kit::component::button::ButtonVariants;
 use gpui_kit::component::notification::Notification;
 use gpui_kit::component::slider::SliderState;
 use gpui_kit::*;
@@ -31,11 +30,13 @@ mod profile_edit;
 mod prompt;
 mod reload;
 mod render;
+mod seen;
 mod startup;
 mod title_bar;
 
 pub use page::{Page, PlayState};
 pub(crate) use prompt::Prompt;
+pub(crate) use seen::Seen;
 pub(crate) use startup::Prepared;
 
 pub struct Shell {
@@ -67,11 +68,7 @@ pub struct Shell {
     play_pending: play_checks::Pending,
     pub(crate) blocked: Option<Blocked>,
     pub(crate) game_edited: Option<Edited>,
-    pub(crate) recovered_seen: f64,
-    pub(crate) mods_blocked_seen: f64,
-    pub(crate) not_stock_seen: f64,
-    pub(crate) blocked_seen: f64,
-    pub(crate) launch_failed_seen: f64,
+    pub(crate) seen: Seen,
     pub(crate) restoring: bool,
     pub(crate) build: Option<Busy>,
     pub(crate) cancelling: bool,

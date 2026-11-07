@@ -1,10 +1,9 @@
 use crate::scale::px;
 use crate::theme::{SCROLLBAR_GAP, ScrollArea, palette};
-use gpui_kit::component::button::{ButtonVariant, ButtonVariants};
+use gpui_kit::component::button::ButtonVariant;
 use gpui_kit::component::input::{Input, InputState};
 use gpui_kit::component::notification::Notification;
 use gpui_kit::component::{WindowExt, h_flex, v_flex};
-use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::collections::BTreeSet;
 use std::rc::Rc;

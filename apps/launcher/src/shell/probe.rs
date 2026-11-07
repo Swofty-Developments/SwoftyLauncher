@@ -2,9 +2,7 @@ use crate::crash_modal::{self, CrashView};
 use crate::game::{self, Install, Owner, Probe};
 use crate::game_edited::Edited;
 use gpui_kit::component::WindowExt;
-use gpui_kit::component::button::ButtonVariants;
 use gpui_kit::component::notification::Notification;
-use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::time::{Duration, Instant};
 use swofty_core::quarantine;
@@ -62,8 +60,8 @@ impl Shell {
         if probe.saves_marker && self.saves.take_notice(&root) {
             self.show_saves_notice(window, cx);
         }
-        if let Some(n) = probe.recovered.filter(|n| n.at > self.recovered_seen) {
-            self.recovered_seen = n.at;
+        if let Some(n) = probe.recovered.filter(|n| n.at > self.seen.recovered) {
+            self.seen.recovered = n.at;
             let mut text: Vec<String> = n.lines.iter().take(4).cloned().collect();
             if n.lines.len() > text.len() {
                 text.push(format!(
@@ -76,22 +74,22 @@ impl Shell {
         if let Some(r) = probe
             .mods_blocked
             .as_ref()
-            .filter(|r| r.at > self.mods_blocked_seen)
+            .filter(|r| r.at > self.seen.mods_blocked)
         {
-            self.mods_blocked_seen = r.at;
+            self.seen.mods_blocked = r.at;
             show_mods_blocked(r, cx.entity().downgrade(), window, cx);
         }
-        if let Some(r) = probe.not_stock.as_ref().filter(|r| r.at > self.not_stock_seen) {
-            self.not_stock_seen = r.at;
+        if let Some(r) = probe.not_stock.as_ref().filter(|r| r.at > self.seen.not_stock) {
+            self.seen.not_stock = r.at;
             self.game_edited = Some(Edited::NotStock(r.clone()));
             self.show_game_edited(window, cx);
         }
         if let Some(b) = probe
             .blocked
             .as_ref()
-            .filter(|_| probe.blocked_at.is_some_and(|at| at > self.blocked_seen))
+            .filter(|_| probe.blocked_at.is_some_and(|at| at > self.seen.blocked))
         {
-            self.blocked_seen = probe.blocked_at.expect("blocked file timestamp");
+            self.seen.blocked = probe.blocked_at.expect("blocked file timestamp");
             self.blocked = Some(b.clone());
             self.game_edited = Some(Edited::Leftovers(b.clone()));
             self.show_game_edited(window, cx);
@@ -99,9 +97,9 @@ impl Shell {
         if let Some(f) = probe
             .launch_failed
             .as_ref()
-            .filter(|f| f.at > self.launch_failed_seen)
+            .filter(|f| f.at > self.seen.launch_failed)
         {
-            self.launch_failed_seen = f.at;
+            self.seen.launch_failed = f.at;
             self.notice = Some(f.headline().to_owned());
             show_launch_failed(f, window, cx);
         }

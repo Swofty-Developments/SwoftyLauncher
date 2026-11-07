@@ -1,10 +1,9 @@
 use crate::scale::px;
 use gpui_kit::assets::IconName;
-use gpui_kit::component::button::{Button, ButtonVariants};
+use gpui_kit::component::button::Button;
 use gpui_kit::component::input::{Input, InputState};
 use gpui_kit::component::notification::Notification;
 use gpui_kit::component::{WindowExt, h_flex};
-use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::path::PathBuf;
 use std::rc::Rc;

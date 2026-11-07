@@ -1,5 +1,4 @@
 use crate::library::Library;
-use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::time::Instant;
 

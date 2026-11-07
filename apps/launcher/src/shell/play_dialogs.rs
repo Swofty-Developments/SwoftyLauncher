@@ -2,9 +2,8 @@ use crate::game::{self};
 use crate::scale::px;
 use crate::theme::palette;
 use gpui_kit::component::WindowExt;
-use gpui_kit::component::button::{ButtonVariant, ButtonVariants};
+use gpui_kit::component::button::ButtonVariant;
 use gpui_kit::component::notification::Notification;
-use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::process::stop_game_in;
 

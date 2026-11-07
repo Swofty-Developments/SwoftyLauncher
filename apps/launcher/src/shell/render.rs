@@ -1,6 +1,5 @@
 use crate::scale::px;
 use crate::theme::palette;
-use gpui_kit::component::button::ButtonVariants;
 use gpui_kit::component::{WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
