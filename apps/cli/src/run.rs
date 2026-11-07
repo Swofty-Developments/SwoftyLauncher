@@ -12,7 +12,7 @@ use swofty_core::crash::{Event, LogScan, Symbols, fatal_name};
 use swofty_core::install::{Game, Installer, PROXY, Source};
 use swofty_core::launch;
 use swofty_core::loader_check;
-use swofty_core::multiplayer::bridge::{ENV as NETPLAY_ENV, armed_env};
+use swofty_core::multiplayer::bridge::{ENV as NETPLAY_ENV, armed_env, with_network_log_channels};
 use swofty_core::process::{
     descends_from, game_processes, game_running_in, games_in, steamvr_running, stop_game_in, stop_process,
 };
@@ -843,6 +843,11 @@ fn play(
         for (name, value) in armed_env(armed) {
             game_env.entry(name.to_owned()).or_insert(value);
         }
+    }
+    if game_env.contains_key(NETPLAY_ENV)
+        && let Some(channels) = game_env.get_mut("SWOFTY_GAME_LOG_CHANNELS")
+    {
+        *channels = with_network_log_channels(channels);
     }
     // The prefix's registry override is not always what Wine reads at start,
     // so the session also names version.dll in WINEDLLOVERRIDES, which wins

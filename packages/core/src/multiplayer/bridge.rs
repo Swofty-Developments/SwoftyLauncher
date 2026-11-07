@@ -66,6 +66,20 @@ const RESERVED_MEMBERS: u8 = 24;
 const BIND_ATTEMPTS: usize = 64;
 const BUF: usize = 65536;
 
+/// The game log channels a multiplayer game always opens, on top of any the player set.
+pub const NETWORK_LOG_CHANNELS: &str = "NETWORK*:info,SSL*:info";
+
+/// `channels` with [`NETWORK_LOG_CHANNELS`] added, unless it already opens the network channels.
+pub fn with_network_log_channels(channels: &str) -> String {
+    if channels.split(',').any(|c| c.trim().starts_with("NETWORK*")) {
+        return channels.to_owned();
+    }
+    if channels.trim().is_empty() {
+        return format!("default,{NETWORK_LOG_CHANNELS}");
+    }
+    format!("{channels},{NETWORK_LOG_CHANNELS}")
+}
+
 /// The game's environment for [`ENV`] set to `value`: the trace too while [`TRACE_WHEN_ARMED`].
 pub fn armed_env(value: &str) -> Vec<(&'static str, String)> {
     let mut env = vec![(ENV, value.to_owned())];
@@ -851,6 +865,19 @@ mod tests {
                 }
             })
             .collect()
+    }
+
+    #[test]
+    fn a_players_own_log_channels_keep_the_network_ones() {
+        assert_eq!(
+            with_network_log_channels("default,PITLANE:info"),
+            "default,PITLANE:info,NETWORK*:info,SSL*:info"
+        );
+        assert_eq!(
+            with_network_log_channels("default,NETWORK*:info,SSL*:info"),
+            "default,NETWORK*:info,SSL*:info"
+        );
+        assert_eq!(with_network_log_channels(""), "default,NETWORK*:info,SSL*:info");
     }
 
     #[test]
