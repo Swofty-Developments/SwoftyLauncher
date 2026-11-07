@@ -17,7 +17,7 @@ Every addon is listed under the tiles, with its count and the sort order. Select
 - **Sort:** Most stars, Most downloads, Trending (downloads in the last 30 days), Recently updated, Newest and Name. While you search, the order is Best match.
 - **Filters:** type, state (installed, not installed, update available, starred by you, works with this launcher), creator, and **Hide addons that run code**. A filter chosen on the tiles applies to every category.
 
-Select an addon for its description, a 30-day downloads chart, its file size and checksum, the launcher version it needs, and every version's changelog. **More from** lists the same creator's other addons.
+Select an addon for its description, a 30-day downloads chart, its file size and checksum, the launcher version it needs, and every version's changelog. When the creator lists the addon's source code, a **Source code** button opens it; an addon without one has no button, and an installed addon's page shows **Not listed** under **Source code**. **More from** lists the same creator's other addons.
 
 ## Install one
 
