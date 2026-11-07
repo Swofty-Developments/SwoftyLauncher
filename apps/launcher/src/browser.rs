@@ -3,6 +3,7 @@
 
 mod authors;
 mod rows;
+mod tiles;
 
 pub(crate) use authors::View;
 
@@ -2685,50 +2686,6 @@ impl Shell {
             )
     }
 
-    fn category_bar(&self, p: Palette, cx: &mut Context<Self>) -> Div {
-        let tabs: Vec<Tab> = [None].into_iter().chain(shelves()).collect();
-        let pills: Vec<AnyElement> = tabs
-            .into_iter()
-            .enumerate()
-            .map(|(i, tab)| {
-                let n = self.browser.grid_cache.as_ref().unwrap().categories[i];
-                let on = self.browser.tab == tab;
-                h_flex()
-                    .id(SharedString::from(format!("browser-tab-{tab:?}")))
-                    .h(px(28.))
-                    .px(px(11.))
-                    .gap(px(6.))
-                    .flex_shrink_0()
-                    .rounded(px(14.))
-                    .border_1()
-                    .cursor_pointer()
-                    .text_size(px(13.))
-                    .map(|d| {
-                        if on {
-                            d.bg(p.accent.opacity(0.14))
-                                .border_color(p.accent.opacity(0.6))
-                                .text_color(p.text)
-                                .font_weight(FontWeight::MEDIUM)
-                        } else {
-                            d.border_color(p.border)
-                                .text_color(p.text_muted)
-                                .hover(move |s| s.bg(p.hover).text_color(p.text))
-                        }
-                    })
-                    .child(tab_label(tab))
-                    .child(
-                        div()
-                            .text_size(px(11.))
-                            .text_color(if on { p.text_muted } else { p.text_placeholder })
-                            .child(n.to_string()),
-                    )
-                    .on_click(cx.listener(move |this, _, _, cx| this.shelve(tab, cx)))
-                    .into_any_element()
-            })
-            .collect();
-        h_flex().gap(px(6.)).flex_wrap().children(pills)
-    }
-
     fn sort_button(&self, sort: Sort, searching: bool, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let shell = cx.entity().downgrade();
         Button::new("browser-sort")
@@ -2874,17 +2831,16 @@ impl Shell {
         };
         let width = self.content_width - FILTERS_W - 20.;
         let rows = !self.browser.addons.is_empty() && !filtering;
-        let bar = h_flex()
+        let bar = v_flex()
             .pb(px(14.))
-            .gap(px(12.))
+            .gap(px(10.))
             .flex_shrink_0()
-            .items_start()
-            .child(div().flex_1().min_w_0().child(self.category_bar(p, cx)))
+            .child(self.category_tiles(p, cx))
             .child(
                 h_flex()
                     .gap(px(10.))
-                    .flex_shrink_0()
                     .items_center()
+                    .justify_end()
                     .h(px(28.))
                     .child(
                         div()

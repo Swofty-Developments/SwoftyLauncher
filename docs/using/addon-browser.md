@@ -9,12 +9,13 @@ The **Addon Browser** page lists the addons creators publish to Swofty Launcher.
 
 ## Find an addon
 
-The page opens on **All**: one row per category, in the order of the category bar (Seasons, Tracks, Cars, Helmets, Shaders, Career, AI, Performance, Utility, Other). A category with no addons has no row. Each row shows the category's addon cards in the chosen sort order, up to 24, with its count at the top.
+The page opens on **All**: one row per category, in the order of the category tiles (Seasons, Tracks, Cars, Helmets, Shaders, Career, AI, Performance, Utility, Other). A category with no addons has no row. Each row shows the category's addon cards in the chosen sort order, up to 24, with its count at the top.
 
-- Scroll a row sideways with the mouse wheel while holding Shift, with a trackpad swipe, or with the arrow buttons at the top right of the row. The arrows move by whole cards and stop at the ends. A fade at the edge of a row shows there are more cards past it.
+- Drag a row sideways with the mouse, anywhere on it, cards included. The row follows the pointer and glides on a little when you let go. A drag is never a click on a card; a plain click still opens the addon. A mostly vertical drag scrolls the page instead.
+- You can also scroll a row with the mouse wheel while holding Shift, with a trackpad swipe, with the Left and Right keys, or with the arrow buttons at the top right of the row. The arrows move by whole cards and stop at the ends. A fade at the edge of a row shows there are more cards past it.
 - **See all** opens that category's addons as a grid. A row with more than 24 addons ends in a **See all** card.
 
-Above the rows, the category bar switches between All and each category. Searching, choosing a filter or picking a category replaces the rows with a grid of the matching addons.
+Above the rows, a strip of category tiles shows each category's glyph, name and addon count, in the same order as the rows. Select a tile to show only that category; the selected tile is highlighted. Select **All** to return to the rows. Searching, choosing a filter or picking a category replaces the rows with a grid of the matching addons.
 
 - **Search:** matches names, ids, creators, categories, types and descriptions, and tolerates one typo in longer words. `author:<name>` and `category:<name>` narrow it down. Creators that match show above the addons. A search from All covers every category, and a search inside a category covers that category.
 - **Sort:** Most stars, Most downloads, Trending (downloads in the last 30 days), Recently updated, Newest and Name. While you search, the order is Best match.

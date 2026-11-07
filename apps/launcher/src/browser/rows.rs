@@ -15,17 +15,54 @@ const POSTER_ICON: f32 = 76.;
 const END_W: f32 = 168.;
 const FADE_W: f32 = 64.;
 const GLIDE_SECONDS: f32 = 0.32;
+const DRAG_SLOP: f32 = 6.;
+const FLING_MIN: f32 = 240.;
+const FLING_REACH: f32 = 0.22;
+const FLING_SECONDS: f32 = 0.6;
+const FLING_STALE: Duration = Duration::from_millis(80);
 
 #[derive(Clone, Default)]
 struct Row {
     scroll: ScrollHandle,
     glide: Rc<Glide>,
+    drag: Rc<Drag>,
 }
 
 #[derive(Default)]
 struct Glide {
     generation: Cell<u64>,
     target: Cell<Option<f32>>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Lane {
+    Undecided,
+    Across,
+    Down,
+}
+
+#[derive(Clone, Copy)]
+struct Press {
+    from: Point<Pixels>,
+    last: Point<Pixels>,
+    time: Instant,
+    offset: f32,
+    velocity: f32,
+    lane: Lane,
+}
+
+#[derive(Default)]
+struct Drag {
+    press: Cell<Option<Press>>,
+}
+
+#[derive(Clone, Copy)]
+struct Motion {
+    from: f32,
+    to: f32,
+    start: Instant,
+    seconds: f32,
+    generation: u64,
 }
 
 #[derive(Default)]
@@ -73,42 +110,59 @@ fn paged(at: f32, unit: f32, group: usize, max: f32, way: Way) -> f32 {
     (-next * unit).clamp(-max.max(0.), 0.)
 }
 
-fn glide(row: &Row, to: f32, view: EntityId, window: &mut Window) {
+fn glide(row: &Row, to: f32, seconds: f32, view: EntityId, window: &mut Window) {
     let generation = row.glide.generation.get().wrapping_add(1);
     row.glide.generation.set(generation);
     row.glide.target.set(Some(to));
-    let from = f32::from(row.scroll.offset().x);
-    glide_frame(row.clone(), from, to, Instant::now(), generation, view, window);
+    let motion = Motion {
+        from: f32::from(row.scroll.offset().x),
+        to,
+        start: Instant::now(),
+        seconds,
+        generation,
+    };
+    glide_frame(row.clone(), motion, view, window);
 }
 
-fn glide_frame(
-    row: Row,
-    from: f32,
-    to: f32,
-    start: Instant,
-    generation: u64,
-    view: EntityId,
-    window: &mut Window,
-) {
+fn glide_frame(row: Row, motion: Motion, view: EntityId, window: &mut Window) {
     window.on_next_frame(move |window, cx| {
-        if row.glide.generation.get() != generation {
+        if row.glide.generation.get() != motion.generation {
             return;
         }
         let t = if cx.reduce_motion() {
             1.
         } else {
-            (start.elapsed().as_secs_f32() / GLIDE_SECONDS).min(1.)
+            (motion.start.elapsed().as_secs_f32() / motion.seconds).min(1.)
         };
         let eased = 1. - (1. - t).powi(3);
         let y = row.scroll.offset().y;
-        row.scroll.set_offset(point(px(from + (to - from) * eased), y));
+        let x = motion.from + (motion.to - motion.from) * eased;
+        row.scroll.set_offset(point(px(x), y));
         cx.notify(view);
         if t < 1. {
-            glide_frame(row, from, to, start, generation, view, window);
+            glide_frame(row, motion, view, window);
         } else {
             row.glide.target.set(None);
         }
     });
+}
+
+fn lane_of(dx: f32, dy: f32) -> Lane {
+    if dx.hypot(dy) < DRAG_SLOP {
+        Lane::Undecided
+    } else if dx.abs() >= dy.abs() {
+        Lane::Across
+    } else {
+        Lane::Down
+    }
+}
+
+fn dragged(origin: f32, dx: f32, max: f32) -> f32 {
+    (origin + dx).clamp(-max.max(0.), 0.)
+}
+
+fn fling_target(at: f32, velocity: f32, max: f32) -> Option<f32> {
+    (velocity.abs() >= FLING_MIN).then(|| (at + velocity * FLING_REACH).clamp(-max.max(0.), 0.))
 }
 
 impl Shell {
@@ -157,7 +211,8 @@ impl Shell {
             .iter()
             .take(ROW_CAP)
             .filter_map(|&i| self.browser.addons.get(i))
-            .map(|a| self.poster_card(a, tab, p, cx));
+            .map(|a| self.poster_card(a, tab, p, cx))
+            .collect::<Vec<_>>();
         let at = f32::from(row.scroll.offset().x);
         let max = f32::from(row.scroll.max_offset().x).abs();
         let measured = row.scroll.bounds().size.width > px(0.);
@@ -170,6 +225,10 @@ impl Shell {
             .gap(px(GAP))
             .overflow_x_scroll()
             .track_scroll(&row.scroll)
+            .capture_any_mouse_down(self.press_listener(&row, cx))
+            .on_mouse_move(self.drag_listener(&row, cx))
+            .capture_any_mouse_up(self.release_listener(&row, cx))
+            .on_mouse_up_out(MouseButton::Left, self.release_listener(&row, cx))
             .children(cards)
             .when(found.len() > ROW_CAP, |d| {
                 d.child(self.row_end(tab, found.len(), p, cx))
@@ -200,6 +259,106 @@ impl Shell {
                     .when(fade_right, |d| d.child(edge_fade(false, p))),
             )
             .into_any_element()
+    }
+
+    fn press_listener(
+        &self,
+        row: &Row,
+        cx: &mut Context<Self>,
+    ) -> impl Fn(&MouseDownEvent, &mut Window, &mut App) + 'static {
+        let row = row.clone();
+        cx.listener(move |_, e: &MouseDownEvent, _, _| {
+            if e.button != MouseButton::Left {
+                return;
+            }
+            row.drag.press.set(Some(Press {
+                from: e.position,
+                last: e.position,
+                time: Instant::now(),
+                offset: f32::from(row.scroll.offset().x),
+                velocity: 0.,
+                lane: Lane::Undecided,
+            }));
+        })
+    }
+
+    fn drag_listener(
+        &self,
+        row: &Row,
+        cx: &mut Context<Self>,
+    ) -> impl Fn(&MouseMoveEvent, &mut Window, &mut App) + 'static {
+        let row = row.clone();
+        cx.listener(move |this, e: &MouseMoveEvent, _, cx| this.drag_row(&row, e, cx))
+    }
+
+    fn release_listener(
+        &self,
+        row: &Row,
+        cx: &mut Context<Self>,
+    ) -> impl Fn(&MouseUpEvent, &mut Window, &mut App) + 'static {
+        let row = row.clone();
+        cx.listener(move |this, e: &MouseUpEvent, window, cx| {
+            if e.button == MouseButton::Left && this.end_drag(&row, window, cx) {
+                cx.stop_propagation();
+            }
+        })
+    }
+
+    fn drag_row(&mut self, row: &Row, e: &MouseMoveEvent, cx: &mut Context<Self>) {
+        let Some(mut press) = row.drag.press.get() else {
+            return;
+        };
+        if e.pressed_button != Some(MouseButton::Left) {
+            row.drag.press.set(None);
+            return;
+        }
+        let dx = f32::from(e.position.x - press.from.x);
+        let dy = f32::from(e.position.y - press.from.y);
+        if press.lane == Lane::Undecided {
+            press.lane = lane_of(dx, dy);
+            if press.lane != Lane::Undecided {
+                row.glide
+                    .generation
+                    .set(row.glide.generation.get().wrapping_add(1));
+                row.glide.target.set(None);
+            }
+        }
+        match press.lane {
+            Lane::Undecided => {}
+            Lane::Across => {
+                let max = f32::from(row.scroll.max_offset().x).abs();
+                let y = row.scroll.offset().y;
+                row.scroll
+                    .set_offset(point(px(dragged(press.offset, dx, max)), y));
+                let dt = press.time.elapsed().as_secs_f32();
+                if dt > 0.001 {
+                    let step = f32::from(e.position.x - press.last.x) / dt;
+                    press.velocity = press.velocity * 0.4 + step * 0.6;
+                    press.time = Instant::now();
+                }
+            }
+            Lane::Down => {
+                self.browser.smooth.cancel();
+                self.browser.grid_scroll.scroll_by(press.last.y - e.position.y);
+            }
+        }
+        press.last = e.position;
+        row.drag.press.set(Some(press));
+        cx.notify();
+    }
+
+    fn end_drag(&mut self, row: &Row, window: &mut Window, cx: &mut Context<Self>) -> bool {
+        let Some(press) = row.drag.press.take() else {
+            return false;
+        };
+        if press.lane == Lane::Across && press.time.elapsed() < FLING_STALE {
+            let at = f32::from(row.scroll.offset().x);
+            let max = f32::from(row.scroll.max_offset().x).abs();
+            if let Some(to) = fling_target(at, press.velocity, max) {
+                glide(row, to, FLING_SECONDS, cx.entity_id(), window);
+            }
+        }
+        press.lane != Lane::Undecided
     }
 
     fn row_heading(
@@ -274,7 +433,13 @@ impl Shell {
             .get()
             .unwrap_or_else(|| f32::from(row.scroll.offset().x));
         let group = (viewport / unit).floor() as usize;
-        glide(row, paged(from, unit, group, max, way), cx.entity_id(), window);
+        glide(
+            row,
+            paged(from, unit, group, max, way),
+            GLIDE_SECONDS,
+            cx.entity_id(),
+            window,
+        );
     }
 
     fn poster_card(&self, a: &Addon, tab: Tab, p: Palette, cx: &mut Context<Self>) -> AnyElement {
@@ -419,7 +584,7 @@ fn edge_fade(left: bool, p: Palette) -> Div {
 
 #[cfg(test)]
 mod tests {
-    use super::{Addon, Category, Tab, Way, group_rows, paged};
+    use super::{Addon, Category, Lane, Tab, Way, dragged, fling_target, group_rows, lane_of, paged};
 
     fn addon(id: &str, category: Option<&str>) -> Addon {
         serde_json::from_value(serde_json::json!({
@@ -464,5 +629,29 @@ mod tests {
         assert_eq!(paged(-250., 100., 2, 1000., Way::Back), -100.);
         assert_eq!(paged(0., 100., 0, 1000., Way::Forward), -100.);
         assert_eq!(paged(0., 100., 3, 0., Way::Forward), 0.);
+    }
+
+    #[test]
+    fn a_drag_picks_its_lane_after_a_few_pixels() {
+        assert_eq!(lane_of(2., 1.), Lane::Undecided);
+        assert_eq!(lane_of(-9., 3.), Lane::Across);
+        assert_eq!(lane_of(2., -9.), Lane::Down);
+    }
+
+    #[test]
+    fn dragging_follows_the_pointer_and_clamps_at_the_ends() {
+        assert_eq!(dragged(-100., -50., 1000.), -150.);
+        assert_eq!(dragged(-100., 50., 1000.), -50.);
+        assert_eq!(dragged(-100., 500., 1000.), 0.);
+        assert_eq!(dragged(-900., -500., 1000.), -1000.);
+        assert_eq!(dragged(0., -50., 0.), 0.);
+    }
+
+    #[test]
+    fn a_fast_release_glides_on_and_a_slow_one_stays() {
+        assert_eq!(fling_target(-100., -1000., 2000.), Some(-320.));
+        assert_eq!(fling_target(-100., 100., 2000.), None);
+        assert_eq!(fling_target(-100., -5000., 300.), Some(-300.));
+        assert_eq!(fling_target(-100., 5000., 300.), Some(0.));
     }
 }
