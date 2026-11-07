@@ -6,12 +6,14 @@ use gpui_kit::assets::IconName;
 use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::{
     Context, FontWeight, InteractiveElement, IntoElement, ParentElement, StatefulInteractiveElement, Styled,
-    Window, div, relative,
+    Window, div,
 };
 
 use crate::scale::px;
 use crate::shell::{Page, Shell};
 use crate::theme::Palette;
+use crate::ui::ProgressBar;
+use swofty_i18n::trf;
 
 pub(crate) const LINGER: Duration = Duration::from_secs(4);
 pub(crate) const SLIDE: Duration = Duration::from_millis(260);
@@ -195,7 +197,7 @@ impl Shell {
                                         .flex_shrink_0()
                                         .text_size(px(12.))
                                         .text_color(p.text_muted)
-                                        .child(format!("+{} more", line.more))
+                                        .child(trf!("+{count} more", count = line.more))
                                 })),
                         )
                         .child(
@@ -205,20 +207,7 @@ impl Shell {
                                 .text_color(if line.failed { p.warning } else { p.text_muted })
                                 .child(line.status),
                         )
-                        .children(line.fraction.filter(|_| !line.failed).map(|done| {
-                            div()
-                                .h(px(4.))
-                                .w_full()
-                                .rounded_full()
-                                .bg(p.border_variant)
-                                .child(
-                                    div()
-                                        .h_full()
-                                        .w(relative(done.clamp(0., 1.)))
-                                        .rounded_full()
-                                        .bg(p.accent),
-                                )
-                        })),
+                        .children(line.fraction.filter(|_| !line.failed).map(ProgressBar::new)),
                 )
                 .children(line.failed.then(|| {
                     div()

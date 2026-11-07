@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::{Icon, TITLE_BAR_HEIGHT, h_flex, v_flex};
+use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::known_problems::Diagnosis;
@@ -13,6 +13,7 @@ use crate::discord::{BLURPLE, BLURPLE_HOVER, INVITE, LOGO};
 use crate::send_logs;
 use crate::shell::Shell;
 use crate::theme::Palette;
+use crate::ui::Overlay;
 
 /// A crash newer than this opens the modal by itself; an older one only shows
 /// in the play bar.
@@ -241,26 +242,11 @@ impl Shell {
                 )
             });
         Some(
-            div()
-                .id("crash-modal")
-                .absolute()
-                .top(TITLE_BAR_HEIGHT)
-                .left_0()
-                .right_0()
-                .bottom_0()
-                .occlude()
-                .bg(p.background)
-                .overflow_y_scroll()
-                .child(
-                    v_flex()
-                        .min_h_full()
-                        .w_full()
-                        .items_center()
-                        .justify_center()
-                        .px(px(24.))
-                        .py(px(32.))
-                        .child(card),
-                ),
+            Overlay::new("crash-modal")
+                .opaque(p.background)
+                .below_title_bar()
+                .scrolls()
+                .child(v_flex().w(px(668.)).px(px(24.)).py(px(32.)).child(card)),
         )
     }
 }
