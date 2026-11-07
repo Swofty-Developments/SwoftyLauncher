@@ -869,8 +869,16 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     let mut hasher = Sha256::new();
     let packed = store.root.join("cache").join(crate::cache::PACKED_DIR);
     swofty_formats::erp::cache_compressed(Some(packed.clone()));
-    let features = loader_dir()
-        .map(|d| load_features(&d))
+    let loader = loader_dir();
+    let exe_dir = std::env::current_exe()
+        .ok()
+        .and_then(|e| e.parent().map(Path::to_path_buf));
+    built
+        .lines
+        .push(loader_line(exe_dir.as_deref(), loader.as_deref()));
+    let features = loader
+        .as_deref()
+        .map(load_features)
         .transpose()?
         .unwrap_or_default();
     let config = store.config();
@@ -1307,6 +1315,9 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         .collect();
     let natural = planner.route(Kind::Group) == Route::Runtime;
     if !natural && maps.len() > SLOTS.len() {
+        if loader.is_none() {
+            return Err(Error::Other(loader_missing(exe_dir.as_deref())));
+        }
         return Err(Error::Map(format!(
             "at most {} tracks can be enabled at once",
             SLOTS.len()
@@ -2701,6 +2712,18 @@ fn stage_erps(built: &mut Built, staged: &BTreeMap<String, PathBuf>, rels: Vec<S
         }
     }
     Ok(())
+}
+
+fn loader_line(exe_dir: Option<&Path>, loader: Option<&Path>) -> String {
+    let show = |p: Option<&Path>| p.map_or_else(|| "none".to_owned(), |p| p.display().to_string());
+    format!("loader: {}; swofty.exe in {}", show(loader), show(exe_dir))
+}
+
+fn loader_missing(exe_dir: Option<&Path>) -> String {
+    let at = exe_dir.map_or_else(|| "the launcher's folder".to_owned(), |d| d.display().to_string());
+    format!(
+        "Swofty Launcher's game files (version.dll, swofty_core.dll) are missing from {at}; your antivirus may have removed them. Restore them or run the installer again"
+    )
 }
 
 /// The warning for an addon's archive changes a build skips because the
@@ -6862,6 +6885,27 @@ mod tests {
             "Mod: 1 file(s) under character_package/ land at the game root, where the game never reads them; the folder belongs under 2025_asset_groups/ - re-import it with that path"
         );
         std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_missing_loader_is_named_instead_of_a_track_limit() {
+        assert_eq!(
+            loader_missing(Some(Path::new("/apps/swofty"))),
+            "Swofty Launcher's game files (version.dll, swofty_core.dll) are missing from /apps/swofty; your antivirus may have removed them. Restore them or run the installer again"
+        );
+        assert!(loader_missing(None).contains("missing from the launcher's folder;"));
+    }
+
+    #[test]
+    fn the_build_log_names_the_exe_folder_and_the_loader() {
+        assert_eq!(
+            loader_line(Some(Path::new("/apps/swofty")), None),
+            "loader: none; swofty.exe in /apps/swofty"
+        );
+        assert_eq!(
+            loader_line(Some(Path::new("/apps/swofty")), Some(Path::new("/apps/loader"))),
+            "loader: /apps/loader; swofty.exe in /apps/swofty"
+        );
     }
 
     #[test]
