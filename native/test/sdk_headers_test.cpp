@@ -655,6 +655,25 @@ static int fake_current(int32_t *car, int32_t *camera)
 }
 static int fake_available() { return g_active; }
 
+static int fake_owned(const char *name)
+{
+    return std::string(name) == "f1_2026" ? SWOFTY_OWNERSHIP_OWNED : std::string(name) == "f1_2025" ? SWOFTY_OWNERSHIP_NOT_OWNED : SWOFTY_OWNERSHIP_UNKNOWN;
+}
+
+static void content_ownership()
+{
+    using swofty::content::Ownership;
+    CHECK(swofty::content::owned("f1_2026") == Ownership::unknown);
+    SwoftyContentOps ops{SWOFTY_CONTENT_OPS_VERSION, fake_owned};
+    swofty::detail::set_content_ops_table(&ops);
+    CHECK(swofty::content::owned("f1_2026") == Ownership::owned);
+    CHECK(swofty::content::owned("f1_2025") == Ownership::not_owned);
+    CHECK(swofty::content::owned("other") == Ownership::unknown);
+    ops.version = 0;
+    CHECK(swofty::content::owned("f1_2026") == Ownership::unknown);
+    swofty::detail::set_content_ops_table(nullptr);
+}
+
 static void session_operations()
 {
     cars::live::Car car(3);
@@ -695,6 +714,7 @@ int main()
 {
     unavailable_without_core();
     session_operations();
+    content_ownership();
     liveries_records();
     payload_accessors();
     round_trip();

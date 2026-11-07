@@ -145,6 +145,7 @@ const SwoftyCareerContent *career_content_table();
 std::vector<CoreMixins> career_content_mixins();
 void career_content_commit();
 void career_content_tick();
+void entitlements_tick();
 void hub_tick();
 const SwoftyEra *era_table();
 const SwoftyRegistry *registry_table();

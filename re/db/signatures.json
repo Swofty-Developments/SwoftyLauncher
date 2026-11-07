@@ -162070,6 +162070,34 @@
    "used_by": [
     "jonniedesigns.sponsor-base"
    ]
+  },
+  {
+   "id": "fe_tiles.ctx",
+   "section": ".xtls",
+   "pattern": "48 89 86 D8 00 00 00 48 8B 0D ?? ?? ?? ?? 48 8D 15",
+   "match": "0x14077b3f7",
+   "anchor": "0xa",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x7",
+    "len": 7
+   },
+   "target": "0x14604bbf0",
+   "kind": "data",
+   "names": [
+    "g_FeTile_Ctx"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-07",
+     "by": "std-ent",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/entitlements.cpp"
+   ]
   }
  ]
 }

@@ -5,6 +5,17 @@
 #include <swofty/systems/forward.hpp>
 #include <swofty/systems/sessions.hpp>
 
+#include <atomic>
+#include <string>
+#include <string_view>
+
+#if defined(_WIN32)
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#endif
+
 // Grand Prix and Time Trial content: a package is one season build (an entrant list, its teams, cars
 // and drivers, and the box's rules); an era box is the tile in the era picker that opens it.
 
@@ -62,5 +73,55 @@ SWOFTY_RECORD(EraBox, package, title, image, order, time_trial)
 
 inline Registry<Package> packages{"content.package", {.applies = Applies::content}};
 inline Registry<EraBox> era_boxes{"era.box", {.applies = Applies::read}};
+
+}
+
+namespace swofty::detail {
+
+inline std::atomic<const SwoftyContentOps *> &content_ops_override()
+{
+    static std::atomic<const SwoftyContentOps *> t{nullptr};
+    return t;
+}
+
+inline void set_content_ops_table(const SwoftyContentOps *t) { content_ops_override() = t; }
+
+inline const SwoftyContentOps *content_ops_table()
+{
+    if (auto t = content_ops_override().load())
+        return t->version >= 1 ? t : nullptr;
+#if defined(_WIN32)
+    static std::atomic<const SwoftyContentOps *> found{nullptr};
+    if (auto t = found.load())
+        return t;
+    HMODULE core = GetModuleHandleW(L"swofty_core.dll");
+    auto get = core ? reinterpret_cast<SwoftyCoreContentOpsFn>(GetProcAddress(core, "SwoftyCoreContentOps")) : nullptr;
+    const SwoftyContentOps *t = get ? get() : nullptr;
+    if (t && t->version < 1)
+        t = nullptr;
+    found = t;
+    return t;
+#else
+    return nullptr;
+#endif
+}
+
+}
+
+namespace swofty::content {
+
+enum class Ownership { unknown, owned, not_owned };
+
+// Whether the player owns the content behind an entitlement name (standard library 1.8, experimental). "f1_2026"
+// is the F1 2026 season content. unknown until the game has the answer, for any other name, and on a core or
+// build without the game binding. A cache read: safe from any thread.
+inline Ownership owned(std::string_view entitlement)
+{
+    auto t = swofty::detail::content_ops_table();
+    if (!t || !t->owned)
+        return Ownership::unknown;
+    int r = t->owned(std::string(entitlement).c_str());
+    return r == SWOFTY_OWNERSHIP_OWNED ? Ownership::owned : r == SWOFTY_OWNERSHIP_NOT_OWNED ? Ownership::not_owned : Ownership::unknown;
+}
 
 }

@@ -979,6 +979,22 @@ typedef struct SwoftySessionOps {
     int (*disqualify)(uint32_t car);
 } SwoftySessionOps;
 
+/* Content ownership (standard library 1.8, experimental), from the core export SwoftyCoreContentOps; not a
+   SwoftyApi member. owned reads whether the player owns the content behind an entitlement name such as
+   "f1_2026" (the F1 2026 season content): SWOFTY_OWNERSHIP_OWNED, SWOFTY_OWNERSHIP_NOT_OWNED, or
+   SWOFTY_OWNERSHIP_UNKNOWN before the game has the answer, for a name the core does not track, or on a build
+   where the game binding does not resolve. The core reads the game's own answer on the flow thread and
+   caches it; the call is a cache read and is safe from any thread. */
+#define SWOFTY_CONTENT_OPS_VERSION 1
+#define SWOFTY_OWNERSHIP_UNKNOWN 0
+#define SWOFTY_OWNERSHIP_OWNED 1
+#define SWOFTY_OWNERSHIP_NOT_OWNED 2
+
+typedef struct SwoftyContentOps {
+    uint32_t version;
+    int (*owned)(const char *entitlement);
+} SwoftyContentOps;
+
 /* Live car operations (standard library 1.6, experimental), from the core export SwoftyCoreCarOps; not a SwoftyApi
    field. Table version 2; version 1 is the first six members and keeps its layout. A car is the game's vehicle id
    (CarLive.vehicle_id, the slot of g_Sess_VehicleTable), dense from 0 in create order; the handle is that slot's
@@ -1222,6 +1238,7 @@ typedef const SwoftyCareerOps *(*SwoftyCoreCareerOpsFn)(void);
 typedef const SwoftyCareerSaves *(*SwoftyCoreCareerSavesFn)(void);
 typedef const SwoftySessionOps *(*SwoftyCoreSessionOpsFn)(void);
 typedef const SwoftyCarOps *(*SwoftyCoreCarOpsFn)(void);
+typedef const SwoftyContentOps *(*SwoftyCoreContentOpsFn)(void);
 
 #define SWOFTY_STAGE_WINDOW 1
 
@@ -1241,6 +1258,7 @@ SWOFTY_EXPORT const SwoftyCareerOps *SwoftyCoreCareerOps(void);
 SWOFTY_EXPORT const SwoftyCareerSaves *SwoftyCoreCareerSaves(void);
 SWOFTY_EXPORT const SwoftySessionOps *SwoftyCoreSessionOps(void);
 SWOFTY_EXPORT const SwoftyCarOps *SwoftyCoreCarOps(void);
+SWOFTY_EXPORT const SwoftyContentOps *SwoftyCoreContentOps(void);
 
 #ifdef __cplusplus
 }

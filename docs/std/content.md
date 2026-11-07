@@ -585,6 +585,28 @@ F1 2017                          Classic Seasons 2017
 F1 2017 (V10)                    mod.esp, on Classic Seasons 2017
 ```
 
+## Content ownership
+
+`content::owned` says whether the player owns the content behind an entitlement name. `f1_2026` is the F1 2026 season content.
+
+```cpp
+#include <swofty/systems/content.hpp>
+
+using swofty::content::Ownership;
+
+switch (swofty::content::owned("f1_2026")) {
+case Ownership::owned:     /* the player can use the 2026 cars */ break;
+case Ownership::not_owned: /* the player does not own the 2026 content */ break;
+case Ownership::unknown:   /* the game has no answer yet: ask again later */ break;
+}
+```
+
+- **The answer is the game's own.** The core reads it with `FeTile_Check_EntrantListUsable` on the `f1_2026` entrant list, the same call the game uses to fill its session information. It runs on the flow thread; `owned` reads the cached result and is safe from any thread.
+- **`unknown`** is returned before the game has built its front-end context, for every name other than `f1_2026`, and on a build where the core does not resolve the game binding. `not_owned` is reported only after the check has returned false for about five seconds of front-end ticks, so an early `unknown` never turns into a false `not_owned`.
+- **`owned` is final** for the session. `not_owned` is rechecked every ten seconds or so and becomes `owned` if the content is installed later.
+- **The core logs the answer once** as `[entitlements] f1_2026: owned` or `not owned`.
+- **`swofty/entitlements.json`** is written in the game folder when the answer is known: `{"f1_2026": true}` or `{"f1_2026": false}`.
+
 ## Readiness and limits
 
 - **Packages and boxes: ready.** The core's era picker (`era_picker.cpp`, up to 64 boxes) and the entrant pipeline are L2, mapped and verified in the game. Classic Seasons ships nine seasons on them.
@@ -594,3 +616,4 @@ F1 2017 (V10)                    mod.esp, on Classic Seasons 2017
 - **Sound rows: boot.** When the game reads `audio.audio_car_data` after boot needs reverse engineering. A team's `engine_sound` applies at boot, to its car everywhere. To change one box only, give the box its own vehicle variant.
 - **The box's track list: partial.** The list builder behind the track select screen (`ui.track_select.build`) needs reverse engineering. A guard covers tracks that don't fit.
 - **Scale:** one season is about 700 records. Classic Seasons 2017, as an addon for 1.5, builds its season with about 700 operations: 99 add-row, 170 set and 430 put-record. They cover its car packages, `file.put`s for the `cs17_*.bdl` bundles, 430 raw audio records, and the rows for the entrant list, teams and pit times.
+- **Content ownership: experimental.** `content::owned` returns `unknown` until the game bindings it needs (`g_FeTile_Ctx`, `FeTile_Check_EntrantListUsable`) are exported for the running build.
