@@ -24,3 +24,9 @@ fn illustration(mode: UiMode) -> Arc<Image> {
 pub(super) fn display(mode: UiMode) -> Img {
     img(illustration(mode)).w(px(WIDTH)).h(px(HEIGHT))
 }
+
+pub(super) fn globe() -> Img {
+    static GLOBE: LazyLock<Arc<Image>> =
+        LazyLock::new(|| image(include_bytes!("../../assets/language-globe.svg")));
+    img(GLOBE.clone()).w(px(WIDTH * 0.6)).h(px(HEIGHT * 0.6))
+}

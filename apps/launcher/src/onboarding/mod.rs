@@ -2,8 +2,9 @@ mod art;
 mod steps;
 mod welcome;
 
+use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::h_flex;
+use gpui_kit::component::{Icon, Sizable, h_flex};
 use gpui_kit::*;
 use swofty_core::session::{ONBOARDING_VERSION, UiMode};
 use swofty_i18n::tr;
@@ -11,6 +12,8 @@ use swofty_i18n::tr;
 use crate::scale::px;
 use crate::shell::Shell;
 use crate::theme::Palette;
+
+const BUTTON_HEIGHT: f32 = 48.;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub(crate) enum Step {
@@ -159,7 +162,7 @@ impl Shell {
                     this.onboarding_key(ev.keystroke.key.as_str(), window, cx);
                 }))
                 .child(welcome::backdrop(step, p))
-                .child(crate::overlay::clear_title_bar())
+                .child(crate::overlay::title_bar(p))
                 .child(stage)
                 .child(self.footer(step, p, cx)),
         )
@@ -168,17 +171,50 @@ impl Shell {
     fn footer(&self, step: Step, p: Palette, cx: &mut Context<Self>) -> impl IntoElement {
         let back = match step.previous() {
             Some(_) => Button::new("onboarding-back")
-                .ghost()
-                .label(tr("Back"))
-                .on_click(cx.listener(|this, _, _, cx| this.onboarding_back(cx))),
+                .outline()
+                .large()
+                .h(px(BUTTON_HEIGHT))
+                .px(px(24.))
+                .child(
+                    h_flex()
+                        .gap(px(8.))
+                        .items_center()
+                        .child(Icon::new(IconName::ArrowLeft).size(px(18.)))
+                        .child(div().text_size(px(16.)).child(tr("Back"))),
+                )
+                .on_click(cx.listener(|this, _, _, cx| this.onboarding_back(cx)))
+                .into_any_element(),
             None => Button::new("onboarding-skip")
                 .ghost()
-                .label(tr("Skip"))
-                .on_click(cx.listener(|this, _, window, cx| this.onboarding_finish(window, cx))),
+                .large()
+                .h(px(BUTTON_HEIGHT))
+                .px(px(20.))
+                .child(
+                    div()
+                        .text_size(px(15.))
+                        .text_color(p.text_muted)
+                        .child(tr("Skip")),
+                )
+                .on_click(cx.listener(|this, _, window, cx| this.onboarding_finish(window, cx)))
+                .into_any_element(),
         };
         let forward = Button::new("onboarding-next")
             .primary()
-            .label(step.forward_label())
+            .large()
+            .h(px(BUTTON_HEIGHT))
+            .px(px(28.))
+            .child(
+                h_flex()
+                    .gap(px(10.))
+                    .items_center()
+                    .child(
+                        div()
+                            .text_size(px(16.))
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .child(step.forward_label()),
+                    )
+                    .child(Icon::new(IconName::ArrowRight).size(px(18.))),
+            )
             .on_click(cx.listener(|this, _, window, cx| this.onboarding_forward(window, cx)));
         h_flex()
             .w_full()

@@ -78,6 +78,15 @@ fn choice(id: SharedString, selected: bool, p: Palette) -> Stateful<Div> {
         .when(selected, |d| d.child(checked(p)))
 }
 
+fn english_name(code: &str) -> Option<&'static str> {
+    match code {
+        "en" => Some(tr("English")),
+        "ru" => Some(tr("Russian")),
+        "zh-CN" => Some(tr("Chinese (Simplified)")),
+        _ => None,
+    }
+}
+
 impl Shell {
     pub(super) fn language_step(&self, p: Palette, cx: &mut Context<Self>) -> Div {
         let current = swofty_i18n::language();
@@ -85,19 +94,31 @@ impl Shell {
             let code = l.code;
             choice(format!("onboarding-language-{code}").into(), code == current, p)
                 .w(px(220.))
-                .h(px(72.))
+                .h(px(80.))
                 .px(px(20.))
                 .flex()
                 .items_center()
                 .text_size(px(18.))
                 .font_weight(FontWeight::MEDIUM)
-                .child(l.name)
+                .child(v_flex().gap(px(2.)).child(l.name).when_some(
+                    english_name(code).filter(|n| *n != l.name),
+                    |d, n| {
+                        d.child(
+                            div()
+                                .text_size(px(13.))
+                                .font_weight(FontWeight::NORMAL)
+                                .text_color(p.text_muted)
+                                .child(n),
+                        )
+                    },
+                ))
                 .on_click(cx.listener(move |this, _, window, cx| this.set_language(code, window, cx)))
         });
         v_flex()
             .items_center()
             .gap(px(28.))
             .max_w(px(780.))
+            .child(art::globe())
             .child(heading(
                 tr("Choose your language"),
                 tr("You can change it later in Settings."),

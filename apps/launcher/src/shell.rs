@@ -11,7 +11,7 @@ use gpui_kit::component::dialog::{AlertDialog, DialogFooter};
 use gpui_kit::component::input::{Input, InputState};
 use gpui_kit::component::notification::Notification;
 use gpui_kit::component::slider::SliderState;
-use gpui_kit::component::{Disableable, Icon, Sizable, TitleBar, WindowExt, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Icon, Sizable, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::busy::Busy;
@@ -2175,7 +2175,7 @@ impl Shell {
                 .on_click(cx.listener(|this, _, window, cx| this.mp_sign_in(window, cx)))
                 .into_any_element(),
         };
-        TitleBar::new().bg(p.chrome).child(
+        crate::overlay::title_bar(p).child(
             h_flex()
                 .flex_1()
                 .justify_end()

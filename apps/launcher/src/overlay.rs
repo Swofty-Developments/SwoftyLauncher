@@ -15,6 +15,6 @@ pub(crate) fn takeover(id: impl Into<ElementId>, p: Palette) -> Stateful<Div> {
         .text_size(px(14.))
 }
 
-pub(crate) fn clear_title_bar() -> TitleBar {
-    TitleBar::new().bg(transparent_black())
+pub(crate) fn title_bar(p: Palette) -> TitleBar {
+    TitleBar::new().bg(p.chrome)
 }
