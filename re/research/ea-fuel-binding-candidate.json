@@ -1,0 +1,23 @@
+{
+  "status": "research_only_not_a_loader_binding",
+  "build": {
+    "distribution": "EA App",
+    "sha256": "cc506879c1c834aa54d3478b2f2133d2ec243f2f2d313397631145ea618ff7f4",
+    "pe_timestamp": 1789128892
+  },
+  "candidate": {
+    "name": "g_Game_EngineModeAvail",
+    "section": ".rdata",
+    "pattern": "48 8B 3D ?? ?? ?? ?? 49 8B 9C 24 A8 05 00 00 48 85 DB 0F 84",
+    "anchor": "0x3",
+    "resolve": { "kind": "riprel", "insn": "0x0", "len": 7 },
+    "observed_match_rva": "0x3888a0c",
+    "observed_target_rva": "0x61a4968",
+    "observations": "Single match in the running EA image; 21 vehicle ECU pointers and stock scales read; rich availability entries locked. No game writes were performed."
+  },
+  "required_before_export": [
+    "Equivalent unique Steam signature and binding knowledge-base registration",
+    "Independent verification of field layouts and binding semantics",
+    "Race traces and validation of writes, restoration, session transitions and Steam behavior"
+  ]
+}
