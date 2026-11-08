@@ -461,6 +461,19 @@ fn read_resource(path: &Path, t: &PkgTarget) -> Result<Node> {
     Ok(Pkg::parse(&frag.data()?)?.root)
 }
 
+pub fn mipmap_path(target: &str, rel: &str) -> String {
+    format!("{}/{rel}", target.trim_end_matches('/'))
+}
+
+pub fn mipmap_names(from: &Path) -> Vec<String> {
+    if !from.is_dir() {
+        return Vec::new();
+    }
+    loader_files(from)
+        .map(|files| files.into_keys().collect())
+        .unwrap_or_default()
+}
+
 pub fn overlay_names(path: &Path) -> Result<Vec<String>> {
     let file = ErpFile::open(path).map_err(|e| fail(format!("{}: {e}", path.display())))?;
     Ok(file.erp.resources.iter().map(|r| r.name.clone()).collect())
@@ -772,7 +785,7 @@ impl<'a> ErpBuild<'a> {
                     return Err(fail(format!("add-mipmaps: {} has no files", source.path)));
                 }
                 for (rel, path) in files {
-                    self.mipmaps.insert(format!("{target}/{rel}"), path);
+                    self.mipmaps.insert(mipmap_path(target, &rel), path);
                 }
                 Ok(())
             }

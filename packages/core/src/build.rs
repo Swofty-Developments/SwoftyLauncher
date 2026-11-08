@@ -917,6 +917,11 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             .map(|f| f.erp.resources.into_iter().map(|r| r.name).collect())
             .unwrap_or_default()
     };
+    let mipmap_names = |origin: &Origin, src: &Source| -> Vec<String> {
+        src.resolve(&source_dir(store, &origin.addon, src.root))
+            .map(|p| crate::erpbuild::mipmap_names(&p))
+            .unwrap_or_default()
+    };
     let mut lenient = packages.clone();
     if let Some(core) = addons.get(CORE_ID) {
         lenient.insert(CORE_ID.to_owned(), core.name.clone());
@@ -924,7 +929,8 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     let mut planner = Planner::new(&features, &config.runtime_assets)
         .build_only(&config.build_assets)
         .lenient(lenient)
-        .overlays(&overlay_names);
+        .overlays(&overlay_names)
+        .mipmaps(&mipmap_names);
     if features != Features::default() {
         hasher.update(format!("runtime {features:?} {:?};", config.runtime_assets));
         if !config.build_assets.is_empty() {

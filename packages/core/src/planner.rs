@@ -270,11 +270,15 @@ pub struct Planner<'a> {
     core_rows: BTreeMap<String, BTreeSet<String>>,
     touched: BTreeMap<String, Touched>,
     overlays: Option<&'a OverlayNames<'a>>,
+    mipmaps: Option<&'a MipmapNames<'a>>,
     row_ids: Option<RefCell<crate::row_ids::Store>>,
 }
 
 /// The resource names in an `erp.overlay` op's archive.
 pub type OverlayNames<'a> = dyn Fn(&Origin, &Source) -> Vec<String> + 'a;
+
+/// The file names in an `erp.add-mipmaps` op's source folder; empty when the source is a single file.
+pub type MipmapNames<'a> = dyn Fn(&Origin, &Source) -> Vec<String> + 'a;
 
 #[derive(Default)]
 struct Touched {
@@ -367,12 +371,18 @@ impl<'a> Planner<'a> {
             core_rows: BTreeMap::new(),
             touched: BTreeMap::new(),
             overlays: None,
+            mipmaps: None,
             row_ids: None,
         }
     }
 
     pub fn overlays(mut self, names: &'a OverlayNames<'a>) -> Self {
         self.overlays = Some(names);
+        self
+    }
+
+    pub fn mipmaps(mut self, names: &'a MipmapNames<'a>) -> Self {
+        self.mipmaps = Some(names);
         self
     }
 
@@ -456,8 +466,20 @@ impl<'a> Planner<'a> {
 
     pub fn push(&mut self, op: Op) {
         self.rank(&op.origin);
-        if let Some((target, replaces)) = target(&op.op) {
+        let placed: Vec<String> = match (&op.op, self.mipmaps) {
+            (AssetOp::Erp(ErpOp::AddMipmaps { source, target }), Some(names)) => names(&op.origin, source)
+                .iter()
+                .map(|rel| crate::erpbuild::mipmap_path(target, rel))
+                .collect(),
+            _ => Vec::new(),
+        };
+        if placed.is_empty()
+            && let Some((target, replaces)) = target(&op.op)
+        {
             self.write(target, &op.origin, replaces);
+        }
+        for path in placed {
+            self.write(Target::File(path), &op.origin, true);
         }
         if let (AssetOp::Erp(ErpOp::Overlay { erps, source }), Some(names)) = (&op.op, self.overlays) {
             for uri in names(&op.origin, source) {
@@ -1356,6 +1378,57 @@ mod tests {
         p.push(op("b", &remove("r")));
         assert_eq!(p.route(Kind::Erp), Route::Build);
         assert_eq!(p.route_note(Kind::Erp), None);
+    }
+
+    fn mipmap_conflicts(files: &[(&str, &[&str])], ops: &[(&str, &str)]) -> Vec<String> {
+        let features = Features {
+            stable: BTreeSet::from([Kind::Erp, Kind::Db]),
+            experimental: BTreeSet::new(),
+        };
+        let none = BTreeSet::new();
+        let names = |_: &Origin, src: &Source| -> Vec<String> {
+            files
+                .iter()
+                .find(|(path, _)| *path == src.path)
+                .map(|(_, names)| names.iter().map(|n| (*n).to_owned()).collect())
+                .unwrap_or_default()
+        };
+        let mut p = Planner::new(&features, &none).mipmaps(&names);
+        for (addon, source) in ops {
+            p.push(op(
+                addon,
+                &format!(
+                    r#"{{"op":"erp.add-mipmaps","source":"{source}","target":"environment_package/core_assets/objects/textures/main_front_end/names/"}}"#
+                ),
+            ));
+        }
+        p.finish().conflicts.iter().map(Conflict::to_string).collect()
+    }
+
+    #[test]
+    fn folder_mipmaps_with_different_names_do_not_overlap() {
+        let shown = mipmap_conflicts(
+            &[("m", &["s0_a.mipmaps", "s0_b.mipmaps"]), ("n", &["s1_a.mipmaps"])],
+            &[("a", "m"), ("b", "n")],
+        );
+        assert!(shown.is_empty(), "{shown:?}");
+    }
+
+    #[test]
+    fn folder_mipmaps_with_the_same_name_overlap_once() {
+        let shown = mipmap_conflicts(
+            &[
+                ("m", &["s0_a.mipmaps", "shared.mipmaps"]),
+                ("n", &["s1_a.mipmaps", "shared.mipmaps"]),
+            ],
+            &[("a", "m"), ("b", "n")],
+        );
+        assert_eq!(
+            shown,
+            [
+                "environment_package/core_assets/objects/textures/main_front_end/names/shared.mipmaps: b overrides a"
+            ]
+        );
     }
 
     fn lists() -> Gvdb {
