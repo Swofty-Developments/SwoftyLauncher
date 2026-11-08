@@ -172,7 +172,7 @@ Refusing `MessageRequestVehicleExitGarage` (handler `0x142a41120`) on its own le
 
 ## Pausing
 
-`on_frame` keeps running in the pause menu, with the real seconds since the last frame, and `game.pause` and `game.resume` don't fire. An addon that counts game time with `on_frame` keeps counting while the player is paused. `updateVehicle` above doesn't run for the player's car in the pause menu, so Terminal Damage counts time only while that update ran in the last 500 ms.
+`on_frame` keeps running in the pause menu, with the real seconds since the last frame, and an addon that counts game time with `on_frame` keeps counting while the player is paused: subscribe to `game.pause` and `game.resume`, or poll `swofty::view::paused()` ([pause and resume](/reference/std/events#pause-and-resume)). `updateVehicle` above doesn't run for the player's car in the pause menu, so Terminal Damage counts time only while that update ran in the last 500 ms.
 
 ## Suspension damage layers
 

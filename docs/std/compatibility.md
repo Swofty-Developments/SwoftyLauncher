@@ -103,7 +103,7 @@ The 1.5 core accepts the last eight (`session.end`, `lap`, `flag`, `state`, `scr
 ## What stays exactly as it is
 
 - **`SwoftyApi`:** append-only. Version 9 adds `registry`, `hooks` and `services` after `era`, and a check like `api->version >= 8` still passes.
-- **Exported tables:** `SwoftyCoreHub`, `SwoftyCoreHud`, `SwoftyCoreEra`, `SwoftyCoreCareerContent` and the rest keep their names, layouts and versions.
+- **Exported tables:** `SwoftyCoreHub`, `SwoftyCoreHud`, `SwoftyCorePauseReasons`, `SwoftyCoreEra`, `SwoftyCoreCareerContent` and the rest keep their names, layouts and versions.
 - **Result codes, feature gates and `available()`** don't change.
 - **Loading:** an older DLL has no `SwoftyAddonRegister`, and it loads at the stage its manifest says.
 - **Mixins:** chains, priorities, load order and the conflict rules don't change.

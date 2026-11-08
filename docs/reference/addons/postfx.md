@@ -204,7 +204,7 @@ skip   paused  replay  photo  menu  cutscene  spectating
 - `menu` is every state without a player-driven session view: the frontend, the garage and the hub.
 - A pass without `when` runs in every view.
 - The view is reported only where the core recognises the game's state, and `swofty/loader.log` logs each change as `[view] kind=… flags=… valid=…`. While `valid` is 0, a pass with `views` does not run and `skip` does not apply. The driving camera stays unknown until it is confirmed on the game's build, so `views` passes stay off for now.
-- A shader reads the same state with `view_kind()` and `view_is(SWOFTY_VIEW_PAUSED)`, to change what it draws rather than whether it runs.
+- A shader reads the same state with `view_kind()` and `view_is(SWOFTY_VIEW_PAUSED)`, to change what it draws rather than whether it runs. The `paused` flag follows the game's pause flow state; native code reads the game's pause reasons with [`swofty::view::paused()`](/reference/std/events#pause-and-resume).
 
 ## Live options and enabled
 

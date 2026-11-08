@@ -170,6 +170,7 @@ packages/sdk/include/
   swofty/career_wizard.hpp  per-career new-career wizard control
   swofty/era.hpp            boxes in the Addons row of the Grand Prix / Time Trial era picker
   swofty/hud.hpp            toasts in the race HUD's own notification
+  swofty/view.hpp           the game's pause reason mask: paused(), pause_reasons()
   swofty/hub.hpp            Team HQ tabs (not in the template's native/include/)
   swofty/mem.hpp            guarded memory reads: read, in_image, object_like, c_string
   swofty/assets.hpp         runtime asset loading
