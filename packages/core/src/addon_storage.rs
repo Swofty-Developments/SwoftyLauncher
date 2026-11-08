@@ -659,19 +659,69 @@ fn files(dir: &Path) -> Result<Vec<String>> {
     Ok(out)
 }
 
-/// Remove the empty folders under `dir`, and `dir` when that empties it.
+/// Remove the empty folders under `dir`, and `dir` when that empties it. An
+/// empty folder that stays locked, as a helper program or a scanner holds it,
+/// is left behind and logged: a folder with nothing in it costs the player
+/// nothing, and the next restore removes it.
 fn prune(dir: &Path) -> Result<bool> {
+    prune_with(dir, &|d| std::fs::remove_dir(d))
+}
+
+fn prune_with(dir: &Path, remove: &dyn Fn(&Path) -> std::io::Result<()>) -> Result<bool> {
     let mut empty = true;
     for e in std::fs::read_dir(dir).map_err(io_err(dir))? {
         let e = e.map_err(io_err(dir))?;
-        if !e.file_type().is_ok_and(|t| t.is_dir()) || !prune(&e.path())? {
+        if !e.file_type().is_ok_and(|t| t.is_dir()) || !prune_with(&e.path(), remove)? {
             empty = false;
         }
     }
-    if empty {
-        with_retry(dir, || std::fs::remove_dir(dir))?;
+    if !empty {
+        return Ok(false);
     }
-    Ok(empty)
+    let locked = std::cell::Cell::new(false);
+    let removed = with_retry(dir, || {
+        remove(dir).inspect_err(|e| locked.set(crate::is_locked_file_error(e)))
+    });
+    match removed {
+        Err(_) if locked.get() && holds_no_files(dir) => {
+            eprintln!(
+                "left the empty folder {} in place: it is locked by another process",
+                dir.display()
+            );
+            Ok(false)
+        }
+        r => r.map(|()| true),
+    }
+}
+
+/// Remove `dir` and everything in it. A tree that stays locked and holds no
+/// file, only empty folders, is left behind and logged instead of failing.
+pub(crate) fn clear_tree(dir: &Path) -> Result<()> {
+    clear_tree_with(dir, &|d| std::fs::remove_dir_all(d))
+}
+
+fn clear_tree_with(dir: &Path, remove: &dyn Fn(&Path) -> std::io::Result<()>) -> Result<()> {
+    let locked = std::cell::Cell::new(false);
+    let removed = with_retry(dir, || {
+        remove(dir).inspect_err(|e| locked.set(crate::is_locked_file_error(e)))
+    });
+    match removed {
+        Err(_) if locked.get() && holds_no_files(dir) => {
+            eprintln!(
+                "left the empty folder {} in place: it is locked by another process",
+                dir.display()
+            );
+            Ok(())
+        }
+        r => r,
+    }
+}
+
+fn holds_no_files(dir: &Path) -> bool {
+    std::fs::read_dir(dir).is_ok_and(|rd| {
+        rd.flatten()
+            .all(|e| e.file_type().is_ok_and(|t| t.is_dir()) && holds_no_files(&e.path()))
+    })
 }
 
 /// Move `from` to `to`, replacing it. Across volumes the copy keeps the
@@ -721,5 +771,76 @@ mod tests {
         assert_eq!(addon_of("swofty/settings.json"), None);
         assert_eq!(addon_of("swofty/addons/../x"), None);
         assert_eq!(addon_of("2025_asset_groups/ui_package/persistent.erp"), None);
+    }
+
+    fn locked() -> std::io::Error {
+        std::io::Error::from_raw_os_error(if cfg!(windows) { 32 } else { 13 })
+    }
+
+    fn scratch(name: &str) -> PathBuf {
+        let dir = std::env::temp_dir().join(format!("swofty-storage-{name}-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    #[test]
+    fn prune_leaves_a_locked_empty_folder_and_carries_on() {
+        let root = scratch("prune-locked");
+        let dir = root.join("a.b");
+        std::fs::create_dir_all(dir.join("sub")).unwrap();
+        let tries = std::cell::Cell::new(0);
+        let remove = |d: &Path| {
+            tries.set(tries.get() + 1);
+            if d == dir {
+                Err(locked())
+            } else {
+                std::fs::remove_dir(d)
+            }
+        };
+        assert!(!prune_with(&dir, &remove).unwrap());
+        assert!(dir.is_dir());
+        assert!(!dir.join("sub").exists());
+        assert!(tries.get() > 1);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn prune_still_fails_when_a_locked_folder_holds_a_file() {
+        let root = scratch("prune-file");
+        let dir = root.join("a.b");
+        std::fs::create_dir_all(&dir).unwrap();
+        let file = dir.join("data.bin");
+        let remove = |_: &Path| {
+            std::fs::write(&file, b"x").unwrap();
+            Err(locked())
+        };
+        assert!(prune_with(&dir, &remove).is_err());
+        assert!(file.is_file());
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn prune_does_not_hide_other_errors() {
+        let root = scratch("prune-other");
+        let dir = root.join("a.b");
+        std::fs::create_dir_all(&dir).unwrap();
+        let remove = |_: &Path| Err(std::io::Error::from(std::io::ErrorKind::InvalidInput));
+        assert!(prune_with(&dir, &remove).is_err());
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn clear_tree_tolerates_only_empty_leftovers() {
+        let root = scratch("tree");
+        let empty = root.join("empty");
+        std::fs::create_dir_all(empty.join("x/y")).unwrap();
+        clear_tree_with(&empty, &|_| Err(locked())).unwrap();
+        assert!(empty.is_dir());
+        let full = root.join("full");
+        std::fs::create_dir_all(full.join("x")).unwrap();
+        std::fs::write(full.join("x/f.txt"), b"x").unwrap();
+        assert!(clear_tree_with(&full, &|_| Err(locked())).is_err());
+        std::fs::remove_dir_all(&root).ok();
     }
 }

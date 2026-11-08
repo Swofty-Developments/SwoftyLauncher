@@ -1282,7 +1282,7 @@ impl<'a> Installer<'a> {
                     crate::move_file(&e.path(), &logs.join(e.file_name()))?;
                 }
             }
-            with_retry(&loader, || std::fs::remove_dir_all(&loader))?;
+            addon_storage::clear_tree(&loader)?;
         }
         if let Some(reg) = &self.game.user_reg
             && let Ok(text) = std::fs::read_to_string(reg)
