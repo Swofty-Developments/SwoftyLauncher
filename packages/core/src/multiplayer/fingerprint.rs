@@ -66,6 +66,10 @@ pub struct AddonPrint {
     /// the digest leaves it out.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub detail: Option<Detail>,
+    /// The stat id the core's registry gave each of the addon's records, by `<registry>:<record>`,
+    /// as the install's `ids.json` held them when the fingerprint was made.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub stat_ids: BTreeMap<String, i64>,
 }
 
 /// The parts and files of an addon's [`Output`], each as the first 12 hex digits of its
@@ -145,13 +149,17 @@ impl Fingerprint {
         let addons: Vec<Value> = addons
             .into_iter()
             .map(|a| {
-                serde_json::json!({
+                let mut one = serde_json::json!({
                     "id": a.id,
                     "version": a.version.to_string(),
                     "source": a.source,
                     "inputs": a.inputs,
                     "order": rank(&a.id),
-                })
+                });
+                if !a.stat_ids.is_empty() {
+                    one["stat_ids"] = serde_json::json!(a.stat_ids);
+                }
+                one
             })
             .collect();
         let doc = serde_json::json!({
@@ -177,8 +185,32 @@ fn sorted(v: Value) -> Value {
     }
 }
 
+/// The ids `doc`, the core's `ids.json`, holds for the records of `addon`, by `<registry>:<record>`.
+pub fn stat_ids_of(doc: &Value, addon: &str) -> BTreeMap<String, i64> {
+    let prefix = format!("{addon}/");
+    let mut out = BTreeMap::new();
+    let Some(registries) = doc["ids"].as_object() else {
+        return out;
+    };
+    for (registry, records) in registries {
+        let Some(records) = records.as_object() else {
+            continue;
+        };
+        for (record, entry) in records.iter().filter(|(r, _)| r.starts_with(&prefix)) {
+            if let Some(id) = entry.as_i64().or_else(|| entry["id"].as_i64()) {
+                out.insert(format!("{registry}:{record}"), id);
+            }
+        }
+    }
+    out
+}
+
 /// The fingerprint of `profile` as its build would load it, on the game `game_build`.
 pub fn fingerprint(store: &Store, profile: &Profile, game_build: &Identity) -> Result<Fingerprint> {
+    let registry_ids = crate::stdlib::reports::found(&store.root, None, crate::stdlib::reports::IDS)
+        .and_then(|p| std::fs::read(p).ok())
+        .and_then(|b| serde_json::from_slice::<Value>(&b).ok())
+        .unwrap_or(Value::Null);
     let installed = store.addons()?;
     let load = crate::resolver::resolve(profile, &installed)?.order;
     let mut hashes = Hashes::open(store.root.join(HASHES_FILE));
@@ -221,6 +253,7 @@ pub fn fingerprint(store: &Store, profile: &Profile, game_build: &Identity) -> R
             inputs,
             order,
             detail,
+            stat_ids: stat_ids_of(&registry_ids, &m.id),
         });
         let values: BTreeMap<String, Value> = m
             .options
@@ -557,6 +590,12 @@ pub enum MismatchKind {
         id: String,
         name: String,
     },
+    /// The core's registry gave the addon's records other stat ids than the host's: the games would read
+    /// the same record by different numbers.
+    StatIdsDiffer {
+        id: String,
+        name: String,
+    },
     /// The data addons both sides have, in each side's load order.
     LoadOrder {
         local: Vec<String>,
@@ -578,7 +617,8 @@ impl Mismatch {
             | MismatchKind::ExtraAddon { name, .. }
             | MismatchKind::VersionDiffers { name, .. }
             | MismatchKind::SourceDiffers { name, .. }
-            | MismatchKind::InputsDiffer { name, .. } => Some(name),
+            | MismatchKind::InputsDiffer { name, .. }
+            | MismatchKind::StatIdsDiffer { name, .. } => Some(name),
             MismatchKind::OptionDiffers { addon, .. } => Some(addon),
             _ => None,
         }
@@ -631,6 +671,9 @@ impl Mismatch {
             MismatchKind::InputsDiffer { id, name } => {
                 format!("{name} ({id}) has other data or profile state than the host's")
             }
+            MismatchKind::StatIdsDiffer { id, name } => {
+                format!("{name} ({id}) has other stat ids than the host's")
+            }
             MismatchKind::LoadOrder { local, host } => format!(
                 "load order {} is not the host's {}",
                 local.join(", "),
@@ -678,6 +721,7 @@ fn lent_cures(m: &Mismatch, lent: &crate::row_ids::Overrides) -> bool {
             lent.options.get(addon).is_some_and(|o| o.contains_key(option))
         }
         MismatchKind::SourceDiffers { id, .. } => lent.options.contains_key(id) && !m.differences.is_empty(),
+        MismatchKind::StatIdsDiffer { id, .. } => lent.registry.contains_key(id),
         _ => false,
     }
 }
@@ -790,6 +834,22 @@ fn owned(on: Option<bool>) -> &'static str {
     }
 }
 
+fn stat_id_differences(l: &AddonPrint, h: &AddonPrint) -> Vec<String> {
+    let keys: std::collections::BTreeSet<&String> = l.stat_ids.keys().chain(h.stat_ids.keys()).collect();
+    let id = |ids: &BTreeMap<String, i64>, key: &str| ids.get(key).map_or("none".to_owned(), i64::to_string);
+    keys.into_iter()
+        .filter(|key| l.stat_ids.get(*key) != h.stat_ids.get(*key))
+        .map(|key| {
+            let (registry, record) = key.split_once(':').unwrap_or(("", key));
+            format!(
+                "{registry} {record} has stat id {} here and {} at the host",
+                id(&l.stat_ids, key),
+                id(&h.stat_ids, key)
+            )
+        })
+        .collect()
+}
+
 /// The host's stat ids, for each addon `local` and `host` both have whose added rows got other ids on
 /// `local`: what a joiner builds one session with to match the host.
 pub fn row_id_overrides(local: &Fingerprint, host: &Fingerprint) -> crate::row_ids::Overrides {
@@ -814,11 +874,27 @@ pub fn row_id_overrides(local: &Fingerprint, host: &Fingerprint) -> crate::row_i
     out
 }
 
+/// The host's registry stat ids of the records of each addon `local` and `host` both have, for the
+/// addons whose records `local` holds under other ids.
+pub fn registry_id_overrides(
+    local: &Fingerprint,
+    host: &Fingerprint,
+) -> BTreeMap<String, BTreeMap<String, i64>> {
+    host.addons
+        .iter()
+        .filter_map(|h| {
+            let l = local.addons.iter().find(|a| a.id == h.id)?;
+            (l.stat_ids != h.stat_ids).then(|| (h.id.clone(), h.stat_ids.clone()))
+        })
+        .collect()
+}
+
 /// What a joiner lends one session's builds to match `host`: the host's stat ids ([`row_id_overrides`]),
 /// and for the addons both have at the same version, the host's load order when it differs and the
 /// host's value of each option that differs.
 pub fn host_overrides(local: &Fingerprint, host: &Fingerprint) -> crate::row_ids::Overrides {
     let mut out = row_id_overrides(local, host);
+    out.registry = registry_id_overrides(local, host);
     let mine: BTreeMap<&str, &AddonPrint> = local.addons.iter().map(|a| (a.id.as_str(), a)).collect();
     let shared: BTreeMap<&str, (&AddonPrint, &AddonPrint)> = host
         .addons
@@ -874,6 +950,11 @@ impl Fingerprint {
         for a in &mut addons {
             if let Some(rank) = arranged.iter().position(|id| *id == a.id) {
                 a.order = Some(rank);
+            }
+        }
+        for a in &mut addons {
+            if let Some(ids) = lent.registry.get(&a.id) {
+                a.stat_ids = ids.clone();
             }
         }
         let mut options = self.options.clone();
@@ -979,6 +1060,7 @@ pub fn compare(local: &Fingerprint, host: &Fingerprint, catalog: &[Addon]) -> Ve
                 },
                 listed(h),
             ),
+            Some(l) if l.stat_ids != h.stat_ids => push(MismatchKind::StatIdsDiffer { id, name }, false),
             Some(_) => {}
         }
         if let Some(l) = mine.get(h.id.as_str())
@@ -1076,6 +1158,11 @@ pub fn compare(local: &Fingerprint, host: &Fingerprint, catalog: &[Addon]) -> Ve
         {
             m.differences = differences(l, h);
         }
+        if let MismatchKind::StatIdsDiffer { id, .. } = &m.kind
+            && let (Some(l), Some(h)) = (mine.get(id.as_str()), theirs.get(id.as_str()))
+        {
+            m.differences = stat_id_differences(l, h);
+        }
     }
     out
 }
@@ -1154,6 +1241,7 @@ mod tests {
             inputs: None,
             order,
             detail: None,
+            stat_ids: BTreeMap::new(),
         }
     }
 
@@ -2003,6 +2091,99 @@ mod tests {
         local.addons[1].order = Some(0);
         local.options = options(&[("t.a", "laps", json!(3)), ("t.a", "mode", json!("full"))]);
         Fingerprint::new(local.game_build.clone(), local.addons, local.options, None)
+    }
+
+    fn with_ids(mut f: Fingerprint, addon: &str, ids: &[(&str, i64)]) -> Fingerprint {
+        for a in &mut f.addons {
+            if a.id == addon {
+                a.stat_ids = ids.iter().map(|(k, v)| ((*k).to_owned(), *v)).collect();
+            }
+        }
+        Fingerprint::new(f.game_build.clone(), f.addons, f.options, None)
+    }
+
+    const PACKAGE: &str = "content.package:t.a/season";
+    const SCENARIO: &str = "content.package.scenario:t.a/season";
+
+    #[test]
+    fn the_core_registry_ids_an_addon_holds_are_read_from_ids_json() {
+        let doc = json!({
+            "ids": {
+                "content.package": {
+                    "t.a/season": { "id": 116, "since": "2026-11-08" },
+                    "t.ab/other": 9,
+                    "game/stock": { "id": 1 }
+                },
+                "content.package.scenario": { "t.a/season": { "id": 26 } }
+            }
+        });
+        assert_eq!(
+            stat_ids_of(&doc, "t.a"),
+            BTreeMap::from([(PACKAGE.to_owned(), 116), (SCENARIO.to_owned(), 26)])
+        );
+        assert!(stat_ids_of(&Value::Null, "t.a").is_empty());
+    }
+
+    #[test]
+    fn registry_ids_are_part_of_the_digest_and_name_the_record_that_differs() {
+        let hosted = with_ids(host(), "t.a", &[(PACKAGE, 116), (SCENARIO, 26)]);
+        let local = with_ids(host(), "t.a", &[(PACKAGE, 115), (SCENARIO, 25)]);
+        assert_ne!(hosted.digest, local.digest);
+        assert_ne!(hosted.digest, host().digest);
+        let found = compare(&local, &hosted, &[]);
+        assert_eq!(kinds(&found), [("stat_ids_differ".into(), false)]);
+        assert_eq!(
+            found[0].differences,
+            [
+                "content.package.scenario t.a/season has stat id 25 here and 26 at the host",
+                "content.package t.a/season has stat id 115 here and 116 at the host"
+            ]
+        );
+        assert!(compare(&hosted, &hosted, &[]).is_empty());
+    }
+
+    #[test]
+    fn the_hosts_registry_ids_are_lent_and_make_the_fingerprint_the_hosts() {
+        let hosted = with_ids(host(), "t.a", &[(PACKAGE, 116), (SCENARIO, 26)]);
+        let local = with_ids(
+            host(),
+            "t.a",
+            &[(PACKAGE, 115), (SCENARIO, 25), ("vehicle:t.a/car", 7)],
+        );
+        let lent = host_overrides(&local, &hosted);
+        assert_eq!(
+            lent.registry,
+            BTreeMap::from([(
+                "t.a".to_owned(),
+                BTreeMap::from([(PACKAGE.to_owned(), 116), (SCENARIO.to_owned(), 26)])
+            )])
+        );
+        assert!(lent.rows.is_empty() && lent.order.is_empty() && lent.options.is_empty());
+        assert_eq!(local.lent(&lent).digest, hosted.digest);
+        assert!(compare(&local.lent(&lent), &hosted, &[]).is_empty());
+        assert!(host_overrides(&hosted, &hosted).is_empty());
+        let found = compare(&local, &hosted, &[]);
+        assert!(unresolved_by_launch(&found, true, &lent).is_empty());
+        assert_eq!(unresolved_by_launch(&found, false, &lent).len(), 1);
+    }
+
+    #[test]
+    fn registry_ids_are_lent_only_for_addons_the_local_side_has() {
+        let hosted = with_ids(host(), "t.b", &[("vehicle:t.b/car", 7)]);
+        let mut local = host();
+        local.addons.retain(|a| a.id != "t.b");
+        let local = Fingerprint::new(game(), local.addons, local.options, None);
+        assert!(registry_id_overrides(&local, &hosted).is_empty());
+    }
+
+    #[test]
+    fn a_host_with_no_registry_ids_for_an_addon_clears_the_joiners_so_the_prints_match() {
+        let local = with_ids(host(), "t.a", &[(PACKAGE, 115)]);
+        let lent = host_overrides(&local, &host());
+        assert_eq!(lent.registry["t.a"], BTreeMap::new());
+        assert!(!lent.is_empty());
+        assert_eq!(local.lent(&lent).digest, host().digest);
+        assert!(lent.room_stat_ids(&["t.a".to_owned()]).is_none());
     }
 
     #[test]

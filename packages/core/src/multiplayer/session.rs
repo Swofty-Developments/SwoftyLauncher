@@ -2795,6 +2795,7 @@ mod tests {
             inputs: None,
             order: Some(0),
             detail: None,
+            stat_ids: BTreeMap::new(),
         };
         let mut addons = vec![addon("okayama")];
         addons.extend(extra.iter().map(|id| addon(id)));
@@ -2856,6 +2857,7 @@ mod tests {
             inputs: None,
             order: Some(place),
             detail: None,
+            stat_ids: BTreeMap::new(),
         };
         Fingerprint::new(
             Identity {

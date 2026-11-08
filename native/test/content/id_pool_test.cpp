@@ -139,5 +139,52 @@ int main()
                   d.get("team.identity", "season-1972/mclaren").id < 0,
               "an ids.json that gives two addons one id keeps it for the one a career holds");
     }
+    {
+        std::string own = R"({"version":1,"ids":{
+            "content.package":{"swofty.s23/sw_2023":{"id":115},"swofty.other/pack":{"id":116}},
+            "content.package.scenario":{"swofty.s23/sw_2023":{"id":25}}}})";
+        std::string host = R"({"version":1,"ids":{
+            "content.package":{"swofty.s23/sw_2023":116},
+            "content.package.scenario":{"swofty.s23/sw_2023":26}}})";
+        ids::Store s;
+        s.load(own);
+        pool(s, "content.package", 15, 254, 254);
+        pool(s, "content.package.scenario", 15, 254, 254);
+        std::vector<std::string> lines;
+        std::string why;
+        check(s.lend_json(host, &lines, &why) && why.empty(), "the host's ids are read");
+        check(s.get("content.package", "swofty.s23/sw_2023").id == 116 &&
+                  s.get("content.package.scenario", "swofty.s23/sw_2023").id == 26,
+              "a lent package and scenario id replace the install's own");
+        check(s.allocate("content.package", "swofty.s23/sw_2023", DAY).id == 116, "allocating a lent record gives the lent id");
+        int64_t moved = s.get("content.package", "swofty.other/pack").id;
+        check(moved >= 15 && moved != 116 && moved != 115, "an unrelated record on the lent id moves to a free one");
+        check(s.allocate("content.package", "new/pack", DAY).id != 116 && s.allocate("content.package", "new/pack", DAY).id != moved,
+              "a new record never takes a lent id");
+        check(s.pin("content.package", "swofty.s23/sw_2023", 40, DAY).id == 116, "an explicit pin does not undo a lent id");
+        check(!s.dirty() && s.lent(), "a lent store is never written back");
+        std::string dumped = s.dump();
+        check(dumped.find("\"id\": 116") != std::string::npos, "the lent ids are in the dump a caller would see");
+    }
+    {
+        ids::Store s;
+        s.load(R"({"version":1,"ids":{"content.package":{"a/p":{"id":20}}},
+            "careers":{"c":{"content.package":{"a/p":20,"b/q":30}}}})");
+        pool(s, "content.package", 15, 254, 254);
+        s.set_live("content.package", {"a/p", "b/q"});
+        std::vector<std::string> lines;
+        s.lend_json(R"({"ids":{"content.package":{"c/r":30}}})", &lines);
+        bool refused = false;
+        for (auto &l : lines)
+            refused = refused || l.find("not lent") != std::string::npos;
+        check(refused && s.get("content.package", "c/r").id < 0, "an id a career uses for another record is refused and logged");
+        std::vector<std::string> both;
+        s.lend_json(R"({"ids":{"content.package":{"x/p":50,"y/p":50}}})", &both);
+        check(s.get("content.package", "x/p").id == 50 && s.get("content.package", "y/p").id < 0,
+              "two lent records on one id lend only the first");
+        ids::Store clean;
+        std::string why;
+        check(!clean.lend_json("nope", nullptr, &why) && !why.empty() && !clean.lent(), "unreadable lent ids lend nothing");
+    }
     return failures ? 1 : 0;
 }

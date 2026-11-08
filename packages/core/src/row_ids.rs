@@ -98,11 +98,37 @@ pub struct Overrides {
     /// The host's value of each option that differs from the joiner's, by addon and option id.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub options: BTreeMap<String, BTreeMap<String, serde_json::Value>>,
+    /// The host's stat ids for the core's registry records of each shared addon, as
+    /// `<registry>:<record>` to id. The core reads them from `swofty/room_stat_ids.json` for the
+    /// session and keeps its own `ids.json` as it is. An addon with no ids here means the host's
+    /// registry holds none for it.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub registry: BTreeMap<String, BTreeMap<String, i64>>,
 }
+
+/// The file in the game's `swofty` folder that carries a room's [`Overrides::registry`] to the core.
+pub const ROOM_STAT_IDS_FILE: &str = "room_stat_ids.json";
 
 impl Overrides {
     pub fn is_empty(&self) -> bool {
-        self.rows.values().all(BTreeMap::is_empty) && self.order.is_empty() && self.options.is_empty()
+        self.rows.values().all(BTreeMap::is_empty)
+            && self.order.is_empty()
+            && self.options.is_empty()
+            && self.registry.is_empty()
+    }
+
+    /// The registry ids of the addons in `order`, as `swofty/room_stat_ids.json` holds them: registry to
+    /// record to id. `None` when there are none to lend.
+    pub fn room_stat_ids(&self, order: &[String]) -> Option<serde_json::Value> {
+        let mut ids: BTreeMap<&str, BTreeMap<&str, i64>> = BTreeMap::new();
+        for (_, entries) in self.registry.iter().filter(|(a, _)| order.contains(a)) {
+            for (key, id) in entries {
+                if let Some((registry, record)) = key.split_once(':') {
+                    ids.entry(registry).or_default().insert(record, *id);
+                }
+            }
+        }
+        (!ids.is_empty()).then(|| serde_json::json!({ "version": 1, "ids": ids }))
     }
 
     /// These overrides with `newer` laid over them: a row, option or order `newer` has wins.
@@ -113,6 +139,7 @@ impl Overrides {
         for (addon, options) in newer.options {
             self.options.entry(addon).or_default().extend(options);
         }
+        self.registry.extend(newer.registry);
         if !newer.order.is_empty() {
             self.order = newer.order;
         }
@@ -150,6 +177,11 @@ impl Overrides {
     pub fn stamp(&self, order: &[String]) -> Option<String> {
         let keys = self.keys(order);
         let ranked: Vec<&String> = self.order.iter().filter(|id| order.contains(id)).collect();
+        let registry: BTreeMap<&String, &BTreeMap<String, i64>> = self
+            .registry
+            .iter()
+            .filter(|(id, _)| order.contains(id))
+            .collect();
         let options: BTreeMap<&String, &BTreeMap<String, serde_json::Value>> =
             self.options.iter().filter(|(id, _)| order.contains(id)).collect();
         let mut out = String::new();
@@ -164,6 +196,12 @@ impl Overrides {
                 "room settings {} {};",
                 serde_json::to_string(&ranked).expect("serialisable"),
                 serde_json::to_string(&options).expect("serialisable")
+            );
+        }
+        if !registry.is_empty() {
+            out += &format!(
+                "room registry ids {};",
+                serde_json::to_string(&registry).expect("serialisable")
             );
         }
         (!out.is_empty()).then_some(out)
@@ -2465,6 +2503,46 @@ mod tests {
             .unwrap();
         assert!(store.id_aliases().is_empty(), "{:?}", store.id_aliases());
         std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn the_hosts_registry_ids_become_the_cores_room_file_for_the_addons_in_the_build() {
+        let lent = Overrides {
+            registry: BTreeMap::from([
+                (
+                    "a".to_owned(),
+                    BTreeMap::from([
+                        ("content.package:a/season".to_owned(), 116),
+                        ("content.package.scenario:a/season".to_owned(), 26),
+                    ]),
+                ),
+                (
+                    "gone".to_owned(),
+                    BTreeMap::from([("vehicle:gone/car".to_owned(), 9)]),
+                ),
+            ]),
+            ..Default::default()
+        };
+        assert!(!lent.is_empty());
+        assert_eq!(
+            lent.room_stat_ids(&order(&["a", "b"])).unwrap(),
+            serde_json::json!({
+                "version": 1,
+                "ids": {
+                    "content.package": { "a/season": 116 },
+                    "content.package.scenario": { "a/season": 26 }
+                }
+            })
+        );
+        assert!(lent.room_stat_ids(&order(&["b"])).is_none());
+        let stamp = lent.stamp(&order(&["a"])).unwrap();
+        assert!(stamp.contains("116"), "{stamp}");
+        assert_ne!(lent.stamp(&order(&["a"])), lent.stamp(&order(&["gone"])));
+        let newer = Overrides {
+            registry: BTreeMap::from([("a".to_owned(), BTreeMap::new())]),
+            ..Default::default()
+        };
+        assert!(lent.merged(newer).registry["a"].is_empty());
     }
 
     #[test]

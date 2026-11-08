@@ -429,6 +429,18 @@ void attach()
                         why.c_str());
         else if (!text.empty())
             swofty::log("[registry] stat ids: ids.json holds %zu id(s)", ids::store().size());
+        std::string room = runtime::read_file(runtime::swofty_root() + L"room_stat_ids.json", size_t(4) << 20);
+        if (!room.empty()) {
+            std::vector<std::string> lines;
+            if (ids::store().lend_json(room, &lines, &why)) {
+                for (auto &l : lines)
+                    swofty::log("%s", l.c_str());
+                swofty::log("[registry] stat ids: the host's ids are lent for this shared session; ids.json is not "
+                            "written");
+            } else
+                swofty::log("[registry] stat ids: swofty\\room_stat_ids.json is unusable (%s); this install's ids are used",
+                            why.c_str());
+        }
         reg::set_stat_id_source([](const std::string &registry, const std::string &id, int64_t *out) {
             std::string line;
             int r = stat_id(reg::store(), ids::store(), registry, id, out, today(), &line);
