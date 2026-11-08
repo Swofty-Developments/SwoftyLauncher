@@ -21,8 +21,8 @@ Install the launcher with the installer or by hand, then follow the setup steps 
 
    | Platform | Download |
    |---|---|
-   | Windows | [SwoftyLauncherInstaller.exe](https://github.com/Swofty-Developments/SwoftyLauncher/raw/main/installer/SwoftyLauncherInstaller.exe) |
-   | Linux and Steam Deck | [SwoftyLauncherInstaller-linux.zip](https://github.com/Swofty-Developments/SwoftyLauncher/raw/main/installer/SwoftyLauncherInstaller-linux.zip), then extract it |
+   | Windows | [SwoftyLauncherInstaller.exe](https://cdn.swofty.net/launcher/latest/SwoftyLauncherInstaller.exe) |
+   | Linux and Steam Deck | [SwoftyLauncherInstaller-linux.zip](https://cdn.swofty.net/launcher/latest/SwoftyLauncherInstaller-linux.zip), then extract it |
 
 2. Run `SwoftyLauncherInstaller.exe` on Windows, or `SwoftyLauncherInstaller` on Linux and Steam Deck. Windows may show **Windows protected your PC**; select **More info**, then **Run anyway**.
 3. Under **Install to**, keep the default folder, or select **Browse…** to choose another.
@@ -68,7 +68,7 @@ When the folder for your addons and saves holds no addons, the installer looks i
 
 ## Install by hand
 
-1. Open [Releases](https://github.com/Swofty-Developments/SwoftyLauncher/releases).
+1. Open [Releases](https://github.com/Swofty-Developments/SwoftyLauncher/releases). Each release's archives are also at `https://cdn.swofty.net/launcher/<tag>/`, and `https://cdn.swofty.net/launcher/latest.json` names the latest.
 2. Download the archive for your platform:
 
    | Platform | Archive |

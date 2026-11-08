@@ -25,9 +25,9 @@ hero:
     text: F1 25
     link: https://store.steampowered.com/app/3059520/
   download:
-    windows: https://github.com/Swofty-Developments/SwoftyLauncher/raw/main/installer/SwoftyLauncherInstaller.exe
-    linux: https://github.com/Swofty-Developments/SwoftyLauncher/raw/main/installer/SwoftyLauncherInstaller-linux.zip
-    both: https://github.com/Swofty-Developments/SwoftyLauncher/raw/main/installer/SwoftyLauncherInstaller.zip
+    windows: https://cdn.swofty.net/launcher/latest/SwoftyLauncherInstaller.exe
+    linux: https://cdn.swofty.net/launcher/latest/SwoftyLauncherInstaller-linux.zip
+    both: https://cdn.swofty.net/launcher/latest/SwoftyLauncherInstaller.zip
     manual: /guide/installation
   docs: /guide/
 
