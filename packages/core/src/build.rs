@@ -806,6 +806,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             skipped.push(format!("{} is left out: it {}", u.name, u.reason));
         }
     }
+    let lent_settings = crate::row_ids::lent().map(|o| (p.lend(&o), o));
     let resolved = resolve(&p, &addons)?;
     let mut std16 = match p.is_vanilla() {
         true => BTreeMap::new(),
@@ -827,6 +828,18 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         },
         ..Built::default()
     };
+    if let Some(((ordered, values), lent)) = &lent_settings
+        && (*ordered > 0 || *values > 0)
+    {
+        built.lines.push(format!(
+            "launch: using the host's load order and {values} option value(s) for {} addon(s)",
+            lent.order
+                .iter()
+                .chain(lent.options.keys())
+                .collect::<BTreeSet<_>>()
+                .len()
+        ));
+    }
     built
         .warnings
         .extend(deps.of(crate::stdlib::deps::Level::Warn).map(|f| f.line()));
@@ -1399,7 +1412,10 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     }
     let record_ui = record_ui_lists(&ui_maps, &tracks, &recorded, &resolve, &mut built.warnings);
     let mut caches = Vec::new();
-    let mut session = store.session_settings(profile)?;
+    let mut session = match &lent_settings {
+        Some(_) => store.session_settings_of(&p)?,
+        None => store.session_settings(profile)?,
+    };
     session.set_maps(tracks.iter().map(|(_, pkg, origin)| (pkg, origin.addon.as_str())));
     session.set_mods(mods.into_iter());
     hasher.update(serde_json::to_vec(&session).expect("serialisable"));
@@ -1501,7 +1517,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             crate::row_ids::Store::load(&store.root, Some(&game.dir), profile, last);
         built.warnings.extend(row_id_warnings);
         built.lines.extend(row_ids.recover(&store.sessions_dir()).lines);
-        if let Some(lent) = &lent_ids {
+        if let Some(lent) = lent_ids.as_ref().filter(|l| !l.rows.is_empty()) {
             let n = row_ids.lend(lent, &resolved.order).map_err(Error::Resolve)?;
             built.lines.push(format!(
                 "database: {n} added-row id(s) are the room host's, for this session only; row-ids.json keeps yours"
@@ -4363,6 +4379,7 @@ mod tests {
                 "t.lent".to_owned(),
                 BTreeMap::from([("entrants.teams.team/team12_26".to_owned(), 140)]),
             )]),
+            ..Default::default()
         };
         crate::row_ids::lend(Some(host));
         let lent = build(&store, "default", &game);
@@ -4388,11 +4405,42 @@ mod tests {
             "the next normal build is the player's own"
         );
         assert_eq!(stat_id(&back), "102");
+        let settings = crate::row_ids::Overrides {
+            order: vec!["t.lent".to_owned()],
+            options: BTreeMap::from([(
+                "t.lent".to_owned(),
+                BTreeMap::from([("laps".to_owned(), serde_json::json!(7))]),
+            )]),
+            ..Default::default()
+        };
+        crate::row_ids::lend(Some(settings));
+        let ordered = build(&store, "default", &game);
+        crate::row_ids::lend(None);
+        let ordered = ordered.unwrap();
+        assert!(
+            ordered
+                .lines
+                .iter()
+                .any(|l| l
+                    .contains("launch: using the host's load order and 1 option value(s) for 1 addon(s)")),
+            "{:?}",
+            ordered.lines
+        );
+        assert_ne!(
+            ordered.buildhash, own.buildhash,
+            "the host's settings are part of the cache key"
+        );
+        assert_eq!(
+            store.profile("default").unwrap().options.get("t.lent"),
+            None,
+            "the profile keeps its own"
+        );
         let clash = crate::row_ids::Overrides {
             rows: BTreeMap::from([(
                 "t.lent".to_owned(),
                 BTreeMap::from([("entrants.teams.team/team12_26".to_owned(), 101)]),
             )]),
+            ..Default::default()
         };
         crate::row_ids::lend(Some(clash));
         let refused = build(&store, "default", &game);

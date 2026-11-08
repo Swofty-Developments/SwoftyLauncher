@@ -172,6 +172,24 @@ impl Local {
         Ok(Self::new(fingerprint, &categories, catalog))
     }
 
+    /// This fingerprint as it is once a session's builds use `lent` (see [`Fingerprint::lent`]).
+    pub fn lent(&self, lent: &Overrides) -> Local {
+        let categories = self
+            .blob
+            .get("addons")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .filter_map(|a| {
+                Some((
+                    a.get("id")?.as_str()?.to_owned(),
+                    a.get("category")?.as_str()?.to_owned(),
+                ))
+            })
+            .collect();
+        Local::new(self.fingerprint.lent(lent), &categories, self.catalog.clone())
+    }
+
     /// The digest the lobby compares.
     pub fn digest(&self) -> String {
         format!("sha256:{}", self.fingerprint.digest)
@@ -368,6 +386,8 @@ pub struct LaunchAsk {
     pub row_ids: Option<Overrides>,
     /// How many addons' ids `row_ids` carries.
     pub id_addons: usize,
+    /// How many addons the host's load order and option values (`row_ids`) are lent for.
+    pub setting_addons: usize,
     /// The game is running but isn't what the room needs: the launcher closes it first, and asks the
     /// player before it does.
     pub restart: bool,
@@ -790,6 +810,8 @@ struct Worker {
     game_port: Option<u16>,
     launch_seq: u32,
     launch: Option<LaunchAsk>,
+    host_lent: Overrides,
+    lent_applied: Option<Overrides>,
     launched: Option<Instant>,
     refreshed: bool,
     stage_sent: Option<MemberStage>,
@@ -848,6 +870,8 @@ impl Worker {
             game_port: None,
             launch_seq: 0,
             launch: None,
+            host_lent: Overrides::default(),
+            lent_applied: None,
             launched: None,
             refreshed: false,
             stage_sent: None,
@@ -1020,7 +1044,7 @@ impl Worker {
             return Err(Halt::Game("waiting for the host's addon list".into()));
         }
         if host.digest.as_deref() == Some(self.setup.local.digest().as_str()) {
-            return Ok(None);
+            return Ok(self.lent_applied.clone());
         }
         let print = self
             .lobby
@@ -1028,7 +1052,10 @@ impl Worker {
             .and_then(|l| self.prints.get(&l.host))
             .and_then(|blob| serde_json::from_value::<Fingerprint>(blob.clone()).ok())
             .ok_or_else(|| Halt::Game("waiting for the host's addon list".into()))?;
-        let ids = fingerprint::row_id_overrides(&self.setup.local.fingerprint, &print);
+        let mut ids = fingerprint::host_overrides(&self.setup.local.fingerprint, &print);
+        if let Some(asked) = &self.lent_applied {
+            ids = asked.clone().merged(ids);
+        }
         Ok(Some(ids).filter(|o| !o.is_empty()))
     }
 
@@ -1118,6 +1145,13 @@ impl Worker {
             .ok_or_else(|| Halt::Step("starting the bridge".into(), Duration::from_millis(200)))?;
         let name = self.driver_name();
         let id_addons = row_ids.as_ref().map_or(0, |o| o.rows.len());
+        let setting_values = row_ids.as_ref().map_or(0, Overrides::option_values);
+        let ordered = row_ids.as_ref().map_or(0, |o| o.order.len());
+        let setting_addons = row_ids
+            .iter()
+            .flat_map(|o| o.order.iter().chain(o.options.keys()))
+            .collect::<std::collections::BTreeSet<_>>()
+            .len();
         let same = self
             .launch
             .as_ref()
@@ -1125,13 +1159,20 @@ impl Worker {
         if !same {
             self.launch_seq += 1;
             diag::line(format!(
-                "launch: asking the launcher to {} F1 25 for the room ({why}; host ids for {id_addons} addon(s))",
+                "launch: asking the launcher to {} F1 25 for the room ({why}; host ids for {id_addons} addon(s), load order for {ordered} addon(s), {setting_values} option value(s))",
                 if restart { "restart" } else { "start" }
             ));
+            if ordered > 0 || setting_values > 0 {
+                diag::line(format!(
+                    "launch: using the host's load order and {setting_values} option value(s) for {setting_addons} addon(s)"
+                ));
+            }
+            self.lent_applied = row_ids.clone();
             self.launch = Some(LaunchAsk {
                 seq: self.launch_seq,
                 row_ids,
                 id_addons,
+                setting_addons,
                 restart,
                 why: why.to_owned(),
                 self_member,
@@ -1394,7 +1435,10 @@ impl Worker {
     }
 
     fn update_local(&mut self, local: Local) {
-        self.setup.local = local;
+        self.setup.local = match &self.lent_applied {
+            Some(lent) if self.launched.is_some() && !self.hosting() => local.lent(lent),
+            _ => local,
+        };
         self.announce(&self.fingerprint_message());
         if !self.hosting() {
             self.compare_with_host();
@@ -1591,6 +1635,7 @@ impl Worker {
         let host_digest = lobby.host_member().and_then(|h| h.digest.clone());
         if host_digest.as_deref() == Some(self.setup.local.digest().as_str()) {
             self.mismatches.clear();
+            self.host_lent = Overrides::default();
             self.note_print(host_digest.as_deref(), true);
             return;
         }
@@ -1599,6 +1644,11 @@ impl Worker {
             .as_ref()
             .and_then(|blob| serde_json::from_value::<Fingerprint>(blob.clone()).ok());
         let compared = host_print.is_some();
+        self.host_lent = host_print
+            .as_ref()
+            .filter(|_| !self.hosting())
+            .map(|host| fingerprint::host_overrides(&self.setup.local.fingerprint, host))
+            .unwrap_or_default();
         self.mismatches = match host_print {
             Some(host) => {
                 fingerprint::compare(&self.setup.local.fingerprint, &host, &self.setup.local.catalog)
@@ -2145,6 +2195,7 @@ impl Worker {
             mismatches: fingerprint::unresolved_by_launch(
                 &self.mismatches,
                 self.setup.room_launch && self.launched.is_none(),
+                &self.host_lent,
             ),
             lobby_connected: self.lobby_connected,
             relay: self
@@ -2795,6 +2846,101 @@ mod tests {
         Fingerprint::new(f.game_build.clone(), f.addons, BTreeMap::new(), None)
     }
 
+    fn ordered_print(first: &str, second: &str, laps: i64) -> Fingerprint {
+        let addon = |id: &str, place: usize| AddonPrint {
+            id: id.into(),
+            name: format!("{id} name"),
+            version: Version::new(1, 0, 0),
+            source: Source::Built("cc".repeat(32)),
+            registry: None,
+            inputs: None,
+            order: Some(place),
+            detail: None,
+        };
+        Fingerprint::new(
+            Identity {
+                build_id: "1".into(),
+                exe_sha256: "ab".repeat(32),
+            },
+            vec![addon(first, 0), addon(second, 1)],
+            BTreeMap::from([(
+                "okayama".to_owned(),
+                BTreeMap::from([("laps".to_owned(), json!(laps))]),
+            )]),
+            None,
+        )
+    }
+
+    #[test]
+    fn a_joiner_asks_for_the_hosts_load_order_and_options_and_matches_once_built_with_them() {
+        let server = server();
+        let (host_game, guest_game) = (FakeGame::new("order-h"), FakeGame::new("order-g"));
+        let host_print = ordered_print("okayama", "bb.two", 5);
+        let host = create(
+            setup(&server.url, "host-token", &host_game, host_print.clone()),
+            RoomSettings::default(),
+        );
+        let code = wait_until(&host, "the host's lobby", in_lobby).room.unwrap().code;
+        guest_game.closed.store(true, Ordering::Relaxed);
+        let own = ordered_print("bb.two", "okayama", 3);
+        let guest = join(
+            launching(
+                setup(&server.url, "guest-token", &guest_game, own.clone()),
+                Some(own),
+            ),
+            &code,
+        );
+        let state = wait_until(&guest, "the launch ask", asked);
+        assert!(
+            state.mismatches.is_empty(),
+            "load order and options are handled by the launch: {:?}",
+            state.mismatches
+        );
+        let ask = state.launch.unwrap();
+        let lent = ask.row_ids.unwrap();
+        assert_eq!(lent.order, ["okayama", "bb.two"]);
+        assert_eq!(lent.options["okayama"]["laps"], json!(5));
+        assert_eq!(ask.setting_addons, 2);
+        guest.launched();
+        guest_game.closed.store(false, Ordering::Relaxed);
+        guest_game.reach_lobby();
+        let state = wait_until(&guest, "the guest's lobby", in_lobby);
+        assert!(state.mismatches.is_empty(), "{:?}", state.mismatches);
+    }
+
+    #[test]
+    fn a_joiner_without_the_hosts_addon_keeps_the_mismatch_and_lends_nothing_for_it() {
+        let server = server();
+        let (host_game, guest_game) = (FakeGame::new("order-h2"), FakeGame::new("order-g2"));
+        let host_print = ordered_print("okayama", "bb.two", 5);
+        let host = create(
+            setup(&server.url, "host-token", &host_game, host_print),
+            RoomSettings::default(),
+        );
+        let code = wait_until(&host, "the host's lobby", in_lobby).room.unwrap().code;
+        guest_game.closed.store(true, Ordering::Relaxed);
+        let mut own = ordered_print("okayama", "bb.two", 3);
+        own.addons.pop();
+        let own = Fingerprint::new(own.game_build.clone(), own.addons, own.options, None);
+        let guest = join(
+            launching(setup(&server.url, "guest-token", &guest_game, own), None),
+            &code,
+        );
+        let state = wait_until(&guest, "the missing addon", |s| {
+            s.mismatches
+                .iter()
+                .any(|m| matches!(m.kind, fingerprint::MismatchKind::MissingAddon { .. }))
+        });
+        assert!(
+            state
+                .mismatches
+                .iter()
+                .all(|m| !matches!(m.kind, fingerprint::MismatchKind::LoadOrder { .. })),
+            "{:?}",
+            state.mismatches
+        );
+    }
+
     fn asked(s: &SessionState) -> bool {
         s.launch.is_some()
     }
@@ -3211,6 +3357,7 @@ mod tests {
             seq: 1,
             row_ids: None,
             id_addons: 0,
+            setting_addons: 0,
             restart: false,
             why: String::new(),
             self_member: 3,

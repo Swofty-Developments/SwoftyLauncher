@@ -429,14 +429,16 @@ fn wrapper(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Result<Exi
                 say(
                     "info",
                     &format!(
-                        "room launch: building with the host's stat ids for {} addon(s)",
-                        ids.rows.len()
+                        "room launch: building with the host's stat ids for {} addon(s), load order for {} addon(s) and {} option value(s)",
+                        ids.rows.len(),
+                        ids.order.len(),
+                        ids.option_values()
                     ),
                 );
                 swofty_core::row_ids::lend(Some(ids));
             }
             Err(e) => bail!(
-                "the host's stat ids for the room couldn't be read ({}): {e}",
+                "the host's ids and settings for the room couldn't be read ({}): {e}",
                 file.display()
             ),
         }

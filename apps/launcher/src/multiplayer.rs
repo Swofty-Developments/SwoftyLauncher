@@ -502,7 +502,7 @@ impl Shell {
                     .and_then(|()| ids.write(&file).map_err(|e| e.to_string()))
                 {
                     self.mp_page.launch_seen = ask.seq;
-                    session.launch_failed(&format!("the host's ids couldn't be written ({e})"));
+                    session.launch_failed(&format!("the host's ids and settings couldn't be written ({e})"));
                     return;
                 }
                 Some(file)

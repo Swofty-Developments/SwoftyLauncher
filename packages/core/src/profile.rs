@@ -135,6 +135,44 @@ impl Profile {
             .map(|m| m.id.as_str())
     }
 
+    /// Gives this copy of the profile the host's load order and option values of `overrides` for one session's
+    /// build; it is never saved. Returns the addons it ordered and the option values it set.
+    pub fn lend(&mut self, overrides: &crate::row_ids::Overrides) -> (usize, usize) {
+        if self.is_vanilla() {
+            return (0, 0);
+        }
+        let takes = |m: &ProfileAddon| m.id != CORE_ID && overrides.order.contains(&m.id);
+        let held: Vec<String> = self
+            .addons
+            .iter()
+            .filter(|m| takes(m))
+            .map(|m| m.id.clone())
+            .collect();
+        let arranged = overrides.arranged(&held);
+        let mut entries: Vec<Option<ProfileAddon>> = Vec::new();
+        for id in &arranged {
+            entries.push(self.addons.iter().find(|m| &m.id == id).cloned());
+        }
+        let mut next = entries.into_iter().flatten();
+        for slot in self.addons.iter_mut().filter(|m| takes(m)) {
+            if let Some(entry) = next.next() {
+                *slot = entry;
+            }
+        }
+        let mut values = 0;
+        for (addon, options) in &overrides.options {
+            if !self.addons.iter().any(|m| &m.id == addon) {
+                continue;
+            }
+            let mine = self.options.entry(addon.clone()).or_default();
+            for (id, value) in options {
+                mine.insert(id.clone(), value.clone());
+                values += 1;
+            }
+        }
+        (arranged.len(), values)
+    }
+
     /// Moves `id` by `delta` places among the profile's addons, which is its
     /// place in the load order; the core addon stays first.
     pub fn move_addon(&mut self, id: &str, delta: isize) -> crate::Result<()> {
@@ -310,6 +348,28 @@ fn stored(
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn a_lent_profile_takes_the_hosts_order_and_options_and_leaves_the_rest() {
+        let mut p: Profile = serde_json::from_str(
+            r#"{"schema_version":1,"name":"x","mods":[{"id":"swofty.core"},{"id":"b"},{"id":"mine"},{"id":"a"}],
+                "options":{"a":{"laps":3,"keep":1}}}"#,
+        )
+        .unwrap();
+        p.normalise();
+        let host = crate::row_ids::Overrides {
+            order: vec!["a".into(), "b".into(), "swofty.core".into()],
+            options: BTreeMap::from([(
+                "a".to_owned(),
+                BTreeMap::from([("laps".to_owned(), serde_json::json!(5))]),
+            )]),
+            ..Default::default()
+        };
+        assert_eq!(p.lend(&host), (2, 1));
+        assert_eq!(p.enabled().collect::<Vec<_>>(), ["swofty.core", "a", "mine", "b"]);
+        assert_eq!(p.options["a"]["laps"], 5);
+        assert_eq!(p.options["a"]["keep"], 1);
+    }
+
     use super::*;
 
     #[test]
