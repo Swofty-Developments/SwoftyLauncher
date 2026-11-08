@@ -38,6 +38,7 @@
 #include <swofty/db.hpp>
 #include <swofty/hub.hpp>
 #include <swofty/hud.hpp>
+#include <swofty/view.hpp>
 #include <swofty/lang.hpp>
 #include <swofty/popup.hpp>
 #include <swofty/storage.hpp>
