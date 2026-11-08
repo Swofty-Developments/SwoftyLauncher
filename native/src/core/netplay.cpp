@@ -1,6 +1,7 @@
 #include "runtime.hpp"
 #include "netplay_icons_logic.hpp"
 #include "netplay_keys_logic.hpp"
+#include "netplay_privilege_logic.hpp"
 #include "netplay_session.hpp"
 
 #include <safetyhook.hpp>
@@ -137,6 +138,27 @@ void keys_entry(void *service, const void *request, void **callback)
         return;
     }
     keys_orig(service, request, callback);
+}
+
+// Session privilege checks. CheckPrivilegeTask::onUpdate hands its callback list to the online context's
+// privilege slot and waits in state 2 until the slot's provider has answered every node; with no EA connection
+// the provider never does, and the task is only ended 30 to 120 s later with the online-services popup. While the
+// game is armed, the wrap of onUpdate runs the real update, then calls each queued node callback (the task's own
+// privilegeCheckTaskCallback) as granted and releases the slot, so the task finishes on its next update.
+constexpr const char *PRIV_MIXIN = "swofty_core.dll (netplay privilege checks)";
+constexpr const char *PRIV_UPDATE = "Game_CheckPrivilegeTask_OnUpdate";
+constexpr const char *PRIV_CALLBACK = "Game_CheckPrivilegeTask_PrivilegeCheckTaskCallback";
+
+using PrivUpdate_t = void(void *task);
+PrivUpdate_t *priv_orig;
+std::atomic<bool> said_priv{false};
+bool priv_offered = false, priv_bound = false, priv_settled = false;
+
+void priv_entry(void *task)
+{
+    priv_orig(task);
+    if (runtime::netplay_privilege::grant(static_cast<uint8_t *>(task)) > 0 && !said_priv.exchange(true))
+        swofty::log("[netplay] privilege checks: answered as granted (offline shared session)");
 }
 
 std::vector<safetyhook::MidHook> h_icon_gates;
@@ -354,6 +376,36 @@ void netplay_keys_commit()
     if (!core_mixins_active(KEYS_MIXIN))
         swofty::log("[netplay] key material left to the online fetch: the %s wrap did not install (see the [core] lines)",
                     KEYS_SUBMIT);
+}
+
+std::vector<CoreMixins> netplay_privilege_mixins()
+{
+    std::vector<CoreMixins> out;
+    if (priv_offered || !code_ready())
+        return out;
+    priv_offered = true;
+    if (!armed())
+        return out;
+    if (!swofty::api->resolve(PRIV_UPDATE) || !swofty::api->resolve(PRIV_CALLBACK)) {
+        swofty::log("[netplay] privilege checks left to the online services: needs %s and %s, which this build does not "
+                    "resolve",
+                    PRIV_UPDATE, PRIV_CALLBACK);
+        return out;
+    }
+    priv_bound = true;
+    out.push_back({PRIV_MIXIN, {{PRIV_UPDATE, SWOFTY_MIXIN_WRAP, 0, (void *)&priv_entry, (void **)&priv_orig}}});
+    return out;
+}
+
+void netplay_privilege_commit()
+{
+    if (!priv_bound || priv_settled)
+        return;
+    priv_settled = true;
+    if (!core_mixins_active(PRIV_MIXIN))
+        swofty::log("[netplay] privilege checks left to the online services: the %s wrap did not install (see the [core] "
+                    "lines)",
+                    PRIV_UPDATE);
 }
 
 void netplay_setup()
