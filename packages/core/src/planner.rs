@@ -11,8 +11,8 @@ use crate::conflicts::Changes;
 use crate::dbedit::deps::Copy;
 use crate::entrant_lists::StockLists;
 use crate::ops::{
-    DbOps, DbReport, ErpOp, FieldNames, MovedStatId, RowIds, apply_db_ops_lenient, explicit_stat_ids, no_row,
-    stat_id_ceiling,
+    DbOps, DbReport, ErpOp, FieldNames, MovedStatId, RowIds, apply_db_ops_lenient, explicit_stat_ids,
+    ids_exhausted, no_row, stat_id_ceiling,
 };
 use crate::owned::{self, Added};
 use crate::rowkeys::{Names, RowKeys};
@@ -260,6 +260,7 @@ pub struct Planner<'a> {
     removals: usize,
     fields: BTreeMap<String, BTreeMap<String, Vec<String>>>,
     skipped: Vec<String>,
+    id_left_out: BTreeMap<String, usize>,
     waits: BTreeSet<(String, String)>,
     stock_removals: BTreeMap<String, usize>,
     track_removals: BTreeMap<String, usize>,
@@ -361,6 +362,7 @@ impl<'a> Planner<'a> {
             removals: 0,
             fields: BTreeMap::new(),
             skipped: Vec::new(),
+            id_left_out: BTreeMap::new(),
             waits: BTreeSet::new(),
             stock_removals: BTreeMap::new(),
             track_removals: BTreeMap::new(),
@@ -900,6 +902,17 @@ impl<'a> Planner<'a> {
     // An op on a row that only the core adds at the game's start cannot apply in the build: it is skipped with a warning.
     fn settle(&mut self, origin: &Origin, errors: Vec<swofty_addon::Error>, last: bool) -> Result<()> {
         let mut errors = errors;
+        let no_id = errors.iter().filter(|e| ids_exhausted(e)).count();
+        if no_id > 0 || (!errors.is_empty() && self.id_left_out.contains_key(&origin.addon)) {
+            *self.id_left_out.entry(origin.addon.clone()).or_default() += no_id;
+            self.skipped.extend(errors.iter().map(|e| {
+                format!(
+                    "{origin}: left out: {}; a change that depends on a row left out is left out too",
+                    e.to_string().trim_start_matches("applying ")
+                )
+            }));
+            return Ok(());
+        }
         if last {
             let (core, rest): (Vec<_>, Vec<_>) = errors
                 .into_iter()
@@ -1052,6 +1065,12 @@ impl<'a> Planner<'a> {
             .iter()
             .max_by_key(|w| self.ranks.iter().position(|o| o == *w))
             .map(|w| w.addon.as_str())
+    }
+
+    /// The addons whose cars or teams the last `apply_db` left out for want of a free stat id, with how many
+    /// of their rows got none.
+    pub fn take_id_left_out(&mut self) -> BTreeMap<String, usize> {
+        std::mem::take(&mut self.id_left_out)
     }
 
     /// Lenient addons' changes the last `apply_db` could not apply.

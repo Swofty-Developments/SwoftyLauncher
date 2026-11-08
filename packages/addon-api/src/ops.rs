@@ -103,6 +103,23 @@ pub struct StatIdCeiling {
 }
 
 const STAT_ID_CEILINGS: &[(&str, &str, StatIdCeiling)] = &[
+    // The core's vehicle and team id pools end at 1023, and its registry never allocates above them.
+    (
+        "entrants.vehicles",
+        "vehicle",
+        StatIdCeiling {
+            max: 1023,
+            from: None,
+        },
+    ),
+    (
+        "entrants.teams",
+        "team",
+        StatIdCeiling {
+            max: 1023,
+            from: None,
+        },
+    ),
     // VehicleIdentity +0xcd8 and VehiclePackageRow +0x0 are u8, 0xff = none.
     (
         "entrants.vehicles.vehicle_packages",
@@ -975,6 +992,12 @@ const NO_ROW: &str = "no row matches";
 /// Whether `e` is a selector that matched no row, which a row added later can fix.
 pub fn no_row(e: &Error) -> bool {
     matches!(e, Error::Resolve(m) if m.contains(&format!(": {NO_ROW}")))
+}
+
+/// Whether `e` is an `add-row` that found no free `stat_id` in the vehicle or team table, up to the highest the game reads.
+pub fn ids_exhausted(e: &Error) -> bool {
+    matches!(e, Error::Resolve(m)
+        if m.contains(": entrants.vehicles has no free stat_id") || m.contains(": entrants.teams has no free stat_id"))
 }
 
 fn resolve_path(db: &Db, path: &str) -> Result<Base> {

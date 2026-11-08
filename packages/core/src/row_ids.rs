@@ -1162,6 +1162,7 @@ mod tests {
         pub(super) ids: BTreeMap<String, i64>,
         pub(super) store: Store,
         pub(super) lines: Vec<String>,
+        pub(super) left_out: BTreeMap<String, usize>,
     }
 
     fn try_build(
@@ -1217,10 +1218,12 @@ mod tests {
                 (label, id.parse().unwrap())
             })
             .collect();
+        let left_out = p.take_id_left_out();
         Ok(Built {
             ids,
             store: p.take_row_ids().unwrap(),
             lines: report.lines,
+            left_out,
         })
     }
 
@@ -1800,6 +1803,69 @@ mod tests {
         let e = try_build(PACKAGES, 0, &[("a", &["a1"])], store).err().unwrap();
         assert!(e.to_string().contains("has no free stat_id up to 254"), "{e}");
         std::fs::remove_dir_all(&data).ok();
+    }
+
+    fn pinned_vehicles(upto: i64) -> String {
+        let records: Vec<String> = (1..=upto).map(|id| format!(r#""a/car_{id}":{id}"#)).collect();
+        format!(r#"{{"version":1,"ids":{{"vehicle":{{{}}}}}}}"#, records.join(","))
+    }
+
+    #[test]
+    fn vehicle_and_team_rows_never_take_an_id_past_1023() {
+        let data = data_dir("vehicle-ceiling");
+        put(&reports::path(&data, reports::IDS), &pinned_vehicles(1022));
+        let (store, _) = Store::load(&data, None, "p", None);
+        let built = build(VEHICLES, 0, &[("b", &["v1"])], store);
+        assert_eq!(built.ids["v1"], 1023);
+        assert!(built.left_out.is_empty());
+        let seasons: Vec<String> = (0..20).map(|i| format!("s{i}")).collect();
+        let refs: Vec<&str> = seasons.iter().map(String::as_str).collect();
+        for table in [VEHICLES, TEAMS] {
+            let built = build(table, 1020, &[("b", &refs)], Store::default());
+            assert!(
+                built.ids.values().all(|id| (1021..=1023).contains(id)),
+                "{:?}",
+                built.ids
+            );
+            assert_eq!(built.ids.len(), 3);
+            assert_eq!(built.left_out["b"], 17);
+        }
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn a_vehicle_row_that_finds_no_id_is_left_out_without_failing_the_build() {
+        let data = data_dir("vehicle-left-out");
+        put(&reports::path(&data, reports::IDS), &pinned_vehicles(1023));
+        let (store, _) = Store::load(&data, None, "p", None);
+        let built = build(VEHICLES, 0, &[("a", &["v1", "v2"]), ("b", &["w1"])], store);
+        assert!(built.ids.is_empty());
+        assert_eq!(built.left_out["a"], 2);
+        assert_eq!(built.left_out["b"], 1);
+        assert!(
+            !built
+                .store
+                .rows
+                .keys()
+                .any(|k| k.contains("entrants.vehicles.vehicle/"))
+        );
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn two_addons_never_share_a_vehicle_id() {
+        let labels: Vec<String> = (0..10).map(|i| format!("c{i}")).collect();
+        let refs: Vec<&str> = labels.iter().map(String::as_str).collect();
+        let mut store = Store::default();
+        let mut all = BTreeSet::new();
+        for addon in ["s1972", "s1986", "s2000"] {
+            let built = build(VEHICLES, 509, &[(addon, &refs)], store);
+            for id in built.ids.values() {
+                assert!(all.insert(*id), "{id} given twice");
+            }
+            store = built.store;
+        }
+        assert_eq!(all.len(), 30);
     }
 
     #[test]
