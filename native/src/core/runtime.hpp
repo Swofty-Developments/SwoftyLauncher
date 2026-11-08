@@ -137,6 +137,7 @@ bool career_start_live();
 uint32_t career_start_picked();
 void popup_setup();
 void popup_tick();
+bool typing(const char *what);
 void mfd_setup();
 void mfd_tick();
 int popup_show(const std::string &title, const std::string &body, const std::string &by);

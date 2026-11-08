@@ -4,6 +4,7 @@
 #include "hud_font_atlas.hpp"
 #include "hud_image.hpp"
 #include "hud_input.hpp"
+#include "text_entry.hpp"
 #include "hud_guard.hpp"
 #include "hud_png.hpp"
 #include "perf.hpp"
@@ -1180,11 +1181,13 @@ LRESULT CALLBACK input_proc(HWND w, UINT msg, WPARAM wp, LPARAM lp)
         block = held;
         break;
     case WM_CHAR:
+        text_entry::state.chr(GetTickCount64());
         e = {Ev::chr, utf16.push(uint32_t(wp)), 0, 0};
         record = e.a != 0;
         block = held;
         break;
     case WM_KEYDOWN:
+        text_entry::state.key(uint32_t(wp) & 0xff, GetTickCount64());
         e = {Ev::key_down, uint32_t(wp) & 0xff, 0, 0};
         block = held;
         break;
@@ -2106,7 +2109,8 @@ int ov_input(const SwoftyPaint *paint, SwoftyInput *out)
     input_read_ms.store(GetTickCount64(), std::memory_order_relaxed);
     SwoftyInput full{};
     full.size = sizeof full;
-    hud::input::view(frame_snap, frame_focus, reinterpret_cast<const hud::Frame *>(paint)->owner, full);
+    hud::input::view(frame_snap, frame_focus, reinterpret_cast<const hud::Frame *>(paint)->owner, full,
+                     runtime::typing(nullptr));
     uint32_t size = out->size;
     memcpy(out, &full, std::min<size_t>(size, sizeof full));
     out->size = size;

@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "perf.hpp"
+#include "text_entry.hpp"
 
 // Message popups (NeUIMessageSystem). The game raises every popup the same way: construct a message
 // by its UIMD id (Ui_Message_Construct, 0x1442d9bf0: system, out handle, fixed-capacity id string,
@@ -141,6 +142,10 @@ Handle *construct_hook(void *s, Handle *out, FixedId *id, Callback *cb, const ch
     const char *name = id && swofty::mem::readable(id, sizeof(FixedId)) && id->data && swofty::mem::readable(id->data, 1)
                            ? id->data
                            : nullptr;
+    if (name && text_entry::is_entry_message(name)) {
+        text_entry::state.begin(GetTickCount64());
+        swofty::log("[popup] '%.64s' takes typed text; core hotkeys are held back until it closes", name);
+    }
     if (name && out && cb && swofty::mem::readable(cb, sizeof *cb) && runtime::netplay_popup(name, cb->fn, cb->ctx)) {
         *out = Handle{s, nullptr};
         return out;
@@ -530,6 +535,15 @@ void popup_setup()
                 "base+0x%llx",
                 (unsigned long long)(a_construct - base), (unsigned long long)(a_set_attr - base),
                 (unsigned long long)(a_release - base), (unsigned long long)(uintptr_t(id_vt) - base));
+}
+
+bool typing(const char *what)
+{
+    if (!text_entry::state.active(GetTickCount64()))
+        return false;
+    if (what && text_entry::state.first_suppression())
+        swofty::log("[popup] %s ignored: a text box has focus", what);
+    return true;
 }
 
 void popup_tick()

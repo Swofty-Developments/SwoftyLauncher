@@ -108,6 +108,8 @@ What an addon's `Input` holds depends on the focus:
 
 `key_down(vk)`, `key_pressed(vk)`, `key_typed(vk)`, `clicked(button)`, `held(button)`, `pad_held(button)`, `pad_hit(button)` and `inside(x, y, w, h)` read an `Input`. Keys are Windows virtual-key codes; `keys_pressed` holds the keys that went down this frame and `keys_typed` also their auto-repeats.
 
+While the game has a text box open (naming a team, for example) an addon that does not hold focus gets no keys, so a hotkey does not fire from typed letters.
+
 The gamepad fields come from `xinput1_4.dll!XInputGetState`, read while an addon calls `input()`:
 
 | Field | Holds |

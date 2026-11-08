@@ -10,6 +10,7 @@
 #include "hud_guard.hpp"
 #include "hud_image.hpp"
 #include "hud_input.hpp"
+#include "text_entry.hpp"
 #include "hud_png.hpp"
 #include "exec_plan.hpp"
 
@@ -1084,6 +1085,46 @@ static void test_exec_plan()
     CHECK(log == "e", "an empty batch still runs its end steps");
 }
 
+static void test_text_entry()
+{
+    using namespace hud::input;
+    CHECK(text_entry::is_entry_message("team_name_entry") && text_entry::is_entry_message("Profile_Name_Entry"),
+          "a name entry popup counts as a text box");
+    CHECK(!text_entry::is_entry_message("beta_motd") && !text_entry::is_entry_message("swofty_message"),
+          "an ordinary popup is not a text box");
+    text_entry::State st;
+    CHECK(!st.active(1000), "no text box is open at start");
+    st.begin(1000);
+    CHECK(st.active(1001) && st.active(1000 + text_entry::IDLE_MS - 1), "a text box is open from its popup");
+    CHECK(!st.active(1000 + text_entry::IDLE_MS), "an abandoned text box times out");
+    st.begin(1000);
+    st.key('B', 15000);
+    CHECK(st.active(30000), "typing keeps the text box open");
+    st.key(text_entry::KEY_ENTER, 31000);
+    CHECK(!st.active(31001), "enter closes the text box");
+    st.begin(40000);
+    st.key(text_entry::KEY_ESCAPE, 40010);
+    CHECK(!st.active(40011), "escape closes the text box");
+    st.key('B', 50000);
+    CHECK(!st.active(50001), "a key outside a text box does not open one");
+    st.begin(60000);
+    CHECK(st.first_suppression() && !st.first_suppression(), "a suppression is logged once per text box");
+    st.begin(61000);
+    CHECK(st.first_suppression(), "the next text box logs again");
+
+    Snapshot s;
+    fold(s, {{Ev::key_down, 'B', 0, 0}}, 1, 1);
+    Focus f;
+    SwoftyInput out{};
+    out.size = sizeof out;
+    view(s, f, "addon", out, true);
+    CHECK(!bit(out.keys_down, 'B') && !bit(out.keys_pressed, 'B') && !bit(out.keys_typed, 'B'),
+          "addons see no keys while a text box has focus");
+    out.size = sizeof out;
+    view(s, f, "addon", out, false);
+    CHECK(bit(out.keys_pressed, 'B'), "addons see keys when no text box has focus");
+}
+
 int main(int argc, char **argv)
 {
     test_font();
@@ -1099,6 +1140,7 @@ int main(int argc, char **argv)
     test_cap();
     test_text_cache();
     test_input();
+    test_text_entry();
     test_registry();
     test_build_dispatch();
     test_image_registry();

@@ -2889,21 +2889,21 @@ void poll_toggles()
 {
     bool front = game_in_front();
     for (auto &t : toggles) {
-        bool down = t.vk && front && (GetAsyncKeyState(t.vk) & 0x8000);
-        if (down && !t.down) {
+        bool raw = t.vk && front && (GetAsyncKeyState(t.vk) & 0x8000);
+        if (raw && !t.down && !runtime::typing("a shader key")) {
             t.off = !t.off;
             swofty::log("[postfx] %s's passes are %s (its key)", t.addon.c_str(), t.off ? "off" : "on");
             runtime::hud_toast(t.off ? "SHADERS OFF" : "SHADERS ON", t.addon, 2.0f, t.addon_id);
         }
-        t.down = down;
+        t.down = raw;
     }
-    bool down = shader_vk && front && (GetAsyncKeyState(shader_vk) & 0x8000);
-    if (down && !shader_key_down) {
+    bool raw = shader_vk && front && (GetAsyncKeyState(shader_vk) & 0x8000);
+    if (raw && !shader_key_down && !runtime::typing("a shader key")) {
         shaders_off = !shaders_off;
         swofty::log("[shaders] shaders are %s (the toggle key)", shaders_off ? "off" : "on");
         runtime::hud_toast(shaders_off ? "SHADERS OFF" : "SHADERS ON", active.name, 2.0f, "");
     }
-    shader_key_down = down;
+    shader_key_down = raw;
 }
 
 void log_trace()
