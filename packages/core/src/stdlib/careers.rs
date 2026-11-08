@@ -353,6 +353,7 @@ pub fn record_session(data: &Path, profile: &str, since_ms: i64, loader_log: &st
         .filter(|id| installed.contains_key(id))
         .collect();
     let mut changed = record_rows(&mut list, &in_save, since_ms, &plan.order, &owners, &installed);
+    changed |= backfill_rows(&mut list, &crate::row_ids::id_owners(data), &installed);
     changed |= record(
         &mut list,
         &in_save,
@@ -368,6 +369,112 @@ pub fn record_session(data: &Path, profile: &str, since_ms: i64, loader_log: &st
         )?;
     }
     Ok(())
+}
+
+const SAVE_IDS: [(&str, &str, i64, i64); 3] = [
+    ("team_raw", "entrants.teams.team", 400, 16383),
+    ("vehicle_raw", "entrants.vehicles.vehicle", 205, 16383),
+    ("driver_raw", "entrants.drivers.driver", 255, 16383),
+];
+
+/// The ids a career's save entry holds above the stock rows, as `(table, id)`: rows an addon added.
+fn added_ids(c: &Career) -> Vec<(&'static str, i64)> {
+    SAVE_IDS
+        .iter()
+        .filter_map(|(field, table, above, below)| {
+            let id = c.extra.get(*field).and_then(Value::as_i64)?;
+            (id > *above && id < *below).then_some((*table, id))
+        })
+        .collect()
+}
+
+fn records_rows(c: &Career) -> bool {
+    c.addons.iter().any(|a| a.why.as_deref() == Some(ROWS_WHY))
+}
+
+/// Careers last played before the launcher recorded database addons hold no owners. For each such
+/// career whose save entry holds team, vehicle or driver ids above the stock rows, records the
+/// addons the install's ids name as the owners of those rows. Returns whether any career changed.
+pub fn backfill_rows(
+    list: &mut [Career],
+    owners: &BTreeMap<(String, i64), BTreeSet<String>>,
+    installed: &BTreeMap<String, AddonManifest>,
+) -> bool {
+    let mut changed = false;
+    for c in list.iter_mut().filter(|c| !c.is_gone() && !records_rows(c)) {
+        for (table, id) in added_ids(c) {
+            let Some(found) = owners.get(&(table.to_owned(), id)) else {
+                continue;
+            };
+            for addon in found {
+                if c.addons.iter().any(|a| &a.id == addon) {
+                    continue;
+                }
+                c.addons.push(CareerAddon {
+                    id: addon.clone(),
+                    version: installed.get(addon).map(|m| m.version.to_string()),
+                    need: None,
+                    why: Some(ROWS_WHY.to_owned()),
+                });
+                changed = true;
+            }
+        }
+    }
+    changed
+}
+
+/// The Play stop for careers with ids above the stock rows and no owner [`backfill_rows`] could name:
+/// their addon isn't installed or isn't one the install knows. Names the installed database addons
+/// that are off as the ones to try. `None` when every career names its owners.
+pub fn unowned_line(
+    list: &[Career],
+    order: &[String],
+    installed: &BTreeMap<String, AddonManifest>,
+    owners: &BTreeSet<String>,
+) -> Option<String> {
+    let careers: Vec<&str> = list
+        .iter()
+        .filter(|c| !c.is_gone() && !records_rows(c) && !added_ids(c).is_empty())
+        .map(|c| {
+            if c.label.is_empty() {
+                c.career.as_str()
+            } else {
+                c.label.as_str()
+            }
+        })
+        .collect();
+    if careers.is_empty() {
+        return None;
+    }
+    let off: Vec<String> = owners
+        .iter()
+        .filter(|id| !order.contains(id))
+        .filter_map(|id| installed.get(id).map(|m| m.name.clone()))
+        .collect();
+    let shown = careers.iter().take(3).copied().collect::<Vec<_>>().join("; ");
+    let more = careers.len().saturating_sub(3);
+    let more = if more > 0 {
+        format!("; {more} more")
+    } else {
+        String::new()
+    };
+    let try_on = if off.is_empty() {
+        String::new()
+    } else {
+        format!(
+            " Addons that are off: {}.",
+            off.iter().take(6).cloned().collect::<Vec<_>>().join(", ")
+        )
+    };
+    Some(format!(
+        "{} in your save use rows from addons that aren't installed or on ({shown}{more}). \
+         The game can crash at the splash. Turn on the addons those careers were made with and press Play, \
+         or restore a save from before in Profiles > Saves.{try_on}",
+        match careers.len() {
+            1 => "1 career".to_owned(),
+            n => format!("{n} careers"),
+        },
+    ))
 }
 
 /// The Play stop for careers whose saved database rows come from an addon that is off or not
@@ -758,6 +865,78 @@ mod tests {
             .extra
             .insert("status".into(), Value::String("missing".into()));
         assert_eq!(stop_line(&list, &[], &installed), None);
+    }
+
+    fn old_careers() -> Vec<Career> {
+        parse(
+            r#"{"version":1,"careers":[
+              {"career":"driver_career:a","label":"","addons":[],"driver_raw":3,"team_raw":480,"vehicle_raw":217,"source":"slots","status":"present"},
+              {"career":"driver_career:b","label":"","addons":[],"driver_raw":16388,"team_raw":501,"vehicle_raw":510,"source":"slots","status":"present"},
+              {"career":"driver_career:c","label":"","addons":[],"driver_raw":102,"team_raw":155,"vehicle_raw":161,"source":"slots","status":"present"},
+              {"career":"my_team:d","label":"","addons":[],"driver_raw":3,"team_raw":16387,"vehicle_raw":16390,"source":"slots","status":"present"},
+              {"career":"driver_career:e","label":"","addons":[],"driver_raw":3,"team_raw":501,"vehicle_raw":510,"source":"slots","status":"deleted"}]}"#,
+        )
+    }
+
+    fn id_owners() -> BTreeMap<(String, i64), BTreeSet<String>> {
+        let one =
+            |table: &str, id: i64, addon: &str| ((table.to_owned(), id), BTreeSet::from([addon.to_owned()]));
+        [
+            one("entrants.teams.team", 501, "x.season"),
+            one("entrants.vehicles.vehicle", 510, "x.season"),
+            one("entrants.vehicles.vehicle", 600, "x.other"),
+        ]
+        .into()
+    }
+
+    #[test]
+    fn backfills_the_owners_of_added_ids_in_careers_with_none_recorded() {
+        let installed = installed_of(&["x.season"]);
+        let mut list = old_careers();
+        assert!(backfill_rows(&mut list, &id_owners(), &installed));
+        assert_eq!(list[1].addons.len(), 1);
+        assert_eq!(list[1].addons[0].id, "x.season");
+        assert_eq!(list[1].addons[0].why.as_deref(), Some(ROWS_WHY));
+        assert!(list[0].addons.is_empty() && list[2].addons.is_empty() && list[3].addons.is_empty());
+        assert!(list[4].addons.is_empty());
+        assert!(!backfill_rows(&mut list, &id_owners(), &installed));
+        let stop = stop_line(&list, &[], &installed).unwrap();
+        assert!(stop.contains("x.season"), "{stop}");
+        assert_eq!(stop_line(&list, &["x.season".to_owned()], &installed), None);
+    }
+
+    #[test]
+    fn a_career_with_recorded_rows_is_not_backfilled() {
+        let mut list = old_careers();
+        list[1].addons.push(CareerAddon {
+            id: "x.recorded".into(),
+            why: Some(ROWS_WHY.into()),
+            ..CareerAddon::default()
+        });
+        assert!(!backfill_rows(
+            &mut list,
+            &id_owners(),
+            &installed_of(&["x.season"])
+        ));
+        assert_eq!(list[1].addons.len(), 1);
+    }
+
+    #[test]
+    fn warns_about_added_ids_no_installed_addon_owns() {
+        let installed = installed_of(&["x.season"]);
+        let owners: BTreeSet<String> = ["x.season".to_owned()].into();
+        let mut list = old_careers();
+        backfill_rows(&mut list, &id_owners(), &installed);
+        let line = unowned_line(&list, &[], &installed, &owners).unwrap();
+        assert!(
+            line.contains(
+                "1 career in your save use rows from addons that aren't installed or on (driver_career:a)"
+            ),
+            "{line}"
+        );
+        assert!(line.contains("Addons that are off: N x.season"), "{line}");
+        assert_eq!(unowned_line(&list[1..], &[], &installed, &owners), None);
+        assert_eq!(unowned_line(&[], &[], &installed, &owners), None);
     }
 
     #[test]

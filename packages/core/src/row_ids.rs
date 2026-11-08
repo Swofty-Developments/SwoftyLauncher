@@ -237,6 +237,40 @@ pub fn save_owners(data: &Path) -> BTreeSet<String> {
         .collect()
 }
 
+/// The addons that own each team, vehicle or driver id a save can hold, by table and id: the ids the
+/// store keeps for their rows, and the ids those rows had before.
+pub fn id_owners(data: &Path) -> BTreeMap<(String, i64), BTreeSet<String>> {
+    let file: File = match crate::load_json(&path(data)) {
+        Ok(Loaded::Found(f)) => f,
+        _ => File::default(),
+    };
+    let mut out: BTreeMap<(String, i64), BTreeSet<String>> = BTreeMap::new();
+    let mut put = |key: &str, id: i64| {
+        let mut parts = key.splitn(3, '/');
+        if let (Some(addon), Some(table)) = (parts.next(), parts.next())
+            && ALIAS_TABLES.iter().any(|(t, _)| *t == table)
+        {
+            out.entry((table.to_owned(), id))
+                .or_default()
+                .insert(addon.to_owned());
+        }
+    };
+    let profiles = file.profiles.values();
+    for (key, entry) in file
+        .rows
+        .iter()
+        .chain(profiles.clone().flat_map(|p| p.rows.iter()))
+    {
+        put(key, entry.id);
+    }
+    for (key, ids) in file.aliases.iter().chain(profiles.flat_map(|p| p.aliases.iter())) {
+        for id in ids {
+            put(key, *id);
+        }
+    }
+    out
+}
+
 pub fn path(data: &Path) -> PathBuf {
     reports::path(data, FILE)
 }
@@ -2282,6 +2316,35 @@ mod tests {
         let owners: Vec<String> = save_owners(&data).into_iter().collect();
         assert_eq!(owners, ["a.engines", "b.heads", "e.teams"]);
         assert!(save_owners(&data_dir("none")).is_empty());
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn id_owners_name_the_addon_of_a_kept_id_and_of_an_older_one() {
+        let data = data_dir("id-owners");
+        put(
+            &path(&data),
+            r#"{"version":2,"rows":{
+              "a.season/entrants.teams.team/t":{"id":501,"from":"next"},
+              "a.season/tracks.Track/x":{"id":9,"from":"next"}},
+              "aliases":{"a.season/entrants.teams.team/t":[480]},
+              "profiles":{"p":{"rows":{"b.cars/entrants.vehicles.vehicle/v":{"id":510,"from":"next"}}}}}"#,
+        );
+        let owners = id_owners(&data);
+        let of = |table: &str, id: i64| owners.get(&(table.to_owned(), id)).cloned().unwrap_or_default();
+        assert_eq!(
+            of("entrants.teams.team", 501),
+            BTreeSet::from(["a.season".to_owned()])
+        );
+        assert_eq!(
+            of("entrants.teams.team", 480),
+            BTreeSet::from(["a.season".to_owned()])
+        );
+        assert_eq!(
+            of("entrants.vehicles.vehicle", 510),
+            BTreeSet::from(["b.cars".to_owned()])
+        );
+        assert!(of("tracks.Track", 9).is_empty());
         std::fs::remove_dir_all(&data).ok();
     }
 }

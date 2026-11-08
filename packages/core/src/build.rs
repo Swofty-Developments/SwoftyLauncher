@@ -839,11 +839,20 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         .extend(deps.notes.iter().map(|n| format!("registry: {n}")));
     if !p.is_vanilla() {
         let careers = crate::stdlib::careers::read(&crate::stdlib::careers::data_path(&store.root));
-        let scoped: Vec<_> = crate::stdlib::careers::in_save_of(&careers, &store.root, profile)
+        let mut scoped: Vec<_> = crate::stdlib::careers::in_save_of(&careers, &store.root, profile)
             .into_iter()
             .cloned()
             .collect();
+        crate::stdlib::careers::backfill_rows(&mut scoped, &crate::row_ids::id_owners(&store.root), &addons);
         if let Some(line) = crate::stdlib::careers::stop_line(&scoped, &resolved.order, &addons) {
+            built.warnings.push(line);
+        }
+        if let Some(line) = crate::stdlib::careers::unowned_line(
+            &scoped,
+            &resolved.order,
+            &addons,
+            &crate::row_ids::save_owners(&store.root),
+        ) {
             built.warnings.push(line);
         }
         if let Some(line) = crate::stdlib::careers::play_line(&careers, &resolved.order, &addons) {
