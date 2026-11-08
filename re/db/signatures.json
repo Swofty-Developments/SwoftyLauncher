@@ -162098,6 +162098,32 @@
    "used_by": [
     "native/src/core/entitlements.cpp"
    ]
+  },
+  {
+   "id": "game.os_service_submit_request",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 4C 89 C6 48 89 CF 8B 02 8B 4A 04",
+   "match": "0x1432bbd10",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1432bbd10",
+   "kind": "func_start",
+   "names": [
+    "Game_OsService_SubmitRequest"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-08",
+     "by": "netplay-keys",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/netplay.cpp"
+   ]
   }
  ]
 }
