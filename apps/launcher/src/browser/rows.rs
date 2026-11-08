@@ -14,6 +14,7 @@ use gpui_kit::*;
 use swofty_core::catalog::Addon;
 use swofty_i18n::{tr, trf, trn};
 
+use super::tiles::landing_rows;
 use super::*;
 use crate::pages::tile;
 use crate::scale::px;
@@ -188,20 +189,26 @@ impl Shell {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let groups: Arc<[(Tab, Vec<usize>)]> = group_rows(&self.browser.addons, &shown).into();
-        let layout = (shown, groups.len(), true, width.to_bits());
+        let header = landing_rows(width);
+        let layout = (shown, groups.len() + header, true, width.to_bits());
         if self.browser.grid_layout != layout {
             let offset = self.browser.grid_scroll.logical_scroll_top();
             self.browser
                 .grid_scroll
-                .reset_with_uniform_height(groups.len(), px(ROW_HEIGHT));
+                .reset_with_uniform_height(groups.len() + header, px(ROW_HEIGHT));
             self.browser.grid_scroll.scroll_to(offset);
             self.browser.grid_layout = layout;
         }
         let content = list(
             self.browser.grid_scroll.clone(),
-            cx.processor(move |this, index: usize, _, cx| match groups.get(index) {
-                Some((tab, found)) => this.category_row(*tab, found, width, p, cx),
-                None => div().into_any_element(),
+            cx.processor(move |this, index: usize, _, cx| {
+                if index < header {
+                    return this.landing_row(index, width, p, cx);
+                }
+                match groups.get(index - header) {
+                    Some((tab, found)) => this.category_row(*tab, found, width, p, cx),
+                    None => div().into_any_element(),
+                }
             }),
         )
         .size_full();

@@ -161,7 +161,11 @@ impl Shell {
         };
         let width = self.content_width - FILTERS_W - 20.;
         let rows = !self.browser.addons.is_empty() && !filtering;
-        let bar = self.grid_bar(&count, sort, !query.is_empty(), p, cx);
+        let bar = if rows {
+            div()
+        } else {
+            self.grid_bar(&count, sort, !query.is_empty(), p, cx)
+        };
         let filters = self.filter_column(p, cx);
         let found = shown
             .is_empty()
@@ -197,16 +201,17 @@ impl Shell {
     }
 
     fn grid_bar(&self, count: &str, sort: Sort, searching: bool, p: Palette, cx: &mut Context<Self>) -> Div {
-        v_flex()
+        h_flex()
             .pb(px(14.))
-            .gap(px(10.))
+            .gap(px(12.))
             .flex_shrink_0()
-            .child(self.category_tiles(p, cx))
+            .items_start()
+            .child(div().flex_1().min_w_0().child(self.category_bar(p, cx)))
             .child(
                 h_flex()
                     .gap(px(10.))
+                    .flex_shrink_0()
                     .items_center()
-                    .justify_end()
                     .h(px(28.))
                     .child(
                         div()

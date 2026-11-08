@@ -190,6 +190,15 @@ impl Shell {
         cx.notify();
     }
 
+    pub(super) fn show_categories(&mut self, cx: &mut Context<Self>) {
+        let b = &mut self.browser;
+        b.tab = None;
+        b.smooth.cancel();
+        b.scroll.set_offset(Point::default());
+        b.grid_scroll.scroll_to(ListOffset::default());
+        self.clear_filters(cx);
+    }
+
     pub(crate) fn show_shader_addons(&mut self, cx: &mut Context<Self>) {
         self.shelve(Some(Some(Category::Shaders)), cx);
     }
