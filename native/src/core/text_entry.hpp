@@ -9,19 +9,20 @@ namespace text_entry {
 constexpr uint64_t IDLE_MS = 20000;
 constexpr uint32_t KEY_ENTER = 0x0d, KEY_ESCAPE = 0x1b;
 
-inline bool ieq_contains(std::string_view hay, std::string_view needle)
+inline bool ieq_contains_word(std::string_view hay, std::string_view needle)
 {
+    auto low = [](char c) { return c >= 'A' && c <= 'Z' ? char(c + 32) : c; };
     if (needle.size() > hay.size())
         return false;
     for (size_t i = 0; i + needle.size() <= hay.size(); i++) {
+        if (i > 0 && hay[i - 1] != '_')
+            continue;
+        size_t end = i + needle.size();
+        if (end < hay.size() && hay[end] != '_')
+            continue;
         size_t j = 0;
-        for (; j < needle.size(); j++) {
-            char c = hay[i + j];
-            if (c >= 'A' && c <= 'Z')
-                c = char(c + 32);
-            if (c != needle[j])
-                break;
-        }
+        while (j < needle.size() && low(hay[i + j]) == needle[j])
+            j++;
         if (j == needle.size())
             return true;
     }
@@ -31,7 +32,7 @@ inline bool ieq_contains(std::string_view hay, std::string_view needle)
 inline bool is_entry_message(std::string_view id)
 {
     for (std::string_view key : {"entry", "text_input", "name_input", "rename", "keyboard", "enter_name", "search"})
-        if (ieq_contains(id, key))
+        if (ieq_contains_word(id, key))
             return true;
     return false;
 }

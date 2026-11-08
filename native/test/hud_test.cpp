@@ -1090,6 +1090,9 @@ static void test_text_entry()
     using namespace hud::input;
     CHECK(text_entry::is_entry_message("team_name_entry") && text_entry::is_entry_message("Profile_Name_Entry"),
           "a name entry popup counts as a text box");
+    CHECK(!text_entry::is_entry_message("rnd_research_complete") && !text_entry::is_entry_message("career_entrylist_popup") &&
+              text_entry::is_entry_message("driver_search") && text_entry::is_entry_message("lobby_text_input"),
+          "text entry names match whole words between underscores, not inside other words");
     CHECK(!text_entry::is_entry_message("beta_motd") && !text_entry::is_entry_message("swofty_message"),
           "an ordinary popup is not a text box");
     text_entry::State st;
