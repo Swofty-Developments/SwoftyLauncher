@@ -43,10 +43,10 @@ PolyphoniX Native is a shader: the PolyphoniX Native look from Assetto Corsa's C
 
 - It applies to the 3D picture before the HUD draws, so the HUD and the menus keep their own colours.
 - **B** turns it on and off in game, with a `SHADERS ON` / `SHADERS OFF` toast. **On/off key** picks another key, or **None**.
-
-Keys do not fire while you type in a text box in the game, such as naming your team.
 - Every slider changes the picture straight away under **ADDON SETTINGS** in game.
 - It needs Swofty Launcher 1.7.12 or later.
+
+Keys do not fire while you type in a text box in the game, such as naming your team.
 
 | Setting | Id | Default | Does |
 |---|---|---|---|
