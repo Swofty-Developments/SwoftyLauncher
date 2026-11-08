@@ -7,6 +7,7 @@
 // the flow thread, a car without a system, and cars::live::cars/get/set/scale/is_ai through the table.
 // run_car_live_test.sh builds and runs it.
 #include "../../src/core/hooks/car_live.hpp"
+#include "../../src/core/hooks/ea_fuel_binding.hpp"
 
 #include <swofty/systems/cars.hpp>
 
@@ -548,7 +549,7 @@ static void v2_refit()
 alignas(16) static uint8_t ecu[CARS][0x170];
 alignas(16) static uint8_t avail_mem[0x400];
 
-static void v3_fuel()
+static void v3_fuel(bool fuel_only = false)
 {
     build_world();
     for (int i = 0; i < CARS; i++) {
@@ -560,6 +561,7 @@ static void v3_fuel()
     static std::vector<std::pair<uintptr_t, int>> calls;
     calls.clear();
     cl::Env e = make_env();
+    e.fuel_only = fuel_only;
     e.fuel_set_mode = [](uintptr_t ecu_at, int mode) { calls.emplace_back(ecu_at, mode); };
     e.mode_avail = [] { return reinterpret_cast<uintptr_t>(avail_mem); };
     Ops::bind(std::move(e));
@@ -707,6 +709,77 @@ static void replay_hold()
     expect(!Ops::resume_due(false), "and only once");
 }
 
+static void fuel_only_capability()
+{
+    build_world();
+    cl::Env e = make_env();
+    e.fuel_only = true;
+    Ops::bind(std::move(e));
+    float value = 0;
+    expect(Ops::op_get(0, nullptr, SWOFTY_CAR_STEERING_LOCK, &value) == SWOFTY_ASSET_UNAVAILABLE,
+           "fuel-only builds cannot read unrelated car fields");
+    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_DIFF_ON_THROTTLE, 0.5f) == SWOFTY_ASSET_UNAVAILABLE,
+           "fuel-only builds cannot write unrelated car fields");
+    expect(Ops::op_layer("test", SWOFTY_CAR_ALL, SWOFTY_CAR_ENGINE_POWER_SCALE, SWOFTY_CAR_OP_SET, 1.0f, 0, nullptr) == SWOFTY_ASSET_UNAVAILABLE,
+           "fuel-only builds cannot register unrelated layers");
+    expect(Ops::op_refit_tyres(0, "dry") == SWOFTY_ASSET_UNAVAILABLE,
+           "fuel-only builds cannot refit tyres");
+    expect(Ops::op_layer("test", SWOFTY_CAR_ALL, SWOFTY_CAR_FUEL_BASE + 2, SWOFTY_CAR_OP_SET, 1.05f, 0, nullptr) == SWOFTY_ASSET_OK,
+           "fuel-only builds accept a fuel layer");
+}
+
+static void ea_fuel_binding_candidate()
+{
+    using swofty_core::hooks::ea_fuel_binding::rip_target;
+    const uint8_t forward[] = {0x48, 0x8b, 0x3d, 0x55, 0xbf, 0x91, 0x02};
+    const uint8_t backward[] = {0x48, 0x8b, 0x3d, 0xf0, 0xff, 0xff, 0xff};
+    const uint8_t wrong[] = {0x48, 0x8b, 0x05, 0x55, 0xbf, 0x91, 0x02};
+    expect(rip_target(0x143888a0cull, forward, sizeof forward) == 0x1461a4968ull,
+           "EA candidate resolves the RIP-relative global seen in the live game");
+    expect(rip_target(0x2000, backward, sizeof backward) == 0x1ff7,
+           "EA candidate sign-extends a negative displacement");
+    expect(!rip_target(0x2000, wrong, sizeof wrong) && !rip_target(0x2000, forward, 6),
+           "EA candidate refuses unexpected or truncated instructions");
+}
+
+static void ea_late_fuel_car()
+{
+    build_world();
+    attach(car_mem[0], cl::FUEL_ECU, ecu[0]);
+    attach(car_mem[1], cl::FUEL_ECU, ecu[1]);
+    for (int c = 0; c < 2; ++c) {
+        for (int k = 0; k < 16; ++k)
+            put_obf(ecu[c], 0x28 + 0x10 * k, 1.0f, 0x7700u + k + c);
+        at<int32_t>(ecu[c], cl::FUEL_ECU_MODE) = 1;
+    }
+    auto e = make_env();
+    e.fuel_only = true;
+    e.fuel_set_mode = [](uintptr_t, int) {};
+    Ops::bind(std::move(e));
+    uintptr_t original = table[0];
+    table[0] = 0; // This car has not appeared when the addon registers layers.
+    uint32_t token = 0;
+    expect(Ops::op_layer("late", SWOFTY_CAR_ALL, SWOFTY_CAR_FUEL_BASE + 2,
+                         SWOFTY_CAR_OP_SET, 1.05f, 0, &token) == SWOFTY_ASSET_OK,
+           "EA fuel layer registers while a car is still loading");
+    table[0] = original;
+    Ops::apply_all();
+    float value = 0;
+    expect(Ops::op_get(0, nullptr, SWOFTY_CAR_FUEL_BASE + 2, &value) == SWOFTY_ASSET_OK &&
+               std::fabs(value - 1.05f) < 1e-6f,
+           "EA retry applies a fuel layer to a car that appeared later");
+    // A new car occupies slot 0 and already has the same value. Its base must
+    // not be mistaken for the previous car's base on layer removal.
+    put_obf(ecu[1], 0x48, 1.05f, 0x7703u);
+    car_mem[1][cl::CAR_VEHICLE_ID] = 0;
+    table[0] = reinterpret_cast<uintptr_t>(car_mem[1]);
+    Ops::apply_all();
+    Ops::op_unlayer(token);
+    expect(Ops::op_get(0, nullptr, SWOFTY_CAR_FUEL_BASE + 2, &value) == SWOFTY_ASSET_OK &&
+               std::fabs(value - 1.05f) < 1e-6f,
+           "EA car replacement does not restore the prior car's baseline");
+}
+
 int main()
 {
     core_ops();
@@ -720,8 +793,12 @@ int main()
     v2_gating();
     v2_refit();
     v3_fuel();
+    v3_fuel(true);
     replay_frames();
     replay_hold();
+    fuel_only_capability();
+    ea_fuel_binding_candidate();
+    ea_late_fuel_car();
     if (fails) {
         printf("car_live_test: %d failure(s)\n", fails);
         return 1;
