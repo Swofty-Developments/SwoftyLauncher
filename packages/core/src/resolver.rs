@@ -122,7 +122,7 @@ pub fn resolve(profile: &Profile, installed: &BTreeMap<String, AddonManifest>) -
         .filter(|p| p.kind == crate::order::Kind::Below)
     {
         warnings.push(format!(
-            "{}: {}; the build loads it first anyway. Order for me on the Addons page puts it there in the list",
+            "{}: {}; the build loads it first anyway. Fix load order on the Addons page puts it there in the list",
             name(&p.addon),
             p.line(&name)
         ));

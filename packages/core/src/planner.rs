@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use std::collections::{BTreeMap, BTreeSet, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
@@ -920,6 +920,10 @@ impl<'a> Planner<'a> {
         late: bool,
     ) -> (Vec<(usize, swofty_addon::Error)>, Vec<Added>) {
         let before = owned::counts(db);
+        let guarded = match late {
+            true => self.later_records(db, origin),
+            false => Vec::new(),
+        };
         let mut ours = DbReport::default();
         let lists = self.lists.as_ref().filter(|l| l.touched(ops));
         let was = lists.map(|l| l.before(db));
@@ -983,26 +987,30 @@ impl<'a> Planner<'a> {
                 self.kept(Target::Record(key), &keeper, origin);
             }
         }
-        let rank = |p: &Self, o: &Origin| p.ranks.iter().position(|r| r == o);
         for key in replaced {
-            let target = Target::Record(key);
-            let ahead: Vec<Origin> = match late {
-                true => self
-                    .writers
-                    .get(&target)
-                    .into_iter()
-                    .flatten()
-                    .filter(|w| rank(self, w) > rank(self, origin))
-                    .cloned()
-                    .collect(),
-                false => Vec::new(),
-            };
-            self.write(target.clone(), origin, true);
-            for w in ahead {
-                self.kept(target.clone(), origin, &w);
-            }
+            self.write(Target::Record(key), origin, true);
         }
+        restore_later_records(db, guarded);
         (failed, owned::added(db, &origin.addon, &before))
+    }
+
+    fn later_records(&self, db: &Gvdb, origin: &Origin) -> Vec<(usize, swofty_formats::gvdb::Record)> {
+        let rank = |o: &Origin| self.ranks.iter().position(|r| r == o);
+        let mine = rank(origin);
+        let keys: HashSet<u64> = self
+            .writers
+            .iter()
+            .filter_map(|(t, ws)| match t {
+                Target::Record(k) if ws.iter().any(|w| rank(w) > mine) => Some(*k),
+                _ => None,
+            })
+            .collect();
+        db.records
+            .iter()
+            .enumerate()
+            .filter(|(_, r)| keys.contains(&r.key))
+            .map(|(i, r)| (i, r.clone()))
+            .collect()
     }
 
     /// Gives the rows `add-row` gives an id of its own the ids `ids` keeps; see [`Planner::take_row_ids`].
@@ -1101,6 +1109,19 @@ pub fn waiting_lines(waiting: &[Op], features: &Features) -> Vec<String> {
             false => format!("{origin}: {n} {kind} op(s) wait for {kind} support in swofty_core"),
         })
         .collect()
+}
+
+fn restore_later_records(db: &mut Gvdb, guarded: Vec<(usize, swofty_formats::gvdb::Record)>) {
+    if guarded.is_empty() {
+        return;
+    }
+    let at: HashMap<u64, usize> = db.records.iter().enumerate().map(|(i, r)| (r.key, i)).collect();
+    for (was, record) in guarded {
+        match at.get(&record.key) {
+            Some(&i) => db.records[i] = record,
+            None => db.records.insert(was.min(db.records.len()), record),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -1393,7 +1414,7 @@ mod tests {
         let mut db = lists();
         p.apply_db(&mut db).unwrap();
         assert_eq!(db.get_text("t.list_1._metadata_").as_deref(), Some("cs_f1_2016"));
-        assert_eq!(db.get_text("t.list_1.name").as_deref(), Some("edited"));
+        assert_eq!(db.get_text("t.list_1.name").as_deref(), Some("cs"));
         assert_eq!(db.get_text("t.list_1.colour").as_deref(), Some("late"));
         assert_eq!(db.get_text("t.list_0.name").as_deref(), Some("cs"));
         assert!(p.take_skipped().is_empty());
@@ -1416,12 +1437,49 @@ mod tests {
         );
         assert_eq!(
             winner(&planned, "t.list_1.name"),
-            ("simplified (grid-editor)".to_owned(), vec!["cs".to_owned()])
+            ("cs".to_owned(), vec!["simplified (grid-editor)".to_owned()])
         );
         assert_eq!(
             winner(&planned, "t.list_1.colour"),
             ("late".to_owned(), vec!["simplified (grid-editor)".to_owned()])
         );
+    }
+
+    #[test]
+    fn an_op_that_waits_never_overwrites_what_a_later_addon_wrote() {
+        let features = Features::default();
+        let opt_in = BTreeSet::new();
+        let mut p = Planner::new(&features, &opt_in);
+        list_fields(&mut p, "cs");
+        p.push(op("early", &set("cs_f1_2016", "name", "early")));
+        p.push(op("early", &set("cs_f1_2016", "colour", "early")));
+        p.push(op("cs", &add("cs_f1_2016")));
+        p.push(op("cs", &set("cs_f1_2016", "name", "cs")));
+        let mut db = lists();
+        p.apply_db(&mut db).unwrap();
+        assert_eq!(db.get_text("t.list_1.name").as_deref(), Some("cs"));
+        assert_eq!(db.get_text("t.list_1.colour").as_deref(), Some("early"));
+        let key = Target::Record(swofty_formats::hash::fnv1a64("t.list_1.name"));
+        let planned = p.finish();
+        let c = planned.conflicts.iter().find(|c| c.target == key).unwrap();
+        assert_eq!(c.winner.to_string(), "cs");
+        assert!(c.overridden.iter().any(|o| o.addon == "early"));
+    }
+
+    #[test]
+    fn a_waiting_op_loses_every_record_a_later_addon_wrote_and_keeps_the_rest() {
+        let features = Features::default();
+        let opt_in = BTreeSet::new();
+        let mut p = Planner::new(&features, &opt_in);
+        list_fields(&mut p, "cs");
+        p.push(op("early", &set("cs_f1_2016", "name", "early")));
+        p.push(op("early", &set("f1", "name", "early")));
+        p.push(op("cs", &add("cs_f1_2016")));
+        p.push(op("cs", &set("f1", "name", "cs")));
+        let mut db = lists();
+        p.apply_db(&mut db).unwrap();
+        assert_eq!(db.get_text("t.list_0.name").as_deref(), Some("cs"));
+        assert_eq!(db.get_text("t.list_1.name").as_deref(), Some("early"));
     }
 
     #[test]

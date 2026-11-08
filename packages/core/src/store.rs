@@ -1205,6 +1205,33 @@ impl Store {
         Ok(out)
     }
 
+    /// Writes a load-order fix: the profile's new order and the folders its
+    /// ejected addons leave, together. A folders failure puts the profile back.
+    pub fn apply_fix(
+        &self,
+        name: &str,
+        plan: &crate::order::FixPlan,
+        default_place: &dyn Fn(&str) -> Option<crate::folders::Key>,
+    ) -> Result<()> {
+        let _write = profile_write();
+        let saved = self.profile(name)?;
+        let mut fixed = saved.clone();
+        crate::folders::reorder(&mut fixed, &plan.order, &|_| false);
+        self.save_profile(&fixed)?;
+        if plan.ejected.is_empty() {
+            return Ok(());
+        }
+        let mut folders = self.folders();
+        for (id, _) in &plan.ejected {
+            folders.set_place(id, None, default_place(id).as_ref());
+        }
+        if let Err(e) = self.save_folders(&folders) {
+            self.save_profile(&saved)?;
+            return Err(e);
+        }
+        Ok(())
+    }
+
     pub fn save_profile(&self, p: &Profile) -> Result<()> {
         if p.is_vanilla() {
             return Err(Error::Other(
@@ -1390,6 +1417,40 @@ mod tests {
         std::fs::remove_dir_all(&d).ok();
         std::fs::create_dir_all(&d).unwrap();
         d
+    }
+
+    #[test]
+    fn apply_fix_writes_the_order_and_the_folders_together() {
+        use crate::folders::Key;
+        let root = tmp("apply-fix");
+        let store = Store::new(&root);
+        let mut p = store.profile(DEFAULT_PROFILE).unwrap();
+        for id in ["t.a", "t.c", "t.b"] {
+            p.set_enabled(id, true).unwrap();
+        }
+        store.save_profile(&p).unwrap();
+        let plan = crate::order::FixPlan {
+            order: [CORE_ID, "t.a", "t.b", "t.c"].map(str::to_owned).to_vec(),
+            ejected: vec![("t.c".to_owned(), Key::Own("f".into()))],
+            moved: 2,
+        };
+        let mut f = crate::folders::Folders::default();
+        f.placed.insert("t.c".into(), Key::Own("f".into()).text());
+        store.save_folders(&f).unwrap();
+        let default = Key::Category(swofty_addon::manifest::Category::Seasons);
+        store
+            .apply_fix(DEFAULT_PROFILE, &plan, &|_| Some(default.clone()))
+            .unwrap();
+        let ids: Vec<String> = store
+            .profile(DEFAULT_PROFILE)
+            .unwrap()
+            .addons
+            .into_iter()
+            .map(|a| a.id)
+            .collect();
+        assert_eq!(ids, plan.order);
+        assert_eq!(store.folders().place("t.c", false, None), None);
+        std::fs::remove_dir_all(&root).ok();
     }
 
     #[test]

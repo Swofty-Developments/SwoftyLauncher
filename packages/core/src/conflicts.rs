@@ -64,6 +64,16 @@ pub struct Pair {
     pub items: Vec<String>,
 }
 
+const RENUMBERED: &str = ".stat_id";
+
+impl Pair {
+    /// The changes the loser lost, not counting stat ids the build renumbers.
+    pub fn real_items(&self) -> usize {
+        let renumbered = self.items.iter().filter(|i| i.ends_with(RENUMBERED)).count();
+        self.database.saturating_sub(renumbered) + self.strings + self.files + self.resources
+    }
+}
+
 /// What one addon writes in a build.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct Changes {
