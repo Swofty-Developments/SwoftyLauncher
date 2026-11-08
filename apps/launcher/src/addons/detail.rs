@@ -104,7 +104,7 @@ impl Shell {
             Some(self.options_panel(man, p, cx).into_any_element())
         };
         let conflicts = self.conflicts_block(id, p, cx).into_any_element();
-        let flag = self.problem_box(id, 0., "detail", p, cx);
+        let flag = self.problem_list(id, p, cx);
         let body = v_flex()
             .gap(px(18.))
             .when(!inline, |d| d.child(head))

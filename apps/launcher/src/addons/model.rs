@@ -89,7 +89,6 @@ pub(super) enum AddonListItem {
         position: Option<usize>,
         at: usize,
         nested: Option<(Key, usize)>,
-        flagged: usize,
     },
     Detail(String),
     End,
@@ -120,10 +119,9 @@ pub(crate) struct AddonsPage {
     /// conflicts with the addons each is about.
     pub(super) status: std::collections::BTreeMap<String, Vec<String>>,
     pub(super) registry_conflicts: Vec<(Vec<String>, swofty_core::stdlib::reports::Conflict)>,
-    pub(super) problems: Vec<order::Problem>,
-    pub(super) problems_key: Option<(Instant, u64)>,
+    pub(super) diagnosis: order::Diagnosis,
+    pub(super) problems_key: Option<(Instant, u64, u64)>,
     pub(super) careers: Vec<swofty_core::stdlib::careers::Career>,
-    pub(super) cycle: Option<String>,
     pub(super) _search: Subscription,
 }
 
@@ -160,10 +158,9 @@ impl AddonsPage {
             drop: None,
             status: Default::default(),
             registry_conflicts: Vec::new(),
-            problems: Vec::new(),
+            diagnosis: order::Diagnosis::empty(),
             problems_key: None,
             careers: Vec::new(),
-            cycle: None,
             _search: changed,
         }
     }

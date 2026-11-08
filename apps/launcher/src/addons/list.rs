@@ -165,7 +165,6 @@ impl Shell {
                     position: positions.get(id).copied(),
                     at,
                     nested,
-                    flagged: self.problems_for(id).len(),
                 });
                 if !split && self.open_addon.as_deref() == Some(id) {
                     children.push(AddonListItem::Detail(id.to_owned()));

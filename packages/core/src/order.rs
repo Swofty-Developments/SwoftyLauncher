@@ -281,7 +281,7 @@ pub enum FixError {
 }
 
 impl FixError {
-    pub fn cycle(&self) -> &[String] {
+    pub fn members(&self) -> &[String] {
         match self {
             Self::Cycle(ids) => ids,
         }
@@ -289,11 +289,11 @@ impl FixError {
 
     /// The addon to turn off to break the cycle: the one that loads last.
     pub fn turn_off(&self) -> Option<&str> {
-        self.cycle().last().map(String::as_str)
+        self.members().last().map(String::as_str)
     }
 
     pub fn line(&self, name: &dyn Fn(&str) -> String) -> String {
-        let names: Vec<String> = self.cycle().iter().map(|id| name(id)).collect();
+        let names: Vec<String> = self.members().iter().map(|id| name(id)).collect();
         format!(
             "These addons need each other above themselves, so no order works: {}. Turn one of them off.",
             names.join(", ")
@@ -840,7 +840,7 @@ mod tests {
         ]);
         let p = profile(&["x.a", "x.b", "x.c"]);
         let err = plan_fix(&p, &all, &[], &is_pinned, &no_place).unwrap_err();
-        assert_eq!(err.cycle(), ["x.a", "x.b"]);
+        assert_eq!(err.members(), ["x.a", "x.b"]);
         assert_eq!(err.turn_off(), Some("x.b"));
         let text = err.to_string();
         assert!(

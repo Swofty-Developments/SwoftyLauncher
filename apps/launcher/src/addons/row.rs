@@ -135,7 +135,7 @@ impl Shell {
                     .flex_1()
                     .min_w_0()
                     .gap(px(2.))
-                    .child(row_title(m, off, p))
+                    .child(row_title(m, off, self.status_icon(&id, p), p))
                     .child(self.row_tags(m, p)),
             )
             .child(self.row_pills(m, p))
@@ -164,10 +164,7 @@ impl Shell {
             }
             false => row,
         };
-        match self.problem_box(&id, if nested { NESTED } else { 0. }, "row", p, cx) {
-            Some(flag) => v_flex().child(row).child(flag).into_any_element(),
-            None => row.into_any_element(),
-        }
+        row.into_any_element()
     }
 }
 
@@ -315,8 +312,7 @@ impl Shell {
     fn row_pills(&self, m: &AddonItem, p: Palette) -> Div {
         let id = m.manifest.id.clone();
         let pairs = self.live_pairs(m);
-        let lost = pairs.iter().filter(|pr| pr.loser == id).count();
-        let won = pairs.len() - lost;
+        let overlaps = pairs.iter().filter(|pr| pr.real_items() > 0).count();
         let kept = self.stock_removals(m);
         h_flex()
             .flex_shrink_0()
@@ -374,36 +370,21 @@ impl Shell {
                     .tooltip(move |window, cx| Tooltip::new(stock_removals_text(kept)).build(window, cx)),
                 )
             })
-            .when(lost > 0, |d| {
+            .when(overlaps > 0, |d| {
                 d.child(
                     pill(
-                        IconName::TriangleAlert,
-                        trf!("Loses to {lost}", lost = lost),
-                        p.warning,
+                        IconName::Layers,
+                        trf!("Overlaps {count}", count = overlaps),
+                        p.text_muted,
                     )
-                    .id(SharedString::from(format!("loses-{id}")))
+                    .id(SharedString::from(format!("overlaps-{id}")))
                     .tooltip(move |window, cx| {
                         Tooltip::new(trf!(
-                            "{amount} lower in the load order {value} some of what this addon changes",
-                            amount = trn(lost, "{count} addon", "{count} addons"),
-                            value = if lost == 1 { "replaces" } else { "replace" }
+                            "{amount} also change some of this. The lower one in the list wins. Open the row for details.",
+                            amount = trn(overlaps, "{count} addon", "{count} addons")
                         ))
                         .build(window, cx)
                     }),
-                )
-            })
-            .when(lost == 0 && won > 0, |d| {
-                d.child(
-                    pill(IconName::Layers, trf!("Wins over {won}", won = won), p.text_muted)
-                        .id(SharedString::from(format!("wins-{id}")))
-                        .tooltip(move |window, cx| {
-                            Tooltip::new(trf!(
-                                "Replaces some of what {amount} higher in the load order {value}",
-                                amount = trn(won, "{count} addon", "{count} addons"),
-                                value = if won == 1 { "changes" } else { "change" }
-                            ))
-                            .build(window, cx)
-                        }),
                 )
             })
     }
@@ -413,11 +394,12 @@ fn accent_bar(color: Hsla) -> Div {
     div().absolute().left_0().top_0().bottom_0().w(px(3.)).bg(color)
 }
 
-fn row_title(m: &AddonItem, off: bool, p: Palette) -> Div {
+fn row_title(m: &AddonItem, off: bool, flag: Option<AnyElement>, p: Palette) -> Div {
     let man = &m.manifest;
     h_flex()
         .gap(px(8.))
         .items_baseline()
+        .children(flag)
         .child(
             div()
                 .min_w_0()

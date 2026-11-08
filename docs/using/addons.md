@@ -70,30 +70,30 @@ The list is the load order, top to bottom, and the number on a row is its place 
 
 When the launcher opens a profile whose addons aren't grouped by folder, it moves each folder's addons up to the first of them and keeps their order. That can change which addon wins between two in different folders.
 
-After a conflict check, a row that is on shows **Loses to** with the number of addons lower in the list that replace some of its changes, or **Wins over** with the number it replaces. The badges go away when an addon is turned on, turned off or moved, until the next check.
+After a conflict check, a row that is on shows a quiet **Overlaps** badge with the number of addons that also change some of what it changes. The lower one in the list wins, whichever of them an addon's own rows say. An overlap is not a problem, so nothing asks you to fix it. The badges go away when an addon is turned on, turned off or moved, until the next check.
 
-An addon loads after every addon it requires, whatever their places in the list. The Addons page shows a box under each row that has a problem, and a banner at the top counts them. Red boxes are problems, amber boxes are warnings:
+An addon loads after every addon it requires, whatever their places in the list. A row that has a problem shows a warning triangle by its name. Hover it for what is wrong, or select the row to open its panel, which lists the problem with a button where one helps:
 
 ```
-Classic Career         Needs Classic Seasons (shared) above it     [Move Classic Seasons (shared) above] [Order for me]
-Progressive Career     Needs F1 2019, which is off                 [Turn F1 2019 on]
+Classic Career         Needs F1 2019, which is off                 [Turn F1 2019 on]
 Classic Career         Needs F1 2020, which isn't installed        [Install F1 2020]
 More Driver Models     Changes rows that Classic Seasons adds, so it needs Classic Seasons above it
 F1 2012 Season         F1 2012 has more teams than this track has garages (with Pedro's Mugello)
 ```
 
-- **Needs X above it** is a required addon, or one the addon loads after, listed below it. **Move X above** puts X directly above the row. **Order for me** reorders the whole profile with the smallest change that puts every addon below what it needs, and keeps the rest of your order. If addons need each other above themselves, the banner names them and **Order for me** is not offered.
+- When addons load below something they need, a bar at the top of the page says how many, with one large **Fix load order** button. It reorders the profile with the smallest change that puts every addon below what it needs, and keeps the rest of your order. If a folder would pull an addon back above what it needs, the addon leaves that folder and a message names it. The page checks the new order afterwards and checks conflicts again, so you see the result.
+- If addons need each other above themselves, the bar is red, names them and has a **Turn off X** button.
 - **Needs X, which is off** and **Needs X, which isn't installed** stop Play. **Turn X on** and **Install X** fix them. A version outside the required range says which version is installed and opens the Addon Browser.
 - **Can't be on with X** is a declared conflict. **Turn X off** fixes it.
-- **Changes rows that X adds** comes from the profile's last build: the addon's database changes waited for rows X adds. Check conflicts after moving addons to see it clear.
-- Addons in Built In, such as Simplified for Swofty, don't move, so they get no **Needs X above it** or **Changes rows that X adds** box and **Order for me** leaves them in place. The build still loads them after every addon they require or load after.
+- **Changes rows that X adds** comes from the profile's last build: the addon's database changes waited for rows X adds. **Fix load order** puts it below X.
+- Addons in Built In, such as Simplified for Swofty, don't move and never show an order problem. **Fix load order** leaves them in place, and the addons below them win where they overlap. The build still loads them after every addon they require or load after.
 - **Your career K needs X, which is off** shows on X's row when a saved career lists X among the addons it needs. It also shows when X is not installed or outside the range the career needs.
-- An amber **loads below it and replaces N of its changes** is a conflict from the last check. **Move X above** makes the row win instead.
-- An amber clash is a known bad pairing, such as F1 2012 Season with Mugello. The list is in `packages/core/src/order_clashes.json`.
+- A clash is a known bad pairing, such as F1 2012 Season with Mugello. The list is in `packages/core/src/order_clashes.json`.
+- Problems that **Fix load order** can't help, such as a missing addon, show as a count by the page title: **2 addons need attention**.
 
 The Play log lists a required addon listed below its dependent as a warning. The build loads it first anyway.
 
-The panel of an addon shows the same box.
+The panel of an addon lists the same problems.
 
 A row whose addon asks to remove records the game's database ships with shows a badge such as **12 removals skipped**. The build leaves those records in place, and the panel's **Conflicts** section says so. See [Removing stock records](/reference/ops/database#removing-stock-records).
 

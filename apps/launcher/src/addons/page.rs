@@ -166,7 +166,7 @@ impl Shell {
     pub(crate) fn addons_page(&mut self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         self.sync_addons();
         self.refresh_problems();
-        let flagged = self.problem_banner(p, cx);
+        let flagged = self.fix_bar(p, cx);
         let mut query = self.addons.search.read(cx).value().trim().to_lowercase();
         let highlight = self.sync_highlight(&mut query, cx);
         let subtitle = self.addons_subtitle();
@@ -397,12 +397,24 @@ impl Shell {
             )
         } else {
             let on = self.library.listed().filter(|m| self.addon_on(m)).count();
-            trf!(
+            let line = trf!(
                 "{installed} · {on} on in {name}",
                 installed = installed,
                 on = on,
                 name = self.library.profile.name
-            )
+            );
+            match self.attention() {
+                0 => line,
+                n => trf!(
+                    "{line} · {amount}",
+                    line = line,
+                    amount = trn(
+                        n,
+                        "{count} addon needs attention",
+                        "{count} addons need attention"
+                    )
+                ),
+            }
         }
     }
 

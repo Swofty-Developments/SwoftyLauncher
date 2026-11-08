@@ -2,12 +2,16 @@ use crate::pages::GUTTER;
 use crate::scale::px;
 use crate::shell::{Page, Shell};
 use crate::theme::Palette;
+use crate::ui::tokens::Tone;
 use gpui_kit::assets::IconName;
-use gpui_kit::component::button::Button;
+use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::notification::Notification;
+use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{Icon, Sizable, WindowExt, h_flex, v_flex};
+use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::collections::HashSet;
+use std::hash::{Hash, Hasher};
 use swofty_core::order;
 use swofty_i18n::{tr, trf, trn};
 
@@ -24,18 +28,21 @@ impl Shell {
 
     pub(super) fn refresh_problems(&mut self) {
         let built = self.addons.report.as_ref().map_or(0, |r| r.built_at.to_bits());
-        let key = (self.library.loaded, built);
+        let mut hasher = std::collections::hash_map::DefaultHasher::new();
+        self.library.profile.enabled().for_each(|id| id.hash(&mut hasher));
+        let key = (self.library.loaded, built, hasher.finish());
         if self.addons.problems_key == Some(key) {
             return;
         }
         self.addons.problems_key = Some(key);
+        self.addons.diagnosis = self.diagnose_now();
+    }
+
+    fn diagnose_now(&mut self) -> order::Diagnosis {
         if self.vanilla() {
-            self.addons.problems.clear();
-            self.addons.cycle = None;
-            return;
+            return order::Diagnosis::empty();
         }
         let installed = self.installed_manifests();
-        let profile = &self.library.profile;
         self.addons.careers =
             swofty_core::stdlib::careers::read(&swofty_core::stdlib::careers::data_path(&self.store.root));
         let tracks: HashSet<&str> = self
@@ -47,25 +54,36 @@ impl Shell {
             .collect();
         let store = &self.store;
         let pinned = |id: &str| store.is_builtin(id) || order::is_pinned(id);
-        let mut found = order::problems(profile, &installed, &pinned);
-        if let Some(r) = &self.addons.report {
-            found.extend(order::from_report(profile, r, &pinned));
-        }
-        found.extend(order::careers(profile, &installed, &self.addons.careers));
-        found.extend(order::clashes(profile, &installed, &|id| tracks.contains(id)));
-        let mut trial = profile.clone();
-        self.addons.cycle = order::fix(&mut trial, &installed, &found, &pinned)
-            .err()
-            .map(|e| e.to_string());
-        self.addons.problems = found;
+        order::diagnose(
+            &self.library.profile,
+            &installed,
+            self.addons.report.as_ref(),
+            &self.addons.careers,
+            &|id| tracks.contains(id),
+            &pinned,
+            &|id| self.library.place(id),
+        )
     }
 
     pub(super) fn problems_for(&self, id: &str) -> Vec<&order::Problem> {
-        self.addons.problems.iter().filter(|p| p.addon == id).collect()
+        self.addons
+            .diagnosis
+            .problems
+            .iter()
+            .filter(|p| p.addon == id)
+            .collect()
     }
 
-    pub(super) fn can_order(&self) -> bool {
-        self.addons.problems.iter().any(order::Problem::is_order)
+    pub(super) fn attention(&self) -> usize {
+        let ids: HashSet<&str> = self
+            .addons
+            .diagnosis
+            .problems
+            .iter()
+            .filter(|p| !p.fixable_by_reorder())
+            .map(|p| p.addon.as_str())
+            .collect();
+        ids.len()
     }
 
     pub(super) fn problem_color(p: Palette, severity: order::Severity) -> Hsla {
@@ -75,36 +93,74 @@ impl Shell {
         }
     }
 
-    pub(super) fn order_for_me(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let installed = self.installed_manifests();
-        let learned = self.addons.problems.clone();
-        let store = self.store.clone();
-        let moved = std::rc::Rc::new(std::cell::Cell::new(true));
-        let seen = moved.clone();
-        self.update_profile(window, cx, move |profile| {
-            let pinned = |id: &str| store.is_builtin(id) || order::is_pinned(id);
-            seen.set(order::fix(profile, &installed, &learned, &pinned)?);
-            Ok(())
-        });
-        if !moved.get() {
+    fn default_place(&self, id: &str) -> Option<swofty_core::folders::Key> {
+        let a = self.library.addons.iter().find(|a| a.manifest.id == id)?;
+        swofty_core::folders::default_place(a.source == crate::library::Source::Builtin, a.category())
+    }
+
+    pub(super) fn fix_load_order(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let order::FixState::Ready(plan, _) = self.addons.diagnosis.fix.clone() else {
+            return;
+        };
+        let profile = self.library.profile.name.clone();
+        if let Err(e) = self
+            .store
+            .apply_fix(&profile, &plan, &|id| self.default_place(id))
+        {
+            crate::app_log::action("fix load order").failed(&e);
             window.push_notification(
-                Notification::info("The order already satisfies every rule it can fix. Nothing moved."),
+                Notification::error(e.to_string()).title(tr("Could not fix the load order")),
                 cx,
             );
+            return;
+        }
+        self.reload(cx);
+        self.refresh_problems();
+        let left: Vec<String> = match &self.addons.diagnosis.fix {
+            order::FixState::Ready(..) => self
+                .addons
+                .diagnosis
+                .problems
+                .iter()
+                .filter(|p| p.fixable_by_reorder())
+                .map(|p| self.addon_name(&p.addon))
+                .collect(),
+            _ => Vec::new(),
+        };
+        if !left.is_empty() {
+            let text = trf!(
+                "The load order still has problems for {names}",
+                names = left.join(", ")
+            );
+            crate::app_log::action("fix load order").failed(&text);
+            window.push_notification(Notification::error(text), cx);
+            return;
+        }
+        window.push_notification(
+            Notification::success(trn(
+                plan.moved,
+                "Reordered {count} addon",
+                "Reordered {count} addons",
+            )),
+            cx,
+        );
+        if !plan.ejected.is_empty() {
+            let names: Vec<String> = plan.ejected.iter().map(|(id, _)| self.addon_name(id)).collect();
+            let text = trn(
+                plan.ejected.len(),
+                "Moved {names} out of its folder so the order holds",
+                "Moved {names} out of their folders so the order holds",
+            )
+            .replace("{names}", &names.join(", "));
+            window.push_notification(Notification::info(text), cx);
+        }
+        if self.addons.report.is_some() {
+            self.check_conflicts(window, cx);
         }
     }
 
-    pub(super) fn move_dependency_above(
-        &mut self,
-        dep: &str,
-        addon: &str,
-        window: &mut Window,
-        cx: &mut Context<Self>,
-    ) {
-        let (dep, addon) = (dep.to_owned(), addon.to_owned());
-        self.update_profile(window, cx, move |profile| {
-            order::move_above(profile, &dep, &addon)
-        });
+    pub(super) fn turn_off_for_cycle(&mut self, id: &str, window: &mut Window, cx: &mut Context<Self>) {
+        self.set_addon_enabled(id, false, window, cx);
     }
 
     pub(super) fn install_missing(&mut self, id: &str, cx: &mut Context<Self>) {
@@ -144,20 +200,7 @@ impl Shell {
                         .into_any_element(),
                 );
             }
-            order::Kind::Below
-            | order::Kind::Waits
-            | order::Kind::Loses {
-                winner_below: true, ..
-            } => {
-                let (dep, at) = (other.clone(), addon.clone());
-                out.push(
-                    button(key("above"), trf!("Move {name} above", name = name(&other)))
-                        .on_click(cx.listener(move |this, _, window, cx| {
-                            this.move_dependency_above(&dep, &at, window, cx)
-                        }))
-                        .into_any_element(),
-                );
-            }
+            order::Kind::Below | order::Kind::Waits => {}
             order::Kind::Version { .. } => {
                 out.push(
                     button(key("update"), tr("Open Addon Browser").to_owned())
@@ -175,7 +218,6 @@ impl Shell {
                         .into_any_element(),
                 );
             }
-            order::Kind::Loses { .. } => {}
             order::Kind::Career { why, .. } => {
                 let id = addon.clone();
                 match &**why {
@@ -202,31 +244,15 @@ impl Shell {
         out
     }
 
-    pub(super) fn problem_box(
-        &self,
-        id: &str,
-        indent: f32,
-        scope: &'static str,
-        p: Palette,
-        cx: &mut Context<Self>,
-    ) -> Option<AnyElement> {
+    pub(super) fn problem_list(&self, id: &str, p: Palette, cx: &mut Context<Self>) -> Option<AnyElement> {
         let found = self.problems_for(id);
         if found.is_empty() {
             return None;
         }
-        let worst = match found.iter().any(|f| f.severity() == order::Severity::Red) {
-            true => order::Severity::Red,
-            false => order::Severity::Amber,
-        };
-        let color = Self::problem_color(p, worst);
         let name = |id: &str| self.addon_name(id);
-        let ordering = found
-            .iter()
-            .any(|f| matches!(f.kind, order::Kind::Below | order::Kind::Waits));
-        let lines: Vec<AnyElement> = found
+        let rows: Vec<AnyElement> = found
             .iter()
             .map(|f| {
-                let line_color = Self::problem_color(p, f.severity());
                 h_flex()
                     .gap(px(8.))
                     .items_start()
@@ -235,7 +261,7 @@ impl Shell {
                         Icon::new(IconName::TriangleAlert)
                             .size(px(14.))
                             .mt(px(2.))
-                            .text_color(line_color),
+                            .text_color(Self::problem_color(p, f.severity())),
                     )
                     .child(
                         div()
@@ -249,135 +275,171 @@ impl Shell {
                         h_flex()
                             .gap(px(6.))
                             .flex_wrap()
-                            .children(self.problem_actions(scope, f, cx)),
+                            .children(self.problem_actions("detail", f, cx)),
                     )
                     .into_any_element()
             })
             .collect();
-        let order_button = (ordering && self.addons.cycle.is_none()).then(|| {
-            Button::new(SharedString::from(format!("order-{scope}-{id}")))
-                .small()
-                .outline()
-                .icon(IconName::ArrowUpDown)
-                .label(tr("Order for me"))
-                .tooltip(tr(
-                    "Reorders the whole profile so every addon loads below what it needs",
-                ))
-                .on_click(cx.listener(|this, _, window, cx| this.order_for_me(window, cx)))
-        });
-        let cycle = ordering.then(|| self.addons.cycle.clone()).flatten();
+        let ordered = found.iter().any(|f| f.fixable_by_reorder());
         Some(
             v_flex()
-                .id(SharedString::from(format!("problems-{scope}-{id}")))
-                .ml(px(indent + 6.))
-                .mr(px(12.))
-                .mb(px(8.))
-                .px(px(10.))
-                .py(px(8.))
                 .gap(px(6.))
-                .rounded(px(6.))
-                .border_1()
-                .border_color(color.opacity(0.7))
-                .bg(color.opacity(0.12))
-                .children(lines)
-                .children(cycle.map(|c| div().text_size(px(12.)).text_color(p.text_muted).child(c)))
-                .children(order_button)
+                .children(rows)
+                .when(ordered, |d| {
+                    d.child(
+                        div()
+                            .text_size(px(12.))
+                            .text_color(p.text_muted)
+                            .child(tr("Fix load order at the top of the page puts it right.")),
+                    )
+                })
                 .into_any_element(),
         )
     }
 
-    pub(super) fn problem_banner(&self, p: Palette, cx: &mut Context<Self>) -> Option<AnyElement> {
-        if self.vanilla() || self.addons.problems.is_empty() {
-            return None;
-        }
-        let all = &self.addons.problems;
-        let red = all
+    pub(super) fn status_icon(&self, id: &str, p: Palette) -> Option<AnyElement> {
+        let name = |id: &str| self.addon_name(id);
+        let lines = status_icon_lines(&self.addons.diagnosis, id, &name)?;
+        let color = self
+            .problems_for(id)
             .iter()
-            .filter(|f| f.severity() == order::Severity::Red)
-            .count();
-        let amber = all.len() - red;
-        let color = Self::problem_color(
-            p,
-            if red > 0 {
-                order::Severity::Red
-            } else {
-                order::Severity::Amber
-            },
-        );
-        let text = match (red, amber) {
-            (r, 0) => trf!(
-                "{amount} to fix before these addons work together",
-                amount = trn(r, "{count} problem", "{count} problems")
+            .map(|f| f.severity())
+            .find(|s| *s == order::Severity::Red)
+            .map_or(p.warning, |_| p.error);
+        let tip = lines.join("\n");
+        Some(
+            div()
+                .id(SharedString::from(format!("problem-{id}")))
+                .flex_shrink_0()
+                .child(Icon::new(IconName::TriangleAlert).size(px(14.)).text_color(color))
+                .tooltip(move |window, cx| Tooltip::new(tip.clone()).build(window, cx))
+                .into_any_element(),
+        )
+    }
+
+    pub(super) fn fix_bar(&self, p: Palette, cx: &mut Context<Self>) -> Option<AnyElement> {
+        let name = |id: &str| self.addon_name(id);
+        let (tone, title, body, button) = match &self.addons.diagnosis.fix {
+            order::FixState::Nothing => return None,
+            order::FixState::Ready(_, count) => (
+                Tone::Warning,
+                trn(
+                    *count,
+                    "{count} addon loads in the wrong order",
+                    "{count} addons load in the wrong order",
+                ),
+                tr("Fix load order moves them below what they need. Nothing else changes.").to_owned(),
+                Button::new("fix-order")
+                    .primary()
+                    .large()
+                    .h(px(46.))
+                    .min_w(px(210.))
+                    .icon(IconName::ArrowUpDown)
+                    .label(trf!("Fix load order ({count})", count = count))
+                    .on_click(cx.listener(|this, _, window, cx| this.fix_load_order(window, cx))),
             ),
-            (0, a) => trf!(
-                "{amount} worth a look",
-                amount = trn(a, "{count} warning", "{count} warnings")
-            ),
-            (r, a) => trf!(
-                "{amount} to fix, and {amount2}",
-                amount = trn(r, "{count} problem", "{count} problems"),
-                amount2 = trn(a, "{count} warning", "{count} warnings")
-            ),
+            order::FixState::Blocked(e) => {
+                let off = e.turn_off()?.to_owned();
+                let label = trf!("Turn off {name}", name = name(&off));
+                (
+                    Tone::Error,
+                    tr("These addons can't all load in a good order").to_owned(),
+                    e.line(&name),
+                    Button::new("fix-order-off")
+                        .danger()
+                        .large()
+                        .h(px(46.))
+                        .min_w(px(210.))
+                        .icon(IconName::PowerOff)
+                        .label(label)
+                        .on_click(
+                            cx.listener(move |this, _, window, cx| this.turn_off_for_cycle(&off, window, cx)),
+                        ),
+                )
+            }
         };
-        let first = all
-            .iter()
-            .find(|f| f.severity() == order::Severity::Red)
-            .or_else(|| all.first())
-            .map(|f| {
-                let name = |id: &str| self.addon_name(id);
-                format!("{}: {}", self.addon_name(&f.addon), f.line(&name))
-            })
-            .unwrap_or_default();
-        let order_button = (self.can_order() && self.addons.cycle.is_none()).then(|| {
-            Button::new("order-banner")
-                .small()
-                .outline()
-                .icon(IconName::ArrowUpDown)
-                .label(tr("Order for me"))
-                .on_click(cx.listener(|this, _, window, cx| this.order_for_me(window, cx)))
-        });
+        let color = tone.color(&p);
         Some(
             h_flex()
                 .mx(px(GUTTER))
                 .mb(px(12.))
-                .px(px(12.))
-                .py(px(8.))
-                .gap(px(10.))
+                .px(px(16.))
+                .py(px(12.))
+                .gap(px(14.))
                 .flex_shrink_0()
                 .items_center()
-                .flex_wrap()
-                .rounded(px(6.))
+                .rounded(px(8.))
                 .border_1()
-                .border_color(color.opacity(0.7))
-                .bg(color.opacity(0.12))
-                .child(Icon::new(IconName::TriangleAlert).size(px(16.)).text_color(color))
+                .border_color(color.opacity(0.6))
+                .bg(color.opacity(0.1))
+                .child(
+                    Icon::new(tone.icon())
+                        .size(px(22.))
+                        .flex_shrink_0()
+                        .text_color(color),
+                )
                 .child(
                     v_flex()
                         .flex_1()
                         .min_w(px(200.))
+                        .gap(px(2.))
                         .child(
                             div()
-                                .text_size(px(13.))
-                                .font_weight(FontWeight::MEDIUM)
+                                .text_size(px(15.))
+                                .font_weight(FontWeight::SEMIBOLD)
                                 .text_color(p.text)
-                                .child(text),
+                                .child(title),
                         )
-                        .child(
-                            div()
-                                .text_size(px(12.))
-                                .text_color(p.text_muted)
-                                .truncate()
-                                .child(first),
-                        )
-                        .children(
-                            self.addons
-                                .cycle
-                                .clone()
-                                .map(|c| div().text_size(px(12.)).text_color(p.text_muted).child(c)),
-                        ),
+                        .child(div().text_size(px(13.)).text_color(p.text_muted).child(body)),
                 )
-                .children(order_button)
+                .child(button)
                 .into_any_element(),
         )
+    }
+}
+
+/// The lines a row's warning triangle shows, or `None` when the addon has no problem.
+pub(super) fn status_icon_lines(
+    diagnosis: &order::Diagnosis,
+    id: &str,
+    name: &dyn Fn(&str) -> String,
+) -> Option<Vec<String>> {
+    let mut lines: Vec<String> = diagnosis
+        .problems
+        .iter()
+        .filter(|p| p.addon == id)
+        .map(|p| p.line(name))
+        .collect();
+    if lines.is_empty() {
+        return None;
+    }
+    lines.push(tr("Click the row for options").to_owned());
+    Some(lines)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::status_icon_lines;
+    use swofty_core::order;
+
+    fn problem(addon: &str, kind: order::Kind) -> order::Problem {
+        order::Problem {
+            addon: addon.into(),
+            other: "dep".into(),
+            kind,
+        }
+    }
+
+    #[test]
+    fn a_row_has_an_icon_only_when_it_has_a_problem() {
+        let diagnosis = order::Diagnosis {
+            problems: vec![problem("a", order::Kind::Below), problem("b", order::Kind::Off)],
+            fix: order::FixState::Nothing,
+        };
+        let name = |id: &str| id.to_owned();
+        let lines = status_icon_lines(&diagnosis, "a", &name).unwrap();
+        assert_eq!(lines[0], "Needs dep above it");
+        assert_eq!(lines.len(), 2);
+        assert!(status_icon_lines(&diagnosis, "c", &name).is_none());
     }
 }
