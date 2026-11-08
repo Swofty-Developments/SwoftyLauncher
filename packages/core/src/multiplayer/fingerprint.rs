@@ -656,14 +656,30 @@ impl Mismatch {
 }
 
 /// The mismatches a room launch will not resolve by itself: with `will_build`, the ones a build with the
-/// host's ids cures (an addon this player's game isn't built with yet, or only different stat ids) are
-/// left out, since starting F1 25 for the room builds it.
-pub fn unresolved_by_launch(mismatches: &[Mismatch], will_build: bool) -> Vec<Mismatch> {
+/// host's ids and settings (`lent`) cures are left out (an addon this player's game isn't built with yet,
+/// only different stat ids, the load order, an option the host's value is lent for, and an addon whose
+/// built operations differ because of such an option), since starting F1 25 for the room builds it.
+pub fn unresolved_by_launch(
+    mismatches: &[Mismatch],
+    will_build: bool,
+    lent: &crate::row_ids::Overrides,
+) -> Vec<Mismatch> {
     mismatches
         .iter()
-        .filter(|m| !(will_build && m.cured_by_build()))
+        .filter(|m| !(will_build && (m.cured_by_build() || lent_cures(m, lent))))
         .cloned()
         .collect()
+}
+
+fn lent_cures(m: &Mismatch, lent: &crate::row_ids::Overrides) -> bool {
+    match &m.kind {
+        MismatchKind::LoadOrder { .. } => !lent.order.is_empty(),
+        MismatchKind::OptionDiffers { addon, option, .. } => {
+            lent.options.get(addon).is_some_and(|o| o.contains_key(option))
+        }
+        MismatchKind::SourceDiffers { id, .. } => lent.options.contains_key(id) && !m.differences.is_empty(),
+        _ => false,
+    }
 }
 
 /// Files named before the rest are counted.
@@ -796,6 +812,78 @@ pub fn row_id_overrides(local: &Fingerprint, host: &Fingerprint) -> crate::row_i
         }
     }
     out
+}
+
+/// What a joiner lends one session's builds to match `host`: the host's stat ids ([`row_id_overrides`]),
+/// and for the addons both have at the same version, the host's load order when it differs and the
+/// host's value of each option that differs.
+pub fn host_overrides(local: &Fingerprint, host: &Fingerprint) -> crate::row_ids::Overrides {
+    let mut out = row_id_overrides(local, host);
+    let mine: BTreeMap<&str, &AddonPrint> = local.addons.iter().map(|a| (a.id.as_str(), a)).collect();
+    let shared: BTreeMap<&str, (&AddonPrint, &AddonPrint)> = host
+        .addons
+        .iter()
+        .filter_map(|h| {
+            let l = mine.get(h.id.as_str())?;
+            let same =
+                l.version == h.version && (l.source == h.source || !matches!(l.source, Source::Builtin(_)));
+            same.then_some((h.id.as_str(), (*l, h)))
+        })
+        .collect();
+    let placed = |pick: fn(&(&AddonPrint, &AddonPrint)) -> Option<usize>| -> Vec<String> {
+        let mut ranked: Vec<(usize, &str)> = shared
+            .iter()
+            .filter(|(_, pair)| pair.0.order.is_some() && pair.1.order.is_some())
+            .filter_map(|(id, pair)| Some((pick(pair)?, *id)))
+            .collect();
+        ranked.sort();
+        ranked.into_iter().map(|(_, id)| id.to_owned()).collect()
+    };
+    let (mine_order, host_order) = (placed(|p| p.0.order), placed(|p| p.1.order));
+    if mine_order != host_order {
+        out.order = host_order;
+    }
+    for (addon, values) in host
+        .options
+        .iter()
+        .filter(|(id, _)| shared.contains_key(id.as_str()))
+    {
+        let ours = local.options.get(addon);
+        for (option, h) in values
+            .iter()
+            .filter(|(o, h)| ours.and_then(|o2| o2.get(*o)) != Some(*h))
+        {
+            out.options
+                .entry(addon.clone())
+                .or_default()
+                .insert(option.clone(), h.clone());
+        }
+    }
+    out
+}
+
+impl Fingerprint {
+    /// This fingerprint as it is once a session's builds use `lent`: the shared addons in the host's load
+    /// order and the host's option values.
+    pub fn lent(&self, lent: &crate::row_ids::Overrides) -> Fingerprint {
+        let mut ranked: Vec<&AddonPrint> = self.addons.iter().filter(|a| a.order.is_some()).collect();
+        ranked.sort_by_key(|a| a.order);
+        let current: Vec<String> = ranked.iter().map(|a| a.id.clone()).collect();
+        let arranged = lent.arranged(&current);
+        let mut addons = self.addons.clone();
+        for a in &mut addons {
+            if let Some(rank) = arranged.iter().position(|id| *id == a.id) {
+                a.order = Some(rank);
+            }
+        }
+        let mut options = self.options.clone();
+        for (addon, values) in &lent.options {
+            if let Some(mine) = options.get_mut(addon) {
+                mine.extend(values.iter().map(|(k, v)| (k.clone(), v.clone())));
+            }
+        }
+        Fingerprint::new(self.game_build.clone(), addons, options, self.dlc)
+    }
 }
 
 /// What `local` must change to match `host`, the game build and DLC first, then addons,
@@ -1493,8 +1581,11 @@ mod tests {
             differences: Vec::new(),
         };
         let all = vec![unbuilt, ids, files.clone(), missing.clone()];
-        assert_eq!(unresolved_by_launch(&all, true), vec![files, missing]);
-        assert_eq!(unresolved_by_launch(&all, false), all);
+        assert_eq!(
+            unresolved_by_launch(&all, true, &Default::default()),
+            vec![files, missing]
+        );
+        assert_eq!(unresolved_by_launch(&all, false, &Default::default()), all);
     }
 
     #[test]
@@ -1903,6 +1994,80 @@ mod tests {
         assert_eq!(
             kinds(&compare(&local, &host(), &[])),
             [("extra_addon".into(), true)]
+        );
+    }
+
+    fn differing_local() -> Fingerprint {
+        let mut local = host();
+        local.addons[0].order = Some(1);
+        local.addons[1].order = Some(0);
+        local.options = options(&[("t.a", "laps", json!(3)), ("t.a", "mode", json!("full"))]);
+        Fingerprint::new(local.game_build.clone(), local.addons, local.options, None)
+    }
+
+    #[test]
+    fn the_hosts_order_and_differing_options_are_lent_for_the_addons_both_have() {
+        let lent = host_overrides(&differing_local(), &host());
+        assert_eq!(lent.order, ["t.a", "t.b"]);
+        assert_eq!(lent.options, options(&[("t.a", "laps", json!(5))]));
+        assert!(host_overrides(&host(), &host()).is_empty());
+    }
+
+    #[test]
+    fn an_addon_at_another_version_or_missing_is_not_lent_anything() {
+        let mut local = differing_local();
+        local.addons[0].version = Version::parse("1.1.0").unwrap();
+        let lent = host_overrides(&local, &host());
+        assert!(!lent.order.contains(&"t.a".to_owned()), "{lent:?}");
+        assert!(lent.options.is_empty(), "{lent:?}");
+        let mut local = differing_local();
+        local.addons.retain(|a| a.id != "t.b");
+        assert!(host_overrides(&local, &host()).order.is_empty());
+    }
+
+    #[test]
+    fn a_fingerprint_built_with_the_lent_settings_is_the_hosts() {
+        let local = differing_local();
+        assert_ne!(local.digest, host().digest);
+        let lent = host_overrides(&local, &host());
+        assert_eq!(local.lent(&lent).digest, host().digest);
+        assert!(compare(&local.lent(&lent), &host(), &[]).is_empty());
+    }
+
+    #[test]
+    fn the_launch_resolves_load_order_and_option_mismatches_but_not_the_rest() {
+        let local = differing_local();
+        let lent = host_overrides(&local, &host());
+        let mut found = compare(&local, &host(), &[]);
+        found.extend(compare(
+            &Fingerprint::new(game(), Vec::new(), BTreeMap::new(), None),
+            &host(),
+            &[],
+        ));
+        let left: Vec<String> = kinds(&unresolved_by_launch(&found, true, &lent))
+            .into_iter()
+            .map(|(k, _)| k)
+            .collect();
+        assert!(left.iter().all(|k| k == "missing_addon"), "{left:?}");
+        assert!(!left.is_empty());
+        assert_eq!(unresolved_by_launch(&found, false, &lent).len(), found.len());
+        let source = Mismatch {
+            kind: MismatchKind::SourceDiffers {
+                id: "t.a".into(),
+                name: "t.a name".into(),
+                version: Version::parse("1.0.0").unwrap(),
+                local: Source::Built("1".repeat(64)),
+                host: Source::Built("2".repeat(64)),
+                registry: None,
+            },
+            fixable: false,
+            differences: vec!["its database operations differ".into()],
+        };
+        assert!(unresolved_by_launch(std::slice::from_ref(&source), true, &lent).is_empty());
+        assert_eq!(
+            unresolved_by_launch(&[source], true, &Default::default()).len(),
+            1,
+            "without a lent option the difference is real"
         );
     }
 

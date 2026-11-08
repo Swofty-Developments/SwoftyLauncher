@@ -1148,10 +1148,15 @@ impl Store {
     }
 
     pub fn session_settings(&self, profile: &str) -> Result<SessionSettings> {
-        let requests = crate::paths::game_folder_view(&self.requests_path(profile));
-        let p = self.profile(profile)?;
+        self.session_settings_of(&self.profile(profile)?)
+    }
+
+    /// The settings of a session of `p`, a profile as the caller has it, such as one a room lends the host's
+    /// load order and options.
+    pub fn session_settings_of(&self, p: &Profile) -> Result<SessionSettings> {
+        let requests = crate::paths::game_folder_view(&self.requests_path(&p.name));
         let installed = self.addons()?;
-        let mut s = SessionSettings::build(&p, &installed, Some(requests))?;
+        let mut s = SessionSettings::build(p, &installed, Some(requests))?;
         // Each addon's folder and track flag, as the launcher's Addons page has them.
         let folders = self.folders();
         for a in &mut s.addons {

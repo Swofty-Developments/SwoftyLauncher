@@ -19,8 +19,8 @@ use serde_json::{Value, json};
 pub const REPLY_TIMEOUT: Duration = Duration::from_secs(10);
 /// Host waits for the player's car category pick and the lobby.
 pub const HOST_TIMEOUT: Duration = Duration::from_secs(150);
-/// Join waits for the host's lobby.
-pub const JOIN_TIMEOUT: Duration = Duration::from_secs(45);
+/// Join waits for the game's own checks and the host's lobby.
+pub const JOIN_TIMEOUT: Duration = Duration::from_secs(150);
 /// `status.json` older than this means core is not running its netplay driver.
 pub const STATUS_STALE: Duration = Duration::from_secs(20);
 

@@ -9,6 +9,7 @@ use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::{Input, InputEvent, InputState};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
 use gpui_kit::component::notification::Notification;
+use gpui_kit::component::spinner::Spinner;
 use gpui_kit::component::switch::Switch;
 use gpui_kit::component::{Disableable, Icon, Sizable, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
@@ -502,7 +503,7 @@ impl Shell {
                     .and_then(|()| ids.write(&file).map_err(|e| e.to_string()))
                 {
                     self.mp_page.launch_seen = ask.seq;
-                    session.launch_failed(&format!("the host's ids couldn't be written ({e})"));
+                    session.launch_failed(&format!("the host's ids and settings couldn't be written ({e})"));
                     return;
                 }
                 Some(file)
@@ -1507,7 +1508,12 @@ impl Shell {
                 h_flex()
                     .gap(px(12.))
                     .items_center()
-                    .child(Icon::new(icon).size(px(22.)).text_color(color))
+                    .map(|d| match icon {
+                        IconName::LoaderCircle => {
+                            d.child(Spinner::new().icon(icon).with_size(px(22.)).color(color))
+                        }
+                        _ => d.child(Icon::new(icon).size(px(22.)).text_color(color)),
+                    })
                     .child(
                         v_flex()
                             .flex_1()
