@@ -622,6 +622,31 @@ static void v3_fuel()
     expect(writes == 1 && at<uint32_t>(avail_mem, cl::MODE_AVAIL_FUEL + 1 * cl::MODE_AVAIL_STRIDE + 8) == 0,
            "only the entry the game relocked is written");
     expect(Ops::op_unlock_fuel_mixes("a", 0) == SWOFTY_ASSET_OK && Ops::unlocked_mask() == 0, "withdrawing the mask stops the writes");
+
+    expect(SWOFTY_CAR_OPS_VERSION >= 4 && Ops::table.version >= 4 && Ops::table.set_fuel_mix == Ops::op_set_fuel_mix,
+           "the op table offers set_fuel_mix from version 4");
+    calls.clear();
+    memset(avail_mem, 0xff, sizeof avail_mem);
+    for (uint32_t m : { 0u, 1u })
+        memset(avail_mem + cl::MODE_AVAIL_FUEL + m * 4, 0, 4);
+    at<int32_t>(ecu[0], cl::FUEL_ECU_MODE) = 0;
+    expect(Ops::op_set_fuel_mix(0, 4) == SWOFTY_ASSET_INVALID && Ops::op_set_fuel_mix(0, 0xffffffffu) == SWOFTY_ASSET_INVALID,
+           "a mode above 3 is invalid");
+    expect(Ops::op_set_fuel_mix(CARS, 1) != SWOFTY_ASSET_OK, "an unknown car is refused");
+    expect(Ops::op_set_fuel_mix(0, 2) == SWOFTY_ASSET_INVALID && calls.empty(), "a mix the MFD does not offer is refused untouched");
+    expect(Ops::op_set_fuel_mix(0, 1) == SWOFTY_ASSET_OK && calls.size() == 1 &&
+               calls[0] == std::make_pair(reinterpret_cast<uintptr_t>(ecu[0]), 1),
+           "an offered mix goes through the game's mode switch");
+    calls.clear();
+    at<int32_t>(ecu[0], cl::FUEL_ECU_MODE) = 1;
+    expect(Ops::op_set_fuel_mix(0, 1) == SWOFTY_ASSET_OK && calls.empty(), "the active mix is not switched again");
+    flow = false;
+    expect(Ops::op_set_fuel_mix(0, 0) == SWOFTY_ASSET_LATE && calls.empty(), "off the flow thread the switch is late");
+    flow = true;
+    cl::Env none = make_env();
+    none.mode_avail = [] { return reinterpret_cast<uintptr_t>(avail_mem); };
+    Ops::bind(std::move(none));
+    expect(Ops::op_set_fuel_mix(0, 1) == SWOFTY_ASSET_UNAVAILABLE, "without the game's mode switch the op is unavailable");
 }
 
 static void replay_frames()

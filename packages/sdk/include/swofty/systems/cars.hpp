@@ -579,6 +579,29 @@ inline std::optional<FuelMix> fuel_mix(uint32_t car_index)
     return static_cast<FuelMix>(1u << mode);
 }
 
+inline bool set_fuel_mix_available()
+{
+    auto t = swofty::detail::live_car_ops();
+    return t && t->version >= 4 && t->set_fuel_mix;
+}
+
+// Switches the car to a mix the MFD offers it, through the game's own mode switch. Result::invalid for a mix the car
+// is not offered (see unlock_fuel_mixes), Result::late off the game's flow thread, Result::unavailable on a core
+// older than car ops version 4.
+inline Result set_fuel_mix(uint32_t car_index, FuelMix mix)
+{
+    auto t = swofty::detail::live_car_ops();
+    if (!t || t->version < 4 || !t->set_fuel_mix)
+        return Result::unavailable;
+    const uint32_t bits = static_cast<uint32_t>(mix);
+    if (bits == 0 || (bits & (bits - 1)) || bits > SWOFTY_CAR_FUEL_MIX_MAX)
+        return Result::invalid;
+    uint32_t mode = 0;
+    while ((1u << mode) != bits)
+        mode++;
+    return swofty::detail::result(t->set_fuel_mix(car_index, mode));
+}
+
 inline std::optional<Field> field(std::string_view path)
 {
     auto t = swofty::detail::live_car_ops_v2();

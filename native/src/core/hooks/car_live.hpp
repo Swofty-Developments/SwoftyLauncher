@@ -1145,9 +1145,38 @@ template <class Tag> struct Ops {
         return SWOFTY_ASSET_OK;
     }
 
+    static int op_set_fuel_mix(uint32_t index, uint32_t mode)
+    {
+        if (mode > 3)
+            return SWOFTY_ASSET_INVALID;
+        if (!env.fuel_set_mode)
+            return SWOFTY_ASSET_UNAVAILABLE;
+        if (env.flow_thread && !env.flow_thread())
+            return SWOFTY_ASSET_LATE;
+        uintptr_t car = 0, ecu = 0;
+        if (int r = car_at(index, nullptr, car); r != SWOFTY_ASSET_OK)
+            return r;
+        if (int r = system_at(car, FUEL_ECU, ecu); r != SWOFTY_ASSET_OK)
+            return r;
+        int32_t current = 0;
+        if (!rd(ecu + FUEL_ECU_MODE, current) || current < 0 || current > 3)
+            return SWOFTY_ASSET_LATE;
+        if (env.mode_avail && index < MODE_AVAIL_CARS) {
+            uintptr_t base = env.mode_avail();
+            uint32_t entry = 0;
+            if (!base || !rd(base + MODE_AVAIL_FUEL + index * MODE_AVAIL_STRIDE + mode * 4, entry))
+                return SWOFTY_ASSET_LATE;
+            if (entry != 0)
+                return SWOFTY_ASSET_INVALID;
+        }
+        if (int32_t(mode) != current)
+            env.fuel_set_mode(ecu, int(mode));
+        return SWOFTY_ASSET_OK;
+    }
+
     static inline const SwoftyCarOps table = {
         SWOFTY_CAR_OPS_VERSION, op_available, op_count, op_car, op_get, op_set, op_field, op_layer, op_unlayer,
-        op_refit_tyres, op_unlock_fuel_mixes, op_fuel_mix,
+        op_refit_tyres, op_unlock_fuel_mixes, op_fuel_mix, op_set_fuel_mix,
     };
 };
 

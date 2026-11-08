@@ -426,6 +426,24 @@ SWOFTY_ON_LOAD
 }
 ```
 
+`set_fuel_mix(car, mix)` switches a car to a mix through the game's own mode switch (the one the core uses after a `fuel_ecu.*` write). It answers `Result::invalid` for a mix the MFD does not offer the car, `Result::late` off the flow thread and `Result::unavailable` on a core older than car ops version 4; `set_fuel_mix_available()` tells ahead. The game resets the mix to Standard at a qualifying lap start; re-apply the player's choice on the lap event:
+
+```cpp
+using namespace swofty;
+
+static std::optional<cars::live::FuelMix> chosen;
+
+SWOFTY_ON_LOAD
+{
+    events::on<sessions::events::Lap>().after([](const sessions::events::Lap &l, const events::Context &) {
+        if (chosen)
+            cars::live::set_fuel_mix(l.car.index(), *chosen);
+    });
+}
+```
+
+A change the game makes cannot be told from the player's: the core has no mix-changed event, so the addon records the mix it wants (here `chosen`, taken from `fuel_mix(car)` while the player drives) and re-applies it.
+
 `unlock_fuel_mixes` clears the availability entries of the mixes in the mask for every car, every frame, until the mask is 0 again. `fuel_mix(car)` reads a car's current mix. The availability table (`g_EngineModeAvail`, KB notes in car.md) has no independent verify row; the core reads it through checked memory and answers `Result::unavailable` on any other build.
 
 ## Handling records
