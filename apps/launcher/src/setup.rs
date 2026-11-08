@@ -111,6 +111,7 @@ impl SetupWizard {
             let result = cx
                 .background_executor()
                 .spawn(async move {
+                    let _helpers = store.helpers().pause();
                     let g = Game::locate(&store.root, dir.clone()).map_err(|e| e.to_string())?;
                     let unrestored = setup::reset(&store.root, &g, other_mods)
                         .map(|r| r.unrestored)

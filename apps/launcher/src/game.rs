@@ -310,6 +310,7 @@ pub fn recover_stale(store: &Store) -> Result<Vec<String>, String> {
 
 /// The Restore game folder button: what `swofty restore` does.
 pub fn restore(store: &Store, dir: PathBuf) -> Result<String, String> {
+    let _helpers = store.helpers().pause();
     let g = Game::locate(&store.root, dir).map_err(|e| e.to_string())?;
     let done = recovery::restore(&store.root, &g).map_err(|e| e.to_string())?;
     if !done.left.is_empty() {

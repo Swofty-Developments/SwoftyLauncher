@@ -2,6 +2,7 @@ use std::collections::{BTreeSet, HashMap};
 use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Child, ChildStdin, Command, Stdio};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::mpsc::{Receiver, RecvTimeoutError, channel};
 use std::sync::{Arc, Mutex, MutexGuard, TryLockError};
 use std::time::Duration;
@@ -49,6 +50,7 @@ pub struct HelperAddon {
     run: Mutex<Run>,
     summaries: Mutex<HashMap<String, Option<Summary>>>,
     stale: Arc<Mutex<Option<Stale>>>,
+    paused: Arc<AtomicUsize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -122,6 +124,7 @@ impl HelperAddon {
             run: Mutex::new(Run::Idle),
             summaries: Mutex::new(HashMap::new()),
             stale: Arc::default(),
+            paused: Arc::default(),
         })
     }
 
@@ -149,6 +152,10 @@ impl HelperAddon {
         *self.lock() = Run::Idle;
     }
 
+    fn paused(&self) -> bool {
+        self.paused.load(Ordering::SeqCst) > 0
+    }
+
     /// The section's view, or None while another call holds the plugin, such as an
     /// import or a build, instead of waiting for it to finish.
     pub fn try_view(&self, cx: &Cx, section: &str) -> Option<Result<View>> {
@@ -159,6 +166,9 @@ impl HelperAddon {
         };
         if let Run::Dead(e) = &*run {
             return Some(Ok(self.dead_view(e.clone())));
+        }
+        if self.paused() && !matches!(*run, Run::Live(_)) {
+            return None;
         }
         let call = Call::View {
             section: section.into(),
@@ -232,6 +242,12 @@ impl HelperAddon {
             return Err(swofty_addon::Error::Other(e.clone()));
         }
         if matches!(*run, Run::Idle) {
+            if self.paused() {
+                return Err(swofty_addon::Error::Other(format!(
+                    "{} is stopped while the game folder is being put back",
+                    self.name()
+                )));
+            }
             *run = Run::Live(self.start(cx).map_err(|e| self.fail(&mut run, e))?);
         }
         let Run::Live(live) = &mut *run else {
@@ -709,7 +725,20 @@ impl Importer for HelperAddon {
 }
 
 #[derive(Default)]
-pub struct Helpers(Mutex<Vec<Arc<HelperAddon>>>);
+pub struct Helpers {
+    all: Mutex<Vec<Arc<HelperAddon>>>,
+    paused: Arc<AtomicUsize>,
+}
+
+/// Keeps every helper program stopped, and unstartable, until it drops.
+#[must_use = "helpers start again when this drops"]
+pub struct Pause(Arc<AtomicUsize>);
+
+impl Drop for Pause {
+    fn drop(&mut self) {
+        self.0.fetch_sub(1, Ordering::SeqCst);
+    }
+}
 
 impl std::fmt::Debug for Helpers {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -719,18 +748,32 @@ impl std::fmt::Debug for Helpers {
 
 impl Helpers {
     pub fn get(&self, manifest: &AddonManifest, dir: &Path) -> Option<Arc<HelperAddon>> {
-        let mut all = self.0.lock().unwrap_or_else(|e| e.into_inner());
+        let mut all = self.all.lock().unwrap_or_else(|e| e.into_inner());
         if let Some(h) = all.iter().find(|h| h.manifest == *manifest && h.dir == dir) {
             return Some(h.clone());
         }
-        let helper = Arc::new(HelperAddon::new(manifest.clone(), dir)?);
+        let mut helper = HelperAddon::new(manifest.clone(), dir)?;
+        helper.paused = self.paused.clone();
+        let helper = Arc::new(helper);
         all.retain(|h| h.manifest.id != manifest.id);
         all.push(helper.clone());
         Some(helper)
     }
 
+    /// Stops every helper program and keeps them from starting until the
+    /// returned guard drops: a helper holds folders the restore must remove.
+    pub fn pause(&self) -> Pause {
+        self.paused.fetch_add(1, Ordering::SeqCst);
+        let pause = Pause(self.paused.clone());
+        let all: Vec<_> = self.all.lock().unwrap_or_else(|e| e.into_inner()).clone();
+        for h in all {
+            h.stop();
+        }
+        pause
+    }
+
     pub fn forget(&self, id: &str) {
-        let mut all = self.0.lock().unwrap_or_else(|e| e.into_inner());
+        let mut all = self.all.lock().unwrap_or_else(|e| e.into_inner());
         for h in all.iter().filter(|h| h.manifest.id == id) {
             h.stop();
         }
@@ -907,6 +950,41 @@ read -r l
         assert_eq!(received[5]["params"]["name"], "other");
         h.stop();
         assert!(!h.running());
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn pausing_stops_helpers_and_keeps_them_from_starting_until_dropped() {
+        let root = tmp("pause");
+        let store = Store::new(root.join("data"));
+        let dir = store.addons_dir().join("t.helper");
+        addon(
+            &dir,
+            r#"read -r l; echo '{"id":0,"result":{"api":1}}'
+while read -r l; do echo '{"id":1,"result":{"subtitle":"s","body":{"blocks":[]}}}'; done
+"#,
+        );
+        let h = store
+            .helpers()
+            .get(&AddonManifest::load(&dir).unwrap(), &dir)
+            .unwrap();
+        let state = Memory::default();
+        let (data, cache) = (root.join("state"), root.join("cache"));
+        std::fs::create_dir_all(&cache).unwrap();
+        let p = profile("default");
+        let cx = Cx::new("t.helper", &p, &data, &cache, None, &state);
+        h.view(&cx, "items").unwrap();
+        assert!(h.running());
+        let pause = store.helpers().pause();
+        assert!(!h.running());
+        assert!(h.view(&cx, "items").is_err());
+        assert!(h.try_view(&cx, "items").is_none());
+        assert!(!h.running());
+        assert!(h.failure().is_none());
+        drop(pause);
+        h.view(&cx, "items").unwrap();
+        assert!(h.running());
+        h.stop();
         std::fs::remove_dir_all(&root).ok();
     }
 
