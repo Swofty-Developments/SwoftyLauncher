@@ -148,6 +148,8 @@ void facts(const reg::Context &c)
             f.session->setup_mode = c.setup_mode;
         } else {
             f.session.reset();
+            f.player.reset();
+            f.participants.clear();
         }
         f.vehicle_packages.clear();
         if (!c.vehicle_package.empty())

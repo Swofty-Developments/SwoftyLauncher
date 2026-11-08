@@ -17,6 +17,7 @@
 #include "context.hpp"
 #include "core_events.hpp"
 #include "hooks.hpp"
+#include "player_facts.hpp"
 #include "../view_state.hpp"
 #include "session_points.hpp"
 
@@ -337,6 +338,24 @@ void apply_profiles(uint32_t index, bool force = false)
 }
 
 uint64_t g_epoch = 0;
+player_facts::Cache g_players;
+
+void sync_players()
+{
+    auto facts = core().current();
+    if (!facts)
+        return;
+    auto change = player_facts::sync<Ops>(g_players, *facts);
+    if (!change)
+        return;
+    const bool seen = facts->epoch == g_epoch;
+    update_facts([&](Facts &f) {
+        f.player = std::move(change->player);
+        f.participants = std::move(change->participants);
+    });
+    if (seen)
+        g_epoch = core().current()->epoch;
+}
 
 void frame(double, void *)
 {
@@ -344,6 +363,7 @@ void frame(double, void *)
     static const uint32_t apply_probe = perf::probe("core", "car_live apply_car");
     static const uint32_t flush_probe = perf::probe("core", "car_live flush");
     g_flow_tid = GetCurrentThreadId();
+    sync_players();
     auto facts = core().current();
     bool changed = facts && facts->epoch != g_epoch;
     if (facts)

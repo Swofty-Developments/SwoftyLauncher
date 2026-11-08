@@ -7,6 +7,7 @@
 // the flow thread, a car without a system, and cars::live::cars/get/set/scale/is_ai through the table.
 // run_car_live_test.sh builds and runs it.
 #include "../../src/core/hooks/car_live.hpp"
+#include "../../src/core/hooks/player_facts.hpp"
 
 #include <swofty/systems/cars.hpp>
 
@@ -707,6 +708,61 @@ static void replay_hold()
     expect(!Ops::resume_due(false), "and only once");
 }
 
+static void player_facts_sync()
+{
+    namespace hk = swofty_core::hooks;
+    build_world();
+    Ops::bind(make_env());
+    hk::Facts f;
+    hk::player_facts::Cache cache;
+    f.session.emplace();
+    f.epoch = 1;
+    auto apply = [&](const std::optional<hk::player_facts::Change> &c) {
+        if (!c)
+            return;
+        f.player = c->player;
+        f.participants = c->participants;
+        f.epoch++;
+    };
+
+    hk::Facts menu;
+    expect(!hk::player_facts::sync<Ops>(cache, menu), "no session, no cars: nothing to change");
+    auto first = hk::player_facts::sync<Ops>(cache, f);
+    expect(first && first->player && first->player->car == 0 && first->player->human, "the human car is the player");
+    expect(first && first->participants.size() == 3 && !first->participants[1].human, "every car is a participant");
+    apply(first);
+    expect(!hk::player_facts::sync<Ops>(cache, f), "an unchanged table changes nothing");
+    expect(!hk::player_facts::sync<Ops>(cache, f), "and stays quiet across frames");
+
+    at<uint32_t>(car_mem[0], cl::CAR_IS_AI) = 1;
+    at<uint32_t>(car_mem[2], cl::CAR_IS_AI) = 0;
+    auto moved = hk::player_facts::sync<Ops>(cache, f);
+    expect(moved && moved->player && moved->player->car == 2, "the player follows a changed human car");
+    apply(moved);
+
+    at<uint32_t>(car_mem[2], cl::CAR_IS_AI) = 1;
+    auto spectating = hk::player_facts::sync<Ops>(cache, f);
+    expect(spectating && !spectating->player && spectating->participants.size() == 3, "no human car leaves the player empty");
+    apply(spectating);
+
+    at<uint32_t>(car_mem[1], cl::CAR_IS_AI) = 0;
+    f.epoch++;
+    auto back = hk::player_facts::sync<Ops>(cache, f);
+    expect(back && back->player && back->player->car == 1, "a human car after spectating is found on the next epoch");
+    apply(back);
+
+    f.session.reset();
+    auto ended = hk::player_facts::sync<Ops>(cache, f);
+    expect(ended && !ended->player && ended->participants.empty(), "the session ending clears player and participants");
+    apply(ended);
+    expect(!hk::player_facts::sync<Ops>(cache, f), "and stays clear");
+
+    f.session.emplace();
+    count = 0;
+    expect(!hk::player_facts::sync<Ops>(cache, f), "no cars yet leaves the player empty");
+    count = CARS;
+}
+
 int main()
 {
     core_ops();
@@ -722,6 +778,7 @@ int main()
     v3_fuel();
     replay_frames();
     replay_hold();
+    player_facts_sync();
     if (fails) {
         printf("car_live_test: %d failure(s)\n", fails);
         return 1;

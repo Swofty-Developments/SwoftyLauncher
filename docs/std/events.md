@@ -212,8 +212,8 @@ public:
     const std::optional<CareerView> &career() const; // data group, year, season, round of rounds, day
     const std::optional<WeekendView> &weekend() const;
     const std::optional<SessionView> &session() const;   // type, group, track, weather, laps, setup mode
-    const std::optional<Entrant> &player() const;
-    std::span<const Entrant> participants() const;   // car, driver, team, vehicle, human
+    const std::optional<Entrant> &player() const;        // the human's car while a session has cars; empty otherwise
+    std::span<const Entrant> participants() const;   // every car of the session: car and human (driver, team, vehicle stay empty)
     bool in(const Selector &s) const;
 
     // the effective record of this moment's own thing: the season of the career, the package of a GP,
