@@ -1039,7 +1039,7 @@ typedef struct SwoftyContentOps {
    SWOFTY_CAR_CHASSIS_BALLAST_KG rebuilds the mass without fuel until the next fuel update.
    Virtual fields (engine.power_scale, engine.limiter_offset_rpm, ai.grip_scale) write nothing to game data: the
    core's handlers on site_Car_EngineDriveTorque and site_Ai_TableGripInput read them per car. */
-#define SWOFTY_CAR_OPS_VERSION 3
+#define SWOFTY_CAR_OPS_VERSION 4
 #define SWOFTY_CAR_ALL 0xffffffffu
 
 #define SWOFTY_CAR_STEERING_LOCK 1u
@@ -1200,6 +1200,11 @@ typedef struct SwoftyCarOps {
        the KB's. fuel_mix: the car's current mix (0 lean .. 3 max) in *mode. */
     int (*unlock_fuel_mixes)(const char *owner, uint32_t mask);
     int (*fuel_mix)(uint32_t index, uint32_t *mode);
+    /* version 4. set_fuel_mix: switches the car to mix `mode` (0 lean .. 3 max) through the game's own mode switch.
+       Only on the flow thread (SWOFTY_ASSET_LATE otherwise). SWOFTY_ASSET_INVALID for a mode above 3 or a mix the
+       MFD does not offer the car (unlock_fuel_mixes makes one offered); SWOFTY_ASSET_UNAVAILABLE when the core has
+       no mode switch on this build. */
+    int (*set_fuel_mix)(uint32_t index, uint32_t mode);
 } SwoftyCarOps;
 
 typedef struct SwoftyApi {
