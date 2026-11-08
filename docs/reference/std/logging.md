@@ -274,7 +274,7 @@ These environment variables change what swofty_core and the loader log. Set them
   ```
 
 - `SWOFTY_OVERLAY_KILL=<list>`: turns overlay parts off: `all`, `paint`, `capture` or `hdr`, comma-separated. `"overlay_kill"` in `swofty/assets.json` does the same.
-- `SWOFTY_OVERLAY_FG=1`: draws the overlay into the game's back buffer before frame generation, so generated frames carry it. Off by default. `"overlay_fg": true` in `swofty/assets.json` does the same.
+- `SWOFTY_OVERLAY_FG`: draws the overlay into the game's back buffer before frame generation, so generated frames carry it. On by default when frame generation is on in the game's settings at start. `SWOFTY_OVERLAY_FG=0` or `"overlay_fg": false` in `swofty/assets.json` turns it off; `=1` or `true` turns it on whatever the game's setting.
 - `SWOFTY_OVERLAY_NITS=<nits>`: the overlay's paper white on HDR10 and scRGB output, 80 to 1000. Default 350, the level of the game's own HUD white.
 - `SWOFTY_KEEP_FOCUS=1`: keeps the game running when its window loses focus. swofty_core drops `WM_KILLFOCUS`, `WM_ACTIVATE(WA_INACTIVE)` and `WM_ACTIVATEAPP(FALSE)` before the game's window procedure sees them, and hands a window that starts without focus one `WM_SETFOCUS`. A race in a parked or hidden window then runs instead of stopping at the pause menu. For test runs only.
 - `SWOFTY_POSTFX_CAPTURE=<folder>`: for developing [post-process passes](/reference/addons/postfx). Writes the picture just before and just after the passes to `<folder>\postfx-NN-before.ppm` and `postfx-NN-after.ppm`, at most six pairs, ten seconds apart, the first thirty seconds after the passes start. The pictures have no HUD. Under Proton, give a Windows path:

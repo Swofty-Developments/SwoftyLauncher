@@ -130,6 +130,14 @@ inline FgSetting fg_setting(const std::string &hardware_settings)
     return f;
 }
 
+// -1 when SWOFTY_OVERLAY_FG / "overlay_fg" is unset. Unset, it follows the game's setting at start.
+inline bool before_fg_wanted(int forced, const FgSetting &game)
+{
+    if (forced >= 0)
+        return forced != 0;
+    return game.known && game.mode != 0;
+}
+
 inline std::string chain(const std::vector<std::string> &modules, std::string_view skip_a, std::string_view skip_b)
 {
     std::string out;

@@ -738,6 +738,13 @@ static void test_guard()
     fs = fg_setting("<frame_gen mode=\"1\" /><multi_frame_gen value=\"2\" />");
     CHECK(fs.known && fs.mode == 1 && fs.multi == 2 && fs.on(), "frame_gen mode 1 reads as on");
     CHECK(fg_setting("<frame_gen />").on() && fg_setting("").on(), "a missing frame_gen mode reads as on");
+    CHECK(before_fg_wanted(-1, fg_setting("<frame_gen mode=\"1\" />")) &&
+              before_fg_wanted(-1, fg_setting("<frame_gen mode=\"3\" />")),
+          "drawing before frame generation is on by default when the game has frame generation on");
+    CHECK(!before_fg_wanted(-1, fg_setting(hw)) && !before_fg_wanted(-1, fg_setting("")),
+          "drawing before frame generation stays off when frame generation is off or the setting can't be read");
+    CHECK(!before_fg_wanted(0, fg_setting("<frame_gen mode=\"1\" />")) && before_fg_wanted(1, fg_setting(hw)),
+          "SWOFTY_OVERLAY_FG and \"overlay_fg\" override the game's setting");
     CHECK(hdr_mode("<resolution>\n\t\t\t<hdr mode=\"1\" peakNits=\"1000\" />") == 1 && hdr_mode("<x/>") == -1,
           "the game's hdr mode reads from hardware settings");
     CHECK(output_for(24, 12, 0) == HDR10_PQ && output_for(24, 0, 1) == SDR && output_for(24, COLOR_SPACE_UNSET, 1) == HDR10_PQ &&

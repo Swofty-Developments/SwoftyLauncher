@@ -146,15 +146,24 @@ bool killed(const char *what)
     return kill_has(list, "all") || kill_has(list, what);
 }
 
+std::wstring hardware_settings_path();
+
 bool before_fg_wanted()
 {
     static const bool on = [] {
+        int forced = -1;
         char v[8] = {};
         DWORD n = GetEnvironmentVariableA("SWOFTY_OVERLAY_FG", v, sizeof v);
-        if (n && n < sizeof v)
-            return v[0] != '0' && v[0] != '\0';
         const json::Value &j = runtime::config()["overlay_fg"];
-        return j.type == json::Value::Bool && j.b;
+        if (n && n < sizeof v)
+            forced = v[0] != '0' && v[0] != '\0';
+        else if (j.type == json::Value::Bool)
+            forced = j.b;
+        std::wstring path = forced < 0 ? hardware_settings_path() : std::wstring();
+        hud::guard::FgSetting game;
+        if (!path.empty())
+            game = hud::guard::fg_setting(runtime::read_file(path, 1 << 20));
+        return hud::guard::before_fg_wanted(forced, game);
     }();
     return on;
 }
@@ -1640,13 +1649,13 @@ void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
             if (fg_named) {
                 if (fresh)
                     swofty::log("[overlay] frame generation (%s) owns swapchain %p and the core's D3D12 device hooks "
-                                "did not arm (drawing before frame generation is opt-in: SWOFTY_OVERLAY_FG=1); the overlay "
-                                "does not draw on it",
+                                "did not arm (drawing before frame generation is off: frame generation was off when the game "
+                                "started, or SWOFTY_OVERLAY_FG=0 / \"overlay_fg\": false); the overlay does not draw on it",
                                 c.fg.c_str(), static_cast<void *>(sc));
             } else if (!fg_watch.told || fresh) {
                 swofty::log("[overlay] swapchain %p was created through %s, frame generation is not off in the game's "
-                            "settings and drawing before frame generation is not on (opt-in: SWOFTY_OVERLAY_FG=1); the "
-                            "overlay does not draw on it",
+                            "settings and drawing before frame generation is off (frame generation was off when the game "
+                            "started, or SWOFTY_OVERLAY_FG=0 / \"overlay_fg\": false); the overlay does not draw on it",
                             static_cast<void *>(sc),
                             ffx ? "FidelityFX (amd_fidelityfx_dx12.dll)"
                                 : "Streamline's frame generation hook (sl.dlss_g.dll)");
@@ -1758,7 +1767,8 @@ bool arm()
             swofty::log("[overlay] the core's D3D12 device hooks did not arm; the overlay cannot draw when frame "
                         "generation owns the swapchain");
         else
-            swofty::log("[overlay] drawing before frame generation is on (SWOFTY_OVERLAY_FG or \"overlay_fg\")");
+            swofty::log("[overlay] drawing before frame generation is on (frame generation is on in the game's "
+                        "settings, or SWOFTY_OVERLAY_FG / \"overlay_fg\")");
     }
     return d3d12hooks::arm_swapchain();
 }

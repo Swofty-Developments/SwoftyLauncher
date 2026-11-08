@@ -248,15 +248,15 @@ The launcher can turn the overlay off for one addon: an addon id in `"overlay_of
 
 ## When the overlay draws
 
-Paint callbacks run once per frame at `Present`. Where the swapchain is one the core can draw on, the overlay is drawn into its back buffer there. Where frame generation owns the swapchain and `SWOFTY_OVERLAY_FG=1` (or `"overlay_fg": true` in `swofty/assets.json`) is set, the overlay is drawn into the game's own back buffer in the command queue just after the game's list that moves it to `PRESENT`, so frame generation sees it and the generated frames carry it. That draw uses the callbacks' output from the previous `Present`, so the overlay is one frame late. `swofty/loader.log` has an `[overlay]` line for each case.
+Paint callbacks run once per frame at `Present`. Where the swapchain is one the core can draw on, the overlay is drawn into its back buffer there. Where frame generation owns the swapchain, the overlay is drawn into the game's own back buffer in the command queue just after the game's list that moves it to `PRESENT`, so frame generation sees it and the generated frames carry it. That draw uses the callbacks' output from the previous `Present`, so the overlay is one frame late. The core decides at start: drawing before frame generation is on when the game's `hardware_settings_config.xml` has frame generation on. `SWOFTY_OVERLAY_FG=0` or `"overlay_fg": false` in `swofty/assets.json` turns it off, and `SWOFTY_OVERLAY_FG=1` or `"overlay_fg": true` turns it on whatever the game's setting. `swofty/loader.log` has an `[overlay]` line for each case.
 
 | Case | Overlay |
 |---|---|
 | A swapchain the game created after the core loaded | Draws, on the command queue the swapchain was created with |
 | A swapchain created before the core hooked swapchain creation | Doesn't draw on it |
-| A swapchain that a frame generation module (DLSS Frame Generation, FSR or XeSS frame generation) created or presents | Doesn't draw by default; with `SWOFTY_OVERLAY_FG=1` it draws into the game's back buffer (a resource named `BackBuffer`) before `Present` |
-| A swapchain created through Streamline's frame generation hook (`sl.dlss_g.dll`, every NVIDIA Streamline build of F1 25) | Draws at `Present` while the game's `hardware_settings_config.xml` has `frame_gen mode="0"`; draws into the game's back buffer before `Present` once it reads anything else and `SWOFTY_OVERLAY_FG=1` is set (otherwise it stops for the session) |
-| Frame generation with `SWOFTY_OVERLAY_FG=1`, and the back buffer is not a render target of the swapchain's size, or its queue is not a direct queue, or it is on another device than the overlay's | Doesn't draw; one `[overlay]` line says which |
+| A swapchain that a frame generation module (DLSS Frame Generation, FSR or XeSS frame generation) created or presents | Draws into the game's back buffer (a resource named `BackBuffer`) before `Present` when frame generation was on in the game's settings at start |
+| A swapchain created through Streamline's frame generation hook (`sl.dlss_g.dll`, every NVIDIA Streamline build of F1 25) | Draws at `Present` while the game's `hardware_settings_config.xml` has `frame_gen mode="0"`; draws into the game's back buffer before `Present` once it reads anything else, when frame generation was on at start (otherwise it stops for the session) |
+| Frame generation, and the back buffer is not a render target of the swapchain's size, or its queue is not a direct queue, or it is on another device than the overlay's | Doesn't draw; one `[overlay]` line says which |
 | The GPU still holds the previous frames' overlay work | Skips drawing that frame |
 | The GPU was removed | Stops for the rest of the session; an `[overlay]` line says how long after the overlay last drew |
 
