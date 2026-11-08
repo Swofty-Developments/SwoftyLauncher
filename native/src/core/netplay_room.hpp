@@ -60,6 +60,11 @@ std::string last_error();
 // The game content the session's cars come from, from the domain Car Category sets (network subsystem
 // +0x4f4): "f1_2025", "f1_2026", or empty when the network subsystem or the domain is unknown.
 std::string session_content();
+// The session's role (0 offline, 1 host, 2 client) or -1 when it cannot be read.
+int session_role();
+// Leaves the session the way the game does when an invite is cancelled: calls InviteManager::cancel (the
+// address `cancel`) on the network subsystem's invite manager. Empty on success, else why nothing was called.
+std::string leave_session(uintptr_t cancel);
 enum class CoverSignal { waiting, shown, failed };
 CoverSignal cover_signal();
 void tick();

@@ -572,6 +572,20 @@ int main()
                std::string(room::preset_content(room::PRESET_2025)) == "f1_2025" && !*room::preset_content(0),
            "the Car Category domain names the car content");
 
+    {
+        Image m = world();
+        uint64_t invites = 0;
+        m.set<uint64_t>(INVITES + room::INVITES_NS, NS);
+        expect(room::plan_leave(m.memory(), NS, invites).empty() && invites == INVITES,
+               "leaving finds the invite manager the game's cancel expects");
+        m.set<uint64_t>(INVITES + room::INVITES_NS, NS + 0x10);
+        expect(room::plan_leave(m.memory(), NS, invites).find("point back") != std::string::npos,
+               "an invite manager that does not point at the network subsystem is refused");
+        m.set<uint64_t>(NS + room::NS_INVITES, 0);
+        expect(room::plan_leave(m.memory(), NS, invites).find("no invite manager") != std::string::npos,
+               "a null invite manager is refused");
+    }
+
     printf(fails ? "netplay room test: FAILED\n" : "netplay room test: ALL PASSED\n");
     return fails ? 1 : 0;
 }

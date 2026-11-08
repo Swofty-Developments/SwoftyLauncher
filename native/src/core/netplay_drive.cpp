@@ -29,8 +29,9 @@
 // status and clear always answer. configure (the room: member number, bridge base port and the
 // signed-in name for the driver, shared with the hooks through netplay_session.hpp), host, join and
 // leave need SWOFTY_NETPLAY in the game's environment, host and join also a configured room, and each
-// a game state that allows it. host, join and leave report unavailable until their game entry points
-// are bound (research/multiplayer/lan-netplay-design.md, "Driving host/join").
+// a game state that allows it. host and join report unavailable until their game entry points
+// are bound (research/multiplayer/lan-netplay-design.md, "Driving host/join"). leave calls InviteManager::cancel, the
+// game's own cancel of a LAN join, once the bindings export it, and answers when the session role is 0 again.
 
 namespace runtime {
 std::string hook_error(const safetyhook::MidHook::Error &e);
@@ -349,9 +350,28 @@ std::wstring dir(const char *sub)
     return runtime::under_swofty(std::string("netplay\\") + sub);
 }
 
-std::string run_leave(const drive::Command &)
+constexpr const char *LEAVE_BINDING = "Game_InviteManager_Cancel";
+
+drive::Leave leaving;
+uintptr_t a_leave_cancel;
+bool leave_resolved;
+
+uintptr_t leave_cancel()
 {
-    return "unavailable: leaving is not bound in this build";
+    if (!leave_resolved) {
+        leave_resolved = true;
+        a_leave_cancel = swofty::api->resolve(LEAVE_BINDING);
+    }
+    return a_leave_cancel;
+}
+
+std::string run_leave(const drive::Command &c)
+{
+    if (!leave_cancel())
+        return "unavailable: leaving is not bound in this build";
+    leaving.start(c, GetTickCount64());
+    swofty::log("[netplay] leave: started");
+    return {};
 }
 
 std::mutex job_lock;
@@ -590,6 +610,30 @@ void reply(const drive::Command &c, const std::string &error, const std::string 
     outgoing.emplace_back(c.seq, std::move(body));
 }
 
+void leave_tick()
+{
+    if (!leaving.active())
+        return;
+    int session_role = runtime::netplay_room::session_role();
+    if (leaving.tick(lobby.load(), session_role, GetTickCount64())) {
+        std::string why = runtime::netplay_room::leave_session(leave_cancel());
+        if (!why.empty())
+            leaving.fail(why);
+        else
+            swofty::log("[netplay] leave: called InviteManager::cancel (session role %d)", session_role);
+    }
+    if (!leaving.finished())
+        return;
+    drive::Command c = leaving.cmd;
+    std::string error = leaving.error, detail = leaving.detail;
+    leaving.reset();
+    if (error.empty()) {
+        role = int(drive::Role::none);
+        swofty::log("[netplay] leave: left the LAN session (%s)", detail.c_str());
+    }
+    reply(c, error, detail);
+}
+
 void run_job()
 {
     drive::Facts f;
@@ -693,6 +737,7 @@ void netplay_tick()
     skip_tick();
     flush_notices();
     runtime::netplay_room::tick();
+    leave_tick();
     bool running;
     {
         std::lock_guard<std::mutex> g(job_lock);
@@ -711,7 +756,7 @@ void netplay_tick()
         incoming.pop_front();
     }
     drive::State s = state();
-    s.busy = running;
+    s.busy = running || leaving.active();
     std::string error = drive::refuse(c, s);
     if (error.empty()) {
         switch (c.op) {
@@ -735,7 +780,11 @@ void netplay_tick()
             swofty::log("[netplay] %s: started (screens)", drive::op_name(c.op));
             return;
         }
-        case drive::Op::leave: error = run_leave(c); break;
+        case drive::Op::leave:
+            error = run_leave(c);
+            if (error.empty())
+                return;
+            break;
         case drive::Op::cancel: {
             bool cancelled;
             {

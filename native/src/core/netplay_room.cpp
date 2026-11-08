@@ -773,6 +773,28 @@ std::string session_content()
     return room::preset_content(preset);
 }
 
+int session_role()
+{
+    std::lock_guard<std::mutex> g(lock);
+    resolve_once();
+    return session_role_now();
+}
+
+std::string leave_session(uintptr_t cancel)
+{
+    using Cancel_t = void(void *invites);
+    std::lock_guard<std::mutex> g(lock);
+    resolve_once();
+    void *ns = network_now();
+    if (!ns)
+        return "the network subsystem was not reached";
+    uint64_t invites = 0;
+    if (std::string why = room::plan_leave(memory(), reinterpret_cast<uint64_t>(ns), invites); !why.empty())
+        return why;
+    reinterpret_cast<Cancel_t *>(cancel)(reinterpret_cast<void *>(invites));
+    return {};
+}
+
 namespace {
 
 void home_join_tick()

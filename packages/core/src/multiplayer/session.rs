@@ -43,9 +43,12 @@ pub const HOST_IP: Ipv4Addr = Ipv4Addr::new(10, 77, 0, 1);
 const TICK: Duration = Duration::from_millis(25);
 const HOUSEKEEPING: Duration = Duration::from_secs(1);
 const GAME_RETRY: Duration = Duration::from_secs(1);
-/// The longest a status round trip, `leave`, `clear` or `cancel` may take, so leaving a room
-/// never hangs on a game that stopped answering.
+/// The longest a status round trip, `clear` or `cancel` may take, so leaving a room never hangs
+/// on a game that stopped answering.
 const QUICK_TIMEOUT: Duration = Duration::from_secs(2);
+/// The longest `leave` may take: the game answers once it is out of its LAN session, and gives up
+/// itself after five seconds.
+const LEAVE_TIMEOUT: Duration = Duration::from_secs(6);
 /// How long leaving waits for the lobby connection's thread before leaving it behind.
 const SOCKET_STOP: Duration = Duration::from_secs(1);
 const WS_CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
@@ -113,7 +116,7 @@ impl GameControl for Mailbox {
     }
 
     fn leave(&self) -> Result<GameStatus, game::Error> {
-        game::send(&self.dir, &Command::Leave, QUICK_TIMEOUT).map(|r| r.status)
+        game::send(&self.dir, &Command::Leave, LEAVE_TIMEOUT).map(|r| r.status)
     }
 
     fn clear(&self) -> Result<GameStatus, game::Error> {
@@ -2077,8 +2080,9 @@ impl Worker {
         }
     }
 
-    /// Every game command here gives up after [`QUICK_TIMEOUT`] and the server call after a few
-    /// seconds, so leaving finishes even with the game or the network gone.
+    /// Every game command here gives up after [`QUICK_TIMEOUT`] (`leave`: [`LEAVE_TIMEOUT`]) and
+    /// the server call after a few seconds, so leaving finishes even with the game or the network
+    /// gone.
     fn cleanup(&mut self) {
         if let Some(pending) = self.entering.take() {
             if let Err(e) = self.setup.game.cancel() {

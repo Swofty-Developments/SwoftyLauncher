@@ -383,6 +383,42 @@ int main()
                "an error popup still ends a headless job");
     }
 
+    {
+        drive::Command leave_cmd = drive::parse(R"({"seq":7,"op":"leave"})");
+        drive::Leave l;
+        expect(!l.active() && !l.finished(), "a fresh leave is idle");
+        l.start(leave_cmd, 1000);
+        expect(l.active() && l.cmd.seq == 7, "leave starts for its command");
+        expect(l.tick(true, 1, 1000), "the first tick asks for the game call");
+        expect(!l.tick(true, 1, 1100) && l.active(), "the game stays in the session until the role drops");
+        expect(!l.tick(true, 0, 1200) && l.finished() && l.error.empty(), "role 0 ends the leave while the lobby closes");
+        expect(l.detail.find("lobby screen") != std::string::npos, "the detail says how it ended");
+    }
+    {
+        drive::Leave l;
+        l.start(drive::parse(R"({"seq":8,"op":"leave"})"), 0);
+        l.tick(true, -1, 0);
+        l.tick(true, -1, 100);
+        expect(l.active(), "an unreadable role with the lobby open keeps waiting");
+        l.tick(false, -1, 200);
+        expect(l.finished() && l.error.empty(), "an unreadable role with the lobby gone ends the leave");
+    }
+    {
+        drive::Leave l;
+        l.start(drive::parse(R"({"seq":9,"op":"leave"})"), 0);
+        l.tick(true, 2, 0);
+        l.tick(true, 2, drive::LEAVE_MS - 1);
+        expect(l.active(), "leave waits up to its limit");
+        l.tick(true, 2, drive::LEAVE_MS);
+        expect(l.finished() && l.error.find("still in the LAN session") != std::string::npos,
+               "a game that stays in the session fails with a named reason");
+        l.reset();
+        expect(!l.active() && !l.finished(), "reset returns to idle");
+        l.start(drive::parse(R"({"seq":10,"op":"leave"})"), 0);
+        l.fail("the invite manager does not point back");
+        expect(l.finished() && !l.error.empty(), "a failed call ends the leave with its reason");
+    }
+
     printf("%s\n", fails ? "FAILED" : "all ok");
     return fails ? 1 : 0;
 }

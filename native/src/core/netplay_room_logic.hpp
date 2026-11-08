@@ -48,6 +48,7 @@ constexpr uint64_t REQUEST_BUSY[4] = {0xa8, 0xb0, 0xf8, 0x100};
 constexpr uint64_t REQUEST_BUSY_BYTE = 0x158;
 
 constexpr uint64_t INVITES_TYPE = 0x18;
+constexpr uint64_t INVITES_NS = 8;
 constexpr uint64_t INVITES_DELEGATE = 0xb78;
 constexpr uint32_t INVITE_CREATE_CUSTOM = 3;
 constexpr uint32_t INVITE_SESSION = 10;
@@ -298,6 +299,18 @@ inline std::string plan_join(const Memory &m, uint64_t ns, uint64_t owner, const
     out.request = request;
     out.invites = invites;
     out.writes = join_request_writes(request, out.ip, out.port);
+    return {};
+}
+
+// What leaving the session calls: InviteManager::cancel on the network subsystem's invite manager (+0x3b8),
+// whose own +8 is the network subsystem. Empty when the manager is what the call expects.
+inline std::string plan_leave(const Memory &m, uint64_t ns, uint64_t &invites)
+{
+    if (!m.ptr(ns + NS_INVITES, invites))
+        return "the network subsystem has no invite manager at +0x3b8";
+    uint64_t back = 0;
+    if (!m.get(invites + INVITES_NS, back) || back != ns)
+        return "the invite manager does not point back at the network subsystem (+8)";
     return {};
 }
 
