@@ -227,6 +227,27 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
             logo_array::pad(stock, shape, blank, uint32_t(names.size()));
             shape.count = uint32_t(names.size());
         }
+        if (sound && names.size() < shape.count) {
+            size_t unnamed = shape.count - names.size();
+            std::string first = std::to_string(names.size()), failed;
+            std::set<std::string> used(names.begin(), names.end());
+            for (size_t n = names.size(); n < shape.count && failed.empty(); n++) {
+                std::string pad = "swofty_pad_" + std::to_string(n);
+                while (!used.insert(pad).second)
+                    pad += "_";
+                if (!pkg.append_entry(*node, pad, std::string(TEXTURE_PATH) + pad + ".tif", failed))
+                    break;
+                names.push_back(pad);
+            }
+            if (failed.empty()) {
+                uidb_changed = true;
+                out.lines.push_back("team.logo: " + array + " holds " + std::to_string(shape.count) + " slices for " +
+                                    std::to_string(shape.count - unnamed) + " keys: other addons added slices without keys, so " +
+                                    std::to_string(unnamed) + " placeholder key(s) from slice " + first +
+                                    " on name them and new logos land on their own keys");
+                stock.names = names;
+            }
+        }
         if (sound)
             sound = logo_array::shape_of(stock, shape, why);
         if (!sound) {
@@ -282,6 +303,10 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
             for (auto &l : view_in[rel])
                 out.changes[l][view] = {grown.view};
         }
+        for (size_t at = 0; at < add.size(); at++)
+            out.lines.push_back("team.logo: " + array + " slice " + std::to_string(shape.count + at) + " = " + add[at].key +
+                                (used[at]->donor.empty() ? " (its image)" : " (copy of " + used[at]->donor + ", slice " +
+                                 std::to_string(std::find(names.begin(), names.end(), used[at]->donor) - names.begin()) + ")"));
         for (auto &s : add) {
             std::string e;
             if (!pkg.append_entry(*node, s.key, std::string(TEXTURE_PATH) + s.key + ".tif", e)) {

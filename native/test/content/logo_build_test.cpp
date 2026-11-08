@@ -494,5 +494,109 @@ int main(int argc, char **argv)
             std::printf("      %s\n", l.c_str());
         check(rr.built == 4 && rr.refused == 0 && rr.changes.count(lb::DATABASES), "the game's own archives build four probe slices");
     }
+    {
+        fs::path ov = out / "stacked";
+        fs::create_directories(ov / "ov");
+        std::string array = "teams.driver_select_team_logos";
+        std::string image = std::string(lb::ARRAY_URI) + array + ".texarray.image";
+        auto frag_of = [&](const fs::path &file, const std::string &name, size_t n) {
+            auto src = open_file(file);
+            ef::Archive arc;
+            std::string bytes, w2;
+            if (src && ef::open(*src, arc, w2)) {
+                const ef::Entry *e = arc.find(name);
+                if (e && e->frags.size() > n)
+                    ef::fragment(*src, arc, e->frags[n], bytes, w2);
+            }
+            return bytes;
+        };
+        auto names_in = [&](const std::string &db_bytes) {
+            content::uidb::Pkg q;
+            q.read(db_bytes);
+            std::vector<std::string> names;
+            if (auto *n = q.find(lb::list_path(array)))
+                for (auto &e : n->list)
+                    names.push_back(content::uidb::Pkg::text_of(e, "Name"));
+            return names;
+        };
+        std::string stock_head = frag_of(game / list[1], image, 0), stock_data = frag_of(game / list[1], image, 1);
+        uint32_t stock_count = content::logo_array::le32(stock_head, content::logo_array::HEAD_COUNT);
+        std::string db_stock = frag_of(game / lb::DATABASES, lb::OVERRIDES, 0);
+        std::vector<std::string> stock_names = names_in(db_stock);
+        size_t slice = stock_data.size() / stock_count;
+        check(stock_names.size() == stock_count && stock_names.size() >= 2, "the stacked fixture starts as a stock array of named slices");
+
+        std::vector<lb::Want> others(3);
+        for (size_t i = 0; i < others.size(); i++) {
+            others[i].array = array;
+            others[i].key = "addon_" + std::to_string(i);
+            others[i].donor = stock_names[1];
+        }
+        lb::Result appended;
+        lb::build(env, others, appended);
+        for (auto &[rel, changes] : appended.changes) {
+            if (rel == lb::DATABASES)
+                continue;
+            auto src = open_file(game / rel);
+            ef::Archive arc;
+            ef::open(*src, arc, why);
+            std::string name = "ov/" + std::to_string(std::hash<std::string>{}(rel)) + ".erp";
+            std::ofstream(ov / name, std::ios::binary) << rewrite_to_string(*src, arc, changes, why);
+        }
+        lb::Env stacked;
+        stacked.list = [&] { return list; };
+        stacked.open = [&](const std::string &rel) { return rel.rfind("ov/", 0) == 0 ? open_file(ov / rel) : open_file(game / rel); };
+        stacked.overlays = [&](const std::string &rel) {
+            return !appended.changes.count(rel) || rel == lb::DATABASES
+                       ? std::vector<std::string>{}
+                       : std::vector<std::string>{"ov/" + std::to_string(std::hash<std::string>{}(rel)) + ".erp"};
+        };
+
+        std::vector<lb::Want> teams(3);
+        for (auto &t : teams)
+            t.array = array;
+        teams[0].key = "team_a";
+        teams[0].donor = stock_names[0];
+        teams[0].fallback = true;
+        teams[1].key = "team_b";
+        teams[1].donor = stock_names[1];
+        teams[1].fallback = true;
+        teams[2].key = "team_c";
+        teams[2].donor = stock_names[0];
+        teams[2].fallback = true;
+        lb::Result res;
+        bool ok = lb::build(stacked, teams, res);
+        check(ok && res.built == 3 && res.refused == 0, "teams with a donor fallback build on an array other addons grew without keys");
+        std::vector<std::string> names_out;
+        std::string head_out, data_out;
+        for (auto &[rel, changes] : res.changes) {
+            auto n = changes.find(lb::OVERRIDES);
+            if (n != changes.end())
+                names_out = names_in(*n->second[0]);
+            auto i = changes.find(image);
+            if (i != changes.end()) {
+                head_out = *i->second[0];
+                data_out = *i->second[1];
+            }
+        }
+        uint32_t count_out = head_out.size() >= 32 ? content::logo_array::le32(head_out, content::logo_array::HEAD_COUNT) : 0;
+        check(count_out == stock_count + 3 + 3 && names_out.size() == count_out && data_out.size() == size_t(count_out) * slice,
+              "the grown array has one key for every slice (" + std::to_string(names_out.size()) + " keys, " + std::to_string(count_out) + " slices)");
+        for (auto &t : teams) {
+            auto at = std::find(names_out.begin(), names_out.end(), t.key);
+            size_t index = size_t(at - names_out.begin());
+            auto donor = std::find(stock_names.begin(), stock_names.end(), t.donor);
+            size_t donor_index = size_t(donor - stock_names.begin());
+            check(at != names_out.end() && (index + 1) * slice <= data_out.size() &&
+                      data_out.compare(index * slice, slice, stock_data, donor_index * slice, slice) == 0,
+                  t.key + " reads its donor's stock slice " + std::to_string(donor_index) + " at slice " + std::to_string(index));
+        }
+        check(std::any_of(res.lines.begin(), res.lines.end(), [](const std::string &l) {
+                  return l.find("placeholder key(s)") != std::string::npos;
+              }) && std::any_of(res.lines.begin(), res.lines.end(), [](const std::string &l) {
+                  return l.find("team_a = ") != std::string::npos || l.find("= team_a (copy of") != std::string::npos;
+              }),
+              "the build logs the placeholder keys and the slice every new key lands on");
+    }
     return failures ? 1 : 0;
 }

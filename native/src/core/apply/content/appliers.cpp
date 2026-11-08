@@ -444,8 +444,10 @@ void apply_logos(Expansion &x, Report &report)
         return;
     LogoReport made;
     deliver_logos(x.logos, made);
-    for (auto &l : made.lines)
+    for (auto &l : made.lines) {
         report.lines.push_back(l);
+        swofty::log("[apply] %s", l.c_str());
+    }
     report.refused += made.refused;
     report.lines.push_back("team.logo: " + std::to_string(x.logos.size()) + " logo slot(s) planned, " + std::to_string(made.built) +
                            " slice(s) built, " + std::to_string(made.refused) + " refused");
