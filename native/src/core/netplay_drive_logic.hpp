@@ -423,7 +423,7 @@ constexpr const char *BACK_HOME = "the game went back to its main menu before th
 
 constexpr const char *LAN_DIALOG = "multiplayer_lan_msg";
 constexpr const char *IP_PROMPT = "set_join_via_ip";
-constexpr uint64_t OPEN_MS = 10000, PROMPT_MS = 5000, JOIN_LOBBY_MS = 30000, HOST_LOBBY_MS = 120000;
+constexpr uint64_t OPEN_MS = 10000, PROMPT_MS = 5000, JOIN_LOBBY_MS = 120000, HOST_LOBBY_MS = 120000;
 
 class Job {
 public:
