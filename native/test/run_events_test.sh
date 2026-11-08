@@ -54,6 +54,9 @@ mkdir -p "$OUT"
 "${PIN[@]}" zig c++ -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../../packages/sdk/include \
     -o "$OUT/netplay_keys_test" netplay_keys_test.cpp
 "$OUT/netplay_keys_test"
+"${PIN[@]}" zig c++ -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../src/core \
+    -o "$OUT/netplay_privilege_test" netplay_privilege_test.cpp
+"$OUT/netplay_privilege_test"
 "${PIN[@]}" zig c++ -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../../packages/sdk/include \
     -o "$OUT/testagent_test" testagent_test.cpp
 "$OUT/testagent_test"

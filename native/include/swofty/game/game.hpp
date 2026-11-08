@@ -274,6 +274,10 @@ inline constexpr address<"Game_Championship_AddSessionDefaultLength"> Game_Champ
 inline constexpr address<"Game_Championship_AddSessionFromDef"> Game_Championship_AddSessionFromDef{}; // L2 experimental
 inline constexpr address<"Game_Championship_AddSessionWithFormat"> Game_Championship_AddSessionWithFormat{}; // L2 experimental
 inline constexpr address<"Game_Championship_ResetSessionsForRestart"> Game_Championship_ResetSessionsForRestart{}; // L2 experimental
+using Game_CheckPrivilegeTask_OnUpdate_t = void(void *task);
+inline constexpr fn<"Game_CheckPrivilegeTask_OnUpdate", Game_CheckPrivilegeTask_OnUpdate_t> Game_CheckPrivilegeTask_OnUpdate{}; // L2 experimental, game::online_systems::tasks::CheckPrivilegeTask::onUpdate
+using Game_CheckPrivilegeTask_PrivilegeCheckTaskCallback_t = void(void *task, uint32_t privilege, bool success, const void *continuation);
+inline constexpr fn<"Game_CheckPrivilegeTask_PrivilegeCheckTaskCallback", Game_CheckPrivilegeTask_PrivilegeCheckTaskCallback_t> Game_CheckPrivilegeTask_PrivilegeCheckTaskCallback{}; // L2 experimental, game::online_systems::tasks::CheckPrivilegeTask::privilegeCheckTaskCallback
 inline constexpr address<"Game_CinematicDirector_SendCinematicData"> Game_CinematicDirector_SendCinematicData{}; // L2 experimental
 inline constexpr address<"Game_CinematicPitStop_Start"> Game_CinematicPitStop_Start{}; // L2 experimental
 inline constexpr address<"Game_CinematicPitStop_Stop"> Game_CinematicPitStop_Stop{}; // L2 experimental
