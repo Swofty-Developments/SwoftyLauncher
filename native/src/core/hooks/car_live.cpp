@@ -13,6 +13,7 @@
 #include "../perf.hpp"
 #include "../registry/table.hpp"
 #include "car_live.hpp"
+#include "ea_fuel_binding.hpp"
 #include "car_profile.hpp"
 #include "context.hpp"
 #include "core_events.hpp"
@@ -36,6 +37,27 @@ struct CoreTag {};
 using Ops = car_live::Ops<CoreTag>;
 
 std::atomic<uint32_t> g_flow_tid{0};
+
+// Deliberately compile-time opt-in until the EA-specific KB verification and
+// in-game lifecycle tests documented by the project have been completed.
+bool g_ea_fuel_backend = false;
+
+#if defined(SWOFTY_EXPERIMENTAL_EA_FUEL)
+uintptr_t experimental_ea_availability_global()
+{
+    uintptr_t base = swofty::api->module_base();
+    auto dos = reinterpret_cast<const IMAGE_DOS_HEADER *>(base);
+    auto nt = reinterpret_cast<const IMAGE_NT_HEADERS64 *>(base + dos->e_lfanew);
+    if (nt->FileHeader.TimeDateStamp != ea_fuel_binding::timestamp ||
+        nt->OptionalHeader.SizeOfImage != ea_fuel_binding::image_size)
+        return 0;
+    uintptr_t hit = 0;
+    if (swofty::api->scan(".xtls", ea_fuel_binding::pattern, &hit) != 1 || !mem::readable(hit, 7))
+        return 0;
+    uintptr_t target = ea_fuel_binding::rip_target(hit, reinterpret_cast<const uint8_t *>(hit), 7);
+    return target && mem::in_image(target) ? target : 0;
+}
+#endif
 
 bool on_flow_thread()
 {
@@ -402,6 +424,15 @@ void frame(double, void *)
     mem::Trust trust(runtime::HEAP_TRUST_MS);
     perf::Scope scope(flush_probe);
     Ops::flush();
+    // On EA, built events can arrive before every car is present in the
+    // vehicle table. Retry fuel layers after the table settles; leave replay
+    // frames alone and avoid scanning when no addon requested fuel layers.
+    static uint64_t ea_retry_at = 0;
+    uint64_t now = GetTickCount64();
+    if (g_ea_fuel_backend && !in_replay && now - ea_retry_at >= 1000 && Ops::has_fuel_layers()) {
+        ea_retry_at = now;
+        Ops::apply_all();
+    }
 }
 
 void setup()
@@ -423,7 +454,29 @@ void setup()
     e.enabled = [] { return runtime::enabled("events", nullptr); };
     e.row_ready = row_ready;
     if (!runtime::same_build()) {
+#if defined(SWOFTY_EXPERIMENTAL_EA_FUEL)
+        uintptr_t mode_global = experimental_ea_availability_global();
+        uintptr_t setter = swofty::api->resolve("Car_FuelEcu_SetMode_Thunk");
+        e.table = swofty::api->resolve("g_Sess_VehicleTable");
+        e.count = swofty::api->resolve("g_Sess_VehicleCount");
+        if (mode_global && setter && e.table && e.count) {
+            e.fuel_only = true;
+            e.fuel_set_mode = [setter](uintptr_t ecu, int mode) {
+                reinterpret_cast<void (*)(void *, int)>(setter)(reinterpret_cast<void *>(ecu), mode);
+            };
+            e.mode_avail = [mode_global] {
+                uintptr_t ptr = 0;
+                return mem::read(mode_global, ptr) && mem::object_like(ptr) ? ptr : uintptr_t(0);
+            };
+            g_ea_fuel_backend = true;
+            swofty::log("[cars] experimental EA fuel-only backend enabled for the researched build");
+        } else {
+            e.table = e.count = 0;
+            swofty::log("[cars] EA fuel-only backend unavailable: a required binding did not resolve");
+        }
+#else
         swofty::log("[cars] live car operations off: the field offsets are the KB build's and this is not that build");
+#endif
     } else {
         e.table = swofty::api->resolve("g_Sess_VehicleTable");
         e.count = swofty::api->resolve("g_Sess_VehicleCount");
@@ -508,10 +561,12 @@ void declare_car_points(Table &t)
 
 void arm_car_points()
 {
-    if (!runtime::same_build())
+    if (!runtime::same_build() && !g_ea_fuel_backend)
         return;
     g_built->keep(true);
     g_built->install(false, "the core");
+    if (g_ea_fuel_backend)
+        return; // Other car points and their fields remain Steam-only.
     g_reset->keep(true);
     g_reset->install(false, "the core");
     if (row_ready("Car_Upgrades_ApplyToVehicle")) {

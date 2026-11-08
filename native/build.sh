@@ -18,6 +18,11 @@ hooknoop) DEFS=(-DSWOFTY_MOD_SETTINGS_NOOP) ;;
     exit 2
     ;;
 esac
+# Research builds only. The default must remain off until the EA binding has
+# passed the independent KB and in-game verification gates.
+if [[ ${SWOFTY_EXPERIMENTAL_EA_FUEL:-0} == 1 ]]; then
+    DEFS+=(-DSWOFTY_EXPERIMENTAL_EA_FUEL)
+fi
 DIST=dist${VARIANT:+-$VARIANT}
 OUT=build${VARIANT:+/$VARIANT}
 
