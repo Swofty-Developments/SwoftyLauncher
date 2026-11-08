@@ -35,6 +35,11 @@ public:
     std::string dump() const;
     void clear();
 
+    using Lent = std::map<std::string, std::map<std::string, int64_t>>;
+    bool lend_json(const std::string &text, std::vector<std::string> *lines, std::string *why = nullptr);
+    std::vector<std::string> lend(const Lent &lent);
+    bool lent() const;
+
     void define_pool(const std::string &registry, Pool pool);
     bool has_pool(const std::string &registry) const;
     void set_live(const std::string &registry, const std::vector<std::string> &records);
@@ -63,6 +68,7 @@ private:
         int64_t id = -1;
         std::string since;
         int64_t pin = -1;
+        bool lent = false;
     };
 
     bool held_locked(const std::string &registry, int64_t id, std::string *holder) const;
@@ -84,6 +90,7 @@ private:
     std::map<std::string, std::map<int64_t, std::string>> db_;
     std::size_t deduped_ = 0;
     bool dirty_ = false;
+    bool lent_ = false;
 };
 
 Store &store();

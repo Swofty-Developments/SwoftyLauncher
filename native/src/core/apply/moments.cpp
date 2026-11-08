@@ -413,6 +413,23 @@ void on_stage(int stage)
 
 }
 
+// Whether this game start is a shared session's: its direct start request (SWOFTY_DIRECT_START, or
+// swofty\direct_start.json, which the launcher removes before every other start) targets a room.
+bool room_boot()
+{
+    char env[1024] = {};
+    DWORD n = GetEnvironmentVariableA("SWOFTY_DIRECT_START", env, sizeof env);
+    std::string text;
+    if (n && n < sizeof env && env[0] == '@') {
+        std::string path(env + 1);
+        text = runtime::read_file(runtime::wide(path), size_t(1) << 16);
+    } else if (n && n < sizeof env)
+        text = env;
+    else
+        text = runtime::read_file(runtime::swofty_root() + L"direct_start.json", size_t(1) << 16);
+    return text == "room" || text.find("\"room\"") != std::string::npos;
+}
+
 void attach()
 {
     std::call_once(attached, [] {
@@ -429,6 +446,23 @@ void attach()
                         why.c_str());
         else if (!text.empty())
             swofty::log("[registry] stat ids: ids.json holds %zu id(s)", ids::store().size());
+        std::string room = runtime::read_file(runtime::swofty_root() + L"room_stat_ids.json", size_t(4) << 20);
+        if (!room.empty() && !room_boot()) {
+            swofty::log("[registry] stat ids: swofty\\room_stat_ids.json is left from an earlier shared session and this "
+                        "start is not one; this install's ids are used");
+            room.clear();
+        }
+        if (!room.empty()) {
+            std::vector<std::string> lines;
+            if (ids::store().lend_json(room, &lines, &why)) {
+                for (auto &l : lines)
+                    swofty::log("%s", l.c_str());
+                swofty::log("[registry] stat ids: the host's ids are lent for this shared session; ids.json is not "
+                            "written");
+            } else
+                swofty::log("[registry] stat ids: swofty\\room_stat_ids.json is unusable (%s); this install's ids are used",
+                            why.c_str());
+        }
         reg::set_stat_id_source([](const std::string &registry, const std::string &id, int64_t *out) {
             std::string line;
             int r = stat_id(reg::store(), ids::store(), registry, id, out, today(), &line);

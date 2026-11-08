@@ -2322,6 +2322,20 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                     crate::row_ids::ALIASES_FILE
                 ));
             }
+            if let Some(ids) = lent_ids
+                .as_ref()
+                .and_then(|l| l.room_stat_ids(&resolved.order))
+            {
+                let rel = format!("{LOADER_DIR}/{}", crate::row_ids::ROOM_STAT_IDS_FILE);
+                let src = built.overlay.join(crate::row_ids::ROOM_STAT_IDS_FILE);
+                std::fs::create_dir_all(&built.overlay).map_err(io_err(&built.overlay))?;
+                crate::write_json(&src, &ids)?;
+                built.plan.loader.insert(rel, src);
+                built.lines.push(format!(
+                    "registry: {LOADER_DIR}/{} lends the host's stat ids for this session",
+                    crate::row_ids::ROOM_STAT_IDS_FILE
+                ));
+            }
             if let Some(placed) = &std_index {
                 let index = built.overlay.join("registry-index.json");
                 std::fs::create_dir_all(&built.overlay).map_err(io_err(&built.overlay))?;
@@ -4434,6 +4448,21 @@ mod tests {
             store.profile("default").unwrap().options.get("t.lent"),
             None,
             "the profile keeps its own"
+        );
+        let registry = crate::row_ids::Overrides {
+            registry: BTreeMap::from([(
+                "t.lent".to_owned(),
+                BTreeMap::from([("content.package:t.lent/season".to_owned(), 116)]),
+            )]),
+            ..Default::default()
+        };
+        crate::row_ids::lend(Some(registry));
+        let registered = build(&store, "default", &game);
+        crate::row_ids::lend(None);
+        assert_ne!(
+            registered.unwrap().buildhash,
+            own.buildhash,
+            "the host's registry ids are part of the cache key"
         );
         let clash = crate::row_ids::Overrides {
             rows: BTreeMap::from([(

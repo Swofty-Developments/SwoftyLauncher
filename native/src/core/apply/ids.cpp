@@ -123,6 +123,96 @@ void Store::clear()
     live_.clear();
     db_.clear();
     dirty_ = false;
+    lent_ = false;
+}
+
+bool Store::lend_json(const std::string &text, std::vector<std::string> *lines, std::string *why)
+{
+    swofty::json::Error e;
+    Value doc = swofty::json::parse(text, &e);
+    if (!e.ok() || !doc.is_object()) {
+        if (why)
+            *why = e.ok() ? "not a JSON object" : e.message;
+        return false;
+    }
+    Lent lent;
+    if (auto regs = doc["ids"].if_object())
+        for (auto &[reg, recs] : *regs)
+            if (auto o = recs.if_object())
+                for (auto &[rec, id] : *o)
+                    if (id.is_int() && id.as_int() >= 0)
+                        lent[reg][rec] = id.as_int();
+    std::vector<std::string> got = lend(lent);
+    if (lines)
+        *lines = std::move(got);
+    return true;
+}
+
+std::vector<std::string> Store::lend(const Lent &lent)
+{
+    std::lock_guard g(mu_);
+    std::vector<std::string> out;
+    std::size_t applied = 0;
+    for (auto &[reg, recs] : lent) {
+        auto &mine = ids_[reg];
+        std::map<int64_t, std::string> claimed;
+        std::vector<std::string> displaced;
+        for (auto &[rec, id] : recs) {
+            auto [at, fresh] = claimed.emplace(id, rec);
+            if (!fresh) {
+                out.push_back("[registry] stat ids: " + reg + " " + rec + " not lent: the host gives " + at->second +
+                              " the same stat id " + std::to_string(id));
+                continue;
+            }
+            std::string who;
+            for (auto &[career, map] : careers_) {
+                auto it = map.find(reg);
+                if (it == map.end())
+                    continue;
+                for (auto &[r, v] : it->second)
+                    if (v == id && r != rec)
+                        who = career + " uses " + std::to_string(id) + " for " + r;
+            }
+            if (!who.empty()) {
+                out.push_back("[registry] stat ids: " + reg + " " + rec + " not lent (host's " + std::to_string(id) +
+                              "): " + who + " here, so this record keeps its own id");
+                claimed.erase(id);
+                continue;
+            }
+            for (auto &[other, en] : mine)
+                if (other != rec && en.id == id && !en.lent)
+                    displaced.push_back(other);
+            auto e = mine.find(rec);
+            int64_t was = e == mine.end() ? -1 : e->second.id;
+            mine[rec] = Entry{id, e == mine.end() ? std::string() : e->second.since, -1, true};
+            applied++;
+            out.push_back("[registry] stat ids: " + reg + " " + rec + " -> " + std::to_string(id) +
+                          " (lent by the host for this session" +
+                          (was >= 0 && was != id ? "; this install keeps " + std::to_string(was) : std::string()) +
+                          ")");
+        }
+        for (auto &rec : displaced) {
+            auto it = mine.find(rec);
+            if (it == mine.end() || it->second.lent)
+                continue;
+            int64_t was = it->second.id;
+            mine.erase(it);
+            int64_t to = next_free_locked(reg, rec);
+            if (to >= 0)
+                mine[rec] = Entry{to, std::string(), -1, false};
+            out.push_back("[registry] stat ids: " + reg + " " + rec + " moved off " + std::to_string(was) +
+                          ", which the host's record needs, " +
+                          (to >= 0 ? "to " + std::to_string(to) : std::string("and gets an id when it registers")));
+        }
+    }
+    lent_ = lent_ || applied > 0;
+    return out;
+}
+
+bool Store::lent() const
+{
+    std::lock_guard g(mu_);
+    return lent_;
 }
 
 void Store::define_pool(const std::string &registry, Pool pool)
@@ -288,10 +378,15 @@ Result Store::get(const std::string &registry, const std::string &record) const
     if (e == it->second.end())
         return r;
     auto pit = pools_.find(registry);
-    if (pit != pools_.end() && e->second.id > pit->second.cap)
+    if (pit != pools_.end() && e->second.id > pit->second.cap && !e->second.lent)
         return r;
     r.id = e->second.id;
     r.how = "kept";
+    if (e->second.lent) {
+        r.line = "[registry] stat ids: " + registry + " " + record + " -> " + std::to_string(r.id) +
+                 " (lent by the host for this session)";
+        return r;
+    }
     r.line = "[registry] stat ids: " + registry + " " + record + " -> " + std::to_string(r.id) + " (kept from ids.json" +
              (e->second.since.empty() ? std::string(")") : ", since " + e->second.since + ")");
     return r;
@@ -351,6 +446,11 @@ Result Store::pin(const std::string &registry, const std::string &record, int64_
     r.how = "explicit";
     auto &recs = ids_[registry];
     auto e = recs.find(record);
+    if (e != recs.end() && e->second.lent) {
+        r.id = e->second.id;
+        r.how = "kept";
+        return r;
+    }
     bool was_moved = e != recs.end() && e->second.pin == id && e->second.id != id;
     std::string row;
     if (label.empty() && was_moved) {
@@ -400,6 +500,8 @@ Result Store::recheck(const std::string &registry, const std::string &record, co
         return r;
     r.id = e->second.id;
     r.how = "kept";
+    if (e->second.lent)
+        return r;
     std::string row;
     if (!db_locked(registry, r.id, label, &row))
         return r;
@@ -481,7 +583,7 @@ void Store::forget_career(const std::string &career)
 bool Store::dirty() const
 {
     std::lock_guard g(mu_);
-    return dirty_;
+    return dirty_ && !lent_;
 }
 
 void Store::saved()
