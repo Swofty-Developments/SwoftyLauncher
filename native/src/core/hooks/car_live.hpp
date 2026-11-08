@@ -317,6 +317,9 @@ inline const Field *field(uint32_t id)
 }
 
 struct Env {
+    // Narrow capability for builds whose other car layouts are not verified.
+    // It is intentionally opt-in; an EA build is not enabled by this flag alone.
+    bool fuel_only = false;
     std::function<bool(uintptr_t addr, void *out, size_t n)> read;
     std::function<bool(uintptr_t addr, const void *in, size_t n)> write;
     std::function<bool()> flow_thread;
@@ -375,6 +378,7 @@ template <class Tag> struct Ops {
     static inline uint32_t next_token = 1;
     static inline uint64_t next_order = 0;
     static inline Slot slots[MAX_CARS][FIELD_COUNT];
+    static inline uintptr_t fuel_slot_cars[MAX_CARS]{};
     static inline ai_racecraft::Fields racecraft;
     static inline std::atomic<float> virt[MAX_CARS][VIRTUALS];
     static inline std::atomic<bool> dirty{false}, power_active{false}, ai_active{false};
@@ -405,6 +409,7 @@ template <class Tag> struct Ops {
             for (auto &row : slots)
                 for (auto &s : row)
                     s = Slot{};
+            std::fill(std::begin(fuel_slot_cars), std::end(fuel_slot_cars), uintptr_t(0));
         }
         reset_virtuals();
         racecraft.forget();
@@ -420,6 +425,8 @@ template <class Tag> struct Ops {
 
     static bool ready(const Field &f)
     {
+        if (env.fuel_only && (f.id < SWOFTY_CAR_FUEL_BASE || f.id >= SWOFTY_CAR_FUEL_BASE + 16))
+            return false;
         if (f.needs && env.row_ready && !env.row_ready(f.needs))
             return false;
         if (f.kind == Kind::cell && env.row_ready)
@@ -586,6 +593,14 @@ template <class Tag> struct Ops {
             if (l.field == field && (l.index == SWOFTY_CAR_ALL || l.index == index))
                 return true;
         return false;
+    }
+
+    static bool has_fuel_layers()
+    {
+        std::lock_guard<std::mutex> g(lay_lock);
+        return std::any_of(layers.begin(), layers.end(), [](const LayerRec &l) {
+            return l.field >= SWOFTY_CAR_FUEL_BASE && l.field < SWOFTY_CAR_FUEL_BASE + 16;
+        });
     }
 
     static float clamp(const Field &f, float v) { return std::min(std::max(v, f.lo), f.hi); }
@@ -779,6 +794,11 @@ template <class Tag> struct Ops {
         uintptr_t fuel_sys = 0;
         const std::vector<LayerRec> mine = layers_of(index);
         std::unique_lock<std::mutex> g(slot_lock);
+        if (env.fuel_only && fuel_slot_cars[index] != car) {
+            for (auto &slot : slots[index])
+                slot = Slot{};
+            fuel_slot_cars[index] = car;
+        }
         for (size_t i = 0; i < FIELD_COUNT; i++) {
             const Field &f = FIELDS[i];
             if (f.kind == Kind::virt)
@@ -914,6 +934,8 @@ template <class Tag> struct Ops {
 
     static int op_refit_tyres(uint32_t index, const char *group)
     {
+        if (env.fuel_only)
+            return SWOFTY_ASSET_UNAVAILABLE;
         if (!group || !*group || std::strlen(group) > 31)
             return SWOFTY_ASSET_INVALID;
         for (const char *c = group; *c; c++)
