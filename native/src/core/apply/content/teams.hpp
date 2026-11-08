@@ -504,6 +504,14 @@ inline void lower_team(const std::string &id, const Value &rec, const Lookup &lo
     put_colour("team_wear_secondary_colour", w["secondary"]);
     put_colour("team_wear_tertiary_colour", w["tertiary"]);
     auto sid = stat_of(stat, TEAM_IDS, id, pin_of(rec));
+    if ((!sid && stat) || (sid && *sid > TEAM_STAT_MAX)) {
+        plan.lines.push_back("team.identity " + id + ": " +
+                             (sid ? "stat id " + std::to_string(*sid) : std::string("no stat id")) + " is outside 0-" +
+                             std::to_string(TEAM_STAT_MAX) +
+                             ", which is all the game keeps for a team; the team is left out, and so is every entrant list that uses it");
+        plan.refused++;
+        return;
+    }
     if (sid)
         set["stat_id"] = Value(std::to_string(*sid));
     const Value *logo = rec["logo"].is_string() ? lookup("team.logo", std::string(rec["logo"].as_string())) : nullptr;

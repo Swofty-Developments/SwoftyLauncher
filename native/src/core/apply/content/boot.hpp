@@ -292,6 +292,7 @@ struct Expansion {
     std::vector<GarageArt> garages;
     std::map<std::string, std::vector<std::pair<std::string, std::string>>> texts;
     std::set<std::string> owners;
+    std::map<std::string, std::map<std::string, int>> left_out;
 };
 
 inline TeamRefs refs_of(registry::Store &st, const Lookup &lookup)
@@ -510,7 +511,8 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
             else if (r == "vehicle") {
                 lower_vehicle(id, *rec, lookup, source, plan, stat, &dropped);
                 auto linked = vehicle_tower.find(id);
-                if (linked == vehicle_tower.end())
+                if (plan.ops.size() == 0 && plan.refused) {
+                } else if (linked == vehicle_tower.end())
                     lower_vehicle_team(*rec, read, plan);
                 else
                     lower_vehicle_team(*rec, read, plan, linked->second.first, linked->second.second);
@@ -544,7 +546,7 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
             else if (r == "career.market")
                 lower_market(id, *rec, lookup, read, refs, plan);
             else
-                lower_package(id, *rec, lookup, plan, stat, &wear.person_driver, read, &refs.constructor_team);
+                lower_package(id, *rec, lookup, plan, stat, &wear.person_driver, read, &refs.constructor_team, &dropped);
             x.engine.add_fields(plan.fields);
             x.engine.attribute(owner, reg, id);
             std::size_t mark = x.engine.mark();
@@ -556,6 +558,11 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
                 x.engine.rollback(mark);
                 if (r == "vehicle.package")
                     dropped.insert(id);
+                if (r == "vehicle" || r == "team.identity" ||
+                    (r == "content.package" && !dropped_ref(*rec, &dropped).empty()))
+                    x.left_out[owner][r]++;
+                if (r == "vehicle" || r == "team.identity")
+                    dropped.insert(drop_key(reg, id));
                 x.refused[reg]++;
                 lines.push_back(std::string(reg) + " " + id + ": not applied: " +
                                 (why.empty() ? (plan.lines.empty() ? std::string("it lowers to nothing")

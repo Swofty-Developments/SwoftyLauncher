@@ -178,6 +178,8 @@ inline std::optional<int64_t> stat_of(const StatIds &stat, const char *registry,
 }
 
 inline constexpr int64_t VEHICLE_PACKAGE_MAX = 254;
+inline constexpr int64_t VEHICLE_STAT_MAX = 1023;
+inline constexpr int64_t TEAM_STAT_MAX = 1023;
 
 inline std::string text(const Value &v)
 {
@@ -324,6 +326,11 @@ inline void lower_vehicle_package(const std::string &id, const Value &rec, Plan 
 
 using Dropped = std::set<std::string>;
 
+inline std::string drop_key(const char *registry, const std::string &id)
+{
+    return std::string(registry) + "|" + id;
+}
+
 inline void lower_vehicle(const std::string &id, const Value &rec, const Lookup &lookup, const Source &source,
                           Plan &plan, const StatIds &stat = {}, const Dropped *dropped = nullptr)
 {
@@ -355,6 +362,14 @@ inline void lower_vehicle(const std::string &id, const Value &rec, const Lookup 
     if (ai.is_string() && ai.as_string() != "auto")
         set["asset_filename"] = ai;
     auto sid = stat_of(stat, "vehicle", id, pin_of(rec));
+    if ((!sid && stat) || (sid && *sid > VEHICLE_STAT_MAX)) {
+        plan.lines.push_back("vehicle " + id + ": " +
+                             (sid ? "stat id " + std::to_string(*sid) : std::string("no stat id")) + " is outside 0-" +
+                             std::to_string(VEHICLE_STAT_MAX) +
+                             ", which is all the game keeps for a vehicle; the car is left out, and so is every entrant list that uses it");
+        plan.refused++;
+        return;
+    }
     if (sid)
         set["stat_id"] = std::to_string(*sid);
     push_row(plan, "entrants.vehicles", std::string(VEHICLES) + "[_metadata_=" + donor + "]", std::move(set));
@@ -557,11 +572,32 @@ inline std::optional<Board> board_of(const std::string &id, const Value &rec)
     return Board{"swofty_" + board_word(list), false};
 }
 
+inline std::string dropped_ref(const Value &rec, const Dropped *dropped)
+{
+    if (!dropped || dropped->empty())
+        return {};
+    const Value &entries = rec["teams"];
+    for (std::size_t t = 0; t < entries.size(); t++)
+        for (const char *registry : {"team.identity", "vehicle"}) {
+            const Value &ref = entries[t][std::string_view(registry) == "vehicle" ? "vehicle" : "team"];
+            if (ref.is_string() && dropped->count(drop_key(registry, std::string(ref.as_string()))))
+                return std::string(registry == std::string_view("vehicle") ? "vehicle " : "team ") +
+                       std::string(ref.as_string());
+        }
+    return {};
+}
+
 inline void lower_package(const std::string &id, const Value &rec, const Lookup &lookup, Plan &plan,
                           const StatIds &stat = {}, const PersonMap *wear = nullptr, const Read &read = {},
-                          const ConstructorTeams *constructors = nullptr)
+                          const ConstructorTeams *constructors = nullptr, const Dropped *dropped = nullptr)
 {
     plan.owner = addon_of(id);
+    if (std::string gone = dropped_ref(rec, dropped); !gone.empty()) {
+        plan.lines.push_back("content.package " + id + ": " + gone +
+                             " has no stat id and is left out; the entrant list is left out with it");
+        plan.refused++;
+        return;
+    }
     const Value &db = rec["database"];
     std::string list = std::string(rec["entrant_list"].as_string());
     std::string title = title_text(rec["title"]);
@@ -788,12 +824,12 @@ struct PoolSpec {
 
 // vehicle.package and scenario ids stop at 254: the game keeps them in a byte, and the launcher stops 1.5 operations there too.
 inline constexpr PoolSpec POOLS[] = {
-    {"vehicle", "entrants.vehicles", "vehicle", "stat_id", 1023},
+    {"vehicle", "entrants.vehicles", "vehicle", "stat_id", VEHICLE_STAT_MAX},
     {"vehicle.package", "entrants.vehicles.vehicle_packages", "vehicle_package", "stat_id", VEHICLE_PACKAGE_MAX},
     {"content.package", "entrants.entrant_lists", "entrant_list", "stat_id", 255},
     {SCENARIO_IDS, "game_setup.scenarios", "scenario", "statId", 254},
     {LEADERBOARD_IDS, LEADERBOARD_TABLE, "leaderboard_descriptor", "stat_id", 255},
-    {"team.identity", "entrants.teams", "team", "stat_id", 1023},
+    {"team.identity", "entrants.teams", "team", "stat_id", TEAM_STAT_MAX},
 };
 
 struct PoolScan {

@@ -4,6 +4,7 @@
 #include "../database.hpp"
 #include "../files_api.hpp"
 #include "../ids.hpp"
+#include "../moments.hpp"
 #include "boot.hpp"
 #include "garage_build.hpp"
 #include "gvdb.hpp"
@@ -201,6 +202,9 @@ void define_pools(Database &d, std::vector<std::string> &lines, std::map<std::st
             pool.ranges = scan.holes;
         else if (scan.lo <= scan.hi)
             pool.ranges.push_back({scan.lo, scan.hi});
+        for (auto &spec : POOLS)
+            if (scan.registry == spec.registry)
+                pool.cap = spec.cap;
         ids::store().define_pool(scan.registry, pool);
         lines.push_back("stat-id pool for " + scan.registry + ": " +
                         (scan.lo <= scan.hi ? std::to_string(scan.lo) + "-" + std::to_string(scan.hi) : std::string("none")) +
@@ -225,6 +229,19 @@ int64_t stat_id(const std::string &registry, const std::string &id, int64_t pin)
     return r.id;
 }
 
+void report_left_out(const Expansion &x)
+{
+    for (auto &[addon, counts] : x.left_out) {
+        auto n = [&counts](const char *reg) {
+            auto it = counts.find(reg);
+            return it == counts.end() ? 0 : it->second;
+        };
+        swofty::log("[registry] left out: %s: %d team(s), %d vehicle(s), %d entrant list(s) got no stat id", addon.c_str(),
+                    n("team.identity"), n("vehicle"), n("content.package"));
+        moments::left_out(addon, n("team.identity"), n("vehicle"), n("content.package"));
+    }
+}
+
 void run_boot(Store &st)
 {
     State &s = state();
@@ -237,6 +254,9 @@ void run_boot(Store &st)
     std::map<std::string, PoolScan> scans;
     define_pools(d, s.boot_lines, scans);
     pin_all(st, scans);
+    for (const char *registry : {"vehicle", "vehicle.package", "content.package", "team.identity"})
+        if (scans.count(registry))
+            ids::store().set_live(registry, st.list(registry, ""));
     Admission adm = admit(st.order(), plan.addon_fresh, db::staging().room());
     for (auto &[addon, keys] : adm.refused) {
         db::Refusal r{addon, {}, keys};
@@ -648,6 +668,8 @@ public:
         }
         report.applied = int(x.records[registry_]);
         report.refused = int(x.refused[registry_]);
+        if (first)
+            report_left_out(x);
         for (auto &addon : s.refused[registry_]) {
             report.refused++;
             report.lines.push_back(addon + ": left out for room (see the [registry] room line)");

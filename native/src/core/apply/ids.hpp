@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <limits>
 #include <map>
 #include <mutex>
 #include <set>
@@ -12,6 +13,7 @@ namespace swofty_core::apply::ids {
 
 struct Pool {
     std::vector<std::pair<int64_t, int64_t>> ranges;
+    int64_t cap = INT64_MAX;
 };
 
 using CareerMap = std::map<std::string, std::map<std::string, int64_t>>;
@@ -54,6 +56,7 @@ public:
     bool dirty() const;
     void saved();
     std::size_t size() const;
+    std::size_t deduped() const;
 
 private:
     struct Entry {
@@ -79,6 +82,7 @@ private:
     std::map<std::string, Pool> pools_;
     std::map<std::string, std::set<std::string>> live_;
     std::map<std::string, std::map<int64_t, std::string>> db_;
+    std::size_t deduped_ = 0;
     bool dirty_ = false;
 };
 

@@ -17,6 +17,7 @@ void boot_load(room::Report &report);
 void boot_without_database(room::Report report);
 void write_room(const room::Report &report);
 void status(const std::string &addon, const std::string &line);
+void left_out(const std::string &addon, int teams, int vehicles, int lists);
 
 void career_loaded(const char *key, unsigned mode);
 void career_unloaded();

@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <ctime>
 #include <cstddef>
+#include <array>
 #include <map>
 #include <mutex>
 #include <set>
@@ -34,6 +35,7 @@ using swofty::json::Value;
 std::once_flag attached;
 std::mutex status_mu;
 std::map<std::string, std::vector<std::string>> status_lines;
+std::map<std::string, std::array<int, 3>> left_outs;
 std::atomic<bool> loaded_from_flow{false};
 std::mutex ids_mu;
 
@@ -181,6 +183,12 @@ void extend(Value &, Value &conflicts)
                                       {"addon", Value(f.addon)},
                                       {"error", Value(f.what)}}));
     std::lock_guard g(status_mu);
+    if (!left_outs.empty()) {
+        Value out = Value::object();
+        for (auto &[addon, n] : left_outs)
+            out[addon] = Value::object({{"teams", Value(n[0])}, {"vehicles", Value(n[1])}, {"lists", Value(n[2])}});
+        conflicts["left_out"] = out;
+    }
     if (status_lines.empty())
         return;
     Value st = Value::object();
@@ -448,6 +456,12 @@ void status(const std::string &addon, const std::string &line)
 {
     std::lock_guard g(status_mu);
     status_lines[addon.empty() ? std::string("swofty.core") : addon].push_back(line);
+}
+
+void left_out(const std::string &addon, int teams, int vehicles, int lists)
+{
+    std::lock_guard g(status_mu);
+    left_outs[addon] = {teams, vehicles, lists};
 }
 
 void write_room(const room::Report &report)

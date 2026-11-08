@@ -2,6 +2,8 @@
 
 #include <swofty/json.hpp>
 
+#include <algorithm>
+
 namespace swofty_core::apply::ids {
 
 using swofty::json::Value;
@@ -18,6 +20,7 @@ bool Store::load(const std::string &text, std::string *why)
     std::lock_guard g(mu_);
     ids_.clear();
     careers_.clear();
+    deduped_ = 0;
     dirty_ = false;
     swofty::json::Error e;
     Value doc = swofty::json::parse(text, &e);
@@ -49,6 +52,31 @@ bool Store::load(const std::string &text, std::string *why)
                         for (auto &[rec, id] : *r)
                             if (id.is_int())
                                 careers_[career][reg][rec] = id.as_int();
+    for (auto &[reg, recs] : ids_) {
+        std::map<int64_t, std::string> owner;
+        std::vector<std::string> lose;
+        for (auto &[rec, en] : recs) {
+            auto [at, fresh] = owner.emplace(en.id, rec);
+            if (fresh)
+                continue;
+            bool mine = false, theirs = false;
+            for (auto &[career, map] : careers_)
+                if (auto c = map.find(reg); c != map.end()) {
+                    auto a = c->second.find(rec), b = c->second.find(at->second);
+                    mine = mine || (a != c->second.end() && a->second == en.id);
+                    theirs = theirs || (b != c->second.end() && b->second == en.id);
+                }
+            if (mine && !theirs) {
+                lose.push_back(at->second);
+                at->second = rec;
+            } else
+                lose.push_back(rec);
+        }
+        for (auto &rec : lose)
+            recs.erase(rec);
+        deduped_ += lose.size();
+        dirty_ = dirty_ || !lose.empty();
+    }
     return true;
 }
 
@@ -100,6 +128,11 @@ void Store::clear()
 void Store::define_pool(const std::string &registry, Pool pool)
 {
     std::lock_guard g(mu_);
+    std::vector<std::pair<int64_t, int64_t>> within;
+    for (auto &[lo, hi] : pool.ranges)
+        if (lo <= std::min(hi, pool.cap))
+            within.push_back({lo, std::min(hi, pool.cap)});
+    pool.ranges = std::move(within);
     pools_[registry] = std::move(pool);
 }
 
@@ -253,6 +286,9 @@ Result Store::get(const std::string &registry, const std::string &record) const
         return r;
     auto e = it->second.find(record);
     if (e == it->second.end())
+        return r;
+    auto pit = pools_.find(registry);
+    if (pit != pools_.end() && e->second.id > pit->second.cap)
         return r;
     r.id = e->second.id;
     r.how = "kept";
@@ -452,6 +488,12 @@ void Store::saved()
 {
     std::lock_guard g(mu_);
     dirty_ = false;
+}
+
+std::size_t Store::deduped() const
+{
+    std::lock_guard g(mu_);
+    return deduped_;
 }
 
 std::size_t Store::size() const
