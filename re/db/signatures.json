@@ -162139,7 +162139,7 @@
    "names": [
     "Game_CheckPrivilegeTask_OnUpdate"
    ],
-   "verified": [],
+   "verified": [{"build": "d873a1c8d2044cef", "date": "2026-11-08", "by": "netplay-privilege-verify", "how": "static"}],
    "used_by": [
     "native/src/core/netplay.cpp"
    ]
@@ -162158,7 +162158,7 @@
    "names": [
     "Game_CheckPrivilegeTask_PrivilegeCheckTaskCallback"
    ],
-   "verified": [],
+   "verified": [{"build": "d873a1c8d2044cef", "date": "2026-11-08", "by": "netplay-privilege-verify", "how": "static"}],
    "used_by": [
     "native/src/core/netplay.cpp"
    ]

@@ -2808,6 +2808,9 @@ pub type Game_CareerWizard_StartsInF1_t = unsafe extern "C" fn(
     entrant_list: *const c_char,
 ) -> bool;
 pub type Game_Career_IsDriverCareerMode_t = unsafe extern "C" fn(championship: *const c_void) -> bool;
+pub type Game_CheckPrivilegeTask_OnUpdate_t = unsafe extern "C" fn(task: *mut c_void);
+pub type Game_CheckPrivilegeTask_PrivilegeCheckTaskCallback_t =
+    unsafe extern "C" fn(task: *mut c_void, privilege: u32, success: bool, continuation: *const c_void);
 pub type Game_ContractTeamSelect_OnEnter_t = unsafe extern "C" fn(state: *mut c_void) -> u64;
 pub type Game_ContractTeamSelect_OnExit_t = unsafe extern "C" fn(state: *mut c_void) -> u64;
 pub type Game_ContractTeamSelect_OnUpdate_t =
@@ -4332,6 +4335,16 @@ pub mod bindings {
     };
     pub const Game_Championship_ResetSessionsForRestart: Binding = Binding {
         id: "Game_Championship_ResetSessionsForRestart",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CheckPrivilegeTask_OnUpdate: Binding = Binding {
+        id: "Game_CheckPrivilegeTask_OnUpdate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_CheckPrivilegeTask_PrivilegeCheckTaskCallback: Binding = Binding {
+        id: "Game_CheckPrivilegeTask_PrivilegeCheckTaskCallback",
         kind: "func",
         status: Status::Experimental,
     };
