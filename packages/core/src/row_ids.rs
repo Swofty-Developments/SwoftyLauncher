@@ -271,6 +271,35 @@ pub fn id_owners(data: &Path) -> BTreeMap<(String, i64), BTreeSet<String>> {
     out
 }
 
+/// The highest `stat_id` the stock database `db` gives a team, vehicle or driver row, by table
+/// (`entrants.teams.team`): an id above it in a save names a row an addon added. A table `db`
+/// holds no rows of is left out.
+pub fn stock_max_ids(db: &Gvdb) -> BTreeMap<String, i64> {
+    let index: HashMap<u64, usize> = db.records.iter().enumerate().map(|(i, r)| (r.key, i)).collect();
+    let text = |path: &str| {
+        index
+            .get(&fnv1a64(path))
+            .map(|&i| db.records[i].text().trim().to_owned())
+    };
+    let mut out = BTreeMap::new();
+    for (full, _) in ALIAS_TABLES {
+        let Some((table, row)) = full.rsplit_once('.') else {
+            continue;
+        };
+        let count = text(&instance_count_path(table, row))
+            .and_then(|v| v.parse::<usize>().ok())
+            .unwrap_or(0);
+        let field = stat_id_field(table, row);
+        let max = (0..count)
+            .filter_map(|i| text(&format!("{table}.{row}_{i}.{field}"))?.parse::<i64>().ok())
+            .max();
+        if let Some(max) = max {
+            out.insert((*full).to_owned(), max);
+        }
+    }
+    out
+}
+
 pub fn path(data: &Path) -> PathBuf {
     reports::path(data, FILE)
 }
@@ -2346,5 +2375,25 @@ mod tests {
         );
         assert!(of("tracks.Track", 9).is_empty());
         std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn stock_max_ids_are_the_highest_stat_id_of_each_stock_table() {
+        use swofty_formats::gvdb::Record;
+        let mut records = vec![Record::new(
+            &instance_count_path("entrants.teams", "team"),
+            0,
+            "3",
+        )];
+        for (i, id) in [7, 159, 12].into_iter().enumerate() {
+            records.push(Record::new(
+                &format!("entrants.teams.team_{i}.stat_id"),
+                0,
+                id.to_string(),
+            ));
+        }
+        let max = stock_max_ids(&Gvdb { records });
+        assert_eq!(max.get("entrants.teams.team"), Some(&159));
+        assert_eq!(max.get("entrants.vehicles.vehicle"), None);
     }
 }

@@ -353,7 +353,6 @@ pub fn record_session(data: &Path, profile: &str, since_ms: i64, loader_log: &st
         .filter(|id| installed.contains_key(id))
         .collect();
     let mut changed = record_rows(&mut list, &in_save, since_ms, &plan.order, &owners, &installed);
-    changed |= backfill_rows(&mut list, &crate::row_ids::id_owners(data), &installed);
     changed |= record(
         &mut list,
         &in_save,
@@ -371,19 +370,25 @@ pub fn record_session(data: &Path, profile: &str, since_ms: i64, loader_log: &st
     Ok(())
 }
 
-const SAVE_IDS: [(&str, &str, i64, i64); 3] = [
-    ("team_raw", "entrants.teams.team", 400, 16383),
-    ("vehicle_raw", "entrants.vehicles.vehicle", 205, 16383),
-    ("driver_raw", "entrants.drivers.driver", 255, 16383),
+const SAVE_IDS: [(&str, &str); 3] = [
+    ("team_raw", "entrants.teams.team"),
+    ("vehicle_raw", "entrants.vehicles.vehicle"),
+    ("driver_raw", "entrants.drivers.driver"),
 ];
 
-/// The ids a career's save entry holds above the stock rows, as `(table, id)`: rows an addon added.
-fn added_ids(c: &Career) -> Vec<(&'static str, i64)> {
+/// The ids from this value up are the game's placeholders (no team, my team), never rows.
+const PLACEHOLDER_IDS: i64 = 16383;
+
+/// The ids a career's save entry holds above the stock database's highest (`stock_max`, by table,
+/// see `row_ids::stock_max_ids`), as `(table, id)`: rows an addon added. A table with no stock
+/// maximum yields none.
+fn added_ids(c: &Career, stock_max: &BTreeMap<String, i64>) -> Vec<(&'static str, i64)> {
     SAVE_IDS
         .iter()
-        .filter_map(|(field, table, above, below)| {
+        .filter_map(|(field, table)| {
             let id = c.extra.get(*field).and_then(Value::as_i64)?;
-            (id > *above && id < *below).then_some((*table, id))
+            let top = stock_max.get(*table)?;
+            (id > *top && id < PLACEHOLDER_IDS).then_some((*table, id))
         })
         .collect()
 }
@@ -394,15 +399,17 @@ fn records_rows(c: &Career) -> bool {
 
 /// Careers last played before the launcher recorded database addons hold no owners. For each such
 /// career whose save entry holds team, vehicle or driver ids above the stock rows, records the
-/// addons the install's ids name as the owners of those rows. Returns whether any career changed.
+/// addons the install's ids name as the owners of those rows. With no `stock_max` nothing counts
+/// as added, so nothing is recorded. Returns whether any career changed.
 pub fn backfill_rows(
     list: &mut [Career],
     owners: &BTreeMap<(String, i64), BTreeSet<String>>,
+    stock_max: &BTreeMap<String, i64>,
     installed: &BTreeMap<String, AddonManifest>,
 ) -> bool {
     let mut changed = false;
     for c in list.iter_mut().filter(|c| !c.is_gone() && !records_rows(c)) {
-        for (table, id) in added_ids(c) {
+        for (table, id) in added_ids(c, stock_max) {
             let Some(found) = owners.get(&(table.to_owned(), id)) else {
                 continue;
             };
@@ -431,10 +438,11 @@ pub fn unowned_line(
     order: &[String],
     installed: &BTreeMap<String, AddonManifest>,
     owners: &BTreeSet<String>,
+    stock_max: &BTreeMap<String, i64>,
 ) -> Option<String> {
     let careers: Vec<&str> = list
         .iter()
-        .filter(|c| !c.is_gone() && !records_rows(c) && !added_ids(c).is_empty())
+        .filter(|c| !c.is_gone() && !records_rows(c) && !added_ids(c, stock_max).is_empty())
         .map(|c| {
             if c.label.is_empty() {
                 c.career.as_str()
@@ -878,6 +886,35 @@ mod tests {
         )
     }
 
+    fn stock_max() -> BTreeMap<String, i64> {
+        [
+            ("entrants.teams.team".to_owned(), 475),
+            ("entrants.vehicles.vehicle".to_owned(), 211),
+            ("entrants.drivers.driver".to_owned(), 300),
+        ]
+        .into()
+    }
+
+    #[test]
+    fn a_career_on_the_highest_stock_ids_raises_nothing() {
+        let mut list = parse(
+            r#"[{"career":"driver_career:s","addons":[],"driver_raw":300,"team_raw":475,"vehicle_raw":211,"status":"present"}]"#,
+        );
+        let owners: BTreeMap<(String, i64), BTreeSet<String>> = [(
+            ("entrants.teams.team".to_owned(), 475),
+            BTreeSet::from(["x.season".to_owned()]),
+        )]
+        .into();
+        let installed = installed_of(&["x.season"]);
+        assert!(!backfill_rows(&mut list, &owners, &stock_max(), &installed));
+        assert!(list[0].addons.is_empty());
+        let off: BTreeSet<String> = ["x.season".to_owned()].into();
+        assert_eq!(unowned_line(&list, &[], &installed, &off, &stock_max()), None);
+        list[0].extra.insert("team_raw".into(), 476.into());
+        assert!(unowned_line(&list, &[], &installed, &off, &stock_max()).is_some());
+        assert_eq!(unowned_line(&list, &[], &installed, &off, &BTreeMap::new()), None);
+    }
+
     fn id_owners() -> BTreeMap<(String, i64), BTreeSet<String>> {
         let one =
             |table: &str, id: i64, addon: &str| ((table.to_owned(), id), BTreeSet::from([addon.to_owned()]));
@@ -893,13 +930,13 @@ mod tests {
     fn backfills_the_owners_of_added_ids_in_careers_with_none_recorded() {
         let installed = installed_of(&["x.season"]);
         let mut list = old_careers();
-        assert!(backfill_rows(&mut list, &id_owners(), &installed));
+        assert!(backfill_rows(&mut list, &id_owners(), &stock_max(), &installed));
         assert_eq!(list[1].addons.len(), 1);
         assert_eq!(list[1].addons[0].id, "x.season");
         assert_eq!(list[1].addons[0].why.as_deref(), Some(ROWS_WHY));
         assert!(list[0].addons.is_empty() && list[2].addons.is_empty() && list[3].addons.is_empty());
         assert!(list[4].addons.is_empty());
-        assert!(!backfill_rows(&mut list, &id_owners(), &installed));
+        assert!(!backfill_rows(&mut list, &id_owners(), &stock_max(), &installed));
         let stop = stop_line(&list, &[], &installed).unwrap();
         assert!(stop.contains("x.season"), "{stop}");
         assert_eq!(stop_line(&list, &["x.season".to_owned()], &installed), None);
@@ -916,6 +953,7 @@ mod tests {
         assert!(!backfill_rows(
             &mut list,
             &id_owners(),
+            &stock_max(),
             &installed_of(&["x.season"])
         ));
         assert_eq!(list[1].addons.len(), 1);
@@ -926,8 +964,8 @@ mod tests {
         let installed = installed_of(&["x.season"]);
         let owners: BTreeSet<String> = ["x.season".to_owned()].into();
         let mut list = old_careers();
-        backfill_rows(&mut list, &id_owners(), &installed);
-        let line = unowned_line(&list, &[], &installed, &owners).unwrap();
+        backfill_rows(&mut list, &id_owners(), &stock_max(), &installed);
+        let line = unowned_line(&list, &[], &installed, &owners, &stock_max()).unwrap();
         assert!(
             line.contains(
                 "1 career in your save use rows from addons that aren't installed or on (driver_career:a)"
@@ -935,8 +973,11 @@ mod tests {
             "{line}"
         );
         assert!(line.contains("Addons that are off: N x.season"), "{line}");
-        assert_eq!(unowned_line(&list[1..], &[], &installed, &owners), None);
-        assert_eq!(unowned_line(&[], &[], &installed, &owners), None);
+        assert_eq!(
+            unowned_line(&list[1..], &[], &installed, &owners, &stock_max()),
+            None
+        );
+        assert_eq!(unowned_line(&[], &[], &installed, &owners, &stock_max()), None);
     }
 
     #[test]

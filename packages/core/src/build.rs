@@ -843,7 +843,17 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             .into_iter()
             .cloned()
             .collect();
-        crate::stdlib::careers::backfill_rows(&mut scoped, &crate::row_ids::id_owners(&store.root), &addons);
+        let stock_max = std::fs::read(original(&store.root, game, GVDB))
+            .ok()
+            .and_then(|b| Gvdb::parse(&b).ok())
+            .map(|db| crate::row_ids::stock_max_ids(&db))
+            .unwrap_or_default();
+        crate::stdlib::careers::backfill_rows(
+            &mut scoped,
+            &crate::row_ids::id_owners(&store.root),
+            &stock_max,
+            &addons,
+        );
         if let Some(line) = crate::stdlib::careers::stop_line(&scoped, &resolved.order, &addons) {
             built.warnings.push(line);
         }
@@ -852,6 +862,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             &resolved.order,
             &addons,
             &crate::row_ids::save_owners(&store.root),
+            &stock_max,
         ) {
             built.warnings.push(line);
         }
