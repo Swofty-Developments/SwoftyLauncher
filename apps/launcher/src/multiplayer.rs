@@ -24,7 +24,7 @@ use swofty_core::multiplayer::session::{
     Local, MemberState, Phase, RoomContent, Session, SessionState, Setup,
 };
 use swofty_core::store::Store;
-use swofty_i18n::trn;
+use swofty_i18n::{tr, trn};
 
 use crate::pages::{GUTTER, badge, label, monogram, tag};
 use crate::shell::{Page, Shell};
@@ -652,6 +652,21 @@ impl Shell {
     pub(crate) fn mp_viewed_room(&self) -> Option<&RoomSummary> {
         let code = self.mp_page.viewing.as_deref()?;
         self.mp_page.rooms.iter().find(|r| r.code == code)
+    }
+
+    /// The play button's word while a shared session starts and F1 25 isn't building or running yet, so it
+    /// can't be pressed as a second Play.
+    pub(crate) fn mp_starting_label(&self) -> Option<&'static str> {
+        let m = &self.mp_page;
+        if !m.busy() {
+            return None;
+        }
+        let hosting = m.starting.as_deref() == Some("create") || m.state.as_ref().is_some_and(|s| s.host);
+        Some(if hosting {
+            tr("Opening room…")
+        } else {
+            tr("Joining…")
+        })
     }
 
     pub(crate) fn mp_can_play_room(&self) -> bool {

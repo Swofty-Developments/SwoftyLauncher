@@ -706,7 +706,15 @@ impl Shell {
             return self.addon_update_button(p, cx);
         }
         let vr = self.launch_mode().is_vr();
+        let starting = self.mp_starting_label();
         let (icon, label, bg, fg, enabled) = match state {
+            PlayState::Ready | PlayState::Crashed(_) if starting.is_some() => (
+                IconName::LoaderCircle,
+                starting.unwrap_or_default(),
+                p.elevated,
+                p.accent,
+                false,
+            ),
             PlayState::Ready | PlayState::Crashed(_) if vr => (
                 IconName::RectangleGoggles,
                 tr("Play in VR"),
@@ -762,7 +770,7 @@ impl Shell {
             ),
             PlayState::Elsewhere(_) => (IconName::Play, tr("Play"), p.elevated, p.text_muted, false),
         };
-        let ready = matches!(state, PlayState::Ready | PlayState::Crashed(_));
+        let ready = matches!(state, PlayState::Ready | PlayState::Crashed(_)) && starting.is_none();
         let missing = matches!(state, PlayState::NotInstalled);
         let running = matches!(state, PlayState::Running);
         let building = matches!(state, PlayState::Building);
