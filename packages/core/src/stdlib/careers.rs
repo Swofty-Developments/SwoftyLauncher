@@ -397,6 +397,26 @@ fn records_rows(c: &Career) -> bool {
     c.addons.iter().any(|a| a.why.as_deref() == Some(ROWS_WHY))
 }
 
+/// The stock maximum ids `read` gives, read only when a career of `list` needs them: one that is not
+/// deleted, records no database-row addons and holds a team, vehicle or driver id that could be an
+/// addon's. Empty otherwise.
+pub fn stock_max_for(list: &[Career], read: impl FnOnce() -> BTreeMap<String, i64>) -> BTreeMap<String, i64> {
+    let could_be_added = |c: &Career| {
+        SAVE_IDS
+            .iter()
+            .filter_map(|(field, _)| c.extra.get(*field).and_then(Value::as_i64))
+            .any(|id| id <= PLACEHOLDER_IDS)
+    };
+    if list
+        .iter()
+        .any(|c| !c.is_gone() && !records_rows(c) && could_be_added(c))
+    {
+        read()
+    } else {
+        BTreeMap::new()
+    }
+}
+
 /// Careers last played before the launcher recorded database addons hold no owners. For each such
 /// career whose save entry holds team, vehicle or driver ids above the stock rows, records the
 /// addons the install's ids name as the owners of those rows. With no `stock_max` nothing counts
@@ -940,6 +960,38 @@ mod tests {
         let stop = stop_line(&list, &[], &installed).unwrap();
         assert!(stop.contains("x.season"), "{stop}");
         assert_eq!(stop_line(&list, &["x.season".to_owned()], &installed), None);
+    }
+
+    #[test]
+    fn the_stock_database_is_read_only_for_careers_that_may_hold_added_ids() {
+        let reads = std::cell::Cell::new(0);
+        let read = || {
+            reads.set(reads.get() + 1);
+            stock_max()
+        };
+        let mut list = old_careers();
+        for c in list.iter_mut() {
+            c.addons.push(CareerAddon {
+                id: "x.season".into(),
+                why: Some(ROWS_WHY.into()),
+                ..CareerAddon::default()
+            });
+        }
+        assert!(stock_max_for(&list, read).is_empty());
+        assert_eq!(reads.get(), 0);
+        assert!(stock_max_for(&[], read).is_empty());
+        let mut gone = old_careers();
+        gone.retain(Career::is_gone);
+        assert!(stock_max_for(&gone, read).is_empty());
+        assert_eq!(reads.get(), 0);
+        let mut sentinel = parse(
+            r#"[{"career":"my_team:s","addons":[],"driver_raw":16384,"team_raw":16387,"vehicle_raw":16390,"status":"present"}]"#,
+        );
+        assert!(stock_max_for(&sentinel, read).is_empty());
+        assert_eq!(reads.get(), 0);
+        sentinel.extend(old_careers());
+        assert_eq!(stock_max_for(&sentinel, read), stock_max());
+        assert_eq!(reads.get(), 1);
     }
 
     #[test]

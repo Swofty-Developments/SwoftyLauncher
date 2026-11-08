@@ -843,11 +843,13 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             .into_iter()
             .cloned()
             .collect();
-        let stock_max = std::fs::read(original(&store.root, game, GVDB))
-            .ok()
-            .and_then(|b| Gvdb::parse(&b).ok())
-            .map(|db| crate::row_ids::stock_max_ids(&db))
-            .unwrap_or_default();
+        let stock_max = crate::stdlib::careers::stock_max_for(&scoped, || {
+            std::fs::read(original(&store.root, game, GVDB))
+                .ok()
+                .and_then(|b| Gvdb::parse(&b).ok())
+                .map(|db| crate::row_ids::stock_max_ids(&db))
+                .unwrap_or_default()
+        });
         crate::stdlib::careers::backfill_rows(
             &mut scoped,
             &crate::row_ids::id_owners(&store.root),
