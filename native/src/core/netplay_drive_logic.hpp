@@ -736,6 +736,11 @@ public:
     {
         switch (step_) {
         case Step::call:
+            if (!lobby) {
+                detail = "the game had already left the lobby";
+                step_ = Step::done;
+                return false;
+            }
             step_ = Step::wait;
             return true;
         case Step::wait:

@@ -419,6 +419,14 @@ int main()
         expect(l.finished() && !l.error.empty(), "a failed call ends the leave with its reason");
     }
 
+    {
+        drive::Leave l;
+        l.start(drive::parse(R"({"seq":11,"op":"leave"})"), 0);
+        expect(!l.tick(false, 2, 0), "no game call when the lobby closed before it");
+        expect(l.finished() && l.error.empty() && l.detail.find("already left") != std::string::npos,
+               "a lobby that closed first ends the leave without calling the game");
+    }
+
     printf("%s\n", fails ? "FAILED" : "all ok");
     return fails ? 1 : 0;
 }
