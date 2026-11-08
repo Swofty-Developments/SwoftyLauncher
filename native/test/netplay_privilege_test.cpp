@@ -42,6 +42,7 @@ int main()
     put(task, np::task_slot, slot);
     put(task, np::task_list, list);
     put(slot, np::slot_state, int32_t(1));
+    put(slot, np::slot_list, static_cast<void *>(list));
 
     int fail = 0;
     auto check = [&](bool ok, const char *what) {
@@ -56,6 +57,13 @@ int main()
     put(slot, np::slot_state, int32_t(0));
     check(np::grant(task) == 0, "slot idle: nothing answered");
     put(slot, np::slot_state, int32_t(1));
+    uint8_t other[0x40] = {};
+    put(slot, np::slot_list, static_cast<void *>(other));
+    check(np::grant(task) == 0 && seen.empty(), "slot owned by another request: left alone");
+    int32_t kept;
+    std::memcpy(&kept, slot + np::slot_state, sizeof kept);
+    check(kept == 1, "another request's slot state kept");
+    put(slot, np::slot_list, static_cast<void *>(list));
     check(np::grant(task) == 2, "two nodes answered");
     check(seen.size() == 2 && seen[0] == 7 && seen[1] == 11, "privileges in list order");
     check(all_granted, "granted with a continuation");

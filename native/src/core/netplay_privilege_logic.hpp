@@ -7,6 +7,7 @@ namespace runtime::netplay_privilege {
 constexpr size_t task_state = 0x158;
 constexpr size_t task_slot = 0x140;
 constexpr size_t task_list = 0x150;
+constexpr size_t slot_list = 0x18;
 constexpr size_t slot_state = 0x28;
 constexpr size_t list_sentinel = 0x20;
 constexpr size_t list_first = 0x28;
@@ -40,7 +41,7 @@ inline int grant(uint8_t *task)
         return 0;
     auto slot = load<uint8_t *>(task, task_slot);
     auto list = load<uint8_t *>(task, task_list);
-    if (!slot || !list || load<int32_t>(slot, slot_state) != 1)
+    if (!slot || !list || load<int32_t>(slot, slot_state) != 1 || load<const uint8_t *>(slot, slot_list) != list)
         return 0;
     static Continuation next{&done, nullptr};
     int answered = 0;
