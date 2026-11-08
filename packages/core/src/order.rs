@@ -887,6 +887,9 @@ mod tests {
         );
         let again = plan_fix(&p, &all, &[], &is_pinned, &after).unwrap();
         assert_eq!((again.moved, again.ejected.len()), (0, 0));
+        let d = diagnose(&p, &all, None, &[], &|_| false, &is_pinned, &after);
+        assert!(d.problems.is_empty(), "{:?}", d.problems);
+        assert_eq!(d.fix, FixState::Nothing);
     }
 
     #[test]
