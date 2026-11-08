@@ -6283,6 +6283,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_InviteManager_Cancel: Binding = Binding {
+        id: "Game_InviteManager_Cancel",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_InviteManager_ChangeState: Binding = Binding {
         id: "Game_InviteManager_ChangeState",
         kind: "func",

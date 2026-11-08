@@ -685,6 +685,7 @@ inline constexpr address<"Game_InGameMenuVM_OnReturnToGarage"> Game_InGameMenuVM
 inline constexpr address<"Game_InboxTabVM_OnTabActivated"> Game_InboxTabVM_OnTabActivated{}; // L2 experimental
 inline constexpr address<"Game_InboxTabVM_OnTabDeactivated"> Game_InboxTabVM_OnTabDeactivated{}; // L2 experimental
 inline constexpr address<"Game_Input_OnControlSchemeAdded"> Game_Input_OnControlSchemeAdded{}; // L2 experimental
+inline constexpr address<"Game_InviteManager_Cancel"> Game_InviteManager_Cancel{}; // L2 experimental, InviteManager::cancel
 inline constexpr address<"Game_InviteManager_ChangeState"> Game_InviteManager_ChangeState{}; // L2 experimental
 inline constexpr address<"Game_InviteManager_Join"> Game_InviteManager_Join{}; // L2 experimental
 inline constexpr address<"Game_InviteManager_OnCareerLoadedSoC"> Game_InviteManager_OnCareerLoadedSoC{}; // L2 experimental
