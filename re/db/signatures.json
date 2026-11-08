@@ -22614,7 +22614,9 @@
      "how": "static"
     }
    ],
-   "used_by": []
+   "used_by": [
+    "native/src/core/netplay_drive.cpp"
+   ]
   },
   {
    "id": "game.game_session_manager_content_domain_verifier_send_to",
