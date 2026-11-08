@@ -181,17 +181,19 @@ impl Shell {
 
     pub(super) fn shelve(&mut self, tab: Tab, cx: &mut Context<Self>) {
         let b = &mut self.browser;
-        if b.tab != tab {
+        if b.landing || b.tab != tab {
             b.smooth.cancel();
             b.scroll.set_offset(Point::default());
             b.grid_scroll.scroll_to(ListOffset::default());
         }
+        b.landing = false;
         b.tab = tab;
         cx.notify();
     }
 
     pub(super) fn show_categories(&mut self, cx: &mut Context<Self>) {
         let b = &mut self.browser;
+        b.landing = true;
         b.tab = None;
         b.smooth.cancel();
         b.scroll.set_offset(Point::default());

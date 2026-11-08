@@ -35,7 +35,6 @@ pub(crate) struct Browser {
     pub(super) scroll: ScrollHandle,
     pub(super) grid_scroll: ListState,
     pub(super) grid_cache: Option<GridCache>,
-    pub(super) rows: rows::Rows,
     pub(super) catalog_revision: u64,
     pub(super) facet_counts: RefCell<HashMap<Facet, usize>>,
     pub(super) needs_cache: RefCell<HashMap<String, AddonNeeds>>,
@@ -58,6 +57,7 @@ pub(crate) struct Browser {
     pub(super) star_gen: u64,
     pub(super) sort: Sort,
     pub(super) search_sort: Option<Sort>,
+    pub(super) landing: bool,
     pub(super) tab: Tab,
     pub(super) facets: BTreeSet<Facet>,
     pub(super) hide_code: bool,
@@ -101,7 +101,6 @@ impl Browser {
             scroll: ScrollHandle::new(),
             grid_scroll: ListState::new(0, ListAlignment::Top, px(200.)),
             grid_layout: Default::default(),
-            rows: Default::default(),
             grid_cache: None,
             catalog_revision: 0,
             facet_counts: RefCell::default(),
@@ -128,6 +127,7 @@ impl Browser {
             star_gen: 0,
             sort: Sort::Stars,
             search_sort: None,
+            landing: true,
             tab: None,
             facets: BTreeSet::new(),
             hide_code: false,
@@ -141,6 +141,10 @@ impl Browser {
             avatars: HashMap::new(),
             _search: changed,
         }
+    }
+
+    pub(super) fn on_landing(&self, searching: bool) -> bool {
+        self.landing && self.tab.is_none() && !searching && self.facets.is_empty() && !self.hide_code
     }
 
     pub(super) fn stale(&self) -> bool {

@@ -11,6 +11,7 @@ use swofty_core::catalog::search::Query;
 use swofty_core::update::current_version;
 use swofty_i18n::{tr, trf, trn};
 
+use super::tiles::landing_rows;
 use super::*;
 use crate::library::Type;
 use crate::pages::{GUTTER, tile};
@@ -160,12 +161,13 @@ impl Shell {
             trn(shown.len(), "{count} addon", "{count} addons")
         };
         let width = self.content_width - FILTERS_W - 20.;
-        let rows = !self.browser.addons.is_empty() && !filtering;
-        let bar = if rows {
-            div()
-        } else {
-            self.grid_bar(&count, sort, !query.is_empty(), p, cx)
-        };
+        let landing = !self.browser.addons.is_empty() && self.browser.on_landing(!query.is_empty());
+        if landing {
+            let filters = self.filter_column(p, cx);
+            let body = self.virtual_cards(shown, query, width, true, count, sort, p, cx);
+            return self.browser_columns(filters, div(), body);
+        }
+        let bar = self.grid_bar(&count, sort, !query.is_empty(), p, cx);
         let filters = self.filter_column(p, cx);
         let found = shown
             .is_empty()
@@ -190,12 +192,10 @@ impl Shell {
             .into_any_element()
         } else if shown.is_empty() && bare && !self.browser.addons.is_empty() && self.browser.tab.is_some() {
             self.empty_shelf(self.browser.tab, p, cx)
-        } else if rows && !shown.is_empty() {
-            self.category_rows(shown, width, p, cx)
         } else if shown.is_empty() {
             self.grid_empty(p, cx)
         } else {
-            self.virtual_cards(shown, query, width, p, cx)
+            self.virtual_cards(shown, query, width, false, count, sort, p, cx)
         };
         self.browser_columns(filters, bar, body)
     }
@@ -337,19 +337,23 @@ impl Shell {
             .collect()
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub(super) fn virtual_cards(
         &mut self,
         indices: Arc<[usize]>,
         query: Arc<Query>,
         width: f32,
+        landing: bool,
+        count: String,
+        sort: Sort,
         p: Palette,
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let columns = ((width + GAP) / (CARD_W + GAP)).floor().max(1.) as usize;
         let card_w = ((width - GAP * (columns - 1) as f32) / columns as f32).floor() - 1.;
         let rows = indices.len().div_ceil(columns);
-        let header_rows = 1;
-        let layout = (indices.clone(), columns, false, width.to_bits());
+        let header_rows = if landing { landing_rows(width) + 1 } else { 1 };
+        let layout = (indices.clone(), columns, landing, width.to_bits());
         if self.browser.grid_layout != layout {
             let offset = self.browser.grid_scroll.logical_scroll_top();
             // Give unvisited rows height so scrolling is not clamped to only the measured content.
@@ -363,9 +367,19 @@ impl Shell {
             self.browser.grid_scroll.clone(),
             cx.processor(move |this, row: usize, _, cx| {
                 if row < header_rows {
-                    return v_flex()
-                        .children(this.creators_found(&query, p, cx))
-                        .into_any_element();
+                    return if landing {
+                        if row + 1 == header_rows {
+                            this.all_heading(count.clone(), sort, width, p, cx)
+                                .pb(px(GAP))
+                                .into_any_element()
+                        } else {
+                            this.landing_row(row, width, p, cx)
+                        }
+                    } else {
+                        v_flex()
+                            .children(this.creators_found(&query, p, cx))
+                            .into_any_element()
+                    };
                 }
                 let start = (row - header_rows) * columns;
                 let end = (start + columns).min(indices.len());
@@ -387,6 +401,30 @@ impl Shell {
             .smooth
             .wrap(content, &self.browser.grid_scroll, cx)
             .into_any_element()
+    }
+
+    fn all_heading(&self, count: String, sort: Sort, width: f32, p: Palette, cx: &mut Context<Self>) -> Div {
+        h_flex()
+            .w(px(width - 1.))
+            .pt(px(10.))
+            .gap(px(12.))
+            .flex_shrink_0()
+            .items_center()
+            .child(
+                div()
+                    .flex_1()
+                    .min_w_0()
+                    .text_size(px(15.))
+                    .font_weight(FontWeight::SEMIBOLD)
+                    .child(tr("All addons")),
+            )
+            .child(
+                div()
+                    .text_size(px(12.))
+                    .text_color(p.text_placeholder)
+                    .child(count),
+            )
+            .child(self.sort_button(sort, false, cx))
     }
 
     pub(super) fn scroll_area(&self, body: Stateful<Div>, cx: &Context<Self>) -> Div {

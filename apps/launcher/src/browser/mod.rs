@@ -13,7 +13,6 @@ mod model;
 mod offer;
 mod page;
 mod panels;
-mod rows;
 mod sidebar;
 mod state;
 mod sync;
@@ -32,7 +31,6 @@ use swofty_i18n::trf;
 use crate::format;
 use crate::news::format_date;
 
-use card::*;
 use filters::*;
 use grid::*;
 use jobs::*;
