@@ -11,6 +11,7 @@
 #include <string>
 
 #include "career_state.hpp"
+#include "pause_edge.hpp"
 #include "view_flow_logic.hpp"
 
 namespace runtime {
@@ -202,12 +203,22 @@ void pause_mid(safetyhook::Context &ctx)
     int bit = int(uint32_t(ctx.r8));
     if (bit < 0 || bit >= 32)
         return;
-    uint32_t mask = pause_mask.load(std::memory_order_relaxed);
-    mask = set ? (mask | 1u << bit) : (mask & ~(1u << bit));
+    uint32_t before = pause_mask.load(std::memory_order_relaxed);
+    uint32_t mask = set ? (before | 1u << bit) : (before & ~(1u << bit));
     pause_mask.store(mask, std::memory_order_relaxed);
     static std::atomic<int> logged{0};
     if (logged.fetch_add(1, std::memory_order_relaxed) < 64)
         swofty::log("[view] pause reason bit %d %s, mask %08x", bit, set ? "set" : "cleared", mask);
+    switch (view::pause_edge(before, mask)) {
+    case view::PauseEdge::paused:
+        runtime::events_fire(SWOFTY_EVENT_PAUSE, mask, bit, nullptr);
+        break;
+    case view::PauseEdge::resumed:
+        runtime::events_fire(SWOFTY_EVENT_RESUME, 0, bit, nullptr);
+        break;
+    case view::PauseEdge::none:
+        break;
+    }
 }
 
 safetyhook::MidHook install(const runtime::Sig &sig, safetyhook::MidHookFn fn)
@@ -231,6 +242,11 @@ namespace view {
 State current()
 {
     return unpack(packed.load(std::memory_order_acquire));
+}
+
+uint32_t pause_reasons()
+{
+    return pause_mask.load(std::memory_order_relaxed);
 }
 
 void flow(uint32_t hash, uint32_t to)
@@ -267,4 +283,9 @@ void setup()
     recompute();
 }
 
+}
+
+extern "C" __declspec(dllexport) uint32_t SwoftyCorePauseReasons(void)
+{
+    return view::pause_reasons();
 }

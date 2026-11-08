@@ -13,6 +13,7 @@ struct State {
 };
 
 State current();
+uint32_t pause_reasons();
 void setup();
 void flow(uint32_t hash, uint32_t to);
 
