@@ -183,7 +183,8 @@ FeTile_Press_EraTile_t *press_orig;
 Game_F1WorldActivityContainer_SelectEntrantList_t *select_orig;
 uint32_t logged_builds, logged_narrow, logged_refused, logged_detached;
 constexpr size_t BOX_TIME_TRIAL = offsetof(SwoftyEraBox, time_trial_entrant_list);
-static_assert(BOX_TIME_TRIAL == 0x28);
+constexpr size_t BOX_ONLY = offsetof(SwoftyEraBox, only);
+static_assert(BOX_TIME_TRIAL == 0x28 && BOX_ONLY == 0x30);
 logic::DrsSwaps drs;
 std::string last_drs_line;
 
@@ -893,6 +894,8 @@ void site_entry(SwoftyContext *c)
     for (const auto &box : order) {
         if (built.boxes >= logic::MAX_BOXES)
             break;
+        if (!logic::shown(box, tt))
+            continue;
         if (!mode || !available(mode, logic::HOST, box.entrant_list.c_str())) {
             if (skip_once(box.entrant_list))
                 swofty::log("[era] box %s from %s skipped: this screen's mode does not offer the entrant list under %s "
@@ -1072,8 +1075,10 @@ int api_add_box(const SwoftyEraBox *desc)
     }
     split_off();
     logic::Box box{text(desc->entrant_list), text(desc->title), text(desc->image), desc->order, who, 0, {}};
-    if (desc->size >= sizeof(SwoftyEraBox))
+    if (desc->size >= BOX_TIME_TRIAL + sizeof(desc->time_trial_entrant_list))
         box.time_trial = text(desc->time_trial_entrant_list);
+    if (desc->size >= BOX_ONLY + sizeof(desc->only))
+        box.only = desc->only;
     std::lock_guard<std::mutex> g(lock);
     std::string why = logic::check(box, boxes);
     if (!why.empty()) {
@@ -1084,6 +1089,10 @@ int api_add_box(const SwoftyEraBox *desc)
     boxes.push_back(box);
     std::string state = off ? "off: " + off_why : live ? "live from the next build of the picker" : "queued for the next mixin commit";
     std::string tt = box.time_trial.empty() ? std::string() : ", Time Trial list " + box.time_trial;
+    if (box.only == logic::ONLY_GRAND_PRIX)
+        tt += ", Grand Prix only";
+    else if (box.only == logic::ONLY_TIME_TRIAL)
+        tt += ", Time Trial only";
     swofty::log("[era] box %s from %s registered (title %s, image %s, order %d%s): %s", box.entrant_list.c_str(),
                 who.c_str(), box.title.c_str(), logic::image_of(box).c_str(), box.order, tt.c_str(), state.c_str());
     return off ? SWOFTY_ASSET_UNAVAILABLE : SWOFTY_ASSET_OK;
@@ -1286,6 +1295,8 @@ extern "C" __declspec(dllexport) const SwoftyEra *SwoftyCoreEra(void)
 {
     return &table;
 }
+
+extern "C" __declspec(dllexport) const uint32_t SwoftyCoreEraOnly = SWOFTY_API_ERA;
 
 namespace runtime {
 

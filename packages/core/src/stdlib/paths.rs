@@ -93,7 +93,7 @@ const SCHEMAS: &[(&str, &str)] = &[
     ),
     (
         "era.box",
-        include_str!("../../../sdk/std/registries/era.box/1.1.json"),
+        include_str!("../../../sdk/std/registries/era.box/1.2.json"),
     ),
     (
         "gloves",

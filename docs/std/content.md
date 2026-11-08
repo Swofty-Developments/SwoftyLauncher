@@ -56,6 +56,7 @@ struct EraBox {                                    // an entry in the GP/TT era 
     std::string image;                             // "#overrides.home_screen.tiles_solo_6x6[cs_f1_2017]"
     int order = 0;                                 // its place in the Addons row
     TimeTrial time_trial;                          // since 1.1: its Time Trial list
+    std::optional<EraOnly> only;                   // since 1.2: grand_prix or time_trial keeps it off the other picker
 };
 
 inline Registry<Package> packages{"content.package", { .applies = Applies::content }};   // its entrant list rows are added at boot
@@ -480,6 +481,11 @@ swofty::era::add_box({
   - Each session load logs a `session trace` line at StateLoadSession Entering, Updating and Exiting, at StateSession Entering and at the session's vehicle setup: the entrants with their team ids, the list, the setup mode, the session participants and the vehicles.
   - Everything the guard changed is put back when the session unloads (StateUnloadSession Exiting) or a box is pressed.
 - A core before launcher 1.6.2 ignores `time_trial` and has no guard.
+- **One picker only.** `only` (`era.box` 1.2, launcher 1.8.25) leaves a box off the other picker: `"only": "time_trial"` shows it only on the Time Trial picker, `"only": "grand_prix"` only on the Grand Prix picker. Absent shows it on both. A Grand Prix only box is never checked against the Time Trial car limit. The native call is `Box::only` ([Era picker boxes](/reference/std/era-picker#one-picker-only)).
+
+```json
+"era.box": { "preview": { "package": "mod.example/preview", "order": 2008, "only": "time_trial" } }
+```
 - **Tyre classes.** A car's tyres come from its own compound class (the `compound class` of its car template; a car built on the F2 template gets an F2 class), while the session's tyre sets come from the setup mode's class. A Time Trial at an F1 track narrows an F2 class's dry options to the track's F1 compounds, which it lacks, so only its Wet option is left. The game then refits every such car through a missing option and faults on session enter. Since launcher 1.6.12 the core's tyre slot guard gives the set a slot with the compounds of another option of the car's own class, dry first, so the car runs on its Wet compound instead of crashing, and logs a `[tyres] slot guard` line for the first 8 repairs. A box whose cars race under F1 rules should give them an F1-layout class (`f1`), as F1 1990 does with `Sess_TyreClass_FromName`.
 
 ```text

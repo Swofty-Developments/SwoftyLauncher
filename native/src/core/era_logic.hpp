@@ -42,6 +42,7 @@ constexpr const char *SELECTED_ADDON_TILE = "selected_addon_tile";
 constexpr const char *ADDON_TILES_VISIBLE = "addon_tiles_visible";
 constexpr const char *IMAGE_ARRAY = "#overrides.home_screen.tiles_solo_6x6";
 constexpr size_t MAX_BOXES = 64;
+constexpr uint32_t ONLY_ANY = 0, ONLY_GRAND_PRIX = 1, ONLY_TIME_TRIAL = 2;
 constexpr size_t LIST_NAME_MAX = 63;
 constexpr size_t TEXT_MAX = 255;
 constexpr size_t NODE_REFS = 0x24;
@@ -77,7 +78,13 @@ struct Box {
     std::string owner;
     size_t seq = 0;
     std::string time_trial;
+    uint32_t only = ONLY_ANY;
 };
+
+inline bool shown(const Box &box, bool time_trial)
+{
+    return box.only == ONLY_ANY || box.only == (time_trial ? ONLY_TIME_TRIAL : ONLY_GRAND_PRIX);
+}
 
 inline bool plain_name(const std::string &s)
 {
@@ -92,6 +99,8 @@ inline std::string check(Box &box, const std::vector<Box> &have)
 {
     if (!plain_name(box.entrant_list))
         return "entrant_list must be 1 to 63 letters, digits or underscores";
+    if (box.only > ONLY_TIME_TRIAL)
+        return "only must be 0 (both pickers), 1 (Grand Prix) or 2 (Time Trial)";
     if (box.time_trial == box.entrant_list)
         box.time_trial.clear();
     if (!box.time_trial.empty() && !plain_name(box.time_trial))

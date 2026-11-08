@@ -6,6 +6,7 @@
 #include <swofty/systems/sessions.hpp>
 
 #include <atomic>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -60,16 +61,20 @@ struct TimeTrial {
 };
 SWOFTY_RECORD(TimeTrial, entrant_list)
 
+enum class EraOnly { grand_prix, time_trial };
+SWOFTY_ENUM(EraOnly, grand_prix, time_trial)
+
 struct EraBox {
-    static constexpr Version version{1, 1};
+    static constexpr Version version{1, 2};
     Ref<Package> package;
     Text title;
     std::string image;
     int order = 0;
     TimeTrial time_trial;
+    std::optional<EraOnly> only;
     json::Value extra;
 };
-SWOFTY_RECORD(EraBox, package, title, image, order, time_trial)
+SWOFTY_RECORD(EraBox, package, title, image, order, time_trial, only)
 
 inline Registry<Package> packages{"content.package", {.applies = Applies::content}};
 inline Registry<EraBox> era_boxes{"era.box", {.applies = Applies::read}};

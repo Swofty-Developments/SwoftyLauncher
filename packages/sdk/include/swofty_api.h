@@ -654,9 +654,15 @@ typedef struct SwoftyCareerWizard {
    #overrides.home_screen.tiles_solo_6x6[<entrant_list>]), order sorts the boxes (then registration
    order). time_trial_entrant_list (since SWOFTY_API_ERA 2; NULL or "" for entrant_list) is the list the
    box selects on a Time Trial picker; it must be in swofty_f1's entrant lists too. On a Time Trial
-   picker the core skips a box whose list holds more than 23 cars. A descriptor that ends before
-   time_trial_entrant_list (size 0x28) is read without it. Strings are copied. */
-#define SWOFTY_API_ERA 2
+   picker the core skips a box whose list holds more than 23 cars. only (since SWOFTY_API_ERA 3) is
+   SWOFTY_ERA_ONLY_ANY (0, both pickers), SWOFTY_ERA_ONLY_GRAND_PRIX or SWOFTY_ERA_ONLY_TIME_TRIAL: the
+   core leaves the box off the other picker; any other value is refused. A core that exports no
+   SwoftyCoreEraOnly ignores the field. A descriptor that ends before time_trial_entrant_list (size
+   0x28) is read without it, one that ends before only (size 0x30) without only. Strings are copied. */
+#define SWOFTY_API_ERA 3
+#define SWOFTY_ERA_ONLY_ANY 0
+#define SWOFTY_ERA_ONLY_GRAND_PRIX 1
+#define SWOFTY_ERA_ONLY_TIME_TRIAL 2
 typedef struct SwoftyEraBox {
     uint32_t size;
     const char *entrant_list;
@@ -664,6 +670,7 @@ typedef struct SwoftyEraBox {
     const char *image;
     int32_t order;
     const char *time_trial_entrant_list;
+    uint32_t only;
 } SwoftyEraBox;
 
 typedef struct SwoftyEra {

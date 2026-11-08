@@ -111,6 +111,8 @@ swofty::era::add_box({
 - `title`: the `lng_*` key the box shows. Add the string with your addon's language table. Empty means `lng_<entrant_list>`.
 - `image`: the texture path the box shows. Empty means `#overrides.home_screen.tiles_solo_6x6[<entrant_list>]`: add an entry with that name to the `home_screen.tiles_solo_6x6` overrides and a slice to its texture array.
 - `order`: boxes show in ascending `order`, then in registration order. Default `0`.
+- `time_trial`: the entrant list the box selects on the Time Trial picker. Empty means `entrant_list`. A Time Trial session holds at most 23 cars of its list.
+- `only`: which picker shows the box. `Only::any` (the default) shows it on both, `Only::time_trial` on the Time Trial picker only, `Only::grand_prix` on the Grand Prix picker only ([One picker only](#one-picker-only)).
 
 `title` and `image` are at most 255 characters each. The strings are copied. Up to 64 boxes can be registered, across every addon.
 
@@ -127,6 +129,23 @@ A refused box logs the reason:
 [era] box my-list from author.other refused: entrant_list must be 1 to 63 letters, digits or underscores
 [era] box cs_f1_2099 from author.other refused: the core holds at most 64 boxes
 ```
+
+## One picker only
+
+A box shows on both pickers by default. `only` keeps it off one, for cars that only drive in Time Trial, such as a preview car:
+
+```cpp
+swofty::era::add_box({
+    .entrant_list = "bitey_mp4_23",
+    .title = "lng_bitey_mp4_23",
+    .order = 2008,
+    .only = swofty::era::Only::time_trial,
+});
+```
+
+The Grand Prix picker leaves the box out and the Time Trial picker shows it. `Only::grand_prix` does the reverse, and a Grand Prix only box is not checked against Time Trial's 23-car limit. A box left off a picker logs nothing and does not count toward the 64 boxes shown.
+
+`swofty::era::only_supported()` is true when the running core honours `only` (API era table 3, launcher 1.8.25). On an older core `add_box()` returns `unavailable` for a box with an `only`. Declare the same box in `registry/content.json` with `"only": "time_trial"` ([Time Trial](/std/content#time-trial)).
 
 ## The data side
 

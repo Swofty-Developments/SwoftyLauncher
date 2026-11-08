@@ -544,6 +544,17 @@ int main()
                "an oversized Time Trial list is refused by its own name (" + why + ")");
         expect(era::time_trial_refusal(plain, -1).empty(), "an unread car count refuses nothing");
 
+        era::Box both = box("bdx_any"), tt_only = box("bdx_tt_only"), gp_only = box("bdx_gp_only");
+        tt_only.only = era::ONLY_TIME_TRIAL;
+        gp_only.only = era::ONLY_GRAND_PRIX;
+        expect(era::check(tt_only, none).empty() && era::check(gp_only, none).empty(), "a box with only set is accepted");
+        expect(era::shown(both, false) && era::shown(both, true), "a box without only shows on both pickers");
+        expect(!era::shown(tt_only, false) && era::shown(tt_only, true), "a Time Trial only box is off the Grand Prix picker and on the Time Trial picker");
+        expect(era::shown(gp_only, false) && !era::shown(gp_only, true), "a Grand Prix only box is on the Grand Prix picker and off the Time Trial picker");
+        era::Box odd = box("bdx_odd");
+        odd.only = 3;
+        expect(!era::check(odd, none).empty(), "an only past 2 is refused");
+
         expect(era::entrant_count(0x1000, 0x1000 + 24 * 0x88) == 24, "24 entrant records of 0x88 bytes count 24");
         expect(era::entrant_count(0x1000, 0x1000) == 0, "an empty list counts 0");
         expect(era::entrant_count(0, 0x88) < 0 && era::entrant_count(0x2000, 0x1000) < 0 &&

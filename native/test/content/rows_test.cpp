@@ -1559,6 +1559,15 @@ static void box_time_trial_tests()
           "a Time Trial list equal to the package's list is the package's list");
     p = lower(R"({"package":"mod.example/f1_2025ish"})");
     check(p.boxes.size() == 1 && p.boxes[0].time_trial.empty() && !warned(p), "a 22-car package's box needs no Time Trial list");
+    p = lower(R"({"package":"mod.example/f1_2025ish"})");
+    check(p.boxes.size() == 1 && p.boxes[0].only == 0, "an era.box without only shows on both pickers");
+    p = lower(R"({"package":"mod.example/f1_2025ish","only":"time_trial"})");
+    check(p.boxes.size() == 1 && p.boxes[0].only == 2, "an era.box's only time_trial reaches the box");
+    p = lower(R"({"package":"mod.example/f1_2012","only":"grand_prix"})");
+    check(p.boxes.size() == 1 && p.boxes[0].only == 1 && !warned(p),
+          "a Grand Prix only box is not warned about its Time Trial car count");
+    p = lower(R"({"package":"mod.example/f1_2025ish","only":null})");
+    check(p.boxes.size() == 1 && p.boxes[0].only == 0, "a null only is both pickers");
 }
 
 static void drs_tests(const std::string &regs)

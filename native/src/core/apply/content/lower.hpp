@@ -71,6 +71,7 @@ struct Box {
     std::string id, entrant_list, title, image, literal;
     int order = 0;
     std::string time_trial;
+    uint32_t only = 0;
 };
 
 struct LogoImage {
@@ -769,10 +770,12 @@ inline void lower_box(const std::string &id, const Value &rec, const Lookup &loo
     const Value &tt = rec["time_trial"]["entrant_list"];
     if (tt.is_string() && tt.as_string() != box.entrant_list)
         box.time_trial = std::string(tt.as_string());
+    std::string only = rec["only"].is_string() ? std::string(rec["only"].as_string()) : std::string();
+    box.only = only == "grand_prix" ? 1 : only == "time_trial" ? 2 : 0;
     std::size_t seats = 0;
     for (std::size_t t = 0; t < (*pkg)["teams"].size(); t++)
         seats += (*pkg)["teams"][t]["drivers"].size();
-    if (box.time_trial.empty() && seats > BOX_TIME_TRIAL_CARS)
+    if (box.only != 1 && box.time_trial.empty() && seats > BOX_TIME_TRIAL_CARS)
         plan.lines.push_back("era.box " + id + ": its package's " + std::to_string(seats) +
                              " cars are more than a Time Trial session holds (" + std::to_string(BOX_TIME_TRIAL_CARS) +
                              "); the Time Trial picker leaves the box off until it names a time_trial entrant_list");
