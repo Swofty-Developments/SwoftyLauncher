@@ -206,17 +206,31 @@ impl Location {
         (loc, tried)
     }
 
-    /// The save source a profile boots: its own launcher save with Use launcher saves on, else the
-    /// Steam save (also for Vanilla).
-    pub fn source_of_profile(data: &Path, profile: &str) -> Option<String> {
-        let steam = profile == crate::profile::VANILLA
-            || !crate::store::Store::new(data.to_path_buf())
+    /// The save a profile boots: its own launcher save with Use launcher saves on, else the active
+    /// copy's game save (Steam or EA app, also for Vanilla).
+    pub fn of_profile(data: &Path, profile: &str) -> Option<Self> {
+        let launcher = profile != crate::profile::VANILLA
+            && crate::store::Store::new(data.to_path_buf())
                 .profile(profile)
                 .map_or(true, |p| p.launcher_saves);
-        match steam {
-            true => Self::active(data).map(|l| l.source),
-            false => Some(Self::launcher(data, profile).source),
+        Self::choose(data, profile, launcher, || Self::active(data))
+    }
+
+    fn choose(
+        data: &Path,
+        profile: &str,
+        launcher: bool,
+        active: impl FnOnce() -> Option<Self>,
+    ) -> Option<Self> {
+        match launcher {
+            true => Some(Self::launcher(data, profile)),
+            false => active(),
         }
+    }
+
+    /// The vault source of [`Self::of_profile`].
+    pub fn source_of_profile(data: &Path, profile: &str) -> Option<String> {
+        Self::of_profile(data, profile).map(|l| l.source)
     }
 
     /// The save of the copy Play uses.
@@ -364,5 +378,32 @@ mod tests {
         assert_eq!(keys, ["profile/NXDSMWW.BWW", "profile/QKRHMYXE"]);
         assert_eq!(loc.path_of("profile/QKRHMYXE"), Some(profile.join("QKRHMYXE")));
         assert_eq!(Location::ea_in_prefix(&pfx.join("nothing")), None);
+    }
+
+    #[test]
+    fn profile_save_follows_launcher_saves() {
+        let d = tmp("choose");
+        let steam = Location::steam(&{
+            let r = d.join("userdata/843502855/3059520/remote");
+            std::fs::create_dir_all(&r).unwrap();
+            r
+        })
+        .unwrap();
+        let pfx = tmp("choose-ea");
+        let ea_dir = pfx.join("drive_c/users/steamuser/AppData/Local/F1 25/savegame/ea/profile");
+        std::fs::create_dir_all(&ea_dir).unwrap();
+        std::fs::create_dir_all(pfx.join("drive_c/users/Public")).unwrap();
+        let ea = Location::ea_in_prefix(&pfx).unwrap();
+
+        let on = Location::choose(&d, "Race", true, || Some(steam.clone())).unwrap();
+        assert_eq!(on.source, "launcher-Race");
+        let on_ea = Location::choose(&d, "Race", true, || Some(ea.clone())).unwrap();
+        assert_eq!(on_ea.source, "launcher-Race");
+        let off = Location::choose(&d, "Race", false, || Some(steam.clone())).unwrap();
+        assert_eq!(off.source, "steam-843502855");
+        let off_ea = Location::choose(&d, "Race", false, || Some(ea.clone())).unwrap();
+        assert_eq!(off_ea.source, "ea-steamuser");
+        assert_eq!(off_ea.layout, Layout::Ea);
+        assert!(Location::choose(&d, "Race", false, || None).is_none());
     }
 }

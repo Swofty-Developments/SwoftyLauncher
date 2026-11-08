@@ -24,7 +24,12 @@ pub(super) const PIN_W: f32 = 18.;
 
 impl Shell {
     pub(super) fn versions_block(&self, view: &SavesView, p: Palette, cx: &mut Context<Self>) -> Div {
-        let rows: Vec<AnyElement> = match view.versions.is_empty() {
+        let missing = self
+            .saves
+            .confirm
+            .as_deref()
+            .is_some_and(|c| !view.versions.iter().any(|v| v.snap.id == c));
+        let mut rows: Vec<AnyElement> = match view.versions.is_empty() {
             true => vec![placeholder(
                 match view.steam_missing {
                     true => steam_save_missing_text(),
@@ -38,6 +43,12 @@ impl Shell {
                 .map(|v| self.version_row(v, view, p, cx))
                 .collect(),
         };
+        if missing {
+            rows.insert(
+                0,
+                placeholder(tr("The version to restore is not in this list."), p),
+            );
+        }
         v_flex()
             .gap(px(8.))
             .child(label(tr("VERSIONS"), p))

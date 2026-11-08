@@ -125,7 +125,7 @@ pub(crate) fn saves_print(root: &Path, profile: &str, game_running: bool) -> u64
     tag(&mut h, &swofty_core::stdlib::careers::data_path(root));
     let sources = match profile == VANILLA {
         true => Vault::sources(root),
-        false => vec![Location::launcher(root, profile).source],
+        false => Location::source_of_profile(root, profile).into_iter().collect(),
     };
     for source in sources {
         let dir = Vault::root(root).join(&source);

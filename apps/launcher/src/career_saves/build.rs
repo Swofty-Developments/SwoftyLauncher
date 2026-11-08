@@ -58,16 +58,16 @@ pub(super) fn build_saves_untimed(
     let banner = SavesPage::banner_for(&root, &name);
     let active_loc = Location::active(&root);
     let vanilla = name == VANILLA;
-    let loc = match vanilla {
-        true => active_loc.clone(),
-        false => Some(Location::launcher(&root, &name)),
-    };
+    let loc = Location::of_profile(&root, &name);
+    let own_store = loc
+        .as_ref()
+        .is_some_and(|l| matches!(l.layout, vault::Layout::Launcher | vault::Layout::LauncherEa));
     let vault = loc.as_ref().and_then(|l| Vault::of(&root, l).ok());
     let game = crate::sections::game(store, install);
     let entries = card_careers(&root, store, game.as_ref(), &name);
     let snaps = vault.as_ref().and_then(|v| v.list().ok()).unwrap_or_default();
     let has_save = loc.as_ref().is_some_and(launcher_saves::has_files);
-    let imported = (has_save && entries.is_empty()).then(|| match vanilla {
+    let imported = (has_save && entries.is_empty() && (vanilla || own_store)).then(|| match vanilla {
         true => Imported {
             title: tr("Your Steam save").to_owned(),
             at: None,
