@@ -5,6 +5,7 @@ use crate::shell::{Page, Shell};
 use crate::theme::Palette;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
+use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
 use gpui_kit::component::notification::Notification;
 use gpui_kit::component::{Icon, Sizable, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
@@ -170,18 +171,19 @@ impl Shell {
         let mut query = self.addons.search.read(cx).value().trim().to_lowercase();
         let highlight = self.sync_highlight(&mut query, cx);
         let subtitle = self.addons_subtitle();
-        let actions = (!self.vanilla()).then(|| {
-            h_flex()
-                .gap(px(8.))
-                .child(self.check_button("check-conflicts-page", false, cx))
-                .child(
-                    Button::new("turn-off-all")
-                        .outline()
-                        .icon(IconName::PowerOff)
-                        .label(tr("Turn off all"))
-                        .on_click(cx.listener(|this, _, window, cx| this.turn_off_all(window, cx))),
-                )
-        });
+        let actions = h_flex()
+            .gap(px(8.))
+            .when(!self.vanilla(), |d| {
+                d.child(self.check_button("check-conflicts-page", false, cx))
+                    .child(
+                        Button::new("turn-off-all")
+                            .outline()
+                            .icon(IconName::PowerOff)
+                            .label(tr("Turn off all"))
+                            .on_click(cx.listener(|this, _, window, cx| this.turn_off_all(window, cx))),
+                    )
+            })
+            .child(self.install_computer_button(cx));
         let pending = self.pending_note(p);
         let saves = self.saves_banner(false, p, cx);
         let tracks = self.tracks_note(p, cx);
@@ -200,12 +202,12 @@ impl Shell {
             .map(|id| self.addon_detail(&id, false, p, cx));
         v_flex()
             .size_full()
-            .child(self.header(Page::Addons.label(), subtitle, div().children(actions), p))
+            .child(self.header(Page::Addons.label(), subtitle, actions, p))
             .children(saves)
             .children(pending)
             .children(flagged)
             .children(tracks)
-            .child(self.install_cards(p, cx))
+            .children(self.install_cards(p, cx))
             .child(
                 h_flex()
                     .flex_1()
@@ -221,91 +223,133 @@ impl Shell {
             .into_any_element()
     }
 
-    pub(super) fn install_cards(&self, p: Palette, cx: &mut Context<Self>) -> impl IntoElement {
+    pub(crate) fn is_card_dismissed(&self, id: &str) -> bool {
+        self.store.config().dismissed_cards.contains(id)
+    }
+
+    pub(crate) fn dismiss_card(&mut self, id: &str, cx: &mut Context<Self>) {
+        let mut config = self.store.config();
+        if config.dismissed_cards.insert(id.to_string()) {
+            self.store.save_config(&config).ok();
+            cx.notify();
+        }
+    }
+
+    pub(crate) fn install_computer_button(&self, cx: &mut Context<Self>) -> impl IntoElement {
+        let shell = cx.entity().downgrade();
+        Button::new("install-addon-computer")
+            .outline()
+            .icon(IconName::Upload)
+            .label(tr("Install addon from computer"))
+            .dropdown_menu_with_anchor(Anchor::TopRight, move |menu, _, _| {
+                let (file, folder) = (shell.clone(), shell.clone());
+                menu.item(
+                    PopupMenuItem::new(tr("Choose a file…"))
+                        .icon(IconName::File)
+                        .on_click(move |_, window, cx| {
+                            file.update(cx, |s, cx| s.pick_addons(false, window, cx)).ok();
+                        }),
+                )
+                .item(
+                    PopupMenuItem::new(tr("Choose a folder…"))
+                        .icon(IconName::FolderOpen)
+                        .on_click(move |_, window, cx| {
+                            folder.update(cx, |s, cx| s.pick_addons(true, window, cx)).ok();
+                        }),
+                )
+            })
+    }
+
+    pub(super) fn install_cards(&self, p: Palette, cx: &mut Context<Self>) -> Option<impl IntoElement> {
+        let show_browser = !self.is_card_dismissed("install-browse");
+        let show_importer = !self.is_card_dismissed("install-mod");
+        if !show_browser && !show_importer {
+            return None;
+        }
+
         let roomy = self.content_width >= 900. && !self.short;
         let short = self.short;
-        let card = |id, icon, color, title, body| install_card(short, p, id, icon, color, title, body);
-        let folder = div()
-            .id("install-folder")
-            .flex_shrink_0()
-            .text_size(px(12.))
-            .text_color(p.text_muted)
-            .cursor_pointer()
-            .hover(move |s| s.text_color(p.text))
-            .child(tr("Choose a folder…"))
-            .on_click(cx.listener(|this, _, window, cx| {
-                cx.stop_propagation();
-                this.pick_addons(true, window, cx)
-            }));
-        let addon = card(
-            "install-addon",
-            IconName::Upload,
-            p.accent,
-            tr("Installing a Swofty Addon?"),
-            if short {
-                tr("Drop it here or click to choose")
-            } else {
-                tr("Drag and drop it here or click to choose a file")
-            },
-        )
-        .border_dashed()
-        .border_color(p.border)
-        .cursor_pointer()
-        .hover(move |s| s.border_color(p.accent).bg(p.hover))
-        .child(folder)
-        .on_click(cx.listener(|this, _, window, cx| this.pick_addons(false, window, cx)));
-        let importer = card(
-            "install-mod",
-            IconName::FolderInput,
-            p.success,
-            tr("Installing a mod?"),
-            if short {
-                tr("Mods convert into addons")
-            } else {
-                tr("Mods convert into Swofty addons using the Simplified Importer.")
-            },
-        )
-        .border_color(p.border_variant)
-        .child(
-            Button::new("go-importer")
-                .outline()
-                .small()
-                .label(if roomy {
-                    tr("Go to Simplified Importer")
-                } else {
-                    tr("Simplified Importer")
-                })
-                .on_click(cx.listener(|this, _, _, cx| this.open_page(Page::Importer, cx))),
-        );
-        let browser = card(
-            "install-browse",
-            IconName::PackageSearch,
-            p.warning,
-            tr("Looking for a Swofty Addon?"),
-            tr("Browse addons published by the community"),
-        )
-        .border_color(p.border_variant)
-        .child(
-            Button::new("go-browser")
-                .outline()
-                .small()
-                .label(if roomy {
-                    tr("Open Addon Browser")
-                } else {
-                    tr("Addon Browser")
-                })
-                .on_click(cx.listener(|this, _, _, cx| this.open_page(Page::Browser, cx))),
-        );
-        h_flex()
+        let card = |id, icon, color, title, body, dismiss| {
+            install_card(short, p, id, (icon, color), title, body, dismiss)
+        };
+
+        let mut row = h_flex()
             .flex_wrap()
             .items_stretch()
             .px(px(GUTTER))
             .pb(px(if short { 12. } else { 18. }))
             .gap(px(if short { 10. } else { 14. }))
-            .flex_shrink_0()
-            .child(browser)
-            .child(addon)
-            .child(importer)
+            .flex_shrink_0();
+
+        if show_browser {
+            let dismiss = Button::new("dismiss-browse")
+                .ghost()
+                .xsmall()
+                .icon(IconName::X)
+                .tooltip(tr("Dismiss"))
+                .on_click(cx.listener(|this, _, _, cx| {
+                    this.dismiss_card("install-browse", cx);
+                }));
+            let browser = card(
+                "install-browse",
+                IconName::PackageSearch,
+                p.warning,
+                tr("Looking for a Swofty Addon?"),
+                tr("Browse addons published by the community."),
+                Some(dismiss.into_any_element()),
+            )
+            .border_color(p.border_variant)
+            .child(
+                Button::new("go-browser")
+                    .outline()
+                    .small()
+                    .label(if roomy {
+                        tr("Open Addon Browser")
+                    } else {
+                        tr("Addon Browser")
+                    })
+                    .on_click(cx.listener(|this, _, _, cx| this.open_page(Page::Browser, cx))),
+            );
+            row = row.child(browser);
+        }
+
+        if show_importer {
+            let dismiss = Button::new("dismiss-importer")
+                .ghost()
+                .xsmall()
+                .icon(IconName::X)
+                .tooltip(tr("Dismiss"))
+                .on_click(cx.listener(|this, _, _, cx| {
+                    this.dismiss_card("install-mod", cx);
+                }));
+            let importer = card(
+                "install-mod",
+                IconName::FolderInput,
+                p.success,
+                tr("Installing a mod?"),
+                if short {
+                    tr("Mods convert into addons")
+                } else {
+                    tr("Mods convert into Swofty addons using the Simplified Importer.")
+                },
+                Some(dismiss.into_any_element()),
+            )
+            .border_color(p.border_variant)
+            .child(
+                Button::new("go-importer")
+                    .outline()
+                    .small()
+                    .label(if roomy {
+                        tr("Go to Simplified Importer")
+                    } else {
+                        tr("Simplified Importer")
+                    })
+                    .on_click(cx.listener(|this, _, _, cx| this.open_page(Page::Importer, cx))),
+            );
+            row = row.child(importer);
+        }
+
+        Some(row)
     }
 
     pub(super) fn list_heading(&self, p: Palette) -> AnyElement {
@@ -329,10 +373,10 @@ fn install_card(
     short: bool,
     p: Palette,
     id: &'static str,
-    icon: IconName,
-    color: Hsla,
+    (icon, color): (IconName, Hsla),
     title: &'static str,
     body: &'static str,
+    dismiss: Option<AnyElement>,
 ) -> Stateful<Div> {
     let text = v_flex()
         .flex_1()
@@ -378,7 +422,8 @@ fn install_card(
                         .flex_shrink_0()
                         .text_color(color),
                 )
-                .child(text),
+                .child(text)
+                .children(dismiss),
         )
 }
 
