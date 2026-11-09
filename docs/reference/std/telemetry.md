@@ -315,7 +315,7 @@ The core logs the first packet of each format and id whose length differs from t
 
 The game's UDP telemetry output must also be on in its settings for the car, participant and session fields to fill (see below).
 
-With the feature on, the core hooks the frame tick, the session start and the results finalise. A session is live from `Game_GameModule_OnSessionEnter` until the results are finalised; in it the feed's `frame` and `session.session_time` advance.
+With the feature on, the core drives the feed from the events module's frame-tick and session-start hooks and hooks the results finalise itself. A session is live from `Game_GameModule_OnSessionEnter` until the results are finalised; in it the feed's `frame` and `session.session_time` advance.
 
 The car, participant and session fields come from the packets the game builds for its UDP telemetry, read in the `sendto` hook before the id rewrite. The game sends them only while UDP telemetry output is on in its settings; with it off the fields stay zero, `session.udp_format` stays 0 and no event fires. The decode does not use the UDP port and does not change the packet.
 

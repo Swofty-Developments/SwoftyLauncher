@@ -77,6 +77,7 @@ void flow_mid(safetyhook::Context &)
     perf::flow_tick();
     perf::Scope p(probe);
     runtime::career_tick();
+    runtime::telemetry_tick();
     runtime::popup_tick();
     runtime::mfd_tick();
     runtime::netplay_tick();
@@ -102,6 +103,7 @@ void session_enter_mid(safetyhook::Context &)
     perf::Scope p(probe);
     swofty::mem::invalidate();
     swofty_core::apply::moments::session_load("Game_GameModule_OnSessionEnter");
+    runtime::telemetry_session_enter();
     bool restart;
     {
         std::lock_guard<std::mutex> g(lifecycle_lock);
@@ -293,6 +295,16 @@ const SwoftyEvents *events_table()
 void frame_probe_name(const char *what)
 {
     next_frame_probe = what;
+}
+
+bool events_flow_armed()
+{
+    return bool(h_flow);
+}
+
+bool events_session_enter_armed()
+{
+    return bool(h_session_enter);
 }
 
 void events_setup()

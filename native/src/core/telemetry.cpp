@@ -15,8 +15,9 @@ std::string hook_error(const safetyhook::MidHook::Error &e);
 
 // Typed read access to live session and car state, and the shared-memory feed external tools
 // read. The table stays unavailable until the telemetry feature is on (experimental) and a
-// session is live. The per-frame tick, the session start and the results finalise are observed
-// with mid hooks so the feed's frame counter and session clock advance in a running game. The
+// session is live. The per-frame tick and the session start are driven from the events module's
+// flow-tick and session-enter hooks (events.cpp), and the results finalise has its own mid hook, so the
+// feed's frame counter and session clock advance in a running game. The
 // car, participant and session fields come from the game's own UDP packets, decoded in the sendto
 // hook (udp_ids.cpp, udp_telemetry_logic.hpp), so they fill only while the game's UDP telemetry
 // output is on. Overtake, collision and retirement events are queued there and fired on the flow
@@ -32,11 +33,6 @@ using swofty::tel::feed_end;
 using swofty::tel::feed_init;
 using swofty::tel::feed_read;
 
-const runtime::Sig S_FLOW{"Vm_Update_FlowStateMachine",
-                          "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 02 00 00 C5 F8 29 B4 24 40 02 00 00 C5 F9 28 F2 48 89",
-                          0x4423ce0};
-const runtime::Sig S_ONSESS{"Game_GameModule_OnSessionEnter",
-                            "41 57 41 56 41 54 56 57 53 48 81 EC 38 02 00 00 48 89 CE 80 3D AA F7 83 05 01 75 6D", 0x80c300};
 const runtime::Sig S_RESULTS{"Game_SessionStateFinaliseResultsSync_OnResultsFinalised",
                              "56 57 53 48 83 EC 30 4C 89 C7 48 89 D0 48 89 CE 4C 8B 02 48 8D 15 5E C1 67 05", 0x9d2b20};
 
@@ -55,7 +51,7 @@ SwoftyTelemetryFeed *view;
 std::vector<udp_tel::Event> pending;
 std::atomic<uint64_t> first_seen[3];
 
-safetyhook::MidHook h_flow, h_onsess, h_results;
+safetyhook::MidHook h_results;
 LARGE_INTEGER qpc_freq, qpc_last;
 
 double tick_seconds()
@@ -73,7 +69,7 @@ void publish()
         feed_copy(view, &master);
 }
 
-void on_flow(safetyhook::Context &)
+void flow_tick()
 {
     double dt = tick_seconds();
     std::vector<udp_tel::Event> fire;
@@ -114,7 +110,7 @@ void set_live(bool live, const char *why)
                     (unsigned long long)master.frame);
 }
 
-void on_sess(safetyhook::Context &)
+void session_enter()
 {
     set_live(true, "Game_GameModule_OnSessionEnter");
 }
@@ -239,13 +235,12 @@ void setup()
     feed_init(&master);
     QueryPerformanceFrequency(&qpc_freq);
     QueryPerformanceCounter(&qpc_last);
-    hook(h_flow, S_FLOW, on_flow);
-    hook(h_onsess, S_ONSESS, on_sess);
     hook(h_results, S_RESULTS, on_results);
     g_on = true;
     swofty::log("[telemetry] on; frame tick %s, session witnesses %s/%s; car, participant and session fields fill from "
                 "the game's UDP packets while its UDP telemetry output is on",
-                h_flow ? "hooked" : "unresolved", h_onsess ? "on" : "off", h_results ? "on" : "off");
+                runtime::events_flow_armed() ? "hooked" : "unresolved", runtime::events_session_enter_armed() ? "on" : "off",
+                h_results ? "on" : "off");
 }
 
 }
@@ -286,6 +281,18 @@ const SwoftyTelemetry *telemetry_table()
 void telemetry_setup()
 {
     setup();
+}
+
+void telemetry_tick()
+{
+    if (g_on)
+        flow_tick();
+}
+
+void telemetry_session_enter()
+{
+    if (g_on)
+        session_enter();
 }
 
 }
