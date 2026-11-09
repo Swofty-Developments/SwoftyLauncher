@@ -179,7 +179,9 @@ inline std::optional<int64_t> stat_of(const StatIds &stat, const char *registry,
 }
 
 inline constexpr int64_t VEHICLE_PACKAGE_MAX = 254;
-inline constexpr int64_t VEHICLE_STAT_MAX = 1023;
+// The game keeps a vehicle id in the high word of its (id << 16) | kind keys and in 14 bits where it packs one
+// (0x3fff means none), as it does a driver id, so vehicle ids run to 16382 like driver ids.
+inline constexpr int64_t VEHICLE_STAT_MAX = 16382;
 inline constexpr int64_t TEAM_STAT_MAX = 1023;
 
 inline std::string text(const Value &v)
