@@ -5,7 +5,6 @@ use crate::ui::{EmptyState, PageHeader, Toggle, row, row_head};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
-use gpui_kit::component::scroll::Scrollable;
 use gpui_kit::component::v_flex;
 use gpui_kit::*;
 use swofty_i18n::tr;
@@ -36,7 +35,7 @@ impl Shell {
         id: impl Into<ElementId>,
         rows: Vec<AnyElement>,
         p: Palette,
-    ) -> Scrollable<Div> {
+    ) -> crate::scroll::SmoothScrollable<Div> {
         v_flex()
             .flex_1()
             .min_h_0()
