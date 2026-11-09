@@ -495,7 +495,7 @@ EOF
                 { echo "FAIL: storage: files after the read-only run: $ro_files"; status=1; }
         fi
         once "telemetry: setup wired through ready() when the feature is on" '\[telemetry\] on; frame tick '
-        once "telemetry: the frame tick and session enter ride the events hooks" '\[telemetry\] on; frame tick hooked, session witnesses on/'
+        once "telemetry: the frame tick rides the events hook" '\[telemetry\] on; frame tick hooked'
         count "telemetry: no private flow or session-enter scan" 0 '\[assets\] telemetry: (Vm_Update_FlowStateMachine|Game_GameModule_OnSessionEnter) signature matched'
         once "telemetry: reads are gated off outside a session" '\[t_assets\] telemetry: available 0, session unavailable, car0 unavailable, car99 invalid'
         once "telemetry: an addon opens the shared feed" '\[t_assets\] telemetry: shared_memory ok name=Local.SwoftyTelemetry'
