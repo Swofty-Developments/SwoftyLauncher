@@ -1507,6 +1507,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     let mut waits = Vec::new();
     let mut udp_ids = crate::udp_ids::UdpIds::default();
     let mut id_aliases = crate::row_ids::IdAliases::default();
+    let mut row_ids_unsaved = false;
     if !maps.is_empty() || planner.has_db() || room_asked.is_some() {
         let shipped = std::fs::read(&db_src).map_err(io_err(&db_src))?;
         let mut db = Gvdb::parse(&shipped)?;
@@ -1581,7 +1582,9 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             }
             id_aliases = ids.id_aliases();
             built.lines.extend(ids.summary());
-            if !checking {
+            if checking {
+                row_ids_unsaved = ids.unsaved();
+            } else {
                 ids.save(&store.root)?;
             }
         }
@@ -2475,7 +2478,9 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         ARCHIVE_AGE,
         ARCHIVE_BYTES,
     );
-    if let Some(saved) = saved {
+    // A check keeps no row ids, so a build that reused this one would never keep them
+    // either, and a later build could give those rows other ids than a career holds.
+    if let Some(saved) = saved.filter(|_| !row_ids_unsaved) {
         crate::write_json(&built.overlay.join(SAVED_FILE), &saved)?;
     }
     crate::write_json(&crate::conflicts::path(store, profile), &built.report)?;
@@ -4118,6 +4123,59 @@ mod tests {
                 ..AssetBatch::default()
             })
         }
+    }
+
+    #[test]
+    fn a_row_id_a_conflict_check_gave_is_kept_by_the_build_after_it() {
+        use swofty_formats::gvdb::Record;
+        if loader_dir().is_some() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("swofty-build-check-ids-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        let mut records = vec![Record::new("entrants.teams._team_instancecount_", 0, "2")];
+        for (i, label) in ["mclaren_26", "gm_cadillac_26"].iter().enumerate() {
+            let row = format!("entrants.teams.team_{i}");
+            records.push(Record::new(&format!("{row}._metadata_"), 4, *label));
+            records.push(Record::new(&format!("{row}.stat_id"), 0, (100 + i).to_string()));
+        }
+        std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir,
+            user_reg: None,
+        };
+        let manifest = AddonManifest::parse(
+            r#"{ "schema_version": 1, "id": "t.rows", "name": "Rows", "version": "1.0.0", "author": "t",
+                 "compat": { "game": "f1_25" } }"#,
+        )
+        .unwrap();
+        let store = Store::new(root.join("data")).with_builtins(vec![Builtin {
+            addon: Arc::new(Rows(manifest)),
+            locked: false,
+            default_on: true,
+        }]);
+        let reused = |b: &Built| b.lines.iter().any(|l| l.starts_with("build: nothing changed"));
+        let ids = crate::row_ids::path(&store.root);
+
+        let checked = build_as(&store, "default", &game, true).unwrap();
+        assert!(!ids.exists(), "a check keeps no ids");
+
+        let built = build(&store, "default", &game).unwrap();
+        assert_eq!(built.buildhash, checked.buildhash);
+        assert!(!reused(&built), "{:?}", built.lines);
+        let kept: serde_json::Value = serde_json::from_slice(&std::fs::read(&ids).unwrap()).unwrap();
+        assert_eq!(kept["rows"]["t.rows/entrants.teams.team/team12_26"]["id"], 102);
+        assert!(reused(&build(&store, "default", &game).unwrap()));
+
+        // With every id already kept, a check's build is as good as any.
+        std::fs::remove_file(built.overlay.join(SAVED_FILE)).unwrap();
+        build_as(&store, "default", &game, true).unwrap();
+        assert!(reused(&build(&store, "default", &game).unwrap()));
+        std::fs::remove_dir_all(&root).ok();
     }
 
     #[test]

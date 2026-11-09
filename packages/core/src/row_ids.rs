@@ -1043,8 +1043,13 @@ impl Store {
     }
 
     /// Writes the store to `data` when this build changed it.
+    /// Whether this build gave an id, or anything else, that [`Store::save`] would write.
+    pub fn unsaved(&self) -> bool {
+        self.changed && !self.read_only
+    }
+
     pub fn save(&self, data: &Path) -> Result<()> {
-        if !self.changed || self.read_only {
+        if !self.unsaved() {
             return Ok(());
         }
         let mut profiles = self.others.clone();
