@@ -59,7 +59,7 @@ struct Vehicle {                                   // one entrants.vehicles row
     Class performance_class = Class::f1;           // performance_class
     int performance_tier = 0;                      // performance_tier
     float tyre_wear_scale = 1.0f;                  // tyre_wear_scale
-    StatId stat_id = StatId::automatic;            // vehicle ids run to 1,023
+    StatId stat_id = StatId::automatic;            // vehicle ids run to 16,382
 };
 
 struct WingDamage {                                // F1WingDamage, read on every front wing impact
@@ -401,7 +401,7 @@ SWOFTY_REGISTER
 </Split>
 
 ```text
-[registry] stat ids: vehicle swofty.classic-seasons-2017/ferrari -> 515 (pool to 1023)
+[registry] stat ids: vehicle swofty.classic-seasons-2017/ferrari -> 515 (pool to 16382)
 [registry] vehicle.package swofty.classic-seasons-2017/cs_2017_ferrari: setup presets from game/f1_2025 (1 row, 421 keys)
 [registry] vehicle.handling swofty.classic-seasons-2017/ferrari: selector from someone.realism-pack skipped /f1_aero
            (protected by swofty.classic-seasons-2017; "Also change year packs" is off)
