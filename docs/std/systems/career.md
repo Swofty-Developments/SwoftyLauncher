@@ -563,7 +563,7 @@ Slot 12 is listed by the team row the core made for the record (its key, `maruss
 
 ### A box with 12 teams
 
-A `content.package` gets its own standings row, `<entrant_list>_teams`, which its entrant list names as the previous season's team standings. The core copies `f1_teams_2026` (11 teams) for a package of more than 20 cars and `f1_teams_2024` (10 teams) otherwise, and writes the package's teams into it in package order. When the package has more teams than the copied row, the core adds the rest. The entrant list grows the same way past the 22 entrants of `f1_2026`:
+A `content.package` gets its own standings row, `<entrant_list>_teams`, which its entrant list names as the previous season's team standings. The core copies `f1_teams_2024` (10 teams), whatever the package's size, and writes the package's teams into it in package order. When the package has more teams than the copied row, the core adds the rest. The entrant list is a copy of `f1_2025` (20 entrants) and grows the same way. The copied rows carry no F1 2026 content, so a player who does not own it can open the package's track select:
 
 ```json
 {
@@ -582,15 +582,15 @@ A `content.package` gets its own standings row, `<entrant_list>_teams`, which it
 ```
 
 ```text
-[apply] content.package boot:   content.package mod.f1-2012/f1_2012: standings f1_2012_teams has 12 teams; f1_teams_2026 holds 11, the rest are added
-[apply] content.package boot:   content.package mod.f1-2012/f1_2012: entrant list f1_2012 has 24 entrants; f1_2026 holds 22, the rest are added
+[apply] content.package boot:   content.package mod.f1-2012/f1_2012: standings f1_2012_teams has 12 teams; f1_teams_2024 holds 10, the rest are added
+[apply] content.package boot:   content.package mod.f1-2012/f1_2012: entrant list f1_2012 has 24 entrants; f1_2025 holds 20, the rest are added
 [apply] content.package boot:   content.package mod.f1-2012/f1_2012: entrant list f1_2012, 24 entrants in swofty_f1
 ```
 
 The package's `database` block names other rows to copy: `standings_from` a standings row, `entrant_list_from` an entrant list. A row it names that already holds every team is copied as it is, and nothing is added.
 
 ```json
-"database": { "standings_from": "mod_f1_2012_teams", "entrant_list_from": "f1_2026" }
+"database": { "standings_from": "mod_f1_2012_teams", "entrant_list_from": "f1_2025" }
 ```
 
 ## What a career freezes

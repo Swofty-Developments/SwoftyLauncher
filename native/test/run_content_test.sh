@@ -55,6 +55,7 @@ python3 content/check_logo_build.py content/bc7 "$OUT/logo_out"
 "$OUT/id_pool_test"
 "$OUT/wear_test" ../../packages/sdk/std/registries
 python3 content/check_lowering.py "$OUT/lower_tool"
+python3 content/check_wide_default.py "$OUT/lower_tool"
 GAMEDB="/mnt/gaming/SteamLibrary/steamapps/common/F1 25/game_package/gamedatabases/gamedatabases.2025.bin"
 if [[ -f $GAMEDB ]]; then
     "$OUT/rows_tool" --registries ../../packages/sdk/std/registries --db "$GAMEDB" --out "$OUT/f2012_edits.json" --summary "$OUT/f2012_summary.json" \

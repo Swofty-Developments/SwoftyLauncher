@@ -633,9 +633,9 @@ inline void lower_package(const std::string &id, const Value &rec, const Lookup 
         seats += teams[t]["drivers"].size();
     bool wide = seats > 20;
     std::string list_from = db["entrant_list_from"].is_string() ? std::string(db["entrant_list_from"].as_string())
-                                                                 : wide ? "f1_2026" : "f1_2025";
+                                                                 : "f1_2025";
     std::string standings_from = db["standings_from"].is_string() ? std::string(db["standings_from"].as_string())
-                                                                   : wide ? "f1_teams_2026" : "f1_teams_2024";
+                                                                   : "f1_teams_2024";
     for (std::size_t t = 0; t < teams.size(); t++) {
         const Value &team = teams[t];
         for (std::size_t s = 0; s < team["drivers"].size(); s++) {
