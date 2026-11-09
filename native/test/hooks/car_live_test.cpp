@@ -708,6 +708,55 @@ static void replay_hold()
     expect(!Ops::resume_due(false), "and only once");
 }
 
+static uint32_t control_modes[8];
+static int control_answer = SWOFTY_ASSET_OK;
+
+static int fake_control(uint32_t car, uint32_t *mode)
+{
+    if (control_answer != SWOFTY_ASSET_OK)
+        return control_answer;
+    if (car >= 8)
+        return SWOFTY_ASSET_INVALID;
+    *mode = control_modes[car];
+    return SWOFTY_ASSET_OK;
+}
+
+static void player_facts_control()
+{
+    namespace hk = swofty_core::hooks;
+    build_world();
+    Ops::bind(make_env());
+    hk::Facts f;
+    hk::player_facts::Cache cache;
+    f.session.emplace();
+    f.epoch = 1;
+    for (int i = 0; i < 3; i++) {
+        at<uint32_t>(car_mem[i], cl::CAR_IS_AI) = 0;
+        control_modes[i] = 1;
+    }
+    control_modes[2] = 0;
+
+    auto built = hk::player_facts::sync<Ops>(cache, f, fake_control);
+    expect(built && built->player && built->player->car == 2, "a table with every is_ai flag clear takes the car the controller calls human");
+    expect(built && built->participants[0].human == false && built->participants[2].human, "a flagged car under an AI controller is not human");
+
+    hk::player_facts::Cache fresh;
+    control_answer = SWOFTY_ASSET_LATE;
+    auto early = hk::player_facts::sync<Ops>(fresh, f, fake_control);
+    expect(!early || !early->player, "no controller answer yet leaves the player empty");
+    expect(!fresh.scanned, "and the table is scanned again on the next frame");
+    control_answer = SWOFTY_ASSET_OK;
+    auto later = hk::player_facts::sync<Ops>(fresh, f, fake_control);
+    expect(later && later->player && later->player->car == 2, "the player appears once the controller answers");
+
+    control_modes[2] = 1;
+    control_modes[1] = 0;
+    f.player = later->player;
+    f.participants = later->participants;
+    auto moved = hk::player_facts::sync<Ops>(fresh, f, fake_control);
+    expect(moved && moved->player && moved->player->car == 1, "the player follows the controller when the human control moves");
+}
+
 static void player_facts_sync()
 {
     namespace hk = swofty_core::hooks;
@@ -779,6 +828,7 @@ int main()
     replay_frames();
     replay_hold();
     player_facts_sync();
+    player_facts_control();
     if (fails) {
         printf("car_live_test: %d failure(s)\n", fails);
         return 1;

@@ -113,6 +113,11 @@ void declare_session_points(Table &t)
     Points::declare(t, make_vops(), make_env());
 }
 
+int session_control_mode(uint32_t car, uint32_t *mode)
+{
+    return Points::op_control(car, mode, nullptr);
+}
+
 void arm_session_points()
 {
     Points::arm();

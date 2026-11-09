@@ -345,7 +345,7 @@ void sync_players()
     auto facts = core().current();
     if (!facts)
         return;
-    auto change = player_facts::sync<Ops>(g_players, *facts);
+    auto change = player_facts::sync<Ops>(g_players, *facts, session_control_mode);
     if (!change)
         return;
     const bool seen = facts->epoch == g_epoch;
