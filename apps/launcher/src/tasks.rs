@@ -4,7 +4,6 @@ use std::time::Duration;
 use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::scroll::Scrollbar;
 use gpui_kit::component::spinner::Spinner;
 use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
@@ -33,6 +32,7 @@ pub(crate) struct TaskDialog {
     list: TaskList,
     outcome: Option<Outcome>,
     scroll: ScrollHandle,
+    motion: crate::scroll::SmoothScroll,
     running: Option<usize>,
 }
 
@@ -111,6 +111,7 @@ impl Shell {
                 list: TaskList::default(),
                 outcome: None,
                 scroll: ScrollHandle::new(),
+                motion: Default::default(),
                 running: None,
             }),
         };
@@ -235,20 +236,25 @@ impl Shell {
             .bg(p.chrome)
             .overflow_hidden()
             .child(
-                v_flex()
-                    .id("task-items")
-                    .max_h(px(list_max))
-                    .track_scroll(&d.scroll)
-                    .overflow_y_scroll()
-                    .children(
-                        d.list
-                            .items
-                            .iter()
-                            .enumerate()
-                            .map(|(i, item)| task_row(item, i == last, p)),
-                    ),
-            )
-            .child(Scrollbar::new(&d.scroll));
+                div()
+                    .relative()
+                    .w_full()
+                    .child(
+                        v_flex()
+                            .id("task-items")
+                            .max_h(px(list_max))
+                            .track_scroll(&d.scroll)
+                            .overflow_y_scroll()
+                            .children(
+                                d.list
+                                    .items
+                                    .iter()
+                                    .enumerate()
+                                    .map(|(i, item)| task_row(item, i == last, p)),
+                            ),
+                    )
+                    .child(d.motion.overlay(&d.scroll, cx)),
+            );
         let fraction = match counts.total {
             0 if running => 0.,
             0 => 1.,
