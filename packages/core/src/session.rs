@@ -1051,7 +1051,11 @@ mod tests {
     #[test]
     fn config_remembers_dismissed_cards() {
         let mut config = Config::default();
-        assert!(!serde_json::to_string(&config).unwrap().contains("dismissed_cards"));
+        assert!(
+            !serde_json::to_string(&config)
+                .unwrap()
+                .contains("dismissed_cards")
+        );
         config.dismissed_cards.insert("install-browse".into());
         let back: Config = serde_json::from_str(&serde_json::to_string(&config).unwrap()).unwrap();
         assert!(back.dismissed_cards.contains("install-browse"));

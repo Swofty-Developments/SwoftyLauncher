@@ -270,7 +270,7 @@ impl Shell {
         let roomy = self.content_width >= 900. && !self.short;
         let short = self.short;
         let card = |id, icon, color, title, body, dismiss| {
-            install_card(short, p, id, icon, color, title, body, dismiss)
+            install_card(short, p, id, (icon, color), title, body, dismiss)
         };
 
         let mut row = h_flex()
@@ -373,8 +373,7 @@ fn install_card(
     short: bool,
     p: Palette,
     id: &'static str,
-    icon: IconName,
-    color: Hsla,
+    (icon, color): (IconName, Hsla),
     title: &'static str,
     body: &'static str,
     dismiss: Option<AnyElement>,
