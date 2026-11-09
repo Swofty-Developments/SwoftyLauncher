@@ -3058,7 +3058,6 @@ pub type Sess_RedFlagRaceStrategy_Update_t =
 pub type Sess_Register_RaceRecordables_t = unsafe extern "C" fn(game: *mut c_void);
 pub type Sess_RuleManager_Initialise_t =
     unsafe extern "C" fn(self_: *mut c_void, systems: *mut c_void, components: *mut c_void) -> u32;
-pub type Sess_Rules_Disqualify_t = unsafe extern "C" fn(rules: *mut c_void, vehicle: u32);
 pub type Sess_Rules_IsPracticeQualifying_t =
     unsafe extern "C" fn(owner_with_session_at_0x1b8: *mut c_void) -> bool;
 pub type Sess_SafetyCarTether_UpdateProgress_t = unsafe extern "C" fn(tether_entry: *mut c_void);
