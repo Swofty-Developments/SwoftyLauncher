@@ -2,10 +2,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::time::Instant;
 
-use gpui::{
-    ElementId, Interactivity, RenderOnce, ScrollHandle,
-    StyleRefinement,
-};
+use gpui::{ElementId, Interactivity, RenderOnce, ScrollHandle, StyleRefinement};
 use gpui_kit::component::scroll::{Scrollable, ScrollableElement, Scrollbar, ScrollbarHandle};
 use gpui_kit::*;
 
@@ -30,10 +27,9 @@ impl Motion {
     }
 
     fn step(&mut self, now: Instant, reduced: bool) -> f32 {
-        let elapsed = self
-            .last
-            .replace(now)
-            .map_or(0., |last| now.duration_since(last).as_secs_f32().clamp(0.008, 0.05));
+        let elapsed = self.last.replace(now).map_or(0., |last| {
+            now.duration_since(last).as_secs_f32().clamp(0.008, 0.05)
+        });
         let step = if reduced || self.pending.abs() < SETTLE_DISTANCE {
             self.pending
         } else {
@@ -215,61 +211,57 @@ where
         let motion_clone = motion.0.clone();
         let mouse_motion = motion.0.clone();
 
-        div()
-            .relative()
-            .size_full()
-            .child(self.scrollable)
-            .child(
-                div()
-                    .absolute()
-                    .inset_0()
-                    .on_scroll(move |event, window, cx| {
-                        gpui_kit::base::apply_system_reduce_motion(cx);
-                        let mut state = motion_clone.borrow_mut();
-                        let ScrollDelta::Lines(delta) = event.delta else {
-                            // Preserve the trackpad's pixel precision and native momentum.
-                            state.cancel();
-                            return;
-                        };
-                        if delta.y == 0. || !delta.y.is_finite() {
-                            return;
-                        }
-                        let distance = -delta.y * WHEEL_LINE_HEIGHT;
-                        let at = wheel_handle.offset().y;
-                        let max = max_offset(&wheel_handle);
-                        if (distance < 0. && at >= px(0.)) || (distance > 0. && at <= -max) {
-                            state.cancel();
-                            return;
-                        }
-                        cx.stop_propagation();
-                        if cx.reduce_motion() {
-                            let remaining = state.pending;
-                            state.cancel();
-                            scroll_by(&wheel_handle, remaining + distance);
-                            cx.notify(view);
-                            return;
-                        }
-                        if state.pending * distance < 0. {
-                            state.pending = 0.;
-                        }
-                        if state.pending == 0. {
-                            state.last = Some(Instant::now());
-                        }
-                        // Bound the target so repeated wheel events cannot queue motion past an edge.
-                        state.pending = (state.pending + distance).clamp(f32::from(at), f32::from(at + max));
-                        if !state.scheduled {
-                            state.scheduled = true;
-                            schedule(
-                                wheel_handle.clone(),
-                                motion_clone.clone(),
-                                view,
-                                state.generation,
-                                window,
-                            );
-                        }
-                    })
-                    .capture_any_mouse_down(move |_, _, _| mouse_motion.borrow_mut().cancel()),
-            )
+        div().relative().size_full().child(self.scrollable).child(
+            div()
+                .absolute()
+                .inset_0()
+                .on_scroll(move |event, window, cx| {
+                    gpui_kit::base::apply_system_reduce_motion(cx);
+                    let mut state = motion_clone.borrow_mut();
+                    let ScrollDelta::Lines(delta) = event.delta else {
+                        // Preserve the trackpad's pixel precision and native momentum.
+                        state.cancel();
+                        return;
+                    };
+                    if delta.y == 0. || !delta.y.is_finite() {
+                        return;
+                    }
+                    let distance = -delta.y * WHEEL_LINE_HEIGHT;
+                    let at = wheel_handle.offset().y;
+                    let max = max_offset(&wheel_handle);
+                    if (distance < 0. && at >= px(0.)) || (distance > 0. && at <= -max) {
+                        state.cancel();
+                        return;
+                    }
+                    cx.stop_propagation();
+                    if cx.reduce_motion() {
+                        let remaining = state.pending;
+                        state.cancel();
+                        scroll_by(&wheel_handle, remaining + distance);
+                        cx.notify(view);
+                        return;
+                    }
+                    if state.pending * distance < 0. {
+                        state.pending = 0.;
+                    }
+                    if state.pending == 0. {
+                        state.last = Some(Instant::now());
+                    }
+                    // Bound the target so repeated wheel events cannot queue motion past an edge.
+                    state.pending = (state.pending + distance).clamp(f32::from(at), f32::from(at + max));
+                    if !state.scheduled {
+                        state.scheduled = true;
+                        schedule(
+                            wheel_handle.clone(),
+                            motion_clone.clone(),
+                            view,
+                            state.generation,
+                            window,
+                        );
+                    }
+                })
+                .capture_any_mouse_down(move |_, _, _| mouse_motion.borrow_mut().cancel()),
+        )
     }
 }
 
@@ -321,10 +313,12 @@ mod tests {
 
     #[test]
     fn motion_decay_steps_smoothly_to_zero() {
-        let mut motion = Motion::default();
-        motion.pending = 100.0;
         let start = Instant::now();
-        motion.last = Some(start);
+        let mut motion = Motion {
+            pending: 100.0,
+            last: Some(start),
+            ..Default::default()
+        };
 
         let mut total_stepped = 0.0;
         let mut t = start;
@@ -342,9 +336,11 @@ mod tests {
 
     #[test]
     fn motion_cancels_cleanly() {
-        let mut motion = Motion::default();
-        motion.pending = 50.0;
-        motion.scheduled = true;
+        let mut motion = Motion {
+            pending: 50.0,
+            scheduled: true,
+            ..Default::default()
+        };
         let generation = motion.generation;
         motion.cancel();
         assert_eq!(motion.pending, 0.0);
@@ -354,10 +350,12 @@ mod tests {
 
     #[test]
     fn motion_reduced_motion_steps_all_at_once() {
-        let mut motion = Motion::default();
-        motion.pending = 75.0;
         let start = Instant::now();
-        motion.last = Some(start);
+        let mut motion = Motion {
+            pending: 75.0,
+            last: Some(start),
+            ..Default::default()
+        };
         let s = motion.step(start + Duration::from_millis(16), true);
         assert_eq!(s, 75.0);
         assert_eq!(motion.pending, 0.0);
