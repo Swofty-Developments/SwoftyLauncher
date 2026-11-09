@@ -493,8 +493,9 @@ static void variant_tests(const std::string &regs)
           "with the first addon left out, the next one's rows start at the table's next index");
 }
 
-// The stock rows a 24-car package copies: f1_2026 holds 22 entrants and f1_teams_2026 11 teams, as in the game; a
-// creator's own 12-team standings row (made by a database operation) sits next to them.
+// The stock wide rows next to the ones a 24-car package copies (f1_2025 and f1_teams_2024 from stock_package_rows):
+// f1_2026 holds 22 entrants and f1_teams_2026 11 teams, as in the game; a creator's own 12-team standings row (made by
+// a database operation) sits next to them.
 static void stock_wide_rows(Db &db)
 {
     stock_package_rows(db);
@@ -593,10 +594,10 @@ static void twelve_team_tests(const std::string &regs)
         };
         bool added_line = false;
         for (auto &l : x.lines["content.package"])
-            added_line |= l.find("standings f2012_teams has 12 teams; f1_teams_2026 holds 11, the rest are added") != std::string::npos;
+            added_line |= l.find("standings f2012_teams has 12 teams; f1_teams_2024 holds 2, the rest are added") != std::string::npos;
         if (!own_row) {
             check(refused == 0 && x.records["content.package"] == 1,
-                  "with no standings_from, a 12-team package applies on the 11-team stock row");
+                  "with no standings_from, a 12-team package applies on the stock f1_teams_2024 row");
             check(!standings.empty() && text(standings + "._team_reference_instancecount_") == "12",
                   "its standings row is grown to 12 teams");
             check(text(standings + ".team_reference_10.team") == "hrt_2012" &&
