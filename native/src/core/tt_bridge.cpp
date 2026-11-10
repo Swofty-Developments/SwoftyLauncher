@@ -120,8 +120,12 @@ const runtime::Sig S_ACCOUNT_ERROR{"Game_F1os_AccountStateError",
 
 const runtime::Sig S_FINDER_GATE{"site_Game_GhostLapHandler_RivalFinderOnline",
         "8B 87 A0 00 00 00 20 CB 0F 85 8C 00 00 00 83 F8 01 0F 84 83 00 00 00 48 89 F9 BA 01 00 00 00 E8", 0x2f98ec6, runtime::Sig::addr, 0, 6};
-const runtime::Sig S_FEATURES{"Game_Features_LoadContentSetMask",
-        "41 57 41 56 41 54 56 57 55 53 48 81 EC 50 08 00 00 48 89 D7 48 89 CE 48 8D 15 ?? ?? ?? ?? 48 89 F9 45 31 C0 E8", 0x13ed470};
+const runtime::Sig S_TS_FLAG{"site_Game_TrackSelectVM_CanViewLeaderboard",
+        "48 8B 05 ?? ?? ?? ?? 80 78 18 00 74 04 31 C0 EB 0D 48 8B 05 ?? ?? ?? ?? 0F B6 40 18 34 01 88 44 24 50", 0x1f27937, runtime::Sig::addr, 0, 30};
+const runtime::Sig S_PRIV_GATE{"site_Game_UIUIPrivilegeCheckControl_HandleSignal_Result",
+        "41 80 BE AB 00 00 00 00 0F 84 8C 00 00 00 45 84 FF 0F 84 8D 00 00 00", 0x3822cdf, runtime::Sig::addr, 0, 8};
+constexpr uintptr_t TS_FLAG_GLOBAL_A = 0, TS_FLAG_GLOBAL_B = 17;
+constexpr int64_t TS_FORCED_WINDOW_MS = 10 * 60 * 1000;
 
 constexpr uintptr_t PB_HANDLER_ID_BLOCK = 0x298, PB_HANDLER_TIME = 0x300;
 
@@ -151,15 +155,18 @@ std::atomic<int> hits_upload{0}, hits_download{0}, hits_racenet{0};
 std::vector<std::string> seen_methods;
 
 bool diag_on = false;
-safetyhook::MidHook h_finder, h_features, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
+safetyhook::MidHook h_finder, h_ts_flag, h_priv, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
 
 struct GateHook {
     uintptr_t at = 0, resume = 0, session_global = 0;
     safetyhook::MidHook hook;
 };
 GateHook gates[5];
-std::atomic<uintptr_t> diag_storage{0}, feature_holder{0};
-uint64_t feature_seen = ~uint64_t(0);
+std::atomic<uintptr_t> diag_storage{0};
+uintptr_t ts_global_a = 0, ts_global_b = 0;
+std::atomic<int64_t> ts_forced_ms{0}, enter_ms{0};
+std::string ts_seen, priv_seen;
+bool lookup_logged = true;
 std::atomic<int> finder_logged{0};
 uintptr_t diag_handler_seen = ~uintptr_t(0);
 std::atomic<int> diag_gate_logged{0}, diag_push_logged{0}, diag_error_logged{0}, diag_bypass_logged{0};
@@ -596,8 +603,32 @@ void account_error_mid(safetyhook::Context &c)
 void session_enter_mid(safetyhook::Context &c)
 {
     diag_storage = c.rcx;
-    swofty::log("[boards] diag: ghost lap storage system 0x%llx onSessionEnter (handler before: 0x%llx)", (unsigned long long)c.rcx,
-                (unsigned long long)peek64(c.rcx + 0x278));
+    enter_ms = now_ms();
+    lookup_logged = false;
+    std::string code;
+    {
+        std::lock_guard<std::mutex> lk(lock);
+        code = session_code;
+    }
+    swofty::log("[boards] diag: ghost lap storage system 0x%llx onSessionEnter (handler before: 0x%llx), session track '%s', content '%s', custom track %d",
+                (unsigned long long)c.rcx, (unsigned long long)peek64(c.rcx + 0x278), code.c_str(), current_content().c_str(), session_custom.load() ? 1 : 0);
+}
+
+void session_lookup_tick()
+{
+    int64_t at = enter_ms.load();
+    uintptr_t sys = diag_storage.load();
+    if (!at || !sys || lookup_logged || now_ms() - at < 3000)
+        return;
+    lookup_logged = true;
+    uint64_t handler = peek64(sys + 0x278);
+    std::string name;
+    if (handler) {
+        uint64_t ctx = peek64(handler + 0x58), np = ctx ? peek64(ctx + 0x68) : 0;
+        name = np ? tb::read_c(game_mem(), np) : std::string();
+    }
+    swofty::log("[boards] diag: board lookup of onSessionEnter: %s%s", handler ? "found, board " : "no board found, the ghost lap handler stays 0",
+                name.c_str());
 }
 
 
@@ -631,25 +662,70 @@ void finder_mid(safetyhook::Context &c)
     c.rcx = (c.rcx & ~uint64_t(0xff)) | 1;
 }
 
-void features_mid(safetyhook::Context &c) { feature_holder = c.rcx; }
-
-void features_tick()
+bool screen_ours()
 {
-    uintptr_t h = feature_holder.load();
-    if (!h || !runtime::readable(reinterpret_cast<void *>(h), 16))
-        return;
-    uint64_t lo = peek64(h);
-    if (lo == feature_seen)
-        return;
-    feature_seen = lo;
-    swofty::log("[boards] diag: content-set feature mask at 0x%llx = 0x%016llx %016llx: tt_leaderboards_on %d, show_rivals_tt %d, show_objectives_tt %d, tt_ai_level_check %d",
-                (unsigned long long)h, (unsigned long long)peek64(h + 8), (unsigned long long)lo, int(lo >> 37 & 1), int(lo >> 38 & 1), int(lo >> 39 & 1),
-                int(lo >> 62 & 1));
+    return bridge_on && tb::ours_session(current_content(), session_custom.load(std::memory_order_relaxed));
 }
 
+uint8_t flag_byte(uintptr_t global)
+{
+    uint64_t obj = global ? peek64(global) : 0;
+    if (!obj || !runtime::readable(reinterpret_cast<void *>(obj + 0x18), 1))
+        return 0xff;
+    return *reinterpret_cast<uint8_t *>(obj + 0x18);
+}
+
+void ts_flag_mid(safetyhook::Context &c)
+{
+    uint8_t al = uint8_t(c.rax), joining = flag_byte(ts_global_b), blocked = flag_byte(ts_global_a);
+    bool ours = screen_ours(), force = ours && !al;
+    if (force) {
+        c.rax = (c.rax & ~uint64_t(0xff)) | 1;
+        ts_forced_ms = now_ms();
+    }
+    if (!diag_on && !force)
+        return;
+    std::string content = current_content();
+    char key[160];
+    snprintf(key, sizeof key, "%u/%u/%u/%d/%d/%s", al, blocked, joining, ours, session_custom.load() ? 1 : 0, content.c_str());
+    {
+        std::lock_guard<std::mutex> lk(lock);
+        if (key == ts_seen)
+            return;
+        ts_seen = key;
+    }
+    swofty::log("[boards] %strack select can_view_leaderboard: computed %u (flag [0x1460fddb8]+0x18 = %u, [0x14604e168]+0x18 = %u), content '%s', custom track %d, "
+                "ours %d -> %s",
+                diag_on ? "diag: " : "", al, blocked, joining, content.c_str(), session_custom.load() ? 1 : 0, ours,
+                force ? "forced visible: the View Leaderboards button and prompt are shown" : ours ? "already visible" : "left to the game");
+}
+
+void priv_mid(safetyhook::Context &c)
+{
+    uint32_t type = uint32_t(c.rbp);
+    if (type != 1)
+        return;
+    uint8_t ok = uint8_t(c.r15), enabled = runtime::readable(reinterpret_cast<void *>(c.r14 + 0xab), 1) ? *reinterpret_cast<uint8_t *>(c.r14 + 0xab) : 0xff;
+    bool recent = ts_forced_ms.load() && now_ms() - ts_forced_ms.load() < TS_FORCED_WINDOW_MS;
+    bool skip = bridge_on && recent && screen_ours();
+    char key[48];
+    snprintf(key, sizeof key, "%u/%u/%d", ok, enabled, skip);
+    if (skip)
+        c.rflags |= 0x40;
+    {
+        std::lock_guard<std::mutex> lk(lock);
+        if (key == priv_seen)
+            return;
+        priv_seen = key;
+    }
+    if (diag_on || skip)
+        swofty::log("[boards] %sprivilege check type 1 of control 0x%llx (check free %u, control enabled %u): %s", diag_on ? "diag: " : "", (unsigned long long)c.r14, ok,
+                    enabled,
+                    skip ? "the Time Trial leaderboard button of our content: success raised without the platform check" : "left to the game (not our leaderboard button)");
+}
 void diag_tick()
 {
-    features_tick();
+    session_lookup_tick();
     uintptr_t sys = diag_storage.load();
     if (!sys)
         return;
@@ -778,10 +854,22 @@ void setup()
                 swofty::log("[boards] rival finder gate armed at base+0x%llx (%s)", (unsigned long long)(at - swofty::api->module_base()),
                             bridge_on ? "our boards count as online for the rival search" : "diagnostics only");
     }
+    if (bridge_on || diag_on) {
+        if (uintptr_t at = runtime::find(S_TS_FLAG, "boards", "boards")) {
+            uintptr_t start = at - 30;
+            auto rip = [&](uintptr_t insn) { return insn + 7 + uintptr_t(int64_t(*reinterpret_cast<const int32_t *>(insn + 3))); };
+            ts_global_a = rip(start + TS_FLAG_GLOBAL_A);
+            ts_global_b = rip(start + TS_FLAG_GLOBAL_B);
+            if (hook_mid(h_ts_flag, at, ts_flag_mid, "track select leaderboard flag"))
+                swofty::log("[boards] track select leaderboard button armed at base+0x%llx (%s)", (unsigned long long)(at - swofty::api->module_base()),
+                            bridge_on ? "shown for our content" : "diagnostics only");
+        }
+        if (uintptr_t at = runtime::find(S_PRIV_GATE, "boards", "boards"))
+            if (hook_mid(h_priv, at, priv_mid, "leaderboard privilege check"))
+                swofty::log("[boards] leaderboard privilege check skip armed at base+0x%llx (%s)", (unsigned long long)(at - swofty::api->module_base()),
+                            bridge_on ? "our leaderboard button needs no platform check" : "diagnostics only");
+    }
     if (diag_on) {
-        if (uintptr_t at = runtime::find(S_FEATURES, "boards", "boards"))
-            if (hook_mid(h_features, at, features_mid, "content-set features"))
-                swofty::log("[boards] diag: content-set feature loader hooked at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
         if (uintptr_t at = runtime::find(S_ACCOUNT_ERROR, "boards", "boards"))
             if (hook_mid(h_account_error, at, account_error_mid, "account state error"))
                 swofty::log("[boards] diag: account-state error handler hooked at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
