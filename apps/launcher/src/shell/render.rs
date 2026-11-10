@@ -95,13 +95,19 @@ impl Render for Shell {
                         .min_w_0()
                         .overflow_hidden()
                         .bg(p.background)
-                        .pt(px(if has_sub {
-                            super::topbar::SUB_HEIGHT + 4.
-                        } else {
-                            0.
-                        }))
                         .children(side)
-                        .child(v_flex().flex_1().h_full().min_w_0().child(content)),
+                        .child(
+                            v_flex()
+                                .flex_1()
+                                .h_full()
+                                .min_w_0()
+                                .pt(px(if has_sub {
+                                    super::topbar::SUB_HEIGHT + 4.
+                                } else {
+                                    0.
+                                }))
+                                .child(content),
+                        ),
                 ),
             )
             .children(self.sub_row(p, layout_width, cx))

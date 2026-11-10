@@ -32,6 +32,7 @@ pub(crate) struct Notice {
 }
 
 pub(crate) struct SubNav {
+    pub split: Option<usize>,
     pub inline: Vec<Link>,
     pub more: Vec<Link>,
 }
@@ -78,7 +79,8 @@ impl Shell {
             _ => return None,
         };
         let (inline, more) = split_overflow(links, fixed, (layout_width - 260.).max(300.));
-        Some(SubNav { inline, more })
+        let split = (tab == Some(Tab::Library) && inline.len() + more.len() > fixed).then_some(fixed);
+        Some(SubNav { split, inline, more })
     }
 
     fn addon_page_links(&self) -> Vec<Link> {
@@ -547,12 +549,24 @@ impl Shell {
         let inline_len = nav.inline.len();
         let more_active =
             nav.more.iter().any(|l| l.page == self.page) || focus.is_some_and(|f| f >= inline_len);
-        let links: Vec<AnyElement> = nav
+        let mut links: Vec<AnyElement> = nav
             .inline
             .iter()
             .enumerate()
             .map(|(i, l)| self.link(l, focus == Some(i), p, cx))
             .collect();
+        if let Some(at) = nav.split.filter(|at| *at <= links.len()) {
+            links.insert(
+                at,
+                div()
+                    .id("sub-divider")
+                    .w(px(1.))
+                    .h_full()
+                    .flex_shrink_0()
+                    .bg(p.border)
+                    .into_any_element(),
+            );
+        }
         let more = (!nav.more.is_empty()).then(|| {
             let shell = cx.entity().downgrade();
             let items: Vec<(SharedString, Page)> =
