@@ -587,3 +587,25 @@ Setup registered(std::string &why)
 const bool registered_at_load = (runtime::direct_start_register_time_trial(registered), true);
 
 }
+
+namespace runtime::direct_start::tt {
+
+std::string current_track()
+{
+    if (!runtime::same_build())
+        return {};
+    DirectStartContext ctx = runtime::direct_start_context();
+    if (!ctx.game_modes)
+        return {};
+    std::vector<std::string> names;
+    uint8_t *mode = mode_named(ctx.game_modes, MODE, names);
+    uint8_t *e = mode && runtime::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
+    if (!e || !runtime::readable(e, ENTITY_TEAMS + 8))
+        return {};
+    uint8_t *now = rva<CurrentTrack_t>(RVA_CURRENT_TRACK)(e);
+    const char *name = now && runtime::readable(now, TRACK_NAME + 8) ? c_name(at<const char *>(now, TRACK_NAME)) : nullptr;
+    return name ? name : "";
+}
+
+}
+

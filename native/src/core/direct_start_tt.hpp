@@ -11,4 +11,6 @@ namespace runtime::direct_start::tt {
 // the flow thread while StateFTUE is held, until it answers done or failed.
 Setup setup(const json::Value &request, std::string &why);
 
+std::string current_track();
+
 }
