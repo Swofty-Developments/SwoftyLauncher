@@ -560,6 +560,7 @@ pub fn build(
         0,
         Box::new(move |d| {
             let d = patch::offline_panel(&patch::fe_home(d)?)?;
+            let d = home_rows::panel_labels_ui(&d)?;
             if show_panel { Ok(d) } else { patch::hide_panel(&d) }
         }),
     )];
@@ -578,7 +579,13 @@ pub fn build(
     let mut templates = career.as_ref().map(|c| c.3.clone());
     if let Some((scene, with_rows)) = rows {
         templates = Some(with_rows);
-        frontend.push((home_rows::SCENE, 0, Box::new(move |_| Ok(scene))));
+        frontend.push((
+            home_rows::SCENE,
+            0,
+            Box::new(move |_| home_rows::panel_scene(&scene)),
+        ));
+    } else {
+        frontend.push((home_rows::SCENE, 0, Box::new(|d| home_rows::panel_scene(d))));
     }
     if let Some((ui, type_ui, scene, _)) = career {
         frontend.push((career_select::UI, 0, Box::new(move |_| Ok(ui))));
@@ -1217,9 +1224,20 @@ mod tests {
         assert!(hard.is_empty(), "{hard:?}");
         assert_eq!(lines, ["ui: the main menu gets rows of cards"]);
         let home = read_frag(&src, FE_HOME, 0).unwrap();
-        let patched = patch::offline_panel(&patch::fe_home(&home).unwrap()).unwrap();
+        let patched = home_rows::panel_labels_ui(&patch::offline_panel(&patch::fe_home(&home).unwrap()).unwrap()).unwrap();
         let dst2 = out.join("home2").join("flow_frontend.erp");
-        write_archive(&src, &dst2, vec![(FE_HOME, 0, Box::new(move |_| Ok(patched)))], Vec::new()).unwrap();
+        let stock_scene = read_frag(&src, home_rows::SCENE, 0).unwrap();
+        let panel_only = home_rows::panel_scene(&stock_scene).unwrap();
+        write_archive(
+            &src,
+            &dst2,
+            vec![
+                (FE_HOME, 0, Box::new(move |_| Ok(patched))),
+                (home_rows::SCENE, 0, Box::new(move |_| Ok(panel_only))),
+            ],
+            Vec::new(),
+        )
+        .unwrap();
         let report = check::archive_files(&[(name.as_str(), src.as_path(), dst2.as_path())]).unwrap();
         let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
         assert!(hard.is_empty(), "the Launched with panel binding: {hard:?}");

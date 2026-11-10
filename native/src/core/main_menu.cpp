@@ -73,7 +73,7 @@ void *f1w_populate = nullptr, *f1w_action = nullptr;
 std::atomic<bool> tt_warned{false};
 std::atomic<int> rows_flag{-1}, menu_flag{-1};
 std::atomic<int> via{0};
-std::atomic<uint64_t> swap_at{0};
+std::atomic<uint64_t> swap_at{0}, home_opened_at{0};
 std::mutex swap_lock;
 std::string swap_screens;
 bool swap_reported = true;
@@ -343,11 +343,19 @@ void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4)
                 swap_reported = false;
             }
             swap_at = GetTickCount64();
+            {
+                std::lock_guard<std::mutex> g(chain_lock);
+                chain = {};
+            }
+            container_vm = nullptr;
             h_fire.call<void>(router, vm, &replacement, a4);
             Ne_Make_StrFromCStr(&replacement, nullptr, 0, 0);
             return;
         }
     }
+    if (uint64_t at = swap_at.load(); at && GetTickCount64() - at < 5000)
+        swofty::log("[main-menu] route %s fired %llu ms after the back swap (vm %p, not replaced)", text,
+                    (unsigned long long)(GetTickCount64() - at), vm);
     h_fire.call<void>(router, vm, name, a4);
 }
 
@@ -408,6 +416,13 @@ void card_populate(HomeItem *item, void *node, uint32_t a7)
 
 Action *card_action(HomeItem *item, Action *out)
 {
+    if (uint64_t at = home_opened_at.load(); at && GetTickCount64() - at < 700) {
+        out->type = 0;
+        out->str = nullptr;
+        swofty::log("[main-menu] %s: press ignored %llu ms after fe_home opened (carried-over input)", id_of(item),
+                    (unsigned long long)(GetTickCount64() - at));
+        return out;
+    }
     out->type = 1;
     out->str = nullptr;
     Ne_Make_StrFromCStr(&out->str, route_name(), 0, 0);
@@ -625,6 +640,7 @@ void style_settings(void *item)
 
 void prepare();
 void poll_bind();
+void apply_texts();
 
 void tick()
 {
@@ -641,6 +657,7 @@ void tick()
         if (patched.load() && !panel_disabled.load() && std::strcmp(env("SWOFTY_MAIN_MENU_PANEL"), "0") != 0) {
             prepare();
             poll_bind();
+            apply_texts();
         }
     }
     int want = strip_wanted.load();
@@ -701,6 +718,8 @@ void screen(const char *name)
     if (std::strncmp(name, "fe_", 3) == 0 && std::strcmp(name, "fe_planes") != 0) {
         bool home = !std::strcmp(name, "fe_home");
         home_open = home;
+        if (home)
+            home_opened_at = GetTickCount64();
         if (home && via.exchange(0))
             swofty::log("[main-menu] fe_home screen opened; back-to-menu disarmed (a screen-open event, not proof it is the visible screen)");
         strip_wanted = home ? 0 : 1;
@@ -718,6 +737,8 @@ void command(void *, uint32_t command_hash, uint32_t focused_hash)
     bool tt = focused_hash == logic::djb2(logic::ID_TIME_TRIAL);
     bool gp = focused_hash == logic::djb2(logic::ID_GRAND_PRIX);
     if (!tt && !gp)
+        return;
+    if (uint64_t at = home_opened_at.load(); at && GetTickCount64() - at < 700)
         return;
     if (!tt)
         start_chain(false);
@@ -771,6 +792,35 @@ void prepare()
     swofty::log("[main-menu] panel prepared on the flow thread: avatar slot %d, video slot %d", p->avatar_slot, p->video_slot);
 }
 
+void apply_texts()
+{
+    static std::string last_panel, last_video;
+    static bool done = false;
+    std::shared_ptr<const Prepared> p;
+    {
+        std::lock_guard<std::mutex> g(prepared_lock);
+        p = prepared;
+    }
+    if (!p)
+        return;
+    std::string panel = p->version + "\n" + p->discord;
+    std::string video = p->s.video_url.empty() ? std::string() : logic::watch_line(logic::button_name(bind_pad.load())) + "\n" + p->s.video_title;
+    if (done && panel == last_panel && video == last_video)
+        return;
+    bool a = ui_vm_set_path("ui_menu_data.swofty_panel_text", 0, panel.c_str());
+    bool b = ui_vm_set_path("ui_menu_data.swofty_video_text", 0, video.c_str());
+    static int fails = 0;
+    if (a && b) {
+        done = true;
+        last_panel = panel;
+        last_video = video;
+        swofty::log("[main-menu] panel text set through the UI data (top right: %s; bottom right: %s)", panel.c_str(),
+                    video.empty() ? "(none)" : video.c_str());
+    } else if (fails++ % 60 == 0) {
+        swofty::log("[main-menu] could not set the panel UI text yet (panel %d, video %d)", int(a), int(b));
+    }
+}
+
 void poll_bind()
 {
     static uint64_t last = 0;
@@ -783,7 +833,7 @@ void poll_bind()
         std::lock_guard<std::mutex> g(prepared_lock);
         p = prepared;
     }
-    if (!p || p->video_slot < 0)
+    if (!p || p->s.video_url.empty())
         return;
     bool on_pad = false;
     bool pressed = bind_pressed(&on_pad);
@@ -795,15 +845,28 @@ void poll_bind()
 void paint(hud::Frame &f, uint64_t now)
 {
     (void)now;
-    if (!drawing())
+    static bool told_first = false, told_blocked = false, told_noprep = false;
+    if (!std::exchange(told_first, true))
+        swofty::log("[main-menu] panel: paint called on a %.0fx%.0f frame (patched %d, home open %d, state %d, prepared %d, disabled %d)",
+                    double(f.width), double(f.height), int(patched.load()), int(home_open.load()), int(state_loaded.load()),
+                    int(panel_prepared.load()), int(panel_disabled.load()));
+    if (!drawing()) {
+        if (home_open.load() && !std::exchange(told_blocked, true))
+            swofty::log("[main-menu] panel: not due on an open home screen (patched %d, state %d, prepared %d, disabled %d)",
+                        int(patched.load()), int(state_loaded.load()), int(panel_prepared.load()), int(panel_disabled.load()));
         return;
+    }
     std::shared_ptr<const Prepared> p;
     {
         std::lock_guard<std::mutex> g(prepared_lock);
         p = prepared;
     }
-    if (!p)
+    if (!p) {
+        if (!std::exchange(told_noprep, true))
+            swofty::log("[main-menu] panel: due but the prepared snapshot is empty");
         return;
+    }
+    size_t verts_before = f.verts.size();
     LARGE_INTEGER t0, t1, freq;
     QueryPerformanceCounter(&t0);
     static bool told_drawn = false;
@@ -836,6 +899,10 @@ void paint(hud::Frame &f, uint64_t now)
         cap.rgba = 0xe9ecf3ff;
         hud::text(f, vx, vy + vh + 8 * u, cap, logic::watch_line(logic::button_name(bind_pad.load())));
     }
+    static bool told_verts = false;
+    if (!std::exchange(told_verts, true))
+        swofty::log("[main-menu] panel: first draw added %zu vertices and %zu batch(es) (frame total %zu / %zu)",
+                    f.verts.size() - verts_before, f.batches.size(), f.verts.size(), f.batches.size());
     QueryPerformanceCounter(&t1);
     QueryPerformanceFrequency(&freq);
     double ms = double(t1.QuadPart - t0.QuadPart) * 1000.0 / double(freq.QuadPart);

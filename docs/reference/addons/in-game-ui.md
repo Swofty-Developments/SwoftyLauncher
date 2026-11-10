@@ -505,3 +505,5 @@ Back from the container fires the route `f1_world`; while a card is armed the co
 ```
 
 While the main menu is open the overlay paints the Swofty Launcher version, the Discord sign-in state and avatar in the top right, and the latest video's thumbnail with `Press RB to watch` (`Press V to watch` without a gamepad) in the bottom right. Pressing the key writes `swofty/open_url.json`. Entering Time Trial while signed out of Discord shows the game's message popup once per session; its OK continues.
+
+The top-right and bottom-right text is also game UI: the launcher's build adds two labels to `fe_home.ui` bound to `ui_menu_data.swofty_panel_text` (version and Discord state) and `ui_menu_data.swofty_video_text` (`Press RB to watch` and the video title), laid out in two new `fe_home.idf` slots. The core sets both paths on the flow thread, so they show without the overlay.

@@ -214,3 +214,96 @@ pub fn hide_strip(data: &[u8]) -> Result<Vec<u8>> {
     }
     Ok(out)
 }
+
+pub const PANEL_TEXT_PATH: &str = "#ui_menu_data.swofty_panel_text";
+pub const VIDEO_TEXT_PATH: &str = "#ui_menu_data.swofty_video_text";
+const PANEL_LABEL: &str = "swofty_panel_label";
+const VIDEO_LABEL: &str = "swofty_video_label";
+const LABEL_SOURCE: &str = "description";
+const LABEL_SLOT_SOURCE: &str = "description_label";
+const LABELS: [(&str, &str, f64, f64, &str); 2] = [
+    (PANEL_LABEL, PANEL_TEXT_PATH, 3.2, 4.0, "7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c01"),
+    (VIDEO_LABEL, VIDEO_TEXT_PATH, 3.2, -3.4, "7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c02"),
+];
+
+pub fn has_panel_labels_ui(data: &[u8]) -> Result<bool> {
+    let mut doc = Pkg::parse(data)?;
+    let screen = first_screen(&mut doc)?;
+    Ok(screen.slot(CHILDREN)?.iter().any(|k| k.is_node() && k.name() == PANEL_LABEL))
+}
+
+/// fe_home.ui with two text labels bound to `ui_menu_data.swofty_panel_text` (top right) and
+/// `ui_menu_data.swofty_video_text` (bottom right), laid out in the scene slots `panel_scene` adds.
+pub fn panel_labels_ui(data: &[u8]) -> Result<Vec<u8>> {
+    edit(data, |doc| {
+        let screen = first_screen(doc)?;
+        let owner = screen.name().to_owned();
+        let source = screen
+            .slot(CHILDREN)?
+            .iter()
+            .find(|k| k.is_node() && k.name() == LABEL_SOURCE)
+            .ok_or_else(|| err(format!("{TEMPLATES} has no {LABEL_SOURCE}")))?
+            .clone();
+        let mut added = Vec::new();
+        for (name, path, _, _, _) in LABELS {
+            let mut label = clone_node(&source, &owner, name)?;
+            set_layout(&mut label, &[name])?;
+            let t = label.props_mut()?.at_mut("text")?.o_mut()?;
+            set_str(t, "value", "")?;
+            set_str(t, "dbentry", path)?;
+            set_prop_value(&mut label, "localise", Val::bool(false))?;
+            fix_ids(&mut label, Some(&owner));
+            added.push(label);
+        }
+        screen.slot_mut(CHILDREN)?.extend(added);
+        Ok(())
+    })
+}
+
+pub fn has_panel_slots(data: &[u8]) -> Result<bool> {
+    let doc = Pkg::parse(data)?;
+    let scenes = idf::scenes(&doc)?;
+    let root = scenes.first().ok_or_else(|| err("a scene file without scenes"))?.o()?.at("scene")?;
+    Ok(idf::find(root, PANEL_LABEL).is_some())
+}
+
+/// fe_home.idf with a text slot for each label, copies of the description's, under transition_fade_items.
+pub fn panel_scene(data: &[u8]) -> Result<Vec<u8>> {
+    let mut doc = Pkg::parse(data)?;
+    let entry = idf::scenes_mut(&mut doc)?
+        .first_mut()
+        .ok_or_else(|| err(format!("{SCENE} has no scenes")))?;
+    if idf::scene_name(entry) != Some(idf::scene_id(SCENE)) {
+        return Err(err(format!("not {SCENE}")));
+    }
+    let root = entry.o_mut()?.at_mut("scene")?;
+    if idf::find(root, PANEL_LABEL).is_some() {
+        return Err(err(format!("{SCENE} already has the panel labels")));
+    }
+    let source = idf::find(root, LABEL_SLOT_SOURCE)
+        .ok_or_else(|| err(format!("{SCENE} has no {LABEL_SLOT_SOURCE}")))?;
+    let mut slots = Vec::new();
+    for (name, _, x, y, guid) in LABELS {
+        let mut slot = idf::detached(source);
+        slot.o_mut()?.set("name", s(name));
+        idf::set_param(&mut slot, "guid", Val::str(guid))?;
+        set_position(&mut slot, x, y)?;
+        idf::recompute_ids(&mut slot, &format!("{PATH}.{name}"))?;
+        slots.push(slot);
+    }
+    let parent = find_mut(root, "transition_fade_items")
+        .ok_or_else(|| err(format!("{SCENE} has no transition_fade_items")))?;
+    idf::children_mut(parent)?.extend(slots);
+    idf::relookup(entry)?;
+    let out = doc.to_bytes()?;
+    let back = Pkg::parse(&out)?;
+    if back.to_bytes()? != out {
+        return Err(err(format!("the patched {SCENE} does not round-trip")));
+    }
+    let mut bad = idf::xref_mismatches(&back)?;
+    bad.extend(idf::id_problems(&back)?);
+    if !bad.is_empty() {
+        return Err(err(format!("{SCENE}: {}", bad.join("; "))));
+    }
+    Ok(out)
+}
