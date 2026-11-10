@@ -96,6 +96,14 @@ int main()
         uint8_t other[16] = {0x5e, 0x2c, 0x17, 0x57, 0xff, 0xff, 0xff, 0xff};
         expect(tb::garage_node_offset(other, sizeof other) == -1, "another node id does not match");
     }
+    expect(tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2038, 0), "a panel with seven tabs is driven once");
+    expect(!tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2038, 0x1000), "the same panel is not driven twice");
+    expect(!tb::garage_should_drive(false, true, 0x1000, 0x2000, 0x2038, 0) && !tb::garage_should_drive(true, false, 0x1000, 0x2000, 0x2038, 0),
+           "never with the bridge off or for stock content");
+    expect(!tb::garage_should_drive(true, true, 0, 0x2000, 0x2038, 0) && !tb::garage_should_drive(true, true, 0x1000, 0, 0, 0), "null panel or null list never");
+    expect(!tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2000, 0) && !tb::garage_should_drive(true, true, 0x1000, 0x2038, 0x2000, 0), "an empty or inverted list never");
+    expect(!tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2003, 0) && !tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2000 + 8 * 65, 0),
+           "a misaligned or absurdly long list never");
     expect(tb::garage_result(0, true, true) == 1, "a denied garage privilege becomes granted for our content");
     expect(tb::garage_result(0, false, true) == 0 && tb::garage_result(0, true, false) == 0, "it stays denied with the bridge off or for stock content");
     expect(tb::garage_result(1, true, true) == 1 && tb::garage_result(0xff, true, true) == 0xff && tb::garage_result(2, true, true) == 2,

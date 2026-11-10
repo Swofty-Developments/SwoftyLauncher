@@ -398,6 +398,16 @@ inline int garage_node_offset(const uint8_t *bytes, size_t n, uint32_t want = GA
     return -1;
 }
 
+// Driving the garage monitor's `car_monitor_tt_leaderboard_privilege_check` ourselves: allowed once per panel object, only for our content with
+// the bridge on, and only when the panel's tab list (begin/end pointers) is a plausible non-empty list of 8-byte entries.
+inline bool garage_should_drive(bool bridge_on, bool ours_content, uint64_t panel, uint64_t tabs_begin, uint64_t tabs_end, uint64_t driven_panel)
+{
+    if (!bridge_on || !ours_content || !panel || panel == driven_panel || !tabs_begin || tabs_end <= tabs_begin)
+        return false;
+    uint64_t span = tabs_end - tabs_begin;
+    return span % 8 == 0 && span / 8 <= 64;
+}
+
 inline bool ours(int descriptor, bool track_custom) { return descriptor >= FIRST_ADDON_DESCRIPTOR || track_custom; }
 
 // Routing

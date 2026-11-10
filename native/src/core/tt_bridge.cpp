@@ -19,6 +19,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <set>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -143,6 +144,13 @@ const runtime::Sig S_WATCHDOG_REARM{"site_Game_SessionTimer_Rearm_1409d2790",
         "48 89 86 88 0B 00 00 48 83 BE 90 0B 00 00 00 74 07 48 89 86 90 0B 00 00 F6 86 C8 0B 00 00 01 0F 94 86 C0 0B 00 00", 0x9d2790};
 const runtime::Sig S_WATCHDOG_TRIP{"site_Game_SessionTimer_Trip_1409d2853",
         "F6 86 A8 0B 00 00 01 0F 94 86 A0 0B 00 00 48 83 C4 30 5B 5D 5F 5E 41 5C 41 5E 41 5F C3", 0x9d284c};
+const runtime::Sig S_GARAGE_CHECK_DONE{"site_Game_GarageCockpitViewModel_TtPrivilegeCheckDone",
+        "0F B6 43 08 48 C7 84 24 30 01 00 00 00 00 00 00 48 8D 0D ?? ?? ?? ?? 48 89 8C 24 28 01 00 00 88 84 24 38 01 00 00", 0x1bc5481};
+const runtime::Sig S_GARAGE_CMD{"site_Game_GarageCockpitViewModel_OnCommandRaised_entry",
+        "4C 89 C3 48 89 D7 48 89 CE 48 8B 02 48 85 C0 74 27 8B 00 3D 7C DC 61 08", 0x1bc514a};
+const runtime::Sig S_GARAGE_UPDATE{"site_Game_GarageMonitorPanel_Update_141f76f09",
+        "48 89 CE 0F B6 99 48 09 00 00 48 8B 81 70 02 00 00 4C 8B A0 88 00 00 00", 0x1f76f09};
+const runtime::Sig S_GARAGE_PRIV_SUB{"Game_GarageMonitorPanel_OnTtLeaderboardPrivilege_thunk_141f79690", "E9 9B 42 6A 0A", 0x1f79690};
 const runtime::Sig S_PRIV_GATE{"site_Game_UIUIPrivilegeCheckControl_HandleSignal_Result",
         "41 80 BE AB 00 00 00 00 0F 84 8C 00 00 00 45 84 FF 0F 84 8D 00 00 00", 0x3822cdf, runtime::Sig::addr, 0, 8};
 constexpr uintptr_t TS_FLAG_GLOBAL_A = 0, TS_FLAG_GLOBAL_B = 17;
@@ -178,7 +186,7 @@ std::atomic<int> hits_upload{0}, hits_download{0}, hits_racenet{0};
 std::vector<std::string> seen_methods;
 
 bool diag_on = false;
-safetyhook::MidHook h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
+safetyhook::MidHook h_garage_done, h_garage_cmd, h_garage_update, h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
 
 struct GateHook {
     uintptr_t at = 0, resume = 0, session_global = 0;
@@ -911,6 +919,47 @@ void garage_done_mid(safetyhook::Context &c)
                     grant ? "; changed to granted for our content so car_monitor_tt_leaderboard_privilege_check enables the leaderboard tab" : "");
 }
 
+void garage_cmd_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> logged{0};
+    static std::mutex m;
+    static std::set<uint32_t> seen;
+    if (!bridge_on || !content_ours())
+        return;
+    uint64_t name = peek64(c.rdx);
+    uint32_t id = name ? peek32(name) : 0;
+    if (!id)
+        return;
+    std::lock_guard<std::mutex> lk(m);
+    if (seen.insert(id).second && ++logged <= 60)
+        swofty::log("[boards] garage view model command 0x%x raised%s", id, id == 0x3c3e50f5 ? " (tt_privilege_check_done: the leaderboard privilege result)" : "");
+}
+
+std::atomic<uint64_t> garage_driven_panel{0};
+uintptr_t garage_priv_sub = 0;
+
+// Ownership: rcx is the garage monitor panel, the object whose Update is running on the game thread right now. Reads are plain values
+// guarded by readable(). The one call is the panel's own subscriber for car_monitor_tt_leaderboard_privilege_check with a zeroed local
+// message whose bool (+0x10) is true; the subscriber only reads that byte. Done once per panel object.
+void garage_update_mid(safetyhook::Context &c)
+{
+    uint64_t panel = c.rcx;
+    if (!garage_priv_sub || !bridge_on || garage_driven_panel.load() == panel)
+        return;
+    uint64_t tb_ = 0, te = 0;
+    if (!runtime::readable(reinterpret_cast<void *>(panel + 0x408), 16))
+        return;
+    tb_ = peek64(panel + 0x408), te = peek64(panel + 0x410);
+    if (!tb::garage_should_drive(bridge_on, content_ours(), panel, tb_, te, garage_driven_panel.load()))
+        return;
+    garage_driven_panel = panel;
+    alignas(16) uint8_t msg[0x40] = {};
+    msg[0x10] = 1;
+    reinterpret_cast<uint64_t (*)(uint64_t, void *)>(garage_priv_sub)(panel, msg);
+    swofty::log("[boards] garage monitor: car_monitor_tt_leaderboard_privilege_check raised as granted on panel 0x%llx (%llu tabs) for our content: the leaderboard tab is enabled by the panel's own subscriber",
+                (unsigned long long)panel, (unsigned long long)((te - tb_) / 8));
+}
+
 void commit_path_log(const char *what, safetyhook::Context &c, std::atomic<int> &logged)
 {
     if (++logged > 24)
@@ -1261,6 +1310,22 @@ void setup()
             if (uintptr_t at = runtime::find(*sig, "boards", "boards"))
                 if (hook_mid(*hook, at, fn, label))
                     swofty::log("[boards] %s logged at base+0x%llx", label, (unsigned long long)(at - swofty::api->module_base()));
+        if (bridge_on || diag_on) {
+            if (uintptr_t at = runtime::find(S_GARAGE_CHECK_DONE, "boards", "boards"))
+                if (hook_mid(h_garage_done, at, garage_done_mid, "garage tt privilege result"))
+                    swofty::log("[boards] garage tt_privilege_check_done logged at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
+            if (uintptr_t at = runtime::find(S_GARAGE_CMD, "boards", "boards"))
+                if (hook_mid(h_garage_cmd, at, garage_cmd_mid, "garage view model commands"))
+                    swofty::log("[boards] garage view model commands logged at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
+        }
+        if (bridge_on)
+            if (uintptr_t sub = runtime::find(S_GARAGE_PRIV_SUB, "boards", "boards"))
+                if (uintptr_t at = runtime::find(S_GARAGE_UPDATE, "boards", "boards"))
+                    if (hook_mid(h_garage_update, at, garage_update_mid, "garage monitor panel update")) {
+                        garage_priv_sub = sub;
+                        swofty::log("[boards] garage monitor privilege drive armed at base+0x%llx (subscriber base+0x%llx)", (unsigned long long)(at - swofty::api->module_base()),
+                                    (unsigned long long)(sub - swofty::api->module_base()));
+                    }
         if (uintptr_t at = runtime::find(S_READER_FAIL, "boards", "boards"))
             if (hook_mid(h_reader_fail, at, reader_fail_mid, "leaderboard reader failure"))
                 swofty::log("[boards] leaderboard reader failure logged at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
