@@ -23,12 +23,12 @@
 //   0x001 Position     3 x f32 world position (chassis +0x200)
 //   0x002 Orientation  4 x i16, (x, y, z, w) of the unit quaternion times 32767; the rotation matrix rows at chassis
 //                      +0x190/+0x1a0/+0x1b0 are the body axes (right, up, forward)
-//   0x004 Steering     i8, steering input times 127
-//   0x008 Gear         u8, the gearbox index (0 reverse, 1 neutral, 2 first)
+//   0x004 Steering     i8, steering input times 127, the opposite sign to the recorder's steer column
+//   0x008 Gear         u8, the gearbox index: the recorder's gear column plus one
 //   0x010 Throttle     u8, 0..1 times 255
 //   0x020 Brake        u8, 0..1 times 255
 //   0x040 Rpm          u8, engine rad/s divided by 2100 times 255
-//   0x080 RearWing     u8, the DRS flag
+//   0x080 RearWing     u8, a DRS state: 4 with the DRS open and 2 closed in the one real lap seen (1 once)
 //   0x100 Speed        u8, forward speed in m/s
 //   0x200 Teleport     u32, 0x40 after a teleport (no interpolation), 0x3f otherwise
 //   0x400 Progress     u16, lap progress 0..1 times 65535
@@ -44,6 +44,7 @@ constexpr size_t FIXED = 0x80, SUMMARY = 0x6c, PAD = 20, HEAD = 8 + FIXED;
 constexpr size_t MAX_DATA = 0xc780, MAX_RECORDS = 0x2000, MIN_RECORDS = 0x65, MIN_BYTES = 300;
 constexpr uint32_t MAX_MS = 0x3ffff;
 constexpr float RPM_SCALE = 2100.0f;
+constexpr uint8_t WING_CLOSED = 2, WING_OPEN = 4;
 constexpr uint32_t TELEPORT_NONE = 0x3f, TELEPORT_JUMP = 0x40;
 constexpr size_t SUMMARY_MASK = 4, SUMMARY_LAP = 8, SUMMARY_SECTOR = 12, SUMMARY_FLAGS = 0x60;
 
@@ -390,14 +391,14 @@ inline Record sample_at(const std::vector<Sample> &s, size_t &cursor, float t, Q
     r.quat[1] = quantise(q.y);
     r.quat[2] = quantise(q.z);
     r.quat[3] = quantise(q.w);
-    r.steer = int8_t(std::lround(std::fmax(-1.0f, std::fmin(1.0f, mix(a.steer, b.steer))) * 127.0f));
+    r.steer = int8_t(std::lround(std::fmax(-1.0f, std::fmin(1.0f, -mix(a.steer, b.steer))) * 127.0f));
     int g = (u < 0.5f ? a.gear : b.gear) + 1;
     r.gear = uint8_t(std::max(0, std::min(15, g)));
     r.throttle = byte_of(mix(a.throttle, b.throttle));
     r.brake = byte_of(mix(a.brake, b.brake));
     float rad = mix(a.rpm, b.rpm) * 6.2831855f / 60.0f;
     r.rpm = byte_of(rad / RPM_SCALE);
-    r.wing = (u < 0.5f ? a.drs : b.drs) > 0.5f ? 1 : 0;
+    r.wing = (u < 0.5f ? a.drs : b.drs) > 0.5f ? WING_OPEN : WING_CLOSED;
     float sp = std::sqrt(mix(a.vel[0], b.vel[0]) * mix(a.vel[0], b.vel[0]) + mix(a.vel[1], b.vel[1]) * mix(a.vel[1], b.vel[1]) +
                          mix(a.vel[2], b.vel[2]) * mix(a.vel[2], b.vel[2]));
     r.speed = uint8_t(std::fmin(255.0f, sp));

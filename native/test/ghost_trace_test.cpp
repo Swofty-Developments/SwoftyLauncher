@@ -348,8 +348,37 @@ static void real_lap()
                 gt::lap_seconds(*t));
 }
 
+static void real_trace()
+{
+    std::ifstream f("fixtures/real-suzuka-2016.trace", std::ios::binary);
+    std::vector<uint8_t> d((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+    CHECK(d.size() == 19261);
+    gt::Trace t;
+    size_t used = 0;
+    CHECK(gt::decode(d.data(), d.size(), t, &used) == gt::Status::ok);
+    CHECK(used == d.size() && t.records.size() == 2009);
+    CHECK(gt::accepted_when_bound(t));
+    CHECK(std::fabs(gt::lap_seconds(t) - 88.118f) < 0.001f);
+    CHECK(t.records.front().ms == 0 && t.records.back().ms == 88117 && t.records.front().mask == gt::CH_ALL);
+    CHECK(std::fabs(t.records.front().pos[0] - 627.40f) < 0.01f);
+    std::vector<uint8_t> again;
+    CHECK(gt::encode(t, again) && again == d);
+    uint32_t seen = 0;
+    for (auto &r : t.records) {
+        seen |= r.mask;
+        if (r.mask & gt::CH_ORIENTATION) {
+            float n = 0;
+            for (int16_t q : r.quat)
+                n += (q / 32767.0f) * (q / 32767.0f);
+            CHECK(std::fabs(n - 1.0f) < 0.001f);
+        }
+    }
+    CHECK(seen == gt::CH_ALL);
+}
+
 int main()
 {
+    real_trace();
     layout_tests();
     round_trips();
     reader_rules();
