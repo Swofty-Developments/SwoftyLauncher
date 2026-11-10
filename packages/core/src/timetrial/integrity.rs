@@ -145,7 +145,7 @@ fn prune(data: &Path, current: &str) {
         })
         .filter_map(|e| Some((e.metadata().ok()?.modified().ok()?, e.path())))
         .collect();
-    others.sort_by(|a, b| b.0.cmp(&a.0));
+    others.sort_by_key(|o| std::cmp::Reverse(o.0));
     for (_, path) in others.into_iter().skip(KEEP - 1) {
         std::fs::remove_dir_all(path).ok();
     }
