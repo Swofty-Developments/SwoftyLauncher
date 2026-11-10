@@ -44,8 +44,8 @@ impl Default for SupportPage {
 }
 
 impl Shell {
-    fn support_api(&self) -> Option<Api> {
-        self.mp.as_ref().map(|s| Api::new(&s.token))
+    fn support_api(&self) -> Api {
+        Api::new(self.mp.as_ref().map(|s| s.token.as_str()).unwrap_or_default())
     }
 
     pub(super) fn support_inputs(
@@ -95,24 +95,23 @@ impl Shell {
 
     pub(crate) fn support_open(&mut self, cx: &mut Context<Self>) {
         if matches!(self.support.goal, Load::Idle | Load::Failed(_))
-            || matches!(self.support.me, Load::Idle | Load::Failed(_))
+            || (self.mp.is_some() && matches!(self.support.me, Load::Idle | Load::Failed(_)))
         {
             self.support_reload(cx);
         }
     }
 
     pub(super) fn support_reload(&mut self, cx: &mut Context<Self>) {
-        let Some(api) = self.support_api() else {
-            return;
-        };
+        let api = self.support_api();
+        let signed_in = self.mp.is_some();
         self.support.goal = Load::Loading;
         self.support.supporters = Load::Loading;
-        self.support.me = Load::Loading;
+        self.support.me = if signed_in { Load::Loading } else { Load::Idle };
         cx.notify();
         cx.spawn(async move |this, cx| {
             let (goal, supporters, me) = cx
                 .background_executor()
-                .spawn(async move { (api.support_goal(), api.support_supporters(), api.support_me()) })
+                .spawn(async move { (api.support_goal(), api.support_supporters(), signed_in.then(|| api.support_me())) })
                 .await;
             this.update(cx, |s, cx| {
                 let faces: Vec<String> = supporters
@@ -122,7 +121,7 @@ impl Shell {
                     .collect();
                 s.support.goal = load(goal);
                 s.support.supporters = load(supporters);
-                s.support.me = load(me);
+                s.support.me = me.map(load).unwrap_or(Load::Idle);
                 if let Load::Ready(me) = &s.support.me {
                     s.support.mode = me.display_mode.clone().unwrap_or_else(|| "discord".into());
                 }
@@ -148,9 +147,10 @@ impl Shell {
             },
             _ => None,
         };
-        let Some(api) = self.support_api().filter(|_| !self.support.busy) else {
+        if self.support.busy || (kind != Kind::OneTime && self.mp.is_none()) {
             return;
-        };
+        }
+        let api = self.support_api();
         self.support.busy = true;
         self.support.notice = None;
         cx.notify();
@@ -173,7 +173,7 @@ impl Shell {
     }
 
     pub(super) fn support_claim(&mut self, email: String, payment: String, cx: &mut Context<Self>) {
-        let Some(api) = self.support_api().filter(|_| !self.support.busy) else {
+        let Some(api) = self.mp.is_some().then(|| self.support_api()).filter(|_| !self.support.busy) else {
             return;
         };
         self.support.busy = true;
@@ -202,7 +202,7 @@ impl Shell {
     }
 
     pub(super) fn support_save(&mut self, bio: String, cx: &mut Context<Self>) {
-        let Some(api) = self.support_api().filter(|_| !self.support.busy) else {
+        let Some(api) = self.mp.is_some().then(|| self.support_api()).filter(|_| !self.support.busy) else {
             return;
         };
         let bio: String = bio.trim().chars().take(BIO_MAX).collect();

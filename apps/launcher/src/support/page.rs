@@ -87,22 +87,6 @@ impl Shell {
             .icon(IconName::ArrowRightLeft)
             .label(tr("Refresh"))
             .on_click(cx.listener(|this, _, _, cx| this.support_reload(cx)));
-        if self.mp.is_none() {
-            let header = self.header(
-                tr("Support"),
-                tr("Keep Swofty Launcher free and open source").to_owned(),
-                div(),
-                p,
-            );
-            return v_flex()
-                .size_full()
-                .child(header)
-                .child(
-                    EmptyState::new(IconName::Heart, tr("Sign in to support Swofty Launcher"))
-                        .body(tr("Sign in with Discord from the title bar.")),
-                )
-                .into_any_element();
-        }
         let inputs = self.support_inputs(window, cx);
         if !self.support.bio_synced
             && let Load::Ready(me) = &self.support.me
@@ -290,8 +274,8 @@ impl Shell {
                     Button::new("support-claim")
                         .small()
                         .outline()
-                        .label(tr("Claim"))
-                        .disabled(busy)
+                        .label(if self.mp.is_some() { tr("Claim") } else { tr("Sign in to claim") })
+                        .disabled(busy || self.mp.is_none())
                         .on_click(cx.listener(move |this, _, _, cx| {
                             let (a, b) = (e.read(cx).value().to_string(), pay.read(cx).value().to_string());
                             if a.trim().is_empty() || b.trim().is_empty() {
@@ -411,8 +395,8 @@ impl Shell {
                 Button::new(id)
                     .small()
                     .when_else(plus, |b| b.primary(), |b| b.outline())
-                    .label(tr("Subscribe"))
-                    .disabled(busy)
+                    .label(if self.mp.is_some() { tr("Subscribe") } else { tr("Sign in to subscribe") })
+                    .disabled(busy || self.mp.is_none())
                     .on_click(cx.listener(move |this, _, _, cx| this.support_checkout(kind, None, cx))),
             )
             .into_any_element()
