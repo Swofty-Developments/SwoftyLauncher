@@ -6,6 +6,7 @@
 #include "apply/moments.hpp"
 #include "direct_start_tt.hpp"
 #include "era_logic.hpp"
+#include "ghost_trace_logic.hpp"
 #include "hooks/core_events.hpp"
 #include "hooks/hooks.hpp"
 #include "lap_game_logic.hpp"
@@ -545,6 +546,22 @@ void lap_rec_ghost(uintptr_t handler)
         ghost_in.push_back(std::move(b));
 }
 
+void lap_rec_native_trace(const uint8_t *data, size_t size)
+{
+    if (!active.load(std::memory_order_relaxed) || tt_bridge_pb_armed())
+        return;
+    runtime::ghost_trace::Trace t;
+    if (runtime::ghost_trace::decode(data, size, t) != runtime::ghost_trace::Status::ok || !lr::ghost_size_ok(size)) {
+        swofty::log("[laps] native trace refused: %zu bytes do not decode", size);
+        return;
+    }
+    swofty::log("[laps] native trace from the game: %zu bytes, %zu records", size, t.records.size());
+    Blob b{std::vector<uint8_t>(data, data + size), now_seconds()};
+    std::lock_guard<std::mutex> lk(lock);
+    if (active.load())
+        ghost_in.push_back(std::move(b));
+}
+
 std::vector<CoreMixins> lap_rec_mixins()
 {
     std::vector<CoreMixins> out;
@@ -574,7 +591,7 @@ void lap_rec_commit()
         return;
     hooks_settled = true;
     game_armed = core_mixins_active(GAME_MIXIN);
-    ghost_armed = tt_bridge_pb_armed();
+    ghost_armed = tt_bridge_pb_armed() || ghost_play_trace_armed();
     swofty::log("[laps] game lap result %s; ghost blob %s", game_armed ? "armed" : "not armed (laps use the clock)",
                 ghost_armed ? "armed" : "not armed (no GHST section)");
 }
@@ -601,7 +618,7 @@ void lap_rec_session_enter()
         return;
     }
     recorder.begin_session();
-    ghost_armed = tt_bridge_pb_armed();
+    ghost_armed = tt_bridge_pb_armed() || ghost_play_trace_armed();
     sealer.expect(game_armed, ghost_armed);
     tt_bridge_session_enter();
     discarded = written = 0;

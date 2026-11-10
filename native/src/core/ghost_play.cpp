@@ -85,7 +85,8 @@ ResetFn reset_fn = nullptr;
 ReadFn read_fn = nullptr;
 std::atomic<uintptr_t> component{0};
 std::atomic<int> diag_reads{0};
-bool ghost_on = false, diag_on = false;
+bool ghost_on = false, diag_on = false, record_on = false;
+std::atomic<bool> trace_armed{false};
 int slot = 4;
 
 struct Request {
@@ -431,13 +432,20 @@ uint64_t newlap_hook(void *comp, void *msg)
 {
     uintptr_t c = uintptr_t(comp);
     uint64_t r = h_newlap.call<uint64_t>(comp, msg);
-    if (!diag_on)
+    if (!diag_on && !record_on)
         return r;
     mem::Trust trust(runtime::HEAP_TRUST_MS);
-    std::lock_guard<std::mutex> g(lock);
     uint8_t car = 0xff, valid = 0;
     mem::read(uintptr_t(msg) + 0x10, car);
     mem::read(uintptr_t(msg) + 0x18, valid);
+    if (record_on && valid) {
+        std::vector<uint8_t> blob;
+        if (uintptr_t tl = tlap_at(c, 1); tl && trace_bytes_of(tl, blob))
+            runtime::lap_rec_native_trace(blob.data(), blob.size());
+    }
+    if (!diag_on)
+        return r;
+    std::lock_guard<std::mutex> g(lock);
     swofty::log("[ghost] diag: lap recorded for car %u (message flag %u); laps %s", unsigned(car), unsigned(valid), describe(c).c_str());
     for (int i : {1, 3}) {
         uintptr_t tl = tlap_at(c, i);
@@ -459,7 +467,8 @@ void setup()
     bool wanted = gate.is_object() && gate["tt_ghost"].as_bool(false);
     diag_on = env_is("SWOFTY_TT_DIAG", "1");
     ghost_on = wanted && !env_is("SWOFTY_TT_GHOST", "0");
-    if (!wanted && !diag_on)
+    record_on = gate.is_object() && gate["tt_boards"].as_bool(false) && !env_is("SWOFTY_LAP_GHOST", "0");
+    if (!wanted && !diag_on && !record_on)
         return;
     if (wanted && !ghost_on)
         swofty::log("[ghost] off (SWOFTY_TT_GHOST=0)");
@@ -470,6 +479,22 @@ void setup()
     char sv[8] = {};
     if (GetEnvironmentVariableA("SWOFTY_TT_GHOST_SLOT", sv, sizeof sv) && sv[0] >= '0' && sv[0] <= '5')
         slot = sv[0] - '0';
+    if (!ghost_on && !diag_on && !record_on)
+        return;
+    if (record_on || diag_on) {
+        if (uintptr_t nl = runtime::find(S_NEWLAP, "ghost", "ghost")) {
+            auto ih = safetyhook::InlineHook::create(reinterpret_cast<void *>(nl), reinterpret_cast<void *>(&newlap_hook));
+            if (ih) {
+                h_newlap = std::move(*ih);
+                trace_armed = record_on;
+                swofty::log("[ghost] lap trace hook armed at base+0x%llx%s%s", (unsigned long long)(nl - swofty::api->module_base()),
+                            record_on ? ": the game's trace of every completed lap goes to the lap file" : "",
+                            diag_on ? ", diag on" : "");
+            } else
+                swofty::log("[ghost] lap trace hook failed: %s", runtime::hook_error(ih.error()).c_str());
+        } else
+            swofty::log("[ghost] lap trace hook off: needs %s (byte signature matched nothing unique)", S_NEWLAP.what);
+    }
     if (!ghost_on && !diag_on)
         return;
     uintptr_t tick = runtime::find(S_TICK, "ghost", "ghost");
@@ -504,14 +529,13 @@ void setup()
         else
             swofty::log("[ghost] diag: the trace reader hook failed: %s", runtime::hook_error(ih.error()).c_str());
     }
-    if (uintptr_t nl = runtime::find(S_NEWLAP, "ghost", "ghost")) {
-        auto ih = safetyhook::InlineHook::create(reinterpret_cast<void *>(nl), reinterpret_cast<void *>(&newlap_hook));
-        if (ih)
-            h_newlap = std::move(*ih);
-        else
-            swofty::log("[ghost] diag: the lap recorded hook failed: %s", runtime::hook_error(ih.error()).c_str());
-    }
 }
+
+}
+
+namespace runtime {
+
+bool ghost_play_trace_armed() { return trace_armed.load(); }
 
 }
 
