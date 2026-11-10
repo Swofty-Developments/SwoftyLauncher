@@ -40,8 +40,25 @@ bool ui_vm_set_path(const std::string &path, int type, const void *value);
 // (paint) from swofty/home_menu.json while the home screen is open. Images (the Discord avatar and the video
 // thumbnail) are decoded by the overlay's image loader and drawn as overlay images.
 //
+// Navigation (notes: main-menu NAV.md). Time Trial, Grand Prix and the Grand Prix saves list are launcher routes in the
+// fe_home group (swofty_time_trial, swofty_grand_prix, swofty_grand_prix_saves; ui/home_nav.flag says the build has them): the first two are
+// the game's own home_to_activity with a launcher f1_world_flow entry that opens the activity container with the
+// picker's command already raised (swofty_enter_time_trial, swofty_enter_grand_prix), the third a copy of the theatre
+// route to the saves list in the front-end flow. The Back of the container (f1_world / home), of the Showroom and of
+// the saves list is swapped where the game fires it for swofty_back_home (the container's home route behind the
+// standard wipe) or swofty_home (the hub's back_1). Every Migrate the game runs is logged with its flow and entry
+// (nav:), the last accepted flow is kept, and a screen that does not open in time is recovered. A session that
+// started from a card hands over (frontend_transition.ui, swofty_enter_return) to the bare activity container, where
+// the card's command is raised.
+//
 // SWOFTY_MAIN_MENU=0 turns the whole feature off. SWOFTY_MAIN_MENU_NAV=single|rows picks the navigation
 // layout; only single (one spawner, tile order) exists so far, and rows is logged as not built.
+// SWOFTY_MAIN_MENU_ENTRY=chain opens the pickers the old way (home_to_activity, then the command 900 ms after
+// the container is up); SWOFTY_MAIN_MENU_BACK=stock|home|twostep picks the game's Back, its home route or the two-step
+// hub Back instead of the launcher's routes; SWOFTY_MAIN_MENU_GPSAVES=0 always opens the new Grand Prix picker;
+// SWOFTY_MAIN_MENU_RETURN=0 leaves the session-end hand-over on the bare container; SWOFTY_MAIN_MENU_RECOVER=0 turns
+// the recovery of a screen that did not open off; SWOFTY_MAIN_MENU_STATEFIX=0 leaves #ui_menu_data.frontend_transition_state
+// alone when leaving the container; SWOFTY_MAIN_MENU_MIGRATELOG=0 leaves the Migrate command unhooked.
 
 namespace runtime::main_menu {
 
@@ -77,13 +94,6 @@ std::atomic<int> rows_flag{-1}, menu_flag{-1};
 std::atomic<int> via{0};
 std::atomic<uint64_t> swap_at{0}, home_opened_at{0};
 std::atomic<void *> last_router{nullptr};
-std::atomic<bool> f1_flow{false};
-
-const char *back_variant()
-{
-    const char *v = std::getenv("SWOFTY_MAIN_MENU_BACK");
-    return v && *v ? v : "close";
-}
 std::atomic<uint64_t> hub_at{0};
 std::mutex view_lock;
 logic::HomeView home_view;
@@ -302,9 +312,8 @@ void add_showroom(TileList *list, uint8_t index)
 enum class Step { idle, wait_container, done };
 struct Chain {
     Step step = Step::idle;
-    bool time_trial = false;
-    uint64_t started = 0, container_at = 0, release_at = 0;
-    bool use_pad = false, resume = false;
+    const char *command = "";
+    uint64_t started = 0, container_at = 0;
 } chain;
 std::mutex chain_lock;
 
@@ -312,6 +321,71 @@ const char *route_name()
 {
     const char *r = env("SWOFTY_MAIN_MENU_ROUTE");
     return *r ? r : "home_to_activity";
+}
+
+bool off(const char *name) { return !std::strcmp(env(name), "0"); }
+
+bool nav_flag()
+{
+    static std::atomic<int> flag{-1};
+    int f = flag.load();
+    if (f < 0) {
+        f = runtime::read_file(runtime::under_swofty("ui\\home_nav.flag"), 16).empty() ? 0 : 1;
+        flag = f;
+        swofty::log("[main-menu] nav: the launcher's Time Trial, Grand Prix and Back routes %s", f ? "are in this build" : "are not in this build; the old chain and the game's Back stay");
+    }
+    return f == 1;
+}
+
+bool entry_by_route() { return nav_flag() && std::strcmp(env("SWOFTY_MAIN_MENU_ENTRY"), "chain") != 0; }
+
+logic::Back back_mode() { return logic::back_variant_of(env("SWOFTY_MAIN_MENU_BACK"), nav_flag()); }
+
+struct NavState {
+    std::atomic<int> mode{int(logic::Mode::none)}, expect{int(logic::Expect::none)};
+    std::atomic<uint64_t> expect_at{0}, return_at{0};
+    std::atomic<bool> was_in_session{false}, return_armed{false};
+} nav;
+std::mutex flow_lock;
+std::string flow_now = logic::FRONTEND_FLOW;
+
+std::string get_flow()
+{
+    std::lock_guard<std::mutex> g(flow_lock);
+    return flow_now;
+}
+
+void set_flow(const std::string &f)
+{
+    std::lock_guard<std::mutex> g(flow_lock);
+    flow_now = f;
+}
+
+void expect_screen(logic::Expect e, const char *why)
+{
+    nav.expect = int(e);
+    nav.expect_at = GetTickCount64();
+    swofty::log("[main-menu] nav: expecting %s (%s); flow now %s", e == logic::Expect::home ? "fe_home" : e == logic::Expect::saves ? "grand_prix_continue" : "f1_world_activity_container",
+                why, get_flow().c_str());
+}
+
+std::string ne_text(NeStr *s)
+{
+    auto p = reinterpret_cast<uint8_t *>(s);
+    if (!p || !runtime::readable(p, NESTR_CHARS))
+        return {};
+    uint32_t len = *reinterpret_cast<uint32_t *>(p + 6) & 0xfffff;
+    if (len > 200 || !runtime::readable(p + NESTR_CHARS, len + 1))
+        return {};
+    return std::string(reinterpret_cast<const char *>(p) + NESTR_CHARS, len);
+}
+
+void reset_transition_state(const char *why)
+{
+    if (off("SWOFTY_MAIN_MENU_STATEFIX"))
+        return;
+    bool ok = ui_vm_set_path("ui_menu_data.frontend_transition_state", 0, "main_menu");
+    swofty::log("[main-menu] nav: #ui_menu_data.frontend_transition_state set to main_menu before %s: %s", why, ok ? "done" : "could not be set");
 }
 
 const runtime::Sig S_CONTAINER{
@@ -329,53 +403,72 @@ uint64_t container_detour(void *container, NeStr **message, void *third)
         swofty::log("[main-menu] chain: activity container view model %p seen", container);
     }
     container_third = third;
+    if (nav.expect.load() != int(logic::Expect::none) || chain.step == Step::wait_container)
+        swofty::log("[main-menu] nav: container command '%s'", message && *message ? ne_text(*message).c_str() : "");
     return h_container.call<uint64_t>(container, message, third);
+}
+
+const runtime::Sig S_MIGRATE{"Ui_RouteCommand_Migrate",
+                             "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 4C 89 C7 48 89 D6 48 89 CB 4D 8B 78 50 45 8B 70 40 48 8B 0D ?? ?? ?? ?? 48 8B 01 FF 50 48",
+                             0x4186240};
+safetyhook::InlineHook h_migrate;
+
+NeStr **migrate_detour(void *cmd, NeStr **out, void *node)
+{
+    NeStr **r = h_migrate.call<NeStr **>(cmd, out, node);
+    auto base = static_cast<uint8_t *>(cmd);
+    std::string flow, entry, result;
+    if (runtime::readable(base + 0xc8, 16)) {
+        flow = ne_text(*reinterpret_cast<NeStr **>(base + 0xc8));
+        entry = ne_text(*reinterpret_cast<NeStr **>(base + 0xd0));
+    }
+    if (r && runtime::readable(r, sizeof(void *)))
+        result = ne_text(*r);
+    bool failed = logic::migrate_failed(result);
+    if (!failed && !flow.empty())
+        set_flow(flow);
+    swofty::log("[main-menu] nav: Migrate command: flow '%s' entry '%s' -> %s%s%s; the flow the game last accepted is now %s", flow.c_str(),
+                entry.empty() ? "(none)" : entry.c_str(), failed ? "FAILED: " : "accepted", failed ? result.c_str() : "", "", get_flow().c_str());
+    return r;
 }
 
 const runtime::Sig S_FIRE{"Vm_Fire_Route", "48 8B 4E 28 48 89 F2 49 89 F8 45 31 C9 E8 ?? ?? ?? ?? E9 E4 00 00 00",
                           0x42c0e20, runtime::Sig::rel32, 13, 14, 5};
 safetyhook::InlineHook h_fire;
 
+bool fire_in_group(const char *group, const char *route, const char *why)
+{
+    void *router = last_router.load();
+    if (!router || !h_fire) {
+        swofty::log("[main-menu] nav: route '%s' in group %s (%s) not fired: no router captured yet", route, group, why);
+        return false;
+    }
+    static uint8_t scratch[0x400];
+    *reinterpret_cast<uint32_t *>(scratch + 0x250) = logic::djb2(group);
+    NeStr *name = nullptr;
+    Ne_Make_StrFromCStr(&name, route, 0, 0);
+    swofty::log("[main-menu] nav: firing route '%s' in group %s (%s); flow now %s", route, group, why, get_flow().c_str());
+    h_fire.call<void>(router, scratch, &name, 0);
+    Ne_Make_StrFromCStr(&name, nullptr, 0, 0);
+    return true;
+}
 
 void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4)
 {
+    last_router = router;
     const char *text = name && *name ? reinterpret_cast<const char *>(*name) + NESTR_CHARS : "";
-    if (home_open.load() && runtime::readable(static_cast<uint8_t *>(vm) + 0x250, 4) &&
-        *reinterpret_cast<uint32_t *>(static_cast<uint8_t *>(vm) + 0x250) == logic::djb2("fe_home") && std::strncmp(text, "swofty_", 7) != 0) {
+    uint32_t gid = runtime::readable(static_cast<uint8_t *>(vm) + 0x250, 4) ? *reinterpret_cast<uint32_t *>(static_cast<uint8_t *>(vm) + 0x250) : 0;
+    if (home_open.load() && gid == logic::djb2("fe_home") && logic::hides_panel(text)) {
         std::lock_guard<std::mutex> g(view_lock);
         home_view.left();
         home_open = false;
         swofty::log("[main-menu] panel hidden: route %s fired from the home screen", text);
     }
-    if (f1_flow.load() && home_open.load() && std::strcmp(env("SWOFTY_MAIN_MENU_FLOWFIX"), "0") != 0 &&
-        runtime::readable(static_cast<uint8_t *>(vm) + 0x250, 4) &&
-        *reinterpret_cast<uint32_t *>(static_cast<uint8_t *>(vm) + 0x250) == logic::djb2("fe_home") &&
-        std::strcmp(text, logic::TO_ACTIVITY_ROUTE) != 0 && std::strcmp(text, logic::SHOWROOM_ROUTE) != 0 &&
-        std::strcmp(text, logic::FLOW_FIX_ROUTE) != 0 && std::strcmp(text, "open") != 0 && std::strcmp(text, "open_no_input") != 0 &&
-        std::strcmp(text, "close") != 0) {
-        f1_flow = false;
-        NeStr *fix = nullptr;
-        Ne_Make_StrFromCStr(&fix, logic::FLOW_FIX_ROUTE, 0, 0);
-        swofty::log("[main-menu] flow: leaving the main menu through route %s while the f1_world flow is still active (we came back with swofty_back_home); migrating to frontend_flow first (route %s)",
-                    text, logic::FLOW_FIX_ROUTE);
-        h_fire.call<void>(router, vm, &fix, a4);
-        Ne_Make_StrFromCStr(&fix, nullptr, 0, 0);
-    }
-    int mode = via.load();
-    if (mode) {
-        uint32_t gid = runtime::readable(static_cast<uint8_t *>(vm) + 0x250, 4) ? *reinterpret_cast<uint32_t *>(static_cast<uint8_t *>(vm) + 0x250) : 0;
-        swofty::log("[main-menu] route fired while back-to-menu is armed (%s): %s (route group id 0x%08x)", mode == 1 ? "card" : "showroom", text, gid);
-        last_router = router;
-        const char *to = nullptr;
-        if (mode == 1 && !std::strcmp(text, "f1_world") && gid == logic::djb2("f1_world_activity_container") &&
-            std::strcmp(back_variant(), "twostep") != 0) {
-            to = !std::strcmp(back_variant(), "home") ? "home" : logic::BACK_HOME_FROM_CONTAINER;
-            if (std::strcmp(to, "home") != 0)
-                f1_flow = true;
-        }
-        else if (mode == 2 && !std::strcmp(text, "back_1") && gid == logic::djb2("fe_showroom"))
-            to = logic::HOME_BACK_ROUTE;
-        if (to) {
+    if (patched.load()) {
+        if (gid == logic::djb2("f1_world_activity_container") || gid == logic::djb2("fe_showroom") || gid == logic::djb2("grand_prix_continue"))
+            swofty::log("[main-menu] nav: route '%s' fired in group 0x%08x (%s)", text, gid,
+                        gid == logic::djb2("fe_showroom") ? "fe_showroom" : gid == logic::djb2("grand_prix_continue") ? "grand_prix_continue" : "f1_world_activity_container");
+        if (const char *to = logic::back_replacement(back_mode(), gid, text)) {
             auto entry = reinterpret_cast<uint32_t *>(swofty::api->module_base() + 0x6066c74);
             if (runtime::readable(entry, 4))
                 *entry = 0;
@@ -385,14 +478,21 @@ void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4)
                 swap_reported = false;
             }
             swap_at = GetTickCount64();
+            if (std::strcmp(to, logic::HOME_BACK_ROUTE) != 0)
+                reset_transition_state(to);
+            expect_screen(logic::Expect::home, "Back");
+            nav.return_armed = false;
+            swofty::log("[main-menu] back: the game's handler fired route %s from its own view model (group 0x%08x); it is replaced by %s in the same group, so the F1 World hub is never opened",
+                        text, gid, to);
             NeStr *replacement = nullptr;
             Ne_Make_StrFromCStr(&replacement, to, 0, 0);
-            swofty::log("[main-menu] back: the game's handler fired route %s from its own view model (group 0x%08x); it is replaced by %s in the same group, so the F1 World hub is never opened (f1_world flow stays active: %s)",
-                        text, gid, to, f1_flow.load() ? "yes, the next tile press uses swofty_to_activity" : "no");
             h_fire.call<void>(router, vm, &replacement, a4);
             Ne_Make_StrFromCStr(&replacement, nullptr, 0, 0);
             return;
         }
+    }
+    if (via.load()) {
+        swofty::log("[main-menu] route fired while back-to-menu is armed (%s): %s (route group id 0x%08x)", via.load() == 1 ? "card" : "showroom", text, gid);
         if (uint64_t at = swap_at.load(); at && GetTickCount64() - at < 5000)
             swofty::log("[main-menu] route %s fired %llu ms after the back step (vm %p, not replaced)", text, (unsigned long long)(GetTickCount64() - at), vm);
     }
@@ -415,6 +515,24 @@ void hook_fire()
     }
     h_fire = std::move(*h);
     swofty::log("[main-menu] back: Vm_Fire_Route hooked at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
+}
+
+void hook_migrate()
+{
+    if (h_migrate || off("SWOFTY_MAIN_MENU_MIGRATELOG"))
+        return;
+    auto at = runtime::find(S_MIGRATE, "home", "core");
+    if (!at) {
+        swofty::log("[main-menu] nav: the route Migrate command did not resolve; migrations are not logged and no flow is tracked");
+        return;
+    }
+    auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(migrate_detour));
+    if (!h) {
+        swofty::log("[main-menu] nav: hooking the route Migrate command failed: %s", runtime::hook_error(h.error()).c_str());
+        return;
+    }
+    h_migrate = std::move(*h);
+    swofty::log("[main-menu] nav: route Migrate command hooked at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
 }
 
 void hook_container()
@@ -454,6 +572,8 @@ void card_populate(HomeItem *item, void *node, uint32_t a7)
     style_item(item);
 }
 
+bool gp_saves_exist();
+
 Action *card_action(HomeItem *item, Action *out)
 {
     if (uint64_t at = home_opened_at.load(); at && GetTickCount64() - at < 700) {
@@ -463,12 +583,23 @@ Action *card_action(HomeItem *item, Action *out)
                     (unsigned long long)(GetTickCount64() - at));
         return out;
     }
+    bool gp = !std::strcmp(id_of(item), logic::ID_GRAND_PRIX);
+    const char *route = route_name();
+    if (entry_by_route()) {
+        logic::Mode m = gp ? logic::grand_prix_mode(gp_saves_exist(), !off("SWOFTY_MAIN_MENU_GPSAVES")) : logic::Mode::time_trial;
+        nav.mode = int(m);
+        nav.return_armed = false;
+        route = logic::press_route(m);
+        expect_screen(m == logic::Mode::grand_prix_saves ? logic::Expect::saves : logic::Expect::container, route);
+        swofty::log("[main-menu] chain: %s card pressed; route %s opens %s", gp ? "Grand Prix" : "Time Trial", route,
+                    m == logic::Mode::time_trial ? "the activity container with the Time Trial picker's command" : m == logic::Mode::grand_prix_saves ? "the Grand Prix saves list" : "the activity container with the new Grand Prix picker's command");
+    } else {
+        via = 1;
+        swofty::log("[main-menu] %s card pressed: route %s (the old chain)", id_of(item), route);
+    }
     out->type = 1;
     out->str = nullptr;
-    Ne_Make_StrFromCStr(&out->str, route_name(), 0, 0);
-    via = 1;
-    swofty::log("[main-menu] %s card pressed: route %s (the stock item returns its own id as the route, so the id is not used)",
-                id_of(item), route_name());
+    Ne_Make_StrFromCStr(&out->str, route, 0, 0);
     return out;
 }
 
@@ -616,9 +747,12 @@ std::string host_path(const std::string &p)
     return p;
 }
 
+// The function's first 64 bytes are shared with a second lookup (0x1407c7280), so the pattern is taken from the first
+// byte that differs (function + 0x31c: the lea/call displacements are wildcards, the short jump after them is not) and
+// the anchor walks back to the entry.
 const runtime::Sig S_MODE_BY_NAME{"Game_GameModes_FindByName",
-                                  "56 48 83 EC 60 48 89 CE 48 83 C1 30 48 8D 44 24 40 48 C7 44 24 30 20 00 00 00 48 89 44 24 38 48 85 D2 0F 84 FC 01 00 00 44 0F B6 02 45 84 C0 0F 84 EA 02 00 00",
-                                  0x7d0de0};
+                                  "44 24 5E C6 00 00 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 E8 ?? ?? ?? ?? 48 C1 E0 03 48 03 46 58 48 3B 46 60 74 65 48 8B",
+                                  0x7d0de0, runtime::Sig::addr, 0, uintptr_t(0) - 0x31c};
 const runtime::Sig S_GAME_MANAGER{"game.manager",
                                   "48 8B B8 98 01 00 00 48 85 FF 0F 84 ?? ?? ?? ?? 48 8D 4C 24 70 E8 ?? ?? ?? ?? 48 8B 05", 0x604c2c8,
                                   runtime::Sig::riprel, 26, 29, 7};
@@ -672,15 +806,18 @@ void start_chain(bool time_trial)
     std::lock_guard<std::mutex> g(chain_lock);
     chain = {};
     chain.step = Step::wait_container;
-    chain.time_trial = time_trial;
-    chain.started = GetTickCount64();
-    container_vm = nullptr;
+    bool resume = false;
     if (!time_trial) {
         swofty::log("[main-menu] chain: checking for a saved Grand Prix season");
-        chain.resume = gp_saves_exist();
+        resume = gp_saves_exist();
     }
+    logic::Mode m = time_trial ? logic::Mode::time_trial : logic::grand_prix_mode(resume, true);
+    nav.mode = int(m);
+    chain.command = logic::return_command(m);
+    chain.started = GetTickCount64();
+    container_vm = nullptr;
     swofty::log("[main-menu] chain: %s card pressed; route %s, then the activity container's %s command", time_trial ? "Time Trial" : "Grand Prix",
-                route_name(), time_trial ? "'time_trial'" : "'grand_prix_resume' when a Grand Prix season is saved, else 'grand_prix_new'");
+                route_name(), chain.command);
 }
 
 }
@@ -722,6 +859,7 @@ bool arm_patch()
     patched = true;
     hook_container();
     hook_fire();
+    hook_migrate();
     swofty::log("[main-menu] stock F1 World, divider, Local Multiplayer, League Racing, Player Hub and Theatre tiles skipped");
     return true;
 }
@@ -760,10 +898,54 @@ void style_settings(void *item)
 void prepare();
 void poll_bind();
 
+void recover(logic::Expect e)
+{
+    std::string flow = get_flow();
+    switch (logic::recovery_for(e, flow, home_open.load())) {
+    case logic::Recovery::none:
+        swofty::log("[main-menu] nav: the expected screen did not open but the main menu is up; nothing to recover");
+        break;
+    case logic::Recovery::back_home_route:
+        swofty::log("[main-menu] nav: the expected screen did not open within 4 s and the %s flow is current; migrating back to the main menu so the player is never left without a screen", flow.c_str());
+        reset_transition_state("the recovery");
+        if (fire_in_group("f1_world_activity_container", logic::BACK_HOME_FROM_CONTAINER, "recovery"))
+            expect_screen(logic::Expect::home, "recovery");
+        break;
+    case logic::Recovery::open_home:
+        swofty::log("[main-menu] nav: the expected screen did not open within 4 s in the %s flow; reopening the main menu screen so the player is never left without a screen", flow.c_str());
+        fire_in_group("fe_home", "open", "recovery");
+        break;
+    }
+}
+
+void watch_nav()
+{
+    uint64_t now = GetTickCount64();
+    bool in_session = runtime::in_session_now();
+    if (logic::return_due(nav.was_in_session.load(), in_session, logic::Mode(nav.mode.load()), !off("SWOFTY_MAIN_MENU_RETURN") && entry_by_route())) {
+        nav.return_armed = true;
+        nav.return_at = now;
+        swofty::log("[main-menu] nav: session-end hand-over: a session that the %s card started has ended; the activity container the hand-over lands on gets that card's command", logic::return_command(logic::Mode(nav.mode.load())));
+    }
+    nav.was_in_session = in_session;
+    if (nav.return_armed.load() && now - nav.return_at.load() > 120000) {
+        nav.return_armed = false;
+        swofty::log("[main-menu] nav: session-end hand-over: no activity container within 120 s; disarmed");
+    }
+    int e = nav.expect.load();
+    if (e != int(logic::Expect::none) && now - nav.expect_at.load() > 4000 && !in_session) {
+        nav.expect = int(logic::Expect::none);
+        if (off("SWOFTY_MAIN_MENU_RECOVER"))
+            swofty::log("[main-menu] nav: the expected screen did not open within 4 s; recovery is off (SWOFTY_MAIN_MENU_RECOVER=0)");
+        else
+            recover(logic::Expect(e));
+    }
+}
+
 void tick()
 {
-    if (f1_flow.load() && runtime::in_session_now())
-        f1_flow = false;
+    if (patched.load())
+        watch_nav();
     if (uint64_t at = hub_at.load(); at && GetTickCount64() - at >= 60) {
         hub_at = 0;
         void *router = last_router.load();
@@ -844,7 +1026,7 @@ void tick()
         return;
     }
     if (chain.step == Step::wait_container && chain.container_at && container_vm.load() && now - chain.container_at > 900) {
-        const char *command = chain.time_trial ? "time_trial" : (chain.resume ? "grand_prix_resume" : "grand_prix_new");
+        const char *command = chain.command;
         NeStr *name = nullptr;
         Ne_Make_StrFromCStr(&name, command, 0, 0);
         swofty::log("[main-menu] chain: raising '%s' on the activity container %p", command, container_vm.load());
@@ -859,7 +1041,7 @@ void screen(const char *name)
 {
     if (!name)
         return;
-    if (via.load() == 1 && !std::strcmp(name, "fe_f1_world") && std::strcmp(back_variant(), "twostep") == 0) {
+    if (via.load() == 1 && !std::strcmp(name, "fe_f1_world") && back_mode() == logic::Back::twostep) {
         hub_at = GetTickCount64();
         swofty::log("[main-menu] back: the stock Back opened the F1 World hub; its own Back (route 'back') follows at once");
     }
@@ -875,9 +1057,38 @@ void screen(const char *name)
         uint64_t now = GetTickCount64();
         if (chain.step != Step::idle && chain.step != Step::done)
             swofty::log("[main-menu] chain: screen %s (step %d)", name, int(chain.step));
-        if (!std::strcmp(name, "f1_world_activity_container") && chain.step == Step::wait_container) {
-            chain.container_at = now;
-            container_vm = nullptr;
+        if (!std::strcmp(name, "f1_world_activity_container")) {
+            if (chain.step == Step::wait_container) {
+                chain.container_at = now;
+                container_vm = nullptr;
+            } else if (nav.return_armed.exchange(false)) {
+                logic::Mode m = logic::Mode(nav.mode.load());
+                chain = {};
+                chain.step = Step::wait_container;
+                chain.command = logic::return_command(m);
+                chain.started = chain.container_at = now;
+                container_vm = nullptr;
+                swofty::log("[main-menu] nav: session-end hand-over landed on the activity container (the F1 World hub was skipped); raising '%s' on it once its view model is up", chain.command);
+            }
+        }
+    }
+    {
+        logic::Expect e = logic::Expect(nav.expect.load());
+        bool container = !std::strcmp(name, "f1_world_activity_container"), saves = !std::strcmp(name, "grand_prix_continue"), home = !std::strcmp(name, "fe_home");
+        if (e != logic::Expect::none || nav.return_armed.load())
+            swofty::log("[main-menu] nav: screen %s opened; flow now %s; expected %s", name, get_flow().c_str(),
+                        e == logic::Expect::container ? "the activity container" : e == logic::Expect::saves ? "the saves list" : e == logic::Expect::home ? "fe_home" : "(nothing)");
+        if ((container && e == logic::Expect::container) || (saves && e == logic::Expect::saves) || (home && e == logic::Expect::home)) {
+            nav.expect = int(logic::Expect::none);
+            swofty::log("[main-menu] nav: %s opened %llu ms after it was asked for", name, (unsigned long long)(GetTickCount64() - nav.expect_at.load()));
+        }
+        if (home) {
+            set_flow(logic::FRONTEND_FLOW);
+            nav.return_armed = false;
+            if (!runtime::in_session_now())
+                nav.mode = int(logic::Mode::none);
+            if (e != logic::Expect::none && e != logic::Expect::home)
+                nav.expect = int(logic::Expect::none);
         }
     }
     logic::Screen kind = logic::classify_screen(name);
@@ -910,7 +1121,7 @@ void command(void *, uint32_t command_hash, uint32_t focused_hash)
         return;
     if (uint64_t at = home_opened_at.load(); at && GetTickCount64() - at < 700)
         return;
-    if (!tt)
+    if (!tt && !entry_by_route())
         start_chain(false);
     if (!tt)
         return;
@@ -921,7 +1132,8 @@ void command(void *, uint32_t command_hash, uint32_t focused_hash)
         s = state;
     }
     if (!logic::time_trial_warning_due(s, true, tt_warned.load())) {
-        start_chain(true);
+        if (!entry_by_route())
+            start_chain(true);
         return;
     }
     tt_warned = true;

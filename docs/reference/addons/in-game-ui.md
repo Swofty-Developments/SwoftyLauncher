@@ -492,16 +492,25 @@ The tiles stay in the stock vertical list at the stock position, all in the larg
 
 When the home tile block does not match byte for byte, the core logs `the home tile block did not resolve on this build; the stock main menu stays` and changes nothing.
 
-`SWOFTY_MAIN_MENU=0` leaves the stock main menu. `SWOFTY_MAIN_MENU_CHAIN=0` makes the Grand Prix and Time Trial cards stop at the activity container. `SWOFTY_MAIN_MENU_NAV` is logged.
+`SWOFTY_MAIN_MENU=0` leaves the stock main menu. `SWOFTY_MAIN_MENU_NAV` is logged.
 
-Pressing Grand Prix or Time Trial fires the home route `home_to_activity`, which opens the F1 World activity container without the F1 World hub. When the container is up the core raises the container's own `grand_prix_new` (Grand Prix) or `time_trial` (Time Trial) command, which selects that tab. `SWOFTY_MAIN_MENU_ROUTE` replaces the route name.
+Time Trial, Grand Prix and the Grand Prix saves list are routes the launcher adds to the `fe_home` group, and the pickers open without the F1 World hub:
 
-Back from the container fires the route `f1_world`; while a card is armed the core replaces it with `home`, which migrates to `fe_home`. The Showroom's back fires `back_1`; the core replaces it with `swofty_home`, a route the launcher adds to the `fe_showroom` group as a copy of the container's `home` route.
+- `swofty_time_trial` and `swofty_grand_prix` are copies of the game's `home_to_activity` that migrate to the `f1_world_flow` entries `swofty_enter_time_trial` and `swofty_enter_grand_prix`. The entries open the activity container with the command `time_trial` or `grand_prix_new` already raised, the way the game's `enter_splitscreen_era_select` raises `ss_game_mode_select`.
+- `swofty_grand_prix_saves` is a copy of the `theatre` route that opens `grand_prix_continue` in the front-end flow. The Grand Prix card fires it when the season check finds a saved season (`F2_2026`, `F2_2025`, `F2_2024`, `F1_Championship_Season`, `F1_2026_Championship_Season`, as `GrandPrixContinueViewModel` asks), else `swofty_grand_prix`.
+- Back from the container fires `f1_world` or `home`; the core replaces it with `swofty_back_home`, the container's `home` route behind the standard full-screen wipe with the theming overlay opened after `Migrate frontend_flow enter_fe_home`. Back from the Showroom and from the saves list fires `back_1`; the core replaces it with `swofty_home`, a copy of the hub's `back_1` in the `fe_showroom` and `grand_prix_continue` groups. Before `swofty_back_home` the core sets `#ui_menu_data.frontend_transition_state` to `main_menu`.
+- A Time Trial or Grand Prix session that ends hands over through `frontend_transition.ui`, whose `migrate_to_f1_world` node enters `swofty_enter_return` (the bare activity container) instead of `enter_f1_world_container`. The core raises the command of the card that started the session once the container's view model is up (`grand_prix_resume` opens the saves list).
+- The core logs every `Migrate` route command (`nav: Migrate command: flow ... entry ...`), keeps the flow the game last accepted, and when a screen it asked for is not open after 4 seconds fires `swofty_back_home` (the `f1_world_flow` is current) or the `open` route of `fe_home` (the front-end flow is current).
+
+`SWOFTY_MAIN_MENU_ENTRY=chain` opens the pickers the old way (`home_to_activity`, then the command 900 ms after the container is up; `SWOFTY_MAIN_MENU_ROUTE` replaces the route name, `SWOFTY_MAIN_MENU_CHAIN=0` stops at the container). `SWOFTY_MAIN_MENU_BACK=stock|home|twostep` leaves the game's Back, fires the container's `home`, or takes the hub's own Back. `SWOFTY_MAIN_MENU_GPSAVES=0` always opens the new Grand Prix picker. `SWOFTY_MAIN_MENU_RETURN=0` leaves the session-end hand-over on the bare container. `SWOFTY_MAIN_MENU_RECOVER=0` turns the recovery off. `SWOFTY_MAIN_MENU_STATEFIX=0` leaves the transition state alone. `SWOFTY_MAIN_MENU_MIGRATELOG=0` leaves the `Migrate` command unhooked.
 
 ```text
-[main-menu] chain: activity container command handler hooked at base+0x...
-[main-menu] chain: Time Trial card pressed; route home_to_activity, then the activity container's 'time_trial' command
-[main-menu] chain: raising 'time_trial' on the activity container 0x...
+[main-menu] nav: the launcher's Time Trial, Grand Prix and Back routes are in this build
+[main-menu] nav: route Migrate command hooked at base+0x...
+[main-menu] chain: Time Trial card pressed; route swofty_time_trial opens the activity container with the Time Trial picker's command
+[main-menu] nav: Migrate command: flow 'f1_world_flow' entry 'swofty_enter_time_trial' -> accepted; the flow the game last accepted is now f1_world_flow
+[main-menu] back: the game's handler fired route f1_world from its own view model (group 0x59ba71d1); it is replaced by swofty_back_home in the same group, so the F1 World hub is never opened
+[main-menu] nav: session-end hand-over landed on the activity container (the F1 World hub was skipped); raising 'time_trial' on it once its view model is up
 ```
 
 While the main menu is open the overlay paints the Swofty Launcher version, the Discord sign-in state and avatar in the top right, and the latest video's thumbnail with `Press RB to watch` (`Press V to watch` without a gamepad) in the bottom right. Pressing the key writes `swofty/open_url.json`. Entering Time Trial while signed out of Discord shows the game's message popup once per session; its OK continues.

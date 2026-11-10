@@ -68,8 +68,11 @@ constexpr uint16_t WATCH_PAD_MASK = 0x0200;
 constexpr const char *SHOWROOM_ROUTE = "swofty_showroom";
 constexpr const char *HOME_BACK_ROUTE = "swofty_home";
 constexpr const char *BACK_HOME_FROM_CONTAINER = "swofty_back_home";
-constexpr const char *TO_ACTIVITY_ROUTE = "swofty_to_activity";
-constexpr const char *FLOW_FIX_ROUTE = "swofty_flow_fix";
+constexpr const char *TIME_TRIAL_ROUTE = "swofty_time_trial";
+constexpr const char *GRAND_PRIX_ROUTE = "swofty_grand_prix";
+constexpr const char *GRAND_PRIX_SAVES_ROUTE = "swofty_grand_prix_saves";
+constexpr const char *FRONTEND_FLOW = "frontend_flow";
+constexpr const char *F1_WORLD_FLOW = "f1_world_flow";
 
 constexpr uint32_t WATCH_KEY_VK = 0x56;
 constexpr double PANEL_BUDGET_MS = 4.0;
@@ -314,6 +317,98 @@ inline bool panel_too_slow(double draw_ms) { return draw_ms > PANEL_BUDGET_MS; }
 inline bool time_trial_warning_due(const State &s, bool is_time_trial, bool already_shown)
 {
     return s.loaded && is_time_trial && !s.signed_in && !already_shown;
+}
+
+
+// A route fired from the home screen hides the panel, except the launcher's own that keep the screen (the Showroom's, Addon Settings').
+inline bool hides_panel(const std::string &route)
+{
+    return route.rfind("swofty_", 0) != 0 || route == TIME_TRIAL_ROUTE || route == GRAND_PRIX_ROUTE || route == GRAND_PRIX_SAVES_ROUTE;
+}
+
+enum class Mode { none, time_trial, grand_prix_new, grand_prix_saves };
+
+inline const char *press_route(Mode m)
+{
+    switch (m) {
+    case Mode::time_trial:
+        return TIME_TRIAL_ROUTE;
+    case Mode::grand_prix_new:
+        return GRAND_PRIX_ROUTE;
+    case Mode::grand_prix_saves:
+        return GRAND_PRIX_SAVES_ROUTE;
+    default:
+        return "";
+    }
+}
+
+inline Mode grand_prix_mode(bool saves, bool saves_check_on) { return saves && saves_check_on ? Mode::grand_prix_saves : Mode::grand_prix_new; }
+
+inline const char *return_command(Mode m)
+{
+    switch (m) {
+    case Mode::time_trial:
+        return "time_trial";
+    case Mode::grand_prix_new:
+        return "grand_prix_new";
+    case Mode::grand_prix_saves:
+        return "grand_prix_resume";
+    default:
+        return "";
+    }
+}
+
+enum class Back { stock, route, home, twostep };
+
+inline Back back_variant_of(const std::string &v, bool data_in_build)
+{
+    if (v == "stock")
+        return Back::stock;
+    if (v == "twostep")
+        return Back::twostep;
+    if (v == "home")
+        return Back::home;
+    return data_in_build ? Back::route : Back::stock;
+}
+
+// The route the launcher fires in place of the game's own Back route (nullptr: the game's stays). The container's
+// Back fires f1_world (to the hub) or home; the Showroom's and the Grand Prix saves list's fire back_1.
+inline const char *back_replacement(Back variant, uint32_t group, const std::string &route)
+{
+    if (variant == Back::route || variant == Back::home) {
+        if (group == djb2("f1_world_activity_container") && (route == "f1_world" || route == "home"))
+            return variant == Back::home ? "home" : BACK_HOME_FROM_CONTAINER;
+    }
+    if (variant == Back::route && route == "back_1" && (group == djb2("fe_showroom") || group == djb2("grand_prix_continue")))
+        return HOME_BACK_ROUTE;
+    return nullptr;
+}
+
+enum class Expect { none, container, saves, home };
+
+enum class Recovery { none, back_home_route, open_home };
+
+// What to do when the screen a transition asked for did not open in time. flow_now is the flow the last migration
+// the game accepted asked for; a main menu wanted while another flow is current needs the migration back.
+inline Recovery recovery_for(Expect e, const std::string &flow_now, bool home_screen_open)
+{
+    if (e == Expect::none || (e == Expect::home && home_screen_open))
+        return Recovery::none;
+    if (flow_now == F1_WORLD_FLOW)
+        return Recovery::back_home_route;
+    return home_screen_open ? Recovery::none : Recovery::open_home;
+}
+
+inline bool migrate_failed(const std::string &text)
+{
+    return text.find("failed to migrate") != std::string::npos || text.find("No screen called") != std::string::npos;
+}
+
+// A session that ended after a Time Trial or Grand Prix card press hands over to the f1_world flow's container; the
+// card's command is raised there once it is up.
+inline bool return_due(bool was_in_session, bool in_session, Mode last, bool feature_on)
+{
+    return feature_on && was_in_session && !in_session && last != Mode::none;
 }
 
 }

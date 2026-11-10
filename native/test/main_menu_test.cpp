@@ -123,6 +123,63 @@ int main()
     expect(mm::djb2("") == 5381 && mm::djb2("a") == 5381 * 33 + 'a', "djb2 matches the game's string hash");
     expect(mm::open_request_json("https://youtu.be/a") == R"({"url":"https://youtu.be/a"})", "open request json");
     expect(mm::open_request_json("a\"b") == R"({"url":"a\"b"})", "open request json escapes quotes");
+    expect(std::string(mm::press_route(mm::Mode::time_trial)) == "swofty_time_trial" &&
+               std::string(mm::press_route(mm::Mode::grand_prix_new)) == "swofty_grand_prix" &&
+               std::string(mm::press_route(mm::Mode::grand_prix_saves)) == "swofty_grand_prix_saves" &&
+               std::string(mm::press_route(mm::Mode::none)).empty(),
+           "each card has its own launcher route");
+    expect(mm::grand_prix_mode(true, true) == mm::Mode::grand_prix_saves && mm::grand_prix_mode(false, true) == mm::Mode::grand_prix_new &&
+               mm::grand_prix_mode(true, false) == mm::Mode::grand_prix_new,
+           "Grand Prix goes to the saves list only when a season exists and the check is on");
+    expect(std::string(mm::return_command(mm::Mode::time_trial)) == "time_trial" &&
+               std::string(mm::return_command(mm::Mode::grand_prix_saves)) == "grand_prix_resume" &&
+               std::string(mm::return_command(mm::Mode::grand_prix_new)) == "grand_prix_new",
+           "the session-end hand-over raises the command of the card that started the session");
+    {
+        auto route = mm::Back::route;
+        expect(std::string(mm::back_replacement(route, mm::djb2("f1_world_activity_container"), "f1_world")) == "swofty_back_home" &&
+                   std::string(mm::back_replacement(route, mm::djb2("f1_world_activity_container"), "home")) == "swofty_back_home",
+               "the container's Back (to the hub or home) becomes the launcher's route home");
+        expect(std::string(mm::back_replacement(route, mm::djb2("fe_showroom"), "back_1")) == "swofty_home" &&
+                   std::string(mm::back_replacement(route, mm::djb2("grand_prix_continue"), "back_1")) == "swofty_home",
+               "the Showroom's and the saves list's Back become the launcher's route home");
+        expect(mm::back_replacement(route, mm::djb2("fe_f1_world"), "back_1") == nullptr &&
+                   mm::back_replacement(route, mm::djb2("f1_world_activity_container"), "tt_track_select") == nullptr &&
+                   mm::back_replacement(route, mm::djb2("fe_showroom"), "showroom_f1") == nullptr,
+               "other routes stay the game's");
+        expect(std::string(mm::back_replacement(mm::Back::home, mm::djb2("f1_world_activity_container"), "f1_world")) == "home" &&
+                   mm::back_replacement(mm::Back::home, mm::djb2("fe_showroom"), "back_1") == nullptr,
+               "the home variant fires the container's stock home route only");
+        expect(mm::back_replacement(mm::Back::stock, mm::djb2("f1_world_activity_container"), "f1_world") == nullptr &&
+                   mm::back_replacement(mm::Back::twostep, mm::djb2("f1_world_activity_container"), "f1_world") == nullptr,
+               "the stock and two-step variants leave the route alone");
+        expect(mm::back_variant_of("", true) == mm::Back::route && mm::back_variant_of("", false) == mm::Back::stock &&
+                   mm::back_variant_of("home", false) == mm::Back::home && mm::back_variant_of("twostep", true) == mm::Back::twostep &&
+                   mm::back_variant_of("stock", true) == mm::Back::stock,
+               "the default Back is the launcher's route when its data is in the build, else the game's");
+    }
+    expect(mm::hides_panel("home_to_activity") && mm::hides_panel("swofty_time_trial") && mm::hides_panel("swofty_grand_prix_saves") &&
+               !mm::hides_panel("swofty_showroom"),
+           "the card routes hide the panel, the Showroom's route does not");
+    expect(mm::recovery_for(mm::Expect::none, "frontend_flow", false) == mm::Recovery::none &&
+               mm::recovery_for(mm::Expect::home, "frontend_flow", true) == mm::Recovery::none,
+           "nothing to recover when nothing was expected or the main menu is up");
+    expect(mm::recovery_for(mm::Expect::home, "f1_world_flow", false) == mm::Recovery::back_home_route &&
+               mm::recovery_for(mm::Expect::container, "f1_world_flow", false) == mm::Recovery::back_home_route &&
+               mm::recovery_for(mm::Expect::saves, "f1_world_flow", false) == mm::Recovery::back_home_route,
+           "a screen that did not open while the f1_world flow is current takes the migration back to the main menu");
+    expect(mm::recovery_for(mm::Expect::container, "frontend_flow", false) == mm::Recovery::open_home &&
+               mm::recovery_for(mm::Expect::saves, "frontend_flow", false) == mm::Recovery::open_home &&
+               mm::recovery_for(mm::Expect::home, "frontend_flow", false) == mm::Recovery::open_home,
+           "a screen that did not open in the front-end flow reopens the main menu screen");
+    expect(mm::recovery_for(mm::Expect::container, "frontend_flow", true) == mm::Recovery::none,
+           "a main menu that is up is never replaced");
+    expect(mm::migrate_failed("Screen fe_home failed to migrate because of 5") && mm::migrate_failed("No screen called x exists") && !mm::migrate_failed(""),
+           "a failed migration is told from its error text");
+    expect(mm::return_due(true, false, mm::Mode::time_trial, true) && !mm::return_due(true, false, mm::Mode::none, true) &&
+               !mm::return_due(false, false, mm::Mode::time_trial, true) && !mm::return_due(true, true, mm::Mode::time_trial, true) &&
+               !mm::return_due(true, false, mm::Mode::time_trial, false),
+           "the hand-over is armed when a session that a card started has ended");
     printf("%s\n", fails ? "FAILED" : "all passed");
     return fails ? 1 : 0;
 }
