@@ -131,6 +131,10 @@ const runtime::Sig S_WRITE_TOKEN{"site_Game_GhostLapHandler_Update_SessionTokenT
         "80 B9 90 00 02 00 00 74 14 48 8B 89 50 01 02 00 48 85 C9 74 08 80 39 00 0F 95 C1 EB 02 31 C9 40 20 DF 40 80 FF 01", 0x2f99099, runtime::Sig::addr, 0, 31};
 const runtime::Sig S_READER_FAIL{"Game_LeaderboardReader_OnTaskCancelledOrFailed",
         "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 02 00 00 C5 F8 29 B4 24 30 02 00 00 48 89 D6 48 89 CF 80 3D", 0x2fc0ed0};
+const runtime::Sig S_HANDLER_READY{"Game_GhostLapHandler_PbReady_142f91900",
+        "56 57 55 53 48 83 EC 28 48 89 CE 48 8B 41 78 48 85 C0 75 17 48 8D 4C 24", 0x2f91900};
+const runtime::Sig S_GARAGE_MSG{"Game_GarageMonitor_OnMessage_141f76ac0",
+        "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 48 8B 02 48 85", 0x1f76ac0};
 const runtime::Sig S_PRIV_GATE{"site_Game_UIUIPrivilegeCheckControl_HandleSignal_Result",
         "41 80 BE AB 00 00 00 00 0F 84 8C 00 00 00 45 84 FF 0F 84 8D 00 00 00", 0x3822cdf, runtime::Sig::addr, 0, 8};
 constexpr uintptr_t TS_FLAG_GLOBAL_A = 0, TS_FLAG_GLOBAL_B = 17;
@@ -177,7 +181,8 @@ std::atomic<uintptr_t> diag_storage{0};
 uintptr_t ts_global_a = 0, ts_global_b = 0;
 std::atomic<int64_t> ts_forced_ms{0}, enter_ms{0};
 std::string ts_seen, priv_seen, select_seen, ready_seen;
-safetyhook::InlineHook h_write_ready;
+safetyhook::InlineHook h_write_ready, h_ready;
+safetyhook::MidHook h_garage;
 bool lookup_logged = true;
 std::atomic<int> finder_logged{0};
 uintptr_t diag_handler_seen = ~uintptr_t(0);
@@ -731,8 +736,16 @@ void ts_flag_mid(safetyhook::Context &c)
 void priv_mid(safetyhook::Context &c)
 {
     uint32_t type = uint32_t(c.rbp);
-    if (type != 1)
+    if (type != 1) {
+        if (diag_on && type < 12) {
+            static std::atomic<unsigned> seen{0};
+            if (!(seen.fetch_or(1u << type) & (1u << type)))
+                swofty::log("[boards] diag: privilege check of type %u reached the UI privilege control 0x%llx (check free %u): left to the game; the garage panel's own check is the one "
+                            "that posts car_monitor_tt_leaderboard_privilege_check",
+                            type, (unsigned long long)c.r14, unsigned(uint8_t(c.r15)));
+        }
         return;
+    }
     uint8_t ok = uint8_t(c.r15), enabled = runtime::readable(reinterpret_cast<void *>(c.r14 + 0xab), 1) ? *reinterpret_cast<uint8_t *>(c.r14 + 0xab) : 0xff;
     bool recent = ts_forced_ms.load() && now_ms() - ts_forced_ms.load() < TS_FORCED_WINDOW_MS;
     bool skip = bridge_on && recent && screen_ours();
@@ -786,6 +799,30 @@ void write_token_mid(safetyhook::Context &c)
     if (++logged <= 6)
         swofty::log("[boards] personal best write of handler 0x%llx board %s: the session token test fails offline, this board is ours: treated as signed in", (unsigned long long)handler,
                     board.c_str());
+}
+
+uint64_t handler_ready_hook(uint64_t handler)
+{
+    uint64_t r = h_ready.call<uint64_t>(handler);
+    static std::atomic<int> logged{0};
+    static std::atomic<uint64_t> last{~0ull};
+    uint64_t key = (handler << 1) ^ (r & 0xff);
+    if (last.exchange(key) != key && ++logged <= 40) {
+        uint64_t ctx = peek64(handler + 0x58), np = ctx ? peek64(ctx + 0x68) : 0;
+        swofty::log("[boards] handler 0x%llx board %s: check 0x142f91900 (stored personal best usable) returned %u", (unsigned long long)handler,
+                    np ? tb::read_c(game_mem(), np).c_str() : "?", unsigned(r & 0xff));
+    }
+    return r;
+}
+
+void garage_msg_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> logged{0};
+    uint64_t msg = peek64(c.rdx);
+    uint32_t id = msg ? peek32(msg) : 0;
+    const char *name = id == 0x41bdb6f5 ? "leaderboard_fail (disables the panel)" : id == 0x48e6b721 ? "exit_container" : id == 0x75f3af2d ? "(0x75f3af2d)" : nullptr;
+    if (name && ++logged <= 40)
+        swofty::log("[boards] garage monitor message %s reached the panel handler (0x%x); backtrace %s", name, id, backtrace_text(1, 4).c_str());
 }
 
 void reader_fail_mid(safetyhook::Context &c)
@@ -853,11 +890,26 @@ void handler_watch(uint64_t handler, const std::string &board)
                     (unsigned long long)handler, board.c_str());
         state = 1;
     }
-    if (state != last_state || watch_seen != t) {
+    std::string blockers;
+    auto need = [&](bool ok, const char *what) {
+        if (!ok)
+            blockers += std::string(blockers.empty() ? "" : ", ") + what;
+    };
+    need(b(0x65) != 0, "no new personal best flagged (+0x65)");
+    need(b(0x63) != 0, "+0x63 clear");
+    need(state == 1, "entry state is not 1");
+    need(w(0x94) == 0 && w(0x98) == 0, "+0x94/+0x98 busy");
+    need(w(0x130) == 0 && w(0x134) == 0, "+0x130/+0x134 busy");
+    need(w(0x1d0) == 0 && w(0x1d4) == 0, "a leaderboard task is out (+0x1d0/+0x1d4)");
+    need(b(0x66) == 0, "+0x66 set");
+    need(!finder || peek32(finder + 0xa0) - 2u > 7u, "the rival finder is mid-search");
+    char tt[700];
+    snprintf(tt, sizeof tt, "%s; write blocked by: %s", t, blockers.empty() ? "nothing visible (the presence/session checks and 0x142f91900 are logged separately)" : blockers.c_str());
+    std::string full = tt;
+    if (state != last_state || watch_seen != full) {
         last_state = state;
-        watch_seen = t;
-        if (diag_on)
-            swofty::log("[boards] diag: handler 0x%llx board %s: %s", (unsigned long long)handler, board.c_str(), t);
+        watch_seen = full;
+        swofty::log("[boards] %shandler 0x%llx board %s: %s", diag_on ? "diag: " : "", (unsigned long long)handler, board.c_str(), full.c_str());
     }
 }
 
@@ -1018,6 +1070,16 @@ void setup()
             if (uintptr_t at = runtime::find(S_WRITE_TOKEN, "boards", "boards"))
                 if (hook_mid(h_write_token, at, write_token_mid, "personal best write session token test"))
                     swofty::log("[boards] personal best write token test hooked at base+0x%llx (our boards count as signed in)", (unsigned long long)(at - swofty::api->module_base()));
+        if (uintptr_t at = runtime::find(S_HANDLER_READY, "boards", "boards")) {
+            auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&handler_ready_hook));
+            if (h) {
+                h_ready = std::move(*h);
+                swofty::log("[boards] handler personal best check 0x142f91900 logged at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
+            }
+        }
+        if (uintptr_t at = runtime::find(S_GARAGE_MSG, "boards", "boards"))
+            if (hook_mid(h_garage, at, garage_msg_mid, "garage monitor messages"))
+                swofty::log("[boards] garage monitor messages logged at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
         if (uintptr_t at = runtime::find(S_READER_FAIL, "boards", "boards"))
             if (hook_mid(h_reader_fail, at, reader_fail_mid, "leaderboard reader failure"))
                 swofty::log("[boards] leaderboard reader failure logged at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
