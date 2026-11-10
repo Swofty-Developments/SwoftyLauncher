@@ -741,26 +741,21 @@ void ts_flag_mid(safetyhook::Context &c)
                 force ? "forced visible: the View Leaderboards button and prompt are shown" : ours ? "already visible" : "left to the game");
 }
 
-uint32_t ui_node_name(uint64_t node)
-{
-    uint64_t inner = node + 0x268, vt = peek64(inner), fn = vt ? peek64(vt + 8) : 0, base = swofty::api->module_base();
-    if (!vt || fn < base || fn >= base + 0x20000000)
-        return 0;
-    uint64_t info = reinterpret_cast<uint64_t (*)(uint64_t)>(fn)(inner);
-    return info ? peek32(info + 0x110) : 0;
-}
-
 void priv_mid(safetyhook::Context &c)
 {
     uint32_t type = uint32_t(c.rbp);
-    if (bridge_on && type != 1 && type < 12 && content_ours() && ui_node_name(c.r14) == 0x57172c5d) {
-        c.rflags |= 0x40;
-        static std::atomic<int> granted{0};
-        if (++granted <= 8)
-            swofty::log("[boards] garage monitor: leaderboard tab privilege (type %u, node leaderboard_privilege_check) granted for our content: the panel's check is answered as passed, "
-                        "so car_monitor_tt_leaderboard_privilege_check enables the tab (the panel then reads GetTTLeaderboard through the bridge)",
-                        type);
-        return;
+    if (bridge_on && type != 1 && type < 12 && content_ours()) {
+        char sw[8] = {};
+        bool user_content = type == 2 && GetEnvironmentVariableA("SWOFTY_TT_GARAGE_TYPE2", sw, sizeof sw) && sw[0] == '1';
+        static std::atomic<int> granted{0}, missed{0};
+        if (user_content) {
+            c.rflags |= 0x40;
+            if (++granted <= 8)
+                swofty::log("[boards] privilege check type 2 of control 0x%llx granted for our content (SWOFTY_TT_GARAGE_TYPE2=1)", (unsigned long long)c.r14);
+            return;
+        }
+        if (++missed <= 6)
+            swofty::log("[boards] privilege check type %u of control 0x%llx left to the game (SWOFTY_TT_GARAGE_TYPE2=1 would grant type 2)", type, (unsigned long long)c.r14);
     }
     if (type != 1) {
         if (diag_on && type < 12) {
@@ -873,6 +868,22 @@ void trip_mid(safetyhook::Context &c)
                     (double(int64_t(q.QuadPart + int64_t(offs)) - int64_t(start))) / freq, (unsigned long long)peek64(c.rsi + 0xb88), (unsigned long long)peek64(c.rsi + 0xb98),
                     peek32(c.rsi + 0xbd0), rearm_count.load());
     }
+}
+
+// Ownership: rbx is the command's data block, owned by the garage view model's caller for the duration of the call. The hook
+// reads one byte at +8 only after readable() says so, writes that one byte back only when garage_result says to, and calls
+// nothing in the game.
+void garage_done_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> logged{0};
+    uint8_t value = runtime::readable(reinterpret_cast<void *>(c.rbx + 8), 1) ? *reinterpret_cast<uint8_t *>(c.rbx + 8) : 0xff;
+    uint8_t result = tb::garage_result(value, bridge_on, content_ours());
+    bool grant = result != value;
+    if (grant)
+        *reinterpret_cast<uint8_t *>(c.rbx + 8) = result;
+    if (++logged <= 8)
+        swofty::log("[boards] garage monitor: tt_privilege_check_done arrived with %s%s", value == 1 ? "granted" : value == 0 ? "denied" : "an unreadable value",
+                    grant ? "; changed to granted for our content so car_monitor_tt_leaderboard_privilege_check enables the leaderboard tab" : "");
 }
 
 void commit_path_log(const char *what, safetyhook::Context &c, std::atomic<int> &logged)

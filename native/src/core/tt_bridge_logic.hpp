@@ -374,6 +374,13 @@ inline BoardTrack request_track(const swofty_core::apply::tracks::Base &base, co
 }
 
 // One rule for "this board is ours": an addon's descriptor or a custom track. The request redirect and the guards use it.
+// The garage monitor's `tt_privilege_check_done` command carries one byte, the privilege result. A denied result (0) becomes
+// granted (1) for our content with the bridge on; a granted result, an unreadable value (0xff) and any other value stay.
+inline uint8_t garage_result(uint8_t value, bool bridge_on, bool ours_content)
+{
+    return value == 0 && bridge_on && ours_content ? 1 : value;
+}
+
 inline bool ours(int descriptor, bool track_custom) { return descriptor >= FIRST_ADDON_DESCRIPTOR || track_custom; }
 
 // Routing

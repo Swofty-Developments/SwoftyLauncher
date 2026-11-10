@@ -82,6 +82,12 @@ int main()
            "malformed names do not parse");
     expect(tb::board_name(6, 5, 'D') == "LBV0605D" && tb::board_name(12, 3, 'W') == "LBV1203W", "names format back");
 
+    // garage privilege result
+    expect(tb::garage_result(0, true, true) == 1, "a denied garage privilege becomes granted for our content");
+    expect(tb::garage_result(0, false, true) == 0 && tb::garage_result(0, true, false) == 0, "it stays denied with the bridge off or for stock content");
+    expect(tb::garage_result(1, true, true) == 1 && tb::garage_result(0xff, true, true) == 0xff && tb::garage_result(2, true, true) == 2,
+           "a granted, unreadable or unknown value is left alone");
+
     // methods and routing
     expect(tb::method_of("GetTTLeaderboard") == tb::Method::get_tt && tb::method_of("Nope") == tb::Method::none &&
                tb::method_of("UpdateLeaderboardEntryBinaryData") == tb::Method::update_binary,
