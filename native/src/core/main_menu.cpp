@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <thread>
 #include <map>
 #include <cstdlib>
 #include <cstring>
@@ -1381,10 +1382,30 @@ void poll_bind()
     }
     if (!p || p->s.video_url.empty())
         return;
-    bool on_pad = false;
-    bool pressed = bind_pressed(&on_pad);
-    bind_pad = on_pad;
-    if (pressed)
+    // XInputGetState and the key sweep can block for about a second each under Wine, so they are sampled on their own thread and the
+    // flow thread only reads the result.
+    static std::atomic<bool> pressed{false}, started{false};
+    static std::atomic<uint64_t> wanted_at{0};
+    wanted_at = now;
+    if (!started.exchange(true))
+        std::thread([] {
+            for (;;) {
+                Sleep(100);
+                if (GetTickCount64() - wanted_at.load() > 500)
+                    continue;
+                uint64_t t0 = GetTickCount64();
+                bool on_pad = false;
+                if (bind_pressed(&on_pad))
+                    pressed = true;
+                bind_pad = on_pad;
+                uint64_t took = GetTickCount64() - t0;
+                static uint64_t slow = 0;
+                if (took > 50 && slow++ % 100 == 0)
+                    swofty::log("[main-menu] the video card's pad and key sample took %llu ms on its own thread (slow sample %llu)",
+                                static_cast<unsigned long long>(took), static_cast<unsigned long long>(slow));
+            }
+        }).detach();
+    if (pressed.exchange(false))
         open_video(p->s);
 }
 
