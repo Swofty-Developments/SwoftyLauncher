@@ -607,6 +607,18 @@ std::size_t Store::size() const
     return n;
 }
 
+std::vector<int64_t> Store::ids_of(const std::string &registry) const
+{
+    std::lock_guard<std::mutex> g(mu_);
+    std::vector<int64_t> out;
+    auto it = ids_.find(registry);
+    if (it != ids_.end())
+        for (auto &[record, entry] : it->second)
+            if (entry.id >= 0)
+                out.push_back(entry.id);
+    return out;
+}
+
 Store &store()
 {
     static Store s;
