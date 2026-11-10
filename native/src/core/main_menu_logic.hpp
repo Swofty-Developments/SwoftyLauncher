@@ -70,9 +70,13 @@ constexpr const char *HOME_BACK_ROUTE = "swofty_home";
 
 constexpr uint32_t WATCH_KEY_VK = 0x56;
 constexpr double PANEL_BUDGET_MS = 4.0;
-constexpr double ACCOUNT_AT_X = 3.06, ACCOUNT_AT_Y = 3.81;
-constexpr double VIDEO_AT_X = 2.29, VIDEO_AT_Y = -4.95;
-constexpr double VIDEO_IMAGE_DX = 3.3, VIDEO_IMAGE_DY = 1.06, VIDEO_IMAGE_W = 6.6, VIDEO_IMAGE_H = 1.8;
+constexpr double ACCOUNT_AT_X = 4.77, ACCOUNT_AT_Y = 3.91;
+constexpr double VIDEO_AT_X = 2.29, VIDEO_AT_Y = -4.82;
+// Measured on a 1908x1028 capture of the build that placed them at (3.06, 3.81) and (2.29, -4.95): the account
+// panel's accent bar lands 0.235 units right of its origin and its panel runs 0.12..1.0 units above it; the news
+// card's panel is 6.6 by 1.8 units with its left edge 0.32 right of the origin and its bottom edge on the origin.
+constexpr double ACCOUNT_AVATAR_DX = -0.674, ACCOUNT_AVATAR_DY = 0.834, ACCOUNT_AVATAR_SIZE = 0.68;
+constexpr double VIDEO_PANEL_DX = 0.32, VIDEO_PANEL_W = 6.6, VIDEO_PANEL_H = 1.8, VIDEO_INSET = 0.08;
 constexpr double SCENE_UNITS_TALL = 11.0, SCENE_CENTRE_X_SHIFT = -0.0148, SCENE_CENTRE_Y = 0.4918;
 
 struct Point {
@@ -80,6 +84,17 @@ struct Point {
 };
 
 inline float scene_scale(float height) { return height / float(SCENE_UNITS_TALL); }
+
+struct Rect {
+    double x = 0, y = 0, w = 0, h = 0;
+};
+
+inline Rect video_image_rect()
+{
+    double h = VIDEO_PANEL_H - 2 * VIDEO_INSET, w = h * 16.0 / 9.0;
+    double right = VIDEO_AT_X + VIDEO_PANEL_DX + VIDEO_PANEL_W - VIDEO_INSET;
+    return {right - w, VIDEO_AT_Y + VIDEO_PANEL_H - VIDEO_INSET, w, h};
+}
 
 inline Point scene_to_px(double x, double y, float width, float height)
 {

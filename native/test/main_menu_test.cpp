@@ -2,6 +2,7 @@
 // strip text, the home menu state file and the Time Trial warning rule. run_main_menu_test.sh builds and runs it.
 #include "../src/core/main_menu_logic.hpp"
 
+#include <cmath>
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -87,6 +88,14 @@ int main()
         expect(logo.y > 160 && logo.y < 176, "the logo's bottom edge (y 3.7) lands at the screenshot's 168 px");
         auto small = mm::scene_to_px(-8.6, 3.4, 1366, 768);
         expect(small.x / 1366.0f > 0.0481f && small.x / 1366.0f < 0.0661f, "the left edge keeps its place relative to the frame at 1366x768");
+    }
+    {
+        auto r = mm::video_image_rect();
+        expect(std::abs(r.w / r.h - 16.0 / 9.0) < 1e-6, "the video image is 16:9");
+        auto tl = mm::scene_to_px(r.x, r.y, 1908, 1028);
+        auto br = mm::scene_to_px(r.x + r.w, r.y - r.h, 1908, 1028);
+        expect(tl.x > 1515 && tl.x < 1525 && br.x > 1788 && br.x < 1797, "the image sits at the right end of the card (x about 1520..1793 at 1908x1028)");
+        expect(tl.y > 790 && tl.y < 800 && br.y > 945 && br.y < 955, "the image sits inside the card's height (y about 795..949)");
     }
     expect(mm::panel_due(true, true, true, false, true), "the panel is due on the open home screen once prepared");
     expect(!mm::panel_due(false, true, true, false, true) && !mm::panel_due(true, false, true, false, true) &&

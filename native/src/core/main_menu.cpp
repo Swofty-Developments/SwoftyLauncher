@@ -814,9 +814,9 @@ void apply_texts()
     }
     if (!p)
         return;
-    std::string panel = p->version;
     std::string who = p->s.signed_in ? (p->s.name.empty() ? std::string("Signed in to Discord") : "Signed in as " + p->s.name)
                                      : std::string("Not signed in to Discord");
+    std::string panel = p->version + "  -  " + (p->s.signed_in ? (p->s.name.empty() ? std::string("Discord") : p->s.name) : std::string("Not signed in"));
     std::string title = p->s.video_url.empty() ? std::string() : p->s.video_title;
     std::string prompt = p->s.video_url.empty() ? std::string() : logic::watch_line(logic::button_name(bind_pad.load()));
     if (done && panel == last_panel && title == last_title && prompt == last_prompt)
@@ -894,14 +894,15 @@ void paint(hud::Frame &f, uint64_t now)
                     p->video_slot >= 0 ? "yes" : "no", p->avatar_slot >= 0 ? "yes" : "no");
     const float unit = logic::scene_scale(H);
     if (p->avatar_slot >= 0) {
-        auto at = logic::scene_to_px(logic::ACCOUNT_AT_X - 1.0, logic::ACCOUNT_AT_Y + 0.85, W, H);
-        float size = 0.7f * unit;
+        auto at = logic::scene_to_px(logic::ACCOUNT_AT_X + logic::ACCOUNT_AVATAR_DX,
+                                     logic::ACCOUNT_AT_Y + logic::ACCOUNT_AVATAR_DY, W, H);
+        float size = float(logic::ACCOUNT_AVATAR_SIZE) * unit;
         hud::image(f, p->avatar_slot, at.x, at.y, size, size, 0xffffffff);
     }
     if (p->video_slot >= 0 && p->video_w && p->video_h) {
-        auto at = logic::scene_to_px(logic::VIDEO_AT_X + logic::VIDEO_IMAGE_DX - logic::VIDEO_IMAGE_W * 0.5,
-                                     logic::VIDEO_AT_Y + logic::VIDEO_IMAGE_DY + logic::VIDEO_IMAGE_H * 0.5, W, H);
-        float rw = float(logic::VIDEO_IMAGE_W) * unit, rh = float(logic::VIDEO_IMAGE_H) * unit;
+        auto r = logic::video_image_rect();
+        auto at = logic::scene_to_px(r.x, r.y, W, H);
+        float rw = float(r.w) * unit, rh = float(r.h) * unit;
         float want = rw / rh, have = float(p->video_w) / float(p->video_h);
         float v0 = 0, v1 = 1, u0 = 0, u1 = 1;
         if (have < want) {

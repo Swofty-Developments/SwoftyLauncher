@@ -230,8 +230,8 @@ const ACCOUNT_XREF: &str = "details_offline";
 const VIDEO_XREF: &str = "details_news";
 /// Where the two components sit on screen, in scene units from the scene's origin, fitted from the stock screenshot
 /// (the list's left edge x -8.6 at 98 px, the description y -1.77 at 713 px, the logo's bottom y 3.7 at 168 px of 1914x1079).
-pub const ACCOUNT_AT: (f64, f64) = (3.06, 3.81);
-pub const VIDEO_AT: (f64, f64) = (2.29, -4.95);
+pub const ACCOUNT_AT: (f64, f64) = (4.77, 3.91);
+pub const VIDEO_AT: (f64, f64) = (2.29, -4.82);
 /// transition_anim_details, their parent in the scene, sits here, so a slot's own position is its place minus this.
 const DETAILS_PARENT: (f64, f64) = (-8.6, -4.86);
 const XREF_GUIDS: [&str; 2] = ["7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c01", "7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c02"];
@@ -268,7 +268,7 @@ pub fn native_panels_ui(data: &[u8]) -> Result<Vec<u8>> {
         set_layout(&mut account, &[ACCOUNT_SLOT])?;
         hide_visibility_binding(&mut account)?;
         bind_text(account.child_mut("subtitle")?, PANEL_TEXT_PATH)?;
-        bind_text(account.child_mut("tooltip_label")?, PANEL_TITLE_PATH)?;
+        hide(account.child_mut("tooltip_label")?)?;
         hide(account.child_mut("tooltip_extra_2")?)?;
         let mut video = clone_node(&video_src, PANELS_PARENT, VIDEO_PANEL)?;
         set_layout(&mut video, &[VIDEO_SLOT])?;
