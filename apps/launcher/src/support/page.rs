@@ -4,6 +4,7 @@ use gpui_kit::component::input::Input;
 use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
+use std::time::Duration;
 use swofty_core::support::{BIO_MAX, FALLBACK_URL, Goal, Kind, Supporter, format_date, tier_name};
 use swofty_i18n::{tr, trf};
 
@@ -12,7 +13,7 @@ use crate::scale::px;
 use crate::shell::Shell;
 use crate::theme::{Palette, ScrollArea};
 use crate::time_trial::Load;
-use crate::ui::EmptyState;
+use crate::ui::Overlay;
 
 const LIST_WIDTH: f32 = 300.;
 const PINK: u32 = 0xff5fa2;
@@ -35,14 +36,8 @@ fn money(cents: u64) -> String {
     }
 }
 
-fn card(p: Palette) -> Div {
-    v_flex()
-        .gap(px(10.))
-        .p(px(16.))
-        .rounded(px(10.))
-        .border_1()
-        .border_color(p.border)
-        .bg(p.surface)
+fn section() -> Div {
+    v_flex().gap(px(10.))
 }
 
 fn heading(text: impl Into<SharedString>) -> Div {
@@ -59,8 +54,30 @@ fn muted(text: impl Into<SharedString>, p: Palette) -> Div {
         .child(text.into())
 }
 
-fn badge(plus: bool) -> Div {
+/// A soft white streak that sweeps left to right across its parent, which must be relative and clip.
+fn glint(id: impl Into<ElementId>, every: Duration) -> impl IntoElement {
+    let half = |from: u32, to: u32| {
+        div().h_full().w(px(9.)).bg(linear_gradient(
+            90.,
+            linear_color_stop(rgba(from), 0.),
+            linear_color_stop(rgba(to), 1.),
+        ))
+    };
+    h_flex()
+        .absolute()
+        .top_0()
+        .bottom_0()
+        .child(half(0xffffff00, 0xffffff99))
+        .child(half(0xffffff99, 0xffffff00))
+        .with_animation(id, Animation::new(every).repeat(), |el, t| {
+            el.left(relative(t * 2.4 - 0.4))
+        })
+}
+
+fn badge(id: impl Into<ElementId>, plus: bool) -> Div {
     div()
+        .relative()
+        .overflow_hidden()
         .flex_shrink_0()
         .px(px(8.))
         .py(px(2.))
@@ -69,7 +86,7 @@ fn badge(plus: bool) -> Div {
         .font_weight(FontWeight::BOLD)
         .text_color(rgb(0xffffff))
         .map(|d| match plus {
-            true => d.bg(gradient()),
+            true => d.bg(gradient()).child(glint(id, Duration::from_millis(3200))),
             false => d.bg(rgb(PINK)),
         })
         .child(tier_name(if plus { "supporter_plus" } else { "supporter" }))
@@ -83,10 +100,17 @@ impl Shell {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let refresh = Button::new("support-refresh")
-            .outline()
+            .ghost()
             .icon(IconName::ArrowRightLeft)
-            .label(tr("Refresh"))
             .on_click(cx.listener(|this, _, _, cx| this.support_reload(cx)));
+        let claim = Button::new("support-claim-open")
+            .outline()
+            .label(tr("Claim previous donation"))
+            .on_click(cx.listener(|this, _, _, cx| {
+                this.support.claim_open = true;
+                this.support.notice = None;
+                cx.notify();
+            }));
         let inputs = self.support_inputs(window, cx);
         if !self.support.bio_synced
             && let Load::Ready(me) = &self.support.me
@@ -96,43 +120,130 @@ impl Shell {
             self.support.bio_synced = true;
         }
         let list = self.support_list(p);
+        let modal = self
+            .support
+            .claim_open
+            .then(|| self.support_claim_modal(inputs.2.clone(), inputs.3.clone(), p, cx));
         let main = self.support_main(inputs, p, cx);
         let header = self.header(
             tr("Support"),
             tr("Keep Swofty Launcher free and open source").to_owned(),
-            refresh,
+            h_flex().gap(px(8.)).items_center().child(claim).child(refresh),
             p,
         );
         v_flex()
+            .relative()
             .size_full()
             .child(header)
             .child(
                 h_flex()
                     .flex_1()
                     .min_h_0()
-                    .gap(px(16.))
+                    .gap(px(24.))
                     .px(px(GUTTER))
                     .pb(px(16.))
                     .child(list)
                     .child(main),
             )
+            .children(modal)
+            .into_any_element()
+    }
+
+    fn support_claim_modal(
+        &self,
+        email: Entity<gpui_kit::component::input::InputState>,
+        payment: Entity<gpui_kit::component::input::InputState>,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        let busy = self.support.busy;
+        let weak = cx.entity().downgrade();
+        let (e, pay) = (email.clone(), payment.clone());
+        let notice = self.support.notice.as_ref().map(|(ok, text)| {
+            div()
+                .text_size(px(13.))
+                .text_color(if *ok { rgb(0x4cc38a).into() } else { p.error })
+                .child(text.clone())
+        });
+        let claimed = self.support.claimed.as_ref().map(|c| {
+            let when = c.expires_at.as_ref().map(format_date).unwrap_or_default();
+            let mut line = trf!(
+                "You're {tier}: {months} months left (expires {date})",
+                tier = tier_name(&c.tier),
+                months = c.months_left,
+                date = when
+            );
+            if c.role_granted {
+                line.push_str(&format!(", {}", tr("role granted in Discord")));
+            }
+            div().text_size(px(13.)).text_color(rgb(0x4cc38a)).child(line)
+        });
+        let panel = v_flex()
+            .w(px(440.))
+            .gap(px(12.))
+            .p(px(20.))
+            .rounded(px(12.))
+            .border_1()
+            .border_color(p.border)
+            .bg(p.background)
+            .child(div().text_size(px(17.)).font_weight(FontWeight::BOLD).child(tr("Claim previous donation")))
+            .child(muted(
+                tr("Paid on Stripe outside the launcher? Enter the email you paid with and the invoice or payment ID to get your tier and Discord role."),
+                p,
+            ))
+            .child(Input::new(&email).small())
+            .child(Input::new(&payment).small())
+            .children(notice)
+            .children(claimed)
+            .child(
+                h_flex()
+                    .gap(px(8.))
+                    .justify_end()
+                    .child(
+                        Button::new("support-claim-close")
+                            .small()
+                            .ghost()
+                            .label(tr("Close"))
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.support.claim_open = false;
+                                this.support.notice = None;
+                                cx.notify();
+                            })),
+                    )
+                    .child(
+                        Button::new("support-claim")
+                            .small()
+                            .primary()
+                            .label(if self.mp.is_some() { tr("Claim") } else { tr("Sign in to claim") })
+                            .disabled(busy || self.mp.is_none())
+                            .on_click(cx.listener(move |this, _, _, cx| {
+                                let (a, b) = (e.read(cx).value().to_string(), pay.read(cx).value().to_string());
+                                if a.trim().is_empty() || b.trim().is_empty() {
+                                    this.support.notice =
+                                        Some((false, tr("Enter both the email and the payment ID.").to_owned()));
+                                    cx.notify();
+                                } else {
+                                    this.support_claim(a, b, cx);
+                                }
+                            })),
+                    ),
+            );
+        Overlay::new("support-claim-modal")
+            .on_dismiss(move |_, cx| {
+                weak.update(cx, |this, cx| {
+                    this.support.claim_open = false;
+                    cx.notify();
+                })
+                .ok();
+            })
+            .child(panel)
             .into_any_element()
     }
 
     fn support_list(&self, p: Palette) -> AnyElement {
-        let frame = || {
-            v_flex()
-                .w(px(LIST_WIDTH))
-                .flex_shrink_0()
-                .h_full()
-                .min_h_0()
-                .rounded(px(10.))
-                .border_1()
-                .border_color(p.border)
-        };
+        let frame = || v_flex().w(px(LIST_WIDTH)).flex_shrink_0().h_full().min_h_0();
         let note = |text: String| {
             frame()
-                .p(px(12.))
                 .text_size(px(13.))
                 .text_color(p.text_muted)
                 .child(text)
@@ -151,11 +262,12 @@ impl Shell {
             .collect();
         frame()
             .child(
-                div()
-                    .px(px(14.))
-                    .pt(px(12.))
-                    .pb(px(4.))
-                    .child(heading(tr("Supporters"))),
+                h_flex()
+                    .pb(px(6.))
+                    .gap(px(8.))
+                    .items_center()
+                    .child(heading(tr("Supporters")))
+                    .child(muted(supporters.len().to_string(), p)),
             )
             .child(
                 div()
@@ -189,10 +301,9 @@ impl Shell {
         let bio = s.bio.clone().filter(|b| !b.trim().is_empty());
         h_flex()
             .id(SharedString::from(format!("supporter-{i}")))
-            .px(px(14.))
-            .py(px(10.))
+            .py(px(9.))
             .gap(px(10.))
-            .items_start()
+            .items_center()
             .when(i > 0, |d| d.border_t_1().border_color(p.border_variant))
             .child(face)
             .child(
@@ -213,7 +324,7 @@ impl Shell {
                                     .text_color(rgb(if plus { PLUS_NAME } else { PINK }))
                                     .child(name),
                             )
-                            .child(badge(plus)),
+                            .child(badge(SharedString::from(format!("supporter-glint-{i}")), plus)),
                     )
                     .children(bio.map(|b| muted(b, p))),
             )
@@ -231,27 +342,35 @@ impl Shell {
         p: Palette,
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let (bio, amount, email, payment) = inputs;
+        let (bio, amount, _, _) = inputs;
         let busy = self.support.busy;
-        let goal = self.support_goal(p);
+        let goal: AnyElement = match &self.support.goal {
+            Load::Idle | Load::Loading => muted(tr("Loading the goal…"), p).into_any_element(),
+            Load::Failed(e) => muted(e.clone(), p).into_any_element(),
+            Load::Ready(g) => goal_body(g, p).into_any_element(),
+        };
         let tiers = h_flex()
             .gap(px(12.))
-            .child(self.tier_card(Kind::Supporter, "$5", tr("Supporter"), false, busy, p, cx))
-            .child(self.tier_card(Kind::SupporterPlus, "$20", tr("Supporter+"), true, busy, p, cx));
+            .flex_wrap()
+            .child(self.tier_pill(Kind::Supporter, "$5", false, busy, p, cx))
+            .child(self.tier_pill(Kind::SupporterPlus, "$20", true, busy, p, cx));
         let typed = amount.read(cx).value().to_string();
-        let onetime = card(p)
-            .child(heading(tr("One-time donation")))
+        let onetime = section()
+            .child(heading(tr("One Time Donation")))
             .child(muted(
-                tr("One-time donations convert to whole months of a tier: $20 is 1 month of Supporter+, $5 is 1 month of Supporter. For example $100 is 5 months of Supporter+."),
+                tr("One time donations convert to whole months of a tier"),
                 p,
             ))
             .child(
                 h_flex()
                     .gap(px(8.))
-                    .child(div().w(px(220.)).child(Input::new(&amount).small().prefix(div().text_color(p.text_muted).child("$"))))
+                    .child(
+                        div()
+                            .w(px(260.))
+                            .child(Input::new(&amount).prefix(div().text_color(p.text_muted).child("$"))),
+                    )
                     .child(
                         Button::new("support-onetime")
-                            .small()
                             .primary()
                             .label(tr("Donate"))
                             .disabled(busy)
@@ -260,48 +379,8 @@ impl Shell {
                             })),
                     ),
             );
-        let (e, pay) = (email.clone(), payment.clone());
-        let claim = card(p)
-            .child(heading(tr("Already paid? Claim your support")))
-            .child(muted(
-                tr("Paid on Stripe outside the launcher? Enter the email you paid with and the invoice or payment ID to get your tier and Discord role."),
-                p,
-            ))
-            .child(Input::new(&email).small())
-            .child(Input::new(&payment).small())
-            .child(
-                h_flex().gap(px(8.)).child(
-                    Button::new("support-claim")
-                        .small()
-                        .outline()
-                        .label(if self.mp.is_some() { tr("Claim") } else { tr("Sign in to claim") })
-                        .disabled(busy || self.mp.is_none())
-                        .on_click(cx.listener(move |this, _, _, cx| {
-                            let (a, b) = (e.read(cx).value().to_string(), pay.read(cx).value().to_string());
-                            if a.trim().is_empty() || b.trim().is_empty() {
-                                this.support.notice = Some((false, tr("Enter both the email and the payment ID.").to_owned()));
-                                cx.notify();
-                            } else {
-                                this.support_claim(a, b, cx);
-                            }
-                        })),
-                ),
-            )
-            .children(self.support.claimed.as_ref().map(|c| {
-                let when = c.expires_at.as_ref().map(format_date).unwrap_or_default();
-                let mut line = trf!(
-                    "You're {tier}: {months} months left (expires {date})",
-                    tier = tier_name(&c.tier),
-                    months = c.months_left,
-                    date = when
-                );
-                if c.role_granted {
-                    line.push_str(&format!(", {}", tr("role granted in Discord")));
-                }
-                div().text_size(px(13.)).text_color(rgb(0x4cc38a)).child(line)
-            }));
         let status = self.support_status(bio, p, cx);
-        let perks = card(p).child(heading(tr("What you get"))).children(
+        let perks = section().child(heading(tr("What you get"))).children(
             [
                 tr("Access to #f1-supporter-leaks"),
                 tr("The #f1-supporter-general chat"),
@@ -316,12 +395,17 @@ impl Shell {
                     .child(div().text_size(px(13.)).child(t))
             }),
         );
-        let notice = self.support.notice.as_ref().map(|(ok, text)| {
-            div()
-                .text_size(px(13.))
-                .text_color(if *ok { rgb(0x4cc38a).into() } else { p.error })
-                .child(text.clone())
-        });
+        let notice = self
+            .support
+            .notice
+            .as_ref()
+            .filter(|_| !self.support.claim_open)
+            .map(|(ok, text)| {
+                div()
+                    .text_size(px(13.))
+                    .text_color(if *ok { rgb(0x4cc38a).into() } else { p.error })
+                    .child(text.clone())
+            });
         let fallback = Button::new("support-fallback")
             .small()
             .ghost()
@@ -335,13 +419,12 @@ impl Shell {
             .scroll_y("support-main")
             .child(
                 v_flex()
-                    .gap(px(14.))
+                    .gap(px(26.))
                     .pr(px(4.))
-                    .children(status)
                     .child(goal)
+                    .children(status)
                     .child(tiers)
                     .child(onetime)
-                    .child(claim)
                     .children(notice)
                     .child(perks)
                     .child(h_flex().child(fallback)),
@@ -349,56 +432,57 @@ impl Shell {
             .into_any_element()
     }
 
-    fn support_goal(&self, p: Palette) -> Div {
-        let body: AnyElement = match &self.support.goal {
-            Load::Idle | Load::Loading => muted(tr("Loading the goal…"), p).into_any_element(),
-            Load::Failed(e) => muted(e.clone(), p).into_any_element(),
-            Load::Ready(g) => goal_body(g, p).into_any_element(),
-        };
-        card(p).child(heading(tr("Monthly goal"))).child(body)
-    }
-
-    fn tier_card(
+    fn tier_pill(
         &self,
         kind: Kind,
         price: &'static str,
-        name: &'static str,
         plus: bool,
         busy: bool,
-        p: Palette,
+        _p: Palette,
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let id = if plus { "support-plus" } else { "support-basic" };
-        card(p)
-            .flex_1()
-            .min_w_0()
-            .when(plus, |d| d.border_color(rgb(PURPLE)))
+        let signed_in = self.mp.is_some();
+        let name = tier_name(if plus { "supporter_plus" } else { "supporter" }).to_uppercase();
+        div()
+            .id(if plus { "support-plus" } else { "support-basic" })
+            .relative()
+            .overflow_hidden()
+            .flex()
+            .items_center()
+            .gap(px(14.))
+            .h(px(46.))
+            .px(px(22.))
+            .rounded_full()
+            .text_color(rgb(0xffffff))
+            .map(|d| match plus {
+                true => d
+                    .bg(gradient())
+                    .child(glint("support-plus-glint", Duration::from_millis(2600))),
+                false => d.bg(rgb(PINK)),
+            })
+            .when(busy, |d| d.opacity(0.6))
+            .when(!busy, |d| d.cursor_pointer().hover(|d| d.opacity(0.9)))
             .child(
-                h_flex()
-                    .justify_between()
-                    .items_center()
-                    .child(badge(plus))
-                    .child(
-                        div()
-                            .text_size(px(18.))
-                            .font_weight(FontWeight::BOLD)
-                            .child(format!("{price}{}", tr(" / month"))),
-                    ),
+                div()
+                    .text_size(px(15.))
+                    .font_weight(FontWeight::EXTRA_BOLD)
+                    .child(name),
             )
+            .child(div().w(px(1.)).h(px(18.)).bg(rgba(0xffffff66)))
             .child(
                 div()
                     .text_size(px(14.))
                     .font_weight(FontWeight::SEMIBOLD)
-                    .child(name),
+                    .child(format!("{price}{}", tr(" / month"))),
             )
-            .child(
-                Button::new(id)
-                    .small()
-                    .when_else(plus, |b| b.primary(), |b| b.outline())
-                    .label(if self.mp.is_some() { tr("Subscribe") } else { tr("Sign in to subscribe") })
-                    .disabled(busy || self.mp.is_none())
-                    .on_click(cx.listener(move |this, _, _, cx| this.support_checkout(kind, None, cx))),
-            )
+            .on_click(cx.listener(move |this, _, _, cx| {
+                if signed_in {
+                    this.support_checkout(kind, None, cx);
+                } else {
+                    this.support.notice = Some((false, tr("Sign in with Discord to subscribe.").to_owned()));
+                    cx.notify();
+                }
+            }))
             .into_any_element()
     }
 
@@ -433,13 +517,12 @@ impl Shell {
                 }))
         };
         Some(
-            card(p)
-                .when(plus, |d| d.border_color(rgb(PURPLE)))
+            section()
                 .child(
                     h_flex()
                         .gap(px(10.))
                         .items_center()
-                        .child(badge(plus))
+                        .child(badge("support-me-glint", plus))
                         .child(heading(trf!(
                             "{months} months left (expires {date})",
                             months = months,
@@ -480,44 +563,121 @@ impl Shell {
 }
 
 fn goal_body(g: &Goal, p: Palette) -> Div {
+    let filled = g.fraction();
+    // Thin lines that drift up and fade above the filled part of the bar.
+    let floats = (0..9usize).map(|i| {
+        let at = filled * ((i as f32 * 0.137 + 0.05) % 1.);
+        let wide = 10. + (i % 4) as f32 * 7.;
+        let period = Duration::from_millis(2200 + (i as u64 * 430) % 1900);
+        div()
+            .absolute()
+            .left(relative(at))
+            .h(px(2.))
+            .w(px(wide))
+            .rounded_full()
+            .bg(rgb(if i % 2 == 0 { HOT_PINK } else { PURPLE }))
+            .with_animation(
+                SharedString::from(format!("goal-float-{i}")),
+                Animation::new(period).repeat(),
+                move |el, t| {
+                    let t = (t + i as f32 * 0.21) % 1.;
+                    el.top(px(30. - 30. * t))
+                        .ml(px(18. * t))
+                        .opacity((t * std::f32::consts::PI).sin() * 0.8)
+                },
+            )
+    });
+    // Bright sparks that run along the filled part.
+    let sparks = (0..3usize).map(|i| {
+        let half = |from: u32, to: u32| {
+            div().h_full().w(px(22.)).bg(linear_gradient(
+                90.,
+                linear_color_stop(rgba(from), 0.),
+                linear_color_stop(rgba(to), 1.),
+            ))
+        };
+        h_flex()
+            .absolute()
+            .top_0()
+            .bottom_0()
+            .child(half(0xffffff00, 0xffffffcc))
+            .child(half(0xffffffcc, 0xffffff00))
+            .with_animation(
+                SharedString::from(format!("goal-spark-{i}")),
+                Animation::new(Duration::from_millis(1700 + i as u64 * 650)).repeat(),
+                move |el, t| el.left(relative(((t + i as f32 * 0.37) % 1.) * 1.3 - 0.2)),
+            )
+    });
     v_flex()
-        .gap(px(8.))
+        .gap(px(6.))
         .child(
             div()
-                .h(px(12.))
+                .text_size(px(12.))
+                .font_weight(FontWeight::BOLD)
+                .text_color(rgb(PINK))
+                .child(tr("Monthly goal").to_uppercase()),
+        )
+        .child(
+            h_flex()
+                .items_end()
+                .gap(px(10.))
+                .child(
+                    div()
+                        .text_size(px(44.))
+                        .line_height(px(46.))
+                        .font_weight(FontWeight::EXTRA_BOLD)
+                        .child(money(g.raised_cents)),
+                )
+                .child(
+                    div()
+                        .pb(px(6.))
+                        .text_size(px(16.))
+                        .text_color(p.text_muted)
+                        .child(format!("{} {} {}", tr("of"), money(g.goal_cents), tr("/ month"))),
+                ),
+        )
+        .child(div().relative().h(px(32.)).w_full().children(floats))
+        .child(
+            div()
+                .h(px(20.))
                 .w_full()
                 .rounded_full()
                 .bg(p.border_variant)
                 .overflow_hidden()
                 .child(
                     div()
+                        .relative()
+                        .overflow_hidden()
                         .h_full()
-                        .w(relative(g.fraction()))
+                        .w(relative(filled))
                         .rounded_full()
-                        .bg(gradient()),
+                        .bg(gradient())
+                        .children(sparks),
                 ),
         )
         .child(
             div()
-                .text_size(px(14.))
-                .font_weight(FontWeight::MEDIUM)
-                .child(format!(
-                    "{} {} {} {}",
-                    money(g.raised_cents),
-                    tr("of"),
-                    money(g.goal_cents),
-                    tr("/ month")
-                )),
+                .pt(px(14.))
+                .text_size(px(18.))
+                .font_weight(FontWeight::BOLD)
+                .child(tr("What it pays for")),
         )
-        .child(muted(tr("It pays for"), p))
-        .child(h_flex().gap(px(6.)).flex_wrap().children(g.costs.iter().map(|c| {
-            div()
-                .px(px(8.))
-                .py(px(3.))
-                .rounded_full()
-                .border_1()
-                .border_color(p.border)
-                .text_size(px(12.))
-                .child(c.clone())
-        })))
+        .child(
+            h_flex()
+                .gap(px(10.))
+                .flex_wrap()
+                .children(g.costs.iter().map(|c| {
+                    h_flex()
+                        .gap(px(8.))
+                        .items_center()
+                        .px(px(16.))
+                        .py(px(10.))
+                        .rounded_full()
+                        .bg(p.surface)
+                        .text_size(px(15.))
+                        .font_weight(FontWeight::SEMIBOLD)
+                        .child(div().size(px(8.)).rounded_full().bg(gradient()))
+                        .child(c.clone())
+                })),
+        )
 }

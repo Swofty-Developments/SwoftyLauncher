@@ -25,6 +25,7 @@ pub(crate) struct SupportPage {
     pub busy: bool,
     pub notice: Option<(bool, String)>,
     pub claimed: Option<Claimed>,
+    pub claim_open: bool,
 }
 
 impl Default for SupportPage {
@@ -39,6 +40,7 @@ impl Default for SupportPage {
             busy: false,
             notice: None,
             claimed: None,
+            claim_open: false,
         }
     }
 }
@@ -111,7 +113,13 @@ impl Shell {
         cx.spawn(async move |this, cx| {
             let (goal, supporters, me) = cx
                 .background_executor()
-                .spawn(async move { (api.support_goal(), api.support_supporters(), signed_in.then(|| api.support_me())) })
+                .spawn(async move {
+                    (
+                        api.support_goal(),
+                        api.support_supporters(),
+                        signed_in.then(|| api.support_me()),
+                    )
+                })
                 .await;
             this.update(cx, |s, cx| {
                 let faces: Vec<String> = supporters
@@ -173,7 +181,12 @@ impl Shell {
     }
 
     pub(super) fn support_claim(&mut self, email: String, payment: String, cx: &mut Context<Self>) {
-        let Some(api) = self.mp.is_some().then(|| self.support_api()).filter(|_| !self.support.busy) else {
+        let Some(api) = self
+            .mp
+            .is_some()
+            .then(|| self.support_api())
+            .filter(|_| !self.support.busy)
+        else {
             return;
         };
         self.support.busy = true;
@@ -202,7 +215,12 @@ impl Shell {
     }
 
     pub(super) fn support_save(&mut self, bio: String, cx: &mut Context<Self>) {
-        let Some(api) = self.mp.is_some().then(|| self.support_api()).filter(|_| !self.support.busy) else {
+        let Some(api) = self
+            .mp
+            .is_some()
+            .then(|| self.support_api())
+            .filter(|_| !self.support.busy)
+        else {
             return;
         };
         let bio: String = bio.trim().chars().take(BIO_MAX).collect();
