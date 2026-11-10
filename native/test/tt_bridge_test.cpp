@@ -395,6 +395,61 @@ int main()
            "a refill reuses the object and the new length");
     expect(sizeof(tb::Response::raw) == 0xb0, "the response is 0xb0 bytes");
 
+    // online-state gate of the F1os method starts
+    {
+        std::vector<uint8_t> real;
+        for (const char *p = "48 8B 8E 00 01 00 00 48 8B 49 40 48 8B 89 40 01 00 00 48 8B 89 98 01 00 00 48 85 C9 0F 84 EA 00 00 00 8B 91 C8 01 00 00 F7 D2 F6 C2 03 0F 85 D9 00 00 00 48 83 B9 C0 01 00 00 00 0F 84 CB 00 00 00 83 FF 02 0F 85 EF 00 00 00 83 F8 02 0F 85 F0 00 00 00 48 8B 05 1C 6B 0A 03 48 8B 80 E0 04 00 00 80 B8 90 00 02 00 00 0F 84 DF 00 00 00 48 8B 80 50 01 02 00 48 85 C0 0F 84 CF 00 00 00 80 38 00 0F 84 C6 00 00 00 80 7E 32 00"; *p;) {
+            if (*p == ' ') { p++; continue; }
+            real.push_back(uint8_t(std::stoi(std::string(p, 2), nullptr, 16)));
+            p += 2;
+        }
+        expect(real.size() == tb::gate::TEMPLATE_LEN && tb::gate::pattern().ok, "the gate template parses and the real bytes are its length");
+        std::vector<uint8_t> buf(0x3000, 0x90);
+        auto put = [&](size_t at) { memcpy(buf.data() + at, real.data(), real.size()); };
+        put(0x100);
+        put(0x1800);
+        auto matches = tb::gate::find_all(buf.data(), buf.size());
+        expect(matches.size() == 2 && matches[0] == 0x100 && matches[1] == 0x1800, "the real GetTTLeaderboard gate bytes are found twice in a padded buffer");
+        auto site = tb::gate::site_of(matches[0]);
+        expect(site.hook == 0x100 + 25 && buf[site.hook] == 0x48 && buf[site.hook + 1] == 0x85 && buf[site.hook + 2] == 0xc9, "the hook site is the TEST RCX,RCX of the presence record");
+        expect(buf[site.resume] == 0x80 && buf[site.resume + 1] == 0x7e && buf[site.resume + 2] == 0x32, "the resume site is the first compare after the gate (cmp byte [rsi+0x32], 0)");
+        expect(tb::gate::session_global(buf.data(), matches[0]) == 0x100 + 83 + 7 + 0x030A6B1C, "the session block global is the rip-relative load inside the gate");
+        expect(tb::gate::find_all(buf.data(), 100).empty(), "a buffer shorter than the template has no match");
+        auto broken = buf;
+        broken[0x100 + 33] ^= 0xff;
+        broken[0x100 + 25] ^= 0xff;
+        expect(tb::gate::find_all(broken.data(), broken.size()).size() == 1, "one changed fixed byte drops the match, a wildcard byte does not");
+        auto lea = [&](size_t at, int64_t target) {
+            buf[at] = 0x48; buf[at + 1] = 0x8d; buf[at + 2] = 0x05;
+            int32_t rel = int32_t(target - int64_t(at) - 7);
+            memcpy(buf.data() + at + 3, &rel, 4);
+        };
+        lea(0x900, 0x2400);
+        lea(0x1f00, 0x2800);
+        auto own = tb::gate::owners(buf.data(), buf.size(), matches, {0x2400, 0x2800, 0x2900, -1});
+        expect(own.size() == 4 && own[0] == 0 && own[1] == 1 && own[2] == -1 && own[3] == -1, "each OnResult belongs to the function whose gate precedes its lea");
+        lea(0x1900, 0x2400);
+        own = tb::gate::owners(buf.data(), buf.size(), matches, {0x2400});
+        expect(own[0] == -1, "an OnResult taken by two functions has no owner");
+    }
+    {
+        tb::gate::State s;
+        s.presence_ok = tb::gate::presence_ok(3, 7);
+        s.s60 = 2;
+        s.s64 = 0;
+        s.session_ok = false;
+        expect(tb::gate::first_failure(s) == tb::gate::Why::overlay, "with presence and S+0x60 right and S+0x64 wrong the first failure is 9, the overlay popup");
+        s.s64 = 2;
+        expect(tb::gate::first_failure(s) == tb::gate::Why::session, "then the missing session token");
+        s.session_ok = true;
+        expect(tb::gate::first_failure(s) == tb::gate::Why::none, "all four pass");
+        s.s60 = 1;
+        expect(tb::gate::first_failure(s) == tb::gate::Why::login, "S+0x60 first");
+        s.presence_ok = tb::gate::presence_ok(1, 7);
+        expect(tb::gate::first_failure(s) == tb::gate::Why::presence && !tb::gate::presence_ok(3, 0), "presence needs both flag bits and a user");
+        expect(std::string(tb::gate::account_state_name(9)) == "eEAAccountSteamOverlayDisabled" && std::string(tb::gate::account_state_name(99)) == "unknown", "account state names");
+    }
+
     // log cap and kill switch
     expect(tb::say(0) == tb::Say::none && tb::say(1) == tb::Say::line && tb::say(6) == tb::Say::last && tb::say(7) == tb::Say::none, "log lines are capped");
     expect(tb::switch_off("0") && tb::switch_off("off") && !tb::switch_off("1") && !tb::switch_off("") && !tb::switch_off(nullptr) && !tb::switch_off("00"), "env switches parse");

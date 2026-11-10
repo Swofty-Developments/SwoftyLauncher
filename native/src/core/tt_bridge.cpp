@@ -43,6 +43,16 @@ std::string hook_error(const safetyhook::MidHook::Error &e);
 //    PostToRacenet return at their entry while the session's content is not the game's own; with the bridge off the
 //    Add/Update requests of an addon board are answered locally.
 //
+// 4. Online-state gate (third pass, FINDINGS "Third pass: offline gate"). With the launcher's offline component the game
+//    runs without a platform session, and every F1os op's OnStart (103 methods share one template) finishes with an
+//    AccountServiceOperation state instead of sending: 10 no presence record, 8 EA login error, 9 platform overlay disabled
+//    (the "Platform Client Overlay is not enabled" popup), 4/5/7 no session token. For the five Time Trial methods only,
+//    and only for a request the bridge answers itself, a mid hook at the first of those checks resumes at the first
+//    instruction after the last one, so the op builds its request and reaches Game_F1os_RequestRing_Push, where the push
+//    hook swallows it. Nothing else changes: other methods and the publisher's own boards keep the game's checks.
+// 5. SWOFTY_TT_DIAG=1 logs only: the gate values per Time Trial request, every push, the board XML, the popup trigger,
+//    the ghost handler of the storage system. No behaviour changes in that mode.
+//
 // Every hook point is found by byte scan, gated on the KB build. SWOFTY_TT_UPLOAD_GUARD=0, SWOFTY_TT_DOWNLOAD_GUARD=0,
 // SWOFTY_TT_RACENET_GUARD=0 and SWOFTY_TT_REQUEST_GUARD=0 turn the guards off.
 
@@ -101,6 +111,12 @@ const runtime::Sig S_UPDATE_BINARY{"Game_F1os_OnResult_UpdateLeaderboardEntryBin
         "80 BF 88 00 00 00 00 48 8D 0D 9D B8 CA 03 ",
         0x3006cd0};
 
+const runtime::Sig S_SESSION_ENTER{"Game_GhostLapsStorageSystem_OnSessionEnter",
+        "41 57 41 56 41 54 56 57 55 53 48 81 EC 80 00 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6A B8 62 00 00 00", 0x2f95ee0};
+const runtime::Sig S_ACCOUNT_ERROR{"Game_F1os_AccountStateError",
+        "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 89 CE 48 8B 81 98 00 00 00 48 85 C0 74 16 "
+        "48 8B 40 10 48 8B 40 38 48 85 C0 74 09 80 38 00 0F 85 69 05 00 00 0F B6 86 B8 01 00 00", 0x336da00};
+
 constexpr uintptr_t PB_HANDLER_ID_BLOCK = 0x298, PB_HANDLER_TIME = 0x300;
 
 using OnResult_t = void (*)(void *op, void *resp);
@@ -128,7 +144,18 @@ std::atomic<int> logged_requests{0}, logged_unreadable{0}, logged_passes{0}, xml
 std::atomic<int> hits_upload{0}, hits_download{0}, hits_racenet{0};
 std::vector<std::string> seen_methods;
 
-safetyhook::MidHook h_xml, h_push, h_upload, h_download, h_racenet, h_pb;
+bool diag_on = false;
+safetyhook::MidHook h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
+
+struct GateHook {
+    uintptr_t at = 0, resume = 0, session_global = 0;
+    safetyhook::MidHook hook;
+};
+GateHook gates[5];
+std::atomic<uintptr_t> diag_storage{0};
+uintptr_t diag_handler_seen = ~uintptr_t(0);
+std::atomic<int> diag_gate_logged{0}, diag_push_logged{0}, diag_error_logged{0}, diag_bypass_logged{0};
+std::vector<std::string> diag_gate_seen;
 
 bool read_mem(void *, uint64_t addr, void *out, size_t n)
 {
@@ -189,15 +216,64 @@ std::string hex_dump(const uint8_t *p, size_t n)
     return s;
 }
 
+std::string rva_list(void **frames, int n)
+{
+    std::string s;
+    uintptr_t base = swofty::api->module_base();
+    for (int i = 0; i < n; i++) {
+        char b[24];
+        uintptr_t a = reinterpret_cast<uintptr_t>(frames[i]);
+        snprintf(b, sizeof b, "%s+0x%llx", s.empty() ? "" : " ", (unsigned long long)(a - base));
+        s += b;
+    }
+    return s;
+}
+
+std::string backtrace_text(int skip, int depth)
+{
+    void *frames[12] = {};
+    USHORT n = RtlCaptureStackBackTrace(DWORD(skip), DWORD(std::min(depth, 12)), frames, nullptr);
+    return rva_list(frames, int(n));
+}
+
+uint64_t peek64(uint64_t at)
+{
+    uint64_t v = 0;
+    if (runtime::readable(reinterpret_cast<void *>(at), 8))
+        memcpy(&v, reinterpret_cast<void *>(at), 8);
+    return v;
+}
+
+uint32_t peek32(uint64_t at)
+{
+    uint32_t v = 0;
+    if (runtime::readable(reinterpret_cast<void *>(at), 4))
+        memcpy(&v, reinterpret_cast<void *>(at), 4);
+    return v;
+}
+
 void xml_mid(safetyhook::Context &c)
 {
-    if (!bridge_on)
+    if (!bridge_on && !diag_on)
         return;
     uint64_t len = 0;
     uint64_t at_len = c.rsp + 0x70;
     if (!runtime::readable(reinterpret_cast<void *>(at_len), 8))
         return;
     memcpy(&len, reinterpret_cast<void *>(at_len), 8);
+    if (!bridge_on) {
+        size_t boards = 0;
+        std::string first;
+        if (len >= 16 && len <= (size_t(32) << 20) && runtime::readable(reinterpret_cast<void *>(c.rax), len)) {
+            auto els = tb::leaderboard_elements(std::string(reinterpret_cast<const char *>(c.rax), size_t(len)));
+            boards = els.size();
+            first = els.empty() ? "" : els.front().name;
+        }
+        swofty::log("[boards] diag: system/leaderboard.xml loaded by the game (%llu bytes, %zu boards, first %s); the board definitions are read at network subsystem "
+                    "connect, online or not",
+                    (unsigned long long)len, boards, first.c_str());
+        return;
+    }
     int n = ++xml_logged;
     if (len < 16 || len > (size_t(32) << 20) || !runtime::readable(reinterpret_cast<void *>(c.rax), len)) {
         swofty::log("[boards] board definitions: the buffer at the load site is not readable (rax 0x%llx, length %llu); left alone",
@@ -270,6 +346,12 @@ void push_mid(safetyhook::Context &c)
     uint64_t op = c.rcx;
     std::string name;
     tb::Method m = tb::method_at_op(game_mem(), op, &name);
+    if (diag_on && ++diag_push_logged <= 60) {
+        uint64_t sp = peek64(op + tb::OP_SERVICE);
+        std::string service = sp ? tb::read_c(game_mem(), sp) : std::string();
+        swofty::log("[boards] diag: RequestRing_Push op 0x%llx service %s method %s%s; caller %s", (unsigned long long)op, service.empty() ? "?" : service.c_str(),
+                    name.empty() ? "?" : name.c_str(), m != tb::Method::none ? " (Time Trial board method)" : "", backtrace_text(1, 3).c_str());
+    }
     if (m == tb::Method::none) {
         if (!name.empty() && seen_methods.size() < 40 && std::find(seen_methods.begin(), seen_methods.end(), name) == seen_methods.end()) {
             seen_methods.push_back(name);
@@ -391,6 +473,196 @@ bool file_age_seconds(const std::wstring &path, int64_t *age)
     return true;
 }
 
+tb::gate::State read_gate_state(const safetyhook::Context &c, const GateHook &g, uint32_t *flags, uint64_t *user, uint8_t *session_flag, std::string *token)
+{
+    tb::gate::State st;
+    st.s60 = uint32_t(c.rdi);
+    st.s64 = uint32_t(c.rax);
+    *flags = 0;
+    *user = 0;
+    if (c.rcx) {
+        *flags = peek32(c.rcx + 0x1c8);
+        *user = peek64(c.rcx + 0x1c0);
+        st.presence_ok = tb::gate::presence_ok(*flags, *user);
+    }
+    *session_flag = 0;
+    token->clear();
+    uint64_t sys = g.session_global ? peek64(g.session_global) : 0;
+    uint64_t blk = sys ? peek64(sys + 0x4e0) : 0;
+    if (blk) {
+        uint64_t tok = peek64(blk + 0x20150);
+        if (runtime::readable(reinterpret_cast<void *>(blk + 0x20090), 1))
+            *session_flag = *reinterpret_cast<uint8_t *>(blk + 0x20090);
+        char first = 0;
+        if (tok && runtime::readable(reinterpret_cast<void *>(tok), 1))
+            first = *reinterpret_cast<char *>(tok);
+        st.session_ok = *session_flag != 0 && first != 0;
+        *token = !tok ? "null" : first ? "set" : "empty";
+    } else
+        *token = "no block";
+    return st;
+}
+
+void gate_mid(int idx, safetyhook::Context &c)
+{
+    tb::Method m = tb::Method(idx + 1);
+    GateHook &g = gates[idx];
+    uint64_t op = c.rsi;
+    uint32_t flags;
+    uint64_t user;
+    uint8_t session_flag;
+    std::string token;
+    tb::gate::State st = read_gate_state(c, g, &flags, &user, &session_flag, &token);
+    tb::gate::Why why = tb::gate::first_failure(st);
+    std::string name;
+    tb::Method seen = tb::method_at_op(game_mem(), op, &name);
+    tb::Args a;
+    tb::Route route = tb::Route::pass;
+    tb::BoardTrack track;
+    if (seen == m) {
+        a = tb::decode_args(game_mem(), op, m);
+        if (a.ok) {
+            std::string code;
+            {
+                std::lock_guard<std::mutex> lk(lock);
+                code = session_code;
+            }
+            track = tb::request_track(swofty_core::apply::tracks::base(), a.board, code);
+            route = tb::route_of(m, a.board, bridge_on, track.custom);
+            if (route == tb::Route::local && !request_guard)
+                route = tb::Route::pass;
+        }
+    }
+    bool bypass = bridge_on && route != tb::Route::pass && push_hooked && found.on_result[int(m)] && why != tb::gate::Why::none;
+    if (diag_on || bypass) {
+        char key[160];
+        snprintf(key, sizeof key, "%d/%u/%u/%d/%d/%d", idx, st.s60, st.s64, st.presence_ok, st.session_ok, bypass);
+        bool fresh = false;
+        {
+            std::lock_guard<std::mutex> lk(lock);
+            if (std::find(diag_gate_seen.begin(), diag_gate_seen.end(), key) == diag_gate_seen.end() && diag_gate_seen.size() < 48) {
+                diag_gate_seen.push_back(key);
+                fresh = true;
+            }
+        }
+        if (fresh || (diag_on && ++diag_gate_logged <= 24))
+            swofty::log("[boards] diag: online-state gate of %s op 0x%llx board %s: presence record %s (flags 0x%x user 0x%llx), S+0x60 = %u, S+0x64 = %u, "
+                        "session token %s (flag %u); first failure: %s; %s; caller %s",
+                        tb::method_name(m), (unsigned long long)op, a.ok ? a.board_text.c_str() : "(args not read)",
+                        st.presence_ok ? "ok" : c.rcx ? "not signed in" : "missing", flags, (unsigned long long)user, st.s60, st.s64, token.c_str(),
+                        session_flag, tb::gate::why_text(why),
+                        bypass ? "this request is ours: the checks are skipped" : route == tb::Route::pass ? "stock board or bridge off: left to the game" : "left to the game",
+                        backtrace_text(1, 3).c_str());
+    }
+    if (!bypass)
+        return;
+    c.rip = g.resume;
+    if (++diag_bypass_logged <= 12)
+        swofty::log("[boards] gate %s %s: online-state checks skipped (would have failed with %s); the request goes to the push hook", tb::method_name(m),
+                    a.board_text.c_str(), tb::gate::why_text(why));
+}
+
+template <int I> void gate_cb(safetyhook::Context &c) { gate_mid(I, c); }
+
+const safetyhook::MidHookFn gate_cbs[5] = {gate_cb<0>, gate_cb<1>, gate_cb<2>, gate_cb<3>, gate_cb<4>};
+
+void account_error_mid(safetyhook::Context &c)
+{
+    if (!runtime::readable(reinterpret_cast<void *>(c.rcx + 0x1b8), 1))
+        return;
+    unsigned state = *reinterpret_cast<uint8_t *>(c.rcx + 0x1b8);
+    if (state == 0 || state == 1 || state == 7)
+        return;
+    if (++diag_error_logged <= 16)
+        swofty::log("[boards] diag: account-state error handler: state %u %s%s; backtrace %s", state, tb::gate::account_state_name(state),
+                    state == 9 ? " (the Platform Client Overlay popup)" : "", backtrace_text(1, 6).c_str());
+}
+
+void session_enter_mid(safetyhook::Context &c)
+{
+    diag_storage = c.rcx;
+    swofty::log("[boards] diag: ghost lap storage system 0x%llx onSessionEnter (handler before: 0x%llx)", (unsigned long long)c.rcx,
+                (unsigned long long)peek64(c.rcx + 0x278));
+}
+
+void diag_tick()
+{
+    uintptr_t sys = diag_storage.load();
+    if (!sys)
+        return;
+    uint64_t handler = peek64(sys + 0x278);
+    if (handler == diag_handler_seen)
+        return;
+    diag_handler_seen = handler;
+    std::string name;
+    if (handler) {
+        uint64_t ctx = peek64(handler + 0x58);
+        uint64_t np = ctx ? peek64(ctx + 0x68) : 0;
+        name = np ? tb::read_c(game_mem(), np) : std::string();
+    }
+    swofty::log("[boards] diag: ghost lap handler of storage system 0x%llx is now 0x%llx%s%s", (unsigned long long)sys, (unsigned long long)handler,
+                name.empty() ? "" : ", board ", name.c_str());
+}
+
+bool section_of(const char *want, const uint8_t **begin, size_t *size)
+{
+    auto base = reinterpret_cast<const uint8_t *>(swofty::api->module_base());
+    auto dos = reinterpret_cast<const IMAGE_DOS_HEADER *>(base);
+    auto nt = reinterpret_cast<const IMAGE_NT_HEADERS64 *>(base + dos->e_lfanew);
+    auto sec = IMAGE_FIRST_SECTION(nt);
+    for (unsigned i = 0; i < nt->FileHeader.NumberOfSections; i++) {
+        char nm[9] = {};
+        memcpy(nm, sec[i].Name, 8);
+        if (!strcmp(nm, want)) {
+            *begin = base + sec[i].VirtualAddress;
+            *size = sec[i].Misc.VirtualSize;
+            return true;
+        }
+    }
+    return false;
+}
+
+void install_gates()
+{
+    const uint8_t *buf = nullptr;
+    size_t n = 0;
+    if (!section_of(".xtls", &buf, &n)) {
+        swofty::log("[boards] gate: off, the code section was not found");
+        return;
+    }
+    auto matches = tb::gate::find_all(buf, n);
+    std::vector<int64_t> targets;
+    for (int i = 0; i < 5; i++)
+        targets.push_back(found.on_result[i + 1] ? int64_t(found.on_result[i + 1] - reinterpret_cast<uintptr_t>(buf)) : -1);
+    auto own = tb::gate::owners(buf, n, matches, targets);
+    int armed = 0;
+    std::string missing;
+    for (int i = 0; i < 5; i++) {
+        tb::Method m = tb::Method(i + 1);
+        if (own[i] < 0) {
+            missing += std::string(missing.empty() ? "" : ", ") + tb::method_name(m);
+            continue;
+        }
+        tb::gate::Site site = tb::gate::site_of(matches[own[i]]);
+        GateHook &g = gates[i];
+        g.at = reinterpret_cast<uintptr_t>(buf) + site.hook;
+        g.resume = reinterpret_cast<uintptr_t>(buf) + site.resume;
+        g.session_global = uintptr_t(int64_t(reinterpret_cast<uintptr_t>(buf)) + tb::gate::session_global(buf, matches[own[i]]));
+        if (hook_mid(g.hook, g.at, gate_cbs[i], "online-state gate")) {
+            armed++;
+            swofty::log("[boards] gate %s armed at base+0x%llx (OnStart template match %zu of %zu); %s", tb::method_name(m),
+                        (unsigned long long)(g.at - swofty::api->module_base()), size_t(own[i]) + 1, matches.size(),
+                        bridge_on ? "requests of our boards skip the online-state checks" : "diagnostics only");
+        } else
+            g.at = 0;
+    }
+    if (!missing.empty())
+        swofty::log("[boards] gate: no OnStart found for %s (%zu template matches); those methods keep the game's online-state checks", missing.c_str(),
+                    matches.size());
+    if (!armed)
+        swofty::log("[boards] gate: off, no online-state hook armed");
+}
+
 void setup()
 {
     auto gate = swofty::json::parse(runtime::read_file(runtime::swofty_root() + L"tt.json", size_t(1) << 20));
@@ -404,7 +676,10 @@ void setup()
     DWORD gn = GetEnvironmentVariableA("SWOFTY_TT_GUARDS", gv, sizeof gv);
     guards_on = (gate.is_object() && gate["tt_guards"].as_bool(false)) || (gn && gn < sizeof gv && !strcmp(gv, "1"));
     request_guard = guards_on && !env_off("SWOFTY_TT_REQUEST_GUARD", "addon board write guard");
-    track_watch = bridge_on || guards_on;
+    char dv[16] = {};
+    DWORD dn = GetEnvironmentVariableA("SWOFTY_TT_DIAG", dv, sizeof dv);
+    diag_on = dn && dn < sizeof dv && !strcmp(dv, "1");
+    track_watch = bridge_on || guards_on || diag_on;
     table = tb::Table(unix_seconds() * 100);
     make_dirs();
 
@@ -420,16 +695,30 @@ void setup()
     swofty::log("[boards] bridge %s; OnResult resolved for %s", bridge_on ? "on (tt.json tt_bridge)" : "off (tt.json has no tt_bridge)",
                 missing.empty() ? "all five methods" : ("all but " + missing).c_str());
 
-    uintptr_t push = (bridge_on || request_guard) ? runtime::find(S_PUSH, "boards", "boards") : 0;
+    if (diag_on)
+        swofty::log("[boards] diag mode on (SWOFTY_TT_DIAG=1): logging only the online-state gate, pushes, board XML, the popup trigger and the ghost handler%s",
+                    bridge_on ? "; the bridge itself is also on" : "");
+    uintptr_t push = (bridge_on || request_guard || diag_on) ? runtime::find(S_PUSH, "boards", "boards") : 0;
     if (push) {
         push_hooked = hook_mid(h_push, push, push_mid, "request redirect");
         if (push_hooked)
             swofty::log("[boards] request redirect armed at base+0x%llx (%s)", (unsigned long long)(push - swofty::api->module_base()),
-                        bridge_on ? "addon board requests go to the mailbox" : "addon board writes answered locally");
-    } else if (bridge_on || request_guard)
+                        bridge_on ? "addon board requests go to the mailbox" : request_guard ? "addon board writes answered locally" : "diagnostics only");
+    } else if (bridge_on || request_guard || diag_on)
         swofty::log("[boards] request redirect: off, needs %s (byte signature matched nothing unique)", S_PUSH.what);
 
-    if (bridge_on) {
+    if (bridge_on || diag_on)
+        install_gates();
+    if (diag_on) {
+        if (uintptr_t at = runtime::find(S_ACCOUNT_ERROR, "boards", "boards"))
+            if (hook_mid(h_account_error, at, account_error_mid, "account state error"))
+                swofty::log("[boards] diag: account-state error handler hooked at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
+        if (uintptr_t at = runtime::find(S_SESSION_ENTER, "boards", "boards"))
+            if (hook_mid(h_session_enter, at, session_enter_mid, "storage system session enter"))
+                swofty::log("[boards] diag: storage system onSessionEnter hooked at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
+    }
+
+    if (bridge_on || diag_on) {
         uintptr_t xml = runtime::find(S_XML, "boards", "boards");
         if (!xml)
             swofty::log("[boards] board definitions: off, needs %s (byte signature matched nothing unique)", S_XML.what);
@@ -498,6 +787,8 @@ namespace runtime {
 
 void tt_bridge_tick()
 {
+    if (diag_on)
+        diag_tick();
     if (track_watch.load(std::memory_order_relaxed)) {
         int64_t t = now_ms();
         if (t - track_checked_ms.load() >= 500) {

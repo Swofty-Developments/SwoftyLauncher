@@ -865,4 +865,176 @@ inline std::string extend_xml(const std::string &x, const std::vector<int> &desc
     return out;
 }
 
+// Online-state gate of the F1os method starts (FINDINGS "Third pass"). Every F1os op's OnStart opens with the same
+// template: the signed-in presence record, the platform state words S+0x60 / S+0x64 and the session token block are each
+// compared, and a failing one finishes the op with an AccountServiceOperation state (8 login error, 9 platform overlay
+// disabled, 10 no presence, 4/5/7 no session) instead of reaching Game_F1os_RequestRing_Push. The template is found by
+// bytes; the five Time Trial methods are told apart by which OnResult the function takes the address of.
+
+namespace gate {
+
+constexpr const char *TEMPLATE =
+    "48 8B 8E 00 01 00 00 48 8B 49 40 48 8B 89 40 01 00 00 48 8B 89 98 01 00 00 48 85 C9 0F 84 ?? ?? ?? ?? 8B 91 C8 01 00 00 F7 D2 F6 C2 03 "
+    "0F 85 ?? ?? ?? ?? 48 83 B9 C0 01 00 00 00 0F 84 ?? ?? ?? ?? 83 FF 02 0F 85 ?? ?? ?? ?? 83 F8 02 0F 85 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? "
+    "48 8B 80 E0 04 00 00 80 B8 90 00 02 00 00 0F 84 ?? ?? ?? ?? 48 8B 80 50 01 02 00 48 85 C0 0F 84 ?? ?? ?? ?? 80 38 00 0F 84 ?? ?? ?? ?? "
+    "80 7E 32 00";
+
+constexpr size_t TEMPLATE_LEN = 139;
+constexpr size_t HOOK_AT = 25;
+constexpr size_t SESSION_GLOBAL_AT = 83;
+constexpr size_t RESUME_AT = TEMPLATE_LEN - 4;
+constexpr size_t MAX_FUNCTION = 0x4000;
+
+struct Pattern {
+    std::array<uint8_t, TEMPLATE_LEN> byte{};
+    std::array<bool, TEMPLATE_LEN> any{};
+    bool ok = false;
+};
+
+inline Pattern pattern()
+{
+    Pattern p;
+    std::string_view t(TEMPLATE);
+    size_t n = 0, i = 0;
+    while (i < t.size()) {
+        if (t[i] == ' ') {
+            i++;
+            continue;
+        }
+        if (n >= TEMPLATE_LEN)
+            return p;
+        if (t[i] == '?') {
+            p.any[n] = true;
+            i += 2;
+        } else {
+            p.byte[n] = uint8_t(std::stoi(std::string(t.substr(i, 2)), nullptr, 16));
+            i += 2;
+        }
+        n++;
+    }
+    p.ok = n == TEMPLATE_LEN;
+    return p;
+}
+
+inline bool matches_at(const Pattern &p, const uint8_t *at)
+{
+    for (size_t i = 0; i < TEMPLATE_LEN; i++)
+        if (!p.any[i] && at[i] != p.byte[i])
+            return false;
+    return true;
+}
+
+inline std::vector<size_t> find_all(const uint8_t *buf, size_t n)
+{
+    std::vector<size_t> out;
+    Pattern p = pattern();
+    if (!p.ok || n < TEMPLATE_LEN)
+        return out;
+    const uint8_t first = p.byte[0];
+    for (size_t i = 0; i + TEMPLATE_LEN <= n; i++) {
+        const uint8_t *q = static_cast<const uint8_t *>(memchr(buf + i, first, n - TEMPLATE_LEN + 1 - i));
+        if (!q)
+            break;
+        i = size_t(q - buf);
+        if (matches_at(p, q))
+            out.push_back(i);
+    }
+    return out;
+}
+
+inline bool lea_to(const uint8_t *buf, size_t from, size_t to, int64_t target)
+{
+    for (size_t i = from; i + 7 <= to; i++) {
+        if ((buf[i] == 0x48 || buf[i] == 0x4c) && buf[i + 1] == 0x8d && (buf[i + 2] & 0xc7) == 0x05) {
+            int32_t rel;
+            memcpy(&rel, buf + i + 3, 4);
+            if (int64_t(i) + 7 + rel == target)
+                return true;
+        }
+    }
+    return false;
+}
+
+struct Site {
+    size_t match = 0, hook = 0, resume = 0;
+};
+
+inline int64_t session_global(const uint8_t *buf, size_t match)
+{
+    int32_t rel;
+    memcpy(&rel, buf + match + SESSION_GLOBAL_AT + 3, 4);
+    return int64_t(match + SESSION_GLOBAL_AT) + 7 + rel;
+}
+
+inline Site site_of(size_t match) { return {match, match + HOOK_AT, match + RESUME_AT}; }
+
+// For each target (an OnResult as an offset into buf) the match of the function that takes its address, 0-based index
+// into `matches`, or -1 when none (or more than one) does.
+inline std::vector<int> owners(const uint8_t *buf, size_t n, const std::vector<size_t> &matches, const std::vector<int64_t> &targets)
+{
+    std::vector<int> out(targets.size(), -1);
+    for (size_t t = 0; t < targets.size(); t++) {
+        if (targets[t] < 0)
+            continue;
+        int hit = -1;
+        bool many = false;
+        for (size_t m = 0; m < matches.size(); m++) {
+            size_t from = matches[m] + TEMPLATE_LEN;
+            size_t to = std::min(m + 1 < matches.size() ? matches[m + 1] : n, matches[m] + MAX_FUNCTION);
+            if (to > n)
+                to = n;
+            if (from < to && lea_to(buf, from, to, targets[t])) {
+                many = many || hit >= 0;
+                hit = int(m);
+            }
+        }
+        out[t] = many ? -1 : hit;
+    }
+    return out;
+}
+
+enum class Why { none, presence = 10, login = 8, overlay = 9, session = 4 };
+
+struct State {
+    uint32_t s60 = 0, s64 = 0;
+    bool presence_ok = false;
+    bool session_ok = false;
+};
+
+inline Why first_failure(const State &s)
+{
+    if (!s.presence_ok)
+        return Why::presence;
+    if (s.s60 != 2)
+        return Why::login;
+    if (s.s64 != 2)
+        return Why::overlay;
+    if (!s.session_ok)
+        return Why::session;
+    return Why::none;
+}
+
+inline const char *why_text(Why w)
+{
+    switch (w) {
+    case Why::presence: return "10 no signed-in presence record";
+    case Why::login: return "8 EA account login error (S+0x60 != 2)";
+    case Why::overlay: return "9 platform client overlay disabled (S+0x64 != 2)";
+    case Why::session: return "4/5/7 no session token";
+    default: return "none, the op would be sent";
+    }
+}
+
+inline bool presence_ok(uint32_t flags, uint64_t user) { return (~flags & 3u) == 0 && user != 0; }
+
+inline const char *account_state_name(unsigned v)
+{
+    static const char *const names[] = {"eIdle", "eInProgress", "eServerNotAccessible", "ePrivilegesNotGranted", "eServerDownForMaintenance",
+                                        "eAccountBanned", "eAccountSuspened", "eAccountLoggedIn", "eEAAccountLoginError",
+                                        "eEAAccountSteamOverlayDisabled", "eCurrentSessionHostile"};
+    return v < sizeof names / sizeof *names ? names[v] : "unknown";
+}
+
+}
+
 }
