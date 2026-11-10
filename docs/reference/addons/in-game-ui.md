@@ -448,3 +448,31 @@ To apply the same `clone-entry` and `set-value` edits to `!pkg` resources, use t
 - [Addon manifest](./manifest#operations): the `screens` field.
 - [UI library](/reference/std/ui): view-model properties and commands.
 - [Menus and UI](/reference/ui/): editing a screen's layout with Swofty UI.
+
+## Main menu state files
+
+The launcher writes `swofty/home_menu.json` into the game folder at launch and rewrites it when the latest video has been fetched. The core reads it for the main menu's top-right strip and the video card.
+
+```json
+{
+  "schema": 1,
+  "launcher_version": "1.8.37",
+  "discord": { "signed_in": true, "name": "swofty", "avatar": "C:/users/.../multiplayer/avatar.png" },
+  "video": {
+    "title": "Latest video",
+    "url": "https://youtu.be/abc123",
+    "thumbnail": "C:/users/.../cache/home_menu/thumbnail.jpg"
+  }
+}
+```
+
+`avatar` is present only while signed in and the image file exists. `video` is present when the registry answered at least once; a failed fetch keeps the cached video.
+
+The video comes from the registry's `GET /v1/video/latest`:
+
+```json
+{ "id": "abc123", "title": "Latest video", "url": "https://youtu.be/abc123",
+  "thumbnail_url": "https://i.ytimg.com/vi/abc123/hqdefault.jpg", "published_at": "2026-11-09T10:00:00Z" }
+```
+
+To open a link the core writes `swofty/open_url.json`, `{"url": "https://youtu.be/abc123"}`. The launcher reads and deletes it while the game runs, and opens the link in the default browser of the host. It opens only `https` links on `www.youtube.com`, `youtube.com` and `youtu.be`.
