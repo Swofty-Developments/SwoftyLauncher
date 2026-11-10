@@ -11,6 +11,9 @@ const THUMBNAIL: &str = "thumbnail.jpg";
 const AVATAR: &str = "multiplayer/avatar.png";
 const VIDEO_ROUTE: &str = "/v1/video/latest";
 const THUMBNAIL_LIMIT: u64 = 2 * 1024 * 1024;
+const IMAGE_HOSTS: [&str; 1] = ["i.ytimg.com"];
+const AVATAR_HOSTS: [&str; 1] = ["cdn.discordapp.com"];
+const AVATAR_LIMIT: u64 = 1024 * 1024;
 const HOSTS: [&str; 3] = ["www.youtube.com", "youtube.com", "youtu.be"];
 const TIMEOUT: Duration = Duration::from_secs(8);
 
@@ -54,11 +57,15 @@ struct OpenRequest {
 }
 
 pub fn video_url_allowed(url: &str) -> bool {
+    https_host_in(url, &HOSTS)
+}
+
+pub fn https_host_in(url: &str, hosts: &[&str]) -> bool {
     let Some(rest) = url.strip_prefix("https://") else {
         return false;
     };
     let authority = rest.split(['/', '?', '#']).next().unwrap_or("");
-    !authority.contains('@') && !authority.contains(':') && HOSTS.contains(&authority.to_ascii_lowercase().as_str())
+    !authority.contains('@') && !authority.contains(':') && hosts.contains(&authority.to_ascii_lowercase().as_str())
 }
 
 pub fn parse_open_request(text: &str) -> Option<String> {
@@ -104,11 +111,11 @@ fn fetch_video(registry: &str) -> Option<Video> {
     (video_url_allowed(&video.url) && !video.id.is_empty() && !video.thumbnail_url.is_empty()).then_some(video)
 }
 
-fn fetch_thumbnail(url: &str, to: &Path) -> bool {
+fn fetch_image(url: &str, to: &Path, limit: u64) -> bool {
     let Some(mut body) = get(url) else {
         return false;
     };
-    let Ok(bytes) = body.with_config().limit(THUMBNAIL_LIMIT).read_to_vec() else {
+    let Ok(bytes) = body.with_config().limit(limit).read_to_vec() else {
         return false;
     };
     let looks_like_image = bytes.starts_with(&[0xff, 0xd8]) || bytes.starts_with(b"\x89PNG");
@@ -125,8 +132,23 @@ fn cached_video(data: &Path) -> Option<Video> {
 }
 
 pub fn latest_video(data: &Path, registry: &str) -> Option<VideoCard> {
+    latest_video_from(data, registry, &|url| https_host_in(url, &IMAGE_HOSTS))
+}
+
+pub fn fetch_avatar(data: &Path) -> bool {
+    let Some(session) = crate::mpauth::load(data) else {
+        return false;
+    };
+    let Some(url) = session.avatar.filter(|u| https_host_in(u, &AVATAR_HOSTS)) else {
+        return false;
+    };
+    fetch_image(&url, &data.join(AVATAR), AVATAR_LIMIT)
+}
+
+fn latest_video_from(data: &Path, registry: &str, trusted: &dyn Fn(&str) -> bool) -> Option<VideoCard> {
     let dir = data.join(CACHE_DIR);
-    let fresh = fetch_video(registry).filter(|v| fetch_thumbnail(&v.thumbnail_url, &dir.join(THUMBNAIL)));
+    let fresh = fetch_video(registry)
+        .filter(|v| trusted(&v.thumbnail_url) && fetch_image(&v.thumbnail_url, &dir.join(THUMBNAIL), THUMBNAIL_LIMIT));
     if let Some(video) = &fresh {
         std::fs::write(dir.join(VIDEO_CACHE), serde_json::to_vec(video).ok()?).ok()?;
     }
@@ -178,6 +200,9 @@ pub fn publish(data: &Path, game: &Path, version: &str) {
     let _ = write(game, &state(data, version, cached));
     let (data, game, version) = (data.to_path_buf(), game.to_path_buf(), version.to_owned());
     std::thread::spawn(move || {
+        if fetch_avatar(&data) {
+            let _ = write(&game, &state(&data, &version, None));
+        }
         if let Some(card) = latest_video(&data, &base_url()) {
             let _ = write(&game, &state(&data, &version, Some(card)));
         }
@@ -235,14 +260,14 @@ mod tests {
         let data = temp("cache");
         let jpeg = vec![0xff, 0xd8, 0xff, 0xe0, 9, 9];
         let registry = serve_at(free_port(), jpeg.clone(), "https://youtu.be/abc");
-        let card = latest_video(&data, &registry).expect("fresh card");
+        let card = latest_video_from(&data, &registry, &|_| true).expect("fresh card");
         assert_eq!(card.url, "https://youtu.be/abc");
         assert_eq!(std::fs::read(&card.thumbnail).unwrap(), jpeg);
         let dead = "http://127.0.0.1:9";
-        let again = latest_video(&data, dead).expect("cached card");
+        let again = latest_video_from(&data, dead, &|_| true).expect("cached card");
         assert_eq!(again, card);
         let empty = temp("none");
-        assert!(latest_video(&empty, dead).is_none());
+        assert!(latest_video_from(&empty, dead, &|_| true).is_none());
         std::fs::remove_dir_all(&data).ok();
         std::fs::remove_dir_all(&empty).ok();
     }
@@ -285,7 +310,20 @@ mod tests {
     fn a_video_with_a_foreign_url_is_refused() {
         let data = temp("foreign");
         let registry = serve_at(free_port(), vec![0xff, 0xd8, 1], "https://evil.example/x");
-        assert!(latest_video(&data, &registry).is_none());
+        assert!(latest_video_from(&data, &registry, &|_| true).is_none());
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn images_come_only_from_the_expected_cdns() {
+        assert!(https_host_in("https://i.ytimg.com/vi/abc/hqdefault.jpg", &IMAGE_HOSTS));
+        assert!(!https_host_in("https://i.ytimg.com.evil.example/x.jpg", &IMAGE_HOSTS));
+        assert!(!https_host_in("http://i.ytimg.com/x.jpg", &IMAGE_HOSTS));
+        assert!(https_host_in("https://cdn.discordapp.com/avatars/1/a.png?size=128", &AVATAR_HOSTS));
+        assert!(!https_host_in("https://i.ytimg.com/x.png", &AVATAR_HOSTS));
+        let data = temp("untrusted");
+        let registry = serve_at(free_port(), vec![0xff, 0xd8, 1], "https://youtu.be/abc");
+        assert!(latest_video(&data, &registry).is_none(), "a loopback thumbnail host is refused");
         std::fs::remove_dir_all(&data).ok();
     }
 
