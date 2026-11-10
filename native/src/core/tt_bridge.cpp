@@ -124,6 +124,8 @@ const runtime::Sig S_TS_FLAG{"site_Game_TrackSelectVM_CanViewLeaderboard",
         "48 8B 05 ?? ?? ?? ?? 80 78 18 00 74 04 31 C0 EB 0D 48 8B 05 ?? ?? ?? ?? 0F B6 40 18 34 01 88 44 24 50", 0x1f27937, runtime::Sig::addr, 0, 30};
 const runtime::Sig S_SELECT_BOARD{"site_Game_TimeTrialLeaderboard_SelectBoard_Search",
         "48 8B 83 78 04 00 00 48 8B 58 10 31 ED 48 85 DB 74 47 4C 8B 73 18 4C 3B 73 20", 0x2fce993, runtime::Sig::addr, 0, 11};
+const runtime::Sig S_WRITE_READY{"FUN_142fa0100_LeaderboardWriteReady",
+        "56 57 53 48 83 EC 20 48 89 CF 48 8B 41 10 48 8B 40 40 48 8B 80 40 01 00 00 48 8B 80", 0x2fa0100};
 const runtime::Sig S_PRIV_GATE{"site_Game_UIUIPrivilegeCheckControl_HandleSignal_Result",
         "41 80 BE AB 00 00 00 00 0F 84 8C 00 00 00 45 84 FF 0F 84 8D 00 00 00", 0x3822cdf, runtime::Sig::addr, 0, 8};
 constexpr uintptr_t TS_FLAG_GLOBAL_A = 0, TS_FLAG_GLOBAL_B = 17;
@@ -167,7 +169,8 @@ GateHook gates[5];
 std::atomic<uintptr_t> diag_storage{0};
 uintptr_t ts_global_a = 0, ts_global_b = 0;
 std::atomic<int64_t> ts_forced_ms{0}, enter_ms{0};
-std::string ts_seen, priv_seen, select_seen;
+std::string ts_seen, priv_seen, select_seen, ready_seen;
+safetyhook::InlineHook h_write_ready;
 bool lookup_logged = true;
 std::atomic<int> finder_logged{0};
 uintptr_t diag_handler_seen = ~uintptr_t(0);
@@ -730,6 +733,27 @@ void priv_mid(safetyhook::Context &c)
                     enabled,
                     skip ? "the Time Trial leaderboard button of our content: success raised without the platform check" : "left to the game (not our leaderboard button)");
 }
+uint64_t write_ready_hook(uint64_t handler)
+{
+    uint64_t r = h_write_ready.call<uint64_t>(handler);
+    if ((r & 1) || !bridge_on || !push_hooked)
+        return r;
+    uint64_t ctx = peek64(handler + 0x58), np = ctx ? peek64(ctx + 0x68) : 0;
+    std::string board = np ? tb::read_c(game_mem(), np) : std::string();
+    tb::BoardName bn = tb::parse_board(board);
+    if (!bn.ok || !tb::ours(bn.descriptor, content_ours()))
+        return r;
+    {
+        std::lock_guard<std::mutex> lk(lock);
+        if (ready_seen != board) {
+            ready_seen = board;
+            swofty::log("[boards] leaderboard write precondition of handler 0x%llx board %s: the game says offline (no session token), this board is ours: treated as ready, the lap goes to AddLeaderboardEntry",
+                        (unsigned long long)handler, board.c_str());
+        }
+    }
+    return 1;
+}
+
 void select_board_mid(safetyhook::Context &c)
 {
     uint64_t kp = peek64(c.rsp + 0x38);
@@ -903,6 +927,15 @@ void setup()
                 swofty::log("[boards] track select leaderboard button armed at base+0x%llx (%s)", (unsigned long long)(at - swofty::api->module_base()),
                             bridge_on ? "shown for our content" : "diagnostics only");
         }
+        if (bridge_on)
+            if (uintptr_t at = runtime::find(S_WRITE_READY, "boards", "boards")) {
+                auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&write_ready_hook));
+                if (h) {
+                    h_write_ready = std::move(*h);
+                    swofty::log("[boards] leaderboard write precondition hooked at base+0x%llx (our boards count as ready)", (unsigned long long)(at - swofty::api->module_base()));
+                } else
+                    swofty::log("[boards] leaderboard write precondition: off, the inline hook failed");
+            }
         if (uintptr_t at = runtime::find(S_SELECT_BOARD, "boards", "boards"))
             if (hook_mid(h_select, at, select_board_mid, "leaderboard screen board lookup"))
                 swofty::log("[boards] leaderboard screen board lookup logged at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
