@@ -46,31 +46,28 @@ static Mem good()
     m.set<uint64_t>(CAR + ls::CAR_FUEL, FUEL);
     m.set<uint64_t>(CAR + ls::CAR_SUSP, SUSP);
     m.set<uint32_t>(CAR + ls::CAR_HANDLING, 8);
-    m.set<uint32_t>(AERO + ls::AERO_FRONT, 25);
-    m.set<uint32_t>(AERO + ls::AERO_REAR, 30);
-    m.set<float>(TUNE + 0x214, 0.5f);
-    m.set<float>(TUNE + 0x30, 0.1f);
-    m.set<float>(TUNE + 0x34, 1.0f);
-    m.set<float>(TUNE + 0x218, 1.0f);
-    m.set<float>(TUNE + 0x38, 0.1f);
-    m.set<float>(TUNE + 0x3c, 1.0f);
-    m.set<float>(TUNE + 0x228, 0.0f);
-    m.set<float>(TUNE + 0x68, -0.0610865f);
-    m.set<float>(TUNE + 0x6c, -0.0436332f);
-    m.set<float>(TUNE + 0x230, 0.5f);
-    m.set<float>(TUNE + 0x78, 0.0f);
-    m.set<float>(TUNE + 0x7c, 0.00872665f);
-    m.set<float>(TUNE + 0x238, 0.5f);
-    m.set<float>(TUNE + 0x250, 0.5f);
-    m.set<float>(TUNE + 0x248, 0.25f);
-    m.set<float>(TUNE + 0xa8, 0.030f);
-    m.set<float>(TUNE + 0xac, 0.050f);
-    m.set<float>(BRAKE + ls::BRAKE_PRESSURE_AT, 1.0f);
-    m.set<float>(BRAKE + ls::BRAKE_BIAS_AT, 0.56f);
-    m.set<float>(FUEL + ls::FUEL_AT, 30.0f);
+    m.set<uint32_t>(AERO + ls::AERO_FRONT, 23);
+    m.set<uint32_t>(AERO + ls::AERO_REAR, 23);
+    m.set<float>(TUNE + 0x214, 0.2222f);
+    m.set<float>(TUNE + 0x218, 0.5f);
+    m.set<float>(TUNE + 0x228, 0.1f);
+    m.set<float>(TUNE + 0x22c, 0.1f);
+    m.set<float>(TUNE + 0x230, 0.4f);
+    m.set<float>(TUNE + 0x234, 0.5333f);
+    m.set<float>(TUNE + 0x238, 0.9f);
+    m.set<float>(TUNE + 0x23c, 0.45f);
+    m.set<float>(TUNE + 0x250, 0.7f);
+    m.set<float>(TUNE + 0x254, 0.4f);
+    m.set<float>(TUNE + 0x220, 0.5f);
+    m.set<float>(TUNE + 0x248, 0.5f);
+    m.set<float>(TUNE + 0x24c, 0.5f);
+    m.set<float>(BRAKE + ls::BRAKE_PRESSURE_AT, 0.97f);
+    m.set<float>(BRAKE + ls::BRAKE_BIAS_AT, 0.4f);
+    m.set<float>(FUEL + ls::FUEL_AT, 10.0f);
+    const float psi[4] = {21.3f, 21.3f, 24.2f, 24.2f};
     for (int i = 0; i < 4; i++) {
         m.set<uint64_t>(SUSP + ls::WHEELS + 8 * i, WHEEL + 0x1000 * i);
-        m.set<float>(WHEEL + 0x1000 * i + ls::WHEEL_PRESSURE, i < 2 ? 21.0f : 22.5f);
+        m.set<float>(WHEEL + 0x1000 * i + ls::WHEEL_PRESSURE, psi[i] * 6.894757f);
     }
     return m;
 }
@@ -79,25 +76,39 @@ int main()
 {
     Mem m = good();
     ls::Setup s;
-    expect(ls::read(m, CAR, s), "a populated car reads");
-    expect(s.has[ls::FRONT_WING] && s.v[ls::FRONT_WING] == 25 && s.v[ls::REAR_WING] == 30, "wings are the levels");
-    expect(std::fabs(s.v[ls::DIFF_ON] - 55) < 0.01 && std::fabs(s.v[ls::DIFF_OFF] - 100) < 0.01, "diff percent from the lerp");
-    expect(std::fabs(s.v[ls::FRONT_CAMBER] - (-3.5)) < 0.01, "radian camber ranges become degrees");
-    expect(std::fabs(s.v[ls::FRONT_TOE] - 0.25) < 0.01, "toe in degrees");
-    expect(s.v[ls::FRONT_SUSPENSION] == 21 && s.v[ls::FRONT_ARB] == 11, "suspension and anti-roll bar steps are 1-based");
-    expect(std::fabs(s.v[ls::FRONT_RIDE] - 35) < 0.01, "ride height in millimetres");
-    expect(s.v[ls::BRAKE_PRESSURE] == 100 && s.v[ls::BRAKE_BIAS] == 56, "brake pressure and bias percent");
-    expect(s.v[ls::FUEL_LOAD] == 30, "fuel in kg");
-    expect(s.v[ls::TYRE_RL] == 21 && s.v[ls::TYRE_FR] == 22.5, "tyre pressures follow the wheel order RL RR FL FR");
+    expect(ls::read(m, CAR, s), "the proof-lap car reads");
+    struct Truth {
+        ls::Key k;
+        double v;
+    };
+    // The stock F1 25 balanced preset (f1_2025_vehicle_package, steps 23 23 4 9 1 1 8 8 36 18 14 8 10 10 17 8 5 5) in UI units.
+    const Truth truth[] = {{ls::FRONT_WING, 23},  {ls::REAR_WING, 23},     {ls::DIFF_ON, 30},          {ls::DIFF_OFF, 55},
+                           {ls::FRONT_CAMBER, -3.4}, {ls::REAR_CAMBER, -1.9}, {ls::FRONT_TOE, 0.08},     {ls::REAR_TOE, 0.18},
+                           {ls::FRONT_SUSPENSION, 37}, {ls::REAR_SUSPENSION, 19}, {ls::FRONT_ARB, 15},   {ls::REAR_ARB, 9},
+                           {ls::FRONT_RIDE, 25},  {ls::REAR_RIDE, 50},     {ls::BRAKE_PRESSURE, 97},   {ls::BRAKE_BIAS, 58},
+                           {ls::ENGINE_BRAKING, 50}, {ls::FUEL_LOAD, 10},  {ls::TYRE_FL, 24.2},        {ls::TYRE_FR, 24.2},
+                           {ls::TYRE_RL, 21.3},   {ls::TYRE_RR, 21.3}};
+    for (auto &t : truth) {
+        char what[96];
+        std::snprintf(what, sizeof what, "%s is %g in UI units (got %g)", ls::NAMES[t.k], t.v, s.v[t.k]);
+        expect(s.has[t.k] && std::fabs(s.v[t.k] - t.v) < 0.011, what);
+    }
     s.changed = false;
     auto j = ls::to_json(s);
-    expect(j.type() == swofty::json::Type::object && j["front_wing"].as_int() == 25 && j["changed"].as_bool(true) == false, "json object");
-    expect(std::fabs(j["front_camber"].as_double() + 3.5) < 0.01, "json camber");
+    expect(j.type() == swofty::json::Type::object && j["front_wing"].as_int() == 23 && j["changed"].as_bool(true) == false, "json object");
+    expect(j["diff_on_throttle"].type() == swofty::json::Type::integer && j["front_camber"].type() == swofty::json::Type::floating,
+           "integers where the UI shows integers");
 
-    Mem kpa = good();
-    kpa.set<float>(WHEEL + ls::WHEEL_PRESSURE, 150000.0f);
+    Mem bar = good();
+    bar.set<float>(WHEEL + ls::WHEEL_PRESSURE, 1.6692f);
     ls::Setup k;
-    expect(ls::read(kpa, CAR, k) && std::fabs(k.v[ls::TYRE_RL] - 21.756) < 0.01, "pascal tyre pressure converts to psi");
+    expect(ls::read(bar, CAR, k) && std::fabs(k.v[ls::TYRE_RL] - 24.2) < 0.05, "a bar reading converts to psi");
+
+    Mem broken = good();
+    broken.set<float>(WHEEL + ls::WHEEL_PRESSURE, 7000.0f);
+    ls::Setup nb;
+    expect(ls::read(broken, CAR, nb) && !nb.has[ls::TYRE_RL] && ls::diag_text(nb).find("tyre pressures unreadable") != std::string::npos,
+           "an unreadable tyre pressure is named in the diag line");
 
     Mem bad = good();
     bad.set<float>(TUNE + 0x214, 7.0f);
@@ -119,7 +130,7 @@ int main()
     c = s;
     c.has[ls::FUEL_LOAD] = false;
     expect(ls::differs(a, c), "a missing key differs");
-    expect(ls::diag_text(s).find("front_wing=25") != std::string::npos, "diag text names raw values");
+    expect(ls::diag_text(s).find("front_wing=23") != std::string::npos, "diag text names raw values");
 
     namespace lf = runtime::lap_file;
     lf::Header h;
@@ -128,7 +139,7 @@ int main()
     lf::Layout l;
     l.add("t", lf::Type::f32);
     auto hj = lf::header_json(h, l);
-    expect(hj["setup"]["rear_wing"].as_int() == 30, "the header carries the setup object");
+    expect(hj["setup"]["rear_wing"].as_int() == 23, "the header carries the setup object");
     lf::Header none_h;
     expect(lf::header_json(none_h, l)["setup"].type() != swofty::json::Type::object, "no setup object when unreadable");
     if (failed) {

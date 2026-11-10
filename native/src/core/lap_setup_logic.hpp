@@ -9,11 +9,11 @@
 #include <string>
 
 // The player's car setup as the game's setup screen shows it, read from the live car (re/db structs CarTuning.h,
-// CarSetupValues.h, subsystems/car.md#tuning). Each slider's 0..1 fraction sits on the F1Tuning system (car +0x590) and is
-// lerped over the Min/Max pair the same system carries; wings are the F1Aero levels; brake bias and pressure sit on the
-// BrakeECU, fuel on the FuelTank, tyre pressures on the wheels. The conversions to the UI numbers are static readings of the
-// game's own formulas and heuristics for the units (marked below); the [laps] setup diag line prints the raw inputs so one
-// lap confirms or corrects them. The sampler path allocates nothing: a Setup is a plain array.
+// CarSetupValues.h, subsystems/car.md#tuning). Each slider's 0..1 fraction (step / steps) sits on the F1Tuning system (car
+// +0x590); the UI value is min + step * (max - min) / steps with the min, max and steps of the game database's
+// car_setup.sliders rows (SPECS below). Wings are the F1Aero levels, brake pressure and bias sit on the BrakeECU, fuel on
+// the FuelTank, tyre pressures on the wheels. Verified against the stock F1 25 "balanced" preset by the first proof lap.
+// The sampler path allocates nothing: a Setup is a plain array.
 namespace runtime::lap_setup {
 
 enum Key {
@@ -28,30 +28,35 @@ constexpr const char *NAMES[KEYS] = {
     "rear_ride_height", "brake_pressure", "brake_bias", "engine_braking", "tyre_pressure_fl", "tyre_pressure_fr",
     "tyre_pressure_rl", "tyre_pressure_rr", "fuel_load"};
 
-// Plausible UI ranges; a value outside drops that key.
-constexpr double LOW[KEYS] = {0, 0, 0, 0, -10, -10, -2, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0};
-constexpr double HIGH[KEYS] = {100, 100, 100, 100, 5, 5, 2, 2, 100, 100, 100, 100, 200, 200, 100, 100, 100, 50, 50, 50, 50, 200};
+// UI ranges from the game database (car_setup.sliders.slider_N: min, max, steps; stock F1 25 file). A slider's UI value is
+// min + step * (max - min) / steps, with the step the game keeps as a fraction step / steps on the F1Tuning system.
+struct Spec {
+    double min, max;
+    int steps;
+};
+
+constexpr Spec SPECS[KEYS] = {
+    {0, 50, 50},      {0, 50, 50},     {10, 100, 18},   {10, 100, 18},   {-3.5, -2.5, 10}, {-2, -1, 10},
+    {0, 0.2, 20},     {0.1, 0.25, 15}, {1, 41, 40},     {1, 41, 40},     {1, 21, 20},      {1, 21, 20},
+    {15, 35, 20},     {40, 60, 20},    {80, 100, 20},   {50, 70, 20},    {0, 100, 10},     {22.5, 29.5, 70},
+    {22.5, 29.5, 70}, {20.5, 26.5, 60}, {20.5, 26.5, 60}, {5, 110, 105}};
 
 constexpr uint64_t CAR_FUEL = 0x540, CAR_BRAKE = 0x550, CAR_AERO = 0x570, CAR_SUSP = 0x580, CAR_TUNING = 0x590,
                    CAR_HANDLING = 0x9f40, WHEELS = 0x70;
 constexpr uint64_t AERO_FRONT = 0x19b4, AERO_REAR = 0x19c0, BRAKE_PRESSURE_AT = 0x21dc, BRAKE_BIAS_AT = 0x21d8,
-                   FUEL_AT = 0x100, WHEEL_PRESSURE = 0x64;
+                   FUEL_AT = 0x100, WHEEL_PRESSURE = 0x64, WHEEL_PRESSURE2 = 0x68;
 
 struct Slider {
     Key key;
-    uint64_t frac, lo, hi;
+    uint64_t frac;
 };
 
 constexpr Slider SLIDERS[] = {
-    {DIFF_ON, 0x214, 0x30, 0x34},       {DIFF_OFF, 0x218, 0x38, 0x3c},      {ENGINE_BRAKING, 0x220, 0x58, 0x5c},
-    {FRONT_CAMBER, 0x228, 0x68, 0x6c},  {REAR_CAMBER, 0x22c, 0x70, 0x74},   {FRONT_TOE, 0x230, 0x78, 0x7c},
-    {REAR_TOE, 0x234, 0x80, 0x84},      {FRONT_SUSPENSION, 0x238, 0, 0},     {REAR_SUSPENSION, 0x23c, 0, 0},
-    {FRONT_ARB, 0x250, 0, 0},           {REAR_ARB, 0x254, 0, 0},
+    {DIFF_ON, 0x214},  {DIFF_OFF, 0x218},  {ENGINE_BRAKING, 0x220}, {FRONT_CAMBER, 0x228}, {REAR_CAMBER, 0x22c},
+    {FRONT_TOE, 0x230}, {REAR_TOE, 0x234}, {FRONT_SUSPENSION, 0x238}, {REAR_SUSPENSION, 0x23c}, {FRONT_ARB, 0x250},
+    {REAR_ARB, 0x254},
 };
-constexpr int SUSPENSION_STEPS = 40, ARB_STEPS = 20;
-constexpr uint64_t RIDE_FRONT_NEW = 0x248, RIDE_REAR_NEW = 0x24c, RIDE_FRONT_OLD = 0x240, RIDE_REAR_OLD = 0x244,
-                   RIDE_LO_F = 0xa8, RIDE_HI_F = 0xac, RIDE_LO_R = 0xb0, RIDE_HI_R = 0xb4;
-constexpr uint64_t BRAKE_P_LO = 0xe8, BRAKE_P_HI = 0xec;
+constexpr uint64_t RIDE_FRONT_NEW = 0x248, RIDE_REAR_NEW = 0x24c, RIDE_FRONT_OLD = 0x240, RIDE_REAR_OLD = 0x244;
 
 struct Setup {
     bool has[KEYS] = {};
@@ -59,6 +64,7 @@ struct Setup {
     double raw[KEYS] = {};
     int count = 0;
     bool changed = false;
+    char note[160] = {};
 };
 
 inline bool finite(double d)
@@ -73,7 +79,7 @@ inline double lerp(double a, double b, double t)
 
 inline void put(Setup &s, Key k, double ui, double raw)
 {
-    if (!finite(ui) || ui < LOW[k] || ui > HIGH[k])
+    if (!finite(ui) || ui < SPECS[k].min - 0.5 || ui > SPECS[k].max + 0.5)
         return;
     s.has[k] = true;
     s.v[k] = std::round(ui * 1000.0) / 1000.0;
@@ -81,10 +87,11 @@ inline void put(Setup &s, Key k, double ui, double raw)
     s.count++;
 }
 
-// Angles in the F1Tuning data are radians when the range is tiny; the UI shows degrees.
-inline double angle_ui(double v, double hi)
+inline double ui_of(Key k, double fraction)
 {
-    return std::fabs(hi) <= 0.2 ? v * 57.29577951308232 : v;
+    const Spec &p = SPECS[k];
+    double t = fraction < 0 ? 0 : fraction > 1 ? 1 : fraction;
+    return p.min + std::round(t * p.steps) * (p.max - p.min) / p.steps;
 }
 
 // Pressure units: Pa, kPa or psi, told apart by magnitude; the UI shows psi.
@@ -94,6 +101,8 @@ inline double psi_of(double v)
         return v * 0.00014503773773;
     if (v > 100)
         return v * 0.14503773773;
+    if (v < 5)
+        return v * 14.503773773;
     return v;
 }
 
@@ -120,45 +129,39 @@ template <class R> inline bool read(R &mem, uint64_t car, Setup &out)
     if (aero && rd(mem, aero + AERO_REAR, lv))
         put(out, REAR_WING, lv, lv);
     for (const Slider &s : SLIDERS) {
-        float f = 0, lo = 0, hi = 0;
-        if (!rd(mem, tune + s.frac, f) || !finite(f) || f < -0.001f || f > 1.001f)
-            continue;
-        double t = f < 0 ? 0 : f > 1 ? 1 : f;
-        if (s.key == FRONT_SUSPENSION || s.key == REAR_SUSPENSION) {
-            put(out, s.key, std::round(t * SUSPENSION_STEPS) + 1, f);
-        } else if (s.key == FRONT_ARB || s.key == REAR_ARB) {
-            put(out, s.key, std::round(t * ARB_STEPS) + 1, f);
-        } else if (rd(mem, tune + s.lo, lo) && rd(mem, tune + s.hi, hi) && finite(lo) && finite(hi)) {
-            double ui = lerp(lo, hi, t);
-            if (s.key == FRONT_CAMBER || s.key == REAR_CAMBER || s.key == FRONT_TOE || s.key == REAR_TOE)
-                ui = angle_ui(ui, hi);
-            else if (hi <= 1.5)
-                ui *= 100.0;
-            put(out, s.key, ui, f);
-        }
+        float f = 0;
+        if (rd(mem, tune + s.frac, f) && finite(f) && f >= -0.001f && f <= 1.001f)
+            put(out, s.key, ui_of(s.key, f), f);
     }
     bool modern = handling >= 7;
-    float f = 0, lo = 0, hi = 0;
-    if (rd(mem, tune + (modern ? RIDE_FRONT_NEW : RIDE_FRONT_OLD), f) && rd(mem, tune + RIDE_LO_F, lo) &&
-        rd(mem, tune + RIDE_HI_F, hi) && finite(f) && f >= 0 && f <= 1)
-        put(out, FRONT_RIDE, hi <= 1.0 ? lerp(lo, hi, f) * 1000.0 : lerp(lo, hi, f), f);
-    if (rd(mem, tune + (modern ? RIDE_REAR_NEW : RIDE_REAR_OLD), f) && rd(mem, tune + RIDE_LO_R, lo) &&
-        rd(mem, tune + RIDE_HI_R, hi) && finite(f) && f >= 0 && f <= 1)
-        put(out, REAR_RIDE, hi <= 1.0 ? lerp(lo, hi, f) * 1000.0 : lerp(lo, hi, f), f);
+    float f = 0;
+    if (rd(mem, tune + (modern ? RIDE_FRONT_NEW : RIDE_FRONT_OLD), f) && finite(f) && f >= 0 && f <= 1)
+        put(out, FRONT_RIDE, ui_of(FRONT_RIDE, f), f);
+    if (rd(mem, tune + (modern ? RIDE_REAR_NEW : RIDE_REAR_OLD), f) && finite(f) && f >= 0 && f <= 1)
+        put(out, REAR_RIDE, ui_of(REAR_RIDE, f), f);
     float b = 0;
     if (brake && rd(mem, brake + BRAKE_PRESSURE_AT, b) && finite(b))
-        put(out, BRAKE_PRESSURE, b <= 2.0f ? b * 100.0 : b, b);
+        put(out, BRAKE_PRESSURE, b <= 2.0f ? std::round(b * 100.0) : b, b);
     if (brake && rd(mem, brake + BRAKE_BIAS_AT, b) && finite(b))
-        put(out, BRAKE_BIAS, b <= 1.5f ? b * 100.0 : b, b);
+        put(out, BRAKE_BIAS, ui_of(BRAKE_BIAS, b), b);
     float kg = 0;
     if (fuel && rd(mem, fuel + FUEL_AT, kg) && finite(kg))
         put(out, FUEL_LOAD, kg, kg);
     static const Key wheel_keys[4] = {TYRE_RL, TYRE_RR, TYRE_FL, TYRE_FR};
-    for (int i = 0; i < 4 && susp; i++) {
+    int at = 0;
+    for (int i = 0; i < 4; i++) {
         uint64_t wheel = 0;
-        float p = 0;
-        if (rd(mem, susp + WHEELS + 8 * uint64_t(i), wheel) && wheel && rd(mem, wheel + WHEEL_PRESSURE, p) && finite(p))
-            put(out, wheel_keys[i], psi_of(p), p);
+        float p = 0, q = 0;
+        bool read_ok = susp && rd(mem, susp + WHEELS + 8 * uint64_t(i), wheel) && wheel && rd(mem, wheel + WHEEL_PRESSURE, p) &&
+                       finite(p);
+        rd(mem, wheel + WHEEL_PRESSURE2, q);
+        if (read_ok) {
+            double psi = std::round(psi_of(p) * 10.0) / 10.0;
+            put(out, wheel_keys[i], psi, p);
+        }
+        if (!out.has[wheel_keys[i]] && at < int(sizeof out.note) - 40)
+            at += snprintf(out.note + at, sizeof out.note - size_t(at), "wheel%d ptr 0x%llx +0x64=%g +0x68=%g; ", i,
+                           (unsigned long long)wheel, double(p), double(q));
     }
     return out.count >= 4;
 }
@@ -199,6 +202,8 @@ inline std::string diag_text(const Setup &s)
         snprintf(b, sizeof b, "%s%s=%.3f(raw %.4f)", out.empty() ? "" : " ", NAMES[k], s.v[k], s.raw[k]);
         out += b;
     }
+    if (s.note[0])
+        out += std::string(" [tyre pressures unreadable: ") + s.note + "]";
     return out.empty() ? "unreadable" : out;
 }
 
