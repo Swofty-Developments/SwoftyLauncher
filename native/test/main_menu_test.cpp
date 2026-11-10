@@ -37,7 +37,8 @@ int main()
     expect(at(p, 1, 0) == mm::ID_GRAND_PRIX && at(p, 1, 1) == mm::ID_TIME_TRIAL, "Grand Prix and Time Trial share row 2");
     expect(at(p, 2, 0) == "theatre" && p.cards[4].wide, "Theatre is a full-width row under them");
     expect(at(p, 3, 0) == mm::ID_SHOWROOM, "Showroom follows Theatre");
-    expect(at(p, 4, 0) == "mod_menu" && p.cards.back().id == "mod_menu", "Addon Settings is last");
+    expect(at(p, 4, 0) == mm::ID_DIVIDER, "a divider sits between the cards and Addon Settings");
+    expect(at(p, 5, 0) == "mod_menu" && p.cards.back().id == "mod_menu", "Addon Settings is last");
     for (auto &c : p.cards)
         expect(c.id != "f1_world" && c.id != "local_multiplayer" && c.id != "pro_leagues" && c.id != "player_hub",
                "removed entry gone: " + c.id);
@@ -45,7 +46,7 @@ int main()
 
     auto q = mm::layout({"career", "home_navigate_to_challenge_event", "theatre", "mod_menu", "f1_world"}, false);
     expect(at(q, 0, 1) == "home_navigate_to_challenge_event", "the challenge tile joins the first row");
-    expect(at(q, 3, 0) == "mod_menu", "no Showroom card when its route is unavailable");
+    expect(at(q, 4, 0) == "mod_menu", "no Showroom card when its route is unavailable");
     auto r = mm::layout({"career", "future_tile", "theatre", "mod_menu", "f1_world"}, true);
     expect(at(r, 0, 1) == "future_tile", "an unknown stock entry stays in the first row");
     auto none = mm::layout({"career", "theatre", "mod_menu"}, true);
@@ -63,6 +64,9 @@ int main()
                std::string(mm::template_for("theatre")) == mm::TEMPLATE_WIDE_A && std::string(mm::template_for("swofty_showroom")) == mm::TEMPLATE_WIDE_B &&
                std::string(mm::template_for("mod_menu")) == mm::TEMPLATE_WIDE_C && std::string(mm::template_for("f1_world")).empty(),
            "every card has its row template and unknown ids have none");
+    expect(std::string(mm::template_for("theatre", false)) == mm::TEMPLATE_DEFAULT && std::string(mm::template_for("swofty_showroom", false)) == mm::TEMPLATE_DEFAULT &&
+               std::string(mm::template_for("career", false)).empty() && std::string(mm::template_for("swofty_divider")) == mm::TEMPLATE_DIVIDER,
+           "without rows Theatre and Showroom take the default large tile; with rows the divider has its slot");
     expect(std::string(mm::TT_BODY).find("will not be saved") != std::string::npos && std::string(mm::TT_BODY).find("OK to continue") != std::string::npos,
            "the warning says laps are not saved and that OK continues");
     auto out = mm::parse_state(R"({"schema":1,"launcher_version":"1.8.37","discord":{"signed_in":false,"name":""}})");

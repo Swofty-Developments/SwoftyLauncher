@@ -3,11 +3,13 @@
 #include "main_menu.hpp"
 #include "main_menu_logic.hpp"
 #include "virtual_pad.hpp"
+#include "json.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mixin.hpp>
 
 #include <atomic>
+#include <map>
 #include <cstdlib>
 #include <cstring>
 #include <mutex>
@@ -16,6 +18,8 @@
 namespace runtime {
 int overlay_image(const std::string &id, const std::string &path, uint32_t *width, uint32_t *height);
 }
+
+bool ui_vm_set_path(const std::string &path, int type, const void *value);
 
 // The main menu in rows. FeTile_Build_List's home case adds the stock tiles in order: Braking Point, Career,
 // F1 The Movie, F1 World, the challenge tile, a divider, Local Multiplayer, League Racing, Player Hub, Theatre.
@@ -41,7 +45,7 @@ namespace {
 using namespace swofty::game;
 namespace logic = ::runtime::main_menu;
 
-constexpr size_t OFF_F1WORLD = 11, OFF_CHALLENGE = 32, OFF_THEATRE = 98, OFF_END_JMP = 103;
+constexpr size_t OFF_F1WORLD = 11, OFF_CHALLENGE = 32, OFF_DIVIDER = 47, OFF_THEATRE = 98, OFF_END_JMP = 103;
 constexpr size_t NESTR_CHARS = 9;
 
 const runtime::Sig S_BLOCK{"FeHome_F1WorldBlock",
@@ -57,7 +61,7 @@ using GetAction_t = Action *(*)(HomeItem *, Action *);
 
 struct Block {
     uint8_t *at = nullptr;
-    Add_t f1world = nullptr, challenge = nullptr, theatre = nullptr;
+    Add_t f1world = nullptr, challenge = nullptr, divider = nullptr, theatre = nullptr;
 } block;
 
 std::atomic<bool> resolved{false}, patched{false}, home_open{false};
@@ -65,6 +69,7 @@ std::once_flag once;
 void *f1w_populate = nullptr, *f1w_action = nullptr;
 std::atomic<bool> tt_warned{false};
 std::atomic<int> rows_flag{-1};
+std::atomic<int> strip_wanted{-1}, strip_set{-1};
 void *theatre_populate = nullptr, *theatre_action = nullptr;
 std::mutex state_lock;
 logic::State state;
@@ -105,6 +110,7 @@ bool resolve()
         block.at = at;
         block.f1world = target(at, OFF_F1WORLD);
         block.challenge = target(at, OFF_CHALLENGE);
+        block.divider = target(at, OFF_DIVIDER);
         block.theatre = target(at, OFF_THEATRE);
         swofty::log("[main-menu] home tile block at %p; adders F1 World %p, challenge %p, Theatre %p", at,
                     reinterpret_cast<void *>(block.f1world), reinterpret_cast<void *>(block.challenge),
@@ -149,19 +155,60 @@ bool rows_on()
 
 void style_item(HomeItem *item)
 {
-    const char *tpl = logic::template_for(id_of(item));
+    const char *tpl = logic::template_for(id_of(item), rows_on());
     auto node = item ? static_cast<uint8_t *>(item->button_node.node) : nullptr;
-    if (!*tpl || !node)
+    if (!*tpl)
         return;
+    if (!node) {
+        swofty::log("[main-menu] %s: no VM node yet, template %s not set", id_of(item), tpl);
+        return;
+    }
     set_string(*g_Vm_Registry, node + 8, "type", tpl);
     swofty::log("[main-menu] %s -> template %s", id_of(item), tpl);
+}
+
+std::map<void **, void *> typed_orig;
+std::mutex typed_lock;
+
+void typed_populate(HomeItem *item, void *node, uint32_t a7)
+{
+    void *orig = nullptr;
+    {
+        std::lock_guard<std::mutex> g(typed_lock);
+        auto it = typed_orig.find(reinterpret_cast<void **>(item->vtable));
+        orig = it == typed_orig.end() ? nullptr : it->second;
+    }
+    if (orig)
+        reinterpret_cast<Populate_t>(orig)(item, node, a7);
+    style_item(item);
+}
+
+void wrap_item(HomeItem *item)
+{
+    const char *id = id_of(item);
+    if (!*logic::template_for(id, rows_on()))
+        return;
+    if (!std::strcmp(id, logic::ID_GRAND_PRIX) || !std::strcmp(id, logic::ID_TIME_TRIAL) ||
+        !std::strcmp(id, logic::ID_SHOWROOM) || !std::strcmp(id, logic::ID_SETTINGS))
+        return;
+    auto vt = reinterpret_cast<void **>(item->vtable);
+    {
+        std::lock_guard<std::mutex> g(typed_lock);
+        if (typed_orig.count(vt))
+            return;
+    }
+    void *orig = vt[4];
+    void **nv = swofty::subclass(item, {{4, reinterpret_cast<void *>(typed_populate)}});
+    std::lock_guard<std::mutex> g(typed_lock);
+    typed_orig[nv] = orig;
+    swofty::log("[main-menu] %s: populate wrapped to set its template", id);
 }
 
 void style_list(TileList *list)
 {
     for (auto e = list->items_begin; e && e < list->items_end; e++)
         if (e->tile && e->tile->item)
-            style_item(e->tile->item);
+            wrap_item(e->tile->item);
 }
 
 void showroom_populate(HomeItem *item, void *node, uint32_t a7)
@@ -176,6 +223,7 @@ void showroom_populate(HomeItem *item, void *node, uint32_t a7)
     Vm_Set_Bool(reg, parent, "title_localised", &no, 1);
     set_string(reg, parent, "description", "Look over every car in the game");
     Vm_Set_Bool(reg, parent, "description_localised", &no, 1);
+    style_item(item);
 }
 
 Action *showroom_action(HomeItem *item, Action *out)
@@ -237,13 +285,17 @@ void card_populate(HomeItem *item, void *node, uint32_t a7)
     set_string(reg, parent, "description",
                gp ? "Race a Grand Prix weekend" : "Set the fastest lap on any track");
     Vm_Set_Bool(reg, parent, "description_localised", &no, 1);
+    style_item(item);
 }
 
 Action *card_action(HomeItem *item, Action *out)
 {
-    Action *a = reinterpret_cast<GetAction_t>(f1w_action)(item, out);
-    swofty::log("[main-menu] %s card pressed: route type %d (the F1 World route)", id_of(item), a ? a->type : -1);
-    return a;
+    out->type = 1;
+    out->str = nullptr;
+    Ne_Make_StrFromCStr(&out->str, logic::STOCK_ROUTE_F1_WORLD, 0, 0);
+    swofty::log("[main-menu] %s card pressed: route %s (the stock item returns its own id as the route, so the id is not used)",
+                id_of(item), logic::STOCK_ROUTE_F1_WORLD);
+    return out;
 }
 
 void add_card(TileList *list, uint8_t index, const char *id)
@@ -267,14 +319,23 @@ void add_card(TileList *list, uint8_t index, const char *id)
     Ne_Make_StrFromCStr(&item->id, id, 0, 0);
 }
 
-void read_state()
+void read_state(bool force = false)
 {
     uint64_t now = GetTickCount64();
     std::lock_guard<std::mutex> g(state_lock);
-    if (state_read_at && now - state_read_at < 1000)
+    if (!force && state_read_at && now - state_read_at < 1000)
         return;
     state_read_at = now;
     auto next = logic::parse_state(runtime::read_file(runtime::under_swofty("home_menu.json"), size_t(1) << 20));
+    if (const char *override_path = std::getenv("SWOFTY_HOME_VIDEO_JSON"); override_path && *override_path) {
+        json::Value v;
+        if (json::parse(runtime::read_file(runtime::wide(override_path), size_t(1) << 20), v)) {
+            next.loaded = true;
+            next.video_title = v["title"].str();
+            next.video_url = v["url"].str();
+            next.video_thumbnail = v["thumbnail"].str();
+        }
+    }
     if (next.loaded != state.loaded || next.signed_in != state.signed_in || next.video_url != state.video_url)
         swofty::log("[main-menu] state: %s, %s, video %s", next.loaded ? logic::version_line(next).c_str() : "no file",
                     logic::discord_line(next).c_str(), logic::has_video(next) ? "yes" : "none");
@@ -358,6 +419,13 @@ bool enabled()
     return resolve();
 }
 
+bool wants_overlay()
+{
+    if (!std::strcmp(env("SWOFTY_MAIN_MENU"), "0"))
+        return false;
+    return !runtime::read_file(runtime::under_swofty("home_menu.json"), 16).empty();
+}
+
 bool arm_patch()
 {
     if (!resolve())
@@ -393,8 +461,12 @@ uint8_t add_tiles(void *list_, uint8_t career_index, const uint8_t *flags)
     bool showroom = rows_on();
     if (showroom)
         add_showroom(list, ++index);
-    if (rows_on())
-        style_list(list);
+    block.divider(list, ++index);
+    if (HomeItem *divider = last_item(list)) {
+        Ne_Make_StrFromCStr(&divider->id, logic::ID_DIVIDER, 0, 0);
+        swofty::log("[main-menu] divider tile added before Addon Settings (index %u)", unsigned(index));
+    }
+    style_list(list);
     swofty::log("[main-menu] tiles added after Career: Grand Prix, Time Trial%s, Theatre%s (last index %u)",
                 flags && (flags[8] & 1) ? ", challenge" : "", showroom ? ", Showroom" : "", unsigned(index));
     return index;
@@ -408,6 +480,18 @@ void style_settings(void *item)
 
 void tick()
 {
+    int want = strip_wanted.load();
+    if (want >= 0 && want != strip_set.load() && patched.load()) {
+        int v = want;
+        bool ok = ui_vm_set_path("ui_menu_data.swofty_strip_visible", 1, &v);
+        static int tries = 0;
+        if (ok) {
+            strip_set = want;
+            swofty::log("[main-menu] stock top-right strip %s (ui_menu_data.swofty_strip_visible = %d)", want ? "shown" : "hidden", want);
+        } else if (tries++ % 120 == 0) {
+            swofty::log("[main-menu] could not set ui_menu_data.swofty_strip_visible yet (try %d)", tries);
+        }
+    }
     std::lock_guard<std::mutex> g(chain_lock);
     if (chain.step == Step::idle || chain.step == Step::done)
         return;
@@ -458,8 +542,15 @@ void screen(const char *name)
         if (!std::strcmp(name, "f1_world_activity_container") && chain.step == Step::wait_container)
             chain.container_at = now;
     }
-    if (std::strncmp(name, "fe_", 3) == 0)
-        home_open = !std::strcmp(name, "fe_home");
+    if (std::strncmp(name, "fe_", 3) == 0 && std::strcmp(name, "fe_planes") != 0) {
+        bool home = !std::strcmp(name, "fe_home");
+        home_open = home;
+        strip_wanted = home ? 0 : 1;
+        if (home && patched.load()) {
+            read_state(true);
+            swofty::log("[main-menu] home screen open: state read, stock top-right strip %s", rows_on() ? "hidden" : "hidden");
+        }
+    }
 }
 
 void command(void *, uint32_t command_hash, uint32_t focused_hash)

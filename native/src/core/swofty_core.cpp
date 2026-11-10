@@ -62,6 +62,7 @@ void mod_populate(HomeItem *item, void *node, uint32_t a7)
     Vm_Set_Bool(reg, parent, "description_localised", &no, 1);
     swofty::log("[core] populate #%u item=%p node=%p a7=%u vm=%p: title='%s' description set, localised=false", call,
                 item, node, a7, vm_node, TITLE);
+    runtime::main_menu::style_settings(item);
 }
 
 Action *mod_get_action(HomeItem *item, Action *out)

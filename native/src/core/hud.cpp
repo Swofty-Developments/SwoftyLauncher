@@ -2185,16 +2185,19 @@ void setup()
     capture_setup();
     bool on = gate_on();
     bool cover = runtime::room_cover::setup();
+    bool menu = runtime::main_menu::wants_overlay();
+    if (menu)
+        swofty::log("[main-menu] the present hook arms for the main menu panel and video card");
     if (cover)
         swofty::log("[cover] a direct start is requested; the present hook arms for its cover screen");
-    if (!on && !cap.on && !cover) {
+    if (!on && !cap.on && !cover && !menu) {
         swofty::log("[overlay] the overlay feature is experimental and off; the HUD present hook is not armed");
         return;
     }
     if (!on && cap.on)
         swofty::log("[overlay] the overlay is off; the present hook arms for SWOFTY_FRAME_CAPTURE only");
     implemented = on;
-    if (on || cover) {
+    if (on || cover || menu) {
         renderer.font_tried = true;
         if (!hud::img::grey(hud::font::ATLAS_PNG, hud::font::ATLAS_PNG_SIZE, renderer.font_px))
             swofty::log("[overlay] decoding the built-in font atlas failed; text draws nothing");

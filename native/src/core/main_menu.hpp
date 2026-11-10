@@ -6,6 +6,7 @@
 namespace runtime::main_menu {
 
 bool enabled();
+bool wants_overlay();
 bool arm_patch();
 uint8_t add_tiles(void *list, uint8_t career_index, const uint8_t *flags);
 void screen(const char *name);

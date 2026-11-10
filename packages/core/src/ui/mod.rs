@@ -53,6 +53,7 @@ pub const ERPS: &[&str] = &[
     "databases.erp",
     "flow_persistent.erp",
     "flow_frontend.erp",
+    home_rows::PLAYERCARD_ARCHIVE,
     era::ARCHIVES[0],
     era::ARCHIVES[1],
     car_category::ARCHIVES[1],
@@ -588,7 +589,23 @@ pub fn build(
     }
     write_archive(&src_h, &dst_h, frontend, Vec::new())?;
 
+    let (src_c, dst_c) = erp(home_rows::PLAYERCARD_ARCHIVE);
+    write_archive(
+        &src_c,
+        &dst_c,
+        vec![(
+            home_rows::PLAYERCARD,
+            0,
+            Box::new(|d| match home_rows::has_strip_binding(d) {
+                Ok(false) => home_rows::hide_strip(d),
+                _ => Ok(d.to_vec()),
+            }),
+        )],
+        Vec::new(),
+    )?;
+
     let mut build = MenuBuild::default();
+    build.lines.push("ui: the player card strip hides while the main menu is up".to_owned());
     build.lines.extend(setup_lines);
     build.lines.extend(career_lines);
     build.warnings.extend(career_warnings);
@@ -1190,6 +1207,30 @@ mod tests {
         assert!(hard.is_empty(), "{hard:?}");
         assert_eq!(lines, ["ui: the main menu gets rows of cards"]);
         std::fs::remove_dir_all(&out).ok();
+    }
+
+    #[test]
+    #[ignore = "needs SWOFTY_STOCK_COMMON_FRONT_END, a stock common_front_end.erp"]
+    fn the_player_card_strip_binds_its_visibility_within_the_loader_rules() {
+        let src = std::path::PathBuf::from(std::env::var_os("SWOFTY_STOCK_COMMON_FRONT_END").expect("set"));
+        let ui = read_frag(&src, home_rows::PLAYERCARD, 0).unwrap();
+        assert!(!home_rows::has_strip_binding(&ui).unwrap());
+        let out = home_rows::hide_strip(&ui).unwrap();
+        assert!(home_rows::has_strip_binding(&out).unwrap());
+        let dir = std::env::temp_dir().join(format!("swofty-strip-{}", std::process::id()));
+        let dst = dir.join("common_front_end.erp");
+        write_archive(
+            &src,
+            &dst,
+            vec![(home_rows::PLAYERCARD, 0, Box::new(move |_| Ok(out)))],
+            Vec::new(),
+        )
+        .unwrap();
+        let name = ui_file(home_rows::PLAYERCARD_ARCHIVE);
+        let report = check::archive_files(&[(name.as_str(), src.as_path(), dst.as_path())]).unwrap();
+        let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
+        assert!(hard.is_empty(), "{hard:?}");
+        std::fs::remove_dir_all(&dir).ok();
     }
 
     const SETUP_ROUTE: &str = "career_wizard_driver_career_progressive";

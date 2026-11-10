@@ -21,6 +21,10 @@ constexpr const char *ID_SETTINGS = "mod_menu";
 constexpr const char *ID_GRAND_PRIX = "swofty_grand_prix";
 constexpr const char *ID_TIME_TRIAL = "swofty_time_trial";
 constexpr const char *ID_SHOWROOM = "swofty_showroom";
+constexpr const char *ID_DIVIDER = "swofty_divider";
+constexpr const char *STOCK_ROUTE_F1_WORLD = "f1_world";
+constexpr const char *TEMPLATE_DEFAULT = "fe_tile_button_default";
+constexpr const char *TEMPLATE_DIVIDER = "swofty_home_divider";
 
 constexpr const char *TT_TITLE = "Not signed in";
 constexpr const char *TT_BODY = "Sign in with Discord in Swofty Launcher to save your laps to the Time Trial boards. "
@@ -32,8 +36,12 @@ constexpr const char *TEMPLATE_WIDE_A = "swofty_home_wide_a";
 constexpr const char *TEMPLATE_WIDE_B = "swofty_home_wide_b";
 constexpr const char *TEMPLATE_WIDE_C = "swofty_home_wide_c";
 
-inline const char *template_for(const std::string &id)
+inline const char *template_for(const std::string &id, bool rows = true)
 {
+    if (!rows)
+        return id == ID_THEATRE || id == ID_SHOWROOM ? TEMPLATE_DEFAULT : "";
+    if (id == ID_DIVIDER)
+        return TEMPLATE_DIVIDER;
     if (id == ID_STORY || id == ID_CAREER || id == ID_CHALLENGE)
         return TEMPLATE_TOP;
     if (id == ID_GRAND_PRIX || id == ID_TIME_TRIAL)
@@ -125,8 +133,10 @@ inline Plan layout(const std::vector<std::string> &stock, bool showroom_availabl
         plan.cards.push_back({ID_THEATRE, row++, 0, true});
     if (showroom_available)
         plan.cards.push_back({ID_SHOWROOM, row++, 0, true});
-    if (has(ID_SETTINGS))
+    if (has(ID_SETTINGS)) {
+        plan.cards.push_back({ID_DIVIDER, row++, 0, true});
         plan.cards.push_back({ID_SETTINGS, row++, 0, true});
+    }
     return plan;
 }
 
