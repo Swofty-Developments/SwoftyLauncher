@@ -1,5 +1,7 @@
 #pragma once
 
+#include "presence_id_logic.hpp"
+
 #include "direct_start_logic.hpp"
 #include "session_lifecycle_logic.hpp"
 #include <windows.h>
@@ -310,6 +312,7 @@ void lap_rec_session_end();
 bool lap_rec_active();
 void tt_bridge_tick();
 bool tt_bridge_ghost_id(uint8_t out[48]);
+bool tt_bridge_presence_id(runtime::presence_id::Id &out);
 bool tt_bridge_pb_armed();
 std::string tt_bridge_last_board();
 void tt_bridge_session_enter();

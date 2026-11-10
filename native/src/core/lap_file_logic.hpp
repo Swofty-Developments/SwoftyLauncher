@@ -1,5 +1,6 @@
 #pragma once
 
+#include "presence_id_logic.hpp"
 #include <swofty/json.hpp>
 
 #include <cstdint>
@@ -150,7 +151,29 @@ struct Header {
     std::optional<double> session_time_s;
     std::optional<int> rate_hz;
     swofty::json::Value assists, setup;
+    std::optional<runtime::presence_id::Id> presence;
 };
+
+inline swofty::json::Value presence_json(const runtime::presence_id::Id &id)
+{
+    using swofty::json::Value;
+    auto number = [](uint64_t v) { return v > uint64_t(INT64_MAX) ? Value(std::to_string(v)) : Value(int64_t(v)); };
+    Value values = Value::array();
+    values.push_back(number(id.value[0]));
+    for (int i = 1; i < 3; i++)
+        values.push_back(id.value[i] ? number(id.value[i]) : Value(nullptr));
+    Value flags = Value::array();
+    flags.push_back(Value(int64_t(id.flag39)));
+    flags.push_back(Value(int64_t(id.flag38)));
+    std::vector<uint8_t> stream = runtime::presence_id::serialise(id);
+    Value v = Value::object({{"type", int64_t(id.type)}});
+    int platform = runtime::presence_id::platform_of(id.type);
+    v["platform"] = platform ? Value(int64_t(platform)) : Value(nullptr);
+    v["values"] = std::move(values);
+    v["flags"] = std::move(flags);
+    v["stream"] = runtime::presence_id::base64(stream);
+    return v;
+}
 
 inline swofty::json::Value header_json(const Header &h, const Layout &layout)
 {
@@ -211,6 +234,8 @@ inline swofty::json::Value header_json(const Header &h, const Layout &layout)
     v["fields"] = layout.json();
     text(v, "nonce", h.nonce);
     text(v, "ghost_id", h.ghost_id);
+    if (h.presence)
+        v["presence"] = presence_json(*h.presence);
     return v;
 }
 

@@ -11,7 +11,7 @@
 // The presence user object (record+0x1c0, vtable base+0x5a5b900) hands out its id through its vtable slot 7 (FUN_14411e3c0,
 // out = a 0x40 byte id struct): type byte 1; value0 = object[+0x28] ^ object[+0x20] (the id; a Steam presence holds the SteamID64 here);
 // value1 and value2 come from two platform service strings (strtoull), zero when the service gave none; flag39 = 0 when
-// object[+0x18] == 0 else 1; flag38 = 0. Ids of type 1 are compared by Ne_UserId_Equals (FUN_144122660): same type, same flag39 and
+// object[+0x18] == 0 else 1 (and then the object gives no values: the getter's second branch leaves value0..2 zero); flag38 = 0. Ids of type 1 are compared by Ne_UserId_Equals (FUN_144122660): same type, same flag39 and
 // the same value0; value1 and value2 are not compared. A leaderboard row becomes the same id through FUN_143282d40: Platform 1
 // gives type 1 with value0 = the decimal PlatformID string and flag39 = 0.
 //
@@ -37,8 +37,8 @@ inline Id from_presence_object(const Object &o)
 {
     Id id;
     id.type = 1;
-    id.value[0] = o.at28 ^ o.at20;
     id.flag39 = o.at18 != 0;
+    id.value[0] = id.flag39 ? 0 : o.at28 ^ o.at20;
     return id;
 }
 
@@ -135,6 +135,11 @@ inline std::string base64(const std::vector<uint8_t> &b)
         s += i + 2 < b.size() ? t[w & 63] : '=';
     }
     return s;
+}
+
+inline int platform_of(uint8_t type)
+{
+    return type == 1 ? 1 : 0;
 }
 
 inline std::string hex(const std::vector<uint8_t> &b)

@@ -572,10 +572,12 @@ tb::gate::State read_gate_state(const safetyhook::Context &c, const GateHook &g,
     return st;
 }
 
+runtime::presence_id::Id presence_now;
+bool presence_known = false;
+
 void log_presence_user(uint64_t user)
 {
-    static std::atomic<int> logged{0};
-    if (!user || logged.load() >= 2 || logged.fetch_add(1) >= 2)
+    if (!user)
         return;
     uint8_t obj[0x80] = {};
     if (!runtime::readable(reinterpret_cast<void *>(user), sizeof obj))
@@ -588,6 +590,14 @@ void log_presence_user(uint64_t user)
     memcpy(&o.at20, obj + 0x20, 8);
     memcpy(&o.at28, obj + 0x28, 8);
     runtime::presence_id::Id id = runtime::presence_id::from_presence_object(o);
+    {
+        std::lock_guard<std::mutex> g(lock);
+        presence_now = id;
+        presence_known = true;
+    }
+    static std::atomic<int> logged{0};
+    if (!diag_on || logged.load() >= 2 || logged.fetch_add(1) >= 2)
+        return;
     std::vector<uint8_t> raw(obj, obj + sizeof obj);
     std::vector<uint8_t> stream = runtime::presence_id::serialise(id);
     swofty::log("[boards] diag: presence user object 0x%llx (vtable base+0x%llx), id as the game's getter (FUN_14411e3c0) builds it: type %u, flag39 %u, flag38 %u, "
@@ -609,8 +619,7 @@ void gate_mid(int idx, safetyhook::Context &c)
     std::string token;
     tb::gate::State st = read_gate_state(c, g, &flags, &user, &session_flag, &token);
     tb::gate::Why why = tb::gate::first_failure(st);
-    if (diag_on)
-        log_presence_user(user);
+    log_presence_user(user);
     std::string name;
     tb::Method seen = tb::method_at_op(game_mem(), op, &name);
     tb::Args a;
@@ -1675,6 +1684,15 @@ void tt_bridge_session_enter()
 {
     std::lock_guard<std::mutex> g(lock);
     last_board.clear();
+}
+
+bool tt_bridge_presence_id(runtime::presence_id::Id &out)
+{
+    std::lock_guard<std::mutex> g(lock);
+    if (!presence_known)
+        return false;
+    out = presence_now;
+    return true;
 }
 
 bool tt_bridge_ghost_id(uint8_t out[48])

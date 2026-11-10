@@ -321,6 +321,20 @@ void finish(lr::Sealed &sealed, const LapContext &ctx)
     uint8_t id_block[runtime::tt_bridge::ID_BLOCK];
     if (!sealed.ghost.empty() && runtime::tt_bridge_ghost_id(id_block))
         h.ghost_id = runtime::tt_bridge::base64(id_block, sizeof id_block);
+    {
+        runtime::presence_id::Id pid;
+        if (runtime::tt_bridge_presence_id(pid)) {
+            h.presence = pid;
+            char dv[8] = {};
+            if (GetEnvironmentVariableA("SWOFTY_TT_DIAG", dv, sizeof dv) && !strcmp(dv, "1")) {
+                auto stream = runtime::presence_id::serialise(pid);
+                swofty::log("[laps] lap %u: presence in the header: type %u, platform %d, value0 %llu, flags %u %u, stream hex %s base64 %s", lap.index,
+                            unsigned(pid.type), runtime::presence_id::platform_of(pid.type), (unsigned long long)pid.value[0], unsigned(pid.flag39),
+                            unsigned(pid.flag38), runtime::presence_id::hex(stream).c_str(), runtime::presence_id::base64(stream).c_str());
+            }
+        } else
+            swofty::log("[laps] lap %u: the game's presence id was never read (no board request passed the gate yet); the header has no presence", lap.index);
+    }
     if (auto facts = swofty_core::hooks::core().current(); facts && facts->player) {
         h.team = facts->player->team;
         h.vehicle = facts->player->vehicle;
