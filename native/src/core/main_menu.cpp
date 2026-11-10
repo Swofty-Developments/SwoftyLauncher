@@ -395,11 +395,19 @@ const runtime::Sig S_CONTAINER{
     0x1a77d60};
 safetyhook::InlineHook h_container;
 std::atomic<void *> container_vm{nullptr}, container_third{nullptr};
+std::atomic<uint64_t> container_vm_at{0};
+
+uint64_t raise_delay_ms()
+{
+    const char *v = std::getenv("SWOFTY_MAIN_MENU_RAISE_MS");
+    return v && *v ? uint64_t(std::atoll(v)) : 300;
+}
 
 uint64_t container_detour(void *container, NeStr **message, void *third)
 {
     if (container_vm.load() != container) {
         container_vm = container;
+        container_vm_at = GetTickCount64();
         swofty::log("[main-menu] chain: activity container view model %p seen", container);
     }
     container_third = third;
@@ -590,6 +598,14 @@ Action *card_action(HomeItem *item, Action *out)
         nav.mode = int(m);
         nav.return_armed = false;
         route = logic::press_route(m);
+        if (m != logic::Mode::grand_prix_saves) {
+            std::lock_guard<std::mutex> g(chain_lock);
+            chain = {};
+            chain.step = Step::wait_container;
+            chain.command = logic::return_command(m);
+            chain.started = chain.container_at = GetTickCount64();
+            container_vm = nullptr;
+        }
         expect_screen(m == logic::Mode::grand_prix_saves ? logic::Expect::saves : logic::Expect::container, route);
         swofty::log("[main-menu] chain: %s card pressed; route %s opens %s", gp ? "Grand Prix" : "Time Trial", route,
                     m == logic::Mode::time_trial ? "the activity container with the Time Trial picker's command" : m == logic::Mode::grand_prix_saves ? "the Grand Prix saves list" : "the activity container with the new Grand Prix picker's command");
@@ -1025,7 +1041,8 @@ void tick()
         chain.step = Step::done;
         return;
     }
-    if (chain.step == Step::wait_container && chain.container_at && container_vm.load() && now - chain.container_at > 900) {
+    if (chain.step == Step::wait_container && chain.container_at && container_vm.load() &&
+        now - chain.container_at > 300 && now - container_vm_at.load() > raise_delay_ms()) {
         const char *command = chain.command;
         NeStr *name = nullptr;
         Ne_Make_StrFromCStr(&name, command, 0, 0);
