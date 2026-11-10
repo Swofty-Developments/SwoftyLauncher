@@ -1,4 +1,5 @@
 #include <atomic>
+#include <map>
 #include "runtime.hpp"
 #include "main_menu.hpp"
 
@@ -83,6 +84,27 @@ void flow_mid(safetyhook::Context &)
         double t0 = now_seconds();
         fn();
         double ms = (now_seconds() - t0) * 1000.0;
+        static std::mutex lock;
+        static std::map<std::string, double> total;
+        static double since = now_seconds();
+        {
+            std::lock_guard<std::mutex> g(lock);
+            total[name] += ms;
+            double span = now_seconds() - since;
+            if (span >= 60.0) {
+                std::string line;
+                for (auto &kv : total)
+                    if (kv.second / span >= 1.0) {
+                        char b[96];
+                        snprintf(b, sizeof b, "%s%s %.1f", line.empty() ? "" : ", ", kv.first.c_str(), kv.second / span);
+                        line += b;
+                    }
+                if (!line.empty())
+                    swofty::log("[perf] flow tick steps over 1 ms/s in the last %.0f s (ms per second): %s", span, line.c_str());
+                total.clear();
+                since = now_seconds();
+            }
+        }
         static std::atomic<uint64_t> slow{0};
         if (ms > 100.0) {
             uint64_t n = ++slow;

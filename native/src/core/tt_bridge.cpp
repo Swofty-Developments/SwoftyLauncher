@@ -1665,8 +1665,14 @@ void diag_tick()
     if (!sys)
         return;
     uint64_t handler = peek64(sys + 0x278);
+    // Reading the board name and describing the handler are log work of a few guarded reads each; they run when the handler changes,
+    // twice a second otherwise, and every frame only under the diagnostics switch.
+    static int64_t watched_ms = 0;
+    int64_t t = now_ms();
+    bool due = diag_on || handler != diag_handler_seen || t - watched_ms >= 500;
     std::string name;
-    if (handler) {
+    if (handler && due) {
+        watched_ms = t;
         uint64_t ctx = peek64(handler + 0x58);
         uint64_t np = ctx ? peek64(ctx + 0x68) : 0;
         name = np ? tb::read_c(game_mem(), np) : std::string();
