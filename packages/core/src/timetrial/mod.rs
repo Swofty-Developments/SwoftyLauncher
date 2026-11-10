@@ -43,7 +43,7 @@ pub fn token(data: &Path, config: &Config) -> Option<String> {
         .map(|s| s.token)
 }
 
-const KEYS: [&str; 3] = ["tt_boards", "tt_nonce", "tt_bridge"];
+const KEYS: [&str; 4] = ["tt_boards", "tt_nonce", "tt_bridge", "tt_ghost"];
 
 /// Tell the core, through [`SESSION_FILE`], that laps are to be recorded for the boards, which
 /// session nonce they carry and whether the in-game bridge is armed. Other keys in the file stay as they are.
@@ -57,8 +57,10 @@ pub fn write_session_keys(game: &Path, nonce: Option<&str>, bridge: bool) -> std
     };
     if bridge {
         doc.insert("tt_bridge".into(), true.into());
+        doc.insert("tt_ghost".into(), true.into());
     } else {
         doc.remove("tt_bridge");
+        doc.remove("tt_ghost");
     }
     if let Some(dir) = path.parent() {
         std::fs::create_dir_all(dir)?;
@@ -103,7 +105,7 @@ mod tests {
             serde_json::from_slice(&std::fs::read(game.join(SESSION_FILE)).unwrap()).unwrap();
         assert_eq!(
             doc,
-            serde_json::json!({"tt_boards": true, "tt_nonce": "abc", "tt_bridge": true})
+            serde_json::json!({"tt_boards": true, "tt_nonce": "abc", "tt_bridge": true, "tt_ghost": true})
         );
         clear_session_keys(&game);
         assert!(!game.join(SESSION_FILE).exists());
