@@ -156,6 +156,10 @@ int main()
                    !tb::replay_manager_plausible(m, 0x317a560, 0x140000000ull, 0x160000000ull, true, false, true) && !tb::replay_manager_plausible(m, 0x317a560, 0x140000000ull, 0x160000000ull, true, true, false),
                "unreadable pieces or no system are refused");
     }
+    expect(tb::replay_ui_suppressed(5000, 4999) && !tb::replay_ui_suppressed(5000, 5000) && !tb::replay_ui_suppressed(0, 1), "the save messages are suppressed only inside our window");
+    expect(!tb::replay_precheck_blocks(true, 0x10, 0x20, 0x30, true) && tb::replay_precheck_blocks(true, 0, 0x20, 0x30, true) && tb::replay_precheck_blocks(true, 0x10, 0, 0x30, true) &&
+               tb::replay_precheck_blocks(true, 0x10, 0x20, 0, true) && !tb::replay_precheck_blocks(false, 0, 0, 0x30, true) && !tb::replay_precheck_blocks(false, 0, 0, 0, false),
+           "the pre-check blocks a missing buffer or session but never an undecoded module list");
     expect(tb::garage_result(0, true, true) == 1, "a denied garage privilege becomes granted for our content");
     expect(tb::garage_result(0, false, true) == 0 && tb::garage_result(0, true, false) == 0, "it stays denied with the bridge off or for stock content");
     expect(tb::garage_result(1, true, true) == 1 && tb::garage_result(0xff, true, true) == 0xff && tb::garage_result(2, true, true) == 2,

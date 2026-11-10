@@ -459,6 +459,19 @@ inline bool replay_manager_plausible(const ReplayManagerView &m, uint64_t system
            m.lock118 < 0x7fffffffffffull && lock_readable && m.queue150 > 0x10000 && m.queue150 < 0x7fffffffffffull && queue_readable;
 }
 
+// Our own save runs with the game's save messages suppressed (the "saving" modal and the success or error result) for a bounded window.
+inline bool replay_ui_suppressed(int64_t until_ms, int64_t now_ms) { return until_ms > 0 && now_ms < until_ms; }
+
+// Pre-check mirroring the first conditions of the game's save job (Game_Replay_SaveFullReplay 0x142c46a00): it needs the "main" module with both
+// of its replay buffers (+0xc0 full, +0xd0 key frames) and a session object ([[mgr+0x28]+0x88]+0x260). The call is skipped only when the module
+// was found and one of them is missing; an undecoded module list never blocks (the job then decides).
+inline bool replay_precheck_blocks(bool main_found, uint64_t full_buffer, uint64_t key_buffer, uint64_t session_ptr, bool session_known)
+{
+    if (session_known && session_ptr == 0)
+        return true;
+    return main_found && (full_buffer == 0 || key_buffer == 0);
+}
+
 // A lap marks a replay save when it is valid (or validity is unknown, -1) and faster than the session's best so far (0 = none yet).
 inline bool replay_lap_is_best(int64_t lap_ms, int valid, int64_t session_best_ms)
 {

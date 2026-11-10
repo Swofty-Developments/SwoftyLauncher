@@ -162,6 +162,9 @@ const runtime::Sig S_REPLAY_UPDATE{"Game_ReplaySystem_UpdateFromModule_1445d6040
         "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 78 29 AC 24 C0 00 00 00 C5 78 29 A4 24 B0 00 00 00 C5 78 29", 0x45d6040};
 const runtime::Sig S_REPLAY_FRAME{"Game_ReplayBuffer_BeginFrameWrite_1445c4b20", "41 56 56 57 53 48 83 EC 68 C5 F8 29 74 24 50 C5 F9 6F F1 48 89 CE 80 79 51 00 74 30", 0x45c4b20};
 const runtime::Sig S_REPLAY_SAVE{"Game_ReplayManager_SaveFullReplay_142c46880", "41 56 56 57 53 48 81 EC 38 02 00 00 80 B9 E1 06 00 00 00 74 46 48 89 CE 48 83 B9 50 01 00 00 00", 0x2c46880};
+const runtime::Sig S_REPLAY_JOB{"Game_Replay_SaveFullReplay_job_142c46a00", "41 57 41 56 41 55 41 54 56 57 55 53 B8 08 14 00 00 E8 BA 2D 04 02 48 29", 0x2c46a00};
+const runtime::Sig S_REPLAY_UI_START{"Game_ReplaySaveListener_ShowSaving_142c44220", "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 48 89 CE C6 41", 0x2c44220};
+const runtime::Sig S_REPLAY_UI_RESULT{"Game_ReplaySaveListener_ShowResult_142c44760", "41 57 41 56 41 55 41 54 56 57 53 48 81 EC D0 01 00 00 48 89 D3 48 89 CF", 0x2c44760};
 const runtime::Sig S_REPLAY_PATH{"Game_ReplayManager_BuildSavePath_142c48860", "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 05 00 00 48 89 D6 48 89 CB 48 8D 79 20", 0x2c48860};
 const runtime::Sig S_GARAGE_BUILD{"Game_GarageMonitorPanel_BuildTabs_141f71fa0",
         "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 48 89 CE 80 B9 49 09 00 00 00", 0x1f71fa0};
@@ -206,7 +209,8 @@ bool diag_on = false;
 bool replay_capture_on = false;
 std::atomic<int64_t> replay_pending_ms{0};
 std::atomic<uint32_t> replay_pending_lap{0};
-safetyhook::MidHook h_garage_done, h_garage_cmd, h_garage_update, h_tab_block, h_tab_flags, h_tab_friends, h_tab_build, h_tab_gate, h_replay_tick, h_replay_tick17, h_replay_update, h_replay_frame, h_replay_save, h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
+safetyhook::InlineHook h_rui_start, h_rui_result;
+safetyhook::MidHook h_garage_done, h_garage_cmd, h_garage_update, h_tab_block, h_tab_flags, h_tab_friends, h_tab_build, h_tab_gate, h_replay_tick, h_replay_tick17, h_replay_update, h_replay_frame, h_replay_save, h_replay_job, h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
 
 struct GateHook {
     uintptr_t at = 0, resume = 0, session_global = 0;
@@ -1073,6 +1077,79 @@ std::string narrow(const wchar_t *w)
     return out;
 }
 
+std::atomic<int64_t> replay_ui_until_ms{0};
+std::atomic<int> replay_last_status{-1};
+
+// The game's save messages: ShowSaving (0x142c44220, this = the save listener) opens the "saving" modal, ShowResult (0x142c44760, this, status
+// block: int status at +0, u64 required bytes at +8) opens the saved / disk space / generic error modal and posts the result on the bus. For
+// our own save they are skipped inside the suppression window (they only touch the listener's own message handle); the status is logged.
+void replay_ui_start_hook(uint64_t listener)
+{
+    if (tb::replay_ui_suppressed(replay_ui_until_ms.load(), now_ms())) {
+        swofty::log("[replay] the game's \"saving\" message is suppressed for our own replay save");
+        return;
+    }
+    h_rui_start.call<void>(listener);
+}
+
+void replay_ui_result_hook(uint64_t listener, uint64_t status_block)
+{
+    if (!tb::replay_ui_suppressed(replay_ui_until_ms.load(), now_ms())) {
+        h_rui_result.call<void>(listener, status_block);
+        return;
+    }
+    int status = runtime::readable(reinterpret_cast<void *>(status_block), 16) ? int(peek32(status_block)) : -1;
+    uint64_t need = runtime::readable(reinterpret_cast<void *>(status_block), 16) ? peek64(status_block + 8) : 0;
+    replay_last_status = status;
+    replay_ui_until_ms = 0;
+    swofty::log("[replay] the game's save job finished with status %d (0 saved, 1 no disk space, 2 failed), required bytes %llu; its result message is suppressed for our own save", status,
+                (unsigned long long)need);
+}
+
+void replay_job_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> logged{0};
+    if (++logged <= 8)
+        swofty::log("[replay] the game's save job started on manager 0x%llx (ours %d)", (unsigned long long)c.rdx, tb::replay_ui_suppressed(replay_ui_until_ms.load(), now_ms()) ? 1 : 0);
+}
+
+// Read-only mirror of the first checks of the save job. The "main" module is looked up in the list at [[mgr+0x40]+0x110]+0x28..0x30 (stride 0x10,
+// module pointer at +8, its first qword points at the name) like the job does; both buffers [+0xc0] and [+0xd0] and the session
+// [[mgr+0x28]+0x88]+0x260 are plain reads. Everything is logged so a failing save can be explained from the log.
+bool replay_precheck(uint64_t mgr)
+{
+    auto name_of = [](uint64_t module) {
+        uint64_t np = module ? peek64(module) : 0;
+        char buf[24] = {};
+        if (np && runtime::readable(reinterpret_cast<void *>(np), sizeof buf - 1))
+            memcpy(buf, reinterpret_cast<void *>(np), sizeof buf - 1);
+        for (char &ch : buf)
+            if (ch && (ch < 0x20 || ch > 0x7e))
+                ch = '?';
+        return std::string(buf);
+    };
+    uint64_t sys = peek64(mgr + 0x40), reg = sys ? peek64(sys + 0x110) : 0;
+    uint64_t begin = reg ? peek64(reg + 0x28) : 0, end = reg ? peek64(reg + 0x30) : 0;
+    uint64_t count = end > begin ? (end - begin) / 16 : 0;
+    uint64_t main_module = 0;
+    std::string names;
+    for (uint64_t k = 0; k < count && k < 24; k++) {
+        uint64_t module = peek64(begin + 16 * k + 8);
+        std::string n = name_of(module);
+        names += (names.empty() ? "" : ", ") + n;
+        if (!_stricmp(n.c_str(), "main") && !main_module)
+            main_module = module;
+    }
+    uint64_t full = main_module ? peek64(main_module + 0xc0) : 0, key = main_module ? peek64(main_module + 0xd0) : 0;
+    uint64_t holder = peek64(mgr + 0x28), session_obj = holder ? peek64(holder + 0x88) : 0, session = session_obj ? peek64(session_obj + 0x260) : 0;
+    bool session_known = holder != 0;
+    bool block = tb::replay_precheck_blocks(main_module != 0, full, key, session, session_known);
+    swofty::log("[replay] save pre-check: %llu module(s) in the list [%s]; main module 0x%llx full buffer [+0xc0] 0x%llx key frame buffer [+0xd0] 0x%llx; session holder 0x%llx -> object 0x%llx -> 0x%llx: %s",
+                (unsigned long long)count, names.c_str(), (unsigned long long)main_module, (unsigned long long)full, (unsigned long long)key, (unsigned long long)holder,
+                (unsigned long long)session_obj, (unsigned long long)session, block ? "the game's save would fail (a buffer or the session is missing): not calling it" : "no missing piece found");
+    return !block;
+}
+
 void replay_watch(std::wstring path, uint32_t lap_ms, uint64_t stamp)
 {
     uint64_t last = 0;
@@ -1080,6 +1157,10 @@ void replay_watch(std::wstring path, uint32_t lap_ms, uint64_t stamp)
     DWORD attr = 0;
     for (int i = 0; i < 180; i++) {
         Sleep(1000);
+        if (replay_last_status.load() > 0) {
+            swofty::log("[replay] capture: the game reported the save failed (status %d); no file to copy", replay_last_status.load());
+            return;
+        }
         attr = GetFileAttributesW(path.c_str());
         if (attr == INVALID_FILE_ATTRIBUTES)
             continue;
@@ -1176,6 +1257,7 @@ void replay_save_entry_mid(safetyhook::Context &c)
 }
 
 std::atomic<int64_t> replay_session_best_ms{0};
+bool replay_capture_any = false;
 
 // Called from the lap recorder (flow thread) after a lap was written: a valid lap faster than the session's best marks a capture pending.
 void replay_lap_finished(int64_t lap_ms, int valid)
@@ -1183,7 +1265,8 @@ void replay_lap_finished(int64_t lap_ms, int valid)
     if (!replay_capture_on || !bridge_on)
         return;
     int64_t best = replay_session_best_ms.load();
-    bool mark = tb::replay_lap_is_best(lap_ms, valid, best);
+    // SWOFTY_TT_REPLAY_CAPTURE=any is a test switch: every finished lap is saved, valid or not.
+    bool mark = tb::replay_lap_is_best(lap_ms, valid, best) || (replay_capture_any && lap_ms > 0);
     swofty::log("[replay] capture: lap %lld ms (valid %d), session best %lld ms: %s", (long long)lap_ms, valid, (long long)best, mark ? "marked for a replay save" : "not a new best, no save");
     if (!mark)
         return;
@@ -1249,7 +1332,13 @@ void replay_tick(uint64_t sys, const char *slot)
         return;
     }
     std::wstring path(reinterpret_cast<const wchar_t *>(pptr));
+    if (!replay_precheck(sys))
+        return;
+    replay_last_status = -1;
+    replay_ui_until_ms = now_ms() + 240000;
     bool ok = (reinterpret_cast<uint64_t (*)(uint64_t, const void *)>(replay_save_fn)(sys, reinterpret_cast<const void *>(pptr)) & 0xff) != 0;
+    if (!ok)
+        replay_ui_until_ms = 0;
     swofty::log("[replay] capture: ReplayManager::SaveFullReplay(%s) %s for the personal best of %u ms", narrow(path.c_str()).c_str(), ok ? "queued" : "refused (a save is already running or nothing is recording)",
                 replay_pending_lap.load());
     if (ok) {
@@ -1631,7 +1720,8 @@ void setup()
     {
         char rv[8] = {};
         DWORD rn = GetEnvironmentVariableA("SWOFTY_TT_REPLAY_CAPTURE", rv, sizeof rv);
-        replay_capture_on = rn && rn < sizeof rv && !strcmp(rv, "1");
+        replay_capture_on = rn && rn < sizeof rv && (!strcmp(rv, "1") || !strcmp(rv, "any"));
+        replay_capture_any = rn && rn < sizeof rv && !strcmp(rv, "any");
     }
     track_watch = bridge_on || guards_on || diag_on;
     table = tb::Table(unix_seconds() * 100);
@@ -1738,6 +1828,19 @@ void setup()
                 replay_build_path_fn = path_fn;
                 replay_save_fn = save_fn;
                 hook_mid(h_replay_save, save_fn, replay_save_entry_mid, "replay save observer");
+                if (uintptr_t j = runtime::find(S_REPLAY_JOB, "boards", "boards"))
+                    hook_mid(h_replay_job, j, replay_job_mid, "replay save job observer");
+                uintptr_t ui_start = runtime::find(S_REPLAY_UI_START, "boards", "boards"), ui_result = runtime::find(S_REPLAY_UI_RESULT, "boards", "boards");
+                if (ui_start && ui_result) {
+                    auto a = safetyhook::InlineHook::create(reinterpret_cast<void *>(ui_start), reinterpret_cast<void *>(&replay_ui_start_hook));
+                    auto b = safetyhook::InlineHook::create(reinterpret_cast<void *>(ui_result), reinterpret_cast<void *>(&replay_ui_result_hook));
+                    if (a && b) {
+                        h_rui_start = std::move(*a);
+                        h_rui_result = std::move(*b);
+                        swofty::log("[replay] the game's save messages are hooked (suppressed only during our own save)");
+                    } else
+                        swofty::log("[replay] the game's save message hooks failed: our save will show the game's messages");
+                }
                 if (uintptr_t t17 = runtime::find(S_REPLAY_TICK17, "boards", "boards"))
                     hook_mid(h_replay_tick17, t17, replay_tick17_mid, "replay system tick (slot 17)");
                 if (uintptr_t up = runtime::find(S_REPLAY_UPDATE, "boards", "boards"))
