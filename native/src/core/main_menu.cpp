@@ -1231,3 +1231,18 @@ void paint(hud::Frame &f, uint64_t now)
 }
 
 }
+
+namespace runtime {
+
+bool main_menu_account(std::string &name)
+{
+    if (!main_menu::state_loaded.load())
+        return false;
+    std::lock_guard<std::mutex> g(main_menu::state_lock);
+    if (!main_menu::state.signed_in || main_menu::state.name.empty())
+        return false;
+    name = main_menu::state.name;
+    return true;
+}
+
+}
