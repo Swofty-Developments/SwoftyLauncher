@@ -33,7 +33,8 @@ This manifest uses every field. Only `schema_version`, `id`, `name`, `version` a
     "game": "f1_25",                                 // the only value
     "game_builds": [">=25251167"],                   // empty: every build
     "launcher": ">=1.5.13",                          // the launcher versions it installs and builds on
-    "seasons": ["f1_2026"]
+    "seasons": ["f1_2026"],
+    "platforms": ["steam", "ea"]                     // the game copies you tested on; empty: Not tested
   },
   "requires": [{ "id": "swofty.core", "version": ">=0.1.0" }],
   "conflicts": [{ "id": "*", "touches": "db:entrants.entrant_lists.entrant_list_34.*" }],
@@ -189,9 +190,18 @@ A launcher before 1.3.0 rejects `category` and `origin`; set `"compat": { "launc
   "game": "f1_25",                 // f1_25; any other value is rejected
   "game_builds": [">=25251167"],   // semver ranges matched against the build id as <id>.0.0; empty accepts every build
   "launcher": ">=0.1.0",           // optional: a semver range the launcher must satisfy
-  "seasons": ["f1_2026"]           // season tags
+  "seasons": ["f1_2026"],          // season tags
+  "platforms": ["steam", "ea"]     // optional: the game copies the addon was tested on
 }
 ```
+
+`compat.platforms` (string array, optional) lists the game copies you tested the addon on: `"steam"` for the Steam copy and `"ea"` for the EA app copy. The [Addon Browser](/using/addon-browser#find-an-addon) tags the addon with each platform listed, and tags an addon with none, or without the field, **Not tested**. Any other value is rejected:
+
+```text
+swofty: invalid manifest: yourname.my-addon: compat.platforms "gog" is not one of "steam", "ea"
+```
+
+The list never stops an install or a build. A launcher before 1.8.36 rejects the field; set `"compat": { "launcher": ">=1.8.36" }` when you use it.
 
 On a launcher outside `compat.launcher`, installing the addon fails, and so does building a profile that enables it:
 
