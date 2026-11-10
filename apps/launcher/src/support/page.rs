@@ -5,7 +5,7 @@ use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::time::Duration;
-use swofty_core::support::{BIO_MAX, FALLBACK_URL, Goal, Kind, Supporter, format_date, tier_name};
+use swofty_core::support::{BIO_MAX, Goal, Kind, Supporter, format_date, tier_name};
 use swofty_i18n::{tr, trf};
 
 use crate::pages::GUTTER;
@@ -381,31 +381,48 @@ impl Shell {
                         .prefix(div().text_color(p.text_muted).child("$")),
                 ),
             );
+        let perks = |lines: &[&'static str]| {
+            v_flex().gap(px(6.)).pt(px(4.)).children(lines.iter().map(|t| {
+                h_flex()
+                    .gap(px(8.))
+                    .items_start()
+                    .child(
+                        Icon::new(IconName::Check)
+                            .size(px(14.))
+                            .mt(px(2.))
+                            .text_color(rgb(PINK)),
+                    )
+                    .child(div().text_size(px(13.)).child(*t))
+            }))
+        };
         let tiers = h_flex()
             .w_full()
             .justify_center()
             .items_start()
-            .gap(px(16.))
+            .gap(px(28.))
             .flex_wrap()
-            .child(column().child(self.tier_pill(Kind::Supporter, "$5", false, busy, p, cx)))
-            .child(column().child(self.tier_pill(Kind::SupporterPlus, "$20", true, busy, p, cx)))
-            .child(onetime);
+            .child(
+                column()
+                    .w(px(280.))
+                    .child(self.tier_pill(Kind::Supporter, "$5", false, busy, p, cx))
+                    .child(perks(&[
+                        tr("Access to #f1-supporter-leaks"),
+                        tr("The #f1-supporter-general chat"),
+                        tr("Discord embed links and external emoji permissions"),
+                        tr("Supporting a free and open-source launcher with no ads"),
+                    ])),
+            )
+            .child(
+                column()
+                    .w(px(280.))
+                    .child(self.tier_pill(Kind::SupporterPlus, "$20", true, busy, p, cx))
+                    .child(perks(&[
+                        tr("All of Supporter"),
+                        tr("Access to private betatesting"),
+                    ])),
+            )
+            .child(onetime.w(px(280.)));
         let status = self.support_status(bio, p, cx);
-        let perks = section().child(heading(tr("What you get"))).children(
-            [
-                tr("Access to #f1-supporter-leaks"),
-                tr("The #f1-supporter-general chat"),
-                tr("Discord embed links and external emoji permissions"),
-                tr("Supporting a free and open-source launcher with no ads"),
-            ]
-            .into_iter()
-            .map(|t| {
-                h_flex()
-                    .gap(px(8.))
-                    .child(Icon::new(IconName::Check).size(px(14.)).text_color(rgb(PINK)))
-                    .child(div().text_size(px(13.)).child(t))
-            }),
-        );
         let notice = self
             .support
             .notice
@@ -417,11 +434,6 @@ impl Shell {
                     .text_color(if *ok { rgb(0x4cc38a).into() } else { p.error })
                     .child(text.clone())
             });
-        let fallback = Button::new("support-fallback")
-            .small()
-            .ghost()
-            .label(tr("Other ways to donate"))
-            .on_click(|_, _, cx| cx.open_url(FALLBACK_URL));
         div()
             .flex_1()
             .min_w_0()
@@ -435,9 +447,7 @@ impl Shell {
                     .child(goal)
                     .children(status)
                     .child(tiers)
-                    .children(notice)
-                    .child(perks)
-                    .child(h_flex().child(fallback)),
+                    .children(notice),
             )
             .into_any_element()
     }
@@ -666,18 +676,20 @@ fn goal_body(g: &Goal, p: Palette) -> Div {
                 ),
         )
         .child(
-            div()
-                .pt(px(14.))
-                .text_size(px(18.))
-                .font_weight(FontWeight::BOLD)
-                .child(tr("What it pays for")),
-        )
-        .child(v_flex().gap(px(6.)).children(g.costs.iter().map(|c| {
             h_flex()
-                .gap(px(10.))
-                .items_center()
-                .text_size(px(15.))
-                .child(div().size(px(6.)).rounded_full().bg(rgb(PINK)))
-                .child(c.clone())
-        })))
+                .w_full()
+                .pt(px(12.))
+                .justify_center()
+                .flex_wrap()
+                .gap_x(px(28.))
+                .gap_y(px(6.))
+                .children(g.costs.iter().map(|c| {
+                    h_flex()
+                        .gap(px(10.))
+                        .items_center()
+                        .text_size(px(15.))
+                        .child(div().size(px(6.)).rounded_full().bg(rgb(PINK)))
+                        .child(c.clone())
+                })),
+        )
 }
