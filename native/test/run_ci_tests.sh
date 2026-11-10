@@ -90,6 +90,7 @@ t "Lap recorder state machine, field plan and session gate unit test" native/tes
 t "Ghost trace codec and lap converter unit test" native/test/run_ghost_trace_test.sh
 t "Ghost arming state machine unit test" native/test/run_ghost_arm_test.sh
 t "Lap setup capture unit test" native/test/run_lap_setup_test.sh
+t "Lap toast message and state machine unit test" native/test/run_toast_test.sh
 t "Player name sanitising unit test" native/test/run_player_name_test.sh
 t "Lap assists capture unit test" native/test/run_lap_assists_test.sh
 t "Ghost request file unit test" native/test/run_ghost_request_test.sh
