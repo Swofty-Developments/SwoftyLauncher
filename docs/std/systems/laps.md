@@ -9,7 +9,7 @@ While Time Trial boards are on, the core records every completed Time Trial lap 
 
 The recorder runs when the launcher writes `"tt_boards": true` into `swofty/tt.json` and the session is a Time Trial. It samples the player's car once per rendered frame. A lap starts at a line crossing and ends at the next one. The lap out of the garage is not recorded. A lap is dropped when the car is reset or moved, when the session ends, or when it is too short or too long to be a lap.
 
-On the build the core's lap offsets are from, the core also hooks the game's own lap record (`Sess_LapTimes_ReportNewLapTime`). A completed lap then waits up to two seconds after its line crossing for the game's lap result and, when the lap is valid, for the ghost blob the game commits on a personal best. The file is written when both have arrived or when the two seconds have passed. When the hook is not available the file is written at once and the lap's time comes from the clock. `SWOFTY_LAP_GAME_RESULT=0` turns the lap result off and `SWOFTY_LAP_GHOST=0` the ghost blob.
+On the build the core's lap offsets are from, the core also hooks the game's own lap record (`Sess_LapTimes_ReportNewLapTime`). A completed lap then waits up to two seconds after its line crossing for the game's lap result and, when the lap is valid, for the ghost blob the game commits on a personal best. The file is written when both have arrived or when the two seconds have passed. When the hook is not available the file is written at once and the lap's time comes from the clock. The ghost blob comes from the one hook on the game's personal best commit, a byte-scan hook of the in-game boards code that is armed whenever `tt_boards` is on, with or without `tt_bridge`. `SWOFTY_LAP_GAME_RESULT=0` turns the lap result off and `SWOFTY_LAP_GHOST=0` the ghost blob.
 
 ## The file
 
@@ -64,7 +64,7 @@ These keys are left out when the core could not read them:
 | `car.team_stat` `car.vehicle_stat` `car.livery_stat` | the game's stat ids of the player's participant |
 | `board.content_name` | the title of the era box the content id names |
 
-`board.weather` is guessed from the track wetness when the lap starts. The core has no read of the Time Trial weather setting. `board.game_board` and `board.track_name` are not written yet.
+`board.weather` is guessed from the track wetness when the lap starts. The core has no read of the Time Trial weather setting. `board.track_name` is not written yet. `board.game_board` is the last board name the game's leaderboard screen requested in the session, written when its weather matches the lap's. `ghost_id` is the base64 of the 0x30-byte id block of the last committed personal best, written on laps that carry a `GHST` section. Both keys are left out when unknown.
 
 The ghost blob is built by the game on a personal best only, after the lap result. A lap's `GHST` section is the blob committed within two seconds of its line crossing, so a lap that is not a personal best has none.
 
@@ -156,14 +156,14 @@ Personal bests. When the game commits a personal best, the core keeps the 0x30-b
 [boards] personal best committed (time word 0x3f3a1b2c): player id block 0700000000000000 ...
 ```
 
-Guards. These run whenever the core runs, with or without `tt_bridge`. While the session's content is an addon's, the core returns at the entry of the game's remote storage upload, remote storage download and Racenet post, so a lap in addon content never reaches the publisher's boards. With the bridge off, `AddLeaderboardEntry` and `UpdateLeaderboardEntryBinaryData` for an addon board are answered locally with `{"Rank":0}` and `{}`.
+Guards. They are off. `"tt_guards": true` in `swofty/tt.json` or `SWOFTY_TT_GUARDS=1` turns them on, and the core logs `[boards] guards off: enable with tt_guards after the in-game confirmation` at arm time when they are off. The facts they use are not confirmed in the running game. With guards on, with or without `tt_bridge`, while the session's content is an addon's, the core returns at the entry of the game's remote storage upload, remote storage download and Racenet post. A lap in addon content does not reach the publisher's boards. With the bridge off and guards on, `AddLeaderboardEntry` and `UpdateLeaderboardEntryBinaryData` for an addon board are answered locally with `{"Rank":0}` and `{}`.
 
 ```
 [boards] guard: remote storage upload guard armed at base+0x2fa3de0: it returns for addon content
 [boards] guard: remote storage upload skipped for addon content swofty.swofty-2022/f1_2022
 ```
 
-`SWOFTY_TT_UPLOAD_GUARD=0`, `SWOFTY_TT_DOWNLOAD_GUARD=0`, `SWOFTY_TT_RACENET_GUARD=0` and `SWOFTY_TT_REQUEST_GUARD=0` turn them off. A step whose hook point does not resolve logs `off, needs <name>` and the rest keep running. Each kind of line is logged a few times and then goes quiet.
+`SWOFTY_TT_UPLOAD_GUARD=0`, `SWOFTY_TT_DOWNLOAD_GUARD=0`, `SWOFTY_TT_RACENET_GUARD=0` and `SWOFTY_TT_REQUEST_GUARD=0` turn single guards off. A step whose hook point does not resolve logs `off, needs <name>` and the rest keep running. Each kind of line is logged a few times and then goes quiet.
 
 ## Events
 

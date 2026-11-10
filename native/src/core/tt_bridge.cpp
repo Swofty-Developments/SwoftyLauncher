@@ -38,9 +38,10 @@ std::string hook_error(const safetyhook::MidHook::Error &e);
 //    sending. The request is written to swofty\tt\outbox\<seq>.json; the flow tick polls swofty\tt\inbox\<seq>.json and
 //    completes the op by calling the method's OnResult with a synthetic response (+0x88 0, +0x98 0, +0x9c status, +0xa0 ->
 //    {data, ?, length}). Unanswered after 8 s: status 504. Only with "tt_bridge": true.
-// 3. Guards, always on: a lap in addon content never reaches the publisher's boards. StartRemoteStorageUpload,
-//    StartRemoteStorageDownload and PostToRacenet return at their entry while the session's content is not the game's own;
-//    with the bridge off the Add/Update requests of an addon board are answered locally.
+// 3. Guards, off until "tt_guards": true in tt.json or SWOFTY_TT_GUARDS=1 (their facts are not confirmed in game): a lap in
+//    addon content never reaches the publisher's boards. StartRemoteStorageUpload, StartRemoteStorageDownload and
+//    PostToRacenet return at their entry while the session's content is not the game's own; with the bridge off the
+//    Add/Update requests of an addon board are answered locally.
 //
 // Every hook point is found by byte scan, gated on the KB build. SWOFTY_TT_UPLOAD_GUARD=0, SWOFTY_TT_DOWNLOAD_GUARD=0,
 // SWOFTY_TT_RACENET_GUARD=0 and SWOFTY_TT_REQUEST_GUARD=0 turn the guards off.
@@ -111,7 +112,7 @@ struct Resolved {
 std::mutex lock;
 tb::Table table(1);
 Resolved found;
-bool bridge_on = false, boards_on = false, request_guard = true, push_hooked = false;
+bool bridge_on = false, boards_on = false, guards_on = false, request_guard = false, push_hooked = false;
 std::atomic<bool> pb_armed{false};
 std::string last_board;
 std::atomic<int> pending_count{0};
@@ -383,7 +384,10 @@ void setup()
         swofty::log("[boards] off: the hook points are this build's byte signatures; this exe is a different build");
         return;
     }
-    request_guard = !env_off("SWOFTY_TT_REQUEST_GUARD", "addon board write guard");
+    char gv[16] = {};
+    DWORD gn = GetEnvironmentVariableA("SWOFTY_TT_GUARDS", gv, sizeof gv);
+    guards_on = (gate.is_object() && gate["tt_guards"].as_bool(false)) || (gn && gn < sizeof gv && !strcmp(gv, "1"));
+    request_guard = guards_on && !env_off("SWOFTY_TT_REQUEST_GUARD", "addon board write guard");
     table = tb::Table(unix_seconds() * 100);
     make_dirs();
 
@@ -431,6 +435,10 @@ void setup()
                                  : "player id block");
     }
 
+    if (!guards_on) {
+        swofty::log("[boards] guards off: enable with tt_guards after the in-game confirmation");
+        return;
+    }
     install_guard(h_upload, S_UPLOAD, upload_mid, "SWOFTY_TT_UPLOAD_GUARD", "remote storage upload guard");
     install_guard(h_download, S_DOWNLOAD, download_mid, "SWOFTY_TT_DOWNLOAD_GUARD", "remote storage download guard");
     install_guard(h_racenet, S_RACENET, racenet_mid, "SWOFTY_TT_RACENET_GUARD", "Racenet post guard");
