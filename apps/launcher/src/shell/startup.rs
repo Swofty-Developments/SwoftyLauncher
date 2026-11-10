@@ -88,12 +88,15 @@ impl Shell {
         let catalog = Self::watch_catalog(cx);
         let mp = Self::start_account(&store, cx);
         Self::watch_multiplayer(window, cx);
+        let root = store.root.clone();
         let mut shell = Self {
             library,
             store,
             page: Page::News,
             nav: None,
             popover: None,
+            avatar: crate::avatar::load(&root),
+            avatar_link: None,
             root_focus: cx.focus_handle(),
             profiles_open: true,
             layout_width: 1440.,
@@ -317,6 +320,7 @@ impl Shell {
                     .await;
                 this.update(cx, |s, cx| {
                     s.mp = refreshed;
+                    s.sync_avatar(cx);
                     cx.notify();
                 })
                 .ok();

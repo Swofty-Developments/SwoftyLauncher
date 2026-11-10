@@ -366,38 +366,51 @@ impl Shell {
                 .border_color(if focused { p.accent } else { transparent_black() })
         };
         match self.account_name() {
-            Some(name) => ring(
-                h_flex()
-                    .id("account-block")
-                    .occlude()
-                    .h_full()
-                    .flex_shrink_0()
-                    .items_center()
-                    .gap(px(10.))
-                    .px(px(16.))
-                    .bg(p.surface)
-                    .cursor_pointer()
-                    .hover(move |s| s.bg(p.hover)),
-            )
-            .child(avatar(&name, 24., p).rounded_full())
-            .child(
-                div()
-                    .max_w(px(if compact { 90. } else { 150. }))
-                    .truncate()
-                    .text_size(px(13.))
-                    .font_weight(FontWeight::MEDIUM)
-                    .child(name),
-            )
-            .child(
-                Icon::new(IconName::ChevronDown)
-                    .size(px(14.))
-                    .text_color(p.text_muted),
-            )
-            .on_click(cx.listener(|this, _, _, cx| {
-                this.nav = None;
-                this.open_popover(Popover::Account, cx);
-            }))
-            .into_any_element(),
+            Some(name) => {
+                let size = BAR_HEIGHT * 0.6;
+                let face = match &self.avatar {
+                    Some(image) => div()
+                        .size(px(size))
+                        .flex_shrink_0()
+                        .rounded_full()
+                        .overflow_hidden()
+                        .child(img(image.clone()).size_full())
+                        .into_any_element(),
+                    None => avatar(&name, size, p).rounded_full().into_any_element(),
+                };
+                ring(
+                    h_flex()
+                        .id("account-block")
+                        .occlude()
+                        .h_full()
+                        .flex_shrink_0()
+                        .items_center()
+                        .gap(px(14.))
+                        .px(px(24.))
+                        .bg(p.surface)
+                        .cursor_pointer()
+                        .hover(move |s| s.bg(p.hover)),
+                )
+                .child(face)
+                .child(
+                    div()
+                        .max_w(px(if compact { 110. } else { 190. }))
+                        .truncate()
+                        .text_size(px(15.))
+                        .font_weight(FontWeight::SEMIBOLD)
+                        .child(name),
+                )
+                .child(
+                    Icon::new(IconName::ChevronDown)
+                        .size(px(18.))
+                        .text_color(p.text_muted),
+                )
+                .on_click(cx.listener(|this, _, _, cx| {
+                    this.nav = None;
+                    this.open_popover(Popover::Account, cx);
+                }))
+                .into_any_element()
+            }
             None => ring(
                 h_flex()
                     .id("mp-login")

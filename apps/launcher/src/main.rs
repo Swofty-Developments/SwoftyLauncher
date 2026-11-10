@@ -3,6 +3,7 @@
 mod addons;
 mod admin_needed;
 mod app_log;
+mod avatar;
 mod blocks;
 mod browser;
 mod career_saves;

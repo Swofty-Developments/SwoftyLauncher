@@ -46,6 +46,8 @@ pub struct Shell {
     pub(crate) page: Page,
     pub(crate) nav: Option<tabs::Cursor>,
     pub(crate) popover: Option<topbar::Popover>,
+    pub(crate) avatar: Option<Arc<Image>>,
+    pub(crate) avatar_link: Option<String>,
     pub(crate) root_focus: FocusHandle,
     pub(crate) profiles_open: bool,
     pub(crate) layout_width: f32,
@@ -174,6 +176,7 @@ impl Shell {
                             ));
                         }
                         s.mp = Some(session);
+                        s.sync_avatar(cx);
                     }
                     Err(e) => s
                         .mp_toasts
@@ -212,6 +215,7 @@ impl Shell {
             Some(session) => {
                 let gained = session.allowed && !was_allowed;
                 self.mp = Some(session);
+                self.sync_avatar(cx);
                 if gained {
                     self.mp_toasts.push(Notification::success(
                         "Your account has been granted access to: Multiplayer",
@@ -221,5 +225,36 @@ impl Shell {
             None => self.mp = None,
         }
         cx.notify();
+    }
+}
+
+impl Shell {
+    pub(crate) fn sync_avatar(&mut self, cx: &mut Context<Self>) {
+        let Some(link) = self.mp.as_ref().and_then(|s| s.avatar.clone()) else {
+            return;
+        };
+        if self.avatar_link.as_ref() == Some(&link) {
+            return;
+        }
+        self.avatar_link = Some(link.clone());
+        let dir = self.store.root.clone();
+        cx.spawn(async move |this, cx| {
+            let image = cx
+                .background_executor()
+                .spawn(async move {
+                    crate::avatar::fetch(&dir, &link)
+                        .then(|| crate::avatar::load(&dir))
+                        .flatten()
+                })
+                .await;
+            this.update(cx, |s, cx| {
+                if image.is_some() {
+                    s.avatar = image;
+                    cx.notify();
+                }
+            })
+            .ok();
+        })
+        .detach();
     }
 }

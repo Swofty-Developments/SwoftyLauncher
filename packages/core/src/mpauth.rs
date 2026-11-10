@@ -244,7 +244,8 @@ fn refresh_at(base: &str, data_dir: &Path, session: &Session) -> Option<Session>
             Some(false) => session.allowed,
             _ => body.multiplayer_allowed,
         },
-        avatar: avatar_link(body.user.id.as_deref(), body.user.avatar.as_deref()).or_else(|| session.avatar.clone()),
+        avatar: avatar_link(body.user.id.as_deref(), body.user.avatar.as_deref())
+            .or_else(|| session.avatar.clone()),
     };
     let _ = save(data_dir, &fresh);
     Some(fresh)
