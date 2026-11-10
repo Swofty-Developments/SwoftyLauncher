@@ -239,7 +239,10 @@ Board snapshot(const live_car::LiveCar &c)
     Board b;
     auto facts = swofty_core::hooks::core().current();
     b.content = facts && !facts->content.empty() ? facts->content : "game/f1_2025";
-    runtime::tt_bridge::BoardTrack t = runtime::tt_bridge_board_track(runtime::lower(runtime::direct_start::tt::current_track()),
+    std::string code = runtime::direct_start::tt::current_track();
+    if (code.empty())
+        code = runtime::track_select_time_trial();
+    runtime::tt_bridge::BoardTrack t = runtime::tt_bridge_board_track(runtime::lower(code),
                                                                       runtime::tt_bridge::parse_board(runtime::tt_bridge_last_board()).track);
     b.track = t.key;
     b.track_name = t.name;

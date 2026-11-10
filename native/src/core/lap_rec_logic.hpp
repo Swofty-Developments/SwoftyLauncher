@@ -92,6 +92,7 @@ inline const char *discard_name(Discard d)
 
 struct Config {
     size_t max_samples = 60 * 60 * 10;
+    double sample_period_s = 1.0 / 60.0;
     size_t min_samples = 30;
     double min_lap_s = 20.0;
     double min_path_m = 400.0;
@@ -173,8 +174,12 @@ public:
             return discarding(bad);
         if (state_ != State::timing)
             return none;
+        if (cfg_.sample_period_s > 0 && count_ > 0 && f.now_s < next_sample_s_)
+            return none;
         if (count_ >= cfg_.max_samples)
             return discarding(Discard::capped);
+        next_sample_s_ = count_ > 0 && f.now_s - next_sample_s_ < cfg_.sample_period_s ? next_sample_s_ + cfg_.sample_period_s
+                                                                                       : f.now_s + cfg_.sample_period_s;
         buf_.insert(buf_.end(), sample, sample + stride);
         count_++;
         stride_ = stride;
@@ -258,6 +263,7 @@ private:
     uint32_t index_ = 0;
     Frame last_;
     bool have_last_ = false;
+    double next_sample_s_ = 0;
 };
 
 enum class Col : uint8_t {

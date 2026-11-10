@@ -263,6 +263,7 @@ void heap_sizes_commit();
 bool save_heap_raised(uint64_t &bytes);
 std::vector<CoreMixins> track_select_mixins();
 void track_select_commit();
+std::string track_select_time_trial();
 std::vector<CoreMixins> team_slots_mixins();
 void team_slots_commit();
 std::vector<CoreMixins> netplay_icons_mixins();
