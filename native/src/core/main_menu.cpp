@@ -293,6 +293,7 @@ struct Chain {
     Step step = Step::idle;
     bool time_trial = false;
     uint64_t started = 0, container_at = 0, release_at = 0;
+    bool use_pad = false;
 } chain;
 std::mutex chain_lock;
 
@@ -526,7 +527,13 @@ void read_state(bool force = false)
     set_offline_text(next.online);
 }
 
-bool pad_connected_and_watch(bool *connected)
+struct PadSample {
+    bool connected = false;
+    uint32_t packet = 0;
+    uint16_t buttons = 0;
+};
+
+PadSample sample_pad()
 {
     using Get_t = DWORD(WINAPI *)(DWORD, void *);
     static Get_t get = [] {
@@ -536,22 +543,43 @@ bool pad_connected_and_watch(bool *connected)
         return m ? reinterpret_cast<Get_t>(GetProcAddress(m, "XInputGetState")) : nullptr;
     }();
     uint8_t buf[16] = {};
-    *connected = get && get(0, buf) == 0;
-    uint16_t buttons;
-    std::memcpy(&buttons, buf + 4, 2);
-    return *connected && (buttons & logic::WATCH_PAD_MASK);
+    PadSample s;
+    s.connected = get && get(0, buf) == 0;
+    std::memcpy(&s.packet, buf, 4);
+    std::memcpy(&s.buttons, buf + 4, 2);
+    return s;
+}
+
+bool any_key_down()
+{
+    for (int vk = 8; vk < 255; vk++)
+        if (GetAsyncKeyState(vk) & 0x8000)
+            return true;
+    return false;
 }
 
 bool bind_pressed(bool *pad)
 {
     static bool was = false;
-    bool connected = false;
-    bool y = pad_connected_and_watch(&connected);
-    *pad = connected;
+    static uint32_t last_packet = 0;
+    static uint64_t pad_at = 0, key_at = 0;
+    uint64_t now = GetTickCount64();
+    PadSample p = sample_pad();
+    if (p.connected && p.packet != last_packet)
+        pad_at = now;
+    last_packet = p.packet;
+    bool key_active = GetForegroundWindow() != nullptr && any_key_down();
+    if (key_active)
+        key_at = now;
+    static bool shown_pad = false;
+    if (pad_at != key_at)
+        shown_pad = p.connected && pad_at > key_at;
+    *pad = shown_pad;
+    bool y = p.connected && (p.buttons & logic::WATCH_PAD_MASK);
     bool key = (GetAsyncKeyState(logic::WATCH_KEY_VK) & 0x8000) != 0 && GetForegroundWindow() != nullptr;
-    bool now = y || key;
-    bool edge = now && !was;
-    was = now;
+    bool down = y || key;
+    bool edge = down && !was;
+    was = down;
     return edge;
 }
 
@@ -593,8 +621,17 @@ void start_chain(bool time_trial)
     chain.time_trial = time_trial;
     chain.started = GetTickCount64();
     container_vm = nullptr;
-    swofty::log("[main-menu] chain: %s card pressed; route %s, then the activity container's '%s' command",
-                time_trial ? "Time Trial" : "Grand Prix", route_name(), time_trial ? "time_trial" : "grand_prix_new");
+    if (!time_trial && std::strcmp(env("SWOFTY_MAIN_MENU_GP"), "command") != 0) {
+        runtime::pad::setup();
+        chain.use_pad = runtime::pad::why().empty();
+        if (!chain.use_pad)
+            swofty::log("[main-menu] chain: the virtual pad is unavailable (%s); Grand Prix falls back to the grand_prix_new command",
+                        runtime::pad::why().c_str());
+    }
+    swofty::log("[main-menu] chain: %s card pressed; route %s, then %s", time_trial ? "Time Trial" : "Grand Prix", route_name(),
+                time_trial ? "the activity container's 'time_trial' command"
+                           : (chain.use_pad ? "A on the Play tab's first tile through the virtual pad"
+                                            : "the activity container's 'grand_prix_new' command"));
 }
 
 }
@@ -674,18 +711,18 @@ void style_settings(void *item)
 
 void prepare();
 void poll_bind();
-void apply_texts();
 
 void tick()
 {
-    if (uint64_t at = hub_at.load(); at && hub_router.load()) {
+    if (uint64_t at = hub_at.load(); at) {
         uint64_t now = GetTickCount64();
-        void *vm = hub_vm.load();
-        bool live = vm && hub_update_at.load() > at && now - at >= 500;
-        if (live || now - at > 3000) {
+        if (!hub_router.load() && now - at > 1500) {
+            hub_at = 0;
+            swofty::log("[main-menu] back: no route router was captured before the hub opened; Back stays stock");
+        } else if (hub_router.load() && now - at >= 350) {
             hub_at = 0;
             NeStr *route = nullptr;
-            Ne_Make_StrFromCStr(&route, "back_1", 0, 0);
+            Ne_Make_StrFromCStr(&route, "back", 0, 0);
             {
                 std::lock_guard<std::mutex> g(swap_lock);
                 swap_screens.clear();
@@ -693,28 +730,21 @@ void tick()
             }
             swap_at = now;
             hub_fired_at = now;
-            if (live && runtime::readable(static_cast<uint8_t *>(vm) + 0x28, 8)) {
-                void *router = *reinterpret_cast<void **>(static_cast<uint8_t *>(vm) + 0x28);
-                swofty::log("[main-menu] back: firing back_1 on the live hub view model %p (router %p, group id 0x%08x)", vm, router,
-                            *reinterpret_cast<uint32_t *>(static_cast<uint8_t *>(vm) + 0x250));
-                if (h_fire)
-                    h_fire.call<void>(router, vm, &route, 0);
-            } else {
-                static uint8_t fake_vm[0x400];
-                *reinterpret_cast<uint32_t *>(fake_vm + 0x250) = logic::djb2("fe_f1_world");
-                swofty::log("[main-menu] back: no live hub view model was seen; firing back_1 on a scratch view model (may not navigate)");
-                if (h_fire)
-                    h_fire.call<void>(hub_router.load(), fake_vm, &route, 0);
-            }
+            static uint8_t scratch[0x400];
+            *reinterpret_cast<uint32_t *>(scratch + 0x250) = logic::djb2("fe_f1_world");
+            swofty::log("[main-menu] back: the hub opened %llu ms ago; firing route 'back' in group fe_f1_world (0x%08x), the route its own Back button fires",
+                        (unsigned long long)(now - at), logic::djb2("fe_f1_world"));
+            if (h_fire)
+                h_fire.call<void>(hub_router.load(), scratch, &route, 0);
             Ne_Make_StrFromCStr(&route, nullptr, 0, 0);
         }
     }
     if (uint64_t at = hub_fired_at.load(); at && GetTickCount64() - at > 1500) {
         hub_fired_at = 0;
         uint64_t last = hub_update_at.load();
-        swofty::log("[main-menu] back: 1.5 s after back_1 the hub view model %s (last update %llu ms ago); fe_home panel %s",
-                    hub_recent() ? "is STILL updating, so the hub is still on screen" : "has stopped updating",
-                    (unsigned long long)(GetTickCount64() - last), drawing() ? "is due" : "is not due");
+        swofty::log("[main-menu] back: 1.5 s after route back the hub update hook %s; fe_home panel %s",
+                    last ? ("last fired " + std::to_string(GetTickCount64() - last) + " ms ago").c_str() : "never fired (it does not tick on this screen)",
+                    drawing() ? "is due" : "is not due");
     }
     if (uint64_t at = swap_at.load(); at && GetTickCount64() - at > 1000) {
         std::lock_guard<std::mutex> g(swap_lock);
@@ -729,7 +759,6 @@ void tick()
         if (patched.load() && !panel_disabled.load() && std::strcmp(env("SWOFTY_MAIN_MENU_PANEL"), "0") != 0) {
             prepare();
             poll_bind();
-            apply_texts();
         }
     }
     int want = strip_wanted.load();
@@ -761,19 +790,16 @@ void tick()
         chain.step = Step::done;
         return;
     }
-    if (chain.step == Step::wait_container && !chain.time_trial && !chain.release_at && chain.container_at &&
-        container_vm.load() && now - chain.container_at > 2600 && std::strcmp(env("SWOFTY_MAIN_MENU_GP"), "command") != 0) {
-        runtime::pad::setup();
-        if (runtime::pad::why().empty()) {
-            runtime::pad::claim(true);
-            runtime::pad::set(runtime::pad::A);
-            chain.release_at = now + 160;
-            swofty::log("[main-menu] chain: pressing A on the Play tab's first tile (the stock Grand Prix entry decides between saves and a new Grand Prix)");
-            return;
-        }
-        swofty::log("[main-menu] chain: the virtual pad is unavailable (%s); using the grand_prix_new command", runtime::pad::why().c_str());
+    if (chain.step == Step::wait_container && chain.use_pad && !chain.release_at && chain.container_at && container_vm.load() &&
+        now - chain.container_at > 2600) {
+        runtime::pad::claim(true);
+        runtime::pad::set(runtime::pad::A);
+        chain.release_at = now + 160;
+        swofty::log("[main-menu] chain: pressing A on the Play tab's first tile (the stock Grand Prix entry decides between saves and a new Grand Prix)");
+        return;
     }
-    if (chain.step == Step::wait_container && !chain.release_at && (chain.time_trial || std::strcmp(env("SWOFTY_MAIN_MENU_GP"), "command") == 0 || !runtime::pad::why().empty()) && chain.container_at && container_vm.load() && now - chain.container_at > 900) {
+    if (chain.step == Step::wait_container && !chain.use_pad && !chain.release_at && chain.container_at && container_vm.load() &&
+        now - chain.container_at > 900) {
         NeStr *name = nullptr;
         Ne_Make_StrFromCStr(&name, chain.time_trial ? "time_trial" : "grand_prix_new", 0, 0);
         swofty::log("[main-menu] chain: raising '%s' on the activity container %p",
@@ -792,7 +818,8 @@ void screen(const char *name)
         return;
     if (via.load() && !std::strcmp(name, "fe_f1_world")) {
         hub_at = GetTickCount64();
-        swofty::log("[main-menu] back: the F1 World hub opened while back-to-menu is armed; its own back route follows in 350 ms");
+        swofty::log("[main-menu] back: the F1 World hub opened while back-to-menu is armed (router %p); route 'back' follows in 350 ms",
+                    hub_router.load());
     }
     if (uint64_t at = swap_at.load(); at && GetTickCount64() - at < 5000)
     {
@@ -900,41 +927,6 @@ void prepare()
     swofty::log("[main-menu] panel prepared on the flow thread: avatar slot %d, video slot %d", p->avatar_slot, p->video_slot);
 }
 
-void apply_texts()
-{
-    static std::string last_panel, last_title, last_prompt;
-    static bool done = false;
-    std::shared_ptr<const Prepared> p;
-    {
-        std::lock_guard<std::mutex> g(prepared_lock);
-        p = prepared;
-    }
-    if (!p)
-        return;
-    std::string who = p->s.signed_in ? (p->s.name.empty() ? std::string("Signed in to Discord") : "Signed in as " + p->s.name)
-                                     : std::string("Not signed in to Discord");
-    std::string panel = p->version + "  -  " + (p->s.signed_in ? (p->s.name.empty() ? std::string("Discord") : p->s.name) : std::string("Not signed in"));
-    std::string title = p->s.video_url.empty() ? std::string() : p->s.video_title;
-    std::string prompt = p->s.video_url.empty() ? std::string() : logic::watch_line(logic::button_name(bind_pad.load()));
-    if (done && panel == last_panel && title == last_title && prompt == last_prompt)
-        return;
-    bool a = ui_vm_set_path("ui_menu_data.swofty_panel_text", 0, panel.c_str()) &&
-             ui_vm_set_path("ui_menu_data.swofty_panel_title", 0, who.c_str());
-    bool b = ui_vm_set_path("ui_menu_data.swofty_video_title", 0, title.c_str());
-    bool c = ui_vm_set_path("ui_menu_data.swofty_video_prompt", 0, prompt.c_str());
-    static int fails = 0;
-    if (a && b && c) {
-        done = true;
-        last_panel = panel;
-        last_title = title;
-        last_prompt = prompt;
-        swofty::log("[main-menu] native panel text set (account: %s; video: %s / %s)", panel.c_str(),
-                    title.empty() ? "(none)" : title.c_str(), prompt.empty() ? "(none)" : prompt.c_str());
-    } else if (fails++ % 60 == 0) {
-        swofty::log("[main-menu] could not set the native panel text yet (%d %d %d)", int(a), int(b), int(c));
-    }
-}
-
 void poll_bind()
 {
     static uint64_t last = 0;
@@ -954,6 +946,40 @@ void poll_bind()
     bind_pad = on_pad;
     if (pressed)
         open_video(p->s);
+}
+
+void fade_panel(hud::Frame &f, float x, float y, float w, float h, float fade_left, float fade_right, float k)
+{
+    const int slices = 48;
+    auto smooth = [](float t) {
+        t = t < 0 ? 0 : t > 1 ? 1 : t;
+        return t * t * (3 - 2 * t);
+    };
+    for (int i = 0; i < slices; i++) {
+        float t0 = float(i) / slices, t1 = float(i + 1) / slices, tm = (t0 + t1) * 0.5f;
+        float a = (fade_left > 0 && tm < fade_left ? smooth(tm / fade_left) : 1.0f) *
+                  (fade_right > 0 && tm > 1 - fade_right ? smooth((1 - tm) / fade_right) : 1.0f);
+        uint32_t fill = 0x0b0d1200u | uint32_t(a * 0xe4);
+        uint32_t line = 0xffffff00u | uint32_t(a * 0x50);
+        float sx = x + t0 * w, sw = (t1 - t0) * w + 0.6f;
+        hud::rect(f, sx, y, sw, h, fill);
+        hud::rect(f, sx, y, sw, 1.3f * k, line);
+        hud::rect(f, sx, y + h - 1.3f * k, sw, 1.3f * k, line);
+    }
+}
+
+void key_glyph(hud::Frame &f, float x, float y, float h, float k, const std::string &key, bool pad_style)
+{
+    hud::TextStyle st;
+    st.px = h * 0.62f;
+    st.rgba = 0xf3f5f9ffu;
+    float w = 0, hh = 0;
+    hud::measure(st, key, &w, &hh);
+    float bw = pad_style ? std::max(h * 1.5f, w + 18 * k) : std::max(h, w + 14 * k);
+    float radius = pad_style ? h * 0.5f : 6 * k;
+    hud::rect_rounded(f, x, y, bw, h, radius, 0xffffff1cu);
+    hud::rect_rounded_outline(f, x, y, bw, h, radius, 1.4f * k, 0xf3f5f9d8u);
+    hud::text(f, x + (bw - w) * 0.5f, y + (h - st.px) * 0.5f, st, key);
 }
 
 void image_rounded(hud::Frame &f, int slot, float x, float y, float w, float h, float r, float u0, float v0, float u1, float v1)
@@ -1053,35 +1079,77 @@ void paint(hud::Frame &f, uint64_t now)
     if (!std::exchange(told_drawn, true))
         swofty::log("[main-menu] panel: first draw on a %.0fx%.0f frame; video card %s, avatar %s", double(W), double(H),
                     p->video_slot >= 0 ? "yes" : "no", p->avatar_slot >= 0 ? "yes" : "no");
-    const float unit = logic::scene_scale(H);
-    if (p->avatar_slot >= 0) {
-        auto at = logic::scene_to_px(logic::ACCOUNT_AT_X + logic::ACCOUNT_AVATAR_DX,
-                                     logic::ACCOUNT_AT_Y + logic::ACCOUNT_AVATAR_DY, W, H);
-        float size = float(logic::ACCOUNT_AVATAR_SIZE) * unit;
-        hud::image(f, p->avatar_slot, at.x, at.y, size, size, 0xffffffff);
+    const float k = H / 1028.0f;
+    auto anchor = logic::scene_to_px(logic::CARD_RIGHT_X, logic::CARD_BOTTOM_Y, W, H);
+    const float right = anchor.x;
+    {
+        hud::TextStyle cap_style;
+        cap_style.px = 15 * k;
+        cap_style.rgba = 0xa9afbfffu;
+        cap_style.tracking = 15 * k * 0.12f;
+        hud::TextStyle name_style;
+        name_style.px = 26 * k;
+        name_style.rgba = 0xf3f5f9ffu;
+        hud::TextStyle ver_style;
+        ver_style.px = 18 * k;
+        ver_style.rgba = 0xa9afbfffu;
+        std::string caption = p->s.signed_in ? "SIGNED IN WITH DISCORD" : "NOT SIGNED IN";
+        std::string who = p->s.signed_in ? (p->s.name.empty() ? std::string("Discord") : p->s.name) : std::string("Swofty Launcher");
+        float tmp = 0, cw = 0, nw = 0, vw = 0;
+        hud::measure(cap_style, caption, &cw, &tmp);
+        hud::measure(name_style, who, &nw, &tmp);
+        hud::measure(ver_style, p->version, &vw, &tmp);
+        float text_w = std::max({cw, nw, vw});
+        float avatar = 44 * k, pad = 12 * k, gap = 12 * k;
+        float block_h = cap_style.px * 1.25f + 3 * k + name_style.px * 1.15f + 2 * k + ver_style.px * 1.2f;
+        float ph = std::max(avatar, block_h) + 2 * pad;
+        float pw = pad + avatar + gap + 3 * k + 9 * k + text_w + 18 * k;
+        float px = right - pw, py = 44 * k;
+        fade_panel(f, px - 110 * k, py, pw + 110 * k, ph, 0.45f, 0.04f, k);
+        float ax = px + pad, ay = py + (ph - avatar) * 0.5f;
+        if (p->avatar_slot >= 0) {
+            image_rounded(f, p->avatar_slot, ax, ay, avatar, avatar, avatar * 0.5f, 0, 0, 1, 1);
+        } else {
+            hud::rect_rounded(f, ax, ay, avatar, avatar, avatar * 0.5f, p->s.signed_in ? 0x5865f2ffu : 0x3a3f4bffu);
+            hud::TextStyle initial;
+            initial.px = 24 * k;
+            initial.rgba = 0xffffffffu;
+            std::string letter = p->s.signed_in && !p->s.name.empty() ? p->s.name.substr(0, 1) : "S";
+            float lw = 0;
+            hud::measure(initial, letter, &lw, &tmp);
+            hud::text(f, ax + (avatar - lw) * 0.5f, ay + (avatar - initial.px) * 0.5f, initial, letter);
+        }
+        float bx = ax + avatar + gap, by = py + (ph - block_h) * 0.5f;
+        hud::rect_rounded(f, bx, by, 3 * k, block_h, 1.5f * k, 0xe10600ffu);
+        float tx = bx + 3 * k + 9 * k, yy = by;
+        hud::text(f, tx, yy, cap_style, caption);
+        yy += cap_style.px * 1.25f + 3 * k;
+        hud::text(f, tx, yy, name_style, who);
+        yy += name_style.px * 1.15f + 2 * k;
+        hud::text(f, tx, yy, ver_style, p->version);
     }
     if (p->video_slot >= 0 && p->video_w && p->video_h) {
-        const float k = H / 1028.0f;
         hud::TextStyle cap_style;
         cap_style.px = 16 * k;
-        cap_style.rgba = 0xa9afbfff;
+        cap_style.rgba = 0xa9afbfffu;
         cap_style.tracking = 16 * k * 0.12f;
         hud::TextStyle title_style;
         title_style.px = 24 * k;
-        title_style.rgba = 0xf3f5f9ff;
-        hud::TextStyle key_style;
-        key_style.px = 17 * k;
-        key_style.rgba = 0xf3f5f9ff;
+        title_style.rgba = 0xf3f5f9ffu;
         hud::TextStyle watch_style;
         watch_style.px = 20 * k;
-        watch_style.rgba = 0xd5d9e3ff;
+        watch_style.rgba = 0xd5d9e3ffu;
         const std::string caption = "LATEST VIDEO";
-        const std::string key = logic::button_name(bind_pad.load());
-        float tmp_h = 0, cap_w = 0, key_w = 0, watch_w = 0;
+        const bool pad_dev = bind_pad.load();
+        const std::string key = logic::button_name(pad_dev);
+        float tmp_h = 0, cap_w = 0, watch_w = 0, key_w = 0;
+        hud::TextStyle key_probe;
+        key_probe.px = 26 * k * 0.62f;
         hud::measure(cap_style, caption, &cap_w, &tmp_h);
-        hud::measure(key_style, key, &key_w, &tmp_h);
         hud::measure(watch_style, "Watch", &watch_w, &tmp_h);
-        const float cap_box_w = std::max(30 * k, key_w + 16 * k), cap_box_h = 26 * k;
+        hud::measure(key_probe, key, &key_w, &tmp_h);
+        const float row_h = 26 * k;
+        const float glyph_w = pad_dev ? std::max(row_h * 1.5f, key_w + 18 * k) : std::max(row_h, key_w + 14 * k);
         auto plan0 = logic::plan_card(k, 0);
         auto title_lines = wrap_title(title_style, p->s.video_title, plan0.text_max, 2);
         float title_w = 0;
@@ -1090,17 +1158,15 @@ void paint(hud::Frame &f, uint64_t now)
             hud::measure(title_style, line, &w, &tmp_h);
             title_w = std::max(title_w, w);
         }
-        float text_w = std::max({cap_w, title_w, cap_box_w + 10 * k + watch_w});
+        float text_w = std::max({cap_w, title_w, glyph_w + 10 * k + watch_w});
         auto card = logic::plan_card(k, text_w);
-        auto anchor = logic::scene_to_px(logic::CARD_RIGHT_X, logic::CARD_BOTTOM_Y, W, H);
-        float cx = anchor.x - card.width, cy = anchor.y - card.height;
-        hud::rect_rounded(f, cx, cy, card.width, card.height, 10 * k, 0x0c0e13eaU);
-        hud::rect_rounded_outline(f, cx, cy, card.width, card.height, 10 * k, 1.2f * k, 0xffffff2eU);
+        float cx = right - card.width, cy = anchor.y - card.height;
+        fade_panel(f, cx - 110 * k, cy, card.width + 110 * k, card.height, 0.45f, 0.04f, k);
         float tx = cx + card.pad + 12 * k;
-        float cap_h = cap_style.px * 1.25f, title_h = title_style.px * 1.2f * float(title_lines.size()), row_h = cap_box_h;
+        float cap_h = cap_style.px * 1.25f, title_h = title_style.px * 1.2f * float(title_lines.size());
         float block_h = cap_h + 6 * k + title_h + 8 * k + row_h;
         float ty = cy + (card.height - block_h) * 0.5f;
-        hud::rect_rounded(f, cx + card.pad, ty, 3 * k, block_h, 1.5f * k, 0xe10600ffU);
+        hud::rect_rounded(f, cx + card.pad, ty, 3 * k, block_h, 1.5f * k, 0xe10600ffu);
         hud::text(f, tx, ty, cap_style, caption);
         float yy = ty + cap_h + 6 * k;
         for (auto &line : title_lines) {
@@ -1108,9 +1174,8 @@ void paint(hud::Frame &f, uint64_t now)
             yy += title_style.px * 1.2f;
         }
         yy += 8 * k;
-        hud::rect_rounded_outline(f, tx, yy, cap_box_w, cap_box_h, 6 * k, 1.4f * k, 0xf3f5f9d0U);
-        hud::text(f, tx + (cap_box_w - key_w) * 0.5f, yy + (cap_box_h - key_style.px) * 0.5f, key_style, key);
-        hud::text(f, tx + cap_box_w + 10 * k, yy + (cap_box_h - watch_style.px) * 0.5f, watch_style, "Watch");
+        key_glyph(f, tx, yy, row_h, k, key, pad_dev);
+        hud::text(f, tx + glyph_w + 10 * k, yy + (row_h - watch_style.px) * 0.5f, watch_style, "Watch");
         float want = card.thumb_w / card.thumb_h, have = float(p->video_w) / float(p->video_h);
         float v0 = 0, v1 = 1, u0 = 0, u1 = 1;
         if (have < want) {
