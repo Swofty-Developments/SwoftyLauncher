@@ -8,6 +8,7 @@ use swofty_core::baseline::Identity;
 use swofty_core::install::Game;
 use swofty_core::store::Store;
 use swofty_core::timetrial::api::{Api, Boards};
+use swofty_core::timetrial::integrity::{self, Module};
 use swofty_core::timetrial::queue::{Entry, Folder, Limits, Queue, unix_now};
 use swofty_core::timetrial::upload::{self, Watcher};
 use swofty_core::timetrial::{self, token};
@@ -172,6 +173,19 @@ pub fn begin(
         move || fingerprint(&s, &p, &identity),
         |line| say("laps", line),
     ))
+}
+
+/// The verified integrity module for a session when Time Trial boards is on and the player is signed in.
+/// Any trouble is one log line and the session goes on without it.
+pub fn integrity(store: &Store, out: &dyn Fn(&str)) -> Option<Module> {
+    let token = token(&store.root, &store.config())?;
+    match integrity::ensure(&store.root, &Api::new(&token)) {
+        Ok(m) => Some(m),
+        Err(why) => {
+            out(&format!("integrity module: not loaded for this session: {why}"));
+            None
+        }
+    }
 }
 
 pub fn end(watcher: Option<Watcher>, game: &std::path::Path) {
