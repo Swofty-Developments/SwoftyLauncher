@@ -602,6 +602,19 @@ void lap_rec_assists(const uint8_t *summary, size_t size, int device, int perfor
     assist_reading = {raw, device, performance, now_seconds(), false};
 }
 
+bool lap_rec_current_board(std::string &content, std::string &track, std::string &weather)
+{
+    if (swofty_core::apply::moments::session_mode_track().first != "time_trial")
+        return false;
+    live_car::LiveCar c;
+    live_car::read(c);
+    Board b = snapshot(c);
+    content = b.content;
+    track = b.track;
+    weather = b.weather;
+    return true;
+}
+
 void lap_rec_native_trace(const uint8_t *data, size_t size)
 {
     if (!active.load(std::memory_order_relaxed))
@@ -664,7 +677,7 @@ void lap_rec_session_enter()
     queued.clear();
     game_in.clear();
     ghost_in.clear();
-    sealer = lr::Sealer();
+    sealer = lr::Sealer(lr::Sealer::Config{5.0, 5.0});
     contexts.clear();
     planned = false;
     gate = lr::gate_of(read_file(swofty_root() + L"tt.json", size_t(1) << 20));

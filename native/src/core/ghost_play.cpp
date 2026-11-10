@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <ctime>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -102,6 +103,8 @@ uintptr_t saved_for = 0;
 struct Request {
     std::string path, label, driver, team;
     bool replay = false;
+    runtime::ghost_request::Request meta;
+    int64_t read_unix = 0;
     std::vector<uint8_t> blob;
     std::string kind;
     uint64_t stamp = 0;
@@ -287,6 +290,8 @@ bool load_request(const std::wstring &play, Request &out, std::string &why)
     out.replay = req.mode == runtime::ghost_request::Mode::replay;
     out.driver = req.driver;
     out.team = req.team;
+    out.meta = req;
+    out.read_unix = int64_t(time(nullptr));
     std::string bytes = runtime::read_file(runtime::wide(out.path), size_t(64) << 20);
     if (bytes.empty()) {
         why = "the lap file is missing or empty";
@@ -302,6 +307,11 @@ bool load_request(const std::wstring &play, Request &out, std::string &why)
             return false;
         }
         std::string w;
+        std::string lap_track = runtime::ghost_request::lower(std::string(parsed.header["board"]["track"].as_string()));
+        if (!lap_track.empty() && lap_track != out.meta.track) {
+            why = "the lap file is for track '" + lap_track + "', the request names '" + out.meta.track + "'";
+            return false;
+        }
         auto trace = gt::trace_of_lap(parsed, &w);
         if (!trace) {
             why = "the lap does not convert: " + w;
@@ -337,38 +347,43 @@ void publish(std::shared_ptr<const Request> r, uint64_t gen)
     pub_gen = gen;
 }
 
+void drop_stale_request(const std::wstring &play)
+{
+    WIN32_FILE_ATTRIBUTE_DATA d{};
+    FILETIME created, exited, kernel, user;
+    if (!GetFileAttributesExW(play.c_str(), GetFileExInfoStandard, &d) ||
+        !GetProcessTimes(GetCurrentProcess(), &created, &exited, &kernel, &user))
+        return;
+    if (CompareFileTime(&d.ftLastWriteTime, &created) < 0) {
+        DeleteFileW(play.c_str());
+        swofty::log("[ghost] stale play.json (older than this game process) deleted");
+    }
+}
+
 void worker()
 {
-    uint64_t last_stamp = 0, gen = 0;
+    uint64_t gen = 0;
+    std::wstring play = ghost_dir() + L"play.json", done = ghost_dir() + L"play.done.json";
+    drop_stale_request(play);
     while (worker_run.load()) {
         Sleep(500);
-        std::wstring play = ghost_dir() + L"play.json";
         WIN32_FILE_ATTRIBUTE_DATA d{};
-        if (!GetFileAttributesExW(play.c_str(), GetFileExInfoStandard, &d)) {
-            if (last_stamp) {
-                last_stamp = 0;
-                publish(nullptr, 0);
-                swofty::log("[ghost] play.json is gone; the ghost is disarmed");
-            }
+        if (!GetFileAttributesExW(play.c_str(), GetFileExInfoStandard, &d))
             continue;
-        }
-        uint64_t stamp = (uint64_t(d.ftLastWriteTime.dwHighDateTime) << 32) | d.ftLastWriteTime.dwLowDateTime;
-        stamp ^= (uint64_t(d.nFileSizeLow) << 1);
-        if (stamp == last_stamp)
-            continue;
-        last_stamp = stamp;
         auto r = std::make_shared<Request>();
         std::string why;
-        if (!load_request(play, *r, why)) {
+        bool ok = load_request(play, *r, why);
+        MoveFileExW(play.c_str(), done.c_str(), MOVEFILE_REPLACE_EXISTING);
+        if (!ok) {
             publish(nullptr, 0);
-            swofty::log("[ghost] request refused: %s", why.c_str());
+            swofty::log("[ghost] request refused and consumed: %s", why.c_str());
             continue;
         }
-        r->stamp = stamp;
-        swofty::log("[ghost] request: mode %s, %s lap '%s', driver '%s' team '%s': %zu records, %zu bytes, lap %.3f s",
-                    r->replay ? "replay (plays as the personal best ghost; open the viewer on that car)" : "ghost", r->kind.c_str(),
-                    r->path.c_str(), r->driver.empty() ? r->label.c_str() : r->driver.c_str(), r->team.c_str(), r->records,
-                    r->blob.size(), r->lap_s);
+        swofty::log("[ghost] request consumed (play.done.json): mode %s, %s lap '%s', driver '%s' team '%s', board track '%s': %zu records, "
+                    "%zu bytes, lap %.3f s; it arms only in a Time Trial on that track",
+                    r->replay ? "replay" : "ghost", r->kind.c_str(), r->path.c_str(),
+                    r->meta.driver.empty() ? r->label.c_str() : r->meta.driver.c_str(), r->meta.team.c_str(), r->meta.track.c_str(),
+                    r->records, r->blob.size(), r->lap_s);
         publish(r, ++gen);
     }
 }
@@ -484,8 +499,19 @@ void game_step(uintptr_t comp)
         }
     } else
         playing = false;
-    if (d.what == runtime::ghost_arm::Do::arm && req)
+    if (d.what == runtime::ghost_arm::Do::arm && req) {
+        runtime::ghost_request::Session session;
+        session.time_trial = runtime::lap_rec_current_board(session.content, session.track, session.weather);
+        auto verdict = runtime::ghost_request::check(req->meta, session, int64_t(time(nullptr)), req->read_unix);
+        if (verdict != runtime::ghost_request::Verdict::ok) {
+            swofty::log("[ghost] request discarded: %s (requested track '%s', session track '%s', time trial %d)",
+                        runtime::ghost_request::verdict_name(verdict), req->meta.track.c_str(), session.track.c_str(),
+                        session.time_trial ? 1 : 0);
+            publish(nullptr, 0);
+            return;
+        }
         do_arm(comp, d.slot, *req);
+    }
     else if (d.what == runtime::ghost_arm::Do::restore)
         do_restore(comp);
 }
@@ -524,6 +550,8 @@ void tick_mid(safetyhook::Context &c)
         component = comp;
         swofty::log("[ghost] telemetry component 0x%llx", (unsigned long long)comp);
         last_slots.clear();
+        if (arming.armed())
+            publish(nullptr, 0);
         arming.component(comp);
     }
     if (record_on)
