@@ -955,6 +955,19 @@ void handler_watch(uint64_t handler, const std::string &board)
     need(!task_out, "a leaderboard task is out (+0x1d0/+0x1d4)");
     need(b(0x66) == 0, "+0x66 set (personal best save pending)");
     need(finder_state - 2 < 0 || finder_state - 2 > 7, "the rival finder is mid-search");
+    uint64_t sysobj = peek64(handler + 0x18), flag_mask = sysobj ? peek64(sysobj + 0xba8) : 0;
+    unsigned flag = sysobj ? unsigned(peek32(sysobj + 0xba0) & 0xff) : 0, limit = sysobj ? peek32(sysobj + 0xbd0) : 0;
+    bool check1 = sysobj && ((flag_mask & 1) == flag);
+    uint64_t lst = sysobj ? peek64(sysobj + 0x38) : 0, v0 = lst ? peek64(lst + 8) : 0, p1 = v0 ? peek64(v0 + 8) : 0, p2 = p1 ? peek64(p1 + 0x1a8) : 0, p3 = p2 ? peek64(p2 + 0x30) : 0;
+    float floor_s = 0;
+    if (p3) {
+        uint32_t m = peek32(p3 + 0x2a0) ^ peek32(p3 + 0x2a8);
+        memcpy(&floor_s, &m, 4);
+    }
+    char checks[240];
+    snprintf(checks, sizeof checks, "check 1 (session timer flag) %s [limit %u s], validator 0 minimum lap floor %.3f s%s", check1 ? "ok" : "TRIPPED", limit, floor_s,
+             p3 ? "" : " (not readable)");
+    blockers += std::string(blockers.empty() ? "" : "; ") + checks;
     char t[640];
     snprintf(t, sizeof t,
              "entry state %d (0 reading, 1 entry known, 2 entry unusable, 4 no entry)%s, task out %d, download %u, flags 60..66 %u %u %u %u %u %u %u, memory pb valid +0x288 %u, "
