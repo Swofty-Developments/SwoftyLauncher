@@ -1,0 +1,780 @@
+#pragma once
+
+#include <swofty/json.hpp>
+
+#include <algorithm>
+#include <array>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <map>
+#include <memory>
+#include <optional>
+#include <set>
+#include <string>
+#include <string_view>
+#include <vector>
+
+namespace runtime::tt_bridge {
+
+namespace json = swofty::json;
+
+constexpr int64_t TIMEOUT_MS = 8000;
+constexpr size_t MAX_PENDING = 32;
+constexpr int FIRST_ADDON_DESCRIPTOR = 6, LAST_NAMED_DESCRIPTOR = 99;
+constexpr size_t MAX_XML_BOARDS = 6000;
+constexpr size_t ID_BLOCK = 0x30;
+
+enum class Say { none, line, last };
+
+inline Say say(int occurrence, int first = 6)
+{
+    if (occurrence < 1 || occurrence > first)
+        return Say::none;
+    return occurrence == first ? Say::last : Say::line;
+}
+
+inline bool switch_off(const char *value)
+{
+    if (!value)
+        return false;
+    return (value[0] == '0' && !value[1]) || !strcmp(value, "off");
+}
+
+// Board names
+
+struct BoardName {
+    bool ok = false;
+    int descriptor = -1, track = -1;
+    char weather = 0;
+    bool addon() const { return ok && descriptor >= FIRST_ADDON_DESCRIPTOR; }
+};
+
+inline BoardName parse_board(std::string_view s)
+{
+    BoardName b;
+    if (s.size() < 8 || s.size() > 12 || s.substr(0, 3) != "LBV")
+        return b;
+    char w = s.back();
+    if (w != 'D' && w != 'W')
+        return b;
+    auto digits = [&](size_t from, size_t to, int &out) {
+        if (to <= from)
+            return false;
+        out = 0;
+        for (size_t i = from; i < to; i++) {
+            if (s[i] < '0' || s[i] > '9')
+                return false;
+            out = out * 10 + (s[i] - '0');
+        }
+        return true;
+    };
+    if (!digits(3, 5, b.descriptor) || !digits(5, s.size() - 1, b.track) || s.size() - 1 - 5 < 2)
+        return b = BoardName{};
+    b.weather = w;
+    b.ok = true;
+    return b;
+}
+
+inline std::string board_name(int descriptor, int track, char weather)
+{
+    char b[24];
+    snprintf(b, sizeof b, "LBV%02d%02d%c", descriptor, track, weather);
+    return b;
+}
+
+inline const char *weather_word(char w) { return w == 'W' ? "wet" : "dry"; }
+
+// Methods
+
+enum class Method { none, get_tt, get_friends_tt, get_binary, add_entry, update_binary };
+
+inline const char *method_name(Method m)
+{
+    switch (m) {
+    case Method::get_tt: return "GetTTLeaderboard";
+    case Method::get_friends_tt: return "GetFriendsTTLeaderboard";
+    case Method::get_binary: return "GetBinaryDataForUser";
+    case Method::add_entry: return "AddLeaderboardEntry";
+    case Method::update_binary: return "UpdateLeaderboardEntryBinaryData";
+    case Method::none: break;
+    }
+    return "";
+}
+
+inline Method method_of(std::string_view name)
+{
+    for (Method m : {Method::get_tt, Method::get_friends_tt, Method::get_binary, Method::add_entry, Method::update_binary})
+        if (name == method_name(m))
+            return m;
+    return Method::none;
+}
+
+enum class Kind { str, i32, i64 };
+
+struct Field {
+    const char *key;
+    uint32_t offset;
+    Kind kind;
+};
+
+inline constexpr uint32_t ARGS_AT_OP = 0x128;
+inline constexpr uint32_t OP_SERVICE = 0x110, OP_METHOD = 0x118, OP_ARGS_TEXT = 0x168;
+
+inline const std::vector<Field> &fields_of(Method m)
+{
+    static const std::vector<Field> get_tt = {{"LeaderboardID", 8, Kind::str}, {"Version", 0x30, Kind::i32},
+                                              {"RangeType", 0x34, Kind::i32},  {"FromIndex", 0x38, Kind::i64},
+                                              {"ToIndex", 0x40, Kind::i64},    {"TopResultCount", 0x48, Kind::i32},
+                                              {"CrossPlay", 0x4c, Kind::i32}};
+    static const std::vector<Field> friends = {{"LeaderboardID", 8, Kind::str},
+                                               {"Version", 0x30, Kind::i32},
+                                               {"CommaSeparatedFriends", 0x38, Kind::str},
+                                               {"CommaSeparatedEAFriends", 0x60, Kind::str},
+                                               {"RangeType", 0x88, Kind::i32},
+                                               {"FromIndex", 0x90, Kind::i64},
+                                               {"ToIndex", 0x98, Kind::i64},
+                                               {"TopResultCount", 0xa0, Kind::i32},
+                                               {"CrossPlay", 0xa4, Kind::i32}};
+    static const std::vector<Field> binary = {{"PlatformID", 8, Kind::str},
+                                              {"Platform", 0x30, Kind::i32},
+                                              {"LeaderboardID", 0x48, Kind::str},
+                                              {"Version", 0x70, Kind::i32}};
+    static const std::vector<Field> add = {{"LeaderboardID", 8, Kind::str}, {"Version", 0x30, Kind::i32},
+                                           {"Score", 0x38, Kind::i64},      {"Date", 0x40, Kind::i64},
+                                           {"BinaryDataHash", 0x70, Kind::str}, {"ResultStatus", 0xb8, Kind::i64},
+                                           {"JSONData", 0xc0, Kind::str},   {"CrossPlay", 0xec, Kind::i32}};
+    static const std::vector<Field> update = {{"Version", 8, Kind::i32}, {"LeaderboardID", 0x10, Kind::str}};
+    static const std::vector<Field> none;
+    switch (m) {
+    case Method::get_tt: return get_tt;
+    case Method::get_friends_tt: return friends;
+    case Method::get_binary: return binary;
+    case Method::add_entry: return add;
+    case Method::update_binary: return update;
+    case Method::none: break;
+    }
+    return none;
+}
+
+inline uint32_t board_slot(Method m)
+{
+    for (auto &f : fields_of(m))
+        if (!strcmp(f.key, "LeaderboardID"))
+            return f.offset;
+    return 0;
+}
+
+// Checked memory
+
+struct Mem {
+    bool (*fn)(void *ctx, uint64_t addr, void *out, size_t n) = nullptr;
+    void *ctx = nullptr;
+    bool read(uint64_t addr, void *out, size_t n) const { return fn && addr && fn(ctx, addr, out, n); }
+    template <class T> bool get(uint64_t addr, T &v) const { return read(addr, &v, sizeof v); }
+};
+
+constexpr size_t MAX_STRING = 96;
+
+inline bool printable(const char *p, size_t n)
+{
+    for (size_t i = 0; i < n; i++)
+        if (uint8_t(p[i]) < 0x20 || uint8_t(p[i]) > 0x7e)
+            return false;
+    return n > 0;
+}
+
+// A game string at an address: the NeStr object (+0 djb2 hash, +4 refcount, +6 24-bit length, chars from +9), or a C
+// string, reached through the slot, its second, third or fourth word, or held inline.
+enum class Form { none, ne_str, c_str, inline_c };
+
+struct StrForm {
+    Form form = Form::none;
+    uint32_t word = 0;
+    bool ok() const { return form != Form::none; }
+};
+
+inline std::string read_c(const Mem &m, uint64_t at)
+{
+    char buf[MAX_STRING + 1] = {};
+    size_t n = 0;
+    for (; n < MAX_STRING; n++) {
+        char c;
+        if (!m.read(at + n, &c, 1))
+            return {};
+        if (!c)
+            break;
+        buf[n] = c;
+    }
+    if (n == MAX_STRING || !printable(buf, n))
+        return {};
+    return std::string(buf, n);
+}
+
+inline std::string read_ne(const Mem &m, uint64_t p)
+{
+    uint8_t h[9];
+    if (!p || !m.read(p, h, sizeof h))
+        return {};
+    size_t len = size_t(h[6]) | size_t(h[7]) << 8 | size_t(h[8]) << 16;
+    if (len == 0 || len >= MAX_STRING)
+        return {};
+    std::string s(len, '\0');
+    if (!m.read(p + 9, s.data(), len) || !printable(s.data(), len))
+        return {};
+    return s;
+}
+
+inline std::string read_with(const Mem &m, uint64_t slot, StrForm f)
+{
+    if (!f.ok())
+        return {};
+    uint64_t at = slot + f.word * 8;
+    if (f.form == Form::inline_c)
+        return read_c(m, at);
+    uint64_t p = 0;
+    if (!m.get(at, p))
+        return {};
+    return f.form == Form::ne_str ? read_ne(m, p) : read_c(m, p);
+}
+
+template <class Accept>
+inline StrForm probe_form(const Mem &m, uint64_t slot, Accept accept, std::string *value = nullptr)
+{
+    for (Form form : {Form::ne_str, Form::c_str, Form::inline_c})
+        for (uint32_t word = 0; word < 4; word++) {
+            StrForm f{form, word};
+            std::string s = read_with(m, slot, f);
+            if (!s.empty() && accept(s)) {
+                if (value)
+                    *value = s;
+                return f;
+            }
+        }
+    return {};
+}
+
+inline const char *form_name(StrForm f)
+{
+    static char b[32];
+    const char *k = f.form == Form::ne_str ? "NeStr*" : f.form == Form::c_str ? "char*" : f.form == Form::inline_c ? "inline" : "none";
+    snprintf(b, sizeof b, "%s@word%u", k, f.word);
+    return b;
+}
+
+struct Args {
+    bool ok = false;
+    Method method = Method::none;
+    std::string board_text;
+    BoardName board;
+    StrForm form;
+    json::Value values = json::Value::object();
+};
+
+inline Args decode_args(const Mem &m, uint64_t op, Method method)
+{
+    Args a;
+    a.method = method;
+    uint32_t slot = board_slot(method);
+    if (!slot)
+        return a;
+    uint64_t base = op + ARGS_AT_OP;
+    a.form = probe_form(m, base + slot, [](const std::string &s) { return parse_board(s).ok; }, &a.board_text);
+    if (!a.form.ok())
+        return a;
+    a.board = parse_board(a.board_text);
+    for (auto &f : fields_of(method)) {
+        uint64_t at = base + f.offset;
+        if (f.kind == Kind::str) {
+            std::string s = read_with(m, at, a.form);
+            if (!s.empty())
+                a.values[f.key] = json::Value(s);
+        } else if (f.kind == Kind::i32) {
+            int32_t v;
+            if (m.get(at, v))
+                a.values[f.key] = json::Value(int64_t(v));
+        } else {
+            int64_t v;
+            if (m.get(at, v))
+                a.values[f.key] = json::Value(v);
+        }
+    }
+    a.ok = true;
+    return a;
+}
+
+inline Method method_at_op(const Mem &m, uint64_t op, std::string *name = nullptr)
+{
+    StrForm f = probe_form(m, op + OP_METHOD, [](const std::string &s) { return method_of(s) != Method::none; }, name);
+    if (f.ok())
+        return method_of(*name);
+    f = probe_form(m, op + OP_METHOD, [](const std::string &s) { return s.size() >= 3; }, name);
+    return Method::none;
+}
+
+// Routing
+
+enum class Route { pass, mailbox, local };
+
+inline Route route_of(Method method, const BoardName &b, bool bridge_on)
+{
+    if (method == Method::none || !b.addon())
+        return Route::pass;
+    if (bridge_on)
+        return Route::mailbox;
+    return method == Method::add_entry || method == Method::update_binary ? Route::local : Route::pass;
+}
+
+inline const char *local_body(Method method) { return method == Method::add_entry ? "{\"Rank\":0}" : "{}"; }
+
+// Guards
+
+inline bool addon_content(std::string_view content)
+{
+    return !content.empty() && content.substr(0, 5) != "game/";
+}
+
+// Mailbox
+
+constexpr int64_t STALE_SECONDS = 60;
+
+inline std::string request_json(uint64_t seq, Method method, const json::Value &args, std::string_view content,
+                                std::string_view track, const BoardName &board, std::string_view board_text,
+                                std::string_view ghost_id_b64)
+{
+    json::Value v = json::Value::object();
+    v["seq"] = json::Value(int64_t(seq));
+    v["method"] = json::Value(std::string(method_name(method)));
+    v["args"] = args;
+    json::Value b = json::Value::object();
+    b["content"] = json::Value(std::string(content));
+    b["track"] = json::Value(std::string(track));
+    b["weather"] = json::Value(std::string(weather_word(board.weather)));
+    b["game_board"] = json::Value(std::string(board_text));
+    v["board"] = b;
+    json::Value p = json::Value::object();
+    if (!ghost_id_b64.empty())
+        p["ghost_id"] = json::Value(std::string(ghost_id_b64));
+    v["player"] = p;
+    return json::dump(v);
+}
+
+inline std::string base64(const uint8_t *p, size_t n)
+{
+    static const char T[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    std::string o;
+    for (size_t i = 0; i < n; i += 3) {
+        uint32_t v = uint32_t(p[i]) << 16 | (i + 1 < n ? uint32_t(p[i + 1]) << 8 : 0) | (i + 2 < n ? p[i + 2] : 0);
+        o += T[v >> 18 & 63];
+        o += T[v >> 12 & 63];
+        o += i + 1 < n ? T[v >> 6 & 63] : '=';
+        o += i + 2 < n ? T[v & 63] : '=';
+    }
+    return o;
+}
+
+struct Answer {
+    uint64_t seq = 0;
+    int status = 0;
+    std::string body;
+};
+
+inline std::optional<Answer> parse_answer(std::string_view text, uint64_t want_seq)
+{
+    json::Value v = json::parse(text);
+    if (!v.is_object() || !v["seq"].is_int() || !v["status"].is_int() || !v["body"].is_string())
+        return std::nullopt;
+    Answer a;
+    a.seq = uint64_t(v["seq"].as_int());
+    a.status = int(v["status"].as_int());
+    a.body = std::string(v["body"].as_string());
+    if (a.seq != want_seq || a.status < 100 || a.status > 599)
+        return std::nullopt;
+    return a;
+}
+
+inline std::string error_body(std::string_view message)
+{
+    json::Value v = json::Value::object();
+    v["Message"] = json::Value(std::string(message));
+    v["Data"] = json::Value();
+    return json::dump(v);
+}
+
+// Pending operations
+
+struct Pending {
+    uint64_t seq = 0, op = 0;
+    Method method = Method::none;
+    BoardName board;
+    std::string board_text;
+    json::Value args = json::Value::object();
+    int64_t start_ms = 0, deadline_ms = 0;
+    bool sent = false, answered = false, local = false;
+    int status = 0;
+    std::string body;
+};
+
+struct Completion {
+    uint64_t seq = 0, op = 0;
+    Method method = Method::none;
+    std::string board_text;
+    int status = 0;
+    std::string body;
+    enum Why { answered, timed_out, local, evicted } why = answered;
+    int64_t waited_ms = 0;
+};
+
+inline const char *why_name(Completion::Why w)
+{
+    return w == Completion::answered ? "answered" : w == Completion::timed_out ? "timed out" : w == Completion::local ? "answered locally" : "dropped";
+}
+
+class Table {
+public:
+    explicit Table(uint64_t first_seq = 1) : next_(first_seq) {}
+
+    uint64_t add(uint64_t op, Method method, const Args &args, int64_t now_ms, bool local)
+    {
+        if (items_.size() >= MAX_PENDING)
+            for (auto &p : items_)
+                if (!p.answered) {
+                    p.answered = true;
+                    p.status = 503;
+                    p.body = error_body("too many pending requests");
+                    p.sent = true;
+                    break;
+                }
+        Pending p;
+        p.seq = next_++;
+        p.op = op;
+        p.method = method;
+        p.board = args.board;
+        p.board_text = args.board_text;
+        p.args = args.values;
+        p.start_ms = now_ms;
+        p.deadline_ms = now_ms + TIMEOUT_MS;
+        p.local = local;
+        if (local) {
+            p.answered = true;
+            p.sent = true;
+            p.status = 200;
+            p.body = local_body(method);
+        }
+        items_.push_back(std::move(p));
+        return items_.back().seq;
+    }
+
+    std::vector<Pending *> unsent()
+    {
+        std::vector<Pending *> out;
+        for (auto &p : items_)
+            if (!p.sent)
+                out.push_back(&p);
+        return out;
+    }
+
+    std::vector<Pending *> waiting()
+    {
+        std::vector<Pending *> out;
+        for (auto &p : items_)
+            if (p.sent && !p.answered)
+                out.push_back(&p);
+        return out;
+    }
+
+    bool answer(uint64_t seq, int status, std::string body)
+    {
+        for (auto &p : items_)
+            if (p.seq == seq && !p.answered) {
+                p.answered = true;
+                p.status = status;
+                p.body = std::move(body);
+                return true;
+            }
+        return false;
+    }
+
+    std::vector<Completion> take_due(int64_t now_ms)
+    {
+        std::vector<Completion> out;
+        for (auto it = items_.begin(); it != items_.end();) {
+            bool timed = !it->answered && now_ms >= it->deadline_ms;
+            if (it->answered || timed) {
+                Completion c;
+                c.seq = it->seq;
+                c.op = it->op;
+                c.method = it->method;
+                c.board_text = it->board_text;
+                c.waited_ms = now_ms - it->start_ms;
+                if (timed) {
+                    c.status = 504;
+                    c.body = error_body("The request timed out");
+                    c.why = Completion::timed_out;
+                } else {
+                    c.status = it->status;
+                    c.body = it->body;
+                    c.why = it->local ? Completion::local : Completion::answered;
+                }
+                out.push_back(std::move(c));
+                it = items_.erase(it);
+            } else
+                ++it;
+        }
+        return out;
+    }
+
+    size_t size() const { return items_.size(); }
+    void clear() { items_.clear(); }
+
+private:
+    uint64_t next_;
+    std::vector<Pending> items_;
+};
+
+// The synthetic response the method's OnResult reads: +0x88 u8 0, +0x98 u8 0 (success), +0x9c u32 status, +0xa0 -> body
+// object {char *data, u64 unknown, u64 length}.
+
+constexpr size_t RESPONSE_SIZE = 0xb0;
+
+struct Response {
+    alignas(16) uint8_t raw[RESPONSE_SIZE] = {};
+    uint64_t body_obj[3] = {};
+    std::string data;
+
+    void fill(int status, std::string text)
+    {
+        memset(raw, 0, sizeof raw);
+        data = std::move(text);
+        body_obj[0] = reinterpret_cast<uint64_t>(data.c_str());
+        body_obj[1] = data.size();
+        body_obj[2] = data.size();
+        raw[0x88] = 0;
+        raw[0x98] = 0;
+        uint32_t s = uint32_t(status);
+        memcpy(raw + 0x9c, &s, 4);
+        uint64_t p = reinterpret_cast<uint64_t>(&body_obj[0]);
+        memcpy(raw + 0xa0, &p, 8);
+    }
+};
+
+// Board definitions XML
+
+struct XmlElement {
+    size_t begin = 0, open_end = 0, end = 0;
+    bool self_closing = false;
+    std::string id, name;
+    int64_t id_value = -1;
+};
+
+struct XmlReport {
+    bool changed = false;
+    std::string why;
+    std::string template_name;
+    size_t added = 0, descriptors = 0, tracks = 0, existing = 0, capped = 0;
+    int64_t first_id = -1, last_id = -1;
+};
+
+struct Attr {
+    std::string name;
+    size_t value_begin = 0, value_end = 0;
+};
+
+inline bool xml_space(char c) { return c == ' ' || c == '\t' || c == '\r' || c == '\n'; }
+
+inline std::vector<Attr> attributes(const std::string &x, size_t from, size_t to)
+{
+    std::vector<Attr> out;
+    size_t i = from;
+    while (i < to) {
+        while (i < to && (xml_space(x[i]) || x[i] == '/'))
+            i++;
+        size_t ns = i;
+        while (i < to && !xml_space(x[i]) && x[i] != '=' && x[i] != '/' && x[i] != '>')
+            i++;
+        if (i == ns)
+            break;
+        Attr a;
+        a.name = x.substr(ns, i - ns);
+        while (i < to && xml_space(x[i]))
+            i++;
+        if (i >= to || x[i] != '=')
+            continue;
+        i++;
+        while (i < to && xml_space(x[i]))
+            i++;
+        if (i >= to || (x[i] != '"' && x[i] != '\''))
+            break;
+        char q = x[i++];
+        a.value_begin = i;
+        while (i < to && x[i] != q)
+            i++;
+        if (i >= to)
+            break;
+        a.value_end = i++;
+        out.push_back(std::move(a));
+    }
+    return out;
+}
+
+inline size_t tag_end(const std::string &x, size_t from)
+{
+    char quote = 0;
+    for (size_t i = from; i < x.size(); i++) {
+        if (quote) {
+            if (x[i] == quote)
+                quote = 0;
+        } else if (x[i] == '"' || x[i] == '\'')
+            quote = x[i];
+        else if (x[i] == '>')
+            return i;
+    }
+    return std::string::npos;
+}
+
+inline std::vector<XmlElement> leaderboard_elements(const std::string &x)
+{
+    std::vector<XmlElement> out;
+    static const std::string OPEN = "<leaderboard";
+    size_t at = 0;
+    while ((at = x.find(OPEN, at)) != std::string::npos) {
+        size_t after = at + OPEN.size();
+        if (after >= x.size() || !(xml_space(x[after]) || x[after] == '>' || x[after] == '/')) {
+            at = after;
+            continue;
+        }
+        size_t gt = tag_end(x, after);
+        if (gt == std::string::npos)
+            break;
+        XmlElement e;
+        e.begin = at;
+        e.open_end = gt + 1;
+        e.self_closing = x[gt - 1] == '/';
+        if (e.self_closing)
+            e.end = gt + 1;
+        else {
+            size_t close = x.find("</leaderboard", gt);
+            if (close == std::string::npos)
+                break;
+            size_t cg = x.find('>', close);
+            if (cg == std::string::npos)
+                break;
+            e.end = cg + 1;
+        }
+        for (auto &a : attributes(x, after, e.self_closing ? gt - 1 : gt)) {
+            if (a.name == "id")
+                e.id = x.substr(a.value_begin, a.value_end - a.value_begin);
+            else if (a.name == "name")
+                e.name = x.substr(a.value_begin, a.value_end - a.value_begin);
+        }
+        char *stop = nullptr;
+        long long id = strtoll(e.id.c_str(), &stop, 10);
+        if (!e.id.empty() && stop && !*stop)
+            e.id_value = id;
+        out.push_back(std::move(e));
+        at = out.back().end;
+    }
+    return out;
+}
+
+inline std::string clone_element(const std::string &x, const XmlElement &t, int64_t id, const std::string &name)
+{
+    std::string text = x.substr(t.begin, t.end - t.begin);
+    size_t open_len = t.open_end - t.begin;
+    size_t after = std::string("<leaderboard").size();
+    size_t gt = open_len - 1;
+    std::string opening = text.substr(0, open_len);
+    auto attrs = attributes(opening, after, t.self_closing ? gt - 1 : gt);
+    for (size_t i = attrs.size(); i-- > 0;) {
+        const Attr &a = attrs[i];
+        std::string value = opening.substr(a.value_begin, a.value_end - a.value_begin);
+        std::string repl;
+        if (a.name == "id")
+            repl = std::to_string(id);
+        else if (value == t.name)
+            repl = name;
+        else
+            continue;
+        opening.replace(a.value_begin, a.value_end - a.value_begin, repl);
+    }
+    return opening + text.substr(open_len);
+}
+
+// Clones the first LBV element of the buffer once per addon descriptor, track the buffer's stock boards carry and
+// weather, with ids above every id present, after the last leaderboard element.
+inline std::string extend_xml(const std::string &x, const std::vector<int> &descriptors, XmlReport &rep)
+{
+    rep = XmlReport{};
+    auto elements = leaderboard_elements(x);
+    if (elements.empty()) {
+        rep.why = "no <leaderboard> element in the buffer";
+        return x;
+    }
+    const XmlElement *tmpl = nullptr;
+    int64_t max_id = -1;
+    std::set<int> tracks;
+    std::set<std::string> names;
+    for (auto &e : elements) {
+        max_id = std::max(max_id, e.id_value);
+        names.insert(e.name);
+        BoardName b = parse_board(e.name);
+        if (b.ok) {
+            tracks.insert(b.track);
+            if (!tmpl && e.id_value >= 0)
+                tmpl = &e;
+        }
+    }
+    if (!tmpl) {
+        rep.why = "no stock LBV element to use as the template";
+        return x;
+    }
+    rep.template_name = tmpl->name;
+    std::set<int> want;
+    for (int d : descriptors)
+        if (d >= FIRST_ADDON_DESCRIPTOR && d <= LAST_NAMED_DESCRIPTOR)
+            want.insert(d);
+    rep.descriptors = want.size();
+    rep.tracks = tracks.size();
+    if (want.empty()) {
+        rep.why = "no addon descriptor ids are assigned yet";
+        return x;
+    }
+    const XmlElement &last = elements.back();
+    size_t ls = x.rfind('\n', tmpl->begin);
+    ls = ls == std::string::npos ? 0 : ls + 1;
+    std::string indent;
+    for (size_t i = ls; i < tmpl->begin && (x[i] == ' ' || x[i] == '\t'); i++)
+        indent += x[i];
+    std::string eol = x.find("\r\n") != std::string::npos ? "\r\n" : "\n";
+    std::string add;
+    int64_t id = max_id;
+    for (int d : want)
+        for (int t : tracks)
+            for (char w : {'D', 'W'}) {
+                std::string name = board_name(d, t, w);
+                if (names.count(name)) {
+                    rep.existing++;
+                    continue;
+                }
+                if (rep.added >= MAX_XML_BOARDS) {
+                    rep.capped++;
+                    continue;
+                }
+                id++;
+                if (rep.first_id < 0)
+                    rep.first_id = id;
+                rep.last_id = id;
+                add += eol + indent + clone_element(x, *tmpl, id, name);
+                rep.added++;
+            }
+    if (!rep.added) {
+        rep.why = "every addon board is already defined";
+        return x;
+    }
+    rep.changed = true;
+    std::string out = x;
+    out.insert(last.end, add);
+    return out;
+}
+
+}

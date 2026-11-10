@@ -1,0 +1,325 @@
+// Host-native unit test for the Time Trial boards bridge (native/src/core/tt_bridge_logic.hpp): board names, args decoding
+// through checked memory, the XML extension, routing, the mailbox JSON, the pending table and the synthetic response.
+// Built and run by native/test/run_tt_bridge_test.sh.
+
+#include "tt_bridge_logic.hpp"
+
+#include <cstdio>
+#include <map>
+
+namespace tb = runtime::tt_bridge;
+
+static int failed = 0;
+
+static void expect(bool ok, const char *what)
+{
+    std::printf("%s: %s\n", ok ? "ok  " : "FAIL", what);
+    if (!ok)
+        failed++;
+}
+
+struct Fake {
+    std::map<uint64_t, uint8_t> bytes;
+    void put(uint64_t at, const void *p, size_t n)
+    {
+        for (size_t i = 0; i < n; i++)
+            bytes[at + i] = static_cast<const uint8_t *>(p)[i];
+    }
+    template <class T> void put(uint64_t at, T v) { put(at, &v, sizeof v); }
+    void cstr(uint64_t at, const std::string &s) { put(at, s.c_str(), s.size() + 1); }
+    void ne(uint64_t at, const std::string &s)
+    {
+        uint8_t h[9] = {};
+        h[6] = uint8_t(s.size());
+        h[7] = uint8_t(s.size() >> 8);
+        put(at, h, 9);
+        cstr(at + 9, s);
+    }
+    static bool read(void *ctx, uint64_t addr, void *out, size_t n)
+    {
+        auto &f = *static_cast<Fake *>(ctx);
+        for (size_t i = 0; i < n; i++) {
+            auto it = f.bytes.find(addr + i);
+            if (it == f.bytes.end())
+                return false;
+            static_cast<uint8_t *>(out)[i] = it->second;
+        }
+        return true;
+    }
+    tb::Mem mem() { return {&Fake::read, this}; }
+};
+
+static std::string sample_xml(const char *eol, bool single_quotes)
+{
+    std::string q = single_quotes ? "'" : "\"";
+    std::string out = std::string("<?xml version=") + q + "1.0" + q + "?>" + eol + "<leaderboards>" + eol;
+    auto board = [&](int id, const char *name) {
+        out += std::string("  <leaderboard version=") + q + "3" + q + " name=" + q + name + q + " sort=" + q + "ascending" + q + " id=" + q +
+               std::to_string(id) + q + " name_pc=" + q + name + q + ">" + eol + "    <column type=" + q + "rating" + q + " name=" + q +
+               "time" + q + " stat=" + q + "t" + q + "/>" + eol + "    <reset version=" + q + "1" + q + "/>" + eol + "  </leaderboard>" + eol;
+    };
+    board(10, "LBV0001D");
+    board(11, "LBV0001W");
+    board(12, "LBV0002D");
+    board(13, "LBV0002W");
+    out += std::string("  <leaderboard id=") + q + "40" + q + " name=" + q + "Other" + q + "/>" + eol;
+    out += "</leaderboards>";
+    out += eol;
+    return out;
+}
+
+int main()
+{
+    // names
+    auto b = tb::parse_board("LBV0605D");
+    expect(b.ok && b.descriptor == 6 && b.track == 5 && b.weather == 'D' && b.addon(), "LBV0605D is an addon board, track 5, dry");
+    b = tb::parse_board("LBV0012W");
+    expect(b.ok && b.descriptor == 0 && b.track == 12 && b.weather == 'W' && !b.addon(), "LBV0012W is a stock board");
+    expect(tb::parse_board("LBV0500D").descriptor == 5 && !tb::parse_board("LBV0500D").addon(), "descriptor 5 is stock");
+    expect(tb::parse_board("LBV9907W").addon() && tb::parse_board("LBV9907W").track == 7, "descriptor 99 is an addon");
+    expect(!tb::parse_board("LBV0605X").ok && !tb::parse_board("LBV06D").ok && !tb::parse_board("XBV0605D").ok &&
+               !tb::parse_board("").ok && !tb::parse_board("LBV06a5D").ok && !tb::parse_board("LBV065D").ok,
+           "malformed names do not parse");
+    expect(tb::board_name(6, 5, 'D') == "LBV0605D" && tb::board_name(12, 3, 'W') == "LBV1203W", "names format back");
+
+    // methods and routing
+    expect(tb::method_of("GetTTLeaderboard") == tb::Method::get_tt && tb::method_of("Nope") == tb::Method::none &&
+               tb::method_of("UpdateLeaderboardEntryBinaryData") == tb::Method::update_binary,
+           "methods by name");
+    auto addon = tb::parse_board("LBV0605D"), stock = tb::parse_board("LBV0105D");
+    expect(tb::route_of(tb::Method::get_tt, addon, true) == tb::Route::mailbox, "addon read with the bridge on goes to the mailbox");
+    expect(tb::route_of(tb::Method::add_entry, addon, true) == tb::Route::mailbox, "addon write with the bridge on goes to the mailbox");
+    expect(tb::route_of(tb::Method::get_tt, stock, true) == tb::Route::pass, "a stock board passes untouched");
+    expect(tb::route_of(tb::Method::add_entry, addon, false) == tb::Route::local && tb::route_of(tb::Method::update_binary, addon, false) == tb::Route::local,
+           "addon writes with the bridge off are answered locally");
+    expect(tb::route_of(tb::Method::get_binary, addon, false) == tb::Route::pass, "addon reads with the bridge off pass");
+    expect(tb::route_of(tb::Method::none, addon, true) == tb::Route::pass, "an unknown method passes");
+    expect(std::string(tb::local_body(tb::Method::add_entry)) == "{\"Rank\":0}" && std::string(tb::local_body(tb::Method::update_binary)) == "{}",
+           "local answers");
+    expect(tb::addon_content("swofty.swofty-2022/f1_2022") && !tb::addon_content("game/f1_2025") && !tb::addon_content(""), "guards treat non-game content as addon");
+
+    // memory and strings: GetTTLeaderboard args through a NeStr pointer
+    Fake f;
+    uint64_t op = 0x10000, args = op + tb::ARGS_AT_OP;
+    f.put<uint64_t>(args + 8, 0x50000);
+    f.ne(0x50000, "LBV0605D");
+    f.put<int32_t>(args + 0x30, 3);
+    f.put<int32_t>(args + 0x34, 0);
+    f.put<int64_t>(args + 0x38, 0);
+    f.put<int64_t>(args + 0x40, 9);
+    f.put<int32_t>(args + 0x48, 3);
+    f.put<int32_t>(args + 0x4c, 1);
+    auto a = tb::decode_args(f.mem(), op, tb::Method::get_tt);
+    expect(a.ok && a.board_text == "LBV0605D" && a.form.form == tb::Form::ne_str && a.form.word == 0, "NeStr slot decodes and names its form");
+    expect(a.values["LeaderboardID"].as_string() == "LBV0605D" && a.values["Version"].as_int() == 3 && a.values["ToIndex"].as_int() == 9 &&
+               a.values["TopResultCount"].as_int() == 3 && a.values["CrossPlay"].as_int() == 1 && a.values["FromIndex"].as_int() == 0,
+           "every GetTTLeaderboard key is read");
+
+    // char* slot, second word
+    Fake g;
+    g.put<uint64_t>(args + 8 + 8, 0x60000);
+    g.cstr(0x60000, "LBV0701W");
+    g.put<int32_t>(args + 0x30, 1);
+    auto a2 = tb::decode_args(g.mem(), op, tb::Method::get_tt);
+    expect(a2.ok && a2.board.descriptor == 7 && a2.form.form == tb::Form::c_str && a2.form.word == 1, "a char* in the slot's second word decodes");
+
+    // inline
+    Fake h;
+    h.cstr(args + 8, "LBV0606D");
+    auto a3 = tb::decode_args(h.mem(), op, tb::Method::get_tt);
+    expect(a3.ok && a3.form.form == tb::Form::inline_c && a3.board.track == 6, "an inline C string decodes");
+
+    // unreadable and garbage
+    Fake none;
+    expect(!tb::decode_args(none.mem(), op, tb::Method::get_tt).ok, "unreadable args are not ok");
+    Fake junk;
+    junk.put<uint64_t>(args + 8, 0x70000);
+    junk.cstr(0x70000, "not a board");
+    expect(!tb::decode_args(junk.mem(), op, tb::Method::get_tt).ok, "a string that is no board name is not ok");
+    Fake nullp;
+    nullp.put<uint64_t>(args + 8, 0);
+    expect(!tb::decode_args(nullp.mem(), op, tb::Method::get_tt).ok, "a null string pointer is not ok");
+    Fake binstr;
+    binstr.put<uint64_t>(args + 8, 0x80000);
+    uint8_t bad[] = {1, 2, 3, 4, 0, 0, 8, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8};
+    binstr.put(0x80000, bad, sizeof bad);
+    expect(!tb::decode_args(binstr.mem(), op, tb::Method::get_tt).ok, "non-printable characters are refused");
+
+    // other methods' tables
+    Fake m;
+    m.put<uint64_t>(args + 0x48, 0x51000);
+    m.ne(0x51000, "LBV0605D");
+    m.put<uint64_t>(args + 8, 0x52000);
+    m.ne(0x52000, "steam123");
+    m.put<int32_t>(args + 0x30, 2);
+    m.put<int32_t>(args + 0x70, 5);
+    auto gb = tb::decode_args(m.mem(), op, tb::Method::get_binary);
+    expect(gb.ok && gb.board_text == "LBV0605D" && gb.values["PlatformID"].as_string() == "steam123" && gb.values["Platform"].as_int() == 2 &&
+               gb.values["Version"].as_int() == 5,
+           "GetBinaryDataForUser reads LeaderboardID at +0x48 and PlatformID at +8");
+    Fake u;
+    u.put<uint64_t>(args + 0x10, 0x53000);
+    u.ne(0x53000, "LBV0605D");
+    u.put<int32_t>(args + 8, 4);
+    auto up = tb::decode_args(u.mem(), op, tb::Method::update_binary);
+    expect(up.ok && up.values["Version"].as_int() == 4 && !up.values["BinaryDataBase64"].is_string(), "UpdateLeaderboardEntryBinaryData has no binary key");
+    Fake ad;
+    ad.put<uint64_t>(args + 8, 0x54000);
+    ad.ne(0x54000, "LBV0605W");
+    ad.put<int64_t>(args + 0x38, 91234);
+    ad.put<int32_t>(args + 0xec, 1);
+    auto ae = tb::decode_args(ad.mem(), op, tb::Method::add_entry);
+    expect(ae.ok && ae.values["Score"].as_int() == 91234 && ae.values["CrossPlay"].as_int() == 1 && ae.board.weather == 'W', "AddLeaderboardEntry reads Score and CrossPlay");
+    Fake fr;
+    fr.put<uint64_t>(args + 8, 0x55000);
+    fr.ne(0x55000, "LBV0605D");
+    fr.put<uint64_t>(args + 0x38, 0x56000);
+    fr.ne(0x56000, "a,b");
+    fr.put<int32_t>(args + 0xa4, 1);
+    auto fa = tb::decode_args(fr.mem(), op, tb::Method::get_friends_tt);
+    expect(fa.ok && fa.values["CommaSeparatedFriends"].as_string() == "a,b" && fa.values["CrossPlay"].as_int() == 1, "GetFriendsTTLeaderboard reads the friends list and CrossPlay");
+
+    // method at op
+    Fake mo;
+    mo.put<uint64_t>(op + tb::OP_METHOD, 0x57000);
+    mo.cstr(0x57000, "GetTTLeaderboard");
+    std::string name;
+    expect(tb::method_at_op(mo.mem(), op, &name) == tb::Method::get_tt && name == "GetTTLeaderboard", "the method name at op+0x118 is read");
+    Fake mo2;
+    mo2.put<uint64_t>(op + tb::OP_METHOD, 0x57000);
+    mo2.cstr(0x57000, "UpdateSession");
+    expect(tb::method_at_op(mo2.mem(), op, &name) == tb::Method::none && name == "UpdateSession", "another method is named and not redirected");
+
+    // XML
+    for (const char *eol : {"\n", "\r\n"})
+        for (bool sq : {false, true}) {
+            std::string x = sample_xml(eol, sq);
+            tb::XmlReport r;
+            std::string y = tb::extend_xml(x, {6, 7, 5, 300}, r);
+            auto els = tb::leaderboard_elements(y);
+            std::set<int64_t> ids;
+            std::set<std::string> names;
+            bool dup = false;
+            for (auto &e : els) {
+                dup |= !ids.insert(e.id_value).second || !names.insert(e.name).second;
+            }
+            std::string label = std::string(eol[1] ? "CRLF" : "LF") + (sq ? ", single quotes" : ", double quotes");
+            expect(r.changed && r.added == 8 && els.size() == 5 + r.added, ("clones every descriptor, track and weather: " + label).c_str());
+            expect(!dup && r.first_id == 41 && r.last_id == 40 + int64_t(r.added), ("ids are unique and above every stock id: " + label).c_str());
+            expect(names.count("LBV0601D") && names.count("LBV0702W") && !names.count("LBV0501D") && !names.count("LBV30001D"), ("names follow the board format: " + label).c_str());
+            expect(y.find("</leaderboards>") != std::string::npos && y.rfind("</leaderboards>") > y.rfind("LBV0702W") &&
+                       y.compare(0, x.size() - 20, x, 0, x.size() - 20) == 0,
+                   ("clones sit before the container close: " + label).c_str());
+            std::string eolc = eol;
+            expect(eolc != "\r\n" || (y.find("\n") != std::string::npos && y.find("\n\n") == std::string::npos && y.find("\r\r") == std::string::npos &&
+                                      [&] { for (size_t i = 0; i < y.size(); i++) if (y[i] == '\n' && (i == 0 || y[i - 1] != '\r')) return false; return true; }()),
+                   ("CRLF buffers stay CRLF: " + label).c_str());
+            auto d = tb::leaderboard_elements(y);
+            bool kids = true;
+            for (auto &e : d)
+                if (e.name.rfind("LBV06", 0) == 0) {
+                    std::string body = y.substr(e.begin, e.end - e.begin);
+                    kids = kids && body.find("name_pc=") != std::string::npos && body.find(e.name) != std::string::npos &&
+                           body.find("rating") != std::string::npos && body.find("<reset") != std::string::npos && body.find("LBV0001D") == std::string::npos;
+                }
+            expect(kids, ("clones keep the children and replace every copy of the name: " + label).c_str());
+        }
+
+    {
+        std::string x = "<leaderboards><leaderboard id=\"3\" name=\"LBV0001D\" sort=\"ascending\"/></leaderboards>";
+        tb::XmlReport r;
+        std::string y = tb::extend_xml(x, {6}, r);
+        auto els = tb::leaderboard_elements(y);
+        expect(r.changed && els.size() == 3 && els[1].self_closing && els[1].name == "LBV0601D" && els[1].id_value == 4 && els[2].name == "LBV0601W",
+               "a self-closing template is cloned self-closing");
+        expect(y.find("</leaderboards>") == y.size() - 15, "the container close stays last");
+    }
+    {
+        tb::XmlReport r;
+        std::string x = "<leaderboards><leaderboard name=\"Other\" id=\"1\"/></leaderboards>";
+        expect(tb::extend_xml(x, {6}, r) == x && !r.changed && !r.why.empty(), "a buffer with no LBV template is left alone and says why");
+        std::string none = "<root/>";
+        expect(tb::extend_xml(none, {6}, r) == none && !r.changed, "a buffer with no leaderboard is left alone");
+        std::string ok = sample_xml("\n", false);
+        expect(tb::extend_xml(ok, {}, r) == ok && !r.changed && r.why.find("no addon descriptor") == 0, "no assigned descriptors leaves it alone");
+        expect(tb::extend_xml(ok, {1, 2, 5}, r) == ok, "stock descriptors are never cloned");
+        std::string once = tb::extend_xml(ok, {6}, r);
+        tb::XmlReport r2;
+        expect(tb::extend_xml(once, {6}, r2) == once && r2.existing == 4 && !r2.changed, "extending twice adds nothing");
+        std::string odd = "<leaderboards>\n<leaderboards_extra/>\n<leaderboard\n  name = \"LBV0001D\"\n  id = \"7\"\n>\n<column type=\"rating\"/>\n</leaderboard>\n</leaderboards>\n";
+        std::string y = tb::extend_xml(odd, {9}, r);
+        auto els = tb::leaderboard_elements(y);
+        expect(r.changed && els.size() == 3 && els[1].id_value == 8 && els[1].name == "LBV0901D", "spaces around = and attributes on their own lines parse");
+    }
+
+    // mailbox
+    std::string req = tb::request_json(12, tb::Method::get_tt, a.values, "swofty.swofty-2022/f1_2022", "bahrain", a.board, a.board_text, "QUJD");
+    auto parsed = swofty::json::parse(req);
+    expect(parsed["seq"].as_int() == 12 && parsed["method"].as_string() == "GetTTLeaderboard" && parsed["args"]["LeaderboardID"].as_string() == "LBV0605D" &&
+               parsed["board"]["content"].as_string() == "swofty.swofty-2022/f1_2022" && parsed["board"]["track"].as_string() == "bahrain" &&
+               parsed["board"]["weather"].as_string() == "dry" && parsed["board"]["game_board"].as_string() == "LBV0605D" &&
+               parsed["player"]["ghost_id"].as_string() == "QUJD",
+           "the request has the contract's shape");
+    expect(!swofty::json::parse(tb::request_json(1, tb::Method::get_tt, a.values, "c", "t", a.board, a.board_text, ""))["player"]["ghost_id"].is_string(), "no ghost id key when none is known");
+    expect(tb::base64(reinterpret_cast<const uint8_t *>("ABC"), 3) == "QUJD" && tb::base64(reinterpret_cast<const uint8_t *>("AB"), 2) == "QUI=" &&
+               tb::base64(reinterpret_cast<const uint8_t *>("A"), 1) == "QQ==",
+           "base64 pads");
+    auto ans = tb::parse_answer("{\"seq\":12,\"status\":200,\"body\":\"{\\\"Rank\\\":3}\"}", 12);
+    expect(ans && ans->status == 200 && ans->body == "{\"Rank\":3}", "an answer parses");
+    expect(!tb::parse_answer("{\"seq\":13,\"status\":200,\"body\":\"{}\"}", 12), "an answer for another seq is refused");
+    expect(!tb::parse_answer("{\"seq\":12,\"status\":99,\"body\":\"{}\"}", 12) && !tb::parse_answer("{\"seq\":12,\"status\":200}", 12) &&
+               !tb::parse_answer("nonsense", 12) && !tb::parse_answer("{\"seq\":12,\"status\":200,\"body\":{}}", 12),
+           "bad statuses, missing and non-string bodies, and garbage are refused");
+
+    // pending table
+    tb::Table t(100);
+    uint64_t s1 = t.add(0xaaa, tb::Method::get_tt, a, 1000, false);
+    uint64_t s2 = t.add(0xbbb, tb::Method::add_entry, ae, 1000, true);
+    expect(s1 == 100 && s2 == 101 && t.unsent().size() == 1 && t.waiting().size() == 0, "a local entry is already sent and answered");
+    t.unsent()[0]->sent = true;
+    expect(t.waiting().size() == 1, "a sent request waits");
+    auto due = t.take_due(1500);
+    expect(due.size() == 1 && due[0].op == 0xbbb && due[0].status == 200 && due[0].body == "{\"Rank\":0}" && due[0].why == tb::Completion::local, "the local answer completes at once");
+    expect(t.take_due(1500).empty() && t.size() == 1, "nothing else is due before the answer or the deadline");
+    expect(t.answer(s1, 200, "{}") && !t.answer(s1, 200, "{}") && !t.answer(999, 200, "{}"), "an answer is taken once, for a known seq");
+    due = t.take_due(1600);
+    expect(due.size() == 1 && due[0].why == tb::Completion::answered && due[0].status == 200 && t.size() == 0, "the answer completes the op");
+    t.add(0xccc, tb::Method::get_tt, a, 2000, false);
+    t.unsent()[0]->sent = true;
+    expect(t.take_due(2000 + tb::TIMEOUT_MS - 1).empty(), "no timeout before 8 s");
+    due = t.take_due(2000 + tb::TIMEOUT_MS);
+    expect(due.size() == 1 && due[0].why == tb::Completion::timed_out && due[0].status == 504 && due[0].waited_ms == tb::TIMEOUT_MS &&
+               swofty::json::parse(due[0].body)["Message"].is_string(),
+           "an unanswered request times out at 8 s with a 504 error body");
+    tb::Table full(1);
+    for (size_t i = 0; i < tb::MAX_PENDING + 3; i++) {
+        full.add(i + 1, tb::Method::get_tt, a, 0, false);
+        full.unsent()[0]->sent = true;
+    }
+    auto drop = full.take_due(1);
+    expect(drop.size() == 3 && drop[0].status == 503 && full.size() == tb::MAX_PENDING, "past the cap the oldest requests are failed at once");
+
+    // response struct
+    auto resp = std::make_unique<tb::Response>();
+    resp->fill(200, "{\"Rank\":3}");
+    uint32_t status;
+    memcpy(&status, resp->raw + 0x9c, 4);
+    uint64_t body_ptr;
+    memcpy(&body_ptr, resp->raw + 0xa0, 8);
+    auto *obj = reinterpret_cast<uint64_t *>(body_ptr);
+    expect(resp->raw[0x88] == 0 && resp->raw[0x98] == 0 && status == 200, "the response's flags and status sit at +0x88, +0x98, +0x9c");
+    expect(obj[0] == reinterpret_cast<uint64_t>(resp->data.c_str()) && obj[2] == 10 && std::string(reinterpret_cast<char *>(obj[0]), obj[2]) == "{\"Rank\":3}",
+           "+0xa0 points at {data, ?, length}");
+    resp->fill(504, "x");
+    memcpy(&status, resp->raw + 0x9c, 4);
+    expect(status == 504 && reinterpret_cast<uint64_t *>(resp->raw + 0xa0)[0] == body_ptr && static_cast<uint64_t *>(reinterpret_cast<void *>(body_ptr))[2] == 1,
+           "a refill reuses the object and the new length");
+    expect(sizeof(tb::Response::raw) == 0xb0, "the response is 0xb0 bytes");
+
+    // log cap and kill switch
+    expect(tb::say(0) == tb::Say::none && tb::say(1) == tb::Say::line && tb::say(6) == tb::Say::last && tb::say(7) == tb::Say::none, "log lines are capped");
+    expect(tb::switch_off("0") && tb::switch_off("off") && !tb::switch_off("1") && !tb::switch_off("") && !tb::switch_off(nullptr) && !tb::switch_off("00"), "env switches parse");
+
+    std::printf(failed ? "%d FAILED\n" : "all passed\n", failed);
+    return failed ? 1 : 0;
+}
