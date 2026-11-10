@@ -127,6 +127,8 @@ const runtime::Sig S_SELECT_BOARD{"site_Game_TimeTrialLeaderboard_SelectBoard_Se
         "48 8B 83 78 04 00 00 48 8B 58 10 31 ED 48 85 DB 74 47 4C 8B 73 18 4C 3B 73 20", 0x2fce993, runtime::Sig::addr, 0, 11};
 const runtime::Sig S_WRITE_READY{"FUN_142fa0100_LeaderboardWriteReady",
         "56 57 53 48 83 EC 20 48 89 CF 48 8B 41 10 48 8B 40 40 48 8B 80 40 01 00 00 48 8B 80", 0x2fa0100};
+const runtime::Sig S_WRITE_TOKEN{"site_Game_GhostLapHandler_Update_SessionTokenTest",
+        "80 B9 90 00 02 00 00 74 14 48 8B 89 50 01 02 00 48 85 C9 74 08 80 39 00 0F 95 C1 EB 02 31 C9 40 20 DF 40 80 FF 01", 0x2f99099, runtime::Sig::addr, 0, 31};
 const runtime::Sig S_PRIV_GATE{"site_Game_UIUIPrivilegeCheckControl_HandleSignal_Result",
         "41 80 BE AB 00 00 00 00 0F 84 8C 00 00 00 45 84 FF 0F 84 8D 00 00 00", 0x3822cdf, runtime::Sig::addr, 0, 8};
 constexpr uintptr_t TS_FLAG_GLOBAL_A = 0, TS_FLAG_GLOBAL_B = 17;
@@ -162,7 +164,7 @@ std::atomic<int> hits_upload{0}, hits_download{0}, hits_racenet{0};
 std::vector<std::string> seen_methods;
 
 bool diag_on = false;
-safetyhook::MidHook h_finder, h_ts_flag, h_priv, h_select, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
+safetyhook::MidHook h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
 
 struct GateHook {
     uintptr_t at = 0, resume = 0, session_global = 0;
@@ -767,6 +769,22 @@ uint64_t write_ready_hook(uint64_t handler)
     return 1;
 }
 
+void write_token_mid(safetyhook::Context &c)
+{
+    if ((c.rcx & 0xff) || !bridge_on || !push_hooked)
+        return;
+    uint64_t handler = c.rsi, ctx = peek64(handler + 0x58), np = ctx ? peek64(ctx + 0x68) : 0;
+    std::string board = np ? tb::read_c(game_mem(), np) : std::string();
+    tb::BoardName bn = tb::parse_board(board);
+    if (!bn.ok || !tb::ours(bn.descriptor, content_ours()))
+        return;
+    c.rcx |= 1;
+    static std::atomic<int> logged{0};
+    if (++logged <= 6)
+        swofty::log("[boards] personal best write of handler 0x%llx board %s: the session token test fails offline, this board is ours: treated as signed in", (unsigned long long)handler,
+                    board.c_str());
+}
+
 void select_board_mid(safetyhook::Context &c)
 {
     uint64_t kp = peek64(c.rsp + 0x38);
@@ -949,6 +967,10 @@ void setup()
                 } else
                     swofty::log("[boards] leaderboard write precondition: off, the inline hook failed");
             }
+        if (bridge_on)
+            if (uintptr_t at = runtime::find(S_WRITE_TOKEN, "boards", "boards"))
+                if (hook_mid(h_write_token, at, write_token_mid, "personal best write session token test"))
+                    swofty::log("[boards] personal best write token test hooked at base+0x%llx (our boards count as signed in)", (unsigned long long)(at - swofty::api->module_base()));
         if (uintptr_t at = runtime::find(S_SELECT_BOARD, "boards", "boards"))
             if (hook_mid(h_select, at, select_board_mid, "leaderboard screen board lookup"))
                 swofty::log("[boards] leaderboard screen board lookup logged at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
