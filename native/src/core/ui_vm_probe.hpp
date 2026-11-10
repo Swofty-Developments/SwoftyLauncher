@@ -18,4 +18,5 @@ struct UiProbeStats {
 };
 
 size_t ui_vm_probe_strings(const char *needle, UiProbeHit *out, size_t cap, UiProbeStats &stats);
+bool ui_vm_node_exists(const std::string &path);
 bool ui_vm_set_path(const std::string &path, int type, const void *value);

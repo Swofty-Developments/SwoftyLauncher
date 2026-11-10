@@ -99,7 +99,8 @@ bool read_stock(std::string &stock)
     return false;
 }
 
-int64_t session_seen_ms = 0;
+int64_t session_seen_ms = 0, last_tabs_ms = 0;
+int last_tabs = -1;
 bool probed = false;
 int leaf_writes = 0;
 int64_t last_leaf_ms = 0;
@@ -194,6 +195,16 @@ void player_name_tick(bool in_time_trial)
         session_seen_ms = now;
     if (diag_on && !probed && now - session_seen_ms >= PROBE_DELAY_MS)
         probe();
+    if (diag_on && now - last_tabs_ms >= 3000) {
+        last_tabs_ms = now;
+        int g = ui_vm_node_exists("leaderboard_data.table.view_type_list.global") ? 1 : 0;
+        int f = ui_vm_node_exists("leaderboard_data.table.view_type_list.friends") ? 1 : 0;
+        if (g * 2 + f != last_tabs) {
+            last_tabs = g * 2 + f;
+            swofty::log("[boards] leaderboard screen: registry view_type_list entries global=%d friends=%d (the data patch that drops friends %s)", g, f,
+                        g && !f ? "is in effect" : g && f ? "is NOT in effect" : "- screen not loaded");
+        }
+    }
     if (leaf_on && now - last_leaf_ms >= 2000) {
         last_leaf_ms = now;
         leaf_write();

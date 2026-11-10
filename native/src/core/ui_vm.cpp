@@ -698,3 +698,17 @@ size_t ui_vm_probe_strings(const char *needle, UiProbeHit *out, size_t cap, UiPr
     }
     return found;
 }
+
+bool ui_vm_node_exists(const std::string &path)
+{
+    if (!g_Vm_Registry.address() || !a_path)
+        return false;
+    void *reg = *g_Vm_Registry;
+    if (!reg || !swofty::mem::readable(uint64_t(reg) + 8, 8))
+        return false;
+    auto *root = *reinterpret_cast<uint8_t **>(static_cast<uint8_t *>(reg) + 8);
+    if (!root)
+        return false;
+    void **node = reinterpret_cast<Path_t *>(a_path)(reg, root + 8, path.c_str());
+    return node && swofty::mem::readable(uint64_t(node), 8) && *node;
+}
