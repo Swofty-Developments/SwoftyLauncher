@@ -153,7 +153,7 @@ std::atomic<int> pending_count{0};
 std::deque<std::unique_ptr<tb::Response>> responses;
 std::deque<std::string> xml_buffers;
 std::map<uint64_t, uint64_t> op_vtables;
-std::atomic<int> handle_logged{0};
+std::atomic<int> handle_logged{0}, quiet_logged{0};
 uint8_t ghost_block[tb::ID_BLOCK] = {};
 bool have_ghost_block = false;
 std::wstring outbox, inbox;
@@ -609,9 +609,18 @@ void account_error_mid(safetyhook::Context &c)
     unsigned state = *reinterpret_cast<uint8_t *>(c.rcx + 0x1b8);
     if (state == 0 || state == 1 || state == 7)
         return;
-    if (++diag_error_logged <= 16)
-        swofty::log("[boards] diag: account-state error handler: state %u %s%s; backtrace %s", state, tb::gate::account_state_name(state),
-                    state == 9 ? " (the Platform Client Overlay popup)" : "", backtrace_text(1, 6).c_str());
+    bool quiet = bridge_on && (state == 2 || state == 8 || state == 9 || state == 10) && content_ours();
+    if (diag_on && ++diag_error_logged <= 16)
+        swofty::log("[boards] diag: account-state error handler: state %u %s%s%s; backtrace %s", state, tb::gate::account_state_name(state),
+                    state == 9 ? " (the Platform Client Overlay popup)" : "", quiet ? "; no popup: the offline launcher's content does not need the account service" : "",
+                    backtrace_text(1, 6).c_str());
+    else if (quiet && ++quiet_logged <= 4)
+        swofty::log("[boards] account-state error handler: state %u %s: its popup is not shown for this content (the leaderboard and ghosts use the bridge)", state,
+                    tb::gate::account_state_name(state));
+    if (quiet) {
+        c.rax = 0;
+        c.trampoline_rsp = c.rsp;
+    }
 }
 
 void session_enter_mid(safetyhook::Context &c)
@@ -954,10 +963,12 @@ void setup()
                 swofty::log("[boards] leaderboard privilege check skip armed at base+0x%llx (%s)", (unsigned long long)(at - swofty::api->module_base()),
                             bridge_on ? "our leaderboard button needs no platform check" : "diagnostics only");
     }
-    if (diag_on) {
+    if (bridge_on || diag_on)
         if (uintptr_t at = runtime::find(S_ACCOUNT_ERROR, "boards", "boards"))
             if (hook_mid(h_account_error, at, account_error_mid, "account state error"))
-                swofty::log("[boards] diag: account-state error handler hooked at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
+                swofty::log("[boards] account-state error handler hooked at base+0x%llx (%s)", (unsigned long long)(at - swofty::api->module_base()),
+                            bridge_on ? "its popups are not shown for addon content" : "diagnostics only");
+    if (diag_on) {
         if (uintptr_t at = runtime::find(S_SESSION_ENTER, "boards", "boards"))
             if (hook_mid(h_session_enter, at, session_enter_mid, "storage system session enter"))
                 swofty::log("[boards] diag: storage system onSessionEnter hooked at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
