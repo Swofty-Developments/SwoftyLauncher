@@ -24,6 +24,19 @@ pub struct Session {
     pub token: String,
     pub name: String,
     pub allowed: bool,
+    #[serde(default)]
+    pub avatar: Option<String>,
+}
+
+/// The CDN link for a user's avatar, from the server's `avatar` value: a full link, or a Discord avatar hash.
+pub fn avatar_link(id: Option<&str>, avatar: Option<&str>) -> Option<String> {
+    let avatar = avatar.filter(|a| !a.is_empty())?;
+    if avatar.starts_with("https://") {
+        return Some(avatar.to_owned());
+    }
+    let id = id.filter(|i| !i.is_empty() && i.bytes().all(|b| b.is_ascii_digit()))?;
+    let hash_ok = avatar.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_');
+    hash_ok.then(|| format!("https://cdn.discordapp.com/avatars/{id}/{avatar}.png?size=128"))
 }
 
 fn base_url() -> String {
@@ -169,6 +182,7 @@ impl Pending {
                         token,
                         name: get("name").unwrap_or_else(|| "Player".into()),
                         allowed: get("allowed").as_deref() == Some("1"),
+                        avatar: avatar_link(get("id").as_deref(), get("avatar").as_deref()),
                     };
                     let _ = save(data_dir, &session);
                     return Ok(session);
@@ -230,6 +244,7 @@ fn refresh_at(base: &str, data_dir: &Path, session: &Session) -> Option<Session>
             Some(false) => session.allowed,
             _ => body.multiplayer_allowed,
         },
+        avatar: avatar_link(body.user.id.as_deref(), body.user.avatar.as_deref()).or_else(|| session.avatar.clone()),
     };
     let _ = save(data_dir, &fresh);
     Some(fresh)
@@ -260,7 +275,11 @@ struct MeResponse {
 
 #[derive(Deserialize)]
 struct MeUser {
+    #[serde(default)]
+    id: Option<String>,
     name: String,
+    #[serde(default)]
+    avatar: Option<String>,
 }
 
 fn base64url(bytes: &[u8]) -> String {
@@ -333,6 +352,22 @@ mod tests {
     }
 
     #[test]
+    fn an_avatar_hash_becomes_a_discord_cdn_link() {
+        assert_eq!(
+            avatar_link(Some("123"), Some("abc_9")).as_deref(),
+            Some("https://cdn.discordapp.com/avatars/123/abc_9.png?size=128")
+        );
+        assert_eq!(avatar_link(Some("123"), None), None);
+        assert_eq!(avatar_link(None, Some("abc")), None);
+        assert_eq!(avatar_link(Some("1/../2"), Some("abc")), None);
+        assert_eq!(avatar_link(Some("1"), Some("a/b")), None);
+        assert_eq!(
+            avatar_link(None, Some("https://cdn.discordapp.com/a.png")).as_deref(),
+            Some("https://cdn.discordapp.com/a.png")
+        );
+    }
+
+    #[test]
     fn only_a_401_ends_the_session_and_an_unknown_role_keeps_the_last_answer() {
         let dir = std::env::temp_dir().join(format!("swofty-mpauth-{}", std::process::id()));
         std::fs::remove_dir_all(&dir).ok();
@@ -340,6 +375,7 @@ mod tests {
             token: "t".into(),
             name: "xsoul".into(),
             allowed: true,
+            avatar: None,
         };
         save(&dir, &session).unwrap();
         let closed = {
