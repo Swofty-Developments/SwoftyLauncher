@@ -1,8 +1,6 @@
-use gpui_kit::component::scroll::{ScrollableElement, Scrollbar, ScrollbarHandle, ScrollbarMode};
+use gpui_kit::component::scroll::{Scrollable, ScrollableElement, Scrollbar, ScrollbarHandle, ScrollbarMode};
 use gpui_kit::component::{Theme, ThemeMode};
-use gpui_kit::{
-    Anchor, App, Element, ElementId, Global, Hsla, InteractiveElement, ParentElement, Styled, hsla, px, rgb,
-};
+use gpui_kit::{Anchor, App, ElementId, Global, Hsla, hsla, px, rgb};
 
 #[derive(Clone, Copy)]
 pub struct Palette {
@@ -133,13 +131,10 @@ pub fn init(cx: &mut App) {
 pub const SCROLLBAR_GAP: f32 = 14.;
 
 /// Scrolls an area that has no scroll handle of its own, with the launcher's
-/// scrollbar and smooth momentum scrolling. `id` keys the scroll position.
+/// scrollbar. `id` keys the scroll position.
 pub trait ScrollArea: ScrollableElement + Sized {
-    fn scroll_y(self, id: impl Into<ElementId>) -> crate::scroll::SmoothScrollable<Self>
-    where
-        Self: InteractiveElement + Styled + ParentElement + Element + 'static,
-    {
-        crate::scroll::SmoothScrollable::new(self, id)
+    fn scroll_y(self, id: impl Into<ElementId>) -> Scrollable<Self> {
+        self.overflow_y_scrollbar().id(id)
     }
 }
 

@@ -14,7 +14,7 @@ use gpui_kit::*;
 
 use crate::pages::label;
 use crate::shell::Shell;
-use crate::theme::{Palette, ScrollArea};
+use crate::theme::Palette;
 use swofty_i18n::tr;
 
 #[derive(Default)]
@@ -159,8 +159,9 @@ impl Shell {
         );
         let output = self.developer.output.clone().map(|(text, ok)| {
             div()
+                .id("dev-output")
                 .max_h(px(220.))
-                .scroll_y("dev-output")
+                .overflow_y_scroll()
                 .p(px(10.))
                 .rounded(px(5.))
                 .border_1()
