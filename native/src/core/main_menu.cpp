@@ -1089,16 +1089,6 @@ void watch_nav()
     watch_cover();
     uint64_t now = GetTickCount64();
     bool in_session = runtime::in_session_now();
-    if (logic::return_due(nav.was_in_session.load(), in_session, logic::Mode(nav.mode.load()), !off("SWOFTY_MAIN_MENU_RETURN") && entry_by_route())) {
-        nav.return_armed = true;
-        nav.return_at = now;
-        swofty::log("[main-menu] nav: session-end hand-over: a session that the %s card started has ended; the activity container the hand-over lands on gets that card's command", logic::return_command(logic::Mode(nav.mode.load())));
-    }
-    nav.was_in_session = in_session;
-    if (nav.return_armed.load() && now - nav.return_at.load() > 120000) {
-        nav.return_armed = false;
-        swofty::log("[main-menu] nav: session-end hand-over: no activity container within 120 s; disarmed");
-    }
     int e = nav.expect.load();
     if (e != int(logic::Expect::none) && now - nav.expect_at.load() > 4000 && !in_session) {
         nav.expect = int(logic::Expect::none);
@@ -1237,6 +1227,12 @@ void screen(const char *name)
             }
         }
     }
+    if (!std::strcmp(name, "frontend_transition") && logic::Mode(nav.mode.load()) != logic::Mode::none && !off("SWOFTY_MAIN_MENU_RETURN") && entry_by_route()) {
+        nav.return_armed = true;
+        nav.return_at = GetTickCount64();
+        swofty::log("[main-menu] nav: session-end hand-over: the front end is back (frontend_transition) after a session that the %s card started; the activity container the hand-over lands on gets that card's command; armed until it opens or fe_home does",
+                    logic::return_command(logic::Mode(nav.mode.load())));
+    }
     {
         logic::Expect e = logic::Expect(nav.expect.load());
         bool container = !std::strcmp(name, "f1_world_activity_container"), saves = !std::strcmp(name, "grand_prix_continue"), home = !std::strcmp(name, "fe_home");
@@ -1250,8 +1246,7 @@ void screen(const char *name)
         if (home) {
             set_flow(logic::FRONTEND_FLOW);
             nav.return_armed = false;
-            if (!runtime::in_session_now())
-                nav.mode = int(logic::Mode::none);
+            nav.mode = int(logic::Mode::none);
             if (e != logic::Expect::none && e != logic::Expect::home)
                 nav.expect = int(logic::Expect::none);
         }
