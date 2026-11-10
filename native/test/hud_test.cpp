@@ -738,6 +738,8 @@ static void test_guard()
     CHECK(learned_fg(true, "").empty() && learned_fg(false, "") == "a non-direct present queue" &&
               learned_fg(true, "nvngx_dlssg.dll") == "nvngx_dlssg.dll (calls Present)",
           "a queue read from a swapchain is drawn on only when it is direct and no frame generation module presents");
+    CHECK(streamline_result_ok(0) && !streamline_result_ok(1) && !streamline_result_ok(-1),
+          "only sl::Result::eOk (0) lets the native swapchain be used");
     std::string hw = "<x>\n\t<antialiasing taa=\"true\" dlss=\"false\" />\n\t<frame_gen mode=\"0\" />\n\t"
                      "<multi_frame_gen value=\"0\" />\n</x>";
     FgSetting fs = fg_setting(hw);
