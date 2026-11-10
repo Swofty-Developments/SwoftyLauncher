@@ -703,6 +703,8 @@ const ACTIVITY_ENTRY: &str = "enter_f1_world_activity";
 const SPLITSCREEN_ENTRY: &str = "enter_splitscreen_era_select";
 const F1_WORLD_FLOW: &str = "f1_world_flow";
 const THEMING_OVERLAY: &str = "theming_overlay_frontend";
+const TINY_WIPE: &str = "ui_wipes/ui_wipe_tiny_right.bk2";
+const TINY_WIPE_CURVE: &str = "tran_wipe_tiny_right_dly_c";
 const STANDARD_WIPE: &str = "ui_wipes/ui_wipe_standard_out.bk2";
 const STANDARD_WIPE_CURVE: &str = "tran_wipe_stndrd_out_dly_c";
 const TRANSITION_ENTRY_NODE: &str = "migrate_to_f1_world";
@@ -710,7 +712,7 @@ const TRANSITION_ENTRY_NODE: &str = "migrate_to_f1_world";
 /// routes_f1_world.uir with the routes that leave the pickers for the main menu without the F1 World hub:
 /// `swofty_back_home` in the activity container's group, a copy of the container's own `home` route (a wipe,
 /// `Migrate frontend_flow enter_fe_home`, then fe_home with its slices and scene) that runs the standard
-/// full-screen wipe and opens the theming overlay only after the migration, so nothing of the old screen or the hub
+/// small wipe of its own and opens the theming overlay only after the migration, so nothing of the old screen or the hub
 /// shows before the wipe covers it; `swofty_home` in the fe_showroom and grand_prix_continue groups, a copy of the
 /// hub's `back_1` (a wipe, then close the screen and open fe_home; both screens are in the front-end flow, so no
 /// migration is needed). The core swaps them in where the game's own handlers fire their Back route.
@@ -735,7 +737,12 @@ pub fn f1_world_routes(data: &[u8]) -> Result<Vec<u8>> {
         for group in ["fe_showroom", "grand_prix_continue"] {
             let mut r = back.clone();
             set_str(r.o_mut()?, "Id", HOME_BACK_ROUTE)?;
-            replace_strings(&mut r, &|v| (v == "fe_f1_world").then(|| group.to_owned()));
+            replace_strings(&mut r, &|v| match v {
+                "fe_f1_world" => Some(group.to_owned()),
+                STANDARD_WIPE => Some(TINY_WIPE.to_owned()),
+                STANDARD_WIPE_CURVE => Some(TINY_WIPE_CURVE.to_owned()),
+                _ => None,
+            });
             added.push((group, r));
         }
         for (group, r) in added {
@@ -789,14 +796,12 @@ fn container_home_route(stock: &Node) -> Result<Node> {
         .ok_or_else(|| err("the container's home route has no Migrate to frontend_flow"))?;
     let mut wiped = 0;
     for c in cmds.iter_mut() {
-        if let Some(v) = attr_mut(c, "Video") {
-            set_str(v.o_mut()?, "Value", STANDARD_WIPE)?;
+        if attr_mut(c, "Video").is_some() {
             wiped += 1;
         }
         if let Some(v) = attr_mut(c, "DilationCurve") {
             let curve = v.o()?.str_at("Value")?.to_owned();
             if curve.starts_with("tran_wipe_") && curve.ends_with("_dly_c") {
-                set_str(v.o_mut()?, "Value", STANDARD_WIPE_CURVE)?;
                 wiped += 1;
             }
         }
@@ -1843,8 +1848,8 @@ mod tests {
         assert_eq!(route_ids_of(&p, "fe_f1_world"), ["back_1"]);
         let home = route_in(&p, "f1_world_activity_container", BACK_HOME_FROM_CONTAINER);
         let cmds = home.o().unwrap().at("Commands").unwrap().a().unwrap();
-        assert_eq!(attr_value(&cmds[1], "Video").as_deref(), Some(STANDARD_WIPE));
-        assert_eq!(attr_value(&cmds[2], "DilationCurve").as_deref(), Some(STANDARD_WIPE_CURVE));
+        assert_eq!(attr_value(&cmds[1], "Video").as_deref(), Some(TINY_WIPE), "the stock small wipe stays");
+        assert_eq!(attr_value(&cmds[2], "DilationCurve").as_deref(), Some(TINY_WIPE_CURVE));
         assert_eq!(attr_value(&cmds[0], "DilationCurve").as_deref(), Some("tran_pre_wipe_dly_gen"));
         assert_eq!(cmds[3].o().unwrap().str_at("Dependencies").unwrap(), "5", "the overlay opens after the migration");
         let stock = route_in(&p, "f1_world_activity_container", "home");

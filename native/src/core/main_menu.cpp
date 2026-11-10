@@ -90,6 +90,7 @@ std::atomic<bool> resolved{false}, patched{false}, home_open{false};
 std::once_flag once;
 void *f1w_populate = nullptr, *f1w_action = nullptr;
 std::atomic<bool> tt_warned{false};
+constexpr uint64_t PANEL_DELAY_MS = 450, PANEL_FADE_MS = 250;
 std::atomic<int> rows_flag{-1}, menu_flag{-1};
 std::atomic<int> via{0};
 std::atomic<uint64_t> swap_at{0}, home_opened_at{0};
@@ -1495,6 +1496,11 @@ void paint(hud::Frame &f, uint64_t now)
     QueryPerformanceCounter(&t0);
     static bool told_drawn = false;
     hud::reset_state(f);
+    uint64_t shown_for = GetTickCount64() - home_opened_at.load();
+    float fade = shown_for < PANEL_DELAY_MS ? 0.0f : std::min(1.0f, float(shown_for - PANEL_DELAY_MS) / float(PANEL_FADE_MS));
+    if (fade <= 0.0f)
+        return;
+    f.opacity = fade;
     float W = f.width, H = f.height;
     if (!std::exchange(told_drawn, true))
         swofty::log("[main-menu] panel: first draw on a %.0fx%.0f frame; video card %s, avatar %s", double(W), double(H),
