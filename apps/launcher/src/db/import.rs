@@ -1,7 +1,6 @@
 use std::path::Path;
 
-use gpui_kit::component::WindowExt;
-use gpui_kit::component::notification::Notification;
+use crate::notices::{Notification, Notify};
 use gpui_kit::*;
 use swofty_core::dbedit::ImportReport;
 use swofty_core::dbedit::package::{self, Incoming};
@@ -47,7 +46,7 @@ impl Shell {
             return;
         }
         self.db.importing = true;
-        window.push_notification(Notification::info(trf!("Importing {file}…", file = file)), cx);
+        window.notify(Notification::info(trf!("Importing {file}…", file = file)), cx);
         cx.notify();
         let (store, path) = (self.store.clone(), path.to_path_buf());
         cx.spawn_in(window, async move |this, cx| {
@@ -89,7 +88,7 @@ impl Shell {
                     body.push_str(&trf!("\nTurned on in {profile}", profile = profile));
                 }
                 let title = trf!("Imported {name}", name = done.package.name);
-                window.push_notification(Notification::success(body).title(title), cx);
+                window.notify(Notification::success(body).title(title), cx);
                 self.reload(cx);
                 self.show_addon(&id, cx);
             }
@@ -106,7 +105,7 @@ impl Shell {
                 crate::app_log::action("db editor: import")
                     .file(std::path::Path::new(&file))
                     .failed(&e);
-                window.push_notification(
+                window.notify(
                     Notification::error(e).title(trf!("Could not import {file}", file = file)),
                     cx,
                 )

@@ -1,11 +1,11 @@
 use super::model::{AddonListItem, PINNED};
 use crate::library::{AddonItem, Source};
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use crate::shell::Shell;
 use crate::theme::{Palette, palette};
 use gpui_kit::assets::IconName;
-use gpui_kit::component::notification::Notification;
-use gpui_kit::component::{Icon, WindowExt, h_flex};
+use gpui_kit::component::{Icon, h_flex};
 use gpui_kit::*;
 use std::collections::HashSet;
 use swofty_core::folders::{self, Entry, Key, Spot};
@@ -242,7 +242,7 @@ impl Shell {
             if f != self.library.folders {
                 if let Err(e) = self.store.save_folders(&f) {
                     crate::app_log::action("save folders").failed(&e);
-                    window.push_notification(Notification::error(e.to_string()), cx);
+                    window.notify(Notification::error(e.to_string()), cx);
                     return;
                 }
                 moved_folder = true;

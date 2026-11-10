@@ -1,8 +1,7 @@
 use std::collections::BTreeSet;
 use std::time::{Duration, Instant};
 
-use gpui_kit::component::WindowExt;
-use gpui_kit::component::notification::Notification;
+use crate::notices::{Notification, Notify};
 use gpui_kit::*;
 use swofty_core::catalog::{self, Addon};
 use swofty_core::manifest::AddonManifest;
@@ -66,7 +65,7 @@ impl Shell {
                     .iter()
                     .find(|m| m.manifest.id == id)
                     .map_or(id, |m| m.manifest.name.as_str());
-                window.push_notification(
+                window.notify(
                     Notification::success(trf!("Added {name} to {profile}", name = name, profile = profile)),
                     cx,
                 );
@@ -75,7 +74,7 @@ impl Shell {
                 crate::app_log::action("add addon to profile")
                     .addon(id)
                     .failed(&e);
-                window.push_notification(Notification::error(e.to_string()), cx);
+                window.notify(Notification::error(e.to_string()), cx);
             }
         }
         self.reload(cx);

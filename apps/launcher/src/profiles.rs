@@ -1,9 +1,9 @@
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use crate::shell::{Prompt, Shell};
 use crate::theme::{Palette, palette};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::ButtonVariant;
-use gpui_kit::component::notification::Notification;
 use gpui_kit::component::{Icon, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
@@ -160,11 +160,11 @@ impl Shell {
                                 ),
                                 None => trf!("Deleted profile {name}", name = name),
                             };
-                            window.push_notification(Notification::success(text), cx);
+                            window.notify(Notification::success(text), cx);
                         }
                         Err(e) => {
                             crate::app_log::action("delete profile").failed(&e);
-                            window.push_notification(Notification::error(e), cx)
+                            window.notify(Notification::error(e), cx)
                         }
                     }
                     shell.update(cx, |s, cx| s.reload(cx)).ok();

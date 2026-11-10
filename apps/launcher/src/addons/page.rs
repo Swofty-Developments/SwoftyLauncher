@@ -1,4 +1,5 @@
 use super::SPLIT_AT;
+use crate::notices::{Notification, Notify};
 use crate::pages::{GUTTER, label};
 use crate::scale::px;
 use crate::shell::{Page, Shell};
@@ -6,8 +7,7 @@ use crate::theme::Palette;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
-use gpui_kit::component::notification::Notification;
-use gpui_kit::component::{Icon, Sizable, WindowExt, h_flex, v_flex};
+use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::path::PathBuf;
@@ -81,16 +81,16 @@ impl Shell {
                     match r {
                         Ok((left_out, m)) => {
                             let text = trf!("Installed {name} {version}", name = m.name, version = m.version);
-                            window.push_notification(Notification::success(text), cx);
+                            window.notify(Notification::success(text), cx);
                             if !left_out.is_empty() {
                                 let note = Notification::warning(left_out.join("\n"))
                                     .title(tr("Track can't be used"))
                                     .autohide(false);
-                                window.push_notification(note, cx);
+                                window.notify(note, cx);
                             }
                             last = Some(m.id);
                         }
-                        Err(e) => window.push_notification(Notification::error(e), cx),
+                        Err(e) => window.notify(Notification::error(e), cx),
                     }
                 }
                 s.reload(cx);
@@ -124,37 +124,26 @@ impl Shell {
         });
         let shell = cx.entity().downgrade();
         let text = trn(off.len(), "Turned off {count} addon", "Turned off {count} addons");
-        let note = Notification::success(text)
-            .action(move |_, _, cx| {
-                let (shell, before) = (shell.clone(), before.clone());
-                let note = cx.entity().downgrade();
-                Button::new("undo-turn-off-all")
-                    .outline()
-                    .small()
-                    .label(tr("Undo"))
-                    .on_click(move |_, window, cx| {
-                        let before = before.clone();
-                        shell
-                            .update(cx, |s, cx| {
-                                s.update_profile(window, cx, |p| {
-                                    let rest: Vec<_> = p
-                                        .addons
-                                        .iter()
-                                        .filter(|a| !before.iter().any(|b| b.id == a.id))
-                                        .cloned()
-                                        .collect();
-                                    p.addons = before.into_iter().chain(rest).collect();
-                                    Ok(())
-                                })
-                            })
-                            .ok();
-                        note.update(cx, |n, cx| n.dismiss(window, cx)).ok();
+        let note = Notification::success(text).action(tr("Undo"), move |window, cx| {
+            let before = before.clone();
+            shell
+                .update(cx, |s, cx| {
+                    s.update_profile(window, cx, |p| {
+                        let rest: Vec<_> = p
+                            .addons
+                            .iter()
+                            .filter(|a| !before.iter().any(|b| b.id == a.id))
+                            .cloned()
+                            .collect();
+                        p.addons = before.into_iter().chain(rest).collect();
+                        Ok(())
                     })
-            })
-            .autohide(true);
-        window.push_notification(note, cx);
+                })
+                .ok();
+        });
+        window.notify(note, cx);
         if !kept.is_empty() {
-            window.push_notification(
+            window.notify(
                 Notification::info(trf!(
                     "Left on: {kept}. Turning it off warns about your saves, so use its own switch.",
                     kept = kept.join(", ")

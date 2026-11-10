@@ -3,12 +3,12 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::{Input, InputEvent, InputState};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
-use gpui_kit::component::notification::Notification;
 use gpui_kit::component::spinner::Spinner;
 use gpui_kit::component::switch::Switch;
 use gpui_kit::component::{Disableable, Icon, Sizable, WindowExt, h_flex, v_flex};
@@ -597,7 +597,7 @@ impl Shell {
         for pid in &pids {
             if let Err(e) = swofty_core::process::stop_process(*pid) {
                 crate::app_log::action("stop f1 25").failed(&e);
-                window.push_notification(Notification::error(e.to_string()), cx);
+                window.notify(Notification::error(e.to_string()), cx);
                 return false;
             }
         }

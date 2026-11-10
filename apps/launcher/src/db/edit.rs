@@ -1,6 +1,6 @@
+use crate::notices::Notification;
 use gpui_kit::component::WindowExt;
 use gpui_kit::component::input::{InputEvent, InputState};
-use gpui_kit::component::notification::Notification;
 use gpui_kit::*;
 use swofty_i18n::{tr, trf, trn};
 

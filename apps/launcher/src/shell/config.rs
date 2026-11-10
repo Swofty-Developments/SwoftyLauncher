@@ -1,5 +1,4 @@
-use gpui_kit::component::WindowExt;
-use gpui_kit::component::notification::Notification;
+use crate::notices::{Notification, Notify};
 use gpui_kit::*;
 use swofty_core::session::LaunchMode;
 
@@ -19,7 +18,7 @@ impl Shell {
                     if on { "its launcher saves" } else { "Steam's saves" }
                 ));
                 self.library.profile.launcher_saves = on;
-                window.push_notification(
+                window.notify(
                     Notification::info(match on {
                         true => trf!("{name} plays on its own launcher saves.", name = name),
                         false => trf!("{name} plays on your Steam saves.", name = name),
@@ -29,7 +28,7 @@ impl Shell {
             }
             Err(e) => {
                 crate::app_log::action("save profile").failed(&e);
-                window.push_notification(Notification::error(e.to_string()), cx);
+                window.notify(Notification::error(e.to_string()), cx);
             }
         }
         cx.notify();
@@ -40,7 +39,7 @@ impl Shell {
         config.launch.start_store = on;
         if let Err(e) = self.store.save_config(&config) {
             crate::app_log::action("save settings").failed(&e);
-            window.push_notification(Notification::error(e.to_string()), cx);
+            window.notify(Notification::error(e.to_string()), cx);
         }
         self.start_store = config.launch.start_store;
         cx.notify();
@@ -56,7 +55,7 @@ impl Shell {
         config.clear_old_session_logs = on;
         if let Err(e) = self.store.save_config(&config) {
             crate::app_log::action("save settings").failed(&e);
-            window.push_notification(Notification::error(e.to_string()), cx);
+            window.notify(Notification::error(e.to_string()), cx);
         }
         self.clear_old_session_logs = config.clear_old_session_logs;
         cx.notify();
@@ -67,7 +66,7 @@ impl Shell {
         config.set_launch_mode(&self.library.profile.name, mode);
         if let Err(e) = self.store.save_config(&config) {
             crate::app_log::action("save settings").failed(&e);
-            window.push_notification(Notification::error(e.to_string()), cx);
+            window.notify(Notification::error(e.to_string()), cx);
         }
         self.vr_profiles = config.vr_profiles;
         cx.notify();

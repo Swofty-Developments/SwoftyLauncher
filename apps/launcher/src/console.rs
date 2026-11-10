@@ -4,12 +4,12 @@ use std::io::{Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::notification::Notification;
 use gpui_kit::component::scroll::Scrollbar;
-use gpui_kit::component::{ActiveTheme, Disableable, Icon, Sizable, TitleBar, WindowExt, h_flex, v_flex};
+use gpui_kit::component::{ActiveTheme, Disableable, Icon, Sizable, TitleBar, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::session::{LOADER_LOG, SessionRecord};
@@ -339,7 +339,7 @@ impl Console {
             .join("\n");
         let count = lines.len();
         cx.write_to_clipboard(ClipboardItem::new_string(text));
-        window.push_notification(
+        window.notify(
             Notification::success(format!("Copied {}", trn(count, "{count} line", "{count} lines"))),
             cx,
         );

@@ -16,8 +16,8 @@ use super::{Page, Shell};
 
 pub(super) const COLLAPSE_BELOW: f32 = 1040.;
 const COMPACT_BELOW: f32 = 1180.;
-const BAR_HEIGHT: f32 = 68.;
-pub(super) const SUB_HEIGHT: f32 = 42.;
+pub(crate) const BAR_HEIGHT: f32 = 68.;
+pub(crate) const SUB_HEIGHT: f32 = 42.;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Popover {
@@ -148,6 +148,12 @@ impl Shell {
 
     fn open_popover(&mut self, which: Popover, cx: &mut Context<Self>) {
         self.popover = (self.popover != Some(which)).then_some(which);
+        if self.popover == Some(Popover::Notices) {
+            cx.update_global(|n: &mut crate::notices::Notices, _| {
+                n.mark_read();
+                n.dismiss_popups();
+            });
+        }
         cx.notify();
     }
 
@@ -249,7 +255,7 @@ impl Shell {
                     .into_any_element()
             };
         let action_focus = |a: usize| focus == Some(Tab::ALL.len() + a);
-        let notices = self.notices().len();
+        let notices = self.notices().len() + cx.global::<crate::notices::Notices>().unread();
         crate::ui::title_bar(p)
             .h(px(BAR_HEIGHT))
             .pl(px(0.))
@@ -750,8 +756,51 @@ impl Shell {
     }
 
     fn notices_panel(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        let notices = self.notices();
-        let body: Vec<AnyElement> = if notices.is_empty() {
+        let status = self.notices();
+        let history: Vec<crate::notices::Entry> = cx.global::<crate::notices::Notices>().entries().to_vec();
+        let empty = status.is_empty() && history.is_empty();
+        let mut rows: Vec<AnyElement> = Vec::new();
+        for (i, n) in status.into_iter().enumerate() {
+            let page = n.page;
+            rows.push(
+                h_flex()
+                    .id(SharedString::from(format!("notice-{i}")))
+                    .gap(px(10.))
+                    .p(px(12.))
+                    .items_start()
+                    .border_b_1()
+                    .border_color(p.border_variant)
+                    .when(page.is_some(), |d| {
+                        d.cursor_pointer().hover(move |s| s.bg(p.hover))
+                    })
+                    .child(
+                        Icon::new(n.icon)
+                            .size(px(16.))
+                            .text_color(p.accent)
+                            .flex_shrink_0(),
+                    )
+                    .child(
+                        div()
+                            .flex_1()
+                            .min_w_0()
+                            .text_size(px(13.))
+                            .line_height(px(18.))
+                            .child(n.text),
+                    )
+                    .on_click(cx.listener(move |this, _, _, cx| {
+                        this.popover = None;
+                        if let Some(page) = page {
+                            this.open_page(page, cx);
+                        }
+                        cx.notify();
+                    }))
+                    .into_any_element(),
+            );
+        }
+        for e in &history {
+            rows.push(self.history_row(e, p));
+        }
+        let body: Vec<AnyElement> = if empty {
             vec![
                 v_flex()
                     .items_center()
@@ -771,58 +820,159 @@ impl Shell {
                     .into_any_element(),
             ]
         } else {
-            notices
-                .into_iter()
-                .enumerate()
-                .map(|(i, n)| {
-                    let page = n.page;
-                    h_flex()
-                        .id(SharedString::from(format!("notice-{i}")))
-                        .gap(px(10.))
-                        .p(px(12.))
-                        .items_start()
-                        .when(page.is_some(), |d| {
-                            d.cursor_pointer().hover(move |s| s.bg(p.hover))
-                        })
-                        .when(i > 0, |d| d.border_t_1().border_color(p.border_variant))
-                        .child(
-                            Icon::new(n.icon)
-                                .size(px(16.))
-                                .text_color(p.accent)
-                                .flex_shrink_0(),
-                        )
-                        .child(
-                            div()
-                                .flex_1()
-                                .min_w_0()
-                                .text_size(px(13.))
-                                .line_height(px(18.))
-                                .child(n.text),
-                        )
-                        .on_click(cx.listener(move |this, _, _, cx| {
-                            this.popover = None;
-                            if let Some(page) = page {
-                                this.open_page(page, cx);
-                            }
-                            cx.notify();
-                        }))
-                        .into_any_element()
-                })
-                .collect()
+            rows
         };
         self.panel(p)
             .child(
-                div()
+                h_flex()
                     .px(px(12.))
-                    .py(px(10.))
+                    .py(px(6.))
+                    .items_center()
                     .border_b_1()
                     .border_color(p.border_variant)
-                    .text_size(px(12.))
-                    .font_weight(FontWeight::SEMIBOLD)
-                    .text_color(p.text_muted)
-                    .child(tr("NOTIFICATIONS")),
+                    .child(
+                        div()
+                            .flex_1()
+                            .text_size(px(12.))
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .text_color(p.text_muted)
+                            .child(tr("NOTIFICATIONS")),
+                    )
+                    .when(!history.is_empty(), |d| {
+                        d.child(
+                            Button::new("clear-notices")
+                                .ghost()
+                                .small()
+                                .label(tr("Clear all"))
+                                .on_click(cx.listener(|this, _, _, cx| {
+                                    cx.update_global(|n: &mut crate::notices::Notices, _| n.clear());
+                                    this.popover = None;
+                                    cx.notify();
+                                })),
+                        )
+                    }),
             )
-            .children(body)
+            .child(v_flex().max_h(px(480.)).overflow_y_hidden().children(body))
             .into_any_element()
+    }
+
+    fn history_row(&self, e: &crate::notices::Entry, p: Palette) -> AnyElement {
+        use crate::notices::Kind;
+        let (icon, tone) = match e.note.kind {
+            Kind::Info => (IconName::Info, p.accent),
+            Kind::Success => (IconName::CircleCheck, p.success),
+            Kind::Warning => (IconName::TriangleAlert, p.warning),
+            Kind::Error => (IconName::CircleX, p.error),
+        };
+        let action = e.note.action.clone();
+        h_flex()
+            .id(SharedString::from(format!("history-{}", e.id)))
+            .gap(px(10.))
+            .p(px(12.))
+            .items_start()
+            .border_b_1()
+            .border_color(p.border_variant)
+            .child(Icon::new(icon).size(px(16.)).text_color(tone).flex_shrink_0())
+            .child(
+                v_flex()
+                    .flex_1()
+                    .min_w_0()
+                    .gap(px(2.))
+                    .children(e.note.title.clone().map(|t| {
+                        div()
+                            .text_size(px(13.))
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .child(t)
+                    }))
+                    .child(
+                        div()
+                            .text_size(px(13.))
+                            .line_height(px(18.))
+                            .text_color(if e.note.title.is_some() {
+                                p.text_muted
+                            } else {
+                                p.text
+                            })
+                            .child(e.note.message.clone()),
+                    )
+                    .children(action.map(|(label, run)| {
+                        Button::new(SharedString::from(format!("history-action-{}", e.id)))
+                            .outline()
+                            .small()
+                            .label(label)
+                            .on_click(move |_, window, cx| run(window, cx))
+                    })),
+            )
+            .child(
+                div()
+                    .text_size(px(11.))
+                    .text_color(p.text_placeholder)
+                    .flex_shrink_0()
+                    .child(crate::format::ago(e.at.elapsed().as_secs_f64())),
+            )
+            .into_any_element()
+    }
+
+    pub(super) fn popup_layer(&mut self, p: Palette, cx: &mut Context<Self>) -> Option<AnyElement> {
+        if self.popover == Some(Popover::Notices) {
+            return None;
+        }
+        let now = std::time::Instant::now();
+        let popups: Vec<crate::notices::Entry> = cx
+            .global::<crate::notices::Notices>()
+            .popups(now)
+            .into_iter()
+            .cloned()
+            .collect();
+        if popups.is_empty() {
+            return None;
+        }
+        if !self.popup_timer {
+            self.popup_timer = true;
+            cx.spawn(async move |this, cx| {
+                cx.background_executor()
+                    .timer(std::time::Duration::from_millis(1200))
+                    .await;
+                this.update(cx, |s, cx| {
+                    s.popup_timer = false;
+                    cx.notify();
+                })
+                .ok();
+            })
+            .detach();
+        }
+        Some(
+            v_flex()
+                .id("popups")
+                .absolute()
+                .top(px(BAR_HEIGHT
+                    + 6.
+                    + if self.notch_beside {
+                        crate::download_dock::NOTCH_HEIGHT + 6.
+                    } else {
+                        0.
+                    }))
+                .right(px(8.))
+                .w(px(340.))
+                .gap(px(6.))
+                .children(popups.iter().map(|e| {
+                    let id = e.id;
+                    div()
+                        .id(SharedString::from(format!("popup-{id}")))
+                        .rounded(px(8.))
+                        .border_1()
+                        .border_color(p.border)
+                        .bg(p.elevated)
+                        .overflow_hidden()
+                        .cursor_pointer()
+                        .occlude()
+                        .child(self.history_row(e, p))
+                        .on_click(cx.listener(move |_, _, _, cx| {
+                            cx.update_global(|n: &mut crate::notices::Notices, _| n.dismiss_popup(id));
+                            cx.notify();
+                        }))
+                }))
+                .into_any_element(),
+        )
     }
 }

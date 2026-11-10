@@ -2,14 +2,14 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::{Input, InputEvent, InputState, NumberInput};
-use gpui_kit::component::notification::Notification;
 use gpui_kit::component::select::{Select, SelectDelegate, SelectEvent, SelectState};
 use gpui_kit::component::slider::{Slider, SliderEvent, SliderState};
 use gpui_kit::component::switch::Switch;
-use gpui_kit::component::{Disableable, Sizable, WindowExt, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use serde_json::{Map, Value};
@@ -302,7 +302,7 @@ impl Shell {
         for f in form.fields.iter().filter(|f| only.is_none_or(|o| o == f.id())) {
             let Some(v) = self.field_value(&key, f, cx) else {
                 let name = f.label().unwrap_or(f.id()).to_owned();
-                window.push_notification(
+                window.notify(
                     Notification::error(trf!("{name} is not a number", name = name)),
                     cx,
                 );

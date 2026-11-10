@@ -1,6 +1,7 @@
+use crate::notices::Notify;
 use crate::scale::px;
 use crate::theme::palette;
-use gpui_kit::component::{WindowExt, h_flex, v_flex};
+use gpui_kit::component::{h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::time::Instant;
@@ -33,13 +34,13 @@ impl Render for Shell {
             self.sync_db(window, cx);
         }
         for note in std::mem::take(&mut self.db.toasts) {
-            window.push_notification(note, cx);
+            window.notify(note, cx);
         }
         for note in std::mem::take(&mut self.browser.toasts) {
-            window.push_notification(note, cx);
+            window.notify(note, cx);
         }
         for note in std::mem::take(&mut self.mp_toasts) {
-            window.push_notification(note, cx);
+            window.notify(note, cx);
         }
         let content = match self.page {
             Page::News => self.news_page(p, short, cx),
@@ -111,11 +112,11 @@ impl Render for Shell {
                 ),
             )
             .children(self.sub_row(p, layout_width, cx))
+            .children(self.download_notch(p, layout_width, has_sub, window, cx))
             .children(self.popover_layer(p, cx))
+            .children(self.popup_layer(p, cx))
             .children(self.update_bar(p))
             .child(self.play_bar(p, wide, cx))
-            .children(self.progress_card(p))
-            .children(self.download_dock(p, window, cx))
             .children(self.task_dialog(p, window, cx))
             .children(self.crash_overlay(p, cx))
             .children(self.data_move_overlay(p, cx))

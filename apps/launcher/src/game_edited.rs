@@ -1,8 +1,8 @@
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::dialog::DialogFooter;
-use gpui_kit::component::notification::Notification;
 use gpui_kit::component::{Icon, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
@@ -451,7 +451,7 @@ fn footer(
                             .on_click(move |_, window, cx| {
                                 cx.open_url(open.url);
                                 window.close_dialog(cx);
-                                window.push_notification(
+                                window.notify(
                                     Notification::info(tr("Press Play again when Steam has finished."))
                                         .title(tr("Steam is verifying F1 25")),
                                     cx,

@@ -1,8 +1,7 @@
 use crate::game::{self};
 use crate::library::Library;
+use crate::notices::{Notification, Notify};
 use crate::play_checks;
-use gpui_kit::component::WindowExt;
-use gpui_kit::component::notification::Notification;
 use gpui_kit::*;
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
@@ -95,6 +94,8 @@ impl Shell {
             page: Page::News,
             nav: None,
             popover: None,
+            popup_timer: false,
+            notch_beside: false,
             avatar: crate::avatar::load(&root),
             avatar_link: None,
             root_focus: cx.focus_handle(),
@@ -188,6 +189,25 @@ impl Shell {
             Ok("browser") => shell.open_page(Page::Browser, cx),
             Ok("settings") => shell.open_page(Page::Settings, cx),
             _ => {}
+        }
+        if cfg!(debug_assertions) && std::env::var_os("SWOFTY_FAKE_NOTICES").is_some() {
+            cx.update_global(|n: &mut crate::notices::Notices, _| {
+                let now = std::time::Instant::now();
+                n.add(
+                    Notification::success(swofty_i18n::tr("Updated Project Halo 0.1.2"))
+                        .title(swofty_i18n::tr("Updated 1 of 1 addon")),
+                    now,
+                );
+                n.add(
+                    Notification::warning(swofty_i18n::tr("Turning it off warns about your saves.")),
+                    now,
+                );
+                n.add(
+                    Notification::error(swofty_i18n::tr("Couldn't reach the addon registry."))
+                        .title(swofty_i18n::tr("Download failed")),
+                    now,
+                );
+            });
         }
         shell.fetch_news(cx);
         shell.sync_catalog_updates();
@@ -368,7 +388,7 @@ impl Shell {
                          with the launcher's buttons instead, or open Swofty Launcher normally to drag and drop."),
                     )
                     .title(tr("Running as administrator"));
-                    cx.update(|window, cx| window.push_notification(note, cx)).ok();
+                    cx.update(|window, cx| window.notify(note, cx)).ok();
                 }
             })
             .detach();

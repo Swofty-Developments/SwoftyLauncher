@@ -1,8 +1,8 @@
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use crate::theme::{SCROLLBAR_GAP, ScrollArea, palette};
 use gpui_kit::component::button::ButtonVariant;
 use gpui_kit::component::input::{Input, InputState};
-use gpui_kit::component::notification::Notification;
 use gpui_kit::component::{WindowExt, h_flex, v_flex};
 use gpui_kit::*;
 use std::collections::BTreeSet;
@@ -121,7 +121,7 @@ impl Shell {
                                 .await;
                             cx.update(|window, cx| match removed {
                                 Ok(()) => {
-                                    window.push_notification(
+                                    window.notify(
                                         Notification::success(trf!("Removed {name}", name = name)),
                                         cx,
                                     );
@@ -134,7 +134,7 @@ impl Shell {
                                 }
                                 Err(e) => {
                                     crate::app_log::action("remove addon").addon(&id).failed(&e);
-                                    window.push_notification(Notification::error(e.to_string()), cx);
+                                    window.notify(Notification::error(e.to_string()), cx);
                                 }
                             })
                             .ok();
@@ -202,7 +202,7 @@ impl Shell {
         match removed {
             Ok(()) => {
                 self.open_addon = None;
-                window.push_notification(
+                window.notify(
                     Notification::success(trf!(
                         "Removed {name} from {profile}",
                         name = name,
@@ -215,7 +215,7 @@ impl Shell {
                 crate::app_log::action("remove addon from profile")
                     .addon(id)
                     .failed(&e);
-                window.push_notification(Notification::error(e.to_string()), cx);
+                window.notify(Notification::error(e.to_string()), cx);
             }
         }
         self.reload(cx);
@@ -344,11 +344,11 @@ impl Shell {
                                 addons = trn(picked.len(), "{count} addon", "{count} addons"),
                                 profile = profile
                             );
-                            window.push_notification(Notification::success(text), cx);
+                            window.notify(Notification::success(text), cx);
                         }
                         Err(e) => {
                             crate::app_log::action("add addons to profile").failed(&e);
-                            window.push_notification(Notification::error(e.to_string()), cx);
+                            window.notify(Notification::error(e.to_string()), cx);
                         }
                     }
                     shell.update(cx, |s, cx| s.reload(cx)).ok();
@@ -365,7 +365,7 @@ impl Shell {
     ) {
         if let Err(e) = self.store.update_profile(&self.library.profile.name, f) {
             crate::app_log::action("change the profile").failed(&e);
-            window.push_notification(Notification::error(e.to_string()), cx);
+            window.notify(Notification::error(e.to_string()), cx);
         }
         self.reload(cx);
     }
@@ -374,7 +374,7 @@ impl Shell {
         self.play_pending.cancel();
         if let Err(e) = self.store.set_active_profile(name) {
             crate::app_log::action("switch profile").failed(&e);
-            window.push_notification(Notification::error(e.to_string()), cx);
+            window.notify(Notification::error(e.to_string()), cx);
         }
         self.reload_in_background(cx);
     }

@@ -62,6 +62,7 @@ impl RenderOnce for PageHeader {
                     )
                     .children(
                         self.subtitle
+                            .filter(|s| !s.is_empty())
                             .map(|s| div().text_size(text::body()).text_color(p.text_muted).child(s)),
                     )
                     .children(

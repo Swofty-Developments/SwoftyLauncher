@@ -2,8 +2,8 @@ use crate::crash_modal::CrashView;
 use crate::game::{Install, Launch, Owner};
 use crate::game_edited::Edited;
 use crate::library::Library;
+use crate::notices::Notification;
 use crate::play_checks;
-use gpui_kit::component::notification::Notification;
 use gpui_kit::component::slider::SliderState;
 use gpui_kit::*;
 use std::collections::{BTreeSet, HashMap, HashSet};
@@ -40,12 +40,15 @@ pub use page::{Page, PlayState};
 pub(crate) use prompt::Prompt;
 pub(crate) use seen::Seen;
 pub(crate) use startup::Prepared;
+pub(crate) use topbar::{BAR_HEIGHT, SUB_HEIGHT};
 
 pub struct Shell {
     pub(crate) store: Store,
     pub(crate) page: Page,
     pub(crate) nav: Option<tabs::Cursor>,
     pub(crate) popover: Option<topbar::Popover>,
+    pub(crate) popup_timer: bool,
+    pub(crate) notch_beside: bool,
     pub(crate) avatar: Option<Arc<Image>>,
     pub(crate) avatar_link: Option<String>,
     pub(crate) root_focus: FocusHandle,

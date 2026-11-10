@@ -1,5 +1,4 @@
-use gpui_kit::component::WindowExt;
-use gpui_kit::component::notification::Notification;
+use crate::notices::{Notification, Notify};
 use gpui_kit::*;
 use swofty_core::session::UiMode;
 
@@ -35,7 +34,7 @@ impl Shell {
     ) {
         if let Err(e) = self.store.save_config(config) {
             crate::app_log::action("save settings").failed(&e);
-            window.push_notification(Notification::error(e.to_string()), cx);
+            window.notify(Notification::error(e.to_string()), cx);
         }
     }
 }

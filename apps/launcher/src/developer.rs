@@ -5,10 +5,10 @@
 use std::path::PathBuf;
 use std::process::Command;
 
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::notification::Notification;
-use gpui_kit::component::{Disableable, Sizable, WindowExt, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
@@ -41,7 +41,7 @@ impl Shell {
         config.developer = on;
         if let Err(e) = self.store.save_config(&config) {
             crate::app_log::action("save settings").failed(&e);
-            window.push_notification(Notification::error(e.to_string()), cx);
+            window.notify(Notification::error(e.to_string()), cx);
         }
         self.developer_mode = config.developer;
         cx.notify();
@@ -73,7 +73,7 @@ impl Shell {
             return;
         };
         let Some(cli) = crate::game::cli_path(&self.store) else {
-            window.push_notification(Notification::error(tr("The swofty command isn't installed")), cx);
+            window.notify(Notification::error(tr("The swofty command isn't installed")), cx);
             return;
         };
         self.developer.running = Some(verb);

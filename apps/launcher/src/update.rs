@@ -2,12 +2,12 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use gpui_kit::assets::IconName;
-use gpui_kit::component::notification::Notification;
 use gpui_kit::component::spinner::Spinner;
 use gpui_kit::component::tooltip::Tooltip;
-use gpui_kit::component::{Icon, Sizable, WindowExt, h_flex, v_flex};
+use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use semver::Version;
@@ -99,6 +99,10 @@ impl Updates {
         self.addon.choose(&update::current_version(), None)
     }
 
+    pub fn runs_from_release(&self) -> bool {
+        !matches!(&self.copy, Err(reason) if reason.contains(NOT_RELEASE_FOLDER))
+    }
+
     fn waiting_notice(&self) -> Option<String> {
         let target = self
             .launcher_offer()
@@ -142,6 +146,8 @@ fn blocked_text(version: &Version, reason: &str) -> String {
         update::current_version()
     )
 }
+
+pub(crate) const NOT_RELEASE_FOLDER: &str = "does not run from a release folder";
 
 pub(crate) fn sentence(text: &str) -> String {
     let mut chars = text.chars();
@@ -286,14 +292,14 @@ impl Shell {
 
     fn start_updates(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if matches!(self.play_state(), PlayState::Building) {
-            window.push_notification(Notification::error(BUILDING), cx);
+            window.notify(Notification::error(BUILDING), cx);
             return;
         }
         if matches!(
             self.play_state(),
             PlayState::Running | PlayState::Elsewhere(_) | PlayState::Launching | PlayState::Preparing
         ) {
-            window.push_notification(Notification::error(tr("Close F1 25 before updating.")), cx);
+            window.notify(Notification::error(tr("Close F1 25 before updating.")), cx);
             return;
         }
         let plan = self.updates.plan();
@@ -306,7 +312,7 @@ impl Shell {
             this.update_in(cx, |s, window, cx| {
                 if let Some(e) = s.finish_updates(ran, cx) {
                     crate::app_log::action("update").failed(&e);
-                    window.push_notification(Notification::error(e).title(tr("Update failed")), cx);
+                    window.notify(Notification::error(e).title(tr("Update failed")), cx);
                 }
             })
             .ok();
@@ -630,7 +636,7 @@ impl Shell {
     }
 
     pub(crate) fn launcher_notices(&self) -> Vec<String> {
-        if !self.update_check {
+        if !self.update_check || !self.updates.runs_from_release() {
             return Vec::new();
         }
         match self.updates.blocked_notice() {
@@ -640,7 +646,7 @@ impl Shell {
     }
 
     pub(crate) fn update_bar(&self, p: Palette) -> Option<impl IntoElement> {
-        if !self.update_check {
+        if !self.update_check || !self.updates.runs_from_release() {
             return None;
         }
         let bar = h_flex()
@@ -711,6 +717,14 @@ mod tests {
         assert_eq!(reason, update::DATA_IN_INSTALL);
         assert!(u.plan().is_empty());
         assert_eq!(updater::gate(&u.phase, !u.plan().is_empty(), false), Gate::Play);
+    }
+
+    #[test]
+    fn a_source_build_is_not_a_release_copy_but_a_data_conflict_is() {
+        let mut u = blocked();
+        assert!(u.runs_from_release());
+        u.copy = Err("this copy does not run from a release folder".into());
+        assert!(!u.runs_from_release());
     }
 
     #[test]

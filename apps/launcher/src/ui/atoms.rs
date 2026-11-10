@@ -1,12 +1,12 @@
 use super::Pill;
 use crate::library::{AddonIcon, ProfileItem};
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use crate::shell::{Page, Prompt, Shell, SliderSlot};
 use crate::theme::{Palette, ScrollArea, palette};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariant, ButtonVariants};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
-use gpui_kit::component::notification::Notification;
 use gpui_kit::component::scroll::Scrollable;
 use gpui_kit::component::slider::{Slider, SliderEvent, SliderState};
 use gpui_kit::component::{Disableable, Icon, Sizable, WindowExt, h_flex, v_flex};

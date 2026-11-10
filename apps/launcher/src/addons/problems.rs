@@ -1,3 +1,4 @@
+use crate::notices::{Notification, Notify};
 use crate::pages::GUTTER;
 use crate::scale::px;
 use crate::shell::{Page, Shell};
@@ -5,9 +6,8 @@ use crate::theme::Palette;
 use crate::ui::tokens::Tone;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::notification::Notification;
 use gpui_kit::component::tooltip::Tooltip;
-use gpui_kit::component::{Icon, Sizable, WindowExt, h_flex, v_flex};
+use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::collections::HashSet;
@@ -108,7 +108,7 @@ impl Shell {
             .apply_fix(&profile, &plan, &|id| self.default_place(id))
         {
             crate::app_log::action("fix load order").failed(&e);
-            window.push_notification(
+            window.notify(
                 Notification::error(e.to_string()).title(tr("Could not fix the load order")),
                 cx,
             );
@@ -133,10 +133,10 @@ impl Shell {
                 names = left.join(", ")
             );
             crate::app_log::action("fix load order").failed(&text);
-            window.push_notification(Notification::error(text), cx);
+            window.notify(Notification::error(text), cx);
             return;
         }
-        window.push_notification(
+        window.notify(
             Notification::success(trn(
                 plan.moved,
                 "Reordered {count} addon",
@@ -152,7 +152,7 @@ impl Shell {
                 "Moved {names} out of their folders so the order holds",
             )
             .replace("{names}", &names.join(", "));
-            window.push_notification(Notification::info(text), cx);
+            window.notify(Notification::info(text), cx);
         }
         if self.addons.report.is_some() {
             self.check_conflicts(window, cx);

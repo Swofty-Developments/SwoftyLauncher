@@ -125,6 +125,7 @@ pub fn init(cx: &mut App) {
         t.notification.margins.bottom = px(crate::play_bar::HEIGHT + 16.);
     });
     cx.set_global(p);
+    cx.set_global(crate::notices::Notices::default());
 }
 
 /// Room a column keeps clear of the scrollbar thumb at its right edge.

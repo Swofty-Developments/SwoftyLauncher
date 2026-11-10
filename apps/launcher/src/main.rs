@@ -26,6 +26,7 @@ mod importer;
 mod library;
 mod multiplayer;
 mod news;
+mod notices;
 mod onboarding;
 mod online;
 mod pages;

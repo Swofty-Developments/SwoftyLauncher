@@ -1,3 +1,4 @@
+use crate::notices::Notify;
 use std::cell::Cell;
 
 use crate::scale::px;
@@ -87,16 +88,16 @@ impl Shell {
                         .unwrap_or_else(|_| Err("The launcher is closing".into()));
                     match result {
                         Ok(()) => {
-                            window.push_notification(
-                                gpui_kit::component::notification::Notification::success(trf!("Added {p}", p = p)),
+                            window.notify(
+                                crate::notices::Notification::success(trf!("Added {p}", p = p)),
                                 cx,
                             );
                             true
                         }
                         Err(e) => {
                             crate::app_log::action("db editor: add a key").failed(&e);
-                            window.push_notification(
-                                gpui_kit::component::notification::Notification::error(e).title(tr("Could not add the key")),
+                            window.notify(
+                                crate::notices::Notification::error(e).title(tr("Could not add the key")),
                                 cx,
                             );
                             false

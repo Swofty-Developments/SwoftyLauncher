@@ -1,8 +1,8 @@
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use gpui_kit::component::input::{Input, InputEvent, InputState};
-use gpui_kit::component::notification::Notification;
 use gpui_kit::component::switch::Switch;
-use gpui_kit::component::{Disableable, Sizable, WindowExt, h_flex};
+use gpui_kit::component::{Disableable, Sizable, h_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use serde_json::{Map, Value};
@@ -336,7 +336,7 @@ impl Shell {
             Field::Number(nf) => match number_text(&text) {
                 Some(v) => nf.json(nf.clamp(v)),
                 None => {
-                    window.push_notification(
+                    window.notify(
                         Notification::error(trf!("{text} is not a number", text = text)),
                         cx,
                     );
