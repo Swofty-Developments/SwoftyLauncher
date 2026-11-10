@@ -548,7 +548,7 @@ void lap_rec_ghost(uintptr_t handler)
 
 void lap_rec_native_trace(const uint8_t *data, size_t size)
 {
-    if (!active.load(std::memory_order_relaxed) || tt_bridge_pb_armed())
+    if (!active.load(std::memory_order_relaxed))
         return;
     runtime::ghost_trace::Trace t;
     if (runtime::ghost_trace::decode(data, size, t) != runtime::ghost_trace::Status::ok || !lr::ghost_size_ok(size)) {
