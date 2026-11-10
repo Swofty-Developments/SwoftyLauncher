@@ -769,9 +769,12 @@ inline std::string clone_element(const std::string &x, const XmlElement &t, int6
 
 // Clones the first LBV element of the buffer once per board a descriptor and track call for, ids above every id present,
 // after the last leaderboard element: every addon descriptor over the stock tracks and the custom tracks' stat ids, and
-// every stock descriptor the buffer uses over the custom stat ids. A name the buffer defines is never added again.
+// every stock descriptor the buffer uses over the custom stat ids. With fill_stock_descriptors every game descriptor (0 to
+// 5) also gets the boards of the tracks the buffer names that it lacks: an addon season that plays under a game descriptor
+// (classic cars use 1) has no board for a track the stock game never ran that descriptor on. A name the buffer defines is
+// never added again.
 inline std::string extend_xml(const std::string &x, const std::vector<int> &descriptors, const std::vector<int> &custom_stat_ids,
-                              XmlReport &rep)
+                              XmlReport &rep, bool fill_stock_descriptors = false)
 {
     rep = XmlReport{};
     auto elements = leaderboard_elements(x);
@@ -812,7 +815,7 @@ inline std::string extend_xml(const std::string &x, const std::vector<int> &desc
     rep.tracks = tracks.size();
     rep.custom_tracks = custom.size();
     rep.stock_descriptors = custom.empty() ? 0 : stock_descriptors.size();
-    if (want.empty() && custom.empty()) {
+    if (want.empty() && custom.empty() && !fill_stock_descriptors) {
         rep.why = "no addon descriptor ids are assigned yet and no custom tracks";
         return x;
     }
@@ -855,6 +858,11 @@ inline std::string extend_xml(const std::string &x, const std::vector<int> &desc
         for (int t : custom)
             for (char w : {'D', 'W'})
                 add_board(d, t, w);
+    if (fill_stock_descriptors)
+        for (int d = 0; d < FIRST_ADDON_DESCRIPTOR; d++)
+            for (int t : tracks)
+                for (char w : {'D', 'W'})
+                    add_board(d, t, w);
     if (!rep.added) {
         rep.why = "every addon and custom track board is already defined";
         return x;

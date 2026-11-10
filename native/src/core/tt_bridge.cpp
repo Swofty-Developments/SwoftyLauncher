@@ -122,6 +122,8 @@ const runtime::Sig S_FINDER_GATE{"site_Game_GhostLapHandler_RivalFinderOnline",
         "8B 87 A0 00 00 00 20 CB 0F 85 8C 00 00 00 83 F8 01 0F 84 83 00 00 00 48 89 F9 BA 01 00 00 00 E8", 0x2f98ec6, runtime::Sig::addr, 0, 6};
 const runtime::Sig S_TS_FLAG{"site_Game_TrackSelectVM_CanViewLeaderboard",
         "48 8B 05 ?? ?? ?? ?? 80 78 18 00 74 04 31 C0 EB 0D 48 8B 05 ?? ?? ?? ?? 0F B6 40 18 34 01 88 44 24 50", 0x1f27937, runtime::Sig::addr, 0, 30};
+const runtime::Sig S_SELECT_BOARD{"site_Game_TimeTrialLeaderboard_SelectBoard_Search",
+        "48 8B 83 78 04 00 00 48 8B 58 10 31 ED 48 85 DB 74 47 4C 8B 73 18 4C 3B 73 20", 0x2fce993, runtime::Sig::addr, 0, 11};
 const runtime::Sig S_PRIV_GATE{"site_Game_UIUIPrivilegeCheckControl_HandleSignal_Result",
         "41 80 BE AB 00 00 00 00 0F 84 8C 00 00 00 45 84 FF 0F 84 8D 00 00 00", 0x3822cdf, runtime::Sig::addr, 0, 8};
 constexpr uintptr_t TS_FLAG_GLOBAL_A = 0, TS_FLAG_GLOBAL_B = 17;
@@ -155,7 +157,7 @@ std::atomic<int> hits_upload{0}, hits_download{0}, hits_racenet{0};
 std::vector<std::string> seen_methods;
 
 bool diag_on = false;
-safetyhook::MidHook h_finder, h_ts_flag, h_priv, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
+safetyhook::MidHook h_finder, h_ts_flag, h_priv, h_select, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
 
 struct GateHook {
     uintptr_t at = 0, resume = 0, session_global = 0;
@@ -165,7 +167,7 @@ GateHook gates[5];
 std::atomic<uintptr_t> diag_storage{0};
 uintptr_t ts_global_a = 0, ts_global_b = 0;
 std::atomic<int64_t> ts_forced_ms{0}, enter_ms{0};
-std::string ts_seen, priv_seen;
+std::string ts_seen, priv_seen, select_seen;
 bool lookup_logged = true;
 std::atomic<int> finder_logged{0};
 uintptr_t diag_handler_seen = ~uintptr_t(0);
@@ -216,6 +218,11 @@ std::string current_content()
 {
     auto facts = swofty_core::hooks::core().current();
     return facts ? facts->content : std::string();
+}
+
+bool content_ours()
+{
+    return session_custom.load(std::memory_order_relaxed) || tb::addon_content(current_content());
 }
 
 std::string hex_dump(const uint8_t *p, size_t n)
@@ -317,7 +324,7 @@ void xml_mid(safetyhook::Context &c)
             if (t.kind != swofty_core::apply::tracks::Kind::stock && t.stat_id >= 0)
                 custom_ids.push_back(t.stat_id);
     tb::XmlReport rep;
-    std::string out = tb::extend_xml(text, descriptors, custom_ids, rep);
+    std::string out = tb::extend_xml(text, descriptors, custom_ids, rep, true);
     if (!rep.template_name.empty() && n == 1) {
         for (auto &e : tb::leaderboard_elements(text))
             if (e.name == rep.template_name) {
@@ -393,7 +400,7 @@ void push_mid(safetyhook::Context &c)
         code = session_code;
     }
     tb::BoardTrack track = tb::request_track(swofty_core::apply::tracks::base(), a.board, code);
-    tb::Route route = tb::route_of(m, a.board, bridge_on, track.custom);
+    tb::Route route = tb::route_of(m, a.board, bridge_on, track.custom || content_ours());
     if (route == tb::Route::local && !request_guard)
         route = tb::Route::pass;
     if (route == tb::Route::pass || !found.on_result[int(m)]) {
@@ -402,7 +409,7 @@ void push_mid(safetyhook::Context &c)
                         a.board_text.c_str());
         else if (++logged_passes <= 3)
             swofty::log("[boards] request %s %s passes (%s board, string form %s)", name.c_str(), a.board_text.c_str(),
-                        tb::ours(a.board.descriptor, track.custom) ? "own" : "stock", tb::form_name(a.form));
+                        tb::ours(a.board.descriptor, track.custom || content_ours()) ? "own" : "stock", tb::form_name(a.form));
         return;
     }
     uint64_t seq;
@@ -550,7 +557,7 @@ void gate_mid(int idx, safetyhook::Context &c)
                 code = session_code;
             }
             track = tb::request_track(swofty_core::apply::tracks::base(), a.board, code);
-            route = tb::route_of(m, a.board, bridge_on, track.custom);
+            route = tb::route_of(m, a.board, bridge_on, track.custom || content_ours());
             if (route == tb::Route::local && !request_guard)
                 route = tb::Route::pass;
         }
@@ -639,7 +646,7 @@ void finder_mid(safetyhook::Context &c)
     uint64_t ctx = peek64(handler + 0x58), np = ctx ? peek64(ctx + 0x68) : 0;
     std::string board = np ? tb::read_c(game_mem(), np) : std::string();
     tb::BoardName bn = tb::parse_board(board);
-    bool ours = bn.ok && tb::ours(bn.descriptor, session_custom.load(std::memory_order_relaxed));
+    bool ours = bn.ok && tb::ours(bn.descriptor, content_ours());
     bool open = user_online && s60 && s64;
     bool bypass = bridge_on && ours && push_hooked && !open;
     char key[96];
@@ -723,6 +730,38 @@ void priv_mid(safetyhook::Context &c)
                     enabled,
                     skip ? "the Time Trial leaderboard button of our content: success raised without the platform check" : "left to the game (not our leaderboard button)");
 }
+void select_board_mid(safetyhook::Context &c)
+{
+    uint64_t kp = peek64(c.rsp + 0x38);
+    std::string key = kp ? tb::read_c(game_mem(), kp) : std::string();
+    uint64_t reg = c.rbx, first = reg ? peek64(reg + 0x18) : 0, last = reg ? peek64(reg + 0x20) : 0;
+    size_t listed = first && last >= first ? size_t(std::min<uint64_t>((last - first) / 8, 100000)) : 0, same_descriptor = 0;
+    bool found = false;
+    std::string prefix = key.size() >= 5 ? key.substr(0, 5) : key, sample;
+    for (size_t i = 0; i < listed; i++) {
+        uint64_t board = peek64(first + 8 * i), np = board ? peek64(board + 0x68) : 0;
+        std::string name = np ? tb::read_c(game_mem(), np) : std::string();
+        if (!_stricmp(name.c_str(), key.c_str()))
+            found = true;
+        if (name.compare(0, prefix.size(), prefix) == 0) {
+            same_descriptor++;
+            if (sample.size() < 80 && name.size() > 5)
+                sample += (sample.empty() ? "" : " ") + name.substr(5);
+        }
+    }
+    char tag[96];
+    snprintf(tag, sizeof tag, "%s/%zu/%d", key.c_str(), listed, found);
+    {
+        std::lock_guard<std::mutex> lk(lock);
+        if (select_seen == tag)
+            return;
+        select_seen = tag;
+    }
+    swofty::log("[boards] %sleaderboard screen board lookup: key '%s', %zu board(s) listed (registry 0x%llx), %s; %zu with the prefix %s (tracks %s)",
+                diag_on ? "diag: " : "", key.c_str(), listed, (unsigned long long)reg, found ? "FOUND" : "NOT in the list: the screen opens empty",
+                same_descriptor, prefix.c_str(), sample.empty() ? "none" : sample.c_str());
+}
+
 void diag_tick()
 {
     session_lookup_tick();
@@ -864,6 +903,15 @@ void setup()
                 swofty::log("[boards] track select leaderboard button armed at base+0x%llx (%s)", (unsigned long long)(at - swofty::api->module_base()),
                             bridge_on ? "shown for our content" : "diagnostics only");
         }
+        if (uintptr_t at = runtime::find(S_SELECT_BOARD, "boards", "boards"))
+            if (hook_mid(h_select, at, select_board_mid, "leaderboard screen board lookup"))
+                swofty::log("[boards] leaderboard screen board lookup logged at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
+        if (bridge_on)
+            if (const SwoftyLang *l = runtime::lang_table()) {
+                int r = l->override_set("*", "lng_global_leaderboard", "SWOFTY LEADERBOARD");
+                swofty::log("[boards] leaderboard tab label: %s", r == SWOFTY_ASSET_OK ? "renamed to SWOFTY LEADERBOARD (lng_global_leaderboard override)"
+                                                                                       : "the text override is unavailable, the tab keeps GLOBAL LEADERBOARD");
+            }
         if (uintptr_t at = runtime::find(S_PRIV_GATE, "boards", "boards"))
             if (hook_mid(h_priv, at, priv_mid, "leaderboard privilege check"))
                 swofty::log("[boards] leaderboard privilege check skip armed at base+0x%llx (%s)", (unsigned long long)(at - swofty::api->module_base()),

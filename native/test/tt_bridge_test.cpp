@@ -235,6 +235,21 @@ int main()
         expect(y.find("</leaderboards>") == y.size() - 15, "the container close stays last");
     }
     {
+        std::string x = "<leaderboards><leaderboard id=\"3\" name=\"LBV0001D\" sort=\"ascending\"/><leaderboard id=\"4\" name=\"LBV0205W\" sort=\"ascending\"/></leaderboards>";
+        tb::XmlReport r;
+        std::string y = tb::extend_xml(x, {}, {}, r, true);
+        std::set<std::string> names;
+        for (auto &e : tb::leaderboard_elements(y))
+            names.insert(e.name);
+        expect(r.changed && names.count("LBV0105D") && names.count("LBV0101W") && names.count("LBV0501D") && names.count("LBV0201D") && names.count("LBV0001W") &&
+                   !names.count("LBV0601D") && r.added == 6 * 2 * 2 - 2,
+               "a game descriptor gets the boards of every track the file names that it lacks");
+        tb::XmlReport r2;
+        expect(tb::extend_xml(y, {}, {}, r2, true) == y && !r2.changed, "filling the game descriptors twice adds nothing");
+        tb::XmlReport r3;
+        expect(tb::extend_xml(x, {}, {}, r3) == x && !r3.changed, "without the switch a game descriptor is never filled");
+    }
+    {
         tb::XmlReport r;
         std::string x = "<leaderboards><leaderboard name=\"Other\" id=\"1\"/></leaderboards>";
         expect(tb::extend_xml(x, {6}, {}, r) == x && !r.changed && !r.why.empty(), "a buffer with no LBV template is left alone and says why");
