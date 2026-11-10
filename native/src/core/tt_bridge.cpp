@@ -979,6 +979,9 @@ void setup()
                 int r = l->override_set("*", "lng_global_leaderboard", "SWOFTY LEADERBOARD");
                 swofty::log("[boards] leaderboard tab label: %s", r == SWOFTY_ASSET_OK ? "renamed to SWOFTY LEADERBOARD (lng_global_leaderboard override)"
                                                                                        : "the text override is unavailable, the tab keeps GLOBAL LEADERBOARD");
+                int g = l->override_set("*", "lng_default_ghost", "Personal Best");
+                swofty::log("[boards] ghost name tag: %s", g == SWOFTY_ASSET_OK ? "lng_default_ghost reads Personal Best (the only default ghost of a board session is the player's own best)"
+                                                                                 : "the text override is unavailable, the tag keeps Default Ghost");
             }
         if (uintptr_t at = runtime::find(S_PRIV_GATE, "boards", "boards"))
             if (hook_mid(h_priv, at, priv_mid, "leaderboard privilege check"))
