@@ -630,7 +630,7 @@ bool pb_pending = false, pb_rearm_on = true;
 uintptr_t pb_comp = 0;
 PbKey pb_key, pb_done;
 std::vector<uint8_t> pb_blob;
-int64_t pb_rearmed_at = 0;
+int64_t pb_rearmed_at = 0, pb_recorded_at = 0;
 int pb_watch = 0;
 
 void pb_rearm_tick(uintptr_t comp)
@@ -645,51 +645,78 @@ void pb_rearm_tick(uintptr_t comp)
     }
     std::vector<uint8_t> blob;
     PbKey key;
+    int64_t recorded = 0;
     {
         std::lock_guard<std::mutex> g(pb_lock);
         if (!pb_pending || pb_comp != comp)
             return;
-        pb_pending = false;
-        if (pb_key == pb_done)
-            return;
-        blob = pb_blob;
         key = pb_key;
+        recorded = pb_recorded_at;
+        if (pb_key == pb_done) {
+            pb_pending = false;
+            return;
+        }
+        blob = pb_blob;
     }
-    if (!pb_rearm_on || !reset_fn || !read_fn)
-        return;
-    if (swofty_core::apply::moments::session_mode_track().first != "time_trial" || !runtime::tt_bridge_ours_session())
-        return;
     uintptr_t tl3 = tlap_at(comp, 3), tl1 = tlap_at(comp, 1);
-    if (!tl3 || !tl1)
+    if (!pb_rearm_on || !reset_fn || !read_fn || !tl3 || !tl1) {
+        std::lock_guard<std::mutex> g(pb_lock);
+        pb_pending = false;
         return;
+    }
+    if (swofty_core::apply::moments::session_mode_track().first != "time_trial" || !runtime::tt_bridge_ours_session()) {
+        std::lock_guard<std::mutex> g(pb_lock);
+        pb_pending = false;
+        return;
+    }
+    int64_t waited = now - recorded;
     LapState before = state_of(tl3);
-    if (before.bound == 0 || before.time > 2.0f) {
-        swofty::log("[ghost] new PB re-arm skipped: lap 3 is %s (mode %u/%u, time %.3f); the running ghost is not disturbed",
-                    before.bound ? "mid-lap" : "not bound to a car", before.mode, before.want, before.time);
+    // The game's own handler resets lap 3 a few milliseconds after the new PB (Game_GhostLapHandler_Reset on the commit path) and
+    // reloads it from the download; arming before that reset is wiped. Wait for the wipe (count 0) or 600 ms, then arm.
+    if (before.count > 0 && waited < 600)
+        return;
+    if (waited > 30000) {
+        swofty::log("[ghost] new PB re-arm dropped: %.1f s since the lap, too late to start in sync", waited / 1000.0);
+        std::lock_guard<std::mutex> g(pb_lock);
+        pb_pending = false;
+        return;
+    }
+    if (before.bound == 0) {
+        swofty::log("[ghost] new PB re-arm skipped: lap 3 is not bound to a car");
+        std::lock_guard<std::mutex> g(pb_lock);
+        pb_pending = false;
         return;
     }
     slot = 3;
     if (!read_trace_into(tl3, blob)) {
         swofty::log("[ghost] new PB re-arm failed: the reader refused the lap's own trace");
+        std::lock_guard<std::mutex> g(pb_lock);
+        pb_pending = false;
         return;
     }
+    LapState read_back = state_of(tl3);
     uint32_t keep[5] = {};
     if (!mem::readable(tl1 + TL_MODE, sizeof keep) || !mem::readable(tl3 + TL_MODE, sizeof keep)) {
         swofty::log("[ghost] new PB re-arm: the play state fields are not readable");
         return;
     }
     std::memcpy(keep, reinterpret_cast<const void *>(tl1 + TL_MODE), sizeof keep);
+    float elapsed = float(waited) / 1000.0f;
+    std::memcpy(&keep[4], &elapsed, 4);
+    keep[0] = 2;
+    keep[1] = 2;
     swofty_core::hooks::guard::copy_memory(reinterpret_cast<void *>(tl3 + TL_MODE), keep, sizeof keep);
     LapState after = state_of(tl3);
     {
         std::lock_guard<std::mutex> g(pb_lock);
         pb_done = key;
+        pb_pending = false;
     }
     pb_rearmed_at = now;
     pb_watch = 2;
-    swofty::log("[ghost] new PB armed in lap 3 for the running session: %.3f s, %u records, play state copied from lap 1 (mode %u/%u time %.3f); before: mode %u/%u "
-                "time %.3f; the ghost car stays bound to 0x%llx (a slot swap, no renderer reload)",
-                after.lap, after.count, after.mode, after.want, after.time, before.mode, before.want, before.time, (unsigned long long)after.bound);
+    swofty::log("[ghost] new PB armed in lap 3 for the running session %.2f s after the lap: read back %u records (%.3f s), then play mode %u/%u at time %.3f (the lap's own "
+                "elapsed time); before: count %u mode %u/%u; the ghost car stays bound to 0x%llx (a slot rewrite, no renderer reload)",
+                elapsed, read_back.count, read_back.lap, after.mode, after.want, after.time, before.count, before.mode, before.want, (unsigned long long)after.bound);
 }
 
 uint64_t newlap_hook(void *comp, void *msg)
@@ -708,6 +735,7 @@ uint64_t newlap_hook(void *comp, void *msg)
             pb_pending = true;
             pb_comp = c;
             pb_key = a3;
+            pb_recorded_at = now_ms();
             pb_blob = std::move(blob);
             swofty::log("[ghost] new PB recorded: %.3f s, %u records; re-arm queued for the game thread", a3.lap, a3.count);
         }

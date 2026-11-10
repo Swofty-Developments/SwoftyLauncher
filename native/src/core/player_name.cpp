@@ -1,5 +1,6 @@
 #include "hooks/guard.hpp"
 #include "main_menu_logic.hpp"
+#include "mem_scan_logic.hpp"
 #include "player_name_logic.hpp"
 #include "ui_registry_walk.hpp"
 #include "runtime.hpp"
@@ -15,6 +16,7 @@
 #include "apply/moments.hpp"
 
 #include <atomic>
+#include <algorithm>
 #include <cstring>
 #include <mutex>
 #include <string>
@@ -180,6 +182,111 @@ void probe_registry(int pass)
     }
 }
 
+std::atomic<bool> scan_started{false};
+
+struct Region {
+    uint64_t base, size;
+    unsigned type;
+};
+
+std::vector<Region> rw_regions()
+{
+    std::vector<Region> out;
+    MEMORY_BASIC_INFORMATION m{};
+    uint64_t at = 0x10000;
+    while (at < 0x7fffffff0000ull && VirtualQuery(reinterpret_cast<void *>(at), &m, sizeof m)) {
+        bool ok = m.State == MEM_COMMIT && !(m.Protect & (PAGE_NOACCESS | PAGE_GUARD)) &&
+                  (m.Protect & (PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY));
+        if (ok && m.RegionSize <= (uint64_t(2) << 30))
+            out.push_back({uint64_t(m.BaseAddress), uint64_t(m.RegionSize), unsigned(m.Type)});
+        uint64_t next = uint64_t(m.BaseAddress) + m.RegionSize;
+        if (next <= at)
+            break;
+        at = next;
+    }
+    return out;
+}
+
+void scan_copies(std::string stock)
+{
+    namespace ms = runtime::mem_scan;
+    constexpr size_t CHUNK = size_t(8) << 20;
+    auto regions = rw_regions();
+    std::vector<uint8_t> buf(CHUNK + 16);
+    uint64_t base = swofty::api->module_base();
+    struct Hit {
+        uint64_t at;
+        bool record;
+        int rc;
+        unsigned type;
+    };
+    std::vector<Hit> hits;
+    uint64_t scanned = 0;
+    for (auto &r : regions) {
+        for (uint64_t off = 0; off < r.size && hits.size() < 48; off += CHUNK) {
+            size_t n = size_t(std::min<uint64_t>(CHUNK + 16, r.size - off));
+            if (!registry_read(r.base + off, buf.data(), n))
+                continue;
+            scanned += n;
+            std::vector<size_t> at;
+            ms::find_all(buf.data(), n, stock, at, 48);
+            for (size_t o : at) {
+                uint64_t found_at = r.base + off + o;
+                if (found_at >= uint64_t(buf.data()) && found_at < uint64_t(buf.data()) + buf.size())
+                    continue;
+                uint8_t head[16] = {};
+                bool rec = false;
+                int rc = 0;
+                if (registry_read(r.base + off + o - 9, head, 9)) {
+                    auto c = ms::classify(head, stock.size());
+                    rec = c.is_record;
+                    rc = c.refcount;
+                }
+                hits.push_back({r.base + off + o, rec, rc, r.type});
+            }
+        }
+    }
+    swofty::log("[boards] name copies: \"%s\" found %zu time(s) in %.0f MB of writable memory (%zu regions)", stock.c_str(), hits.size(), scanned / 1048576.0,
+                regions.size());
+    std::vector<uint64_t> targets;
+    for (auto &h : hits) {
+        swofty::log("[boards] name copies: at 0x%llx (%s, region type 0x%x%s)", (unsigned long long)h.at, h.record ? "string record" : "plain C string", h.type,
+                    h.record ? (" refcount " + std::to_string(h.rc)).c_str() : "");
+        targets.push_back(h.at);
+        if (h.record)
+            targets.push_back(h.at - 9);
+    }
+    if (targets.empty())
+        return;
+    std::vector<std::pair<uint64_t, uint64_t>> refs;
+    for (auto &r : regions) {
+        for (uint64_t off = 0; off < r.size && refs.size() < 80; off += CHUNK) {
+            size_t n = size_t(std::min<uint64_t>(CHUNK, r.size - off));
+            if (!registry_read(r.base + off, buf.data(), n))
+                continue;
+            ms::find_pointers(buf.data(), n, r.base + off, targets, refs, 80);
+        }
+    }
+    swofty::log("[boards] name copies: %zu pointer(s) to those copies", refs.size());
+    for (auto &p : refs) {
+        uint8_t ctx[0x40] = {};
+        uint64_t from = p.first >= 0x30 ? p.first - 0x30 : p.first;
+        bool got = registry_read(from, ctx, sizeof ctx);
+        std::string hex;
+        char h[4];
+        if (got)
+            for (size_t i = 0; i < sizeof ctx; i++) {
+                snprintf(h, sizeof h, "%02x", ctx[i]);
+                hex += h;
+                if (i % 8 == 7)
+                    hex += ' ';
+            }
+        bool in_image = p.first >= base && p.first < base + 0x20000000ull;
+        swofty::log("[boards] name copies: 0x%llx -> 0x%llx%s; 0x30 bytes before it and 0x10 from it: %s", (unsigned long long)p.first, (unsigned long long)p.second,
+                    in_image ? " (inside the game image)" : "", got ? hex.c_str() : "(unreadable)");
+    }
+}
+
 void pin_names(const std::string &name, const std::string &stock)
 {
     namespace ur = runtime::ui_registry;
@@ -320,6 +427,9 @@ void player_name_pin_tick()
     }
     if (!why.empty())
         return;
+    char diag[8] = {};
+    if (GetEnvironmentVariableA("SWOFTY_TT_DIAG", diag, sizeof diag) && !strcmp(diag, "1") && !scan_started.exchange(true))
+        std::thread([stock] { scan_copies(stock); }).detach();
     pin_names(clean, stock);
 }
 
