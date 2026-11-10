@@ -165,7 +165,7 @@ void read_surface(uintptr_t car, LiveCar &out)
     }
 }
 
-bool vec3(uintptr_t at, float out[3])
+bool vec3(uintptr_t at, float (&out)[3])
 {
     return mem::read(at, out) && real(out[0]) && real(out[1]) && real(out[2]);
 }
