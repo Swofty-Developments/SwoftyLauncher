@@ -55,6 +55,7 @@ impl Render for Shell {
             Page::Careers => self.careers_page(p, wide, cx),
             Page::Multiplayer => self.multiplayer_page(p, cx),
             Page::TimeTrial => self.time_trial_page(p, window, cx),
+            Page::Support => self.support_page(p, window, cx),
             Page::Settings => self.settings_page(p, cx),
             Page::Section(i) => self.section_page(i, p, cx),
         };

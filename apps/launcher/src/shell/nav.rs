@@ -80,6 +80,9 @@ impl Shell {
         if page == Page::TimeTrial {
             self.tt_open(cx);
         }
+        if page == Page::Support {
+            self.support_open(cx);
+        }
         if let Some(i) = self.open_section().filter(|i| !self.section_loaded(*i)) {
             self.fetch_views(Some(i), cx);
         }
@@ -315,6 +318,7 @@ impl Shell {
 
     pub(super) fn sidebar(&self, p: Palette, short: bool, cx: &mut Context<Self>) -> impl IntoElement {
         let mut big = vec![
+            (Page::Support, None),
             (Page::News, None),
             (Page::Addons, Some(self.library.listed().count())),
             (Page::Browser, None),
@@ -379,7 +383,6 @@ impl Shell {
                         ),
                 ),
             )
-            .child(crate::donate::button())
             .child(self.send_logs_button(p, cx))
             .child(
                 v_flex()
