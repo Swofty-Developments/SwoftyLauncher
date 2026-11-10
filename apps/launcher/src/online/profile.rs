@@ -24,7 +24,7 @@ impl Shell {
         let bests: Vec<AnyElement> = page
             .bests
             .iter()
-            .map(|b| {
+            .flat_map(|b| {
                 let card = TrackCard {
                     key: b.key.clone(),
                     name: b.track.clone(),
@@ -37,7 +37,13 @@ impl Shell {
                     custom: false,
                 };
                 let idx = self.target_item(&mut items, Target::Board(Box::new(card), b.track.clone()));
-                self.best_row(b, idx, p, cx)
+                let mut out = vec![self.best_row(b, idx, p, cx)];
+                if self.online.setup_open.as_deref() == Some(b.lap_id.as_str())
+                    && let Some(setup) = &b.setup
+                {
+                    out.push(self.setup_panel(setup, None, p, cx));
+                }
+                out
             })
             .collect();
         self.online.items = items;
@@ -240,6 +246,7 @@ impl Shell {
                     .text_color(p.text_muted)
                     .child(iso_date(&b.date).to_owned()),
             )
+            .child(self.setup_button(&format!("best-{idx}"), &b.lap_id, b.setup.is_some(), cx))
             .on_click(cx.listener(move |this, _, _, cx| this.online_go(target.clone(), cx)))
             .into_any_element()
     }

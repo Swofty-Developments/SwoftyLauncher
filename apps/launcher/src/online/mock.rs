@@ -57,6 +57,38 @@ fn label(year: &str) -> String {
     ["SWOFTY ", year].concat()
 }
 
+fn mock_setup(d: usize, s: usize) -> Setup {
+    let n = |k: usize, lo: u64, span: u64| (lo + seed(d * 7 + s, k) % span) as f32;
+    Setup {
+        values: vec![
+            ("front_wing", n(1, 15, 20)),
+            ("rear_wing", n(2, 20, 20)),
+            ("diff_on_throttle", n(3, 50, 40)),
+            ("diff_off_throttle", n(4, 40, 40)),
+            ("engine_braking", n(5, 30, 60)),
+            ("front_camber", -3.5 + n(6, 0, 5) * 0.1),
+            ("rear_camber", -1.8 + n(7, 0, 5) * 0.1),
+            ("front_toe", 0.05 + n(8, 0, 5) * 0.01),
+            ("rear_toe", 0.2 + n(9, 0, 5) * 0.01),
+            ("front_suspension", n(10, 10, 12)),
+            ("rear_suspension", n(11, 10, 12)),
+            ("front_anti_roll_bar", n(12, 5, 10)),
+            ("rear_anti_roll_bar", n(13, 5, 10)),
+            ("front_ride_height", n(14, 20, 20)),
+            ("rear_ride_height", n(15, 40, 20)),
+            ("brake_pressure", n(16, 90, 10)),
+            ("brake_bias", n(17, 50, 10)),
+            ("tyre_pressure_fl", 22. + n(18, 0, 6) * 0.1),
+            ("tyre_pressure_fr", 22. + n(19, 0, 6) * 0.1),
+            ("tyre_pressure_rl", 20.5 + n(20, 0, 6) * 0.1),
+            ("tyre_pressure_rr", 20.5 + n(21, 0, 6) * 0.1),
+            ("fuel_load", n(22, 20, 30)),
+        ],
+        compound: Some(["soft", "medium", "hard"][d % 3].to_owned()),
+        changed: false,
+    }
+}
+
 fn driver(i: usize) -> Driver {
     Driver {
         id: format!("{}", 1000 + i),
@@ -262,6 +294,7 @@ impl BoardsApi for MockBoards {
                     car: Some(["ferrari sf-22", "mercedes w13", "red bull rb18"][d % 3].to_owned()),
                     date: format!("2026-11-{:02}T04:10:11Z", 10 - (d % 9)),
                     verified: place != 4,
+                    setup: (place % 5 != 4).then(|| mock_setup(d, s)),
                 }
             })
             .collect();
@@ -310,6 +343,7 @@ impl BoardsApi for MockBoards {
                 position: place as u32 + 1,
                 lap_id: format!("lap{s}{t}{d:02}"),
                 date: "2026-11-09T18:22:01Z".into(),
+                setup: Some(mock_setup(d, s)),
             }
         };
         Ok(Profile {

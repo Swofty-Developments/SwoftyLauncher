@@ -236,6 +236,8 @@ struct BoardRowDto {
     set_at: String,
     #[serde(default)]
     verification: String,
+    #[serde(default)]
+    setup: Option<serde_json::Value>,
 }
 
 #[derive(Deserialize)]
@@ -281,6 +283,7 @@ fn row(r: BoardRowDto) -> Row {
         car: r.car_label.filter(|c| !c.is_empty()),
         date: r.set_at,
         verified: r.verification == "verified",
+        setup: r.setup.as_ref().and_then(setup_of),
     }
 }
 
@@ -314,6 +317,32 @@ struct BestDto {
     position: Option<u32>,
     #[serde(default)]
     set_at: String,
+    #[serde(default)]
+    setup: Option<serde_json::Value>,
+}
+
+pub(super) fn setup_of(v: &serde_json::Value) -> Option<Setup> {
+    let map = v.as_object()?;
+    let mut values = Vec::new();
+    for (_, rows) in SETUP_GROUPS {
+        for (key, _, _) in rows {
+            if let Some(n) = map.get(*key).and_then(serde_json::Value::as_f64) {
+                values.push((*key, n as f32));
+            }
+        }
+    }
+    let setup = Setup {
+        values,
+        compound: map
+            .get("tyre_compound")
+            .and_then(|c| c.as_str())
+            .map(str::to_owned),
+        changed: map
+            .get("changed")
+            .and_then(serde_json::Value::as_bool)
+            .unwrap_or(false),
+    };
+    (!setup.is_empty()).then_some(setup)
 }
 
 fn best(b: BestDto) -> BestLap {
@@ -329,6 +358,7 @@ fn best(b: BestDto) -> BestLap {
         position: b.position.or(b.rank).unwrap_or(0),
         lap_id: b.lap_id,
         date: b.set_at,
+        setup: b.setup.as_ref().and_then(setup_of),
     }
 }
 
@@ -501,6 +531,7 @@ impl BoardsApi for HttpBoards {
             encode(&key.track),
             encode(&key.weather)
         );
+        path.push_str("&setup=1");
         if filter.ranked_only {
             path.push_str("&ranked=1");
         }
@@ -586,6 +617,7 @@ impl BoardsApi for HttpBoards {
                         rank: None,
                         position: None,
                         set_at: r.set_at,
+                        setup: None,
                     })
                 })
                 .collect(),
@@ -656,5 +688,20 @@ mod tests {
         assert!(!row(board.rows.into_iter().next().unwrap()).verified);
         let overview: OverviewDto = serde_json::from_str(r##"{"generated": "2026-11-10T08:11:54Z", "scoring": {"min_field": 3, "pace_scale": 0.015, "pace_share": 0.7, "full_field": 10}, "seasons": [], "global": {"total": 0, "rows": []}, "custom": {"tracks": []}}"##).unwrap();
         assert!(overview.seasons.is_empty() && overview.global.rows.is_empty());
+    }
+
+    #[test]
+    fn a_setup_object_keeps_known_numbers_and_the_compound() {
+        let v: serde_json::Value = serde_json::from_str(
+            r#"{"front_wing":25,"brake_bias":56,"tyre_pressure_fl":22.5,"tyre_compound":"soft","changed":true,"mystery":1}"#,
+        )
+        .unwrap();
+        let s = setup_of(&v).unwrap();
+        assert_eq!(s.get("front_wing"), Some(25.));
+        assert_eq!(s.get("tyre_pressure_fl"), Some(22.5));
+        assert_eq!(s.compound.as_deref(), Some("soft"));
+        assert!(s.changed);
+        assert!(setup_of(&serde_json::json!({})).is_none());
+        assert!(setup_of(&serde_json::Value::Null).is_none());
     }
 }

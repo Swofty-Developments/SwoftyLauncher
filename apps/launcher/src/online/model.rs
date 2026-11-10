@@ -90,7 +90,137 @@ pub struct SeasonPage {
     pub tracks: Vec<TrackCard>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct Setup {
+    pub values: Vec<(&'static str, f32)>,
+    pub compound: Option<String>,
+    pub changed: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Unit {
+    Plain,
+    Percent,
+    Degrees,
+    Psi,
+    Kg,
+}
+
+pub type SetupRow = (&'static str, &'static str, Unit);
+
+pub const SETUP_GROUPS: [(&str, &[SetupRow]); 7] = [
+    (
+        "Aerodynamics",
+        &[
+            ("front_wing", "Front wing", Unit::Plain),
+            ("rear_wing", "Rear wing", Unit::Plain),
+        ],
+    ),
+    (
+        "Transmission",
+        &[
+            ("diff_on_throttle", "Differential on throttle", Unit::Percent),
+            ("diff_off_throttle", "Differential off throttle", Unit::Percent),
+            ("engine_braking", "Engine braking", Unit::Percent),
+        ],
+    ),
+    (
+        "Suspension geometry",
+        &[
+            ("front_camber", "Front camber", Unit::Degrees),
+            ("rear_camber", "Rear camber", Unit::Degrees),
+            ("front_toe", "Front toe", Unit::Degrees),
+            ("rear_toe", "Rear toe", Unit::Degrees),
+        ],
+    ),
+    (
+        "Suspension",
+        &[
+            ("front_suspension", "Front suspension", Unit::Plain),
+            ("rear_suspension", "Rear suspension", Unit::Plain),
+            ("front_anti_roll_bar", "Front anti-roll bar", Unit::Plain),
+            ("rear_anti_roll_bar", "Rear anti-roll bar", Unit::Plain),
+            ("front_ride_height", "Front ride height", Unit::Plain),
+            ("rear_ride_height", "Rear ride height", Unit::Plain),
+        ],
+    ),
+    (
+        "Brakes",
+        &[
+            ("brake_pressure", "Brake pressure", Unit::Percent),
+            ("brake_bias", "Brake bias", Unit::Percent),
+        ],
+    ),
+    (
+        "Tyres",
+        &[
+            ("tyre_pressure_fl", "Front left pressure", Unit::Psi),
+            ("tyre_pressure_fr", "Front right pressure", Unit::Psi),
+            ("tyre_pressure_rl", "Rear left pressure", Unit::Psi),
+            ("tyre_pressure_rr", "Rear right pressure", Unit::Psi),
+        ],
+    ),
+    ("Fuel", &[("fuel_load", "Fuel load", Unit::Kg)]),
+];
+
+pub fn setup_value_text(v: f32, unit: Unit) -> String {
+    let n = if (v - v.round()).abs() < 0.005 {
+        format!("{}", v.round() as i64)
+    } else {
+        format!("{v:.2}").trim_end_matches('0').to_owned()
+    };
+    match unit {
+        Unit::Plain => n,
+        Unit::Percent => format!("{n}%"),
+        Unit::Degrees => format!("{n}\u{b0}"),
+        Unit::Psi => format!("{n}\u{a0}psi"),
+        Unit::Kg => format!("{n} kg"),
+    }
+}
+
+impl Setup {
+    pub fn get(&self, key: &str) -> Option<f32> {
+        self.values.iter().find(|(k, _)| *k == key).map(|(_, v)| *v)
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.values.is_empty() && self.compound.is_none()
+    }
+
+    pub fn difference(&self, mine: &Setup, key: &str) -> Option<f32> {
+        let (a, b) = (self.get(key)?, mine.get(key)?);
+        ((a - b).abs() > 0.004).then_some(a - b)
+    }
+
+    pub fn text(&self) -> String {
+        let mut out = String::new();
+        for (group, rows) in SETUP_GROUPS {
+            let lines: Vec<String> = rows
+                .iter()
+                .filter_map(|(key, label, unit)| {
+                    self.get(key)
+                        .map(|v| format!("  {label}: {}", setup_value_text(v, *unit)))
+                })
+                .collect();
+            let compound = (group == "Tyres").then(|| self.compound.clone()).flatten();
+            if lines.is_empty() && compound.is_none() {
+                continue;
+            }
+            out.push_str(group);
+            out.push('\n');
+            if let Some(c) = compound {
+                out.push_str(&swofty_i18n::trf!("  Compound: {c}\n", c = c));
+            }
+            for l in lines {
+                out.push_str(&l);
+                out.push('\n');
+            }
+        }
+        out
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct Row {
     pub rank: u32,
     pub lap_id: String,
@@ -100,6 +230,7 @@ pub struct Row {
     pub car: Option<String>,
     pub date: String,
     pub verified: bool,
+    pub setup: Option<Setup>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -122,7 +253,7 @@ impl Filter {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct BoardPage {
     pub track: TrackCard,
     pub season: String,
@@ -132,7 +263,7 @@ pub struct BoardPage {
     pub mine: Option<Row>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct BestLap {
     pub season: String,
     pub track: String,
@@ -141,6 +272,7 @@ pub struct BestLap {
     pub position: u32,
     pub lap_id: String,
     pub date: String,
+    pub setup: Option<Setup>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -433,6 +565,7 @@ mod tests {
             car: None,
             date: String::new(),
             verified: true,
+            setup: None,
         };
         let rows = [row(vec![30, 31, 32]), row(vec![29, 33, 31])];
         assert_eq!(best_sectors(&rows, 3), [Some(29), Some(31), Some(31)]);
@@ -579,5 +712,41 @@ mod tests {
         assert_eq!(Recents::load(&dir), r);
         std::fs::remove_dir_all(&dir).ok();
         assert_eq!(Recents::load(&dir), Recents::default());
+    }
+
+    fn setup_of(front: f32, compound: &str) -> Setup {
+        Setup {
+            values: vec![
+                ("front_wing", front),
+                ("brake_bias", 56.),
+                ("front_camber", -3.5),
+                ("fuel_load", 30.),
+            ],
+            compound: Some(compound.into()),
+            changed: false,
+        }
+    }
+
+    #[test]
+    fn setup_values_read_like_the_game_screen() {
+        assert_eq!(setup_value_text(25., Unit::Plain), "25");
+        assert_eq!(setup_value_text(56., Unit::Percent), "56%");
+        assert_eq!(setup_value_text(-3.5, Unit::Degrees), "-3.5\u{b0}");
+        assert_eq!(setup_value_text(22.5, Unit::Psi), "22.5\u{a0}psi");
+        assert_eq!(setup_value_text(30., Unit::Kg), "30 kg");
+    }
+
+    #[test]
+    fn a_setup_is_grouped_copied_and_compared() {
+        let a = setup_of(25., "soft");
+        let b = setup_of(20., "soft");
+        let text = a.text();
+        assert!(text.contains("Aerodynamics\n  Front wing: 25\n"));
+        assert!(text.contains("Tyres\n  Compound: soft"));
+        assert!(!text.contains("Rear wing"));
+        assert_eq!(a.difference(&b, "front_wing"), Some(5.));
+        assert_eq!(a.difference(&b, "brake_bias"), None);
+        assert_eq!(a.difference(&b, "rear_wing"), None);
+        assert!(Setup::default().is_empty() && !a.is_empty());
     }
 }

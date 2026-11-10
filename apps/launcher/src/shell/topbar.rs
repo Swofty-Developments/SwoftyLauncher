@@ -85,10 +85,14 @@ impl Shell {
                 links.extend(self.addon_page_links());
                 (links, 3)
             }
-            Some(Tab::Multiplayer) if self.nav_mp() => (
-                vec![Link::new(Page::Online, None), Link::new(Page::Multiplayer, None)],
-                2,
-            ),
+            Some(Tab::Online) => {
+                let mut links = vec![Link::new(Page::Online, None)];
+                if self.nav_mp() {
+                    links.push(Link::new(Page::Multiplayer, None));
+                }
+                let n = links.len();
+                (links, n)
+            }
             None if self.developer_mode => (
                 vec![Link::new(Page::Settings, None), Link::new(Page::Tools, None)],
                 2,
@@ -260,7 +264,7 @@ impl Shell {
     }
 
     pub(super) fn top_bar(&self, p: Palette, layout_width: f32, cx: &mut Context<Self>) -> impl IntoElement {
-        let labels: Vec<&str> = Tab::ALL.iter().map(|t| t.label(self.nav_mp())).collect();
+        let labels: Vec<&str> = Tab::ALL.iter().map(|t| t.label()).collect();
         let step = barfit::choose(
             layout_width,
             &labels,
@@ -520,9 +524,8 @@ impl Shell {
         p: Palette,
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let mp = self.nav_mp();
         v_flex()
-            .id(SharedString::from(format!("tab-{}", tab.label(mp))))
+            .id(SharedString::from(format!("tab-{}", tab.label())))
             .h(fixed(BAR_HEIGHT - 8.))
             .px(fixed(if tight { 10. } else { 22. }))
             .gap(fixed(4.))
@@ -543,15 +546,15 @@ impl Shell {
                 };
                 d.border_color(if focused { p.accent } else { transparent_black() })
             })
-            .child(match filled_icon(tab.icon(mp), cx).filter(|_| active) {
+            .child(match filled_icon(tab.icon(), cx).filter(|_| active) {
                 Some(data) => svg()
                     .data(&data)
                     .size(fixed(26.))
                     .text_color(tab.tint(&p))
                     .into_any_element(),
-                None => Icon::new(tab.icon(mp)).size(fixed(26.)).into_any_element(),
+                None => Icon::new(tab.icon()).size(fixed(26.)).into_any_element(),
             })
-            .child(tab.label(mp))
+            .child(tab.label())
             .on_click(cx.listener(move |this, _, _, cx| {
                 this.nav = None;
                 this.popover = None;
@@ -572,12 +575,11 @@ impl Shell {
         p: Palette,
         cx: &mut Context<Self>,
     ) -> impl IntoElement {
-        let mp = self.nav_mp();
         let shown = focus
             .filter(|i| *i < Tab::ALL.len())
             .map(|i| Tab::ALL[i])
             .or(current)
-            .map_or(tr("Menu"), |t| t.label(mp));
+            .map_or(tr("Menu"), |t| t.label());
         let shell = cx.entity().downgrade();
         Button::new("tab-menu")
             .outline()
@@ -589,7 +591,7 @@ impl Shell {
                 for tab in Tab::ALL {
                     let shell = shell.clone();
                     menu = menu.item(
-                        PopupMenuItem::new(tab.label(mp))
+                        PopupMenuItem::new(tab.label())
                             .checked(Some(tab) == current)
                             .on_click(move |_, _, cx| {
                                 shell

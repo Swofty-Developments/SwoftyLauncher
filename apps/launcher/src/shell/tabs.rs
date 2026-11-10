@@ -8,29 +8,27 @@ pub enum Tab {
     Home,
     Library,
     Discover,
-    Multiplayer,
+    Online,
 }
 
 impl Tab {
-    pub const ALL: [Tab; 4] = [Tab::Home, Tab::Library, Tab::Discover, Tab::Multiplayer];
+    pub const ALL: [Tab; 4] = [Tab::Home, Tab::Library, Tab::Discover, Tab::Online];
 
-    pub fn label(self, mp: bool) -> &'static str {
+    pub fn label(self) -> &'static str {
         match self {
             Self::Home => tr("Home"),
             Self::Library => tr("Library"),
             Self::Discover => tr("Discover"),
-            Self::Multiplayer if mp => tr("Multiplayer"),
-            Self::Multiplayer => tr("Time Trial"),
+            Self::Online => tr("Online"),
         }
     }
 
-    pub fn icon(self, mp: bool) -> IconName {
+    pub fn icon(self) -> IconName {
         match self {
             Self::Home => IconName::Newspaper,
             Self::Library => IconName::Puzzle,
             Self::Discover => IconName::PackageSearch,
-            Self::Multiplayer if mp => IconName::Users,
-            Self::Multiplayer => IconName::Trophy,
+            Self::Online => IconName::Trophy,
         }
     }
 
@@ -39,7 +37,7 @@ impl Tab {
             Self::Home => p.tab_home,
             Self::Library => p.tab_library,
             Self::Discover => p.tab_discover,
-            Self::Multiplayer => p.tab_trial,
+            Self::Online => p.tab_trial,
         }
     }
 
@@ -48,7 +46,7 @@ impl Tab {
             Self::Home => Page::News,
             Self::Library => Page::Addons,
             Self::Discover => Page::Browser,
-            Self::Multiplayer => Page::Online,
+            Self::Online => Page::Online,
         }
     }
 }
@@ -71,7 +69,7 @@ impl Page {
         match self {
             Self::News => Some(Tab::Home),
             Self::Browser => Some(Tab::Discover),
-            Self::Online | Self::Multiplayer => Some(Tab::Multiplayer),
+            Self::Online | Self::Multiplayer => Some(Tab::Online),
             Self::Settings | Self::Tools => None,
             Self::Addons
             | Self::Shaders
@@ -163,7 +161,7 @@ mod tests {
         assert_eq!(Page::Browser.tab(), Some(Tab::Discover));
         assert_eq!(Page::Shaders.tab(), Some(Tab::Library));
         assert_eq!(Page::Section(3).tab(), Some(Tab::Library));
-        assert_eq!(Page::Multiplayer.tab(), Some(Tab::Multiplayer));
+        assert_eq!(Page::Multiplayer.tab(), Some(Tab::Online));
         assert_eq!(Page::Settings.tab(), None);
         assert_eq!(Page::Tools.tab(), None);
         for tab in Tab::ALL {
@@ -172,12 +170,10 @@ mod tests {
     }
 
     #[test]
-    fn the_last_tab_says_multiplayer_only_with_access() {
-        assert_eq!(Tab::Multiplayer.label(false), "Time Trial");
-        assert_eq!(Tab::Multiplayer.label(true), "Multiplayer");
-        for tab in [Tab::Home, Tab::Library, Tab::Discover] {
-            assert_eq!(tab.label(true), tab.label(false));
-        }
+    fn the_last_tab_is_online_for_everyone() {
+        let labels: Vec<&str> = Tab::ALL.iter().map(|t| t.label()).collect();
+        assert_eq!(labels, ["Home", "Library", "Discover", "Online"]);
+        assert!(labels.iter().all(|l| !l.to_lowercase().contains("multiplayer")));
     }
 
     #[test]
@@ -193,7 +189,7 @@ mod tests {
 
     #[test]
     fn the_bar_reaches_the_actions_after_the_tabs() {
-        let mut c = Cursor::on_tab(Some(Tab::Multiplayer));
+        let mut c = Cursor::on_tab(Some(Tab::Online));
         c.apply(Key::Right, TOP, 0);
         assert_eq!(c.col, Tab::ALL.len());
         assert_eq!(Action::ALL[c.col - Tab::ALL.len()], Action::Notifications);

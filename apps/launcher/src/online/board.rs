@@ -35,6 +35,16 @@ impl Shell {
             if self.online.viewing.as_deref() == Some(r.lap_id.as_str()) {
                 body.push(self.lap_actions(&r.lap_id, p, cx));
             }
+            if self.online.setup_open.as_deref() == Some(r.lap_id.as_str())
+                && let Some(setup) = &r.setup
+            {
+                let mine = page
+                    .mine
+                    .as_ref()
+                    .filter(|m| m.lap_id != r.lap_id)
+                    .and_then(|m| m.setup.as_ref());
+                body.push(self.setup_panel(setup, mine, p, cx));
+            }
         }
         self.online.items = items;
         let remaining = page.total.saturating_sub(page.rows.len() as u32);
@@ -79,7 +89,7 @@ impl Shell {
                 d.child(head_cell(130., "CAR", p))
             })
             .child(head_cell(84., "DATE", p))
-            .child(head_cell(70., "", p));
+            .child(head_cell(112., "", p));
         v_flex()
             .flex_1()
             .min_h_0()
@@ -317,18 +327,31 @@ impl Shell {
                     .child(iso_date(&r.date).to_owned()),
             )
             .child(
-                div().w(px(70.)).flex_shrink_0().child(
-                    Button::new(SharedString::from(format!("view-{idx}-{}", r.lap_id)))
-                        .outline()
-                        .tap_xs()
-                        .label(tr("View"))
-                        .when(open, |b| b.primary())
-                        .on_click(cx.listener(move |this, _, _, cx| {
-                            let same = this.online.viewing.as_deref() == Some(lap.as_str());
-                            this.online.viewing = (!same).then(|| lap.clone());
-                            cx.notify();
-                        })),
-                ),
+                h_flex()
+                    .w(px(112.))
+                    .flex_shrink_0()
+                    .gap(px(4.))
+                    .child(
+                        Button::new(SharedString::from(format!("view-{idx}-{}", r.lap_id)))
+                            .outline()
+                            .tap_xs()
+                            .label(tr("View"))
+                            .when(open, |b| b.primary())
+                            .on_click(cx.listener({
+                                let lap = lap.clone();
+                                move |this, _, _, cx| {
+                                    let same = this.online.viewing.as_deref() == Some(lap.as_str());
+                                    this.online.viewing = (!same).then(|| lap.clone());
+                                    cx.notify();
+                                }
+                            })),
+                    )
+                    .child(self.setup_button(
+                        &format!("{idx}-{}", r.lap_id),
+                        &r.lap_id,
+                        r.setup.is_some(),
+                        cx,
+                    )),
             )
             .into_any_element()
     }
@@ -433,6 +456,155 @@ impl Shell {
                 .child(h_flex().gap(px(10.)).overflow_x_hidden().children(points))
                 .into_any_element(),
         )
+    }
+
+    pub(super) fn setup_button(&self, id: &str, lap: &str, has: bool, cx: &mut Context<Self>) -> AnyElement {
+        let lap = lap.to_owned();
+        Button::new(SharedString::from(format!("setup-{id}")))
+            .ghost()
+            .tap_xs()
+            .icon(IconName::Wrench)
+            .disabled(!has)
+            .tooltip(if has {
+                tr("Show the car setup")
+            } else {
+                tr("No setup was recorded for this lap")
+            })
+            .on_click(cx.listener(move |this, _, _, cx| {
+                let same = this.online.setup_open.as_deref() == Some(lap.as_str());
+                this.online.setup_open = (!same).then(|| lap.clone());
+                cx.notify();
+            }))
+            .into_any_element()
+    }
+
+    pub(super) fn setup_panel(
+        &self,
+        setup: &Setup,
+        mine: Option<&Setup>,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        let compare = self.online.setup_compare && mine.is_some();
+        let text = setup.text();
+        let groups: Vec<AnyElement> = SETUP_GROUPS
+            .iter()
+            .filter_map(|(title, rows)| {
+                let lines: Vec<AnyElement> = rows
+                    .iter()
+                    .filter_map(|(key, label, unit)| {
+                        let v = setup.get(key)?;
+                        let diff = mine.filter(|_| compare).and_then(|m| setup.difference(m, key));
+                        Some(
+                            h_flex()
+                                .gap(px(8.))
+                                .items_center()
+                                .child(
+                                    div()
+                                        .flex_1()
+                                        .text_size(px(12.))
+                                        .text_color(p.text_muted)
+                                        .child(*label),
+                                )
+                                .child(
+                                    div()
+                                        .text_size(px(13.))
+                                        .font_weight(FontWeight::SEMIBOLD)
+                                        .child(setup_value_text(v, *unit)),
+                                )
+                                .children(diff.map(|d| {
+                                    div()
+                                        .w(px(52.))
+                                        .text_size(px(11.))
+                                        .text_color(if d > 0. { p.warning } else { p.accent_hover })
+                                        .child(format!(
+                                            "{}{}",
+                                            if d > 0. { "+" } else { "" },
+                                            setup_value_text(d, *unit)
+                                        ))
+                                }))
+                                .into_any_element(),
+                        )
+                    })
+                    .collect();
+                let compound = (*title == "Tyres").then(|| setup.compound.clone()).flatten();
+                if lines.is_empty() && compound.is_none() {
+                    return None;
+                }
+                Some(
+                    v_flex()
+                        .w(px(260.))
+                        .gap(px(6.))
+                        .p(px(12.))
+                        .rounded(px(10.))
+                        .bg(p.surface)
+                        .border_1()
+                        .border_color(p.border_variant)
+                        .child(section_title(tr(title), p))
+                        .children(compound.map(|c| {
+                            h_flex()
+                                .gap(px(8.))
+                                .child(
+                                    div()
+                                        .flex_1()
+                                        .text_size(px(12.))
+                                        .text_color(p.text_muted)
+                                        .child(tr("Compound")),
+                                )
+                                .child(
+                                    div()
+                                        .text_size(px(13.))
+                                        .font_weight(FontWeight::SEMIBOLD)
+                                        .child(crate::format::title_case(&c)),
+                                )
+                        }))
+                        .children(lines)
+                        .into_any_element(),
+                )
+            })
+            .collect();
+        v_flex()
+            .gap(px(10.))
+            .px(px(14.))
+            .py(px(12.))
+            .bg(p.background)
+            .border_t_1()
+            .border_color(p.border_variant)
+            .child(
+                h_flex()
+                    .gap(px(8.))
+                    .items_center()
+                    .child(div().flex_1().text_size(px(12.)).text_color(p.text_muted).child(
+                        if setup.changed {
+                            tr("The setup changed during this lap; these are the values it started with.")
+                        } else {
+                            tr("Car setup")
+                        },
+                    ))
+                    .children(mine.map(|_| {
+                        Button::new("setup-compare")
+                            .outline()
+                            .tap_sm()
+                            .label(tr("Compare with mine"))
+                            .when(compare, |b| b.primary())
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.online.setup_compare = !this.online.setup_compare;
+                                cx.notify();
+                            }))
+                    }))
+                    .child(
+                        Button::new("setup-copy")
+                            .outline()
+                            .tap_sm()
+                            .icon(IconName::Copy)
+                            .label(tr("Copy"))
+                            .on_click(move |_, _, cx| {
+                                cx.write_to_clipboard(ClipboardItem::new_string(text.clone()))
+                            }),
+                    ),
+            )
+            .child(h_flex().flex_wrap().items_start().gap(px(10.)).children(groups))
+            .into_any_element()
     }
 }
 

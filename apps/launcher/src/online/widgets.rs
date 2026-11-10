@@ -280,6 +280,12 @@ impl Shell {
                                         .outline()
                                         .tap_sm()
                                         .label(tr("Log in with Discord"))
+                                        .disabled(self.game_busy())
+                                        .tooltip(if self.game_busy() {
+                                            tr("Close the game to sign in or out")
+                                        } else {
+                                            tr("Log in with Discord")
+                                        })
                                         .on_click(
                                             cx.listener(|this, _, window, cx| this.mp_sign_in(window, cx)),
                                         ),
