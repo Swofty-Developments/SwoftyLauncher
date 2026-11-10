@@ -9,7 +9,7 @@ use serde_json::Value;
 
 use crate::http::{self, Field};
 
-const CALL_TIMEOUT: Duration = Duration::from_secs(20);
+const CALL_TIMEOUT: Duration = Duration::from_secs(8);
 const UPLOAD_TIMEOUT: Duration = Duration::from_secs(60);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -281,5 +281,62 @@ mod tests {
         let mut out = Vec::new();
         flate2::read::GzDecoder::new(&packed[..]).read_to_end(&mut out).unwrap();
         assert_eq!(out, b"SWLAP lap bytes");
+    }
+
+    fn serve(status: &str, body: &'static str) -> (String, std::thread::JoinHandle<Vec<u8>>) {
+        use std::io::Read;
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let url = format!("http://{}", listener.local_addr().unwrap());
+        let status = status.to_owned();
+        let t = std::thread::spawn(move || {
+            let (mut c, _) = listener.accept().unwrap();
+            let mut got = Vec::new();
+            let mut buf = [0u8; 8192];
+            loop {
+                let n = c.read(&mut buf).unwrap();
+                got.extend_from_slice(&buf[..n]);
+                let text = String::from_utf8_lossy(&got);
+                if let Some(h) = text.find("\r\n\r\n") {
+                    let len = text[..h]
+                        .lines()
+                        .find_map(|l| l.to_ascii_lowercase().strip_prefix("content-length: ").and_then(|v| v.trim().parse::<usize>().ok()))
+                        .unwrap_or(0);
+                    if got.len() >= h + 4 + len {
+                        break;
+                    }
+                }
+            }
+            let reply = format!("HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}", body.len());
+            c.write_all(reply.as_bytes()).unwrap();
+            got
+        });
+        (url, t)
+    }
+
+    #[test]
+    fn uploads_a_lap_as_multipart_with_the_bearer_token() {
+        let (url, t) = serve("200 OK", r#"{"id":"l1","status":"ranked","rank":4,"best":true}"#);
+        let meta = Meta::new(Some("n0nce".into()), serde_json::json!({"digest": "d"}));
+        let got = Api::with_server(&url, "tok").upload(b"SWLAP-bytes", &meta).unwrap();
+        assert_eq!((got.id.as_str(), got.rank), ("l1", Some(4)));
+        let request = String::from_utf8_lossy(&t.join().unwrap()).into_owned();
+        assert!(request.starts_with("POST /v1/tt/laps HTTP/1.1"));
+        assert!(request.to_ascii_lowercase().contains("authorization: bearer tok"));
+        assert!(request.contains("name=\"meta\""));
+        assert!(request.contains(r#""gzip":true"#));
+        assert!(request.contains(r#""session":"n0nce""#));
+        assert!(request.contains("name=\"lap\"; filename="));
+    }
+
+    #[test]
+    fn asks_for_a_session_nonce_and_reads_a_refusal() {
+        let (url, t) = serve("200 OK", r#"{"nonce":"abcd","expires":99}"#);
+        let n = Api::with_server(&url, "tok").sessions().unwrap();
+        assert_eq!((n.nonce.as_str(), n.expires), ("abcd", 99));
+        t.join().unwrap();
+        let (url, t) = serve("429 Too Many Requests", r#"{"error":"slow down"}"#);
+        let e = Api::with_server(&url, "tok").upload(b"x", &Meta::new(None, Value::Null)).unwrap_err();
+        assert_eq!((e.status, e.message.as_str(), e.transient()), (429, "slow down", true));
+        t.join().unwrap();
     }
 }

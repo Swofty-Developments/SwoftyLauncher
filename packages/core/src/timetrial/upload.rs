@@ -17,15 +17,15 @@ use crate::session::Config;
 const WATCH_EVERY: Duration = Duration::from_secs(5);
 const FINAL_SWEEP: Duration = Duration::from_secs(6);
 
-/// The line the run log gets for an event.
+/// The run log line for an event, tagged `laps` by the caller.
 pub fn line(event: &Event) -> String {
     match event {
         Event::Uploaded { time_ms, answer, .. } => {
             let rank = answer.rank.map_or(String::new(), |r| format!(" -> P{r}"));
-            format!("[laps] uploaded {time_ms} ms{rank} ({})", answer.status)
+            format!("uploaded {time_ms} ms{rank} ({})", answer.status)
         }
-        Event::Retry { error, .. } => format!("[laps] upload failed, will retry: {error}"),
-        Event::Rejected { name, error } => format!("[laps] {name} not uploaded: {error}"),
+        Event::Retry { error, .. } => format!("upload failed, will retry: {error}"),
+        Event::Rejected { name, error } => format!("{name} not uploaded: {error}"),
     }
 }
 
@@ -187,7 +187,7 @@ mod tests {
             url: None,
         };
         let e = Event::Uploaded { name: "a".into(), time_ms: 91234, answer };
-        assert_eq!(line(&e), "[laps] uploaded 91234 ms -> P12 (ranked)");
+        assert_eq!(line(&e), "uploaded 91234 ms -> P12 (ranked)");
     }
 
     #[test]
