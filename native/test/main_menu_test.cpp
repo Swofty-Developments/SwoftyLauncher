@@ -93,9 +93,9 @@ int main()
         auto small = mm::plan_card(1.0f, 100);
         expect(small.width == 480 && small.height == 150 + 24, "a short title keeps the minimum width and the thumbnail sits in an even 12 px inset");
         auto big = mm::plan_card(1.0f, 300);
-        expect(big.width == 12 + 300 + 16 + big.thumb_w + 12 && big.width > 480, "a longer title widens the card");
+        expect(big.width == 12 + 300 + 28 + big.thumb_w + 12 && big.width > 480, "a longer title widens the card");
         auto capped = mm::plan_card(1.0f, 900);
-        expect(capped.text_max == 420 && capped.width == 12 + 420 + 16 + capped.thumb_w + 12, "the text block is capped at 420 px");
+        expect(capped.text_max == 420 && capped.width == 12 + 420 + 28 + capped.thumb_w + 12, "the text block is capped at 420 px");
         auto scaled = mm::plan_card(2.0f, 100);
         expect(scaled.width == 960 && scaled.thumb_h == 300, "the card scales with the screen height");
         expect(std::abs(big.thumb_w / big.thumb_h - 16.0 / 9.0) < 1e-4, "the thumbnail is 16:9");

@@ -127,7 +127,7 @@ inline VideoCard plan_card(float k, float text_w)
 {
     VideoCard c;
     c.pad = 12 * k;
-    c.gap = 16 * k;
+    c.gap = 28 * k;
     c.thumb_h = 150 * k;
     c.thumb_w = c.thumb_h * 16.0f / 9.0f;
     c.text_max = 420 * k;

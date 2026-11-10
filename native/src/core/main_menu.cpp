@@ -1083,50 +1083,39 @@ void paint(hud::Frame &f, uint64_t now)
     auto anchor = logic::scene_to_px(logic::CARD_RIGHT_X, logic::CARD_BOTTOM_Y, W, H);
     const float right = anchor.x;
     {
-        hud::TextStyle cap_style;
-        cap_style.px = 15 * k;
-        cap_style.rgba = 0xa9afbfffu;
-        cap_style.tracking = 15 * k * 0.12f;
         hud::TextStyle name_style;
         name_style.px = 26 * k;
         name_style.rgba = 0xf3f5f9ffu;
-        hud::TextStyle ver_style;
-        ver_style.px = 18 * k;
-        ver_style.rgba = 0xa9afbfffu;
-        std::string caption = p->s.signed_in ? "SIGNED IN WITH DISCORD" : "NOT SIGNED IN";
-        std::string who = p->s.signed_in ? (p->s.name.empty() ? std::string("Discord") : p->s.name) : std::string("Swofty Launcher");
-        float tmp = 0, cw = 0, nw = 0, vw = 0;
-        hud::measure(cap_style, caption, &cw, &tmp);
+        std::string who = p->s.signed_in ? (p->s.name.empty() ? std::string("Discord") : p->s.name) : std::string("Not signed in");
+        float tmp = 0, nw = 0;
         hud::measure(name_style, who, &nw, &tmp);
-        hud::measure(ver_style, p->version, &vw, &tmp);
-        float text_w = std::max({cw, nw, vw});
-        float avatar = 44 * k, pad = 12 * k, gap = 12 * k;
-        float block_h = cap_style.px * 1.25f + 3 * k + name_style.px * 1.15f + 2 * k + ver_style.px * 1.2f;
-        float ph = std::max(avatar, block_h) + 2 * pad;
-        float pw = pad + avatar + gap + 3 * k + 9 * k + text_w + 18 * k;
+        nw = nw * 1.06f + 4 * k;
+        float avatar = 44 * k, pad = 10 * k, gap = 12 * k;
+        float block_h = name_style.px * 1.3f;
+        float ph = avatar + 2 * pad;
+        float pw = std::max(190 * k, pad + avatar + gap + 3 * k + 9 * k + nw + 20 * k);
         float px = right - pw, py = 44 * k;
         fade_panel(f, px - 110 * k, py, pw + 110 * k, ph, 0.45f, 0.04f, k);
-        float ax = px + pad, ay = py + (ph - avatar) * 0.5f;
+        float ax = px + pad, ay = py + pad;
         if (p->avatar_slot >= 0) {
             image_rounded(f, p->avatar_slot, ax, ay, avatar, avatar, avatar * 0.5f, 0, 0, 1, 1);
-        } else {
-            hud::rect_rounded(f, ax, ay, avatar, avatar, avatar * 0.5f, p->s.signed_in ? 0x5865f2ffu : 0x3a3f4bffu);
+        } else if (p->s.signed_in) {
+            hud::rect_rounded(f, ax, ay, avatar, avatar, avatar * 0.5f, 0x5865f2ffu);
             hud::TextStyle initial;
             initial.px = 24 * k;
             initial.rgba = 0xffffffffu;
-            std::string letter = p->s.signed_in && !p->s.name.empty() ? p->s.name.substr(0, 1) : "S";
+            std::string letter = p->s.name.empty() ? "D" : p->s.name.substr(0, 1);
             float lw = 0;
             hud::measure(initial, letter, &lw, &tmp);
             hud::text(f, ax + (avatar - lw) * 0.5f, ay + (avatar - initial.px) * 0.5f, initial, letter);
+        } else {
+            hud::rect_rounded(f, ax, ay, avatar, avatar, avatar * 0.5f, 0x3a3f4bffu);
+            hud::rect_rounded(f, ax + avatar * 0.34f, ay + avatar * 0.18f, avatar * 0.32f, avatar * 0.32f, avatar * 0.16f, 0xb9bfcdffu);
+            hud::rect_rounded(f, ax + avatar * 0.2f, ay + avatar * 0.56f, avatar * 0.6f, avatar * 0.26f, avatar * 0.13f, 0xb9bfcdffu);
         }
         float bx = ax + avatar + gap, by = py + (ph - block_h) * 0.5f;
         hud::rect_rounded(f, bx, by, 3 * k, block_h, 1.5f * k, 0xe10600ffu);
-        float tx = bx + 3 * k + 9 * k, yy = by;
-        hud::text(f, tx, yy, cap_style, caption);
-        yy += cap_style.px * 1.25f + 3 * k;
-        hud::text(f, tx, yy, name_style, who);
-        yy += name_style.px * 1.15f + 2 * k;
-        hud::text(f, tx, yy, ver_style, p->version);
+        hud::text(f, bx + 12 * k, by + (block_h - name_style.px) * 0.5f, name_style, who);
     }
     if (p->video_slot >= 0 && p->video_w && p->video_h) {
         hud::TextStyle cap_style;
@@ -1158,7 +1147,7 @@ void paint(hud::Frame &f, uint64_t now)
             hud::measure(title_style, line, &w, &tmp_h);
             title_w = std::max(title_w, w);
         }
-        float text_w = std::max({cap_w, title_w, glyph_w + 10 * k + watch_w});
+        float text_w = std::max({cap_w, title_w, glyph_w + 10 * k + watch_w}) * 1.06f + 4 * k;
         auto card = logic::plan_card(k, text_w);
         float cx = right - card.width, cy = anchor.y - card.height;
         fade_panel(f, cx - 110 * k, cy, card.width + 110 * k, card.height, 0.45f, 0.04f, k);

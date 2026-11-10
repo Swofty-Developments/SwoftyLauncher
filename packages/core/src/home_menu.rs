@@ -159,13 +159,32 @@ pub fn latest_video(data: &Path, registry: &str) -> Option<VideoCard> {
 }
 
 pub fn fetch_avatar(data: &Path) -> bool {
-    let Some(session) = crate::mpauth::load(data) else {
-        return false;
+    static TOLD: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+    let why = |text: &str| {
+        if !TOLD.swap(true, std::sync::atomic::Ordering::Relaxed) {
+            eprintln!("home menu: no Discord avatar for the main menu: {text}");
+        }
+        false
     };
-    let Some(url) = session.avatar.filter(|u| https_host_in(u, &AVATAR_HOSTS)) else {
-        return false;
+    let Some(mut session) = crate::mpauth::load(data) else {
+        return why("not signed in");
     };
-    fetch_image(&url, &data.join(AVATAR), AVATAR_LIMIT)
+    if session.avatar.is_none()
+        && let Some(fresh) = crate::mpauth::refresh(data, &session)
+    {
+        session = fresh;
+    }
+    let Some(url) = session.avatar else {
+        return why("the account has no avatar (the server's /v1/auth/launcher/me returned no user.avatar, and the launcher keeps no avatar picture on disk)");
+    };
+    if !https_host_in(&url, &AVATAR_HOSTS) {
+        return why("the avatar link is not on Discord's CDN");
+    }
+    if fetch_image(&url, &data.join(AVATAR), AVATAR_LIMIT) {
+        true
+    } else {
+        why("downloading the avatar failed")
+    }
 }
 
 fn latest_video_from(data: &Path, registry: &str, trusted: &dyn Fn(&str) -> bool) -> Option<VideoCard> {
