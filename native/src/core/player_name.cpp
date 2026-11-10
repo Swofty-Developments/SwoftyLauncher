@@ -449,12 +449,12 @@ SwapResult swap_sources(const std::string &stock, const std::string &name_in)
                 auto c = ms::classify(head, stock.size());
                 if (!c.is_record)
                     continue;
-                uint32_t word;
-                std::memcpy(&word, head + 6, 4);
+                uint32_t word = 0;
+                std::memcpy(&word, head + 6, 3);
                 word = (word & ~0xfffffu) | uint32_t(name.size());
                 std::string chars = name;
                 chars.push_back('\0');
-                if (write_process(where, chars.data(), chars.size()) && write_process(where - 3, &word, 4))
+                if (write_process(where - 3, &word, 3) && write_process(where, chars.data(), chars.size()))
                     res.records++;
             }
         }
