@@ -162141,7 +162141,14 @@
    "names": [
     "Game_CheckPrivilegeTask_OnUpdate"
    ],
-   "verified": [{"build": "d873a1c8d2044cef", "date": "2026-11-08", "by": "netplay-privilege-verify", "how": "static"}],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-08",
+     "by": "netplay-privilege-verify",
+     "how": "static"
+    }
+   ],
    "used_by": [
     "native/src/core/netplay.cpp"
    ]
@@ -162160,7 +162167,14 @@
    "names": [
     "Game_CheckPrivilegeTask_PrivilegeCheckTaskCallback"
    ],
-   "verified": [{"build": "d873a1c8d2044cef", "date": "2026-11-08", "by": "netplay-privilege-verify", "how": "static"}],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-08",
+     "by": "netplay-privilege-verify",
+     "how": "static"
+    }
+   ],
    "used_by": [
     "native/src/core/netplay.cpp"
    ]
@@ -162218,6 +162232,31 @@
    "used_by": [
     "native/src/core/estimate_laptime_guard.cpp"
    ]
+  },
+  {
+   "id": "game.ghost_pb_committed",
+   "section": ".xtls",
+   "pattern": "C6 46 66 01 80 3D ?? ?? ?? ?? 00 0F 84",
+   "match": "0x142fa3db8",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142fa3db8",
+   "kind": "mid",
+   "expect": "C6 46 66 01 80 3D 0D 23 0F 03 00",
+   "names": [
+    "site_Game_GhostPb_Committed"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-10",
+     "by": "tt-re",
+     "how": "static"
+    }
+   ],
+   "used_by": []
   }
  ]
 }
