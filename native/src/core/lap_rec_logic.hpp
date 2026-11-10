@@ -73,6 +73,8 @@ enum class Discard : uint8_t {
     too_few_samples,
     capped,
     backwards,
+    interrupted,
+    stationary,
 };
 
 inline const char *discard_name(Discard d)
@@ -86,12 +88,14 @@ inline const char *discard_name(Discard d)
     case Discard::too_few_samples: return "the lap has too few samples";
     case Discard::capped: return "the lap is longer than the sample cap";
     case Discard::backwards: return "the line was crossed backwards";
+    case Discard::interrupted: return "a replay, cutscene or spectating took over the car";
+    case Discard::stationary: return "the car stood still for too long";
     }
     return "";
 }
 
 struct Config {
-    size_t max_samples = 60 * 60 * 10;
+    size_t max_samples = 60 * 60 * 12;
     double sample_period_s = 1.0 / 60.0;
     size_t min_samples = 30;
     double min_lap_s = 20.0;
@@ -100,6 +104,11 @@ struct Config {
     double max_gap_s = 5.0;
     double reset_from_ms = 30.0;
     double reset_to_ms = 1.0;
+    double still_speed_ms = 0.5;
+    double max_still_s = 30.0;
+    double stall_gap_s = 0.5;
+    double stall_move_m = 0.25;
+    double stall_min_speed_ms = 5.0;
 };
 
 struct Frame {
@@ -107,6 +116,7 @@ struct Frame {
     double pos[3] = {0, 0, 0};
     double speed_ms = 0;
     bool player = true;
+    bool interrupted = false;
 };
 
 struct Lap {
@@ -114,6 +124,7 @@ struct Lap {
     uint32_t count = 0;
     double started_s = 0, ended_s = 0, path_m = 0;
     uint32_t index = 0;
+    double shift_s = 0;
 };
 
 struct Outcome {
@@ -137,6 +148,9 @@ public:
         clear();
         state_ = State::outlap;
         index_ = 0;
+        shift_ = 0;
+        stalls_ = 0;
+        still_s_ = 0;
     }
 
     Outcome end_session()
@@ -146,23 +160,47 @@ public:
         return o;
     }
 
-    double elapsed(double now_s) const { return now_s - started_; }
+    double elapsed(double now_s) const { return now_s - shift_ - started_; }
+    double shift_s() const { return shift_; }
+    uint32_t stalls() const { return stalls_; }
 
     // The car moved without driving there, or stopped dead in a tick: the lap in progress is thrown away and the
-    // next line crossing starts a fresh one.
-    Outcome step(const Frame &f, const uint8_t *sample, size_t stride)
+    // next line crossing starts a fresh one. A gap in which the car did not move at all while it was driving is a
+    // stall of the game (focus lost, a hitch) and is taken out of the lap's clock instead. A replay, a cutscene or
+    // spectating discards the lap, and so does a car that stands still for max_still_s.
+    Outcome step(const Frame &in, const uint8_t *sample, size_t stride)
     {
         Outcome none;
-        if (!f.player || state_ == State::idle)
+        if (!in.player || state_ == State::idle)
             return none;
+        Frame f = in;
+        f.now_s -= shift_;
+        if (in.interrupted) {
+            last_ = f;
+            have_last_ = true;
+            return discarding(Discard::interrupted);
+        }
         Discard bad = Discard::none;
         if (have_last_) {
             double dt = f.now_s - last_.now_s;
             double dx = f.pos[0] - last_.pos[0], dy = f.pos[1] - last_.pos[1], dz = f.pos[2] - last_.pos[2];
             double step = std::sqrt(dx * dx + dy * dy + dz * dz);
+            if (dt > cfg_.stall_gap_s && step < cfg_.stall_move_m && last_.speed_ms > cfg_.stall_min_speed_ms) {
+                double gap = dt - cfg_.sample_period_s;
+                shift_ += gap;
+                f.now_s -= gap;
+                dt = cfg_.sample_period_s;
+                stalls_++;
+            }
             double allowed = cfg_.teleport_floor_m + 1.5 * std::fmax(f.speed_ms, last_.speed_ms) * std::fmax(dt, 0.0);
+            if (f.speed_ms < cfg_.still_speed_ms && dt > 0)
+                still_s_ += dt;
+            else
+                still_s_ = 0;
             if (dt < 0 || dt > cfg_.max_gap_s || step > allowed)
                 bad = Discard::teleport;
+            else if (state_ == State::timing && still_s_ > cfg_.max_still_s)
+                bad = Discard::stationary;
             else if (last_.speed_ms > cfg_.reset_from_ms && f.speed_ms < cfg_.reset_to_ms)
                 bad = Discard::reset;
             else if (state_ == State::timing)
@@ -192,6 +230,7 @@ public:
         Outcome o;
         if (!player || state_ == State::idle)
             return o;
+        now_s -= shift_;
         if (state_ == State::outlap) {
             start(now_s);
             o.kind = Outcome::started;
@@ -217,6 +256,7 @@ public:
         o.lap.ended_s = now_s;
         o.lap.path_m = path_;
         o.lap.index = ++index_;
+        o.lap.shift_s = shift_;
         start(now_s);
         return o;
     }
@@ -260,7 +300,8 @@ private:
     std::vector<uint8_t> buf_;
     size_t count_ = 0, stride_ = 0;
     double path_ = 0, started_ = 0;
-    uint32_t index_ = 0;
+    uint32_t index_ = 0, stalls_ = 0;
+    double shift_ = 0, still_s_ = 0;
     Frame last_;
     bool have_last_ = false;
     double next_sample_s_ = 0;

@@ -325,6 +325,152 @@ static lr::GameLap fake_game(bool valid, bool usable = true)
     return g;
 }
 
+static void handler_free_extras()
+{
+    constexpr uint64_t MGR = 0x80000, MODES = 0x81000, HOLDER = 0x82000, INNER = 0x83000;
+    Fake m = tlap_memory(91.234f, 1, 1);
+    m.put<uint64_t>(MGR + lr::MGR_SYSTEMS, MAP);
+    m.put<uint64_t>(MGR + lr::MGR_MODES, MODES);
+    m.put<uint64_t>(MODES + lr::MODES_HOLDER, HOLDER);
+    m.put<uint64_t>(HOLDER + lr::SESSION_LIST, INNER);
+    m.put<uint64_t>(INNER + lr::PART_BEGIN, PARTS);
+    m.put<uint64_t>(INNER + lr::PART_END, PARTS + lr::PART_STRIDE);
+    m.put<uint8_t>(PARTS + lr::PART_CAR, 7);
+    m.put<uint32_t>(PARTS + lr::PART_TEAM, 11);
+    m.put<uint32_t>(PARTS + lr::PART_VEHICLE, 22);
+    m.put<uint32_t>(PARTS + lr::PART_LIVERY, 33);
+    lr::GameLap g;
+    g.car = 7;
+    g.time_ms = int64_t(int32_t(91.234f * 1000.0f));
+    lr::ExtrasRoots roots;
+    roots.manager = MGR;
+    roots.key = KEY;
+    lr::ExtrasFrom from = lr::read_extras(m, g, roots);
+    expect(g.tlap.ok && from.tlap == lr::From::manager && g.tlap.input == 1 && g.tlap.performance == 1 && g.tlap.trc == 2,
+           "the telemetry lap is read through the game manager with no ghost handler");
+    expect(g.stats.ok && from.stats == lr::From::manager && g.stats.team == 11 && g.stats.vehicle == 22 &&
+               g.stats.livery == 33,
+           "the participant stat ids are read through the game manager's modes holder");
+    lr::GameLap wrong_car;
+    wrong_car.car = 9;
+    wrong_car.time_ms = g.time_ms;
+    lr::read_extras(m, wrong_car, roots);
+    expect(wrong_car.tlap.ok && !wrong_car.stats.ok, "a car with no participant entry has no stat ids");
+    lr::GameLap late;
+    late.car = 7;
+    late.time_ms = 80000;
+    expect(lr::read_extras(m, late, roots).tlap == lr::From::none && !late.tlap.ok,
+           "a telemetry lap that is not the lap just completed is not taken");
+    lr::GameLap fallback;
+    fallback.car = 7;
+    fallback.time_ms = g.time_ms;
+    lr::ExtrasRoots handler;
+    handler.handler_map = MAP;
+    handler.handler_base = HOLDER;
+    handler.key = KEY;
+    lr::ExtrasFrom hf = lr::read_extras(m, fallback, handler);
+    expect(hf.tlap == lr::From::handler && hf.stats == lr::From::handler, "the ghost handler's roots still work as a fallback");
+    lr::GameLap none;
+    none.car = 7;
+    none.time_ms = g.time_ms;
+    lr::ExtrasRoots empty;
+    empty.key = KEY;
+    expect(lr::read_extras(m, none, empty).tlap == lr::From::none && !none.tlap.ok && !none.stats.ok,
+           "with no manager and no handler nothing resolves and nothing crashes");
+}
+
+static void interruptions()
+{
+    {
+        Drive d;
+        d.rec.begin_session();
+        d.run(2);
+        d.rec.newlap(d.t, true);
+        d.run(30);
+        lr::Frame f;
+        f.now_s = d.t;
+        f.pos[0] = d.x;
+        f.speed_ms = 60;
+        f.interrupted = true;
+        uint8_t s[4] = {1, 2, 3, 4};
+        lr::Outcome o = d.rec.step(f, s, 4);
+        expect(o.kind == lr::Outcome::discarded && o.why == lr::Discard::interrupted && d.rec.state() == lr::State::outlap,
+               "a replay or cutscene over the car discards the lap in progress");
+        lr::Frame idle = f;
+        idle.interrupted = true;
+        expect(d.rec.step(idle, s, 4).kind == lr::Outcome::none, "an interruption with no lap in progress is nothing");
+    }
+    {
+        Drive d;
+        d.rec.begin_session();
+        d.run(2);
+        d.rec.newlap(d.t, true);
+        d.run(10);
+        d.speed = 20;
+        d.tick();
+        d.speed = 0;
+        for (int i = 0; i < 60 * 29; i++) {
+            d.tick();
+        }
+        expect(d.rec.state() == lr::State::timing, "standing still for under the limit keeps the lap");
+        lr::Outcome o;
+        for (int i = 0; i < 60 * 3 && o.kind == lr::Outcome::none; i++)
+            o = d.tick();
+        expect(o.kind == lr::Outcome::discarded && o.why == lr::Discard::stationary,
+               "a car that stands still past the limit (parked, in the garage) loses the lap");
+    }
+    {
+        Drive d;
+        d.rec.begin_session();
+        d.run(2);
+        d.rec.newlap(d.t, true);
+        d.run(40);
+        double before = d.rec.elapsed(d.t);
+        d.t += 4.0;
+        lr::Frame f;
+        f.now_s = d.t;
+        f.pos[0] = d.x - 1;
+        f.speed_ms = 60;
+        uint8_t s[4] = {1, 2, 3, 4};
+        lr::Outcome o = d.rec.step(f, s, 4);
+        expect(o.kind == lr::Outcome::none && d.rec.state() == lr::State::timing && d.rec.stalls() == 1,
+               "a frozen game without a pause is a stall, not a teleport");
+        expect(std::fabs(d.rec.elapsed(d.t) - before) < 0.1, "the stall is taken out of the lap clock");
+        d.t += 1.0 / 60;
+        d.x += 1;
+        d.run(40);
+        lr::Outcome e = d.rec.newlap(d.t, true);
+        expect(e.kind == lr::Outcome::completed && std::fabs(e.lap.shift_s - 4.0) < 0.1 &&
+                   std::fabs((e.lap.ended_s - e.lap.started_s) - 80.0) < 1.0,
+               "the lap that stalled completes with the stall taken out and the shift reported");
+    }
+    {
+        Drive d;
+        d.rec.begin_session();
+        d.run(2);
+        d.rec.newlap(d.t, true);
+        d.run(5);
+        d.t += 4.0;
+        d.x += 400;
+        lr::Outcome o = d.tick();
+        expect(o.kind == lr::Outcome::discarded && o.why == lr::Discard::teleport,
+               "a gap in which the car moved far is still a teleport (a restart or a return to the garage)");
+    }
+    {
+        lr::Config c;
+        c.max_samples = 120;
+        Drive d(c);
+        d.rec.begin_session();
+        d.run(2);
+        d.rec.newlap(d.t, true);
+        lr::Outcome last;
+        for (int i = 0; i < 400 && last.kind == lr::Outcome::none; i++)
+            last = d.tick();
+        expect(last.why == lr::Discard::capped, "the cap discards the lap and says so");
+        expect(lr::Config{}.max_samples >= 60 * 60 * 12, "the default cap is 12 minutes of samples");
+    }
+}
+
 static void sealing()
 {
     {
@@ -422,6 +568,8 @@ static void sealing()
 
 int main()
 {
+    handler_free_extras();
+    interruptions();
     game_laps();
     tlap_and_stats();
     sealing();

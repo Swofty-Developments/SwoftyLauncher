@@ -26,6 +26,7 @@ constexpr uintptr_t MAP_SLOTS = 0x18, MAP_MASK = 0x30;
 constexpr size_t MAX_MAP_SLOTS = size_t(1) << 16;
 constexpr uintptr_t PART_BEGIN = 0x2e0, PART_END = 0x2e8, PART_STRIDE = 0x88, PART_CAR = 0x82, PART_TEAM = 0x58,
                     PART_VEHICLE = 0x5c, PART_LIVERY = 0x64, SESSION_LIST = 0x260;
+constexpr uintptr_t MGR_SYSTEMS = 0x30, MGR_MODES = 0xc0, MODES_HOLDER = 0x88;
 constexpr size_t MAX_GHOST_BYTES = size_t(1) << 20;
 constexpr size_t MAX_GHOST_BLOB = 0x20000;
 
@@ -199,6 +200,77 @@ template <class R> inline Stats find_stats(R &mem, uint64_t list_owner, int car)
         return s;
     }
     return s;
+}
+
+// Where the lap's extras came from. The game manager reaches both without the ghost handler: its systems map
+// ([manager+0x30], the map the handler's constructor reads its systems from) holds the telemetry component, and the
+// participant list hangs under [[manager+0xc0]+0x88] (+0x260 is the entity, as for the handler's session).
+enum class From : uint8_t { none, manager, handler };
+
+inline const char *from_name(From f)
+{
+    return f == From::manager ? "the game manager" : f == From::handler ? "the ghost handler" : "nowhere";
+}
+
+struct ExtrasFrom {
+    From tlap = From::none, stats = From::none;
+};
+
+struct ExtrasRoots {
+    uint64_t manager = 0, handler_map = 0, handler_base = 0, key = 0;
+};
+
+template <class R> inline uint64_t manager_map(R &mem, uint64_t manager)
+{
+    uint64_t map = 0;
+    return manager && rd(mem, manager + MGR_SYSTEMS, map) ? map : 0;
+}
+
+template <class R> inline uint64_t manager_session(R &mem, uint64_t manager)
+{
+    uint64_t modes = 0, holder = 0;
+    return manager && rd(mem, manager + MGR_MODES, modes) && modes && rd(mem, modes + MODES_HOLDER, holder) ? holder : 0;
+}
+
+template <class R> inline Stats stats_at(R &mem, uint64_t base, int car)
+{
+    Stats s;
+    uint64_t inner = 0;
+    if (!base)
+        return s;
+    s = find_stats(mem, base, car);
+    if (!s.ok && rd(mem, base + SESSION_LIST, inner) && inner)
+        s = find_stats(mem, inner, car);
+    return s;
+}
+
+template <class R> inline ExtrasFrom read_extras(R &mem, GameLap &g, const ExtrasRoots &roots)
+{
+    ExtrasFrom from;
+    const std::pair<From, uint64_t> maps[] = {{From::manager, manager_map(mem, roots.manager)},
+                                              {From::handler, roots.handler_map}};
+    for (auto &[kind, map] : maps) {
+        if (g.tlap.ok || !map)
+            continue;
+        uint64_t tlap = find_last_tlap(mem, map, roots.key);
+        TLapExtras t = tlap ? decode_tlap(mem, tlap, g.time_ms) : TLapExtras{};
+        if (t.ok) {
+            g.tlap = t;
+            from.tlap = kind;
+        }
+    }
+    const std::pair<From, uint64_t> bases[] = {{From::manager, manager_session(mem, roots.manager)},
+                                               {From::handler, roots.handler_base}};
+    for (auto &[kind, base] : bases) {
+        if (g.stats.ok || !base)
+            continue;
+        Stats st = stats_at(mem, base, g.car);
+        if (st.ok) {
+            g.stats = st;
+            from.stats = kind;
+        }
+    }
+    return from;
 }
 
 struct Sealed {
