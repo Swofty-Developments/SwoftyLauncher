@@ -136,6 +136,7 @@ int career_unblock(const void *from, uint32_t mode);
 void career_start_setup();
 void career_start_drop_module(void *module);
 bool career_start_live();
+bool in_session_now();
 uint32_t career_start_picked();
 void popup_setup();
 void popup_tick();

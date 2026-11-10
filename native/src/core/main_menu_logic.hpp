@@ -79,6 +79,41 @@ constexpr double ACCOUNT_AVATAR_DX = -0.674, ACCOUNT_AVATAR_DY = 0.834, ACCOUNT_
 constexpr double VIDEO_PANEL_DX = 0.32, VIDEO_PANEL_W = 6.6, VIDEO_PANEL_H = 1.8, VIDEO_INSET = 0.08;
 constexpr double SCENE_UNITS_TALL = 11.0, SCENE_CENTRE_X_SHIFT = -0.0148, SCENE_CENTRE_Y = 0.4918;
 
+enum class Screen { overlay, home, other };
+
+inline Screen classify_screen(const std::string &name)
+{
+    static const char *const overlays[] = {"persistent", "playercard", "render_badge", "theming_overlay_frontend",
+                                           "standard_wipe", "frontend_transition", "slice_bg_content_underlay",
+                                           "f1_life_driver_tags", "audio_themes", "fe_planes", "wipes",
+                                           "tutorials_masked"};
+    if (name == "fe_home")
+        return Screen::home;
+    for (const char *o : overlays)
+        if (name == o)
+            return Screen::overlay;
+    return Screen::other;
+}
+
+struct HomeView {
+    bool home = false;
+    void screen(const std::string &name)
+    {
+        switch (classify_screen(name)) {
+        case Screen::home:
+            home = true;
+            break;
+        case Screen::other:
+            home = false;
+            break;
+        case Screen::overlay:
+            break;
+        }
+    }
+    void left() { home = false; }
+    bool visible(bool in_session, bool hub_updating) const { return home && !in_session && !hub_updating; }
+};
+
 struct Point {
     float x = 0, y = 0;
 };

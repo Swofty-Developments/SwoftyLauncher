@@ -3,6 +3,7 @@
 #include "main_menu.hpp"
 #include "main_menu_logic.hpp"
 #include <safetyhook.hpp>
+#include "virtual_pad.hpp"
 #include "json.hpp"
 
 #include <swofty/game.hpp>
@@ -291,7 +292,7 @@ enum class Step { idle, wait_container, done };
 struct Chain {
     Step step = Step::idle;
     bool time_trial = false;
-    uint64_t started = 0, container_at = 0;
+    uint64_t started = 0, container_at = 0, release_at = 0;
 } chain;
 std::mutex chain_lock;
 
@@ -324,11 +325,59 @@ const runtime::Sig S_FIRE{"Vm_Fire_Route", "48 8B 4E 28 48 89 F2 49 89 F8 45 31 
 safetyhook::InlineHook h_fire;
 
 std::atomic<void *> hub_router{nullptr};
-std::atomic<uint64_t> hub_at{0};
+std::atomic<uint64_t> hub_at{0}, hub_update_at{0}, hub_fired_at{0};
+std::atomic<void *> hub_vm{nullptr};
+std::mutex view_lock;
+logic::HomeView home_view;
+
+const runtime::Sig S_HUB_UPDATE{
+    "Game_F1WorldScreenVM_Update",
+    "56 57 55 53 48 83 EC 78 48 89 CE 80 B9 D1 16 00 00 00 74 0D 48 8B 86 30 07 00 00 80 78 2C 00 74 2E 48 8B 86 E0 15 00 "
+    "00 48 85 C0 0F 84 ?? ?? ?? ?? 80 B8 A1 00 00 00 00 0F 84",
+    0x1b1a2f0};
+safetyhook::InlineHook h_hub;
+
+uint64_t hub_detour(void *vm)
+{
+    hub_vm = vm;
+    hub_update_at = GetTickCount64();
+    return h_hub.call<uint64_t>(vm);
+}
+
+bool hub_recent()
+{
+    uint64_t at = hub_update_at.load();
+    return at && GetTickCount64() - at < 300;
+}
+
+void hook_hub()
+{
+    if (h_hub)
+        return;
+    auto at = runtime::find(S_HUB_UPDATE, "home", "core");
+    if (!at) {
+        swofty::log("[main-menu] back: the F1 World hub update did not resolve; its view model cannot be captured");
+        return;
+    }
+    auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(hub_detour));
+    if (!h) {
+        swofty::log("[main-menu] back: hooking the F1 World hub update failed: %s", runtime::hook_error(h.error()).c_str());
+        return;
+    }
+    h_hub = std::move(*h);
+    swofty::log("[main-menu] back: F1 World hub update hooked at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
+}
 
 void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4)
 {
     const char *text = name && *name ? reinterpret_cast<const char *>(*name) + NESTR_CHARS : "";
+    if (home_open.load() && runtime::readable(static_cast<uint8_t *>(vm) + 0x250, 4) &&
+        *reinterpret_cast<uint32_t *>(static_cast<uint8_t *>(vm) + 0x250) == logic::djb2("fe_home") && std::strncmp(text, "swofty_", 7) != 0) {
+        std::lock_guard<std::mutex> g(view_lock);
+        home_view.left();
+        home_open = false;
+        swofty::log("[main-menu] panel hidden: route %s fired from the home screen", text);
+    }
     int mode = via.load();
     if (mode) {
         uint32_t gid = runtime::readable(static_cast<uint8_t *>(vm) + 0x250, 4) ? *reinterpret_cast<uint32_t *>(static_cast<uint8_t *>(vm) + 0x250) : 0;
@@ -557,7 +606,8 @@ bool enabled()
 
 bool drawing()
 {
-    return logic::panel_due(patched.load(), home_open.load(), state_loaded.load(), panel_disabled.load(), panel_prepared.load());
+    return logic::panel_due(patched.load(), home_open.load() && !runtime::in_session_now() && !hub_recent(), state_loaded.load(),
+                            panel_disabled.load(), panel_prepared.load());
 }
 
 bool wants_overlay()
@@ -586,6 +636,7 @@ bool arm_patch()
     patched = true;
     hook_container();
     hook_fire();
+    hook_hub();
     swofty::log("[main-menu] stock F1 World, divider, Local Multiplayer, League Racing, Player Hub and Theatre tiles skipped");
     return true;
 }
@@ -627,22 +678,43 @@ void apply_texts();
 
 void tick()
 {
-    if (uint64_t at = hub_at.load(); at && GetTickCount64() - at > 350 && hub_router.load()) {
-        hub_at = 0;
-        static uint8_t fake_vm[0x400];
-        *reinterpret_cast<uint32_t *>(fake_vm + 0x250) = logic::djb2("fe_f1_world");
-        NeStr *route = nullptr;
-        Ne_Make_StrFromCStr(&route, "back_1", 0, 0);
-        swofty::log("[main-menu] back: firing the hub's own back route back_1 (group fe_f1_world)");
-        {
-            std::lock_guard<std::mutex> g(swap_lock);
-            swap_screens.clear();
-            swap_reported = false;
+    if (uint64_t at = hub_at.load(); at && hub_router.load()) {
+        uint64_t now = GetTickCount64();
+        void *vm = hub_vm.load();
+        bool live = vm && hub_update_at.load() > at && now - at >= 500;
+        if (live || now - at > 3000) {
+            hub_at = 0;
+            NeStr *route = nullptr;
+            Ne_Make_StrFromCStr(&route, "back_1", 0, 0);
+            {
+                std::lock_guard<std::mutex> g(swap_lock);
+                swap_screens.clear();
+                swap_reported = false;
+            }
+            swap_at = now;
+            hub_fired_at = now;
+            if (live && runtime::readable(static_cast<uint8_t *>(vm) + 0x28, 8)) {
+                void *router = *reinterpret_cast<void **>(static_cast<uint8_t *>(vm) + 0x28);
+                swofty::log("[main-menu] back: firing back_1 on the live hub view model %p (router %p, group id 0x%08x)", vm, router,
+                            *reinterpret_cast<uint32_t *>(static_cast<uint8_t *>(vm) + 0x250));
+                if (h_fire)
+                    h_fire.call<void>(router, vm, &route, 0);
+            } else {
+                static uint8_t fake_vm[0x400];
+                *reinterpret_cast<uint32_t *>(fake_vm + 0x250) = logic::djb2("fe_f1_world");
+                swofty::log("[main-menu] back: no live hub view model was seen; firing back_1 on a scratch view model (may not navigate)");
+                if (h_fire)
+                    h_fire.call<void>(hub_router.load(), fake_vm, &route, 0);
+            }
+            Ne_Make_StrFromCStr(&route, nullptr, 0, 0);
         }
-        swap_at = GetTickCount64();
-        if (h_fire)
-            h_fire.call<void>(hub_router.load(), fake_vm, &route, 0);
-        Ne_Make_StrFromCStr(&route, nullptr, 0, 0);
+    }
+    if (uint64_t at = hub_fired_at.load(); at && GetTickCount64() - at > 1500) {
+        hub_fired_at = 0;
+        uint64_t last = hub_update_at.load();
+        swofty::log("[main-menu] back: 1.5 s after back_1 the hub view model %s (last update %llu ms ago); fe_home panel %s",
+                    hub_recent() ? "is STILL updating, so the hub is still on screen" : "has stopped updating",
+                    (unsigned long long)(GetTickCount64() - last), drawing() ? "is due" : "is not due");
     }
     if (uint64_t at = swap_at.load(); at && GetTickCount64() - at > 1000) {
         std::lock_guard<std::mutex> g(swap_lock);
@@ -681,7 +753,27 @@ void tick()
         chain.step = Step::done;
         return;
     }
-    if (chain.step == Step::wait_container && chain.container_at && container_vm.load() && now - chain.container_at > 900) {
+    if (chain.release_at && now >= chain.release_at) {
+        runtime::pad::release();
+        runtime::pad::claim(false);
+        chain.release_at = 0;
+        swofty::log("[main-menu] chain: virtual pad A released");
+        chain.step = Step::done;
+        return;
+    }
+    if (chain.step == Step::wait_container && !chain.time_trial && !chain.release_at && chain.container_at &&
+        container_vm.load() && now - chain.container_at > 2600 && std::strcmp(env("SWOFTY_MAIN_MENU_GP"), "command") != 0) {
+        runtime::pad::setup();
+        if (runtime::pad::why().empty()) {
+            runtime::pad::claim(true);
+            runtime::pad::set(runtime::pad::A);
+            chain.release_at = now + 160;
+            swofty::log("[main-menu] chain: pressing A on the Play tab's first tile (the stock Grand Prix entry decides between saves and a new Grand Prix)");
+            return;
+        }
+        swofty::log("[main-menu] chain: the virtual pad is unavailable (%s); using the grand_prix_new command", runtime::pad::why().c_str());
+    }
+    if (chain.step == Step::wait_container && !chain.release_at && (chain.time_trial || std::strcmp(env("SWOFTY_MAIN_MENU_GP"), "command") == 0 || !runtime::pad::why().empty()) && chain.container_at && container_vm.load() && now - chain.container_at > 900) {
         NeStr *name = nullptr;
         Ne_Make_StrFromCStr(&name, chain.time_trial ? "time_trial" : "grand_prix_new", 0, 0);
         swofty::log("[main-menu] chain: raising '%s' on the activity container %p",
@@ -719,9 +811,14 @@ void screen(const char *name)
             container_vm = nullptr;
         }
     }
-    if (std::strncmp(name, "fe_", 3) == 0 && std::strcmp(name, "fe_planes") != 0) {
+    logic::Screen kind = logic::classify_screen(name);
+    if (kind != logic::Screen::overlay) {
+        {
+            std::lock_guard<std::mutex> g(view_lock);
+            home_view.screen(name);
+            home_open = home_view.home;
+        }
         bool home = !std::strcmp(name, "fe_home");
-        home_open = home;
         if (home)
             home_opened_at = GetTickCount64();
         if (home) {

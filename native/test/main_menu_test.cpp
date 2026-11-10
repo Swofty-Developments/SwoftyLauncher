@@ -97,6 +97,28 @@ int main()
         expect(tl.x > 1515 && tl.x < 1525 && br.x > 1788 && br.x < 1797, "the image sits at the right end of the card (x about 1520..1793 at 1908x1028)");
         expect(tl.y > 790 && tl.y < 800 && br.y > 945 && br.y < 955, "the image sits inside the card's height (y about 795..949)");
     }
+    {
+        mm::HomeView v;
+        expect(!v.visible(false, false), "hidden by default");
+        v.screen("fe_home");
+        v.screen("fe_planes");
+        v.screen("theming_overlay_frontend");
+        expect(v.visible(false, false), "visible on the home screen with only overlays opening");
+        v.screen("f1_world_activity_container");
+        expect(!v.visible(false, false), "hidden once the activity container opens");
+        v.screen("fe_f1_world");
+        v.screen("fe_home");
+        expect(v.visible(false, false), "visible when the home screen opens again");
+        expect(!v.visible(false, true), "hidden while the hub's own view model still updates");
+        v.screen("playercard");
+        expect(v.visible(false, false), "an overlay opening does not hide it");
+        expect(!v.visible(true, false), "hidden in a session");
+        v.left();
+        expect(!v.visible(false, false), "hidden after a route away from the home screen");
+        v.screen("fe_home");
+        v.screen("some_leaderboard_screen");
+        expect(!v.visible(false, false), "any other screen opening on top hides it");
+    }
     expect(mm::panel_due(true, true, true, false, true), "the panel is due on the open home screen once prepared");
     expect(!mm::panel_due(false, true, true, false, true) && !mm::panel_due(true, false, true, false, true) &&
                !mm::panel_due(true, true, false, false, true) && !mm::panel_due(true, true, true, true, true) &&

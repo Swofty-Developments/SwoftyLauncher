@@ -519,6 +519,11 @@ void team_hq_entry(SwoftyContext *c)
 
 namespace runtime {
 
+bool in_session_now()
+{
+    return in_session.load(std::memory_order_relaxed);
+}
+
 const SwoftyCareer *career_table()
 {
     return &table;
