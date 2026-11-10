@@ -204,10 +204,8 @@ impl Shell {
                             .text_color(p.text_muted)
                             .child(if vanilla {
                                 tr("No addons").to_owned()
-                            } else if active {
-                                trf!("{on} of {total} on", on = on, total = total)
                             } else {
-                                trf!("{count} on", count = on)
+                                trf!("{on} of {total} on", on = on, total = total)
                             }),
                     ),
             )

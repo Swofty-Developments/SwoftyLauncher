@@ -98,7 +98,7 @@ impl Shell {
             links.push(Link {
                 page: Page::Section(i),
                 label: s.spec.title.clone().into(),
-                count: self.section_count(i),
+                count: None,
             });
         }
         if !importer {
@@ -115,7 +115,7 @@ impl Shell {
             links.push(Link {
                 page: Page::Section(i),
                 label: s.spec.title.clone().into(),
-                count: self.section_count(i),
+                count: None,
             });
         }
         links

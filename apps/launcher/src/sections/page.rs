@@ -225,21 +225,6 @@ impl Shell {
             .into_any_element()
     }
 
-    pub(crate) fn section_count(&self, index: usize) -> Option<usize> {
-        let s = self.library.sections.get(index)?;
-        match &self
-            .views
-            .get(&format!("{}/{}", s.addon, s.spec.id))?
-            .as_ref()
-            .ok()?
-            .body
-        {
-            Body::List { rows, .. } => Some(rows.len()),
-            Body::Empty { .. } => Some(0),
-            Body::Blocks(_) => None,
-        }
-    }
-
     // A row without art shows its page's icon: `sections/<id>.svg` when the addon has one,
     // else the page's icon from the launcher's set.
     pub(super) fn row_art(&self, addon: &str, section: &str, a: &Art, size: f32, p: Palette) -> AnyElement {

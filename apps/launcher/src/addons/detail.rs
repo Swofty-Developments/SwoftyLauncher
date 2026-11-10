@@ -326,21 +326,6 @@ impl Shell {
         }
         let mut remove: Vec<AnyElement> = Vec::new();
         if m.source != Source::Builtin && !m.locked {
-            let profile = &self.library.profile;
-            if !profile.is_vanilla() && m.in_profile {
-                let (id, name) = (man.id.clone(), man.name.clone());
-                remove.push(
-                    Button::new("detail-take-out")
-                        .ghost()
-                        .small()
-                        .icon(IconName::Minus)
-                        .label(trf!("Remove from {name}", name = profile.name))
-                        .on_click(cx.listener(move |this, _, window, cx| {
-                            this.remove_from_profile(&id, &name, window, cx)
-                        }))
-                        .into_any_element(),
-                );
-            }
             let (id, name) = (man.id.clone(), man.name.clone());
             remove.push(
                 Button::new("detail-remove")

@@ -17,7 +17,6 @@ mod sync;
 
 use std::time::Duration;
 
-pub(crate) use crate::ui::facet::checkbox;
 pub(crate) use model::AddonsPage;
 
 const FADE: Duration = Duration::from_secs(4);

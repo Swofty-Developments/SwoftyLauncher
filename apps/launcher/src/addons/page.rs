@@ -81,7 +81,15 @@ impl Shell {
                     match r {
                         Ok((left_out, m)) => {
                             let text = trf!("Installed {name} {version}", name = m.name, version = m.version);
-                            window.notify(Notification::success(text), cx);
+                            let (shell, id) = (cx.entity().downgrade(), m.id.clone());
+                            window.notify(
+                                Notification::success(text).action(tr("Turn on"), move |window, cx| {
+                                    shell
+                                        .update(cx, |s, cx| s.set_addon_enabled(&id, true, window, cx))
+                                        .ok();
+                                }),
+                                cx,
+                            );
                             if !left_out.is_empty() {
                                 let note = Notification::warning(left_out.join("\n"))
                                     .title(tr("Track can't be used"))
@@ -313,12 +321,7 @@ impl Shell {
     }
 
     fn tracks_note(&self, p: Palette, cx: &mut Context<Self>) -> Option<Div> {
-        let hidden = self
-            .library
-            .addons
-            .iter()
-            .filter(|m| m.in_profile && m.track)
-            .count()
+        let hidden = self.library.addons.iter().filter(|m| m.track).count()
             - self.library.listed().filter(|m| m.track).count();
         self.library.tracks_page.filter(|_| hidden > 0).map(|i| {
             h_flex()

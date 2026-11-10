@@ -267,16 +267,6 @@ impl Shell {
                     total = total
                 )))
             })
-            .when(!vanilla && self.library.not_in_profile().next().is_some(), |d| {
-                d.child(
-                    Button::new("add-to-profile")
-                        .ghost()
-                        .xsmall()
-                        .icon(IconName::Plus)
-                        .label(tr("Add addons"))
-                        .on_click(cx.listener(|this, _, window, cx| this.add_to_profile(window, cx))),
-                )
-            })
             .when(!vanilla, |d| {
                 d.child(
                     Button::new("new-folder")

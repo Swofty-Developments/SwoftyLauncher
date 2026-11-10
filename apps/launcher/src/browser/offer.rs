@@ -30,13 +30,7 @@ impl Shell {
         if self.browser.failed.contains_key(&a.id) {
             return Offer::Failed;
         }
-        let elsewhere = self
-            .library
-            .addons
-            .iter()
-            .any(|m| m.manifest.id == a.id && !m.in_profile);
         match (a.offered(&current_version()), self.installed_version(&a.id)) {
-            (_, Some(_)) if elsewhere => Offer::Elsewhere,
             (Some(v), Some(m)) if v.version > m => Offer::Update(m, v.version.clone()),
             (_, Some(m)) => Offer::Installed(m),
             (Some(_), None) if self.needs_of(a).1.is_some() => Offer::Blocked,
@@ -140,17 +134,6 @@ impl Shell {
                     .icon(IconName::Check)
                     .label(trf!("Installed v{version}", version = v))
                     .disabled(true);
-            }
-            Offer::Elsewhere => {
-                let label = trf!("Add to {profile}", profile = self.library.profile.name);
-                return button
-                    .primary()
-                    .icon(IconName::Plus)
-                    .label(label)
-                    .on_click(cx.listener(move |this, _, window, cx| {
-                        cx.stop_propagation();
-                        this.add_one_to_profile(&target, window, cx);
-                    }));
             }
             Offer::TooOld => {
                 return button
