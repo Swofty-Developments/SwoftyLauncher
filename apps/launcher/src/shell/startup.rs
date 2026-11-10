@@ -105,6 +105,7 @@ impl Shell {
             session: None,
             mp,
             mp_busy: false,
+            ban: None,
             mp_toasts: Vec::new(),
             mp_page: crate::multiplayer::Multiplayer::new(window, cx),
             crash: None,
@@ -309,11 +310,11 @@ impl Shell {
             cx.spawn(async move |this, cx| {
                 let refreshed = cx
                     .background_executor()
-                    .spawn(async move { swofty_core::mpauth::refresh(&dir, &current) })
+                    .spawn(async move { swofty_core::mpauth::refresh_checked(&dir, &current) })
                     .await;
                 this.update(cx, |s, cx| {
-                    s.mp = refreshed;
-                    cx.notify();
+                    let allowed = s.mp.as_ref().is_some_and(|m| m.allowed);
+                    s.mp_apply_check(refreshed, allowed, cx);
                 })
                 .ok();
                 let data = this.update(cx, |s, _| s.store.clone()).ok();
@@ -341,10 +342,10 @@ impl Shell {
                 let was_allowed = session.allowed;
                 let refreshed = cx
                     .background_executor()
-                    .spawn(async move { swofty_core::mpauth::refresh(&dir, &session) })
+                    .spawn(async move { swofty_core::mpauth::refresh_checked(&dir, &session) })
                     .await;
                 if this
-                    .update(cx, |s, cx| s.mp_apply_refresh(refreshed, was_allowed, cx))
+                    .update(cx, |s, cx| s.mp_apply_check(refreshed, was_allowed, cx))
                     .is_err()
                 {
                     break;

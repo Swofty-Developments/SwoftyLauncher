@@ -54,6 +54,7 @@ pub struct Shell {
     pub(crate) session: Option<SessionRecord>,
     pub(crate) mp: Option<swofty_core::mpauth::Session>,
     pub(crate) mp_busy: bool,
+    pub(crate) ban: Option<swofty_core::mpauth::Ban>,
     pub(crate) mp_toasts: Vec<Notification>,
     pub(crate) mp_page: crate::multiplayer::Multiplayer,
     pub(crate) crash: Option<(PathBuf, Result<String, StartFailure>)>,
@@ -172,6 +173,7 @@ impl Shell {
                         }
                         s.mp = Some(session);
                     }
+                    Err(swofty_core::mpauth::SignInError::Banned(ban)) => s.ban = Some(ban),
                     Err(e) => s
                         .mp_toasts
                         .push(Notification::error(format!("Sign-in failed: {e}"))),
@@ -197,6 +199,25 @@ impl Shell {
         self.mp_toasts
             .push(Notification::info(format!("Signed out {name}")));
         cx.notify();
+    }
+
+    pub(super) fn mp_apply_check(
+        &mut self,
+        checked: swofty_core::mpauth::Refreshed,
+        was_allowed: bool,
+        cx: &mut Context<Self>,
+    ) {
+        use swofty_core::mpauth::Refreshed;
+        match checked {
+            Refreshed::Session(session) => self.mp_apply_refresh(Some(session), was_allowed, cx),
+            Refreshed::Gone => self.mp_apply_refresh(None, was_allowed, cx),
+            Refreshed::Banned(ban) => {
+                self.mp_leave(cx);
+                self.mp = None;
+                self.ban = Some(ban);
+                cx.notify();
+            }
+        }
     }
 
     pub(super) fn mp_apply_refresh(

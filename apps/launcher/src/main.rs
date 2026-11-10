@@ -4,6 +4,7 @@ mod addons;
 mod admin_needed;
 mod app_log;
 mod blocks;
+mod ban;
 mod browser;
 mod career_saves;
 mod colour;

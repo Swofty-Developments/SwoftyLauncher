@@ -13,9 +13,59 @@ use std::time::{Duration, Instant};
 use serde::{Deserialize, Serialize};
 
 const WAIT: Duration = Duration::from_secs(180);
+const BANNED_PAGE: &str = "<!doctype html><meta charset=utf-8><title>Not signed in</title>\
+<body style=\"font:16px system-ui;display:grid;place-items:center;height:100vh;margin:0;\
+background:#0b0b0d;color:#eee\"><div>This account is banned. Swofty Launcher shows the reason. You can close this tab.</div>";
 const DONE_PAGE: &str = "<!doctype html><meta charset=utf-8><title>Signed in</title>\
 <body style=\"font:16px system-ui;display:grid;place-items:center;height:100vh;margin:0;\
 background:#0b0b0d;color:#eee\"><div>Signed in to Swofty Launcher. You can close this tab.</div>";
+
+/// Why the server refuses an account, as the moderator wrote it.
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+pub struct Ban {
+    #[serde(default)]
+    pub reason: String,
+    #[serde(default)]
+    pub by: Option<String>,
+    #[serde(default)]
+    pub at: Option<u64>,
+}
+
+/// Why a sign-in did not give a session.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum SignInError {
+    Banned(Ban),
+    Failed(String),
+}
+
+impl std::fmt::Display for SignInError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Banned(b) => write!(f, "this account is banned: {}", b.reason),
+            Self::Failed(e) => f.write_str(e),
+        }
+    }
+}
+
+impl From<String> for SignInError {
+    fn from(e: String) -> Self {
+        Self::Failed(e)
+    }
+}
+
+impl From<&str> for SignInError {
+    fn from(e: &str) -> Self {
+        Self::Failed(e.to_owned())
+    }
+}
+
+/// What the server says of a stored session.
+#[derive(Clone, Debug)]
+pub enum Refreshed {
+    Session(Session),
+    Gone,
+    Banned(Ban),
+}
 
 /// A persisted sign-in. `allowed` is whether the server cleared this user for
 /// multiplayer (beta-tester role); it is re-checked on each launch via [`refresh`].
@@ -141,13 +191,13 @@ pub fn begin() -> Result<(Pending, String), String> {
 pub fn sign_in(data_dir: &Path, open: impl FnOnce(&str)) -> Result<Session, String> {
     let (pending, url) = begin()?;
     open(&url);
-    pending.wait(data_dir)
+    pending.wait(data_dir).map_err(|e| e.to_string())
 }
 
 impl Pending {
     /// Block until the browser hits the loopback with a matching nonce, persist
     /// the session, and return it.
-    pub fn wait(self, data_dir: &Path) -> Result<Session, String> {
+    pub fn wait(self, data_dir: &Path) -> Result<Session, SignInError> {
         let Pending { listener, nonce } = self;
         let deadline = Instant::now() + WAIT;
         loop {
@@ -161,7 +211,10 @@ impl Pending {
                     let get = |k: &str| pairs.iter().find(|(p, _)| p == k).map(|(_, v)| v.clone());
 
                     let ok = get("nonce").as_deref() == Some(nonce.as_str());
-                    let body = if ok {
+                    let banned = ok && get("error").as_deref() == Some("banned");
+                    let body = if banned {
+                        BANNED_PAGE
+                    } else if ok {
                         DONE_PAGE
                     } else {
                         "sign-in could not be verified"
@@ -178,6 +231,13 @@ impl Pending {
 
                     if !ok {
                         continue;
+                    }
+                    if banned {
+                        return Err(SignInError::Banned(Ban {
+                            reason: get("reason").unwrap_or_default(),
+                            by: get("by").filter(|v| !v.is_empty()),
+                            at: get("at").and_then(|v| v.parse().ok()),
+                        }));
                     }
                     let token = get("token").ok_or("the server sent no session token")?;
                     let session = Session {
@@ -196,7 +256,7 @@ impl Pending {
                     }
                     std::thread::sleep(Duration::from_millis(120));
                 }
-                Err(e) => return Err(format!("sign-in failed: {e}")),
+                Err(e) => return Err(format!("sign-in failed: {e}").into()),
             }
         }
     }
@@ -211,7 +271,19 @@ pub fn refresh(data_dir: &Path, session: &Session) -> Option<Session> {
     refresh_at(&base_url(), data_dir, session)
 }
 
+/// [`refresh`], telling a ban apart from a plain end of the session.
+pub fn refresh_checked(data_dir: &Path, session: &Session) -> Refreshed {
+    check_at(&base_url(), data_dir, session)
+}
+
 fn refresh_at(base: &str, data_dir: &Path, session: &Session) -> Option<Session> {
+    match check_at(base, data_dir, session) {
+        Refreshed::Session(s) => Some(s),
+        Refreshed::Gone | Refreshed::Banned(_) => None,
+    }
+}
+
+fn check_at(base: &str, data_dir: &Path, session: &Session) -> Refreshed {
     let url = format!("{base}/v1/auth/launcher/me");
     let response = ureq::get(&url)
         .header("Authorization", &format!("Bearer {}", session.token))
@@ -222,15 +294,31 @@ fn refresh_at(base: &str, data_dir: &Path, session: &Session) -> Option<Session>
         .build()
         .call();
     let Ok(mut response) = response else {
-        return Some(session.clone());
+        return Refreshed::Session(session.clone());
     };
     match response.status().as_u16() {
         200 => {}
         401 => {
             forget(data_dir);
-            return None;
+            return Refreshed::Gone;
         }
-        _ => return Some(session.clone()),
+        403 => {
+            let ban = response
+                .body_mut()
+                .read_to_string()
+                .ok()
+                .and_then(|t| serde_json::from_str::<serde_json::Value>(&t).ok())
+                .filter(|d| d.get("error").and_then(serde_json::Value::as_str) == Some("banned"))
+                .and_then(|d| serde_json::from_value::<Ban>(d).ok());
+            return match ban {
+                Some(ban) => {
+                    forget(data_dir);
+                    Refreshed::Banned(ban)
+                }
+                None => Refreshed::Session(session.clone()),
+            };
+        }
+        _ => return Refreshed::Session(session.clone()),
     }
     let body = response
         .body_mut()
@@ -238,7 +326,7 @@ fn refresh_at(base: &str, data_dir: &Path, session: &Session) -> Option<Session>
         .ok()
         .and_then(|text| serde_json::from_str::<MeResponse>(&text).ok());
     let Some(body) = body else {
-        return Some(session.clone());
+        return Refreshed::Session(session.clone());
     };
     let fresh = Session {
         token: session.token.clone(),
@@ -247,11 +335,12 @@ fn refresh_at(base: &str, data_dir: &Path, session: &Session) -> Option<Session>
             Some(false) => session.allowed,
             _ => body.multiplayer_allowed,
         },
-        avatar: avatar_link(body.user.id.as_deref(), body.user.avatar.as_deref()).or_else(|| session.avatar.clone()),
+        avatar: avatar_link(body.user.id.as_deref(), body.user.avatar.as_deref())
+            .or_else(|| session.avatar.clone()),
         admin: body.admin,
     };
     let _ = save(data_dir, &fresh);
-    Some(fresh)
+    Refreshed::Session(fresh)
 }
 
 /// End the session on the server and locally.
@@ -371,6 +460,34 @@ mod tests {
             avatar_link(None, Some("https://cdn.discordapp.com/a.png")).as_deref(),
             Some("https://cdn.discordapp.com/a.png")
         );
+    }
+
+    #[test]
+    fn a_banned_callback_gives_the_reason_and_no_session() {
+        let dir = std::env::temp_dir().join(format!("swofty-mpauth-ban-{}", std::process::id()));
+        let (pending, _) = begin().unwrap();
+        let port = pending.listener.local_addr().unwrap().port();
+        let nonce = pending.nonce.clone();
+        let client = std::thread::spawn(move || {
+            let mut c = std::net::TcpStream::connect(("127.0.0.1", port)).unwrap();
+            let line = format!(
+                "GET /done?error=banned&reason=cheating%20on%20boards&by=mod&at=5&nonce={nonce} HTTP/1.1\r\n\r\n"
+            );
+            c.write_all(line.as_bytes()).unwrap();
+            let mut out = String::new();
+            c.read_to_string(&mut out).ok();
+        });
+        let got = pending.wait(&dir);
+        client.join().unwrap();
+        assert_eq!(
+            got.unwrap_err(),
+            SignInError::Banned(Ban {
+                reason: "cheating on boards".into(),
+                by: Some("mod".into()),
+                at: Some(5)
+            })
+        );
+        assert!(load(&dir).is_none());
     }
 
     #[test]

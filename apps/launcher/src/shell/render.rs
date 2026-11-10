@@ -103,6 +103,7 @@ impl Render for Shell {
             .children(self.download_dock(p, window, cx))
             .children(self.task_dialog(p, window, cx))
             .children(self.crash_overlay(p, cx))
+            .children(self.ban_overlay(p, cx))
             .children(self.data_move_overlay(p, cx))
             .children(self.found_data_overlay(p, cx))
             .when(self.dropping, |d| d.child(self.drop_overlay(p)));

@@ -62,7 +62,7 @@ pub struct TrackEntry {
     pub laps: u32,
     #[serde(default)]
     pub best_ms: Option<u64>,
-    #[serde(default)]
+    #[serde(default, alias = "name")]
     pub track_name: Option<String>,
 }
 
@@ -94,7 +94,7 @@ pub struct Group {
 enum Rows<T> {
     List(Vec<T>),
     Wrapped {
-        #[serde(alias = "laps", alias = "entries")]
+        #[serde(alias = "laps", alias = "entries", alias = "boards")]
         rows: Vec<T>,
         #[serde(default)]
         next_offset: Option<u64>,
