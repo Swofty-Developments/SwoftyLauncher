@@ -139,6 +139,8 @@ struct Header {
     std::string core, game_build, nonce;
     std::string content, track, weather, game_board;
     std::string team, vehicle, driver;
+    std::string content_name, track_name, performance;
+    std::optional<int64_t> team_stat, vehicle_stat, livery_stat;
     int64_t time_ms = 0;
     std::vector<int64_t> sectors_ms;
     std::optional<bool> valid;
@@ -165,11 +167,19 @@ inline swofty::json::Value header_json(const Header &h, const Layout &layout)
     text(board, "track", h.track);
     text(board, "weather", h.weather);
     text(board, "game_board", h.game_board);
+    text(board, "content_name", h.content_name);
+    text(board, "track_name", h.track_name);
     v["board"] = std::move(board);
     Value car = Value::object();
     text(car, "team", h.team);
     text(car, "vehicle", h.vehicle);
     text(car, "driver", h.driver);
+    if (h.team_stat)
+        car["team_stat"] = *h.team_stat;
+    if (h.vehicle_stat)
+        car["vehicle_stat"] = *h.vehicle_stat;
+    if (h.livery_stat)
+        car["livery_stat"] = *h.livery_stat;
     v["car"] = std::move(car);
     Value lap = Value::object({{"time_ms", h.time_ms}});
     if (!h.sectors_ms.empty()) {
@@ -191,6 +201,7 @@ inline swofty::json::Value header_json(const Header &h, const Layout &layout)
         v["assists"] = h.assists;
     if (h.setup.type() == swofty::json::Type::object)
         v["setup"] = h.setup;
+    text(v, "performance", h.performance);
     if (h.rate_hz)
         v["rate_hz"] = int64_t(*h.rate_hz);
     v["fields"] = layout.json();

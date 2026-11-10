@@ -135,6 +135,40 @@ int main()
     expect(lf::parse(bad.data(), bad.size(), q) == lf::Status::bad_samples,
            "samples that do not fit the field table are refused");
 
+    {
+        lf::Header h;
+        h.time_ms = 91234;
+        h.game_board = "LBV060012D";
+        h.content_name = "Formula 1 2022";
+        h.track_name = "Bahrain";
+        h.team_stat = 4;
+        h.vehicle_stat = 17;
+        h.livery_stat = 0;
+        h.performance = "equal";
+        h.session_time_s = 412.5;
+        h.assists = swofty::json::Value::object({{"brk", int64_t(1)}, {"abs", int64_t(1)}, {"trc", int64_t(2)},
+                                                 {"drl", int64_t(0)}, {"gbx", int64_t(3)}, {"ers", int64_t(1)},
+                                                 {"input", int64_t(2)}});
+        lf::Layout l = layout();
+        auto v = lf::header_json(h, l);
+        expect(v["board"]["game_board"].as_string() == "LBV060012D" && v["board"]["content_name"].as_string() == "Formula 1 2022" &&
+                   v["board"]["track_name"].as_string() == "Bahrain",
+               "the header carries the game board and the display names");
+        expect(v["car"]["team_stat"].as_int(-1) == 4 && v["car"]["vehicle_stat"].as_int(-1) == 17 &&
+                   v["car"]["livery_stat"].as_int(-1) == 0,
+               "the header carries the participant stat ids, zero included");
+        expect(v["performance"].as_string() == "equal" && v["assists"]["gbx"].as_int(-1) == 3 &&
+                   v["assists"]["input"].as_int(-1) == 2 && v["lap"]["session_time_s"].as_double(0) == 412.5,
+               "the header carries performance, assists and the session time");
+        lf::Header bare;
+        bare.time_ms = 1;
+        auto b = lf::header_json(bare, l);
+        expect(b["board"]["game_board"].type() == swofty::json::Type::null && b["car"]["team_stat"].type() == swofty::json::Type::null &&
+                   b["performance"].type() == swofty::json::Type::null && b["assists"].type() == swofty::json::Type::null &&
+                   b["lap"]["session_time_s"].type() == swofty::json::Type::null,
+               "a key that could not be read is omitted, never guessed");
+    }
+
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;
 }
