@@ -9,6 +9,8 @@ While Time Trial boards are on, the core records every completed Time Trial lap 
 
 The recorder runs when the launcher writes `"tt_boards": true` into `swofty/tt.json` and the session is a Time Trial. It samples the player's car once per rendered frame. A lap starts at a line crossing and ends at the next one. The lap out of the garage is not recorded. A lap is dropped when the car is reset or moved, when the session ends, or when it is too short or too long to be a lap.
 
+On the build the core's lap offsets are from, the core also hooks the game's own lap record (`Sess_LapTimes_ReportNewLapTime`). A completed lap then waits up to two seconds after its line crossing for the game's lap result and, when the lap is valid, for the ghost blob the game commits on a personal best. The file is written when both have arrived or when the two seconds have passed. When the hook is not available the file is written at once and the lap's time comes from the clock. `SWOFTY_LAP_GAME_RESULT=0` turns the lap result off and `SWOFTY_LAP_GHOST=0` the ghost blob.
+
 ## The file
 
 A lap is one file, `swofty/laps/20261110T041011Z-3.swlap`: the UTC time it was written and the lap's number in the session. It is written as a `.tmp` file and renamed.
@@ -19,7 +21,7 @@ A lap is one file, `swofty/laps/20261110T041011Z-3.swlap`: the UTC time it was w
 12  n   header, JSON, UTF-8
 ..      sections: 4-byte tag, u32 length, bytes
           "SMPL"  u32 count, u32 stride, then count * stride bytes
-          "GHST"  the game's own ghost blob for the lap, when there is one
+          "GHST"  the game's own ghost blob for the lap, when there is one (1 to 131072 bytes, copied verbatim)
           "ATST"  an attestation, appended by a laps.sealing handler
           "END\0" length 0
 ```
@@ -33,9 +35,13 @@ The header names what the core knows and leaves out the rest:
   "format": 1,
   "core": "1.8.38",
   "game_build": "<exe sha256>",
-  "board": { "content": "game/f1_2025", "track": "bahrain", "weather": "dry" },
-  "car": { "team": "game/mercedes", "vehicle": "game/mercedes_2025", "driver": "game/russell" },
-  "lap": { "time_ms": 91234, "source": "clock", "lap_index": 3, "started_utc": "2026-11-10T04:10:11Z" },
+  "board": { "content": "swofty.swofty-2022/f1_2022", "track": "bahrain", "weather": "dry", "content_name": "Formula 1 2022" },
+  "car": { "team": "game/mercedes", "vehicle": "game/mercedes_2025", "driver": "game/russell",
+           "team_stat": 4, "vehicle_stat": 17, "livery_stat": 0 },
+  "lap": { "time_ms": 91234, "sectors_ms": [29001, 31002, 31231], "valid": true, "source": "game", "lap_index": 3,
+           "started_utc": "2026-11-10T04:10:11Z", "session_time_s": 412.5 },
+  "assists": { "brk": 1, "abs": 1, "trc": 2, "drl": 0, "gbx": 3, "ers": 1, "input": 2 },
+  "performance": "equal",
   "rate_hz": 60,
   "fields": [
     { "name": "t", "type": "f32", "unit": "s" },
@@ -46,7 +52,21 @@ The header names what the core knows and leaves out the rest:
 }
 ```
 
-`lap.source` is `game` when the time is the game's own lap record and `clock` when the recorder measured it between two line crossings. `lap.valid` and `lap.sectors_ms` are present when the game's record gives them.
+`lap.source` is `game` when the time is the game's own lap record and `clock` when the recorder measured it between two line crossings. `lap.valid` and `lap.sectors_ms` are present when the game's record gives them. The core takes the game's record only when the lap time is finite and between 5 seconds and 1 hour, every sector is positive, and the sectors add up to the lap time within 10 ms when the lap and all three sectors are valid. A record that fails these is logged and the lap's time comes from the clock.
+
+These keys are left out when the core could not read them:
+
+| Key | Meaning |
+| --- | --- |
+| `lap.session_time_s` | the core's telemetry session clock when the line was crossed, seconds since the session went live |
+| `assists` | the raw assist bytes of the game's telemetry lap: `brk`, `abs`, `trc`, `drl`, `gbx` (3 is the game's automatic gearbox), `ers`, and `input` 0 pad, 1 wheel, 2 keyboard, 3 direct |
+| `performance` | `realistic` or `equal` |
+| `car.team_stat` `car.vehicle_stat` `car.livery_stat` | the game's stat ids of the player's participant |
+| `board.content_name` | the title of the era box the content id names |
+
+`board.weather` is guessed from the track wetness when the lap starts. The core has no read of the Time Trial weather setting. `board.game_board` and `board.track_name` are not written yet.
+
+The ghost blob is built by the game on a personal best only, after the lap result. A lap's `GHST` section is the blob committed within two seconds of its line crossing, so a lap that is not a personal best has none.
 
 A sample is the values of `fields`, in order, packed with no padding. `stride` is the sum of the field sizes. A reader parses samples from `fields` and nothing else, so the core adds a field without a new format number.
 
@@ -124,5 +144,13 @@ SWOFTY_REGISTER
 The recorder logs one line per lap in `swofty/loader.log`:
 
 ```
-[laps] wrote 20261110T041011Z-3.swlap lap 91234 ms, 5474 samples, board game/f1_2025|bahrain|dry
+[laps] wrote 20261110T041011Z-3.swlap lap 91234 ms (game), 5474 samples, ghost 0 bytes, board game/f1_2025|bahrain|dry
+```
+
+The hooks log as they read:
+
+```
+[laps] lap result from the game: car 0 record 3 (message lap 3) 91234 ms, sectors 29001 31002 31231 ms, lap valid, sectors 111 valid
+[laps] game lap extras: assists brk 1 abs 1 trc 2 drl 0 gbx 3 ers 1, input wheel, performance realistic
+[laps] ghost blob from the game: 51284 bytes
 ```
