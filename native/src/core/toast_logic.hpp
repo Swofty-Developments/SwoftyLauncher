@@ -82,7 +82,7 @@ inline std::string detail_of(const Message &m)
     std::string s = "P" + std::to_string(m.position);
     if (m.total >= m.position)
         s += " of " + std::to_string(m.total);
-    s += " \xc2\xb7 " + format_time(m.lap_ms);
+    s += " - " + format_time(m.lap_ms);
     if (m.improvement_ms > 0)
         s += "  " + format_gain(m.improvement_ms);
     return s;

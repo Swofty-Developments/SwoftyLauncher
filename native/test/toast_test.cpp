@@ -1,6 +1,7 @@
 #include "toast_logic.hpp"
 
 #include <cstdio>
+#include <string>
 
 namespace t = runtime::toast;
 
@@ -41,14 +42,25 @@ int main()
 
     t::Message f = msg("f", 0);
     f.improvement_ms = 386;
-    expect(t::title_of(f) == "NEW PERSONAL BEST" && t::detail_of(f) == "P3 of 41 \xc2\xb7 1:28.117  -0.386", "lines for a personal best");
+    expect(t::title_of(f) == "NEW PERSONAL BEST" && t::detail_of(f) == "P3 of 41 - 1:28.117  -0.386", "lines for a personal best");
     f.record = true;
     f.total = 0;
     f.improvement_ms = 0;
-    expect(t::title_of(f) == "NEW RECORD" && t::detail_of(f) == "P3 \xc2\xb7 1:28.117", "record title, no total");
+    expect(t::title_of(f) == "NEW RECORD" && t::detail_of(f) == "P3 - 1:28.117", "record title, no total");
     expect(t::format_gain(386) == "-0.386" && t::format_gain(12005) == "-12.005" && t::format_time(59999) == "0:59.999" &&
                t::format_time(600001) == "10:00.001",
            "time formats");
+
+    for (auto rec : {false, true}) {
+        t::Message a = msg("ascii", 0, rec ? 1 : 12);
+        a.record = rec;
+        a.improvement_ms = 386;
+        std::string all = t::title_of(a) + t::detail_of(a);
+        bool pure = true;
+        for (unsigned char c : all)
+            pure = pure && c < 0x80;
+        expect(pure, "the toast text is pure ASCII");
+    }
 
     t::Machine mc;
     expect(!mc.active() && !mc.step(0, 100).visible, "idle at first");
