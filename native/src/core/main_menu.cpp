@@ -421,7 +421,7 @@ std::atomic<uint64_t> cover_since{0}, cover_frames{0}, cover_applied_frames{0}, 
 
 void cover_up(const char *why)
 {
-    if (off("SWOFTY_MAIN_MENU_COVER"))
+    if (std::strcmp(env("SWOFTY_MAIN_MENU_COVER"), "1") != 0)
         return;
     cover_since = GetTickCount64();
     cover_frames = 0;
@@ -469,7 +469,18 @@ void apply_pending(void *vm, const char *where)
 const runtime::Sig S_GOHOME{"Game_F1WorldActivityContainer_GoHome",
                             "56 57 48 83 EC 28 48 89 CE 88 91 45 09 00 00 80 FA 06 74 34 0F B6 C2 83 F8 05 0F 85 2F 01 00 00 80 BE 42 09 00 00 00 0F 84 22 01 00 00",
                             0x1a79ee0};
-safetyhook::InlineHook h_gohome;
+safetyhook::InlineHook h_gohome, h_addtabs;
+
+const runtime::Sig S_ADDTABS{"Game_F1WorldActivityContainer_AddTabs",
+                             "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 F8 29 B4 24 E0 00 00 00 49 89 CF B1 02 E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 80 78 38",
+                             0x1a76130};
+
+void addtabs_detour(void *vm)
+{
+    h_addtabs.call<void>(vm);
+    swofty::log("[main-menu] nav: activity container tabs built (AddTabs returned) at frame %llu", (unsigned long long)frame_no.load());
+    apply_pending(vm, "the moment its tabs exist");
+}
 
 uint64_t gohome_detour(void *vm, uint8_t state)
 {
@@ -623,6 +634,24 @@ void hook_migrate()
     }
     h_migrate = std::move(*h);
     swofty::log("[main-menu] nav: route Migrate command hooked at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
+}
+
+void hook_addtabs()
+{
+    if (h_addtabs)
+        return;
+    auto at = runtime::find(S_ADDTABS, "home", "core");
+    if (!at) {
+        swofty::log("[main-menu] nav: the container's AddTabs did not resolve; the command is raised %llu ms after its view model is seen", (unsigned long long)raise_delay_ms());
+        return;
+    }
+    auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(addtabs_detour));
+    if (!h) {
+        swofty::log("[main-menu] nav: hooking the container's AddTabs failed: %s", runtime::hook_error(h.error()).c_str());
+        return;
+    }
+    h_addtabs = std::move(*h);
+    swofty::log("[main-menu] nav: container AddTabs hooked at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
 }
 
 void hook_gohome()
@@ -977,6 +1006,7 @@ bool arm_patch()
     hook_fire();
     hook_migrate();
     hook_gohome();
+    hook_addtabs();
     swofty::log("[main-menu] stock F1 World, divider, Local Multiplayer, League Racing, Player Hub and Theatre tiles skipped");
     return true;
 }
