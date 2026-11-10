@@ -305,6 +305,39 @@ pub struct Me {
 }
 
 pub const RANK_PAGE: u32 = 50;
+pub const CHUNK: usize = 5;
+pub const TOP_ROW_H: f32 = 64.;
+pub const ROW_H: f32 = 38.4;
+pub const CHUNK_H: f32 = 192.;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Slot {
+    Top(usize),
+    Row(usize),
+    Footer,
+}
+
+pub fn chunk_count(rows: usize) -> usize {
+    let top = rows.min(3);
+    1 + (rows - top + 1).div_ceil(CHUNK)
+}
+
+pub fn chunk_slots(chunk: usize, rows: usize) -> Vec<Slot> {
+    let top = rows.min(3);
+    if chunk == 0 {
+        return (0..top).map(Slot::Top).collect();
+    }
+    (0..CHUNK)
+        .filter_map(|v| {
+            let idx = top + (chunk - 1) * CHUNK + v;
+            match idx.cmp(&rows) {
+                std::cmp::Ordering::Less => Some(Slot::Row(idx)),
+                std::cmp::Ordering::Equal => Some(Slot::Footer),
+                std::cmp::Ordering::Greater => None,
+            }
+        })
+        .collect()
+}
 
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Feed {
@@ -841,5 +874,28 @@ mod tests {
         assert_eq!(f.rows.len(), 50);
         f.failed("down".into());
         assert!(f.wants_more(49).is_none() && !f.finished());
+    }
+
+    #[test]
+    fn the_top_three_are_the_first_chunk_and_rows_follow_in_fives() {
+        assert_eq!(CHUNK as f32 * ROW_H, CHUNK_H);
+        assert_eq!(3. * TOP_ROW_H, CHUNK_H);
+        assert_eq!(chunk_slots(0, 50), [Slot::Top(0), Slot::Top(1), Slot::Top(2)]);
+        assert_eq!(
+            chunk_slots(1, 50),
+            [
+                Slot::Row(3),
+                Slot::Row(4),
+                Slot::Row(5),
+                Slot::Row(6),
+                Slot::Row(7)
+            ]
+        );
+        assert_eq!(chunk_count(50), 1 + 48usize.div_ceil(5));
+        let last = chunk_count(50) - 1;
+        assert_eq!(chunk_slots(last, 50).last(), Some(&Slot::Footer));
+        assert_eq!(chunk_slots(0, 2), [Slot::Top(0), Slot::Top(1)]);
+        assert_eq!(chunk_slots(1, 2), [Slot::Footer]);
+        assert_eq!(chunk_count(0), 2);
     }
 }

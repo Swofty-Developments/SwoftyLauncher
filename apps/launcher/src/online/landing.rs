@@ -147,22 +147,9 @@ impl Shell {
             .account_name()
             .and_then(|_| self.online.me.clone())
             .and_then(|m| m.entry);
-        let top: Vec<AnyElement> = feed
-            .rows
-            .iter()
-            .take(3)
-            .map(|r| {
-                let idx = items.len();
-                items.push(Target::Profile(r.driver.clone()));
-                self.top_rank_row(
-                    r,
-                    idx,
-                    me.as_ref().is_some_and(|m| m.driver.id == r.driver.id),
-                    p,
-                    cx,
-                )
-            })
-            .collect();
+        for r in feed.rows.iter().take(3) {
+            items.push(Target::Profile(r.driver.clone()));
+        }
         let header = div()
             .h(px(46.))
             .flex()
@@ -212,7 +199,7 @@ impl Shell {
         } else {
             let handle = self.online.handles.entry(scope.to_owned()).or_default().clone();
             let key = scope.to_owned();
-            let count = feed.rows.len().saturating_sub(3) + 1;
+            let count = chunk_count(feed.rows.len());
             div()
                 .flex_1()
                 .min_h_0()
@@ -222,17 +209,29 @@ impl Shell {
                         count,
                         cx.processor(move |this, range: std::ops::Range<usize>, _, cx| {
                             let feed = this.online.feeds.get(&key).cloned().unwrap_or_default();
-                            if let Some(off) = feed.wants_more(range.end + 3) {
+                            if let Some(off) = feed.wants_more(3 + range.end * CHUNK + 3) {
                                 this.online_rank_load(&key, off, cx);
                             }
                             let me_id = this.online.me.as_ref().map(|m| m.driver.id.clone());
                             range
-                                .map(|i| match feed.rows.get(i + 3) {
-                                    Some(r) => {
-                                        let mine = me_id.as_deref() == Some(r.driver.id.as_str());
-                                        this.rank_row(r, usize::MAX, mine, p, cx)
-                                    }
-                                    None => this.rank_footer(&feed, p),
+                                .map(|chunk| {
+                                    let rows: Vec<AnyElement> = chunk_slots(chunk, feed.rows.len())
+                                        .into_iter()
+                                        .map(|slot| match slot {
+                                            Slot::Top(i) => {
+                                                let r = &feed.rows[i];
+                                                let mine = me_id.as_deref() == Some(r.driver.id.as_str());
+                                                this.top_rank_row(r, usize::MAX, mine, p, cx)
+                                            }
+                                            Slot::Row(i) => {
+                                                let r = &feed.rows[i];
+                                                let mine = me_id.as_deref() == Some(r.driver.id.as_str());
+                                                this.rank_row(r, usize::MAX, mine, p, cx)
+                                            }
+                                            Slot::Footer => this.rank_footer(&feed, p),
+                                        })
+                                        .collect();
+                                    v_flex().h(px(CHUNK_H)).w_full().children(rows).into_any_element()
                                 })
                                 .collect::<Vec<_>>()
                         }),
@@ -272,7 +271,6 @@ impl Shell {
             .flex_1()
             .min_h_0()
             .child(header)
-            .children(top)
             .child(body)
             .children(pinned)
             .into_any_element()
@@ -320,7 +318,7 @@ impl Shell {
         let colour = medal(r.rank, &p);
         h_flex()
             .id(SharedString::from(format!("top-{idx}-{}", r.driver.id)))
-            .h(px(64.))
+            .h(px(TOP_ROW_H))
             .px(px(14.))
             .gap(px(12.))
             .items_center()
@@ -378,7 +376,7 @@ impl Shell {
         h_flex()
             .id(SharedString::from(format!("rank-{idx}-{}", r.driver.id)))
             .w_full()
-            .h(px(38.))
+            .h(px(ROW_H))
             .px(px(14.))
             .gap(px(10.))
             .items_center()
