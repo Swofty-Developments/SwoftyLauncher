@@ -315,6 +315,19 @@ mod tests {
     }
 
     #[test]
+    fn the_pinned_key_accepts_the_servers_signature_format() {
+        let offer = Offer {
+            version: "kat".to_owned(),
+            sha256: "0".repeat(64),
+            size: 1,
+            signature:
+                "zZcTrXukQHWeNKBjlHN+WEge6rdUdGhnGofCPjCQVXy4FyEs2Fs7H0Vugik9LDAeaHmV09oJP3/zQGEYwO2vBw=="
+                    .to_owned(),
+        };
+        verify(&decode(PUBLIC_KEY).unwrap(), &offer).unwrap();
+    }
+
+    #[test]
     fn downloads_verifies_and_stores_a_signed_module() {
         let key = pair();
         let routes = vec![
