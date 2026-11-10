@@ -4,43 +4,6 @@ use swofty_core::ui::node::{NodeExt, ObjExt};
 use swofty_formats::erp::Erp;
 use swofty_formats::pkg::Pkg;
 
-fn labels(data: &[u8]) -> Vec<(String, String)> {
-    let mut p = Pkg::parse(data).unwrap();
-    let o = p.root.o_mut().unwrap();
-    let list = o
-        .at_mut("leaderboard_data").unwrap().o_mut().unwrap().at_mut("Contents").unwrap().o_mut().unwrap()
-        .at_mut("table").unwrap().o_mut().unwrap().at_mut("Contents").unwrap().o_mut().unwrap()
-        .at_mut("view_type_list").unwrap().o_mut().unwrap().at_mut("Contents").unwrap().a_mut().unwrap()
-        .clone();
-    list.iter()
-        .map(|e| {
-            let e = e.o().unwrap();
-            let label = e.at("Contents").unwrap().o().unwrap().at("display_name").unwrap().o().unwrap().str_at("Value").unwrap().to_owned();
-            (e.str_at("Name").unwrap().to_owned(), label)
-        })
-        .collect()
-}
-
-#[test]
-fn the_ui_data_patch_blanks_the_friends_tab_label_in_place() {
-    let Some(erp) = std::env::var_os("F1_UI_DATABASES_ERP").map(PathBuf::from) else {
-        eprintln!("F1_UI_DATABASES_ERP is not set; skipping");
-        return;
-    };
-    let res = Erp::read_matching(&erp, |n| n == "eaid://ui_package/databases/ui_data.uidb").unwrap();
-    let stock = res[0].fragments[0].data().unwrap();
-    assert_eq!(
-        labels(&stock),
-        [("global".into(), "lng_global_leaderboard".into()), ("friends".into(), "lng_friends_leaderboard".into())]
-    );
-    let patched = swofty_core::ui::patch::ui_data(&stock, Vec::new()).unwrap();
-    assert_eq!(
-        labels(&patched),
-        [("global".into(), "lng_global_leaderboard".into()), ("friends".into(), String::new())],
-        "both keys stay: the game merges by key, so the entry is overridden, not dropped"
-    );
-}
-
 #[test]
 fn the_leaderboard_screen_loses_its_shoulder_glyphs_and_nothing_else() {
     let Some(erp) = std::env::var_os("F1_FLOW_FRONTEND_ERP").map(PathBuf::from) else {
@@ -70,6 +33,11 @@ fn the_leaderboard_screen_loses_its_shoulder_glyphs_and_nothing_else() {
     };
     assert_eq!(names(&stock), names(&patched), "no node is added or removed");
     assert!(names(&patched).contains(&"tab_controller".to_owned()), "the tab controller stays");
+    let input = |data: &[u8]| {
+        let mut scr = swofty_core::ui::node::first_screen_of(data).unwrap();
+        format!("{:?}", scr.child_mut("tab_controller").unwrap().props().unwrap().get("inputAllowed").cloned())
+    };
+    assert_ne!(input(&stock), input(&patched), "the tab controller takes no input");
     assert!(swofty_core::ui::patch::leaderboard_glyphs(&patched).is_ok(), "patching twice is harmless");
 }
 

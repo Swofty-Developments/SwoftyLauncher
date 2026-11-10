@@ -1071,54 +1071,16 @@ pub fn ui_data(data: &[u8], entries: Vec<(String, Node)>) -> Result<Vec<u8>> {
             return Err(err("ui_menu_data has swofty already"));
         }
         c.set("swofty", uidb_dict("swofty", entries));
-        one_leaderboard_tab(root_obj(p)?)
+        Ok(())
     })
 }
 
-/// leaderboard_data.table.view_type_list is the Time Trial leaderboard's tab list: global, then friends. The game's
-/// database merges this file with the packed stock one by key, so dropping the `friends` entry changes nothing (the
-/// registry kept resolving it). The entry is overridden in place instead: its label key is emptied, so the second tab
-/// draws no text.
-pub const BLANK_LABEL: &str = "";
+pub const FRIENDS_TAB_LABEL: &str = "lng_friends_leaderboard";
+pub const FRIENDS_TAB_TEXT: &str = " ";
 
-fn one_leaderboard_tab(root: &mut Obj) -> Result<()> {
-    let list = root
-        .at_mut("leaderboard_data")?
-        .o_mut()?
-        .at_mut("Contents")?
-        .o_mut()?
-        .at_mut("table")?
-        .o_mut()?
-        .at_mut("Contents")?
-        .o_mut()?
-        .at_mut("view_type_list")?
-        .o_mut()?
-        .at_mut("Contents")?
-        .a_mut()?;
-    if list.len() != 2 {
-        return Err(err(format!(
-            "leaderboard_data.table.view_type_list has {} entries, not the stock 2",
-            list.len()
-        )));
-    }
-    let friends = list
-        .iter_mut()
-        .find(|e| e.o().ok().and_then(|o| o.str_at("Name").ok()) == Some("friends"))
-        .ok_or_else(|| err("view_type_list has no friends entry"))?;
-    let label = friends
-        .o_mut()?
-        .at_mut("Contents")?
-        .o_mut()?
-        .at_mut("display_name")?
-        .o_mut()?;
-    if label.str_at("Value")? != "lng_friends_leaderboard" {
-        return Err(err("the friends view type does not read lng_friends_leaderboard"));
-    }
-    set_str(label, "Value", BLANK_LABEL)
-}
-
-/// leaderboard_container.ui without its two shoulder-button glyphs: the tab controller keeps the bumpers (the screen's tab
-/// buttons are built by the game into the shared nav scene), only the hints are hidden.
+/// leaderboard_container.ui without its two shoulder-button glyphs, and with the tab controller's input off so the
+/// bumpers (and the stick) no longer switch tabs. The tab buttons themselves are built by the game into the shared nav
+/// scene from the screen model's view type list, which no data edit reaches.
 pub fn leaderboard_glyphs(data: &[u8]) -> Result<Vec<u8>> {
     edit(data, |p| {
         let screen = first_screen(p)?;
@@ -1130,6 +1092,12 @@ pub fn leaderboard_glyphs(data: &[u8]) -> Result<Vec<u8>> {
             }
             set_bool(n, "visible", false)?;
         }
+        let tc = named_mut(screen, "tab_controller")
+            .ok_or_else(|| err("leaderboard_container has no tab_controller node"))?;
+        if tc.type_code() != "UITC" {
+            return Err(err("tab_controller is not a tab controller"));
+        }
+        set_bool(tc, "inputAllowed", false)?;
         Ok(())
     })
 }

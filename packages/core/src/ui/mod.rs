@@ -702,6 +702,7 @@ pub fn build(
     )?;
     if lang {
         build.strings = popup.strings();
+        build.strings.push((patch::FRIENDS_TAB_LABEL.into(), patch::FRIENDS_TAB_TEXT.into()));
     }
     for rel in ERPS
         .iter()
