@@ -1,5 +1,6 @@
 #include "ghost_arm_logic.hpp"
 #include "ghost_request_logic.hpp"
+#include "apply/moments.hpp"
 #include "ghost_swlap_logic.hpp"
 #include "lap_assists_logic.hpp"
 #include "runtime.hpp"
@@ -554,6 +555,7 @@ void tick_mid(safetyhook::Context &c)
             publish(nullptr, 0);
         arming.component(comp);
     }
+    runtime::player_name_tick(swofty_core::apply::moments::session_mode_track().first == "time_trial");
     if (record_on)
         sample_input(comp);
     if (ghost_on)

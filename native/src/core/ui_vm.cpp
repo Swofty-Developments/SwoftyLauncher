@@ -6,6 +6,7 @@
 #include <swofty/ui.hpp>
 
 #include <cstdio>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -578,4 +579,122 @@ bool ui_vm_attach(const std::string &screen)
                 static_cast<void *>(native), key, key == djb2(screen.c_str()) ? " = djb2(screen)" : " != djb2(screen)",
                 inst->vm->path().c_str());
     return true;
+}
+
+#include "ui_vm_probe.hpp"
+
+#include <unordered_set>
+
+namespace {
+
+bool probe_readable(uint64_t at, size_t n)
+{
+    return at >= 0x10000 && at < 0x800000000000ull && swofty::mem::readable(at, n);
+}
+
+bool probe_string_record(uint64_t rec, std::string &out)
+{
+    if (!probe_readable(rec, 16))
+        return false;
+    uint32_t len = 0;
+    std::memcpy(&len, reinterpret_cast<const void *>(rec + 6), 4);
+    len &= 0xfffff;
+    if (len == 0 || len > 80 || !probe_readable(rec, 9 + len + 1))
+        return false;
+    const char *p = reinterpret_cast<const char *>(rec + 9);
+    if (p[len] != 0)
+        return false;
+    for (uint32_t i = 0; i < len; i++)
+        if (static_cast<unsigned char>(p[i]) < 0x20)
+            return false;
+    out.assign(p, len);
+    return true;
+}
+
+}
+
+size_t ui_vm_probe_strings(const char *needle, UiProbeHit *out, size_t cap, UiProbeStats &stats)
+{
+    stats = UiProbeStats{};
+    if (!g_Vm_Registry.address() || !needle || !*needle)
+        return 0;
+    void *reg = *g_Vm_Registry;
+    uint64_t root = 0;
+    if (!reg || !probe_readable(uint64_t(reg) + 8, 8))
+        return 0;
+    std::memcpy(&root, static_cast<uint8_t *>(reg) + 8, 8);
+    struct Item {
+        uint64_t node;
+        int depth;
+        uint32_t chain[12];
+    };
+    std::vector<Item> stack;
+    std::unordered_set<uint64_t> seen;
+    Item first{root, 0, {}};
+    stack.push_back(first);
+    const uint64_t base = swofty::api->module_base();
+    size_t found = 0;
+    while (!stack.empty() && stats.visited < 30000) {
+        Item it = stack.back();
+        stack.pop_back();
+        if (!probe_readable(it.node, 0x100) || !seen.insert(it.node).second)
+            continue;
+        stats.visited++;
+        uint64_t binding = 0;
+        std::memcpy(&binding, reinterpret_cast<const void *>(it.node + 0x58), 8);
+        if (probe_readable(binding, 8)) {
+            uint64_t vt = 0, fn = 0;
+            std::memcpy(&vt, reinterpret_cast<const void *>(binding), 8);
+            if (probe_readable(vt + 0x38, 8)) {
+                std::memcpy(&fn, reinterpret_cast<const void *>(vt + 0x38), 8);
+                if (fn >= base && fn < base + 0x20000000ull) {
+                    auto get = reinterpret_cast<uint64_t *(*)(void *)>(fn);
+                    uint64_t *slot = get(reinterpret_cast<void *>(binding));
+                    uint64_t rec = 0;
+                    std::string text;
+                    if (probe_readable(uint64_t(slot), 8) && (rec = *slot) && probe_string_record(rec, text)) {
+                        stats.strings++;
+                        if (text == needle) {
+                            stats.matches++;
+                            if (found < cap) {
+                                UiProbeHit &h = out[found++];
+                                h.node = it.node;
+                                h.depth = it.depth;
+                                std::memcpy(h.chain, it.chain, sizeof h.chain);
+                                std::snprintf(h.value, sizeof h.value, "%s", text.c_str());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (it.depth >= 11)
+            continue;
+        uint64_t entries = 0, info = 0, mask = 0;
+        std::memcpy(&entries, reinterpret_cast<const void *>(it.node + 0x70), 8);
+        std::memcpy(&info, reinterpret_cast<const void *>(it.node + 0x78), 8);
+        std::memcpy(&mask, reinterpret_cast<const void *>(it.node + 0x88), 8);
+        if (!entries || !info || mask == 0 || mask >= (1u << 20) || (mask & (mask + 1)) != 0)
+            continue;
+        size_t slots = size_t(mask) + 1 + 16;
+        if (!probe_readable(info, slots) || !probe_readable(entries, slots * 16))
+            continue;
+        stats.maps++;
+        for (size_t i = 0; i < slots; i++) {
+            uint8_t occupied = *reinterpret_cast<const uint8_t *>(info + i);
+            if (!occupied)
+                continue;
+            uint32_t key = 0;
+            uint64_t child = 0;
+            std::memcpy(&key, reinterpret_cast<const void *>(entries + i * 16), 4);
+            std::memcpy(&child, reinterpret_cast<const void *>(entries + i * 16 + 8), 8);
+            if (!child)
+                continue;
+            Item next{child, it.depth + 1, {}};
+            std::memcpy(next.chain, it.chain, sizeof next.chain);
+            next.chain[it.depth] = key;
+            stack.push_back(next);
+        }
+    }
+    return found;
 }

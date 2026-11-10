@@ -1,6 +1,7 @@
 #include "main_menu_logic.hpp"
 #include "player_name_logic.hpp"
 #include "runtime.hpp"
+#include "ui_vm_probe.hpp"
 
 #include <windows.h>
 
@@ -18,19 +19,21 @@
 #include <thread>
 
 namespace runtime {
-std::string hook_error(const safetyhook::InlineHook::Error &e);
+std::string hook_error(const safetyhook::MidHook::Error &e);
 }
 
-// The player's own name in Time Trial. Every presence name the game shows (HUD, session cars, results) goes through the name
-// cache lookup FUN_140816b10 (cache +0x30 keys, +0x5030 names, 0x81-byte slots; 256 entries, most recently used first; the
-// callers include CreateHumanPlayers, Team_Build_SessionCars, ResolveGamerTags, SaveFullReplay): it returns a pointer to the
-// name of the user id it is given. In a Time Trial session started with the board bridge on (tt.json "tt_bridge") and the
-// launcher signed in (the same home_menu.json the main menu panel reads), the hook returns the account display name instead
-// of the stock persona name; outside Time Trial, signed out, or for a name the HUD font cannot draw it returns the stock
-// result untouched. Read-only: the name cache and every save are never written. SWOFTY_TT_PLAYER_NAME=0 turns it off.
+// The player's own name in Time Trial. Findings so far (FINDINGS "Player name"): the presence name cache lookup return does not
+// feed the top-left panel, and a hook on the global UI string setter crashed the game, so neither replaces anything now.
 //
-// Unconfirmed in game: that the HUD's top-left name comes through this lookup (the log line below says whether the hook was
-// hit and what it replaced).
+// SWOFTY_TT_DIAG=1 (read-only): a mid hook at the name cache lookup's entry only remembers the cache pointer (safetyhook saves
+// and restores every register and keeps the stack aligned); once, some seconds into a Time Trial session, the tick (an existing
+// game-thread tick, runtime::player_name_tick) reads the stock persona name from the cache and walks the UI view-model registry
+// for string leaves equal to it, logging up to 40 hits as the chain of djb2 name hashes from the root plus the node address.
+//
+// SWOFTY_TT_PLAYER_NAME_LEAF=1 (default off, needs the probe's path): on the game thread, every 2 s in a Time Trial session with
+// the launcher signed in, the string leaf named by SWOFTY_TT_PLAYER_NAME_PATH (a dotted registry path such as
+// "hud.xxx.driver_name") is set to the account name with the game's own setter; the old -> new line is logged for the first
+// writes. SWOFTY_TT_PLAYER_NAME=0 turns everything off before any hook is installed.
 
 namespace {
 
@@ -38,20 +41,17 @@ const runtime::Sig S_NAME{"Game_PresenceNameCache_Lookup",
                           "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 F8 29 B4 24 50 01 00 00 48 89 D7 48 89 CE "
                           "8B 49 08 4C 8D 76 30 89 CD EB 31 48 89 D9",
                           0x816b10};
+constexpr uint64_t CACHE_NAMES = 0x5030, NAME_STRIDE = 0x81;
+constexpr int CACHE_ENTRIES = 256, PROBE_DELAY_MS = 8000, PROBE_CAP = 40;
 
-using LookupFn = const char *(*)(void *cache, void *id);
-
-safetyhook::InlineHook h_lookup;
-std::atomic<int> hits{0}, replaced{0}, busy{0};
-char shown[runtime::player_name::MAX_BYTES + 1] = {};
-std::string shown_for;
-std::atomic<bool> bridge_on{false};
+safetyhook::MidHook h_cache;
+std::atomic<uintptr_t> cache_ptr{0};
+bool diag_on = false, leaf_on = false, armed = false;
+std::string leaf_path;
 std::mutex account_lock;
 std::string account_cached;
 bool account_signed_in = false;
 
-// The launcher account is read from home_menu.json on a worker thread (the main menu's own state is not loaded when the game
-// starts through the chain entry); the lookup hook only copies the cached string.
 void account_worker()
 {
     for (;;) {
@@ -74,64 +74,130 @@ bool account_name(std::string &out)
     return true;
 }
 
-const char *lookup_hook(void *cache, void *id)
+void cache_mid(safetyhook::Context &c)
 {
-    const char *stock = h_lookup.call<const char *>(cache, id);
-    if (!bridge_on.load(std::memory_order_relaxed) || !stock)
-        return stock;
-    if (busy.exchange(1))
-        return stock;
-    const char *result = stock;
-    std::string account;
-    bool tt = swofty_core::apply::moments::session_mode_track().first == "time_trial";
-    bool known = account_name(account);
-    static std::atomic<int> traced{0};
-    if (traced.fetch_add(1) < 8)
-        swofty::log("[boards] player name: lookup %d: time trial %d, account name %s, stock \"%.40s\"", traced.load(), tt ? 1 : 0,
-                    known ? "known" : "unknown", runtime::readable(stock, 4) ? stock : "?");
-    if (tt && known) {
-        std::string clean;
-        if (runtime::player_name::sanitize(account, clean)) {
-            if (clean != shown_for) {
-                std::memcpy(shown, clean.c_str(), clean.size() + 1);
-                shown_for = clean;
-            }
-            result = shown;
-            int n = replaced.fetch_add(1) + 1;
-            if (n <= 3 || n == 50)
-                swofty::log("[boards] player name: showing \"%s\" (source home_menu.json discord name), replacing \"%.40s\" in the "
-                            "name cache lookup (call %d)",
-                            clean.c_str(), runtime::readable(stock, 4) ? stock : "?", n);
-        } else if (hits.fetch_add(1) == 0)
-            swofty::log("[boards] player name: the account name \"%s\" has characters the HUD font lacks; the stock name stays",
-                        account.c_str());
+    uintptr_t expected = 0;
+    cache_ptr.compare_exchange_strong(expected, uintptr_t(c.rcx));
+}
+
+bool read_stock(std::string &stock)
+{
+    uintptr_t cache = cache_ptr.load();
+    if (!cache)
+        return false;
+    for (int i = 0; i < CACHE_ENTRIES; i++) {
+        uintptr_t at = cache + CACHE_NAMES + uintptr_t(i) * NAME_STRIDE;
+        if (!runtime::readable(reinterpret_cast<void *>(at), NAME_STRIDE))
+            return false;
+        const char *p = reinterpret_cast<const char *>(at);
+        size_t n = strnlen(p, NAME_STRIDE);
+        if (n >= 1 && n < NAME_STRIDE) {
+            stock.assign(p, n);
+            return true;
+        }
     }
-    busy = 0;
-    return result;
+    return false;
+}
+
+int64_t session_seen_ms = 0;
+bool probed = false;
+int leaf_writes = 0;
+int64_t last_leaf_ms = 0;
+
+void probe()
+{
+    probed = true;
+    std::string stock;
+    if (!read_stock(stock)) {
+        swofty::log("[boards] player name probe: no stock name in the name cache (cache 0x%llx)", (unsigned long long)cache_ptr.load());
+        return;
+    }
+    UiProbeHit hits[PROBE_CAP];
+    UiProbeStats st;
+    size_t n = ui_vm_probe_strings(stock.c_str(), hits, PROBE_CAP, st);
+    swofty::log("[boards] player name probe: stock name \"%s\": walked %zu nodes (%zu maps, %zu string leaves), %zu leaf(s) equal it", stock.c_str(),
+                st.visited, st.maps, st.strings, st.matches);
+    for (size_t i = 0; i < n; i++) {
+        std::string chain;
+        char b[16];
+        for (int d = 0; d < hits[i].depth; d++) {
+            snprintf(b, sizeof b, "%s%08x", d ? "." : "", hits[i].chain[d]);
+            chain += b;
+        }
+        swofty::log("[boards] player name probe: hit %zu: node 0x%llx depth %d path(djb2 hashes) %s value \"%s\"", i + 1,
+                    (unsigned long long)hits[i].node, hits[i].depth, chain.c_str(), hits[i].value);
+    }
+}
+
+void leaf_write()
+{
+    std::string account, clean;
+    if (!account_name(account) || !runtime::player_name::sanitize(account, clean))
+        return;
+    if (ui_vm_set_path(leaf_path, 0, clean.c_str()) && leaf_writes++ < 5)
+        swofty::log("[boards] player name: wrote \"%s\" to the leaf %s (source home_menu.json discord name)", clean.c_str(), leaf_path.c_str());
+    else if (leaf_writes == 0)
+        swofty::log("[boards] player name: the leaf %s could not be resolved", leaf_path.c_str());
 }
 
 void setup()
 {
     auto gate = swofty::json::parse(runtime::read_file(runtime::swofty_root() + L"tt.json", size_t(1) << 20));
-    char v[8] = {};
-    bool off = GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME", v, sizeof v) && !strcmp(v, "0");
-    if (!gate.is_object() || !gate["tt_bridge"].as_bool(false) || off || !runtime::same_build())
+    char v[256] = {};
+    auto env = [&](const char *name) {
+        v[0] = 0;
+        return GetEnvironmentVariableA(name, v, sizeof v) && v[0];
+    };
+    bool off = env("SWOFTY_TT_PLAYER_NAME") && !strcmp(v, "0");
+    diag_on = env("SWOFTY_TT_DIAG") && !strcmp(v, "1");
+    leaf_on = env("SWOFTY_TT_PLAYER_NAME_LEAF") && !strcmp(v, "1");
+    if (env("SWOFTY_TT_PLAYER_NAME_PATH"))
+        leaf_path = v;
+    if (!gate.is_object() || !gate["tt_bridge"].as_bool(false) || off || !runtime::same_build() || (!diag_on && !leaf_on))
         return;
-    uintptr_t at = runtime::find(S_NAME, "boards", "boards");
-    if (!at) {
-        swofty::log("[boards] player name: off, needs %s (byte signature matched nothing unique)", S_NAME.what);
-        return;
+    if (leaf_on && leaf_path.empty()) {
+        swofty::log("[boards] player name: the leaf write is off, SWOFTY_TT_PLAYER_NAME_PATH is not set");
+        leaf_on = false;
     }
-    auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&lookup_hook));
-    if (!h) {
-        swofty::log("[boards] player name: off, the hook failed: %s", runtime::hook_error(h.error()).c_str());
-        return;
+    if (diag_on) {
+        uintptr_t at = runtime::find(S_NAME, "boards", "boards");
+        if (!at)
+            swofty::log("[boards] player name probe: needs %s (byte signature matched nothing unique)", S_NAME.what);
+        else if (auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), cache_mid))
+            h_cache = std::move(*h);
+        else
+            swofty::log("[boards] player name probe: the cache mid hook failed: %s", runtime::hook_error(h.error()).c_str());
     }
-    h_lookup = std::move(*h);
-    bridge_on = true;
+    if (!diag_on && !leaf_on)
+        return;
+    armed = true;
     std::thread(account_worker).detach();
-    swofty::log("[boards] player name: hook armed at base+0x%llx; in Time Trial the launcher account's name replaces the stock name",
-                (unsigned long long)(at - swofty::api->module_base()));
+    swofty::log("[boards] player name: %s%s%s (existing game-thread tick; nothing is written unless the leaf write is on)",
+                diag_on ? "probe armed" : "", diag_on && leaf_on ? " and " : "", leaf_on ? "leaf write armed" : "");
+}
+
+}
+
+namespace runtime {
+
+void player_name_tick(bool in_time_trial)
+{
+    if (!armed)
+        return;
+    int64_t now = int64_t(GetTickCount64());
+    if (!in_time_trial) {
+        session_seen_ms = 0;
+        probed = false;
+        return;
+    }
+    if (!session_seen_ms)
+        session_seen_ms = now;
+    if (diag_on && !probed && now - session_seen_ms >= PROBE_DELAY_MS)
+        probe();
+    if (leaf_on && now - last_leaf_ms >= 2000) {
+        last_leaf_ms = now;
+        leaf_write();
+    }
 }
 
 }
