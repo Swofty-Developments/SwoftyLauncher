@@ -30,7 +30,7 @@ std::string hook_error(const safetyhook::MidHook::Error &e);
 // game; every stage logs one [boards] line saying what it found.
 //
 // 1. Board definitions. The game reads its boards from system\leaderboard.xml (Game_NetworkSession_LoadDefinitions). At
-//    site_Game_LeaderboardXml_Loaded the buffer pointer (rax) and its byte length ([rsp+0x70]) are replaced by a longer
+//    site_Game_LeaderboardXml_Loaded the buffer pointer ([rsp+0x70]) and its byte length (rax, stored to [rsp+0x78] by the hooked instruction) are replaced by a longer
 //    buffer with one clone of a stock <leaderboard> element per addon descriptor (ids the core assigned, 6..99), per
 //    track the stock boards name, per weather (tt_bridge_logic.hpp extend_xml). Only with "tt_bridge": true in tt.json.
 // 2. Requests. A mid hook at the entry of Game_F1os_RequestRing_Push (rcx = the op) reads the op's method name and
@@ -117,6 +117,11 @@ const runtime::Sig S_ACCOUNT_ERROR{"Game_F1os_AccountStateError",
         "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 89 CE 48 8B 81 98 00 00 00 48 85 C0 74 16 "
         "48 8B 40 10 48 8B 40 38 48 85 C0 74 09 80 38 00 0F 85 69 05 00 00 0F B6 86 B8 01 00 00", 0x336da00};
 
+const runtime::Sig S_FINDER_GATE{"site_Game_GhostLapHandler_RivalFinderOnline",
+        "8B 87 A0 00 00 00 20 CB 0F 85 8C 00 00 00 83 F8 01 0F 84 83 00 00 00 48 89 F9 BA 01 00 00 00 E8", 0x2f98ec6, runtime::Sig::addr, 0, 6};
+const runtime::Sig S_FEATURES{"Game_Features_LoadContentSetMask",
+        "41 57 41 56 41 54 56 57 55 53 48 81 EC 50 08 00 00 48 89 D7 48 89 CE 48 8D 15 ?? ?? ?? ?? 48 89 F9 45 31 C0 E8", 0x13ed470};
+
 constexpr uintptr_t PB_HANDLER_ID_BLOCK = 0x298, PB_HANDLER_TIME = 0x300;
 
 using OnResult_t = void (*)(void *op, void *resp);
@@ -145,14 +150,16 @@ std::atomic<int> hits_upload{0}, hits_download{0}, hits_racenet{0};
 std::vector<std::string> seen_methods;
 
 bool diag_on = false;
-safetyhook::MidHook h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
+safetyhook::MidHook h_finder, h_features, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
 
 struct GateHook {
     uintptr_t at = 0, resume = 0, session_global = 0;
     safetyhook::MidHook hook;
 };
 GateHook gates[5];
-std::atomic<uintptr_t> diag_storage{0};
+std::atomic<uintptr_t> diag_storage{0}, feature_holder{0};
+uint64_t feature_seen = ~uint64_t(0);
+std::atomic<int> finder_logged{0};
 uintptr_t diag_handler_seen = ~uintptr_t(0);
 std::atomic<int> diag_gate_logged{0}, diag_push_logged{0}, diag_error_logged{0}, diag_bypass_logged{0};
 std::vector<std::string> diag_gate_seen;
@@ -256,16 +263,16 @@ void xml_mid(safetyhook::Context &c)
 {
     if (!bridge_on && !diag_on)
         return;
-    uint64_t len = 0;
-    uint64_t at_len = c.rsp + 0x70;
-    if (!runtime::readable(reinterpret_cast<void *>(at_len), 8))
+    uint64_t len = c.rax, data = 0;
+    uint64_t at_data = c.rsp + 0x70;
+    if (!runtime::readable(reinterpret_cast<void *>(at_data), 8))
         return;
-    memcpy(&len, reinterpret_cast<void *>(at_len), 8);
+    memcpy(&data, reinterpret_cast<void *>(at_data), 8);
     if (!bridge_on) {
         size_t boards = 0;
         std::string first;
-        if (len >= 16 && len <= (size_t(32) << 20) && runtime::readable(reinterpret_cast<void *>(c.rax), len)) {
-            auto els = tb::leaderboard_elements(std::string(reinterpret_cast<const char *>(c.rax), size_t(len)));
+        if (len >= 16 && len <= (size_t(32) << 20) && runtime::readable(reinterpret_cast<void *>(data), len)) {
+            auto els = tb::leaderboard_elements(std::string(reinterpret_cast<const char *>(data), size_t(len)));
             boards = els.size();
             first = els.empty() ? "" : els.front().name;
         }
@@ -275,12 +282,12 @@ void xml_mid(safetyhook::Context &c)
         return;
     }
     int n = ++xml_logged;
-    if (len < 16 || len > (size_t(32) << 20) || !runtime::readable(reinterpret_cast<void *>(c.rax), len)) {
-        swofty::log("[boards] board definitions: the buffer at the load site is not readable (rax 0x%llx, length %llu); left alone",
-                    (unsigned long long)c.rax, (unsigned long long)len);
+    if (len < 16 || len > (size_t(32) << 20) || !runtime::readable(reinterpret_cast<void *>(data), len)) {
+        swofty::log("[boards] board definitions: the buffer at the load site is not readable (data 0x%llx, length %llu); left alone",
+                    (unsigned long long)data, (unsigned long long)len);
         return;
     }
-    std::string text(reinterpret_cast<const char *>(c.rax), size_t(len));
+    std::string text(reinterpret_cast<const char *>(data), size_t(len));
     std::vector<int> descriptors;
     size_t dropped = 0;
     for (int64_t id : swofty_core::apply::ids::store().ids_of(swofty_core::apply::content::LEADERBOARD_IDS)) {
@@ -319,8 +326,9 @@ void xml_mid(safetyhook::Context &c)
         xml_buffers.pop_front();
     const std::string &keep = xml_buffers.back();
     uint64_t new_len = keep.size();
-    memcpy(reinterpret_cast<void *>(at_len), &new_len, 8);
-    c.rax = reinterpret_cast<uint64_t>(keep.c_str());
+    uint64_t new_data = reinterpret_cast<uint64_t>(keep.c_str());
+    memcpy(reinterpret_cast<void *>(at_data), &new_data, 8);
+    c.rax = new_len;
     swofty::log("[boards] board definitions: appended %zu board(s) for %zu addon descriptor(s) over %zu track(s) (ids %lld..%lld, %zu already "
                 "defined%s), %zu of them for %zu custom track(s) (all addon descriptors and %zu stock descriptor(s)), buffer %zu -> %zu bytes",
                 rep.added, rep.descriptors, rep.tracks, (long long)rep.first_id, (long long)rep.last_id, rep.existing,
@@ -585,8 +593,56 @@ void session_enter_mid(safetyhook::Context &c)
                 (unsigned long long)peek64(c.rcx + 0x278));
 }
 
+
+void finder_mid(safetyhook::Context &c)
+{
+    uint8_t user_online = uint8_t(c.rbx), s60 = uint8_t(c.rbp), s64 = uint8_t(c.rcx);
+    uint64_t handler = c.rsi, finder = c.rdi;
+    uint64_t ctx = peek64(handler + 0x58), np = ctx ? peek64(ctx + 0x68) : 0;
+    std::string board = np ? tb::read_c(game_mem(), np) : std::string();
+    tb::BoardName bn = tb::parse_board(board);
+    bool ours = bn.ok && tb::ours(bn.descriptor, session_custom.load(std::memory_order_relaxed));
+    bool open = user_online && s60 && s64;
+    bool bypass = bridge_on && ours && push_hooked && !open;
+    char key[96];
+    snprintf(key, sizeof key, "F/%u/%u/%u/%d", user_online, s60, s64, bypass);
+    bool fresh = false;
+    {
+        std::lock_guard<std::mutex> lk(lock);
+        if (std::find(diag_gate_seen.begin(), diag_gate_seen.end(), key) == diag_gate_seen.end() && diag_gate_seen.size() < 48) {
+            diag_gate_seen.push_back(key);
+            fresh = true;
+        }
+    }
+    if ((diag_on || bypass) && (fresh || (diag_on && ++finder_logged <= 12)))
+        swofty::log("[boards] %srival finder gate of handler 0x%llx board %s: user online %u, S+0x60 ok %u, S+0x64 ok %u, finder state %u -> %s",
+                    diag_on ? "diag: " : "", (unsigned long long)handler, board.empty() ? "?" : board.c_str(), user_online, s60, s64, peek32(finder + 0xa0),
+                    open ? "online, the game's own search runs" : bypass ? "offline, this board is ours: treated as online" : "offline, left to the game (Offline state)");
+    if (!bypass)
+        return;
+    c.rbx = (c.rbx & ~uint64_t(0xff)) | 1;
+    c.rcx = (c.rcx & ~uint64_t(0xff)) | 1;
+}
+
+void features_mid(safetyhook::Context &c) { feature_holder = c.rcx; }
+
+void features_tick()
+{
+    uintptr_t h = feature_holder.load();
+    if (!h || !runtime::readable(reinterpret_cast<void *>(h), 16))
+        return;
+    uint64_t lo = peek64(h);
+    if (lo == feature_seen)
+        return;
+    feature_seen = lo;
+    swofty::log("[boards] diag: content-set feature mask at 0x%llx = 0x%016llx %016llx: tt_leaderboards_on %d, show_rivals_tt %d, show_objectives_tt %d, tt_ai_level_check %d",
+                (unsigned long long)h, (unsigned long long)peek64(h + 8), (unsigned long long)lo, int(lo >> 37 & 1), int(lo >> 38 & 1), int(lo >> 39 & 1),
+                int(lo >> 62 & 1));
+}
+
 void diag_tick()
 {
+    features_tick();
     uintptr_t sys = diag_storage.load();
     if (!sys)
         return;
@@ -709,7 +765,16 @@ void setup()
 
     if (bridge_on || diag_on)
         install_gates();
+    if (bridge_on || diag_on) {
+        if (uintptr_t at = runtime::find(S_FINDER_GATE, "boards", "boards"))
+            if (hook_mid(h_finder, at, finder_mid, "rival finder online gate"))
+                swofty::log("[boards] rival finder gate armed at base+0x%llx (%s)", (unsigned long long)(at - swofty::api->module_base()),
+                            bridge_on ? "our boards count as online for the rival search" : "diagnostics only");
+    }
     if (diag_on) {
+        if (uintptr_t at = runtime::find(S_FEATURES, "boards", "boards"))
+            if (hook_mid(h_features, at, features_mid, "content-set features"))
+                swofty::log("[boards] diag: content-set feature loader hooked at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
         if (uintptr_t at = runtime::find(S_ACCOUNT_ERROR, "boards", "boards"))
             if (hook_mid(h_account_error, at, account_error_mid, "account state error"))
                 swofty::log("[boards] diag: account-state error handler hooked at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
