@@ -98,11 +98,11 @@ bool string_record(Read &read, uint64_t rec, size_t max_text, std::string &out)
 
 template <class Read>
 size_t find_string(Read &read, uint64_t registry, const Layout &lay, const std::string &needle, std::vector<Hit> &hits, size_t cap,
-                   Stats &st, const Limits &lim = {})
+                   Stats &st, const Limits &lim = {}, bool every_string = false)
 {
     st = Stats{};
     uint64_t root = 0;
-    if (needle.empty() || !u64_at(read, registry + 8, root) || !root)
+    if ((needle.empty() && !every_string) || !u64_at(read, registry + 8, root) || !root)
         return 0;
     struct Item {
         uint64_t node, parent;
@@ -144,7 +144,7 @@ size_t find_string(Read &read, uint64_t registry, const Layout &lay, const std::
                 !u64_at(read, binding + 8, rec) || !string_record(read, rec, lim.max_text, text))
                 continue;
             st.strings_read++;
-            if (text != needle)
+            if (!every_string && text != needle)
                 continue;
             st.matches++;
             if (hits.size() < cap) {

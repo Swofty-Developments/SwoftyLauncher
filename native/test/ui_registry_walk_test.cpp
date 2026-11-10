@@ -134,6 +134,18 @@ void finds_the_stock_name_with_its_path()
     CHECK(st.root_vt == LAY.object_vt);
 }
 
+void lists_every_string_when_asked()
+{
+    Heap h;
+    uint64_t a = string_leaf(h, "one"), b = string_leaf(h, "two");
+    uint64_t root = object(h, {{"a", a}, {"b", b}});
+    std::vector<Hit> hits;
+    Stats st;
+    auto rd = [&](uint64_t at, void *out, size_t n) { return h.read(at, out, n); };
+    CHECK(find_string(rd, registry(h, root), LAY, "", hits, 16, st, Limits{}, true) == 2);
+    CHECK(hits[0].value == "one" || hits[0].value == "two");
+}
+
 void walks_lists_and_reports_unknown_kinds()
 {
     Heap h;
@@ -236,6 +248,7 @@ void empty_and_missing_registry()
 int main()
 {
     finds_the_stock_name_with_its_path();
+    lists_every_string_when_asked();
     walks_lists_and_reports_unknown_kinds();
     rejects_dead_and_foreign_values();
     survives_freed_and_garbage_pointers();

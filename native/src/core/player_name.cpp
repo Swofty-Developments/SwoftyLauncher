@@ -108,9 +108,15 @@ const char *lookup_hook(void *cache, void *id)
         return stock;
     const char *result = stock;
     runtime::presence_id::Id me;
-    uint8_t key[0x50];
-    if (session_ours() && runtime::tt_bridge_presence_id(me) &&
-        swofty_core::hooks::guard::copy_memory(key, id, sizeof key) && runtime::player_name::is_local_id(key, me)) {
+    uint8_t key[0x50] = {};
+    bool ours = session_ours(), have_me = runtime::tt_bridge_presence_id(me), have_key = swofty_core::hooks::guard::copy_memory(key, id, sizeof key);
+    bool local = ours && have_me && have_key && runtime::player_name::is_local_id(key, me);
+    static std::atomic<int> traced{0};
+    if (traced.fetch_add(1) < 12)
+        swofty::log("[boards] player name: lookup %d: mode %s, our session %d, presence id %s, key %s, local player %d, stock \"%.40s\"", traced.load(),
+                    swofty_core::apply::moments::session_mode_track().first.c_str(), ours ? 1 : 0, have_me ? "known" : "unknown",
+                    have_key ? "read" : "unreadable", local ? 1 : 0, runtime::readable(stock, 4) ? stock : "?");
+    if (local) {
         std::string clean;
         const char *source = "";
         char seen[runtime::player_name::MAX_BYTES + 1] = {};
@@ -254,23 +260,65 @@ namespace runtime {
 void player_name_pin_tick()
 {
     static int64_t last = 0;
+    static std::string last_decision;
     if (!bridge_on.load(std::memory_order_relaxed))
         return;
     int64_t now = int64_t(GetTickCount64());
     if (now - last < 3000)
         return;
     last = now;
-    if (!session_ours())
-        return;
-    std::string clean, stock;
+    auto mode = swofty_core::apply::moments::session_mode_track().first;
+    bool ours = session_ours();
+    std::string clean, stock, why;
     const char *source = "";
-    char env[96] = {};
+    char env_name[128] = {}, env[96] = {};
+    GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME", env_name, sizeof env_name);
     GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME_STOCK", env, sizeof env);
+    bool name_ok = wanted_name(clean, source);
+    runtime::presence_id::Id me;
+    bool have_me = runtime::tt_bridge_presence_id(me);
     {
         std::lock_guard<std::mutex> g(stock_lock);
         stock = env[0] ? std::string(env) : stock_learned;
     }
-    if (stock.empty() || !wanted_name(clean, source) || clean == stock)
+    if (mode != "time_trial")
+        why = "not a Time Trial session";
+    else if (!ours)
+        why = "not our content (tt_bridge content check)";
+    else if (!name_ok)
+        why = !strcmp(env_name, "0") ? "SWOFTY_TT_PLAYER_NAME=0 (off)" : "no usable name (unset and not signed in, or characters the HUD font lacks)";
+    else if (!have_me)
+        why = "the presence id was not read yet (no board request has passed the gate)";
+    if (why.empty() && stock.empty() && swofty::game::g_Vm_Registry.address()) {
+        namespace ur = runtime::ui_registry;
+        uint64_t base = swofty::api->module_base(), reg = uint64_t(*swofty::game::g_Vm_Registry);
+        ur::Layout lay{base + 0x5a70080, base + 0x5a6ff90, base + 0x565f200, base + 0x5660370};
+        std::vector<ur::Hit> all;
+        ur::Stats st;
+        auto rd = [](uint64_t at, void *out, size_t n) { return registry_read(at, out, n); };
+        ur::find_string(rd, reg, lay, "", all, 8000, st, {}, true);
+        uint32_t players = runtime::player_name::djb2("players"), player0 = runtime::player_name::djb2("player0"),
+                 gamertag = runtime::player_name::djb2("gamertag");
+        for (auto &h : all)
+            if (h.depth == 3 && h.chain[0] == players && h.chain[1] == player0 && h.chain[2] == gamertag) {
+                stock = h.value;
+                std::lock_guard<std::mutex> g(stock_lock);
+                stock_learned = stock;
+                break;
+            }
+        if (stock.empty())
+            why = "the stock persona was not found at players.player0.gamertag";
+    }
+    if (why.empty() && stock == clean)
+        why = "the stock name already equals the name to show";
+    char decision[400];
+    snprintf(decision, sizeof decision, "mode %s, our session %d, name %s (%s), presence id %s, stock \"%.40s\": %s", mode.c_str(), ours ? 1 : 0,
+             name_ok ? clean.c_str() : "-", name_ok ? source : "none", have_me ? "known" : "unknown", stock.c_str(), why.empty() ? "renaming" : why.c_str());
+    if (decision != last_decision) {
+        last_decision = decision;
+        swofty::log("[boards] player name pass: %s", decision);
+    }
+    if (!why.empty())
         return;
     pin_names(clean, stock);
 }
