@@ -416,6 +416,71 @@ uint64_t container_detour(void *container, NeStr **message, void *third)
     return h_container.call<uint64_t>(container, message, third);
 }
 
+std::atomic<bool> cover_on{false};
+std::atomic<uint64_t> cover_since{0}, cover_frames{0}, cover_applied_frames{0}, applied_at{0}, frame_no{0}, open_frame{0};
+
+void cover_up(const char *why)
+{
+    if (off("SWOFTY_MAIN_MENU_COVER"))
+        return;
+    cover_since = GetTickCount64();
+    cover_frames = 0;
+    applied_at = 0;
+    cover_on = true;
+    swofty::log("[main-menu] nav: cover up (%s) at frame %llu", why, (unsigned long long)frame_no.load());
+}
+
+void cover_down(const char *picker)
+{
+    if (!cover_on.exchange(false))
+        return;
+    swofty::log("[main-menu] nav: picker %s open; cover released after %llu ms / %llu frames", picker,
+                (unsigned long long)(GetTickCount64() - cover_since.load()), (unsigned long long)cover_frames.load());
+}
+
+void raise_command(void *vm, const char *command, const char *where)
+{
+    static uint8_t zero[0x100];
+    NeStr *name = nullptr;
+    Ne_Make_StrFromCStr(&name, command, 0, 0);
+    void *third = container_third.load() ? container_third.load() : zero;
+    swofty::log("[main-menu] nav: raising '%s' on the activity container %p (%s) at frame %llu (container opened at frame %llu)", command, vm, where,
+                (unsigned long long)frame_no.load(), (unsigned long long)open_frame.load());
+    uint64_t r = h_container ? h_container.call<uint64_t>(vm, &name, third) : 0;
+    Ne_Make_StrFromCStr(&name, nullptr, 0, 0);
+    applied_at = GetTickCount64();
+    cover_applied_frames = cover_frames.load();
+    swofty::log("[main-menu] nav: command %s applied at frame %llu (returned 0x%llx)", command, (unsigned long long)frame_no.load(), (unsigned long long)r);
+}
+
+void apply_pending(void *vm, const char *where)
+{
+    const char *command = nullptr;
+    {
+        std::lock_guard<std::mutex> g(chain_lock);
+        if (chain.step != Step::wait_container || !*chain.command)
+            return;
+        command = chain.command;
+        chain.step = Step::done;
+    }
+    raise_command(vm, command, where);
+}
+
+const runtime::Sig S_GOHOME{"Game_F1WorldActivityContainer_GoHome",
+                            "56 57 48 83 EC 28 48 89 CE 88 91 45 09 00 00 80 FA 06 74 34 0F B6 C2 83 F8 05 0F 85 2F 01 00 00 80 BE 42 09 00 00 00 0F 84 22 01 00 00",
+                            0x1a79ee0};
+safetyhook::InlineHook h_gohome;
+
+uint64_t gohome_detour(void *vm, uint8_t state)
+{
+    uint64_t r = h_gohome.call<uint64_t>(vm, state);
+    if (state == 5) {
+        swofty::log("[main-menu] nav: activity container tabs built at frame %llu", (unsigned long long)frame_no.load());
+        apply_pending(vm, "the moment its tabs exist");
+    }
+    return r;
+}
+
 const runtime::Sig S_MIGRATE{"Ui_RouteCommand_Migrate",
                              "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 4C 89 C7 48 89 D6 48 89 CB 4D 8B 78 50 45 8B 70 40 48 8B 0D ?? ?? ?? ?? 48 8B 01 FF 50 48",
                              0x4186240};
@@ -435,6 +500,23 @@ NeStr **migrate_detour(void *cmd, NeStr **out, void *node)
     bool failed = logic::migrate_failed(result);
     if (!failed && !flow.empty())
         set_flow(flow);
+    if (!failed && flow == logic::F1_WORLD_FLOW) {
+        bool pending = false;
+        {
+            std::lock_guard<std::mutex> g(chain_lock);
+            if (chain.step != Step::wait_container && nav.return_armed.exchange(false)) {
+                chain = {};
+                chain.step = Step::wait_container;
+                chain.command = logic::return_command(logic::Mode(nav.mode.load()));
+                chain.started = chain.container_at = GetTickCount64();
+                container_vm = nullptr;
+                swofty::log("[main-menu] nav: session-end hand-over migrates to the activity container; '%s' is raised on it when its tabs exist", chain.command);
+            }
+            pending = chain.step == Step::wait_container;
+        }
+        if (pending)
+            cover_up("the container is about to open");
+    }
     swofty::log("[main-menu] nav: Migrate command: flow '%s' entry '%s' -> %s%s%s; the flow the game last accepted is now %s", flow.c_str(),
                 entry.empty() ? "(none)" : entry.c_str(), failed ? "FAILED: " : "accepted", failed ? result.c_str() : "", "", get_flow().c_str());
     return r;
@@ -541,6 +623,24 @@ void hook_migrate()
     }
     h_migrate = std::move(*h);
     swofty::log("[main-menu] nav: route Migrate command hooked at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
+}
+
+void hook_gohome()
+{
+    if (h_gohome)
+        return;
+    auto at = runtime::find(S_GOHOME, "home", "core");
+    if (!at) {
+        swofty::log("[main-menu] nav: the container's tabs-ready callback did not resolve; the command is raised %llu ms after its view model is seen", (unsigned long long)raise_delay_ms());
+        return;
+    }
+    auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(gohome_detour));
+    if (!h) {
+        swofty::log("[main-menu] nav: hooking the container's tabs-ready callback failed: %s", runtime::hook_error(h.error()).c_str());
+        return;
+    }
+    h_gohome = std::move(*h);
+    swofty::log("[main-menu] nav: container tabs-ready callback hooked at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
 }
 
 void hook_container()
@@ -845,7 +945,7 @@ bool enabled()
 
 bool drawing()
 {
-    return logic::panel_due(patched.load(), home_open.load() && !runtime::in_session_now(), state_loaded.load(),
+    return cover_on.load() || logic::panel_due(patched.load(), home_open.load() && !runtime::in_session_now(), state_loaded.load(),
                             panel_disabled.load(), panel_prepared.load());
 }
 
@@ -876,6 +976,7 @@ bool arm_patch()
     hook_container();
     hook_fire();
     hook_migrate();
+    hook_gohome();
     swofty::log("[main-menu] stock F1 World, divider, Local Multiplayer, League Racing, Player Hub and Theatre tiles skipped");
     return true;
 }
@@ -934,8 +1035,27 @@ void recover(logic::Expect e)
     }
 }
 
+void watch_cover()
+{
+    if (!cover_on.load())
+        return;
+    uint64_t now = GetTickCount64();
+    if (uint64_t at = applied_at.load(); at && cover_frames.load() >= cover_applied_frames.load() + 3 && now - at >= 120) {
+        cover_down("tab of the activity container (dynamic_era_select)");
+        return;
+    }
+    if (now - cover_since.load() > 3000) {
+        bool applied = applied_at.load() != 0;
+        swofty::log("[main-menu] nav: cover safety timeout after 3 s (command %s)", applied ? "was applied" : "was never applied");
+        cover_down("(timeout)");
+        if (!applied && !off("SWOFTY_MAIN_MENU_RECOVER"))
+            recover(logic::Expect::container);
+    }
+}
+
 void watch_nav()
 {
+    watch_cover();
     uint64_t now = GetTickCount64();
     bool in_session = runtime::in_session_now();
     if (logic::return_due(nav.was_in_session.load(), in_session, logic::Mode(nav.mode.load()), !off("SWOFTY_MAIN_MENU_RETURN") && entry_by_route())) {
@@ -1044,12 +1164,8 @@ void tick()
     if (chain.step == Step::wait_container && chain.container_at && container_vm.load() &&
         now - chain.container_at > 300 && now - container_vm_at.load() > raise_delay_ms()) {
         const char *command = chain.command;
-        NeStr *name = nullptr;
-        Ne_Make_StrFromCStr(&name, command, 0, 0);
-        swofty::log("[main-menu] chain: raising '%s' on the activity container %p", command, container_vm.load());
-        uint64_t r = h_container ? h_container.call<uint64_t>(container_vm.load(), &name, container_third.load()) : 0;
-        Ne_Make_StrFromCStr(&name, nullptr, 0, 0);
-        swofty::log("[main-menu] chain: command %s returned 0x%llx", command, (unsigned long long)r);
+        chain.step = Step::done;
+        raise_command(container_vm.load(), command, "fallback: after its view model was seen");
         chain.step = Step::done;
     }
 }
@@ -1075,6 +1191,7 @@ void screen(const char *name)
         if (chain.step != Step::idle && chain.step != Step::done)
             swofty::log("[main-menu] chain: screen %s (step %d)", name, int(chain.step));
         if (!std::strcmp(name, "f1_world_activity_container")) {
+            open_frame = frame_no.load();
             if (chain.step == Step::wait_container) {
                 chain.container_at = now;
                 container_vm = nullptr;
@@ -1321,7 +1438,13 @@ void paint(hud::Frame &f, uint64_t now)
         swofty::log("[main-menu] panel: paint called on a %.0fx%.0f frame (patched %d, home open %d, state %d, prepared %d, disabled %d)",
                     double(f.width), double(f.height), int(patched.load()), int(home_open.load()), int(state_loaded.load()),
                     int(panel_prepared.load()), int(panel_disabled.load()));
-    if (!drawing()) {
+    frame_no++;
+    if (cover_on.load()) {
+        hud::reset_state(f);
+        hud::rect(f, 0, 0, f.width, f.height, 0x000000ffu);
+        cover_frames++;
+    }
+    if (!logic::panel_due(patched.load(), home_open.load() && !runtime::in_session_now(), state_loaded.load(), panel_disabled.load(), panel_prepared.load())) {
         if (home_open.load() && !std::exchange(told_blocked, true))
             swofty::log("[main-menu] panel: not due on an open home screen (patched %d, state %d, prepared %d, disabled %d)",
                         int(patched.load()), int(state_loaded.load()), int(panel_prepared.load()), int(panel_disabled.load()));
