@@ -1,4 +1,5 @@
 #include "ghost_arm_logic.hpp"
+#include "ghost_request_logic.hpp"
 #include "ghost_swlap_logic.hpp"
 #include "runtime.hpp"
 
@@ -96,7 +97,8 @@ bool saved_has = false;
 uintptr_t saved_for = 0;
 
 struct Request {
-    std::string path, label;
+    std::string path, label, driver, team;
+    bool replay = false;
     std::vector<uint8_t> blob;
     std::string kind;
     uint64_t stamp = 0;
@@ -271,17 +273,17 @@ void dump(const std::vector<uint8_t> &blob)
 bool load_request(const std::wstring &play, Request &out, std::string &why)
 {
     std::string text = runtime::read_file(play, size_t(1) << 16);
-    auto json = swofty::json::parse(text);
-    if (!json.is_object()) {
-        why = "play.json is not a JSON object";
+    runtime::ghost_request::Request req;
+    auto rst = runtime::ghost_request::parse(text, req);
+    if (rst != runtime::ghost_request::Status::ok) {
+        why = runtime::ghost_request::status_name(rst);
         return false;
     }
-    out.path = std::string(json["lap"].as_string());
-    out.label = std::string(json["label"].as_string());
-    if (out.path.empty()) {
-        why = "play.json has no lap";
-        return false;
-    }
+    out.path = req.lap;
+    out.label = req.label;
+    out.replay = req.mode == runtime::ghost_request::Mode::replay;
+    out.driver = req.driver;
+    out.team = req.team;
     std::string bytes = runtime::read_file(runtime::wide(out.path), size_t(64) << 20);
     if (bytes.empty()) {
         why = "the lap file is missing or empty";
@@ -360,8 +362,10 @@ void worker()
             continue;
         }
         r->stamp = stamp;
-        swofty::log("[ghost] request: %s lap '%s', driver '%s': %zu records, %zu bytes, lap %.3f s", r->kind.c_str(), r->path.c_str(),
-                    r->label.c_str(), r->records, r->blob.size(), r->lap_s);
+        swofty::log("[ghost] request: mode %s, %s lap '%s', driver '%s' team '%s': %zu records, %zu bytes, lap %.3f s",
+                    r->replay ? "replay (plays as the personal best ghost; open the viewer on that car)" : "ghost", r->kind.c_str(),
+                    r->path.c_str(), r->driver.empty() ? r->label.c_str() : r->driver.c_str(), r->team.c_str(), r->records,
+                    r->blob.size(), r->lap_s);
         publish(r, ++gen);
     }
 }
@@ -456,7 +460,7 @@ void game_step(uintptr_t comp)
         gen = pub_gen;
     }
     arming.request(req ? gen : 0);
-    auto d = arming.decide(views_of(comp), slot_env, now_ms());
+    auto d = arming.decide(views_of(comp), req && req->replay ? 3 : slot_env, now_ms());
     static std::string last_why;
     static bool playing = false;
     if (req && last_why != arming.why()) {
