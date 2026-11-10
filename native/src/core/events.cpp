@@ -1,4 +1,5 @@
 #include "runtime.hpp"
+#include "main_menu.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
@@ -81,6 +82,7 @@ void flow_mid(safetyhook::Context &)
     runtime::lap_rec_tick();
     runtime::tt_bridge_tick();
     runtime::popup_tick();
+    runtime::main_menu::tick();
     runtime::mfd_tick();
     runtime::netplay_tick();
     runtime::career_content_tick();

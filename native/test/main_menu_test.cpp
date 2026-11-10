@@ -58,7 +58,13 @@ int main()
     expect(mm::version_line(s) == "Swofty Launcher 1.8.37", "version line");
     expect(mm::discord_line(s) == "Signed in to Discord as swofty", "signed in line");
     expect(mm::has_avatar(s) && mm::has_video(s), "avatar and video present");
-    expect(mm::watch_line("Y") == "Press Y to watch", "watch line");
+    expect(mm::watch_line("RB") == "Press RB to watch", "watch line");
+    expect(std::string(mm::template_for("career")) == mm::TEMPLATE_TOP && std::string(mm::template_for("swofty_time_trial")) == mm::TEMPLATE_MODES &&
+               std::string(mm::template_for("theatre")) == mm::TEMPLATE_WIDE_A && std::string(mm::template_for("swofty_showroom")) == mm::TEMPLATE_WIDE_B &&
+               std::string(mm::template_for("mod_menu")) == mm::TEMPLATE_WIDE_C && std::string(mm::template_for("f1_world")).empty(),
+           "every card has its row template and unknown ids have none");
+    expect(std::string(mm::TT_BODY).find("will not be saved") != std::string::npos && std::string(mm::TT_BODY).find("OK to continue") != std::string::npos,
+           "the warning says laps are not saved and that OK continues");
     auto out = mm::parse_state(R"({"schema":1,"launcher_version":"1.8.37","discord":{"signed_in":false,"name":""}})");
     expect(mm::discord_line(out) == "Not signed in to Discord", "signed out line");
     expect(!mm::has_avatar(out) && !mm::has_video(out), "signed out has no avatar, no video card without a video");

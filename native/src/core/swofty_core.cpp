@@ -153,6 +153,7 @@ SWOFTY_SITE(site_FeHome_AfterCareerCall, swofty::Context &c)
     }
     NeStr *old_id = item->id;
     Ne_Make_StrFromCStr(&item->id, ROUTE, 0, 0);
+    runtime::main_menu::style_settings(item);
     swofty::log("[core] hook #%u: added button_%u (items %zu -> %zu) item=%p, id %p -> %p '%s' (old id released by "
                 "the game's string setter), r12 -> 0x%llx, r15 -> 0x%llx",
                 call, (unsigned)index, before, after, item, old_id, item->id, ROUTE, (unsigned long long)c.r12,

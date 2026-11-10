@@ -24,9 +24,31 @@ constexpr const char *ID_SHOWROOM = "swofty_showroom";
 
 constexpr const char *TT_TITLE = "Not signed in";
 constexpr const char *TT_BODY = "Sign in with Discord in Swofty Launcher to save your laps to the Time Trial boards. "
-                                "Laps from this session will not be saved.";
-constexpr const char *TT_CONTINUE = "Continue";
-constexpr const char *TT_BACK = "Back";
+                                "Laps from this session will not be saved. Press OK to continue to Time Trial.";
+
+constexpr const char *TEMPLATE_TOP = "swofty_home_top";
+constexpr const char *TEMPLATE_MODES = "swofty_home_modes";
+constexpr const char *TEMPLATE_WIDE_A = "swofty_home_wide_a";
+constexpr const char *TEMPLATE_WIDE_B = "swofty_home_wide_b";
+constexpr const char *TEMPLATE_WIDE_C = "swofty_home_wide_c";
+
+inline const char *template_for(const std::string &id)
+{
+    if (id == ID_STORY || id == ID_CAREER || id == ID_CHALLENGE)
+        return TEMPLATE_TOP;
+    if (id == ID_GRAND_PRIX || id == ID_TIME_TRIAL)
+        return TEMPLATE_MODES;
+    if (id == ID_THEATRE)
+        return TEMPLATE_WIDE_A;
+    if (id == ID_SHOWROOM)
+        return TEMPLATE_WIDE_B;
+    if (id == ID_SETTINGS)
+        return TEMPLATE_WIDE_C;
+    return "";
+}
+
+constexpr uint16_t WATCH_PAD_MASK = 0x0200;
+constexpr const char *SHOWROOM_ROUTE = "swofty_showroom";
 
 constexpr uint32_t WATCH_KEY_VK = 0x56;
 
@@ -38,7 +60,7 @@ constexpr uint32_t djb2(const char *s)
     return h;
 }
 
-inline std::string button_name(bool pad) { return pad ? "Y" : "V"; }
+inline std::string button_name(bool pad) { return pad ? "RB" : "V"; }
 
 inline std::string open_request_json(const std::string &url)
 {

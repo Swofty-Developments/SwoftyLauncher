@@ -2,6 +2,7 @@
 
 #include "main_menu.hpp"
 #include "main_menu_logic.hpp"
+#include "virtual_pad.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mixin.hpp>
@@ -63,6 +64,8 @@ std::atomic<bool> resolved{false}, patched{false}, home_open{false};
 std::once_flag once;
 void *f1w_populate = nullptr, *f1w_action = nullptr;
 std::atomic<bool> tt_warned{false};
+std::atomic<int> rows_flag{-1};
+void *theatre_populate = nullptr, *theatre_action = nullptr;
 std::mutex state_lock;
 logic::State state;
 uint64_t state_read_at = 0;
@@ -133,6 +136,93 @@ const char *id_of(const HomeItem *item)
     return item && item->id ? reinterpret_cast<const char *>(item->id) + NESTR_CHARS : "";
 }
 
+bool rows_on()
+{
+    int f = rows_flag.load();
+    if (f < 0) {
+        f = runtime::read_file(runtime::under_swofty("ui\\home_rows.flag"), 16).empty() ? 0 : 1;
+        rows_flag = f;
+        swofty::log("[main-menu] the launcher's rows of cards %s", f ? "are in this build" : "are not in this build; the tiles stay in the stock list");
+    }
+    return f == 1;
+}
+
+void style_item(HomeItem *item)
+{
+    const char *tpl = logic::template_for(id_of(item));
+    auto node = item ? static_cast<uint8_t *>(item->button_node.node) : nullptr;
+    if (!*tpl || !node)
+        return;
+    set_string(*g_Vm_Registry, node + 8, "type", tpl);
+    swofty::log("[main-menu] %s -> template %s", id_of(item), tpl);
+}
+
+void style_list(TileList *list)
+{
+    for (auto e = list->items_begin; e && e < list->items_end; e++)
+        if (e->tile && e->tile->item)
+            style_item(e->tile->item);
+}
+
+void showroom_populate(HomeItem *item, void *node, uint32_t a7)
+{
+    reinterpret_cast<Populate_t>(theatre_populate)(item, node, a7);
+    auto vm_node = static_cast<uint8_t *>(item->button_node.node);
+    if (!vm_node)
+        return;
+    void *reg = *g_Vm_Registry, *parent = vm_node + 8;
+    uint8_t no = 0;
+    set_string(reg, parent, "title", "SHOWROOM");
+    Vm_Set_Bool(reg, parent, "title_localised", &no, 1);
+    set_string(reg, parent, "description", "Look over every car in the game");
+    Vm_Set_Bool(reg, parent, "description_localised", &no, 1);
+}
+
+Action *showroom_action(HomeItem *item, Action *out)
+{
+    out->type = 1;
+    out->str = nullptr;
+    Ne_Make_StrFromCStr(&out->str, logic::SHOWROOM_ROUTE, 0, 0);
+    swofty::log("[main-menu] showroom card pressed (item %p): route %s", item, logic::SHOWROOM_ROUTE);
+    return out;
+}
+
+void add_showroom(TileList *list, uint8_t index)
+{
+    block.theatre(list, index);
+    HomeItem *item = last_item(list);
+    if (!item)
+        return;
+    auto vt = reinterpret_cast<void **>(item->vtable);
+    if (!theatre_populate) {
+        theatre_populate = vt[4];
+        theatre_action = vt[5];
+    }
+    if (vt[4] != theatre_populate) {
+        swofty::log("[main-menu] showroom: the Theatre item's vtable changed; left as a Theatre tile");
+        return;
+    }
+    swofty::subclass(item, {{4, reinterpret_cast<void *>(showroom_populate)}, {5, reinterpret_cast<void *>(showroom_action)}});
+    Ne_Make_StrFromCStr(&item->id, logic::ID_SHOWROOM, 0, 0);
+}
+
+enum class Step { idle, wait_hub, wait_container, tile, done };
+struct Chain {
+    Step step = Step::idle;
+    bool time_trial = false;
+    uint64_t started = 0, hub_at = 0, container_at = 0, release_at = 0, tile_at = 0;
+    bool pressed_play = false;
+} chain;
+std::mutex chain_lock;
+
+void press(uint16_t mask, uint64_t now)
+{
+    runtime::pad::claim(true);
+    runtime::pad::set(mask);
+    chain.release_at = now + 160;
+    swofty::log("[main-menu] chain: virtual pad button 0x%04x held", unsigned(mask));
+}
+
 void card_populate(HomeItem *item, void *node, uint32_t a7)
 {
     reinterpret_cast<Populate_t>(f1w_populate)(item, node, a7);
@@ -191,7 +281,7 @@ void read_state()
     state = next;
 }
 
-bool pad_connected_and_y(bool *connected)
+bool pad_connected_and_watch(bool *connected)
 {
     using Get_t = DWORD(WINAPI *)(DWORD, void *);
     static Get_t get = [] {
@@ -204,14 +294,14 @@ bool pad_connected_and_y(bool *connected)
     *connected = get && get(0, buf) == 0;
     uint16_t buttons;
     std::memcpy(&buttons, buf + 4, 2);
-    return *connected && (buttons & 0x8000);
+    return *connected && (buttons & logic::WATCH_PAD_MASK);
 }
 
 bool bind_pressed(bool *pad)
 {
     static bool was = false;
     bool connected = false;
-    bool y = pad_connected_and_y(&connected);
+    bool y = pad_connected_and_watch(&connected);
     *pad = connected;
     bool key = (GetAsyncKeyState(logic::WATCH_KEY_VK) & 0x8000) != 0 && GetForegroundWindow() != nullptr;
     bool now = y || key;
@@ -237,6 +327,28 @@ std::string host_path(const std::string &p)
         return w;
     }
     return p;
+}
+
+void start_chain(bool time_trial)
+{
+    if (!std::strcmp(env("SWOFTY_MAIN_MENU_CHAIN"), "0")) {
+        swofty::log("[main-menu] chain off (SWOFTY_MAIN_MENU_CHAIN=0); the card opens the F1 World hub");
+        return;
+    }
+    runtime::pad::setup();
+    if (!runtime::pad::why().empty()) {
+        swofty::log("[main-menu] chain: the virtual pad is unavailable (%s); the card opens the F1 World hub",
+                    runtime::pad::why().c_str());
+        return;
+    }
+    std::lock_guard<std::mutex> g(chain_lock);
+    chain = {};
+    chain.step = Step::wait_hub;
+    chain.time_trial = time_trial;
+    chain.started = GetTickCount64();
+    swofty::log("[main-menu] chain: %s card pressed; waiting for fe_f1_world, then Play (A), then %s",
+                time_trial ? "Time Trial" : "Grand Prix",
+                time_trial ? "right + A on the Play tiles" : "A on the first Play tile");
 }
 
 }
@@ -278,23 +390,89 @@ uint8_t add_tiles(void *list_, uint8_t career_index, const uint8_t *flags)
     if (flags && (flags[8] & 1))
         block.challenge(list, ++index);
     block.theatre(list, ++index);
-    swofty::log("[main-menu] tiles added after Career: Grand Prix, Time Trial%s, Theatre (last index %u)",
-                flags && (flags[8] & 1) ? ", challenge" : "", unsigned(index));
+    bool showroom = rows_on();
+    if (showroom)
+        add_showroom(list, ++index);
+    if (rows_on())
+        style_list(list);
+    swofty::log("[main-menu] tiles added after Career: Grand Prix, Time Trial%s, Theatre%s (last index %u)",
+                flags && (flags[8] & 1) ? ", challenge" : "", showroom ? ", Showroom" : "", unsigned(index));
     return index;
+}
+
+void style_settings(void *item)
+{
+    if (rows_on())
+        style_item(static_cast<HomeItem *>(item));
+}
+
+void tick()
+{
+    std::lock_guard<std::mutex> g(chain_lock);
+    if (chain.step == Step::idle || chain.step == Step::done)
+        return;
+    uint64_t now = GetTickCount64();
+    if (chain.release_at && now >= chain.release_at) {
+        runtime::pad::release();
+        runtime::pad::claim(false);
+        chain.release_at = 0;
+    }
+    if (now - chain.started > 20000) {
+        swofty::log("[main-menu] chain: gave up at step %d after 20 s; the player continues by hand", int(chain.step));
+        chain.step = Step::done;
+        return;
+    }
+    if (chain.release_at)
+        return;
+    if (chain.step == Step::wait_hub && chain.hub_at && now - chain.hub_at > 1800) {
+        press(runtime::pad::A, now);
+        chain.step = Step::wait_container;
+    } else if (chain.step == Step::wait_container && chain.container_at && now - chain.container_at > 2600) {
+        if (chain.time_trial && !chain.pressed_play) {
+            chain.pressed_play = true;
+            press(0x0008, now);
+            chain.tile_at = now + 500;
+        } else if (!chain.time_trial || now >= chain.tile_at) {
+            press(runtime::pad::A, now);
+            chain.step = Step::tile;
+            chain.tile_at = now;
+        }
+    } else if (chain.step == Step::tile && now - chain.tile_at > 500) {
+        swofty::log("[main-menu] chain: done; the %s season picker should be up",
+                    chain.time_trial ? "Time Trial" : "Grand Prix");
+        chain.step = Step::done;
+    }
 }
 
 void screen(const char *name)
 {
     if (!name)
         return;
+    {
+        std::lock_guard<std::mutex> g(chain_lock);
+        uint64_t now = GetTickCount64();
+        if (chain.step != Step::idle && chain.step != Step::done)
+            swofty::log("[main-menu] chain: screen %s (step %d)", name, int(chain.step));
+        if (!std::strcmp(name, "fe_f1_world") && chain.step == Step::wait_hub && !chain.hub_at)
+            chain.hub_at = now;
+        if (!std::strcmp(name, "f1_world_activity_container") && chain.step == Step::wait_container)
+            chain.container_at = now;
+    }
     if (std::strncmp(name, "fe_", 3) == 0)
         home_open = !std::strcmp(name, "fe_home");
 }
 
 void command(void *, uint32_t command_hash, uint32_t focused_hash)
 {
-    if (!patched.load() || command_hash != logic::djb2("select_pressed") ||
-        focused_hash != logic::djb2(logic::ID_TIME_TRIAL))
+    if (!patched.load() || command_hash != logic::djb2("select_pressed"))
+        return;
+    bool tt = focused_hash == logic::djb2(logic::ID_TIME_TRIAL);
+    bool gp = focused_hash == logic::djb2(logic::ID_GRAND_PRIX);
+    if (!tt && !gp)
+        return;
+    if (!tt)
+        start_chain(false);
+    if (!tt)
         return;
     read_state();
     logic::State s;
@@ -302,11 +480,14 @@ void command(void *, uint32_t command_hash, uint32_t focused_hash)
         std::lock_guard<std::mutex> g(state_lock);
         s = state;
     }
-    if (!logic::time_trial_warning_due(s, true, tt_warned.load()))
+    if (!logic::time_trial_warning_due(s, true, tt_warned.load())) {
+        start_chain(true);
         return;
+    }
     tt_warned = true;
     int r = runtime::popup_show(logic::TT_TITLE, logic::TT_BODY, "swofty_core (main menu)");
-    swofty::log("[main-menu] Time Trial while not signed in to Discord: warning %s", r == 0 ? "queued" : "refused");
+    swofty::log("[main-menu] Time Trial while not signed in to Discord: warning %s; the pad chain is skipped this once",
+                r == 0 ? "queued" : "refused");
 }
 
 void paint(hud::Frame &f, uint64_t now)

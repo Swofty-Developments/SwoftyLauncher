@@ -479,16 +479,21 @@ To open a link the core writes `swofty/open_url.json`, `{"url": "https://youtu.b
 
 ## Main menu tiles
 
-swofty_core builds the main menu's tile list in this order: Braking Point, Career, Grand Prix, Time Trial, the challenge tile when the game builds it, Theatre, Addon Settings. The F1 World, Local Multiplayer, League Racing and Player Hub tiles and the divider are not added. Grand Prix and Time Trial are copies of the F1 World item with their own id, title and description, and they open the same F1 World route.
+swofty_core builds the main menu's tile list in this order: Braking Point, Career, Grand Prix, Time Trial, the challenge tile when the game builds it, Theatre, Showroom, Addon Settings. The F1 World, Local Multiplayer, League Racing and Player Hub tiles and the divider are not added. Grand Prix and Time Trial are copies of the F1 World item with their own id, title and description. Showroom is a copy of the Theatre item that fires the `swofty_showroom` route, a copy of the home's `theatre` route that opens `fe_showroom`.
+
+When the launcher's UI build is in place (`swofty/ui/home_rows.flag`), the tiles are laid out in rows. The build adds five slots to `fe_home.idf`, `swofty_home_row_top` and `swofty_home_row_modes` stacking left to right and three stacking top to bottom, and five copies of `fe_tile_button_default` in `fe_home.ui` whose layout names those slots. The core sets each tile's VM `type` to its template: Braking Point, Career and the challenge tile `swofty_home_top`; Grand Prix and Time Trial `swofty_home_modes`; Theatre, Showroom and Addon Settings `swofty_home_wide_a`, `_b` and `_c`.
 
 ```text
 [main-menu] home tile block at 0x...; adders F1 World 0x..., challenge 0x..., Theatre 0x...
 [main-menu] stock F1 World, divider, Local Multiplayer, League Racing, Player Hub and Theatre tiles skipped
-[main-menu] tiles added after Career: Grand Prix, Time Trial, Theatre (last index 5)
+[main-menu] the launcher's rows of cards are in this build
+[main-menu] tiles added after Career: Grand Prix, Time Trial, Theatre, Showroom (last index 6)
 ```
 
 When the home tile block does not match byte for byte, the core logs `the home tile block did not resolve on this build; the stock main menu stays` and changes nothing.
 
-`SWOFTY_MAIN_MENU=0` leaves the stock main menu. `SWOFTY_MAIN_MENU_NAV` is logged; only `single` (one spawner, tiles in list order) is built.
+`SWOFTY_MAIN_MENU=0` leaves the stock main menu. `SWOFTY_MAIN_MENU_CHAIN=0` makes the Grand Prix and Time Trial cards stop at the F1 World hub. `SWOFTY_MAIN_MENU_NAV` is logged; only `single` (one spawner, tiles in list order) is built.
 
-While the main menu is open the overlay paints the Swofty Launcher version, the Discord sign-in state and avatar in the top right, and the latest video's thumbnail with `Press Y to watch` (`Press V to watch` without a gamepad) in the bottom right. Pressing the key writes `swofty/open_url.json`. Entering Time Trial while signed out of Discord shows the game's message popup once per session.
+Pressing Grand Prix or Time Trial opens the F1 World route, then the core holds virtual pad buttons: A on the hub, then A (Grand Prix) or Right and A (Time Trial) on the Play tiles, logging `chain:` lines for each screen and button.
+
+While the main menu is open the overlay paints the Swofty Launcher version, the Discord sign-in state and avatar in the top right, and the latest video's thumbnail with `Press RB to watch` (`Press V to watch` without a gamepad) in the bottom right. Pressing the key writes `swofty/open_url.json`. Entering Time Trial while signed out of Discord shows the game's message popup once per session; its OK continues.
