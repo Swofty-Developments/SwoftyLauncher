@@ -56,11 +56,19 @@ fn ensure_with(data: &Path, api: &Api, key: &[u8]) -> Result<Module, String> {
     if !valid_version(&offer.version) {
         return Err("the offered version is not a plain version string".into());
     }
-    if offer.sha256.len() != 64 || !offer.sha256.bytes().all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f')) {
+    if offer.sha256.len() != 64
+        || !offer
+            .sha256
+            .bytes()
+            .all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
+    {
         return Err("the offered hash is not a lowercase sha256".into());
     }
     if offer.size == 0 || offer.size > MAX_SIZE {
-        return Err(format!("the offered size of {} bytes is out of range", offer.size));
+        return Err(format!(
+            "the offered size of {} bytes is out of range",
+            offer.size
+        ));
     }
     verify(key, &offer)?;
     let folder = dir(data).join(&offer.version);
@@ -130,7 +138,11 @@ fn prune(data: &Path, current: &str) {
     };
     let mut others: Vec<(std::time::SystemTime, PathBuf)> = entries
         .flatten()
-        .filter(|e| e.file_name().to_str().is_some_and(|n| valid_version(n) && n != current))
+        .filter(|e| {
+            e.file_name()
+                .to_str()
+                .is_some_and(|n| valid_version(n) && n != current)
+        })
         .filter_map(|e| Some((e.metadata().ok()?.modified().ok()?, e.path())))
         .collect();
     others.sort_by(|a, b| b.0.cmp(&a.0));
@@ -171,7 +183,11 @@ pub fn place(
 ) {
     let rel = format!("{PLUGIN_ID}/{DLL}");
     loader.insert(
-        format!("{}/{}/{rel}", crate::install::LOADER_DIR, crate::build::ADDONS_DIR),
+        format!(
+            "{}/{}/{rel}",
+            crate::install::LOADER_DIR,
+            crate::build::ADDONS_DIR
+        ),
         module.dll.clone(),
     );
     plugins.push(format!("{}/{rel}", crate::build::ADDONS_DIR));
@@ -196,7 +212,10 @@ mod tests {
         const T: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
         let mut out = String::new();
         for c in bytes.chunks(3) {
-            let n = c.iter().enumerate().fold(0u32, |n, (i, b)| n | u32::from(*b) << (16 - 8 * i));
+            let n = c
+                .iter()
+                .enumerate()
+                .fold(0u32, |n, (i, b)| n | u32::from(*b) << (16 - 8 * i));
             for i in 0..=c.len() {
                 out.push(T[(n >> (18 - 6 * i) & 63) as usize] as char);
             }
@@ -221,7 +240,10 @@ mod tests {
 
     type Route = (&'static str, &'static str, Vec<u8>);
 
-    fn serve(routes: Vec<Route>, requests: usize) -> (String, Arc<Mutex<Vec<String>>>, std::thread::JoinHandle<()>) {
+    fn serve(
+        routes: Vec<Route>,
+        requests: usize,
+    ) -> (String, Arc<Mutex<Vec<String>>>, std::thread::JoinHandle<()>) {
         let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
         let url = format!("http://{}", listener.local_addr().unwrap());
         let seen = Arc::new(Mutex::new(Vec::new()));
@@ -238,13 +260,17 @@ mod tests {
                     }
                     got.extend_from_slice(&buf[..n]);
                 }
-                let line = String::from_utf8_lossy(&got).lines().next().unwrap_or("").to_owned();
+                let line = String::from_utf8_lossy(&got)
+                    .lines()
+                    .next()
+                    .unwrap_or("")
+                    .to_owned();
                 let path = line.split(' ').nth(1).unwrap_or("").to_owned();
                 log.lock().unwrap().push(path.clone());
-                let (status, body) = routes
-                    .iter()
-                    .find(|(p, _, _)| path.starts_with(p))
-                    .map_or(("404 Not Found", br#"{"error":"nothing here"}"#.to_vec()), |(_, s, b)| (*s, b.clone()));
+                let (status, body) = routes.iter().find(|(p, _, _)| path.starts_with(p)).map_or(
+                    ("404 Not Found", br#"{"error":"nothing here"}"#.to_vec()),
+                    |(_, s, b)| (*s, b.clone()),
+                );
                 let head = format!(
                     "HTTP/1.1 {status}\r\nContent-Type: application/octet-stream\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
                     body.len()
@@ -266,7 +292,12 @@ mod tests {
         d
     }
 
-    fn run(name: &str, key: &Ed25519KeyPair, routes: Vec<Route>, requests: usize) -> (Result<Module, String>, PathBuf, Vec<String>) {
+    fn run(
+        name: &str,
+        key: &Ed25519KeyPair,
+        routes: Vec<Route>,
+        requests: usize,
+    ) -> (Result<Module, String>, PathBuf, Vec<String>) {
         let d = data(name);
         let (url, seen, t) = serve(routes, requests);
         let got = ensure_with(&d, &Api::with_server(&url, "tok"), key.public_key().as_ref());
@@ -287,8 +318,16 @@ mod tests {
     fn downloads_verifies_and_stores_a_signed_module() {
         let key = pair();
         let routes = vec![
-            ("/v1/tt/integrity/file?version=2026.11.10.1", "200 OK", BYTES.to_vec()),
-            ("/v1/tt/integrity", "200 OK", json(&offer(&key, "2026.11.10.1", BYTES))),
+            (
+                "/v1/tt/integrity/file?version=2026.11.10.1",
+                "200 OK",
+                BYTES.to_vec(),
+            ),
+            (
+                "/v1/tt/integrity",
+                "200 OK",
+                json(&offer(&key, "2026.11.10.1", BYTES)),
+            ),
         ];
         let (got, d, seen) = run("good", &key, routes, 2);
         let m = got.unwrap();
@@ -296,8 +335,14 @@ mod tests {
         assert_eq!(m.sha256, sha256_bytes(BYTES));
         assert_eq!(m.dll, dir(&d).join("2026.11.10.1").join(DLL));
         assert_eq!(std::fs::read(&m.dll).unwrap(), BYTES);
-        assert_eq!(seen, ["/v1/tt/integrity", "/v1/tt/integrity/file?version=2026.11.10.1"]);
-        assert_eq!(std::fs::read_dir(dir(&d).join("2026.11.10.1")).unwrap().count(), 1);
+        assert_eq!(
+            seen,
+            ["/v1/tt/integrity", "/v1/tt/integrity/file?version=2026.11.10.1"]
+        );
+        assert_eq!(
+            std::fs::read_dir(dir(&d).join("2026.11.10.1")).unwrap().count(),
+            1
+        );
         std::fs::remove_dir_all(d).ok();
     }
 
@@ -308,7 +353,10 @@ mod tests {
         let folder = dir(&d).join("v1");
         std::fs::create_dir_all(&folder).unwrap();
         std::fs::write(folder.join(DLL), BYTES).unwrap();
-        let (url, seen, t) = serve(vec![("/v1/tt/integrity", "200 OK", json(&offer(&key, "v1", BYTES)))], 1);
+        let (url, seen, t) = serve(
+            vec![("/v1/tt/integrity", "200 OK", json(&offer(&key, "v1", BYTES)))],
+            1,
+        );
         let m = ensure_with(&d, &Api::with_server(&url, "tok"), key.public_key().as_ref()).unwrap();
         t.join().unwrap();
         assert_eq!(std::fs::read(m.dll).unwrap(), BYTES);
@@ -394,7 +442,12 @@ mod tests {
     fn a_version_that_is_not_a_plain_name_is_refused() {
         let key = pair();
         for v in ["../x", ".hidden", "a/b", "a\\b", "", "x y", &"v".repeat(33)] {
-            let (got, d, seen) = run("trav", &key, vec![("/v1/tt/integrity", "200 OK", json(&offer(&key, v, BYTES)))], 1);
+            let (got, d, seen) = run(
+                "trav",
+                &key,
+                vec![("/v1/tt/integrity", "200 OK", json(&offer(&key, v, BYTES)))],
+                1,
+            );
             assert!(got.unwrap_err().contains("version"), "{v}");
             assert_eq!(seen.len(), 1);
             assert!(!dir(&d).exists());
@@ -410,7 +463,11 @@ mod tests {
         assert!(e.contains("couldn't reach"));
         assert!(!dir(&d).exists());
         let key = pair();
-        let routes = vec![("/v1/tt/integrity", "404 Not Found", br#"{"error":"no integrity module is published"}"#.to_vec())];
+        let routes = vec![(
+            "/v1/tt/integrity",
+            "404 Not Found",
+            br#"{"error":"no integrity module is published"}"#.to_vec(),
+        )];
         let (got, d, _) = run("none", &key, routes, 1);
         assert_eq!(got.unwrap_err(), "no integrity module is published");
         assert!(!dir(&d).exists());
@@ -420,7 +477,10 @@ mod tests {
     fn the_pinned_key_does_not_accept_a_test_signature() {
         let key = pair();
         let d = data("pinned");
-        let (url, _, t) = serve(vec![("/v1/tt/integrity", "200 OK", json(&offer(&key, "v1", BYTES)))], 1);
+        let (url, _, t) = serve(
+            vec![("/v1/tt/integrity", "200 OK", json(&offer(&key, "v1", BYTES)))],
+            1,
+        );
         let e = ensure(&d, &Api::with_server(&url, "tok")).unwrap_err();
         t.join().unwrap();
         assert!(e.contains("pinned key"));
@@ -465,8 +525,17 @@ mod tests {
         place(&m, &mut loader, &mut plugins);
         assert_eq!(
             loader.into_iter().collect::<Vec<_>>(),
-            [("swofty/addons/swofty.integrity/swofty_integrity.dll".to_owned(), m.dll.clone())]
+            [(
+                "swofty/addons/swofty.integrity/swofty_integrity.dll".to_owned(),
+                m.dll.clone()
+            )]
         );
-        assert_eq!(plugins, ["addons/other/o.dll", "addons/swofty.integrity/swofty_integrity.dll"]);
+        assert_eq!(
+            plugins,
+            [
+                "addons/other/o.dll",
+                "addons/swofty.integrity/swofty_integrity.dll"
+            ]
+        );
     }
 }

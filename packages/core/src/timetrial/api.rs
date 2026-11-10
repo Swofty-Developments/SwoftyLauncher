@@ -166,7 +166,11 @@ impl Api {
 
     /// The integrity module's bytes for `version`, at most `limit` of them.
     pub fn integrity_file(&self, version: &str, limit: u64, timeout: Duration) -> Result<Vec<u8>, ApiError> {
-        self.get(&format!("/v1/tt/integrity/file?version={version}"), timeout, limit)
+        self.get(
+            &format!("/v1/tt/integrity/file?version={version}"),
+            timeout,
+            limit,
+        )
     }
 
     fn get(&self, path: &str, timeout: Duration, limit: u64) -> Result<Vec<u8>, ApiError> {
