@@ -1,3 +1,4 @@
+#include "main_menu_logic.hpp"
 #include "player_name_logic.hpp"
 #include "runtime.hpp"
 
@@ -14,20 +15,22 @@
 #include <cstring>
 #include <mutex>
 #include <string>
+#include <thread>
 
 namespace runtime {
 std::string hook_error(const safetyhook::InlineHook::Error &e);
 }
 
-
-// The player's own name in Time Trial. Round 1 replaced the return of the presence name cache lookup (FUN_140816b10) and the
-// HUD kept the stock name, so the HUD does not read that return. The lookup hook now only learns the stock persona name
-// (the first lookup's result). The display-side hook is Vm_NodeSet_String (0x140828440), the one setter of every UI string
-// node: when the value record is exactly the stock name, in a Time Trial session with the board bridge on (tt.json
-// "tt_bridge") and the launcher signed in (home_menu.json, the main menu's source), the node gets an interned copy of the
-// account display name made by the game's own Ne_Make_StrFromCStr. Everything else, outside Time Trial, signed out, or a name
-// the HUD font cannot draw, passes through untouched. Nothing is written to the name cache or to any save: only the UI node's
-// value changes. SWOFTY_TT_PLAYER_NAME=0 turns it off.
+// The player's own name in Time Trial. Every presence name the game shows (HUD, session cars, results) goes through the name
+// cache lookup FUN_140816b10 (cache +0x30 keys, +0x5030 names, 0x81-byte slots; 256 entries, most recently used first; the
+// callers include CreateHumanPlayers, Team_Build_SessionCars, ResolveGamerTags, SaveFullReplay): it returns a pointer to the
+// name of the user id it is given. In a Time Trial session started with the board bridge on (tt.json "tt_bridge") and the
+// launcher signed in (the same home_menu.json the main menu panel reads), the hook returns the account display name instead
+// of the stock persona name; outside Time Trial, signed out, or for a name the HUD font cannot draw it returns the stock
+// result untouched. Read-only: the name cache and every save are never written. SWOFTY_TT_PLAYER_NAME=0 turns it off.
+//
+// Unconfirmed in game: that the HUD's top-left name comes through this lookup (the log line below says whether the hook was
+// hit and what it replaced).
 
 namespace {
 
@@ -36,77 +39,75 @@ const runtime::Sig S_NAME{"Game_PresenceNameCache_Lookup",
                           "8B 49 08 4C 8D 76 30 89 CD EB 31 48 89 D9",
                           0x816b10};
 
-const runtime::Sig S_SETSTR{"Vm_NodeSet_String",
-                            "41 56 56 57 55 53 48 81 EC 20 03 00 00 F6 41 26 01 75 31 44 89 CB 44 89 C7 49 89 D6 48 89 CE 48 8B 49 "
-                            "58 48 8B 01 FF 50 38 84 DB 0F 85 87",
-                            0x828440};
-
-// A VM string value is a refcounted record: refcount i16 at +4, length in the low 20 bits of the u32 at +6, characters from +9.
-using MakeStrFn = uint32_t (*)(void **out, const char *s, uint32_t flags, uintptr_t len);
-using SetStrFn = uint64_t (*)(void *node, void **value, uint32_t a, uint32_t b);
-constexpr uintptr_t RVA_MAKE_STR = 0x19974e0;
-MakeStrFn make_str = nullptr;
-safetyhook::InlineHook h_setstr;
-char stock[runtime::player_name::MAX_BYTES + 1] = {};
-std::atomic<size_t> stock_len{0};
-std::mutex make_lock;
-void *replacement = nullptr;
-std::string replacement_for;
-std::atomic<int> display_hits{0}, display_misses{0};
+using LookupFn = const char *(*)(void *cache, void *id);
 
 safetyhook::InlineHook h_lookup;
+std::atomic<int> hits{0}, replaced{0}, busy{0};
+char shown[runtime::player_name::MAX_BYTES + 1] = {};
+std::string shown_for;
 std::atomic<bool> bridge_on{false};
+std::mutex account_lock;
+std::string account_cached;
+bool account_signed_in = false;
+
+// The launcher account is read from home_menu.json on a worker thread (the main menu's own state is not loaded when the game
+// starts through the chain entry); the lookup hook only copies the cached string.
+void account_worker()
+{
+    for (;;) {
+        auto state = runtime::main_menu::parse_state(runtime::read_file(runtime::swofty_root() + L"home_menu.json", size_t(1) << 20));
+        {
+            std::lock_guard<std::mutex> g(account_lock);
+            account_signed_in = state.loaded && state.signed_in && !state.name.empty();
+            account_cached = account_signed_in ? state.name : std::string();
+        }
+        Sleep(2000);
+    }
+}
+
+bool account_name(std::string &out)
+{
+    std::lock_guard<std::mutex> g(account_lock);
+    if (!account_signed_in)
+        return false;
+    out = account_cached;
+    return true;
+}
 
 const char *lookup_hook(void *cache, void *id)
 {
-    const char *stock_name = h_lookup.call<const char *>(cache, id);
-    if (bridge_on.load(std::memory_order_relaxed) && stock_name && stock_len.load() == 0 && runtime::readable(stock_name, 2)) {
-        size_t n = strnlen(stock_name, sizeof stock - 1);
-        std::memcpy(stock, stock_name, n);
-        stock[n] = 0;
-        stock_len = n;
-        swofty::log("[boards] player name: the stock persona name is \"%s\" (first name cache lookup)", stock);
+    const char *stock = h_lookup.call<const char *>(cache, id);
+    if (!bridge_on.load(std::memory_order_relaxed) || !stock)
+        return stock;
+    if (busy.exchange(1))
+        return stock;
+    const char *result = stock;
+    std::string account;
+    bool tt = swofty_core::apply::moments::session_mode_track().first == "time_trial";
+    bool known = account_name(account);
+    static std::atomic<int> traced{0};
+    if (traced.fetch_add(1) < 8)
+        swofty::log("[boards] player name: lookup %d: time trial %d, account name %s, stock \"%.40s\"", traced.load(), tt ? 1 : 0,
+                    known ? "known" : "unknown", runtime::readable(stock, 4) ? stock : "?");
+    if (tt && known) {
+        std::string clean;
+        if (runtime::player_name::sanitize(account, clean)) {
+            if (clean != shown_for) {
+                std::memcpy(shown, clean.c_str(), clean.size() + 1);
+                shown_for = clean;
+            }
+            result = shown;
+            int n = replaced.fetch_add(1) + 1;
+            if (n <= 3 || n == 50)
+                swofty::log("[boards] player name: showing \"%s\" (source home_menu.json discord name), replacing \"%.40s\" in the "
+                            "name cache lookup (call %d)",
+                            clean.c_str(), runtime::readable(stock, 4) ? stock : "?", n);
+        } else if (hits.fetch_add(1) == 0)
+            swofty::log("[boards] player name: the account name \"%s\" has characters the HUD font lacks; the stock name stays",
+                        account.c_str());
     }
-    return stock_name;
-}
-
-uint64_t setstr_hook(void *node, void **value, uint32_t a, uint32_t b)
-{
-    size_t want = stock_len.load(std::memory_order_relaxed);
-    if (want && value && *value) {
-        const uint8_t *rec = static_cast<const uint8_t *>(*value);
-        if (!runtime::readable(rec, 9 + want + 1))
-            return h_setstr.call<uint64_t>(node, value, a, b);
-        uint32_t len;
-        std::memcpy(&len, rec + 6, 4);
-        len &= 0xfffff;
-        if (len == want && std::memcmp(rec + 9, stock, want) == 0) {
-            std::string account, clean;
-            bool tt = swofty_core::apply::moments::session_mode_track().first == "time_trial";
-            if (tt && runtime::main_menu_account(account) && runtime::player_name::sanitize(account, clean)) {
-                std::lock_guard<std::mutex> g(make_lock);
-                if (clean != replacement_for || !replacement) {
-                    void *made = nullptr;
-                    if (make_str(&made, clean.c_str(), 0, clean.size()) == 0 && made) {
-                        replacement = made;
-                        replacement_for = clean;
-                    }
-                }
-                if (replacement) {
-                    int n = display_hits.fetch_add(1) + 1;
-                    if (n <= 6)
-                        swofty::log("[boards] player name: showing \"%s\" (source home_menu.json discord name) in a UI string at node "
-                                    "0x%llx, was \"%s\" (value record 0x%llx, write %d)",
-                                    clean.c_str(), (unsigned long long)uintptr_t(node), stock, (unsigned long long)uintptr_t(*value), n);
-                    void *use = replacement;
-                    return h_setstr.call<uint64_t>(node, &use, a, b);
-                }
-            } else if (display_misses.fetch_add(1) < 5)
-                swofty::log("[boards] player name: a UI string holds the stock name \"%s\" but is left alone (time trial %d, account name %s)",
-                            stock, tt ? 1 : 0, account.empty() ? "unknown" : "ok");
-        }
-    }
-    return h_setstr.call<uint64_t>(node, value, a, b);
+    busy = 0;
+    return result;
 }
 
 void setup()
@@ -127,16 +128,8 @@ void setup()
         return;
     }
     h_lookup = std::move(*h);
-    make_str = reinterpret_cast<MakeStrFn>(swofty::api->module_base() + RVA_MAKE_STR);
-    if (uintptr_t ss = runtime::find(S_SETSTR, "boards", "boards")) {
-        auto sh = safetyhook::InlineHook::create(reinterpret_cast<void *>(ss), reinterpret_cast<void *>(&setstr_hook));
-        if (sh)
-            h_setstr = std::move(*sh);
-        else
-            swofty::log("[boards] player name: the UI string hook failed: %s", runtime::hook_error(sh.error()).c_str());
-    } else
-        swofty::log("[boards] player name: the UI string hook needs %s (byte signature matched nothing unique)", S_SETSTR.what);
     bridge_on = true;
+    std::thread(account_worker).detach();
     swofty::log("[boards] player name: hook armed at base+0x%llx; in Time Trial the launcher account's name replaces the stock name",
                 (unsigned long long)(at - swofty::api->module_base()));
 }
