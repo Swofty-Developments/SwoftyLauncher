@@ -3503,6 +3503,7 @@ mod tests {
 
     #[test]
     fn a_missing_backup_stops_the_build_and_sends_the_player_through_the_setup_again() {
+        let _pin = crate::builtin::LoaderPin::none();
         let root = std::env::temp_dir().join(format!("swofty-build-backup-gone-{}", std::process::id()));
         std::fs::remove_dir_all(&root).ok();
         let dir = root.join("game");
