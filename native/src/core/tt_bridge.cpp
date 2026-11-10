@@ -13,6 +13,7 @@
 #include "hooks/hooks.hpp"
 
 #include <atomic>
+#include "presence_id_logic.hpp"
 #include <cstdint>
 #include <cstring>
 #include <deque>
@@ -576,52 +577,25 @@ void log_presence_user(uint64_t user)
     static std::atomic<int> logged{0};
     if (!user || logged.load() >= 2 || logged.fetch_add(1) >= 2)
         return;
-    auto hex = [](const uint8_t *b, size_t n) {
-        std::string t;
-        char h[4];
-        for (size_t i = 0; i < n; i++) {
-            snprintf(h, sizeof h, "%02x", b[i]);
-            t += h;
-            if (i % 8 == 7 && i + 1 < n)
-                t += ' ';
-        }
-        return t;
-    };
-    uint8_t obj[0x80] = {}, fn[16] = {}, id[0x40] = {};
-    uint64_t vt = 0, getter = 0;
+    uint8_t obj[0x80] = {};
     if (!runtime::readable(reinterpret_cast<void *>(user), sizeof obj))
         return;
     memcpy(obj, reinterpret_cast<void *>(user), sizeof obj);
+    uint64_t vt = 0;
+    runtime::presence_id::Object o;
     memcpy(&vt, obj, 8);
-    uint64_t base = swofty::api->module_base();
-    std::string getter_text = "vtable not readable";
-    if (vt && runtime::readable(reinterpret_cast<void *>(vt + 0x38), 8)) {
-        memcpy(&getter, reinterpret_cast<void *>(vt + 0x38), 8);
-        if (getter && runtime::readable(reinterpret_cast<void *>(getter), sizeof fn)) {
-            memcpy(fn, reinterpret_cast<void *>(getter), sizeof fn);
-            getter_text = "slot 7 (+0x38) function base+0x" + [&] {
-                char h[24];
-                snprintf(h, sizeof h, "%llx", (unsigned long long)(getter - base));
-                return std::string(h);
-            }() + " bytes " + hex(fn, sizeof fn);
-            int64_t off = -1;
-            if (fn[0] == 0x48 && fn[1] == 0x8d && fn[2] == 0x41 && fn[4] == 0xc3)
-                off = fn[3];
-            else if (fn[0] == 0x48 && fn[1] == 0x8d && fn[2] == 0x81 && fn[7] == 0xc3)
-                off = int32_t(uint32_t(fn[3]) | uint32_t(fn[4]) << 8 | uint32_t(fn[5]) << 16 | uint32_t(fn[6]) << 24);
-            if (off >= 0 && size_t(off) + sizeof id <= 0x4000 && runtime::readable(reinterpret_cast<void *>(user + off), sizeof id)) {
-                memcpy(id, reinterpret_cast<void *>(user + off), sizeof id);
-                getter_text += "; trivial getter, the id struct is at user+0x" + [&] {
-                    char h[24];
-                    snprintf(h, sizeof h, "%llx", (unsigned long long)off);
-                    return std::string(h);
-                }() + ": type " + std::to_string(id[0]) + ", flag(+0x38) " + std::to_string(id[0x38]) + ", platform(+0x39) " +
-                               std::to_string(id[0x39]) + ", bytes " + hex(id, sizeof id);
-            }
-        }
-    }
-    swofty::log("[boards] diag: presence user object 0x%llx (vtable base+0x%llx): %s; %s", (unsigned long long)user,
-                (unsigned long long)(vt - base), hex(obj, sizeof obj).c_str(), getter_text.c_str());
+    memcpy(&o.at18, obj + 0x18, 8);
+    memcpy(&o.at20, obj + 0x20, 8);
+    memcpy(&o.at28, obj + 0x28, 8);
+    runtime::presence_id::Id id = runtime::presence_id::from_presence_object(o);
+    std::vector<uint8_t> raw(obj, obj + sizeof obj);
+    std::vector<uint8_t> stream = runtime::presence_id::serialise(id);
+    swofty::log("[boards] diag: presence user object 0x%llx (vtable base+0x%llx), id as the game's getter (FUN_14411e3c0) builds it: type %u, flag39 %u, flag38 %u, "
+                "value0 %llu (PlatformID of a row with Platform 1), value1 and value2 come from platform service strings and are not compared; serialised id "
+                "stream (%zu bytes, the description's L bytes) hex %s base64 %s; raw object %s",
+                (unsigned long long)user, (unsigned long long)(vt - swofty::api->module_base()), unsigned(id.type), unsigned(id.flag39), unsigned(id.flag38),
+                (unsigned long long)id.value[0], stream.size(), runtime::presence_id::hex(stream).c_str(), runtime::presence_id::base64(stream).c_str(),
+                runtime::presence_id::hex(raw).c_str());
 }
 
 void gate_mid(int idx, safetyhook::Context &c)
