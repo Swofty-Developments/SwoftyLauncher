@@ -381,6 +381,23 @@ inline uint8_t garage_result(uint8_t value, bool bridge_on, bool ours_content)
     return value == 0 && bridge_on && ours_content ? 1 : value;
 }
 
+// The garage's leaderboard privilege control is the UI node `leaderboard_privilege_check`, whose name id is 0x57172c5d. The id is a
+// plain 32-bit value stored in the control object; the predicate looks for it as an aligned dword in a copied byte window.
+// Returns the byte offset of the first match, or -1 for no match or a window too short to hold one.
+constexpr uint32_t GARAGE_LEADERBOARD_NODE = 0x57172c5d;
+
+inline int garage_node_offset(const uint8_t *bytes, size_t n, uint32_t want = GARAGE_LEADERBOARD_NODE)
+{
+    if (!bytes)
+        return -1;
+    for (size_t i = 0; i + 4 <= n; i += 4) {
+        uint32_t v = uint32_t(bytes[i]) | uint32_t(bytes[i + 1]) << 8 | uint32_t(bytes[i + 2]) << 16 | uint32_t(bytes[i + 3]) << 24;
+        if (v == want)
+            return int(i);
+    }
+    return -1;
+}
+
 inline bool ours(int descriptor, bool track_custom) { return descriptor >= FIRST_ADDON_DESCRIPTOR || track_custom; }
 
 // Routing

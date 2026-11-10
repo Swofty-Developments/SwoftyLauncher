@@ -83,6 +83,19 @@ int main()
     expect(tb::board_name(6, 5, 'D') == "LBV0605D" && tb::board_name(12, 3, 'W') == "LBV1203W", "names format back");
 
     // garage privilege result
+    {
+        uint8_t w[64] = {};
+        expect(tb::garage_node_offset(w, sizeof w) == -1, "an all-zero control window does not match the garage leaderboard node");
+        w[20] = 0x5d, w[21] = 0x2c, w[22] = 0x17, w[23] = 0x57;
+        expect(tb::garage_node_offset(w, sizeof w) == 20, "the node id is found at its aligned offset");
+        expect(tb::garage_node_offset(w, 23) == -1 && tb::garage_node_offset(w, 24) == 20, "a window that cuts the value short does not match");
+        w[20] = 0;
+        w[21] = 0x5d, w[22] = 0x2c, w[23] = 0x17, w[24] = 0x57;
+        expect(tb::garage_node_offset(w, sizeof w) == -1, "an unaligned copy of the id does not match");
+        expect(tb::garage_node_offset(nullptr, 64) == -1 && tb::garage_node_offset(w, 0) == -1 && tb::garage_node_offset(w, 3) == -1, "null and tiny windows never match");
+        uint8_t other[16] = {0x5e, 0x2c, 0x17, 0x57, 0xff, 0xff, 0xff, 0xff};
+        expect(tb::garage_node_offset(other, sizeof other) == -1, "another node id does not match");
+    }
     expect(tb::garage_result(0, true, true) == 1, "a denied garage privilege becomes granted for our content");
     expect(tb::garage_result(0, false, true) == 0 && tb::garage_result(0, true, false) == 0, "it stays denied with the bridge off or for stock content");
     expect(tb::garage_result(1, true, true) == 1 && tb::garage_result(0xff, true, true) == 0xff && tb::garage_result(2, true, true) == 2,

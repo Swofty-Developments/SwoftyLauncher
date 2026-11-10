@@ -746,16 +746,41 @@ void priv_mid(safetyhook::Context &c)
     uint32_t type = uint32_t(c.rbp);
     if (bridge_on && type != 1 && type < 12 && content_ours()) {
         char sw[8] = {};
-        bool user_content = type == 2 && GetEnvironmentVariableA("SWOFTY_TT_GARAGE_TYPE2", sw, sizeof sw) && sw[0] == '1';
-        static std::atomic<int> granted{0}, missed{0};
-        if (user_content) {
+        bool broad = type == 2 && GetEnvironmentVariableA("SWOFTY_TT_GARAGE_TYPE2", sw, sizeof sw) && sw[0] == '1';
+        uint8_t win[0x300] = {};
+        size_t have = 0;
+        if (type == 2) {
+            for (size_t n : {sizeof win, size_t(0x100)})
+                if (runtime::readable(reinterpret_cast<void *>(c.r14), n)) {
+                    memcpy(win, reinterpret_cast<void *>(c.r14), n);
+                    have = n;
+                    break;
+                }
+        }
+        int at = type == 2 ? tb::garage_node_offset(win, have) : -1;
+        static std::atomic<int> granted{0}, missed{0}, dumped{0};
+        if (type == 2 && (diag_on || broad) && dumped.load() < 4 && dumped.fetch_add(1) < 4) {
+            swofty::log("[boards] diag: type 2 control 0x%llx (readable window %zu bytes, leaderboard_privilege_check id 0x%x %s in it); first 0x%zx bytes follow",
+                        (unsigned long long)c.r14, have, tb::GARAGE_LEADERBOARD_NODE, at >= 0 ? "found" : "not found", have);
+            for (size_t o = 0; o < have; o += 32) {
+                char line[160];
+                int k = snprintf(line, sizeof line, "+0x%03zx", o);
+                for (size_t i = o; i < o + 32 && i < have; i += 4)
+                    k += snprintf(line + k, sizeof line - k, " %08x", uint32_t(win[i]) | uint32_t(win[i + 1]) << 8 | uint32_t(win[i + 2]) << 16 | uint32_t(win[i + 3]) << 24);
+                swofty::log("[boards] diag:   %s", line);
+            }
+        }
+        if (at >= 0 || broad) {
             c.rflags |= 0x40;
             if (++granted <= 8)
-                swofty::log("[boards] privilege check type 2 of control 0x%llx granted for our content (SWOFTY_TT_GARAGE_TYPE2=1)", (unsigned long long)c.r14);
+                swofty::log("[boards] garage monitor: privilege check type 2 of control 0x%llx granted for our content (leaderboard_privilege_check id 0x%x %s): the panel's check is answered as "
+                            "passed, so car_monitor_tt_leaderboard_privilege_check enables the tab",
+                            (unsigned long long)c.r14, tb::GARAGE_LEADERBOARD_NODE,
+                            at >= 0 ? ("found in the control at +0x" + std::to_string(at)).c_str() : "not found in the control; granted by SWOFTY_TT_GARAGE_TYPE2=1");
             return;
         }
         if (++missed <= 6)
-            swofty::log("[boards] privilege check type %u of control 0x%llx left to the game (SWOFTY_TT_GARAGE_TYPE2=1 would grant type 2)", type, (unsigned long long)c.r14);
+            swofty::log("[boards] privilege check type %u of control 0x%llx left to the game (not the leaderboard_privilege_check node)", type, (unsigned long long)c.r14);
     }
     if (type != 1) {
         if (diag_on && type < 12) {
