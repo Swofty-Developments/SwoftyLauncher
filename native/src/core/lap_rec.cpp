@@ -7,6 +7,7 @@
 #include "direct_start_tt.hpp"
 #include "era_logic.hpp"
 #include "ghost_trace_logic.hpp"
+#include "lap_assists_logic.hpp"
 #include "lap_setup_logic.hpp"
 #include "hooks/core_events.hpp"
 #include "hooks/hooks.hpp"
@@ -103,6 +104,13 @@ Board board;
 std::string started_utc;
 lr::Sealer sealer;
 std::map<uint32_t, LapContext> contexts;
+struct AssistReading {
+    runtime::lap_assists::Raw raw;
+    int device = -1, performance = -1;
+    double at_s = -1e9;
+    bool used = true;
+};
+AssistReading assist_reading;
 runtime::lap_setup::Setup setup_start;
 bool have_setup_start = false;
 std::vector<lr::GameLap> game_in;
@@ -332,9 +340,19 @@ void finish(lr::Sealed &sealed, const LapContext &ctx)
     h.session_time_s = ctx.session_time_s;
     h.rate_hz = 60;
     h.setup = ctx.setup;
+    if (!assist_reading.used && std::fabs(now_seconds() - assist_reading.at_s) < 20.0) {
+        const AssistReading &a = assist_reading;
+        h.assists = runtime::lap_assists::to_json(a.raw, a.device);
+        h.driver_assists = int64_t(runtime::lap_assists::packed(a.raw));
+        if (a.performance == 0 || a.performance == 1)
+            h.performance = lr::performance_name(a.performance);
+        swofty::log("[laps] assists: lap %u %s", lap.index, runtime::lap_assists::diag_text(a.raw, a.device, a.performance).c_str());
+        assist_reading.used = true;
+    } else
+        swofty::log("[laps] assists: lap %u none read from the game's telemetry lap", lap.index);
     if (sealed.game && sealed.game->usable) {
         const lr::TLapExtras &t = sealed.game->tlap;
-        if (t.ok) {
+        if (t.ok && !h.driver_assists) {
             h.assists = swofty::json::Value::object(
                 {{"brk", int64_t(t.brk)}, {"abs", int64_t(t.abs)}, {"trc", int64_t(t.trc)}, {"drl", int64_t(t.drl)},
                  {"gbx", int64_t(t.gbx)}, {"ers", int64_t(t.ers)}, {"input", int64_t(t.input)}});
@@ -572,6 +590,16 @@ void lap_rec_ghost(uintptr_t handler)
     std::lock_guard<std::mutex> lk(lock);
     if (active.load())
         ghost_in.push_back(std::move(b));
+}
+
+void lap_rec_assists(const uint8_t *summary, size_t size, int device, int performance)
+{
+    runtime::lap_assists::Raw raw;
+    if (size < runtime::lap_assists::SUMMARY_SIZE || !runtime::lap_assists::from_summary(summary, raw)) {
+        swofty::log("[laps] assists: the game's summary bytes are not assist levels (unwritten)");
+        return;
+    }
+    assist_reading = {raw, device, performance, now_seconds(), false};
 }
 
 void lap_rec_native_trace(const uint8_t *data, size_t size)

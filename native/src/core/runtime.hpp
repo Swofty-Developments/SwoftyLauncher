@@ -309,6 +309,7 @@ std::string tt_bridge_last_board();
 void tt_bridge_session_enter();
 void lap_rec_ghost(uintptr_t handler);
 void lap_rec_native_trace(const uint8_t *data, size_t size);
+void lap_rec_assists(const uint8_t *summary, size_t size, int device, int performance);
 bool ghost_play_trace_armed();
 void lap_rec_newlap(int car);
 bool telemetry_wants_udp();

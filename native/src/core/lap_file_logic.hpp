@@ -145,7 +145,7 @@ struct Header {
     std::vector<int64_t> sectors_ms;
     std::optional<bool> valid;
     std::string source;
-    std::optional<int64_t> lap_index;
+    std::optional<int64_t> lap_index, driver_assists;
     std::string started_utc;
     std::optional<double> session_time_s;
     std::optional<int> rate_hz;
@@ -203,6 +203,8 @@ inline swofty::json::Value header_json(const Header &h, const Layout &layout)
         v["assists"] = h.assists;
     if (h.setup.type() == swofty::json::Type::object)
         v["setup"] = h.setup;
+    if (h.driver_assists)
+        v["driver_assists"] = *h.driver_assists;
     text(v, "performance", h.performance);
     if (h.rate_hz)
         v["rate_hz"] = int64_t(*h.rate_hz);

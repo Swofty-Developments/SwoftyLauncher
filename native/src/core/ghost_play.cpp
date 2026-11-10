@@ -1,6 +1,7 @@
 #include "ghost_arm_logic.hpp"
 #include "ghost_request_logic.hpp"
 #include "ghost_swlap_logic.hpp"
+#include "lap_assists_logic.hpp"
 #include "runtime.hpp"
 
 #include <windows.h>
@@ -91,6 +92,8 @@ std::atomic<uintptr_t> component{0};
 std::atomic<int> diag_reads{0};
 bool ghost_on = false, diag_on = false, record_on = false;
 std::atomic<bool> trace_armed{false};
+int input_hist[4] = {};
+int64_t last_input_sample = 0;
 int slot_env = -1, slot = 4;
 std::vector<uint8_t> saved_blob;
 bool saved_has = false;
@@ -487,6 +490,28 @@ void game_step(uintptr_t comp)
         do_restore(comp);
 }
 
+int car_input(uintptr_t comp, uintptr_t *car_out = nullptr)
+{
+    uintptr_t tl = tlap_at(comp, 0), car = 0;
+    uint32_t code = 0xff;
+    if (!tl || !mem::read(tl + TL_VEHICLE, car) || !car || !mem::read(car + runtime::lap_assists::CAR_INPUT, code))
+        return -1;
+    if (car_out)
+        *car_out = car;
+    return code < 4 ? int(code) : -1;
+}
+
+void sample_input(uintptr_t comp)
+{
+    int64_t now = now_ms();
+    if (now - last_input_sample < 250)
+        return;
+    last_input_sample = now;
+    int code = car_input(comp);
+    if (code >= 0)
+        input_hist[code]++;
+}
+
 void tick_mid(safetyhook::Context &c)
 {
     static thread_local bool busy = false;
@@ -501,6 +526,8 @@ void tick_mid(safetyhook::Context &c)
         last_slots.clear();
         arming.component(comp);
     }
+    if (record_on)
+        sample_input(comp);
     if (ghost_on)
         game_step(comp);
     if (diag_on) {
@@ -548,6 +575,24 @@ uint64_t newlap_hook(void *comp, void *msg)
     mem::read(uintptr_t(msg) + 0x10, car);
     mem::read(uintptr_t(msg) + 0x18, valid);
     if (record_on && valid) {
+        uintptr_t tl1 = tlap_at(c, 1), car = 0;
+        int game_code = car_input(c, &car), best = -1, perf = -1;
+        for (int i = 0; i < 4; i++)
+            if (input_hist[i] > 0 && (best < 0 || input_hist[i] > input_hist[best]))
+                best = i;
+        uint32_t pv = 0;
+        if (car && mem::read(car + runtime::lap_assists::CAR_PERFORMANCE, pv) && pv < 2)
+            perf = int(pv);
+        uint8_t summary[runtime::lap_assists::SUMMARY_SIZE];
+        if (tl1 && mem::readable(tl1 + TL_SUMMARY, sizeof summary)) {
+            std::memcpy(summary, reinterpret_cast<const void *>(tl1 + TL_SUMMARY), sizeof summary);
+            int device = best >= 0 ? best : game_code;
+            if (best >= 0 && game_code >= 0 && best != game_code)
+                swofty::log("[laps] assists: input device by samples %d, by the car at lap end %d; using the samples", best, game_code);
+            runtime::lap_rec_assists(summary, sizeof summary, device, perf);
+        }
+        for (int &h : input_hist)
+            h = 0;
         std::vector<uint8_t> blob;
         if (uintptr_t tl = tlap_at(c, 1); tl && trace_bytes_of(tl, blob))
             runtime::lap_rec_native_trace(blob.data(), blob.size());
@@ -604,7 +649,7 @@ void setup()
         } else
             swofty::log("[ghost] lap trace hook off: needs %s (byte signature matched nothing unique)", S_NEWLAP.what);
     }
-    if (!ghost_on && !diag_on)
+    if (!ghost_on && !diag_on && !record_on)
         return;
     uintptr_t tick = runtime::find(S_TICK, "ghost", "ghost");
     if (!tick) {
