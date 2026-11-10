@@ -650,8 +650,6 @@ impl Shell {
             .py(px(8.))
             .gap(px(12.))
             .bg(p.surface)
-            .border_t_1()
-            .border_color(p.border_variant)
             .text_size(px(13.));
         let Some((version, tag, reason)) = self.updates.blocked_notice() else {
             let notice = self.updates.waiting_notice()?;

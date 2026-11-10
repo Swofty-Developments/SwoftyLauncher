@@ -14,10 +14,10 @@ use super::overflow::{Link, split_overflow};
 use super::tabs::{ACTIONS, Action, Cursor, Key, Row, Step, Tab};
 use super::{Page, Shell};
 
-pub(super) const COLLAPSE_BELOW: f32 = 900.;
+pub(super) const COLLAPSE_BELOW: f32 = 1040.;
 const COMPACT_BELOW: f32 = 1180.;
 const BAR_HEIGHT: f32 = 68.;
-const SUB_HEIGHT: f32 = 42.;
+pub(super) const SUB_HEIGHT: f32 = 42.;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Popover {
@@ -255,20 +255,25 @@ impl Shell {
             .child(
                 h_flex()
                     .id("top-bar")
+                    .relative()
                     .w_full()
                     .h_full()
                     .items_stretch()
                     .pl(px(14.))
                     .gap(px(10.))
-                    .child(div().flex().items_center().child(left))
                     .child(
                         h_flex()
-                            .flex_1()
-                            .min_w_0()
+                            .absolute()
+                            .top_0()
+                            .left_0()
+                            .right_0()
+                            .h_full()
                             .items_center()
                             .justify_center()
                             .child(tabs),
                     )
+                    .child(div().flex().items_center().child(left))
+                    .child(div().flex_1())
                     .child(
                         h_flex()
                             .items_center()
@@ -439,9 +444,9 @@ impl Shell {
         let mp = self.nav_mp();
         v_flex()
             .id(SharedString::from(format!("tab-{}", tab.label(mp))))
-            .my(px(6.))
-            .px(px(20.))
-            .gap(px(3.))
+            .h(px(BAR_HEIGHT - 8.))
+            .px(px(22.))
+            .gap(px(4.))
             .items_center()
             .justify_center()
             .rounded(px(8.))
@@ -573,10 +578,11 @@ impl Shell {
         Some(
             h_flex()
                 .id("sub-row")
-                .w_full()
-                .flex_shrink_0()
+                .absolute()
+                .top(px(BAR_HEIGHT))
+                .left_0()
+                .right_0()
                 .justify_center()
-                .bg(p.chrome)
                 .child(
                     h_flex()
                         .id("sub-notch")

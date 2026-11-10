@@ -66,6 +66,7 @@ impl Render for Shell {
         if self.dropping && !cx.has_active_drag() {
             self.dropping = false;
         }
+        let has_sub = self.sub_nav(layout_width).is_some();
         let page = self.page_name();
         let tree = v_flex()
             .id("shell")
@@ -86,20 +87,24 @@ impl Render for Shell {
             .text_color(p.text)
             .text_size(px(14.))
             .child(self.top_bar(p, layout_width, cx))
-            .children(self.sub_row(p, layout_width, cx))
             .child(
-                h_flex().flex_1().min_h_0().items_start().bg(p.chrome).child(
+                h_flex().flex_1().min_h_0().items_start().bg(p.background).child(
                     h_flex()
                         .flex_1()
                         .h_full()
                         .min_w_0()
                         .overflow_hidden()
-                        .rounded_t(px(14.))
                         .bg(p.background)
+                        .pt(px(if has_sub {
+                            super::topbar::SUB_HEIGHT + 4.
+                        } else {
+                            0.
+                        }))
                         .children(side)
                         .child(v_flex().flex_1().h_full().min_w_0().child(content)),
                 ),
             )
+            .children(self.sub_row(p, layout_width, cx))
             .children((self.page == Page::Careers).then(|| self.profile_pointer(p, cx)))
             .children(self.popover_layer(p, cx))
             .children(self.update_bar(p))
