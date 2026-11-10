@@ -16,8 +16,8 @@ use super::{Page, Shell};
 
 pub(super) const COLLAPSE_BELOW: f32 = 900.;
 const COMPACT_BELOW: f32 = 1180.;
-const BAR_HEIGHT: f32 = 46.;
-const SUB_HEIGHT: f32 = 38.;
+const BAR_HEIGHT: f32 = 68.;
+const SUB_HEIGHT: f32 = 42.;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Popover {
@@ -32,7 +32,6 @@ pub(crate) struct Notice {
 }
 
 pub(crate) struct SubNav {
-    pub label: &'static str,
     pub inline: Vec<Link>,
     pub more: Vec<Link>,
 }
@@ -58,7 +57,7 @@ impl Shell {
 
     pub(crate) fn sub_nav(&self, layout_width: f32) -> Option<SubNav> {
         let tab = self.page.tab();
-        let (label, links, fixed) = match tab {
+        let (links, fixed) = match tab {
             Some(Tab::Library) => {
                 let mut links = vec![
                     Link::new(Page::Addons, Some(self.library.listed().count())),
@@ -66,22 +65,20 @@ impl Shell {
                     Link::new(Page::Careers, None),
                 ];
                 links.extend(self.addon_page_links());
-                (tr("LIBRARY"), links, 3)
+                (links, 3)
             }
             Some(Tab::Multiplayer) if self.nav_mp() => (
-                tr("MULTIPLAYER"),
                 vec![Link::new(Page::Online, None), Link::new(Page::Multiplayer, None)],
                 2,
             ),
             None if self.developer_mode => (
-                tr("SETTINGS"),
                 vec![Link::new(Page::Settings, None), Link::new(Page::Tools, None)],
                 2,
             ),
             _ => return None,
         };
         let (inline, more) = split_overflow(links, fixed, (layout_width - 260.).max(300.));
-        Some(SubNav { label, inline, more })
+        Some(SubNav { inline, more })
     }
 
     fn addon_page_links(&self) -> Vec<Link> {
@@ -233,12 +230,11 @@ impl Shell {
         let focus = self.nav.filter(|c| c.row == Row::Tabs).map(|c| c.col);
         let left = h_flex()
             .id("notch-left")
-            .h(px(34.))
             .flex_shrink_0()
             .items_center()
-            .gap(px(8.))
-            .child(logo(30.))
-            .when(!collapsed, |d| d.child(wordmark(62.)));
+            .gap(px(10.))
+            .child(logo(42.))
+            .when(!collapsed, |d| d.child(wordmark(84.)));
         let tabs =
             if collapsed {
                 self.tab_menu(current, focus, p, cx).into_any_element()
@@ -252,48 +248,53 @@ impl Shell {
             };
         let action_focus = |a: usize| focus == Some(Tab::ALL.len() + a);
         let notices = self.notices().len();
-        h_flex()
-            .id("top-bar")
+        crate::ui::title_bar(p)
             .h(px(BAR_HEIGHT))
-            .flex_shrink_0()
-            .items_stretch()
-            .pl(px(12.))
-            .gap(px(10.))
-            .bg(p.chrome)
-            .child(div().flex().items_center().child(left))
+            .pl(px(0.))
+            .border_0()
             .child(
                 h_flex()
-                    .flex_1()
-                    .min_w_0()
-                    .items_center()
-                    .justify_center()
-                    .child(tabs),
-            )
-            .child(
-                h_flex()
-                    .items_center()
-                    .gap(px(4.))
-                    .mr(px(6.))
-                    .child(self.bell(notices, action_focus(0), p, cx))
+                    .id("top-bar")
+                    .w_full()
+                    .h_full()
+                    .items_stretch()
+                    .pl(px(14.))
+                    .gap(px(10.))
+                    .child(div().flex().items_center().child(left))
                     .child(
-                        self.icon_button(
-                            "open-settings",
-                            IconName::Settings,
-                            tr("Settings"),
-                            action_focus(1),
-                            p,
-                        )
-                        .when(self.page == Page::Settings || self.page == Page::Tools, |d| {
-                            d.bg(p.selected)
-                        })
-                        .on_click(cx.listener(|this, _, _, cx| {
-                            this.nav = None;
-                            this.popover = None;
-                            this.open_page(Page::Settings, cx);
-                        })),
-                    ),
+                        h_flex()
+                            .flex_1()
+                            .min_w_0()
+                            .items_center()
+                            .justify_center()
+                            .child(tabs),
+                    )
+                    .child(
+                        h_flex()
+                            .items_center()
+                            .gap(px(4.))
+                            .mr(px(6.))
+                            .child(self.bell(notices, action_focus(0), p, cx))
+                            .child(
+                                self.icon_button(
+                                    "open-settings",
+                                    IconName::Settings,
+                                    tr("Settings"),
+                                    action_focus(1),
+                                    p,
+                                )
+                                .when(self.page == Page::Settings || self.page == Page::Tools, |d| {
+                                    d.bg(p.selected)
+                                })
+                                .on_click(cx.listener(|this, _, _, cx| {
+                                    this.nav = None;
+                                    this.popover = None;
+                                    this.open_page(Page::Settings, cx);
+                                })),
+                            ),
+                    )
+                    .child(self.account_block(compact, action_focus(2), p, cx)),
             )
-            .child(self.account_block(compact, action_focus(2), p, cx))
     }
 
     fn icon_button(
@@ -306,17 +307,18 @@ impl Shell {
     ) -> Stateful<Div> {
         h_flex()
             .id(id)
-            .size(px(34.))
+            .size(px(44.))
             .items_center()
             .justify_center()
             .rounded(px(8.))
             .border_1()
             .cursor_pointer()
+            .occlude()
             .text_color(p.text_muted)
             .border_color(if focused { p.accent } else { transparent_black() })
             .hover(move |s| s.bg(p.hover).text_color(p.text))
             .tooltip(move |window, cx| Tooltip::new(tip).build(window, cx))
-            .child(Icon::new(icon).size(px(17.)))
+            .child(Icon::new(icon).size(px(24.)))
     }
 
     fn bell(&self, count: usize, focused: bool, p: Palette, cx: &mut Context<Self>) -> impl IntoElement {
@@ -362,6 +364,7 @@ impl Shell {
             Some(name) => ring(
                 h_flex()
                     .id("account-block")
+                    .occlude()
                     .h_full()
                     .flex_shrink_0()
                     .items_center()
@@ -393,6 +396,7 @@ impl Shell {
             None => ring(
                 h_flex()
                     .id("mp-login")
+                    .occlude()
                     .h_full()
                     .flex_shrink_0()
                     .items_center()
@@ -433,15 +437,18 @@ impl Shell {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let mp = self.nav_mp();
-        h_flex()
+        v_flex()
             .id(SharedString::from(format!("tab-{}", tab.label(mp))))
-            .h(px(34.))
-            .px(px(16.))
+            .my(px(6.))
+            .px(px(20.))
+            .gap(px(3.))
             .items_center()
+            .justify_center()
             .rounded(px(8.))
             .border_1()
             .cursor_pointer()
-            .text_size(px(14.))
+            .occlude()
+            .text_size(px(13.))
             .font_weight(FontWeight::MEDIUM)
             .map(|d| {
                 let d = if active {
@@ -452,6 +459,7 @@ impl Shell {
                 };
                 d.border_color(if focused { p.accent } else { transparent_black() })
             })
+            .child(Icon::new(tab.icon(mp)).size(px(26.)))
             .child(tab.label(mp))
             .on_click(cx.listener(move |this, _, _, cx| {
                 this.nav = None;
@@ -565,25 +573,25 @@ impl Shell {
         Some(
             h_flex()
                 .id("sub-row")
-                .h(px(SUB_HEIGHT))
+                .w_full()
                 .flex_shrink_0()
-                .items_stretch()
-                .gap(px(20.))
-                .px(px(20.))
+                .justify_center()
                 .bg(p.chrome)
-                .border_b_1()
-                .border_color(p.border_variant)
                 .child(
-                    div()
-                        .flex()
-                        .items_center()
-                        .text_size(px(11.))
-                        .font_weight(FontWeight::MEDIUM)
-                        .text_color(p.text_placeholder)
-                        .child(nav.label),
-                )
-                .children(links)
-                .children(more),
+                    h_flex()
+                        .id("sub-notch")
+                        .h(px(SUB_HEIGHT))
+                        .items_stretch()
+                        .gap(px(22.))
+                        .px(px(26.))
+                        .rounded_b(px(14.))
+                        .border_1()
+                        .border_t_0()
+                        .border_color(p.border)
+                        .bg(p.surface)
+                        .children(links)
+                        .children(more),
+                ),
         )
     }
 
@@ -655,13 +663,7 @@ impl Shell {
                     this.popover = None;
                     cx.notify();
                 }))
-                .child(
-                    div()
-                        .absolute()
-                        .top(px(34.) + px(BAR_HEIGHT))
-                        .right(px(8.))
-                        .child(panel),
-                )
+                .child(div().absolute().top(px(BAR_HEIGHT)).right(px(8.)).child(panel))
                 .into_any_element(),
         )
     }

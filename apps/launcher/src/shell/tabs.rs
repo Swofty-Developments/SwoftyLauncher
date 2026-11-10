@@ -1,3 +1,4 @@
+use gpui_kit::assets::IconName;
 use swofty_i18n::tr;
 
 use super::Page;
@@ -20,6 +21,16 @@ impl Tab {
             Self::Discover => tr("Discover"),
             Self::Multiplayer if mp => tr("Multiplayer"),
             Self::Multiplayer => tr("Time Trial"),
+        }
+    }
+
+    pub fn icon(self, mp: bool) -> IconName {
+        match self {
+            Self::Home => IconName::Newspaper,
+            Self::Library => IconName::Puzzle,
+            Self::Discover => IconName::PackageSearch,
+            Self::Multiplayer if mp => IconName::Users,
+            Self::Multiplayer => IconName::Trophy,
         }
     }
 

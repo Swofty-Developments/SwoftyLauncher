@@ -34,7 +34,6 @@ mod render;
 mod seen;
 mod startup;
 mod tabs;
-mod title_bar;
 mod topbar;
 
 pub use page::{Page, PlayState};

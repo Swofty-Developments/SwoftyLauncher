@@ -273,53 +273,6 @@ impl Shell {
             .flex_shrink_0()
             .gap(px(2.))
             .child(head)
-            .when(active && !vanilla, |d| d.child(self.profile_addons(p, cx)))
-            .into_any_element()
-    }
-
-    fn profile_addons(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        let rows: Vec<AnyElement> = self
-            .library
-            .listed()
-            .map(|a| {
-                let id = a.manifest.id.clone();
-                let toggle = self.toggle(format!("side-{id}"), a.enabled, cx, {
-                    let id = id.clone();
-                    move |this, on, window, cx| this.set_addon_enabled(&id, on, window, cx)
-                });
-                h_flex()
-                    .h(px(28.))
-                    .pl(px(14.))
-                    .pr(px(4.))
-                    .gap(px(8.))
-                    .items_center()
-                    .child(
-                        div()
-                            .size(px(6.))
-                            .flex_shrink_0()
-                            .rounded_full()
-                            .bg(if a.enabled { p.success } else { p.switch_off }),
-                    )
-                    .child(
-                        div()
-                            .flex_1()
-                            .min_w_0()
-                            .truncate()
-                            .text_size(px(12.))
-                            .text_color(if a.enabled { p.text } else { p.text_placeholder })
-                            .child(a.manifest.name.clone()),
-                    )
-                    .child(toggle)
-                    .into_any_element()
-            })
-            .collect();
-        v_flex()
-            .ml(px(10.))
-            .pl(px(4.))
-            .pb(px(6.))
-            .border_l_1()
-            .border_color(p.border_variant)
-            .children(rows)
             .into_any_element()
     }
 }

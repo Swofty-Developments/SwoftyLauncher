@@ -85,7 +85,6 @@ impl Render for Shell {
             .bg(p.background)
             .text_color(p.text)
             .text_size(px(14.))
-            .child(self.title_bar(p, cx))
             .child(self.top_bar(p, layout_width, cx))
             .children(self.sub_row(p, layout_width, cx))
             .child(
