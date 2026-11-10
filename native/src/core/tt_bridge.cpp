@@ -1010,9 +1010,27 @@ void handler_watch(uint64_t handler, const std::string &board)
         uint32_t m = peek32(p3 + 0x2a0) ^ peek32(p3 + 0x2a8);
         memcpy(&floor_s, &m, 4);
     }
-    char checks[240];
-    snprintf(checks, sizeof checks, "check 1 (session timer flag) %s [limit %u s], validator 0 minimum lap floor %.3f s%s", check1 ? "ok" : "TRIPPED", limit, floor_s,
-             p3 ? "" : " (not readable)");
+    std::string active;
+    if (sysobj && lst) {
+        uint64_t end = peek64(sysobj + 0x40);
+        size_t count = end >= lst ? std::min<uint64_t>((end - lst) / 16, 6) : 0;
+        static const uint32_t offs[6] = {0x88, 0x40, 0x38, 0x18, 0x28, 0};
+        for (size_t i = 0; i < count; i++) {
+            uint64_t v = peek64(lst + 16 * i + 8);
+            if (!v || !offs[i]) {
+                active += std::string(i ? " " : "") + "?";
+                continue;
+            }
+            bool on = (peek64(v + offs[i] + 8) & 1) != (peek32(v + offs[i]) & 0xff);
+            active += std::string(i ? " " : "") + (on ? "1" : "0");
+        }
+    }
+    bool a_ok = sysobj && ((peek64(sysobj + 0x170) & 1) == (peek32(sysobj + 0x168) & 0xff));
+    char checks[400];
+    snprintf(checks, sizeof checks,
+             "check 1 (session timer flag) %s [limit %u s, flag 2 %s, system flag A %s, +0x198 object %s], validators reporting activity (0 1 2 3 4 5): %s, validator 0 minimum lap floor %.3f s%s",
+             check1 ? "ok" : "TRIPPED", limit, sysobj && ((peek64(sysobj + 0xbc8) & 1) == (peek32(sysobj + 0xbc0) & 0xff)) ? "ok" : "off", a_ok ? "ok" : "off",
+             sysobj && peek64(sysobj + 0x198) ? "present" : "absent", active.empty() ? "?" : active.c_str(), floor_s, p3 ? "" : " (not readable)");
     blockers += std::string(blockers.empty() ? "" : "; ") + checks;
     char t[640];
     snprintf(t, sizeof t,
