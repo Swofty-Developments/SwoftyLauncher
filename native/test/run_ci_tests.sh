@@ -89,6 +89,7 @@ t "Time Trial boards bridge unit test" native/test/run_tt_bridge_test.sh
 t "Lap recorder state machine, field plan and session gate unit test" native/test/run_lap_rec_test.sh
 t "Ghost trace codec and lap converter unit test" native/test/run_ghost_trace_test.sh
 t "Ghost arming state machine unit test" native/test/run_ghost_arm_test.sh
+t "Lap setup capture unit test" native/test/run_lap_setup_test.sh
 t "Front-end tile list guard unit test" native/test/run_fe_tile_guard_test.sh
 t "Main menu logic unit test" native/test/run_main_menu_test.sh
 t "Session enter guard unit test" native/test/run_session_enter_test.sh

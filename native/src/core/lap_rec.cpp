@@ -7,6 +7,7 @@
 #include "direct_start_tt.hpp"
 #include "era_logic.hpp"
 #include "ghost_trace_logic.hpp"
+#include "lap_setup_logic.hpp"
 #include "hooks/core_events.hpp"
 #include "hooks/hooks.hpp"
 #include "lap_game_logic.hpp"
@@ -63,6 +64,7 @@ struct LapContext {
     Board board;
     std::string started_utc;
     std::optional<double> session_time_s;
+    swofty::json::Value setup;
 };
 
 struct Blob {
@@ -101,6 +103,8 @@ Board board;
 std::string started_utc;
 lr::Sealer sealer;
 std::map<uint32_t, LapContext> contexts;
+runtime::lap_setup::Setup setup_start;
+bool have_setup_start = false;
 std::vector<lr::GameLap> game_in;
 std::vector<Blob> ghost_in;
 LARGE_INTEGER qpc_freq;
@@ -327,6 +331,7 @@ void finish(lr::Sealed &sealed, const LapContext &ctx)
     h.started_utc = ctx.started_utc;
     h.session_time_s = ctx.session_time_s;
     h.rate_hz = 60;
+    h.setup = ctx.setup;
     if (sealed.game && sealed.game->usable) {
         const lr::TLapExtras &t = sealed.game->tlap;
         if (t.ok) {
@@ -385,6 +390,28 @@ void finish(lr::Sealed &sealed, const LapContext &ctx)
                                               r.valid ? (*r.valid ? 1 : 0) : -1);
 }
 
+bool read_setup_now(runtime::lap_setup::Setup &out)
+{
+    mem::Trust trust(runtime::HEAP_TRUST_MS);
+    uintptr_t car = live_car::player_car();
+    return car && runtime::lap_setup::read(read_memory, car, out);
+}
+
+swofty::json::Value lap_setup_of(uint32_t index)
+{
+    runtime::lap_setup::Setup end;
+    bool have_end = read_setup_now(end);
+    runtime::lap_setup::Setup use = have_setup_start ? setup_start : end;
+    bool have = have_setup_start || have_end;
+    if (have_setup_start && have_end)
+        use.changed = runtime::lap_setup::differs(setup_start, end);
+    swofty::log("[laps] setup: lap %u %s%s %s", index, have ? "" : "unreadable", use.changed ? " (changed during the lap)" : "",
+                have ? runtime::lap_setup::diag_text(use).c_str() : "");
+    setup_start = end;
+    have_setup_start = have_end;
+    return have ? runtime::lap_setup::to_json(use) : swofty::json::Value();
+}
+
 void release(std::vector<lr::Sealed> ready)
 {
     for (auto &s : ready) {
@@ -418,12 +445,13 @@ void drain(const live_car::LiveCar &c)
     for (auto &p : work) {
         lr::Outcome &o = p.outcome;
         if (o.kind == lr::Outcome::completed) {
-            contexts[o.lap.index] = {board, started_utc, session_clock()};
+            contexts[o.lap.index] = {board, started_utc, session_clock(), lap_setup_of(o.lap.index)};
             double ended = o.lap.ended_s + o.lap.shift_s + paused_total.load();
             sealer.lap(std::move(o.lap), ended);
             board = snapshot(c);
             started_utc = utc_now();
         } else if (o.kind == lr::Outcome::started) {
+            have_setup_start = read_setup_now(setup_start);
             board = snapshot(c);
             started_utc = utc_now();
             swofty::log("[laps] timing started, board %s|%s|%s%s", board.content.c_str(),

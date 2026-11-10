@@ -258,6 +258,17 @@ bool read(LiveCar &out)
     return true;
 }
 
+uintptr_t player_car()
+{
+    if (!resolved)
+        resolve();
+    if (!table || !count)
+        return 0;
+    uintptr_t car = 0;
+    bool ai = false;
+    return find_player(car, ai) >= 0 && !ai ? car : 0;
+}
+
 bool read_dynamics(LiveDynamics &out)
 {
     out = LiveDynamics{};
