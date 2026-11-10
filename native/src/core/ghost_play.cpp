@@ -441,7 +441,7 @@ void do_arm(uintptr_t comp, int pick, const Request &req)
     }
     armed_lap_s = req.lap_s;
     arming.armed_ok(pick);
-    swofty::log("[ghost] armed: '%s' (%.3f s) is lap %d's trace; it plays from the next lap start", req.label.c_str(), req.lap_s, pick);
+    swofty::log("[ghost] armed: '%s' (%.3f s) is lap %d's trace; it plays from the next lap start (the stock lap-start routine sets play mode)", req.label.c_str(), req.lap_s, pick);
 }
 
 void game_step(uintptr_t comp)
@@ -457,6 +457,26 @@ void game_step(uintptr_t comp)
     }
     arming.request(req ? gen : 0);
     auto d = arming.decide(views_of(comp), slot_env, now_ms());
+    static std::string last_why;
+    static bool playing = false;
+    if (req && last_why != arming.why()) {
+        last_why = arming.why();
+        swofty::log("[ghost] request pending: %s", last_why.c_str());
+    }
+    if (arming.armed() && arming.slot() >= 0) {
+        uintptr_t tl = tlap_at(comp, arming.slot());
+        LapState s = tl ? state_of(tl) : LapState{};
+        uint16_t live_flag = 0;
+        if (tl)
+            mem::read(tl + 0x2cc, live_flag);
+        bool now_playing = tl && s.mode == 2 && s.count > 0 && std::fabs(s.lap - armed_lap_s) < 0.002f;
+        if (now_playing != playing) {
+            playing = now_playing;
+            swofty::log("[ghost] %s: lap %d mode %u/%u count %u time %.3f t %.3f flag2cc %u bound 0x%llx", playing ? "PLAYBACK STARTED" : "playback stopped",
+                        arming.slot(), s.mode, s.want, s.count, s.lap, s.time, unsigned(live_flag), (unsigned long long)s.bound);
+        }
+    } else
+        playing = false;
     if (d.what == runtime::ghost_arm::Do::arm && req)
         do_arm(comp, d.slot, *req);
     else if (d.what == runtime::ghost_arm::Do::restore)

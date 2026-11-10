@@ -1,6 +1,7 @@
 #include "ghost_arm_logic.hpp"
 
 #include <cstdio>
+#include <string>
 
 namespace ga = runtime::ghost_arm;
 
@@ -35,6 +36,16 @@ static ga::Views session_start()
     return v;
 }
 
+static ga::Views window()
+{
+    ga::Views v = session_start();
+    for (auto &x : v.s)
+        if (x.present)
+            x.mode = x.want = 1;
+    v.s[0].mode = v.s[0].want = 0;
+    return v;
+}
+
 static ga::Views first_lap(uint32_t n)
 {
     ga::Views v = session_start();
@@ -60,8 +71,11 @@ int main()
     a.component(0x500f27f60);
     a.request(1);
     expect(a.decide(session_start(), -1, 0).what == ga::Do::none, "nothing at session start (0 bound m0 n0, 3 bound m0 n0)");
-    expect(a.decide(first_lap(10), -1, 1).what == ga::Do::none, "nothing while the player's lap has fewer than 50 records");
-    auto d = a.decide(first_lap(60), -1, 2);
+    expect(std::string(a.why()).find("settled") != std::string::npos, "the pending reason names the settling");
+    auto d = a.decide(window(), -1, 1);
+    expect(d.what == ga::Do::arm && d.slot == 3, "arms slot 3 in the window before timing (0 bound m0, 3 bound m1)");
+    expect(a.decide(first_lap(12), -1, 1).what == ga::Do::arm, "arms at once mid-lap (n12)");
+    d = a.decide(first_lap(60), -1, 2);
     expect(d.what == ga::Do::arm && d.slot == 3, "arms slot 3 when the rival is unbound and the lap is live");
     auto v = first_lap(60);
     v.s[4] = slot(true, 2);

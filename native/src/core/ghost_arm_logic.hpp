@@ -6,7 +6,7 @@
 // and acts on the decision; it never blocks and never loops.
 namespace runtime::ghost_arm {
 
-constexpr int SLOTS = 6, MAX_ATTEMPTS = 3, LIVE_RECORDS = 50;
+constexpr int SLOTS = 6, MAX_ATTEMPTS = 3;
 constexpr int64_t RETRY_MS = 2000;
 
 struct SlotView {
@@ -25,12 +25,12 @@ struct Decision {
     int slot = -1;
 };
 
-// The session is live once the player's lap (slot 0, bound to the player's car) is recording: mode 3 with samples. At
-// session start every lap reads mode 0 and count 0, and nothing is written then.
-inline bool live(const Views &v)
+// The window to write a trace is after the laps settle (the target lap left mode 0 for 1 or 2) and before or during the
+// player's lap; the stock lap-start routine then puts the target into play mode. At session start every lap reads mode 0.
+inline bool settled(const Views &v, int pick)
 {
-    const SlotView &p = v.s[0];
-    return p.present && p.bound && p.mode == 3 && p.error == 0 && p.count >= uint32_t(LIVE_RECORDS);
+    const SlotView &p = v.s[0], &t = v.s[pick];
+    return p.present && p.bound && p.error == 0 && t.present && t.bound && t.error == 0 && t.mode != 0;
 }
 
 inline int pick_slot(const Views &v, int env)
@@ -65,22 +65,48 @@ public:
     bool armed() const { return armed_; }
     int slot() const { return slot_; }
 
+    const char *why() const { return why_; }
+
     Decision decide(const Views &v, int env, int64_t now)
     {
         if (!gen_) {
+            why_ = "no request";
             if (armed_ && slot_ == 3)
                 return {Do::restore, 3};
             armed_ = false;
             return {};
         }
-        if (armed_ && !rearm_)
+        if (armed_ && !rearm_) {
+            why_ = "armed";
             return {};
-        if (attempts_ >= MAX_ATTEMPTS || now < retry_at_ || !live(v))
+        }
+        if (attempts_ >= MAX_ATTEMPTS) {
+            why_ = "gave up after three failures";
             return {};
+        }
+        if (now < retry_at_) {
+            why_ = "waiting after a failure";
+            return {};
+        }
         int pick = pick_slot(v, env);
         const SlotView &t = v.s[pick];
-        if (!t.present || !t.bound || t.error != 0)
+        if (!t.present || !v.s[0].present) {
+            why_ = "the laps do not exist yet";
             return {};
+        }
+        if (!t.bound) {
+            why_ = "the target lap is not bound to a car";
+            return {};
+        }
+        if (t.error != 0 || v.s[0].error != 0) {
+            why_ = "a lap reports an error";
+            return {};
+        }
+        if (!settled(v, pick)) {
+            why_ = "the laps have not settled (target lap still in mode 0)";
+            return {};
+        }
+        why_ = "ready";
         return {Do::arm, pick};
     }
 
@@ -109,6 +135,7 @@ private:
     bool armed_ = false, rearm_ = false;
     int attempts_ = 0, slot_ = -1;
     int64_t retry_at_ = 0;
+    const char *why_ = "";
 };
 
 }
