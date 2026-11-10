@@ -6,6 +6,7 @@
 
 pub mod api;
 pub mod fingerprint;
+pub mod integrity;
 pub mod queue;
 pub mod swlap;
 pub mod upload;

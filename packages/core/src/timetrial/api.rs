@@ -154,6 +154,67 @@ impl Api {
         self.send("POST", "/v1/tt/sessions", None, CALL_TIMEOUT)
     }
 
+    /// What the server offers as the integrity module: its version, size, hash and signature.
+    pub fn integrity(&self) -> Result<Value, ApiError> {
+        let bytes = self.get("/v1/tt/integrity", CALL_TIMEOUT, 64 * 1024)?;
+        serde_json::from_slice(&bytes).map_err(|e| ApiError {
+            status: 200,
+            message: format!("the server's answer to GET /v1/tt/integrity is not valid: {e}"),
+            retry_after: None,
+        })
+    }
+
+    /// The integrity module's bytes for `version`, at most `limit` of them.
+    pub fn integrity_file(&self, version: &str, limit: u64, timeout: Duration) -> Result<Vec<u8>, ApiError> {
+        self.get(&format!("/v1/tt/integrity/file?version={version}"), timeout, limit)
+    }
+
+    fn get(&self, path: &str, timeout: Duration, limit: u64) -> Result<Vec<u8>, ApiError> {
+        if !http::bearer_allowed(&self.server) {
+            return Err(ApiError::network(format!(
+                "refusing to send the session token to {} over plain http; use https",
+                self.server
+            )));
+        }
+        let url = format!("{}{path}", self.server);
+        let sent = ureq::get(&url)
+            .header("Authorization", &format!("Bearer {}", self.token))
+            .header("User-Agent", "swofty-launcher")
+            .header("Accept-Encoding", "identity")
+            .config()
+            .timeout_global(Some(timeout))
+            .timeout_connect(Some(Duration::from_secs(10)))
+            .max_redirects(0)
+            .http_status_as_error(false)
+            .build()
+            .call();
+        let mut response =
+            sent.map_err(|e| ApiError::network(format!("couldn't reach {}: {e}", self.server)))?;
+        let status = response.status().as_u16();
+        let retry_after = response
+            .headers()
+            .get("retry-after")
+            .and_then(|v| v.to_str().ok())
+            .and_then(|v| v.trim().parse::<u64>().ok());
+        let body = response
+            .body_mut()
+            .with_config()
+            .limit(limit + 1)
+            .read_to_vec()
+            .map_err(|e| ApiError::network(format!("reading the answer to GET {path}: {e}")))?;
+        if body.len() as u64 > limit {
+            return Err(ApiError::network(format!(
+                "the answer to GET {path} is longer than the {limit} bytes expected"
+            )));
+        }
+        if !(200..300).contains(&status) {
+            let mut e = ApiError::from_body(status, &String::from_utf8_lossy(&body));
+            e.retry_after = e.retry_after.or(retry_after);
+            return Err(e);
+        }
+        Ok(body)
+    }
+
     fn send<T: serde::de::DeserializeOwned>(
         &self,
         method: &str,
