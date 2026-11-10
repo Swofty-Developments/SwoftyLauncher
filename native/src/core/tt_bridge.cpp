@@ -901,8 +901,33 @@ void select_board_mid(safetyhook::Context &c)
 std::string watch_seen;
 int32_t last_state = -1;
 
+void describe_checks(uint64_t handler, const std::string &board)
+{
+    static std::atomic<uint64_t> done{0};
+    if (done.exchange(handler) == handler)
+        return;
+    uint64_t base = swofty::api->module_base();
+    auto rva = [&](uint64_t a) { return a >= base && a < base + 0x20000000 ? a - base : 0; };
+    uint64_t obj = peek64(handler + 0x18), vt = obj ? peek64(obj) : 0;
+    std::string list;
+    uint64_t b = obj ? peek64(obj + 0x38) : 0, e = obj ? peek64(obj + 0x40) : 0;
+    size_t n = b && e >= b ? std::min<uint64_t>((e - b) / 16, 32) : 0;
+    for (size_t i = 0; i < n; i++) {
+        uint64_t v = peek64(b + 16 * i + 8), vvt = v ? peek64(v) : 0;
+        char one[120];
+        snprintf(one, sizeof one, "%s[object 0x%llx vtable base+0x%llx, +0x88 -> base+0x%llx]", i ? ", " : "", (unsigned long long)v, (unsigned long long)rva(vvt),
+                 (unsigned long long)rva(vvt ? peek64(vvt + 0x88) : 0));
+        list += one;
+    }
+    swofty::log("[boards] first-lap save checks of handler 0x%llx board %s: the system at handler+0x18 is object 0x%llx, vtable base+0x%llx, +0x130 check -> base+0x%llx; "
+                "%zu validator(s) at +0x38: %s",
+                (unsigned long long)handler, board.c_str(), (unsigned long long)obj, (unsigned long long)rva(vt), (unsigned long long)rva(vt ? peek64(vt + 0x130) : 0), n,
+                list.empty() ? "none" : list.c_str());
+}
+
 void handler_watch(uint64_t handler, const std::string &board)
 {
+    describe_checks(handler, board);
     auto b = [&](uint64_t off) { return unsigned(peek32(handler + off) & 0xff); };
     auto w = [&](uint64_t off) { return unsigned(peek32(handler + off)); };
     uint64_t finder = peek64(handler + 0x508);
