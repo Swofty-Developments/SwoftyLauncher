@@ -1,3 +1,4 @@
+mod moderation;
 mod page;
 mod state;
 

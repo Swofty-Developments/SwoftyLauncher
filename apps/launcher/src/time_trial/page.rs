@@ -1,5 +1,5 @@
 use gpui_kit::assets::IconName;
-use gpui_kit::component::button::{Button, ButtonVariants};
+use gpui_kit::component::button::Button;
 use gpui_kit::component::input::Input;
 use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
@@ -7,7 +7,8 @@ use gpui_kit::*;
 use swofty_core::timetrial::boards::{Row, format_time};
 use swofty_i18n::{tr, trf};
 
-use super::state::{Load, Pick};
+use super::moderation::flag;
+use super::state::{Load, Pick, View};
 use crate::pages::GUTTER;
 use crate::scale::px;
 use crate::shell::Shell;
@@ -30,6 +31,7 @@ impl Shell {
             .on_click(cx.listener(|this, _, _, cx| {
                 this.tt_load_catalog(cx);
                 this.tt_reload(cx);
+                this.tt_load_pending(cx);
             }));
         if self.mp.is_none() {
             let header = self.header(
@@ -47,8 +49,25 @@ impl Shell {
                 )
                 .into_any_element();
         }
-        let tracks = self.tt_tracks(p, cx);
-        let board = self.tt_board(p, window, cx);
+        let admin = self.tt_admin();
+        let pending_view = admin && self.tt.view == View::Pending;
+        let body = match pending_view {
+            true => self.tt_pending(p, window, cx),
+            false => {
+                let tracks = self.tt_tracks(p, cx);
+                let board = self.tt_board(p, window, cx);
+                h_flex()
+                    .flex_1()
+                    .min_h_0()
+                    .gap(px(16.))
+                    .px(px(GUTTER))
+                    .pb(px(16.))
+                    .child(tracks)
+                    .child(board)
+                    .into_any_element()
+            }
+        };
+        let tabs = admin.then(|| self.tt_tabs(p, cx));
         let header = self.header(
             tr("Time Trial"),
             tr("Leaderboards for every track").to_owned(),
@@ -58,16 +77,8 @@ impl Shell {
         v_flex()
             .size_full()
             .child(header)
-            .child(
-                h_flex()
-                    .flex_1()
-                    .min_h_0()
-                    .gap(px(16.))
-                    .px(px(GUTTER))
-                    .pb(px(16.))
-                    .child(tracks)
-                    .child(board),
-            )
+            .children(tabs)
+            .child(body)
             .into_any_element()
     }
 
@@ -158,7 +169,8 @@ impl Shell {
                 .into_any_element();
         };
         let search = self.tt_search(window, cx);
-        let rows = self.tt.visible();
+        let rows: Vec<Row> = self.tt.visible().into_iter().cloned().collect();
+        let rows_len = rows.len();
         let total = match &self.tt.rows {
             Load::Ready(r) => r.len(),
             _ => 0,
@@ -169,11 +181,11 @@ impl Shell {
             Load::Ready(_) if total == 0 => note(tr("No laps on this board yet."), p),
             Load::Ready(_) if rows.is_empty() => note(tr("No driver matches that name."), p),
             Load::Ready(_) => {
-                let rows: Vec<AnyElement> = rows
-                    .iter()
-                    .enumerate()
-                    .map(|(i, r)| self.tt_row(i, r, p))
-                    .collect();
+                let mut built = Vec::new();
+                for (i, r) in rows.iter().enumerate() {
+                    built.push(self.tt_row(i, r, p, window, cx));
+                }
+                let rows = built;
                 div()
                     .flex_1()
                     .min_h_0()
@@ -202,7 +214,7 @@ impl Shell {
                     )
                     .child(div().text_size(px(12.)).text_color(p.text_muted).child(trf!(
                         "{shown} of {total} drivers",
-                        shown = self.tt.visible().len(),
+                        shown = rows_len,
                         total = total
                     )))
                     .child(
@@ -228,23 +240,42 @@ impl Shell {
             .into_any_element()
     }
 
-    fn tt_row(&self, i: usize, row: &Row, p: Palette) -> AnyElement {
+    fn tt_row(
+        &mut self,
+        i: usize,
+        row: &Row,
+        p: Palette,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
         let place = row.rank.map(|r| r as usize).unwrap_or(i + 1);
-        h_flex()
+        let flagged = row.pending() && self.tt_admin();
+        let open = flagged && self.tt.open_lap.as_deref() == Some(row.lap_id.as_str());
+        let id = row.lap_id.clone();
+        let line = h_flex()
             .id(SharedString::from(format!("tt-row-{}", row.lap_id)))
             .h(px(40.))
             .px(px(14.))
             .gap(px(12.))
             .items_center()
-            .when(i > 0, |d| d.border_t_1().border_color(p.border_variant))
+            .when(flagged, |d| {
+                d.cursor_pointer()
+                    .hover(move |s| s.bg(p.hover))
+                    .on_click(cx.listener(move |this, _, _, cx| this.tt_select_lap(&id, cx)))
+            })
+            .when(open, |d| d.bg(p.surface))
             .child(
                 div()
                     .w(px(32.))
                     .flex_shrink_0()
                     .text_size(px(13.))
                     .text_color(p.text_muted)
-                    .child(place.to_string()),
+                    .child(match row.pending() {
+                        true => "-".to_owned(),
+                        false => place.to_string(),
+                    }),
             )
+            .when(flagged, |d| d.child(flag(p)))
             .child(
                 div()
                     .flex_1()
@@ -267,7 +298,12 @@ impl Shell {
                     .text_size(px(12.))
                     .text_color(p.text_muted)
                     .child(row.date.chars().take(10).collect::<String>()),
-            )
+            );
+        let panel = open.then(|| self.tt_actions(&row.lap_id, &row.reasons, p, window, cx));
+        v_flex()
+            .when(i > 0, |d| d.border_t_1().border_color(p.border_variant))
+            .child(line)
+            .children(panel)
             .into_any_element()
     }
 }
