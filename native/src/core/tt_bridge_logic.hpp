@@ -445,6 +445,20 @@ inline std::string replay_capture_name(uint64_t unix_seconds, uint32_t lap_ms)
     return "pb_" + std::to_string(unix_seconds) + "_" + std::to_string(lap_ms) + ".replay";
 }
 
+// The replay MANAGER (the object SaveFullReplay and its path builder are methods of; the results screen holds it) is not the GameReplaySystem:
+// it holds the system at +0x40, an embedded directory provider with a vtable at +0x20, a lock pointer at +0x118, a job queue pointer at +0x150
+// and a bool at +0x6e1. All values are plain reads; the call is allowed only when every one fits.
+struct ReplayManagerView {
+    uint64_t vtable20 = 0, system40 = 0, lock118 = 0, queue150 = 0;
+    uint8_t flag6e1 = 0xff;
+};
+
+inline bool replay_manager_plausible(const ReplayManagerView &m, uint64_t system, uint64_t module_lo, uint64_t module_hi, bool vtable_readable, bool lock_readable, bool queue_readable)
+{
+    return system != 0 && m.system40 == system && m.vtable20 >= module_lo && m.vtable20 < module_hi && vtable_readable && m.flag6e1 <= 1 && m.lock118 > 0x10000 &&
+           m.lock118 < 0x7fffffffffffull && lock_readable && m.queue150 > 0x10000 && m.queue150 < 0x7fffffffffffull && queue_readable;
+}
+
 // A lap marks a replay save when it is valid (or validity is unknown, -1) and faster than the session's best so far (0 = none yet).
 inline bool replay_lap_is_best(int64_t lap_ms, int valid, int64_t session_best_ms)
 {
@@ -454,7 +468,7 @@ inline bool replay_lap_is_best(int64_t lap_ms, int valid, int64_t session_best_m
 // The save may be started only for our content with the bridge on, with a replay system whose vtable is the game's and a recording enabled.
 inline bool replay_capture_allowed(bool env_on, bool bridge_on, bool ours_content, bool vtable_ok, uint8_t recording_flag, uint64_t job_queue)
 {
-    return env_on && bridge_on && ours_content && vtable_ok && recording_flag != 0 && job_queue != 0;
+    return env_on && bridge_on && ours_content && vtable_ok && recording_flag == 1 && job_queue != 0;
 }
 
 // The game finished writing when the size is non-zero and unchanged across `stable_needed` polls.

@@ -1118,14 +1118,58 @@ void replay_watch(std::wstring path, uint32_t lap_ms, uint64_t stamp)
     swofty::log("[replay] capture: the game's save %s did not appear within 180 s", narrow(path.c_str()).c_str());
 }
 
-std::atomic<uint64_t> replay_system_ptr{0};
+std::atomic<uint64_t> replay_system_ptr{0}, replay_manager_ptr{0};
+
+bool replay_manager_ok(uint64_t m, uint64_t system)
+{
+    if (!m || !runtime::readable(reinterpret_cast<void *>(m + 0x6e0), 2) || !runtime::readable(reinterpret_cast<void *>(m + 0x20), 0x28) || !runtime::readable(reinterpret_cast<void *>(m + 0x118), 8) ||
+        !runtime::readable(reinterpret_cast<void *>(m + 0x150), 8))
+        return false;
+    tb::ReplayManagerView v;
+    v.vtable20 = peek64(m + 0x20), v.system40 = peek64(m + 0x40), v.lock118 = peek64(m + 0x118), v.queue150 = peek64(m + 0x150);
+    v.flag6e1 = *reinterpret_cast<uint8_t *>(m + 0x6e1);
+    uintptr_t base = swofty::api->module_base();
+    return tb::replay_manager_plausible(v, system, base, base + 0x20000000ull, runtime::readable(reinterpret_cast<void *>(v.vtable20), 16),
+                                        runtime::readable(reinterpret_cast<void *>(v.lock118), 8), runtime::readable(reinterpret_cast<void *>(v.queue150), 0x50));
+}
+
+// The manager is found by plain reads only: every qword of the system's first 0x800 bytes, and every qword of the first 0x200 bytes behind
+// those pointers, that is a readable user-space pointer is tested with replay_manager_ok (it must link back to the system at +0x40).
+uint64_t replay_find_manager(uint64_t system, std::string &how)
+{
+    auto user = [](uint64_t p) { return p > 0x10000 && p < 0x7fffffffffffull && (p & 7) == 0; };
+    for (uint64_t o = 0; o < 0x800; o += 8) {
+        uint64_t p = peek64(system + o);
+        if (!user(p) || !runtime::readable(reinterpret_cast<void *>(p), 8))
+            continue;
+        if (replay_manager_ok(p, system)) {
+            how = "system+0x" + std::to_string(o);
+            return p;
+        }
+        if (!runtime::readable(reinterpret_cast<void *>(p), 0x200))
+            continue;
+        for (uint64_t o2 = 0; o2 < 0x200; o2 += 8) {
+            uint64_t q = peek64(p + o2);
+            if (user(q) && runtime::readable(reinterpret_cast<void *>(q), 8) && replay_manager_ok(q, system)) {
+                how = "system+0x" + std::to_string(o) + " -> +0x" + std::to_string(o2);
+                return q;
+            }
+        }
+    }
+    return 0;
+}
 
 void replay_save_entry_mid(safetyhook::Context &c)
 {
     static std::atomic<int> logged{0};
     replay_system_seen = c.rcx;
-    if (runtime::readable(reinterpret_cast<void *>(c.rcx), 8) && peek64(c.rcx) == swofty::api->module_base() + GAME_REPLAY_SYSTEM_VTABLE_RVA)
-        replay_system_ptr = c.rcx;
+    if (runtime::readable(reinterpret_cast<void *>(c.rcx + 0x40), 8)) {
+        uint64_t sys = peek64(c.rcx + 0x40);
+        if (runtime::readable(reinterpret_cast<void *>(sys), 8) && peek64(sys) == swofty::api->module_base() + GAME_REPLAY_SYSTEM_VTABLE_RVA && replay_manager_ok(c.rcx, sys)) {
+            replay_manager_ptr = c.rcx;
+            replay_system_ptr = sys;
+        }
+    }
     if (++logged <= 6)
         swofty::log("[replay] the game started ReplayManager::SaveFullReplay on 0x%llx, path %s", (unsigned long long)c.rcx,
                     runtime::readable(reinterpret_cast<void *>(c.rdx), 2) ? narrow(reinterpret_cast<const wchar_t *>(c.rdx)).c_str() : "?");
@@ -1171,16 +1215,31 @@ void replay_tick(uint64_t sys, const char *slot)
     int64_t pending = replay_pending_ms.load();
     if (!vt_ok || !tb::replay_capture_due(pending, now_ms(), REPLAY_SAVE_DELAY_MS))
         return;
-    uint8_t rec = runtime::readable(reinterpret_cast<void *>(sys + 0x6e1), 1) ? *reinterpret_cast<uint8_t *>(sys + 0x6e1) : 0xff;
-    uint64_t queue = peek64(sys + 0x150);
+    uint64_t mgr = replay_manager_ptr.load();
+    static std::atomic<uint64_t> searched_for{0};
+    if (mgr && !replay_manager_ok(mgr, sys))
+        mgr = 0;
+    if (!mgr && searched_for.exchange(sys) != sys) {
+        std::string how;
+        mgr = replay_find_manager(sys, how);
+        swofty::log("[replay] replay manager search from the GameReplaySystem 0x%llx: %s", (unsigned long long)sys,
+                    mgr ? ("manager 0x" + [&] { char b[24]; snprintf(b, sizeof b, "%llx", (unsigned long long)mgr); return std::string(b); }() + " at " + how).c_str() : "no plausible manager within two pointer hops");
+        if (mgr)
+            replay_manager_ptr = mgr;
+    }
+    uint8_t rec = mgr && runtime::readable(reinterpret_cast<void *>(mgr + 0x6e1), 1) ? *reinterpret_cast<uint8_t *>(mgr + 0x6e1) : 0xff;
+    uint64_t queue = mgr ? peek64(mgr + 0x150) : 0;
     uint32_t queue_busy = queue ? peek32(queue + 0x48) : 0xffffffffu;
-    bool allowed = tb::replay_capture_allowed(replay_capture_on, bridge_on, content_ours(), vt_ok, rec == 0xff ? 0 : rec, queue);
+    bool allowed = mgr != 0 && tb::replay_capture_allowed(replay_capture_on, bridge_on, content_ours(), vt_ok, rec == 0xff ? 0 : rec, queue);
     if (++guard_logs <= 8)
-        swofty::log("[replay] capture guards at tick %s: switch %d, bridge %d, our content %d, GameReplaySystem %d, recording flag [+0x6e1] %u, job queue [+0x150] 0x%llx (busy word [queue+0x48] %u) -> %s",
-                    slot, replay_capture_on ? 1 : 0, bridge_on ? 1 : 0, content_ours() ? 1 : 0, vt_ok ? 1 : 0, unsigned(rec), (unsigned long long)queue, unsigned(queue_busy),
-                    allowed ? "allowed" : "refused");
-    if (!replay_pending_ms.compare_exchange_strong(pending, 0) || !allowed)
+        swofty::log("[replay] capture guards at tick %s: switch %d, bridge %d, our content %d, GameReplaySystem %d, manager 0x%llx, recording flag [mgr+0x6e1] %u, job queue [mgr+0x150] 0x%llx (busy word [queue+0x48] %u) -> %s",
+                    slot, replay_capture_on ? 1 : 0, bridge_on ? 1 : 0, content_ours() ? 1 : 0, vt_ok ? 1 : 0, (unsigned long long)mgr, unsigned(rec), (unsigned long long)queue,
+                    unsigned(queue_busy), allowed ? "allowed" : "refused");
+    if (!allowed)
         return;
+    if (!replay_pending_ms.compare_exchange_strong(pending, 0))
+        return;
+    sys = mgr;
     alignas(16) static uint8_t out[0x240];
     memset(out, 0, sizeof out);
     reinterpret_cast<void *(*)(uint64_t, void *)>(replay_build_path_fn)(sys, out);

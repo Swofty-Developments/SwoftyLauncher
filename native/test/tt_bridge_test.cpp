@@ -134,13 +134,28 @@ int main()
     expect(tb::replay_capture_name(1700000000, 87893) == "pb_1700000000_87893.replay", "the capture file name carries the time and the lap time");
     expect(tb::replay_capture_allowed(true, true, true, true, 1, 0x10) && !tb::replay_capture_allowed(false, true, true, true, 1, 0x10) && !tb::replay_capture_allowed(true, false, true, true, 1, 0x10) &&
                !tb::replay_capture_allowed(true, true, false, true, 1, 0x10) && !tb::replay_capture_allowed(true, true, true, false, 1, 0x10) &&
-               !tb::replay_capture_allowed(true, true, true, true, 0, 0x10) && !tb::replay_capture_allowed(true, true, true, true, 1, 0),
+               !tb::replay_capture_allowed(true, true, true, true, 0, 0x10) && !tb::replay_capture_allowed(true, true, true, true, 150, 0x10) && !tb::replay_capture_allowed(true, true, true, true, 1, 0),
            "the save starts only behind the switch, the bridge, our content, a genuine replay system, a recording and a job queue");
     expect(tb::replay_file_settled(100, 100, 3, 3) && !tb::replay_file_settled(100, 99, 3, 3) && !tb::replay_file_settled(0, 0, 9, 3) && !tb::replay_file_settled(100, 100, 2, 3),
            "a replay file is settled only when its size stopped changing");
     expect(tb::replay_lap_is_best(88505, 1, 0) && tb::replay_lap_is_best(88505, -1, 90000) && !tb::replay_lap_is_best(88505, 0, 0) && !tb::replay_lap_is_best(90000, 1, 88505) &&
                !tb::replay_lap_is_best(88505, 1, 88505) && !tb::replay_lap_is_best(0, 1, 0),
            "a lap marks a replay save only when valid and a new session best");
+    {
+        tb::ReplayManagerView m;
+        m.vtable20 = 0x142000000ull, m.system40 = 0x317a560, m.lock118 = 0x32e0000, m.queue150 = 0x32e4000, m.flag6e1 = 1;
+        expect(tb::replay_manager_plausible(m, 0x317a560, 0x140000000ull, 0x160000000ull, true, true, true), "a manager that links the system and has sane fields is plausible");
+        tb::ReplayManagerView bad = m;
+        bad.system40 = 0x1;
+        expect(!tb::replay_manager_plausible(bad, 0x317a560, 0x140000000ull, 0x160000000ull, true, true, true), "not when +0x40 is not the system");
+        bad = m, bad.flag6e1 = 150;
+        expect(!tb::replay_manager_plausible(bad, 0x317a560, 0x140000000ull, 0x160000000ull, true, true, true), "not when the flag byte is not a bool (the GameReplaySystem itself reads 150 there)");
+        bad = m, bad.vtable20 = 0x3f80000000000000ull;
+        expect(!tb::replay_manager_plausible(bad, 0x317a560, 0x140000000ull, 0x160000000ull, true, true, true), "not when +0x20 is data instead of a vtable (the crash)");
+        expect(!tb::replay_manager_plausible(m, 0x317a560, 0x140000000ull, 0x160000000ull, false, true, true) && !tb::replay_manager_plausible(m, 0, 0x140000000ull, 0x160000000ull, true, true, true) &&
+                   !tb::replay_manager_plausible(m, 0x317a560, 0x140000000ull, 0x160000000ull, true, false, true) && !tb::replay_manager_plausible(m, 0x317a560, 0x140000000ull, 0x160000000ull, true, true, false),
+               "unreadable pieces or no system are refused");
+    }
     expect(tb::garage_result(0, true, true) == 1, "a denied garage privilege becomes granted for our content");
     expect(tb::garage_result(0, false, true) == 0 && tb::garage_result(0, true, false) == 0, "it stays denied with the bridge off or for stock content");
     expect(tb::garage_result(1, true, true) == 1 && tb::garage_result(0xff, true, true) == 0xff && tb::garage_result(2, true, true) == 2,
