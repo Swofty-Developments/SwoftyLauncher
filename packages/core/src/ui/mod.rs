@@ -560,7 +560,7 @@ pub fn build(
         0,
         Box::new(move |d| {
             let d = patch::offline_panel(&patch::fe_home(d)?)?;
-            let d = home_rows::panel_labels_ui(&d)?;
+            let d = home_rows::native_panels_ui(&d)?;
             if show_panel { Ok(d) } else { patch::hide_panel(&d) }
         }),
     )];
@@ -582,10 +582,10 @@ pub fn build(
         frontend.push((
             home_rows::SCENE,
             0,
-            Box::new(move |_| home_rows::panel_scene(&scene)),
+            Box::new(move |_| home_rows::native_panels_scene(&scene)),
         ));
     } else {
-        frontend.push((home_rows::SCENE, 0, Box::new(|d| home_rows::panel_scene(d))));
+        frontend.push((home_rows::SCENE, 0, Box::new(|d| home_rows::native_panels_scene(d))));
     }
     if let Some((ui, type_ui, scene, _)) = career {
         frontend.push((career_select::UI, 0, Box::new(move |_| Ok(ui))));
@@ -1224,16 +1224,14 @@ mod tests {
         assert!(hard.is_empty(), "{hard:?}");
         assert_eq!(lines, ["ui: the main menu gets rows of cards"]);
         let home = read_frag(&src, FE_HOME, 0).unwrap();
-        let patched = home_rows::panel_labels_ui(&patch::offline_panel(&patch::fe_home(&home).unwrap()).unwrap()).unwrap();
+        let patched = home_rows::native_panels_ui(&patch::offline_panel(&patch::fe_home(&home).unwrap()).unwrap()).unwrap();
         let dst2 = out.join("home2").join("flow_frontend.erp");
         let stock_scene = read_frag(&src, home_rows::SCENE, 0).unwrap();
-        let panel_only = home_rows::panel_scene(&stock_scene).unwrap();
+        let panel_only = home_rows::native_panels_scene(&stock_scene).unwrap();
         {
             let doc = swofty_formats::pkg::Pkg::parse(&panel_only).unwrap();
             let root = idf::scenes(&doc).unwrap()[0].o().unwrap().at("scene").unwrap();
-            let label = idf::find(root, "swofty_panel_label").expect("the panel slot");
-            let anims = label.o().unwrap().get("anims").and_then(|n| n.as_arr());
-            assert!(anims.is_none_or(|a| a.items.is_empty()), "the label slot keeps no animation");
+            assert!(idf::find(root, "swofty_details_account").is_some() && idf::find(root, "swofty_details_video").is_some());
         }
         write_archive(
             &src,

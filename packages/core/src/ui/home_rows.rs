@@ -216,59 +216,86 @@ pub fn hide_strip(data: &[u8]) -> Result<Vec<u8>> {
 }
 
 pub const PANEL_TEXT_PATH: &str = "#ui_menu_data.swofty_panel_text";
-pub const VIDEO_TEXT_PATH: &str = "#ui_menu_data.swofty_video_text";
-const PANEL_LABEL: &str = "swofty_panel_label";
-const VIDEO_LABEL: &str = "swofty_video_label";
-const LABEL_SOURCE: &str = "description";
-const LABEL_SLOT_SOURCE: &str = "description_label";
-const LABELS: [(&str, &str, f64, f64, &str); 2] = [
-    (PANEL_LABEL, PANEL_TEXT_PATH, 3.4, 4.6, "7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c01"),
-    (VIDEO_LABEL, VIDEO_TEXT_PATH, 3.4, -3.9, "7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c02"),
-];
+pub const VIDEO_TITLE_PATH: &str = "#ui_menu_data.swofty_video_title";
+pub const VIDEO_PROMPT_PATH: &str = "#ui_menu_data.swofty_video_prompt";
+pub const ACCOUNT_PANEL: &str = "swofty_account_panel";
+pub const VIDEO_PANEL: &str = "swofty_video_panel";
+const ACCOUNT_SLOT: &str = "swofty_details_account";
+const VIDEO_SLOT: &str = "swofty_details_video";
+const PANELS_PARENT: &str = "fe_home.contextual_panels";
+const ACCOUNT_SOURCE: &str = "offline_contextual_panel";
+const VIDEO_SOURCE: &str = "news_contextual_panel";
+const ACCOUNT_XREF: &str = "details_offline";
+const VIDEO_XREF: &str = "details_news";
+pub const ACCOUNT_AT: (f64, f64) = (3.4, 4.0);
+pub const VIDEO_AT: (f64, f64) = (1.9, -3.9);
+const XREF_GUIDS: [&str; 2] = ["7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c01", "7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c02"];
 
-pub fn has_panel_labels_ui(data: &[u8]) -> Result<bool> {
-    let mut doc = Pkg::parse(data)?;
-    let screen = first_screen(&mut doc)?;
-    Ok(screen.slot(CHILDREN)?.iter().any(|k| k.is_node() && k.name() == PANEL_LABEL))
+fn bind_text(n: &mut Node, path: &str) -> Result<()> {
+    set_prop(n, "text", prop(s(""), Some(path)))?;
+    set_prop(n, "localise", prop(boolv(false), None))
 }
 
-/// fe_home.ui with two text labels bound to `ui_menu_data.swofty_panel_text` (top right) and
-/// `ui_menu_data.swofty_video_text` (bottom right), laid out in the scene slots `panel_scene` adds.
-pub fn panel_labels_ui(data: &[u8]) -> Result<Vec<u8>> {
+fn hide(n: &mut Node) -> Result<()> {
+    set_prop(n, "visible", prop(boolv(false), None))
+}
+
+pub fn has_native_panels_ui(data: &[u8]) -> Result<bool> {
+    let mut doc = Pkg::parse(data)?;
+    let screen = first_screen(&mut doc)?;
+    let panels = screen.child_mut("contextual_panels")?;
+    Ok(panels
+        .slot(CHILDREN)?
+        .iter()
+        .any(|k| k.is_node() && k.name() == ACCOUNT_PANEL))
+}
+
+/// fe_home.ui with two panels beside the stock ones in `contextual_panels`, copies of the "Launched with"
+/// card and of the news card laid out in the scene slots `native_panels_scene` adds. They are always
+/// visible, and their text reads `ui_menu_data.swofty_panel_text`, `swofty_video_title` and `swofty_video_prompt`.
+pub fn native_panels_ui(data: &[u8]) -> Result<Vec<u8>> {
     edit(data, |doc| {
         let screen = first_screen(doc)?;
-        let owner = screen.name().to_owned();
-        let source = screen
-            .slot(CHILDREN)?
-            .iter()
-            .find(|k| k.is_node() && k.name() == LABEL_SOURCE)
-            .ok_or_else(|| err(format!("{TEMPLATES} has no {LABEL_SOURCE}")))?
-            .clone();
-        let mut added = Vec::new();
-        for (name, path, _, _, _) in LABELS {
-            let mut label = clone_node(&source, &owner, name)?;
-            set_layout(&mut label, &[name])?;
-            let t = label.props_mut()?.at_mut("text")?.o_mut()?;
-            set_str(t, "value", "")?;
-            set_str(t, "dbentry", path)?;
-            set_prop(&mut label, "localise", prop(boolv(false), None))?;
-            fix_ids(&mut label, Some(&owner));
-            added.push(label);
+        let panels = screen.child_mut("contextual_panels")?;
+        let account_src = panels.child_mut(ACCOUNT_SOURCE)?.clone();
+        let video_src = panels.child_mut(VIDEO_SOURCE)?.clone();
+        let mut account = clone_node(&account_src, PANELS_PARENT, ACCOUNT_PANEL)?;
+        set_layout(&mut account, &[ACCOUNT_SLOT])?;
+        hide_visibility_binding(&mut account)?;
+        bind_text(account.child_mut("subtitle")?, PANEL_TEXT_PATH)?;
+        hide(account.child_mut("tooltip_label")?)?;
+        hide(account.child_mut("tooltip_extra_2")?)?;
+        let mut video = clone_node(&video_src, PANELS_PARENT, VIDEO_PANEL)?;
+        set_layout(&mut video, &[VIDEO_SLOT])?;
+        video.props_mut()?.drop_key("dataContext");
+        hide_visibility_binding(&mut video)?;
+        bind_text(video.child_mut("subtitle")?, VIDEO_TITLE_PATH)?;
+        bind_text(video.child_mut("tooltip_label")?, VIDEO_PROMPT_PATH)?;
+        hide(video.child_mut("tooltip_extra_2")?)?;
+        for n in [&mut account, &mut video] {
+            fix_ids(n, Some(PANELS_PARENT));
         }
-        screen.slot_mut(CHILDREN)?.extend(added);
+        let kids = panels.slot_mut(CHILDREN)?;
+        kids.push(account);
+        kids.push(video);
         Ok(())
     })
 }
 
-pub fn has_panel_slots(data: &[u8]) -> Result<bool> {
+fn hide_visibility_binding(n: &mut Node) -> Result<()> {
+    set_prop(n, "visible", prop(boolv(true), None))
+}
+
+pub fn has_native_panels_scene(data: &[u8]) -> Result<bool> {
     let doc = Pkg::parse(data)?;
     let scenes = idf::scenes(&doc)?;
     let root = scenes.first().ok_or_else(|| err("a scene file without scenes"))?.o()?.at("scene")?;
-    Ok(idf::find(root, PANEL_LABEL).is_some())
+    Ok(idf::find(root, ACCOUNT_SLOT).is_some())
 }
 
-/// fe_home.idf with a text slot for each label, copies of the description's, under transition_fade_items.
-pub fn panel_scene(data: &[u8]) -> Result<Vec<u8>> {
+/// fe_home.idf with two component slots for the native panels, copies of `details_offline` and `details_news`,
+/// under transition_fade_details.
+pub fn native_panels_scene(data: &[u8]) -> Result<Vec<u8>> {
     let mut doc = Pkg::parse(data)?;
     let entry = idf::scenes_mut(&mut doc)?
         .first_mut()
@@ -277,26 +304,24 @@ pub fn panel_scene(data: &[u8]) -> Result<Vec<u8>> {
         return Err(err(format!("not {SCENE}")));
     }
     let root = entry.o_mut()?.at_mut("scene")?;
-    if idf::find(root, PANEL_LABEL).is_some() {
-        return Err(err(format!("{SCENE} already has the panel labels")));
+    if idf::find(root, ACCOUNT_SLOT).is_some() {
+        return Err(err(format!("{SCENE} already has the native panels")));
     }
-    let source = idf::find(root, LABEL_SLOT_SOURCE)
-        .ok_or_else(|| err(format!("{SCENE} has no {LABEL_SLOT_SOURCE}")))?;
     let mut slots = Vec::new();
-    for (name, _, x, y, guid) in LABELS {
-        let mut slot = idf::detached(source);
+    for (source, name, at, guid) in [
+        (ACCOUNT_XREF, ACCOUNT_SLOT, ACCOUNT_AT, XREF_GUIDS[0]),
+        (VIDEO_XREF, VIDEO_SLOT, VIDEO_AT, XREF_GUIDS[1]),
+    ] {
+        let from = idf::find(root, source).ok_or_else(|| err(format!("{SCENE} has no {source}")))?;
+        let mut slot = idf::detached(from);
         slot.o_mut()?.set("name", s(name));
         idf::set_param(&mut slot, "guid", Val::str(guid))?;
-        idf::set_param(&mut slot, "halign", Val::str("right"))?;
-        if let Some(Node::Arr(anims)) = slot.o_mut()?.get_mut("anims") {
-            anims.items.clear();
-        }
-        set_position(&mut slot, x, y)?;
-        idf::recompute_ids(&mut slot, &format!("{PATH}.{name}"))?;
+        set_position(&mut slot, at.0, at.1)?;
+        idf::recompute_ids(&mut slot, &format!("transition_fade_details.transition_anim_details.{name}"))?;
         slots.push(slot);
     }
-    let parent = find_mut(root, "transition_fade_items")
-        .ok_or_else(|| err(format!("{SCENE} has no transition_fade_items")))?;
+    let parent = find_mut(root, "transition_anim_details")
+        .ok_or_else(|| err(format!("{SCENE} has no transition_anim_details")))?;
     idf::children_mut(parent)?.extend(slots);
     idf::relookup(entry)?;
     let out = doc.to_bytes()?;
