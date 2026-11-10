@@ -143,6 +143,8 @@ const runtime::Sig S_WATCHDOG_REARM{"site_Game_SessionTimer_Rearm_1409d2790",
         "48 89 86 88 0B 00 00 48 83 BE 90 0B 00 00 00 74 07 48 89 86 90 0B 00 00 F6 86 C8 0B 00 00 01 0F 94 86 C0 0B 00 00", 0x9d2790};
 const runtime::Sig S_WATCHDOG_TRIP{"site_Game_SessionTimer_Trip_1409d2853",
         "F6 86 A8 0B 00 00 01 0F 94 86 A0 0B 00 00 48 83 C4 30 5B 5D 5F 5E 41 5C 41 5E 41 5F C3", 0x9d284c};
+const runtime::Sig S_GARAGE_CHECK_DONE{"site_Game_GarageCockpitViewModel_TtPrivilegeCheckDone",
+        "0F B6 43 08 48 C7 84 24 30 01 00 00 00 00 00 00 48 8D 0D ?? ?? ?? ?? 48 89 8C 24 28 01 00 00 88 84 24 38 01 00 00", 0x1bc5481};
 const runtime::Sig S_PRIV_GATE{"site_Game_UIUIPrivilegeCheckControl_HandleSignal_Result",
         "41 80 BE AB 00 00 00 00 0F 84 8C 00 00 00 45 84 FF 0F 84 8D 00 00 00", 0x3822cdf, runtime::Sig::addr, 0, 8};
 constexpr uintptr_t TS_FLAG_GLOBAL_A = 0, TS_FLAG_GLOBAL_B = 17;
@@ -178,7 +180,7 @@ std::atomic<int> hits_upload{0}, hits_download{0}, hits_racenet{0};
 std::vector<std::string> seen_methods;
 
 bool diag_on = false;
-safetyhook::MidHook h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
+safetyhook::MidHook h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_garage_done, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
 
 struct GateHook {
     uintptr_t at = 0, resume = 0, session_global = 0;
@@ -753,14 +755,21 @@ uint32_t ui_node_name(uint64_t node)
 void priv_mid(safetyhook::Context &c)
 {
     uint32_t type = uint32_t(c.rbp);
-    if (bridge_on && type != 1 && type < 12 && content_ours() && ui_node_name(c.r14) == 0x57172c5d) {
-        c.rflags |= 0x40;
+    if (bridge_on && type != 1 && type < 12 && content_ours()) {
+        uint32_t name = ui_node_name(c.r14);
+        bool by_name = name == 0x57172c5d, user_content = type == 2;
         static std::atomic<int> granted{0};
-        if (++granted <= 8)
-            swofty::log("[boards] garage monitor: leaderboard tab privilege (type %u, node leaderboard_privilege_check) granted for our content: the panel's check is answered as passed, "
-                        "so car_monitor_tt_leaderboard_privilege_check enables the tab (the panel then reads GetTTLeaderboard through the bridge)",
-                        type);
-        return;
+        if (by_name || user_content) {
+            c.rflags |= 0x40;
+            if (++granted <= 8)
+                swofty::log("[boards] garage monitor: leaderboard tab privilege (type %u, control 0x%llx, name hash read 0x%x = %s) granted for our content: the panel's check is answered "
+                            "as passed, so car_monitor_tt_leaderboard_privilege_check enables the tab (the panel then reads GetTTLeaderboard through the bridge); matched by %s",
+                            type, (unsigned long long)c.r14, name, by_name ? "leaderboard_privilege_check" : "not that node", by_name ? "the node name" : "privilege type 2 (user content: the leaderboard privilege of the garage)");
+            return;
+        }
+        static std::atomic<int> missed{0};
+        if (diag_on && ++missed <= 6)
+            swofty::log("[boards] diag: privilege check type %u of control 0x%llx not granted: name hash read 0x%x", type, (unsigned long long)c.r14, name);
     }
     if (type != 1) {
         if (diag_on && type < 12) {
@@ -873,6 +882,18 @@ void trip_mid(safetyhook::Context &c)
                     (double(int64_t(q.QuadPart + int64_t(offs)) - int64_t(start))) / freq, (unsigned long long)peek64(c.rsi + 0xb88), (unsigned long long)peek64(c.rsi + 0xb98),
                     peek32(c.rsi + 0xbd0), rearm_count.load());
     }
+}
+
+void garage_done_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> logged{0};
+    uint8_t value = runtime::readable(reinterpret_cast<void *>(c.rbx + 8), 1) ? *reinterpret_cast<uint8_t *>(c.rbx + 8) : 0xff;
+    bool grant = bridge_on && content_ours() && value == 0;
+    if (grant)
+        *reinterpret_cast<uint8_t *>(c.rbx + 8) = 1;
+    if (++logged <= 8)
+        swofty::log("[boards] garage monitor: tt_privilege_check_done arrived with %s%s", value == 1 ? "granted" : value == 0 ? "denied" : "an unreadable value",
+                    grant ? "; changed to granted for our content so car_monitor_tt_leaderboard_privilege_check enables the leaderboard tab" : "");
 }
 
 void commit_path_log(const char *what, safetyhook::Context &c, std::atomic<int> &logged)
@@ -1225,6 +1246,10 @@ void setup()
             if (uintptr_t at = runtime::find(*sig, "boards", "boards"))
                 if (hook_mid(*hook, at, fn, label))
                     swofty::log("[boards] %s logged at base+0x%llx", label, (unsigned long long)(at - swofty::api->module_base()));
+        if (bridge_on || diag_on)
+            if (uintptr_t at = runtime::find(S_GARAGE_CHECK_DONE, "boards", "boards"))
+                if (hook_mid(h_garage_done, at, garage_done_mid, "garage tt privilege result"))
+                    swofty::log("[boards] garage tt_privilege_check_done logged%s at base+0x%llx", bridge_on ? " and granted for our content" : "", (unsigned long long)(at - swofty::api->module_base()));
         if (uintptr_t at = runtime::find(S_READER_FAIL, "boards", "boards"))
             if (hook_mid(h_reader_fail, at, reader_fail_mid, "leaderboard reader failure"))
                 swofty::log("[boards] leaderboard reader failure logged at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
