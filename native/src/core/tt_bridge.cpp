@@ -1708,6 +1708,11 @@ void tt_bridge_session_enter()
     last_board.clear();
 }
 
+bool tt_bridge_ours_session()
+{
+    return bridge_on && content_ours();
+}
+
 bool tt_bridge_presence_id(runtime::presence_id::Id &out)
 {
     std::lock_guard<std::mutex> g(lock);

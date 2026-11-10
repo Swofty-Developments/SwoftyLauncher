@@ -128,7 +128,7 @@ void finds_the_stock_name_with_its_path()
     std::vector<Hit> hits;
     Stats st;
     CHECK(walk(h, registry(h, root), "Swooftyy", hits, st) == 1);
-    CHECK(hits.size() == 1 && hits[0].node == name && hits[0].depth == 3);
+    CHECK(hits.size() == 1 && hits[0].node == name && hits[0].parent == pill && hits[0].depth == 3);
     CHECK(hits[0].chain[0] == djb2("hud") && hits[0].chain[1] == djb2("pill_0") && hits[0].chain[2] == djb2("driver_name"));
     CHECK(st.string_leaves == 2 && st.strings_read == 2 && st.matches == 1 && st.objects == 3);
     CHECK(st.root_vt == LAY.object_vt);

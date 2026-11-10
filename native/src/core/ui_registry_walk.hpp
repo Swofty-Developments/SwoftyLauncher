@@ -46,7 +46,7 @@ struct Limits {
 constexpr int CHAIN = 14;
 
 struct Hit {
-    uint64_t node = 0;
+    uint64_t node = 0, parent = 0;
     int depth = 0;
     uint32_t chain[CHAIN] = {};
     std::string value;
@@ -105,19 +105,20 @@ size_t find_string(Read &read, uint64_t registry, const Layout &lay, const std::
     if (needle.empty() || !u64_at(read, registry + 8, root) || !root)
         return 0;
     struct Item {
-        uint64_t node;
+        uint64_t node, parent;
         int depth;
         uint32_t chain[CHAIN];
     };
     std::vector<Item> stack;
     std::unordered_map<uint64_t, bool> seen;
-    Item first{root, 0, {}};
+    Item first{root, 0, 0, {}};
     stack.push_back(first);
     auto push = [&](const Item &from, uint32_t key, uint64_t child) {
         if (!child || from.depth + 1 > lim.max_depth)
             return;
         Item next = from;
         next.node = child;
+        next.parent = from.node;
         next.depth = from.depth + 1;
         next.chain[from.depth < CHAIN ? from.depth : CHAIN - 1] = key;
         stack.push_back(next);
@@ -149,6 +150,7 @@ size_t find_string(Read &read, uint64_t registry, const Layout &lay, const std::
             if (hits.size() < cap) {
                 Hit h;
                 h.node = it.node;
+                h.parent = it.parent;
                 h.depth = it.depth;
                 std::memcpy(h.chain, it.chain, sizeof h.chain);
                 h.value = text;

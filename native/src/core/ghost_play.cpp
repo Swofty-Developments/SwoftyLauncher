@@ -48,6 +48,7 @@ std::string hook_error(const safetyhook::InlineHook::Error &e);
 
 namespace runtime {
 void player_name_probe_tick();
+void player_name_pin_tick();
 }
 
 namespace {
@@ -558,6 +559,7 @@ void tick_mid(safetyhook::Context &c)
             publish(nullptr, 0);
         arming.component(comp);
     }
+    runtime::player_name_pin_tick();
     if (record_on)
         sample_input(comp);
     if (ghost_on)

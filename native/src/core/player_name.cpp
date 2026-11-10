@@ -78,24 +78,48 @@ bool account_name(std::string &out)
     return true;
 }
 
+bool wanted_name(std::string &clean, const char *&source)
+{
+    char env[128] = {};
+    GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME", env, sizeof env);
+    std::string account;
+    account_name(account);
+    std::string text;
+    if (!runtime::player_name::display_source(env, account, text))
+        return false;
+    source = env[0] ? "SWOFTY_TT_PLAYER_NAME" : "home_menu.json discord name";
+    return runtime::player_name::sanitize(text, clean);
+}
+
+bool session_ours()
+{
+    return swofty_core::apply::moments::session_mode_track().first == "time_trial" && runtime::tt_bridge_ours_session();
+}
+
+std::mutex stock_lock;
+std::string stock_learned;
+
 const char *lookup_hook(void *cache, void *id)
 {
     const char *stock = h_lookup.call<const char *>(cache, id);
-    if (!bridge_on.load(std::memory_order_relaxed) || !stock)
+    if (!bridge_on.load(std::memory_order_relaxed) || !stock || !id)
         return stock;
     if (busy.exchange(1))
         return stock;
     const char *result = stock;
-    std::string account;
-    bool tt = swofty_core::apply::moments::session_mode_track().first == "time_trial";
-    bool known = account_name(account);
-    static std::atomic<int> traced{0};
-    if (traced.fetch_add(1) < 8)
-        swofty::log("[boards] player name: lookup %d: time trial %d, account name %s, stock \"%.40s\"", traced.load(), tt ? 1 : 0,
-                    known ? "known" : "unknown", runtime::readable(stock, 4) ? stock : "?");
-    if (tt && known) {
+    runtime::presence_id::Id me;
+    uint8_t key[0x50];
+    if (session_ours() && runtime::tt_bridge_presence_id(me) &&
+        swofty_core::hooks::guard::copy_memory(key, id, sizeof key) && runtime::player_name::is_local_id(key, me)) {
         std::string clean;
-        if (runtime::player_name::sanitize(account, clean)) {
+        const char *source = "";
+        char seen[runtime::player_name::MAX_BYTES + 1] = {};
+        if (runtime::readable(stock, 4)) {
+            strncpy(seen, stock, runtime::player_name::MAX_BYTES);
+            std::lock_guard<std::mutex> g(stock_lock);
+            stock_learned = seen;
+        }
+        if (wanted_name(clean, source)) {
             if (clean != shown_for) {
                 std::memcpy(shown, clean.c_str(), clean.size() + 1);
                 shown_for = clean;
@@ -103,12 +127,11 @@ const char *lookup_hook(void *cache, void *id)
             result = shown;
             int n = replaced.fetch_add(1) + 1;
             if (n <= 3 || n == 50)
-                swofty::log("[boards] player name: showing \"%s\" (source home_menu.json discord name), replacing \"%.40s\" in the "
-                            "name cache lookup (call %d)",
-                            clean.c_str(), runtime::readable(stock, 4) ? stock : "?", n);
+                swofty::log("[boards] player name: showing \"%s\" (source %s) for the local player's id, replacing \"%.40s\" in the name cache "
+                            "lookup (call %d)",
+                            clean.c_str(), source, seen, n);
         } else if (hits.fetch_add(1) == 0)
-            swofty::log("[boards] player name: the account name \"%s\" has characters the HUD font lacks; the stock name stays",
-                        account.c_str());
+            swofty::log("[boards] player name: no usable name to show (empty, off, or characters the HUD font lacks); the stock name stays");
     }
     busy = 0;
     return result;
@@ -149,6 +172,34 @@ void probe_registry(int pass)
         swofty::log("[boards] player name probe %d: hit %zu node 0x%llx depth %d path(djb2) %s value \"%s\"", pass, i,
                     (unsigned long long)hits[i].node, hits[i].depth, path.c_str(), hits[i].value.c_str());
     }
+}
+
+void pin_names(const std::string &name, const std::string &stock)
+{
+    namespace ur = runtime::ui_registry;
+    if (!swofty::game::g_Vm_Registry.address() || !swofty::game::Vm_Set_String.address() || !swofty::game::Ne_Make_StrFromCStr.address())
+        return;
+    uint64_t base = swofty::api->module_base(), reg = uint64_t(*swofty::game::g_Vm_Registry);
+    ur::Layout lay{base + 0x5a70080, base + 0x5a6ff90, base + 0x565f200, base + 0x5660370};
+    std::vector<ur::Hit> hits;
+    ur::Stats st;
+    auto rd = [](uint64_t at, void *out, size_t n) { return registry_read(at, out, n); };
+    ur::find_string(rd, reg, lay, stock, hits, 64, st);
+    static std::atomic<int> logged{0};
+    int written = 0;
+    for (auto &h : hits) {
+        const char *leaf = h.depth >= 1 ? runtime::player_name::leaf_name(h.chain[h.depth - 1]) : nullptr;
+        if (!leaf || !h.parent || h.depth < 2 || !runtime::player_name::root_allowed(h.chain[0]))
+            continue;
+        swofty::game::NeStr *str = nullptr;
+        swofty::game::Ne_Make_StrFromCStr(&str, name.c_str(), 0, 0);
+        swofty::game::Vm_Set_String(reinterpret_cast<void *>(reg), reinterpret_cast<void *>(h.parent + 8), leaf, &str, 1);
+        swofty::game::Ne_Make_StrFromCStr(&str, nullptr, 0, 0);
+        written++;
+    }
+    if (written && logged.fetch_add(1) < 6)
+        swofty::log("[boards] player name: set %d leaf(s) that read \"%s\" to \"%s\" (of %zu string leaves walked)", written, stock.c_str(), name.c_str(),
+                    st.strings_read);
 }
 
 void setup()
@@ -194,6 +245,34 @@ void player_name_probe_tick()
     static const int64_t at_ms[] = {8000, 40000};
     if (pass < 2 && now - entered >= at_ms[pass])
         probe_registry(++pass);
+}
+
+}
+
+namespace runtime {
+
+void player_name_pin_tick()
+{
+    static int64_t last = 0;
+    if (!bridge_on.load(std::memory_order_relaxed))
+        return;
+    int64_t now = int64_t(GetTickCount64());
+    if (now - last < 3000)
+        return;
+    last = now;
+    if (!session_ours())
+        return;
+    std::string clean, stock;
+    const char *source = "";
+    char env[96] = {};
+    GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME_STOCK", env, sizeof env);
+    {
+        std::lock_guard<std::mutex> g(stock_lock);
+        stock = env[0] ? std::string(env) : stock_learned;
+    }
+    if (stock.empty() || !wanted_name(clean, source) || clean == stock)
+        return;
+    pin_names(clean, stock);
 }
 
 }

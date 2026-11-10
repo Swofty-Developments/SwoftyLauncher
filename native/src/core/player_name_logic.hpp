@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <cstring>
+#include "presence_id_logic.hpp"
 #include <string>
 
 // The account display name shown for the player in Time Trial. The game's presence name cache stores names in 0x81-byte
@@ -64,6 +66,63 @@ inline bool sanitize(const std::string &name, std::string &out)
     while (!out.empty() && out.back() == ' ')
         out.pop_back();
     return !out.empty();
+}
+
+
+inline uint32_t djb2(const char *s)
+{
+    uint32_t h = 5381;
+    while (*s)
+        h = h * 33 + uint8_t(*s++);
+    return h;
+}
+
+// The name to show: SWOFTY_TT_PLAYER_NAME holds the text itself ("0" turns the feature off, empty or unset falls back to the launcher
+// account name read from home_menu.json).
+inline bool display_source(const char *env, const std::string &account, std::string &out)
+{
+    out.clear();
+    if (env && *env) {
+        if (!strcmp(env, "0"))
+            return false;
+        out = env;
+        return true;
+    }
+    out = account;
+    return !out.empty();
+}
+
+// Whether the user id struct handed to the name cache lookup (kind at +0x4c, type at +0, the id as value ^ mask at +8/+0x10, flag at +0x39)
+// is the local presence's id. Only kind 0 keys of the presence's own type are compared; type 3 and 7 keys use other fields and never match.
+inline bool is_local_id(const uint8_t id[0x50], const presence_id::Id &me)
+{
+    uint32_t kind;
+    std::memcpy(&kind, id + 0x4c, 4);
+    if (kind != 0 || me.type == 0 || me.type == 3 || me.type == 7 || id[0] != me.type)
+        return false;
+    uint64_t a, b;
+    std::memcpy(&a, id + 8, 8);
+    std::memcpy(&b, id + 0x10, 8);
+    return (a ^ b) == me.value[0] && me.value[0] != 0 && (id[0x39] != 0) == me.flag39;
+}
+
+inline bool root_allowed(uint32_t h)
+{
+    static const uint32_t roots[] = {djb2("network_drivers"), djb2("players"), djb2("view_model_data")};
+    for (uint32_t r : roots)
+        if (r == h)
+            return true;
+    return false;
+}
+
+inline const char *leaf_name(uint32_t h)
+{
+    static const char *names[] = {"display_name", "full_name", "full_name_tv_style", "second_name", "second_name_standard", "gamertag",
+                                  "second_line_name", "driver_full_name_tv_style"};
+    for (const char *n : names)
+        if (djb2(n) == h)
+            return n;
+    return nullptr;
 }
 
 }
