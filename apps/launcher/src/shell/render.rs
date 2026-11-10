@@ -18,8 +18,14 @@ impl Render for Shell {
         let wide = window.viewport_size().width > px(1500.);
         let short = window.viewport_size().height < px(760.);
         self.short = short;
+        let layout_width = f32::from(window.viewport_size().width) / crate::scale::current();
         self.content_width =
             crate::scale::content_width(f32::from(window.viewport_size().width), crate::scale::current());
+        self.layout_width = layout_width;
+        let side = self.profiles_sidebar(p, cx);
+        if side.is_some() {
+            self.content_width = (self.content_width - self.profiles_width()).max(320.);
+        }
         self.sync_sliders(window, cx);
         self.sync_blocks(window, cx);
         self.db_pending_tab(window, cx);
@@ -54,6 +60,7 @@ impl Render for Shell {
             Page::Profiles => self.profiles_page(p, wide, cx),
             Page::Careers => self.careers_page(p, wide, cx),
             Page::Multiplayer => self.multiplayer_page(p, cx),
+            Page::Online => self.online_page(p, cx),
             Page::Settings => self.settings_page(p, cx),
             Page::Section(i) => self.section_page(i, p, cx),
         };
@@ -64,6 +71,8 @@ impl Render for Shell {
         let tree = v_flex()
             .id("shell")
             .relative()
+            .track_focus(&self.root_focus)
+            .on_key_down(cx.listener(|this, ev: &KeyDownEvent, window, cx| this.nav_key(ev, window, cx)))
             .size_full()
             .on_drag_move::<ExternalPaths>(cx.listener(|this, _, _, cx| {
                 if !this.dropping {
@@ -78,24 +87,22 @@ impl Render for Shell {
             .text_color(p.text)
             .text_size(px(14.))
             .child(self.title_bar(p, cx))
+            .child(self.top_bar(p, layout_width, cx))
+            .child(self.sub_row(p, layout_width, cx))
             .child(
-                h_flex()
-                    .flex_1()
-                    .min_h_0()
-                    .items_start()
-                    .bg(p.chrome)
-                    .child(self.sidebar(p, short, cx))
-                    .child(
-                        v_flex()
-                            .flex_1()
-                            .h_full()
-                            .min_w_0()
-                            .overflow_hidden()
-                            .rounded_tl(px(16.))
-                            .bg(p.background)
-                            .child(content),
-                    ),
+                h_flex().flex_1().min_h_0().items_start().bg(p.chrome).child(
+                    h_flex()
+                        .flex_1()
+                        .h_full()
+                        .min_w_0()
+                        .overflow_hidden()
+                        .rounded_t(px(14.))
+                        .bg(p.background)
+                        .children(side)
+                        .child(v_flex().flex_1().h_full().min_w_0().child(content)),
+                ),
             )
+            .children((self.page == Page::Careers).then(|| self.profile_pointer(p)))
             .children(self.update_bar(p))
             .child(self.play_bar(p, wide, cx))
             .children(self.progress_card(p))

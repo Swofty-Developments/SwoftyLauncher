@@ -8,8 +8,6 @@ pub const TV_SCALE: f32 = 1.3;
 const BASE_REM: f32 = 16.;
 const BASE_FONT: f32 = 14.;
 
-/// The sidebar's width in layout units (what `px(SIDEBAR_WIDTH)` scales).
-pub const SIDEBAR_WIDTH: f32 = 220.;
 const MIN_CONTENT: f32 = 320.;
 
 static SCALE: AtomicU32 = AtomicU32::new(1.0_f32.to_bits());
@@ -35,9 +33,9 @@ pub fn px(value: f32) -> Pixels {
 }
 
 /// The width a page has for its content, in layout units: the window's width in
-/// pixels, divided back down by the scale, less the sidebar and the page gutters.
+/// pixels, divided back down by the scale, less the page gutters.
 pub fn content_width(viewport_px: f32, scale: f32) -> f32 {
-    (viewport_px / scale - SIDEBAR_WIDTH - 2. * crate::ui::tokens::space::GUTTER).max(MIN_CONTENT)
+    (viewport_px / scale - 2. * crate::ui::tokens::space::GUTTER).max(MIN_CONTENT)
 }
 
 pub fn apply(mode: UiMode, window: &mut Window, cx: &mut App) {
@@ -95,9 +93,9 @@ mod tests {
 
     #[test]
     fn content_width_is_in_layout_units_in_both_modes() {
-        assert_eq!(content_width(1440., 1.), 1440. - 220. - 56.);
+        assert_eq!(content_width(1440., 1.), 1440. - 56.);
         let tv = content_width(1440., TV_SCALE);
-        assert!((tv - (1440. / TV_SCALE - 220. - 56.)).abs() < 0.01);
+        assert!((tv - (1440. / TV_SCALE - 56.)).abs() < 0.01);
         assert!(tv < content_width(1440., 1.));
         assert_eq!(content_width(400., TV_SCALE), 320.);
     }

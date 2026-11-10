@@ -32,7 +32,9 @@ mod reload;
 mod render;
 mod seen;
 mod startup;
+mod tabs;
 mod title_bar;
+mod topbar;
 
 pub use page::{Page, PlayState};
 pub(crate) use prompt::Prompt;
@@ -42,6 +44,12 @@ pub(crate) use startup::Prepared;
 pub struct Shell {
     pub(crate) store: Store,
     pub(crate) page: Page,
+    pub(crate) nav: Option<tabs::Cursor>,
+    pub(crate) nav_scroll: ScrollHandle,
+    pub(crate) root_focus: FocusHandle,
+    pub(crate) profiles_open: bool,
+    pub(crate) layout_width: f32,
+    pub(crate) online: crate::online::Online,
     pub(crate) library: Library,
     pub(crate) open_addon: Option<String>,
     pub(crate) install: Option<Install>,

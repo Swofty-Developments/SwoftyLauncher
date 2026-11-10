@@ -92,6 +92,12 @@ impl Shell {
             library,
             store,
             page: Page::News,
+            nav: None,
+            nav_scroll: ScrollHandle::new(),
+            root_focus: cx.focus_handle(),
+            profiles_open: true,
+            layout_width: 1440.,
+            online: crate::online::Online::new(),
             open_addon: None,
             install: None,
             copies: Vec::new(),
@@ -175,6 +181,10 @@ impl Shell {
             Ok("saves") => shell.open_page(Page::Careers, cx),
             Ok("shaders") => shell.open_page(Page::Shaders, cx),
             Ok("addons") => shell.open_page(Page::Addons, cx),
+            Ok("online") => shell.open_page(Page::Online, cx),
+            Ok("browser") => shell.open_page(Page::Browser, cx),
+            Ok("settings") => shell.open_page(Page::Settings, cx),
+            Ok("profiles") => shell.open_page(Page::Profiles, cx),
             _ => {}
         }
         shell.fetch_news(cx);

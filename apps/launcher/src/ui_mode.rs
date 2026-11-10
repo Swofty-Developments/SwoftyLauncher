@@ -10,6 +10,7 @@ impl Shell {
         let mode = self.ui_mode.unwrap_or_default();
         crate::scale::apply(mode, window, cx);
         if !self.store.config().needs_onboarding() {
+            window.focus(&self.root_focus, cx);
             return;
         }
         let wizard = crate::onboarding::Onboarding::new(mode, cx);

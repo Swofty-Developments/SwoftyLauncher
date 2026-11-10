@@ -533,7 +533,7 @@ impl Shell {
         Button::new("profile-picker")
             .outline()
             .h(px(40.))
-            .min_w(px(180.))
+            .min_w(px(150.))
             .child(
                 h_flex().gap(px(8.)).child(avatar(&active, 24., p)).child(
                     v_flex()
@@ -899,6 +899,7 @@ impl Shell {
                     .gap(px(20.))
                     .child(self.game_info(p, wide, cx))
                     .child(self.status(&state, p, cx))
+                    .child(self.profile_picker(p, cx))
                     .children(room)
                     .when(!lobby_only, |d| d.child(self.big_button(&state, p, cx))),
             )
