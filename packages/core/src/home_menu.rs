@@ -10,6 +10,8 @@ const VIDEO_CACHE: &str = "video.json";
 const THUMBNAIL: &str = "thumbnail.jpg";
 const AVATAR: &str = "multiplayer/avatar.png";
 const VIDEO_ROUTE: &str = "/v1/video/latest";
+const STATS_ROUTE: &str = "/v1/stats";
+const REFRESH: Duration = Duration::from_secs(300);
 const THUMBNAIL_LIMIT: u64 = 2 * 1024 * 1024;
 const IMAGE_HOSTS: [&str; 1] = ["i.ytimg.com"];
 const AVATAR_HOSTS: [&str; 1] = ["cdn.discordapp.com"];
@@ -49,6 +51,27 @@ pub struct State {
     pub discord: Discord,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub video: Option<VideoCard>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub online: Option<u64>,
+}
+
+#[derive(Debug, Deserialize)]
+struct Stats {
+    online: StatsOnline,
+}
+
+#[derive(Debug, Deserialize)]
+struct StatsOnline {
+    total: u64,
+}
+
+pub fn fetch_online(registry: &str) -> Option<u64> {
+    let text = get(&format!("{registry}{STATS_ROUTE}"))?
+        .with_config()
+        .limit(64 * 1024)
+        .read_to_string()
+        .ok()?;
+    serde_json::from_str::<Stats>(&text).ok().map(|s| s.online.total)
 }
 
 #[derive(Debug, Deserialize)]
@@ -178,12 +201,13 @@ pub fn discord(data: &Path) -> Discord {
     }
 }
 
-pub fn state(data: &Path, version: &str, video: Option<VideoCard>) -> State {
+pub fn state(data: &Path, version: &str, video: Option<VideoCard>, online: Option<u64>) -> State {
     State {
         schema: 1,
         launcher_version: version.to_owned(),
         discord: discord(data),
         video,
+        online,
     }
 }
 
@@ -191,22 +215,54 @@ pub fn write(game: &Path, state: &State) -> crate::Result<()> {
     crate::write_json(&game.join(STATE_FILE), state)
 }
 
-pub fn publish(data: &Path, game: &Path, version: &str) {
-    let cached = cached_video(data).map(|v| VideoCard {
-        title: v.title,
-        url: v.url,
+pub struct Refresh(std::sync::Arc<std::sync::atomic::AtomicBool>);
+
+impl Drop for Refresh {
+    fn drop(&mut self) {
+        self.0.store(true, std::sync::atomic::Ordering::Relaxed);
+    }
+}
+
+pub fn publish(data: &Path, game: &Path, version: &str) -> Refresh {
+    publish_from(data, game, version, base_url(), REFRESH)
+}
+
+fn card_of(data: &Path, video: Video) -> VideoCard {
+    VideoCard {
+        title: video.title,
+        url: video.url,
         thumbnail: data.join(CACHE_DIR).join(THUMBNAIL).to_string_lossy().into_owned(),
-    });
-    let _ = write(game, &state(data, version, cached));
+    }
+}
+
+fn publish_from(data: &Path, game: &Path, version: &str, registry: String, every: Duration) -> Refresh {
+    let _ = write(game, &state(data, version, cached_video(data).map(|v| card_of(data, v)), None));
+    let stop = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let flag = stop.clone();
     let (data, game, version) = (data.to_path_buf(), game.to_path_buf(), version.to_owned());
     std::thread::spawn(move || {
-        if fetch_avatar(&data) {
-            let _ = write(&game, &state(&data, &version, None));
-        }
-        if let Some(card) = latest_video(&data, &base_url()) {
-            let _ = write(&game, &state(&data, &version, Some(card)));
+        let mut online: Option<u64> = None;
+        let mut card: Option<VideoCard> = cached_video(&data).map(|v| card_of(&data, v));
+        let mut first = true;
+        while !flag.load(std::sync::atomic::Ordering::Relaxed) {
+            if first {
+                fetch_avatar(&data);
+            }
+            if let Some(fresh) = latest_video(&data, &registry) {
+                card = Some(fresh);
+            }
+            if let Some(n) = fetch_online(&registry) {
+                online = Some(n);
+            }
+            let _ = write(&game, &state(&data, &version, card.clone(), online));
+            first = false;
+            let until = std::time::Instant::now() + every;
+            while std::time::Instant::now() < until && !flag.load(std::sync::atomic::Ordering::Relaxed) {
+                std::thread::sleep(Duration::from_millis(200));
+            }
         }
     });
+    Refresh(stop)
 }
 
 #[cfg(test)]
@@ -327,11 +383,64 @@ mod tests {
         std::fs::remove_dir_all(&data).ok();
     }
 
+    fn serve_json(body: &'static str) -> String {
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let url = format!("http://{}", listener.local_addr().unwrap());
+        std::thread::spawn(move || {
+            for stream in listener.incoming() {
+                let Ok(mut stream) = stream else { return };
+                let mut head = Vec::new();
+                let mut byte = [0u8; 1];
+                while !head.ends_with(b"\r\n\r\n") && stream.read(&mut byte).is_ok_and(|n| n == 1) {
+                    head.push(byte[0]);
+                }
+                let reply = format!(
+                    "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                    body.len()
+                );
+                stream.write_all(reply.as_bytes()).ok();
+            }
+        });
+        url
+    }
+
+    #[test]
+    fn the_online_count_is_the_stats_total_and_a_dead_server_gives_none() {
+        let registry = serve_json(r#"{"online":{"total":1234,"in_game":56},"other":1}"#);
+        assert_eq!(fetch_online(&registry), Some(1234));
+        let odd = serve_json(r#"{"online":{"in_game":56}}"#);
+        assert_eq!(fetch_online(&odd), None);
+        assert_eq!(fetch_online("http://127.0.0.1:9"), None);
+    }
+
+    #[test]
+    fn the_published_file_gains_the_online_count_and_keeps_it_when_a_refresh_fails() {
+        let data = temp("online");
+        let game = temp("online-game");
+        let registry = serve_json(r#"{"online":{"total":77}}"#);
+        let guard = publish_from(&data, &game, "1.8.37", registry, Duration::from_millis(100));
+        let mut seen = None;
+        for _ in 0..50 {
+            std::thread::sleep(Duration::from_millis(100));
+            if let Ok(bytes) = std::fs::read(game.join(STATE_FILE))
+                && let Ok(v) = serde_json::from_slice::<serde_json::Value>(&bytes)
+                && v.get("online").is_some()
+            {
+                seen = Some(v["online"].clone());
+                break;
+            }
+        }
+        drop(guard);
+        assert_eq!(seen, Some(serde_json::json!(77)));
+        std::fs::remove_dir_all(&data).ok();
+        std::fs::remove_dir_all(&game).ok();
+    }
+
     #[test]
     fn the_state_file_carries_version_sign_in_and_video() {
         let data = temp("state");
         let game = temp("game");
-        let signed_out = state(&data, "1.8.37", None);
+        let signed_out = state(&data, "1.8.37", None, None);
         assert!(!signed_out.discord.signed_in);
         let json = serde_json::to_value(&signed_out).unwrap();
         assert_eq!(json["launcher_version"], "1.8.37");
@@ -345,10 +454,13 @@ mod tests {
                 url: "https://youtu.be/a".into(),
                 thumbnail: "x.jpg".into(),
             }),
+            Some(1234),
         );
         write(&game, &with).unwrap();
         let back: serde_json::Value = serde_json::from_slice(&std::fs::read(game.join(STATE_FILE)).unwrap()).unwrap();
         assert_eq!(back["video"]["url"], "https://youtu.be/a");
+        assert_eq!(back["online"], 1234);
+        assert!(json.get("online").is_none());
         std::fs::remove_dir_all(&data).ok();
         std::fs::remove_dir_all(&game).ok();
     }

@@ -149,7 +149,32 @@ struct State {
     std::string video_title;
     std::string video_url;
     std::string video_thumbnail;
+    long long online = 0;
 };
+
+inline std::string with_separators(long long n)
+{
+    std::string digits = std::to_string(n < 0 ? -n : n), out;
+    for (size_t i = 0; i < digits.size(); i++) {
+        if (i && (digits.size() - i) % 3 == 0)
+            out += ',';
+        out += digits[i];
+    }
+    return (n < 0 ? "-" : "") + out;
+}
+
+constexpr const char *OFFLINE_TEXT = "Launched with Swofty Launcher";
+
+inline std::string online_line(long long n)
+{
+    return n <= 0 ? "" : with_separators(n) + " currently playing";
+}
+
+inline std::string offline_text(long long n)
+{
+    std::string line = online_line(n);
+    return line.empty() ? std::string(OFFLINE_TEXT) : std::string(OFFLINE_TEXT) + "\n" + line;
+}
 
 inline State parse_state(const std::string &text)
 {
@@ -167,6 +192,7 @@ inline State parse_state(const std::string &text)
     s.video_title = v["title"].str();
     s.video_url = v["url"].str();
     s.video_thumbnail = v["thumbnail"].str();
+    s.online = doc["online"].num(0);
     return s;
 }
 

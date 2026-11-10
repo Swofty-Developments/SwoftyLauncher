@@ -1206,6 +1206,13 @@ mod tests {
         let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
         assert!(hard.is_empty(), "{hard:?}");
         assert_eq!(lines, ["ui: the main menu gets rows of cards"]);
+        let home = read_frag(&src, FE_HOME, 0).unwrap();
+        let patched = patch::offline_panel(&patch::fe_home(&home).unwrap()).unwrap();
+        let dst2 = out.join("home2").join("flow_frontend.erp");
+        write_archive(&src, &dst2, vec![(FE_HOME, 0, Box::new(move |_| Ok(patched)))], Vec::new()).unwrap();
+        let report = check::archive_files(&[(name.as_str(), src.as_path(), dst2.as_path())]).unwrap();
+        let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
+        assert!(hard.is_empty(), "the Launched with panel binding: {hard:?}");
         std::fs::remove_dir_all(&out).ok();
     }
 

@@ -319,6 +319,22 @@ void add_card(TileList *list, uint8_t index, const char *id)
     Ne_Make_StrFromCStr(&item->id, id, 0, 0);
 }
 
+void set_offline_text(long long online)
+{
+    static long long last = -1;
+    std::string text = logic::offline_text(online);
+    if (online == last)
+        return;
+    if (ui_vm_set_path("ui_menu_data.swofty_offline_text", 0, text.c_str())) {
+        last = online;
+        swofty::log("[main-menu] Launched with panel text set: %s", logic::online_line(online).empty() ? "no online line" : logic::online_line(online).c_str());
+    } else {
+        static int fails = 0;
+        if (fails++ % 60 == 0)
+            swofty::log("[main-menu] could not set ui_menu_data.swofty_offline_text yet (try %d)", fails);
+    }
+}
+
 void read_state(bool force = false)
 {
     uint64_t now = GetTickCount64();
@@ -340,6 +356,7 @@ void read_state(bool force = false)
         swofty::log("[main-menu] state: %s, %s, video %s", next.loaded ? logic::version_line(next).c_str() : "no file",
                     logic::discord_line(next).c_str(), logic::has_video(next) ? "yes" : "none");
     state = next;
+    set_offline_text(next.online);
 }
 
 bool pad_connected_and_watch(bool *connected)
@@ -480,6 +497,8 @@ void style_settings(void *item)
 
 void tick()
 {
+    if (home_open.load() && patched.load())
+        read_state();
     int want = strip_wanted.load();
     if (want >= 0 && want != strip_set.load() && patched.load()) {
         int v = want;

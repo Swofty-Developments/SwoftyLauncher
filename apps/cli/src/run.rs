@@ -217,7 +217,7 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
         .as_ref()
         .map(|_| Follower::from_end(wrapper.log.clone()));
     let mut follow = Follow::new(&dir, Some((loader, before)), symbols(&game, args.exe.as_deref()));
-    swofty_core::home_menu::publish(&store.root, &game, env!("CARGO_PKG_VERSION"));
+    let _home_menu = swofty_core::home_menu::publish(&store.root, &game, env!("CARGO_PKG_VERSION"));
     install_ctrl_c();
     let mut quiet = false;
     while !dir.join("exit_code").exists() {

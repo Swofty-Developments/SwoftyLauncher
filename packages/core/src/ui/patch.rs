@@ -9,6 +9,7 @@ const ACTION_PREFIX: &str = "#input_data.action_sets.menu_actions.actions.";
 pub const MOD_MENU: &str = "mod_menu";
 pub const MOD_MENU_OFFLINE: &str = "mod_menu_offline";
 pub const OFFLINE_TEXT: &str = "Launched with Swofty Launcher";
+pub const OFFLINE_TEXT_PATH: &str = "#ui_menu_data.swofty_offline_text";
 pub const OFFLINE_PROMPT: &str = "to open settings";
 pub const PROMPT_LABEL: &str = "Addon Settings";
 const PANEL: &str = "fe_home.contextual_panels.offline_contextual_panel";
@@ -118,7 +119,9 @@ pub fn offline_panel(data: &[u8]) -> Result<Vec<u8>> {
         let screen = first_screen(p)?;
         let cp = screen.child_mut("contextual_panels")?;
         let panel = cp.child_mut("offline_contextual_panel")?;
-        literal_text(panel.child_mut("subtitle")?, OFFLINE_TEXT)?;
+        let subtitle = panel.child_mut("subtitle")?;
+        literal_text(subtitle, OFFLINE_TEXT)?;
+        set_prop(subtitle, "text", prop(s(OFFLINE_TEXT), Some(OFFLINE_TEXT_PATH)))?;
         literal_text(panel.child_mut("tooltip_label")?, OFFLINE_PROMPT)?;
         set_prop_value(
             panel.child_mut("tooltip_extra_2")?,

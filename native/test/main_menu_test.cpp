@@ -67,6 +67,16 @@ int main()
     expect(std::string(mm::template_for("theatre", false)) == mm::TEMPLATE_DEFAULT && std::string(mm::template_for("swofty_showroom", false)) == mm::TEMPLATE_DEFAULT &&
                std::string(mm::template_for("career", false)).empty() && std::string(mm::template_for("swofty_divider")) == mm::TEMPLATE_DIVIDER,
            "without rows Theatre and Showroom take the default large tile; with rows the divider has its slot");
+    expect(mm::with_separators(1234) == "1,234" && mm::with_separators(999) == "999" && mm::with_separators(1000000) == "1,000,000" &&
+               mm::with_separators(12) == "12" && mm::with_separators(100000) == "100,000",
+           "thousands separators");
+    expect(mm::online_line(1234) == "1,234 currently playing" && mm::online_line(1) == "1 currently playing" &&
+               mm::online_line(0).empty() && mm::online_line(-5).empty(),
+           "the online line: separators, singular count, hidden for 0 or less");
+    expect(mm::offline_text(0) == "Launched with Swofty Launcher" && mm::offline_text(2500) == "Launched with Swofty Launcher\n2,500 currently playing",
+           "the Launched with panel text gains the online line");
+    expect(mm::parse_state(R"({"schema":1,"online":321,"discord":{}})").online == 321 && mm::parse_state(R"({"schema":1,"discord":{}})").online == 0,
+           "the state file's online field");
     expect(std::string(mm::TT_BODY).find("will not be saved") != std::string::npos && std::string(mm::TT_BODY).find("OK to continue") != std::string::npos,
            "the warning says laps are not saved and that OK continues");
     auto out = mm::parse_state(R"({"schema":1,"launcher_version":"1.8.37","discord":{"signed_in":false,"name":""}})");
