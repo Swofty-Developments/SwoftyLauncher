@@ -77,6 +77,7 @@ std::atomic<int> rows_flag{-1}, menu_flag{-1};
 std::atomic<int> via{0};
 std::atomic<uint64_t> swap_at{0}, home_opened_at{0};
 std::atomic<void *> last_router{nullptr};
+std::atomic<uint64_t> hub_at{0};
 std::mutex view_lock;
 logic::HomeView home_view;
 std::mutex swap_lock;
@@ -345,7 +346,8 @@ void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4)
         swofty::log("[main-menu] route fired while back-to-menu is armed (%s): %s (route group id 0x%08x)", mode == 1 ? "card" : "showroom", text, gid);
         last_router = router;
         const char *to = nullptr;
-        if (mode == 1 && !std::strcmp(text, "f1_world") && gid == logic::djb2("f1_world_activity_container"))
+        if (mode == 1 && !std::strcmp(text, "f1_world") && gid == logic::djb2("f1_world_activity_container") &&
+            !std::strcmp(env("SWOFTY_MAIN_MENU_BACK"), "home"))
             to = logic::BACK_HOME_FROM_CONTAINER;
         else if (mode == 2 && !std::strcmp(text, "back_1") && gid == logic::djb2("fe_showroom"))
             to = logic::HOME_BACK_ROUTE;
@@ -736,6 +738,31 @@ void poll_bind();
 
 void tick()
 {
+    if (uint64_t at = hub_at.load(); at && GetTickCount64() - at >= 60) {
+        hub_at = 0;
+        void *router = last_router.load();
+        if (router && h_fire) {
+            static uint8_t scratch[0x400];
+            *reinterpret_cast<uint32_t *>(scratch + 0x250) = logic::djb2("fe_f1_world");
+            NeStr *route = nullptr;
+            Ne_Make_StrFromCStr(&route, "back", 0, 0);
+            {
+                std::lock_guard<std::mutex> g(swap_lock);
+                swap_screens.clear();
+                swap_reported = false;
+            }
+            swap_at = GetTickCount64();
+            auto entry = reinterpret_cast<uint32_t *>(swofty::api->module_base() + 0x6066c74);
+            if (runtime::readable(entry, 4))
+                *entry = 0;
+            swofty::log("[main-menu] back: firing route 'back' in group fe_f1_world (0x%08x), the route the hub's own Back button fires (this build session15 reached the main menu with it)",
+                        logic::djb2("fe_f1_world"));
+            h_fire.call<void>(router, scratch, &route, 0);
+            Ne_Make_StrFromCStr(&route, nullptr, 0, 0);
+        } else {
+            swofty::log("[main-menu] back: no router was captured; Back from the hub stays stock");
+        }
+    }
     if (uint64_t at = swap_at.load(); at && GetTickCount64() - at > 1000) {
         std::lock_guard<std::mutex> g(swap_lock);
         if (!swap_reported) {
@@ -806,6 +833,10 @@ void screen(const char *name)
 {
     if (!name)
         return;
+    if (via.load() == 1 && !std::strcmp(name, "fe_f1_world") && std::strcmp(env("SWOFTY_MAIN_MENU_BACK"), "home") != 0) {
+        hub_at = GetTickCount64();
+        swofty::log("[main-menu] back: the stock Back opened the F1 World hub; its own Back (route 'back') follows at once");
+    }
     if (uint64_t at = swap_at.load(); at && GetTickCount64() - at < 5000)
     {
         swofty::log("[main-menu] back: screen %s opened %llu ms after the route swap", name,
