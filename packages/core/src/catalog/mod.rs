@@ -16,7 +16,7 @@ use semver::VersionReq;
 use serde::{Deserialize, Deserializer, Serialize};
 use sha2::{Digest, Sha256};
 
-use crate::manifest::{AddonManifest, Category, Requirement};
+use crate::manifest::{AddonManifest, Category, Platform, Requirement};
 use crate::store::Store;
 use crate::transfer;
 use crate::{Error, Result, io_err};
@@ -124,6 +124,25 @@ pub struct Version {
         skip_serializing_if = "Option::is_none"
     )]
     pub requires: Option<Vec<Requirement>>,
+    /// The platforms the version's `swofty.json` lists as tested; empty means not tested.
+    #[serde(
+        default,
+        deserialize_with = "listed_platforms",
+        skip_serializing_if = "Vec::is_empty"
+    )]
+    pub platforms: Vec<Platform>,
+}
+
+/// The platforms the launcher knows; a value it doesn't know, or a list it can't read, is left out.
+fn listed_platforms<'de, D: Deserializer<'de>>(d: D) -> std::result::Result<Vec<Platform>, D::Error> {
+    let raw = Option::<serde_json::Value>::deserialize(d)?;
+    let names: Vec<String> = raw
+        .and_then(|v| serde_json::from_value(v).ok())
+        .unwrap_or_default();
+    let mut out: Vec<Platform> = names.iter().filter_map(|n| Platform::parse(n)).collect();
+    out.sort();
+    out.dedup();
+    Ok(out)
 }
 
 /// A `requires` list the launcher can't read counts as unlisted, so the
@@ -142,6 +161,14 @@ impl Version {
 }
 
 impl Addon {
+    /// The platforms the addon's newest listed version is tested on; empty means not tested.
+    pub fn platforms(&self) -> &[Platform] {
+        self.latest
+            .as_ref()
+            .or_else(|| self.versions.iter().find(|v| !v.yanked))
+            .map_or(&[], |v| v.platforms.as_slice())
+    }
+
     /// The link to the addon's source code, when the catalog names one the launcher may open.
     pub fn source_url(&self) -> Option<&str> {
         self.repository.as_deref().and_then(crate::manifest::https_url)
@@ -792,6 +819,7 @@ mod tests {
             native: false,
             yanked: false,
             requires: None,
+            platforms: Vec::new(),
         }
     }
 
@@ -1284,6 +1312,27 @@ mod tests {
         assert_eq!(addons[0].kind_labels(), ["Code"]);
         assert_eq!(addons[0].stars, 0);
         assert!(parse("<html>").is_none());
+    }
+
+    #[test]
+    fn platforms_are_the_listed_ones_and_absent_means_none() {
+        let version =
+            |platforms: &str| format!(r#"{{"version":"1.0.0","size":1,"sha256":"","url":"u"{platforms}}}"#);
+        let listed = |platforms: &str| {
+            let text = format!(
+                r#"{{"addons":[{{"id":"a.b","name":"B","latest":{}}}]}}"#,
+                version(platforms)
+            );
+            parse(&text).unwrap().remove(0)
+        };
+        assert!(listed("").platforms().is_empty());
+        assert!(listed(r#","platforms":null"#).platforms().is_empty());
+        assert!(listed(r#","platforms":[]"#).platforms().is_empty());
+        assert_eq!(
+            listed(r#","platforms":["ea","steam","ea","gog"]"#).platforms(),
+            [Platform::Steam, Platform::Ea]
+        );
+        assert!(listed(r#","platforms":"steam""#).platforms().is_empty());
     }
 
     #[test]

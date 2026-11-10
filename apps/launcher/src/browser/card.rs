@@ -106,6 +106,15 @@ fn card_note(id: String, icon: IconName, color: Hsla, text: String) -> Stateful<
         .tooltip(move |window, cx| Tooltip::new(tip.clone()).build(window, cx))
 }
 
+fn platform_tag(w: Where, p: Palette) -> impl IntoElement {
+    let tested = w != Where::NotTested;
+    tag(w.label(), p).when(tested, |d| {
+        d.text_color(p.success)
+            .bg(p.success.opacity(0.1))
+            .border_color(p.success.opacity(0.35))
+    })
+}
+
 pub(super) fn native_badge(id: String, p: Palette) -> Stateful<Div> {
     h_flex()
         .id(SharedString::from(id))
@@ -191,7 +200,8 @@ impl Shell {
         let category = a.category_label();
         let kinds = a.kind_labels();
         let native = a.native(&current_version());
-        (category.is_some() || !kinds.is_empty() || native).then(|| {
+        let platforms = Where::tags(a.platforms());
+        Some(
             h_flex()
                 .flex_wrap()
                 .gap(px(6.))
@@ -203,9 +213,10 @@ impl Shell {
                             .border_color(p.accent.opacity(0.35)),
                     )
                 })
+                .children(platforms.into_iter().map(|w| platform_tag(w, p)))
                 .children(kinds.into_iter().map(|k| tag(k, p)))
-                .when(native, |d| d.child(native_badge(id, p)))
-        })
+                .when(native, |d| d.child(native_badge(id, p))),
+        )
     }
 
     pub(super) fn browser_card(

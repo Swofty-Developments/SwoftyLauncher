@@ -102,7 +102,7 @@ swofty: my-addons.zip holds 3 addons; drop it on the launcher to install them al
 Before you zip:
 
 1. Set `id`, `name`, `version`, `author` and `description` in [`swofty.json`](./manifest). If your source code is public, set `repository` too, so players can find it.
-2. Set `compat.game_builds` and `compat.seasons` to the builds and seasons your addon was made for.
+2. Set `compat.game_builds` and `compat.seasons` to the builds and seasons your addon was made for. Set `compat.platforms` to `["steam"]`, `["ea"]` or both for the game copies you tested on; the [Addon Browser](/using/addon-browser) shows **Not tested** without it.
 3. Remove every file that none of your operations name. Leave out build folders such as `target/`.
 4. Ship your compiled binaries: the engine plugin DLL and one launcher plugin binary per OS in `launcher.program`.
 5. Include a README crediting each author whose files you ship, and get their permission to redistribute those files. Never include the game's own archives, database or executable.

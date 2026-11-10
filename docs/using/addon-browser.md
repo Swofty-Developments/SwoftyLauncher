@@ -19,7 +19,9 @@ Above the rows, a strip of category tiles shows each category's glyph, name and 
 
 - **Search:** matches names, ids, creators, categories, types and descriptions, and tolerates one typo in longer words. `author:<name>` and `category:<name>` narrow it down. Creators that match show above the addons. A search from All covers every category, and a search inside a category covers that category.
 - **Sort:** Most stars, Most downloads, Trending (downloads in the last 30 days), Recently updated, Newest and Name. While you search, the order is Best match.
-- **Filters:** type, state (installed, not installed, update available, starred by you, works with this launcher), creator, and **Hide addons that run code**. A filter chosen on All applies to every category.
+- **Filters:** type, state (installed, not installed, update available, starred by you, works with this launcher), platform (All, Steam, EA, Not tested), creator, and **Hide addons that run code**. The platform filter starts on **All**; Steam, EA and Not tested can be ticked together, and **All** clears them. A filter chosen on All applies to every category.
+
+Every card shows a tag for each platform its creator tested the addon on: **Steam**, **EA**, or both. An addon whose creator lists none shows **Not tested**. The tag appears on the addon's page too. A tag never stops an install.
 
 Select an addon for its description, a 30-day downloads chart, its file size and checksum, the launcher version it needs, and every version's changelog. When the creator lists the addon's source code, a **Source code** button opens it; an addon without one has no button, and an installed addon's page shows **Not listed** under **Source code**. **More from** lists the same creator's other addons.
 
