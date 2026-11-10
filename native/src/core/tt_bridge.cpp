@@ -737,9 +737,27 @@ void ts_flag_mid(safetyhook::Context &c)
                 force ? "forced visible: the View Leaderboards button and prompt are shown" : ours ? "already visible" : "left to the game");
 }
 
+uint32_t ui_node_name(uint64_t node)
+{
+    uint64_t inner = node + 0x268, vt = peek64(inner), fn = vt ? peek64(vt + 8) : 0, base = swofty::api->module_base();
+    if (!vt || fn < base || fn >= base + 0x20000000)
+        return 0;
+    uint64_t info = reinterpret_cast<uint64_t (*)(uint64_t)>(fn)(inner);
+    return info ? peek32(info + 0x110) : 0;
+}
+
 void priv_mid(safetyhook::Context &c)
 {
     uint32_t type = uint32_t(c.rbp);
+    if (bridge_on && type != 1 && type < 12 && content_ours() && ui_node_name(c.r14) == 0x57172c5d) {
+        c.rflags |= 0x40;
+        static std::atomic<int> granted{0};
+        if (++granted <= 8)
+            swofty::log("[boards] garage monitor: leaderboard tab privilege (type %u, node leaderboard_privilege_check) granted for our content: the panel's check is answered as passed, "
+                        "so car_monitor_tt_leaderboard_privilege_check enables the tab (the panel then reads GetTTLeaderboard through the bridge)",
+                        type);
+        return;
+    }
     if (type != 1) {
         if (diag_on && type < 12) {
             static std::atomic<unsigned> seen{0};
