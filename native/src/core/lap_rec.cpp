@@ -4,27 +4,40 @@
 
 #include "apply/moments.hpp"
 #include "direct_start_tt.hpp"
+#include "era_logic.hpp"
 #include "hooks/core_events.hpp"
 #include "hooks/hooks.hpp"
+#include "lap_game_logic.hpp"
 #include "lap_rec_logic.hpp"
 #include "live_car.hpp"
 #include "perf.hpp"
 
+#include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 #include <swofty/systems/laps.hpp>
 
 #include <atomic>
 #include <cmath>
+#include <cstring>
+#include <map>
 #include <mutex>
 
 // The lap recorder: in a Time Trial, while swofty\tt.json carries "tt_boards": true, the flow tick samples the
 // player's car and the line crossings of ers_newlap.cpp (session.lap) cut it into laps; each completed lap is written
 // to swofty\laps\<UTC stamp>-<n>.swlap (lap_file_logic.hpp). The state machine is lap_rec_logic.hpp. Crossings are
 // queued and handled on the next flow tick, so file writing and the game reads stay on the flow thread.
-// lap_result() decides the lap time; it is the one place that changes when the game's own lap record is read.
+// lap_result() decides the lap time: the game's own lap record when the hook below delivered one, else the clock.
+// With the game hooks armed a completed lap waits up to two seconds for the game's lap result and, on a valid lap, for
+// the ghost blob the game commits on a personal best (lap_game_logic.hpp, Sealer); with them off the lap is written at
+// once from the clock.
+
+namespace runtime {
+std::vector<era::Box> era_boxes();
+}
 
 namespace {
 
+namespace mem = swofty::mem;
 namespace lr = runtime::lap_rec;
 namespace lf = runtime::lap_file;
 
@@ -41,6 +54,30 @@ struct Board {
 struct Pending {
     lr::Outcome outcome;
 };
+
+struct LapContext {
+    Board board;
+    std::string started_utc;
+    std::optional<double> session_time_s;
+};
+
+struct Blob {
+    std::vector<uint8_t> bytes;
+    double at_s;
+};
+
+constexpr const char *GAME_MIXIN = "swofty_core.dll (lap recorder game lap result)";
+constexpr const char *GHOST_MIXIN = "swofty_core.dll (lap recorder ghost blob)";
+constexpr const char *LAP_TARGET = "Sess_LapTimes_ReportNewLapTime";
+constexpr const char *GHOST_SITE = "site_Game_GhostLaps_SavePersonalBestCommit";
+constexpr uintptr_t RVA_TLAP_KEY = 0x61026a8;
+constexpr uintptr_t HANDLER_BLOB = 0x278, HANDLER_BLOB_SIZE = 0x280, HANDLER_REGISTRY = 0x20, REGISTRY_MAP = 0x30,
+                    HANDLER_TIMING = 0x30, TIMING_SESSION = 0x88;
+
+using ReportFn = uint64_t(void *, void *);
+ReportFn *orig_report = nullptr;
+bool game_offered = false, ghost_offered = false, game_armed = false, ghost_armed = false, hooks_settled = false;
+std::atomic<uintptr_t> registry_map{0}, session_base{0};
 
 struct LapResult {
     int64_t time_ms = 0;
@@ -60,6 +97,10 @@ bool planned = false;
 lr::Plan plan;
 Board board;
 std::string started_utc;
+lr::Sealer sealer;
+std::map<uint32_t, LapContext> contexts;
+std::vector<lr::GameLap> game_in;
+std::vector<Blob> ghost_in;
 LARGE_INTEGER qpc_freq;
 uint64_t discarded = 0, written = 0;
 
@@ -83,11 +124,43 @@ std::string utc_now(SYSTEMTIME *out = nullptr)
     return b;
 }
 
-LapResult lap_result(const lr::Lap &lap)
+LapResult lap_result(const lr::Lap &lap, const std::optional<lr::GameLap> &game)
 {
     LapResult r;
+    if (game && game->usable) {
+        r.time_ms = game->time_ms;
+        r.sectors_ms = game->sectors_ms;
+        r.valid = game->lap_valid;
+        r.source = "game";
+        return r;
+    }
     r.time_ms = int64_t(std::llround((lap.ended_s - lap.started_s) * 1000.0));
     return r;
+}
+
+bool read_memory(uint64_t at, void *dst, size_t n)
+{
+    if (!mem::readable(uintptr_t(at), n))
+        return false;
+    std::memcpy(dst, reinterpret_cast<const void *>(uintptr_t(at)), n);
+    return true;
+}
+
+std::optional<double> session_clock()
+{
+    const SwoftyTelemetry *t = runtime::telemetry_table();
+    SwoftySessionState st{};
+    if (!t || !t->session || t->session(&st) != SWOFTY_ASSET_OK || !std::isfinite(st.session_time) || st.session_time <= 0)
+        return std::nullopt;
+    return double(st.session_time);
+}
+
+std::string content_title(const std::string &content)
+{
+    for (const auto &box : runtime::era_boxes())
+        if (!box.title.empty() && (box.owner + "/" + box.entrant_list == content || box.time_trial == content))
+            return box.title;
+    return {};
 }
 
 lr::Avail avail_of(const live_car::LiveCar &c, const live_car::LiveDynamics &d)
@@ -188,11 +261,15 @@ int32_t add_section(void *user, const char *tag, const void *bytes, uint32_t len
     return SWOFTY_ASSET_OK;
 }
 
-void finish(lr::Lap &lap, const Board &b, const std::string &utc, const live_car::LiveCar &c)
+void finish(lr::Sealed &sealed, const LapContext &ctx)
 {
     LARGE_INTEGER t0, t1, f;
     QueryPerformanceCounter(&t0);
-    LapResult r = lap_result(lap);
+    lr::Lap &lap = sealed.lap;
+    const Board &b = ctx.board;
+    LapResult r = lap_result(lap, sealed.game);
+    if (sealer.game_armed() && !sealed.game)
+        swofty::log("[laps] lap %u: the game reported no lap result within the wait; using the clock", lap.index);
     lf::Header h;
     h.core = SWOFTY_CORE_VERSION;
     h.game_build = runtime::build_exe_sha();
@@ -202,6 +279,7 @@ void finish(lr::Lap &lap, const Board &b, const std::string &utc, const live_car
     h.content = b.content;
     h.track = b.track;
     h.weather = b.weather;
+    h.content_name = content_title(b.content);
     if (auto facts = swofty_core::hooks::core().current(); facts && facts->player) {
         h.team = facts->player->team;
         h.vehicle = facts->player->vehicle;
@@ -212,11 +290,25 @@ void finish(lr::Lap &lap, const Board &b, const std::string &utc, const live_car
     h.valid = r.valid;
     h.source = r.source;
     h.lap_index = int64_t(lap.index);
-    h.started_utc = utc;
+    h.started_utc = ctx.started_utc;
+    h.session_time_s = ctx.session_time_s;
     h.rate_hz = 60;
-    (void)c;
+    if (sealed.game && sealed.game->usable) {
+        const lr::TLapExtras &t = sealed.game->tlap;
+        if (t.ok) {
+            h.assists = swofty::json::Value::object(
+                {{"brk", int64_t(t.brk)}, {"abs", int64_t(t.abs)}, {"trc", int64_t(t.trc)}, {"drl", int64_t(t.drl)},
+                 {"gbx", int64_t(t.gbx)}, {"ers", int64_t(t.ers)}, {"input", int64_t(t.input)}});
+            h.performance = lr::performance_name(t.performance);
+        }
+        if (sealed.game->stats.ok) {
+            h.team_stat = int64_t(sealed.game->stats.team);
+            h.vehicle_stat = int64_t(sealed.game->stats.vehicle);
+            h.livery_stat = int64_t(sealed.game->stats.livery);
+        }
+    }
 
-    std::vector<uint8_t> body = lf::build(h, plan.layout, lap.samples.data(), lap.count, {}, {});
+    std::vector<uint8_t> body = lf::build(h, plan.layout, lap.samples.data(), lap.count, sealed.ghost, {});
     body.resize(body.size() - 8);
 
     SYSTEMTIME st;
@@ -249,26 +341,51 @@ void finish(lr::Lap &lap, const Board &b, const std::string &utc, const live_car
     QueryPerformanceCounter(&t1);
     QueryPerformanceFrequency(&f);
     written++;
-    swofty::log("[laps] wrote %s lap %lld ms, %u samples, board %s|%s|%s", name.c_str(), (long long)r.time_ms, lap.count,
-                b.content.c_str(), b.track.empty() ? "unknown" : b.track.c_str(),
-                b.weather.empty() ? "unknown" : b.weather.c_str());
+    swofty::log("[laps] wrote %s lap %lld ms (%s), %u samples, ghost %zu bytes, board %s|%s|%s", name.c_str(),
+                (long long)r.time_ms, r.source, lap.count, sealed.ghost.size(), b.content.c_str(),
+                b.track.empty() ? "unknown" : b.track.c_str(), b.weather.empty() ? "unknown" : b.weather.c_str());
     swofty::log("[laps] lap %u: %zu bytes, built and written in %.1f ms", lap.index, body.size(),
                 1000.0 * double(t1.QuadPart - t0.QuadPart) / double(f.QuadPart));
     swofty_core::hooks::events::laps_recorded(narrow_path.c_str(), int32_t(r.time_ms),
                                               r.valid ? (*r.valid ? 1 : 0) : -1);
 }
 
+void release(std::vector<lr::Sealed> ready)
+{
+    for (auto &s : ready) {
+        LapContext ctx;
+        auto it = contexts.find(s.lap.index);
+        if (it != contexts.end()) {
+            ctx = std::move(it->second);
+            contexts.erase(it);
+        }
+        finish(s, ctx);
+    }
+}
+
 void drain(const live_car::LiveCar &c)
 {
     std::vector<Pending> work;
+    std::vector<lr::GameLap> games;
+    std::vector<Blob> ghosts;
     {
         std::lock_guard<std::mutex> g(lock);
         work.swap(queued);
+        games.swap(game_in);
+        ghosts.swap(ghost_in);
     }
+    for (auto &g : games) {
+        double at = g.at_s;
+        sealer.game(std::move(g), at);
+    }
+    for (auto &b : ghosts)
+        sealer.ghost(std::move(b.bytes), b.at_s);
     for (auto &p : work) {
         lr::Outcome &o = p.outcome;
         if (o.kind == lr::Outcome::completed) {
-            finish(o.lap, board, started_utc, c);
+            contexts[o.lap.index] = {board, started_utc, session_clock()};
+            double ended = o.lap.ended_s;
+            sealer.lap(std::move(o.lap), ended);
             board = snapshot(c);
             started_utc = utc_now();
         } else if (o.kind == lr::Outcome::started) {
@@ -282,6 +399,7 @@ void drain(const live_car::LiveCar &c)
             swofty::log("[laps] lap discarded: %s", lr::discard_name(o.why));
         }
     }
+    release(sealer.poll(now_seconds()));
 }
 
 void handle(lr::Outcome o)
@@ -292,9 +410,142 @@ void handle(lr::Outcome o)
     queued.push_back({std::move(o)});
 }
 
+void read_extras(lr::GameLap &g, uint64_t lap_times)
+{
+    (void)lap_times;
+    auto rdr = read_memory;
+    if (uintptr_t map = registry_map.load()) {
+        uint64_t tlap = lr::find_last_tlap(rdr, map, swofty::api->module_base() + RVA_TLAP_KEY);
+        g.tlap = tlap ? lr::decode_tlap(rdr, tlap, g.time_ms) : lr::TLapExtras{};
+    }
+    if (uintptr_t base = session_base.load()) {
+        g.stats = lr::find_stats(rdr, base, g.car);
+        uint64_t inner = 0;
+        if (!g.stats.ok && mem::read(base + lr::SESSION_LIST, inner) && inner)
+            g.stats = lr::find_stats(rdr, inner, g.car);
+    }
+}
+
+uint64_t report_lap(void *lap_times, void *msg)
+{
+    uint64_t r = orig_report(lap_times, msg);
+    if (!active.load(std::memory_order_relaxed))
+        return r;
+    uint8_t car = 0;
+    int player = player_car.load();
+    mem::Trust trust(runtime::HEAP_TRUST_MS);
+    if (player < 0 || !mem::read(uintptr_t(msg) + lr::MSG_CAR, car) || car != player)
+        return r;
+    auto rdr = read_memory;
+    lr::GameLap g = lr::decode_lap(rdr, uint64_t(lap_times), uint64_t(msg));
+    lr::sanity(g);
+    g.at_s = now_seconds();
+    if (g.usable) {
+        read_extras(g, uint64_t(lap_times));
+        swofty::log("[laps] lap result from the game: car %u record %d (message lap %u) %lld ms, sectors %lld %lld %lld ms, "
+                    "lap %s, sectors %d%d%d valid",
+                    unsigned(g.car), g.record, g.msg_lap, (long long)g.time_ms, (long long)g.sectors_ms[0],
+                    (long long)g.sectors_ms[1], (long long)g.sectors_ms[2], g.lap_valid ? "valid" : "invalid",
+                    g.sector_valid[0], g.sector_valid[1], g.sector_valid[2]);
+        if (g.tlap.ok)
+            swofty::log("[laps] game lap extras: assists brk %u abs %u trc %u drl %u gbx %u ers %u, input %s, performance %s",
+                        g.tlap.brk, g.tlap.abs, g.tlap.trc, g.tlap.drl, g.tlap.gbx, g.tlap.ers,
+                        lr::input_name(g.tlap.input), lr::performance_name(g.tlap.performance));
+        else
+            swofty::log("[laps] game lap extras: the telemetry lap is not readable (%s)",
+                        registry_map.load() ? "no matching lap in the component map" : "no ghost handler seen yet");
+        if (g.stats.ok)
+            swofty::log("[laps] game lap stats: team %u vehicle %u livery %u", g.stats.team, g.stats.vehicle, g.stats.livery);
+    } else {
+        swofty::log("[laps] game lap result refused (%s): lap %.3f s, sectors %.3f %.3f %.3f s; the clock decides this lap",
+                    g.why.c_str(), g.lap_s, g.sector_s[0], g.sector_s[1], g.sector_s[2]);
+    }
+    std::lock_guard<std::mutex> lk(lock);
+    if (active.load())
+        game_in.push_back(std::move(g));
+    return r;
+}
+
+void ghost_commit(SwoftyContext *c)
+{
+    uintptr_t handler = c->rsi, blob = 0, timing = 0, registry = 0, map = 0, base = 0;
+    uint64_t size = 0;
+    mem::Trust trust(runtime::HEAP_TRUST_MS);
+    if (mem::read(handler + HANDLER_REGISTRY, registry) && registry && mem::read(registry + REGISTRY_MAP, map))
+        registry_map = map;
+    if (mem::read(handler + HANDLER_TIMING, timing) && timing && mem::read(timing + TIMING_SESSION, base))
+        session_base = base;
+    if (!active.load(std::memory_order_relaxed))
+        return;
+    if (!mem::read(handler + HANDLER_BLOB, blob) || !mem::read(handler + HANDLER_BLOB_SIZE, size) ||
+        !lr::ghost_size_ok(size) || !mem::readable(blob, size_t(size))) {
+        swofty::log("[laps] ghost blob refused: handler 0x%llx, pointer 0x%llx, size %llu", (unsigned long long)handler,
+                    (unsigned long long)blob, (unsigned long long)size);
+        return;
+    }
+    Blob b{std::vector<uint8_t>(size), now_seconds()};
+    std::memcpy(b.bytes.data(), reinterpret_cast<const void *>(blob), size_t(size));
+    swofty::log("[laps] ghost blob from the game: %llu bytes", (unsigned long long)size);
+    std::lock_guard<std::mutex> lk(lock);
+    if (active.load())
+        ghost_in.push_back(std::move(b));
+}
+
+bool env_off(const char *name, const char *label)
+{
+    char v[16] = {};
+    DWORD n = GetEnvironmentVariableA(name, v, sizeof v);
+    if (!n || n >= sizeof v || (strcmp(v, "0") && strcmp(v, "off")))
+        return false;
+    swofty::log("[laps] %s off (%s=%s)", label, name, v);
+    return true;
+}
+
 }
 
 namespace runtime {
+
+std::vector<CoreMixins> lap_rec_mixins()
+{
+    std::vector<CoreMixins> out;
+    if (game_offered || !code_ready())
+        return out;
+    game_offered = ghost_offered = true;
+    if (!lr::gate_of(read_file(swofty_root() + L"tt.json", size_t(1) << 20)).on)
+        return out;
+    if (!same_build()) {
+        swofty::log("[laps] game lap result and ghost blob off: this is not the build the lap offsets are from; laps use "
+                    "the clock");
+        return out;
+    }
+    if (!env_off("SWOFTY_LAP_GAME_RESULT", "game lap result")) {
+        if (swofty::api->resolve(LAP_TARGET))
+            out.push_back({GAME_MIXIN, {{LAP_TARGET, SWOFTY_MIXIN_WRAP, 100, (void *)&report_lap, (void **)&orig_report}}});
+        else
+            swofty::log("[laps] game lap result off: needs %s, which this build does not resolve; laps use the clock",
+                        LAP_TARGET);
+    }
+    if (!env_off("SWOFTY_LAP_GHOST", "ghost blob")) {
+        if (swofty::api->resolve(GHOST_SITE))
+            out.push_back({GHOST_MIXIN, {{GHOST_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&ghost_commit, nullptr}}});
+        else
+            swofty::log("[laps] ghost blob off: needs %s, which this build does not resolve; lap files carry no GHST "
+                        "section",
+                        GHOST_SITE);
+    }
+    return out;
+}
+
+void lap_rec_commit()
+{
+    if (!game_offered || hooks_settled)
+        return;
+    hooks_settled = true;
+    game_armed = core_mixins_active(GAME_MIXIN);
+    ghost_armed = core_mixins_active(GHOST_MIXIN);
+    swofty::log("[laps] game lap result %s; ghost blob %s", game_armed ? "armed" : "not armed (laps use the clock)",
+                ghost_armed ? "armed" : "not armed (no GHST section)");
+}
 
 void lap_rec_setup()
 {
@@ -306,6 +557,10 @@ void lap_rec_session_enter()
     std::lock_guard<std::mutex> g(lock);
     active = false;
     queued.clear();
+    game_in.clear();
+    ghost_in.clear();
+    sealer = lr::Sealer();
+    contexts.clear();
     planned = false;
     gate = lr::gate_of(read_file(swofty_root() + L"tt.json", size_t(1) << 20));
     is_time_trial = swofty_core::apply::moments::session_mode_track().first == "time_trial";
@@ -314,10 +569,13 @@ void lap_rec_session_enter()
         return;
     }
     recorder.begin_session();
+    sealer.expect(game_armed, ghost_armed);
     discarded = written = 0;
     player_car = -1;
     active = true;
-    swofty::log("[laps] recording this Time Trial session%s", gate.nonce.empty() ? "" : " (session nonce set)");
+    swofty::log("[laps] recording this Time Trial session%s; lap source %s, ghost blob %s",
+                gate.nonce.empty() ? "" : " (session nonce set)", game_armed ? "the game's lap record" : "the clock",
+                ghost_armed ? "from the game" : "off");
 }
 
 void lap_rec_session_end()
@@ -327,6 +585,7 @@ void lap_rec_session_end()
     live_car::LiveCar c;
     live_car::read(c);
     drain(c);
+    release(sealer.flush());
     active = false;
     lr::Outcome o;
     {

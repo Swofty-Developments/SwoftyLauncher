@@ -50,6 +50,18 @@ inline int64_t game_ms(float seconds)
     return int64_t(int32_t(seconds * 1000.0f));
 }
 
+struct TLapExtras {
+    bool ok = false;
+    uint8_t brk = 0, abs = 0, trc = 0, drl = 0, gbx = 0, ers = 0;
+    int input = -1, performance = -1;
+    float lap_s = 0;
+};
+
+struct Stats {
+    bool ok = false;
+    uint32_t team = 0, vehicle = 0, livery = 0;
+};
+
 struct GameLap {
     bool read = false, usable = false;
     uint8_t car = 0;
@@ -61,6 +73,8 @@ struct GameLap {
     std::vector<int64_t> sectors_ms;
     std::string why;
     double at_s = 0;
+    TLapExtras tlap;
+    Stats stats;
 };
 
 // lapTimes is the rcx of Sess_LapTimes_ReportNewLapTime, msg its rdx. The record of the lap just completed is the
@@ -128,12 +142,6 @@ inline void sanity(GameLap &g)
     g.why.clear();
 }
 
-struct TLapExtras {
-    bool ok = false;
-    uint8_t brk = 0, abs = 0, trc = 0, drl = 0, gbx = 0, ers = 0;
-    int input = -1, performance = -1;
-    float lap_s = 0;
-};
 
 template <class R> inline TLapExtras decode_tlap(R &mem, uint64_t tlap, int64_t expect_ms)
 {
@@ -173,10 +181,6 @@ template <class R> inline uint64_t find_last_tlap(R &mem, uint64_t map, uint64_t
     return 0;
 }
 
-struct Stats {
-    bool ok = false;
-    uint32_t team = 0, vehicle = 0, livery = 0;
-};
 
 // The participant list of a session, one 0x88-byte entry per car; a car's entry carries its index at +0x82.
 template <class R> inline Stats find_stats(R &mem, uint64_t list_owner, int car)

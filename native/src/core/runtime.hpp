@@ -274,6 +274,8 @@ void netplay_privilege_commit();
 uint8_t *team_record_of(uint16_t stat);
 void team_record_inserted(std::function<void(uint16_t, uint8_t *)> fn);
 std::vector<CoreMixins> leaderboard_guard_mixins();
+std::vector<CoreMixins> lap_rec_mixins();
+void lap_rec_commit();
 void leaderboard_guard_commit();
 std::vector<CoreMixins> thrustmaster_lcd_mixins();
 void thrustmaster_lcd_commit();
