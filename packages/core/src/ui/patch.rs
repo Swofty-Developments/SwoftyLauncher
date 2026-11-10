@@ -691,6 +691,36 @@ fn mod_menu_route(groupings: &[Node]) -> Result<Node> {
 }
 
 pub const SHOWROOM_ROUTE: &str = "swofty_showroom";
+pub const HOME_BACK_ROUTE: &str = "swofty_home";
+
+/// routes_f1_world.uir with a `swofty_home` route in the fe_showroom group, a copy of the activity
+/// container's `home` route (migrate to fe_home), which the core fires when the Showroom was opened from
+/// the main menu.
+pub fn f1_world_routes(data: &[u8]) -> Result<Vec<u8>> {
+    edit(data, |p| {
+        let gs = root_obj(p)?.at_mut("RouteGroupings")?.a_mut()?;
+        let mut home = gs
+            .iter()
+            .find(|g| id_of(g) == Some("f1_world_activity_container"))
+            .ok_or_else(|| err("the routes have no f1_world_activity_container grouping"))?
+            .o()?
+            .at("Routes")?
+            .a()?
+            .iter()
+            .find(|r| id_of(r) == Some("home"))
+            .cloned()
+            .ok_or_else(|| err("f1_world_activity_container has no home route"))?;
+        set_str(home.o_mut()?, "Id", HOME_BACK_ROUTE)?;
+        let showroom = gs
+            .iter_mut()
+            .find(|g| id_of(g) == Some("fe_showroom"))
+            .ok_or_else(|| err("the routes have no fe_showroom grouping"))?;
+        let routes = showroom.o_mut()?.at_mut("Routes")?.a_mut()?;
+        routes.retain(|r| id_of(r) != Some(HOME_BACK_ROUTE));
+        routes.push(home);
+        Ok(())
+    })
+}
 
 fn showroom_route(groupings: &[Node]) -> Result<Node> {
     let home = groupings
@@ -1479,6 +1509,41 @@ mod tests {
         let home = group(&p, "fe_home").unwrap();
         let ids: Vec<&str> = home.o().unwrap().at("Routes").unwrap().a().unwrap().iter().filter_map(id_of).collect();
         assert!(ids.contains(&SHOWROOM_ROUTE) && ids.contains(&"theatre"), "{ids:?}");
+    }
+
+    #[test]
+    fn the_showroom_gets_a_route_home_copied_from_the_activity_container() {
+        let data = Pkg {
+            name: [0; 4],
+            root: obj(vec![(
+                "RouteGroupings",
+                arr(vec![
+                    route_group("f1_world_activity_container", vec![route("home", vec![], "fe_home", 0, None)]),
+                    route_group("fe_showroom", vec![route("back_1", vec![], "", 0, None)]),
+                ]),
+            )]),
+            vca: Vec::new(),
+            layout: None,
+        }
+        .to_bytes()
+        .unwrap();
+        let out = f1_world_routes(&data).unwrap();
+        let p = Pkg::parse(&out).unwrap();
+        let ids = |g: &str| -> Vec<String> {
+            group(&p, g)
+                .unwrap()
+                .o()
+                .unwrap()
+                .at("Routes")
+                .unwrap()
+                .a()
+                .unwrap()
+                .iter()
+                .filter_map(|r| id_of(r).map(str::to_owned))
+                .collect()
+        };
+        assert_eq!(ids("fe_showroom"), ["back_1", HOME_BACK_ROUTE]);
+        assert_eq!(ids("f1_world_activity_container"), ["home"]);
     }
 
     fn group<'a>(p: &'a Pkg, id: &str) -> Option<&'a Node> {

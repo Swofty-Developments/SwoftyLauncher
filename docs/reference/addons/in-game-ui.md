@@ -481,7 +481,7 @@ To open a link the core writes `swofty/open_url.json`, `{"url": "https://youtu.b
 
 swofty_core builds the main menu's tile list in this order: Braking Point, Career, Grand Prix, Time Trial, the challenge tile when the game builds it, Theatre, Showroom, Addon Settings. The F1 World, Local Multiplayer, League Racing and Player Hub tiles and the divider are not added. Grand Prix and Time Trial are copies of the F1 World item with their own id, title and description. Showroom is a copy of the Theatre item that fires the `swofty_showroom` route, a copy of the home's `theatre` route that opens `fe_showroom`.
 
-When the launcher's UI build is in place (`swofty/ui/home_rows.flag`), the tiles are laid out in rows. The build adds five slots to `fe_home.idf`, `swofty_home_row_top` and `swofty_home_row_modes` stacking left to right and three stacking top to bottom, and five copies of `fe_tile_button_default` in `fe_home.ui` whose layout names those slots. The core sets each tile's VM `type` to its template: Braking Point, Career and the challenge tile `swofty_home_top`; Grand Prix and Time Trial `swofty_home_modes`; Theatre, Showroom and Addon Settings `swofty_home_wide_a`, `_b` and `_c`.
+The tiles stay in the stock vertical list at the stock position, all in the large default tile style: Theatre and Showroom are copies of the Theatre item and take the type `fe_tile_button_default`, and the divider tile (the stock divider adder) sits before Addon Settings. A launcher build with the environment variable `SWOFTY_HOME_ROWS` set also adds a rows layout (scene slots in `fe_home.idf`, templates in `fe_home.ui`, flag `swofty/ui/home_rows.flag`); it is off by default.
 
 ```text
 [main-menu] home tile block at 0x...; adders F1 World 0x..., challenge 0x..., Theatre 0x...
@@ -492,9 +492,11 @@ When the launcher's UI build is in place (`swofty/ui/home_rows.flag`), the tiles
 
 When the home tile block does not match byte for byte, the core logs `the home tile block did not resolve on this build; the stock main menu stays` and changes nothing.
 
-`SWOFTY_MAIN_MENU=0` leaves the stock main menu. `SWOFTY_MAIN_MENU_CHAIN=0` makes the Grand Prix and Time Trial cards stop at the activity container. `SWOFTY_MAIN_MENU_NAV` is logged; only `single` (one spawner, tiles in list order) is built.
+`SWOFTY_MAIN_MENU=0` leaves the stock main menu. `SWOFTY_MAIN_MENU_CHAIN=0` makes the Grand Prix and Time Trial cards stop at the activity container. `SWOFTY_MAIN_MENU_NAV` is logged.
 
 Pressing Grand Prix or Time Trial fires the home route `home_to_activity`, which opens the F1 World activity container without the F1 World hub. When the container is up the core raises the container's own `grand_prix_new` (Grand Prix) or `time_trial` (Time Trial) command, which selects that tab. `SWOFTY_MAIN_MENU_ROUTE` replaces the route name.
+
+Back from the container fires the route `f1_world`; while a card is armed the core replaces it with `home`, which migrates to `fe_home`. The Showroom's back fires `back_1`; the core replaces it with `swofty_home`, a route the launcher adds to the `fe_showroom` group as a copy of the container's `home` route.
 
 ```text
 [main-menu] chain: activity container command handler hooked at base+0x...

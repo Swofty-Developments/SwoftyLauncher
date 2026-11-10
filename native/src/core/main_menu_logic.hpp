@@ -66,6 +66,7 @@ inline const char *template_for(const std::string &id, bool rows = true)
 
 constexpr uint16_t WATCH_PAD_MASK = 0x0200;
 constexpr const char *SHOWROOM_ROUTE = "swofty_showroom";
+constexpr const char *HOME_BACK_ROUTE = "swofty_home";
 
 constexpr uint32_t WATCH_KEY_VK = 0x56;
 

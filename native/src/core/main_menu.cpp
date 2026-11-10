@@ -69,7 +69,8 @@ std::atomic<bool> resolved{false}, patched{false}, home_open{false};
 std::once_flag once;
 void *f1w_populate = nullptr, *f1w_action = nullptr;
 std::atomic<bool> tt_warned{false};
-std::atomic<int> rows_flag{-1};
+std::atomic<int> rows_flag{-1}, menu_flag{-1};
+std::atomic<int> via{0};
 std::atomic<int> strip_wanted{-1}, strip_set{-1};
 void *theatre_populate = nullptr, *theatre_action = nullptr;
 std::mutex state_lock;
@@ -154,6 +155,17 @@ bool rows_on()
     return f == 1;
 }
 
+bool menu_on()
+{
+    int f = menu_flag.load();
+    if (f < 0) {
+        f = runtime::read_file(runtime::under_swofty("ui\\home_menu.flag"), 16).empty() ? 0 : 1;
+        menu_flag = f;
+        swofty::log("[main-menu] the launcher's Showroom route %s", f ? "is in this build" : "is not in this build; no Showroom card");
+    }
+    return f == 1;
+}
+
 void style_item(HomeItem *item)
 {
     const char *tpl = logic::template_for(id_of(item), rows_on());
@@ -232,6 +244,7 @@ Action *showroom_action(HomeItem *item, Action *out)
     out->type = 1;
     out->str = nullptr;
     Ne_Make_StrFromCStr(&out->str, logic::SHOWROOM_ROUTE, 0, 0);
+    via = 2;
     swofty::log("[main-menu] showroom card pressed (item %p): route %s", item, logic::SHOWROOM_ROUTE);
     return out;
 }
@@ -287,6 +300,52 @@ uint64_t container_detour(void *container, NeStr **message, void *third)
     return h_container.call<uint64_t>(container, message, third);
 }
 
+const runtime::Sig S_FIRE{"Vm_Fire_Route", "48 8B 4E 28 48 89 F2 49 89 F8 45 31 C9 E8 ?? ?? ?? ?? E9 E4 00 00 00",
+                          0x42c0e20, runtime::Sig::rel32, 13, 14, 5};
+safetyhook::InlineHook h_fire;
+
+void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4)
+{
+    const char *text = name && *name ? reinterpret_cast<const char *>(*name) + NESTR_CHARS : "";
+    int mode = via.load();
+    if (mode) {
+        swofty::log("[main-menu] route fired while back-to-menu is armed (%s): %s", mode == 1 ? "card" : "showroom", text);
+        const char *to = mode == 1 && !std::strcmp(text, "f1_world") ? "home"
+                         : mode == 2 && !std::strcmp(text, "back_1")    ? logic::HOME_BACK_ROUTE
+                                                                       : nullptr;
+        if (to) {
+            auto entry = reinterpret_cast<uint32_t *>(swofty::api->module_base() + 0x6066c74);
+            if (runtime::readable(entry, 4))
+                *entry = 0;
+            NeStr *replacement = nullptr;
+            Ne_Make_StrFromCStr(&replacement, to, 0, 0);
+            swofty::log("[main-menu] back: route %s replaced by %s so it returns to the main menu", text, to);
+            h_fire.call<void>(router, vm, &replacement, a4);
+            Ne_Make_StrFromCStr(&replacement, nullptr, 0, 0);
+            return;
+        }
+    }
+    h_fire.call<void>(router, vm, name, a4);
+}
+
+void hook_fire()
+{
+    if (h_fire)
+        return;
+    auto at = runtime::find(S_FIRE, "home", "core");
+    if (!at) {
+        swofty::log("[main-menu] back: Vm_Fire_Route did not resolve; Back from the pickers and the Showroom stays stock");
+        return;
+    }
+    auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(fire_detour));
+    if (!h) {
+        swofty::log("[main-menu] back: hooking Vm_Fire_Route failed: %s", runtime::hook_error(h.error()).c_str());
+        return;
+    }
+    h_fire = std::move(*h);
+    swofty::log("[main-menu] back: Vm_Fire_Route hooked at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
+}
+
 void hook_container()
 {
     if (h_container)
@@ -329,6 +388,7 @@ Action *card_action(HomeItem *item, Action *out)
     out->type = 1;
     out->str = nullptr;
     Ne_Make_StrFromCStr(&out->str, route_name(), 0, 0);
+    via = 1;
     swofty::log("[main-menu] %s card pressed: route %s (the stock item returns its own id as the route, so the id is not used)",
                 id_of(item), route_name());
     return out;
@@ -491,6 +551,7 @@ bool arm_patch()
     FlushInstructionCache(GetCurrentProcess(), block.at, sizeof jmp);
     patched = true;
     hook_container();
+    hook_fire();
     swofty::log("[main-menu] stock F1 World, divider, Local Multiplayer, League Racing, Player Hub and Theatre tiles skipped");
     return true;
 }
@@ -506,7 +567,7 @@ uint8_t add_tiles(void *list_, uint8_t career_index, const uint8_t *flags)
     if (flags && (flags[8] & 1))
         block.challenge(list, ++index);
     block.theatre(list, ++index);
-    bool showroom = rows_on();
+    bool showroom = menu_on();
     if (showroom)
         add_showroom(list, ++index);
     block.divider(list, ++index);
@@ -581,6 +642,8 @@ void screen(const char *name)
     if (std::strncmp(name, "fe_", 3) == 0 && std::strcmp(name, "fe_planes") != 0) {
         bool home = !std::strcmp(name, "fe_home");
         home_open = home;
+        if (home && via.exchange(0))
+            swofty::log("[main-menu] back at the main menu; back-to-menu disarmed");
         strip_wanted = home ? 0 : 1;
         if (home) {
             read_state(true);

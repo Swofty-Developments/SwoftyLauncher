@@ -36,6 +36,7 @@ const FE_CAREER: &str = "eaid://ui_package/screens/fe_career.ui";
 const CONTAINER: &str = "eaid://ui_package/screens/settings_container.ui";
 const ROUTES: &str = "eaid://ui_package/routes/routes_frontend_general.uir";
 const GAME_ROUTES: &str = "eaid://ui_package/routes/routes.uir";
+const F1_WORLD_ROUTES: &str = "eaid://ui_package/routes/routes_f1_world.uir";
 const WIZARD_ROUTES: &str = "eaid://ui_package/routes/routes_career_wizard.uir";
 const SETUP_FLOW_ERP: &str = "flow_career_season_setup";
 const SETUP_BACK_ERP: &str = "flow_frontend";
@@ -441,6 +442,7 @@ pub fn build(
             }),
         ),
     ];
+    persistent.push((F1_WORLD_ROUTES, Box::new(patch::f1_world_routes)));
     if !setups.is_empty() {
         persistent.push((
             WIZARD_ROUTES,
@@ -563,12 +565,15 @@ pub fn build(
     )];
     let mut home_lines = Vec::new();
     let mut home_warnings = Vec::new();
-    let rows = main_menu_rows(
-        &src_h,
-        career.as_ref().map(|c| c.3.as_slice()),
-        &mut home_lines,
-        &mut home_warnings,
-    )?;
+    let rows = match std::env::var_os("SWOFTY_HOME_ROWS") {
+        Some(_) => main_menu_rows(
+            &src_h,
+            career.as_ref().map(|c| c.3.as_slice()),
+            &mut home_lines,
+            &mut home_warnings,
+        )?,
+        None => None,
+    };
     let rows_built = rows.is_some();
     let mut templates = career.as_ref().map(|c| c.3.clone());
     if let Some((scene, with_rows)) = rows {
@@ -611,6 +616,11 @@ pub fn build(
     build.warnings.extend(career_warnings);
     build.lines.extend(home_lines);
     build.warnings.extend(home_warnings);
+    let menu_flag = format!("{UI_DIR}/{}", home_rows::MENU_FLAG);
+    let menu_path = out.join(&menu_flag);
+    std::fs::create_dir_all(menu_path.parent().expect("has parent")).map_err(io_err(&menu_path))?;
+    std::fs::write(&menu_path, b"1").map_err(io_err(&menu_path))?;
+    build.screens.insert(menu_flag, menu_path);
     if rows_built {
         let rel = format!("{UI_DIR}/{}", home_rows::FLAG);
         let path = out.join(&rel);
@@ -1234,6 +1244,22 @@ mod tests {
         )
         .unwrap();
         let name = ui_file(home_rows::PLAYERCARD_ARCHIVE);
+        let report = check::archive_files(&[(name.as_str(), src.as_path(), dst.as_path())]).unwrap();
+        let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
+        assert!(hard.is_empty(), "{hard:?}");
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    #[ignore = "needs SWOFTY_STOCK_PERSISTENT, a stock persistent.erp"]
+    fn the_showroom_route_home_is_added_within_the_loader_rules() {
+        let src = std::path::PathBuf::from(std::env::var_os("SWOFTY_STOCK_PERSISTENT").expect("set"));
+        let routes = read_frag(&src, F1_WORLD_ROUTES, 0).unwrap();
+        let out = patch::f1_world_routes(&routes).unwrap();
+        let dir = std::env::temp_dir().join(format!("swofty-f1routes-{}", std::process::id()));
+        let dst = dir.join("persistent.erp");
+        write_archive(&src, &dst, vec![(F1_WORLD_ROUTES, 0, Box::new(move |_| Ok(out)))], Vec::new()).unwrap();
+        let name = ui_file("persistent.erp");
         let report = check::archive_files(&[(name.as_str(), src.as_path(), dst.as_path())]).unwrap();
         let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
         assert!(hard.is_empty(), "{hard:?}");

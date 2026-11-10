@@ -10,6 +10,7 @@ pub const TEMPLATES: &str = "eaid://ui_package/screens/fe_home.ui";
 pub const TEMPLATES_FRAGMENT: usize = 1;
 pub const ARCHIVE: &str = "flow_frontend.erp";
 pub const FLAG: &str = "home_rows.flag";
+pub const MENU_FLAG: &str = "home_menu.flag";
 
 const STOCK_TEMPLATE: &str = "fe_tile_button_default";
 const STOCK_SLOT: &str = "spawner_stacker_items";
