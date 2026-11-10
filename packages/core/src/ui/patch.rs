@@ -687,12 +687,36 @@ fn mod_menu_route(groupings: &[Node]) -> Result<Node> {
     Ok(r)
 }
 
+pub const SHOWROOM_ROUTE: &str = "swofty_showroom";
+
+fn showroom_route(groupings: &[Node]) -> Result<Node> {
+    let home = groupings
+        .iter()
+        .find(|g| id_of(g) == Some("fe_home"))
+        .ok_or_else(|| err("the routes have no fe_home grouping"))?;
+    let mut r = home
+        .o()?
+        .at("Routes")?
+        .a()?
+        .iter()
+        .find(|r| id_of(r) == Some("theatre"))
+        .cloned()
+        .ok_or_else(|| err("fe_home has no theatre route"))?;
+    set_str(r.o_mut()?, "Id", SHOWROOM_ROUTE)?;
+    replace_strings(&mut r, &|v| match v {
+        "theatre_container" => Some("fe_showroom".into()),
+        _ => None,
+    });
+    Ok(r)
+}
+
 /// Adds ADDON SETTINGS' route groups, which must be new, and each of `optional` whose group the
 /// routes don't have yet.
 pub fn routes(data: &[u8], groups: Vec<Node>, optional: Vec<Node>) -> Result<Vec<u8>> {
     edit(data, |p| {
         let gs = root_obj(p)?.at_mut("RouteGroupings")?.a_mut()?;
         let replace = mod_menu_route(gs)?;
+        let showroom = showroom_route(gs).ok();
         for g in optional {
             if !gs.iter().any(|x| id_of(x) == id_of(&g)) {
                 gs.push(g);
@@ -715,6 +739,10 @@ pub fn routes(data: &[u8], groups: Vec<Node>, optional: Vec<Node>) -> Result<Vec
         let routes = grp.o_mut()?.at_mut("Routes")?.a_mut()?;
         routes.retain(|r| id_of(r) != Some(&rid));
         routes.push(replace);
+        if let Some(showroom) = showroom {
+            routes.retain(|r| id_of(r) != Some(SHOWROOM_ROUTE));
+            routes.push(showroom);
+        }
         Ok(())
     })
 }
@@ -1424,6 +1452,30 @@ mod tests {
         }
         .to_bytes()
         .unwrap()
+    }
+
+    #[test]
+    fn the_home_gets_a_showroom_route_copied_from_its_theatre_route() {
+        let theatre = route("theatre", vec![], "theatre_container", 0, None);
+        let data = Pkg {
+            name: [0; 4],
+            root: obj(vec![(
+                "RouteGroupings",
+                arr(vec![
+                    route_group("fe_home", vec![route("options", vec![], "", 0, None), theatre]),
+                    route_group("settings_container", vec![]),
+                ]),
+            )]),
+            vca: Vec::new(),
+            layout: None,
+        }
+        .to_bytes()
+        .unwrap();
+        let out = routes(&data, Vec::new(), Vec::new()).unwrap();
+        let p = Pkg::parse(&out).unwrap();
+        let home = group(&p, "fe_home").unwrap();
+        let ids: Vec<&str> = home.o().unwrap().at("Routes").unwrap().a().unwrap().iter().filter_map(id_of).collect();
+        assert!(ids.contains(&SHOWROOM_ROUTE) && ids.contains(&"theatre"), "{ids:?}");
     }
 
     fn group<'a>(p: &'a Pkg, id: &str) -> Option<&'a Node> {
