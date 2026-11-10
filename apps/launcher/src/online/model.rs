@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use std::fmt;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -275,6 +277,119 @@ impl Trail {
     }
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
+pub enum Sort {
+    #[default]
+    Name,
+    Record,
+    Drivers,
+    Laps,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
+pub enum LapsFilter {
+    #[default]
+    All,
+    Has,
+    None,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct TrackFilter {
+    pub query: String,
+    pub sort: Sort,
+    pub laps: LapsFilter,
+    pub weather: Option<String>,
+    pub mine: bool,
+}
+
+impl TrackFilter {
+    pub fn apply<'a>(&self, tracks: &'a [TrackCard], mine: &HashSet<BoardKey>) -> Vec<&'a TrackCard> {
+        let q = self.query.trim().to_lowercase();
+        let mut out: Vec<&TrackCard> = tracks
+            .iter()
+            .filter(|t| q.is_empty() || t.name.to_lowercase().contains(&q) || t.key.track.contains(&q))
+            .filter(|t| match self.laps {
+                LapsFilter::All => true,
+                LapsFilter::Has => t.laps > 0,
+                LapsFilter::None => t.laps == 0,
+            })
+            .filter(|t| self.weather.as_ref().is_none_or(|w| *w == t.key.weather))
+            .filter(|t| !self.mine || mine.contains(&t.key))
+            .collect();
+        match self.sort {
+            Sort::Name => out.sort_by_key(|t| t.name.to_lowercase()),
+            Sort::Record => out.sort_by_key(|t| t.record.as_ref().map_or(u64::MAX, |r| r.time_ms)),
+            Sort::Drivers => out.sort_by(|a, b| b.drivers.cmp(&a.drivers).then_with(|| a.name.cmp(&b.name))),
+            Sort::Laps => out.sort_by(|a, b| b.laps.cmp(&a.laps).then_with(|| a.name.cmp(&b.name))),
+        }
+        out
+    }
+
+    pub fn active(&self) -> bool {
+        !self.query.trim().is_empty() || self.laps != LapsFilter::All || self.weather.is_some() || self.mine
+    }
+}
+
+pub fn weathers(tracks: &[TrackCard]) -> Vec<String> {
+    let mut all: Vec<String> = tracks.iter().map(|t| t.key.weather.clone()).collect();
+    all.sort();
+    all.dedup();
+    if all.len() > 1 { all } else { Vec::new() }
+}
+
+pub const RECENT_CAP: usize = 8;
+
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RecentSeason {
+    pub id: String,
+    pub name: String,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Recents {
+    seasons: Vec<RecentSeason>,
+}
+
+impl Recents {
+    pub fn load(data: &std::path::Path) -> Self {
+        std::fs::read(Self::path(data))
+            .ok()
+            .and_then(|b| serde_json::from_slice(&b).ok())
+            .unwrap_or_default()
+    }
+
+    fn path(data: &std::path::Path) -> std::path::PathBuf {
+        data.join("state").join("tt-recent.json")
+    }
+
+    pub fn save(&self, data: &std::path::Path) {
+        let path = Self::path(data);
+        if let Some(dir) = path.parent() {
+            std::fs::create_dir_all(dir).ok();
+        }
+        if let Ok(json) = serde_json::to_vec(self) {
+            std::fs::write(path, json).ok();
+        }
+    }
+
+    pub fn visit(&mut self, id: &str, name: &str) {
+        self.seasons.retain(|s| s.id != id);
+        self.seasons.insert(
+            0,
+            RecentSeason {
+                id: id.to_owned(),
+                name: name.to_owned(),
+            },
+        );
+        self.seasons.truncate(RECENT_CAP);
+    }
+
+    pub fn list(&self) -> &[RecentSeason] {
+        &self.seasons
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -346,5 +461,123 @@ mod tests {
         assert_eq!(t.depth(), 2);
         t.push(Screen::Season("2016".into()), "2016");
         assert_eq!(t.depth(), 2);
+    }
+
+    fn card(name: &str, record: Option<u64>, drivers: u32, laps: u32, weather: &str) -> TrackCard {
+        let d = Driver {
+            id: "1".into(),
+            name: "a".into(),
+            avatar: None,
+        };
+        TrackCard {
+            key: BoardKey {
+                content: "c".into(),
+                track: name.to_lowercase(),
+                weather: weather.into(),
+            },
+            name: name.into(),
+            flag: None,
+            layout: None,
+            record: record.map(|t| PodiumEntry {
+                driver: d.clone(),
+                time_ms: t,
+            }),
+            podium: Vec::new(),
+            drivers,
+            laps,
+            custom: false,
+        }
+    }
+
+    fn sample() -> Vec<TrackCard> {
+        vec![
+            card("Suzuka", Some(88_000), 5, 40, "dry"),
+            card("Monza", Some(80_000), 9, 12, "dry"),
+            card("Baku", None, 0, 0, "dry"),
+            card("Spa", Some(103_000), 7, 90, "wet"),
+        ]
+    }
+
+    #[test]
+    fn tracks_filter_by_name_laps_weather_and_mine() {
+        let tracks = sample();
+        let none = HashSet::new();
+        let names = |f: &TrackFilter, mine: &HashSet<BoardKey>| -> Vec<String> {
+            f.apply(&tracks, mine).iter().map(|t| t.name.clone()).collect()
+        };
+        assert_eq!(
+            names(&TrackFilter::default(), &none),
+            ["Baku", "Monza", "Spa", "Suzuka"]
+        );
+        let q = TrackFilter {
+            query: " su".into(),
+            ..Default::default()
+        };
+        assert_eq!(names(&q, &none), ["Suzuka"]);
+        let has = TrackFilter {
+            laps: LapsFilter::Has,
+            ..Default::default()
+        };
+        assert_eq!(names(&has, &none), ["Monza", "Spa", "Suzuka"]);
+        let empty = TrackFilter {
+            laps: LapsFilter::None,
+            ..Default::default()
+        };
+        assert_eq!(names(&empty, &none), ["Baku"]);
+        let wet = TrackFilter {
+            weather: Some("wet".into()),
+            ..Default::default()
+        };
+        assert_eq!(names(&wet, &none), ["Spa"]);
+        let mine_only = TrackFilter {
+            mine: true,
+            ..Default::default()
+        };
+        let mine: HashSet<BoardKey> = [tracks[1].key.clone()].into();
+        assert_eq!(names(&mine_only, &mine), ["Monza"]);
+        assert!(mine_only.active() && !TrackFilter::default().active());
+    }
+
+    #[test]
+    fn tracks_sort_by_record_drivers_and_laps() {
+        let tracks = sample();
+        let none = HashSet::new();
+        let order = |sort| -> Vec<String> {
+            TrackFilter {
+                sort,
+                ..Default::default()
+            }
+            .apply(&tracks, &none)
+            .iter()
+            .map(|t| t.name.clone())
+            .collect()
+        };
+        assert_eq!(order(Sort::Record), ["Monza", "Suzuka", "Spa", "Baku"]);
+        assert_eq!(order(Sort::Drivers), ["Monza", "Spa", "Suzuka", "Baku"]);
+        assert_eq!(order(Sort::Laps), ["Spa", "Suzuka", "Monza", "Baku"]);
+        assert_eq!(weathers(&tracks), ["dry", "wet"]);
+        assert!(weathers(&tracks[..3]).is_empty());
+    }
+
+    #[test]
+    fn recent_seasons_keep_the_newest_first_without_repeats_and_survive_a_restart() {
+        let mut r = Recents::default();
+        r.visit("a", "A");
+        r.visit("b", "B");
+        r.visit("a", "A");
+        assert_eq!(
+            r.list().iter().map(|s| s.id.as_str()).collect::<Vec<_>>(),
+            ["a", "b"]
+        );
+        for i in 0..20 {
+            r.visit(&format!("s{i}"), "S");
+        }
+        assert_eq!(r.list().len(), RECENT_CAP);
+        assert_eq!(r.list()[0].id, "s19");
+        let dir = std::env::temp_dir().join(format!("swofty-tt-recent-{}", std::process::id()));
+        r.save(&dir);
+        assert_eq!(Recents::load(&dir), r);
+        std::fs::remove_dir_all(&dir).ok();
+        assert_eq!(Recents::load(&dir), Recents::default());
     }
 }

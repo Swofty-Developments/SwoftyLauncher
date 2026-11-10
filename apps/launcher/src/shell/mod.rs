@@ -151,6 +151,11 @@ impl Shell {
         if self.mp_busy || self.mp.is_some() {
             return;
         }
+        if let Err(why) = account_guard(self.game_busy()) {
+            self.mp_toasts.push(Notification::warning(why));
+            cx.notify();
+            return;
+        }
         let (pending, url) = match swofty_core::mpauth::begin() {
             Ok(v) => v,
             Err(e) => {
@@ -195,6 +200,13 @@ impl Shell {
     }
 
     pub(super) fn mp_sign_out(&mut self, _window: &mut Window, cx: &mut Context<Self>) {
+        if self.mp.is_some()
+            && let Err(why) = account_guard(self.game_busy())
+        {
+            self.mp_toasts.push(Notification::warning(why));
+            cx.notify();
+            return;
+        }
         let Some(session) = self.mp.take() else {
             return;
         };
@@ -260,5 +272,23 @@ impl Shell {
             .ok();
         })
         .detach();
+    }
+}
+
+pub(crate) fn account_guard(game_busy: bool) -> Result<(), &'static str> {
+    match game_busy {
+        true => Err(swofty_i18n::tr("Close the game to sign in or out")),
+        false => Ok(()),
+    }
+}
+
+#[cfg(test)]
+mod account_tests {
+    use super::account_guard;
+
+    #[test]
+    fn the_account_is_locked_only_while_the_game_runs() {
+        assert!(account_guard(false).is_ok());
+        assert_eq!(account_guard(true), Err("Close the game to sign in or out"));
     }
 }

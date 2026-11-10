@@ -11,6 +11,7 @@ mod widgets;
 
 use crate::shell::Shell;
 use api::{BoardsApi, HttpBoards};
+use gpui_kit::component::input::InputState;
 use gpui_kit::*;
 use images::{Art, Images};
 use model::*;
@@ -53,6 +54,11 @@ pub(crate) struct Online {
     filter: Filter,
     more: bool,
     images: Images,
+    data: std::path::PathBuf,
+    recents: Recents,
+    filter_tracks: TrackFilter,
+    search: Option<Entity<InputState>>,
+    my_times: HashMap<BoardKey, u64>,
     viewing: Option<String>,
     cursor: Option<usize>,
     items: Vec<Target>,
@@ -77,6 +83,11 @@ impl Online {
             filter: Filter::default(),
             more: false,
             images: Images::new(data),
+            data: data.to_path_buf(),
+            recents: Recents::load(data),
+            filter_tracks: TrackFilter::default(),
+            search: None,
+            my_times: HashMap::new(),
             viewing: None,
             cursor: None,
             items: Vec::new(),
@@ -139,6 +150,13 @@ impl Shell {
                             .chain(o.custom.iter().map(|t| t.layout.as_ref())),
                     );
                     s.online_prefetch(urls, cx);
+                }
+                let me = s.account_name();
+                if let (Ok(o), Some(me)) = (&overview, me)
+                    && let Some(r) = o.global.iter().find(|r| r.driver.name == me)
+                {
+                    let id = r.driver.id.clone();
+                    s.online_load_profile(&id, cx);
                 }
                 s.online.overview = Load::from(overview);
                 cx.notify();
@@ -285,6 +303,11 @@ impl Shell {
                 if let Ok(p) = &page {
                     s.online_prefetch(art_urls([&p.driver], p.bests.iter().map(|_| None)), cx);
                 }
+                if let Ok(p) = &page
+                    && s.account_name().as_deref() == Some(p.driver.name.as_str())
+                {
+                    s.online.my_times = p.bests.iter().map(|b| (b.key.clone(), b.time_ms)).collect();
+                }
                 s.online.profiles.insert(key, Load::from(page));
                 cx.notify();
             })
@@ -299,6 +322,9 @@ impl Shell {
         self.online.viewing = None;
         match target {
             Target::Season(id, name) => {
+                self.online.recents.visit(&id, &name);
+                self.online.recents.save(&self.online.data);
+                self.online.filter_tracks = TrackFilter::default();
                 self.online.trail.push(Screen::Season(id.clone()), name);
                 self.online_load_season(&id, cx);
             }
@@ -315,6 +341,17 @@ impl Shell {
                 self.online_load_profile(&driver.id, cx);
             }
         }
+        cx.notify();
+    }
+
+    pub(crate) fn online_open_recent(&mut self, id: String, name: String, cx: &mut Context<Self>) {
+        self.online.cursor = None;
+        self.online.recents.visit(&id, &name);
+        self.online.recents.save(&self.online.data);
+        self.online.filter_tracks = TrackFilter::default();
+        self.online.trail.jump(1);
+        self.online.trail.push(Screen::Season(id.clone()), name);
+        self.online_load_season(&id, cx);
         cx.notify();
     }
 
@@ -387,10 +424,19 @@ impl Shell {
 }
 
 impl Shell {
-    pub(crate) fn online_page(&mut self, p: crate::theme::Palette, cx: &mut Context<Self>) -> AnyElement {
+    pub(crate) fn online_page(
+        &mut self,
+        p: crate::theme::Palette,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
         use crate::scale::px;
         use gpui_kit::component::v_flex;
         self.online_enter(cx);
+        if self.online.search.is_none() {
+            self.online.search =
+                Some(cx.new(|cx| InputState::new(window, cx).placeholder(swofty_i18n::tr("Search tracks"))));
+        }
         let crumbs = self.crumb_bar(p, cx);
         let banner = self.sign_in_banner(p, cx);
         let body = match self.online.trail.current().clone() {

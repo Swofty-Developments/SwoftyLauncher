@@ -198,7 +198,7 @@ impl Shell {
         );
         h_flex()
             .id(SharedString::from(format!("best-{idx}")))
-            .h(px(50.))
+            .h(px(42.))
             .px(px(14.))
             .gap(px(12.))
             .items_center()

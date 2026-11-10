@@ -4,6 +4,7 @@ use super::{Load, Target};
 use crate::scale::px;
 use crate::shell::Shell;
 use crate::theme::{Palette, ScrollArea};
+use gpui_kit::component::input::Input;
 use gpui_kit::component::{h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
@@ -12,104 +13,297 @@ use swofty_i18n::{tr, trn};
 impl Shell {
     pub(crate) fn online_season(&mut self, id: &str, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let page = match self.online.seasons.get(id) {
-            None | Some(Load::Idle | Load::Loading) => return self.skeleton(p, 5, 110.),
+            None | Some(Load::Idle | Load::Loading) => return self.skeleton(p, 6, 42.),
             Some(Load::Failed(e)) => {
                 let e = e.clone();
                 return self.failed_view(&e, cx);
             }
             Some(Load::Ready(page)) => page.clone(),
         };
-        if page.tracks.is_empty() {
-            return self.nothing_yet();
-        }
         let mut items: Vec<Target> = Vec::new();
         let me = self.account_name();
-        let wide = self.content_width >= 980.;
-        let rows: Vec<AnyElement> = page
-            .tracks
+        let wide = self.content_width >= 1000.;
+        let mine_keys: std::collections::HashSet<BoardKey> = self.online.my_times.keys().cloned().collect();
+        let mut filter = self.online.filter_tracks.clone();
+        if let Some(search) = &self.online.search {
+            filter.query = search.read(cx).value().to_string();
+        }
+        self.online.filter_tracks = filter.clone();
+        let shown: Vec<TrackCard> = filter
+            .apply(&page.tracks, &mine_keys)
+            .into_iter()
+            .cloned()
+            .collect();
+        let rows: Vec<AnyElement> = shown
             .iter()
             .map(|t| {
                 let idx = self.target_item(&mut items, Target::Board(Box::new(t.clone()), t.name.clone()));
-                self.track_row(t, idx, p, cx)
+                let mine = self.online.my_times.get(&t.key).copied();
+                self.thin_track_row(t, idx, mine, p, cx)
             })
             .collect();
-        let ranking: Vec<AnyElement> = page
-            .ranking
+        let custom: Vec<TrackCard> = match &self.online.overview {
+            Load::Ready(o) => o.custom.iter().filter(|t| t.key.content == id).cloned().collect(),
+            _ => Vec::new(),
+        };
+        let custom_shown: Vec<TrackCard> = filter.apply(&custom, &mine_keys).into_iter().cloned().collect();
+        let custom_rows: Vec<AnyElement> = custom_shown
             .iter()
-            .map(|r| {
-                let idx = self.target_item(&mut items, Target::Profile(r.driver.clone()));
-                self.rank_row(r, idx, me.as_deref() == Some(r.driver.name.as_str()), p, cx)
+            .map(|t| {
+                let idx = self.target_item(&mut items, Target::Board(Box::new(t.clone()), t.name.clone()));
+                let mine = self.online.my_times.get(&t.key).copied();
+                self.thin_track_row(t, idx, mine, p, cx)
             })
             .collect();
+        let ranking = self.rank_panel(
+            tr("SEASON RANKING"),
+            tr("Points over every track of the season."),
+            &page.ranking,
+            me.as_deref(),
+            &mut items,
+            p,
+            cx,
+        );
         self.online.items = items;
         let header = self.season_header(&page.season, p);
-        let ranking_panel = panel(p)
-            .w(px(if wide { 330. } else { 0. }))
-            .flex_shrink_0()
-            .child(
+        let bar = self.track_filter_bar(&page.tracks, &filter, me.is_some(), p, cx);
+        let rail = self.season_rail(id, p, cx);
+        let empty = rows.is_empty() && custom_rows.is_empty();
+        let (narrow_ranking, side_ranking) = if wide {
+            (None, Some(ranking))
+        } else {
+            (Some(ranking), None)
+        };
+        let main = v_flex()
+            .flex_1()
+            .min_w_0()
+            .h_full()
+            .scroll_y("online-season")
+            .pb(px(28.))
+            .gap(px(14.))
+            .child(header)
+            .child(bar)
+            .child(if empty {
                 div()
-                    .px(px(14.))
-                    .pt(px(14.))
-                    .pb(px(8.))
-                    .child(section_title(tr("SEASON RANKING"), p)),
-            )
-            .children(ranking);
-        v_flex()
+                    .py(px(30.))
+                    .text_size(px(13.))
+                    .text_color(p.text_muted)
+                    .child(if filter.active() {
+                        tr("No track matches these filters.")
+                    } else {
+                        tr("No tracks have laps yet.")
+                    })
+                    .into_any_element()
+            } else {
+                panel(p).children(rows).into_any_element()
+            })
+            .when(!custom_rows.is_empty(), |d| {
+                d.child(section_title(tr("CUSTOM TRACKS"), p))
+                    .child(panel(p).children(custom_rows))
+            })
+            .children(narrow_ranking);
+        h_flex()
             .flex_1()
             .min_h_0()
-            .scroll_y("online-season")
             .px(px(28.))
+            .gap(px(20.))
+            .items_start()
+            .child(rail)
+            .child(main)
+            .when(wide, |d| {
+                d.child(
+                    v_flex()
+                        .w(px(super::landing::RIGHT_W))
+                        .flex_shrink_0()
+                        .h_full()
+                        .scroll_y("online-season-ranking")
+                        .pb(px(28.))
+                        .children(side_ranking),
+                )
+            })
+            .into_any_element()
+    }
+
+    fn season_rail(&self, current: &str, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+        let recents: Vec<RecentSeason> = self.online.recents.list().to_vec();
+        let covers: Vec<Option<String>> = match &self.online.overview {
+            Load::Ready(o) => recents
+                .iter()
+                .map(|r| {
+                    o.seasons
+                        .iter()
+                        .find(|s| s.id == r.id)
+                        .and_then(|s| s.cover.clone())
+                })
+                .collect(),
+            _ => vec![None; recents.len()],
+        };
+        v_flex()
+            .w(px(190.))
+            .flex_shrink_0()
+            .h_full()
+            .scroll_y("online-rail")
+            .gap(px(4.))
             .pb(px(28.))
-            .gap(px(18.))
-            .child(header)
             .child(
                 h_flex()
-                    .gap(px(18.))
-                    .items_start()
-                    .child(panel(p).flex_1().min_w_0().children(rows))
-                    .when(wide, |d| d.child(ranking_panel)),
+                    .id("rail-all")
+                    .h(px(34.))
+                    .px(px(10.))
+                    .items_center()
+                    .rounded(px(8.))
+                    .cursor_pointer()
+                    .text_size(px(13.))
+                    .font_weight(FontWeight::MEDIUM)
+                    .text_color(p.text_muted)
+                    .hover(move |s| s.bg(p.hover).text_color(p.text))
+                    .child(tr("All seasons"))
+                    .on_click(cx.listener(|this, _, _, cx| this.online_jump(1, cx))),
             )
+            .child(
+                div()
+                    .px(px(10.))
+                    .pt(px(8.))
+                    .pb(px(2.))
+                    .child(section_title(tr("RECENTLY VIEWED"), p)),
+            )
+            .children(recents.into_iter().zip(covers).map(|(r, cover)| {
+                let active = r.id == current;
+                let (id, name) = (r.id.clone(), r.name.clone());
+                h_flex()
+                    .id(SharedString::from(format!("rail-{}", r.id)))
+                    .h(px(44.))
+                    .px(px(10.))
+                    .gap(px(10.))
+                    .items_center()
+                    .rounded(px(8.))
+                    .cursor_pointer()
+                    .text_size(px(13.))
+                    .map(|d| {
+                        if active {
+                            d.bg(p.selected)
+                                .text_color(p.text)
+                                .font_weight(FontWeight::SEMIBOLD)
+                        } else {
+                            d.text_color(p.text_muted)
+                                .hover(move |s| s.bg(p.hover).text_color(p.text))
+                        }
+                    })
+                    .child(self.season_icon(&r.id, cover.as_ref(), 28., p))
+                    .child(div().flex_1().min_w_0().truncate().child(r.name.clone()))
+                    .on_click(cx.listener(move |this, _, _, cx| {
+                        this.online_open_recent(id.clone(), name.clone(), cx)
+                    }))
+            }))
             .into_any_element()
     }
 
     fn season_header(&self, s: &SeasonCard, p: Palette) -> AnyElement {
-        div()
-            .relative()
-            .h(px(150.))
-            .rounded(px(14.))
-            .overflow_hidden()
-            .child(self.tt_cover(s.cover.as_ref(), &s.id))
-            .child(div().absolute().inset_0().bg(linear_gradient(
-                90.,
-                linear_color_stop(hsla(0., 0., 0., 0.8), 0.),
-                linear_color_stop(hsla(0., 0., 0., 0.15), 1.),
-            )))
+        h_flex()
+            .gap(px(16.))
+            .items_center()
+            .pt(px(4.))
+            .child(self.season_icon(&s.id, s.cover.as_ref(), 64., p))
             .child(
                 v_flex()
-                    .absolute()
-                    .left(px(24.))
-                    .bottom(px(20.))
-                    .gap(px(6.))
+                    .gap(px(4.))
                     .child(
                         div()
-                            .text_size(px(30.))
+                            .text_size(px(24.))
                             .font_weight(FontWeight::BOLD)
-                            .text_color(rgb(0xffffff))
                             .child(s.name.clone()),
                     )
                     .child(
                         h_flex()
                             .gap(px(12.))
                             .items_center()
-                            .child(div().text_size(px(13.)).text_color(hsla(0., 0., 1., 0.85)).child(
-                                format!(
-                                    "{} - {}",
-                                    trn(s.tracks as usize, "{count} track", "{count} tracks"),
-                                    trn(s.drivers as usize, "{count} driver", "{count} drivers")
-                                ),
-                            ))
-                            .child(self.tt_faces(&s.top, 28., p)),
+                            .child(div().text_size(px(13.)).text_color(p.text_muted).child(format!(
+                                "{} - {}",
+                                trn(s.tracks as usize, "{count} track", "{count} tracks"),
+                                trn(s.drivers as usize, "{count} driver", "{count} drivers")
+                            )))
+                            .child(self.tt_faces(&s.top, 24., p)),
                     ),
+            )
+            .into_any_element()
+    }
+
+    fn track_filter_bar(
+        &self,
+        tracks: &[TrackCard],
+        f: &TrackFilter,
+        signed_in: bool,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        let weathers = weathers(tracks);
+        let sort = |id: &'static str, label: &'static str, which: Sort, cx: &mut Context<Self>| {
+            self.filter_chip(id, label, f.sort == which, p, cx, move |t| t.sort = which)
+        };
+        v_flex()
+            .gap(px(10.))
+            .child(
+                h_flex()
+                    .gap(px(10.))
+                    .items_center()
+                    .child(
+                        div()
+                            .w(px(260.))
+                            .children(self.online.search.as_ref().map(Input::new)),
+                    )
+                    .child(
+                        div()
+                            .text_size(px(11.))
+                            .text_color(p.text_placeholder)
+                            .child(tr("SORT")),
+                    )
+                    .child(sort("sort-name", tr("Name"), Sort::Name, cx))
+                    .child(sort("sort-record", tr("Record"), Sort::Record, cx))
+                    .child(sort("sort-drivers", tr("Most drivers"), Sort::Drivers, cx))
+                    .child(sort("sort-laps", tr("Most laps"), Sort::Laps, cx)),
+            )
+            .child(
+                h_flex()
+                    .gap(px(8.))
+                    .items_center()
+                    .child(self.filter_chip(
+                        "laps-has",
+                        tr("Has laps"),
+                        f.laps == LapsFilter::Has,
+                        p,
+                        cx,
+                        |t| {
+                            t.laps = if t.laps == LapsFilter::Has {
+                                LapsFilter::All
+                            } else {
+                                LapsFilter::Has
+                            }
+                        },
+                    ))
+                    .child(self.filter_chip(
+                        "laps-none",
+                        tr("No laps"),
+                        f.laps == LapsFilter::None,
+                        p,
+                        cx,
+                        |t| {
+                            t.laps = if t.laps == LapsFilter::None {
+                                LapsFilter::All
+                            } else {
+                                LapsFilter::None
+                            }
+                        },
+                    ))
+                    .children(weathers.into_iter().map(|w| {
+                        let on = f.weather.as_deref() == Some(w.as_str());
+                        let label = crate::format::title_case(&w);
+                        self.filter_chip(format!("weather-{w}"), label, on, p, cx, move |t| {
+                            t.weather = if on { None } else { Some(w.clone()) }
+                        })
+                    }))
+                    .when(signed_in, |d| {
+                        d.child(self.filter_chip("mine", tr("My times"), f.mine, p, cx, |t| t.mine = !t.mine))
+                    }),
             )
             .into_any_element()
     }

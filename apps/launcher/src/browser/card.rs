@@ -184,6 +184,14 @@ impl Shell {
             }))
     }
 
+    pub(crate) fn catalog_icon_of(&self, id: &str, size: f32, p: Palette) -> Option<Div> {
+        let a = self.browser.find(id)?;
+        a.icon
+            .as_ref()
+            .is_some_and(|u| self.browser.icons.contains_key(u))
+            .then(|| self.catalog_icon(a, size, p))
+    }
+
     pub(super) fn catalog_icon(&self, a: &Addon, size: f32, p: Palette) -> Div {
         match a.icon.as_ref().and_then(|u| self.browser.icons.get(u)) {
             Some(image) => div()

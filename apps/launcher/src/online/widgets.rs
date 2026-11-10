@@ -69,20 +69,6 @@ impl Shell {
         url.and_then(|u| self.online.images.get(u))
     }
 
-    pub(super) fn tt_cover(&self, url: Option<&String>, seed: &str) -> Div {
-        let base = div().size_full().bg(tone(seed));
-        match self.online_art(url) {
-            Some(Art::Raster(image)) => {
-                base.child(img(image.clone()).size_full().object_fit(ObjectFit::Cover))
-            }
-            _ => base.bg(linear_gradient(
-                135.,
-                linear_color_stop(tone(seed), 0.),
-                linear_color_stop(tone(&format!("{seed}-b")), 1.),
-            )),
-        }
-    }
-
     pub(super) fn tt_face(&self, d: &Driver, size: f32, p: Palette) -> Div {
         let frame = div()
             .size(px(size))
@@ -111,6 +97,67 @@ impl Shell {
                         .collect::<String>(),
                 ),
         }
+    }
+
+    pub(super) fn season_icon(&self, id: &str, cover: Option<&String>, size: f32, p: Palette) -> Div {
+        let addon = id.split('/').next().unwrap_or(id);
+        if let Some(icon) = self
+            .library
+            .addons
+            .iter()
+            .find(|a| a.manifest.id == addon)
+            .and_then(|a| a.icon.as_ref())
+        {
+            return crate::pages::addon_icon(icon, size, p);
+        }
+        if let Some(d) = self.catalog_icon_of(addon, size, p) {
+            return d;
+        }
+        match self.online_art(cover) {
+            Some(Art::Raster(image)) => div()
+                .size(px(size))
+                .flex_shrink_0()
+                .rounded(px(size * 0.22))
+                .overflow_hidden()
+                .child(img(image.clone()).size_full().object_fit(ObjectFit::Cover)),
+            _ => crate::pages::badge(IconName::Trophy, size, p),
+        }
+    }
+
+    pub(super) fn filter_chip(
+        &self,
+        id: impl Into<SharedString>,
+        label: impl Into<SharedString>,
+        on: bool,
+        p: Palette,
+        cx: &mut Context<Self>,
+        change: impl Fn(&mut TrackFilter) + 'static,
+    ) -> Stateful<Div> {
+        let id: SharedString = id.into();
+        h_flex()
+            .id(id)
+            .h(px(28.))
+            .px(px(12.))
+            .items_center()
+            .rounded_full()
+            .border_1()
+            .cursor_pointer()
+            .text_size(px(12.))
+            .font_weight(FontWeight::MEDIUM)
+            .map(|d| {
+                if on {
+                    d.bg(p.selected).border_color(p.accent).text_color(p.text)
+                } else {
+                    d.border_color(p.border)
+                        .text_color(p.text_muted)
+                        .hover(move |s| s.bg(p.hover))
+                }
+            })
+            .child(label.into())
+            .on_click(cx.listener(move |this, _, _, cx| {
+                change(&mut this.online.filter_tracks);
+                cx.notify();
+            }))
     }
 
     pub(super) fn tt_faces(&self, drivers: &[Driver], size: f32, p: Palette) -> Div {

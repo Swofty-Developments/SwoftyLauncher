@@ -60,7 +60,7 @@ impl Render for Shell {
             Page::Database => self.db_page(p, cx),
             Page::Careers => self.careers_page(p, wide, cx),
             Page::Multiplayer => self.multiplayer_page(p, cx),
-            Page::Online => self.online_page(p, cx),
+            Page::Online => self.online_page(p, window, cx),
             Page::Settings => self.settings_page(p, cx),
             Page::Section(i) => self.section_page(i, p, cx),
         };

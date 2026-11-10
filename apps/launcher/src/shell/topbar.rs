@@ -484,7 +484,12 @@ impl Shell {
                     .text_color(rgb(0xffffff))
                     .bg(rgb(crate::discord::BLURPLE))
                     .hover(|s| s.bg(rgb(crate::discord::BLURPLE_HOVER)))
-                    .when(self.mp_busy, |d| d.opacity(0.6)),
+                    .when(self.mp_busy || self.game_busy(), |d| d.opacity(0.5))
+                    .when(self.game_busy(), |d| {
+                        d.tooltip(|window, cx| {
+                            Tooltip::new(tr("Close the game to sign in or out")).build(window, cx)
+                        })
+                    }),
             )
             .child(
                 svg()
@@ -794,7 +799,8 @@ impl Shell {
                     .ghost()
                     .icon(IconName::LogOut)
                     .label(tr("Log out"))
-                    .disabled(self.mp_busy)
+                    .disabled(self.mp_busy || self.game_busy())
+                    .tooltip(tr("Close the game to sign in or out"))
                     .on_click(cx.listener(|this, _, window, cx| {
                         this.popover = None;
                         this.mp_sign_out(window, cx);

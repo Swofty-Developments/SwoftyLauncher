@@ -100,10 +100,10 @@ impl Shell {
         panel(p)
             .child(
                 h_flex()
-                    .p(px(18.))
-                    .gap(px(20.))
+                    .p(px(14.))
+                    .gap(px(16.))
                     .items_center()
-                    .child(self.layout_art(t.layout.as_ref(), 120., p.accent_hover, p))
+                    .child(self.layout_art(t.layout.as_ref(), 84., p.accent_hover, p))
                     .child(
                         v_flex()
                             .gap(px(4.))
@@ -215,7 +215,7 @@ impl Shell {
         let colour = medal(r.rank, &p);
         h_flex()
             .id(SharedString::from(format!("row-{idx}-{}", r.lap_id)))
-            .h(px(46.))
+            .h(px(38.))
             .px(px(14.))
             .gap(px(12.))
             .items_center()

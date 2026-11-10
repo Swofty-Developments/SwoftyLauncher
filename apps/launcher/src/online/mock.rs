@@ -53,6 +53,10 @@ const TRACKS: [(&str, &str, &str); 8] = [
     ("baku", "Baku", "az"),
 ];
 
+fn label(year: &str) -> String {
+    ["SWOFTY ", year].concat()
+}
+
 fn driver(i: usize) -> Driver {
     Driver {
         id: format!("{}", 1000 + i),
@@ -62,7 +66,7 @@ fn driver(i: usize) -> Driver {
 }
 
 fn season_id(year: &str) -> String {
-    format!("mock.f1-{year}/f1_{year}")
+    format!("swofty.swofty-seasons-{year}/sw_{year}")
 }
 
 fn seed(a: usize, b: usize) -> u64 {
@@ -154,8 +158,8 @@ fn ranking(season: usize) -> Vec<RankEntry> {
 fn season_card(season: usize) -> SeasonCard {
     SeasonCard {
         id: season_id(YEARS[season]),
-        name: format!("F1 {}", YEARS[season]),
-        cover: Some(format!("mock:cover-{}.png", YEARS[season])),
+        name: label(YEARS[season]),
+        cover: None,
         tracks: TRACKS.len() as u32,
         drivers: NAMES.len() as u32,
         top: ranking(season).into_iter().take(3).map(|r| r.driver).collect(),
@@ -188,9 +192,9 @@ fn global() -> Vec<RankEntry> {
 
 fn gate(mode: Mode) -> Result<(), OnlineError> {
     match mode {
-        Mode::Failing => Err(OnlineError::network(
+        Mode::Failing => Err(OnlineError::network(swofty_i18n::tr(
             "couldn't reach the boards server: connection refused",
-        )),
+        ))),
         Mode::Slow => {
             std::thread::sleep(Duration::from_secs(3600));
             Ok(())
@@ -220,7 +224,7 @@ impl BoardsApi for MockBoards {
         custom.flag = Some("de".into());
         Ok(Overview {
             seasons: (0..YEARS.len()).rev().map(season_card).collect(),
-            global: global(),
+            global: global().into_iter().take(10).collect(),
             custom: vec![custom],
             me: None,
         })
@@ -270,7 +274,7 @@ impl BoardsApi for MockBoards {
             .collect();
         Ok(BoardPage {
             track: track_card(s, t),
-            season: format!("F1 {}", YEARS[s]),
+            season: label(YEARS[s]),
             total: rows.len() as u32,
             mine: rows.get(6).cloned(),
             rows,
@@ -290,7 +294,7 @@ impl BoardsApi for MockBoards {
                     .into_iter()
                     .find(|r| r.driver.id == id)
                     .map(|r| SeasonStanding {
-                        season: format!("F1 {}", YEARS[s]),
+                        season: label(YEARS[s]),
                         rank: r.rank,
                         points: r.points,
                     })
@@ -299,7 +303,7 @@ impl BoardsApi for MockBoards {
         let best = |s: usize, t: usize| {
             let place = order(s, t).iter().position(|x| *x == d).unwrap_or(5);
             BestLap {
-                season: format!("F1 {}", YEARS[s]),
+                season: label(YEARS[s]),
                 track: TRACKS[t].1.to_owned(),
                 key: key(s, t),
                 time_ms: time_of(s, t, place),
