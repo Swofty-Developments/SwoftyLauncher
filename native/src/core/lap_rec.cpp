@@ -69,7 +69,7 @@ struct Blob {
 constexpr const char *GAME_MIXIN = "swofty_core.dll (lap recorder game lap result)";
 constexpr const char *GHOST_MIXIN = "swofty_core.dll (lap recorder ghost blob)";
 constexpr const char *LAP_TARGET = "Sess_LapTimes_ReportNewLapTime";
-constexpr const char *GHOST_SITE = "site_Game_GhostLaps_SavePersonalBestCommit";
+constexpr const char *GHOST_SITE = "site_Game_GhostPb_Committed";
 constexpr uintptr_t RVA_TLAP_KEY = 0x61026a8;
 constexpr uintptr_t HANDLER_BLOB = 0x278, HANDLER_BLOB_SIZE = 0x280, HANDLER_REGISTRY = 0x20, REGISTRY_MAP = 0x30,
                     HANDLER_TIMING = 0x30, TIMING_SESSION = 0x88;
