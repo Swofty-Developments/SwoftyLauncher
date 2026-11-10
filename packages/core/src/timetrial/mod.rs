@@ -5,6 +5,7 @@
 //! and the launcher run for it.
 
 pub mod api;
+pub mod boards;
 pub mod bridge;
 pub mod fingerprint;
 pub mod integrity;

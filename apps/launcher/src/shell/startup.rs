@@ -160,6 +160,7 @@ impl Shell {
             highlight: None,
             addons: crate::addons::AddonsPage::new(window, cx),
             saves: crate::career_saves::SavesPage::default(),
+            tt: crate::time_trial::TtPage::default(),
             db: crate::db::Db::new(cx),
             news,
             news_scroll: Default::default(),

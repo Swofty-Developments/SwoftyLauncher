@@ -11,6 +11,7 @@ use crate::http::{self, Field};
 
 const CALL_TIMEOUT: Duration = Duration::from_secs(4);
 const GAME_TIMEOUT: Duration = Duration::from_secs(5);
+const BOARD_TIMEOUT: Duration = Duration::from_secs(15);
 const UPLOAD_TIMEOUT: Duration = Duration::from_secs(60);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -184,6 +185,23 @@ impl Api {
         )
     }
 
+    /// A JSON document of the boards server, read with the sign-in.
+    pub fn get_json<T: serde::de::DeserializeOwned>(&self, path: &str) -> Result<T, ApiError> {
+        let bytes = self.get(path, BOARD_TIMEOUT, 8 * 1024 * 1024)?;
+        serde_json::from_slice(&bytes).map_err(|e| ApiError {
+            status: 200,
+            message: format!("the server's answer to GET {path} is not valid: {e}"),
+            retry_after: None,
+        })
+    }
+
+    /// A moderation call: a POST with a JSON body whose answer is ignored.
+    pub fn post_json(&self, path: &str, body: &Value) -> Result<(), ApiError> {
+        let body = ("application/json".to_owned(), body.to_string().into_bytes());
+        self.send::<Value>("POST", path, Some(body), BOARD_TIMEOUT)
+            .map(|_| ())
+    }
+
     fn get(&self, path: &str, timeout: Duration, limit: u64) -> Result<Vec<u8>, ApiError> {
         if !http::bearer_allowed(&self.server) {
             return Err(ApiError::network(format!(
@@ -274,7 +292,12 @@ impl Api {
             e.retry_after = e.retry_after.or(retry_after);
             return Err(e);
         }
-        serde_json::from_str(&text).map_err(|e| ApiError {
+        let text = if text.trim().is_empty() {
+            "null"
+        } else {
+            text.as_str()
+        };
+        serde_json::from_str(text).map_err(|e| ApiError {
             status,
             message: format!("the server's answer to {method} {path} is not valid: {e}"),
             retry_after: None,

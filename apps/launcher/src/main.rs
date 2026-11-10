@@ -41,6 +41,7 @@ mod shaders;
 mod shell;
 mod tasks;
 mod theme;
+mod time_trial;
 mod tools;
 mod ui;
 mod ui_mode;

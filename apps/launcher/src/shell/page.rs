@@ -16,6 +16,7 @@ pub enum Page {
     Careers,
     Database,
     Multiplayer,
+    TimeTrial,
     Settings,
     Section(usize),
 }
@@ -34,6 +35,7 @@ impl Page {
             Self::Careers => tr("Saves"),
             Self::Database => tr("DB Editor"),
             Self::Multiplayer => tr("Multiplayer"),
+            Self::TimeTrial => tr("Time Trial"),
             Self::Settings => tr("Settings"),
             Self::Section(_) => "",
         }
@@ -60,6 +62,7 @@ impl Page {
             Self::Careers => IconName::Save,
             Self::Database => IconName::Database,
             Self::Multiplayer => IconName::Users,
+            Self::TimeTrial => IconName::Trophy,
             Self::Settings => IconName::Settings,
             Self::Section(_) => IconName::Package,
         }

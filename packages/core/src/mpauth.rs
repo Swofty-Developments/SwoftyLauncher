@@ -26,6 +26,8 @@ pub struct Session {
     pub allowed: bool,
     #[serde(default)]
     pub avatar: Option<String>,
+    #[serde(default)]
+    pub admin: bool,
 }
 
 /// The CDN link for a user's avatar, from the server's `avatar` value: a full link, or a Discord avatar hash.
@@ -183,6 +185,7 @@ impl Pending {
                         name: get("name").unwrap_or_else(|| "Player".into()),
                         allowed: get("allowed").as_deref() == Some("1"),
                         avatar: avatar_link(get("id").as_deref(), get("avatar").as_deref()),
+                        admin: false,
                     };
                     let _ = save(data_dir, &session);
                     return Ok(session);
@@ -245,6 +248,7 @@ fn refresh_at(base: &str, data_dir: &Path, session: &Session) -> Option<Session>
             _ => body.multiplayer_allowed,
         },
         avatar: avatar_link(body.user.id.as_deref(), body.user.avatar.as_deref()).or_else(|| session.avatar.clone()),
+        admin: body.admin,
     };
     let _ = save(data_dir, &fresh);
     Some(fresh)
@@ -267,6 +271,8 @@ pub fn sign_out(data_dir: &Path, session: &Session) {
 struct MeResponse {
     user: MeUser,
     multiplayer_allowed: bool,
+    #[serde(default)]
+    admin: bool,
     /// Whether the server could look up the role; servers before this field
     /// always could.
     #[serde(default)]
@@ -376,6 +382,7 @@ mod tests {
             name: "xsoul".into(),
             allowed: true,
             avatar: None,
+            admin: false,
         };
         save(&dir, &session).unwrap();
         let closed = {

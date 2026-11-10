@@ -77,6 +77,9 @@ impl Shell {
         if page == Page::Careers && was != Page::Careers {
             self.refresh_saves_in_background(cx);
         }
+        if page == Page::TimeTrial {
+            self.tt_open(cx);
+        }
         if let Some(i) = self.open_section().filter(|i| !self.section_loaded(*i)) {
             self.fetch_views(Some(i), cx);
         }
@@ -318,6 +321,7 @@ impl Shell {
             (Page::Shaders, None),
             (Page::Profiles, Some(self.library.profiles.len())),
             (Page::Careers, None),
+            (Page::TimeTrial, None),
         ];
         if self.developer_mode {
             big.insert(3, (Page::Tools, None));
