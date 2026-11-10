@@ -145,7 +145,11 @@ bool typing(const char *what);
 void mfd_setup();
 void mfd_tick();
 int popup_show(const std::string &title, const std::string &body, const std::string &by);
-int hud_toast(const std::string &text, const std::string &detail, float seconds, const std::string &by);
+int hud_toast(const std::string &text, const std::string &detail, float seconds, const std::string &by,
+              const std::string &icon = {});
+namespace toast {
+void tick();
+}
 const SwoftyCareerContent *career_content_table();
 std::vector<CoreMixins> career_content_mixins();
 void career_content_commit();
@@ -303,6 +307,7 @@ void lap_rec_setup();
 void lap_rec_tick();
 void lap_rec_session_enter();
 void lap_rec_session_end();
+bool lap_rec_active();
 void tt_bridge_tick();
 bool tt_bridge_ghost_id(uint8_t out[48]);
 bool tt_bridge_pb_armed();

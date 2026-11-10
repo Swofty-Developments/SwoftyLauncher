@@ -717,6 +717,11 @@ void lap_rec_session_end()
                 (unsigned long long)discarded, o.kind == lr::Outcome::discarded ? ", the lap in progress dropped" : "");
 }
 
+bool lap_rec_active()
+{
+    return active.load(std::memory_order_relaxed);
+}
+
 void lap_rec_newlap(int car)
 {
     if (!active.load(std::memory_order_relaxed))
@@ -733,6 +738,7 @@ void lap_rec_newlap(int car)
 
 void lap_rec_tick()
 {
+    toast::tick();
     if (!active.load(std::memory_order_relaxed))
         return;
     static const uint32_t probe = perf::probe("core", "lap recorder tick");
