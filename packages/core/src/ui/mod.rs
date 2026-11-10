@@ -49,12 +49,15 @@ const MESSAGES: &str = "eaid://ui_package/message_data/onlineservices_messages.u
 const HUD_MESSAGES: &str = "eaid://ui_package/message_data/hud_messages.uimsg";
 const PERSISTENT_UI: &str = "eaid://ui_package/screens/persistent.ui";
 const FRONTEND_TRANSITION: &str = "eaid://ui_package/screens/frontend_transition.ui";
+const LEADERBOARD_ARCHIVE: &str = "screens/leaderboard_container.erp";
+const LEADERBOARD_UI: &str = "eaid://ui_package/screens/leaderboard_container.ui";
 
 pub const ERPS: &[&str] = &[
     "persistent.erp",
     "databases.erp",
     "flow_persistent.erp",
     "flow_frontend.erp",
+    LEADERBOARD_ARCHIVE,
     home_rows::PLAYERCARD_ARCHIVE,
     era::ARCHIVES[0],
     era::ARCHIVES[1],
@@ -566,6 +569,7 @@ pub fn build(
         }),
     )];
     frontend.push((FRONTEND_TRANSITION, 0, Box::new(patch::frontend_transition)));
+    frontend.push((LEADERBOARD_UI, 0, Box::new(patch::leaderboard_glyphs)));
     let mut home_lines = Vec::new();
     let mut home_warnings = Vec::new();
     let rows = match std::env::var_os("SWOFTY_HOME_ROWS") {
@@ -596,6 +600,9 @@ pub fn build(
         ));
     }
     write_archive(&src_h, &dst_h, frontend, Vec::new())?;
+
+    let (src_l, dst_l) = erp(LEADERBOARD_ARCHIVE);
+    write_erp(&src_l, &dst_l, vec![(LEADERBOARD_UI, Box::new(patch::leaderboard_glyphs))])?;
 
     let (src_c, dst_c) = erp(home_rows::PLAYERCARD_ARCHIVE);
     write_archive(

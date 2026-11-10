@@ -4,46 +4,73 @@ use swofty_core::ui::node::{NodeExt, ObjExt};
 use swofty_formats::erp::Erp;
 use swofty_formats::pkg::Pkg;
 
+fn labels(data: &[u8]) -> Vec<(String, String)> {
+    let mut p = Pkg::parse(data).unwrap();
+    let o = p.root.o_mut().unwrap();
+    let list = o
+        .at_mut("leaderboard_data").unwrap().o_mut().unwrap().at_mut("Contents").unwrap().o_mut().unwrap()
+        .at_mut("table").unwrap().o_mut().unwrap().at_mut("Contents").unwrap().o_mut().unwrap()
+        .at_mut("view_type_list").unwrap().o_mut().unwrap().at_mut("Contents").unwrap().a_mut().unwrap()
+        .clone();
+    list.iter()
+        .map(|e| {
+            let e = e.o().unwrap();
+            let label = e.at("Contents").unwrap().o().unwrap().at("display_name").unwrap().o().unwrap().str_at("Value").unwrap().to_owned();
+            (e.str_at("Name").unwrap().to_owned(), label)
+        })
+        .collect()
+}
+
 #[test]
-fn the_ui_data_patch_leaves_one_leaderboard_tab() {
+fn the_ui_data_patch_blanks_the_friends_tab_label_in_place() {
     let Some(erp) = std::env::var_os("F1_UI_DATABASES_ERP").map(PathBuf::from) else {
         eprintln!("F1_UI_DATABASES_ERP is not set; skipping");
         return;
     };
     let res = Erp::read_matching(&erp, |n| n == "eaid://ui_package/databases/ui_data.uidb").unwrap();
     let stock = res[0].fragments[0].data().unwrap();
-    let list = |data: &[u8]| {
-        let mut p = Pkg::parse(data).unwrap();
-        let o = p.root.o_mut().unwrap();
-        o.at_mut("leaderboard_data")
-            .unwrap()
-            .o_mut()
-            .unwrap()
-            .at_mut("Contents")
-            .unwrap()
-            .o_mut()
-            .unwrap()
-            .at_mut("table")
-            .unwrap()
-            .o_mut()
-            .unwrap()
-            .at_mut("Contents")
-            .unwrap()
-            .o_mut()
-            .unwrap()
-            .at_mut("view_type_list")
-            .unwrap()
-            .o_mut()
-            .unwrap()
-            .at_mut("Contents")
-            .unwrap()
-            .a_mut()
-            .unwrap()
-            .len()
-    };
-    assert_eq!(list(&stock), 2);
+    assert_eq!(
+        labels(&stock),
+        [("global".into(), "lng_global_leaderboard".into()), ("friends".into(), "lng_friends_leaderboard".into())]
+    );
     let patched = swofty_core::ui::patch::ui_data(&stock, Vec::new()).unwrap();
-    assert_eq!(list(&patched), 1);
+    assert_eq!(
+        labels(&patched),
+        [("global".into(), "lng_global_leaderboard".into()), ("friends".into(), String::new())],
+        "both keys stay: the game merges by key, so the entry is overridden, not dropped"
+    );
+}
+
+#[test]
+fn the_leaderboard_screen_loses_its_shoulder_glyphs_and_nothing_else() {
+    let Some(erp) = std::env::var_os("F1_FLOW_FRONTEND_ERP").map(PathBuf::from) else {
+        eprintln!("F1_FLOW_FRONTEND_ERP is not set; skipping");
+        return;
+    };
+    let res = Erp::read_matching(&erp, |n| n == "eaid://ui_package/screens/leaderboard_container.ui").unwrap();
+    let stock = res[0].fragments[0].data().unwrap();
+    let patched = swofty_core::ui::patch::leaderboard_glyphs(&stock).unwrap();
+    let visible = |data: &[u8], name: &str| {
+        let mut scr = swofty_core::ui::node::first_screen_of(data).unwrap();
+        let n = scr.child_mut(name).unwrap();
+        let v = n.props().unwrap().get("visible").cloned();
+        format!("{v:?}")
+    };
+    for glyph in ["tooltip_tab_left", "tooltip_tab_right"] {
+        assert_ne!(visible(&stock, glyph), visible(&patched, glyph), "{glyph} is hidden");
+    }
+    let names = |data: &[u8]| {
+        let scr = swofty_core::ui::node::first_screen_of(data).unwrap();
+        scr.slot(swofty_core::ui::node::CHILDREN)
+            .unwrap()
+            .iter()
+            .filter(|c| c.is_node())
+            .map(|c| c.name().to_owned())
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(names(&stock), names(&patched), "no node is added or removed");
+    assert!(names(&patched).contains(&"tab_controller".to_owned()), "the tab controller stays");
+    assert!(swofty_core::ui::patch::leaderboard_glyphs(&patched).is_ok(), "patching twice is harmless");
 }
 
 #[test]
