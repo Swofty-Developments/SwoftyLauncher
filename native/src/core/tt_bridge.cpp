@@ -757,19 +757,20 @@ void priv_mid(safetyhook::Context &c)
     uint32_t type = uint32_t(c.rbp);
     if (bridge_on && type != 1 && type < 12 && content_ours()) {
         uint32_t name = ui_node_name(c.r14);
-        bool by_name = name == 0x57172c5d, user_content = type == 2;
+        char sw[8] = {};
+        bool by_name = name == 0x57172c5d, user_content = type == 2 && GetEnvironmentVariableA("SWOFTY_TT_GARAGE_TYPE2", sw, sizeof sw) && sw[0] == '1';
         static std::atomic<int> granted{0};
         if (by_name || user_content) {
             c.rflags |= 0x40;
             if (++granted <= 8)
                 swofty::log("[boards] garage monitor: leaderboard tab privilege (type %u, control 0x%llx, name hash read 0x%x = %s) granted for our content: the panel's check is answered "
                             "as passed, so car_monitor_tt_leaderboard_privilege_check enables the tab (the panel then reads GetTTLeaderboard through the bridge); matched by %s",
-                            type, (unsigned long long)c.r14, name, by_name ? "leaderboard_privilege_check" : "not that node", by_name ? "the node name" : "privilege type 2 (user content: the leaderboard privilege of the garage)");
+                            type, (unsigned long long)c.r14, name, by_name ? "leaderboard_privilege_check" : "not that node", by_name ? "the node name" : "privilege type 2 (SWOFTY_TT_GARAGE_TYPE2=1)");
             return;
         }
         static std::atomic<int> missed{0};
-        if (diag_on && ++missed <= 6)
-            swofty::log("[boards] diag: privilege check type %u of control 0x%llx not granted: name hash read 0x%x", type, (unsigned long long)c.r14, name);
+        if (++missed <= 6)
+            swofty::log("[boards] diag: privilege check type %u of control 0x%llx not granted: name hash read 0x%x (SWOFTY_TT_GARAGE_TYPE2=1 grants type 2)", type, (unsigned long long)c.r14, name);
     }
     if (type != 1) {
         if (diag_on && type < 12) {
