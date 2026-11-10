@@ -59,6 +59,9 @@ pub(crate) struct Online {
     filter_tracks: TrackFilter,
     search: Option<Entity<InputState>>,
     my_times: HashMap<BoardKey, u64>,
+    feeds: HashMap<String, Feed>,
+    handles: HashMap<String, UniformListScrollHandle>,
+    me: Option<Me>,
     viewing: Option<String>,
     setup_open: Option<String>,
     setup_compare: bool,
@@ -90,6 +93,9 @@ impl Online {
             filter_tracks: TrackFilter::default(),
             search: None,
             my_times: HashMap::new(),
+            feeds: HashMap::new(),
+            handles: HashMap::new(),
+            me: None,
             viewing: None,
             setup_open: None,
             setup_compare: false,
@@ -132,6 +138,20 @@ impl Shell {
         self.online.overview = Load::Loading;
         self.online.seasons.clear();
         self.online.profiles.clear();
+        self.online.feeds.clear();
+        self.online
+            .api
+            .set_token(self.mp.as_ref().map(|m| m.token.clone()));
+        let me_api = self.online.api.clone();
+        cx.spawn(async move |this, cx| {
+            let me = cx.background_executor().spawn(async move { me_api.me() }).await;
+            this.update(cx, |s, cx| {
+                s.online.me = me.ok().flatten();
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
         let api = self.online.api.clone();
         cx.spawn(async move |this, cx| {
             let overview = cx
@@ -197,11 +217,52 @@ impl Shell {
         }
     }
 
+    pub(crate) fn online_rank_ensure(&mut self, scope: &str, cx: &mut Context<Self>) {
+        let feed = self.online.feeds.get(scope);
+        if feed.is_none_or(|f| !f.started && !f.loading) {
+            self.online_rank_load(scope, 0, cx);
+        }
+    }
+
+    pub(crate) fn online_rank_load(&mut self, scope: &str, offset: u32, cx: &mut Context<Self>) {
+        let feed = self.online.feeds.entry(scope.to_owned()).or_default();
+        if feed.loading {
+            return;
+        }
+        feed.loading = true;
+        let (api, key, epoch) = (self.online.api.clone(), scope.to_owned(), self.online.epoch);
+        cx.spawn(async move |this, cx| {
+            let k = key.clone();
+            let page = cx
+                .background_executor()
+                .spawn(async move { api.rankings(&k, offset) })
+                .await;
+            this.update(cx, |s, cx| {
+                if s.online.epoch != epoch {
+                    return;
+                }
+                if let Ok(p) = &page {
+                    let urls = art_urls(p.rows.iter().map(|r| &r.driver), []);
+                    s.online_prefetch(urls, cx);
+                }
+                let feed = s.online.feeds.entry(key).or_default();
+                match page {
+                    Ok(p) => feed.apply(offset, p),
+                    Err(e) => feed.failed(e.message),
+                }
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
+    }
+
     pub(crate) fn online_load_season(&mut self, id: &str, cx: &mut Context<Self>) {
         if matches!(self.online.seasons.get(id), Some(Load::Ready(_) | Load::Loading)) {
             return;
         }
         self.online.seasons.insert(id.to_owned(), Load::Loading);
+        self.online_rank_ensure(id, cx);
         let (api, key, epoch) = (self.online.api.clone(), id.to_owned(), self.online.epoch);
         cx.spawn(async move |this, cx| {
             let k = key.clone();

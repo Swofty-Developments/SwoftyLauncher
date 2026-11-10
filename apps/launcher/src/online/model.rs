@@ -291,6 +291,58 @@ pub struct Profile {
     pub recent: Vec<BestLap>,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct RankingPage {
+    pub rows: Vec<RankEntry>,
+    pub total: u32,
+    pub next_offset: Option<u32>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Me {
+    pub driver: Driver,
+    pub entry: Option<RankEntry>,
+}
+
+pub const RANK_PAGE: u32 = 50;
+
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct Feed {
+    pub rows: Vec<RankEntry>,
+    pub total: u32,
+    pub next: Option<u32>,
+    pub loading: bool,
+    pub error: Option<String>,
+    pub started: bool,
+}
+
+impl Feed {
+    pub fn apply(&mut self, offset: u32, page: RankingPage) {
+        self.loading = false;
+        self.error = None;
+        self.started = true;
+        self.total = page.total;
+        self.next = page.next_offset;
+        self.rows.truncate(offset as usize);
+        self.rows.extend(page.rows);
+    }
+
+    pub fn failed(&mut self, message: String) {
+        self.loading = false;
+        self.started = true;
+        self.error = Some(message);
+    }
+
+    pub fn wants_more(&self, visible_end: usize) -> Option<u32> {
+        let next = self.next?;
+        (!self.loading && self.error.is_none() && visible_end + 12 >= self.rows.len()).then_some(next)
+    }
+
+    pub fn finished(&self) -> bool {
+        self.started && self.next.is_none() && self.error.is_none() && !self.loading
+    }
+}
+
 pub fn lap_url(lap_id: &str) -> String {
     format!("{SITE}/lap/{lap_id}")
 }
@@ -748,5 +800,46 @@ mod tests {
         assert_eq!(a.difference(&b, "brake_bias"), None);
         assert_eq!(a.difference(&b, "rear_wing"), None);
         assert!(Setup::default().is_empty() && !a.is_empty());
+    }
+
+    fn page(n: usize, next: Option<u32>) -> RankingPage {
+        let d = Driver {
+            id: "1".into(),
+            name: "a".into(),
+            avatar: None,
+        };
+        RankingPage {
+            rows: (0..n)
+                .map(|i| RankEntry {
+                    rank: i as u32 + 1,
+                    driver: d.clone(),
+                    points: 1.,
+                    wins: 0,
+                    podiums: 0,
+                })
+                .collect(),
+            total: 120,
+            next_offset: next,
+        }
+    }
+
+    #[test]
+    fn the_feed_pages_in_and_asks_for_more_near_the_end() {
+        let mut f = Feed::default();
+        assert!(f.wants_more(0).is_none());
+        f.apply(0, page(50, Some(50)));
+        assert_eq!(f.wants_more(45), Some(50));
+        assert_eq!(f.wants_more(10), None);
+        f.loading = true;
+        assert_eq!(f.wants_more(49), None);
+        f.apply(50, page(50, Some(100)));
+        assert_eq!(f.rows.len(), 100);
+        f.apply(100, page(20, None));
+        assert_eq!(f.rows.len(), 120);
+        assert!(f.finished() && f.wants_more(120).is_none());
+        f.apply(0, page(50, Some(50)));
+        assert_eq!(f.rows.len(), 50);
+        f.failed("down".into());
+        assert!(f.wants_more(49).is_none() && !f.finished());
     }
 }

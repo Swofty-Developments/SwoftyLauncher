@@ -2,9 +2,11 @@ use super::model::*;
 use super::widgets::*;
 use super::{Load, Target};
 use crate::format::lap_time;
+use crate::scale::Hit;
 use crate::scale::px;
 use crate::shell::Shell;
 use crate::theme::{Palette, ScrollArea};
+use gpui_kit::SharedString;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
@@ -31,7 +33,6 @@ impl Shell {
         };
         let o = o.clone();
         let mut items: Vec<Target> = Vec::new();
-        let me = self.account_name();
         let wide = self.content_width >= 860.;
         let seasons: Vec<AnyElement> = o
             .seasons
@@ -41,32 +42,13 @@ impl Shell {
                 self.season_row(s, idx, p, cx)
             })
             .collect();
-        let custom: Vec<AnyElement> = o
-            .custom
-            .iter()
-            .map(|t| {
-                let idx = self.target_item(&mut items, Target::Board(Box::new(t.clone()), t.name.clone()));
-                self.thin_track_row(t, idx, None, p, cx)
-            })
-            .collect();
-        let ranking = self.rank_panel(
-            tr("GLOBAL RANKING"),
-            tr("Every season counts; racing more seasons scores more."),
-            &o.global,
-            me.as_deref(),
-            &mut items,
-            p,
-            cx,
-        );
+        self.online_rank_ensure("all", cx);
+        let ranking = self.rank_column("all", tr("GLOBAL RANKING"), &mut items, p, cx);
         self.online.items = items;
         let left = v_flex()
             .gap(px(14.))
             .child(section_title(tr("SEASONS"), p))
-            .child(panel(p).children(seasons))
-            .when(!custom.is_empty(), |d| {
-                d.child(section_title(tr("CUSTOM TRACKS"), p))
-                    .child(panel(p).children(custom))
-            });
+            .child(panel(p).children(seasons));
         if wide {
             h_flex()
                 .flex_1()
@@ -88,8 +70,7 @@ impl Shell {
                         .w(px(RIGHT_W))
                         .flex_shrink_0()
                         .h_full()
-                        .scroll_y("online-ranking")
-                        .pb(px(28.))
+                        .pb(px(20.))
                         .child(ranking),
                 )
                 .into_any_element()
@@ -102,7 +83,7 @@ impl Shell {
                 .pb(px(28.))
                 .gap(px(20.))
                 .child(left)
-                .child(ranking)
+                .child(div().h(px(520.)).flex().flex_col().child(ranking))
                 .into_any_element()
         }
     }
@@ -153,53 +134,177 @@ impl Shell {
             .into_any_element()
     }
 
-    #[allow(clippy::too_many_arguments)]
-    pub(super) fn rank_panel(
-        &self,
+    pub(super) fn rank_column(
+        &mut self,
+        scope: &str,
         title: &'static str,
-        sub: &'static str,
-        rows: &[RankEntry],
-        me: Option<&str>,
         items: &mut Vec<Target>,
         p: Palette,
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let mut built: Vec<AnyElement> = Vec::new();
-        for r in rows {
-            let idx = items.len();
-            items.push(Target::Profile(r.driver.clone()));
-            built.push(if r.rank <= 3 {
-                self.top_rank_row(r, idx, me == Some(r.driver.name.as_str()), p, cx)
-            } else {
-                self.rank_row(r, idx, me == Some(r.driver.name.as_str()), p, cx)
-            });
-        }
-        let pinned = me
-            .and_then(|m| rows.iter().find(|r| r.driver.name == m))
+        let feed = self.online.feeds.get(scope).cloned().unwrap_or_default();
+        let me = self
+            .account_name()
+            .and_then(|_| self.online.me.clone())
+            .and_then(|m| m.entry);
+        let top: Vec<AnyElement> = feed
+            .rows
+            .iter()
+            .take(3)
             .map(|r| {
-                div()
-                    .px(px(14.))
-                    .py(px(9.))
-                    .bg(p.selected)
-                    .text_size(px(13.))
-                    .font_weight(FontWeight::SEMIBOLD)
-                    .child(trf!(
-                        "You: #{rank}, {points} pts",
-                        rank = r.rank,
-                        points = score_text(r.points)
-                    ))
-            });
+                let idx = items.len();
+                items.push(Target::Profile(r.driver.clone()));
+                self.top_rank_row(
+                    r,
+                    idx,
+                    me.as_ref().is_some_and(|m| m.driver.id == r.driver.id),
+                    p,
+                    cx,
+                )
+            })
+            .collect();
+        let header = div()
+            .h(px(46.))
+            .flex()
+            .items_center()
+            .justify_center()
+            .child(section_title(title, p));
+        let body: AnyElement = if !feed.started {
+            v_flex()
+                .children((0..8).map(|_| {
+                    div()
+                        .h(px(38.))
+                        .mx(px(14.))
+                        .my(px(2.))
+                        .rounded(px(8.))
+                        .bg(p.elevated)
+                }))
+                .into_any_element()
+        } else if let (Some(e), true) = (&feed.error, feed.rows.is_empty()) {
+            v_flex()
+                .p(px(18.))
+                .gap(px(10.))
+                .items_center()
+                .child(div().text_size(px(12.)).text_color(p.text_muted).child(e.clone()))
+                .child(
+                    gpui_kit::component::button::Button::new(SharedString::from(format!(
+                        "rank-retry-{scope}"
+                    )))
+                    .outline()
+                    .tap_sm()
+                    .label(tr("Try again"))
+                    .on_click({
+                        let scope = scope.to_owned();
+                        cx.listener(move |this, _, _, cx| {
+                            this.online.feeds.remove(&scope);
+                            cx.notify();
+                        })
+                    }),
+                )
+                .into_any_element()
+        } else if feed.rows.is_empty() {
+            div()
+                .p(px(18.))
+                .text_size(px(13.))
+                .text_color(p.text_muted)
+                .child(tr("No ranked drivers yet."))
+                .into_any_element()
+        } else {
+            let handle = self.online.handles.entry(scope.to_owned()).or_default().clone();
+            let key = scope.to_owned();
+            let count = feed.rows.len().saturating_sub(3) + 1;
+            div()
+                .flex_1()
+                .min_h_0()
+                .child(
+                    uniform_list(
+                        SharedString::from(format!("rank-list-{scope}")),
+                        count,
+                        cx.processor(move |this, range: std::ops::Range<usize>, _, cx| {
+                            let feed = this.online.feeds.get(&key).cloned().unwrap_or_default();
+                            if let Some(off) = feed.wants_more(range.end + 3) {
+                                this.online_rank_load(&key, off, cx);
+                            }
+                            let me_id = this.online.me.as_ref().map(|m| m.driver.id.clone());
+                            range
+                                .map(|i| match feed.rows.get(i + 3) {
+                                    Some(r) => {
+                                        let mine = me_id.as_deref() == Some(r.driver.id.as_str());
+                                        this.rank_row(r, usize::MAX, mine, p, cx)
+                                    }
+                                    None => this.rank_footer(&feed, p),
+                                })
+                                .collect::<Vec<_>>()
+                        }),
+                    )
+                    .size_full()
+                    .track_scroll(&handle),
+                )
+                .into_any_element()
+        };
+        let pinned = me.map(|m| {
+            h_flex()
+                .h(px(46.))
+                .px(px(14.))
+                .gap(px(10.))
+                .items_center()
+                .bg(p.selected)
+                .border_t_1()
+                .border_color(p.border)
+                .child(self.tt_face(&m.driver, 26., p))
+                .child(
+                    div()
+                        .flex_1()
+                        .min_w_0()
+                        .truncate()
+                        .text_size(px(13.))
+                        .font_weight(FontWeight::SEMIBOLD)
+                        .child(trf!("You: #{rank}", rank = m.rank)),
+                )
+                .child(
+                    div()
+                        .text_size(px(13.))
+                        .font_weight(FontWeight::BOLD)
+                        .child(format!("{} {}", score_text(m.points), tr("pts"))),
+                )
+        });
         panel(p)
-            .child(
-                v_flex()
-                    .px(px(14.))
-                    .pt(px(14.))
-                    .pb(px(8.))
-                    .child(section_title(title, p))
-                    .child(div().text_size(px(11.)).text_color(p.text_placeholder).child(sub)),
-            )
+            .flex_1()
+            .min_h_0()
+            .child(header)
+            .children(top)
+            .child(body)
             .children(pinned)
-            .children(built)
+            .into_any_element()
+    }
+
+    fn rank_footer(&self, feed: &Feed, p: Palette) -> AnyElement {
+        let text: AnyElement = if feed.error.is_some() {
+            div()
+                .text_size(px(12.))
+                .text_color(p.error)
+                .child(tr("Couldn't load more"))
+                .into_any_element()
+        } else if feed.finished() {
+            div()
+                .text_size(px(11.))
+                .text_color(p.text_placeholder)
+                .child(tr("End of the ranking"))
+                .into_any_element()
+        } else {
+            div()
+                .h(px(18.))
+                .w(px(180.))
+                .rounded(px(6.))
+                .bg(p.elevated)
+                .into_any_element()
+        };
+        div()
+            .h(px(38.))
+            .flex()
+            .items_center()
+            .justify_center()
+            .child(text)
             .into_any_element()
     }
 
@@ -272,6 +377,7 @@ impl Shell {
         let driver = r.driver.clone();
         h_flex()
             .id(SharedString::from(format!("rank-{idx}-{}", r.driver.id)))
+            .w_full()
             .h(px(38.))
             .px(px(14.))
             .gap(px(10.))

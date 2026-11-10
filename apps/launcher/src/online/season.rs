@@ -55,15 +55,7 @@ impl Shell {
                 self.thin_track_row(t, idx, mine, p, cx)
             })
             .collect();
-        let ranking = self.rank_panel(
-            tr("SEASON RANKING"),
-            tr("Points over every track of the season."),
-            &page.ranking,
-            me.as_deref(),
-            &mut items,
-            p,
-            cx,
-        );
+        let ranking = self.rank_column(id, tr("SEASON RANKING"), &mut items, p, cx);
         self.online.items = items;
         let header = self.season_header(&page.season, p);
         let bar = self.track_filter_bar(&page.tracks, &filter, me.is_some(), p, cx);
@@ -72,7 +64,17 @@ impl Shell {
         let (narrow_ranking, side_ranking) = if wide {
             (None, Some(ranking))
         } else {
-            (Some(ranking), None)
+            (
+                Some(
+                    div()
+                        .h(px(520.))
+                        .flex()
+                        .flex_col()
+                        .child(ranking)
+                        .into_any_element(),
+                ),
+                None,
+            )
         };
         let main = v_flex()
             .flex_1()
@@ -116,8 +118,7 @@ impl Shell {
                         .w(px(super::landing::RIGHT_W))
                         .flex_shrink_0()
                         .h_full()
-                        .scroll_y("online-season-ranking")
-                        .pb(px(28.))
+                        .pb(px(20.))
                         .children(side_ranking),
                 )
             })

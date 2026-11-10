@@ -9,6 +9,9 @@ pub trait BoardsApi: Send + Sync {
     fn season(&self, id: &str) -> Result<SeasonPage, OnlineError>;
     fn board(&self, key: &BoardKey, filter: &Filter, offset: u32) -> Result<BoardPage, OnlineError>;
     fn profile(&self, id: &str) -> Result<Profile, OnlineError>;
+    fn rankings(&self, scope: &str, offset: u32) -> Result<RankingPage, OnlineError>;
+    fn me(&self) -> Result<Option<Me>, OnlineError>;
+    fn set_token(&self, token: Option<String>);
 }
 
 #[derive(Deserialize, Default)]
@@ -407,6 +410,7 @@ struct RankDto2 {
 
 pub struct HttpBoards {
     server: String,
+    token: std::sync::Mutex<Option<String>>,
 }
 
 impl HttpBoards {
@@ -417,14 +421,20 @@ impl HttpBoards {
     pub fn with_server(server: &str) -> Self {
         Self {
             server: server.trim().trim_end_matches('/').to_owned(),
+            token: std::sync::Mutex::new(None),
         }
     }
 
     fn get<T: serde::de::DeserializeOwned>(&self, path: &str) -> Result<T, OnlineError> {
         let url = format!("{}{path}", self.server);
-        let sent = ureq::get(&url)
+        let token = self.token.lock().ok().and_then(|t| t.clone());
+        let mut request = ureq::get(&url)
             .header("User-Agent", "swofty-launcher")
-            .header("Accept", "application/json")
+            .header("Accept", "application/json");
+        if let Some(token) = token {
+            request = request.header("Authorization", &["Bearer ", token.as_str()].concat());
+        }
+        let sent = request
             .config()
             .timeout_global(Some(Duration::from_secs(8)))
             .timeout_connect(Some(Duration::from_secs(5)))
@@ -493,7 +503,74 @@ pub fn encode(part: &str) -> String {
     out
 }
 
+#[derive(Deserialize)]
+struct RankingDto {
+    #[serde(default)]
+    total: u32,
+    #[serde(default)]
+    next_offset: Option<u32>,
+    #[serde(default)]
+    rows: Vec<RankDto>,
+}
+
+#[derive(Deserialize)]
+struct MeDto {
+    #[serde(default)]
+    id: String,
+    #[serde(default)]
+    name: String,
+    #[serde(default)]
+    avatar: Option<String>,
+    #[serde(default)]
+    global: Option<RankDto2>,
+}
+
 impl BoardsApi for HttpBoards {
+    fn set_token(&self, token: Option<String>) {
+        if let Ok(mut t) = self.token.lock() {
+            *t = token;
+        }
+    }
+
+    fn rankings(&self, scope: &str, offset: u32) -> Result<RankingPage, OnlineError> {
+        let dto: RankingDto = self.get(&format!(
+            "/v1/tt/rankings?season={}&limit={RANK_PAGE}&offset={offset}",
+            encode(scope)
+        ))?;
+        Ok(RankingPage {
+            rows: dto.rows.into_iter().map(Into::into).collect(),
+            total: dto.total,
+            next_offset: dto.next_offset,
+        })
+    }
+
+    fn me(&self) -> Result<Option<Me>, OnlineError> {
+        if self.token.lock().ok().is_none_or(|t| t.is_none()) {
+            return Ok(None);
+        }
+        match self.get::<MeDto>("/v1/tt/me") {
+            Ok(dto) => {
+                let driver = Driver {
+                    id: dto.id,
+                    name: dto.name,
+                    avatar: dto.avatar,
+                };
+                Ok(Some(Me {
+                    entry: dto.global.map(|g| RankEntry {
+                        rank: g.rank,
+                        driver: driver.clone(),
+                        points: g.score,
+                        wins: g.wins,
+                        podiums: g.podiums,
+                    }),
+                    driver,
+                }))
+            }
+            Err(e) if e.status == 401 => Ok(None),
+            Err(e) => Err(e),
+        }
+    }
+
     fn overview(&self) -> Result<Overview, OnlineError> {
         let dto: OverviewDto = self.get("/v1/tt/overview")?;
         Ok(Overview {
@@ -703,5 +780,22 @@ mod tests {
         assert!(s.changed);
         assert!(setup_of(&serde_json::json!({})).is_none());
         assert!(setup_of(&serde_json::Value::Null).is_none());
+    }
+
+    #[test]
+    fn a_ranking_page_and_me_parse() {
+        let dto: RankingDto = serde_json::from_str(
+            r#"{"season":"all","name":"All","total":312,"limit":50,"offset":0,"next_offset":50,
+               "rows":[{"rank":1,"user":{"id":"1","name":"swofty","avatar":null},"score":187.4,"boards":31,"wins":12,"podiums":20}]}"#,
+        )
+        .unwrap();
+        assert_eq!((dto.total, dto.next_offset, dto.rows.len()), (312, Some(50), 1));
+        let me: MeDto = serde_json::from_str(
+            r#"{"id":"1","name":"swofty","avatar":null,"global":{"rank":3,"of":40,"score":187.4,"boards":31,"wins":12,"podiums":20}}"#,
+        )
+        .unwrap();
+        assert_eq!(me.global.unwrap().rank, 3);
+        let last: RankingDto = serde_json::from_str(r#"{"total":3,"next_offset":null,"rows":[]}"#).unwrap();
+        assert_eq!(last.next_offset, None);
     }
 }

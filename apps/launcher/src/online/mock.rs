@@ -239,7 +239,72 @@ fn find(season_key: &str) -> usize {
     YEARS.iter().position(|y| season_id(y) == season_key).unwrap_or(0)
 }
 
+const FIELD: usize = 420;
+
+fn big_driver(i: usize) -> Driver {
+    if i < NAMES.len() {
+        return driver(i);
+    }
+    Driver {
+        id: format!("{}", 2000 + i),
+        name: format!("racer{i:03}"),
+        avatar: i.is_multiple_of(3).then(|| format!("mock:av-{}.png", i % 14)),
+    }
+}
+
+fn big_ranking(scope: usize) -> Vec<RankEntry> {
+    (0..FIELD)
+        .map(|i| RankEntry {
+            rank: i as u32 + 1,
+            driver: big_driver(i),
+            points: (900. - i as f32 * 2.1 - scope as f32).max(1.),
+            wins: (40usize.saturating_sub(i / 3)) as u32 / 4,
+            podiums: (60usize.saturating_sub(i / 2)) as u32 / 3,
+        })
+        .collect()
+}
+
 impl BoardsApi for MockBoards {
+    fn set_token(&self, _: Option<String>) {}
+
+    fn rankings(&self, scope: &str, offset: u32) -> Result<RankingPage, OnlineError> {
+        gate(self.mode)?;
+        let scope_no = YEARS
+            .iter()
+            .position(|y| season_id(y) == scope)
+            .map_or(0, |i| i + 1);
+        let all = if self.mode == Mode::Empty {
+            Vec::new()
+        } else {
+            big_ranking(scope_no)
+        };
+        let rows: Vec<RankEntry> = all
+            .iter()
+            .skip(offset as usize)
+            .take(RANK_PAGE as usize)
+            .cloned()
+            .collect();
+        let end = offset as usize + rows.len();
+        std::thread::sleep(Duration::from_millis(250));
+        Ok(RankingPage {
+            total: all.len() as u32,
+            next_offset: (end < all.len()).then_some(end as u32),
+            rows,
+        })
+    }
+
+    fn me(&self) -> Result<Option<Me>, OnlineError> {
+        gate(self.mode)?;
+        let entry = big_ranking(0).into_iter().nth(137).map(|mut r| {
+            r.driver.name = "swofty".into();
+            r
+        });
+        Ok(entry.map(|entry| Me {
+            driver: entry.driver.clone(),
+            entry: Some(entry),
+        }))
+    }
+
     fn overview(&self) -> Result<Overview, OnlineError> {
         gate(self.mode)?;
         if self.mode == Mode::Empty {
