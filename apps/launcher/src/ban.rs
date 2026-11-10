@@ -17,7 +17,7 @@ impl Shell {
             false => ban.reason.clone(),
         };
         let who = ban.by.as_ref().map(|by| trf!("Banned by {name}", name = by));
-        let when = ban.at.map(|at| format_when(at));
+        let when = ban.at.map(format_when);
         let details = [who, when].into_iter().flatten().collect::<Vec<_>>().join(" · ");
         let card = v_flex()
             .w(px(460.))
