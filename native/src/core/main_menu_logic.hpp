@@ -28,6 +28,30 @@ constexpr const char *TT_BODY = "Sign in with Discord in Swofty Launcher to save
 constexpr const char *TT_CONTINUE = "Continue";
 constexpr const char *TT_BACK = "Back";
 
+constexpr uint32_t WATCH_KEY_VK = 0x56;
+
+constexpr uint32_t djb2(const char *s)
+{
+    uint32_t h = 5381;
+    for (; *s; s++)
+        h = h * 33 + uint8_t(*s);
+    return h;
+}
+
+inline std::string button_name(bool pad) { return pad ? "Y" : "V"; }
+
+inline std::string open_request_json(const std::string &url)
+{
+    std::string out = "{\"url\":\"";
+    for (char c : url) {
+        if (c == '"' || c == '\\')
+            out += '\\';
+        if (uint8_t(c) >= 0x20)
+            out += c;
+    }
+    return out + "\"}";
+}
+
 struct Card {
     std::string id;
     int row = 0;
@@ -56,10 +80,10 @@ inline Plan layout(const std::vector<std::string> &stock, bool showroom_availabl
     };
     int col = 0;
     auto top = [&](const std::string &id) { plan.cards.push_back({id, 0, col++, false}); };
-    if (has(ID_CAREER))
-        top(ID_CAREER);
     if (has(ID_STORY))
         top(ID_STORY);
+    if (has(ID_CAREER))
+        top(ID_CAREER);
     if (has(ID_CHALLENGE))
         top(ID_CHALLENGE);
     for (auto &s : stock) {

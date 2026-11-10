@@ -1,6 +1,8 @@
 #include <swofty/game.hpp>
 #include <swofty/mixin.hpp>
 
+#include "main_menu.hpp"
+#include "main_menu_logic.hpp"
 #include "perf.hpp"
 #include "runtime.hpp"
 
@@ -129,11 +131,13 @@ SWOFTY_SITE(site_FeHome_AfterCareerCall, swofty::Context &c)
         return;
     }
     auto career_vt = reinterpret_cast<void **>(career->vtable);
-    uint8_t index = uint8_t(c.r12 + 1);
+    uint8_t last = runtime::main_menu::add_tiles(list, uint8_t(c.r12), reinterpret_cast<const uint8_t *>(c.rsi));
+    last_item(list, &before);
+    uint8_t index = uint8_t(last + 1);
     FeHome_Add_CareerTile(list, index);
     HomeItem *item = last_item(list, &after);
-    c.r12 += 1;
-    c.r15 += 1;
+    c.r12 = index;
+    c.r15 = index;
     if (!item || after != before + 1 || reinterpret_cast<void **>(item->vtable) != career_vt) {
         swofty::log("[core] hook #%u: adder result unexpected (items %zu -> %zu, item %p, vt %p vs career %p); tile "
                     "left as a plain Career copy",
@@ -160,6 +164,9 @@ SWOFTY_SITE(site_FeHome_AfterCareerCall, swofty::Context &c)
 SWOFTY_WRAP(FeHome_Handle_Command, uint64_t, FEHomeViewModel *vm, NeStr **cmd)
 {
     static const uint32_t probe = perf::probe("core", "home command (addon settings)");
+    if (vm && cmd && *cmd)
+        runtime::main_menu::command(vm, *reinterpret_cast<const uint32_t *>(*cmd),
+                                    *reinterpret_cast<const uint32_t *>(reinterpret_cast<const uint8_t *>(vm) + 0x3f0));
     {
         perf::Scope p(probe);
         settings_command(cmd && *cmd ? *reinterpret_cast<const uint32_t *>(*cmd) : 0x1505);
