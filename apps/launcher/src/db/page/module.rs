@@ -42,8 +42,8 @@ impl Shell {
                 module.summary.clone(),
             ))
             .children(links);
-        let notes_open = self.db.notes_open;
-        let about = (!module.notes.is_empty()).then(|| {
+        let notes_open = self.db.notes_open || !self.short;
+        let about = (self.short && !module.notes.is_empty()).then(|| {
             h_flex()
                 .id("db-notes-toggle")
                 .gap(px(6.))
