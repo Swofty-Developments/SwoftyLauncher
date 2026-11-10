@@ -93,9 +93,19 @@ pub struct Entry {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Event {
-    Uploaded { name: String, time_ms: u64, answer: Uploaded },
-    Retry { name: String, error: String },
-    Rejected { name: String, error: String },
+    Uploaded {
+        name: String,
+        time_ms: u64,
+        answer: Uploaded,
+    },
+    Retry {
+        name: String,
+        error: String,
+    },
+    Rejected {
+        name: String,
+        error: String,
+    },
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -195,7 +205,9 @@ impl Queue {
                     header: swlap::read(&path).ok(),
                     waiting: (folder == Folder::Outbox)
                         .then(|| read_json::<Waiting>(&side).unwrap_or_default()),
-                    done: (folder != Folder::Outbox).then(|| read_json::<Done>(&side)).flatten(),
+                    done: (folder != Folder::Outbox)
+                        .then(|| read_json::<Done>(&side))
+                        .flatten(),
                     path,
                 }
             })
@@ -236,11 +248,18 @@ impl Queue {
             let header = match swlap::parse(&bytes) {
                 Ok(h) => h,
                 Err(e) => {
-                    self.settle(&entry.path, Folder::Rejected, Done {
-                        error: Some(e.to_string()),
-                        ..Done::of(None, limits.now)
+                    self.settle(
+                        &entry.path,
+                        Folder::Rejected,
+                        Done {
+                            error: Some(e.to_string()),
+                            ..Done::of(None, limits.now)
+                        },
+                    );
+                    on(Event::Rejected {
+                        name,
+                        error: e.to_string(),
                     });
-                    on(Event::Rejected { name, error: e.to_string() });
                     report.rejected += 1;
                     continue;
                 }
@@ -256,7 +275,11 @@ impl Queue {
                     let mut done = Done::of(Some(&header), limits.now);
                     done.answer = Some(answer.clone());
                     self.settle(&entry.path, Folder::Sent, done);
-                    on(Event::Uploaded { name, time_ms: header.lap.time_ms, answer });
+                    on(Event::Uploaded {
+                        name,
+                        time_ms: header.lap.time_ms,
+                        answer,
+                    });
                     report.uploaded += 1;
                 }
                 Err(e) if e.transient() => {
@@ -276,7 +299,10 @@ impl Queue {
                         write_json(&later.path.with_extension("json"), &w).ok();
                     }
                     write_json(&entry.path.with_extension("json"), &next).ok();
-                    on(Event::Retry { name, error: e.message });
+                    on(Event::Retry {
+                        name,
+                        error: e.message,
+                    });
                     report.waiting += total - i;
                     break;
                 }
@@ -284,7 +310,10 @@ impl Queue {
                     let mut done = Done::of(Some(&header), limits.now);
                     done.error = Some(e.message.clone());
                     self.settle(&entry.path, Folder::Rejected, done);
-                    on(Event::Rejected { name, error: e.message });
+                    on(Event::Rejected {
+                        name,
+                        error: e.message,
+                    });
                     report.rejected += 1;
                 }
             }
@@ -376,7 +405,8 @@ fn remove_lap(path: &Path) {
 }
 
 fn file_name(path: &Path) -> String {
-    path.file_name().map_or_else(String::new, |n| n.to_string_lossy().into_owned())
+    path.file_name()
+        .map_or_else(String::new, |n| n.to_string_lossy().into_owned())
 }
 
 fn free_name(dir: &Path, name: &std::ffi::OsStr) -> PathBuf {
@@ -384,7 +414,9 @@ fn free_name(dir: &Path, name: &std::ffi::OsStr) -> PathBuf {
     if !first.exists() {
         return first;
     }
-    let stem = Path::new(name).file_stem().map_or_else(String::new, |s| s.to_string_lossy().into_owned());
+    let stem = Path::new(name)
+        .file_stem()
+        .map_or_else(String::new, |s| s.to_string_lossy().into_owned());
     (1..)
         .map(|n| dir.join(format!("{stem}-{n}.{EXT}")))
         .find(|p| !p.exists())
@@ -518,7 +550,7 @@ mod tests {
         let (r, _) = drain(&q, &Fake::new(vec![]), 1010);
         assert_eq!((r.uploaded, r.waiting), (0, 2));
 
-        let api = Fake::new(vec![Err(ApiError::from_body(503, "")), ]);
+        let api = Fake::new(vec![Err(ApiError::from_body(503, ""))]);
         let (_, _) = drain(&q, &api, 1031);
         let w = q.list(Folder::Outbox)[0].waiting.clone().unwrap();
         assert_eq!((w.attempts, w.next_try), (2, 1031 + 60));
@@ -535,7 +567,10 @@ mod tests {
         let (laps, q) = (root.join("laps"), Queue::new(&root.join("data")));
         lap(&laps, "a.swlap", 1);
         q.collect(&laps, None).unwrap();
-        let api = Fake::new(vec![Err(ApiError::from_body(429, r#"{"error":"slow","retry_after":120}"#))]);
+        let api = Fake::new(vec![Err(ApiError::from_body(
+            429,
+            r#"{"error":"slow","retry_after":120}"#,
+        ))]);
         drain(&q, &api, 500);
         assert_eq!(q.list(Folder::Outbox)[0].waiting.as_ref().unwrap().next_try, 620);
         std::fs::remove_dir_all(&root).ok();
@@ -549,14 +584,29 @@ mod tests {
         std::fs::write(laps.join("b.swlap"), b"junk junk junk junk").unwrap();
         lap(&laps, "c.swlap", 3);
         q.collect(&laps, None).unwrap();
-        let api = Fake::new(vec![Err(ApiError::from_body(400, r#"{"error":"bad lap"}"#)), ok("c", 9)]);
+        let api = Fake::new(vec![
+            Err(ApiError::from_body(400, r#"{"error":"bad lap"}"#)),
+            ok("c", 9),
+        ]);
         let (r, events) = drain(&q, &api, 10);
         assert_eq!((r.uploaded, r.rejected), (1, 2));
         assert_eq!(events.len(), 3);
         let rejected = q.list(Folder::Rejected);
         assert_eq!(rejected.len(), 2);
-        assert_eq!(rejected[0].done.as_ref().unwrap().error.as_deref(), Some("bad lap"));
-        assert!(rejected[1].done.as_ref().unwrap().error.as_ref().unwrap().contains("not a lap"));
+        assert_eq!(
+            rejected[0].done.as_ref().unwrap().error.as_deref(),
+            Some("bad lap")
+        );
+        assert!(
+            rejected[1]
+                .done
+                .as_ref()
+                .unwrap()
+                .error
+                .as_ref()
+                .unwrap()
+                .contains("not a lap")
+        );
         assert_eq!(q.list(Folder::Sent).len(), 1);
         assert!(q.list(Folder::Outbox).is_empty());
         std::fs::remove_dir_all(&root).ok();
@@ -605,7 +655,11 @@ mod tests {
         q.collect(&laps, None).unwrap();
         lap(&laps, "a.swlap", 2);
         q.collect(&laps, None).unwrap();
-        let names: Vec<String> = q.list(Folder::Outbox).iter().map(|e| file_name(&e.path)).collect();
+        let names: Vec<String> = q
+            .list(Folder::Outbox)
+            .iter()
+            .map(|e| file_name(&e.path))
+            .collect();
         assert_eq!(names, ["a-1.swlap", "a.swlap"]);
         std::fs::remove_dir_all(&root).ok();
     }

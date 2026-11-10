@@ -43,12 +43,21 @@ fn clock(ms: u64) -> String {
 fn describe(e: &Entry) -> String {
     let (track, weather, ms, valid) = match (&e.done, &e.header) {
         (Some(d), _) => (d.track.clone(), d.weather.clone(), d.time_ms, d.valid),
-        (None, Some(h)) => (h.board.track.clone(), h.board.weather.clone(), h.lap.time_ms, h.lap.valid),
+        (None, Some(h)) => (
+            h.board.track.clone(),
+            h.board.weather.clone(),
+            h.lap.time_ms,
+            h.lap.valid,
+        ),
         (None, None) => ("?".into(), String::new(), 0, false),
     };
     let state = match e.folder {
         Folder::Outbox => match e.waiting.as_ref().filter(|w| w.attempts > 0) {
-            Some(w) => format!("waiting (tried {}x: {})", w.attempts, w.last_error.as_deref().unwrap_or("")),
+            Some(w) => format!(
+                "waiting (tried {}x: {})",
+                w.attempts,
+                w.last_error.as_deref().unwrap_or("")
+            ),
             None => "waiting".into(),
         },
         Folder::Sent => match e.done.as_ref().and_then(|d| d.answer.as_ref()) {
@@ -60,7 +69,10 @@ fn describe(e: &Entry) -> String {
         },
         Folder::Rejected => format!(
             "not sent: {}",
-            e.done.as_ref().and_then(|d| d.error.as_deref()).unwrap_or("refused")
+            e.done
+                .as_ref()
+                .and_then(|d| d.error.as_deref())
+                .unwrap_or("refused")
         ),
     };
     let lap = if valid { "" } else { " (invalid lap)" };
@@ -82,7 +94,9 @@ fn list(store: &Store) {
         println!("no Time Trial laps yet");
     }
     if token(&store.root, &store.config()).is_none() {
-        println!("Time Trial boards uploads are off: sign in with Discord and leave Time Trial boards on in Settings");
+        println!(
+            "Time Trial boards uploads are off: sign in with Discord and leave Time Trial boards on in Settings"
+        );
     }
 }
 
@@ -94,7 +108,9 @@ fn fingerprint(store: &Store, profile: &str, identity: &Identity) -> Option<Valu
 
 fn send(store: &Store, profile: &str, file: Option<PathBuf>) -> Result<()> {
     let Some(token) = token(&store.root, &store.config()) else {
-        bail!("Time Trial boards is off or you are not signed in: sign in with Discord in the launcher and turn Time Trial boards on in Settings");
+        bail!(
+            "Time Trial boards is off or you are not signed in: sign in with Discord in the launcher and turn Time Trial boards on in Settings"
+        );
     };
     let api = Api::new(&token);
     let print = crate::build::game(store, None)
@@ -118,7 +134,10 @@ fn send(store: &Store, profile: &str, file: Option<PathBuf>) -> Result<()> {
             let report = queue.drain(
                 &api,
                 &print,
-                Limits { ignore_backoff: true, ..Limits::at(unix_now()) },
+                Limits {
+                    ignore_backoff: true,
+                    ..Limits::at(unix_now())
+                },
                 &mut |e| println!("{}", upload::line(&e)),
             );
             println!(
@@ -130,7 +149,12 @@ fn send(store: &Store, profile: &str, file: Option<PathBuf>) -> Result<()> {
     Ok(())
 }
 
-pub fn begin(store: &Store, config: &swofty_core::session::Config, profile: &str, g: &Game) -> Option<Watcher> {
+pub fn begin(
+    store: &Store,
+    config: &swofty_core::session::Config,
+    profile: &str,
+    g: &Game,
+) -> Option<Watcher> {
     let Some(_) = token(&store.root, config) else {
         timetrial::clear_session_keys(&g.dir);
         return None;

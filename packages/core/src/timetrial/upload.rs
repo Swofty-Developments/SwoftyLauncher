@@ -55,7 +55,11 @@ pub fn sweep(
         Some(api) => queue.drain(
             api,
             fingerprint.unwrap_or(&Value::Null),
-            Limits { now, deadline, ignore_backoff: false },
+            Limits {
+                now,
+                deadline,
+                ignore_backoff: false,
+            },
             on,
         ),
         None => Report {
@@ -68,7 +72,14 @@ pub fn sweep(
 /// The pass the launcher makes when it starts, for laps a session left queued.
 pub fn flush(data: &Path, config: &Config) -> Report {
     let api = token(data, config).map(|t| Api::new(&t));
-    sweep(data, None, api.as_ref().map(|a| a as &dyn Boards), None, None, &mut |_| {})
+    sweep(
+        data,
+        None,
+        api.as_ref().map(|a| a as &dyn Boards),
+        None,
+        None,
+        &mut |_| {},
+    )
 }
 
 /// Sweeps while the game runs. [`Watcher::finish`] makes the last sweep, with a few seconds at most.
@@ -141,8 +152,10 @@ impl Watcher {
 }
 
 fn has_laps(game: &Path) -> bool {
-    std::fs::read_dir(laps_dir(game))
-        .is_ok_and(|d| d.filter_map(Result::ok).any(|e| e.path().extension().is_some_and(|x| x == "swlap")))
+    std::fs::read_dir(laps_dir(game)).is_ok_and(|d| {
+        d.filter_map(Result::ok)
+            .any(|e| e.path().extension().is_some_and(|x| x == "swlap"))
+    })
 }
 
 fn has_outbox(data: &Path) -> bool {
@@ -186,7 +199,11 @@ mod tests {
             reasons: vec![],
             url: None,
         };
-        let e = Event::Uploaded { name: "a".into(), time_ms: 91234, answer };
+        let e = Event::Uploaded {
+            name: "a".into(),
+            time_ms: 91234,
+            answer,
+        };
         assert_eq!(line(&e), "uploaded 91234 ms -> P12 (ranked)");
     }
 
@@ -197,7 +214,14 @@ mod tests {
         let laps = laps_dir(&root.join("game"));
         std::fs::create_dir_all(&laps).unwrap();
         std::fs::write(laps.join("a.swlap"), crate::timetrial::swlap::sample(1, true)).unwrap();
-        let r = sweep(&root.join("data"), Some(&root.join("game")), None, None, None, &mut |_| {});
+        let r = sweep(
+            &root.join("data"),
+            Some(&root.join("game")),
+            None,
+            None,
+            None,
+            &mut |_| {},
+        );
         assert_eq!((r.uploaded, r.waiting), (0, 1));
         assert!(!laps.join("a.swlap").exists());
         assert_eq!(Queue::new(&root.join("data")).list(Folder::Outbox).len(), 1);

@@ -650,7 +650,18 @@ fn run_loop(
             return Ok(ExitCode::FAILURE);
         }
         rebuild_if_needed(store, &profile, &game);
-        let code = play(store, args, config, request, &profile, g, installed, restarted)?;
+        let code = play(
+            store,
+            args,
+            config,
+            request,
+            g,
+            installed,
+            Round {
+                profile: &profile,
+                restarted,
+            },
+        )?;
         let relaunch = match store.merge_requests(&profile, true) {
             Ok(Some(m)) => {
                 for c in &m.changed {
@@ -707,16 +718,21 @@ fn written_within(path: &Path, max: Duration) -> bool {
         .is_some_and(|age| age <= max)
 }
 
+struct Round<'a> {
+    profile: &'a str,
+    restarted: bool,
+}
+
 fn play(
     store: &Store,
     args: &RunArgs,
     config: &Config,
     request: &LaunchRequest,
-    profile: &str,
     g: &Game,
     installed: Option<Instant>,
-    restarted: bool,
+    round: Round,
 ) -> Result<i32> {
+    let Round { profile, restarted } = round;
     let game = g.dir.as_path();
     let placed_loader = check_loader(store, game, installed).map_err(Refused)?;
     // The profile build and the offline play download before the first

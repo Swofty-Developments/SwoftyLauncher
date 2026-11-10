@@ -270,7 +270,9 @@ mod tests {
     fn refuses_a_token_over_plain_http() {
         let e = Api::with_server("http://10.0.0.5:1", "t").sessions().unwrap_err();
         assert!(e.message.contains("plain http"));
-        let e = Api::with_server("http://127.0.0.1:1", "t").sessions().unwrap_err();
+        let e = Api::with_server("http://127.0.0.1:1", "t")
+            .sessions()
+            .unwrap_err();
         assert!(e.message.contains("couldn't reach"));
     }
 
@@ -279,7 +281,9 @@ mod tests {
         use std::io::Read;
         let packed = gzip(b"SWLAP lap bytes").unwrap();
         let mut out = Vec::new();
-        flate2::read::GzDecoder::new(&packed[..]).read_to_end(&mut out).unwrap();
+        flate2::read::GzDecoder::new(&packed[..])
+            .read_to_end(&mut out)
+            .unwrap();
         assert_eq!(out, b"SWLAP lap bytes");
     }
 
@@ -299,14 +303,21 @@ mod tests {
                 if let Some(h) = text.find("\r\n\r\n") {
                     let len = text[..h]
                         .lines()
-                        .find_map(|l| l.to_ascii_lowercase().strip_prefix("content-length: ").and_then(|v| v.trim().parse::<usize>().ok()))
+                        .find_map(|l| {
+                            l.to_ascii_lowercase()
+                                .strip_prefix("content-length: ")
+                                .and_then(|v| v.trim().parse::<usize>().ok())
+                        })
                         .unwrap_or(0);
                     if got.len() >= h + 4 + len {
                         break;
                     }
                 }
             }
-            let reply = format!("HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}", body.len());
+            let reply = format!(
+                "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                body.len()
+            );
             c.write_all(reply.as_bytes()).unwrap();
             got
         });
@@ -317,7 +328,9 @@ mod tests {
     fn uploads_a_lap_as_multipart_with_the_bearer_token() {
         let (url, t) = serve("200 OK", r#"{"id":"l1","status":"ranked","rank":4,"best":true}"#);
         let meta = Meta::new(Some("n0nce".into()), serde_json::json!({"digest": "d"}));
-        let got = Api::with_server(&url, "tok").upload(b"SWLAP-bytes", &meta).unwrap();
+        let got = Api::with_server(&url, "tok")
+            .upload(b"SWLAP-bytes", &meta)
+            .unwrap();
         assert_eq!((got.id.as_str(), got.rank), ("l1", Some(4)));
         let request = String::from_utf8_lossy(&t.join().unwrap()).into_owned();
         assert!(request.starts_with("POST /v1/tt/laps HTTP/1.1"));
@@ -335,8 +348,13 @@ mod tests {
         assert_eq!((n.nonce.as_str(), n.expires), ("abcd", 99));
         t.join().unwrap();
         let (url, t) = serve("429 Too Many Requests", r#"{"error":"slow down"}"#);
-        let e = Api::with_server(&url, "tok").upload(b"x", &Meta::new(None, Value::Null)).unwrap_err();
-        assert_eq!((e.status, e.message.as_str(), e.transient()), (429, "slow down", true));
+        let e = Api::with_server(&url, "tok")
+            .upload(b"x", &Meta::new(None, Value::Null))
+            .unwrap_err();
+        assert_eq!(
+            (e.status, e.message.as_str(), e.transient()),
+            (429, "slow down", true)
+        );
         t.join().unwrap();
     }
 }

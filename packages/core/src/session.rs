@@ -987,7 +987,11 @@ mod tests {
     fn time_trial_boards_is_on_unless_turned_off() {
         assert!(Config::default().time_trial_boards);
         assert!(serde_json::from_str::<Config>("{}").unwrap().time_trial_boards);
-        assert!(!serde_json::to_string(&Config::default()).unwrap().contains("time_trial"));
+        assert!(
+            !serde_json::to_string(&Config::default())
+                .unwrap()
+                .contains("time_trial")
+        );
         let off = Config {
             time_trial_boards: false,
             ..Config::default()

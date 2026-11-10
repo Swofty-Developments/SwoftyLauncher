@@ -42,7 +42,13 @@ pub fn multipart(fields: &[Field]) -> (String, Vec<u8>) {
     };
     let mut body = Vec::new();
     for f in fields {
-        body.extend_from_slice(format!("--{boundary}\r\nContent-Disposition: form-data; name=\"{}\"", f.name).as_bytes());
+        body.extend_from_slice(
+            format!(
+                "--{boundary}\r\nContent-Disposition: form-data; name=\"{}\"",
+                f.name
+            )
+            .as_bytes(),
+        );
         if let Some(file) = f.file_name {
             let file = file.replace(['"', '\r', '\n'], "_");
             body.extend_from_slice(format!("; filename=\"{file}\"").as_bytes());
@@ -72,8 +78,18 @@ mod tests {
     #[test]
     fn builds_a_multipart_body_with_a_free_boundary() {
         let (ct, body) = multipart(&[
-            Field { name: "meta", file_name: None, content_type: "application/json", data: b"{}" },
-            Field { name: "lap", file_name: Some("a\"b.swlap"), content_type: "application/octet-stream", data: b"SWLAP" },
+            Field {
+                name: "meta",
+                file_name: None,
+                content_type: "application/json",
+                data: b"{}",
+            },
+            Field {
+                name: "lap",
+                file_name: Some("a\"b.swlap"),
+                content_type: "application/octet-stream",
+                data: b"SWLAP",
+            },
         ]);
         let boundary = ct.strip_prefix("multipart/form-data; boundary=").unwrap();
         let text = String::from_utf8(body).unwrap();

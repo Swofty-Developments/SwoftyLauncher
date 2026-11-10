@@ -201,7 +201,10 @@ mod tests {
         assert_eq!(read(&ok).unwrap().lap.time_ms, 5);
         let bad = dir.join("b.swlap");
         std::fs::write(&bad, b"xx").unwrap();
-        assert!(matches!(read(&bad), Err(ReadError::Unreadable(Unreadable::TooShort))));
+        assert!(matches!(
+            read(&bad),
+            Err(ReadError::Unreadable(Unreadable::TooShort))
+        ));
         assert!(matches!(read(&dir.join("none")), Err(ReadError::Io(_))));
         std::fs::remove_dir_all(&dir).ok();
     }

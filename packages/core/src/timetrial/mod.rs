@@ -91,17 +91,27 @@ mod tests {
         let game = std::env::temp_dir().join(format!("swofty-ttk-{}", std::process::id()));
         std::fs::remove_dir_all(&game).ok();
         write_session_keys(&game, Some("abc")).unwrap();
-        let doc: serde_json::Value = serde_json::from_slice(&std::fs::read(game.join(SESSION_FILE)).unwrap()).unwrap();
+        let doc: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(game.join(SESSION_FILE)).unwrap()).unwrap();
         assert_eq!(doc, serde_json::json!({"tt_boards": true, "tt_nonce": "abc"}));
         clear_session_keys(&game);
         assert!(!game.join(SESSION_FILE).exists());
 
-        std::fs::write(game.join(SESSION_FILE), r#"{"game_log":{"level":"warn"},"tt_nonce":"old"}"#).unwrap();
+        std::fs::write(
+            game.join(SESSION_FILE),
+            r#"{"game_log":{"level":"warn"},"tt_nonce":"old"}"#,
+        )
+        .unwrap();
         write_session_keys(&game, None).unwrap();
-        let doc: serde_json::Value = serde_json::from_slice(&std::fs::read(game.join(SESSION_FILE)).unwrap()).unwrap();
-        assert_eq!(doc, serde_json::json!({"game_log":{"level":"warn"},"tt_boards": true}));
+        let doc: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(game.join(SESSION_FILE)).unwrap()).unwrap();
+        assert_eq!(
+            doc,
+            serde_json::json!({"game_log":{"level":"warn"},"tt_boards": true})
+        );
         clear_session_keys(&game);
-        let doc: serde_json::Value = serde_json::from_slice(&std::fs::read(game.join(SESSION_FILE)).unwrap()).unwrap();
+        let doc: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(game.join(SESSION_FILE)).unwrap()).unwrap();
         assert_eq!(doc, serde_json::json!({"game_log":{"level":"warn"}}));
         std::fs::remove_dir_all(&game).ok();
     }
