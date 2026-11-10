@@ -194,7 +194,7 @@ impl Shell {
                 .p(px(18.))
                 .text_size(px(13.))
                 .text_color(p.text_muted)
-                .child(tr("No ranked drivers yet."))
+                .child(tr("No drivers yet."))
                 .into_any_element()
         } else {
             let handle = self.online.handles.entry(scope.to_owned()).or_default().clone();
@@ -485,7 +485,7 @@ impl Shell {
                             div()
                                 .text_size(px(12.))
                                 .text_color(p.text_placeholder)
-                                .child(tr("No ranked time yet")),
+                                .child(tr("No time yet")),
                         )
                     }),
             )

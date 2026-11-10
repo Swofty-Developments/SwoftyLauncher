@@ -358,7 +358,6 @@ impl BoardsApi for MockBoards {
                     sectors_ms: vec![s1, s2, time - s1 - s2],
                     car: Some(["ferrari sf-22", "mercedes w13", "red bull rb18"][d % 3].to_owned()),
                     date: format!("2026-11-{:02}T04:10:11Z", 10 - (d % 9)),
-                    verified: place != 4,
                     setup: (place % 5 != 4).then(|| mock_setup(d, s)),
                 }
             })

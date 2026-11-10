@@ -147,7 +147,7 @@ impl Shell {
                                         div()
                                             .text_size(px(13.))
                                             .text_color(p.text_muted)
-                                            .child(tr("No ranked laps yet.")),
+                                            .child(tr("No laps yet.")),
                                     )
                                 }),
                         ),

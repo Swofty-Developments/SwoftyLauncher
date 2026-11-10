@@ -7,7 +7,7 @@ use crate::shell::Shell;
 use crate::theme::{Palette, ScrollArea};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
+use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_i18n::tr;
@@ -187,8 +187,6 @@ impl Shell {
                 .child(label)
                 .on_click(cx.listener(move |this, _, _, cx| this.online_set_filter(f.clone(), cx)))
         };
-        let mut ranked = f.clone();
-        ranked.ranked_only = !f.ranked_only;
         let mut assists = f.clone();
         assists.assists_off = !f.assists_off;
         let mut wheel = f.clone();
@@ -196,7 +194,6 @@ impl Shell {
         h_flex()
             .gap(px(8.))
             .items_center()
-            .child(chip("f-ranked", tr("Ranked only"), f.ranked_only, ranked, cx))
             .child(chip("f-assists", tr("No assists"), f.assists_off, assists, cx))
             .child(chip("f-wheel", tr("Wheel"), f.wheel, wheel, cx))
             .child(
@@ -258,13 +255,6 @@ impl Shell {
                             .font_weight(FontWeight::MEDIUM)
                             .child(r.driver.name.clone()),
                     )
-                    .when(r.verified, |d| {
-                        d.child(
-                            Icon::new(IconName::ShieldCheck)
-                                .size(px(14.))
-                                .text_color(p.success),
-                        )
-                    })
                     .when(mine, |d| d.child(chip(tr("YOU"), p)))
                     .on_click(
                         cx.listener(move |this, _, _, cx| {

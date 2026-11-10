@@ -238,8 +238,6 @@ struct BoardRowDto {
     #[serde(default)]
     set_at: String,
     #[serde(default)]
-    verification: String,
-    #[serde(default)]
     setup: Option<serde_json::Value>,
 }
 
@@ -285,7 +283,6 @@ fn row(r: BoardRowDto) -> Row {
         sectors_ms: r.sectors_ms,
         car: r.car_label.filter(|c| !c.is_empty()),
         date: r.set_at,
-        verified: r.verification == "verified",
         setup: r.setup.as_ref().and_then(setup_of),
     }
 }
@@ -609,9 +606,6 @@ impl BoardsApi for HttpBoards {
             encode(&key.weather)
         );
         path.push_str("&setup=1");
-        if filter.ranked_only {
-            path.push_str("&ranked=1");
-        }
         if filter.assists_off {
             path.push_str("&assists=none");
         }
@@ -762,7 +756,7 @@ mod tests {
         let board: BoardDto = serde_json::from_str(r##"{"content": "swofty.swofty-seasons-2016/sw_2016", "track": "suzuka", "weather": "dry", "name": "swofty.swofty-seasons-2016/sw_2016", "track_name": "Suzuka Circuit", "country": "jp", "custom": false, "track_addon": null, "key": "swofty.swofty-seasons-2016/sw_2016|suzuka|dry", "layout": null, "filters": {"assists": null, "device": null, "ranked": false}, "devices": [], "total": 1, "limit": 50, "offset": 0, "record": null, "rows": [{"rank": 1, "lap_id": "11c96143c8aa631d", "user": {"id": "42", "name": "Swofty", "avatar": null}, "time_ms": 88106, "sectors_ms": [31583, 38881, 17641], "car": {"team": "sw16_ferrari"}, "assists": {"brk": 0, "abs": 1, "trc": 2, "drl": 2, "gbx": 3, "ers": 0, "input": 3}, "set_at": "2026-11-10T07:09:29Z", "status": "unranked", "gap_ms": 0, "gap_pct": 0.0, "car_label": "sw16_ferrari", "input": null, "verification": "unverified", "has_replay": true}], "history": [{"lap_id": "421f3a7eece3a234", "time_ms": 88117, "set_at": "2026-11-10T06:19:01Z", "user": {"id": "42", "name": "Swofty", "avatar": null}, "improved_ms": null}, {"lap_id": "11c96143c8aa631d", "time_ms": 88106, "set_at": "2026-11-10T07:09:29Z", "user": {"id": "42", "name": "Swofty", "avatar": null}, "improved_ms": 11}]}"##).unwrap();
         assert_eq!(board.rows.len(), 1);
         assert_eq!(board.rows[0].time_ms, 88106);
-        assert!(!row(board.rows.into_iter().next().unwrap()).verified);
+        assert_eq!(row(board.rows.into_iter().next().unwrap()).rank, 1);
         let overview: OverviewDto = serde_json::from_str(r##"{"generated": "2026-11-10T08:11:54Z", "scoring": {"min_field": 3, "pace_scale": 0.015, "pace_share": 0.7, "full_field": 10}, "seasons": [], "global": {"total": 0, "rows": []}, "custom": {"tracks": []}}"##).unwrap();
         assert!(overview.seasons.is_empty() && overview.global.rows.is_empty());
     }

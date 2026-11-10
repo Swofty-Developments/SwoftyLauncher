@@ -229,7 +229,6 @@ pub struct Row {
     pub sectors_ms: Vec<u64>,
     pub car: Option<String>,
     pub date: String,
-    pub verified: bool,
     pub setup: Option<Setup>,
 }
 
@@ -242,14 +241,13 @@ pub struct HistoryPoint {
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Filter {
-    pub ranked_only: bool,
     pub assists_off: bool,
     pub wheel: bool,
 }
 
 impl Filter {
     pub fn any(&self) -> bool {
-        self.ranked_only || self.assists_off || self.wheel
+        self.assists_off || self.wheel
     }
 }
 
@@ -649,7 +647,6 @@ mod tests {
             sectors_ms: s,
             car: None,
             date: String::new(),
-            verified: true,
             setup: None,
         };
         let rows = [row(vec![30, 31, 32]), row(vec![29, 33, 31])];
