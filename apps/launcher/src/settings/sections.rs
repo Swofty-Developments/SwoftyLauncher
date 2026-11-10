@@ -70,7 +70,7 @@ impl Shell {
             )
             .row(
                 SettingRow::new(tr("Time Trial boards"))
-                    .description(tr("Upload your Time Trial laps to the Swofty leaderboards."))
+                    .description(tr("Upload your Time Trial laps to the Swofty leaderboards. Ranked laps load a closed-source integrity module from Swofty's server."))
                     .control(time_trial),
             )
             .into_any_element()
