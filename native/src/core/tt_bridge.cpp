@@ -129,6 +129,8 @@ const runtime::Sig S_WRITE_READY{"FUN_142fa0100_LeaderboardWriteReady",
         "56 57 53 48 83 EC 20 48 89 CF 48 8B 41 10 48 8B 40 40 48 8B 80 40 01 00 00 48 8B 80", 0x2fa0100};
 const runtime::Sig S_WRITE_TOKEN{"site_Game_GhostLapHandler_Update_SessionTokenTest",
         "80 B9 90 00 02 00 00 74 14 48 8B 89 50 01 02 00 48 85 C9 74 08 80 39 00 0F 95 C1 EB 02 31 C9 40 20 DF 40 80 FF 01", 0x2f99099, runtime::Sig::addr, 0, 31};
+const runtime::Sig S_READER_FAIL{"Game_LeaderboardReader_OnTaskCancelledOrFailed",
+        "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 02 00 00 C5 F8 29 B4 24 30 02 00 00 48 89 D6 48 89 CF 80 3D", 0x2fc0ed0};
 const runtime::Sig S_PRIV_GATE{"site_Game_UIUIPrivilegeCheckControl_HandleSignal_Result",
         "41 80 BE AB 00 00 00 00 0F 84 8C 00 00 00 45 84 FF 0F 84 8D 00 00 00", 0x3822cdf, runtime::Sig::addr, 0, 8};
 constexpr uintptr_t TS_FLAG_GLOBAL_A = 0, TS_FLAG_GLOBAL_B = 17;
@@ -164,7 +166,7 @@ std::atomic<int> hits_upload{0}, hits_download{0}, hits_racenet{0};
 std::vector<std::string> seen_methods;
 
 bool diag_on = false;
-safetyhook::MidHook h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
+safetyhook::MidHook h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
 
 struct GateHook {
     uintptr_t at = 0, resume = 0, session_global = 0;
@@ -635,8 +637,9 @@ void session_enter_mid(safetyhook::Context &c)
         std::lock_guard<std::mutex> lk(lock);
         code = session_code;
     }
-    swofty::log("[boards] diag: ghost lap storage system 0x%llx onSessionEnter (handler before: 0x%llx), session track '%s', content '%s', custom track %d",
-                (unsigned long long)c.rcx, (unsigned long long)peek64(c.rcx + 0x278), code.c_str(), current_content().c_str(), session_custom.load() ? 1 : 0);
+    if (diag_on)
+        swofty::log("[boards] diag: ghost lap storage system 0x%llx onSessionEnter (handler before: 0x%llx), session track '%s', content '%s', custom track %d",
+                    (unsigned long long)c.rcx, (unsigned long long)peek64(c.rcx + 0x278), code.c_str(), current_content().c_str(), session_custom.load() ? 1 : 0);
 }
 
 void session_lookup_tick()
@@ -785,6 +788,15 @@ void write_token_mid(safetyhook::Context &c)
                     board.c_str());
 }
 
+void reader_fail_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> logged{0};
+    if (++logged > 16)
+        return;
+    swofty::log("[boards] leaderboard reader task cancelled or failed (this raises leaderboard_fail, which disables the garage panel): reader 0x%llx, args 0x%llx 0x%llx 0x%llx; backtrace %s",
+                (unsigned long long)c.rcx, (unsigned long long)c.rdx, (unsigned long long)c.r8, (unsigned long long)c.r9, backtrace_text(1, 6).c_str());
+}
+
 void select_board_mid(safetyhook::Context &c)
 {
     uint64_t kp = peek64(c.rsp + 0x38);
@@ -817,6 +829,38 @@ void select_board_mid(safetyhook::Context &c)
                 same_descriptor, prefix.c_str(), sample.empty() ? "none" : sample.c_str());
 }
 
+std::string watch_seen;
+int32_t last_state = -1;
+
+void handler_watch(uint64_t handler, const std::string &board)
+{
+    auto b = [&](uint64_t off) { return unsigned(peek32(handler + off) & 0xff); };
+    auto w = [&](uint64_t off) { return unsigned(peek32(handler + off)); };
+    uint64_t finder = peek64(handler + 0x508);
+    int32_t state = int32_t(w(0x1d8));
+    char t[360];
+    snprintf(t, sizeof t,
+             "entry state %d (0 reading, 1 entry known, 2 entry unusable, 4 no entry), tasks %u/%u/%u/%u, download %u, flags 60..66 %u %u %u %u %u %u %u, pb pending %u, "
+             "pb ms %d, entry ms %d, finder state %d",
+             state, w(0x1d0), w(0x1d4), w(0x130), w(0x134), w(0x138), b(0x60), b(0x61), b(0x62), b(0x63), b(0x64), b(0x65), b(0x66), b(0x65), int(w(0x1b0)), int(w(0x258)),
+             finder ? int(peek32(finder + 0xa0)) : -1);
+    bool ours = false;
+    tb::BoardName bn = tb::parse_board(board);
+    ours = bridge_on && bn.ok && tb::ours(bn.descriptor, content_ours());
+    if (ours && state == 4 && !env_off("SWOFTY_TT_EMPTY_BOARD", "treating a board without an entry as a first lap")) {
+        *reinterpret_cast<uint32_t *>(handler + 0x1d8) = 1;
+        swofty::log("[boards] handler 0x%llx board %s: the board has no entry for the player (state 4); treated as a known empty entry (state 1) so the first lap is submitted",
+                    (unsigned long long)handler, board.c_str());
+        state = 1;
+    }
+    if (state != last_state || watch_seen != t) {
+        last_state = state;
+        watch_seen = t;
+        if (diag_on)
+            swofty::log("[boards] diag: handler 0x%llx board %s: %s", (unsigned long long)handler, board.c_str(), t);
+    }
+}
+
 void diag_tick()
 {
     session_lookup_tick();
@@ -824,17 +868,20 @@ void diag_tick()
     if (!sys)
         return;
     uint64_t handler = peek64(sys + 0x278);
-    if (handler == diag_handler_seen)
-        return;
-    diag_handler_seen = handler;
     std::string name;
     if (handler) {
         uint64_t ctx = peek64(handler + 0x58);
         uint64_t np = ctx ? peek64(ctx + 0x68) : 0;
         name = np ? tb::read_c(game_mem(), np) : std::string();
+        if (runtime::readable(reinterpret_cast<void *>(handler), 0x520))
+            handler_watch(handler, name);
     }
-    swofty::log("[boards] diag: ghost lap handler of storage system 0x%llx is now 0x%llx%s%s", (unsigned long long)sys, (unsigned long long)handler,
-                name.empty() ? "" : ", board ", name.c_str());
+    if (handler == diag_handler_seen)
+        return;
+    diag_handler_seen = handler;
+    if (diag_on)
+        swofty::log("[boards] diag: ghost lap handler of storage system 0x%llx is now 0x%llx%s%s", (unsigned long long)sys, (unsigned long long)handler,
+                    name.empty() ? "" : ", board ", name.c_str());
 }
 
 bool section_of(const char *want, const uint8_t **begin, size_t *size)
@@ -971,6 +1018,9 @@ void setup()
             if (uintptr_t at = runtime::find(S_WRITE_TOKEN, "boards", "boards"))
                 if (hook_mid(h_write_token, at, write_token_mid, "personal best write session token test"))
                     swofty::log("[boards] personal best write token test hooked at base+0x%llx (our boards count as signed in)", (unsigned long long)(at - swofty::api->module_base()));
+        if (uintptr_t at = runtime::find(S_READER_FAIL, "boards", "boards"))
+            if (hook_mid(h_reader_fail, at, reader_fail_mid, "leaderboard reader failure"))
+                swofty::log("[boards] leaderboard reader failure logged at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
         if (uintptr_t at = runtime::find(S_SELECT_BOARD, "boards", "boards"))
             if (hook_mid(h_select, at, select_board_mid, "leaderboard screen board lookup"))
                 swofty::log("[boards] leaderboard screen board lookup logged at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
@@ -994,10 +1044,11 @@ void setup()
                 swofty::log("[boards] account-state error handler hooked at base+0x%llx (%s)", (unsigned long long)(at - swofty::api->module_base()),
                             bridge_on ? "its popups are not shown for addon content" : "diagnostics only");
     if (diag_on) {
+    }
+    if (bridge_on || diag_on)
         if (uintptr_t at = runtime::find(S_SESSION_ENTER, "boards", "boards"))
             if (hook_mid(h_session_enter, at, session_enter_mid, "storage system session enter"))
-                swofty::log("[boards] diag: storage system onSessionEnter hooked at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
-    }
+                swofty::log("[boards] storage system onSessionEnter hooked at base+0x%llx (handler watch)", (unsigned long long)(at - swofty::api->module_base()));
 
     char xv[8] = {};
     DWORD xn = GetEnvironmentVariableA("SWOFTY_TT_BOARD_XML", xv, sizeof xv);
@@ -1111,7 +1162,7 @@ namespace runtime {
 
 void tt_bridge_tick()
 {
-    if (diag_on)
+    if (diag_on || bridge_on)
         diag_tick();
     if (track_watch.load(std::memory_order_relaxed)) {
         int64_t t = now_ms();
