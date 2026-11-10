@@ -158,6 +158,9 @@ const runtime::Sig S_GARAGE_TAB_FLAGS{"site_Game_GarageMonitorPanel_BuildTabs_le
 const runtime::Sig S_GARAGE_TAB_GATE{"site_Game_GarageMonitorPanel_BuildTabs_gate_byte_141f7208e", "80 B9 80 00 00 00 00 0F 84 ?? ?? ?? ?? 83 FD 12 0F 85 ?? ?? ?? ??", 0x1f7208e};
 const runtime::Sig S_REPLAY_TICK{"Ne_ReplaySystem_ResetSlot24_1445d57e0", "56 48 83 EC 20 80 B9 89 00 00 00 00 0F 84 90 00 00 00 48 89 CE 80 3D", 0x45d57e0};
 const runtime::Sig S_REPLAY_TICK17{"Ne_ReplaySystem_ResetSlot17_1445d5b90", "56 48 83 EC 20 80 B9 89 00 00 00 00 74 5F 48 89 CE 80 3D 1C 5F A7 01 01 75 6C", 0x45d5b90};
+const runtime::Sig S_REPLAY_UPDATE{"Game_ReplaySystem_UpdateFromModule_1445d6040",
+        "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 78 29 AC 24 C0 00 00 00 C5 78 29 A4 24 B0 00 00 00 C5 78 29", 0x45d6040};
+const runtime::Sig S_REPLAY_FRAME{"Game_ReplayBuffer_BeginFrameWrite_1445c4b20", "41 56 56 57 53 48 83 EC 68 C5 F8 29 74 24 50 C5 F9 6F F1 48 89 CE 80 79 51 00 74 30", 0x45c4b20};
 const runtime::Sig S_REPLAY_SAVE{"Game_ReplayManager_SaveFullReplay_142c46880", "41 56 56 57 53 48 81 EC 38 02 00 00 80 B9 E1 06 00 00 00 74 46 48 89 CE 48 83 B9 50 01 00 00 00", 0x2c46880};
 const runtime::Sig S_REPLAY_PATH{"Game_ReplayManager_BuildSavePath_142c48860", "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 05 00 00 48 89 D6 48 89 CB 48 8D 79 20", 0x2c48860};
 const runtime::Sig S_GARAGE_BUILD{"Game_GarageMonitorPanel_BuildTabs_141f71fa0",
@@ -203,7 +206,7 @@ bool diag_on = false;
 bool replay_capture_on = false;
 std::atomic<int64_t> replay_pending_ms{0};
 std::atomic<uint32_t> replay_pending_lap{0};
-safetyhook::MidHook h_garage_done, h_garage_cmd, h_garage_update, h_tab_block, h_tab_flags, h_tab_friends, h_tab_build, h_tab_gate, h_replay_tick, h_replay_tick17, h_replay_save, h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
+safetyhook::MidHook h_garage_done, h_garage_cmd, h_garage_update, h_tab_block, h_tab_flags, h_tab_friends, h_tab_build, h_tab_gate, h_replay_tick, h_replay_tick17, h_replay_update, h_replay_frame, h_replay_save, h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
 
 struct GateHook {
     uintptr_t at = 0, resume = 0, session_global = 0;
@@ -1115,10 +1118,14 @@ void replay_watch(std::wstring path, uint32_t lap_ms, uint64_t stamp)
     swofty::log("[replay] capture: the game's save %s did not appear within 180 s", narrow(path.c_str()).c_str());
 }
 
+std::atomic<uint64_t> replay_system_ptr{0};
+
 void replay_save_entry_mid(safetyhook::Context &c)
 {
     static std::atomic<int> logged{0};
     replay_system_seen = c.rcx;
+    if (runtime::readable(reinterpret_cast<void *>(c.rcx), 8) && peek64(c.rcx) == swofty::api->module_base() + GAME_REPLAY_SYSTEM_VTABLE_RVA)
+        replay_system_ptr = c.rcx;
     if (++logged <= 6)
         swofty::log("[replay] the game started ReplayManager::SaveFullReplay on 0x%llx, path %s", (unsigned long long)c.rcx,
                     runtime::readable(reinterpret_cast<void *>(c.rdx), 2) ? narrow(reinterpret_cast<const wchar_t *>(c.rdx)).c_str() : "?");
@@ -1141,18 +1148,26 @@ void replay_lap_finished(int64_t lap_ms, int valid)
     replay_pending_ms = now_ms();
 }
 
-void replay_tick(safetyhook::Context &c, const char *slot)
+// `sys` is the candidate replay system. The per-frame ReplayBuffer::beginFrameWrite hook has no replay system in a register (rcx is the
+// buffer), so it passes 0 and the last GameReplaySystem a hook verified is used; the vtable word is checked again on every use.
+void replay_tick(uint64_t sys, const char *slot)
 {
-    static std::atomic<uint64_t> entries{0}, ours_entries{0};
+    static std::atomic<uint64_t> entries[4]{}, ours_entries[4]{};
     static std::atomic<int> guard_logs{0};
-    uint64_t sys = c.rcx, n = ++entries;
+    int which = !strcmp(slot, "vslot24") ? 0 : !strcmp(slot, "vslot17") ? 1 : !strcmp(slot, "updateFromModule") ? 2 : 3;
+    uint64_t n = ++entries[which];
     uintptr_t base = swofty::api->module_base();
-    bool vt_ok = runtime::readable(reinterpret_cast<void *>(sys), 8) && peek64(sys) == base + GAME_REPLAY_SYSTEM_VTABLE_RVA;
-    if (vt_ok)
-        ours_entries++;
+    uint64_t known = replay_system_ptr.load();
+    if (!sys)
+        sys = known;
+    bool vt_ok = sys && runtime::readable(reinterpret_cast<void *>(sys), 8) && peek64(sys) == base + GAME_REPLAY_SYSTEM_VTABLE_RVA;
+    if (vt_ok) {
+        ours_entries[which]++;
+        replay_system_ptr = sys;
+    }
     if (n <= 5 || n % 20000 == 0)
         swofty::log("[replay] tick %s entry %llu (replay system 0x%llx, GameReplaySystem vtable %s, %llu such entries); pending mark %lld", slot, (unsigned long long)n, (unsigned long long)sys,
-                    vt_ok ? "yes" : "no", (unsigned long long)ours_entries.load(), (long long)replay_pending_ms.load());
+                    vt_ok ? "yes" : "no", (unsigned long long)ours_entries[which].load(), (long long)replay_pending_ms.load());
     int64_t pending = replay_pending_ms.load();
     if (!vt_ok || !tb::replay_capture_due(pending, now_ms(), REPLAY_SAVE_DELAY_MS))
         return;
@@ -1185,8 +1200,51 @@ void replay_tick(safetyhook::Context &c, const char *slot)
     }
 }
 
-void replay_tick_mid(safetyhook::Context &c) { replay_tick(c, "vslot24"); }
-void replay_tick17_mid(safetyhook::Context &c) { replay_tick(c, "vslot17"); }
+void replay_tick_mid(safetyhook::Context &c) { replay_tick(c.rcx, "vslot24"); }
+void replay_tick17_mid(safetyhook::Context &c) { replay_tick(c.rcx, "vslot17"); }
+void replay_update_mid(safetyhook::Context &c) { replay_tick(c.rcx, "updateFromModule"); }
+// Finds a GameReplaySystem reachable from the replay buffer by plain reads: every qword of the buffer's first 0x200 bytes that is a readable
+// user-space pointer is checked for the system's vtable word, and so is every qword of the first 0x100 bytes behind such a pointer. Only
+// readable() guarded 8-byte reads; no calls. Runs once per buffer object.
+uint64_t replay_find_system(uint64_t buffer, std::string &how)
+{
+    uintptr_t want = swofty::api->module_base() + GAME_REPLAY_SYSTEM_VTABLE_RVA;
+    auto user = [](uint64_t p) { return p > 0x10000 && p < 0x7fffffffffffull && (p & 7) == 0; };
+    for (uint64_t o = 0; o < 0x200; o += 8) {
+        uint64_t p = peek64(buffer + o);
+        if (!user(p) || !runtime::readable(reinterpret_cast<void *>(p), 8))
+            continue;
+        if (peek64(p) == want) {
+            how = "buffer+0x" + std::to_string(o);
+            return p;
+        }
+        if (!runtime::readable(reinterpret_cast<void *>(p), 0x100))
+            continue;
+        for (uint64_t o2 = 0; o2 < 0x100; o2 += 8) {
+            uint64_t q = peek64(p + o2);
+            if (user(q) && runtime::readable(reinterpret_cast<void *>(q), 8) && peek64(q) == want) {
+                how = "buffer+0x" + std::to_string(o) + " -> +0x" + std::to_string(o2);
+                return q;
+            }
+        }
+    }
+    return 0;
+}
+
+void replay_frame_mid(safetyhook::Context &c)
+{
+    static std::atomic<uint64_t> searched{0};
+    if (!replay_system_ptr.load() && searched.exchange(c.rcx) != c.rcx && c.rcx) {
+        std::string how;
+        uint64_t sys = replay_find_system(c.rcx, how);
+        swofty::log("[replay] beginFrameWrite buffer 0x%llx: %s", (unsigned long long)c.rcx,
+                    sys ? ("GameReplaySystem 0x" + [&] { char b[24]; snprintf(b, sizeof b, "%llx", (unsigned long long)sys); return std::string(b); }() + " found at " + how).c_str()
+                        : "no GameReplaySystem within two pointer hops");
+        if (sys)
+            replay_system_ptr = sys;
+    }
+    replay_tick(0, "beginFrameWrite");
+}
 
 std::atomic<uint64_t> garage_driven_panel{0}, garage_driven_count{0}, garage_built_ours{0};
 uintptr_t garage_build_fn = 0;
@@ -1623,6 +1681,10 @@ void setup()
                 hook_mid(h_replay_save, save_fn, replay_save_entry_mid, "replay save observer");
                 if (uintptr_t t17 = runtime::find(S_REPLAY_TICK17, "boards", "boards"))
                     hook_mid(h_replay_tick17, t17, replay_tick17_mid, "replay system tick (slot 17)");
+                if (uintptr_t up = runtime::find(S_REPLAY_UPDATE, "boards", "boards"))
+                    hook_mid(h_replay_update, up, replay_update_mid, "replay system updateFromModule");
+                if (uintptr_t fr = runtime::find(S_REPLAY_FRAME, "boards", "boards"))
+                    hook_mid(h_replay_frame, fr, replay_frame_mid, "replay buffer beginFrameWrite");
                 swofty::log("[replay] capture armed (SWOFTY_TT_REPLAY_CAPTURE=1): tick at base+0x%llx, save at base+0x%llx, path builder at base+0x%llx", (unsigned long long)(tick - swofty::api->module_base()),
                             (unsigned long long)(save_fn - swofty::api->module_base()), (unsigned long long)(path_fn - swofty::api->module_base()));
             } else
