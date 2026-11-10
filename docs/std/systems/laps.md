@@ -73,6 +73,29 @@ The types are `f32`, `f64`, `i8`, `u8`, `i16`, `u16`, `i32` and `u32`. A field t
 | `g_lat` `g_long` | the chassis g signals |
 | `drs` | DRS wing open fraction |
 
+## The integrity module
+
+The launcher loads one more native addon for a session in which Time Trial boards is on and the player is signed in with Discord: `swofty.integrity`, a closed-source DLL that Swofty's server publishes. The launcher fetches it from `GET /v1/tt/integrity`, checks its size and sha256, and checks an Ed25519 signature over `swofty-tt-integrity-v1\0 || version || \0 || sha256` against the public key pinned in the launcher. A copy that passes is kept under `timetrial/integrity/<version>/` in the launcher's data folder, the newest two versions. The session places it as `swofty/addons/swofty.integrity/swofty_integrity.dll` and lists it in `swofty/settings.json` under `plugins`, and the session's rollback removes it with every other placed file.
+
+It is not an addon in any profile, the addon list, the load order or the addon set a lap is uploaded with. It is named in `loader.log` as an addon DLL and in the launcher's session log:
+
+```
+integrity: swofty_integrity.dll 2026.11.10.1 under swofty/addons/swofty.integrity
+integrity module: not loaded for this session: couldn't reach https://...
+```
+
+When the offer is missing, unreachable or fails a check, the session starts without the module and the lap is written without an `ATST` section.
+
+At `laps.sealing` the module appends the `ATST` section: a length-prefixed JSON document and a 32-byte HMAC-SHA256 of it.
+
+```
+ATST = u32 json_len, json bytes, 32 bytes mac
+json = { "v": 1, "module": "2026.11.10.1", "nonce": "...", "body_sha256": "...", "time_ms": 91234,
+         "values": { ... }, "db": { ... }, "modules": [ { "name": "swofty_core.dll", "sha256": "..." } ], ... }
+```
+
+`body_sha256` is the hash of the lap file before the section, `values` and `db` are the handling values and database rows read for the player's car, and `modules` lists the DLLs loaded from the game folder. The key of the MAC is held by the server.
+
 ## Events
 
 `laps.recorded` fires once the file is in place. `laps.sealing` fires just before, with the file as built so far.
