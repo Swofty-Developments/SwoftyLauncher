@@ -30,8 +30,11 @@ constexpr const char *TT_TITLE = "Not signed in";
 constexpr const char *TT_BODY = "Sign in with Discord in Swofty Launcher to save your laps to the Time Trial boards. "
                                 "Laps from this session will not be saved. Press OK to continue to Time Trial.";
 
-constexpr const char *TEMPLATE_TOP = "swofty_home_top";
-constexpr const char *TEMPLATE_MODES = "swofty_home_modes";
+constexpr const char *TEMPLATE_TOP_LEFT = "swofty_home_top_left";
+constexpr const char *TEMPLATE_TOP_RIGHT = "swofty_home_top_right";
+constexpr const char *TEMPLATE_TOP_THIRD = "swofty_home_top_third";
+constexpr const char *TEMPLATE_MODES_LEFT = "swofty_home_modes_left";
+constexpr const char *TEMPLATE_MODES_RIGHT = "swofty_home_modes_right";
 constexpr const char *TEMPLATE_WIDE_A = "swofty_home_wide_a";
 constexpr const char *TEMPLATE_WIDE_B = "swofty_home_wide_b";
 constexpr const char *TEMPLATE_WIDE_C = "swofty_home_wide_c";
@@ -42,10 +45,16 @@ inline const char *template_for(const std::string &id, bool rows = true)
         return id == ID_THEATRE || id == ID_SHOWROOM ? TEMPLATE_DEFAULT : "";
     if (id == ID_DIVIDER)
         return TEMPLATE_DIVIDER;
-    if (id == ID_STORY || id == ID_CAREER || id == ID_CHALLENGE)
-        return TEMPLATE_TOP;
-    if (id == ID_GRAND_PRIX || id == ID_TIME_TRIAL)
-        return TEMPLATE_MODES;
+    if (id == ID_STORY)
+        return TEMPLATE_TOP_LEFT;
+    if (id == ID_CAREER)
+        return TEMPLATE_TOP_RIGHT;
+    if (id == ID_CHALLENGE)
+        return TEMPLATE_TOP_THIRD;
+    if (id == ID_GRAND_PRIX)
+        return TEMPLATE_MODES_LEFT;
+    if (id == ID_TIME_TRIAL)
+        return TEMPLATE_MODES_RIGHT;
     if (id == ID_THEATRE)
         return TEMPLATE_WIDE_A;
     if (id == ID_SHOWROOM)

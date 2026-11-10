@@ -15,69 +15,51 @@ const STOCK_TEMPLATE: &str = "fe_tile_button_default";
 const STOCK_SLOT: &str = "spawner_stacker_items";
 const DESCRIPTION: &str = "text_stacker";
 const PATH: &str = "transition_anim_items.transition_fade_items";
-const X: f64 = -8.6;
 
 pub struct Row {
     pub stock: &'static str,
     pub template: &'static str,
     pub slot: &'static str,
+    pub x: f64,
     pub y: f64,
-    pub across: bool,
     pub guid: &'static str,
 }
 
-pub const ROWS: [Row; 6] = [
+const LEFT: f64 = -8.6;
+const RIGHT: f64 = -4.0;
+const THIRD: f64 = 0.6;
+
+const fn row(template: &'static str, slot: &'static str, x: f64, y: f64, guid: &'static str) -> Row {
     Row {
         stock: STOCK_TEMPLATE,
-        template: "swofty_home_top",
-        slot: "swofty_home_row_top",
-        y: 3.2,
-        across: true,
-        guid: "a1c3e5f7-1b2d-4f60-8a91-b3c5d7e9f101",
-    },
-    Row {
-        stock: STOCK_TEMPLATE,
-        template: "swofty_home_modes",
-        slot: "swofty_home_row_modes",
-        y: 2.0,
-        across: true,
-        guid: "b2d4f6a8-2c3e-4a71-9ba2-c4d6e8f0a202",
-    },
-    Row {
-        stock: STOCK_TEMPLATE,
-        template: "swofty_home_wide_a",
-        slot: "swofty_home_row_wide_a",
-        y: 0.8,
-        across: false,
-        guid: "c3e5a7b9-3d4f-4b82-8cb3-d5e7f9a1b303",
-    },
-    Row {
-        stock: STOCK_TEMPLATE,
-        template: "swofty_home_wide_b",
-        slot: "swofty_home_row_wide_b",
-        y: -0.2,
-        across: false,
-        guid: "d4f6b8c0-4e5a-4c93-9dc4-e6f8a0b2c404",
-    },
-    Row {
-        stock: STOCK_TEMPLATE,
-        template: "swofty_home_wide_c",
-        slot: "swofty_home_row_wide_c",
-        y: -1.2,
-        across: false,
-        guid: "e5a7c9d1-5f6b-4da4-8ed5-f7a9b1c3d505",
-    },
+        template,
+        slot,
+        x,
+        y,
+        guid,
+    }
+}
+
+pub const ROWS: [Row; 9] = [
+    row("swofty_home_top_left", "swofty_home_slot_top_left", LEFT, 3.2, "a1c3e5f7-1b2d-4f60-8a91-b3c5d7e9f101"),
+    row("swofty_home_top_right", "swofty_home_slot_top_right", RIGHT, 3.2, "a2c3e5f7-1b2d-4f60-8a91-b3c5d7e9f102"),
+    row("swofty_home_top_third", "swofty_home_slot_top_third", THIRD, 3.2, "a3c3e5f7-1b2d-4f60-8a91-b3c5d7e9f103"),
+    row("swofty_home_modes_left", "swofty_home_slot_modes_left", LEFT, 2.45, "b1d4f6a8-2c3e-4a71-9ba2-c4d6e8f0a201"),
+    row("swofty_home_modes_right", "swofty_home_slot_modes_right", RIGHT, 2.45, "b2d4f6a8-2c3e-4a71-9ba2-c4d6e8f0a202"),
+    row("swofty_home_wide_a", "swofty_home_row_wide_a", LEFT, 1.7, "c3e5a7b9-3d4f-4b82-8cb3-d5e7f9a1b303"),
+    row("swofty_home_wide_b", "swofty_home_row_wide_b", LEFT, 0.95, "d4f6b8c0-4e5a-4c93-9dc4-e6f8a0b2c404"),
     Row {
         stock: "fe_tile_button_divider",
         template: "swofty_home_divider",
         slot: "swofty_home_row_divider",
-        y: -0.7,
-        across: false,
+        x: LEFT,
+        y: 0.5,
         guid: "f6b8d0e2-6a7c-4eb5-9fe6-a8b0c2d4e606",
     },
+    row("swofty_home_wide_c", "swofty_home_row_wide_c", LEFT, 0.0, "e5a7c9d1-5f6b-4da4-8ed5-f7a9b1c3d505"),
 ];
 
-const DESCRIPTION_Y: f64 = -2.4;
+const DESCRIPTION_Y: f64 = -1.1;
 
 fn templates(doc: &mut Pkg) -> Result<&mut Vec<Node>> {
     doc.root.o_mut()?.at_mut("Templates")?.a_mut()
@@ -166,8 +148,8 @@ pub fn build_scene(data: &[u8]) -> Result<Vec<u8>> {
         let mut slot = idf::detached(&kids[at]);
         slot.o_mut()?.set("name", s(row.slot));
         idf::set_param(&mut slot, "guid", Val::str(row.guid))?;
-        idf::set_param(&mut slot, "stackerType", Val::str(if row.across { "l" } else { "t" }))?;
-        set_position(&mut slot, X, row.y)?;
+        idf::set_param(&mut slot, "stackerType", Val::str("t"))?;
+        set_position(&mut slot, row.x, row.y)?;
         idf::recompute_ids(&mut slot, &format!("{PATH}.{}", row.slot))?;
         added.push(slot);
     }
@@ -178,7 +160,7 @@ pub fn build_scene(data: &[u8]) -> Result<Vec<u8>> {
         .iter_mut()
         .find(|k| elem_name(k) == DESCRIPTION)
         .ok_or_else(|| err(format!("{SCENE}: no {DESCRIPTION}")))?;
-    set_position(text, X, DESCRIPTION_Y)?;
+    set_position(text, LEFT, DESCRIPTION_Y)?;
     idf::relookup(entry)?;
     let out = doc.to_bytes()?;
     let back = Pkg::parse(&out)?;

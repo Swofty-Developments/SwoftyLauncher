@@ -60,7 +60,8 @@ int main()
     expect(mm::discord_line(s) == "Signed in to Discord as swofty", "signed in line");
     expect(mm::has_avatar(s) && mm::has_video(s), "avatar and video present");
     expect(mm::watch_line("RB") == "Press RB to watch", "watch line");
-    expect(std::string(mm::template_for("career")) == mm::TEMPLATE_TOP && std::string(mm::template_for("swofty_time_trial")) == mm::TEMPLATE_MODES &&
+    expect(std::string(mm::template_for("story")) == mm::TEMPLATE_TOP_LEFT && std::string(mm::template_for("career")) == mm::TEMPLATE_TOP_RIGHT &&
+               std::string(mm::template_for("swofty_grand_prix")) == mm::TEMPLATE_MODES_LEFT && std::string(mm::template_for("swofty_time_trial")) == mm::TEMPLATE_MODES_RIGHT &&
                std::string(mm::template_for("theatre")) == mm::TEMPLATE_WIDE_A && std::string(mm::template_for("swofty_showroom")) == mm::TEMPLATE_WIDE_B &&
                std::string(mm::template_for("mod_menu")) == mm::TEMPLATE_WIDE_C && std::string(mm::template_for("f1_world")).empty(),
            "every card has its row template and unknown ids have none");

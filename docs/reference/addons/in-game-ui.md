@@ -492,8 +492,14 @@ When the launcher's UI build is in place (`swofty/ui/home_rows.flag`), the tiles
 
 When the home tile block does not match byte for byte, the core logs `the home tile block did not resolve on this build; the stock main menu stays` and changes nothing.
 
-`SWOFTY_MAIN_MENU=0` leaves the stock main menu. `SWOFTY_MAIN_MENU_CHAIN=0` makes the Grand Prix and Time Trial cards stop at the F1 World hub. `SWOFTY_MAIN_MENU_NAV` is logged; only `single` (one spawner, tiles in list order) is built.
+`SWOFTY_MAIN_MENU=0` leaves the stock main menu. `SWOFTY_MAIN_MENU_CHAIN=0` makes the Grand Prix and Time Trial cards stop at the activity container. `SWOFTY_MAIN_MENU_NAV` is logged; only `single` (one spawner, tiles in list order) is built.
 
-Pressing Grand Prix or Time Trial opens the F1 World route, then the core holds virtual pad buttons: A on the hub, then A (Grand Prix) or Right and A (Time Trial) on the Play tiles, logging `chain:` lines for each screen and button.
+Pressing Grand Prix or Time Trial fires the home route `home_to_activity`, which opens the F1 World activity container without the F1 World hub. When the container is up the core raises the container's own `grand_prix_new` (Grand Prix) or `time_trial` (Time Trial) command, which selects that tab. `SWOFTY_MAIN_MENU_ROUTE` replaces the route name.
+
+```text
+[main-menu] chain: activity container command handler hooked at base+0x...
+[main-menu] chain: Time Trial card pressed; route home_to_activity, then the activity container's 'time_trial' command
+[main-menu] chain: raising 'time_trial' on the activity container 0x...
+```
 
 While the main menu is open the overlay paints the Swofty Launcher version, the Discord sign-in state and avatar in the top right, and the latest video's thumbnail with `Press RB to watch` (`Press V to watch` without a gamepad) in the bottom right. Pressing the key writes `swofty/open_url.json`. Entering Time Trial while signed out of Discord shows the game's message popup once per session; its OK continues.

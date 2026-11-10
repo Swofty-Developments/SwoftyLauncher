@@ -2,7 +2,7 @@
 
 #include "main_menu.hpp"
 #include "main_menu_logic.hpp"
-#include "virtual_pad.hpp"
+#include <safetyhook.hpp>
 #include "json.hpp"
 
 #include <swofty/game.hpp>
@@ -16,6 +16,7 @@
 #include <string>
 
 namespace runtime {
+std::string hook_error(const safetyhook::InlineHook::Error &e);
 int overlay_image(const std::string &id, const std::string &path, uint32_t *width, uint32_t *height);
 }
 
@@ -254,21 +255,56 @@ void add_showroom(TileList *list, uint8_t index)
     Ne_Make_StrFromCStr(&item->id, logic::ID_SHOWROOM, 0, 0);
 }
 
-enum class Step { idle, wait_hub, wait_container, tile, done };
+enum class Step { idle, wait_container, done };
 struct Chain {
     Step step = Step::idle;
     bool time_trial = false;
-    uint64_t started = 0, hub_at = 0, container_at = 0, release_at = 0, tile_at = 0;
-    bool pressed_play = false;
+    uint64_t started = 0, container_at = 0;
 } chain;
 std::mutex chain_lock;
 
-void press(uint16_t mask, uint64_t now)
+const char *route_name()
 {
-    runtime::pad::claim(true);
-    runtime::pad::set(mask);
-    chain.release_at = now + 160;
-    swofty::log("[main-menu] chain: virtual pad button 0x%04x held", unsigned(mask));
+    const char *r = env("SWOFTY_MAIN_MENU_ROUTE");
+    return *r ? r : "home_to_activity";
+}
+
+const runtime::Sig S_CONTAINER{
+    "Game_F1WorldActivityContainer_HandleCommand",
+    "41 57 41 56 41 55 41 54 56 57 53 48 81 EC B0 00 00 00 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 4C 89 C7 49 89 D0 48 89 CE "
+    "8B 00 3D 37 3B FC FC 0F 8E ?? ?? ?? ?? 3D BD FC E1 41",
+    0x1a77d60};
+safetyhook::InlineHook h_container;
+std::atomic<void *> container_vm{nullptr}, container_third{nullptr};
+
+uint64_t container_detour(void *container, NeStr **message, void *third)
+{
+    if (container_vm.load() != container) {
+        container_vm = container;
+        swofty::log("[main-menu] chain: activity container view model %p seen", container);
+    }
+    container_third = third;
+    return h_container.call<uint64_t>(container, message, third);
+}
+
+void hook_container()
+{
+    if (h_container)
+        return;
+    auto at = runtime::find(S_CONTAINER, "home", "core");
+    if (!at) {
+        swofty::log("[main-menu] chain: the activity container command handler did not resolve; the cards open the activity container only");
+        return;
+    }
+    auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(container_detour));
+    if (!h) {
+        swofty::log("[main-menu] chain: hooking the activity container command handler failed: %s",
+                    runtime::hook_error(h.error()).c_str());
+        return;
+    }
+    h_container = std::move(*h);
+    swofty::log("[main-menu] chain: activity container command handler hooked at base+0x%llx",
+                (unsigned long long)(at - swofty::api->module_base()));
 }
 
 void card_populate(HomeItem *item, void *node, uint32_t a7)
@@ -292,9 +328,9 @@ Action *card_action(HomeItem *item, Action *out)
 {
     out->type = 1;
     out->str = nullptr;
-    Ne_Make_StrFromCStr(&out->str, logic::STOCK_ROUTE_F1_WORLD, 0, 0);
+    Ne_Make_StrFromCStr(&out->str, route_name(), 0, 0);
     swofty::log("[main-menu] %s card pressed: route %s (the stock item returns its own id as the route, so the id is not used)",
-                id_of(item), logic::STOCK_ROUTE_F1_WORLD);
+                id_of(item), route_name());
     return out;
 }
 
@@ -410,23 +446,17 @@ std::string host_path(const std::string &p)
 void start_chain(bool time_trial)
 {
     if (!std::strcmp(env("SWOFTY_MAIN_MENU_CHAIN"), "0")) {
-        swofty::log("[main-menu] chain off (SWOFTY_MAIN_MENU_CHAIN=0); the card opens the F1 World hub");
-        return;
-    }
-    runtime::pad::setup();
-    if (!runtime::pad::why().empty()) {
-        swofty::log("[main-menu] chain: the virtual pad is unavailable (%s); the card opens the F1 World hub",
-                    runtime::pad::why().c_str());
+        swofty::log("[main-menu] chain off (SWOFTY_MAIN_MENU_CHAIN=0); the card opens the activity container");
         return;
     }
     std::lock_guard<std::mutex> g(chain_lock);
     chain = {};
-    chain.step = Step::wait_hub;
+    chain.step = Step::wait_container;
     chain.time_trial = time_trial;
     chain.started = GetTickCount64();
-    swofty::log("[main-menu] chain: %s card pressed; waiting for fe_f1_world, then Play (A), then %s",
-                time_trial ? "Time Trial" : "Grand Prix",
-                time_trial ? "right + A on the Play tiles" : "A on the first Play tile");
+    container_vm = nullptr;
+    swofty::log("[main-menu] chain: %s card pressed; route %s, then the activity container's '%s' command",
+                time_trial ? "Time Trial" : "Grand Prix", route_name(), time_trial ? "time_trial" : "grand_prix_new");
 }
 
 }
@@ -440,7 +470,7 @@ bool wants_overlay()
 {
     if (!std::strcmp(env("SWOFTY_MAIN_MENU"), "0"))
         return false;
-    return !runtime::read_file(runtime::under_swofty("home_menu.json"), 16).empty();
+    return !runtime::read_file(runtime::under_swofty("home_menu.json"), size_t(1) << 20).empty();
 }
 
 bool arm_patch()
@@ -460,6 +490,7 @@ bool arm_patch()
     VirtualProtect(block.at, sizeof jmp, old, &old);
     FlushInstructionCache(GetCurrentProcess(), block.at, sizeof jmp);
     patched = true;
+    hook_container();
     swofty::log("[main-menu] stock F1 World, divider, Local Multiplayer, League Racing, Player Hub and Theatre tiles skipped");
     return true;
 }
@@ -497,7 +528,7 @@ void style_settings(void *item)
 
 void tick()
 {
-    if (home_open.load() && patched.load())
+    if (home_open.load())
         read_state();
     int want = strip_wanted.load();
     if (want >= 0 && want != strip_set.load() && patched.load()) {
@@ -515,34 +546,20 @@ void tick()
     if (chain.step == Step::idle || chain.step == Step::done)
         return;
     uint64_t now = GetTickCount64();
-    if (chain.release_at && now >= chain.release_at) {
-        runtime::pad::release();
-        runtime::pad::claim(false);
-        chain.release_at = 0;
-    }
     if (now - chain.started > 20000) {
         swofty::log("[main-menu] chain: gave up at step %d after 20 s; the player continues by hand", int(chain.step));
         chain.step = Step::done;
         return;
     }
-    if (chain.release_at)
-        return;
-    if (chain.step == Step::wait_hub && chain.hub_at && now - chain.hub_at > 1800) {
-        press(runtime::pad::A, now);
-        chain.step = Step::wait_container;
-    } else if (chain.step == Step::wait_container && chain.container_at && now - chain.container_at > 2600) {
-        if (chain.time_trial && !chain.pressed_play) {
-            chain.pressed_play = true;
-            press(0x0008, now);
-            chain.tile_at = now + 500;
-        } else if (!chain.time_trial || now >= chain.tile_at) {
-            press(runtime::pad::A, now);
-            chain.step = Step::tile;
-            chain.tile_at = now;
-        }
-    } else if (chain.step == Step::tile && now - chain.tile_at > 500) {
-        swofty::log("[main-menu] chain: done; the %s season picker should be up",
-                    chain.time_trial ? "Time Trial" : "Grand Prix");
+    if (chain.step == Step::wait_container && chain.container_at && container_vm.load() && now - chain.container_at > 900) {
+        NeStr *name = nullptr;
+        Ne_Make_StrFromCStr(&name, chain.time_trial ? "time_trial" : "grand_prix_new", 0, 0);
+        swofty::log("[main-menu] chain: raising '%s' on the activity container %p",
+                    chain.time_trial ? "time_trial" : "grand_prix_new", container_vm.load());
+        uint64_t r = h_container ? h_container.call<uint64_t>(container_vm.load(), &name, container_third.load()) : 0;
+        Ne_Make_StrFromCStr(&name, nullptr, 0, 0);
+        swofty::log("[main-menu] chain: command returned 0x%llx; the %s season picker should be up",
+                    (unsigned long long)r, chain.time_trial ? "Time Trial" : "Grand Prix");
         chain.step = Step::done;
     }
 }
@@ -556,16 +573,16 @@ void screen(const char *name)
         uint64_t now = GetTickCount64();
         if (chain.step != Step::idle && chain.step != Step::done)
             swofty::log("[main-menu] chain: screen %s (step %d)", name, int(chain.step));
-        if (!std::strcmp(name, "fe_f1_world") && chain.step == Step::wait_hub && !chain.hub_at)
-            chain.hub_at = now;
-        if (!std::strcmp(name, "f1_world_activity_container") && chain.step == Step::wait_container)
+        if (!std::strcmp(name, "f1_world_activity_container") && chain.step == Step::wait_container) {
             chain.container_at = now;
+            container_vm = nullptr;
+        }
     }
     if (std::strncmp(name, "fe_", 3) == 0 && std::strcmp(name, "fe_planes") != 0) {
         bool home = !std::strcmp(name, "fe_home");
         home_open = home;
         strip_wanted = home ? 0 : 1;
-        if (home && patched.load()) {
+        if (home) {
             read_state(true);
             swofty::log("[main-menu] home screen open: state read, stock top-right strip %s", rows_on() ? "hidden" : "hidden");
         }

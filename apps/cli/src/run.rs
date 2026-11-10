@@ -175,6 +175,7 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
     let loader = game.join(LOADER_LOG);
     let before = LogMark::read(&loader);
     let asked = now_secs();
+    let _home_menu = swofty_core::home_menu::publish(&store.root, &game, env!("CARGO_PKG_VERSION"));
     let mut wrapper =
         launch(store, &game, args.direct, mode, &args.game_arg).inspect_err(|e| note_blocked(store, e))?;
     let mut silence = Silence::new();
@@ -217,7 +218,6 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
         .as_ref()
         .map(|_| Follower::from_end(wrapper.log.clone()));
     let mut follow = Follow::new(&dir, Some((loader, before)), symbols(&game, args.exe.as_deref()));
-    let _home_menu = swofty_core::home_menu::publish(&store.root, &game, env!("CARGO_PKG_VERSION"));
     install_ctrl_c();
     let mut quiet = false;
     while !dir.join("exit_code").exists() {
@@ -492,6 +492,7 @@ fn wrapper(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Result<Exi
         crate::build::install(store, &profile, g, true, &info)?;
     }
     let installed = apply.then(Instant::now);
+    let _home_menu = swofty_core::home_menu::publish(&store.root, &game, env!("CARGO_PKG_VERSION"));
     become_subreaper();
     let vanilla = store.profile(&profile).is_ok_and(|p| p.is_vanilla());
     if crate::ea::stages_offline(args.via_ea, vanilla) {
