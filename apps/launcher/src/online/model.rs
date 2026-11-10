@@ -302,6 +302,7 @@ pub struct Me {
     pub entry: Option<RankEntry>,
 }
 
+pub const SHOW_SETUPS: bool = false;
 pub const RANK_PAGE: u32 = 50;
 pub const CHUNK: usize = 5;
 pub const TOP_ROW_H: f32 = 64.;

@@ -35,7 +35,8 @@ impl Shell {
             if self.online.viewing.as_deref() == Some(r.lap_id.as_str()) {
                 body.push(self.lap_actions(&r.lap_id, p, cx));
             }
-            if self.online.setup_open.as_deref() == Some(r.lap_id.as_str())
+            if SHOW_SETUPS
+                && self.online.setup_open.as_deref() == Some(r.lap_id.as_str())
                 && let Some(setup) = &r.setup
             {
                 let mine = page
@@ -89,7 +90,7 @@ impl Shell {
                 d.child(head_cell(130., "CAR", p))
             })
             .child(head_cell(84., "DATE", p))
-            .child(head_cell(112., "", p));
+            .child(head_cell(if SHOW_SETUPS { 112. } else { 70. }, "", p));
         v_flex()
             .flex_1()
             .min_h_0()
@@ -318,7 +319,7 @@ impl Shell {
             )
             .child(
                 h_flex()
-                    .w(px(112.))
+                    .w(px(if SHOW_SETUPS { 112. } else { 70. }))
                     .flex_shrink_0()
                     .gap(px(4.))
                     .child(
@@ -336,12 +337,9 @@ impl Shell {
                                 }
                             })),
                     )
-                    .child(self.setup_button(
-                        &format!("{idx}-{}", r.lap_id),
-                        &r.lap_id,
-                        r.setup.is_some(),
-                        cx,
-                    )),
+                    .children(SHOW_SETUPS.then(|| {
+                        self.setup_button(&format!("{idx}-{}", r.lap_id), &r.lap_id, r.setup.is_some(), cx)
+                    })),
             )
             .into_any_element()
     }

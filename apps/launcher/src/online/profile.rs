@@ -38,7 +38,8 @@ impl Shell {
                 };
                 let idx = self.target_item(&mut items, Target::Board(Box::new(card), b.track.clone()));
                 let mut out = vec![self.best_row(b, idx, p, cx)];
-                if self.online.setup_open.as_deref() == Some(b.lap_id.as_str())
+                if SHOW_SETUPS
+                    && self.online.setup_open.as_deref() == Some(b.lap_id.as_str())
                     && let Some(setup) = &b.setup
                 {
                     out.push(self.setup_panel(setup, None, p, cx));
@@ -246,7 +247,10 @@ impl Shell {
                     .text_color(p.text_muted)
                     .child(iso_date(&b.date).to_owned()),
             )
-            .child(self.setup_button(&format!("best-{idx}"), &b.lap_id, b.setup.is_some(), cx))
+            .children(
+                SHOW_SETUPS
+                    .then(|| self.setup_button(&format!("best-{idx}"), &b.lap_id, b.setup.is_some(), cx)),
+            )
             .on_click(cx.listener(move |this, _, _, cx| this.online_go(target.clone(), cx)))
             .into_any_element()
     }

@@ -605,7 +605,9 @@ impl BoardsApi for HttpBoards {
             encode(&key.track),
             encode(&key.weather)
         );
-        path.push_str("&setup=1");
+        if SHOW_SETUPS {
+            path.push_str("&setup=1");
+        }
         if filter.assists_off {
             path.push_str("&assists=none");
         }
