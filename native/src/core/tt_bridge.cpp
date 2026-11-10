@@ -163,6 +163,12 @@ const runtime::Sig S_REPLAY_UPDATE{"Game_ReplaySystem_UpdateFromModule_1445d6040
 const runtime::Sig S_REPLAY_FRAME{"Game_ReplayBuffer_BeginFrameWrite_1445c4b20", "41 56 56 57 53 48 83 EC 68 C5 F8 29 74 24 50 C5 F9 6F F1 48 89 CE 80 79 51 00 74 30", 0x45c4b20};
 const runtime::Sig S_REPLAY_SAVE{"Game_ReplayManager_SaveFullReplay_142c46880", "41 56 56 57 53 48 81 EC 38 02 00 00 80 B9 E1 06 00 00 00 74 46 48 89 CE 48 83 B9 50 01 00 00 00", 0x2c46880};
 const runtime::Sig S_REPLAY_JOB{"Game_Replay_SaveFullReplay_job_142c46a00", "41 57 41 56 41 55 41 54 56 57 55 53 B8 08 14 00 00 E8 BA 2D 04 02 48 29", 0x2c46a00};
+const runtime::Sig S_REPLAY_JOB_COMPONENT{"site_Game_Replay_SaveFullReplay_session_component_142c46c02",
+        "48 8B 46 28 48 8B 80 88 00 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B 80 60 02 00 00 48 89 84 24 98 00 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 4C 24 68 48 8B 84 24 98 00 00 00 4C 8B B0 08 0F 00 00 49 8D 4E 18",
+        0x2c46c02, runtime::Sig::addr, 0, 64};
+const runtime::Sig S_REPLAY_JOB_SELECTED{"site_Game_Replay_SaveFullReplay_component_selected_142c46cf5", "4D 85 F6 0F 84 ?? ?? ?? ?? 4C 8B A2 C0 00 00 00 4C 8B AA D0 00 00 00", 0x2c46cf5};
+const runtime::Sig S_REPLAY_JOB_STORES{"site_Game_Replay_SaveFullReplay_backing_stores_142c46ebd", "49 83 BC 24 B8 02 00 00 00 0F 84 ?? ?? ?? ?? 49 83 BD B8 02 00 00 00 0F 84", 0x2c46ebd};
+const runtime::Sig S_REPLAY_JOB_ALLOC{"site_Game_Replay_SaveFullReplay_allocation_142c46f33", "48 85 C0 0F 84 ?? ?? ?? ?? 48 89 C5 48 8B 07 48 89 F9 FF 50 20", 0x2c46f33};
 const runtime::Sig S_REPLAY_UI_START{"Game_ReplaySaveListener_ShowSaving_142c44220", "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 48 89 CE C6 41", 0x2c44220};
 const runtime::Sig S_REPLAY_UI_RESULT{"Game_ReplaySaveListener_ShowResult_142c44760", "41 57 41 56 41 55 41 54 56 57 53 48 81 EC D0 01 00 00 48 89 D3 48 89 CF", 0x2c44760};
 const runtime::Sig S_REPLAY_PATH{"Game_ReplayManager_BuildSavePath_142c48860", "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 05 00 00 48 89 D6 48 89 CB 48 8D 79 20", 0x2c48860};
@@ -210,7 +216,7 @@ bool replay_capture_on = false;
 std::atomic<int64_t> replay_pending_ms{0};
 std::atomic<uint32_t> replay_pending_lap{0};
 safetyhook::InlineHook h_rui_start, h_rui_result;
-safetyhook::MidHook h_garage_done, h_garage_cmd, h_garage_update, h_tab_block, h_tab_flags, h_tab_friends, h_tab_build, h_tab_gate, h_replay_tick, h_replay_tick17, h_replay_update, h_replay_frame, h_replay_save, h_replay_job, h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
+safetyhook::MidHook h_garage_done, h_garage_cmd, h_garage_update, h_tab_block, h_tab_flags, h_tab_friends, h_tab_build, h_tab_gate, h_replay_tick, h_replay_tick17, h_replay_update, h_replay_frame, h_replay_save, h_replay_job, h_job_component, h_job_selected, h_job_stores, h_job_alloc, h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
 
 struct GateHook {
     uintptr_t at = 0, resume = 0, session_global = 0;
@@ -1106,6 +1112,39 @@ void replay_ui_result_hook(uint64_t listener, uint64_t status_block)
                 (unsigned long long)need);
 }
 
+// Read-only probes inside the save job, one per synchronous check that can end it with status 2. The last probe that logs names the failing
+// check: component (S+0xf08 is the session's current component), selected (0 fails), stores (+0x2b8 of the two buffers, 0 fails), alloc (0 fails).
+void replay_job_component_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> n{0};
+    if (++n <= 8)
+        swofty::log("[replay] save job check 1: session component host 0x%llx, its current component [+0xf08] = 0x%llx (null fails; a wrapper type without a plain child fails)", (unsigned long long)c.rax,
+                    (unsigned long long)c.r14);
+}
+
+void replay_job_selected_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> n{0};
+    if (++n <= 8)
+        swofty::log("[replay] save job check 2: component selected 0x%llx (null fails), main module 0x%llx", (unsigned long long)c.r14, (unsigned long long)c.rdx);
+}
+
+void replay_job_stores_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> n{0};
+    if (++n <= 8)
+        swofty::log("[replay] save job check 3: buffers 0x%llx and 0x%llx, backing stores [+0x2b8] 0x%llx and 0x%llx (null fails), sample counts [+0x2d4] %u and %u", (unsigned long long)c.r12,
+                    (unsigned long long)c.r13, (unsigned long long)peek64(c.r12 + 0x2b8), (unsigned long long)peek64(c.r13 + 0x2b8), unsigned(peek32(c.r12 + 0x2d4)), unsigned(peek32(c.r13 + 0x2d4)));
+}
+
+void replay_job_alloc_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> n{0};
+    if (++n <= 8)
+        swofty::log("[replay] save job check 4: allocation result 0x%llx (null fails) for %llu bytes from allocator 0x%llx", (unsigned long long)c.rax, (unsigned long long)peek64(c.rsp + 0xb8),
+                    (unsigned long long)c.r12);
+}
+
 void replay_job_mid(safetyhook::Context &c)
 {
     static std::atomic<int> logged{0};
@@ -1830,6 +1869,12 @@ void setup()
                 hook_mid(h_replay_save, save_fn, replay_save_entry_mid, "replay save observer");
                 if (uintptr_t j = runtime::find(S_REPLAY_JOB, "boards", "boards"))
                     hook_mid(h_replay_job, j, replay_job_mid, "replay save job observer");
+                for (auto [sig, hook, fn, label] : {std::tuple<const runtime::Sig *, safetyhook::MidHook *, safetyhook::MidHookFn, const char *>{&S_REPLAY_JOB_COMPONENT, &h_job_component, replay_job_component_mid, "save job check 1"},
+                                                    {&S_REPLAY_JOB_SELECTED, &h_job_selected, replay_job_selected_mid, "save job check 2"},
+                                                    {&S_REPLAY_JOB_STORES, &h_job_stores, replay_job_stores_mid, "save job check 3"},
+                                                    {&S_REPLAY_JOB_ALLOC, &h_job_alloc, replay_job_alloc_mid, "save job check 4"}})
+                    if (uintptr_t at = runtime::find(*sig, "boards", "boards"))
+                        hook_mid(*hook, at, fn, label);
                 uintptr_t ui_start = runtime::find(S_REPLAY_UI_START, "boards", "boards"), ui_result = runtime::find(S_REPLAY_UI_RESULT, "boards", "boards");
                 if (ui_start && ui_result) {
                     auto a = safetyhook::InlineHook::create(reinterpret_cast<void *>(ui_start), reinterpret_cast<void *>(&replay_ui_start_hook));
