@@ -1,4 +1,5 @@
-use super::api::*;
+use super::api::BoardsApi;
+use super::model::*;
 use std::time::Duration;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -24,7 +25,7 @@ pub struct MockBoards {
     pub mode: Mode,
 }
 
-const NAMES: [&str; 12] = [
+const NAMES: [&str; 14] = [
     "swofty",
     "Tommaso23",
     "driver1",
@@ -37,14 +38,152 @@ const NAMES: [&str; 12] = [
     "Nyx",
     "oversteer",
     "darkMode",
+    "hairpin",
+    "chicane",
+];
+const YEARS: [&str; 7] = ["2016", "2017", "2018", "2019", "2020", "2021", "2022"];
+const TRACKS: [(&str, &str, &str); 8] = [
+    ("bahrain", "Bahrain", "bh"),
+    ("melbourne", "Melbourne", "au"),
+    ("suzuka", "Suzuka", "jp"),
+    ("monza", "Monza", "it"),
+    ("spa", "Spa-Francorchamps", "be"),
+    ("silverstone", "Silverstone", "gb"),
+    ("interlagos", "Interlagos", "br"),
+    ("baku", "Baku", "az"),
 ];
 
-fn user(i: usize) -> User {
-    User {
+fn driver(i: usize) -> Driver {
+    Driver {
         id: format!("{}", 1000 + i),
         name: NAMES[i % NAMES.len()].to_owned(),
-        avatar: None,
+        avatar: (i % 5 != 4).then(|| format!("mock:av-{}.png", i % 14)),
     }
+}
+
+fn season_id(year: &str) -> String {
+    format!("mock.f1-{year}/f1_{year}")
+}
+
+fn seed(a: usize, b: usize) -> u64 {
+    let mut h = (a as u64).wrapping_mul(0x9E3779B97F4A7C15) ^ (b as u64 + 1).wrapping_mul(0xC2B2AE3D27D4EB4F);
+    h ^= h >> 31;
+    h = h.wrapping_mul(0x94D049BB133111EB);
+    h ^ (h >> 29)
+}
+
+fn record_ms(season: usize, track: usize) -> u64 {
+    80_000 + (track as u64) * 6_200 + (seed(season, track) % 3_000)
+}
+
+fn time_of(season: usize, track: usize, place: usize) -> u64 {
+    let base = record_ms(season, track);
+    base + place as u64 * 311 + (place as u64).pow(2) * 23 + seed(track, place) % 120
+}
+
+fn key(season: usize, track: usize) -> BoardKey {
+    BoardKey {
+        content: season_id(YEARS[season]),
+        track: TRACKS[track].0.to_owned(),
+        weather: "dry".to_owned(),
+    }
+}
+
+fn order(season: usize, track: usize) -> Vec<usize> {
+    let mut ids: Vec<usize> = (0..NAMES.len()).collect();
+    ids.sort_by_key(|i| seed(*i + season * 17, track * 31 + 5));
+    ids
+}
+
+fn podium(season: usize, track: usize) -> Vec<PodiumEntry> {
+    order(season, track)
+        .into_iter()
+        .take(3)
+        .enumerate()
+        .map(|(place, d)| PodiumEntry {
+            driver: driver(d),
+            time_ms: time_of(season, track, place),
+        })
+        .collect()
+}
+
+fn track_card(season: usize, track: usize) -> TrackCard {
+    let p = podium(season, track);
+    TrackCard {
+        key: key(season, track),
+        name: TRACKS[track].1.to_owned(),
+        flag: Some(TRACKS[track].2.to_owned()),
+        layout: Some(format!("mock:layout-{track}.svg")),
+        record: p.first().cloned(),
+        podium: p,
+        drivers: 9 + (seed(season, track) % 6) as u32,
+        laps: 40 + (seed(track, season) % 90) as u32,
+        custom: false,
+    }
+}
+
+fn ranking(season: usize) -> Vec<RankEntry> {
+    let mut points: Vec<(usize, f32, u32, u32)> = (0..NAMES.len())
+        .map(|d| {
+            let mut score = 0.;
+            let (mut wins, mut podiums) = (0, 0);
+            for t in 0..TRACKS.len() {
+                let place = order(season, t).iter().position(|x| *x == d).unwrap_or(13);
+                score +=
+                    100. * (0.7 * (-(place as f32) * 0.012 / 0.015).exp() + 0.3 * (13 - place) as f32 / 13.);
+                wins += u32::from(place == 0);
+                podiums += u32::from(place < 3);
+            }
+            (d, score, wins, podiums)
+        })
+        .collect();
+    points.sort_by(|a, b| b.1.total_cmp(&a.1));
+    points
+        .into_iter()
+        .enumerate()
+        .map(|(i, (d, score, wins, podiums))| RankEntry {
+            rank: i as u32 + 1,
+            driver: driver(d),
+            points: score,
+            wins,
+            podiums,
+        })
+        .collect()
+}
+
+fn season_card(season: usize) -> SeasonCard {
+    SeasonCard {
+        id: season_id(YEARS[season]),
+        name: format!("F1 {}", YEARS[season]),
+        cover: Some(format!("mock:cover-{}.png", YEARS[season])),
+        tracks: TRACKS.len() as u32,
+        drivers: NAMES.len() as u32,
+        top: ranking(season).into_iter().take(3).map(|r| r.driver).collect(),
+    }
+}
+
+fn global() -> Vec<RankEntry> {
+    let mut total: Vec<(usize, f32, u32, u32)> = (0..NAMES.len()).map(|d| (d, 0., 0, 0)).collect();
+    for s in 0..YEARS.len() {
+        for r in ranking(s) {
+            let at = r.driver.id.parse::<usize>().unwrap_or(1000) - 1000;
+            total[at].1 += r.points / (100. * TRACKS.len() as f32) * 100.;
+            total[at].2 += r.wins;
+            total[at].3 += r.podiums;
+        }
+    }
+    total.sort_by(|a, b| b.1.total_cmp(&a.1));
+    total
+        .into_iter()
+        .enumerate()
+        .map(|(i, (d, score, wins, podiums))| RankEntry {
+            rank: i as u32 + 1,
+            driver: driver(d),
+            points: score,
+            wins,
+            podiums,
+        })
+        .collect()
 }
 
 fn gate(mode: Mode) -> Result<(), OnlineError> {
@@ -60,165 +199,139 @@ fn gate(mode: Mode) -> Result<(), OnlineError> {
     }
 }
 
+fn find(season_key: &str) -> usize {
+    YEARS.iter().position(|y| season_id(y) == season_key).unwrap_or(0)
+}
+
 impl BoardsApi for MockBoards {
-    fn seasons(&self) -> Result<Vec<Season>, OnlineError> {
+    fn overview(&self) -> Result<Overview, OnlineError> {
         gate(self.mode)?;
         if self.mode == Mode::Empty {
-            return Ok(Vec::new());
+            return Ok(Overview {
+                seasons: Vec::new(),
+                global: Vec::new(),
+                custom: Vec::new(),
+                me: None,
+            });
         }
-        let track = |track: &str, laps, players, best| SeasonTrack {
-            track: track.to_owned(),
-            name: None,
-            custom: false,
-            weather: "dry".to_owned(),
-            laps,
-            players,
-            best_ms: Some(best),
-        };
-        Ok(vec![
-            Season {
-                content: "swofty.swofty-2022/f1_2022".into(),
-                name: "F1 2022".into(),
-                tracks: vec![
-                    track("bahrain", 41, 17, 91234),
-                    track("jeddah", 28, 12, 88410),
-                    track("monza", 19, 9, 80102),
-                    track("spa", 33, 14, 103877),
-                ],
-            },
-            Season {
-                content: "swofty.classic-2019/f1_2019".into(),
-                name: "F1 2019".into(),
-                tracks: vec![track("melbourne", 12, 6, 84551)],
-            },
-            Season {
-                content: "game/f1_2025".into(),
-                name: "F1 25 (stock)".into(),
-                tracks: Vec::new(),
-            },
-        ])
+        let mut custom = track_card(6, 2);
+        custom.name = "Hockenheimring".into();
+        custom.custom = true;
+        custom.flag = Some("de".into());
+        Ok(Overview {
+            seasons: (0..YEARS.len()).rev().map(season_card).collect(),
+            global: global(),
+            custom: vec![custom],
+            me: None,
+        })
     }
 
-    fn tracks(&self) -> Result<Vec<TrackEntry>, OnlineError> {
+    fn season(&self, id: &str) -> Result<SeasonPage, OnlineError> {
         gate(self.mode)?;
-        if self.mode == Mode::Empty {
-            return Ok(Vec::new());
-        }
-        let board = |content: &str, name: &str, laps, best, who: &str| TrackBoard {
-            content: content.to_owned(),
-            name: name.to_owned(),
-            weather: "dry".to_owned(),
-            laps,
-            best_ms: Some(best),
-            best_user: Some(who.to_owned()),
-        };
-        Ok(vec![
-            TrackEntry {
-                track: "bahrain".into(),
-                name: None,
-                addon: None,
-                custom: false,
-                boards: vec![board(
-                    "swofty.swofty-2022/f1_2022",
-                    "F1 2022",
-                    41,
-                    91234,
-                    "swofty",
-                )],
-            },
-            TrackEntry {
-                track: "swofty.hockenheim:hockenheim".into(),
-                name: Some("Hockenheimring".into()),
-                addon: Some("swofty.hockenheim".into()),
-                custom: true,
-                boards: vec![
-                    board("swofty.swofty-2022/f1_2022", "F1 2022", 12, 58815, "driver1"),
-                    board("swofty.classic-2019/f1_2019", "F1 2019", 4, 61002, "kerbs"),
-                ],
-            },
-            TrackEntry {
-                track: "monza".into(),
-                name: None,
-                addon: None,
-                custom: false,
-                boards: vec![board(
-                    "swofty.swofty-2022/f1_2022",
-                    "F1 2022",
-                    19,
-                    80102,
-                    "Tommaso23",
-                )],
-            },
-        ])
+        let s = find(id);
+        Ok(SeasonPage {
+            season: season_card(s),
+            ranking: ranking(s),
+            tracks: (0..TRACKS.len()).map(|t| track_card(s, t)).collect(),
+        })
     }
 
-    fn board(
-        &self,
-        content: &str,
-        track: &str,
-        weather: &str,
-        _limit: u32,
-        _offset: u32,
-    ) -> Result<Board, OnlineError> {
+    fn board(&self, k: &BoardKey, filter: &Filter, _offset: u32) -> Result<BoardPage, OnlineError> {
         gate(self.mode)?;
-        let rows = if self.mode == Mode::Empty {
-            Vec::new()
-        } else {
-            (0..12)
-                .map(|i| {
-                    let time = 91234 + i as u64 * 437 + (i as u64 * i as u64) * 11;
-                    let s1 = time * 32 / 100;
-                    let s2 = time * 34 / 100;
-                    BoardRow {
-                        rank: i as u32 + 1,
-                        lap_id: format!("3f9c0a1e5b7d4c{i:02}"),
-                        user: user(i),
-                        time_ms: time,
-                        sectors_ms: vec![s1, s2, time - s1 - s2],
-                        car: Some(Car {
-                            team: Some("ferrari".into()),
-                            driver: Some("leclerc".into()),
-                        }),
-                        set_at: format!("2026-11-{:02}T04:10:11Z", 10 - (i % 9)),
-                        status: if i == 4 { "unranked" } else { "ranked" }.into(),
-                    }
-                })
-                .collect()
-        };
-        Ok(Board {
-            content: content.to_owned(),
-            track: track.to_owned(),
-            weather: weather.to_owned(),
-            name: "F1 2022".into(),
-            track_name: None,
+        let s = find(&k.content);
+        let t = TRACKS.iter().position(|x| x.0 == k.track).unwrap_or(0);
+        let rows: Vec<Row> = order(s, t)
+            .into_iter()
+            .enumerate()
+            .filter(|(place, _)| !filter.wheel || place % 2 == 0)
+            .enumerate()
+            .map(|(rank, (place, d))| {
+                let time = time_of(s, t, place);
+                let s1 = time * 31 / 100 + seed(d, 1) % 40;
+                let s2 = time * 35 / 100 + seed(d, 2) % 40;
+                Row {
+                    rank: rank as u32 + 1,
+                    lap_id: format!("lap{s}{t}{d:02}"),
+                    driver: driver(d),
+                    time_ms: time,
+                    sectors_ms: vec![s1, s2, time - s1 - s2],
+                    car: Some(["ferrari sf-22", "mercedes w13", "red bull rb18"][d % 3].to_owned()),
+                    date: format!("2026-11-{:02}T04:10:11Z", 10 - (d % 9)),
+                    verified: place != 4,
+                }
+            })
+            .collect();
+        let history = (0..5)
+            .map(|i| HistoryPoint {
+                time_ms: record_ms(s, t) + (5 - i) * 420,
+                driver: driver((i as usize * 3 + t) % NAMES.len()),
+                date: format!("2026-0{}-1{}", 4 + i, i),
+            })
+            .collect();
+        Ok(BoardPage {
+            track: track_card(s, t),
+            season: format!("F1 {}", YEARS[s]),
             total: rows.len() as u32,
+            mine: rows.get(6).cloned(),
             rows,
+            history,
         })
     }
 
-    fn driver(&self, id: &str) -> Result<Driver, OnlineError> {
+    fn profile(&self, id: &str) -> Result<Profile, OnlineError> {
         gate(self.mode)?;
-        let i = id.parse::<usize>().unwrap_or(1000) - 1000;
-        let best = |track: &str, time, rank| DriverBest {
-            content: "swofty.swofty-2022/f1_2022".into(),
-            name: "F1 2022".into(),
-            track: track.to_owned(),
-            track_name: None,
-            weather: "dry".into(),
-            lap_id: format!("a1b2c3d4e5f6{:04}", time % 10000),
-            time_ms: time,
-            rank: Some(rank),
-            status: "ranked".into(),
-            set_at: "2026-11-09T18:22:01Z".into(),
+        let d = id.parse::<usize>().unwrap_or(1000) - 1000;
+        let all = global();
+        let entry = all.iter().find(|r| r.driver.id == id).cloned();
+        let seasons = (0..YEARS.len())
+            .rev()
+            .filter_map(|s| {
+                ranking(s)
+                    .into_iter()
+                    .find(|r| r.driver.id == id)
+                    .map(|r| SeasonStanding {
+                        season: format!("F1 {}", YEARS[s]),
+                        rank: r.rank,
+                        points: r.points,
+                    })
+            })
+            .collect();
+        let best = |s: usize, t: usize| {
+            let place = order(s, t).iter().position(|x| *x == d).unwrap_or(5);
+            BestLap {
+                season: format!("F1 {}", YEARS[s]),
+                track: TRACKS[t].1.to_owned(),
+                key: key(s, t),
+                time_ms: time_of(s, t, place),
+                position: place as u32 + 1,
+                lap_id: format!("lap{s}{t}{d:02}"),
+                date: "2026-11-09T18:22:01Z".into(),
+            }
         };
-        Ok(Driver {
-            user: user(i),
-            bests: vec![
-                best("bahrain", 91234, 1),
-                best("jeddah", 88910, 3),
-                best("monza", 80502, 2),
-                best("spa", 104310, 5),
-            ],
+        Ok(Profile {
+            driver: driver(d),
+            global: entry,
+            seasons,
+            bests: (0..6).map(|i| best(6 - i % 3, i)).collect(),
+            recent: (0..4).map(|i| best(5, i + 2)).collect(),
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_mock_has_seasons_a_ranking_and_boards() {
+        let api = MockBoards { mode: Mode::Full };
+        let o = api.overview().unwrap();
+        assert_eq!(o.seasons.len(), 7);
+        assert_eq!(o.global[0].rank, 1);
+        assert!(o.global[0].points >= o.global[1].points);
+        let s = api.season(&o.seasons[0].id).unwrap();
+        assert_eq!(s.tracks.len(), 8);
+        let b = api.board(&s.tracks[0].key, &Filter::default(), 0).unwrap();
+        assert!(b.rows.windows(2).all(|w| w[0].time_ms <= w[1].time_ms));
     }
 }

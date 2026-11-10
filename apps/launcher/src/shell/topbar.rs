@@ -182,6 +182,17 @@ impl Shell {
             cx.notify();
             return;
         }
+        if self.nav.is_none()
+            && self.page == Page::Online
+            && self.root_focus.is_focused(window)
+            && plain
+            && (matches!(key, "down" | "right" | "enter" | "escape" | "backspace")
+                || (matches!(key, "up" | "left") && self.online_has_cursor()))
+            && self.online_key(key, cx)
+        {
+            cx.stop_propagation();
+            return;
+        }
         let Some(mut cursor) = self.nav else {
             let wanted = key == "up"
                 && plain
@@ -522,7 +533,8 @@ impl Shell {
                 let d = if active {
                     d.text_color(rgb(0xffffff))
                 } else {
-                    d.text_color(p.text_muted).hover(move |s| s.text_color(p.text))
+                    let hint = tab.tint(&p).opacity(0.85);
+                    d.text_color(p.text_muted).hover(move |s| s.text_color(hint))
                 };
                 d.border_color(if focused { p.accent } else { transparent_black() })
             })
@@ -530,7 +542,7 @@ impl Shell {
                 Some(data) => svg()
                     .data(&data)
                     .size(fixed(26.))
-                    .text_color(p.accent_hover)
+                    .text_color(tab.tint(&p))
                     .into_any_element(),
                 None => Icon::new(tab.icon(mp)).size(fixed(26.)).into_any_element(),
             })
@@ -681,6 +693,7 @@ impl Shell {
 
     fn link(&self, link: &Link, focused: bool, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let active = self.page == link.page;
+        let underline = self.page.tab().map_or(p.accent, |t| t.tint(&p));
         let page = link.page;
         let key = match page {
             Page::Section(i) => i + 100,
@@ -708,7 +721,7 @@ impl Shell {
                     d.text_color(p.text_muted).hover(move |s| s.text_color(p.text))
                 };
                 d.border_color(if active || focused {
-                    p.accent
+                    underline
                 } else {
                     transparent_black()
                 })

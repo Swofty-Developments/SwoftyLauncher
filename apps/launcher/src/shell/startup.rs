@@ -101,7 +101,7 @@ impl Shell {
             root_focus: cx.focus_handle(),
             profiles_open: true,
             layout_width: 1440.,
-            online: crate::online::Online::new(),
+            online: crate::online::Online::new(&root),
             open_addon: None,
             install: None,
             copies: Vec::new(),

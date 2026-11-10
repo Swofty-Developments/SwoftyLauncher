@@ -1,12 +1,21 @@
 mod api;
+mod board;
+mod images;
+mod landing;
 mod mock;
+mod model;
+mod profile;
 mod replay;
-mod view;
+mod season;
+mod widgets;
 
 use crate::shell::Shell;
-use api::{Board, BoardsApi, Driver, HttpBoards, OnlineError, PAGE_SIZE, Season, TrackEntry, User};
+use api::{BoardsApi, HttpBoards};
 use gpui_kit::*;
+use images::{Art, Images};
+use model::*;
 use replay::{NotYet, Replays};
+use std::collections::HashMap;
 use std::sync::Arc;
 
 pub(crate) enum Load<T> {
@@ -25,56 +34,52 @@ impl<T> Load<T> {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub(crate) enum Lens {
-    Seasons,
-    Tracks,
-}
-
-#[derive(Clone, PartialEq, Eq)]
-pub(crate) struct BoardKey {
-    pub content: String,
-    pub track: String,
-    pub weather: String,
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) enum Target {
+    Season(String, String),
+    Board(Box<TrackCard>, String),
+    Profile(Driver),
 }
 
 pub(crate) struct Online {
     api: Arc<dyn BoardsApi>,
     replays: Box<dyn Replays>,
     pretend_running: bool,
-    lens: Lens,
-    seasons: Load<Vec<Season>>,
-    tracks: Load<Vec<TrackEntry>>,
-    open: Option<BoardKey>,
-    board: Load<Board>,
+    trail: Trail,
+    overview: Load<Overview>,
+    seasons: HashMap<String, Load<SeasonPage>>,
+    profiles: HashMap<String, Load<Profile>>,
+    board: Option<(BoardKey, Load<BoardPage>)>,
+    filter: Filter,
     more: bool,
-    driver: Option<(User, Load<Driver>)>,
+    images: Images,
     viewing: Option<String>,
+    cursor: Option<usize>,
+    items: Vec<Target>,
     epoch: u64,
 }
 
 impl Online {
-    pub(crate) fn new() -> Self {
+    pub(crate) fn new(data: &std::path::Path) -> Self {
         let (api, pretend_running): (Arc<dyn BoardsApi>, bool) = match mock_mode() {
             Some(mode) => (Arc::new(mock::MockBoards { mode }), true),
             None => (Arc::new(HttpBoards::new()), false),
         };
-        Self::with(api, pretend_running)
-    }
-
-    fn with(api: Arc<dyn BoardsApi>, pretend_running: bool) -> Self {
         Self {
             api,
             replays: Box::new(NotYet),
             pretend_running,
-            lens: Lens::Seasons,
-            seasons: Load::Idle,
-            tracks: Load::Idle,
-            open: None,
-            board: Load::Idle,
+            trail: Trail::new(),
+            overview: Load::Idle,
+            seasons: HashMap::new(),
+            profiles: HashMap::new(),
+            board: None,
+            filter: Filter::default(),
             more: false,
-            driver: None,
+            images: Images::new(data),
             viewing: None,
+            cursor: None,
+            items: Vec::new(),
             epoch: 0,
         }
     }
@@ -88,9 +93,20 @@ fn mock_mode() -> Option<mock::Mode> {
     }
 }
 
+fn art_urls<'a>(
+    drivers: impl IntoIterator<Item = &'a Driver>,
+    extra: impl IntoIterator<Item = Option<&'a String>>,
+) -> Vec<String> {
+    drivers
+        .into_iter()
+        .filter_map(|d| d.avatar.clone())
+        .chain(extra.into_iter().flatten().cloned())
+        .collect()
+}
+
 impl Shell {
     pub(crate) fn online_enter(&mut self, cx: &mut Context<Self>) {
-        if matches!(self.online.seasons, Load::Idle) {
+        if matches!(self.online.overview, Load::Idle) {
             self.online_reload(cx);
         }
     }
@@ -98,56 +114,99 @@ impl Shell {
     pub(crate) fn online_reload(&mut self, cx: &mut Context<Self>) {
         self.online.epoch += 1;
         let epoch = self.online.epoch;
-        self.online.seasons = Load::Loading;
-        self.online.tracks = Load::Loading;
-        let (a, b) = (self.online.api.clone(), self.online.api.clone());
-        cx.spawn(async move |this, cx| {
-            let seasons = cx.background_executor().spawn(async move { a.seasons() }).await;
-            this.update(cx, |s, cx| {
-                if s.online.epoch == epoch {
-                    s.online.seasons = Load::from(seasons);
-                    cx.notify();
-                }
-            })
-            .ok();
-        })
-        .detach();
-        cx.spawn(async move |this, cx| {
-            let tracks = cx.background_executor().spawn(async move { b.tracks() }).await;
-            this.update(cx, |s, cx| {
-                if s.online.epoch == epoch {
-                    s.online.tracks = Load::from(tracks);
-                    cx.notify();
-                }
-            })
-            .ok();
-        })
-        .detach();
-        if let Some(key) = self.online.open.clone() {
-            self.online_open_board(key, cx);
-        }
-        cx.notify();
-    }
-
-    pub(crate) fn online_open_board(&mut self, key: BoardKey, cx: &mut Context<Self>) {
-        self.online.epoch += 1;
-        let epoch = self.online.epoch;
-        self.online.open = Some(key.clone());
-        self.online.board = Load::Loading;
-        self.online.driver = None;
-        self.online.viewing = None;
+        self.online.overview = Load::Loading;
+        self.online.seasons.clear();
+        self.online.profiles.clear();
         let api = self.online.api.clone();
         cx.spawn(async move |this, cx| {
-            let k = key.clone();
-            let board = cx
+            let overview = cx
                 .background_executor()
-                .spawn(async move { api.board(&k.content, &k.track, &k.weather, PAGE_SIZE, 0) })
+                .spawn(async move { api.overview() })
                 .await;
             this.update(cx, |s, cx| {
-                if s.online.epoch == epoch && s.online.open.as_ref() == Some(&key) {
-                    s.online.board = Load::from(board);
-                    cx.notify();
+                if s.online.epoch != epoch {
+                    return;
                 }
+                if let Ok(o) = &overview {
+                    let urls = art_urls(
+                        o.global
+                            .iter()
+                            .map(|r| &r.driver)
+                            .chain(o.seasons.iter().flat_map(|s| &s.top)),
+                        o.seasons
+                            .iter()
+                            .map(|s| s.cover.as_ref())
+                            .chain(o.custom.iter().map(|t| t.layout.as_ref())),
+                    );
+                    s.online_prefetch(urls, cx);
+                }
+                s.online.overview = Load::from(overview);
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
+        match self.online.trail.current().clone() {
+            Screen::Landing => {}
+            Screen::Season(id) => self.online_load_season(&id, cx),
+            Screen::Board(key) => self.online_load_board(key, 0, cx),
+            Screen::Profile(id) => self.online_load_profile(&id, cx),
+        }
+        cx.notify();
+    }
+
+    fn online_prefetch(&mut self, urls: Vec<String>, cx: &mut Context<Self>) {
+        let dir = self.online.images.dir();
+        for url in self.online.images.wanted(urls) {
+            let dir = dir.clone();
+            cx.spawn(async move |this, cx| {
+                let u = url.clone();
+                let art: Option<Art> = cx
+                    .background_executor()
+                    .spawn(async move { images::load(&dir, &u) })
+                    .await;
+                this.update(cx, |s, cx| {
+                    s.online.images.finish(url, art);
+                    cx.notify();
+                })
+                .ok();
+            })
+            .detach();
+        }
+    }
+
+    pub(crate) fn online_load_season(&mut self, id: &str, cx: &mut Context<Self>) {
+        if matches!(self.online.seasons.get(id), Some(Load::Ready(_) | Load::Loading)) {
+            return;
+        }
+        self.online.seasons.insert(id.to_owned(), Load::Loading);
+        let (api, key, epoch) = (self.online.api.clone(), id.to_owned(), self.online.epoch);
+        cx.spawn(async move |this, cx| {
+            let k = key.clone();
+            let page = cx
+                .background_executor()
+                .spawn(async move { api.season(&k) })
+                .await;
+            this.update(cx, |s, cx| {
+                if s.online.epoch != epoch {
+                    return;
+                }
+                if let Ok(p) = &page {
+                    let urls = art_urls(
+                        p.ranking
+                            .iter()
+                            .map(|r| &r.driver)
+                            .chain(p.tracks.iter().flat_map(|t| t.podium.iter().map(|e| &e.driver)))
+                            .chain(p.season.top.iter()),
+                        p.tracks
+                            .iter()
+                            .map(|t| t.layout.as_ref())
+                            .chain([p.season.cover.as_ref()]),
+                    );
+                    s.online_prefetch(urls, cx);
+                }
+                s.online.seasons.insert(key, Load::from(page));
+                cx.notify();
             })
             .ok();
         })
@@ -155,30 +214,49 @@ impl Shell {
         cx.notify();
     }
 
-    pub(crate) fn online_more(&mut self, cx: &mut Context<Self>) {
-        let (Some(key), Load::Ready(board)) = (self.online.open.clone(), &self.online.board) else {
-            return;
-        };
-        if self.online.more {
-            return;
+    pub(crate) fn online_load_board(&mut self, key: BoardKey, offset: u32, cx: &mut Context<Self>) {
+        if offset == 0 {
+            self.online.board = Some((key.clone(), Load::Loading));
+        } else {
+            if self.online.more {
+                return;
+            }
+            self.online.more = true;
         }
-        self.online.more = true;
-        let offset = board.rows.len() as u32;
-        let epoch = self.online.epoch;
-        let api = self.online.api.clone();
+        self.online.viewing = None;
+        let (api, filter, epoch) = (
+            self.online.api.clone(),
+            self.online.filter.clone(),
+            self.online.epoch,
+        );
         cx.spawn(async move |this, cx| {
             let k = key.clone();
-            let next = cx
+            let page = cx
                 .background_executor()
-                .spawn(async move { api.board(&k.content, &k.track, &k.weather, PAGE_SIZE, offset) })
+                .spawn(async move { api.board(&k, &filter, offset) })
                 .await;
             this.update(cx, |s, cx| {
                 s.online.more = false;
-                if s.online.epoch == epoch
-                    && let (Ok(next), Load::Ready(board)) = (next, &mut s.online.board)
-                {
-                    board.total = next.total;
-                    board.rows.extend(next.rows);
+                if s.online.epoch != epoch || s.online.board.as_ref().map(|b| &b.0) != Some(&key) {
+                    return;
+                }
+                if let Ok(p) = &page {
+                    let urls = art_urls(
+                        p.rows
+                            .iter()
+                            .map(|r| &r.driver)
+                            .chain(p.history.iter().map(|h| &h.driver)),
+                        [p.track.layout.as_ref()],
+                    );
+                    s.online_prefetch(urls, cx);
+                }
+                match (offset, page, s.online.board.as_mut()) {
+                    (0, page, Some(slot)) => slot.1 = Load::from(page),
+                    (_, Ok(next), Some((_, Load::Ready(cur)))) => {
+                        cur.total = next.total;
+                        cur.rows.extend(next.rows);
+                    }
+                    _ => {}
                 }
                 cx.notify();
             })
@@ -188,36 +266,27 @@ impl Shell {
         cx.notify();
     }
 
-    pub(crate) fn online_close_board(&mut self, cx: &mut Context<Self>) {
-        self.online.epoch += 1;
-        self.online.open = None;
-        self.online.board = Load::Idle;
-        self.online.driver = None;
-        self.online.viewing = None;
-        cx.notify();
-    }
-
-    pub(crate) fn online_open_driver(&mut self, user: User, cx: &mut Context<Self>) {
-        self.online.epoch += 1;
-        let epoch = self.online.epoch;
-        let id = user.id.clone();
-        self.online.driver = Some((user, Load::Loading));
-        self.online.viewing = None;
-        let api = self.online.api.clone();
+    pub(crate) fn online_load_profile(&mut self, id: &str, cx: &mut Context<Self>) {
+        if matches!(self.online.profiles.get(id), Some(Load::Ready(_) | Load::Loading)) {
+            return;
+        }
+        self.online.profiles.insert(id.to_owned(), Load::Loading);
+        let (api, key, epoch) = (self.online.api.clone(), id.to_owned(), self.online.epoch);
         cx.spawn(async move |this, cx| {
-            let who = id.clone();
-            let driver = cx
+            let k = key.clone();
+            let page = cx
                 .background_executor()
-                .spawn(async move { api.driver(&who) })
+                .spawn(async move { api.profile(&k) })
                 .await;
             this.update(cx, |s, cx| {
-                if s.online.epoch == epoch
-                    && let Some((u, state)) = &mut s.online.driver
-                    && u.id == id
-                {
-                    *state = Load::from(driver);
-                    cx.notify();
+                if s.online.epoch != epoch {
+                    return;
                 }
+                if let Ok(p) = &page {
+                    s.online_prefetch(art_urls([&p.driver], p.bests.iter().map(|_| None)), cx);
+                }
+                s.online.profiles.insert(key, Load::from(page));
+                cx.notify();
             })
             .ok();
         })
@@ -225,13 +294,117 @@ impl Shell {
         cx.notify();
     }
 
-    pub(crate) fn online_close_driver(&mut self, cx: &mut Context<Self>) {
-        self.online.driver = None;
+    pub(crate) fn online_go(&mut self, target: Target, cx: &mut Context<Self>) {
+        self.online.cursor = None;
         self.online.viewing = None;
+        match target {
+            Target::Season(id, name) => {
+                self.online.trail.push(Screen::Season(id.clone()), name);
+                self.online_load_season(&id, cx);
+            }
+            Target::Board(card, label) => {
+                let key = card.key.clone();
+                self.online.trail.push(Screen::Board(key.clone()), label);
+                self.online.filter = Filter::default();
+                self.online_load_board(key, 0, cx);
+            }
+            Target::Profile(driver) => {
+                self.online
+                    .trail
+                    .push(Screen::Profile(driver.id.clone()), driver.name.clone());
+                self.online_load_profile(&driver.id, cx);
+            }
+        }
         cx.notify();
+    }
+
+    pub(crate) fn online_back(&mut self, cx: &mut Context<Self>) {
+        self.online.cursor = None;
+        self.online.trail.back();
+        self.online_reenter(cx);
+    }
+
+    pub(crate) fn online_jump(&mut self, depth: usize, cx: &mut Context<Self>) {
+        self.online.cursor = None;
+        self.online.trail.jump(depth);
+        self.online_reenter(cx);
+    }
+
+    fn online_reenter(&mut self, cx: &mut Context<Self>) {
+        if let Screen::Board(key) = self.online.trail.current().clone()
+            && self.online.board.as_ref().map(|b| &b.0) != Some(&key)
+        {
+            self.online_load_board(key, 0, cx);
+        }
+        cx.notify();
+    }
+
+    pub(crate) fn online_set_filter(&mut self, filter: Filter, cx: &mut Context<Self>) {
+        self.online.filter = filter;
+        if let Screen::Board(key) = self.online.trail.current().clone() {
+            self.online_load_board(key, 0, cx);
+        }
     }
 
     pub(crate) fn online_game_running(&self) -> bool {
         self.online.pretend_running || matches!(self.play_state(), crate::shell::PlayState::Running)
+    }
+
+    pub(crate) fn online_has_cursor(&self) -> bool {
+        self.online.cursor.is_some()
+    }
+
+    pub(crate) fn online_key(&mut self, key: &str, cx: &mut Context<Self>) -> bool {
+        let n = self.online.items.len();
+        if n == 0 {
+            return key == "escape" && self.online.trail.depth() > 1 && {
+                self.online_back(cx);
+                true
+            };
+        }
+        let at = self.online.cursor;
+        match key {
+            "down" | "right" => self.online.cursor = Some(at.map_or(0, |i| (i + 1).min(n - 1))),
+            "up" | "left" => self.online.cursor = Some(at.map_or(0, |i| i.saturating_sub(1))),
+            "enter" => {
+                if let Some(t) = at.and_then(|i| self.online.items.get(i)).cloned() {
+                    self.online_go(t, cx);
+                }
+                return true;
+            }
+            "escape" | "backspace" => {
+                if self.online.trail.depth() > 1 {
+                    self.online_back(cx);
+                    return true;
+                }
+                return false;
+            }
+            _ => return false,
+        }
+        cx.notify();
+        true
+    }
+}
+
+impl Shell {
+    pub(crate) fn online_page(&mut self, p: crate::theme::Palette, cx: &mut Context<Self>) -> AnyElement {
+        use crate::scale::px;
+        use gpui_kit::component::v_flex;
+        self.online_enter(cx);
+        let crumbs = self.crumb_bar(p, cx);
+        let banner = self.sign_in_banner(p, cx);
+        let body = match self.online.trail.current().clone() {
+            Screen::Landing => self.online_landing(p, cx),
+            Screen::Season(id) => self.online_season(&id, p, cx),
+            Screen::Board(_) => self.online_board(p, cx),
+            Screen::Profile(id) => self.online_profile(&id, p, cx),
+        };
+        let _ = px;
+        v_flex()
+            .size_full()
+            .child(crumbs)
+            .children(banner)
+            .child(v_flex().flex_1().min_h_0().child(body))
+            .into_any_element()
     }
 }
