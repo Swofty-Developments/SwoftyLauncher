@@ -426,7 +426,7 @@ impl Shell {
             Button::new(id)
                 .small()
                 .when_else(mode == key, |b| b.primary(), |b| b.outline())
-                .label(tr(label))
+                .label(label)
                 .on_click(cx.listener(move |this, _, _, cx| {
                     this.support.mode = key.to_owned();
                     cx.notify();
@@ -459,8 +459,8 @@ impl Shell {
                         .gap(px(8.))
                         .items_center()
                         .child(muted(tr("Show me as"), p))
-                        .child(choice("mode-discord", "discord", "Discord name & avatar", cx))
-                        .child(choice("mode-anon", "anonymous", "Anonymous", cx)),
+                        .child(choice("mode-discord", "discord", tr("Discord name & avatar"), cx))
+                        .child(choice("mode-anon", "anonymous", tr("Anonymous"), cx)),
                 )
                 .child(
                     h_flex().child(
