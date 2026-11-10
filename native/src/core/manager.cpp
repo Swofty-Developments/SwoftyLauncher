@@ -2190,6 +2190,11 @@ std::string build_distribution()
     return build_tag;
 }
 
+std::string build_exe_sha()
+{
+    return exe_sha;
+}
+
 std::string mixin_overwrite_on(const std::string &binding, uintptr_t at)
 {
     std::lock_guard<std::recursive_mutex> c(commit_lock);

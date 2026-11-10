@@ -173,6 +173,7 @@ void save_splice_commit();
 // distribution as the binding set names it: "steam", "ea" or "unknown".
 const std::string &settings_json_text();
 std::string build_distribution();
+std::string build_exe_sha();
 // Career saves (career_saves.cpp): the career index and per-career addon data.
 namespace career_saves {
 struct SlotRead;
@@ -293,6 +294,11 @@ void postfx_setup();
 void telemetry_setup();
 void telemetry_tick();
 void telemetry_session_enter();
+void lap_rec_setup();
+void lap_rec_tick();
+void lap_rec_session_enter();
+void lap_rec_session_end();
+void lap_rec_newlap(int car);
 bool telemetry_wants_udp();
 void telemetry_udp(const uint8_t *buf, size_t len);
 void placed_record_setup();
