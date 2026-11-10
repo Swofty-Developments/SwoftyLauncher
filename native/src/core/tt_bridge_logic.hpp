@@ -1,5 +1,7 @@
 #pragma once
 
+#include "apply/tracks/base.hpp"
+
 #include <swofty/json.hpp>
 
 #include <algorithm>
@@ -23,6 +25,7 @@ constexpr int64_t TIMEOUT_MS = 8000;
 constexpr size_t MAX_PENDING = 32;
 constexpr int FIRST_ADDON_DESCRIPTOR = 6, LAST_NAMED_DESCRIPTOR = 99;
 constexpr size_t MAX_XML_BOARDS = 6000;
+constexpr int MAX_TRACK_NUMBER = 999;
 constexpr size_t ID_BLOCK = 0x30;
 
 enum class Say { none, line, last };
@@ -312,13 +315,71 @@ inline Method method_at_op(const Mem &m, uint64_t op, std::string *name = nullpt
     return Method::none;
 }
 
+// Board track keys
+
+struct BoardTrack {
+    std::string key, addon, name, kind;
+    int stat_id = -1;
+    bool custom = false, known = false;
+};
+
+inline std::string lower_ascii(std::string s)
+{
+    for (char &c : s)
+        if (c >= 'A' && c <= 'Z')
+            c = char(c - 'A' + 'a');
+    return s;
+}
+
+// The key a board carries for a track: the code for a stock track, `<addon id>:<code>` for a track an addon adds or
+// fills. stat_hint picks between rows that share a code. A code the base does not list, or a base that is not ready,
+// gives the lowercased code, custom false and known false.
+inline BoardTrack board_track(const swofty_core::apply::tracks::Base &base, std::string_view code, int stat_hint = -1)
+{
+    namespace at = swofty_core::apply::tracks;
+    BoardTrack out;
+    out.key = lower_ascii(std::string(code));
+    if (!base.ready || code.empty())
+        return out;
+    const at::BaseTrack *row = nullptr;
+    std::string lowered = out.key;
+    for (const at::BaseTrack &t : base.tracks)
+        if (lower_ascii(t.code) == lowered && (!row || (stat_hint >= 0 && t.stat_id == stat_hint && row->stat_id != stat_hint)))
+            row = &t;
+    if (!row)
+        return out;
+    out.known = true;
+    out.stat_id = row->stat_id;
+    out.name = row->name;
+    if (row->kind == at::Kind::stock)
+        return out;
+    out.custom = true;
+    out.addon = row->addon;
+    out.kind = at::kind_name(row->kind);
+    out.key = lower_ascii(row->addon + ":" + row->code);
+    return out;
+}
+
+// The track a request is about: the board name's track number through the base when the base has that stat id, else the
+// session's current track.
+inline BoardTrack request_track(const swofty_core::apply::tracks::Base &base, const BoardName &board, std::string_view session_code)
+{
+    if (board.ok && base.ready)
+        if (const auto *t = base.by_stat_id(board.track))
+            return board_track(base, t->code, board.track);
+    return board_track(base, session_code);
+}
+
+// One rule for "this board is ours": an addon's descriptor or a custom track. The request redirect and the guards use it.
+inline bool ours(int descriptor, bool track_custom) { return descriptor >= FIRST_ADDON_DESCRIPTOR || track_custom; }
+
 // Routing
 
 enum class Route { pass, mailbox, local };
 
-inline Route route_of(Method method, const BoardName &b, bool bridge_on)
+inline Route route_of(Method method, const BoardName &b, bool bridge_on, bool track_custom = false)
 {
-    if (method == Method::none || !b.addon())
+    if (method == Method::none || !b.ok || !ours(b.descriptor, track_custom))
         return Route::pass;
     if (bridge_on)
         return Route::mailbox;
@@ -332,6 +393,11 @@ inline const char *local_body(Method method) { return method == Method::add_entr
 inline bool addon_content(std::string_view content)
 {
     return !content.empty() && content.substr(0, 5) != "game/";
+}
+
+inline bool ours_session(std::string_view content, bool track_custom)
+{
+    return ours(addon_content(content) ? FIRST_ADDON_DESCRIPTOR : 0, track_custom);
 }
 
 // Mailbox
@@ -572,6 +638,7 @@ struct XmlReport {
     std::string why;
     std::string template_name;
     size_t added = 0, descriptors = 0, tracks = 0, existing = 0, capped = 0;
+    size_t custom_tracks = 0, custom_added = 0, stock_descriptors = 0;
     int64_t first_id = -1, last_id = -1;
 };
 
@@ -700,9 +767,11 @@ inline std::string clone_element(const std::string &x, const XmlElement &t, int6
     return opening + text.substr(open_len);
 }
 
-// Clones the first LBV element of the buffer once per addon descriptor, track the buffer's stock boards carry and
-// weather, with ids above every id present, after the last leaderboard element.
-inline std::string extend_xml(const std::string &x, const std::vector<int> &descriptors, XmlReport &rep)
+// Clones the first LBV element of the buffer once per board a descriptor and track call for, ids above every id present,
+// after the last leaderboard element: every addon descriptor over the stock tracks and the custom tracks' stat ids, and
+// every stock descriptor the buffer uses over the custom stat ids. A name the buffer defines is never added again.
+inline std::string extend_xml(const std::string &x, const std::vector<int> &descriptors, const std::vector<int> &custom_stat_ids,
+                              XmlReport &rep)
 {
     rep = XmlReport{};
     auto elements = leaderboard_elements(x);
@@ -712,7 +781,7 @@ inline std::string extend_xml(const std::string &x, const std::vector<int> &desc
     }
     const XmlElement *tmpl = nullptr;
     int64_t max_id = -1;
-    std::set<int> tracks;
+    std::set<int> tracks, stock_descriptors;
     std::set<std::string> names;
     for (auto &e : elements) {
         max_id = std::max(max_id, e.id_value);
@@ -720,6 +789,8 @@ inline std::string extend_xml(const std::string &x, const std::vector<int> &desc
         BoardName b = parse_board(e.name);
         if (b.ok) {
             tracks.insert(b.track);
+            if (b.descriptor < FIRST_ADDON_DESCRIPTOR)
+                stock_descriptors.insert(b.descriptor);
             if (!tmpl && e.id_value >= 0)
                 tmpl = &e;
         }
@@ -733,12 +804,20 @@ inline std::string extend_xml(const std::string &x, const std::vector<int> &desc
     for (int d : descriptors)
         if (d >= FIRST_ADDON_DESCRIPTOR && d <= LAST_NAMED_DESCRIPTOR)
             want.insert(d);
+    std::set<int> custom;
+    for (int t : custom_stat_ids)
+        if (t >= 0 && t <= MAX_TRACK_NUMBER)
+            custom.insert(t);
     rep.descriptors = want.size();
     rep.tracks = tracks.size();
-    if (want.empty()) {
-        rep.why = "no addon descriptor ids are assigned yet";
+    rep.custom_tracks = custom.size();
+    rep.stock_descriptors = custom.empty() ? 0 : stock_descriptors.size();
+    if (want.empty() && custom.empty()) {
+        rep.why = "no addon descriptor ids are assigned yet and no custom tracks";
         return x;
     }
+    std::set<int> addon_tracks = tracks;
+    addon_tracks.insert(custom.begin(), custom.end());
     const XmlElement &last = elements.back();
     size_t ls = x.rfind('\n', tmpl->begin);
     ls = ls == std::string::npos ? 0 : ls + 1;
@@ -748,27 +827,36 @@ inline std::string extend_xml(const std::string &x, const std::vector<int> &desc
     std::string eol = x.find("\r\n") != std::string::npos ? "\r\n" : "\n";
     std::string add;
     int64_t id = max_id;
+    auto add_board = [&](int d, int t, char w) {
+        std::string name = board_name(d, t, w);
+        if (names.count(name)) {
+            rep.existing++;
+            return;
+        }
+        if (rep.added >= MAX_XML_BOARDS) {
+            rep.capped++;
+            return;
+        }
+        id++;
+        if (rep.first_id < 0)
+            rep.first_id = id;
+        rep.last_id = id;
+        add += eol + indent + clone_element(x, *tmpl, id, name);
+        names.insert(name);
+        rep.added++;
+        if (custom.count(t))
+            rep.custom_added++;
+    };
     for (int d : want)
-        for (int t : tracks)
-            for (char w : {'D', 'W'}) {
-                std::string name = board_name(d, t, w);
-                if (names.count(name)) {
-                    rep.existing++;
-                    continue;
-                }
-                if (rep.added >= MAX_XML_BOARDS) {
-                    rep.capped++;
-                    continue;
-                }
-                id++;
-                if (rep.first_id < 0)
-                    rep.first_id = id;
-                rep.last_id = id;
-                add += eol + indent + clone_element(x, *tmpl, id, name);
-                rep.added++;
-            }
+        for (int t : addon_tracks)
+            for (char w : {'D', 'W'})
+                add_board(d, t, w);
+    for (int d : stock_descriptors)
+        for (int t : custom)
+            for (char w : {'D', 'W'})
+                add_board(d, t, w);
     if (!rep.added) {
-        rep.why = "every addon board is already defined";
+        rep.why = "every addon and custom track board is already defined";
         return x;
     }
     rep.changed = true;

@@ -114,7 +114,10 @@ tb::Table table(1);
 Resolved found;
 bool bridge_on = false, boards_on = false, guards_on = false, request_guard = false, push_hooked = false;
 std::atomic<bool> pb_armed{false};
-std::string last_board;
+std::string last_board, session_code;
+std::atomic<bool> session_custom{false}, track_watch{false};
+std::atomic<int64_t> track_checked_ms{0};
+std::atomic<bool> unknown_logged{false};
 std::atomic<int> pending_count{0};
 std::deque<std::unique_ptr<tb::Response>> responses;
 std::deque<std::string> xml_buffers;
@@ -210,8 +213,14 @@ void xml_mid(safetyhook::Context &c)
         else if (id > tb::LAST_NAMED_DESCRIPTOR)
             dropped++;
     }
+    std::vector<int> custom_ids;
+    const auto &track_base = swofty_core::apply::tracks::base();
+    if (track_base.ready)
+        for (const auto &t : track_base.tracks)
+            if (t.kind != swofty_core::apply::tracks::Kind::stock && t.stat_id >= 0)
+                custom_ids.push_back(t.stat_id);
     tb::XmlReport rep;
-    std::string out = tb::extend_xml(text, descriptors, rep);
+    std::string out = tb::extend_xml(text, descriptors, custom_ids, rep);
     if (!rep.template_name.empty() && n == 1) {
         for (auto &e : tb::leaderboard_elements(text))
             if (e.name == rep.template_name) {
@@ -224,8 +233,9 @@ void xml_mid(safetyhook::Context &c)
             }
     }
     if (!rep.changed) {
-        swofty::log("[boards] board definitions: left alone (%s); %zu addon descriptor(s), %zu stock track(s)%s",
-                    rep.why.c_str(), rep.descriptors, rep.tracks, dropped ? ", descriptors above 99 have no name form" : "");
+        swofty::log("[boards] board definitions: left alone (%s); %zu addon descriptor(s), %zu stock track(s), %zu custom track(s)%s%s",
+                    rep.why.c_str(), rep.descriptors, rep.tracks, rep.custom_tracks,
+                    track_base.ready ? "" : " (the track base is not ready)", dropped ? ", descriptors above 99 have no name form" : "");
         return;
     }
     xml_buffers.push_back(std::move(out));
@@ -236,9 +246,10 @@ void xml_mid(safetyhook::Context &c)
     memcpy(reinterpret_cast<void *>(at_len), &new_len, 8);
     c.rax = reinterpret_cast<uint64_t>(keep.c_str());
     swofty::log("[boards] board definitions: appended %zu board(s) for %zu addon descriptor(s) over %zu track(s) (ids %lld..%lld, %zu already "
-                "defined%s), buffer %zu -> %zu bytes",
+                "defined%s), %zu of them for %zu custom track(s) (all addon descriptors and %zu stock descriptor(s)), buffer %zu -> %zu bytes",
                 rep.added, rep.descriptors, rep.tracks, (long long)rep.first_id, (long long)rep.last_id, rep.existing,
-                rep.capped ? ", capped" : "", text.size(), keep.size());
+                rep.capped ? (", capped " + std::to_string(rep.capped)).c_str() : "", rep.custom_added, rep.custom_tracks,
+                rep.stock_descriptors, text.size(), keep.size());
 }
 
 void log_unreadable(uint64_t op, tb::Method m, const std::string &name)
@@ -271,11 +282,14 @@ void push_mid(safetyhook::Context &c)
         log_unreadable(op, m, name);
         return;
     }
+    std::string code;
     {
         std::lock_guard<std::mutex> g(lock);
         last_board = a.board_text;
+        code = session_code;
     }
-    tb::Route route = tb::route_of(m, a.board, bridge_on);
+    tb::BoardTrack track = tb::request_track(swofty_core::apply::tracks::base(), a.board, code);
+    tb::Route route = tb::route_of(m, a.board, bridge_on, track.custom);
     if (route == tb::Route::local && !request_guard)
         route = tb::Route::pass;
     if (route == tb::Route::pass || !found.on_result[int(m)]) {
@@ -284,7 +298,7 @@ void push_mid(safetyhook::Context &c)
                         a.board_text.c_str());
         else if (++logged_passes <= 3)
             swofty::log("[boards] request %s %s passes (%s board, string form %s)", name.c_str(), a.board_text.c_str(),
-                        a.board.addon() ? "addon" : "stock", tb::form_name(a.form));
+                        tb::ours(a.board.descriptor, track.custom) ? "own" : "stock", tb::form_name(a.form));
         return;
     }
     uint64_t seq;
@@ -296,20 +310,22 @@ void push_mid(safetyhook::Context &c)
     c.rax = 0;
     c.trampoline_rsp = c.rsp;
     if (++logged_requests <= 24)
-        swofty::log("[boards] request %s %s redirected (seq %llu, %s, string form %s)", name.c_str(), a.board_text.c_str(),
-                    (unsigned long long)seq, route == tb::Route::local ? "answered locally" : "to the mailbox", tb::form_name(a.form));
+        swofty::log("[boards] request %s %s redirected (seq %llu, %s, string form %s, track %s%s)", name.c_str(), a.board_text.c_str(),
+                    (unsigned long long)seq, route == tb::Route::local ? "answered locally" : "to the mailbox", tb::form_name(a.form),
+                    track.key.empty() ? "unknown" : track.key.c_str(), track.custom ? ", custom track" : "");
 }
 
 void guard_entry(safetyhook::Context &c, const char *what, std::atomic<int> &hits)
 {
     std::string content = current_content();
-    if (!tb::addon_content(content))
+    if (!tb::ours_session(content, session_custom.load(std::memory_order_relaxed)))
         return;
     c.rax = 0;
     c.trampoline_rsp = c.rsp;
     tb::Say say = tb::say(++hits);
     if (say != tb::Say::none)
-        swofty::log("[boards] guard: %s skipped for addon content %s%s", what, content.c_str(),
+        swofty::log("[boards] guard: %s skipped for %s%s", what,
+                    tb::addon_content(content) ? ("addon content " + content).c_str() : "a custom track in the game's own content",
                     say == tb::Say::last ? " (further hits are not logged)" : "");
 }
 
@@ -388,6 +404,7 @@ void setup()
     DWORD gn = GetEnvironmentVariableA("SWOFTY_TT_GUARDS", gv, sizeof gv);
     guards_on = (gate.is_object() && gate["tt_guards"].as_bool(false)) || (gn && gn < sizeof gv && !strcmp(gv, "1"));
     request_guard = guards_on && !env_off("SWOFTY_TT_REQUEST_GUARD", "addon board write guard");
+    track_watch = bridge_on || guards_on;
     table = tb::Table(unix_seconds() * 100);
     make_dirs();
 
@@ -444,9 +461,10 @@ void setup()
     install_guard(h_racenet, S_RACENET, racenet_mid, "SWOFTY_TT_RACENET_GUARD", "Racenet post guard");
 }
 
-void write_request(tb::Pending &p, const std::string &content, const std::string &track, const std::string &ghost_b64)
+void write_request(tb::Pending &p, const std::string &content, const std::string &session_track, const std::string &ghost_b64)
 {
-    std::string json = tb::request_json(p.seq, p.method, p.args, content, track, p.board, p.board_text, ghost_b64);
+    tb::BoardTrack track = tb::request_track(swofty_core::apply::tracks::base(), p.board, session_track);
+    std::string json = tb::request_json(p.seq, p.method, p.args, content, track.key, p.board, p.board_text, ghost_b64);
     std::wstring path = outbox + runtime::wide(std::to_string(p.seq) + ".json");
     p.sent = true;
     if (runtime::write_file(path, json))
@@ -480,6 +498,16 @@ namespace runtime {
 
 void tt_bridge_tick()
 {
+    if (track_watch.load(std::memory_order_relaxed)) {
+        int64_t t = now_ms();
+        if (t - track_checked_ms.load() >= 500) {
+            track_checked_ms = t;
+            std::string code = runtime::lower(direct_start::tt::current_track());
+            session_custom = tb::board_track(swofty_core::apply::tracks::base(), code).custom;
+            std::lock_guard<std::mutex> g(lock);
+            session_code = std::move(code);
+        }
+    }
     if (!pending_count.load(std::memory_order_relaxed))
         return;
     std::vector<tb::Completion> due;
@@ -491,7 +519,7 @@ void tt_bridge_tick()
             content = current_content();
             if (content.empty())
                 content = "game/f1_2025";
-            track = runtime::lower(direct_start::tt::current_track());
+            track = session_code;
             if (have_ghost_block)
                 ghost = tb::base64(ghost_block, sizeof ghost_block);
             for (auto *p : unsent)
@@ -530,6 +558,16 @@ void tt_bridge_tick()
 }
 
 bool tt_bridge_pb_armed() { return pb_armed.load(); }
+
+tt_bridge::BoardTrack tt_bridge_board_track(const std::string &code, int stat_hint)
+{
+    const auto &base = swofty_core::apply::tracks::base();
+    tt_bridge::BoardTrack t = tt_bridge::board_track(base, code, stat_hint);
+    if (!t.known && !unknown_logged.exchange(true))
+        swofty::log("[laps] track base: %s; the board key is the track code '%s' (logged once)",
+                    !base.ready ? "not ready" : code.empty() ? "the session's track is not known" : "no track with this code", t.key.c_str());
+    return t;
+}
 
 std::string tt_bridge_last_board()
 {

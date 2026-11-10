@@ -195,7 +195,7 @@ int main()
         for (bool sq : {false, true}) {
             std::string x = sample_xml(eol, sq);
             tb::XmlReport r;
-            std::string y = tb::extend_xml(x, {6, 7, 5, 300}, r);
+            std::string y = tb::extend_xml(x, {6, 7, 5, 300}, {}, r);
             auto els = tb::leaderboard_elements(y);
             std::set<int64_t> ids;
             std::set<std::string> names;
@@ -228,7 +228,7 @@ int main()
     {
         std::string x = "<leaderboards><leaderboard id=\"3\" name=\"LBV0001D\" sort=\"ascending\"/></leaderboards>";
         tb::XmlReport r;
-        std::string y = tb::extend_xml(x, {6}, r);
+        std::string y = tb::extend_xml(x, {6}, {}, r);
         auto els = tb::leaderboard_elements(y);
         expect(r.changed && els.size() == 3 && els[1].self_closing && els[1].name == "LBV0601D" && els[1].id_value == 4 && els[2].name == "LBV0601W",
                "a self-closing template is cloned self-closing");
@@ -237,19 +237,98 @@ int main()
     {
         tb::XmlReport r;
         std::string x = "<leaderboards><leaderboard name=\"Other\" id=\"1\"/></leaderboards>";
-        expect(tb::extend_xml(x, {6}, r) == x && !r.changed && !r.why.empty(), "a buffer with no LBV template is left alone and says why");
+        expect(tb::extend_xml(x, {6}, {}, r) == x && !r.changed && !r.why.empty(), "a buffer with no LBV template is left alone and says why");
         std::string none = "<root/>";
-        expect(tb::extend_xml(none, {6}, r) == none && !r.changed, "a buffer with no leaderboard is left alone");
+        expect(tb::extend_xml(none, {6}, {}, r) == none && !r.changed, "a buffer with no leaderboard is left alone");
         std::string ok = sample_xml("\n", false);
-        expect(tb::extend_xml(ok, {}, r) == ok && !r.changed && r.why.find("no addon descriptor") == 0, "no assigned descriptors leaves it alone");
-        expect(tb::extend_xml(ok, {1, 2, 5}, r) == ok, "stock descriptors are never cloned");
-        std::string once = tb::extend_xml(ok, {6}, r);
+        expect(tb::extend_xml(ok, {}, {}, r) == ok && !r.changed && r.why.find("no addon descriptor") == 0, "no assigned descriptors leaves it alone");
+        expect(tb::extend_xml(ok, {1, 2, 5}, {}, r) == ok, "stock descriptors are never cloned");
+        std::string once = tb::extend_xml(ok, {6}, {}, r);
         tb::XmlReport r2;
-        expect(tb::extend_xml(once, {6}, r2) == once && r2.existing == 4 && !r2.changed, "extending twice adds nothing");
+        expect(tb::extend_xml(once, {6}, {}, r2) == once && r2.existing == 4 && !r2.changed, "extending twice adds nothing");
         std::string odd = "<leaderboards>\n<leaderboards_extra/>\n<leaderboard\n  name = \"LBV0001D\"\n  id = \"7\"\n>\n<column type=\"rating\"/>\n</leaderboard>\n</leaderboards>\n";
-        std::string y = tb::extend_xml(odd, {9}, r);
+        std::string y = tb::extend_xml(odd, {9}, {}, r);
         auto els = tb::leaderboard_elements(y);
         expect(r.changed && els.size() == 3 && els[1].id_value == 8 && els[1].name == "LBV0901D", "spaces around = and attributes on their own lines parse");
+    }
+
+    // custom tracks
+    {
+        namespace at = swofty_core::apply::tracks;
+        at::Base base;
+        auto row = [&](const char *id, const char *code, int stat, at::Kind kind, const char *addon, const char *name) {
+            at::BaseTrack t;
+            t.id = id;
+            t.code = code;
+            t.stat_id = stat;
+            t.kind = kind;
+            t.addon = addon;
+            t.name = name;
+            base.tracks.push_back(t);
+        };
+        row("game/bahrain", "bahrain", 1, at::Kind::stock, "game", "Bahrain");
+        row("Swofty.Tracks/Ring", "ring", 7, at::Kind::record, "Swofty.Tracks", "The Ring");
+        row("other.older/ring", "ring", 8, at::Kind::older, "other.older", "Old Ring");
+        row("swofty.fill/china", "china", 2, at::Kind::record, "swofty.fill", "Filled China");
+        auto unready = tb::board_track(base, "ring");
+        expect(!unready.custom && !unready.known && unready.key == "ring", "a base that is not ready gives the lowercased code, not custom");
+        base.ready = true;
+        auto st = tb::board_track(base, "Bahrain");
+        expect(st.known && !st.custom && st.key == "bahrain" && st.addon.empty() && st.kind.empty() && st.name == "Bahrain" && st.stat_id == 1,
+               "a stock track keys by its code");
+        auto cu = tb::board_track(base, "ring");
+        expect(cu.known && cu.custom && cu.key == "swofty.tracks:ring" && cu.addon == "Swofty.Tracks" && cu.kind == "record" && cu.name == "The Ring" && cu.stat_id == 7,
+               "a record track keys by addon id and code, lowercased");
+        auto hint = tb::board_track(base, "ring", 8);
+        expect(hint.key == "other.older:ring" && hint.kind == "older", "a stat id hint picks between rows that share a code; kind older keys the same way");
+        expect(tb::board_track(base, "nowhere").key == "nowhere" && !tb::board_track(base, "nowhere").custom && !tb::board_track(base, "nowhere").known,
+               "an unknown code keys by the lowercased code");
+        expect(tb::board_track(base, "").key.empty() && !tb::board_track(base, "").custom, "an empty code gives an empty key");
+        auto lb = tb::parse_board("LBV0007D");
+        expect(tb::request_track(base, lb, "bahrain").key == "swofty.tracks:ring", "a request resolves the track from the board name's track number");
+        expect(tb::request_track(base, tb::parse_board("LBV0001D"), "ring").key == "bahrain", "a stock track number wins over the session's track");
+        expect(tb::request_track(base, tb::parse_board("LBV0055D"), "ring").key == "swofty.tracks:ring", "an unknown track number falls back to the session's track");
+        expect(tb::request_track(base, tb::BoardName{}, "").key.empty(), "no board and no session track gives no key");
+        expect(tb::ours(6, false) && tb::ours(0, true) && tb::ours(6, true) && !tb::ours(0, false) && !tb::ours(5, false), "ours: an addon descriptor or a custom track");
+        expect(tb::ours_session("swofty.x/f1_2022", false) && tb::ours_session("game/f1_2025", true) && !tb::ours_session("game/f1_2025", false) && !tb::ours_session("", false),
+               "guards use the same rule through the session's content");
+        auto stock0 = tb::parse_board("LBV0001D");
+        expect(tb::route_of(tb::Method::get_tt, stock0, true, true) == tb::Route::mailbox, "a stock descriptor on a custom track goes to the mailbox");
+        expect(tb::route_of(tb::Method::add_entry, stock0, false, true) == tb::Route::local && tb::route_of(tb::Method::get_tt, stock0, false, true) == tb::Route::pass,
+               "a stock descriptor on a custom track is answered locally for writes with the bridge off");
+        expect(tb::route_of(tb::Method::get_tt, stock0, true, false) == tb::Route::pass && tb::route_of(tb::Method::get_tt, tb::BoardName{}, true, true) == tb::Route::pass,
+               "a stock track on a stock descriptor and an unparsed board pass");
+        auto filled = tb::request_track(base, tb::parse_board("LBV0002D"), "");
+        expect(filled.custom && filled.key == "swofty.fill:china" && tb::route_of(tb::Method::get_tt, tb::parse_board("LBV0002D"), true, filled.custom) == tb::Route::mailbox,
+               "the request for a dormant stock row a track fills is still ours");
+
+        for (const char *eol : {"\n", "\r\n"}) {
+            std::string x = sample_xml(eol, false);
+            tb::XmlReport r;
+            std::string y = tb::extend_xml(x, {6}, {7, 2, -1, 7}, r);
+            auto els = tb::leaderboard_elements(y);
+            std::set<std::string> names;
+            std::set<int64_t> ids;
+            bool dup = false;
+            for (auto &e : els)
+                dup |= !ids.insert(e.id_value).second || !names.insert(e.name).second;
+            expect(r.changed && !dup && r.custom_tracks == 2 && r.stock_descriptors == 1, "custom stat ids are counted once, negatives dropped");
+            expect(names.count("LBV0007D") && names.count("LBV0007W"), "a custom track gets boards under the stock descriptor 00");
+            expect(names.count("LBV0607D") && names.count("LBV0607W") && names.count("LBV0601D") && names.count("LBV0602W"),
+                   "a custom track gets boards under an addon descriptor next to the stock tracks");
+            size_t count_2 = 0;
+            for (auto &e : els)
+                count_2 += e.name == "LBV0002D";
+            expect(count_2 == 1 && r.existing == 2 && names.count("LBV0602D"), "a custom track on a dormant stock row adds no duplicate under the stock descriptor");
+            expect(r.added == 4 + 2 + 2 && r.custom_added == 6 && r.first_id == 41 && r.last_id == 48, "added boards and ids are counted");
+            tb::XmlReport r2;
+            expect(tb::extend_xml(y, {6}, {7, 2}, r2) == y && !r2.changed && r2.added == 0, "extending with custom tracks twice adds nothing");
+            tb::XmlReport r3;
+            std::string z = tb::extend_xml(x, {}, {7}, r3);
+            expect(r3.changed && r3.added == 2 && r3.descriptors == 0 && tb::leaderboard_elements(z).size() == 7, "custom tracks alone extend the stock descriptors");
+            tb::XmlReport r4;
+            expect(tb::extend_xml(x, {}, {}, r4) == x && !r4.changed, "no descriptors and no custom tracks leaves the buffer alone");
+        }
     }
 
     // mailbox
