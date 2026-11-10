@@ -476,3 +476,19 @@ The video comes from the registry's `GET /v1/video/latest`:
 ```
 
 To open a link the core writes `swofty/open_url.json`, `{"url": "https://youtu.be/abc123"}`. The launcher reads and deletes it while the game runs, and opens the link in the default browser of the host. It opens only `https` links on `www.youtube.com`, `youtube.com` and `youtu.be`.
+
+## Main menu tiles
+
+swofty_core builds the main menu's tile list in this order: Braking Point, Career, Grand Prix, Time Trial, the challenge tile when the game builds it, Theatre, Addon Settings. The F1 World, Local Multiplayer, League Racing and Player Hub tiles and the divider are not added. Grand Prix and Time Trial are copies of the F1 World item with their own id, title and description, and they open the same F1 World route.
+
+```text
+[main-menu] home tile block at 0x...; adders F1 World 0x..., challenge 0x..., Theatre 0x...
+[main-menu] stock F1 World, divider, Local Multiplayer, League Racing, Player Hub and Theatre tiles skipped
+[main-menu] tiles added after Career: Grand Prix, Time Trial, Theatre (last index 5)
+```
+
+When the home tile block does not match byte for byte, the core logs `the home tile block did not resolve on this build; the stock main menu stays` and changes nothing.
+
+`SWOFTY_MAIN_MENU=0` leaves the stock main menu. `SWOFTY_MAIN_MENU_NAV` is logged; only `single` (one spawner, tiles in list order) is built.
+
+While the main menu is open the overlay paints the Swofty Launcher version, the Discord sign-in state and avatar in the top right, and the latest video's thumbnail with `Press Y to watch` (`Press V to watch` without a gamepad) in the bottom right. Pressing the key writes `swofty/open_url.json`. Entering Time Trial while signed out of Discord shows the game's message popup once per session.
