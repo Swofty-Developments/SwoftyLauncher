@@ -207,6 +207,35 @@ std::vector<Region> rw_regions()
     return out;
 }
 
+struct Variant {
+    std::string needle;
+    const char *label;
+    bool wide;
+};
+
+std::string widen(const std::string &s)
+{
+    std::string w;
+    for (unsigned char c : s) {
+        w.push_back(char(c));
+        w.push_back('\0');
+    }
+    return w;
+}
+
+std::string hex_of(const uint8_t *b, size_t n)
+{
+    std::string hex;
+    char h[4];
+    for (size_t i = 0; i < n; i++) {
+        snprintf(h, sizeof h, "%02x", b[i]);
+        hex += h;
+        if (i % 8 == 7)
+            hex += ' ';
+    }
+    return hex;
+}
+
 void scan_copies(std::string stock)
 {
     namespace ms = runtime::mem_scan;
@@ -214,76 +243,94 @@ void scan_copies(std::string stock)
     auto regions = rw_regions();
     std::vector<uint8_t> buf(CHUNK + 16);
     uint64_t base = swofty::api->module_base();
+    std::string upper = stock;
+    for (char &c : upper)
+        c = char(toupper((unsigned char)c));
+    std::vector<Variant> variants = {{stock, "ascii", false}, {upper, "ascii upper case", false}, {widen(stock), "utf-16", true},
+                                     {widen(upper), "utf-16 upper case", true}};
     struct Hit {
         uint64_t at;
         bool record;
         int rc;
         unsigned type;
+        const char *label;
+        uint64_t region_base, region_size;
+        std::string before;
     };
     std::vector<Hit> hits;
     uint64_t scanned = 0;
-    for (auto &r : regions) {
-        for (uint64_t off = 0; off < r.size && hits.size() < 48; off += CHUNK) {
-            size_t n = size_t(std::min<uint64_t>(CHUNK + 16, r.size - off));
-            if (!registry_read(r.base + off, buf.data(), n))
-                continue;
-            scanned += n;
-            std::vector<size_t> at;
-            ms::find_all(buf.data(), n, stock, at, 48);
-            for (size_t o : at) {
-                uint64_t found_at = r.base + off + o;
-                if (found_at >= uint64_t(buf.data()) && found_at < uint64_t(buf.data()) + buf.size())
+    for (auto &v : variants) {
+        size_t found = 0;
+        for (auto &r : regions) {
+            for (uint64_t off = 0; off < r.size && found < 48; off += CHUNK) {
+                size_t n = size_t(std::min<uint64_t>(CHUNK + 16, r.size - off));
+                if (!registry_read(r.base + off, buf.data(), n))
                     continue;
-                uint8_t head[16] = {};
-                bool rec = false;
-                int rc = 0;
-                if (registry_read(r.base + off + o - 9, head, 9)) {
-                    auto c = ms::classify(head, stock.size());
-                    rec = c.is_record;
-                    rc = c.refcount;
+                if (&v == &variants[0])
+                    scanned += n;
+                std::vector<size_t> at;
+                ms::find_all(buf.data(), n, v.needle, at, 48);
+                for (size_t o : at) {
+                    uint64_t found_at = r.base + off + o;
+                    if (found_at >= uint64_t(buf.data()) && found_at < uint64_t(buf.data()) + buf.size())
+                        continue;
+                    uint8_t head[0x50] = {};
+                    bool rec = false;
+                    int rc = 0;
+                    std::string before;
+                    if (registry_read(found_at - sizeof head, head, sizeof head)) {
+                        before = hex_of(head, sizeof head);
+                        if (!v.wide) {
+                            auto c = ms::classify(head + sizeof head - 9, v.needle.size());
+                            rec = c.is_record;
+                            rc = c.refcount;
+                        }
+                    }
+                    hits.push_back({found_at, rec, rc, r.type, v.label, r.base, r.size, before});
+                    found++;
                 }
-                hits.push_back({r.base + off + o, rec, rc, r.type});
             }
         }
     }
-    swofty::log("[boards] name copies: \"%s\" found %zu time(s) in %.0f MB of writable memory (%zu regions)", stock.c_str(), hits.size(), scanned / 1048576.0,
-                regions.size());
+    swofty::log("[boards] name copies: \"%s\" variants found %zu time(s) in %.0f MB of writable memory (%zu regions)", stock.c_str(), hits.size(),
+                scanned / 1048576.0, regions.size());
     std::vector<uint64_t> targets;
     for (auto &h : hits) {
-        swofty::log("[boards] name copies: at 0x%llx (%s, region type 0x%x%s)", (unsigned long long)h.at, h.record ? "string record" : "plain C string", h.type,
-                    h.record ? (" refcount " + std::to_string(h.rc)).c_str() : "");
-        targets.push_back(h.at);
-        if (h.record)
+        if (h.record) {
+            swofty::log("[boards] name copies: %s string record at 0x%llx refcount %d", h.label, (unsigned long long)h.at, h.rc);
             targets.push_back(h.at - 9);
+            continue;
+        }
+        swofty::log("[boards] name copies: %s plain at 0x%llx (region 0x%llx size 0x%llx type 0x%x); 0x50 bytes before: %s", h.label, (unsigned long long)h.at,
+                    (unsigned long long)h.region_base, (unsigned long long)h.region_size, h.type, h.before.c_str());
+        targets.push_back(h.at);
     }
     if (targets.empty())
         return;
     std::vector<std::pair<uint64_t, uint64_t>> refs;
     for (auto &r : regions) {
-        for (uint64_t off = 0; off < r.size && refs.size() < 80; off += CHUNK) {
+        for (uint64_t off = 0; off < r.size && refs.size() < 120; off += CHUNK) {
             size_t n = size_t(std::min<uint64_t>(CHUNK, r.size - off));
             if (!registry_read(r.base + off, buf.data(), n))
                 continue;
-            ms::find_pointers(buf.data(), n, r.base + off, targets, refs, 80);
+            ms::find_pointers(buf.data(), n, r.base + off, targets, refs, 120);
         }
     }
     swofty::log("[boards] name copies: %zu pointer(s) to those copies", refs.size());
+    int shown_record_refs = 0;
     for (auto &p : refs) {
+        bool to_record = false;
+        for (auto &h : hits)
+            if (h.record && p.second == h.at - 9)
+                to_record = true;
+        if (to_record && shown_record_refs++ >= 6)
+            continue;
         uint8_t ctx[0x40] = {};
         uint64_t from = p.first >= 0x30 ? p.first - 0x30 : p.first;
         bool got = registry_read(from, ctx, sizeof ctx);
-        std::string hex;
-        char h[4];
-        if (got)
-            for (size_t i = 0; i < sizeof ctx; i++) {
-                snprintf(h, sizeof h, "%02x", ctx[i]);
-                hex += h;
-                if (i % 8 == 7)
-                    hex += ' ';
-            }
         bool in_image = p.first >= base && p.first < base + 0x20000000ull;
-        swofty::log("[boards] name copies: 0x%llx -> 0x%llx%s; 0x30 bytes before it and 0x10 from it: %s", (unsigned long long)p.first, (unsigned long long)p.second,
-                    in_image ? " (inside the game image)" : "", got ? hex.c_str() : "(unreadable)");
+        swofty::log("[boards] name copies: 0x%llx -> 0x%llx%s%s; 0x30 bytes before it and 0x10 from it: %s", (unsigned long long)p.first, (unsigned long long)p.second,
+                    in_image ? " (inside the game image)" : "", to_record ? " (a string record)" : " (a PLAIN copy)", got ? hex_of(ctx, sizeof ctx).c_str() : "(unreadable)");
     }
 }
 
