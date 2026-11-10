@@ -418,6 +418,7 @@ void finish(lr::Sealed &sealed, const LapContext &ctx)
                 b.track_kind.empty() ? "" : (", custom track (" + b.track_kind + " from " + b.track_addon + ")").c_str());
     swofty::log("[laps] lap %u: %zu bytes, built and written in %.1f ms", lap.index, body.size(),
                 1000.0 * double(t1.QuadPart - t0.QuadPart) / double(f.QuadPart));
+    runtime::tt_bridge_lap_finished(r.time_ms, r.valid ? (*r.valid ? 1 : 0) : -1);
     swofty_core::hooks::events::laps_recorded(narrow_path.c_str(), int32_t(r.time_ms),
                                               r.valid ? (*r.valid ? 1 : 0) : -1);
 }

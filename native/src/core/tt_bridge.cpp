@@ -157,6 +157,7 @@ const runtime::Sig S_GARAGE_TAB_BLOCK{"site_Game_GarageMonitorPanel_BuildTabs_le
 const runtime::Sig S_GARAGE_TAB_FLAGS{"site_Game_GarageMonitorPanel_BuildTabs_leaderboard_feature_141f720b5", "48 B9 00 00 00 00 20 00 00 00 48 23 08 0F 84 ?? ?? ?? ??", 0x1f720b5};
 const runtime::Sig S_GARAGE_TAB_GATE{"site_Game_GarageMonitorPanel_BuildTabs_gate_byte_141f7208e", "80 B9 80 00 00 00 00 0F 84 ?? ?? ?? ?? 83 FD 12 0F 85 ?? ?? ?? ??", 0x1f7208e};
 const runtime::Sig S_REPLAY_TICK{"Ne_ReplaySystem_ResetSlot24_1445d57e0", "56 48 83 EC 20 80 B9 89 00 00 00 00 0F 84 90 00 00 00 48 89 CE 80 3D", 0x45d57e0};
+const runtime::Sig S_REPLAY_TICK17{"Ne_ReplaySystem_ResetSlot17_1445d5b90", "56 48 83 EC 20 80 B9 89 00 00 00 00 74 5F 48 89 CE 80 3D 1C 5F A7 01 01 75 6C", 0x45d5b90};
 const runtime::Sig S_REPLAY_SAVE{"Game_ReplayManager_SaveFullReplay_142c46880", "41 56 56 57 53 48 81 EC 38 02 00 00 80 B9 E1 06 00 00 00 74 46 48 89 CE 48 83 B9 50 01 00 00 00", 0x2c46880};
 const runtime::Sig S_REPLAY_PATH{"Game_ReplayManager_BuildSavePath_142c48860", "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 05 00 00 48 89 D6 48 89 CB 48 8D 79 20", 0x2c48860};
 const runtime::Sig S_GARAGE_BUILD{"Game_GarageMonitorPanel_BuildTabs_141f71fa0",
@@ -202,7 +203,7 @@ bool diag_on = false;
 bool replay_capture_on = false;
 std::atomic<int64_t> replay_pending_ms{0};
 std::atomic<uint32_t> replay_pending_lap{0};
-safetyhook::MidHook h_garage_done, h_garage_cmd, h_garage_update, h_tab_block, h_tab_flags, h_tab_friends, h_tab_build, h_tab_gate, h_replay_tick, h_replay_save, h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
+safetyhook::MidHook h_garage_done, h_garage_cmd, h_garage_update, h_tab_block, h_tab_flags, h_tab_friends, h_tab_build, h_tab_gate, h_replay_tick, h_replay_tick17, h_replay_save, h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
 
 struct GateHook {
     uintptr_t at = 0, resume = 0, session_global = 0;
@@ -511,10 +512,6 @@ void pb_mid(safetyhook::Context &c)
         swofty::log("[boards] personal best committed (time word 0x%08x): player id block %s", ms, hex_dump(blk, sizeof blk).c_str());
     if (pb_armed.load(std::memory_order_relaxed))
         runtime::lap_rec_ghost(h);
-    if (replay_capture_on && bridge_on) {
-        replay_pending_lap = ms;
-        replay_pending_ms = now_ms();
-    }
 }
 
 bool hook_mid(safetyhook::MidHook &slot, uintptr_t at, safetyhook::MidHookFn fn, const char *what)
@@ -1127,26 +1124,48 @@ void replay_save_entry_mid(safetyhook::Context &c)
                     runtime::readable(reinterpret_cast<void *>(c.rdx), 2) ? narrow(reinterpret_cast<const wchar_t *>(c.rdx)).c_str() : "?");
 }
 
-void replay_tick_mid(safetyhook::Context &c)
+std::atomic<int64_t> replay_session_best_ms{0};
+
+// Called from the lap recorder (flow thread) after a lap was written: a valid lap faster than the session's best marks a capture pending.
+void replay_lap_finished(int64_t lap_ms, int valid)
 {
-    uint64_t sys = c.rcx;
-    int64_t pending = replay_pending_ms.load();
-    if (!tb::replay_capture_due(pending, now_ms(), REPLAY_SAVE_DELAY_MS))
+    if (!replay_capture_on || !bridge_on)
         return;
+    int64_t best = replay_session_best_ms.load();
+    bool mark = tb::replay_lap_is_best(lap_ms, valid, best);
+    swofty::log("[replay] capture: lap %lld ms (valid %d), session best %lld ms: %s", (long long)lap_ms, valid, (long long)best, mark ? "marked for a replay save" : "not a new best, no save");
+    if (!mark)
+        return;
+    replay_session_best_ms = lap_ms;
+    replay_pending_lap = uint32_t(lap_ms);
+    replay_pending_ms = now_ms();
+}
+
+void replay_tick(safetyhook::Context &c, const char *slot)
+{
+    static std::atomic<uint64_t> entries{0}, ours_entries{0};
+    static std::atomic<int> guard_logs{0};
+    uint64_t sys = c.rcx, n = ++entries;
     uintptr_t base = swofty::api->module_base();
     bool vt_ok = runtime::readable(reinterpret_cast<void *>(sys), 8) && peek64(sys) == base + GAME_REPLAY_SYSTEM_VTABLE_RVA;
-    uint8_t rec = runtime::readable(reinterpret_cast<void *>(sys + 0x6e1), 1) ? *reinterpret_cast<uint8_t *>(sys + 0x6e1) : 0;
+    if (vt_ok)
+        ours_entries++;
+    if (n <= 5 || n % 20000 == 0)
+        swofty::log("[replay] tick %s entry %llu (replay system 0x%llx, GameReplaySystem vtable %s, %llu such entries); pending mark %lld", slot, (unsigned long long)n, (unsigned long long)sys,
+                    vt_ok ? "yes" : "no", (unsigned long long)ours_entries.load(), (long long)replay_pending_ms.load());
+    int64_t pending = replay_pending_ms.load();
+    if (!vt_ok || !tb::replay_capture_due(pending, now_ms(), REPLAY_SAVE_DELAY_MS))
+        return;
+    uint8_t rec = runtime::readable(reinterpret_cast<void *>(sys + 0x6e1), 1) ? *reinterpret_cast<uint8_t *>(sys + 0x6e1) : 0xff;
     uint64_t queue = peek64(sys + 0x150);
-    if (!vt_ok)
+    uint32_t queue_busy = queue ? peek32(queue + 0x48) : 0xffffffffu;
+    bool allowed = tb::replay_capture_allowed(replay_capture_on, bridge_on, content_ours(), vt_ok, rec == 0xff ? 0 : rec, queue);
+    if (++guard_logs <= 8)
+        swofty::log("[replay] capture guards at tick %s: switch %d, bridge %d, our content %d, GameReplaySystem %d, recording flag [+0x6e1] %u, job queue [+0x150] 0x%llx (busy word [queue+0x48] %u) -> %s",
+                    slot, replay_capture_on ? 1 : 0, bridge_on ? 1 : 0, content_ours() ? 1 : 0, vt_ok ? 1 : 0, unsigned(rec), (unsigned long long)queue, unsigned(queue_busy),
+                    allowed ? "allowed" : "refused");
+    if (!replay_pending_ms.compare_exchange_strong(pending, 0) || !allowed)
         return;
-    if (!replay_pending_ms.compare_exchange_strong(pending, 0))
-        return;
-    static std::atomic<int> logged{0};
-    if (!tb::replay_capture_allowed(replay_capture_on, bridge_on, content_ours(), vt_ok, rec, queue)) {
-        if (++logged <= 4)
-            swofty::log("[replay] capture: not started (recording flag %u, job queue 0x%llx, our content %d)", unsigned(rec), (unsigned long long)queue, content_ours() ? 1 : 0);
-        return;
-    }
     alignas(16) static uint8_t out[0x240];
     memset(out, 0, sizeof out);
     reinterpret_cast<void *(*)(uint64_t, void *)>(replay_build_path_fn)(sys, out);
@@ -1165,6 +1184,9 @@ void replay_tick_mid(safetyhook::Context &c)
         std::thread(replay_watch, path, lap, stamp).detach();
     }
 }
+
+void replay_tick_mid(safetyhook::Context &c) { replay_tick(c, "vslot24"); }
+void replay_tick17_mid(safetyhook::Context &c) { replay_tick(c, "vslot17"); }
 
 std::atomic<uint64_t> garage_driven_panel{0}, garage_driven_count{0}, garage_built_ours{0};
 uintptr_t garage_build_fn = 0;
@@ -1599,6 +1621,8 @@ void setup()
                 replay_build_path_fn = path_fn;
                 replay_save_fn = save_fn;
                 hook_mid(h_replay_save, save_fn, replay_save_entry_mid, "replay save observer");
+                if (uintptr_t t17 = runtime::find(S_REPLAY_TICK17, "boards", "boards"))
+                    hook_mid(h_replay_tick17, t17, replay_tick17_mid, "replay system tick (slot 17)");
                 swofty::log("[replay] capture armed (SWOFTY_TT_REPLAY_CAPTURE=1): tick at base+0x%llx, save at base+0x%llx, path builder at base+0x%llx", (unsigned long long)(tick - swofty::api->module_base()),
                             (unsigned long long)(save_fn - swofty::api->module_base()), (unsigned long long)(path_fn - swofty::api->module_base()));
             } else
@@ -1824,6 +1848,7 @@ void tt_bridge_tick()
 }
 
 bool tt_bridge_pb_armed() { return pb_armed.load(); }
+void tt_bridge_lap_finished(int64_t lap_ms, int valid) { replay_lap_finished(lap_ms, valid); }
 
 tt_bridge::BoardTrack tt_bridge_board_track(const std::string &code, int stat_hint)
 {
@@ -1845,6 +1870,8 @@ void tt_bridge_session_enter()
 {
     std::lock_guard<std::mutex> g(lock);
     last_board.clear();
+    replay_session_best_ms = 0;
+    replay_pending_ms = 0;
 }
 
 bool tt_bridge_ours_session()

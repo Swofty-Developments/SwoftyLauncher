@@ -445,6 +445,12 @@ inline std::string replay_capture_name(uint64_t unix_seconds, uint32_t lap_ms)
     return "pb_" + std::to_string(unix_seconds) + "_" + std::to_string(lap_ms) + ".replay";
 }
 
+// A lap marks a replay save when it is valid (or validity is unknown, -1) and faster than the session's best so far (0 = none yet).
+inline bool replay_lap_is_best(int64_t lap_ms, int valid, int64_t session_best_ms)
+{
+    return lap_ms > 0 && valid != 0 && (session_best_ms <= 0 || lap_ms < session_best_ms);
+}
+
 // The save may be started only for our content with the bridge on, with a replay system whose vtable is the game's and a recording enabled.
 inline bool replay_capture_allowed(bool env_on, bool bridge_on, bool ours_content, bool vtable_ok, uint8_t recording_flag, uint64_t job_queue)
 {
