@@ -92,6 +92,7 @@ t "Ghost arming state machine unit test" native/test/run_ghost_arm_test.sh
 t "Lap setup capture unit test" native/test/run_lap_setup_test.sh
 t "Lap toast message and state machine unit test" native/test/run_toast_test.sh
 t "Player name sanitising unit test" native/test/run_player_name_test.sh
+t "UI registry walk unit test" native/test/run_ui_registry_walk_test.sh
 t "Lap assists capture unit test" native/test/run_lap_assists_test.sh
 t "Ghost request file unit test" native/test/run_ghost_request_test.sh
 t "Front-end tile list guard unit test" native/test/run_fe_tile_guard_test.sh

@@ -46,6 +46,10 @@ std::string hook_error(const safetyhook::InlineHook::Error &e);
 // reader, the six laps and the trace of every completed lap (dumped to swofty\tt\ghost\diag-<n>.trace); it changes no
 // behaviour. SWOFTY_TT_GHOST_SLOT picks another telemetry lap than 4.
 
+namespace runtime {
+void player_name_probe_tick();
+}
+
 namespace {
 
 namespace mem = swofty::mem;
@@ -559,6 +563,7 @@ void tick_mid(safetyhook::Context &c)
     if (ghost_on)
         game_step(comp);
     if (diag_on) {
+        runtime::player_name_probe_tick();
         int64_t now = now_ms();
         if (now - last_diag >= int64_t(DIAG_POLL_MS)) {
             last_diag = now;

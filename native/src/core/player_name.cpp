@@ -1,10 +1,13 @@
+#include "hooks/guard.hpp"
 #include "main_menu_logic.hpp"
 #include "player_name_logic.hpp"
+#include "ui_registry_walk.hpp"
 #include "runtime.hpp"
 
 #include <windows.h>
 
 #include <safetyhook.hpp>
+#include <swofty/game.hpp>
 #include <swofty/json.hpp>
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
@@ -16,6 +19,7 @@
 #include <mutex>
 #include <string>
 #include <thread>
+#include <vector>
 
 namespace runtime {
 std::string hook_error(const safetyhook::InlineHook::Error &e);
@@ -110,6 +114,43 @@ const char *lookup_hook(void *cache, void *id)
     return result;
 }
 
+bool registry_read(uint64_t at, void *out, size_t n)
+{
+    return swofty_core::hooks::guard::copy_memory(out, reinterpret_cast<const void *>(at), n);
+}
+
+void probe_registry(int pass)
+{
+    namespace ur = runtime::ui_registry;
+    if (!swofty::game::g_Vm_Registry.address())
+        return;
+    uint64_t base = swofty::api->module_base(), reg = uint64_t(*swofty::game::g_Vm_Registry);
+    ur::Layout lay{base + 0x5a70080, base + 0x5a6ff90, base + 0x565f200, base + 0x5660370};
+    char stock[96] = "Swooftyy";
+    GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME_STOCK", stock, sizeof stock);
+    std::vector<ur::Hit> hits;
+    ur::Stats st;
+    auto rd = [](uint64_t at, void *out, size_t n) { return registry_read(at, out, n); };
+    ur::find_string(rd, reg, lay, stock, hits, 40, st);
+    swofty::log("[boards] player name probe %d: stock name \"%s\": %zu nodes (%zu object, %zu list, %zu string leaves of which %zu readable, "
+                "%zu other kinds, %zu failed reads, %zu bad maps), root vtable base+0x%llx, %zu leaf(s) equal it",
+                pass, stock, st.visited, st.objects, st.lists, st.string_leaves, st.strings_read, st.skipped_kinds, st.failed_reads,
+                st.bad_maps, (unsigned long long)(st.root_vt - base), st.matches);
+    for (auto v : st.unknown_vt)
+        if (v)
+            swofty::log("[boards] player name probe %d: other node class vtable base+0x%llx", pass, (unsigned long long)(v - base));
+    for (size_t i = 0; i < hits.size(); i++) {
+        std::string path;
+        for (int d = 0; d < hits[i].depth && d < ur::CHAIN; d++) {
+            char h[16];
+            snprintf(h, sizeof h, "%s%08x", d ? "." : "", hits[i].chain[d]);
+            path += h;
+        }
+        swofty::log("[boards] player name probe %d: hit %zu node 0x%llx depth %d path(djb2) %s value \"%s\"", pass, i,
+                    (unsigned long long)hits[i].node, hits[i].depth, path.c_str(), hits[i].value.c_str());
+    }
+}
+
 void setup()
 {
     auto gate = swofty::json::parse(runtime::read_file(runtime::swofty_root() + L"tt.json", size_t(1) << 20));
@@ -132,6 +173,27 @@ void setup()
     std::thread(account_worker).detach();
     swofty::log("[boards] player name: hook armed at base+0x%llx; in Time Trial the launcher account's name replaces the stock name",
                 (unsigned long long)(at - swofty::api->module_base()));
+}
+
+}
+
+namespace runtime {
+
+void player_name_probe_tick()
+{
+    static int64_t entered = 0;
+    static int pass = 0;
+    int64_t now = int64_t(GetTickCount64());
+    if (swofty_core::apply::moments::session_mode_track().first != "time_trial") {
+        entered = 0;
+        pass = 0;
+        return;
+    }
+    if (!entered)
+        entered = now;
+    static const int64_t at_ms[] = {8000, 40000};
+    if (pass < 2 && now - entered >= at_ms[pass])
+        probe_registry(++pass);
 }
 
 }
