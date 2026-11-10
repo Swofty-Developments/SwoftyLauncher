@@ -1,2 +1,1 @@
 # One line per "site_*" name that native/src/core resolves by name (swofty::api->resolve) while the generated headers do not export it: the guard that needs it logs "off ... does not resolve". Format: name, tab, reason.
-site_Game_GhostPb_Committed	the mid-site after the personal best ghost blob is committed (mov byte [rsi+0x66], 1 at 0x142fa3db8, rsi = the ghost lap handler); not a generated binding yet, so the ghost blob stays off until the row is exported

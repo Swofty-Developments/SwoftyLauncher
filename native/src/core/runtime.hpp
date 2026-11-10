@@ -302,6 +302,8 @@ void lap_rec_session_enter();
 void lap_rec_session_end();
 void tt_bridge_tick();
 bool tt_bridge_ghost_id(uint8_t out[48]);
+bool tt_bridge_pb_armed();
+void lap_rec_ghost(uintptr_t handler);
 void lap_rec_newlap(int car);
 bool telemetry_wants_udp();
 void telemetry_udp(const uint8_t *buf, size_t len);

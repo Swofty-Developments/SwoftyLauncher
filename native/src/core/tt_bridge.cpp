@@ -111,7 +111,8 @@ struct Resolved {
 std::mutex lock;
 tb::Table table(1);
 Resolved found;
-bool bridge_on = false, request_guard = true, push_hooked = false;
+bool bridge_on = false, boards_on = false, request_guard = true, push_hooked = false;
+std::atomic<bool> pb_armed{false};
 std::atomic<int> pending_count{0};
 std::deque<std::unique_ptr<tb::Response>> responses;
 std::deque<std::string> xml_buffers;
@@ -327,6 +328,8 @@ void pb_mid(safetyhook::Context &c)
     }
     if (++pb_logged <= 6)
         swofty::log("[boards] personal best committed (time word 0x%08x): player id block %s", ms, hex_dump(blk, sizeof blk).c_str());
+    if (pb_armed.load(std::memory_order_relaxed))
+        runtime::lap_rec_ghost(h);
 }
 
 bool hook_mid(safetyhook::MidHook &slot, uintptr_t at, safetyhook::MidHookFn fn, const char *what)
@@ -370,6 +373,7 @@ void setup()
 {
     auto gate = swofty::json::parse(runtime::read_file(runtime::swofty_root() + L"tt.json", size_t(1) << 20));
     bridge_on = gate.is_object() && gate["tt_bridge"].as_bool(false);
+    boards_on = gate.is_object() && gate["tt_boards"].as_bool(false);
     if (!runtime::same_build()) {
         swofty::log("[boards] off: the hook points are this build's byte signatures; this exe is a different build");
         return;
@@ -405,11 +409,21 @@ void setup()
             swofty::log("[boards] board definitions: off, needs %s (byte signature matched nothing unique)", S_XML.what);
         else if (hook_mid(h_xml, xml, xml_mid, "board definitions"))
             swofty::log("[boards] board definitions armed at base+0x%llx", (unsigned long long)(xml - swofty::api->module_base()));
+    }
+
+    bool ghost_on = boards_on && !env_off("SWOFTY_LAP_GHOST", "ghost blob");
+    if (bridge_on || ghost_on) {
         uintptr_t pb = runtime::find(S_PB, "boards", "boards");
+        pb_armed = ghost_on && pb;
         if (!pb)
-            swofty::log("[boards] personal best id capture: off, needs %s", S_PB.what);
+            swofty::log("[boards] personal best hook: off, needs %s (byte signature matched nothing unique)%s", S_PB.what,
+                        ghost_on ? "; lap files carry no GHST section" : "");
+        else if (!hook_mid(h_pb, pb, pb_mid, "personal best hook"))
+            pb_armed = false;
         else
-            hook_mid(h_pb, pb, pb_mid, "personal best id capture");
+            swofty::log("[boards] personal best hook armed at base+0x%llx (%s)", (unsigned long long)(pb - swofty::api->module_base()),
+                        ghost_on ? bridge_on ? "ghost blob for the lap recorder and the player id block" : "ghost blob for the lap recorder"
+                                 : "player id block");
     }
 
     install_guard(h_upload, S_UPLOAD, upload_mid, "SWOFTY_TT_UPLOAD_GUARD", "remote storage upload guard");
@@ -501,6 +515,8 @@ void tt_bridge_tick()
     for (auto &c : due)
         complete(c);
 }
+
+bool tt_bridge_pb_armed() { return pb_armed.load(); }
 
 bool tt_bridge_ghost_id(uint8_t out[48])
 {

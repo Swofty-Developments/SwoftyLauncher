@@ -67,16 +67,14 @@ struct Blob {
 };
 
 constexpr const char *GAME_MIXIN = "swofty_core.dll (lap recorder game lap result)";
-constexpr const char *GHOST_MIXIN = "swofty_core.dll (lap recorder ghost blob)";
 constexpr const char *LAP_TARGET = "Sess_LapTimes_ReportNewLapTime";
-constexpr const char *GHOST_SITE = "site_Game_GhostPb_Committed";
 constexpr uintptr_t RVA_TLAP_KEY = 0x61026a8;
 constexpr uintptr_t HANDLER_BLOB = 0x278, HANDLER_BLOB_SIZE = 0x280, HANDLER_REGISTRY = 0x20, REGISTRY_MAP = 0x30,
                     HANDLER_TIMING = 0x30, TIMING_SESSION = 0x88;
 
 using ReportFn = uint64_t(void *, void *);
 ReportFn *orig_report = nullptr;
-bool game_offered = false, ghost_offered = false, game_armed = false, ghost_armed = false, hooks_settled = false;
+bool game_offered = false, game_armed = false, ghost_armed = false, hooks_settled = false;
 std::atomic<uintptr_t> registry_map{0}, session_base{0};
 
 struct LapResult {
@@ -466,9 +464,23 @@ uint64_t report_lap(void *lap_times, void *msg)
     return r;
 }
 
-void ghost_commit(SwoftyContext *c)
+bool env_off(const char *name, const char *label)
 {
-    uintptr_t handler = c->rsi, blob = 0, timing = 0, registry = 0, map = 0, base = 0;
+    char v[16] = {};
+    DWORD n = GetEnvironmentVariableA(name, v, sizeof v);
+    if (!n || n >= sizeof v || (strcmp(v, "0") && strcmp(v, "off")))
+        return false;
+    swofty::log("[laps] %s off (%s=%s)", label, name, v);
+    return true;
+}
+
+}
+
+namespace runtime {
+
+void lap_rec_ghost(uintptr_t handler)
+{
+    uintptr_t blob = 0, timing = 0, registry = 0, map = 0, base = 0;
     uint64_t size = 0;
     mem::Trust trust(runtime::HEAP_TRUST_MS);
     if (mem::read(handler + HANDLER_REGISTRY, registry) && registry && mem::read(registry + REGISTRY_MAP, map))
@@ -491,30 +503,16 @@ void ghost_commit(SwoftyContext *c)
         ghost_in.push_back(std::move(b));
 }
 
-bool env_off(const char *name, const char *label)
-{
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA(name, v, sizeof v);
-    if (!n || n >= sizeof v || (strcmp(v, "0") && strcmp(v, "off")))
-        return false;
-    swofty::log("[laps] %s off (%s=%s)", label, name, v);
-    return true;
-}
-
-}
-
-namespace runtime {
-
 std::vector<CoreMixins> lap_rec_mixins()
 {
     std::vector<CoreMixins> out;
     if (game_offered || !code_ready())
         return out;
-    game_offered = ghost_offered = true;
+    game_offered = true;
     if (!lr::gate_of(read_file(swofty_root() + L"tt.json", size_t(1) << 20)).on)
         return out;
     if (!same_build()) {
-        swofty::log("[laps] game lap result and ghost blob off: this is not the build the lap offsets are from; laps use "
+        swofty::log("[laps] game lap result off: this is not the build the lap offsets are from; laps use "
                     "the clock");
         return out;
     }
@@ -525,14 +523,6 @@ std::vector<CoreMixins> lap_rec_mixins()
             swofty::log("[laps] game lap result off: needs %s, which this build does not resolve; laps use the clock",
                         LAP_TARGET);
     }
-    if (!env_off("SWOFTY_LAP_GHOST", "ghost blob")) {
-        if (swofty::api->resolve(GHOST_SITE))
-            out.push_back({GHOST_MIXIN, {{GHOST_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&ghost_commit, nullptr}}});
-        else
-            swofty::log("[laps] ghost blob off: needs %s, which this build does not resolve; lap files carry no GHST "
-                        "section",
-                        GHOST_SITE);
-    }
     return out;
 }
 
@@ -542,7 +532,7 @@ void lap_rec_commit()
         return;
     hooks_settled = true;
     game_armed = core_mixins_active(GAME_MIXIN);
-    ghost_armed = core_mixins_active(GHOST_MIXIN);
+    ghost_armed = tt_bridge_pb_armed();
     swofty::log("[laps] game lap result %s; ghost blob %s", game_armed ? "armed" : "not armed (laps use the clock)",
                 ghost_armed ? "armed" : "not armed (no GHST section)");
 }
@@ -569,6 +559,7 @@ void lap_rec_session_enter()
         return;
     }
     recorder.begin_session();
+    ghost_armed = tt_bridge_pb_armed();
     sealer.expect(game_armed, ghost_armed);
     discarded = written = 0;
     player_car = -1;
