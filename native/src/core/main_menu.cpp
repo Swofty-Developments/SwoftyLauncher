@@ -76,6 +76,8 @@ std::atomic<bool> tt_warned{false};
 std::atomic<int> rows_flag{-1}, menu_flag{-1};
 std::atomic<int> via{0};
 std::atomic<uint64_t> swap_at{0}, home_opened_at{0};
+std::mutex view_lock;
+logic::HomeView home_view;
 std::mutex swap_lock;
 std::string swap_screens;
 bool swap_reported = true;
@@ -325,49 +327,6 @@ const runtime::Sig S_FIRE{"Vm_Fire_Route", "48 8B 4E 28 48 89 F2 49 89 F8 45 31 
                           0x42c0e20, runtime::Sig::rel32, 13, 14, 5};
 safetyhook::InlineHook h_fire;
 
-std::atomic<void *> hub_router{nullptr};
-std::atomic<uint64_t> hub_at{0}, hub_update_at{0}, hub_fired_at{0};
-std::atomic<void *> hub_vm{nullptr};
-std::mutex view_lock;
-logic::HomeView home_view;
-
-const runtime::Sig S_HUB_UPDATE{
-    "Game_F1WorldScreenVM_Update",
-    "56 57 55 53 48 83 EC 78 48 89 CE 80 B9 D1 16 00 00 00 74 0D 48 8B 86 30 07 00 00 80 78 2C 00 74 2E 48 8B 86 E0 15 00 "
-    "00 48 85 C0 0F 84 ?? ?? ?? ?? 80 B8 A1 00 00 00 00 0F 84",
-    0x1b1a2f0};
-safetyhook::InlineHook h_hub;
-
-uint64_t hub_detour(void *vm)
-{
-    hub_vm = vm;
-    hub_update_at = GetTickCount64();
-    return h_hub.call<uint64_t>(vm);
-}
-
-bool hub_recent()
-{
-    uint64_t at = hub_update_at.load();
-    return at && GetTickCount64() - at < 300;
-}
-
-void hook_hub()
-{
-    if (h_hub)
-        return;
-    auto at = runtime::find(S_HUB_UPDATE, "home", "core");
-    if (!at) {
-        swofty::log("[main-menu] back: the F1 World hub update did not resolve; its view model cannot be captured");
-        return;
-    }
-    auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(hub_detour));
-    if (!h) {
-        swofty::log("[main-menu] back: hooking the F1 World hub update failed: %s", runtime::hook_error(h.error()).c_str());
-        return;
-    }
-    h_hub = std::move(*h);
-    swofty::log("[main-menu] back: F1 World hub update hooked at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
-}
 
 void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4)
 {
@@ -382,12 +341,32 @@ void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4)
     int mode = via.load();
     if (mode) {
         uint32_t gid = runtime::readable(static_cast<uint8_t *>(vm) + 0x250, 4) ? *reinterpret_cast<uint32_t *>(static_cast<uint8_t *>(vm) + 0x250) : 0;
-        swofty::log("[main-menu] route fired while back-to-menu is armed (%s): %s (route group id of the firing view model 0x%08x; djb2 of f1_world_activity_container 0x%08x, of fe_f1_world 0x%08x)",
-                    mode == 1 ? "card" : "showroom", text, gid, logic::djb2("f1_world_activity_container"), logic::djb2("fe_f1_world"));
-        if (!hub_router.load())
-            hub_router = router;
+        swofty::log("[main-menu] route fired while back-to-menu is armed (%s): %s (route group id 0x%08x)", mode == 1 ? "card" : "showroom", text, gid);
+        const char *to = nullptr;
+        if (mode == 1 && !std::strcmp(text, "f1_world") && gid == logic::djb2("f1_world_activity_container"))
+            to = logic::BACK_HOME_FROM_CONTAINER;
+        else if (mode == 2 && !std::strcmp(text, "back_1") && gid == logic::djb2("fe_showroom"))
+            to = logic::HOME_BACK_ROUTE;
+        if (to) {
+            auto entry = reinterpret_cast<uint32_t *>(swofty::api->module_base() + 0x6066c74);
+            if (runtime::readable(entry, 4))
+                *entry = 0;
+            {
+                std::lock_guard<std::mutex> g(swap_lock);
+                swap_screens.clear();
+                swap_reported = false;
+            }
+            swap_at = GetTickCount64();
+            NeStr *replacement = nullptr;
+            Ne_Make_StrFromCStr(&replacement, to, 0, 0);
+            swofty::log("[main-menu] back: the game's handler fired route %s from its own view model (group 0x%08x); it is replaced by %s in the same group, so the F1 World hub is never opened",
+                        text, gid, to);
+            h_fire.call<void>(router, vm, &replacement, a4);
+            Ne_Make_StrFromCStr(&replacement, nullptr, 0, 0);
+            return;
+        }
         if (uint64_t at = swap_at.load(); at && GetTickCount64() - at < 5000)
-            swofty::log("[main-menu] route %s fired %llu ms after the back step (vm %p)", text, (unsigned long long)(GetTickCount64() - at), vm);
+            swofty::log("[main-menu] route %s fired %llu ms after the back step (vm %p, not replaced)", text, (unsigned long long)(GetTickCount64() - at), vm);
     }
     h_fire.call<void>(router, vm, name, a4);
 }
@@ -609,6 +588,85 @@ std::string host_path(const std::string &p)
     return p;
 }
 
+const runtime::Sig S_MODE_BY_NAME{"Game_GameModes_FindByName",
+                                  "56 48 83 EC 60 48 89 CE 48 83 C1 30 48 8D 44 24 40 48 C7 44 24 30 20 00 00 00 48 89 44 24 38 48 85 D2 0F 84 FC 01 00 00 44 0F B6 02 45 84 C0 0F 84 EA 02 00 00",
+                                  0x7d0de0};
+const runtime::Sig S_GAME_MANAGER{"game.manager",
+                                  "48 8B B8 98 01 00 00 48 85 FF 0F 84 ?? ?? ?? ?? 48 8D 4C 24 70 E8 ?? ?? ?? ?? 48 8B 05", 0x604c2c8,
+                                  runtime::Sig::riprel, 26, 29, 7};
+
+// The stock Grand Prix entry shows its saved seasons when GrandPrixContinueViewModel's mode lookup
+// (Game_GrandPrixContinueVm_FindModeEntity 0x141bccc00) finds a championship mode whose season registry
+// (entity +0x1030, virtual +0x78) answers 1: F2_2026/F2_2025/F2_2024_Championship_Season, F1_Championship_Season,
+// F1_2026_Championship_Season, in that order. The same lookup (0x1407d0de0 on the game modes, the manager's +0xc0)
+// is asked here.
+bool gp_saves_exist()
+{
+    static const uintptr_t names[] = {0x5734370, 0x573438c, 0x57343a8, 0x570a6b2, 0x570a6c9};
+    uintptr_t find = runtime::find(S_MODE_BY_NAME, "home", "core"), manager = runtime::find(S_GAME_MANAGER, "home", "core");
+    if (!find || !manager) {
+        swofty::log("[main-menu] chain: the Grand Prix saves check did not resolve (mode lookup %p, game manager %p); using the new Grand Prix entry",
+                    reinterpret_cast<void *>(find), reinterpret_cast<void *>(manager));
+        return false;
+    }
+    void *mgr = *reinterpret_cast<void **>(manager);
+    if (!mgr || !runtime::readable(static_cast<uint8_t *>(mgr) + 0xc0, 8)) {
+        swofty::log("[main-menu] chain: the game manager is not readable; using the new Grand Prix entry");
+        return false;
+    }
+    void *modes = *reinterpret_cast<void **>(static_cast<uint8_t *>(mgr) + 0xc0);
+    uintptr_t base = swofty::api->module_base();
+    for (uintptr_t rva : names) {
+        const char *name = reinterpret_cast<const char *>(base + rva);
+        if (!runtime::readable(name, 8))
+            continue;
+        auto entity = reinterpret_cast<uint8_t *>(reinterpret_cast<void *(*)(void *, const char *)>(find)(modes, name));
+        if (!entity || !runtime::readable(entity + 0x1030, 8))
+            continue;
+        void **vt = *reinterpret_cast<void ***>(entity + 0x1030);
+        if (!vt || !runtime::readable(vt + 0xf, 8))
+            continue;
+        int answer = reinterpret_cast<int (*)(void *)>(vt[0x78 / 8])(entity + 0x1030);
+        swofty::log("[main-menu] chain: Grand Prix mode %s season registry answers %d", name, answer);
+        if (answer == 1)
+            return true;
+    }
+    swofty::log("[main-menu] chain: no saved Grand Prix season found; using the new Grand Prix entry");
+    return false;
+}
+
+// The game's open-screen table: (*g_Vm_ScreenSystem)->vt[0x48]() returns the screen table used by route commands, a
+// robin-hood map whose entries {u32 djb2(screen), screen *} (16 bytes) run from +0xa0 to the control bytes at +0xa8,
+// one control byte per entry, non-zero when it holds a screen (re/db/globals.tsv g_Vm_ScreenSystem).
+std::string open_screens_report()
+{
+    uintptr_t base = swofty::api->module_base();
+    auto sys_at = reinterpret_cast<void **>(base + 0x6ca1600);
+    if (!runtime::readable(sys_at, 8) || !*sys_at)
+        return "(screen system not readable)";
+    auto vt = *reinterpret_cast<void ***>(*sys_at);
+    if (!runtime::readable(vt + 9, 8))
+        return "(screen system vtable not readable)";
+    auto table = reinterpret_cast<uint8_t *>(reinterpret_cast<void *(*)(void *)>(vt[0x48 / 8])(*sys_at));
+    if (!table || !runtime::readable(table + 0xa0, 16))
+        return "(screen table not readable)";
+    auto entries = *reinterpret_cast<uint8_t **>(table + 0xa0);
+    auto ctrl = *reinterpret_cast<uint8_t **>(table + 0xa8);
+    if (!entries || ctrl <= entries || size_t(ctrl - entries) > 0x100000 || !runtime::readable(entries, size_t(ctrl - entries)))
+        return "(screen table layout not as expected)";
+    size_t cap = size_t(ctrl - entries) / 16;
+    std::string out;
+    for (const char *name : {"fe_home", "fe_f1_world", "f1_world_activity_container", "fe_showroom"}) {
+        uint32_t h = logic::djb2(name);
+        bool open = false;
+        for (size_t i = 0; i < cap && runtime::readable(ctrl + i, 1); i++)
+            if (ctrl[i] && *reinterpret_cast<uint32_t *>(entries + i * 16) == h && *reinterpret_cast<void **>(entries + i * 16 + 8))
+                open = true;
+        out += std::string(out.empty() ? "" : ", ") + name + (open ? "=OPEN" : "=closed");
+    }
+    return out;
+}
+
 void start_chain(bool time_trial)
 {
     if (!std::strcmp(env("SWOFTY_MAIN_MENU_CHAIN"), "0")) {
@@ -621,17 +679,8 @@ void start_chain(bool time_trial)
     chain.time_trial = time_trial;
     chain.started = GetTickCount64();
     container_vm = nullptr;
-    if (!time_trial && std::strcmp(env("SWOFTY_MAIN_MENU_GP"), "command") != 0) {
-        runtime::pad::setup();
-        chain.use_pad = runtime::pad::why().empty();
-        if (!chain.use_pad)
-            swofty::log("[main-menu] chain: the virtual pad is unavailable (%s); Grand Prix falls back to the grand_prix_new command",
-                        runtime::pad::why().c_str());
-    }
-    swofty::log("[main-menu] chain: %s card pressed; route %s, then %s", time_trial ? "Time Trial" : "Grand Prix", route_name(),
-                time_trial ? "the activity container's 'time_trial' command"
-                           : (chain.use_pad ? "A on the Play tab's first tile through the virtual pad"
-                                            : "the activity container's 'grand_prix_new' command"));
+    swofty::log("[main-menu] chain: %s card pressed; route %s, then the activity container's %s command", time_trial ? "Time Trial" : "Grand Prix",
+                route_name(), time_trial ? "'time_trial'" : "'grand_prix_resume' when a Grand Prix season is saved, else 'grand_prix_new'");
 }
 
 }
@@ -643,7 +692,7 @@ bool enabled()
 
 bool drawing()
 {
-    return logic::panel_due(patched.load(), home_open.load() && !runtime::in_session_now() && !hub_recent(), state_loaded.load(),
+    return logic::panel_due(patched.load(), home_open.load() && !runtime::in_session_now(), state_loaded.load(),
                             panel_disabled.load(), panel_prepared.load());
 }
 
@@ -673,7 +722,6 @@ bool arm_patch()
     patched = true;
     hook_container();
     hook_fire();
-    hook_hub();
     swofty::log("[main-menu] stock F1 World, divider, Local Multiplayer, League Racing, Player Hub and Theatre tiles skipped");
     return true;
 }
@@ -714,44 +762,15 @@ void poll_bind();
 
 void tick()
 {
-    if (uint64_t at = hub_at.load(); at) {
-        uint64_t now = GetTickCount64();
-        if (!hub_router.load() && now - at > 1500) {
-            hub_at = 0;
-            swofty::log("[main-menu] back: no route router was captured before the hub opened; Back stays stock");
-        } else if (hub_router.load() && now - at >= 350) {
-            hub_at = 0;
-            NeStr *route = nullptr;
-            Ne_Make_StrFromCStr(&route, "back", 0, 0);
-            {
-                std::lock_guard<std::mutex> g(swap_lock);
-                swap_screens.clear();
-                swap_reported = false;
-            }
-            swap_at = now;
-            hub_fired_at = now;
-            static uint8_t scratch[0x400];
-            *reinterpret_cast<uint32_t *>(scratch + 0x250) = logic::djb2("fe_f1_world");
-            swofty::log("[main-menu] back: the hub opened %llu ms ago; firing route 'back' in group fe_f1_world (0x%08x), the route its own Back button fires",
-                        (unsigned long long)(now - at), logic::djb2("fe_f1_world"));
-            if (h_fire)
-                h_fire.call<void>(hub_router.load(), scratch, &route, 0);
-            Ne_Make_StrFromCStr(&route, nullptr, 0, 0);
-        }
-    }
-    if (uint64_t at = hub_fired_at.load(); at && GetTickCount64() - at > 1500) {
-        hub_fired_at = 0;
-        uint64_t last = hub_update_at.load();
-        swofty::log("[main-menu] back: 1.5 s after route back the hub update hook %s; fe_home panel %s",
-                    last ? ("last fired " + std::to_string(GetTickCount64() - last) + " ms ago").c_str() : "never fired (it does not tick on this screen)",
-                    drawing() ? "is due" : "is not due");
-    }
     if (uint64_t at = swap_at.load(); at && GetTickCount64() - at > 1000) {
         std::lock_guard<std::mutex> g(swap_lock);
         if (!swap_reported) {
             swap_reported = true;
-            swofty::log("[main-menu] back: 1 s after the route swap the screens opened since were: %s; fe_home %s",
-                        swap_screens.empty() ? "(none)" : swap_screens.c_str(), home_open.load() ? "is the last front-end screen opened" : "is NOT the last front-end screen opened");
+            swofty::log("[main-menu] back: 1 s after the route swap the screens opened since were: %s; the F1 World hub (fe_f1_world) %s; fe_home %s",
+                        swap_screens.empty() ? "(none)" : swap_screens.c_str(),
+                        swap_screens.find("fe_f1_world") != std::string::npos ? "WAS OPENED" : "was never opened",
+                        home_open.load() ? "is the last front-end screen opened" : "is NOT the last front-end screen opened");
+            swofty::log("[main-menu] back: screen table read-back: %s", open_screens_report().c_str());
         }
     }
     if (home_open.load()) {
@@ -782,32 +801,14 @@ void tick()
         chain.step = Step::done;
         return;
     }
-    if (chain.release_at && now >= chain.release_at) {
-        runtime::pad::release();
-        runtime::pad::claim(false);
-        chain.release_at = 0;
-        swofty::log("[main-menu] chain: virtual pad A released");
-        chain.step = Step::done;
-        return;
-    }
-    if (chain.step == Step::wait_container && chain.use_pad && !chain.release_at && chain.container_at && container_vm.load() &&
-        now - chain.container_at > 2600) {
-        runtime::pad::claim(true);
-        runtime::pad::set(runtime::pad::A);
-        chain.release_at = now + 160;
-        swofty::log("[main-menu] chain: pressing A on the Play tab's first tile (the stock Grand Prix entry decides between saves and a new Grand Prix)");
-        return;
-    }
-    if (chain.step == Step::wait_container && !chain.use_pad && !chain.release_at && chain.container_at && container_vm.load() &&
-        now - chain.container_at > 900) {
+    if (chain.step == Step::wait_container && chain.container_at && container_vm.load() && now - chain.container_at > 900) {
+        const char *command = chain.time_trial ? "time_trial" : (gp_saves_exist() ? "grand_prix_resume" : "grand_prix_new");
         NeStr *name = nullptr;
-        Ne_Make_StrFromCStr(&name, chain.time_trial ? "time_trial" : "grand_prix_new", 0, 0);
-        swofty::log("[main-menu] chain: raising '%s' on the activity container %p",
-                    chain.time_trial ? "time_trial" : "grand_prix_new", container_vm.load());
+        Ne_Make_StrFromCStr(&name, command, 0, 0);
+        swofty::log("[main-menu] chain: raising '%s' on the activity container %p", command, container_vm.load());
         uint64_t r = h_container ? h_container.call<uint64_t>(container_vm.load(), &name, container_third.load()) : 0;
         Ne_Make_StrFromCStr(&name, nullptr, 0, 0);
-        swofty::log("[main-menu] chain: command returned 0x%llx; the %s season picker should be up",
-                    (unsigned long long)r, chain.time_trial ? "Time Trial" : "Grand Prix");
+        swofty::log("[main-menu] chain: command %s returned 0x%llx", command, (unsigned long long)r);
         chain.step = Step::done;
     }
 }
@@ -816,11 +817,6 @@ void screen(const char *name)
 {
     if (!name)
         return;
-    if (via.load() && !std::strcmp(name, "fe_f1_world")) {
-        hub_at = GetTickCount64();
-        swofty::log("[main-menu] back: the F1 World hub opened while back-to-menu is armed (router %p); route 'back' follows in 350 ms",
-                    hub_router.load());
-    }
     if (uint64_t at = swap_at.load(); at && GetTickCount64() - at < 5000)
     {
         swofty::log("[main-menu] back: screen %s opened %llu ms after the route swap", name,
@@ -848,10 +844,6 @@ void screen(const char *name)
         bool home = !std::strcmp(name, "fe_home");
         if (home)
             home_opened_at = GetTickCount64();
-        if (home) {
-            hub_router = nullptr;
-            hub_at = 0;
-        }
         if (home && via.exchange(0))
             swofty::log("[main-menu] fe_home screen opened; back-to-menu disarmed (a screen-open event, not proof it is the visible screen)");
         strip_wanted = home ? 0 : 1;

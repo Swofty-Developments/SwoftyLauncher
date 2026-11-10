@@ -692,32 +692,38 @@ fn mod_menu_route(groupings: &[Node]) -> Result<Node> {
 
 pub const SHOWROOM_ROUTE: &str = "swofty_showroom";
 pub const HOME_BACK_ROUTE: &str = "swofty_home";
+pub const BACK_HOME_FROM_CONTAINER: &str = "swofty_back_home";
 
-/// routes_f1_world.uir with a `swofty_home` route in the fe_showroom group, a copy of the activity
-/// container's `home` route (migrate to fe_home), which the core fires when the Showroom was opened from
-/// the main menu.
+/// routes_f1_world.uir with two routes that leave a screen the way the F1 World hub's own Back does (a wipe,
+/// then close the screen and open fe_home): `swofty_back_home` in the activity container's group, and
+/// `swofty_home` in the fe_showroom group. The core swaps the route name at the call where the game's own
+/// handler fires the Back route, so the F1 World hub is never opened.
 pub fn f1_world_routes(data: &[u8]) -> Result<Vec<u8>> {
     edit(data, |p| {
         let gs = root_obj(p)?.at_mut("RouteGroupings")?.a_mut()?;
-        let mut home = gs
+        let back = gs
             .iter()
-            .find(|g| id_of(g) == Some("f1_world_activity_container"))
-            .ok_or_else(|| err("the routes have no f1_world_activity_container grouping"))?
+            .find(|g| id_of(g) == Some("fe_f1_world"))
+            .ok_or_else(|| err("the routes have no fe_f1_world grouping"))?
             .o()?
             .at("Routes")?
             .a()?
             .iter()
-            .find(|r| id_of(r) == Some("home"))
+            .find(|r| id_of(r) == Some("back_1"))
             .cloned()
-            .ok_or_else(|| err("f1_world_activity_container has no home route"))?;
-        set_str(home.o_mut()?, "Id", HOME_BACK_ROUTE)?;
-        let showroom = gs
-            .iter_mut()
-            .find(|g| id_of(g) == Some("fe_showroom"))
-            .ok_or_else(|| err("the routes have no fe_showroom grouping"))?;
-        let routes = showroom.o_mut()?.at_mut("Routes")?.a_mut()?;
-        routes.retain(|r| id_of(r) != Some(HOME_BACK_ROUTE));
-        routes.push(home);
+            .ok_or_else(|| err("fe_f1_world has no back_1 route"))?;
+        for (group, id) in [("f1_world_activity_container", BACK_HOME_FROM_CONTAINER), ("fe_showroom", HOME_BACK_ROUTE)] {
+            let mut r = back.clone();
+            set_str(r.o_mut()?, "Id", id)?;
+            replace_strings(&mut r, &|v| (v == "fe_f1_world").then(|| group.to_owned()));
+            let target = gs
+                .iter_mut()
+                .find(|g| id_of(g) == Some(group))
+                .ok_or_else(|| err(format!("the routes have no {group} grouping")))?;
+            let routes = target.o_mut()?.at_mut("Routes")?.a_mut()?;
+            routes.retain(|x| id_of(x) != Some(id));
+            routes.push(r);
+        }
         Ok(())
     })
 }
@@ -1538,14 +1544,15 @@ mod tests {
     }
 
     #[test]
-    fn the_showroom_gets_a_route_home_copied_from_the_activity_container() {
+    fn the_container_and_the_showroom_get_a_route_that_leaves_like_the_hubs_back() {
         let data = Pkg {
             name: [0; 4],
             root: obj(vec![(
                 "RouteGroupings",
                 arr(vec![
-                    route_group("f1_world_activity_container", vec![route("home", vec![], "fe_home", 0, None)]),
+                    route_group("f1_world_activity_container", vec![route("f1_world", vec![], "fe_f1_world", 0, None)]),
                     route_group("fe_showroom", vec![route("back_1", vec![], "", 0, None)]),
+                    route_group("fe_f1_world", vec![route("back_1", vec![], "fe_home", 0, None)]),
                 ]),
             )]),
             vca: Vec::new(),
@@ -1569,7 +1576,8 @@ mod tests {
                 .collect()
         };
         assert_eq!(ids("fe_showroom"), ["back_1", HOME_BACK_ROUTE]);
-        assert_eq!(ids("f1_world_activity_container"), ["home"]);
+        assert_eq!(ids("f1_world_activity_container"), ["f1_world", BACK_HOME_FROM_CONTAINER]);
+        assert_eq!(ids("fe_f1_world"), ["back_1"]);
     }
 
     fn group<'a>(p: &'a Pkg, id: &str) -> Option<&'a Node> {
