@@ -9,7 +9,7 @@ use serde_json::Value;
 
 use crate::http::{self, Field};
 
-const CALL_TIMEOUT: Duration = Duration::from_secs(8);
+const CALL_TIMEOUT: Duration = Duration::from_secs(4);
 const UPLOAD_TIMEOUT: Duration = Duration::from_secs(60);
 
 #[derive(Debug, Clone, PartialEq, Eq)]

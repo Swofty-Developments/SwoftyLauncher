@@ -17,7 +17,7 @@
 #include <cmath>
 #include <mutex>
 
-// The lap recorder: in a Time Trial, while swofty\session.json carries "tt_boards": true, the flow tick samples the
+// The lap recorder: in a Time Trial, while swofty\tt.json carries "tt_boards": true, the flow tick samples the
 // player's car and the line crossings of ers_newlap.cpp (session.lap) cut it into laps; each completed lap is written
 // to swofty\laps\<UTC stamp>-<n>.swlap (lap_file_logic.hpp). The state machine is lap_rec_logic.hpp. Crossings are
 // queued and handled on the next flow tick, so file writing and the game reads stay on the flow thread.
@@ -298,7 +298,7 @@ namespace runtime {
 
 void lap_rec_setup()
 {
-    swofty::log("[laps] recorder ready: it runs in a Time Trial when swofty\\session.json has tt_boards on");
+    swofty::log("[laps] recorder ready: it runs in a Time Trial when swofty\\tt.json has tt_boards on");
 }
 
 void lap_rec_session_enter()
@@ -307,7 +307,7 @@ void lap_rec_session_enter()
     active = false;
     queued.clear();
     planned = false;
-    gate = lr::gate_of(read_file(swofty_root() + L"session.json", size_t(1) << 20));
+    gate = lr::gate_of(read_file(swofty_root() + L"tt.json", size_t(1) << 20));
     is_time_trial = swofty_core::apply::moments::session_mode_track().first == "time_trial";
     if (!gate.on || !is_time_trial || !enabled("lap_rec", nullptr)) {
         recorder.end_session();

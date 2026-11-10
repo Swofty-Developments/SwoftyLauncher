@@ -7,7 +7,7 @@ description: The lap files the core records in Time Trial, and the two events ar
 
 While Time Trial boards are on, the core records every completed Time Trial lap to a file under `swofty/laps/`. An addon reads those files, adds a section to one before it is written, or reacts when one lands.
 
-The recorder runs when the launcher writes `"tt_boards": true` into `swofty/session.json` and the session is a Time Trial. It samples the player's car once per rendered frame. A lap starts at a line crossing and ends at the next one. The lap out of the garage is not recorded. A lap is dropped when the car is reset or moved, when the session ends, or when it is too short or too long to be a lap.
+The recorder runs when the launcher writes `"tt_boards": true` into `swofty/tt.json` and the session is a Time Trial. It samples the player's car once per rendered frame. A lap starts at a line crossing and ends at the next one. The lap out of the garage is not recorded. A lap is dropped when the car is reset or moved, when the session ends, or when it is too short or too long to be a lap.
 
 ## The file
 
@@ -42,7 +42,7 @@ The header names what the core knows and leaves out the rest:
     { "name": "px", "type": "f32", "unit": "m" },
     { "name": "gear", "type": "i8" }
   ],
-  "nonce": "<the value of tt_nonce in session.json>"
+  "nonce": "<the value of tt_nonce in tt.json>"
 }
 ```
 

@@ -104,7 +104,7 @@ static void plans()
     expect(none.layout.columns.size() == 1 && none.layout.columns[0].name == "t", "the clock column always exists");
 
     lr::Gate g = lr::gate_of("{\"tt_boards\": true, \"tt_nonce\": \"abc123\", \"native\": []}");
-    expect(g.on && g.nonce == "abc123", "session.json with tt_boards on opens the gate and carries the nonce");
+    expect(g.on && g.nonce == "abc123", "tt.json with tt_boards on opens the gate and carries the nonce");
     g = lr::gate_of("{\"tt_boards\": true}");
     expect(g.on && g.nonce.empty(), "the nonce is optional");
     expect(!lr::gate_of("{\"tt_boards\": false, \"tt_nonce\": \"x\"}").on, "tt_boards off keeps the gate shut");
