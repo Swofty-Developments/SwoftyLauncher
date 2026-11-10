@@ -650,7 +650,7 @@ fn run_loop(
             return Ok(ExitCode::FAILURE);
         }
         rebuild_if_needed(store, &profile, &game);
-        let code = play(store, args, config, request, g, installed, restarted)?;
+        let code = play(store, args, config, request, &profile, g, installed, restarted)?;
         let relaunch = match store.merge_requests(&profile, true) {
             Ok(Some(m)) => {
                 for c in &m.changed {
@@ -712,6 +712,7 @@ fn play(
     args: &RunArgs,
     config: &Config,
     request: &LaunchRequest,
+    profile: &str,
     g: &Game,
     installed: Option<Instant>,
     restarted: bool,
@@ -921,6 +922,7 @@ fn play(
         say("info", &format!("starting F1 25 in VR ({})", extra.join(" ")));
     }
     let usage = swofty_core::usage::Session::start(&store.root, game);
+    let laps = crate::laps::begin(store, config, profile, g);
     let new_watch =
         || AttachWatch::new(loader.clone(), before.clone(), Instant::now()).with_fallback(fallback.clone());
     let mut watch = placed_loader.then(new_watch);
@@ -1002,6 +1004,7 @@ fn play(
         code,
         launched.elapsed().unwrap_or_default(),
     );
+    crate::laps::end(laps, game);
     keep_game_logs(&store.root, game, &fallback, &dir, before.as_ref(), launched);
     let loader = std::fs::read(dir.join("loader.log"))
         .ok()

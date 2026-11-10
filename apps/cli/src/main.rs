@@ -3,6 +3,7 @@ mod db;
 mod dev;
 mod doctor;
 mod ea;
+mod laps;
 mod offline;
 mod postfx;
 mod recover;
@@ -160,6 +161,11 @@ enum Command {
         about = "The career vault: snapshots of the profile save around every session; list, show, back up and restore them"
     )]
     Saves(saves::SavesCommand),
+    #[command(
+        subcommand,
+        about = "Time Trial boards: the laps waiting to upload and the ones sent"
+    )]
+    Laps(laps::LapsCommand),
     #[command(
         subcommand,
         about = "Test addons in the game: plan the game starts, run the tests and write the report"
@@ -578,6 +584,7 @@ fn dispatch(store: &Store, cli: Cli) -> Result<ExitCode> {
         Command::Doctor => doctor::doctor(&store),
         Command::Game(cmd) => game(&store, cmd).map(|_| ExitCode::SUCCESS),
         Command::Saves(cmd) => saves::command(&store, cmd),
+        Command::Laps(cmd) => laps::command(&store, &profile, cmd),
         Command::Steam { start } => run::steam_check(&store, start),
         Command::Postfx(cmd) => postfx::command(cmd),
         Command::Shaders(cmd) => shaders::command(&store, &profile, cmd),
