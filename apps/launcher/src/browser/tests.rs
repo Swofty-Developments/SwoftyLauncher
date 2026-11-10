@@ -207,3 +207,25 @@ fn an_update_that_failed_at_that_version_is_skipped() {
     held.insert("on".to_owned(), (semver::Version::new(1, 0, 5), "x".to_owned()));
     assert_eq!(due_updates(&updates, &on, &held).len(), 1);
 }
+
+fn tested_on(platforms: serde_json::Value) -> Addon {
+    serde_json::from_value(serde_json::json!({
+        "id": "a.b", "name": "B",
+        "latest": { "version": "1.0.0", "size": 0, "sha256": "", "url": "", "platforms": platforms }
+    }))
+    .unwrap()
+}
+
+#[test]
+fn platform_tags_name_each_listed_platform_or_not_tested() {
+    use super::filters::Where;
+    let tags = |platforms| Where::tags(tested_on(platforms).platforms());
+    assert_eq!(tags(serde_json::json!([])), [Where::NotTested]);
+    assert_eq!(tags(serde_json::json!(["steam"])), [Where::Steam]);
+    assert_eq!(
+        tags(serde_json::json!(["ea", "steam"])),
+        [Where::Steam, Where::Ea]
+    );
+    assert_eq!(tags(serde_json::json!(["gog"])), [Where::NotTested]);
+    assert_eq!(Where::ALL.map(Where::label), ["Steam", "EA", "Not tested"]);
+}

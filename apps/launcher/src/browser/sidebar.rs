@@ -97,6 +97,23 @@ impl Shell {
             .into_any_element()
     }
 
+    fn platform_all_row(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+        let b = &self.browser;
+        let none = !b.facets.iter().any(|f| f.group() == Group::Platform);
+        let n = b
+            .addons
+            .iter()
+            .zip(&b.grid_cache.as_ref().unwrap().scores)
+            .filter(|(a, s)| self.catalog_passes(a, s.is_some(), Some(Group::Platform)))
+            .count();
+        facet_row("browser-filter-platform-all", none, tr("All"), n, p)
+            .on_click(cx.listener(|this, _, _, cx| {
+                this.browser.facets.retain(|f| f.group() != Group::Platform);
+                cx.notify();
+            }))
+            .into_any_element()
+    }
+
     fn filters_header(&self, active: bool, p: Palette, cx: &mut Context<Self>) -> Div {
         let clear = active.then(|| {
             div()
@@ -150,6 +167,14 @@ impl Shell {
             .into_iter()
             .map(|w| self.facet_filter_row(Facet::State(w), p, cx))
             .collect();
+        let all_platforms = self.platform_all_row(p, cx);
+        let platforms: Vec<_> = std::iter::once(all_platforms)
+            .chain(
+                Where::ALL
+                    .into_iter()
+                    .map(|w| self.facet_filter_row(Facet::Platform(w), p, cx)),
+            )
+            .collect();
         let authors: Vec<_> = cache
             .authors
             .iter()
@@ -191,6 +216,7 @@ impl Shell {
                     .pb(px(8.))
                     .child(group(tr("TYPE"), types))
                     .child(group(tr("STATE"), states))
+                    .child(group(tr("PLATFORM"), platforms))
                     .child(group(tr("RUNS CODE IN THE GAME"), vec![code]))
                     .when(!authors.is_empty(), |d| d.child(group(tr("AUTHOR"), authors))),
             )

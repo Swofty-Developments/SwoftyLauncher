@@ -843,6 +843,7 @@ mod tests {
             changelog: String::new(),
             native: false,
             yanked: false,
+            platforms: Vec::new(),
             requires: Some(
                 requires
                     .iter()
