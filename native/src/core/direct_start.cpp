@@ -1207,7 +1207,24 @@ uintptr_t direct_start_set_mode()
 
 DirectStartContext direct_start_context()
 {
-    return context;
+    if (game.manager)
+        return context;
+    static std::atomic<uintptr_t> manager{0};
+    static std::atomic<bool> tried{false};
+    if (!manager.load() && !tried.exchange(true)) {
+        manager = runtime::same_build() ? runtime::find(SIG_GAME_MANAGER, "game manager", "direct") : 0;
+        swofty::log("[direct] game manager for a session without a direct start: %s", manager.load() ? "resolved" : "not resolved");
+    }
+    DirectStartContext c;
+    if (!manager.load() || !runtime::readable(reinterpret_cast<void *>(manager.load()), 8))
+        return c;
+    void *mgr = *reinterpret_cast<void **>(manager.load());
+    void *modes = modes_seen.load();
+    if (!modes && mgr && runtime::readable(mgr, MANAGER_MODES + 8))
+        modes = *reinterpret_cast<void **>(static_cast<uint8_t *>(mgr) + MANAGER_MODES);
+    c.game_manager = mgr;
+    c.game_modes = modes;
+    return c;
 }
 
 void direct_start_register_room(DirectStartSetup setup)

@@ -242,9 +242,7 @@ Board snapshot(const live_car::LiveCar &c)
     Board b;
     auto facts = swofty_core::hooks::core().current();
     b.content = facts && !facts->content.empty() ? facts->content : "game/f1_2025";
-    std::string code = runtime::direct_start::tt::current_track();
-    if (code.empty())
-        code = runtime::track_select_time_trial();
+    std::string code = runtime::direct_start::tt::session_track();
     runtime::tt_bridge::BoardTrack t = runtime::tt_bridge_board_track(runtime::lower(code),
                                                                       runtime::tt_bridge::parse_board(runtime::tt_bridge_last_board()).track);
     b.track = t.key;
@@ -272,12 +270,21 @@ int32_t add_section(void *user, const char *tag, const void *bytes, uint32_t len
     return SWOFTY_ASSET_OK;
 }
 
+lr::ExtrasFrom read_extras(lr::GameLap &g);
+void log_extras(unsigned lap, const char *when, const lr::GameLap &g, const lr::ExtrasFrom &from);
+
 void finish(lr::Sealed &sealed, const LapContext &ctx)
 {
     LARGE_INTEGER t0, t1, f;
     QueryPerformanceCounter(&t0);
     lr::Lap &lap = sealed.lap;
     const Board &b = ctx.board;
+    if (sealed.game && sealed.game->usable && (!sealed.game->tlap.ok || !sealed.game->stats.ok)) {
+        mem::Trust trust(runtime::HEAP_TRUST_MS);
+        lr::ExtrasFrom late = read_extras(*sealed.game);
+        if (sealed.game->tlap.ok || sealed.game->stats.ok || late.tlap != lr::From::none)
+            log_extras(lap.index, " (read when the lap was written)", *sealed.game, late);
+    }
     LapResult r = lap_result(lap, sealed.game);
     if (sealer.game_armed() && !sealed.game)
         swofty::log("[laps] lap %u: the game reported no lap result within the wait; using the clock", lap.index);
@@ -305,6 +312,11 @@ void finish(lr::Sealed &sealed, const LapContext &ctx)
         h.team = facts->player->team;
         h.vehicle = facts->player->vehicle;
         h.driver = facts->player->driver;
+    }
+    if (h.team.empty()) {
+        h.team = runtime::direct_start::tt::player_team();
+        if (!h.team.empty())
+            swofty::log("[laps] lap %u: car team label %s from the player's entrant selection", lap.index, h.team.c_str());
     }
     h.time_ms = r.time_ms;
     h.sectors_ms = r.sectors_ms;
@@ -406,7 +418,7 @@ void drain(const live_car::LiveCar &c)
         lr::Outcome &o = p.outcome;
         if (o.kind == lr::Outcome::completed) {
             contexts[o.lap.index] = {board, started_utc, session_clock()};
-            double ended = o.lap.ended_s + paused_total.load();
+            double ended = o.lap.ended_s + o.lap.shift_s + paused_total.load();
             sealer.lap(std::move(o.lap), ended);
             board = snapshot(c);
             started_utc = utc_now();
@@ -433,20 +445,24 @@ void handle(lr::Outcome o)
     queued.push_back({std::move(o)});
 }
 
-void read_extras(lr::GameLap &g, uint64_t lap_times)
+lr::ExtrasFrom read_extras(lr::GameLap &g)
 {
-    (void)lap_times;
+    lr::ExtrasRoots roots;
+    roots.manager = uintptr_t(runtime::direct_start_context().game_manager);
+    roots.handler_map = registry_map.load();
+    roots.handler_base = session_base.load();
+    roots.key = swofty::api->module_base() + RVA_TLAP_KEY;
     auto rdr = read_memory;
-    if (uintptr_t map = registry_map.load()) {
-        uint64_t tlap = lr::find_last_tlap(rdr, map, swofty::api->module_base() + RVA_TLAP_KEY);
-        g.tlap = tlap ? lr::decode_tlap(rdr, tlap, g.time_ms) : lr::TLapExtras{};
-    }
-    if (uintptr_t base = session_base.load()) {
-        g.stats = lr::find_stats(rdr, base, g.car);
-        uint64_t inner = 0;
-        if (!g.stats.ok && mem::read(base + lr::SESSION_LIST, inner) && inner)
-            g.stats = lr::find_stats(rdr, inner, g.car);
-    }
+    return lr::read_extras(rdr, g, roots);
+}
+
+void log_extras(unsigned lap, const char *when, const lr::GameLap &g, const lr::ExtrasFrom &from)
+{
+    swofty::log("[laps] lap %u extras%s: assists/input/performance %s%s, team/vehicle/livery stat ids %s%s", lap, when,
+                g.tlap.ok ? "from the telemetry lap via " : "unavailable",
+                g.tlap.ok ? lr::from_name(from.tlap) : "",
+                g.stats.ok ? "from the participant list via " : "unavailable",
+                g.stats.ok ? lr::from_name(from.stats) : "");
 }
 
 uint64_t report_lap(void *lap_times, void *msg)
@@ -464,7 +480,8 @@ uint64_t report_lap(void *lap_times, void *msg)
     lr::sanity(g);
     g.at_s = now_seconds();
     if (g.usable) {
-        read_extras(g, uint64_t(lap_times));
+        lr::ExtrasFrom from = read_extras(g);
+        log_extras(g.msg_lap, "", g, from);
         swofty::log("[laps] lap result from the game: car %u record %d (message lap %u) %lld ms, sectors %lld %lld %lld ms, "
                     "lap %s, sectors %d%d%d valid",
                     unsigned(g.car), g.record, g.msg_lap, (long long)g.time_ms, (long long)g.sectors_ms[0],
@@ -475,8 +492,8 @@ uint64_t report_lap(void *lap_times, void *msg)
                         g.tlap.brk, g.tlap.abs, g.tlap.trc, g.tlap.drl, g.tlap.gbx, g.tlap.ers,
                         lr::input_name(g.tlap.input), lr::performance_name(g.tlap.performance));
         else
-            swofty::log("[laps] game lap extras: the telemetry lap is not readable (%s)",
-                        registry_map.load() ? "no matching lap in the component map" : "no ghost handler seen yet");
+            swofty::log("[laps] game lap extras: the telemetry lap is not readable yet (%s)",
+                        runtime::direct_start_context().game_manager ? "no matching lap in the systems map" : "no game manager");
         if (g.stats.ok)
             swofty::log("[laps] game lap stats: team %u vehicle %u livery %u", g.stats.team, g.stats.vehicle, g.stats.livery);
     } else {
@@ -650,19 +667,30 @@ void lap_rec_tick()
         }
     }
     static double paused_since = -1;
+    static uint32_t paused_mask = 0, stalls_logged = 0;
     double now = now_seconds();
-    if (view::pause_reasons()) {
-        if (paused_since < 0)
+    uint32_t view_flags = view::current().flags;
+    uint32_t reasons = view::pause_reasons();
+    if (reasons || (view_flags & view::PHOTO)) {
+        if (paused_since < 0) {
             paused_since = now;
+            paused_mask = reasons;
+            swofty::log("[laps] paused (pause mask %08x%s): sampling and the lap clock stop, the lap in progress continues "
+                        "on resume",
+                        reasons, view_flags & view::PHOTO ? ", photo mode" : "");
+        }
         return;
     }
     if (paused_since >= 0) {
+        swofty::log("[laps] resumed after %.1f s (pause mask %08x); the lap in progress continues", now - paused_since,
+                    paused_mask);
         paused_total.store(paused_total.load() + now - paused_since);
         paused_since = -1;
     }
     lr::Frame f;
     f.now_s = now - paused_total.load();
     f.player = !d.ai && d.has_pos;
+    f.interrupted = (view_flags & (view::REPLAY | view::CUTSCENE | view::SPECTATING)) != 0;
     if (d.has_pos)
         for (int i = 0; i < 3; i++)
             f.pos[i] = d.pos[i];
@@ -679,6 +707,14 @@ void lap_rec_tick()
                               std::pow(f.pos[2] - last_pos[2], 2));
         fill(sample.data(), c, d, recorder.elapsed(f.now_s), dist);
         out = recorder.step(f, sample.data(), sample.size());
+        if (recorder.stalls() < stalls_logged)
+            stalls_logged = 0;
+        if (recorder.stalls() > stalls_logged) {
+            swofty::log("[laps] the game stalled without a pause (the car did not move while the clock ran): %.2f s taken "
+                        "out of the lap clock in total, %u stall(s)",
+                        recorder.shift_s(), recorder.stalls());
+            stalls_logged = recorder.stalls();
+        }
     }
     for (int i = 0; i < 3; i++)
         last_pos[i] = f.pos[i];

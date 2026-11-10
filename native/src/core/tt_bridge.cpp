@@ -502,7 +502,7 @@ void tt_bridge_tick()
         int64_t t = now_ms();
         if (t - track_checked_ms.load() >= 500) {
             track_checked_ms = t;
-            std::string code = runtime::lower(direct_start::tt::current_track());
+            std::string code = runtime::lower(direct_start::tt::session_track());
             session_custom = tb::board_track(swofty_core::apply::tracks::base(), code).custom;
             std::lock_guard<std::mutex> g(lock);
             session_code = std::move(code);

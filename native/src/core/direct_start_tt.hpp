@@ -13,4 +13,8 @@ Setup setup(const json::Value &request, std::string &why);
 
 std::string current_track();
 
+std::string session_track();
+
+std::string player_team();
+
 }
