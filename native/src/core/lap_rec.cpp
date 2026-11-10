@@ -341,9 +341,9 @@ void finish(lr::Sealed &sealed, const LapContext &ctx)
             h.performance = lr::performance_name(t.performance);
         }
         if (sealed.game->stats.ok) {
-            h.team_stat = int64_t(sealed.game->stats.team);
-            h.vehicle_stat = int64_t(sealed.game->stats.vehicle);
-            h.livery_stat = int64_t(sealed.game->stats.livery);
+            h.team_stat = lr::packed_stat(sealed.game->stats.team);
+            h.vehicle_stat = lr::packed_stat(sealed.game->stats.vehicle);
+            h.livery_stat = lr::packed_stat(sealed.game->stats.livery);
         }
     }
 

@@ -301,6 +301,9 @@ static void tlap_and_stats()
     lr::Stats s = lr::find_stats(p, LIST_OWNER, 5);
     expect(s.ok && s.team == 101 && s.vehicle == 201 && s.livery == 301, "the participant of a car gives its team, vehicle and livery stat ids");
     expect(!lr::find_stats(p, LIST_OWNER, 9).ok, "a car with no participant gives nothing");
+    expect(lr::packed_stat(0x029B0000u) == 0x029B && lr::packed_stat(0x035D0000u) == 0x035D && lr::packed_stat(0x3fff0000u) == 0x3fff &&
+               lr::packed_stat(0x00010002u) == ((2u << 14) | 1u),
+           "a participant stat dword packs to the game's 16-bit leaderboard form");
     p.put<uint64_t>(LIST_OWNER + lr::PART_END, PARTS + 100);
     expect(!lr::find_stats(p, LIST_OWNER, 5).ok, "a list that is not a whole number of entries is refused");
 }

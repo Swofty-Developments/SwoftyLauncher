@@ -63,6 +63,13 @@ struct Stats {
     uint32_t team = 0, vehicle = 0, livery = 0;
 };
 
+// A participant's stat id is a dword: the id in its high word, two flag bits in the low word. The leaderboard row carries
+// the game's 16-bit packed form (Game_GhostLapHandler_StartLeaderboardEntryWrite): bits 14-15 from the low bits, bits 0-13 from the id.
+inline int64_t packed_stat(uint32_t raw)
+{
+    return int64_t(((raw & 3u) << 14) | ((raw >> 16) & 0x3fffu));
+}
+
 struct GameLap {
     bool read = false, usable = false;
     uint8_t car = 0;
