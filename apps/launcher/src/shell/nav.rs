@@ -27,6 +27,12 @@ impl Shell {
         if page == Page::Careers && was != Page::Careers {
             self.refresh_saves_in_background(cx);
         }
+        if page == Page::Moderation {
+            self.tt_open(cx);
+        }
+        if page == Page::Support {
+            self.support_open(cx);
+        }
         if let Some(i) = self.open_section().filter(|i| !self.section_loaded(*i)) {
             self.fetch_views(Some(i), cx);
         }

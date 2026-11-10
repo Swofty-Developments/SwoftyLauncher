@@ -1,4 +1,5 @@
 #include "runtime.hpp"
+#include "main_menu.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
@@ -78,7 +79,10 @@ void flow_mid(safetyhook::Context &)
     perf::Scope p(probe);
     runtime::career_tick();
     runtime::telemetry_tick();
+    runtime::lap_rec_tick();
+    runtime::tt_bridge_tick();
     runtime::popup_tick();
+    runtime::main_menu::tick();
     runtime::mfd_tick();
     runtime::netplay_tick();
     runtime::career_content_tick();
@@ -104,6 +108,7 @@ void session_enter_mid(safetyhook::Context &)
     swofty::mem::invalidate();
     swofty_core::apply::moments::session_load("Game_GameModule_OnSessionEnter");
     runtime::telemetry_session_enter();
+    runtime::lap_rec_session_enter();
     bool restart;
     {
         std::lock_guard<std::mutex> g(lifecycle_lock);
@@ -316,6 +321,8 @@ void session_emit(const session_life::Emit &e)
 {
     if (e.end || e.unload)
         tyre_models_drop();
+    if (e.end)
+        lap_rec_session_end();
     if (e.end) {
         swofty::log("[events] session.end (%s)", e.reason == session_life::END_RESTART  ? "restart"
                                                  : e.reason == session_life::END_UNLOAD ? "ended as the unload began"

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "presence_id_logic.hpp"
+
 #include "direct_start_logic.hpp"
 #include "session_lifecycle_logic.hpp"
 #include <windows.h>
@@ -136,6 +138,8 @@ int career_unblock(const void *from, uint32_t mode);
 void career_start_setup();
 void career_start_drop_module(void *module);
 bool career_start_live();
+bool in_session_now();
+bool main_menu_account(std::string &name);
 uint32_t career_start_picked();
 void popup_setup();
 void popup_tick();
@@ -143,7 +147,11 @@ bool typing(const char *what);
 void mfd_setup();
 void mfd_tick();
 int popup_show(const std::string &title, const std::string &body, const std::string &by);
-int hud_toast(const std::string &text, const std::string &detail, float seconds, const std::string &by);
+int hud_toast(const std::string &text, const std::string &detail, float seconds, const std::string &by,
+              const std::string &icon = {});
+namespace toast {
+void tick();
+}
 const SwoftyCareerContent *career_content_table();
 std::vector<CoreMixins> career_content_mixins();
 void career_content_commit();
@@ -173,6 +181,7 @@ void save_splice_commit();
 // distribution as the binding set names it: "steam", "ea" or "unknown".
 const std::string &settings_json_text();
 std::string build_distribution();
+std::string build_exe_sha();
 // Career saves (career_saves.cpp): the career index and per-career addon data.
 namespace career_saves {
 struct SlotRead;
@@ -262,6 +271,7 @@ void heap_sizes_commit();
 bool save_heap_raised(uint64_t &bytes);
 std::vector<CoreMixins> track_select_mixins();
 void track_select_commit();
+std::string track_select_time_trial();
 std::vector<CoreMixins> team_slots_mixins();
 void team_slots_commit();
 std::vector<CoreMixins> netplay_icons_mixins();
@@ -273,6 +283,8 @@ void netplay_privilege_commit();
 uint8_t *team_record_of(uint16_t stat);
 void team_record_inserted(std::function<void(uint16_t, uint8_t *)> fn);
 std::vector<CoreMixins> leaderboard_guard_mixins();
+std::vector<CoreMixins> lap_rec_mixins();
+void lap_rec_commit();
 void leaderboard_guard_commit();
 std::vector<CoreMixins> thrustmaster_lcd_mixins();
 void thrustmaster_lcd_commit();
@@ -293,6 +305,25 @@ void postfx_setup();
 void telemetry_setup();
 void telemetry_tick();
 void telemetry_session_enter();
+void lap_rec_setup();
+void lap_rec_tick();
+void lap_rec_session_enter();
+void lap_rec_session_end();
+bool lap_rec_active();
+void tt_bridge_tick();
+bool tt_bridge_ghost_id(uint8_t out[48]);
+bool tt_bridge_presence_id(runtime::presence_id::Id &out);
+bool tt_bridge_pb_armed();
+bool tt_bridge_ours_session();
+void tt_bridge_lap_finished(int64_t lap_ms, int valid);
+std::string tt_bridge_last_board();
+void tt_bridge_session_enter();
+void lap_rec_ghost(uintptr_t handler);
+void lap_rec_native_trace(const uint8_t *data, size_t size);
+bool lap_rec_current_board(std::string &content, std::string &track, std::string &weather);
+void lap_rec_assists(const uint8_t *summary, size_t size, int device, int performance);
+bool ghost_play_trace_armed();
+void lap_rec_newlap(int car);
 bool telemetry_wants_udp();
 void telemetry_udp(const uint8_t *buf, size_t len);
 void placed_record_setup();

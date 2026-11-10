@@ -48,6 +48,7 @@ Shipped in 1.6.0:
 - **[Career](./career)** `swofty/systems/career.hpp`: `career::modes`, `contents`, `seasons`, `calendars`, `ratings`, `characters`, `wizards`, `hub_tabs`, `rnd_trees`, `markets`.
 - **[UI and strings](./ui)** `swofty/systems/ui.hpp`: `ui::strings`, `addon_options`.
 - **[Sessions](./sessions)** `swofty/systems/sessions.hpp`: `sessions::Rules`, `set_control`.
+- **[Laps](./laps)** `swofty/systems/laps.hpp`: the `laps.recorded` and `laps.sealing` payloads.
 - **[Tracks](./tracks)** `swofty/systems/tracks.hpp`: `tracks::set_track_fuel`, `copy_track_fuel`, `restore_track_fuel`.
 - **[AI](./ai)** `swofty/systems/ai.hpp`: the `ai.controller.update` payload.
 - **[The spectator camera](./graphics#the-spectator-camera)** `swofty/systems/spectator.hpp`: `spectator::set_active`, `follow`, `set_camera`, `current`.

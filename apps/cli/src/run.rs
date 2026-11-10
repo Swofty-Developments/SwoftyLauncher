@@ -175,6 +175,7 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
     let loader = game.join(LOADER_LOG);
     let before = LogMark::read(&loader);
     let asked = now_secs();
+    let _home_menu = swofty_core::home_menu::publish(&store.root, &game, env!("CARGO_PKG_VERSION"));
     let mut wrapper =
         launch(store, &game, args.direct, mode, &args.game_arg).inspect_err(|e| note_blocked(store, e))?;
     let mut silence = Silence::new();
@@ -220,6 +221,9 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
     install_ctrl_c();
     let mut quiet = false;
     while !dir.join("exit_code").exists() {
+        if let Some(url) = swofty_core::home_menu::take_open_request(&game) {
+            open_in_browser(&url);
+        }
         if stop_requested() {
             if wrapper.child.is_none() {
                 say("info", "stopped following (the game keeps running)");
@@ -272,6 +276,14 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
 
 const LEFT: &str = "left without waiting; the next swofty run or launcher start rolls the game files back";
 const SETTLE_TIMEOUT: Duration = Duration::from_secs(600);
+
+fn open_in_browser(url: &str) {
+    let opener = if cfg!(windows) { "explorer" } else { "xdg-open" };
+    match Command::new(opener).arg(url).stdout(Stdio::null()).stderr(Stdio::null()).spawn() {
+        Ok(_) => say("info", &format!("opened {url} in the browser")),
+        Err(e) => say("warning", &format!("could not open {url}: {e}")),
+    }
+}
 
 fn info(line: &str) {
     say("info", line);
@@ -480,6 +492,7 @@ fn wrapper(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Result<Exi
         crate::build::install(store, &profile, g, true, &info)?;
     }
     let installed = apply.then(Instant::now);
+    let _home_menu = swofty_core::home_menu::publish(&store.root, &game, env!("CARGO_PKG_VERSION"));
     become_subreaper();
     let vanilla = store.profile(&profile).is_ok_and(|p| p.is_vanilla());
     if crate::ea::stages_offline(args.via_ea, vanilla) {
@@ -650,7 +663,18 @@ fn run_loop(
             return Ok(ExitCode::FAILURE);
         }
         rebuild_if_needed(store, &profile, &game);
-        let code = play(store, args, config, request, g, installed, restarted)?;
+        let code = play(
+            store,
+            args,
+            config,
+            request,
+            g,
+            installed,
+            Round {
+                profile: &profile,
+                restarted,
+            },
+        )?;
         let relaunch = match store.merge_requests(&profile, true) {
             Ok(Some(m)) => {
                 for c in &m.changed {
@@ -707,6 +731,11 @@ fn written_within(path: &Path, max: Duration) -> bool {
         .is_some_and(|age| age <= max)
 }
 
+struct Round<'a> {
+    profile: &'a str,
+    restarted: bool,
+}
+
 fn play(
     store: &Store,
     args: &RunArgs,
@@ -714,8 +743,9 @@ fn play(
     request: &LaunchRequest,
     g: &Game,
     installed: Option<Instant>,
-    restarted: bool,
+    round: Round,
 ) -> Result<i32> {
+    let Round { profile, restarted } = round;
     let game = g.dir.as_path();
     let placed_loader = check_loader(store, game, installed).map_err(Refused)?;
     // The profile build and the offline play download before the first
@@ -921,6 +951,7 @@ fn play(
         say("info", &format!("starting F1 25 in VR ({})", extra.join(" ")));
     }
     let usage = swofty_core::usage::Session::start(&store.root, game);
+    let laps = crate::laps::begin(store, config, profile, g);
     let new_watch =
         || AttachWatch::new(loader.clone(), before.clone(), Instant::now()).with_fallback(fallback.clone());
     let mut watch = placed_loader.then(new_watch);
@@ -1002,6 +1033,7 @@ fn play(
         code,
         launched.elapsed().unwrap_or_default(),
     );
+    crate::laps::end(laps, game);
     keep_game_logs(&store.root, game, &fallback, &dir, before.as_ref(), launched);
     let loader = std::fs::read(dir.join("loader.log"))
         .ok()

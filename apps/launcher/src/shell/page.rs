@@ -15,6 +15,8 @@ pub enum Page {
     Database,
     Multiplayer,
     Online,
+    Moderation,
+    Support,
     Settings,
     Section(usize),
 }
@@ -33,6 +35,8 @@ impl Page {
             Self::Database => tr("DB Editor"),
             Self::Multiplayer => tr("Multiplayer"),
             Self::Online => tr("Online"),
+            Self::Moderation => tr("Moderation"),
+            Self::Support => tr("Support"),
             Self::Settings => tr("Settings"),
             Self::Section(_) => "",
         }

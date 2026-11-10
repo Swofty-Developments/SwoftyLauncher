@@ -70,6 +70,8 @@ impl Shell {
         let ui_mode = config.ui_mode;
         let developer_mode = config.developer;
         let clear_old_session_logs = config.clear_old_session_logs;
+        let time_trial_boards = config.time_trial_boards;
+        let time_trial_ingame = config.time_trial_ingame;
         let update_check = config.updates.check;
         Self::guard_close(window, cx);
         Self::recover_in_background(&store, clear_old_session_logs, cx);
@@ -113,6 +115,7 @@ impl Shell {
             session: None,
             mp,
             mp_busy: false,
+            ban: None,
             mp_toasts: Vec::new(),
             mp_page: crate::multiplayer::Multiplayer::new(window, cx),
             crash: None,
@@ -151,6 +154,8 @@ impl Shell {
             onboarding: None,
             developer_mode,
             clear_old_session_logs,
+            time_trial_boards,
+            time_trial_ingame,
             reload_generation: 0,
             slow_logged: false,
             update_check,
@@ -166,6 +171,8 @@ impl Shell {
             highlight: None,
             addons: crate::addons::AddonsPage::new(window, cx),
             saves: crate::career_saves::SavesPage::default(),
+            tt: crate::time_trial::TtPage::default(),
+            support: crate::support::SupportPage::default(),
             db: crate::db::Db::new(cx),
             news,
             news_scroll: Default::default(),
@@ -337,14 +344,22 @@ impl Shell {
             cx.spawn(async move |this, cx| {
                 let refreshed = cx
                     .background_executor()
-                    .spawn(async move { swofty_core::mpauth::refresh(&dir, &current) })
+                    .spawn(async move { swofty_core::mpauth::refresh_checked(&dir, &current) })
                     .await;
                 this.update(cx, |s, cx| {
-                    s.mp = refreshed;
+                    let allowed = s.mp.as_ref().is_some_and(|m| m.allowed);
+                    s.mp_apply_check(refreshed, allowed, cx);
                     s.sync_avatar(cx);
-                    cx.notify();
                 })
                 .ok();
+                let data = this.update(cx, |s, _| s.store.clone()).ok();
+                if let Some(store) = data {
+                    cx.background_executor()
+                        .spawn(async move {
+                            swofty_core::timetrial::upload::flush(&store.root, &store.config());
+                        })
+                        .await;
+                }
             })
             .detach();
         }
@@ -362,10 +377,10 @@ impl Shell {
                 let was_allowed = session.allowed;
                 let refreshed = cx
                     .background_executor()
-                    .spawn(async move { swofty_core::mpauth::refresh(&dir, &session) })
+                    .spawn(async move { swofty_core::mpauth::refresh_checked(&dir, &session) })
                     .await;
                 if this
-                    .update(cx, |s, cx| s.mp_apply_refresh(refreshed, was_allowed, cx))
+                    .update(cx, |s, cx| s.mp_apply_check(refreshed, was_allowed, cx))
                     .is_err()
                 {
                     break;

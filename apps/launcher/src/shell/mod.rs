@@ -68,6 +68,7 @@ pub struct Shell {
     pub(crate) session: Option<SessionRecord>,
     pub(crate) mp: Option<swofty_core::mpauth::Session>,
     pub(crate) mp_busy: bool,
+    pub(crate) ban: Option<swofty_core::mpauth::Ban>,
     pub(crate) mp_toasts: Vec<Notification>,
     pub(crate) mp_page: crate::multiplayer::Multiplayer,
     pub(crate) crash: Option<(PathBuf, Result<String, StartFailure>)>,
@@ -108,6 +109,10 @@ pub struct Shell {
     pub(crate) developer_mode: bool,
     /// `clear_old_session_logs` from config.json: opt-in, old session logs are cleared at start.
     pub(crate) clear_old_session_logs: bool,
+    /// `time_trial_boards` from config.json: on unless turned off, uploads completed Time Trial laps.
+    pub(crate) time_trial_boards: bool,
+    /// `time_trial_ingame` from config.json: off unless turned on, shows the boards inside Time Trial.
+    pub(crate) time_trial_ingame: bool,
     reload_generation: u64,
     slow_logged: bool,
     /// `updates.check` from config.json, read when the library loads.
@@ -125,6 +130,8 @@ pub struct Shell {
     pub(crate) highlight: Option<(String, Instant)>,
     pub(crate) addons: crate::addons::AddonsPage,
     pub(crate) saves: crate::career_saves::SavesPage,
+    pub(crate) tt: crate::time_trial::TtPage,
+    pub(crate) support: crate::support::SupportPage,
     pub(crate) db: crate::db::Db,
     pub(crate) news: crate::news::News,
     pub(crate) news_scroll: crate::news::NewsScroll,
@@ -187,6 +194,7 @@ impl Shell {
                         s.mp = Some(session);
                         s.sync_avatar(cx);
                     }
+                    Err(swofty_core::mpauth::SignInError::Banned(ban)) => s.ban = Some(ban),
                     Err(e) => s
                         .mp_toasts
                         .push(Notification::error(format!("Sign-in failed: {e}"))),
@@ -219,6 +227,25 @@ impl Shell {
         self.mp_toasts
             .push(Notification::info(format!("Signed out {name}")));
         cx.notify();
+    }
+
+    pub(super) fn mp_apply_check(
+        &mut self,
+        checked: swofty_core::mpauth::Refreshed,
+        was_allowed: bool,
+        cx: &mut Context<Self>,
+    ) {
+        use swofty_core::mpauth::Refreshed;
+        match checked {
+            Refreshed::Session(session) => self.mp_apply_refresh(Some(session), was_allowed, cx),
+            Refreshed::Gone => self.mp_apply_refresh(None, was_allowed, cx),
+            Refreshed::Banned(ban) => {
+                self.mp_leave(cx);
+                self.mp = None;
+                self.ban = Some(ban);
+                cx.notify();
+            }
+        }
     }
 
     pub(super) fn mp_apply_refresh(

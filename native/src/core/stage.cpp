@@ -19,7 +19,7 @@ const Feature FEATURES[] = {{"group", true},    {"erp", true},        {"db", tru
                             {"lang", true},     {"file", false},      {"events", true},
                             {"storage", true},  {"overlay", false},   {"telemetry", false},
                             {"shaders", false}, {"career", true},     {"popup", true},
-                            {"postfx", false},  {"registry_rows", true}};
+                            {"postfx", false},  {"registry_rows", true}, {"lap_rec", true}};
 
 std::once_flag config_once;
 json::Value config_doc;

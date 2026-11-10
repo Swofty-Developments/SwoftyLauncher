@@ -67,7 +67,7 @@ pub struct Policy {
     pub save_namespace: String,
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Config {
     #[serde(default)]
     pub launch: LaunchConfig,
@@ -121,6 +121,26 @@ pub struct Config {
     /// Maximum simultaneous Addon Browser install jobs; two when unset.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub download_jobs: Option<usize>,
+    /// Upload completed Time Trial laps to the Swofty leaderboards while signed in; on unless turned off.
+    #[serde(default = "on", skip_serializing_if = "is_on")]
+    pub time_trial_boards: bool,
+    /// Show the Swofty boards and rival ghosts inside Time Trial for addon seasons; off unless turned on.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub time_trial_ingame: bool,
+}
+
+fn on() -> bool {
+    true
+}
+
+fn is_on(v: &bool) -> bool {
+    *v
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        serde_json::from_str("{}").expect("every field of Config has a default")
+    }
 }
 
 /// The launcher's two layouts: the desktop one, and TV mode for handhelds and
@@ -962,6 +982,36 @@ mod tests {
         config.console = true;
         let json = serde_json::to_string(&config).unwrap();
         assert!(serde_json::from_str::<Config>(&json).unwrap().console);
+    }
+
+    #[test]
+    fn time_trial_boards_is_on_unless_turned_off() {
+        assert!(Config::default().time_trial_boards);
+        assert!(serde_json::from_str::<Config>("{}").unwrap().time_trial_boards);
+        assert!(
+            !serde_json::to_string(&Config::default())
+                .unwrap()
+                .contains("time_trial")
+        );
+        let off = Config {
+            time_trial_boards: false,
+            ..Config::default()
+        };
+        let json = serde_json::to_string(&off).unwrap();
+        assert!(json.contains(r#""time_trial_boards":false"#));
+        assert!(!serde_json::from_str::<Config>(&json).unwrap().time_trial_boards);
+    }
+
+    #[test]
+    fn time_trial_ingame_is_off_unless_turned_on() {
+        assert!(!Config::default().time_trial_ingame);
+        let on = Config {
+            time_trial_ingame: true,
+            ..Config::default()
+        };
+        let json = serde_json::to_string(&on).unwrap();
+        assert!(json.contains(r#""time_trial_ingame":true"#));
+        assert!(serde_json::from_str::<Config>(&json).unwrap().time_trial_ingame);
     }
 
     #[test]

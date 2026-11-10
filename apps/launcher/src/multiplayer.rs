@@ -684,10 +684,15 @@ impl Shell {
             .flat_map(|s| &s.members)
             .filter_map(|x| x.avatar.as_ref());
         let hosts = m.rooms.iter().filter_map(|r| r.host.avatar.as_ref());
-        let wanted: Vec<String> = members
-            .chain(hosts)
-            .filter(|u| u.starts_with("http") && !m.faces_asked.contains(*u))
-            .cloned()
+        let wanted: Vec<String> = members.chain(hosts).cloned().collect();
+        self.load_faces(wanted, cx);
+    }
+
+    pub(crate) fn load_faces(&mut self, urls: Vec<String>, cx: &mut Context<Self>) {
+        let m = &mut self.mp_page;
+        let wanted: Vec<String> = urls
+            .into_iter()
+            .filter(|u| u.starts_with("http") && !m.faces_asked.contains(u))
             .collect::<HashSet<_>>()
             .into_iter()
             .collect();
@@ -715,7 +720,7 @@ impl Shell {
         .detach();
     }
 
-    fn face(&self, name: &str, url: Option<&str>, size: f32, p: Palette) -> Div {
+    pub(crate) fn face(&self, name: &str, url: Option<&str>, size: f32, p: Palette) -> Div {
         match url.and_then(|u| self.mp_page.faces.get(u)) {
             Some(image) => div()
                 .size(px(size))

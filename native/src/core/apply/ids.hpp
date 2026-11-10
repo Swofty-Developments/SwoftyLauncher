@@ -48,6 +48,7 @@ public:
     bool database_holds(const std::string &registry, int64_t id, const std::string &label, std::string *row = nullptr) const;
 
     Result get(const std::string &registry, const std::string &record) const;
+    std::vector<int64_t> ids_of(const std::string &registry) const;
     Result allocate(const std::string &registry, const std::string &record, const std::string &today);
     Result pin(const std::string &registry, const std::string &record, int64_t id, const std::string &today,
                const std::string &label = {});

@@ -1,5 +1,6 @@
 pub mod car_category;
 pub mod career_select;
+pub mod home_rows;
 pub mod catalog;
 pub mod check;
 pub mod era;
@@ -35,6 +36,7 @@ const FE_CAREER: &str = "eaid://ui_package/screens/fe_career.ui";
 const CONTAINER: &str = "eaid://ui_package/screens/settings_container.ui";
 const ROUTES: &str = "eaid://ui_package/routes/routes_frontend_general.uir";
 const GAME_ROUTES: &str = "eaid://ui_package/routes/routes.uir";
+const F1_WORLD_ROUTES: &str = "eaid://ui_package/routes/routes_f1_world.uir";
 const WIZARD_ROUTES: &str = "eaid://ui_package/routes/routes_career_wizard.uir";
 const SETUP_FLOW_ERP: &str = "flow_career_season_setup";
 const SETUP_BACK_ERP: &str = "flow_frontend";
@@ -46,12 +48,17 @@ const OVERRIDES: &str = "eaid://ui_package/databases/overrides.uidb";
 const MESSAGES: &str = "eaid://ui_package/message_data/onlineservices_messages.uimsg";
 const HUD_MESSAGES: &str = "eaid://ui_package/message_data/hud_messages.uimsg";
 const PERSISTENT_UI: &str = "eaid://ui_package/screens/persistent.ui";
+const FRONTEND_TRANSITION: &str = "eaid://ui_package/screens/frontend_transition.ui";
+const LEADERBOARD_ARCHIVE: &str = "screens/leaderboard_container.erp";
+const LEADERBOARD_UI: &str = "eaid://ui_package/screens/leaderboard_container.ui";
 
 pub const ERPS: &[&str] = &[
     "persistent.erp",
     "databases.erp",
     "flow_persistent.erp",
     "flow_frontend.erp",
+    LEADERBOARD_ARCHIVE,
+    home_rows::PLAYERCARD_ARCHIVE,
     era::ARCHIVES[0],
     era::ARCHIVES[1],
     car_category::ARCHIVES[1],
@@ -424,6 +431,7 @@ pub fn build(
             FLOWS,
             Box::new(|d| {
                 let b = patch::flow_entries(d, OPTIONS_FLOW, &listed)?;
+                let b = patch::f1_world_entries(&b)?;
                 *flows_out.borrow_mut() = b.clone();
                 Ok(b)
             }),
@@ -439,6 +447,7 @@ pub fn build(
             }),
         ),
     ];
+    persistent.push((F1_WORLD_ROUTES, Box::new(patch::f1_world_routes)));
     if !setups.is_empty() {
         persistent.push((
             WIZARD_ROUTES,
@@ -559,10 +568,31 @@ pub fn build(
             if show_panel { Ok(d) } else { patch::hide_panel(&d) }
         }),
     )];
-    if let Some((ui, type_ui, scene, templates)) = career {
+    frontend.push((FRONTEND_TRANSITION, 0, Box::new(patch::frontend_transition)));
+    frontend.push((LEADERBOARD_UI, 0, Box::new(patch::leaderboard_glyphs)));
+    let mut home_lines = Vec::new();
+    let mut home_warnings = Vec::new();
+    let rows = match std::env::var_os("SWOFTY_HOME_ROWS") {
+        Some(_) => main_menu_rows(
+            &src_h,
+            career.as_ref().map(|c| c.3.as_slice()),
+            &mut home_lines,
+            &mut home_warnings,
+        )?,
+        None => None,
+    };
+    let rows_built = rows.is_some();
+    let mut templates = career.as_ref().map(|c| c.3.clone());
+    if let Some((scene, with_rows)) = rows {
+        templates = Some(with_rows);
+        frontend.push((home_rows::SCENE, 0, Box::new(move |_| Ok(scene))));
+    }
+    if let Some((ui, type_ui, scene, _)) = career {
         frontend.push((career_select::UI, 0, Box::new(move |_| Ok(ui))));
         frontend.push((career_select::TYPE_UI, 0, Box::new(move |_| Ok(type_ui))));
         frontend.push((career_select::SCENE, 0, Box::new(move |_| Ok(scene))));
+    }
+    if let Some(templates) = templates {
         frontend.push((
             career_select::TEMPLATES,
             career_select::TEMPLATES_FRAGMENT,
@@ -571,10 +601,48 @@ pub fn build(
     }
     write_archive(&src_h, &dst_h, frontend, Vec::new())?;
 
+    let (src_l, dst_l) = erp(LEADERBOARD_ARCHIVE);
+    write_erp(&src_l, &dst_l, vec![(LEADERBOARD_UI, Box::new(patch::leaderboard_glyphs))])?;
+
+    let (src_c, dst_c) = erp(home_rows::PLAYERCARD_ARCHIVE);
+    write_archive(
+        &src_c,
+        &dst_c,
+        vec![(
+            home_rows::PLAYERCARD,
+            0,
+            Box::new(|d| match home_rows::has_strip_binding(d) {
+                Ok(false) => home_rows::hide_strip(d),
+                _ => Ok(d.to_vec()),
+            }),
+        )],
+        Vec::new(),
+    )?;
+
     let mut build = MenuBuild::default();
+    build.lines.push("ui: the player card strip hides while the main menu is up".to_owned());
     build.lines.extend(setup_lines);
     build.lines.extend(career_lines);
     build.warnings.extend(career_warnings);
+    build.lines.extend(home_lines);
+    build.warnings.extend(home_warnings);
+    let menu_flag = format!("{UI_DIR}/{}", home_rows::MENU_FLAG);
+    let menu_path = out.join(&menu_flag);
+    std::fs::create_dir_all(menu_path.parent().expect("has parent")).map_err(io_err(&menu_path))?;
+    std::fs::write(&menu_path, b"1").map_err(io_err(&menu_path))?;
+    build.screens.insert(menu_flag, menu_path);
+    let nav_flag = format!("{UI_DIR}/{}", home_rows::NAV_FLAG);
+    let nav_path = out.join(&nav_flag);
+    std::fs::write(&nav_path, b"1").map_err(io_err(&nav_path))?;
+    build.screens.insert(nav_flag, nav_path);
+    if rows_built {
+        let rel = format!("{UI_DIR}/{}", home_rows::FLAG);
+        let path = out.join(&rel);
+        let dir = path.parent().expect("has parent");
+        std::fs::create_dir_all(dir).map_err(io_err(dir))?;
+        std::fs::write(&path, b"1").map_err(io_err(&path))?;
+        build.screens.insert(rel, path);
+    }
     if !mfd_rows.is_empty() {
         let mut rows: Vec<mfd::Row> = Vec::new();
         for (k, r) in mfd_rows.iter().enumerate() {
@@ -634,6 +702,7 @@ pub fn build(
     )?;
     if lang {
         build.strings = popup.strings();
+        build.strings.push((patch::FRIENDS_TAB_LABEL.into(), patch::FRIENDS_TAB_TEXT.into()));
     }
     for rel in ERPS
         .iter()
@@ -665,6 +734,42 @@ pub fn build(
 }
 
 type CareerRow = (Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>);
+
+fn main_menu_rows(
+    src: &Path,
+    templates: Option<&[u8]>,
+    lines: &mut Vec<String>,
+    warnings: &mut Vec<String>,
+) -> Result<Option<(Vec<u8>, Vec<u8>)>> {
+    let scene = read_frag(src, home_rows::SCENE, 0)?;
+    let templates = match templates {
+        Some(t) => t.to_vec(),
+        None => read_frag(src, home_rows::TEMPLATES, home_rows::TEMPLATES_FRAGMENT)?,
+    };
+    let built = home_rows::has_slots(&scene)
+        .and_then(|a| home_rows::has_templates(&templates).map(|b| a || b))
+        .and_then(|taken| match taken {
+            true => Ok(None),
+            false => Ok(Some((
+                home_rows::build_scene(&scene)?,
+                home_rows::build_templates(&templates)?,
+            ))),
+        });
+    match built {
+        Ok(Some(edit)) => {
+            lines.push("ui: the main menu gets rows of cards".to_owned());
+            Ok(Some(edit))
+        }
+        Ok(None) => {
+            lines.push("ui: the main menu already has rows; left as it is".to_owned());
+            Ok(None)
+        }
+        Err(e) => {
+            warnings.push(format!("ui: the main menu keeps its stock list ({e})"));
+            Ok(None)
+        }
+    }
+}
 
 fn career_row(
     src: &Path,
@@ -1093,6 +1198,125 @@ mod tests {
             ["ui: the career content select gets Built In and Addons rows"]
         );
         std::fs::remove_dir_all(&out).ok();
+    }
+
+    #[test]
+    #[ignore = "needs SWOFTY_STOCK_FLOW_FRONTEND, a stock flow_frontend.erp"]
+    fn the_main_menu_gets_its_rows_within_the_loader_rules() {
+        let src = std::path::PathBuf::from(std::env::var_os("SWOFTY_STOCK_FLOW_FRONTEND").expect("set"));
+        let mut lines = Vec::new();
+        let mut warnings = Vec::new();
+        let (scene, templates) = main_menu_rows(&src, None, &mut lines, &mut warnings)
+            .unwrap()
+            .expect("a stock archive takes the rows");
+        assert!(warnings.is_empty(), "{warnings:?}");
+        let out = std::env::temp_dir().join(format!("swofty-home-rows-{}", std::process::id()));
+        let dst = out.join("flow_frontend.erp");
+        write_archive(
+            &src,
+            &dst,
+            vec![
+                (home_rows::SCENE, 0, Box::new(move |_| Ok(scene))),
+                (
+                    home_rows::TEMPLATES,
+                    home_rows::TEMPLATES_FRAGMENT,
+                    Box::new(move |_| Ok(templates)),
+                ),
+            ],
+            Vec::new(),
+        )
+        .unwrap();
+        let name = ui_file(home_rows::ARCHIVE);
+        let report = check::archive_files(&[(name.as_str(), src.as_path(), dst.as_path())]).unwrap();
+        let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
+        assert!(hard.is_empty(), "{hard:?}");
+        assert_eq!(lines, ["ui: the main menu gets rows of cards"]);
+        std::fs::remove_dir_all(&out).ok();
+    }
+
+    #[test]
+    #[ignore = "needs SWOFTY_STOCK_COMMON_FRONT_END, a stock common_front_end.erp"]
+    fn the_player_card_strip_binds_its_visibility_within_the_loader_rules() {
+        let src = std::path::PathBuf::from(std::env::var_os("SWOFTY_STOCK_COMMON_FRONT_END").expect("set"));
+        let ui = read_frag(&src, home_rows::PLAYERCARD, 0).unwrap();
+        assert!(!home_rows::has_strip_binding(&ui).unwrap());
+        let out = home_rows::hide_strip(&ui).unwrap();
+        assert!(home_rows::has_strip_binding(&out).unwrap());
+        let dir = std::env::temp_dir().join(format!("swofty-strip-{}", std::process::id()));
+        let dst = dir.join("common_front_end.erp");
+        write_archive(
+            &src,
+            &dst,
+            vec![(home_rows::PLAYERCARD, 0, Box::new(move |_| Ok(out)))],
+            Vec::new(),
+        )
+        .unwrap();
+        let name = ui_file(home_rows::PLAYERCARD_ARCHIVE);
+        let report = check::archive_files(&[(name.as_str(), src.as_path(), dst.as_path())]).unwrap();
+        let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
+        assert!(hard.is_empty(), "{hard:?}");
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    #[ignore = "needs SWOFTY_STOCK_PERSISTENT, a stock persistent.erp"]
+    fn the_main_menu_navigation_routes_and_entries_are_added_within_the_loader_rules() {
+        let src = std::path::PathBuf::from(std::env::var_os("SWOFTY_STOCK_PERSISTENT").expect("set"));
+        let routes = read_frag(&src, F1_WORLD_ROUTES, 0).unwrap();
+        let out = patch::f1_world_routes(&routes).unwrap();
+        let home_routes = read_frag(&src, ROUTES, 0).unwrap();
+        let home_out = patch::routes(&home_routes, Vec::new(), Vec::new()).unwrap();
+        let flows = read_frag(&src, FLOWS, 0).unwrap();
+        let flows_out = patch::f1_world_entries(&flows).unwrap();
+        let dir = std::env::temp_dir().join(format!("swofty-f1routes-{}", std::process::id()));
+        let dst = dir.join("persistent.erp");
+        write_archive(
+            &src,
+            &dst,
+            vec![
+                (F1_WORLD_ROUTES, 0, Box::new(move |_| Ok(out))),
+                (ROUTES, 0, Box::new(move |_| Ok(home_out))),
+                (FLOWS, 0, Box::new(move |_| Ok(flows_out))),
+            ],
+            Vec::new(),
+        )
+        .unwrap();
+        let name = ui_file("persistent.erp");
+        let report = check::archive_files(&[(name.as_str(), src.as_path(), dst.as_path())]).unwrap();
+        let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
+        assert!(hard.is_empty(), "{hard:?}");
+        let written = read_frag(&dst, F1_WORLD_ROUTES, 0).unwrap();
+        let p = swofty_formats::pkg::Pkg::parse(&written).unwrap();
+        let text = format!("{:?}", p.root);
+        assert!(text.contains(patch::BACK_HOME_FROM_CONTAINER) && text.contains(patch::HOME_BACK_ROUTE));
+        let flows_written = read_frag(&dst, FLOWS, 0).unwrap();
+        let text = format!("{:?}", swofty_formats::pkg::Pkg::parse(&flows_written).unwrap().root);
+        for entry in [patch::TIME_TRIAL_ENTRY, patch::GRAND_PRIX_ENTRY, patch::RETURN_ENTRY] {
+            assert!(text.contains(entry), "{entry}");
+        }
+        assert!(text.contains("time_trial") && text.contains("grand_prix_new"));
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    #[ignore = "needs SWOFTY_STOCK_FLOW_FRONTEND, a stock flow_frontend.erp"]
+    fn the_session_end_hand_over_lands_on_the_activity_container_within_the_loader_rules() {
+        let src = std::path::PathBuf::from(std::env::var_os("SWOFTY_STOCK_FLOW_FRONTEND").expect("set"));
+        let ui = read_frag(&src, FRONTEND_TRANSITION, 0).unwrap();
+        let out = patch::frontend_transition(&ui).unwrap();
+        assert_ne!(ui, out);
+        assert!(patch::frontend_transition(&out).is_err(), "patched once only");
+        let dir = std::env::temp_dir().join(format!("swofty-transition-{}", std::process::id()));
+        let dst = dir.join("flow_frontend.erp");
+        write_archive(&src, &dst, vec![(FRONTEND_TRANSITION, 0, Box::new(move |_| Ok(out)))], Vec::new()).unwrap();
+        let name = ui_file("flow_frontend.erp");
+        let report = check::archive_files(&[(name.as_str(), src.as_path(), dst.as_path())]).unwrap();
+        let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
+        assert!(hard.is_empty(), "{hard:?}");
+        let written = read_frag(&dst, FRONTEND_TRANSITION, 0).unwrap();
+        let text = format!("{:?}", swofty_formats::pkg::Pkg::parse(&written).unwrap().root);
+        assert!(text.contains(patch::RETURN_ENTRY));
+        std::fs::remove_dir_all(&dir).ok();
     }
 
     const SETUP_ROUTE: &str = "career_wizard_driver_career_progressive";

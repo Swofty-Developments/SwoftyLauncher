@@ -17,4 +17,18 @@ struct LiveCar {
 
 bool read(LiveCar &out);
 
+uintptr_t player_car();
+
+struct LiveDynamics {
+    bool has_pos = false, has_vel = false, has_angvel = false, has_orient = false, has_spin = false, has_slip = false,
+         has_drs = false;
+    float pos[3] = {}, vel[3] = {}, angvel[3] = {}, quat[4] = {0, 0, 0, 1};
+    float spin[4] = {}, slip_angle[4] = {}, slip_ratio[4] = {};
+    float drs = 0;
+    int player = -1;
+    bool ai = false;
+};
+
+bool read_dynamics(LiveDynamics &out);
+
 }

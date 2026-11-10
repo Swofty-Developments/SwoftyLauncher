@@ -90,6 +90,9 @@ impl Shell {
                 if self.nav_mp() {
                     links.push(Link::new(Page::Multiplayer, None));
                 }
+                if self.tt_admin() {
+                    links.push(Link::new(Page::Moderation, None));
+                }
                 let n = links.len();
                 (links, n)
             }

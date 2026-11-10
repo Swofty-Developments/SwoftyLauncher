@@ -825,7 +825,6 @@ impl Shell {
                     .child(crate::send_logs::short_label())
                     .on_click(cx.listener(|this, _, window, cx| this.send_logs(window, cx))),
             )
-            .child(crate::donate::link())
             .child(
                 div()
                     .text_size(px(12.))

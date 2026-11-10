@@ -108,6 +108,8 @@ std::vector<CoreMixins> netplay_privilege_mixins();
 void netplay_keys_commit();
 void netplay_privilege_commit();
 std::vector<CoreMixins> leaderboard_guard_mixins();
+std::vector<CoreMixins> lap_rec_mixins();
+void lap_rec_commit();
 void leaderboard_guard_commit();
 std::vector<CoreMixins> thrustmaster_lcd_mixins();
 void thrustmaster_lcd_commit();
@@ -1806,7 +1808,7 @@ size_t offer_core_sets()
                        runtime::save_splice_mixins, runtime::ers_newlap_mixins, runtime::ers_mode_mixins, runtime::car_levers_mixins,
                        runtime::garage_crew_mixins, runtime::pit_slots_mixins, runtime::pit_box_mixins, runtime::garage_slots_mixins, runtime::chassis_registry_mixins, runtime::standings_guard_mixins, runtime::ai_corner_guard_mixins, runtime::replay_grid_guard_mixins, runtime::fe_tile_guard_mixins, runtime::tyre_slots_mixins, runtime::tyre_models_mixins, runtime::track_acclim_mixins,
                        runtime::audio_queue_mixins, runtime::heap_sizes_mixins, runtime::team_slots_mixins, runtime::track_select_mixins, runtime::netplay_icons_mixins, runtime::netplay_keys_mixins, runtime::netplay_privilege_mixins,
-                       runtime::leaderboard_guard_mixins, runtime::thrustmaster_lcd_mixins, runtime::estimate_laptime_mixins, runtime::watchdog_grace_mixins, runtime::garage_setup_mixins, runtime::session_enter_mixins, runtime::ai_line_set_mixins})
+                       runtime::leaderboard_guard_mixins, runtime::lap_rec_mixins, runtime::thrustmaster_lcd_mixins, runtime::estimate_laptime_mixins, runtime::watchdog_grace_mixins, runtime::garage_setup_mixins, runtime::session_enter_mixins, runtime::ai_line_set_mixins})
         add_core_sets(sets());
     return addons.size() - before;
 }
@@ -1824,6 +1826,7 @@ void settle_core_sets()
     runtime::car_category_commit();
     runtime::save_splice_commit();
     runtime::ers_newlap_commit();
+    runtime::lap_rec_commit();
     runtime::ers_mode_commit();
     runtime::car_levers_commit();
     runtime::standings_guard_commit();
@@ -2188,6 +2191,11 @@ namespace runtime {
 std::string build_distribution()
 {
     return build_tag;
+}
+
+std::string build_exe_sha()
+{
+    return exe_sha;
 }
 
 std::string mixin_overwrite_on(const std::string &binding, uintptr_t at)

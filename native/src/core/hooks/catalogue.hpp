@@ -98,6 +98,9 @@ inline constexpr Event EVENTS[] = {
     {"session.end", N, SHELL, 1, false, Fired::yes, SWOFTY_EVENT_SESSION_END},
     {"session.unload", N, SHELL, 1, false, Fired::yes, SWOFTY_EVENT_SESSION_UNLOAD},
 
+    {"laps.sealing", M, "swofty::laps::events::Sealing", 1, false, Fired::yes, nullptr},
+    {"laps.recorded", N, "swofty::laps::events::Recorded", 1, false, Fired::yes, nullptr},
+
     {"car.upgrades.fit", M, "swofty::cars::events::UpgradesFit", 1, false, Fired::no, nullptr},
     {"car.vtf.read", M, "swofty::cars::events::VtfRead", 1, true, Fired::no, nullptr},
     {"car.built", N, "swofty::cars::events::Built", 1, false, Fired::game, nullptr},

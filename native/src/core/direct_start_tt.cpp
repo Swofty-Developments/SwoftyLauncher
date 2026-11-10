@@ -587,3 +587,49 @@ Setup registered(std::string &why)
 const bool registered_at_load = (runtime::direct_start_register_time_trial(registered), true);
 
 }
+
+namespace runtime::direct_start::tt {
+
+std::string current_track()
+{
+    if (!runtime::same_build())
+        return {};
+    DirectStartContext ctx = runtime::direct_start_context();
+    if (!ctx.game_modes)
+        return {};
+    std::vector<std::string> names;
+    uint8_t *mode = mode_named(ctx.game_modes, MODE, names);
+    uint8_t *e = mode && runtime::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
+    if (!e || !runtime::readable(e, ENTITY_TEAMS + 8))
+        return {};
+    uint8_t *now = rva<CurrentTrack_t>(RVA_CURRENT_TRACK)(e);
+    const char *name = now && runtime::readable(now, TRACK_NAME + 8) ? c_name(at<const char *>(now, TRACK_NAME)) : nullptr;
+    return name ? name : "";
+}
+
+std::string session_track()
+{
+    std::string code = current_track();
+    return code.empty() ? runtime::track_select_time_trial() : code;
+}
+
+std::string player_team()
+{
+    if (!runtime::same_build())
+        return {};
+    DirectStartContext ctx = runtime::direct_start_context();
+    if (!ctx.game_modes)
+        return {};
+    std::vector<std::string> names;
+    uint8_t *mode = mode_named(ctx.game_modes, MODE, names);
+    uint8_t *e = mode && runtime::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
+    int guard = *rva<int>(RVA_PLAYER_GUARD);
+    if (!e || !runtime::readable(e, ENTITY_TEAMS + 8) || guard == 0 || guard == -1)
+        return {};
+    auto *sel = rva<uint8_t>(RVA_PLAYER_ENTRANTS) + size_t(player_index()) * PLAYER_STRIDE;
+    if (!runtime::readable(sel, PLAYER_TEAM_SET + 1) || !sel[PLAYER_TEAM_SET])
+        return {};
+    return team_name(e, at<uint32_t>(sel, PLAYER_TEAM));
+}
+
+}

@@ -54,6 +54,12 @@ impl Shell {
         let start = Switch::new("settings-start-store")
             .checked(self.start_store)
             .on_click(cx.listener(|this, on: &bool, window, cx| this.set_start_store(*on, window, cx)));
+        let time_trial = Switch::new("settings-time-trial-boards")
+            .checked(self.time_trial_boards)
+            .on_click(cx.listener(|this, on: &bool, window, cx| this.set_time_trial_boards(*on, window, cx)));
+        let time_trial_ingame = Switch::new("settings-time-trial-ingame")
+            .checked(self.time_trial_ingame)
+            .on_click(cx.listener(|this, on: &bool, window, cx| this.set_time_trial_ingame(*on, window, cx)));
         SettingsSection::new(tr("General"))
             .row(
                 SettingRow::new(tr("Language"))
@@ -64,6 +70,16 @@ impl Shell {
                 SettingRow::new(start_label)
                     .description(tr("When you press Play"))
                     .control(start),
+            )
+            .row(
+                SettingRow::new(tr("Time Trial boards"))
+                    .description(tr("Upload your Time Trial laps to the Swofty leaderboards. Ranked laps load a closed-source integrity module from Swofty's server."))
+                    .control(time_trial),
+            )
+            .row(
+                SettingRow::new(tr("In-game leaderboards"))
+                    .description(tr("Show the Swofty boards and rival ghosts inside Time Trial for addon seasons. Experimental."))
+                    .control(time_trial_ingame),
             )
             .into_any_element()
     }
