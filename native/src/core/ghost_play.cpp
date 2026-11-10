@@ -9,6 +9,7 @@
 #include <swofty/mixin.hpp>
 
 #include <atomic>
+#include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -87,7 +88,10 @@ std::atomic<uintptr_t> component{0};
 std::atomic<int> diag_reads{0};
 bool ghost_on = false, diag_on = false, record_on = false;
 std::atomic<bool> trace_armed{false};
-int slot = 4;
+int slot_env = -1, slot = 4;
+std::vector<uint8_t> saved_blob;
+bool saved_has = false;
+uintptr_t saved_for = 0;
 
 struct Request {
     std::string path, label;
@@ -175,6 +179,23 @@ LapState state_of(uintptr_t tl)
     mem::read(tl + TL_LAP, s.lap);
     mem::read(tl + TL_TIME, s.time);
     return s;
+}
+
+std::string key_of(uintptr_t comp)
+{
+    std::string out;
+    char b[40];
+    for (int i = 0; i < SLOTS; i++) {
+        uintptr_t tl = tlap_at(comp, i);
+        if (!tl) {
+            out += "-";
+            continue;
+        }
+        LapState s = state_of(tl);
+        snprintf(b, sizeof b, "%c%u/%u ", s.bound ? 'B' : 'f', s.mode, s.want);
+        out += b;
+    }
+    return out;
 }
 
 std::string describe(uintptr_t comp)
@@ -301,6 +322,8 @@ bool load_request(const std::wstring &play, Request &out, std::string &why)
     return true;
 }
 
+void restore(uintptr_t comp);
+
 void poll_request()
 {
     int64_t now = now_ms();
@@ -313,7 +336,9 @@ void poll_request()
         if (have_request) {
             have_request = false;
             last_stamp = 0;
-            swofty::log("[ghost] play.json is gone; the ghost is disarmed for the next session");
+            restore(component.load());
+            armed_for = 0;
+            swofty::log("[ghost] play.json is gone; the ghost is disarmed");
         }
         return;
     }
@@ -353,13 +378,45 @@ bool read_trace_into(uintptr_t tl, const std::vector<uint8_t> &blob)
     return rc == 0 && (s.error & ~2u) == 0 && s.count > 0;
 }
 
+void restore(uintptr_t comp)
+{
+    if (slot != 3 || saved_for != comp || armed_for != comp)
+        return;
+    uintptr_t tl = tlap_at(comp, 3);
+    if (!tl)
+        return;
+    LapState s = state_of(tl);
+    if (std::fabs(s.lap - request.lap_s) > 0.002f) {
+        swofty::log("[ghost] restore: lap 3 no longer holds the supplied trace (time %.3f); left as is", s.lap);
+    } else if (saved_has) {
+        read_trace_into(tl, saved_blob);
+        swofty::log("[ghost] restore: the player's own personal best trace is back in lap 3");
+    } else {
+        reset_fn(reinterpret_cast<void *>(tl));
+        swofty::log("[ghost] restore: lap 3 reset, the player had no personal best trace");
+    }
+    saved_for = 0;
+    armed_for = 0;
+}
+
 void arm(uintptr_t comp)
 {
     if (!ghost_on || !have_request || armed_for == comp || attempts >= MAX_ATTEMPTS)
         return;
-    uintptr_t tl = tlap_at(comp, slot);
+    int pick = slot_env;
+    if (pick < 0) {
+        uintptr_t rival = tlap_at(comp, 4);
+        pick = rival && state_of(rival).bound ? 4 : 3;
+    }
+    uintptr_t tl = tlap_at(comp, pick);
     if (!tl) {
         return;
+    }
+    slot = pick;
+    if (slot == 3 && saved_for != comp) {
+        saved_has = trace_bytes_of(tl, saved_blob);
+        saved_for = comp;
+        swofty::log("[ghost] arm: lap 3 is the player's personal best slot; its trace is %s", saved_has ? "kept for the restore" : "empty");
     }
     attempts++;
     LapState before = state_of(tl);
@@ -399,10 +456,10 @@ void tick_mid(safetyhook::Context &c)
         int64_t now = now_ms();
         if (now - last_diag >= int64_t(DIAG_POLL_MS)) {
             last_diag = now;
-            std::string s = describe(comp);
-            if (s != last_slots) {
-                last_slots = s;
-                swofty::log("[ghost] diag: laps %s", s.c_str());
+            std::string k = key_of(comp);
+            if (k != last_slots) {
+                last_slots = k;
+                swofty::log("[ghost] diag: laps %s", describe(comp).c_str());
             }
         }
     }
@@ -478,7 +535,7 @@ void setup()
     }
     char sv[8] = {};
     if (GetEnvironmentVariableA("SWOFTY_TT_GHOST_SLOT", sv, sizeof sv) && sv[0] >= '0' && sv[0] <= '5')
-        slot = sv[0] - '0';
+        slot_env = sv[0] - '0';
     if (!ghost_on && !diag_on && !record_on)
         return;
     if (record_on || diag_on) {
