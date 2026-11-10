@@ -18,9 +18,11 @@ namespace mem = swofty::mem;
 constexpr size_t CAR_IS_AI = 0x124, CAR_ENGINE = 0x530, CAR_GEARBOX = 0x538, CAR_CHASSIS = 0x558, CAR_STEERING = 0x560,
                  CAR_SUSPENSION = 0x580, CAR_THROTTLE = 0x188, CAR_BRAKE = 0x190, CAR_FLAGS = 0x224;
 constexpr size_t GEARBOX_INDEX = 0x680, ENGINE_RATE = 0x2538, ENGINE_LIMIT = 0x2528;
+// The body axes (right, up, forward) are the three rows at chassis +0x190, +0x1a0, +0x1b0: the game's own trace records
+// its Orientation channel from them (0x1437b3560) and its Speed channel from the forward row (0x1437c48c0).
 constexpr size_t CHASSIS_G_LATERAL = 0x320, CHASSIS_G_LONG = 0x324, CHASSIS_BODY = 0x340, BODY_STATE = 0x18,
                  BODY_VELOCITY = 0x220;
-constexpr size_t BODY_POSITION = 0x1c0, BODY_ANGULAR = 0x210, BODY_BASIS = 0x8a0, BODY_BASIS_STRIDE = 0x10;
+constexpr size_t BODY_POSITION = 0x1c0, BODY_ANGULAR = 0x210, CHASSIS_BASIS = 0x190, BASIS_STRIDE = 0x10;
 constexpr size_t CAR_AERO = 0x570, AERO_DRS = 0x19a8, WHEEL_SPIN = 0x188, WHEEL_SLIP_ANGLE = 0x3b0, WHEEL_SLIP_RATIO = 0x3b4;
 constexpr size_t WHEEL_WETNESS = 0x280;
 constexpr size_t STEER_ANGLE = 0xe8, STEER_LOCK = 0x28, SUSPENSION_WHEELS = 0x70, WHEEL_SURFACE = 0x200,
@@ -276,14 +278,14 @@ bool read_dynamics(LiveDynamics &out)
             out.has_pos = vec3(body + BODY_POSITION, out.pos);
             out.has_vel = vec3(body + BODY_VELOCITY, out.vel);
             out.has_angvel = vec3(body + BODY_ANGULAR, out.angvel);
-            float axes[3][3];
-            bool read = true;
-            for (int c = 0; c < 3 && read; c++)
-                read = vec3(body + BODY_BASIS + BODY_BASIS_STRIDE * size_t(c), axes[c]);
-            if (read && runtime::lap_rec::unit_axes(axes)) {
-                runtime::lap_rec::quaternion_of(axes, out.quat);
-                out.has_orient = true;
-            }
+        }
+        float axes[3][3];
+        bool read = true;
+        for (int c = 0; c < 3 && read; c++)
+            read = vec3(chassis + CHASSIS_BASIS + BASIS_STRIDE * size_t(c), axes[c]);
+        if (read && runtime::lap_rec::unit_axes(axes)) {
+            runtime::lap_rec::quaternion_of(axes, out.quat);
+            out.has_orient = true;
         }
     }
 
