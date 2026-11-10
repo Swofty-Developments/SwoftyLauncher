@@ -404,15 +404,45 @@ uint64_t raise_delay_ms()
     return v && *v ? uint64_t(std::atoll(v)) : 300;
 }
 
+bool fire_in_group(const char *group, const char *route, const char *why);
+
+void leave_picker_to_home(const char *why)
+{
+    auto entry = reinterpret_cast<uint32_t *>(swofty::api->module_base() + 0x6066c74);
+    if (runtime::readable(entry, 4))
+        *entry = 0;
+    {
+        std::lock_guard<std::mutex> g(swap_lock);
+        swap_screens.clear();
+        swap_reported = false;
+    }
+    swap_at = GetTickCount64();
+    reset_transition_state(logic::BACK_HOME_FROM_CONTAINER);
+    expect_screen(logic::Expect::home, why);
+    nav.return_armed = false;
+    swofty::log("[main-menu] back: the game's handler fired route f1_world from its own view model (group 0x59ba71d1); it is replaced by swofty_back_home in the same group, so the F1 World hub is never opened (picker Back: %s)", why);
+    fire_in_group("f1_world_activity_container", logic::BACK_HOME_FROM_CONTAINER, why);
+}
+
 uint64_t container_detour(void *container, NeStr **message, void *third)
 {
+    if (patched.load() && message && *message && back_mode() == logic::Back::route && !off("SWOFTY_MAIN_MENU_PICKERBACK")) {
+        logic::Mode m = logic::Mode(nav.mode.load());
+        if ((m == logic::Mode::time_trial || m == logic::Mode::grand_prix_new) && ne_text(*message) == "entrant_goto_select" &&
+            nav.expect.load() == int(logic::Expect::none)) {
+            swofty::log("[main-menu] nav: picker Back intercepted (container command entrant_goto_select, which would select the default tab; the %s picker's Back leaves for the main menu at once)",
+                        logic::return_command(m));
+            leave_picker_to_home("picker Back");
+            return 0;
+        }
+    }
     if (container_vm.load() != container) {
         container_vm = container;
         container_vm_at = GetTickCount64();
         swofty::log("[main-menu] chain: activity container view model %p seen", container);
     }
     container_third = third;
-    if (nav.expect.load() != int(logic::Expect::none) || chain.step == Step::wait_container)
+    if (nav.expect.load() != int(logic::Expect::none) || chain.step == Step::wait_container || nav.mode.load() != int(logic::Mode::none))
         swofty::log("[main-menu] nav: container command '%s'", message && *message ? ne_text(*message).c_str() : "");
     return h_container.call<uint64_t>(container, message, third);
 }
