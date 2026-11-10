@@ -64,7 +64,7 @@ pub(super) fn held_failure(error: &str) -> bool {
 impl Shell {
     /// The addon updates the play bar offers: every outdated registry addon that's on in the active
     /// profile, except the ones that failed at this version.
-    pub(super) fn addon_updates(&self) -> Vec<&Update> {
+    pub(crate) fn addon_updates(&self) -> Vec<&Update> {
         let on: HashSet<&str> = if self.vanilla() {
             HashSet::new()
         } else {

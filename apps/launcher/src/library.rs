@@ -1,16 +1,15 @@
 use std::collections::{BTreeSet, HashMap};
 use std::sync::Arc;
 use std::time::Instant;
-use swofty_i18n::{tr, trf, trn};
+use swofty_i18n::{tr, trn};
 
 use gpui_kit::{Image, ImageFormat};
 use swofty_core::asset::AssetOp;
 use swofty_core::folders::{Entry, Folders, Key};
-use swofty_core::launcher::Summary;
 use swofty_core::manifest::{AddonManifest, Category, Kind};
 use swofty_core::ops::ErpOp;
 use swofty_core::profile::{Profile, VANILLA};
-use swofty_core::registry::{Host, Registry};
+use swofty_core::registry::Registry;
 use swofty_core::store::{Store, Unreadable};
 use swofty_core::view::SectionSpec;
 
@@ -277,19 +276,11 @@ fn section_icon(store: &Store, addon: &str, section: &str) -> Option<AddonIcon> 
 pub struct ProfileItem {
     pub name: String,
     pub addons: Vec<String>,
-    pub summaries: Vec<Summary>,
 }
 
 impl ProfileItem {
     pub fn vanilla(&self) -> bool {
         self.name == VANILLA
-    }
-
-    pub fn summary(&self) -> String {
-        if self.vanilla() {
-            return tr("No addons").into();
-        }
-        trf!("{count} on", count = self.addons.len())
     }
 }
 
@@ -403,7 +394,6 @@ impl Library {
                         .filter_map(|id| manifests.get(id))
                         .map(|m| m.name.clone())
                         .collect(),
-                    summaries: summaries(store, &registry, &p),
                     name,
                 }
             })
@@ -468,24 +458,6 @@ impl Library {
     pub fn not_in_profile(&self) -> impl Iterator<Item = &AddonItem> {
         self.addons.iter().filter(|m| !m.in_profile)
     }
-
-    pub fn active(&self) -> Option<&ProfileItem> {
-        self.profiles.iter().find(|p| p.name == self.profile.name)
-    }
-}
-
-fn summaries(store: &Store, registry: &Registry, profile: &Profile) -> Vec<Summary> {
-    if profile.is_vanilla() {
-        return Vec::new();
-    }
-    registry
-        .iter()
-        .filter(|e| !e.declared)
-        .filter_map(|e| {
-            let host = Host::new(store, e.id(), profile, None).ok()?;
-            e.addon.summary(&host.cx())
-        })
-        .collect()
 }
 
 #[cfg(test)]

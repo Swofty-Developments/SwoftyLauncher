@@ -207,7 +207,6 @@ impl Shell {
             .children(pending)
             .children(flagged)
             .children(tracks)
-            .children(self.install_cards(p, cx))
             .child(
                 h_flex()
                     .flex_1()
@@ -221,18 +220,6 @@ impl Shell {
                     .children(detail),
             )
             .into_any_element()
-    }
-
-    pub(crate) fn is_card_dismissed(&self, id: &str) -> bool {
-        self.store.config().dismissed_cards.contains(id)
-    }
-
-    pub(crate) fn dismiss_card(&mut self, id: &str, cx: &mut Context<Self>) {
-        let mut config = self.store.config();
-        if config.dismissed_cards.insert(id.to_string()) {
-            self.store.save_config(&config).ok();
-            cx.notify();
-        }
     }
 
     pub(crate) fn install_computer_button(&self, cx: &mut Context<Self>) -> impl IntoElement {
@@ -260,98 +247,6 @@ impl Shell {
             })
     }
 
-    pub(super) fn install_cards(&self, p: Palette, cx: &mut Context<Self>) -> Option<impl IntoElement> {
-        let show_browser = !self.is_card_dismissed("install-browse");
-        let show_importer = !self.is_card_dismissed("install-mod");
-        if !show_browser && !show_importer {
-            return None;
-        }
-
-        let roomy = self.content_width >= 900. && !self.short;
-        let short = self.short;
-        let card = |id, icon, color, title, body, dismiss| {
-            install_card(short, p, id, (icon, color), title, body, dismiss)
-        };
-
-        let mut row = h_flex()
-            .flex_wrap()
-            .items_stretch()
-            .px(px(GUTTER))
-            .pb(px(if short { 12. } else { 18. }))
-            .gap(px(if short { 10. } else { 14. }))
-            .flex_shrink_0();
-
-        if show_browser {
-            let dismiss = Button::new("dismiss-browse")
-                .ghost()
-                .xsmall()
-                .icon(IconName::X)
-                .tooltip(tr("Dismiss"))
-                .on_click(cx.listener(|this, _, _, cx| {
-                    this.dismiss_card("install-browse", cx);
-                }));
-            let browser = card(
-                "install-browse",
-                IconName::PackageSearch,
-                p.warning,
-                tr("Looking for a Swofty Addon?"),
-                tr("Browse addons published by the community."),
-                Some(dismiss.into_any_element()),
-            )
-            .border_color(p.border_variant)
-            .child(
-                Button::new("go-browser")
-                    .outline()
-                    .small()
-                    .label(if roomy {
-                        tr("Open Addon Browser")
-                    } else {
-                        tr("Addon Browser")
-                    })
-                    .on_click(cx.listener(|this, _, _, cx| this.open_page(Page::Browser, cx))),
-            );
-            row = row.child(browser);
-        }
-
-        if show_importer {
-            let dismiss = Button::new("dismiss-importer")
-                .ghost()
-                .xsmall()
-                .icon(IconName::X)
-                .tooltip(tr("Dismiss"))
-                .on_click(cx.listener(|this, _, _, cx| {
-                    this.dismiss_card("install-mod", cx);
-                }));
-            let importer = card(
-                "install-mod",
-                IconName::FolderInput,
-                p.success,
-                tr("Installing a mod?"),
-                if short {
-                    tr("Mods convert into addons")
-                } else {
-                    tr("Mods convert into Swofty addons using the Simplified Importer.")
-                },
-                Some(dismiss.into_any_element()),
-            )
-            .border_color(p.border_variant)
-            .child(
-                Button::new("go-importer")
-                    .outline()
-                    .small()
-                    .label(if roomy {
-                        tr("Go to Simplified Importer")
-                    } else {
-                        tr("Simplified Importer")
-                    })
-                    .on_click(cx.listener(|this, _, _, cx| this.open_page(Page::Importer, cx))),
-            );
-            row = row.child(importer);
-        }
-
-        Some(row)
-    }
-
     pub(super) fn list_heading(&self, p: Palette) -> AnyElement {
         let title = match self.vanilla() {
             true => tr("INSTALLED").to_owned(),
@@ -367,64 +262,6 @@ impl Shell {
             .child(label(title, p))
             .into_any_element()
     }
-}
-
-fn install_card(
-    short: bool,
-    p: Palette,
-    id: &'static str,
-    (icon, color): (IconName, Hsla),
-    title: &'static str,
-    body: &'static str,
-    dismiss: Option<AnyElement>,
-) -> Stateful<Div> {
-    let text = v_flex()
-        .flex_1()
-        .min_w_0()
-        .gap(px(2.))
-        .child(
-            div()
-                .text_size(px(if short { 13. } else { 14. }))
-                .font_weight(FontWeight::SEMIBOLD)
-                .text_color(p.text)
-                .child(title),
-        )
-        .when(!short, |d| {
-            d.child(
-                div()
-                    .text_size(px(13.))
-                    .line_height(px(18.))
-                    .text_color(p.text_muted)
-                    .child(body),
-            )
-        });
-    v_flex()
-        .id(id)
-        .flex_1()
-        .flex_basis(px(280.))
-        .min_w_0()
-        .items_start()
-        .px(px(if short { 12. } else { 16. }))
-        .py(px(if short { 10. } else { 12. }))
-        .gap(px(if short { 8. } else { 12. }))
-        .rounded(px(8.))
-        .border_1()
-        .bg(p.surface)
-        .child(
-            h_flex()
-                .flex_1()
-                .w_full()
-                .items_start()
-                .gap(px(10.))
-                .child(
-                    Icon::new(icon)
-                        .size(px(if short { 15. } else { 19. }))
-                        .flex_shrink_0()
-                        .text_color(color),
-                )
-                .child(text)
-                .children(dismiss),
-        )
 }
 
 impl Shell {

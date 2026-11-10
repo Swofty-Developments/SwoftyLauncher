@@ -57,7 +57,6 @@ impl Render for Shell {
             Page::Downloads => self.downloads_page(p, cx),
             Page::Shaders => self.shaders.clone().into_any_element(),
             Page::Database => self.db_page(p, cx),
-            Page::Profiles => self.profiles_page(p, wide, cx),
             Page::Careers => self.careers_page(p, wide, cx),
             Page::Multiplayer => self.multiplayer_page(p, cx),
             Page::Online => self.online_page(p, cx),
@@ -88,7 +87,7 @@ impl Render for Shell {
             .text_size(px(14.))
             .child(self.title_bar(p, cx))
             .child(self.top_bar(p, layout_width, cx))
-            .child(self.sub_row(p, layout_width, cx))
+            .children(self.sub_row(p, layout_width, cx))
             .child(
                 h_flex().flex_1().min_h_0().items_start().bg(p.chrome).child(
                     h_flex()
@@ -102,7 +101,8 @@ impl Render for Shell {
                         .child(v_flex().flex_1().h_full().min_w_0().child(content)),
                 ),
             )
-            .children((self.page == Page::Careers).then(|| self.profile_pointer(p)))
+            .children((self.page == Page::Careers).then(|| self.profile_pointer(p, cx)))
+            .children(self.popover_layer(p, cx))
             .children(self.update_bar(p))
             .child(self.play_bar(p, wide, cx))
             .children(self.progress_card(p))

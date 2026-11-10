@@ -28,6 +28,14 @@ pub fn label() -> &'static str {
     if send_logs::available() { LABEL } else { SAVE_LABEL }
 }
 
+pub fn short_label() -> &'static str {
+    if send_logs::available() {
+        tr("Send logs")
+    } else {
+        tr("Save logs")
+    }
+}
+
 pub fn icon() -> IconName {
     if send_logs::available() {
         IconName::Send

@@ -22,6 +22,7 @@ mod config;
 mod console_window;
 mod dialogs;
 mod nav;
+mod overflow;
 mod page;
 mod play;
 mod play_dialogs;
@@ -45,7 +46,7 @@ pub struct Shell {
     pub(crate) store: Store,
     pub(crate) page: Page,
     pub(crate) nav: Option<tabs::Cursor>,
-    pub(crate) nav_scroll: ScrollHandle,
+    pub(crate) popover: Option<topbar::Popover>,
     pub(crate) root_focus: FocusHandle,
     pub(crate) profiles_open: bool,
     pub(crate) layout_width: f32,

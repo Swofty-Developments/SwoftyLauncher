@@ -135,6 +135,14 @@ fn log_change(part: Part, before: &Option<String>, after: &Option<String>) {
     }
 }
 
+fn blocked_text(version: &Version, reason: &str) -> String {
+    format!(
+        "Swofty Launcher {version} is available. {}. You have {}.",
+        sentence(reason),
+        update::current_version()
+    )
+}
+
 pub(crate) fn sentence(text: &str) -> String {
     let mut chars = text.chars();
     match chars.next() {
@@ -621,6 +629,16 @@ impl Shell {
             .into_any_element()
     }
 
+    pub(crate) fn launcher_notices(&self) -> Vec<String> {
+        if !self.update_check {
+            return Vec::new();
+        }
+        match self.updates.blocked_notice() {
+            Some((version, _, reason)) => vec![blocked_text(&version, reason)],
+            None => self.updates.waiting_notice().into_iter().collect(),
+        }
+    }
+
     pub(crate) fn update_bar(&self, p: Palette) -> Option<impl IntoElement> {
         if !self.update_check {
             return None;
@@ -651,11 +669,13 @@ impl Shell {
                     .size(px(16.))
                     .text_color(p.accent),
             )
-            .child(div().flex_1().min_w_0().truncate().child(format!(
-                "Swofty Launcher {version} is available. {}. You have {}.",
-                sentence(reason),
-                update::current_version()
-            )))
+            .child(
+                div()
+                    .flex_1()
+                    .min_w_0()
+                    .truncate()
+                    .child(blocked_text(&version, reason)),
+            )
             .when(fix, |d| {
                 d.child(
                     link("update-move-data", "Moving your addons and saves", p)

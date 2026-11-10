@@ -104,7 +104,7 @@ impl Shell {
                 .outline()
                 .icon(IconName::Layers)
                 .label(tr("Profiles"))
-                .on_click(cx.listener(|this, _, _, cx| this.go(Page::Profiles, cx))),
+                .on_click(cx.listener(|this, _, _, cx| this.go(Page::Addons, cx))),
         };
         let action = v_flex().items_center().gap(px(12.)).child(button).child(
             div().text_size(px(12.)).text_color(p.text_placeholder).child(tr(

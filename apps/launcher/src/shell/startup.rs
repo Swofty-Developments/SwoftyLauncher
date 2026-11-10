@@ -93,7 +93,7 @@ impl Shell {
             store,
             page: Page::News,
             nav: None,
-            nav_scroll: ScrollHandle::new(),
+            popover: None,
             root_focus: cx.focus_handle(),
             profiles_open: true,
             layout_width: 1440.,
@@ -184,7 +184,6 @@ impl Shell {
             Ok("online") => shell.open_page(Page::Online, cx),
             Ok("browser") => shell.open_page(Page::Browser, cx),
             Ok("settings") => shell.open_page(Page::Settings, cx),
-            Ok("profiles") => shell.open_page(Page::Profiles, cx),
             _ => {}
         }
         shell.fetch_news(cx);
