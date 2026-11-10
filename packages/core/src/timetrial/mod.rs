@@ -5,6 +5,7 @@
 //! and the launcher run for it.
 
 pub mod api;
+pub mod bridge;
 pub mod fingerprint;
 pub mod integrity;
 pub mod queue;
@@ -42,11 +43,11 @@ pub fn token(data: &Path, config: &Config) -> Option<String> {
         .map(|s| s.token)
 }
 
-const KEYS: [&str; 2] = ["tt_boards", "tt_nonce"];
+const KEYS: [&str; 3] = ["tt_boards", "tt_nonce", "tt_bridge"];
 
-/// Tell the core, through [`SESSION_FILE`], that laps are to be recorded for the boards and which
-/// session nonce they carry. Other keys in the file stay as they are.
-pub fn write_session_keys(game: &Path, nonce: Option<&str>) -> std::io::Result<()> {
+/// Tell the core, through [`SESSION_FILE`], that laps are to be recorded for the boards, which
+/// session nonce they carry and whether the in-game bridge is armed. Other keys in the file stay as they are.
+pub fn write_session_keys(game: &Path, nonce: Option<&str>, bridge: bool) -> std::io::Result<()> {
     let path = game.join(SESSION_FILE);
     let mut doc = read_object(&path);
     doc.insert("tt_boards".into(), true.into());
@@ -54,6 +55,11 @@ pub fn write_session_keys(game: &Path, nonce: Option<&str>) -> std::io::Result<(
         Some(n) => doc.insert("tt_nonce".into(), n.into()),
         None => doc.remove("tt_nonce"),
     };
+    if bridge {
+        doc.insert("tt_bridge".into(), true.into());
+    } else {
+        doc.remove("tt_bridge");
+    }
     if let Some(dir) = path.parent() {
         std::fs::create_dir_all(dir)?;
     }
@@ -92,10 +98,13 @@ mod tests {
     fn session_keys_merge_into_the_file_and_come_back_out() {
         let game = std::env::temp_dir().join(format!("swofty-ttk-{}", std::process::id()));
         std::fs::remove_dir_all(&game).ok();
-        write_session_keys(&game, Some("abc")).unwrap();
+        write_session_keys(&game, Some("abc"), true).unwrap();
         let doc: serde_json::Value =
             serde_json::from_slice(&std::fs::read(game.join(SESSION_FILE)).unwrap()).unwrap();
-        assert_eq!(doc, serde_json::json!({"tt_boards": true, "tt_nonce": "abc"}));
+        assert_eq!(
+            doc,
+            serde_json::json!({"tt_boards": true, "tt_nonce": "abc", "tt_bridge": true})
+        );
         clear_session_keys(&game);
         assert!(!game.join(SESSION_FILE).exists());
 
@@ -104,7 +113,7 @@ mod tests {
             r#"{"game_log":{"level":"warn"},"tt_nonce":"old"}"#,
         )
         .unwrap();
-        write_session_keys(&game, None).unwrap();
+        write_session_keys(&game, None, false).unwrap();
         let doc: serde_json::Value =
             serde_json::from_slice(&std::fs::read(game.join(SESSION_FILE)).unwrap()).unwrap();
         assert_eq!(

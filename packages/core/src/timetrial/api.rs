@@ -10,6 +10,7 @@ use serde_json::Value;
 use crate::http::{self, Field};
 
 const CALL_TIMEOUT: Duration = Duration::from_secs(4);
+const GAME_TIMEOUT: Duration = Duration::from_secs(5);
 const UPLOAD_TIMEOUT: Duration = Duration::from_secs(60);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -152,6 +153,12 @@ impl Api {
     /// A nonce that ties the laps of one game session together.
     pub fn sessions(&self) -> Result<Nonce, ApiError> {
         self.send("POST", "/v1/tt/sessions", None, CALL_TIMEOUT)
+    }
+
+    /// One in-game request of the bridge: `{status, body}` as the server built it for the game.
+    pub fn game_f1os(&self, request: &Value) -> Result<Value, ApiError> {
+        let body = ("application/json".to_owned(), request.to_string().into_bytes());
+        self.send("POST", "/v1/tt/game/f1os", Some(body), GAME_TIMEOUT)
     }
 
     /// What the server offers as the integrity module: its version, size, hash and signature.

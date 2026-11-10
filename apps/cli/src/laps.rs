@@ -26,6 +26,11 @@ pub enum LapsCommand {
     },
     #[command(about = "Print the address of the Time Trial boards")]
     Open,
+    #[command(about = "Send one in-game bridge request file to the server and print the answer")]
+    BridgeTest {
+        #[arg(help = "A request in the format the game writes to swofty/tt/outbox")]
+        file: PathBuf,
+    },
 }
 
 pub fn command(store: &Store, profile: &str, cmd: LapsCommand) -> Result<ExitCode> {
@@ -33,8 +38,28 @@ pub fn command(store: &Store, profile: &str, cmd: LapsCommand) -> Result<ExitCod
         LapsCommand::List => list(store),
         LapsCommand::Upload { file } => send(store, profile, file)?,
         LapsCommand::Open => println!("{}", timetrial::boards_url()),
+        LapsCommand::BridgeTest { file } => bridge_test(store, &file)?,
     }
     Ok(ExitCode::SUCCESS)
+}
+
+fn bridge_test(store: &Store, file: &std::path::Path) -> Result<()> {
+    let Some(token) = token(&store.root, &store.config()) else {
+        bail!("Time Trial boards is off or you are not signed in");
+    };
+    let mut request: Value = serde_json::from_slice(&std::fs::read(file)?)?;
+    let Some(object) = request.as_object_mut() else {
+        bail!("{} is not a JSON object", file.display());
+    };
+    object.remove("seq");
+    let answer = Api::new(&token).game_f1os(&request)?;
+    println!("status {}", answer.get("status").unwrap_or(&Value::Null));
+    match answer.get("body") {
+        Some(Value::String(body)) => println!("{body}"),
+        Some(other) => println!("{other}"),
+        None => println!("(no body)"),
+    }
+    Ok(())
 }
 
 fn clock(ms: u64) -> String {
@@ -161,7 +186,7 @@ pub fn begin(
         return None;
     };
     let nonce = upload::nonce(&store.root, config).map(|n| n.nonce);
-    if let Err(e) = timetrial::write_session_keys(&g.dir, nonce.as_deref()) {
+    if let Err(e) = timetrial::write_session_keys(&g.dir, nonce.as_deref(), config.time_trial_ingame) {
         say("laps", &format!("lap recording is off: {e}"));
         return None;
     }

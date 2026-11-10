@@ -10,6 +10,7 @@ use std::time::{Duration, Instant};
 use serde_json::Value;
 
 use super::api::{Api, Boards, Nonce};
+use super::bridge::Pump;
 use super::queue::{Event, Folder, Limits, Queue, Report, unix_now};
 use super::{laps_dir, token};
 use crate::session::Config;
@@ -86,6 +87,7 @@ pub fn flush(data: &Path, config: &Config) -> Report {
 pub struct Watcher {
     stop: Arc<AtomicBool>,
     thread: Option<JoinHandle<()>>,
+    pump: Option<Pump>,
     data: PathBuf,
     game: PathBuf,
     config: Config,
@@ -94,6 +96,7 @@ pub struct Watcher {
 }
 
 impl Watcher {
+    /// With In-game leaderboards on and a sign-in, the bridge's mailbox pump runs beside it.
     /// With Time Trial boards off or nobody signed in, the laps are still collected into the outbox and
     /// nothing leaves the machine.
     pub fn start(
@@ -103,14 +106,23 @@ impl Watcher {
         fingerprint: impl Fn() -> Option<Value> + Send + Sync + 'static,
         say: impl Fn(&str) + Send + Sync + 'static,
     ) -> Self {
+        let say: Arc<dyn Fn(&str) + Send + Sync> = Arc::new(say);
         let mut w = Self {
             stop: Arc::new(AtomicBool::new(false)),
             thread: None,
+            pump: config
+                .time_trial_ingame
+                .then(|| token(data, config))
+                .flatten()
+                .map(|t| {
+                    let say = say.clone();
+                    Pump::start(game, Api::new(&t), move |l| say(l))
+                }),
             data: data.to_owned(),
             game: game.to_owned(),
             config: config.clone(),
             fingerprint: Arc::new(fingerprint),
-            say: Arc::new(say),
+            say,
         };
         let (stop, data, game, config) = (w.stop.clone(), w.data.clone(), w.game.clone(), w.config.clone());
         let (fingerprint, say) = (w.fingerprint.clone(), w.say.clone());
@@ -133,9 +145,12 @@ impl Watcher {
         w
     }
 
-    /// Stop the watcher and sweep once more, giving up after a few seconds.
+    /// Stop the watcher and the bridge and sweep once more, giving up after a few seconds.
     pub fn finish(mut self) {
         self.stop.store(true, Ordering::Relaxed);
+        if let Some(pump) = self.pump.take() {
+            pump.finish();
+        }
         if let Some(t) = self.thread.take() {
             t.join().ok();
         }
