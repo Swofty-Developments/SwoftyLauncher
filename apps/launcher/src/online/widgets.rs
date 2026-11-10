@@ -4,7 +4,7 @@ use super::{Online, Target};
 use crate::scale::{Hit, px};
 use crate::shell::Shell;
 use crate::theme::Palette;
-use crate::ui::{Callout, EmptyState};
+use crate::ui::{Callout, EmptyState, Segmented};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
@@ -38,12 +38,12 @@ pub(super) fn panel(p: Palette) -> Div {
         .overflow_hidden()
 }
 
-pub(super) fn section_title(text: &'static str, p: Palette) -> Div {
+pub(super) fn section_title(text: impl Into<SharedString>, p: Palette) -> Div {
     div()
         .text_size(px(12.))
         .font_weight(FontWeight::SEMIBOLD)
         .text_color(p.text_muted)
-        .child(text)
+        .child(text.into())
 }
 
 pub(super) fn chip(label: impl Into<SharedString>, p: Palette) -> Div {
@@ -158,6 +158,174 @@ impl Shell {
                 change(&mut this.online.filter_tracks);
                 cx.notify();
             }))
+    }
+
+    pub(super) fn tt_category_bar(
+        &self,
+        cat: Category,
+        local: bool,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        let set = move |this: &mut Self, next: Category, cx: &mut Context<Self>| {
+            if local {
+                this.online_set_board_category(next, cx);
+            } else {
+                this.online_set_category(next, cx);
+            }
+        };
+        let handle = cx.entity().downgrade();
+        let pick_assist = |label: &'static str, which: AssistFilter| {
+            let handle = handle.clone();
+            (
+                label,
+                cat.assists == which,
+                move |_: &mut Window, cx: &mut App| {
+                    handle
+                        .update(cx, |s, cx| {
+                            set(
+                                s,
+                                Category {
+                                    assists: which,
+                                    ..s.board_or_global(local)
+                                },
+                                cx,
+                            )
+                        })
+                        .ok();
+                },
+            )
+        };
+        let pick_device = |label: &'static str, which: DeviceFilter| {
+            let handle = handle.clone();
+            (label, cat.device == which, move |_: &mut Window, cx: &mut App| {
+                handle
+                    .update(cx, |s, cx| {
+                        set(
+                            s,
+                            Category {
+                                device: which,
+                                ..s.board_or_global(local)
+                            },
+                            cx,
+                        )
+                    })
+                    .ok();
+            })
+        };
+        let mut assists = Segmented::new(if local { "board-assists" } else { "cat-assists" }, p);
+        for (l, on, f) in [
+            pick_assist(tr("Either"), AssistFilter::Either),
+            pick_assist(tr("No assists"), AssistFilter::None),
+            pick_assist(tr("Assists"), AssistFilter::Assists),
+        ] {
+            assists = assists.item(l, on, f);
+        }
+        let mut device = Segmented::new(if local { "board-device" } else { "cat-device" }, p);
+        for (l, on, f) in [
+            pick_device(tr("All"), DeviceFilter::All),
+            pick_device(tr("Wheel"), DeviceFilter::Wheel),
+            pick_device(tr("Controller"), DeviceFilter::Controller),
+            pick_device(tr("Keyboard"), DeviceFilter::Keyboard),
+        ] {
+            device = device.item(l, on, f);
+        }
+        h_flex()
+            .gap(px(10.))
+            .items_center()
+            .child(
+                div()
+                    .text_size(px(11.))
+                    .font_weight(FontWeight::SEMIBOLD)
+                    .text_color(p.text_placeholder)
+                    .child(tr("ASSISTS")),
+            )
+            .child(assists)
+            .child(
+                div()
+                    .text_size(px(11.))
+                    .font_weight(FontWeight::SEMIBOLD)
+                    .text_color(p.text_placeholder)
+                    .child(tr("INPUT")),
+            )
+            .child(device)
+            .into_any_element()
+    }
+
+    pub(super) fn board_or_global(&self, local: bool) -> Category {
+        if local {
+            self.board_category()
+        } else {
+            self.online.category
+        }
+    }
+
+    pub(super) fn input_icons(&self, r: &Row, p: Palette) -> Option<AnyElement> {
+        let device = r.input.map(|d| match d {
+            InputDevice::Wheel => IconName::Disc3,
+            InputDevice::Controller => IconName::Gamepad2,
+            InputDevice::Keyboard => IconName::Keyboard,
+        });
+        let aids = r.aids.as_ref();
+        if device.is_none() && aids.is_none() {
+            return None;
+        }
+        let icon_of = |a: Aid| match a {
+            Aid::TractionControl => IconName::Gauge,
+            Aid::Abs => IconName::CircleSlash,
+            Aid::Gearbox => IconName::Cog,
+            Aid::BrakingAssist => IconName::Hand,
+            Aid::SteeringAssist => IconName::Navigation,
+            Aid::RacingLine => IconName::Route,
+            Aid::Ers => IconName::Zap,
+        };
+        let mut tip: Vec<String> = Vec::new();
+        if let Some(d) = r.input {
+            tip.push(tr(d.label()).to_owned());
+        }
+        if let Some(a) = aids {
+            for aid in Aid::ALL {
+                if let Some(level) = a.level(aid) {
+                    tip.push(format!(
+                        "{}: {}",
+                        tr(aid.label()),
+                        if level == 0 {
+                            tr("Off").to_owned()
+                        } else {
+                            level.to_string()
+                        }
+                    ));
+                }
+            }
+        }
+        let tip = tip.join("\n");
+        Some(
+            h_flex()
+                .id(SharedString::from(format!("icons-{}", r.lap_id)))
+                .gap(px(5.))
+                .items_center()
+                .children(device.map(|i| Icon::new(i).size(px(15.)).text_color(p.text)))
+                .children(aids.map(|a| {
+                    if a.none() {
+                        chip(tr("No assists"), p).into_any_element()
+                    } else {
+                        h_flex()
+                            .gap(px(3.))
+                            .children(Aid::TRIO.iter().map(|aid| {
+                                Icon::new(icon_of(*aid)).size(px(13.)).text_color(if a.on(*aid) {
+                                    p.accent_hover
+                                } else {
+                                    p.text_placeholder.opacity(0.45)
+                                })
+                            }))
+                            .into_any_element()
+                    }
+                }))
+                .tooltip(move |window, cx| {
+                    gpui_kit::component::tooltip::Tooltip::new(tip.clone()).build(window, cx)
+                })
+                .into_any_element(),
+        )
     }
 
     pub(super) fn tt_faces(&self, drivers: &[Driver], size: f32, p: Palette) -> Div {

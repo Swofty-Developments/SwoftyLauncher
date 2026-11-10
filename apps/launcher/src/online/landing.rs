@@ -46,7 +46,13 @@ impl Shell {
         let ranking = self.rank_column("all", tr("GLOBAL RANKING"), &mut items, p, cx);
         self.online.items = items;
         let left = v_flex()
-            .gap(px(14.))
+            .gap(px(10.))
+            .child(h_flex().h(px(34.)).items_center().child(self.tt_category_bar(
+                self.online.category,
+                false,
+                p,
+                cx,
+            )))
             .child(section_title(tr("SEASONS"), p))
             .child(panel(p).children(seasons));
         if wide {
@@ -155,7 +161,7 @@ impl Shell {
             .flex()
             .items_center()
             .justify_center()
-            .child(section_title(title, p));
+            .child(section_title(rank_title(title, &self.online.category), p));
         let body: AnyElement = if !feed.started {
             v_flex()
                 .children((0..8).map(|_| {
@@ -518,5 +524,12 @@ impl Shell {
                 this.online_go(Target::Board(Box::new(card.clone()), label.clone()), cx)
             }))
             .into_any_element()
+    }
+}
+
+fn rank_title(title: &str, cat: &Category) -> String {
+    match cat.is_default() {
+        true => title.to_owned(),
+        false => format!("{title} \u{b7} {}", cat.suffix()),
     }
 }

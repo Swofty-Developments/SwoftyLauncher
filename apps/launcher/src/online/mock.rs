@@ -241,6 +241,57 @@ fn find(season_key: &str) -> usize {
 
 const FIELD: usize = 420;
 
+fn cat_shift(cat: &Category) -> usize {
+    cat.assists as usize * 3 + cat.device as usize
+}
+
+fn device_of(d: usize) -> Option<InputDevice> {
+    match d % 5 {
+        0 | 1 => Some(InputDevice::Wheel),
+        2 | 3 => Some(InputDevice::Controller),
+        _ => d.is_multiple_of(2).then_some(InputDevice::Keyboard),
+    }
+}
+
+fn aids_of_driver(d: usize) -> Assists {
+    let on = !d.is_multiple_of(3);
+    let level = |k: usize| {
+        if on && !seed(d, k).is_multiple_of(3) {
+            1 + (seed(d, k + 9) % 2) as u32
+        } else {
+            0
+        }
+    };
+    Assists {
+        levels: vec![
+            (Aid::TractionControl, level(1)),
+            (Aid::Abs, level(2)),
+            (Aid::BrakingAssist, level(3)),
+            (Aid::SteeringAssist, level(4)),
+            (Aid::RacingLine, level(5)),
+            (Aid::Gearbox, level(6)),
+            (Aid::Ers, level(7)),
+        ],
+    }
+}
+
+fn matches_category(d: usize, cat: &Category) -> bool {
+    let aids = aids_of_driver(d);
+    let none = aids.none();
+    let assist_ok = match cat.assists {
+        AssistFilter::Either => true,
+        AssistFilter::None => none,
+        AssistFilter::Assists => !none,
+    };
+    let device_ok = match cat.device {
+        DeviceFilter::All => true,
+        DeviceFilter::Wheel => device_of(d) == Some(InputDevice::Wheel),
+        DeviceFilter::Controller => device_of(d) == Some(InputDevice::Controller),
+        DeviceFilter::Keyboard => device_of(d) == Some(InputDevice::Keyboard),
+    };
+    assist_ok && device_ok
+}
+
 fn big_driver(i: usize) -> Driver {
     if i < NAMES.len() {
         return driver(i);
@@ -267,7 +318,7 @@ fn big_ranking(scope: usize) -> Vec<RankEntry> {
 impl BoardsApi for MockBoards {
     fn set_token(&self, _: Option<String>) {}
 
-    fn rankings(&self, scope: &str, offset: u32) -> Result<RankingPage, OnlineError> {
+    fn rankings(&self, scope: &str, cat: &Category, offset: u32) -> Result<RankingPage, OnlineError> {
         gate(self.mode)?;
         let scope_no = YEARS
             .iter()
@@ -276,7 +327,7 @@ impl BoardsApi for MockBoards {
         let all = if self.mode == Mode::Empty {
             Vec::new()
         } else {
-            big_ranking(scope_no)
+            big_ranking(scope_no + cat_shift(cat))
         };
         let rows: Vec<RankEntry> = all
             .iter()
@@ -305,7 +356,7 @@ impl BoardsApi for MockBoards {
         }))
     }
 
-    fn overview(&self) -> Result<Overview, OnlineError> {
+    fn overview(&self, _: &Category) -> Result<Overview, OnlineError> {
         gate(self.mode)?;
         if self.mode == Mode::Empty {
             return Ok(Overview {
@@ -327,7 +378,7 @@ impl BoardsApi for MockBoards {
         })
     }
 
-    fn season(&self, id: &str) -> Result<SeasonPage, OnlineError> {
+    fn season(&self, id: &str, _: &Category) -> Result<SeasonPage, OnlineError> {
         gate(self.mode)?;
         let s = find(id);
         Ok(SeasonPage {
@@ -337,14 +388,14 @@ impl BoardsApi for MockBoards {
         })
     }
 
-    fn board(&self, k: &BoardKey, filter: &Filter, _offset: u32) -> Result<BoardPage, OnlineError> {
+    fn board(&self, k: &BoardKey, cat: &Category, _offset: u32) -> Result<BoardPage, OnlineError> {
         gate(self.mode)?;
         let s = find(&k.content);
         let t = TRACKS.iter().position(|x| x.0 == k.track).unwrap_or(0);
         let rows: Vec<Row> = order(s, t)
             .into_iter()
             .enumerate()
-            .filter(|(place, _)| !filter.wheel || place % 2 == 0)
+            .filter(|(_, d)| matches_category(*d, cat))
             .enumerate()
             .map(|(rank, (place, d))| {
                 let time = time_of(s, t, place);
@@ -356,6 +407,8 @@ impl BoardsApi for MockBoards {
                     driver: driver(d),
                     time_ms: time,
                     sectors_ms: vec![s1, s2, time - s1 - s2],
+                    input: device_of(d),
+                    aids: Some(aids_of_driver(d)),
                     car: Some(["ferrari sf-22", "mercedes w13", "red bull rb18"][d % 3].to_owned()),
                     date: format!("2026-11-{:02}T04:10:11Z", 10 - (d % 9)),
                     setup: (place % 5 != 4).then(|| mock_setup(d, s)),
@@ -379,7 +432,7 @@ impl BoardsApi for MockBoards {
         })
     }
 
-    fn profile(&self, id: &str) -> Result<Profile, OnlineError> {
+    fn profile(&self, id: &str, _: &Category) -> Result<Profile, OnlineError> {
         gate(self.mode)?;
         let d = id.parse::<usize>().unwrap_or(1000) - 1000;
         let all = global();
@@ -427,13 +480,13 @@ mod tests {
     #[test]
     fn the_mock_has_seasons_a_ranking_and_boards() {
         let api = MockBoards { mode: Mode::Full };
-        let o = api.overview().unwrap();
+        let o = api.overview(&Category::default()).unwrap();
         assert_eq!(o.seasons.len(), 7);
         assert_eq!(o.global[0].rank, 1);
         assert!(o.global[0].points >= o.global[1].points);
-        let s = api.season(&o.seasons[0].id).unwrap();
+        let s = api.season(&o.seasons[0].id, &Category::default()).unwrap();
         assert_eq!(s.tracks.len(), 8);
-        let b = api.board(&s.tracks[0].key, &Filter::default(), 0).unwrap();
+        let b = api.board(&s.tracks[0].key, &Category::default(), 0).unwrap();
         assert!(b.rows.windows(2).all(|w| w[0].time_ms <= w[1].time_ms));
     }
 }

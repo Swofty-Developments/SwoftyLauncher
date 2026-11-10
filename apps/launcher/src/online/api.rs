@@ -5,11 +5,11 @@ use swofty_i18n::trf;
 use super::model::*;
 
 pub trait BoardsApi: Send + Sync {
-    fn overview(&self) -> Result<Overview, OnlineError>;
-    fn season(&self, id: &str) -> Result<SeasonPage, OnlineError>;
-    fn board(&self, key: &BoardKey, filter: &Filter, offset: u32) -> Result<BoardPage, OnlineError>;
-    fn profile(&self, id: &str) -> Result<Profile, OnlineError>;
-    fn rankings(&self, scope: &str, offset: u32) -> Result<RankingPage, OnlineError>;
+    fn overview(&self, cat: &Category) -> Result<Overview, OnlineError>;
+    fn season(&self, id: &str, cat: &Category) -> Result<SeasonPage, OnlineError>;
+    fn board(&self, key: &BoardKey, cat: &Category, offset: u32) -> Result<BoardPage, OnlineError>;
+    fn profile(&self, id: &str, cat: &Category) -> Result<Profile, OnlineError>;
+    fn rankings(&self, scope: &str, cat: &Category, offset: u32) -> Result<RankingPage, OnlineError>;
     fn me(&self) -> Result<Option<Me>, OnlineError>;
     fn set_token(&self, token: Option<String>);
 }
@@ -239,6 +239,10 @@ struct BoardRowDto {
     set_at: String,
     #[serde(default)]
     setup: Option<serde_json::Value>,
+    #[serde(default)]
+    assists: Option<serde_json::Value>,
+    #[serde(default)]
+    input: Option<serde_json::Value>,
 }
 
 #[derive(Deserialize)]
@@ -283,8 +287,38 @@ fn row(r: BoardRowDto) -> Row {
         sectors_ms: r.sectors_ms,
         car: r.car_label.filter(|c| !c.is_empty()),
         date: r.set_at,
+        input: input_of(r.input.as_ref(), r.assists.as_ref()),
+        aids: aids_of(r.assists.as_ref()),
         setup: r.setup.as_ref().and_then(setup_of),
     }
+}
+
+pub(super) fn input_of(
+    input: Option<&serde_json::Value>,
+    assists: Option<&serde_json::Value>,
+) -> Option<InputDevice> {
+    input
+        .and_then(|v| v.as_str())
+        .or_else(|| {
+            assists
+                .and_then(|a| a.get("input_device"))
+                .and_then(|v| v.as_str())
+        })
+        .and_then(InputDevice::parse)
+}
+
+pub(super) fn aids_of(assists: Option<&serde_json::Value>) -> Option<Assists> {
+    let map = assists?.as_object()?;
+    let mut levels: Vec<(Aid, u32)> = Vec::new();
+    for (key, value) in map {
+        if let (Some(aid), Some(n)) = (
+            Aid::from_key(key),
+            value.as_u64().or_else(|| value.as_bool().map(u64::from)),
+        ) {
+            levels.push((aid, n as u32));
+        }
+    }
+    (!levels.is_empty()).then_some(Assists { levels })
 }
 
 #[derive(Deserialize)]
@@ -489,6 +523,15 @@ fn error_text(status: u16, body: &[u8]) -> String {
         .unwrap_or_else(|| trf!("the boards server answered HTTP {status}", status = status))
 }
 
+fn lead(cat: &Category) -> String {
+    let q = cat.query();
+    if q.is_empty() {
+        q
+    } else {
+        format!("?{}", q.trim_start_matches('&'))
+    }
+}
+
 pub fn encode(part: &str) -> String {
     let mut out = String::with_capacity(part.len());
     for b in part.bytes() {
@@ -529,10 +572,11 @@ impl BoardsApi for HttpBoards {
         }
     }
 
-    fn rankings(&self, scope: &str, offset: u32) -> Result<RankingPage, OnlineError> {
+    fn rankings(&self, scope: &str, cat: &Category, offset: u32) -> Result<RankingPage, OnlineError> {
         let dto: RankingDto = self.get(&format!(
-            "/v1/tt/rankings?season={}&limit={RANK_PAGE}&offset={offset}",
-            encode(scope)
+            "/v1/tt/rankings?season={}&limit={RANK_PAGE}&offset={offset}{}",
+            encode(scope),
+            cat.query()
         ))?;
         Ok(RankingPage {
             rows: dto.rows.into_iter().map(Into::into).collect(),
@@ -568,8 +612,8 @@ impl BoardsApi for HttpBoards {
         }
     }
 
-    fn overview(&self) -> Result<Overview, OnlineError> {
-        let dto: OverviewDto = self.get("/v1/tt/overview")?;
+    fn overview(&self, cat: &Category) -> Result<Overview, OnlineError> {
+        let dto: OverviewDto = self.get(&["/v1/tt/overview", &lead(cat)].concat())?;
         Ok(Overview {
             seasons: dto.seasons.iter().map(|s| season_card(&self.server, s)).collect(),
             global: dto.global.rows.into_iter().map(Into::into).collect(),
@@ -583,8 +627,8 @@ impl BoardsApi for HttpBoards {
         })
     }
 
-    fn season(&self, id: &str) -> Result<SeasonPage, OnlineError> {
-        let dto: SeasonDto = self.get(&format!("/v1/tt/seasons/{}", encode(id)))?;
+    fn season(&self, id: &str, cat: &Category) -> Result<SeasonPage, OnlineError> {
+        let dto: SeasonDto = self.get(&format!("/v1/tt/seasons/{}{}", encode(id), lead(cat)))?;
         let season = season_card(&self.server, &dto);
         let tracks = dto
             .tracks
@@ -598,7 +642,7 @@ impl BoardsApi for HttpBoards {
         })
     }
 
-    fn board(&self, key: &BoardKey, filter: &Filter, offset: u32) -> Result<BoardPage, OnlineError> {
+    fn board(&self, key: &BoardKey, cat: &Category, offset: u32) -> Result<BoardPage, OnlineError> {
         let mut path = format!(
             "/v1/tt/boards/{}/{}?weather={}&limit={PAGE_SIZE}&offset={offset}",
             encode(&key.content),
@@ -608,12 +652,7 @@ impl BoardsApi for HttpBoards {
         if SHOW_SETUPS {
             path.push_str("&setup=1");
         }
-        if filter.assists_off {
-            path.push_str("&assists=none");
-        }
-        if filter.wheel {
-            path.push_str("&device=wheel");
-        }
+        path.push_str(&cat.query());
         let dto: BoardDto = self.get(&path)?;
         let track = TrackCard {
             key: BoardKey {
@@ -651,8 +690,8 @@ impl BoardsApi for HttpBoards {
         })
     }
 
-    fn profile(&self, id: &str) -> Result<Profile, OnlineError> {
-        let dto: ProfileDto = self.get(&format!("/v1/tt/users/{}", encode(id)))?;
+    fn profile(&self, id: &str, cat: &Category) -> Result<Profile, OnlineError> {
+        let dto: ProfileDto = self.get(&format!("/v1/tt/users/{}{}", encode(id), lead(cat)))?;
         let driver: Driver = dto.user.into();
         Ok(Profile {
             global: dto.global.map(|g| RankEntry {
@@ -747,7 +786,7 @@ mod tests {
     #[test]
     fn an_unreachable_server_is_a_network_error() {
         let e = HttpBoards::with_server("http://127.0.0.1:1")
-            .overview()
+            .overview(&Category::default())
             .unwrap_err();
         assert_eq!(e.status, 0);
         assert!(e.message.contains("couldn't reach"));
@@ -793,5 +832,18 @@ mod tests {
         assert_eq!(me.global.unwrap().rank, 3);
         let last: RankingDto = serde_json::from_str(r#"{"total":3,"next_offset":null,"rows":[]}"#).unwrap();
         assert_eq!(last.next_offset, None);
+    }
+
+    #[test]
+    fn a_rows_assists_and_input_are_read_from_the_server_shape() {
+        let v: serde_json::Value =
+            serde_json::from_str(r#"{"trc":2,"abs":1,"gbx":0,"mystery":5,"input_device":"wheel"}"#).unwrap();
+        let aids = aids_of(Some(&v)).unwrap();
+        assert_eq!(aids.level(Aid::TractionControl), Some(2));
+        assert_eq!(aids.level(Aid::Gearbox), Some(0));
+        assert_eq!(input_of(None, Some(&v)), Some(InputDevice::Wheel));
+        let direct = serde_json::json!("pad");
+        assert_eq!(input_of(Some(&direct), None), Some(InputDevice::Controller));
+        assert!(aids_of(Some(&serde_json::json!({}))).is_none());
     }
 }

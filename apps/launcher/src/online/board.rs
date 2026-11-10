@@ -74,7 +74,7 @@ impl Shell {
             .gap(px(12.))
             .items_center()
             .bg(p.elevated)
-            .child(head_cell(40., "RANK", p))
+            .child(head_cell(54., "RANK", p))
             .child(div().flex_1().min_w_0().child(head_cell(120., "DRIVER", p)))
             .child(head_cell(88., "TIME", p))
             .child(head_cell(74., "GAP", p))
@@ -161,43 +161,28 @@ impl Shell {
     }
 
     fn filter_chips(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        let f = self.online.filter.clone();
-        let chip = |id: &'static str, label: &'static str, on: bool, f: Filter, cx: &mut Context<Self>| {
-            h_flex()
-                .id(id)
-                .h(px(30.))
-                .px(px(14.))
-                .items_center()
-                .rounded_full()
-                .border_1()
-                .cursor_pointer()
-                .text_size(px(13.))
-                .font_weight(FontWeight::MEDIUM)
-                .map(|d| {
-                    if on {
-                        d.bg(p.selected).border_color(p.accent).text_color(p.text)
-                    } else {
-                        d.border_color(p.border)
-                            .text_color(p.text_muted)
-                            .hover(move |s| s.bg(p.hover))
-                    }
-                })
-                .child(label)
-                .on_click(cx.listener(move |this, _, _, cx| this.online_set_filter(f.clone(), cx)))
-        };
-        let mut assists = f.clone();
-        assists.assists_off = !f.assists_off;
-        let mut wheel = f.clone();
-        wheel.wheel = !f.wheel;
+        let cat = self.board_category();
+        let differs = self.online.board_category.is_some();
         h_flex()
-            .gap(px(8.))
+            .gap(px(14.))
             .items_center()
-            .child(chip("f-assists", tr("No assists"), f.assists_off, assists, cx))
-            .child(chip("f-wheel", tr("Wheel"), f.wheel, wheel, cx))
-            .child(
-                chip("f-clear", tr("Clear filters"), false, Filter::default(), cx)
-                    .when(!f.any(), |d| d.opacity(0.4)),
-            )
+            .child(self.tt_category_bar(cat, true, p, cx))
+            .when(differs, |d| {
+                d.child(
+                    div()
+                        .id("board-reset-category")
+                        .cursor_pointer()
+                        .text_size(px(12.))
+                        .text_color(p.accent_hover)
+                        .hover(move |s| s.text_color(p.text))
+                        .child(tr("Reset to my categories"))
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            let global = this.online.category;
+                            this.online.board_category = None;
+                            this.online_set_board_category(global, cx);
+                        })),
+                )
+            })
             .into_any_element()
     }
 
@@ -216,6 +201,7 @@ impl Shell {
         let driver = r.driver.clone();
         let personal: Vec<Option<u64>> = (0..3).map(|i| r.sectors_ms.get(i).copied()).collect();
         let colour = medal(r.rank, &p);
+        let shown = shown_rank(idx, r.rank, !self.board_category().is_default());
         h_flex()
             .id(SharedString::from(format!("row-{idx}-{}", r.lap_id)))
             .h(px(38.))
@@ -229,11 +215,18 @@ impl Shell {
             .when(self.online.ringed(idx), |d| d.border_1().border_color(p.accent))
             .child(
                 div()
-                    .w(px(40.))
+                    .w(px(54.))
                     .text_size(px(15.))
                     .font_weight(FontWeight::BOLD)
                     .text_color(colour)
-                    .child(r.rank.to_string()),
+                    .child(shown.0.to_string())
+                    .children(shown.1.map(|o| {
+                        div()
+                            .text_size(px(10.))
+                            .font_weight(FontWeight::NORMAL)
+                            .text_color(p.text_placeholder)
+                            .child(format!("({o})"))
+                    })),
             )
             .child(
                 h_flex()
@@ -252,6 +245,7 @@ impl Shell {
                             .child(r.driver.name.clone()),
                     )
                     .when(mine, |d| d.child(chip(tr("YOU"), p)))
+                    .children(self.input_icons(r, p))
                     .on_click(
                         cx.listener(move |this, _, _, cx| {
                             this.online_go(Target::Profile(driver.clone()), cx)

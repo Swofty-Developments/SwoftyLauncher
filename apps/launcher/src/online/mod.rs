@@ -51,7 +51,8 @@ pub(crate) struct Online {
     seasons: HashMap<String, Load<SeasonPage>>,
     profiles: HashMap<String, Load<Profile>>,
     board: Option<(BoardKey, Load<BoardPage>)>,
-    filter: Filter,
+    category: Category,
+    board_category: Option<Category>,
     more: bool,
     images: Images,
     data: std::path::PathBuf,
@@ -84,7 +85,8 @@ impl Online {
             seasons: HashMap::new(),
             profiles: HashMap::new(),
             board: None,
-            filter: Filter::default(),
+            category: Category::load(data),
+            board_category: None,
             more: false,
             images: Images::new(data),
             data: data.to_path_buf(),
@@ -151,10 +153,11 @@ impl Shell {
         })
         .detach();
         let api = self.online.api.clone();
+        let cat = self.online.category;
         cx.spawn(async move |this, cx| {
             let overview = cx
                 .background_executor()
-                .spawn(async move { api.overview() })
+                .spawn(async move { api.overview(&cat) })
                 .await;
             this.update(cx, |s, cx| {
                 if s.online.epoch != epoch {
@@ -179,6 +182,33 @@ impl Shell {
                 {
                     let id = r.driver.id.clone();
                     s.online_load_profile(&id, cx);
+                }
+                if let (true, Ok(o)) = (cfg!(debug_assertions), &overview)
+                    && let Ok(start) = std::env::var("SWOFTY_ONLINE_START")
+                    && let Some(first) = o.seasons.first()
+                {
+                    let (id, name) = (first.id.clone(), first.name.clone());
+                    s.online.overview = Load::from(overview.clone());
+                    s.online_go(Target::Season(id.clone(), name), cx);
+                    if start == "board" {
+                        let card = TrackCard {
+                            key: BoardKey {
+                                content: id,
+                                track: "bahrain".into(),
+                                weather: "dry".into(),
+                            },
+                            name: "Bahrain".into(),
+                            flag: None,
+                            layout: None,
+                            record: None,
+                            podium: Vec::new(),
+                            drivers: 0,
+                            laps: 0,
+                            custom: false,
+                        };
+                        s.online_go(Target::Board(Box::new(card), "Bahrain".into()), cx);
+                    }
+                    return;
                 }
                 s.online.overview = Load::from(overview);
                 cx.notify();
@@ -229,11 +259,12 @@ impl Shell {
         }
         feed.loading = true;
         let (api, key, epoch) = (self.online.api.clone(), scope.to_owned(), self.online.epoch);
+        let cat = self.online.category;
         cx.spawn(async move |this, cx| {
             let k = key.clone();
             let page = cx
                 .background_executor()
-                .spawn(async move { api.rankings(&k, offset) })
+                .spawn(async move { api.rankings(&k, &cat, offset) })
                 .await;
             this.update(cx, |s, cx| {
                 if s.online.epoch != epoch {
@@ -262,11 +293,12 @@ impl Shell {
         self.online.seasons.insert(id.to_owned(), Load::Loading);
         self.online_rank_ensure(id, cx);
         let (api, key, epoch) = (self.online.api.clone(), id.to_owned(), self.online.epoch);
+        let cat = self.online.category;
         cx.spawn(async move |this, cx| {
             let k = key.clone();
             let page = cx
                 .background_executor()
-                .spawn(async move { api.season(&k) })
+                .spawn(async move { api.season(&k, &cat) })
                 .await;
             this.update(cx, |s, cx| {
                 if s.online.epoch != epoch {
@@ -306,7 +338,7 @@ impl Shell {
         }
         let (api, filter, epoch) = (
             self.online.api.clone(),
-            self.online.filter.clone(),
+            self.online.board_category.unwrap_or(self.online.category),
             self.online.epoch,
         );
         cx.spawn(async move |this, cx| {
@@ -352,11 +384,12 @@ impl Shell {
         }
         self.online.profiles.insert(id.to_owned(), Load::Loading);
         let (api, key, epoch) = (self.online.api.clone(), id.to_owned(), self.online.epoch);
+        let cat = self.online.category;
         cx.spawn(async move |this, cx| {
             let k = key.clone();
             let page = cx
                 .background_executor()
-                .spawn(async move { api.profile(&k) })
+                .spawn(async move { api.profile(&k, &cat) })
                 .await;
             this.update(cx, |s, cx| {
                 if s.online.epoch != epoch {
@@ -392,7 +425,7 @@ impl Shell {
             Target::Board(card, label) => {
                 let key = card.key.clone();
                 self.online.trail.push(Screen::Board(key.clone()), label);
-                self.online.filter = Filter::default();
+                self.online.board_category = None;
                 self.online_load_board(key, 0, cx);
             }
             Target::Profile(driver) => {
@@ -437,11 +470,27 @@ impl Shell {
         cx.notify();
     }
 
-    pub(crate) fn online_set_filter(&mut self, filter: Filter, cx: &mut Context<Self>) {
-        self.online.filter = filter;
+    pub(crate) fn online_set_category(&mut self, cat: Category, cx: &mut Context<Self>) {
+        if self.online.category == cat {
+            return;
+        }
+        self.online.category = cat;
+        cat.save(&self.online.data);
+        self.online.board_category = None;
+        self.online.board = None;
+        self.online.overview = Load::Idle;
+        self.online_reload(cx);
+    }
+
+    pub(crate) fn online_set_board_category(&mut self, cat: Category, cx: &mut Context<Self>) {
+        self.online.board_category = (cat != self.online.category).then_some(cat);
         if let Screen::Board(key) = self.online.trail.current().clone() {
             self.online_load_board(key, 0, cx);
         }
+    }
+
+    pub(crate) fn board_category(&self) -> Category {
+        self.online.board_category.unwrap_or(self.online.category)
     }
 
     pub(crate) fn online_game_running(&self) -> bool {
