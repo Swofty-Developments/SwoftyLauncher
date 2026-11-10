@@ -1,3 +1,4 @@
+#include "ghost_arm_logic.hpp"
 #include "ghost_swlap_logic.hpp"
 #include "runtime.hpp"
 
@@ -13,7 +14,9 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <memory>
 #include <mutex>
+#include <thread>
 #include <string>
 #include <vector>
 
@@ -65,8 +68,8 @@ constexpr uintptr_t RVA_STREAM_VTABLE = 0x5899750;
 constexpr size_t COMP_LAPS = 0x50, TL_VEHICLE = 0x130, TL_BUFFER = 0x1e0,
                  TL_HIGH = 0x1f8, TL_COUNT = 0x214, TL_MODE = 0x23c, TL_WANT = 0x240, TL_TIME = 0x24c,
                  TL_ERROR = 0x250, TL_CURVE = 0x254, TL_SUMMARY = 0x260, TL_LAP = 0x268, TL_FLAGS = 0x2c0;
-constexpr int SLOTS = 6, MAX_ATTEMPTS = 3, MAX_DUMPS = 8;
-constexpr uintptr_t PLAY_POLL_MS = 500, DIAG_POLL_MS = 1000;
+constexpr int SLOTS = 6, MAX_DUMPS = 8;
+constexpr uintptr_t DIAG_POLL_MS = 1000;
 
 using ReadFn = int (*)(void *tlap, void *stream);
 using ResetFn = void (*)(void *tlap);
@@ -79,7 +82,6 @@ struct Stream {
     uint64_t pos;
 };
 
-std::mutex lock;
 safetyhook::MidHook h_tick;
 safetyhook::InlineHook h_read, h_newlap;
 ResetFn reset_fn = nullptr;
@@ -102,12 +104,13 @@ struct Request {
     float lap_s = 0;
 };
 
-Request request;
-bool have_request = false;
-uintptr_t armed_for = 0;
-int attempts = 0;
-uint64_t last_stamp = 0;
-int64_t last_poll = 0, last_diag = 0;
+std::mutex pub_lock;
+std::shared_ptr<const Request> published;
+uint64_t pub_gen = 0;
+std::atomic<bool> worker_run{false};
+runtime::ghost_arm::Arming arming;
+float armed_lap_s = 0;
+int64_t last_diag = 0;
 std::string last_slots;
 int dumps = 0;
 
@@ -322,48 +325,45 @@ bool load_request(const std::wstring &play, Request &out, std::string &why)
     return true;
 }
 
-void restore(uintptr_t comp);
-
-void poll_request()
+void publish(std::shared_ptr<const Request> r, uint64_t gen)
 {
-    int64_t now = now_ms();
-    if (now - last_poll < int64_t(PLAY_POLL_MS))
-        return;
-    last_poll = now;
-    std::wstring play = ghost_dir() + L"play.json";
-    WIN32_FILE_ATTRIBUTE_DATA d{};
-    if (!GetFileAttributesExW(play.c_str(), GetFileExInfoStandard, &d)) {
-        if (have_request) {
-            have_request = false;
-            last_stamp = 0;
-            restore(component.load());
-            armed_for = 0;
-            swofty::log("[ghost] play.json is gone; the ghost is disarmed");
+    std::lock_guard<std::mutex> g(pub_lock);
+    published = std::move(r);
+    pub_gen = gen;
+}
+
+void worker()
+{
+    uint64_t last_stamp = 0, gen = 0;
+    while (worker_run.load()) {
+        Sleep(500);
+        std::wstring play = ghost_dir() + L"play.json";
+        WIN32_FILE_ATTRIBUTE_DATA d{};
+        if (!GetFileAttributesExW(play.c_str(), GetFileExInfoStandard, &d)) {
+            if (last_stamp) {
+                last_stamp = 0;
+                publish(nullptr, 0);
+                swofty::log("[ghost] play.json is gone; the ghost is disarmed");
+            }
+            continue;
         }
-        return;
+        uint64_t stamp = (uint64_t(d.ftLastWriteTime.dwHighDateTime) << 32) | d.ftLastWriteTime.dwLowDateTime;
+        stamp ^= (uint64_t(d.nFileSizeLow) << 1);
+        if (stamp == last_stamp)
+            continue;
+        last_stamp = stamp;
+        auto r = std::make_shared<Request>();
+        std::string why;
+        if (!load_request(play, *r, why)) {
+            publish(nullptr, 0);
+            swofty::log("[ghost] request refused: %s", why.c_str());
+            continue;
+        }
+        r->stamp = stamp;
+        swofty::log("[ghost] request: %s lap '%s', driver '%s': %zu records, %zu bytes, lap %.3f s", r->kind.c_str(), r->path.c_str(),
+                    r->label.c_str(), r->records, r->blob.size(), r->lap_s);
+        publish(r, ++gen);
     }
-    uint64_t stamp = (uint64_t(d.ftLastWriteTime.dwHighDateTime) << 32) | d.ftLastWriteTime.dwLowDateTime;
-    stamp ^= (uint64_t(d.nFileSizeLow) << 1);
-    if (stamp == last_stamp)
-        return;
-    last_stamp = stamp;
-    Request r;
-    std::string why;
-    if (!load_request(play, r, why)) {
-        have_request = false;
-        swofty::log("[ghost] request refused: %s", why.c_str());
-        return;
-    }
-    r.stamp = stamp;
-    {
-        std::lock_guard<std::mutex> g(lock);
-        request = std::move(r);
-        have_request = true;
-        armed_for = 0;
-        attempts = 0;
-    }
-    swofty::log("[ghost] request: %s lap '%s' (%s), driver '%s': %zu records, %zu bytes, lap %.3f s", request.kind.c_str(), request.path.c_str(),
-                request.kind.c_str(), request.label.c_str(), request.records, request.blob.size(), request.lap_s);
 }
 
 bool read_trace_into(uintptr_t tl, const std::vector<uint8_t> &blob)
@@ -378,80 +378,107 @@ bool read_trace_into(uintptr_t tl, const std::vector<uint8_t> &blob)
     return rc == 0 && (s.error & ~2u) == 0 && s.count > 0;
 }
 
-void restore(uintptr_t comp)
+runtime::ghost_arm::Views views_of(uintptr_t comp)
 {
-    if (slot != 3 || saved_for != comp || armed_for != comp)
-        return;
-    uintptr_t tl = tlap_at(comp, 3);
-    if (!tl)
-        return;
-    LapState s = state_of(tl);
-    if (std::fabs(s.lap - request.lap_s) > 0.002f) {
-        swofty::log("[ghost] restore: lap 3 no longer holds the supplied trace (time %.3f); left as is", s.lap);
-    } else if (saved_has) {
-        read_trace_into(tl, saved_blob);
-        swofty::log("[ghost] restore: the player's own personal best trace is back in lap 3");
-    } else {
-        reset_fn(reinterpret_cast<void *>(tl));
-        swofty::log("[ghost] restore: lap 3 reset, the player had no personal best trace");
+    runtime::ghost_arm::Views v;
+    for (int i = 0; i < SLOTS; i++) {
+        uintptr_t tl = tlap_at(comp, i);
+        if (!tl)
+            continue;
+        LapState s = state_of(tl);
+        auto &o = v.s[i];
+        o.present = true;
+        o.bound = s.bound != 0;
+        o.mode = s.mode;
+        o.want = s.want;
+        o.error = s.error;
+        o.count = s.count;
     }
-    saved_for = 0;
-    armed_for = 0;
+    return v;
 }
 
-void arm(uintptr_t comp)
+void do_restore(uintptr_t comp)
 {
-    if (!ghost_on || !have_request || armed_for == comp || attempts >= MAX_ATTEMPTS)
-        return;
-    int pick = slot_env;
-    if (pick < 0) {
-        uintptr_t rival = tlap_at(comp, 4);
-        pick = rival && state_of(rival).bound ? 4 : 3;
+    swofty::log("[ghost] restore: stage 1, checking lap 3");
+    uintptr_t tl = tlap_at(comp, 3);
+    if (tl && saved_for == comp) {
+        LapState s = state_of(tl);
+        if (std::fabs(s.lap - armed_lap_s) > 0.002f)
+            swofty::log("[ghost] restore: lap 3 no longer holds the supplied trace (time %.3f); left as is", s.lap);
+        else if (saved_has) {
+            read_trace_into(tl, saved_blob);
+            swofty::log("[ghost] restore: the player's own personal best trace is back in lap 3");
+        } else {
+            reset_fn(reinterpret_cast<void *>(tl));
+            swofty::log("[ghost] restore: lap 3 reset, the player had no personal best trace");
+        }
     }
+    saved_for = 0;
+    arming.restored();
+}
+
+void do_arm(uintptr_t comp, int pick, const Request &req)
+{
+    slot = pick;
     uintptr_t tl = tlap_at(comp, pick);
     if (!tl) {
+        arming.failed(now_ms());
         return;
     }
-    slot = pick;
-    if (slot == 3 && saved_for != comp) {
+    LapState before = state_of(tl);
+    swofty::log("[ghost] arm: stage 1, lap %d at 0x%llx, bound 0x%llx, mode %u/%u, count %u; %s", pick, (unsigned long long)tl,
+                (unsigned long long)before.bound, before.mode, before.want, before.count, describe(comp).c_str());
+    if (pick == 3 && saved_for != comp) {
         saved_has = trace_bytes_of(tl, saved_blob);
         saved_for = comp;
-        swofty::log("[ghost] arm: lap 3 is the player's personal best slot; its trace is %s", saved_has ? "kept for the restore" : "empty");
+        swofty::log("[ghost] arm: stage 2, lap 3 is the player's personal best slot; its trace is %s", saved_has ? "kept for the restore" : "empty");
     }
-    attempts++;
-    LapState before = state_of(tl);
-    swofty::log("[ghost] arm: component 0x%llx, lap %d at 0x%llx, bound %s (+0x130 = 0x%llx), mode %u/%u, count %u before; %s",
-                (unsigned long long)comp, slot, (unsigned long long)tl, before.bound ? "to a car" : "to no car",
-                (unsigned long long)before.bound, before.mode, before.want, before.count, describe(comp).c_str());
-    if (!before.bound)
-        swofty::log("[ghost] arm: lap %d is not bound to a ghost car; the trace is stored but the game plays it only when a car is bound. "
-                    "Set SWOFTY_TT_GHOST_SLOT to a bound lap to test",
-                    slot);
-    if (!read_trace_into(tl, request.blob)) {
-        swofty::log("[ghost] arm: failed (attempt %d of %d)", attempts, MAX_ATTEMPTS);
+    swofty::log("[ghost] arm: stage 3, reading '%s' into lap %d", req.label.c_str(), pick);
+    if (!read_trace_into(tl, req.blob)) {
+        swofty::log("[ghost] arm: failed");
+        arming.failed(now_ms());
         return;
     }
-    armed_for = comp;
-    swofty::log("[ghost] armed: '%s' (%.3f s) is lap %d's trace; it plays from the next lap start while the lap is bound to a car",
-                request.label.c_str(), request.lap_s, slot);
+    armed_lap_s = req.lap_s;
+    arming.armed_ok(pick);
+    swofty::log("[ghost] armed: '%s' (%.3f s) is lap %d's trace; it plays from the next lap start", req.label.c_str(), req.lap_s, pick);
+}
+
+void game_step(uintptr_t comp)
+{
+    std::shared_ptr<const Request> req;
+    uint64_t gen = 0;
+    {
+        std::unique_lock<std::mutex> l(pub_lock, std::try_to_lock);
+        if (!l.owns_lock())
+            return;
+        req = published;
+        gen = pub_gen;
+    }
+    arming.request(req ? gen : 0);
+    auto d = arming.decide(views_of(comp), slot_env, now_ms());
+    if (d.what == runtime::ghost_arm::Do::arm && req)
+        do_arm(comp, d.slot, *req);
+    else if (d.what == runtime::ghost_arm::Do::restore)
+        do_restore(comp);
 }
 
 void tick_mid(safetyhook::Context &c)
 {
+    static thread_local bool busy = false;
     uintptr_t comp = c.rcx;
-    if (!comp)
+    if (!comp || busy)
         return;
+    busy = true;
     mem::Trust trust(runtime::HEAP_TRUST_MS);
-    std::lock_guard<std::mutex> g(lock);
     if (component.load() != comp) {
         component = comp;
         swofty::log("[ghost] telemetry component 0x%llx", (unsigned long long)comp);
         last_slots.clear();
+        arming.component(comp);
     }
     if (ghost_on)
-        poll_request();
-    if (ghost_on && have_request)
-        arm(comp);
+        game_step(comp);
     if (diag_on) {
         int64_t now = now_ms();
         if (now - last_diag >= int64_t(DIAG_POLL_MS)) {
@@ -463,6 +490,7 @@ void tick_mid(safetyhook::Context &c)
             }
         }
     }
+    busy = false;
 }
 
 int read_hook(void *tlap, void *stream)
@@ -502,7 +530,6 @@ uint64_t newlap_hook(void *comp, void *msg)
     }
     if (!diag_on)
         return r;
-    std::lock_guard<std::mutex> g(lock);
     swofty::log("[ghost] diag: lap recorded for car %u (message flag %u); laps %s", unsigned(car), unsigned(valid), describe(c).c_str());
     for (int i : {1, 3}) {
         uintptr_t tl = tlap_at(c, i);
@@ -522,8 +549,9 @@ void setup()
 {
     auto gate = swofty::json::parse(runtime::read_file(runtime::swofty_root() + L"tt.json", size_t(1) << 20));
     bool wanted = gate.is_object() && gate["tt_ghost"].as_bool(false);
-    diag_on = env_is("SWOFTY_TT_DIAG", "1");
-    ghost_on = wanted && !env_is("SWOFTY_TT_GHOST", "0");
+    bool killed = env_is("SWOFTY_TT_GHOST", "0");
+    diag_on = env_is("SWOFTY_TT_DIAG", "1") && !killed;
+    ghost_on = wanted && !killed;
     record_on = gate.is_object() && gate["tt_boards"].as_bool(false) && !env_is("SWOFTY_LAP_GHOST", "0");
     if (!wanted && !diag_on && !record_on)
         return;
@@ -575,6 +603,10 @@ void setup()
         return;
     }
     h_tick = std::move(*tm);
+    if (ghost_on) {
+        worker_run = true;
+        std::thread(worker).detach();
+    }
     swofty::log("[ghost] %s%s%s; tick hook at base+0x%llx, rival lap %d", ghost_on ? "playback armed (tt.json tt_ghost)" : "playback off",
                 diag_on ? ", diag on (SWOFTY_TT_DIAG)" : "", "", (unsigned long long)(tick - swofty::api->module_base()), slot);
     if (!diag_on)
