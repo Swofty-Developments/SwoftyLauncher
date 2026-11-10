@@ -190,6 +190,10 @@ Guards. They are off. `"tt_guards": true` in `swofty/tt.json` or `SWOFTY_TT_GUAR
 
 `SWOFTY_TT_UPLOAD_GUARD=0`, `SWOFTY_TT_DOWNLOAD_GUARD=0`, `SWOFTY_TT_RACENET_GUARD=0` and `SWOFTY_TT_REQUEST_GUARD=0` turn single guards off. A step whose hook point does not resolve logs `off, needs <name>` and the rest keep running. Each kind of line is logged a few times and then goes quiet.
 
+Online-state gate. In a session without the platform session (the launcher's offline component), the game's own Time Trial requests stop at the checks that open every online method: a missing presence record, the platform state words, the session token. The leaderboard screen then shows the Platform Client Overlay popup and no request reaches the push hook. With the bridge on, for the five Time Trial methods and a request of an addon board or a custom track's board, the core skips those checks at the start of the method, so the request is built and handed to the push hook, which answers it. Other methods and the publisher's boards keep the game's checks. The core logs `[boards] gate <method> armed at base+0x...` per method at arm time and `[boards] gate <method> <board>: online-state checks skipped (would have failed with ...)` per request.
+
+`SWOFTY_TT_DIAG=1` turns on a logging-only mode, with the bridge on or off: each gate with its values and caller (`[boards] diag: online-state gate of ...`), every request pushed to the game's request ring, the board file the game loaded, the account-state error handler with a short backtrace (the popup's trigger) and the ghost handler of the storage system. Nothing changes in that mode.
+
 ## Events
 
 `laps.recorded` fires once the file is in place. `laps.sealing` fires just before, with the file as built so far.
