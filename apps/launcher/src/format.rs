@@ -126,3 +126,36 @@ mod tests {
         assert_eq!(ago(3. * 86_400.), "3 days ago");
     }
 }
+
+/// A lap time from milliseconds: `1:31.234`, or `58.815` under a minute.
+pub fn lap_time(ms: u64) -> String {
+    let (mins, rest) = (ms / 60_000, ms % 60_000);
+    match mins {
+        0 => format!("{}.{:03}", rest / 1000, rest % 1000),
+        _ => format!("{mins}:{:02}.{:03}", rest / 1000, rest % 1000),
+    }
+}
+
+/// A sector time from milliseconds: `29.001`.
+pub fn sector_time(ms: u64) -> String {
+    format!("{}.{:03}", ms / 1000, ms % 1000)
+}
+
+/// The date part of an ISO-8601 timestamp: `2026-11-10`.
+pub fn iso_date(stamp: &str) -> &str {
+    stamp.split('T').next().unwrap_or(stamp)
+}
+
+#[cfg(test)]
+mod lap_tests {
+    use super::*;
+
+    #[test]
+    fn formats_lap_times() {
+        assert_eq!(lap_time(91_234), "1:31.234");
+        assert_eq!(lap_time(58_815), "58.815");
+        assert_eq!(lap_time(60_005), "1:00.005");
+        assert_eq!(sector_time(29_001), "29.001");
+        assert_eq!(iso_date("2026-11-10T04:10:11Z"), "2026-11-10");
+    }
+}
