@@ -63,8 +63,10 @@ These keys are left out when the core could not read them:
 | `performance` | `realistic` or `equal` |
 | `car.team_stat` `car.vehicle_stat` `car.livery_stat` | the game's stat ids of the player's participant |
 | `board.content_name` | the title of the era box the content id names |
+| `board.track_name` | the track's display name from the core's track base |
+| `board.track_addon` `board.track_kind` | on a custom track, the addon id that adds or fills the track and `record` or `older`; left out on a stock track |
 
-`board.weather` is guessed from the track wetness when the lap starts. The core has no read of the Time Trial weather setting. `board.track_name` is not written yet. `board.game_board` is the last board name the game's leaderboard screen requested in the session, written when its weather matches the lap's. `ghost_id` is the base64 of the 0x30-byte id block of the last committed personal best, written on laps that carry a `GHST` section. Both keys are left out when unknown.
+`board.weather` is guessed from the track wetness when the lap starts. The core has no read of the Time Trial weather setting. `board.game_board` is the last board name the game's leaderboard screen requested in the session, written when its weather matches the lap's. `ghost_id` is the base64 of the 0x30-byte id block of the last committed personal best, written on laps that carry a `GHST` section. Both keys are left out when unknown.
 
 The ghost blob is built by the game on a personal best only, after the lap result. A lap's `GHST` section is the blob committed within two seconds of its line crossing, so a lap that is not a personal best has none.
 
@@ -92,6 +94,28 @@ The types are `f32`, `f64`, `i8`, `u8`, `i16`, `u16`, `i32` and `u32`. A field t
 | `surf_fl` `surf_fr` `surf_rl` `surf_rr` | the surface under each wheel (the game's surface id, 255 unknown) |
 | `g_lat` `g_long` | the chassis g signals |
 | `drs` | DRS wing open fraction |
+
+## Custom tracks
+
+A track an addon adds, or a dormant stock row an addon fills, is a custom track. The core reads the session's track code against its track base (`apply::tracks::Base`, filled at boot) and writes `board.track` as:
+
+- a stock track: the code, `bahrain`
+- a custom track, kind `record` or `older`: `<addon id>:<code>`, lowercased, `swofty.tracks:ring`
+
+The key has a colon and never a slash. The game's own season (`game/f1_2025`) and every addon season carry the key. When two rows share a code, the track number of the game's last board name picks the row. A code the base does not list, or a base that is not ready, gives the lowercased code with no `board.track_addon` and `board.track_kind`, and the core logs once:
+
+```
+[laps] track base: no track with this code; the board key is the track code 'ring' (logged once)
+```
+
+```json
+"board": { "content": "game/f1_2025", "track": "swofty.tracks:ring", "weather": "dry", "track_name": "The Ring",
+           "track_addon": "swofty.tracks", "track_kind": "record" }
+```
+
+The mailbox request's `board.track` carries the same key. The core takes the request's track from the board name's track number through the base's stat ids, and from the session's track when the base has no such stat id.
+
+A board is the core's own when its descriptor is 6 or higher or when its track is custom. The request redirect and the guards use that one rule. A request for a stock descriptor on a custom track goes to the mailbox like an addon board, and with guards on a lap on a custom track in the game's own season does not reach the publisher's boards.
 
 ## The integrity module
 
@@ -122,13 +146,13 @@ The core can show addon content on the game's own Time Trial leaderboard screen.
 
 The game names a board `LBV` + the descriptor id (2 digits) + the track (2 digits) + `D` or `W`: `LBV0605D` is descriptor 6, track 5, dry. Descriptors 0 to 5 are the game's own. Descriptors 6 and up are the ids the core assigned to addon boards. The game knows a board only if `system/leaderboard.xml` defines it.
 
-Board definitions. When the game loads `leaderboard.xml` the core appends one copy of a stock `<leaderboard>` element per addon descriptor, per track the stock boards name, per weather. The copies get new `id` and `name` values, ids above every id in the file, and keep the template's other attributes and children. The file's line endings and quoting are kept. The core logs the template element once.
+Board definitions. When the game loads `leaderboard.xml` the core appends one copy of a stock `<leaderboard>` element per addon descriptor, per track the stock boards name and per custom track's stat id, per weather. It also appends the custom tracks' stat ids under every stock descriptor the file uses. A board name the file already defines is not added again, so a custom track on a dormant stock row whose board exists adds nothing under that descriptor. The copies get new `id` and `name` values, ids above every id in the file, and keep the template's other attributes and children. The file's line endings and quoting are kept. The core logs the template element once.
 
 ```
 [boards] bridge on (tt.json tt_bridge); OnResult resolved for all five methods
 [boards] board definitions armed at base+0x30daa2a
 [boards] board definitions: 2918 bytes, template element LBV0001D: <leaderboard id="10" name="LBV0001D" ...
-[boards] board definitions: appended 96 board(s) for 2 addon descriptor(s) over 24 track(s) (ids 41..136, 0 already defined), buffer 2918 -> 41872 bytes
+[boards] board definitions: appended 96 board(s) for 2 addon descriptor(s) over 24 track(s) (ids 41..136, 0 already defined), 12 of them for 2 custom track(s) (all addon descriptors and 1 stock descriptor(s)), buffer 2918 -> 41872 bytes
 ```
 
 Requests. Five methods carry the screen's data: `GetTTLeaderboard`, `GetFriendsTTLeaderboard`, `GetBinaryDataForUser`, `AddLeaderboardEntry`, `UpdateLeaderboardEntryBinaryData`. When one names an addon board the core does not send it. It writes the request to `swofty/tt/outbox/<seq>.json`:
@@ -156,11 +180,12 @@ Personal bests. When the game commits a personal best, the core keeps the 0x30-b
 [boards] personal best committed (time word 0x3f3a1b2c): player id block 0700000000000000 ...
 ```
 
-Guards. They are off. `"tt_guards": true` in `swofty/tt.json` or `SWOFTY_TT_GUARDS=1` turns them on, and the core logs `[boards] guards off: enable with tt_guards after the in-game confirmation` at arm time when they are off. The facts they use are not confirmed in the running game. With guards on, with or without `tt_bridge`, while the session's content is an addon's, the core returns at the entry of the game's remote storage upload, remote storage download and Racenet post. A lap in addon content does not reach the publisher's boards. With the bridge off and guards on, `AddLeaderboardEntry` and `UpdateLeaderboardEntryBinaryData` for an addon board are answered locally with `{"Rank":0}` and `{}`.
+Guards. They are off. `"tt_guards": true` in `swofty/tt.json` or `SWOFTY_TT_GUARDS=1` turns them on, and the core logs `[boards] guards off: enable with tt_guards after the in-game confirmation` at arm time when they are off. The facts they use are not confirmed in the running game. With guards on, with or without `tt_bridge`, while the session's content is an addon's or the session's track is custom, the core returns at the entry of the game's remote storage upload, remote storage download and Racenet post. A lap in addon content or on a custom track does not reach the publisher's boards. With the bridge off and guards on, `AddLeaderboardEntry` and `UpdateLeaderboardEntryBinaryData` for an addon board or a custom track's board are answered locally with `{"Rank":0}` and `{}`.
 
 ```
 [boards] guard: remote storage upload guard armed at base+0x2fa3de0: it returns for addon content
 [boards] guard: remote storage upload skipped for addon content swofty.swofty-2022/f1_2022
+[boards] guard: remote storage upload skipped for a custom track in the game's own content
 ```
 
 `SWOFTY_TT_UPLOAD_GUARD=0`, `SWOFTY_TT_DOWNLOAD_GUARD=0`, `SWOFTY_TT_RACENET_GUARD=0` and `SWOFTY_TT_REQUEST_GUARD=0` turn single guards off. A step whose hook point does not resolve logs `off, needs <name>` and the rest keep running. Each kind of line is logged a few times and then goes quiet.
@@ -194,7 +219,10 @@ The recorder logs one line per lap in `swofty/loader.log`:
 
 ```
 [laps] wrote 20261110T041011Z-3.swlap lap 91234 ms (game), 5474 samples, ghost 0 bytes, board game/f1_2025|bahrain|dry
+[laps] wrote 20261110T041502Z-4.swlap lap 92011 ms (game), 5510 samples, ghost 0 bytes, board game/f1_2025|swofty.tracks:ring|dry, custom track (record from swofty.tracks)
 ```
+
+`[laps] timing started` carries the same board and suffix.
 
 The hooks log as they read:
 
