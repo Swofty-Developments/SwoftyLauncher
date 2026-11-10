@@ -84,6 +84,8 @@ t "Core site names exported (host-only)" native/test/run_core_sites_exported_tes
 t "Garage crew guard unit test" native/test/run_garage_crew_test.sh
 t "Garage crew guard sites export test" native/test/run_garage_crew_sites_test.sh
 t "Leaderboard guard unit test" native/test/run_leaderboard_guard_test.sh
+t "Lap file format unit test" native/test/run_lap_file_test.sh
+t "Lap recorder state machine, field plan and session gate unit test" native/test/run_lap_rec_test.sh
 t "Front-end tile list guard unit test" native/test/run_fe_tile_guard_test.sh
 t "Session enter guard unit test" native/test/run_session_enter_test.sh
 t "AI line set guard unit test" native/test/run_ai_line_set_test.sh

@@ -1,6 +1,11 @@
 #pragma once
 
+#include "lap_file_logic.hpp"
+
+#include <swofty/json.hpp>
+
 #include <cmath>
+#include <cstdio>
 #include <cstdint>
 #include <cstring>
 #include <optional>
@@ -8,6 +13,54 @@
 #include <vector>
 
 namespace runtime::lap_rec {
+
+// Three basis vectors of a body, one per row of c, as read from memory.
+inline bool unit_axes(const float m[3][3])
+{
+    for (int c = 0; c < 3; c++) {
+        float len = m[c][0] * m[c][0] + m[c][1] * m[c][1] + m[c][2] * m[c][2];
+        if (!(len > 0.95f && len < 1.05f))
+            return false;
+    }
+    for (int a = 0; a < 3; a++)
+        for (int b = a + 1; b < 3; b++)
+            if (std::fabs(m[a][0] * m[b][0] + m[a][1] * m[b][1] + m[a][2] * m[b][2]) > 0.05f)
+                return false;
+    return true;
+}
+
+// The matrix whose columns are the three basis vectors, as a unit quaternion (x, y, z, w).
+inline void quaternion_of(const float c[3][3], float q[4])
+{
+    float m00 = c[0][0], m10 = c[0][1], m20 = c[0][2], m01 = c[1][0], m11 = c[1][1], m21 = c[1][2], m02 = c[2][0],
+          m12 = c[2][1], m22 = c[2][2];
+    float tr = m00 + m11 + m22;
+    if (tr > 0) {
+        float s = std::sqrt(tr + 1.0f) * 2;
+        q[3] = 0.25f * s;
+        q[0] = (m21 - m12) / s;
+        q[1] = (m02 - m20) / s;
+        q[2] = (m10 - m01) / s;
+    } else if (m00 > m11 && m00 > m22) {
+        float s = std::sqrt(1.0f + m00 - m11 - m22) * 2;
+        q[3] = (m21 - m12) / s;
+        q[0] = 0.25f * s;
+        q[1] = (m01 + m10) / s;
+        q[2] = (m02 + m20) / s;
+    } else if (m11 > m22) {
+        float s = std::sqrt(1.0f + m11 - m00 - m22) * 2;
+        q[3] = (m02 - m20) / s;
+        q[0] = (m01 + m10) / s;
+        q[1] = 0.25f * s;
+        q[2] = (m12 + m21) / s;
+    } else {
+        float s = std::sqrt(1.0f + m22 - m00 - m11) * 2;
+        q[3] = (m10 - m01) / s;
+        q[0] = (m02 + m20) / s;
+        q[1] = (m12 + m21) / s;
+        q[2] = 0.25f * s;
+    }
+}
 
 enum class State : uint8_t { idle, outlap, timing };
 
@@ -206,5 +259,117 @@ private:
     Frame last_;
     bool have_last_ = false;
 };
+
+enum class Col : uint8_t {
+    t, dist, px, py, pz, vx, vy, vz, throttle, brake, steer, gear, rpm, speed, qx, qy, qz, qw,
+    ws_rl, ws_rr, ws_fl, ws_fr, g_lat, g_long, drs,
+    surf_fl, surf_fr, surf_rl, surf_rr,
+    slip_ang_rl, slip_ang_rr, slip_ang_fl, slip_ang_fr,
+    slip_ratio_rl, slip_ratio_rr, slip_ratio_fl, slip_ratio_fr,
+    count
+};
+
+struct Avail {
+    bool pos = false, vel = false, pedals = false, steer = false, gear = false, rpm = false, speed = false,
+         orient = false, spin = false, g = false, drs = false, surface = false, slip = false;
+};
+
+struct ColumnDef {
+    Col col;
+    const char *name;
+    lap_file::Type type;
+    const char *unit;
+    bool Avail::*needs;
+};
+
+inline constexpr ColumnDef COLUMNS[] = {
+    {Col::t, "t", lap_file::Type::f32, "s", nullptr},
+    {Col::dist, "dist", lap_file::Type::f32, "m", &Avail::pos},
+    {Col::px, "px", lap_file::Type::f32, "m", &Avail::pos},
+    {Col::py, "py", lap_file::Type::f32, "m", &Avail::pos},
+    {Col::pz, "pz", lap_file::Type::f32, "m", &Avail::pos},
+    {Col::vx, "vx", lap_file::Type::f32, "m/s", &Avail::vel},
+    {Col::vy, "vy", lap_file::Type::f32, "m/s", &Avail::vel},
+    {Col::vz, "vz", lap_file::Type::f32, "m/s", &Avail::vel},
+    {Col::throttle, "throttle", lap_file::Type::f32, "", &Avail::pedals},
+    {Col::brake, "brake", lap_file::Type::f32, "", &Avail::pedals},
+    {Col::steer, "steer", lap_file::Type::f32, "", &Avail::steer},
+    {Col::gear, "gear", lap_file::Type::i8, "", &Avail::gear},
+    {Col::rpm, "rpm", lap_file::Type::f32, "rpm", &Avail::rpm},
+    {Col::speed, "speed", lap_file::Type::f32, "km/h", &Avail::speed},
+    {Col::qx, "qx", lap_file::Type::f32, "", &Avail::orient},
+    {Col::qy, "qy", lap_file::Type::f32, "", &Avail::orient},
+    {Col::qz, "qz", lap_file::Type::f32, "", &Avail::orient},
+    {Col::qw, "qw", lap_file::Type::f32, "", &Avail::orient},
+    {Col::ws_rl, "ws_rl", lap_file::Type::f32, "rad/s", &Avail::spin},
+    {Col::ws_rr, "ws_rr", lap_file::Type::f32, "rad/s", &Avail::spin},
+    {Col::ws_fl, "ws_fl", lap_file::Type::f32, "rad/s", &Avail::spin},
+    {Col::ws_fr, "ws_fr", lap_file::Type::f32, "rad/s", &Avail::spin},
+    {Col::g_lat, "g_lat", lap_file::Type::f32, "", &Avail::g},
+    {Col::g_long, "g_long", lap_file::Type::f32, "", &Avail::g},
+    {Col::drs, "drs", lap_file::Type::f32, "", &Avail::drs},
+    {Col::surf_fl, "surf_fl", lap_file::Type::u8, "", &Avail::surface},
+    {Col::surf_fr, "surf_fr", lap_file::Type::u8, "", &Avail::surface},
+    {Col::surf_rl, "surf_rl", lap_file::Type::u8, "", &Avail::surface},
+    {Col::surf_rr, "surf_rr", lap_file::Type::u8, "", &Avail::surface},
+    {Col::slip_ang_rl, "slip_ang_rl", lap_file::Type::f32, "rad", &Avail::slip},
+    {Col::slip_ang_rr, "slip_ang_rr", lap_file::Type::f32, "rad", &Avail::slip},
+    {Col::slip_ang_fl, "slip_ang_fl", lap_file::Type::f32, "rad", &Avail::slip},
+    {Col::slip_ang_fr, "slip_ang_fr", lap_file::Type::f32, "rad", &Avail::slip},
+    {Col::slip_ratio_rl, "slip_ratio_rl", lap_file::Type::f32, "", &Avail::slip},
+    {Col::slip_ratio_rr, "slip_ratio_rr", lap_file::Type::f32, "", &Avail::slip},
+    {Col::slip_ratio_fl, "slip_ratio_fl", lap_file::Type::f32, "", &Avail::slip},
+    {Col::slip_ratio_fr, "slip_ratio_fr", lap_file::Type::f32, "", &Avail::slip},
+};
+
+// The file's field table for the fields that resolved; layout.columns[i] is ids[i]'s column.
+struct Plan {
+    lap_file::Layout layout;
+    std::vector<Col> ids;
+    std::string missing;
+};
+
+inline Plan plan_of(const Avail &a)
+{
+    Plan p;
+    for (auto &c : COLUMNS) {
+        if (c.needs && !(a.*c.needs)) {
+            if (p.missing.find(c.name) == std::string::npos)
+                p.missing += (p.missing.empty() ? "" : " ") + std::string(c.name);
+            continue;
+        }
+        p.layout.add(c.name, c.type, c.unit);
+        p.ids.push_back(c.col);
+    }
+    return p;
+}
+
+struct Gate {
+    bool on = false;
+    std::string nonce;
+};
+
+inline Gate gate_of(const std::string &text)
+{
+    Gate g;
+    swofty::json::Value v = swofty::json::parse(text);
+    if (v.type() != swofty::json::Type::object)
+        return g;
+    g.on = v["tt_boards"].as_bool(false);
+    g.nonce = std::string(v["tt_nonce"].as_string());
+    return g;
+}
+
+inline const char *weather_of(bool known, double wetness)
+{
+    return !known ? "" : wetness >= 0.2 ? "wet" : "dry";
+}
+
+inline std::string file_name(int year, int month, int day, int hour, int minute, int second, uint32_t n)
+{
+    char b[64];
+    std::snprintf(b, sizeof b, "%04d%02d%02dT%02d%02d%02dZ-%u.swlap", year, month, day, hour, minute, second, n);
+    return b;
+}
 
 }

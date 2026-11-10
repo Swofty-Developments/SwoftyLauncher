@@ -43,8 +43,85 @@ struct Drive {
     }
 };
 
+static void orientation()
+{
+    float id[3][3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+    float q[4];
+    lr::quaternion_of(id, q);
+    expect(lr::unit_axes(id) && q[0] == 0 && q[1] == 0 && q[2] == 0 && q[3] == 1, "the identity basis is the identity quaternion");
+    float yaw90[3][3] = {{0, 0, -1}, {0, 1, 0}, {1, 0, 0}};
+    lr::quaternion_of(yaw90, q);
+    expect(std::fabs(q[1] - 0.70710678f) < 1e-5f && std::fabs(q[3] - 0.70710678f) < 1e-5f && std::fabs(q[0]) < 1e-5f &&
+               std::fabs(q[2]) < 1e-5f,
+           "a quarter turn about the up axis is the quaternion (0, sin 45, 0, cos 45)");
+    float flip[3][3] = {{1, 0, 0}, {0, -1, 0}, {0, 0, -1}};
+    lr::quaternion_of(flip, q);
+    expect(std::fabs(q[0] - 1) < 1e-5f && std::fabs(q[3]) < 1e-5f, "a half turn about x takes the largest-diagonal branch");
+    float flip_y[3][3] = {{-1, 0, 0}, {0, 1, 0}, {0, 0, -1}};
+    lr::quaternion_of(flip_y, q);
+    expect(std::fabs(q[1] - 1) < 1e-5f, "a half turn about y");
+    float flip_z[3][3] = {{-1, 0, 0}, {0, -1, 0}, {0, 0, 1}};
+    lr::quaternion_of(flip_z, q);
+    expect(std::fabs(q[2] - 1) < 1e-5f, "a half turn about z");
+    float skew[3][3] = {{1, 0, 0}, {1, 0, 0}, {0, 0, 1}};
+    float zero[3][3] = {};
+    float big[3][3] = {{2, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+    expect(!lr::unit_axes(skew) && !lr::unit_axes(zero) && !lr::unit_axes(big),
+           "axes that are not orthonormal are refused");
+}
+
+static void plans()
+{
+    lr::Avail all;
+    all.pos = all.vel = all.pedals = all.steer = all.gear = all.rpm = all.speed = all.orient = all.spin = all.g = all.drs =
+        all.surface = all.slip = true;
+    lr::Plan full = lr::plan_of(all);
+    expect(full.layout.columns.size() == size_t(lr::Col::count) && full.missing.empty(),
+           "with everything resolved every column is in the table");
+    expect(full.layout.index("t") == 0 && full.layout.index("px") == 2 && full.layout.index("gear") >= 0,
+           "the required fields are present by their contract names");
+    bool required = true;
+    for (const char *n : {"t", "px", "py", "pz", "vx", "vy", "vz", "throttle", "brake", "steer", "gear", "rpm", "speed"})
+        required = required && full.layout.index(n) >= 0;
+    expect(required, "t, px..pz, vx..vz, throttle, brake, steer, gear, rpm and speed are all there");
+    expect(full.layout.columns[size_t(full.layout.index("gear"))].type == runtime::lap_file::Type::i8,
+           "gear is an i8");
+    bool order = true;
+    for (size_t i = 0; i < full.ids.size(); i++)
+        order = order && size_t(full.ids[i]) == i;
+    expect(order, "the column ids follow the table order");
+
+    lr::Avail some;
+    some.pos = some.vel = some.speed = true;
+    lr::Plan part = lr::plan_of(some);
+    expect(part.layout.index("qx") == -1 && part.layout.index("rpm") == -1 && part.layout.index("vx") >= 0,
+           "a field that did not resolve is left out of the table");
+    expect(part.missing.find("rpm") != std::string::npos && part.missing.find("ws_fl") != std::string::npos &&
+               part.missing.find("px") == std::string::npos,
+           "the plan names what is missing");
+    expect(part.ids.size() == part.layout.columns.size(), "ids and columns stay the same length");
+    lr::Plan none = lr::plan_of(lr::Avail{});
+    expect(none.layout.columns.size() == 1 && none.layout.columns[0].name == "t", "the clock column always exists");
+
+    lr::Gate g = lr::gate_of("{\"tt_boards\": true, \"tt_nonce\": \"abc123\", \"native\": []}");
+    expect(g.on && g.nonce == "abc123", "session.json with tt_boards on opens the gate and carries the nonce");
+    g = lr::gate_of("{\"tt_boards\": true}");
+    expect(g.on && g.nonce.empty(), "the nonce is optional");
+    expect(!lr::gate_of("{\"tt_boards\": false, \"tt_nonce\": \"x\"}").on, "tt_boards off keeps the gate shut");
+    expect(!lr::gate_of("{}").on && !lr::gate_of("").on && !lr::gate_of("not json").on && !lr::gate_of("[true]").on,
+           "a missing key, an empty file or garbage keeps the gate shut");
+    expect(!lr::gate_of("{\"tt_boards\": \"yes\"}").on, "only a JSON true opens the gate");
+
+    expect(std::string(lr::weather_of(true, 0.0)) == "dry" && std::string(lr::weather_of(true, 0.8)) == "wet" &&
+               std::string(lr::weather_of(false, 0.8)).empty(),
+           "weather comes from the track wetness and stays unknown when unread");
+    expect(lr::file_name(2026, 11, 10, 4, 10, 11, 3) == "20261110T041011Z-3.swlap", "file names are a UTC stamp and the lap number");
+}
+
 int main()
 {
+    orientation();
+    plans();
     {
         Drive d;
         expect(d.rec.state() == lr::State::idle, "a recorder starts idle");
