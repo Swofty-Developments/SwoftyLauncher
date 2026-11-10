@@ -875,19 +875,13 @@ void handler_watch(uint64_t handler, const std::string &board)
     auto w = [&](uint64_t off) { return unsigned(peek32(handler + off)); };
     uint64_t finder = peek64(handler + 0x508);
     int32_t state = int32_t(w(0x1d8));
-    char t[360];
-    snprintf(t, sizeof t,
-             "entry state %d (0 reading, 1 entry known, 2 entry unusable, 4 no entry), tasks %u/%u/%u/%u, download %u, flags 60..66 %u %u %u %u %u %u %u, pb pending %u, "
-             "pb ms %d, entry ms %d, finder state %d",
-             state, w(0x1d0), w(0x1d4), w(0x130), w(0x134), w(0x138), b(0x60), b(0x61), b(0x62), b(0x63), b(0x64), b(0x65), b(0x66), b(0x65), int(w(0x1b0)), int(w(0x258)),
-             finder ? int(peek32(finder + 0xa0)) : -1);
-    bool ours = false;
+    int finder_state = finder ? int(peek32(finder + 0xa0)) : -1;
     tb::BoardName bn = tb::parse_board(board);
-    ours = bridge_on && bn.ok && tb::ours(bn.descriptor, content_ours());
-    if (ours && state == 4 && !env_off("SWOFTY_TT_EMPTY_BOARD", "treating a board without an entry as a first lap")) {
+    bool ours = bridge_on && bn.ok && tb::ours(bn.descriptor, content_ours());
+    char force[8] = {};
+    bool forced = ours && state == 4 && GetEnvironmentVariableA("SWOFTY_TT_FORCE_EMPTY", force, sizeof force) && force[0] == '1';
+    if (forced) {
         *reinterpret_cast<uint32_t *>(handler + 0x1d8) = 1;
-        swofty::log("[boards] handler 0x%llx board %s: the board has no entry for the player (state 4); treated as a known empty entry (state 1) so the first lap is submitted",
-                    (unsigned long long)handler, board.c_str());
         state = 1;
     }
     std::string blockers;
@@ -895,19 +889,25 @@ void handler_watch(uint64_t handler, const std::string &board)
         if (!ok)
             blockers += std::string(blockers.empty() ? "" : ", ") + what;
     };
+    bool task_out = w(0x1d0) != 0 || w(0x1d4) != 0;
     need(b(0x65) != 0, "no new personal best flagged (+0x65)");
     need(b(0x63) != 0, "+0x63 clear");
     need(state == 1, "entry state is not 1");
     need(w(0x94) == 0 && w(0x98) == 0, "+0x94/+0x98 busy");
     need(w(0x130) == 0 && w(0x134) == 0, "+0x130/+0x134 busy");
-    need(w(0x1d0) == 0 && w(0x1d4) == 0, "a leaderboard task is out (+0x1d0/+0x1d4)");
-    need(b(0x66) == 0, "+0x66 set");
-    need(!finder || peek32(finder + 0xa0) - 2u > 7u, "the rival finder is mid-search");
-    char tt[700];
-    snprintf(tt, sizeof tt, "%s; write blocked by: %s", t, blockers.empty() ? "nothing visible (the presence/session checks and 0x142f91900 are logged separately)" : blockers.c_str());
-    std::string full = tt;
-    if (state != last_state || watch_seen != full) {
-        last_state = state;
+    need(!task_out, "a leaderboard task is out (+0x1d0/+0x1d4)");
+    need(b(0x66) == 0, "+0x66 set (personal best save pending)");
+    need(finder_state - 2 < 0 || finder_state - 2 > 7, "the rival finder is mid-search");
+    char t[640];
+    snprintf(t, sizeof t,
+             "entry state %d (0 reading, 1 entry known, 2 entry unusable, 4 no entry)%s, task out %d, download %u, flags 60..66 %u %u %u %u %u %u %u, memory pb valid +0x288 %u, "
+             "+0x9c %u, +0x31c %u, pb ms %d, remote pb ms +0x300 %d, finder state %d; write blocked by: %s",
+             state, forced ? " (forced by SWOFTY_TT_FORCE_EMPTY=1)" : "", task_out ? 1 : 0, w(0x138), b(0x60), b(0x61), b(0x62), b(0x63), b(0x64), b(0x65), b(0x66), w(0x288), w(0x9c),
+             b(0x31c), int(w(0x1b0)), int(w(0x300)), finder_state, blockers.empty() ? "nothing visible (presence/session checks and 0x142f91900 are logged separately)" : blockers.c_str());
+    std::string full = t;
+    static int watch_logged = 0;
+    if (watch_seen != full && watch_logged < 300) {
+        watch_logged++;
         watch_seen = full;
         swofty::log("[boards] %shandler 0x%llx board %s: %s", diag_on ? "diag: " : "", (unsigned long long)handler, board.c_str(), full.c_str());
     }
