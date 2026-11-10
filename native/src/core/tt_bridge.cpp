@@ -30,7 +30,7 @@ std::string hook_error(const safetyhook::MidHook::Error &e);
 // game; every stage logs one [boards] line saying what it found.
 //
 // 1. Board definitions. The game reads its boards from system\leaderboard.xml (Game_NetworkSession_LoadDefinitions). At
-//    site_Game_LeaderboardXml_Loaded the buffer pointer ([rsp+0x70]) and its byte length (rax, stored to [rsp+0x78] by the hooked instruction) are replaced by a longer
+//    site_Game_LeaderboardXml_Loaded the parser's own copies of the buffer pointer and length ([rsp+0x160], [rsp+0x168], made from the stream's [rsp+0x70] and rax) are replaced by a longer
 //    buffer with one clone of a stock <leaderboard> element per addon descriptor (ids the core assigned, 6..99), per
 //    track the stock boards name, per weather (tt_bridge_logic.hpp extend_xml). Only with "tt_bridge": true in tt.json.
 // 2. Requests. A mid hook at the entry of Game_F1os_RequestRing_Push (rcx = the op) reads the op's method name and
@@ -60,8 +60,9 @@ namespace {
 
 namespace tb = runtime::tt_bridge;
 
-const runtime::Sig S_XML{"site_Game_LeaderboardXml_Loaded", "48 8B 40 58 48 89 44 24 78 48 8B 4C 24 70", 0x30daa2a,
-                         runtime::Sig::addr, 0, 4};
+const runtime::Sig S_XML{"site_Game_LeaderboardXml_Loaded",
+                         "48 89 8C 24 60 01 00 00 48 89 84 24 68 01 00 00 C5 C8 57 F6 C5 F8 11 B4 24 70 01 00 00", 0x30daa44, runtime::Sig::addr, 0, 16};
+const runtime::Sig S_XML_FREE{"site_Game_LeaderboardXml_BufferFreed", "48 8B 54 24 70 48 85 D2 74 09 48 8B 0E 48 8B 01 FF 50 38 48 8B 8C 24 88 00 00 00", 0x30dae60};
 const runtime::Sig S_PUSH{"Game_F1os_RequestRing_Push", "41 57 41 56 56 57 53 48 83 EC 30 4C 89 CF 4C 89 C0 48 89 D6", 0x8293d0};
 const runtime::Sig S_UPLOAD{"Game_GhostLapHandler_StartRemoteStorageUpload", "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 04 00 00 48 89 D7 48 89",
                             0x2fa3de0};
@@ -263,11 +264,17 @@ void xml_mid(safetyhook::Context &c)
 {
     if (!bridge_on && !diag_on)
         return;
-    uint64_t len = c.rax, data = 0;
-    uint64_t at_data = c.rsp + 0x70;
-    if (!runtime::readable(reinterpret_cast<void *>(at_data), 8))
+    uint64_t len = 0, data = 0;
+    uint64_t at_data = c.rsp + 0x160, at_len = c.rsp + 0x168;
+    if (!runtime::readable(reinterpret_cast<void *>(at_data), 16))
         return;
     memcpy(&data, reinterpret_cast<void *>(at_data), 8);
+    memcpy(&len, reinterpret_cast<void *>(at_len), 8);
+    if (len != c.rax || data != c.rcx) {
+        swofty::log("[boards] board definitions: the parser's copy of the buffer (data 0x%llx, length %llu) does not match the loaded one (rcx 0x%llx, rax %llu); left alone",
+                    (unsigned long long)data, (unsigned long long)len, (unsigned long long)c.rcx, (unsigned long long)c.rax);
+        return;
+    }
     if (!bridge_on) {
         size_t boards = 0;
         std::string first;
@@ -328,7 +335,7 @@ void xml_mid(safetyhook::Context &c)
     uint64_t new_len = keep.size();
     uint64_t new_data = reinterpret_cast<uint64_t>(keep.c_str());
     memcpy(reinterpret_cast<void *>(at_data), &new_data, 8);
-    c.rax = new_len;
+    memcpy(reinterpret_cast<void *>(at_len), &new_len, 8);
     swofty::log("[boards] board definitions: appended %zu board(s) for %zu addon descriptor(s) over %zu track(s) (ids %lld..%lld, %zu already "
                 "defined%s), %zu of them for %zu custom track(s) (all addon descriptors and %zu stock descriptor(s)), buffer %zu -> %zu bytes",
                 rep.added, rep.descriptors, rep.tracks, (long long)rep.first_id, (long long)rep.last_id, rep.existing,
@@ -789,7 +796,10 @@ void setup()
         swofty::log("[boards] board definitions: off (SWOFTY_TT_BOARD_XML=0)");
     } else if (bridge_on || diag_on) {
         uintptr_t xml = runtime::find(S_XML, "boards", "boards");
-        if (!xml)
+        if (xml && !runtime::find(S_XML_FREE, "boards", "boards")) {
+            swofty::log("[boards] board definitions: off, the buffer's free site (%s) was not found, so the game's own buffer stays", S_XML_FREE.what);
+            xml = 0;
+        } else if (!xml)
             swofty::log("[boards] board definitions: off, needs %s (byte signature matched nothing unique)", S_XML.what);
         else if (hook_mid(h_xml, xml, xml_mid, "board definitions"))
             swofty::log("[boards] board definitions armed at base+0x%llx", (unsigned long long)(xml - swofty::api->module_base()));
