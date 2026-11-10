@@ -300,6 +300,8 @@ void lap_rec_setup();
 void lap_rec_tick();
 void lap_rec_session_enter();
 void lap_rec_session_end();
+void tt_bridge_tick();
+bool tt_bridge_ghost_id(uint8_t out[48]);
 void lap_rec_newlap(int car);
 bool telemetry_wants_udp();
 void telemetry_udp(const uint8_t *buf, size_t len);

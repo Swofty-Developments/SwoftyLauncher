@@ -79,6 +79,7 @@ void flow_mid(safetyhook::Context &)
     runtime::career_tick();
     runtime::telemetry_tick();
     runtime::lap_rec_tick();
+    runtime::tt_bridge_tick();
     runtime::popup_tick();
     runtime::mfd_tick();
     runtime::netplay_tick();
