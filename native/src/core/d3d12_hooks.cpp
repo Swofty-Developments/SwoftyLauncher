@@ -162,6 +162,51 @@ HRESULT STDMETHODCALLTYPE create_comp_hook(IDXGIFactory2 *f, IUnknown *dev, cons
     return hr;
 }
 
+bool learn(IDXGISwapChain3 *sc, void *caller, const std::string &pfg, Swapchain &out)
+{
+    static void *refused;
+    if (sc == refused)
+        return false;
+    ID3D12CommandQueue *q = nullptr;
+    if (FAILED(sc->GetDevice(IID_PPV_ARGS(&q))) || !q) {
+        refused = sc;
+        swofty::log("[d3d12] swapchain %p was made before the creation hooks and does not name a D3D12 command queue; "
+                    "ignored",
+                    static_cast<void *>(sc));
+        return false;
+    }
+    D3D12_COMMAND_QUEUE_DESC qd = q->GetDesc();
+    q->Release();
+    std::string by = module_of(caller);
+    out = Swapchain();
+    out.sc = sc;
+    out.queue = q;
+    out.how = "IDXGISwapChain::GetDevice at Present";
+    out.by = by;
+    out.fg = hud::guard::learned_fg(qd.Type == D3D12_COMMAND_LIST_TYPE_DIRECT, pfg);
+    out.streamline = hud::guard::streamline_caller(by);
+    {
+        std::lock_guard<std::mutex> g(lock);
+        auto pend = std::find_if(pending_color_space.begin(), pending_color_space.end(),
+                                 [&](const std::pair<void *, UINT> &x) { return x.first == sc; });
+        if (pend != pending_color_space.end()) {
+            out.color_space = pend->second;
+            out.color_space_set = true;
+            pending_color_space.erase(pend);
+        }
+        auto it = std::find_if(chains.begin(), chains.end(), [&](const Swapchain &x) { return x.sc == sc; });
+        if (it != chains.end())
+            *it = out;
+        else
+            chains.push_back(out);
+    }
+    swofty::log("[d3d12] swapchain %p was made before the creation hooks; its queue %p (type %d) is read from the "
+                "swapchain; presented from %s%s",
+                static_cast<void *>(sc), static_cast<void *>(q), int(qd.Type), by.c_str(),
+                out.streamline ? "; through Streamline" : "");
+    return true;
+}
+
 std::string fg_caller(void *caller)
 {
     static void *last;
@@ -229,6 +274,8 @@ HRESULT STDMETHODCALLTYPE present_hook(IDXGISwapChain3 *sc, UINT sync, UINT flag
                 known = true;
             }
         }
+        if (!known)
+            known = learn(sc, caller, pfg, c);
         for (int i = 0, n = presents.n.load(); i < n; i++)
             presents.fns[i](sc, known ? &c : nullptr, caller);
         in_present.store(false);
