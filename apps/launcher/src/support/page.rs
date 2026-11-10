@@ -15,7 +15,8 @@ use crate::theme::{Palette, ScrollArea};
 use crate::time_trial::Load;
 use crate::ui::Overlay;
 
-const LIST_WIDTH: f32 = 300.;
+const LIST_WIDTH: f32 = 470.;
+const YELLOW: u32 = 0xffc933;
 const PINK: u32 = 0xff5fa2;
 const HOT_PINK: u32 = 0xff2d95;
 const PURPLE: u32 = 0x9b30ff;
@@ -274,7 +275,7 @@ impl Shell {
                     .flex_1()
                     .min_h_0()
                     .scroll_y("support-list")
-                    .child(v_flex().children(rows)),
+                    .child(h_flex().flex_wrap().items_start().pr(px(8.)).children(rows)),
             )
             .into_any_element()
     }
@@ -282,7 +283,7 @@ impl Shell {
     fn supporter_row(&self, i: usize, s: &Supporter, p: Palette) -> AnyElement {
         let name = match (&s.display.name, s.display.anonymous) {
             (Some(n), false) => n.clone(),
-            _ => tr("Anonymous Supporter").to_owned(),
+            _ => tr("Anonymous").to_owned(),
         };
         let face = match (&s.display.name, s.display.anonymous) {
             (Some(n), false) => self.face(n, s.display.avatar_url.as_deref(), 36., p),
@@ -301,10 +302,11 @@ impl Shell {
         let bio = s.bio.clone().filter(|b| !b.trim().is_empty());
         h_flex()
             .id(SharedString::from(format!("supporter-{i}")))
-            .py(px(9.))
+            .w(relative(0.5))
+            .py(px(8.))
+            .pr(px(8.))
             .gap(px(10.))
             .items_center()
-            .when(i > 0, |d| d.border_t_1().border_color(p.border_variant))
             .child(face)
             .child(
                 v_flex()
@@ -349,36 +351,45 @@ impl Shell {
             Load::Failed(e) => muted(e.clone(), p).into_any_element(),
             Load::Ready(g) => goal_body(g, p).into_any_element(),
         };
-        let tiers = h_flex()
-            .gap(px(12.))
-            .flex_wrap()
-            .child(self.tier_pill(Kind::Supporter, "$5", false, busy, p, cx))
-            .child(self.tier_pill(Kind::SupporterPlus, "$20", true, busy, p, cx));
         let typed = amount.read(cx).value().to_string();
-        let onetime = section()
-            .child(heading(tr("One Time Donation")))
-            .child(muted(
-                tr("One time donations convert to whole months of a tier"),
-                p,
-            ))
+        let column = || v_flex().items_center().gap(px(8.));
+        let onetime = column()
             .child(
-                h_flex()
-                    .gap(px(8.))
-                    .child(
-                        div()
-                            .w(px(260.))
-                            .child(Input::new(&amount).prefix(div().text_color(p.text_muted).child("$"))),
-                    )
-                    .child(
-                        Button::new("support-onetime")
-                            .primary()
-                            .label(tr("Donate"))
-                            .disabled(busy)
-                            .on_click(cx.listener(move |this, _, _, cx| {
-                                this.support_checkout(Kind::OneTime, Some(typed.clone()), cx)
-                            })),
-                    ),
+                div()
+                    .id("support-onetime")
+                    .flex()
+                    .items_center()
+                    .h(px(46.))
+                    .px(px(22.))
+                    .rounded_full()
+                    .bg(rgb(YELLOW))
+                    .text_color(rgb(0x1a1400))
+                    .text_size(px(15.))
+                    .font_weight(FontWeight::EXTRA_BOLD)
+                    .when(busy, |d| d.opacity(0.6))
+                    .when(!busy, |d| d.cursor_pointer().hover(|d| d.opacity(0.9)))
+                    .child(tr("ONE TIME"))
+                    .on_click(cx.listener(move |this, _, _, cx| {
+                        this.support_checkout(Kind::OneTime, Some(typed.clone()), cx)
+                    })),
+            )
+            .child(muted(tr("Converts to whole months of a tier"), p))
+            .child(
+                div().w(px(200.)).child(
+                    Input::new(&amount)
+                        .small()
+                        .prefix(div().text_color(p.text_muted).child("$")),
+                ),
             );
+        let tiers = h_flex()
+            .w_full()
+            .justify_center()
+            .items_start()
+            .gap(px(16.))
+            .flex_wrap()
+            .child(column().child(self.tier_pill(Kind::Supporter, "$5", false, busy, p, cx)))
+            .child(column().child(self.tier_pill(Kind::SupporterPlus, "$20", true, busy, p, cx)))
+            .child(onetime);
         let status = self.support_status(bio, p, cx);
         let perks = section().child(heading(tr("What you get"))).children(
             [
@@ -424,7 +435,6 @@ impl Shell {
                     .child(goal)
                     .children(status)
                     .child(tiers)
-                    .child(onetime)
                     .children(notice)
                     .child(perks)
                     .child(h_flex().child(fallback)),
@@ -662,22 +672,12 @@ fn goal_body(g: &Goal, p: Palette) -> Div {
                 .font_weight(FontWeight::BOLD)
                 .child(tr("What it pays for")),
         )
-        .child(
+        .child(v_flex().gap(px(6.)).children(g.costs.iter().map(|c| {
             h_flex()
                 .gap(px(10.))
-                .flex_wrap()
-                .children(g.costs.iter().map(|c| {
-                    h_flex()
-                        .gap(px(8.))
-                        .items_center()
-                        .px(px(16.))
-                        .py(px(10.))
-                        .rounded_full()
-                        .bg(p.surface)
-                        .text_size(px(15.))
-                        .font_weight(FontWeight::SEMIBOLD)
-                        .child(div().size(px(8.)).rounded_full().bg(gradient()))
-                        .child(c.clone())
-                })),
-        )
+                .items_center()
+                .text_size(px(15.))
+                .child(div().size(px(6.)).rounded_full().bg(rgb(PINK)))
+                .child(c.clone())
+        })))
 }

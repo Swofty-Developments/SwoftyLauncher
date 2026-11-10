@@ -65,7 +65,7 @@ impl Shell {
                 cx.new(|cx| InputState::new(window, cx).placeholder(tr(hint)))
             };
             let bio = make("One sentence about you (shown next to your name)", window, cx);
-            let amount = make("Amount in dollars, e.g. 20", window, cx);
+            let amount = make("Amount, e.g. 20", window, cx);
             let email = make("Email used on Stripe", window, cx);
             let payment = make("Invoice or payment ID", window, cx);
             let subs = [&bio, &amount, &email, &payment]
