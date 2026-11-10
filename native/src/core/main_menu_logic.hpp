@@ -69,6 +69,7 @@ constexpr const char *SHOWROOM_ROUTE = "swofty_showroom";
 constexpr const char *HOME_BACK_ROUTE = "swofty_home";
 
 constexpr uint32_t WATCH_KEY_VK = 0x56;
+constexpr double PANEL_BUDGET_MS = 4.0;
 
 constexpr uint32_t djb2(const char *s)
 {
@@ -226,6 +227,13 @@ inline std::string watch_line(const std::string &button)
 {
     return "Press " + button + " to watch";
 }
+
+inline bool panel_due(bool patched, bool home_open, bool loaded, bool disabled, bool prepared)
+{
+    return patched && home_open && loaded && prepared && !disabled;
+}
+
+inline bool panel_too_slow(double draw_ms) { return draw_ms > PANEL_BUDGET_MS; }
 
 inline bool time_trial_warning_due(const State &s, bool is_time_trial, bool already_shown)
 {

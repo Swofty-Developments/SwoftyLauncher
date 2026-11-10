@@ -12,6 +12,7 @@
 #include <map>
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 #include <mutex>
 #include <utility>
 #include <string>
@@ -73,7 +74,20 @@ std::atomic<bool> tt_warned{false};
 std::atomic<int> rows_flag{-1}, menu_flag{-1};
 std::atomic<int> via{0};
 std::atomic<uint64_t> swap_at{0};
-std::atomic<bool> state_loaded{false};
+std::mutex swap_lock;
+std::string swap_screens;
+bool swap_reported = true;
+std::atomic<bool> state_loaded{false}, panel_disabled{false}, panel_prepared{false}, bind_pad{false};
+
+struct Prepared {
+    logic::State s;
+    int avatar_slot = -1, video_slot = -1;
+    std::string version, discord, watch;
+};
+std::mutex prepared_lock;
+std::shared_ptr<const Prepared> prepared;
+uint64_t prepared_at = 0;
+std::string prepared_key;
 std::atomic<int> strip_wanted{-1}, strip_set{-1};
 void *theatre_populate = nullptr, *theatre_action = nullptr;
 std::mutex state_lock;
@@ -323,6 +337,11 @@ void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4)
             NeStr *replacement = nullptr;
             Ne_Make_StrFromCStr(&replacement, to, 0, 0);
             swofty::log("[main-menu] back: route %s replaced by %s so it returns to the main menu", text, to);
+            {
+                std::lock_guard<std::mutex> g(swap_lock);
+                swap_screens.clear();
+                swap_reported = false;
+            }
             swap_at = GetTickCount64();
             h_fire.call<void>(router, vm, &replacement, a4);
             Ne_Make_StrFromCStr(&replacement, nullptr, 0, 0);
@@ -540,12 +559,12 @@ bool enabled()
 
 bool drawing()
 {
-    return patched.load() && home_open.load() && state_loaded.load();
+    return logic::panel_due(patched.load(), home_open.load(), state_loaded.load(), panel_disabled.load(), panel_prepared.load());
 }
 
 bool wants_overlay()
 {
-    if (!std::strcmp(env("SWOFTY_MAIN_MENU"), "0"))
+    if (!std::strcmp(env("SWOFTY_MAIN_MENU"), "0") || !std::strcmp(env("SWOFTY_MAIN_MENU_PANEL"), "0"))
         return false;
     return !runtime::read_file(runtime::under_swofty("home_menu.json"), size_t(1) << 20).empty();
 }
@@ -604,10 +623,26 @@ void style_settings(void *item)
         style_item(static_cast<HomeItem *>(item));
 }
 
+void prepare();
+void poll_bind();
+
 void tick()
 {
-    if (home_open.load())
+    if (uint64_t at = swap_at.load(); at && GetTickCount64() - at > 1000) {
+        std::lock_guard<std::mutex> g(swap_lock);
+        if (!swap_reported) {
+            swap_reported = true;
+            swofty::log("[main-menu] back: 1 s after the route swap the screens opened since were: %s; fe_home %s",
+                        swap_screens.empty() ? "(none)" : swap_screens.c_str(), home_open.load() ? "is the last front-end screen opened" : "is NOT the last front-end screen opened");
+        }
+    }
+    if (home_open.load()) {
         read_state();
+        if (patched.load() && !panel_disabled.load() && std::strcmp(env("SWOFTY_MAIN_MENU_PANEL"), "0") != 0) {
+            prepare();
+            poll_bind();
+        }
+    }
     int want = strip_wanted.load();
     if (want >= 0 && want != strip_set.load() && patched.load()) {
         int v = want;
@@ -647,8 +682,12 @@ void screen(const char *name)
     if (!name)
         return;
     if (uint64_t at = swap_at.load(); at && GetTickCount64() - at < 5000)
+    {
         swofty::log("[main-menu] back: screen %s opened %llu ms after the route swap", name,
                     (unsigned long long)(GetTickCount64() - at));
+        std::lock_guard<std::mutex> g(swap_lock);
+        swap_screens += (swap_screens.empty() ? "" : ", ") + std::string(name);
+    }
     {
         std::lock_guard<std::mutex> g(chain_lock);
         uint64_t now = GetTickCount64();
@@ -663,7 +702,7 @@ void screen(const char *name)
         bool home = !std::strcmp(name, "fe_home");
         home_open = home;
         if (home && via.exchange(0))
-            swofty::log("[main-menu] back at the main menu; back-to-menu disarmed");
+            swofty::log("[main-menu] fe_home screen opened; back-to-menu disarmed (a screen-open event, not proof it is the visible screen)");
         strip_wanted = home ? 0 : 1;
         if (home) {
             read_state(true);
@@ -700,34 +739,79 @@ void command(void *, uint32_t command_hash, uint32_t focused_hash)
                 r == 0 ? "queued" : "refused");
 }
 
-void paint(hud::Frame &f, uint64_t now)
+void prepare()
 {
-    (void)now;
-    static bool told_blocked = false, told_drawn = false;
-    if (!patched.load() || !home_open.load()) {
-        if (!told_blocked && home_open.load()) {
-            told_blocked = true;
-            swofty::log("[main-menu] panel: not drawn, the tile patch is not armed");
-        }
-        return;
-    }
-    read_state();
+    uint64_t now = GetTickCount64();
     logic::State s;
     {
         std::lock_guard<std::mutex> g(state_lock);
         s = state;
     }
-    if (!s.loaded) {
-        static bool told = false;
-        if (!std::exchange(told, true))
-            swofty::log("[main-menu] panel: not drawn, swofty/home_menu.json did not load");
+    if (!s.loaded)
         return;
+    std::string key = s.version + "|" + s.avatar + "|" + s.video_thumbnail + "|" + (s.signed_in ? "1" : "0") + "|" + s.name;
+    if (key == prepared_key && now - prepared_at < 60000)
+        return;
+    prepared_key = key;
+    prepared_at = now;
+    auto p = std::make_shared<Prepared>();
+    p->s = s;
+    uint32_t w = 0, h = 0;
+    if (logic::has_avatar(s))
+        p->avatar_slot = runtime::overlay_image("core.main_menu\navatar", host_path(s.avatar), &w, &h);
+    if (logic::has_video(s))
+        p->video_slot = runtime::overlay_image("core.main_menu\nvideo", host_path(s.video_thumbnail), &w, &h);
+    p->version = logic::version_line(s);
+    p->discord = logic::discord_line(s);
+    {
+        std::lock_guard<std::mutex> g(prepared_lock);
+        prepared = p;
     }
+    panel_prepared = true;
+    swofty::log("[main-menu] panel prepared on the flow thread: avatar slot %d, video slot %d", p->avatar_slot, p->video_slot);
+}
+
+void poll_bind()
+{
+    static uint64_t last = 0;
+    uint64_t now = GetTickCount64();
+    if (now - last < 100)
+        return;
+    last = now;
+    std::shared_ptr<const Prepared> p;
+    {
+        std::lock_guard<std::mutex> g(prepared_lock);
+        p = prepared;
+    }
+    if (!p || p->video_slot < 0)
+        return;
+    bool on_pad = false;
+    bool pressed = bind_pressed(&on_pad);
+    bind_pad = on_pad;
+    if (pressed)
+        open_video(p->s);
+}
+
+void paint(hud::Frame &f, uint64_t now)
+{
+    (void)now;
+    if (!drawing())
+        return;
+    std::shared_ptr<const Prepared> p;
+    {
+        std::lock_guard<std::mutex> g(prepared_lock);
+        p = prepared;
+    }
+    if (!p)
+        return;
+    LARGE_INTEGER t0, t1, freq;
+    QueryPerformanceCounter(&t0);
+    static bool told_drawn = false;
     hud::reset_state(f);
     float W = f.width, H = f.height, u = H / 1080.0f;
     if (!std::exchange(told_drawn, true))
         swofty::log("[main-menu] panel: first draw on a %.0fx%.0f frame; video card %s, avatar %s", double(W), double(H),
-                    logic::has_video(s) ? "yes" : "no", logic::has_avatar(s) ? "yes" : "no");
+                    p->video_slot >= 0 ? "yes" : "no", p->avatar_slot >= 0 ? "yes" : "no");
     float pad = 28 * u, bar = 64 * u, cw = 460 * u;
     hud::TextStyle line;
     line.px = 26 * u;
@@ -735,36 +819,29 @@ void paint(hud::Frame &f, uint64_t now)
     float x = W - pad - cw, y = pad;
     hud::rect_rounded(f, x - 14 * u, y - 10 * u, cw + 28 * u, bar + 14 * u, 8 * u, 0x0b0d12f2);
     float tx = x;
-    if (logic::has_avatar(s)) {
-        uint32_t w = 0, h = 0;
-        int slot = runtime::overlay_image("core.main_menu\navatar", host_path(s.avatar), &w, &h);
-        if (slot >= 0) {
-            hud::image(f, slot, x, y, bar, bar, 0xffffffff);
-            tx = x + bar + 14 * u;
-        }
+    if (p->avatar_slot >= 0) {
+        hud::image(f, p->avatar_slot, x, y, bar, bar, 0xffffffff);
+        tx = x + bar + 14 * u;
     }
-    hud::text(f, tx, y + 4 * u, line, logic::version_line(s));
-    line.rgba = s.signed_in ? 0x8fd694ff : 0xa3a8b7ff;
+    hud::text(f, tx, y + 4 * u, line, p->version);
+    line.rgba = p->s.signed_in ? 0x8fd694ff : 0xa3a8b7ff;
     line.px = 22 * u;
-    hud::text(f, tx, y + 4 * u + 30 * u, line, logic::discord_line(s));
-
-    if (!logic::has_video(s))
-        return;
-    float vw = 400 * u, vh = vw * 9.0f / 16.0f;
-    float vx = W - pad - vw, vy = H - 190 * u - vh - 34 * u;
-    uint32_t w = 0, h = 0;
-    int slot = runtime::overlay_image("core.main_menu\nvideo", host_path(s.video_thumbnail), &w, &h);
-    if (slot < 0)
-        return;
-    hud::image(f, slot, vx, vy, vw, vh, 0xffffffff);
-    hud::TextStyle cap;
-    cap.px = 22 * u;
-    cap.rgba = 0xe9ecf3ff;
-    bool on_pad = false;
-    bool pressed = bind_pressed(&on_pad);
-    hud::text(f, vx, vy + vh + 8 * u, cap, logic::watch_line(logic::button_name(on_pad)));
-    if (pressed)
-        open_video(s);
+    hud::text(f, tx, y + 4 * u + 30 * u, line, p->discord);
+    if (p->video_slot >= 0) {
+        float vw = 400 * u, vh = vw * 9.0f / 16.0f;
+        float vx = W - pad - vw, vy = H - 190 * u - vh - 34 * u;
+        hud::image(f, p->video_slot, vx, vy, vw, vh, 0xffffffff);
+        hud::TextStyle cap;
+        cap.px = 22 * u;
+        cap.rgba = 0xe9ecf3ff;
+        hud::text(f, vx, vy + vh + 8 * u, cap, logic::watch_line(logic::button_name(bind_pad.load())));
+    }
+    QueryPerformanceCounter(&t1);
+    QueryPerformanceFrequency(&freq);
+    double ms = double(t1.QuadPart - t0.QuadPart) * 1000.0 / double(freq.QuadPart);
+    if (logic::panel_too_slow(ms) && !panel_disabled.exchange(true))
+        swofty::log("[main-menu] panel: one draw took %.2f ms (budget %.1f ms); the panel is disabled for this session", ms,
+                    logic::PANEL_BUDGET_MS);
 }
 
 }

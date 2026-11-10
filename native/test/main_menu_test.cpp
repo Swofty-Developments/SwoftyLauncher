@@ -78,6 +78,12 @@ int main()
            "the Launched with panel text gains the online line");
     expect(mm::parse_state(R"({"schema":1,"online":321,"discord":{}})").online == 321 && mm::parse_state(R"({"schema":1,"discord":{}})").online == 0,
            "the state file's online field");
+    expect(mm::panel_due(true, true, true, false, true), "the panel is due on the open home screen once prepared");
+    expect(!mm::panel_due(false, true, true, false, true) && !mm::panel_due(true, false, true, false, true) &&
+               !mm::panel_due(true, true, false, false, true) && !mm::panel_due(true, true, true, true, true) &&
+               !mm::panel_due(true, true, true, false, false),
+           "the panel is not due before the tile patch, off the home screen, without a state file, after it disabled itself, or before it is prepared");
+    expect(!mm::panel_too_slow(1.0) && !mm::panel_too_slow(4.0) && mm::panel_too_slow(4.1), "the draw budget is a few ms");
     expect(std::string(mm::TT_BODY).find("will not be saved") != std::string::npos && std::string(mm::TT_BODY).find("OK to continue") != std::string::npos,
            "the warning says laps are not saved and that OK continues");
     auto out = mm::parse_state(R"({"schema":1,"launcher_version":"1.8.37","discord":{"signed_in":false,"name":""}})");

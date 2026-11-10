@@ -2275,37 +2275,49 @@ int overlay_image(const std::string &id, const std::string &path, uint32_t *widt
 {
     static std::mutex failed_lock;
     static std::vector<std::string> failed;
-    std::lock_guard<std::mutex> g(reg_lock);
-    int slot = reg.find_image(id);
-    const hud::Image *im = slot >= 0 ? reg.image(slot) : nullptr;
     std::string key = id + "|" + path;
-    if (!im || im->generation == 0) {
-        {
-            std::lock_guard<std::mutex> f(failed_lock);
-            if (std::find(failed.begin(), failed.end(), key) != failed.end())
-                return -1;
+    {
+        std::lock_guard<std::mutex> g(reg_lock);
+        int slot = reg.find_image(id);
+        const hud::Image *im = slot >= 0 ? reg.image(slot) : nullptr;
+        if (im && im->generation > 0 && im->source == key) {
+            if (width)
+                *width = im->width;
+            if (height)
+                *height = im->height;
+            return slot;
         }
-        std::string why;
-        hud::img::Pixels px;
-        std::wstring wpath = path.rfind("swofty:", 0) == 0 ? runtime::under_swofty(path.substr(7)) : runtime::wide(path);
-        std::string data = runtime::read_file(wpath, size_t(8) << 20);
-        if (data.empty() || !hud::img::decode(data, px, why)) {
-            swofty::log("[overlay] main menu image %s: %s", path.c_str(), data.empty() ? "unreadable" : why.c_str());
-            std::lock_guard<std::mutex> f(failed_lock);
-            failed.push_back(key);
-            return -1;
-        }
-        slot = reg.set_image(id, px.width, px.height, std::move(px.rgba));
-        if (slot + 1 >= int(TEX_MAX))
-            return -1;
-        swofty::log("[overlay] main menu image %s (%ux%u) loaded (slot %d)", path.c_str(), px.width, px.height, slot);
     }
-    if (const hud::Image *shown = reg.image(slot)) {
-        if (width)
-            *width = shown->width;
-        if (height)
-            *height = shown->height;
+    {
+        std::lock_guard<std::mutex> f(failed_lock);
+        if (std::find(failed.begin(), failed.end(), key) != failed.end())
+            return -1;
     }
+    std::string why;
+    hud::img::Pixels px;
+    std::wstring wpath = path.rfind("swofty:", 0) == 0 ? runtime::under_swofty(path.substr(7)) : runtime::wide(path);
+    std::string data = runtime::read_file(wpath, size_t(8) << 20);
+    if (data.empty() || !hud::img::decode(data, px, why)) {
+        swofty::log("[overlay] main menu image %s: %s", path.c_str(), data.empty() ? "unreadable" : why.c_str());
+        std::lock_guard<std::mutex> f(failed_lock);
+        failed.push_back(key);
+        return -1;
+    }
+    uint32_t w = px.width, h = px.height;
+    int slot;
+    {
+        std::lock_guard<std::mutex> g(reg_lock);
+        slot = reg.set_image(id, w, h, std::move(px.rgba));
+        if (slot >= 0)
+            reg.set_source(slot, key);
+    }
+    if (slot + 1 >= int(TEX_MAX))
+        return -1;
+    swofty::log("[overlay] main menu image %s (%ux%u) loaded (slot %d)", path.c_str(), w, h, slot);
+    if (width)
+        *width = w;
+    if (height)
+        *height = h;
     return slot;
 }
 
