@@ -783,7 +783,11 @@ void setup()
                 swofty::log("[boards] diag: storage system onSessionEnter hooked at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
     }
 
-    if (bridge_on || diag_on) {
+    char xv[8] = {};
+    DWORD xn = GetEnvironmentVariableA("SWOFTY_TT_BOARD_XML", xv, sizeof xv);
+    if (xn && xv[0] == '0') {
+        swofty::log("[boards] board definitions: off (SWOFTY_TT_BOARD_XML=0)");
+    } else if (bridge_on || diag_on) {
         uintptr_t xml = runtime::find(S_XML, "boards", "boards");
         if (!xml)
             swofty::log("[boards] board definitions: off, needs %s (byte signature matched nothing unique)", S_XML.what);
