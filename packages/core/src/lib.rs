@@ -28,6 +28,7 @@ pub mod fast_fail;
 pub mod folders;
 pub mod heads;
 pub mod helper;
+pub mod home_menu;
 pub mod import;
 pub mod install;
 pub mod journal;

@@ -217,9 +217,13 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
         .as_ref()
         .map(|_| Follower::from_end(wrapper.log.clone()));
     let mut follow = Follow::new(&dir, Some((loader, before)), symbols(&game, args.exe.as_deref()));
+    swofty_core::home_menu::publish(&store.root, &game, env!("CARGO_PKG_VERSION"));
     install_ctrl_c();
     let mut quiet = false;
     while !dir.join("exit_code").exists() {
+        if let Some(url) = swofty_core::home_menu::take_open_request(&game) {
+            open_in_browser(&url);
+        }
         if stop_requested() {
             if wrapper.child.is_none() {
                 say("info", "stopped following (the game keeps running)");
@@ -272,6 +276,14 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
 
 const LEFT: &str = "left without waiting; the next swofty run or launcher start rolls the game files back";
 const SETTLE_TIMEOUT: Duration = Duration::from_secs(600);
+
+fn open_in_browser(url: &str) {
+    let opener = if cfg!(windows) { "explorer" } else { "xdg-open" };
+    match Command::new(opener).arg(url).stdout(Stdio::null()).stderr(Stdio::null()).spawn() {
+        Ok(_) => say("info", &format!("opened {url} in the browser")),
+        Err(e) => say("warning", &format!("could not open {url}: {e}")),
+    }
+}
 
 fn info(line: &str) {
     say("info", line);
