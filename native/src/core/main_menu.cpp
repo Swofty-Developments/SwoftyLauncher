@@ -956,6 +956,70 @@ void poll_bind()
         open_video(p->s);
 }
 
+void image_rounded(hud::Frame &f, int slot, float x, float y, float w, float h, float r, float u0, float v0, float u1, float v1)
+{
+    if (slot < 0 || w <= 0 || h <= 0 || hud::clipped_out(f))
+        return;
+    std::vector<hud::Pt> pts;
+    hud::rounded_local(pts, x, y, w, h, r, f.xform.scale());
+    if (pts.size() < 3 || !hud::reserve(f, pts.size() * 3, slot + 1))
+        return;
+    uint32_t col = hud::pack(0xffffffff, f.opacity);
+    auto uv = [&](const hud::Pt &p, float *u, float *v) {
+        *u = u0 + (p.x - x) / w * (u1 - u0);
+        *v = v0 + (p.y - y) / h * (v1 - v0);
+    };
+    hud::Pt c{x + w * 0.5f, y + h * 0.5f};
+    for (size_t i = 0; i < pts.size(); i++) {
+        const hud::Pt &a = pts[i], &b = pts[(i + 1) % pts.size()];
+        float cu, cv, au, av, bu, bv;
+        uv(c, &cu, &cv);
+        uv(a, &au, &av);
+        uv(b, &bu, &bv);
+        hud::vtx(f, c.x, c.y, col, cu, cv, hud::IMAGE);
+        hud::vtx(f, a.x, a.y, col, au, av, hud::IMAGE);
+        hud::vtx(f, b.x, b.y, col, bu, bv, hud::IMAGE);
+    }
+}
+
+std::vector<std::string> wrap_title(const hud::TextStyle &style, const std::string &title, float max_w, size_t max_lines)
+{
+    std::vector<std::string> lines;
+    std::string line;
+    size_t i = 0;
+    auto width = [&](const std::string &t) {
+        float w = 0, h = 0;
+        hud::measure(style, t, &w, &h);
+        return w;
+    };
+    while (i < title.size() && lines.size() < max_lines) {
+        size_t j = title.find(' ', i);
+        std::string word = title.substr(i, j == std::string::npos ? std::string::npos : j - i);
+        std::string trial = line.empty() ? word : line + " " + word;
+        if (width(trial) <= max_w || line.empty()) {
+            line = trial;
+            i = j == std::string::npos ? title.size() : j + 1;
+        } else {
+            lines.push_back(line);
+            line.clear();
+        }
+    }
+    if (!line.empty() && lines.size() < max_lines)
+        lines.push_back(line);
+    bool cut = i < title.size();
+    if (!lines.empty()) {
+        std::string &last = lines.back();
+        if (cut)
+            last += "...";
+        while (width(last) > max_w && last.size() > 4) {
+            last.erase(last.size() - (cut ? 4 : 1), cut ? 4 : 1);
+            if (cut)
+                last += "...";
+        }
+    }
+    return lines;
+}
+
 void paint(hud::Frame &f, uint64_t now)
 {
     (void)now;
@@ -997,10 +1061,57 @@ void paint(hud::Frame &f, uint64_t now)
         hud::image(f, p->avatar_slot, at.x, at.y, size, size, 0xffffffff);
     }
     if (p->video_slot >= 0 && p->video_w && p->video_h) {
-        auto r = logic::video_image_rect();
-        auto at = logic::scene_to_px(r.x, r.y, W, H);
-        float rw = float(r.w) * unit, rh = float(r.h) * unit;
-        float want = rw / rh, have = float(p->video_w) / float(p->video_h);
+        const float k = H / 1028.0f;
+        hud::TextStyle cap_style;
+        cap_style.px = 16 * k;
+        cap_style.rgba = 0xa9afbfff;
+        cap_style.tracking = 16 * k * 0.12f;
+        hud::TextStyle title_style;
+        title_style.px = 24 * k;
+        title_style.rgba = 0xf3f5f9ff;
+        hud::TextStyle key_style;
+        key_style.px = 17 * k;
+        key_style.rgba = 0xf3f5f9ff;
+        hud::TextStyle watch_style;
+        watch_style.px = 20 * k;
+        watch_style.rgba = 0xd5d9e3ff;
+        const std::string caption = "LATEST VIDEO";
+        const std::string key = logic::button_name(bind_pad.load());
+        float tmp_h = 0, cap_w = 0, key_w = 0, watch_w = 0;
+        hud::measure(cap_style, caption, &cap_w, &tmp_h);
+        hud::measure(key_style, key, &key_w, &tmp_h);
+        hud::measure(watch_style, "Watch", &watch_w, &tmp_h);
+        const float cap_box_w = std::max(30 * k, key_w + 16 * k), cap_box_h = 26 * k;
+        auto plan0 = logic::plan_card(k, 0);
+        auto title_lines = wrap_title(title_style, p->s.video_title, plan0.text_max, 2);
+        float title_w = 0;
+        for (auto &line : title_lines) {
+            float w = 0;
+            hud::measure(title_style, line, &w, &tmp_h);
+            title_w = std::max(title_w, w);
+        }
+        float text_w = std::max({cap_w, title_w, cap_box_w + 10 * k + watch_w});
+        auto card = logic::plan_card(k, text_w);
+        auto anchor = logic::scene_to_px(logic::CARD_RIGHT_X, logic::CARD_BOTTOM_Y, W, H);
+        float cx = anchor.x - card.width, cy = anchor.y - card.height;
+        hud::rect_rounded(f, cx, cy, card.width, card.height, 10 * k, 0x0c0e13eaU);
+        hud::rect_rounded_outline(f, cx, cy, card.width, card.height, 10 * k, 1.2f * k, 0xffffff2eU);
+        float tx = cx + card.pad + 12 * k;
+        float cap_h = cap_style.px * 1.25f, title_h = title_style.px * 1.2f * float(title_lines.size()), row_h = cap_box_h;
+        float block_h = cap_h + 6 * k + title_h + 8 * k + row_h;
+        float ty = cy + (card.height - block_h) * 0.5f;
+        hud::rect_rounded(f, cx + card.pad, ty, 3 * k, block_h, 1.5f * k, 0xe10600ffU);
+        hud::text(f, tx, ty, cap_style, caption);
+        float yy = ty + cap_h + 6 * k;
+        for (auto &line : title_lines) {
+            hud::text(f, tx, yy, title_style, line);
+            yy += title_style.px * 1.2f;
+        }
+        yy += 8 * k;
+        hud::rect_rounded_outline(f, tx, yy, cap_box_w, cap_box_h, 6 * k, 1.4f * k, 0xf3f5f9d0U);
+        hud::text(f, tx + (cap_box_w - key_w) * 0.5f, yy + (cap_box_h - key_style.px) * 0.5f, key_style, key);
+        hud::text(f, tx + cap_box_w + 10 * k, yy + (cap_box_h - watch_style.px) * 0.5f, watch_style, "Watch");
+        float want = card.thumb_w / card.thumb_h, have = float(p->video_w) / float(p->video_h);
         float v0 = 0, v1 = 1, u0 = 0, u1 = 1;
         if (have < want) {
             float keep = have / want;
@@ -1011,7 +1122,8 @@ void paint(hud::Frame &f, uint64_t now)
             u0 = (1 - keep) * 0.5f;
             u1 = 1 - u0;
         }
-        hud::image_uv(f, p->video_slot, at.x, at.y, rw, rh, u0, v0, u1, v1, 0xffffffff);
+        image_rounded(f, p->video_slot, cx + card.width - card.pad - card.thumb_w, cy + card.pad, card.thumb_w, card.thumb_h,
+                      8 * k, u0, v0, u1, v1);
     }
     overlay_drawn = true;
     static bool told_verts = false;

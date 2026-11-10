@@ -1231,7 +1231,7 @@ mod tests {
         {
             let doc = swofty_formats::pkg::Pkg::parse(&panel_only).unwrap();
             let root = idf::scenes(&doc).unwrap()[0].o().unwrap().at("scene").unwrap();
-            assert!(idf::find(root, "swofty_details_account").is_some() && idf::find(root, "swofty_details_video").is_some());
+            assert!(idf::find(root, "swofty_details_account").is_some());
         }
         write_archive(
             &src,

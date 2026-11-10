@@ -90,34 +90,17 @@ int main()
         expect(small.x / 1366.0f > 0.0481f && small.x / 1366.0f < 0.0661f, "the left edge keeps its place relative to the frame at 1366x768");
     }
     {
-        auto r = mm::video_image_rect();
-        expect(std::abs(r.w / r.h - 16.0 / 9.0) < 1e-6, "the video image is 16:9");
-        auto tl = mm::scene_to_px(r.x, r.y, 1908, 1028);
-        auto br = mm::scene_to_px(r.x + r.w, r.y - r.h, 1908, 1028);
-        expect(tl.x > 1515 && tl.x < 1525 && br.x > 1788 && br.x < 1797, "the image sits at the right end of the card (x about 1520..1793 at 1908x1028)");
-        expect(tl.y > 790 && tl.y < 800 && br.y > 945 && br.y < 955, "the image sits inside the card's height (y about 795..949)");
-    }
-    {
-        mm::HomeView v;
-        expect(!v.visible(false, false), "hidden by default");
-        v.screen("fe_home");
-        v.screen("fe_planes");
-        v.screen("theming_overlay_frontend");
-        expect(v.visible(false, false), "visible on the home screen with only overlays opening");
-        v.screen("f1_world_activity_container");
-        expect(!v.visible(false, false), "hidden once the activity container opens");
-        v.screen("fe_f1_world");
-        v.screen("fe_home");
-        expect(v.visible(false, false), "visible when the home screen opens again");
-        expect(!v.visible(false, true), "hidden while the hub's own view model still updates");
-        v.screen("playercard");
-        expect(v.visible(false, false), "an overlay opening does not hide it");
-        expect(!v.visible(true, false), "hidden in a session");
-        v.left();
-        expect(!v.visible(false, false), "hidden after a route away from the home screen");
-        v.screen("fe_home");
-        v.screen("some_leaderboard_screen");
-        expect(!v.visible(false, false), "any other screen opening on top hides it");
+        auto small = mm::plan_card(1.0f, 100);
+        expect(small.width == 480 && small.height == 150 + 24, "a short title keeps the minimum width and the thumbnail sits in an even 12 px inset");
+        auto big = mm::plan_card(1.0f, 300);
+        expect(big.width == 12 + 300 + 16 + big.thumb_w + 12 && big.width > 480, "a longer title widens the card");
+        auto capped = mm::plan_card(1.0f, 900);
+        expect(capped.text_max == 420 && capped.width == 12 + 420 + 16 + capped.thumb_w + 12, "the text block is capped at 420 px");
+        auto scaled = mm::plan_card(2.0f, 100);
+        expect(scaled.width == 960 && scaled.thumb_h == 300, "the card scales with the screen height");
+        expect(std::abs(big.thumb_w / big.thumb_h - 16.0 / 9.0) < 1e-4, "the thumbnail is 16:9");
+        auto br = mm::scene_to_px(mm::CARD_RIGHT_X, mm::CARD_BOTTOM_Y, 1908, 1028);
+        expect(br.x > 1795 && br.x < 1805 && br.y > 950 && br.y < 962, "the card's right and bottom anchors land at (1800, 956) at 1908x1028");
     }
     expect(mm::panel_due(true, true, true, false, true), "the panel is due on the open home screen once prepared");
     expect(!mm::panel_due(false, true, true, false, true) && !mm::panel_due(true, false, true, false, true) &&

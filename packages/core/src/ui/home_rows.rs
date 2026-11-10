@@ -217,21 +217,14 @@ pub fn hide_strip(data: &[u8]) -> Result<Vec<u8>> {
 
 pub const PANEL_TEXT_PATH: &str = "#ui_menu_data.swofty_panel_text";
 pub const PANEL_TITLE_PATH: &str = "#ui_menu_data.swofty_panel_title";
-pub const VIDEO_TITLE_PATH: &str = "#ui_menu_data.swofty_video_title";
-pub const VIDEO_PROMPT_PATH: &str = "#ui_menu_data.swofty_video_prompt";
 pub const ACCOUNT_PANEL: &str = "swofty_account_panel";
-pub const VIDEO_PANEL: &str = "swofty_video_panel";
 const ACCOUNT_SLOT: &str = "swofty_details_account";
-const VIDEO_SLOT: &str = "swofty_details_video";
 const PANELS_PARENT: &str = "fe_home.contextual_panels";
 const ACCOUNT_SOURCE: &str = "offline_contextual_panel";
-const VIDEO_SOURCE: &str = "news_contextual_panel";
 const ACCOUNT_XREF: &str = "details_offline";
-const VIDEO_XREF: &str = "details_news";
 /// Where the two components sit on screen, in scene units from the scene's origin, fitted from the stock screenshot
 /// (the list's left edge x -8.6 at 98 px, the description y -1.77 at 713 px, the logo's bottom y 3.7 at 168 px of 1914x1079).
-pub const ACCOUNT_AT: (f64, f64) = (4.77, 3.91);
-pub const VIDEO_AT: (f64, f64) = (2.29, -4.82);
+pub const ACCOUNT_AT: (f64, f64) = (4.06, 3.91);
 /// transition_anim_details, their parent in the scene, sits here, so a slot's own position is its place minus this.
 const DETAILS_PARENT: (f64, f64) = (-8.6, -4.86);
 const XREF_GUIDS: [&str; 2] = ["7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c01", "7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c02"];
@@ -255,34 +248,23 @@ pub fn has_native_panels_ui(data: &[u8]) -> Result<bool> {
         .any(|k| k.is_node() && k.name() == ACCOUNT_PANEL))
 }
 
-/// fe_home.ui with two panels beside the stock ones in `contextual_panels`, copies of the "Launched with"
-/// card and of the news card laid out in the scene slots `native_panels_scene` adds. They are always
-/// visible, and their text reads `ui_menu_data.swofty_panel_text`, `swofty_video_title` and `swofty_video_prompt`.
+/// fe_home.ui with the account panel beside the stock ones in `contextual_panels`, a copy of the "Launched with"
+/// card laid out in the scene slot `native_panels_scene` adds. It is always visible, and its text reads
+/// `ui_menu_data.swofty_panel_text`.
 pub fn native_panels_ui(data: &[u8]) -> Result<Vec<u8>> {
     edit(data, |doc| {
         let screen = first_screen(doc)?;
         let panels = screen.child_mut("contextual_panels")?;
         let account_src = panels.child_mut(ACCOUNT_SOURCE)?.clone();
-        let video_src = panels.child_mut(VIDEO_SOURCE)?.clone();
         let mut account = clone_node(&account_src, PANELS_PARENT, ACCOUNT_PANEL)?;
         set_layout(&mut account, &[ACCOUNT_SLOT])?;
         hide_visibility_binding(&mut account)?;
         bind_text(account.child_mut("subtitle")?, PANEL_TEXT_PATH)?;
         hide(account.child_mut("tooltip_label")?)?;
         hide(account.child_mut("tooltip_extra_2")?)?;
-        let mut video = clone_node(&video_src, PANELS_PARENT, VIDEO_PANEL)?;
-        set_layout(&mut video, &[VIDEO_SLOT])?;
-        video.props_mut()?.drop_key("dataContext");
-        hide_visibility_binding(&mut video)?;
-        bind_text(video.child_mut("subtitle")?, VIDEO_TITLE_PATH)?;
-        bind_text(video.child_mut("tooltip_label")?, VIDEO_PROMPT_PATH)?;
-        hide(video.child_mut("tooltip_extra_2")?)?;
-        for n in [&mut account, &mut video] {
-            fix_ids(n, Some(PANELS_PARENT));
-        }
+        fix_ids(&mut account, Some(PANELS_PARENT));
         let kids = panels.slot_mut(CHILDREN)?;
         kids.push(account);
-        kids.push(video);
         Ok(())
     })
 }
@@ -313,10 +295,7 @@ pub fn native_panels_scene(data: &[u8]) -> Result<Vec<u8>> {
         return Err(err(format!("{SCENE} already has the native panels")));
     }
     let mut slots = Vec::new();
-    for (source, name, at, guid) in [
-        (ACCOUNT_XREF, ACCOUNT_SLOT, ACCOUNT_AT, XREF_GUIDS[0]),
-        (VIDEO_XREF, VIDEO_SLOT, VIDEO_AT, XREF_GUIDS[1]),
-    ] {
+    for (source, name, at, guid) in [(ACCOUNT_XREF, ACCOUNT_SLOT, ACCOUNT_AT, XREF_GUIDS[0])] {
         let from = idf::find(root, source).ok_or_else(|| err(format!("{SCENE} has no {source}")))?;
         let mut slot = idf::detached(from);
         slot.o_mut()?.set("name", s(name));

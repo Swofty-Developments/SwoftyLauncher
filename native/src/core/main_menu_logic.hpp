@@ -70,13 +70,10 @@ constexpr const char *HOME_BACK_ROUTE = "swofty_home";
 
 constexpr uint32_t WATCH_KEY_VK = 0x56;
 constexpr double PANEL_BUDGET_MS = 4.0;
-constexpr double ACCOUNT_AT_X = 4.77, ACCOUNT_AT_Y = 3.91;
-constexpr double VIDEO_AT_X = 2.29, VIDEO_AT_Y = -4.82;
-// Measured on a 1908x1028 capture of the build that placed them at (3.06, 3.81) and (2.29, -4.95): the account
-// panel's accent bar lands 0.235 units right of its origin and its panel runs 0.12..1.0 units above it; the news
-// card's panel is 6.6 by 1.8 units with its left edge 0.32 right of the origin and its bottom edge on the origin.
+constexpr double ACCOUNT_AT_X = 4.06, ACCOUNT_AT_Y = 3.91;
 constexpr double ACCOUNT_AVATAR_DX = -0.674, ACCOUNT_AVATAR_DY = 0.834, ACCOUNT_AVATAR_SIZE = 0.68;
-constexpr double VIDEO_PANEL_DX = 0.32, VIDEO_PANEL_W = 6.6, VIDEO_PANEL_H = 1.8, VIDEO_INSET = 0.08;
+// The video card's right edge (x 9.21, 1800 px at 1908x1028) and bottom edge (y -4.82, 956 px), scene units.
+constexpr double CARD_RIGHT_X = 9.21, CARD_BOTTOM_Y = -4.82;
 constexpr double SCENE_UNITS_TALL = 11.0, SCENE_CENTRE_X_SHIFT = -0.0148, SCENE_CENTRE_Y = 0.4918;
 
 enum class Screen { overlay, home, other };
@@ -120,15 +117,25 @@ struct Point {
 
 inline float scene_scale(float height) { return height / float(SCENE_UNITS_TALL); }
 
-struct Rect {
-    double x = 0, y = 0, w = 0, h = 0;
+struct VideoCard {
+    float pad = 0, gap = 0, thumb_w = 0, thumb_h = 0, text_max = 0, width = 0, height = 0;
 };
 
-inline Rect video_image_rect()
+// The video card for a screen of height k * 1028: a 16:9 thumbnail with an even inset, a text block of the measured
+// width (at most 420 px at 1028) and a minimum width (480 px at 1028). It grows to the left of its right edge.
+inline VideoCard plan_card(float k, float text_w)
 {
-    double h = VIDEO_PANEL_H - 2 * VIDEO_INSET, w = h * 16.0 / 9.0;
-    double right = VIDEO_AT_X + VIDEO_PANEL_DX + VIDEO_PANEL_W - VIDEO_INSET;
-    return {right - w, VIDEO_AT_Y + VIDEO_PANEL_H - VIDEO_INSET, w, h};
+    VideoCard c;
+    c.pad = 12 * k;
+    c.gap = 16 * k;
+    c.thumb_h = 150 * k;
+    c.thumb_w = c.thumb_h * 16.0f / 9.0f;
+    c.text_max = 420 * k;
+    float tw = text_w < c.text_max ? text_w : c.text_max;
+    float want = c.pad + tw + c.gap + c.thumb_w + c.pad;
+    c.width = want > 480 * k ? want : 480 * k;
+    c.height = c.thumb_h + 2 * c.pad;
+    return c;
 }
 
 inline Point scene_to_px(double x, double y, float width, float height)
