@@ -703,6 +703,8 @@ inline constexpr site<"site_Sess_TyreVisSlotLookup"> site_Sess_TyreVisSlotLookup
 inline constexpr site<"site_Sess_TyreVisTailCall"> site_Sess_TyreVisTailCall{}; // L2 experimental
 inline constexpr site<"site_Sess_TyreWearReturn"> site_Sess_TyreWearReturn{}; // L2 experimental
 inline constexpr site<"site_Sess_TyreWearSlotLookup"> site_Sess_TyreWearSlotLookup{}; // L2 experimental
+inline constexpr site<"site_Sess_VirtualSession_EstimateTail"> site_Sess_VirtualSession_EstimateTail{}; // L2 experimental
+inline constexpr site<"site_Sess_VirtualSession_EstimateTyreQuery"> site_Sess_VirtualSession_EstimateTyreQuery{}; // L2 experimental
 inline constexpr site<"site_Sess_WheelMapInsertCall"> site_Sess_WheelMapInsertCall{}; // L2 experimental
 inline constexpr vtable<"vt_Sess_AiController", 4> vt_Sess_AiController{}; // L2 experimental
 inline constexpr vtable<"vt_Sess_CareerHubLocation", 11> vt_Sess_CareerHubLocation{}; // L2 experimental, SessionStateCareerHubLocation

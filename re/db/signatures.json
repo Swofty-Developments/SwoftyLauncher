@@ -162164,6 +162164,60 @@
    "used_by": [
     "native/src/core/netplay.cpp"
    ]
+  },
+  {
+   "id": "session.virtual_session_estimate_tyre_query",
+   "section": ".xtls",
+   "pattern": "48 8D 54 24 2C E8 ?? ?? ?? ?? 48 89 C7 C5 7A 11 4C 24 2C",
+   "match": "0x142f6ca96",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f6ca96",
+   "kind": "mid",
+   "expect": "48 8D 54 24 2C",
+   "names": [
+    "site_Sess_VirtualSession_EstimateTyreQuery"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-10",
+     "by": "elt-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/estimate_laptime_guard.cpp"
+   ]
+  },
+  {
+   "id": "session.virtual_session_estimate_tail",
+   "section": ".xtls",
+   "pattern": "C5 F8 28 F0 C5 F8 28 C6 C5 F8 28 74 24 40",
+   "match": "0x142f6cba4",
+   "anchor": "0x4",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142f6cba8",
+   "kind": "mid",
+   "expect": "C5 F8 28 C6 C5 F8 28 74 24 40",
+   "names": [
+    "site_Sess_VirtualSession_EstimateTail"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-10",
+     "by": "elt-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/estimate_laptime_guard.cpp"
+   ]
   }
  ]
 }
