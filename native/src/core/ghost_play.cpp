@@ -730,7 +730,16 @@ uint64_t newlap_hook(void *comp, void *msg)
     if (ghost_on && pb_rearm_on) {
         PbKey a1 = pb_key_of(tlap_at(c, 1)), a3 = pb_key_of(tlap_at(c, 3));
         std::vector<uint8_t> blob;
-        if (a3.count > 0 && a1 == a3 && !(a3 == before3) && trace_bytes_of(tlap_at(c, 1), blob)) {
+        uintptr_t tl1 = tlap_at(c, 1);
+        LapState l1 = tl1 ? state_of(tl1) : LapState{};
+        float sec[3] = {};
+        if (tl1)
+            for (int i = 0; i < 3; i++)
+                mem::read(tl1 + TL_LAP + 4 + 4 * i, sec[i]);
+        bool clean = (l1.flags & 3) == 0 && sec[0] > 0 && sec[1] > 0 && sec[2] > 0 && std::fabs(sec[0] + sec[1] + sec[2] - l1.lap) < 0.05f;
+        if (a3.count > 0 && a1 == a3 && !(a3 == before3) && !clean)
+            swofty::log("[ghost] new PB not armed: the lap is not a valid one for the game (flags 0x%x, sectors %.3f %.3f %.3f, lap %.3f)", l1.flags, sec[0], sec[1], sec[2], l1.lap);
+        if (clean && a3.count > 0 && a1 == a3 && !(a3 == before3) && trace_bytes_of(tl1, blob)) {
             std::lock_guard<std::mutex> g(pb_lock);
             pb_pending = true;
             pb_comp = c;

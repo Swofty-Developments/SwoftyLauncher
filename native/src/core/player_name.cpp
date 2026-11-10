@@ -362,6 +362,139 @@ scanned_all:
     }
 }
 
+bool write_process(uint64_t at, const void *data, size_t n)
+{
+    SIZE_T done = 0;
+    return WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<void *>(at), data, n, &done) != 0 && done == n;
+}
+
+std::string fit_name(const std::string &name, size_t max)
+{
+    if (name.size() <= max)
+        return name;
+    size_t cut = max;
+    while (cut > 0 && (uint8_t(name[cut]) & 0xc0) == 0x80)
+        cut--;
+    return name.substr(0, cut);
+}
+
+struct SwapResult {
+    size_t records = 0, strings = 0, scanned_mb = 0, skipped = 0;
+    bool limit = false;
+};
+
+// Rewrites, in place, every copy of the stock persona the game keeps as input: refcounted VM string records (length word at +6, characters
+// from +9) and MSVC std::string objects in small-string form (16 byte buffer, u64 size, u64 capacity 15) inside private read-write memory.
+// The game's consumers (entrant names, the timing tower and HUD leaves, the leaderboard rows) are all built from such copies. Only strings
+// that read exactly the stock persona change; the new text is cut to the stock length (a record's or small string's storage is never
+// grown, so nothing is allocated or freed). Reads and writes go through ReadProcessMemory / WriteProcessMemory, which fail instead of faulting.
+SwapResult swap_sources(const std::string &stock, const std::string &name_in)
+{
+    namespace ms = runtime::mem_scan;
+    SwapResult res;
+    constexpr size_t CHUNK = size_t(1) << 20, OVERLAP = 256;
+    const int64_t deadline = int64_t(GetTickCount64()) + 20000;
+    std::string name = fit_name(name_in, std::min<size_t>(stock.size(), 15));
+    if (name.empty() || name == stock || stock.size() > 15)
+        return res;
+    NT_TIB *tib = reinterpret_cast<NT_TIB *>(NtCurrentTeb());
+    uint64_t stack_lo = uint64_t(tib->StackLimit), stack_hi = uint64_t(tib->StackBase);
+    std::vector<uint8_t> buf(CHUNK + OVERLAP);
+    uint64_t scanned = 0;
+    for (auto &r : rw_regions()) {
+        for (uint64_t off = 0; off < r.size; off += CHUNK) {
+            if (int64_t(GetTickCount64()) > deadline) {
+                res.limit = true;
+                res.scanned_mb = size_t(scanned >> 20);
+                return res;
+            }
+            size_t n = size_t(std::min<uint64_t>(CHUNK + OVERLAP, r.size - off));
+            if (!read_process(r.base + off, buf.data(), n))
+                continue;
+            scanned += std::min<uint64_t>(CHUNK, n);
+            Sleep(0);
+            std::vector<size_t> at;
+            ms::find_all(buf.data(), n, stock, at, 256);
+            for (size_t o : at) {
+                if (o >= CHUNK && off + CHUNK < r.size)
+                    continue;
+                uint64_t where = r.base + off + o;
+                if ((where >= uint64_t(buf.data()) && where < uint64_t(buf.data()) + buf.size()) || (where >= stack_lo && where < stack_hi) || where < 0x10000 + 16) {
+                    res.skipped++;
+                    continue;
+                }
+                uint8_t obj[32] = {};
+                bool sso = false;
+                if (read_process(where, obj, sizeof obj)) {
+                    uint64_t size, cap;
+                    std::memcpy(&size, obj + 16, 8);
+                    std::memcpy(&cap, obj + 24, 8);
+                    sso = size == stock.size() && cap == 15;
+                    for (size_t i = stock.size(); sso && i < 16; i++)
+                        sso = obj[i] == 0;
+                }
+                if (sso) {
+                    uint8_t out[32] = {};
+                    std::memcpy(out, name.data(), name.size());
+                    uint64_t size = name.size(), cap = 15;
+                    std::memcpy(out + 16, &size, 8);
+                    std::memcpy(out + 24, &cap, 8);
+                    if (write_process(where, out, sizeof out))
+                        res.strings++;
+                    continue;
+                }
+                uint8_t head[9] = {};
+                if (!read_process(where - 9, head, 9))
+                    continue;
+                auto c = ms::classify(head, stock.size());
+                if (!c.is_record)
+                    continue;
+                uint32_t word;
+                std::memcpy(&word, head + 6, 4);
+                word = (word & ~0xfffffu) | uint32_t(name.size());
+                std::string chars = name;
+                chars.push_back('\0');
+                if (write_process(where, chars.data(), chars.size()) && write_process(where - 3, &word, 4))
+                    res.records++;
+            }
+        }
+    }
+    res.scanned_mb = size_t(scanned >> 20);
+    return res;
+}
+
+void source_worker()
+{
+    static int logged = 0;
+    for (;;) {
+        Sleep(4000);
+        char sw[8] = {};
+        if (GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME_SWAP", sw, sizeof sw) && !strcmp(sw, "0"))
+            continue;
+        std::string clean, stock;
+        const char *source = "";
+        char env[96] = {};
+        GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME_STOCK", env, sizeof env);
+        {
+            std::lock_guard<std::mutex> g(stock_lock);
+            stock = env[0] ? std::string(env) : stock_learned;
+        }
+        runtime::presence_id::Id me;
+        if (stock.empty() || !runtime::tt_bridge_presence_id(me) || !wanted_name(clean, source) || clean == stock)
+            continue;
+        int64_t t0 = int64_t(GetTickCount64());
+        SwapResult r = swap_sources(stock, clean);
+        int64_t ms = int64_t(GetTickCount64()) - t0;
+        if ((r.records || r.strings || logged == 0) && logged < 40) {
+            logged++;
+            swofty::log("[boards] player name source swap: rewrote %zu string record(s) and %zu std::string object(s) that read \"%s\" to \"%s\" (source %s; scanned %zu MB in "
+                        "%lld ms%s, %zu own copies skipped)",
+                        r.records, r.strings, stock.c_str(), clean.c_str(), source, r.scanned_mb, (long long)ms, r.limit ? ", stopped at the time limit" : "", r.skipped);
+        }
+        Sleep(8000);
+    }
+}
+
 void pin_names(const std::string &name, const std::string &stock)
 {
     namespace ur = runtime::ui_registry;
@@ -410,6 +543,7 @@ void setup()
     h_lookup = std::move(*h);
     bridge_on = true;
     std::thread(account_worker).detach();
+    std::thread(source_worker).detach();
     swofty::log("[boards] player name: hook armed at base+0x%llx; in Time Trial the launcher account's name replaces the stock name",
                 (unsigned long long)(at - swofty::api->module_base()));
 }
