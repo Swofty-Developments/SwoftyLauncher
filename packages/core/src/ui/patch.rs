@@ -854,8 +854,34 @@ pub fn ui_data(data: &[u8], entries: Vec<(String, Node)>) -> Result<Vec<u8>> {
             return Err(err("ui_menu_data has swofty already"));
         }
         c.set("swofty", uidb_dict("swofty", entries));
-        Ok(())
+        one_leaderboard_tab(root_obj(p)?)
     })
+}
+
+/// leaderboard_data.table.view_type_list is the Time Trial leaderboard's tab list: global, then friends.
+/// The offline game has no friends, so the list keeps its first entry and the screen draws one tab.
+fn one_leaderboard_tab(root: &mut Obj) -> Result<()> {
+    let list = root
+        .at_mut("leaderboard_data")?
+        .o_mut()?
+        .at_mut("Contents")?
+        .o_mut()?
+        .at_mut("table")?
+        .o_mut()?
+        .at_mut("Contents")?
+        .o_mut()?
+        .at_mut("view_type_list")?
+        .o_mut()?
+        .at_mut("Contents")?
+        .a_mut()?;
+    if list.len() != 2 {
+        return Err(err(format!(
+            "leaderboard_data.table.view_type_list has {} entries, not the stock 2",
+            list.len()
+        )));
+    }
+    list.truncate(1);
+    Ok(())
 }
 
 pub const MESSAGE_ID: &str = "swofty_message";
