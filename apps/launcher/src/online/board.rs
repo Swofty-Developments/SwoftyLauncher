@@ -32,9 +32,6 @@ impl Shell {
             let idx = self.target_item(&mut items, Target::Profile(r.driver.clone()));
             let mine = me.as_deref() == Some(r.driver.name.as_str());
             body.push(self.board_row(r, idx, leader, &best, sectors, mine, p, cx));
-            if self.online.viewing.as_deref() == Some(r.lap_id.as_str()) {
-                body.push(self.lap_actions(&r.lap_id, p, cx));
-            }
             if SHOW_SETUPS
                 && self.online.setup_open.as_deref() == Some(r.lap_id.as_str())
                 && let Some(setup) = &r.setup
@@ -90,7 +87,7 @@ impl Shell {
                 d.child(head_cell(130., "CAR", p))
             })
             .child(head_cell(84., "DATE", p))
-            .child(head_cell(if SHOW_SETUPS { 112. } else { 70. }, "", p));
+            .child(head_cell(if SHOW_SETUPS { 190. } else { 160. }, "", p));
         v_flex()
             .flex_1()
             .min_h_0()
@@ -217,8 +214,6 @@ impl Shell {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let driver = r.driver.clone();
-        let lap = r.lap_id.clone();
-        let open = self.online.viewing.as_deref() == Some(r.lap_id.as_str());
         let personal: Vec<Option<u64>> = (0..3).map(|i| r.sectors_ms.get(i).copied()).collect();
         let colour = medal(r.rank, &p);
         h_flex()
@@ -319,24 +314,11 @@ impl Shell {
             )
             .child(
                 h_flex()
-                    .w(px(if SHOW_SETUPS { 112. } else { 70. }))
+                    .w(px(if SHOW_SETUPS { 190. } else { 160. }))
                     .flex_shrink_0()
+                    .justify_end()
                     .gap(px(4.))
-                    .child(
-                        Button::new(SharedString::from(format!("view-{idx}-{}", r.lap_id)))
-                            .outline()
-                            .tap_xs()
-                            .label(tr("View"))
-                            .when(open, |b| b.primary())
-                            .on_click(cx.listener({
-                                let lap = lap.clone();
-                                move |this, _, _, cx| {
-                                    let same = this.online.viewing.as_deref() == Some(lap.as_str());
-                                    this.online.viewing = (!same).then(|| lap.clone());
-                                    cx.notify();
-                                }
-                            })),
-                    )
+                    .child(self.lap_buttons(&format!("{idx}-{}", r.lap_id), &r.lap_id, cx))
                     .children(SHOW_SETUPS.then(|| {
                         self.setup_button(&format!("{idx}-{}", r.lap_id), &r.lap_id, r.setup.is_some(), cx)
                     })),
@@ -344,48 +326,43 @@ impl Shell {
             .into_any_element()
     }
 
-    pub(super) fn lap_actions(&self, lap_id: &str, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+    pub(super) fn lap_buttons(&self, key: &str, lap_id: &str, cx: &mut Context<Self>) -> AnyElement {
         let url = lap_url(lap_id);
         let running = self.online_game_running();
-        let ready = self.online.replays.available();
+        let ready = running && self.online.replays.available();
         let id = lap_id.to_owned();
         h_flex()
-            .px(px(14.))
-            .py(px(8.))
-            .gap(px(8.))
-            .items_center()
-            .bg(p.background)
-            .border_t_1()
-            .border_color(p.border_variant)
+            .flex_shrink_0()
+            .gap(px(6.))
             .child(
-                Button::new(SharedString::from(format!("web-{lap_id}")))
+                Button::new(SharedString::from(format!("web-{key}")))
                     .outline()
-                    .tap_sm()
+                    .tap_xs()
                     .icon(IconName::ExternalLink)
-                    .label(tr("Open on the web"))
+                    .label(tr("Web"))
                     .on_click(move |_, _, cx| cx.open_url(&url)),
             )
-            .when(running, |d| {
-                d.child(
-                    Button::new(SharedString::from(format!("watch-{lap_id}")))
-                        .outline()
-                        .tap_sm()
-                        .icon(IconName::Play)
-                        .label(tr("Watch in game"))
-                        .disabled(!ready)
-                        .tooltip(if ready {
-                            tr("Play this lap's replay in the running game")
-                        } else {
-                            tr("In-game replays are not available yet")
-                        })
-                        .on_click(cx.listener(move |this, _, _, cx| {
-                            if let Err(e) = this.online.replays.watch(&id) {
-                                crate::app_log::action("watch a lap in game").failed(&e);
-                            }
-                            cx.notify();
-                        })),
-                )
-            })
+            .child(
+                Button::new(SharedString::from(format!("game-{key}")))
+                    .outline()
+                    .tap_xs()
+                    .icon(IconName::Play)
+                    .label(tr("Game"))
+                    .disabled(!ready)
+                    .tooltip(if ready {
+                        tr("Play this lap's replay in the running game")
+                    } else if running {
+                        tr("In-game replays are not available yet")
+                    } else {
+                        tr("Start the game to watch this lap")
+                    })
+                    .on_click(cx.listener(move |this, _, _, cx| {
+                        if let Err(e) = this.online.replays.watch(&id) {
+                            crate::app_log::action("watch a lap in game").failed(&e);
+                        }
+                        cx.notify();
+                    })),
+            )
             .into_any_element()
     }
 

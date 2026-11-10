@@ -62,7 +62,6 @@ pub(crate) struct Online {
     feeds: HashMap<String, Feed>,
     handles: HashMap<String, UniformListScrollHandle>,
     me: Option<Me>,
-    viewing: Option<String>,
     setup_open: Option<String>,
     setup_compare: bool,
     cursor: Option<usize>,
@@ -96,7 +95,6 @@ impl Online {
             feeds: HashMap::new(),
             handles: HashMap::new(),
             me: None,
-            viewing: None,
             setup_open: None,
             setup_compare: false,
             cursor: None,
@@ -306,7 +304,6 @@ impl Shell {
             }
             self.online.more = true;
         }
-        self.online.viewing = None;
         let (api, filter, epoch) = (
             self.online.api.clone(),
             self.online.filter.clone(),
@@ -384,7 +381,6 @@ impl Shell {
 
     pub(crate) fn online_go(&mut self, target: Target, cx: &mut Context<Self>) {
         self.online.cursor = None;
-        self.online.viewing = None;
         match target {
             Target::Season(id, name) => {
                 self.online.recents.visit(&id, &name);
