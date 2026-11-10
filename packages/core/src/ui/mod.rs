@@ -1,5 +1,6 @@
 pub mod car_category;
 pub mod career_select;
+pub mod home_rows;
 pub mod catalog;
 pub mod check;
 pub mod era;
@@ -559,10 +560,26 @@ pub fn build(
             if show_panel { Ok(d) } else { patch::hide_panel(&d) }
         }),
     )];
-    if let Some((ui, type_ui, scene, templates)) = career {
+    let mut home_lines = Vec::new();
+    let mut home_warnings = Vec::new();
+    let rows = main_menu_rows(
+        &src_h,
+        career.as_ref().map(|c| c.3.as_slice()),
+        &mut home_lines,
+        &mut home_warnings,
+    )?;
+    let rows_built = rows.is_some();
+    let mut templates = career.as_ref().map(|c| c.3.clone());
+    if let Some((scene, with_rows)) = rows {
+        templates = Some(with_rows);
+        frontend.push((home_rows::SCENE, 0, Box::new(move |_| Ok(scene))));
+    }
+    if let Some((ui, type_ui, scene, _)) = career {
         frontend.push((career_select::UI, 0, Box::new(move |_| Ok(ui))));
         frontend.push((career_select::TYPE_UI, 0, Box::new(move |_| Ok(type_ui))));
         frontend.push((career_select::SCENE, 0, Box::new(move |_| Ok(scene))));
+    }
+    if let Some(templates) = templates {
         frontend.push((
             career_select::TEMPLATES,
             career_select::TEMPLATES_FRAGMENT,
@@ -575,6 +592,16 @@ pub fn build(
     build.lines.extend(setup_lines);
     build.lines.extend(career_lines);
     build.warnings.extend(career_warnings);
+    build.lines.extend(home_lines);
+    build.warnings.extend(home_warnings);
+    if rows_built {
+        let rel = format!("{UI_DIR}/{}", home_rows::FLAG);
+        let path = out.join(&rel);
+        let dir = path.parent().expect("has parent");
+        std::fs::create_dir_all(dir).map_err(io_err(dir))?;
+        std::fs::write(&path, b"1").map_err(io_err(&path))?;
+        build.screens.insert(rel, path);
+    }
     if !mfd_rows.is_empty() {
         let mut rows: Vec<mfd::Row> = Vec::new();
         for (k, r) in mfd_rows.iter().enumerate() {
@@ -665,6 +692,42 @@ pub fn build(
 }
 
 type CareerRow = (Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>);
+
+fn main_menu_rows(
+    src: &Path,
+    templates: Option<&[u8]>,
+    lines: &mut Vec<String>,
+    warnings: &mut Vec<String>,
+) -> Result<Option<(Vec<u8>, Vec<u8>)>> {
+    let scene = read_frag(src, home_rows::SCENE, 0)?;
+    let templates = match templates {
+        Some(t) => t.to_vec(),
+        None => read_frag(src, home_rows::TEMPLATES, home_rows::TEMPLATES_FRAGMENT)?,
+    };
+    let built = home_rows::has_slots(&scene)
+        .and_then(|a| home_rows::has_templates(&templates).map(|b| a || b))
+        .and_then(|taken| match taken {
+            true => Ok(None),
+            false => Ok(Some((
+                home_rows::build_scene(&scene)?,
+                home_rows::build_templates(&templates)?,
+            ))),
+        });
+    match built {
+        Ok(Some(edit)) => {
+            lines.push("ui: the main menu gets rows of cards".to_owned());
+            Ok(Some(edit))
+        }
+        Ok(None) => {
+            lines.push("ui: the main menu already has rows; left as it is".to_owned());
+            Ok(None)
+        }
+        Err(e) => {
+            warnings.push(format!("ui: the main menu keeps its stock list ({e})"));
+            Ok(None)
+        }
+    }
+}
 
 fn career_row(
     src: &Path,
@@ -1092,6 +1155,40 @@ mod tests {
             lines,
             ["ui: the career content select gets Built In and Addons rows"]
         );
+        std::fs::remove_dir_all(&out).ok();
+    }
+
+    #[test]
+    #[ignore = "needs SWOFTY_STOCK_FLOW_FRONTEND, a stock flow_frontend.erp"]
+    fn the_main_menu_gets_its_rows_within_the_loader_rules() {
+        let src = std::path::PathBuf::from(std::env::var_os("SWOFTY_STOCK_FLOW_FRONTEND").expect("set"));
+        let mut lines = Vec::new();
+        let mut warnings = Vec::new();
+        let (scene, templates) = main_menu_rows(&src, None, &mut lines, &mut warnings)
+            .unwrap()
+            .expect("a stock archive takes the rows");
+        assert!(warnings.is_empty(), "{warnings:?}");
+        let out = std::env::temp_dir().join(format!("swofty-home-rows-{}", std::process::id()));
+        let dst = out.join("flow_frontend.erp");
+        write_archive(
+            &src,
+            &dst,
+            vec![
+                (home_rows::SCENE, 0, Box::new(move |_| Ok(scene))),
+                (
+                    home_rows::TEMPLATES,
+                    home_rows::TEMPLATES_FRAGMENT,
+                    Box::new(move |_| Ok(templates)),
+                ),
+            ],
+            Vec::new(),
+        )
+        .unwrap();
+        let name = ui_file(home_rows::ARCHIVE);
+        let report = check::archive_files(&[(name.as_str(), src.as_path(), dst.as_path())]).unwrap();
+        let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
+        assert!(hard.is_empty(), "{hard:?}");
+        assert_eq!(lines, ["ui: the main menu gets rows of cards"]);
         std::fs::remove_dir_all(&out).ok();
     }
 
