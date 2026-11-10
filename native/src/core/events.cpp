@@ -1,3 +1,4 @@
+#include <atomic>
 #include "runtime.hpp"
 #include "main_menu.hpp"
 
@@ -77,20 +78,32 @@ void flow_mid(safetyhook::Context &)
     static const uint32_t probe = perf::probe("core", "flow tick (events, career poll)");
     perf::flow_tick();
     perf::Scope p(probe);
-    runtime::career_tick();
-    runtime::telemetry_tick();
-    runtime::lap_rec_tick();
-    runtime::tt_bridge_tick();
-    runtime::popup_tick();
-    runtime::main_menu::tick();
-    runtime::mfd_tick();
-    runtime::netplay_tick();
-    runtime::career_content_tick();
-    runtime::entitlements_tick();
-    runtime::hub_tick();
-    runtime::tyre_models_tick();
-    runtime::testagent_tick();
-    runtime::direct_start_tick();
+    // A step that holds the flow thread for over 100 ms is named in the log (first hits, then every 50th).
+    auto step = [](const char *name, void (*fn)()) {
+        double t0 = now_seconds();
+        fn();
+        double ms = (now_seconds() - t0) * 1000.0;
+        static std::atomic<uint64_t> slow{0};
+        if (ms > 100.0) {
+            uint64_t n = ++slow;
+            if (n <= 10 || n % 50 == 0)
+                swofty::log("[perf] flow tick step %s took %.0f ms (slow step %llu)", name, ms, static_cast<unsigned long long>(n));
+        }
+    };
+    step("career_tick", [] { runtime::career_tick(); });
+    step("telemetry_tick", [] { runtime::telemetry_tick(); });
+    step("lap_rec_tick", [] { runtime::lap_rec_tick(); });
+    step("tt_bridge_tick", [] { runtime::tt_bridge_tick(); });
+    step("popup_tick", [] { runtime::popup_tick(); });
+    step("main_menu::tick", [] { runtime::main_menu::tick(); });
+    step("mfd_tick", [] { runtime::mfd_tick(); });
+    step("netplay_tick", [] { runtime::netplay_tick(); });
+    step("career_content_tick", [] { runtime::career_content_tick(); });
+    step("entitlements_tick", [] { runtime::entitlements_tick(); });
+    step("hub_tick", [] { runtime::hub_tick(); });
+    step("tyre_models_tick", [] { runtime::tyre_models_tick(); });
+    step("testagent_tick", [] { runtime::testagent_tick(); });
+    step("direct_start_tick", [] { runtime::direct_start_tick(); });
     if (!perf::frame_claim())
         return;
     double dt = disp.tick(now_seconds());

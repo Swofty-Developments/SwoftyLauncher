@@ -1170,11 +1170,19 @@ void tick()
         }
     }
     if (home_open.load()) {
+        uint64_t t0 = GetTickCount64();
         read_state();
+        uint64_t t1 = GetTickCount64(), t2 = t1, t3 = t1;
         if (patched.load() && !panel_disabled.load() && std::strcmp(env("SWOFTY_MAIN_MENU_PANEL"), "0") != 0) {
             prepare();
+            t2 = GetTickCount64();
             poll_bind();
+            t3 = GetTickCount64();
         }
+        static uint64_t slow = 0;
+        if (t3 - t0 > 100 && (slow++ < 10 || slow % 50 == 0))
+            swofty::log("[main-menu] slow home tick: state read %llu ms, panel prepare %llu ms, video bind %llu ms", static_cast<unsigned long long>(t1 - t0),
+                        static_cast<unsigned long long>(t2 - t1), static_cast<unsigned long long>(t3 - t2));
     }
     int want = strip_wanted.load();
     if (want >= 0 && want != strip_set.load() && patched.load()) {
