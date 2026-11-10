@@ -120,6 +120,10 @@ int main()
     expect(!tb::garage_should_rebuild(true, true, 0x1000, 0, 0x10, 1) && !tb::garage_should_rebuild(true, true, 0, 0, 0x12, 1) && !tb::garage_should_rebuild(true, true, 0x1000, 0, 0x12, 0) &&
                !tb::garage_should_rebuild(true, true, 0x1000, 0, 0x12, 65),
            "never outside a time trial garage, for a null panel, an unbuilt panel or an absurd tab count");
+    expect(tb::garage_gate_byte(0, true, true, 0x12) == 1 && tb::garage_gate_byte(1, true, true, 0x12) == 1, "the garage gate byte reads 1 for our content in a time trial garage");
+    expect(tb::garage_gate_byte(0, false, true, 0x12) == 0 && tb::garage_gate_byte(0, true, false, 0x12) == 0 && tb::garage_gate_byte(0, true, true, 0x10) == 0 &&
+               tb::garage_gate_byte(0, true, true, -1) == 0,
+           "it is untouched with the bridge off, for stock content and in other session types");
     expect(tb::garage_result(0, true, true) == 1, "a denied garage privilege becomes granted for our content");
     expect(tb::garage_result(0, false, true) == 0 && tb::garage_result(0, true, false) == 0, "it stays denied with the bridge off or for stock content");
     expect(tb::garage_result(1, true, true) == 1 && tb::garage_result(0xff, true, true) == 0xff && tb::garage_result(2, true, true) == 2,

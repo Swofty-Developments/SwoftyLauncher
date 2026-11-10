@@ -427,6 +427,13 @@ inline bool garage_should_rebuild(bool bridge_on, bool ours_content, uint64_t pa
     return bridge_on && ours_content && panel && panel != built_ours_panel && session_type == GARAGE_TT_SESSION && tab_count > 0 && tab_count <= 64;
 }
 
+// The builder reaches the leaderboard block in a time trial garage only when the panel's registry bool [[panel+0x938]+0x80] is non-zero
+// (checked at 0x141f7208e). For our content in a session of type 0x12 it reads as 1.
+inline uint8_t garage_gate_byte(uint8_t value, bool bridge_on, bool ours_content, int session_type)
+{
+    return bridge_on && ours_content && session_type == GARAGE_TT_SESSION ? 1 : value;
+}
+
 // Which leaderboard tabs the garage builder appends: our content gets only the global one (index 0); everything else keeps both.
 inline bool garage_append_tab(int leaderboard_kind, bool bridge_on, bool ours_content)
 {
