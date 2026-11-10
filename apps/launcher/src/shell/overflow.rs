@@ -20,7 +20,7 @@ impl Link {
 }
 
 fn link_width(link: &Link) -> f32 {
-    26. + 7.5 * link.label.chars().count() as f32 + link.count.map_or(0., |_| 34.)
+    26. + 7.2 * link.label.chars().count() as f32 + link.count.map_or(0., |_| 30.)
 }
 
 pub(super) fn split_overflow(mut links: Vec<Link>, fixed: usize, budget: f32) -> (Vec<Link>, Vec<Link>) {

@@ -8,16 +8,17 @@ use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
+use std::collections::HashMap;
+use std::sync::{Arc, LazyLock, Mutex};
 use swofty_i18n::{tr, trn};
 
+use super::barfit::{self, Account};
 use super::overflow::{Link, split_overflow};
 use super::tabs::{ACTIONS, Action, Cursor, Key, Row, Step, Tab};
 use super::{Page, Shell};
 
-pub(super) const COLLAPSE_BELOW: f32 = 1040.;
-const COMPACT_BELOW: f32 = 1180.;
 pub(crate) const BAR_HEIGHT: f32 = 68.;
-pub(crate) const SUB_HEIGHT: f32 = 42.;
+pub(crate) const SUB_HEIGHT: f32 = 40.;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Popover {
@@ -41,6 +42,22 @@ impl SubNav {
     fn flat(&self) -> Vec<Link> {
         self.inline.iter().chain(&self.more).cloned().collect()
     }
+}
+
+fn filled_icon(icon: IconName, cx: &App) -> Option<Arc<[u8]>> {
+    type Cache = Mutex<HashMap<String, Option<Arc<[u8]>>>>;
+    static CACHE: LazyLock<Cache> = LazyLock::new(Mutex::default);
+    let path = icon.path();
+    let mut cache = CACHE.lock().ok()?;
+    cache
+        .entry(path.to_string())
+        .or_insert_with(|| {
+            let bytes = cx.asset_source().load(&path).ok().flatten()?;
+            let text = String::from_utf8_lossy(&bytes)
+                .replace("fill=\"none\"", "fill=\"currentColor\" fill-opacity=\"0.45\"");
+            Some(Arc::from(text.into_bytes()))
+        })
+        .clone()
 }
 
 impl Shell {
@@ -78,7 +95,7 @@ impl Shell {
             ),
             _ => return None,
         };
-        let (inline, more) = split_overflow(links, fixed, (layout_width - 260.).max(300.));
+        let (inline, more) = split_overflow(links, fixed, (layout_width - 140.).max(300.));
         let split = (tab == Some(Tab::Library) && inline.len() + more.len() > fixed).then_some(fixed);
         Some(SubNav { split, inline, more })
     }
@@ -232,8 +249,15 @@ impl Shell {
     }
 
     pub(super) fn top_bar(&self, p: Palette, layout_width: f32, cx: &mut Context<Self>) -> impl IntoElement {
-        let collapsed = layout_width < COLLAPSE_BELOW;
-        let compact = layout_width < COMPACT_BELOW;
+        let labels: Vec<&str> = Tab::ALL.iter().map(|t| t.label(self.nav_mp())).collect();
+        let step = barfit::choose(
+            layout_width,
+            &labels,
+            self.account_name().map(|n| n.chars().count()),
+            BAR_HEIGHT,
+        );
+        let collapsed = step.collapsed();
+        let account = step.account();
         let current = self.page.tab();
         let focus = self.nav.filter(|c| c.row == Row::Tabs).map(|c| c.col);
         let left = h_flex()
@@ -242,18 +266,17 @@ impl Shell {
             .items_center()
             .gap(px(10.))
             .child(logo(42.))
-            .when(!collapsed, |d| d.child(wordmark(84.)));
-        let tabs =
-            if collapsed {
-                self.tab_menu(current, focus, p, cx).into_any_element()
-            } else {
-                h_flex()
-                    .gap(px(2.))
-                    .children(Tab::ALL.iter().enumerate().map(|(i, tab)| {
-                        self.tab_button(*tab, Some(*tab) == current, focus == Some(i), p, cx)
-                    }))
-                    .into_any_element()
-            };
+            .when(step.wordmark(), |d| d.child(wordmark(84.)));
+        let tabs = if collapsed {
+            self.tab_menu(current, focus, p, cx).into_any_element()
+        } else {
+            h_flex()
+                .gap(px(2.))
+                .children(Tab::ALL.iter().enumerate().map(|(i, tab)| {
+                    self.tab_button(*tab, Some(*tab) == current, focus == Some(i), step.tight(), p, cx)
+                }))
+                .into_any_element()
+        };
         let action_focus = |a: usize| focus == Some(Tab::ALL.len() + a);
         let notices = self.notices().len() + cx.global::<crate::notices::Notices>().unread();
         crate::ui::title_bar(p)
@@ -306,7 +329,7 @@ impl Shell {
                                 })),
                             ),
                     )
-                    .child(self.account_block(compact, action_focus(2), p, cx)),
+                    .child(self.account_block(account, action_focus(2), p, cx)),
             )
     }
 
@@ -368,7 +391,13 @@ impl Shell {
             })
     }
 
-    fn account_block(&self, compact: bool, focused: bool, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+    fn account_block(
+        &self,
+        account: Account,
+        focused: bool,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
         let ring = move |d: Stateful<Div>| d.when(focused, |d| d.border_2().border_color(p.accent));
         match self.account_name() {
             Some(name) => {
@@ -404,25 +433,25 @@ impl Shell {
                         .flex_shrink_0()
                         .items_center()
                         .gap(px(16.))
-                        .pr(px(24.))
+                        .pr(px(if account == Account::IconOnly { 8. } else { 24. }))
                         .bg(p.surface)
                         .cursor_pointer()
                         .hover(move |s| s.bg(p.hover)),
                 )
                 .child(face)
-                .child(
+                .children((account != Account::IconOnly).then(|| {
                     div()
-                        .max_w(px(if compact { 110. } else { 190. }))
+                        .max_w(px(if account == Account::Small { 110. } else { 190. }))
                         .truncate()
                         .text_size(px(15.))
                         .font_weight(FontWeight::SEMIBOLD)
-                        .child(name),
-                )
-                .child(
+                        .child(name)
+                }))
+                .children((account != Account::IconOnly).then(|| {
                     Icon::new(IconName::ChevronDown)
                         .size(px(18.))
-                        .text_color(p.text_muted),
-                )
+                        .text_color(p.text_muted)
+                }))
                 .on_click(cx.listener(|this, _, _, cx| {
                     this.nav = None;
                     this.open_popover(Popover::Account, cx);
@@ -452,13 +481,15 @@ impl Shell {
                     .size(px(18.))
                     .text_color(rgb(0xffffff)),
             )
-            .child(if self.mp_busy {
-                tr("Signing in…")
-            } else if compact {
-                tr("Log in")
-            } else {
-                tr("Log in with Discord")
-            })
+            .children((account != Account::IconOnly).then(|| {
+                if self.mp_busy {
+                    tr("Signing in…")
+                } else if account == Account::Small {
+                    tr("Log in")
+                } else {
+                    tr("Log in with Discord")
+                }
+            }))
             .on_click(cx.listener(|this, _, window, cx| this.mp_sign_in(window, cx)))
             .into_any_element(),
         }
@@ -469,6 +500,7 @@ impl Shell {
         tab: Tab,
         active: bool,
         focused: bool,
+        tight: bool,
         p: Palette,
         cx: &mut Context<Self>,
     ) -> AnyElement {
@@ -476,7 +508,7 @@ impl Shell {
         v_flex()
             .id(SharedString::from(format!("tab-{}", tab.label(mp))))
             .h(px(BAR_HEIGHT - 8.))
-            .px(px(22.))
+            .px(px(if tight { 10. } else { 22. }))
             .gap(px(4.))
             .items_center()
             .justify_center()
@@ -488,14 +520,20 @@ impl Shell {
             .font_weight(FontWeight::MEDIUM)
             .map(|d| {
                 let d = if active {
-                    d.bg(p.selected).text_color(p.text)
+                    d.text_color(rgb(0xffffff))
                 } else {
-                    d.text_color(p.text_muted)
-                        .hover(move |s| s.bg(p.hover).text_color(p.text))
+                    d.text_color(p.text_muted).hover(move |s| s.text_color(p.text))
                 };
                 d.border_color(if focused { p.accent } else { transparent_black() })
             })
-            .child(Icon::new(tab.icon(mp)).size(px(26.)))
+            .child(match filled_icon(tab.icon(mp), cx).filter(|_| active) {
+                Some(data) => svg()
+                    .data(&data)
+                    .size(px(26.))
+                    .text_color(p.accent_hover)
+                    .into_any_element(),
+                None => Icon::new(tab.icon(mp)).size(px(26.)).into_any_element(),
+            })
             .child(tab.label(mp))
             .on_click(cx.listener(move |this, _, _, cx| {
                 this.nav = None;
@@ -631,13 +669,10 @@ impl Shell {
                         .id("sub-notch")
                         .h(px(SUB_HEIGHT))
                         .items_stretch()
-                        .gap(px(22.))
-                        .px(px(26.))
-                        .rounded_b(px(14.))
-                        .border_1()
-                        .border_t_0()
-                        .border_color(p.border)
-                        .bg(p.surface)
+                        .gap(px(26.))
+                        .px(px(30.))
+                        .rounded_b(px(16.))
+                        .bg(p.chrome)
                         .children(links)
                         .children(more),
                 ),
@@ -865,50 +900,68 @@ impl Shell {
             Kind::Error => (IconName::CircleX, p.error),
         };
         let action = e.note.action.clone();
+        let time = div()
+            .text_size(px(11.))
+            .text_color(p.text_placeholder)
+            .flex_shrink_0()
+            .child(crate::format::ago(e.at.elapsed().as_secs_f64()));
+        let (head, body) = match e.note.title.clone() {
+            Some(title) => (title, Some(e.note.message.clone())),
+            None => (e.note.message.clone(), None),
+        };
         h_flex()
             .id(SharedString::from(format!("history-{}", e.id)))
-            .gap(px(10.))
-            .p(px(12.))
+            .gap(px(12.))
+            .px(px(14.))
+            .py(px(12.))
             .items_start()
             .border_b_1()
             .border_color(p.border_variant)
-            .child(Icon::new(icon).size(px(16.)).text_color(tone).flex_shrink_0())
+            .child(
+                div()
+                    .pt(px(1.))
+                    .child(Icon::new(icon).size(px(18.)).text_color(tone).flex_shrink_0()),
+            )
             .child(
                 v_flex()
                     .flex_1()
                     .min_w_0()
-                    .gap(px(2.))
-                    .children(e.note.title.clone().map(|t| {
-                        div()
-                            .text_size(px(13.))
-                            .font_weight(FontWeight::SEMIBOLD)
-                            .child(t)
-                    }))
+                    .gap(px(4.))
                     .child(
-                        div()
-                            .text_size(px(13.))
-                            .line_height(px(18.))
-                            .text_color(if e.note.title.is_some() {
-                                p.text_muted
-                            } else {
-                                p.text
-                            })
-                            .child(e.note.message.clone()),
+                        h_flex()
+                            .gap(px(10.))
+                            .items_start()
+                            .child(
+                                div()
+                                    .flex_1()
+                                    .min_w_0()
+                                    .text_size(px(13.))
+                                    .line_height(px(18.))
+                                    .font_weight(if body.is_some() {
+                                        FontWeight::SEMIBOLD
+                                    } else {
+                                        FontWeight::NORMAL
+                                    })
+                                    .child(head),
+                            )
+                            .child(time),
                     )
+                    .children(body.map(|m| {
+                        div()
+                            .text_size(px(12.))
+                            .line_height(px(17.))
+                            .text_color(p.text_muted)
+                            .child(m)
+                    }))
                     .children(action.map(|(label, run)| {
-                        Button::new(SharedString::from(format!("history-action-{}", e.id)))
-                            .outline()
-                            .small()
-                            .label(label)
-                            .on_click(move |_, window, cx| run(window, cx))
+                        h_flex().pt(px(6.)).child(
+                            Button::new(SharedString::from(format!("history-action-{}", e.id)))
+                                .primary()
+                                .small()
+                                .label(label)
+                                .on_click(move |_, window, cx| run(window, cx)),
+                        )
                     })),
-            )
-            .child(
-                div()
-                    .text_size(px(11.))
-                    .text_color(p.text_placeholder)
-                    .flex_shrink_0()
-                    .child(crate::format::ago(e.at.elapsed().as_secs_f64())),
             )
             .into_any_element()
     }

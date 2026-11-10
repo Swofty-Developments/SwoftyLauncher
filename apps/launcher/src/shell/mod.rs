@@ -18,6 +18,7 @@ use swofty_core::session::{SessionRecord, UiMode};
 use swofty_core::store::Store;
 use swofty_core::view::View;
 
+mod barfit;
 mod config;
 mod console_window;
 mod dialogs;

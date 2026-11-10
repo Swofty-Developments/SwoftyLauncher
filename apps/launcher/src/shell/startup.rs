@@ -195,7 +195,8 @@ impl Shell {
                 let now = std::time::Instant::now();
                 n.add(
                     Notification::success(swofty_i18n::tr("Updated Project Halo 0.1.2"))
-                        .title(swofty_i18n::tr("Updated 1 of 1 addon")),
+                        .title(swofty_i18n::tr("Updated 1 of 1 addon"))
+                        .action(swofty_i18n::tr("Turn on"), |_, _| {}),
                     now,
                 );
                 n.add(
