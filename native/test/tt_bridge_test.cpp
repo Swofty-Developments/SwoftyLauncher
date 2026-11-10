@@ -97,13 +97,20 @@ int main()
         expect(tb::garage_node_offset(other, sizeof other) == -1, "another node id does not match");
     }
     expect(tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2038, 0), "a panel with seven tabs is driven once");
-    expect(!tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2038, 0x1000), "the same panel is not driven twice");
+    expect(!tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2038, 0x1000, 7), "the same panel is not driven twice");
     expect(!tb::garage_should_drive(false, true, 0x1000, 0x2000, 0x2038, 0) && !tb::garage_should_drive(true, false, 0x1000, 0x2000, 0x2038, 0),
            "never with the bridge off or for stock content");
     expect(!tb::garage_should_drive(true, true, 0, 0x2000, 0x2038, 0) && !tb::garage_should_drive(true, true, 0x1000, 0, 0, 0), "null panel or null list never");
     expect(!tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2000, 0) && !tb::garage_should_drive(true, true, 0x1000, 0x2038, 0x2000, 0), "an empty or inverted list never");
     expect(!tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2003, 0) && !tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2000 + 8 * 65, 0),
            "a misaligned or absurdly long list never");
+    expect(tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2018, 0x1000, 1) && !tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2018, 0x1000, 3),
+           "a panel is driven again only when its tab count changed");
+    expect(tb::garage_feature_flags(0x5, true, true) == (0x5 | 0x2000000000ull) && tb::garage_feature_flags(0x5, false, true) == 0x5 && tb::garage_feature_flags(0x5, true, false) == 0x5,
+           "the leaderboard feature bit is added only for our content with the bridge on");
+    expect(tb::garage_feature_flags(0x2000000000ull, true, true) == 0x2000000000ull && tb::garage_feature_flags(0, true, true) == 0x2000000000ull, "adding the bit is idempotent");
+    expect(tb::garage_block_byte(1, true, true) == 0 && tb::garage_block_byte(1, false, true) == 1 && tb::garage_block_byte(1, true, false) == 1 && tb::garage_block_byte(0, true, true) == 0,
+           "the leaderboard block byte reads 0 only for our content with the bridge on");
     expect(tb::garage_result(0, true, true) == 1, "a denied garage privilege becomes granted for our content");
     expect(tb::garage_result(0, false, true) == 0 && tb::garage_result(0, true, false) == 0, "it stays denied with the bridge off or for stock content");
     expect(tb::garage_result(1, true, true) == 1 && tb::garage_result(0xff, true, true) == 0xff && tb::garage_result(2, true, true) == 2,

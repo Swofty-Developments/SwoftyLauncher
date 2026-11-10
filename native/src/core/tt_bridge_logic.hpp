@@ -400,12 +400,27 @@ inline int garage_node_offset(const uint8_t *bytes, size_t n, uint32_t want = GA
 
 // Driving the garage monitor's `car_monitor_tt_leaderboard_privilege_check` ourselves: allowed once per panel object, only for our content with
 // the bridge on, and only when the panel's tab list (begin/end pointers) is a plausible non-empty list of 8-byte entries.
-inline bool garage_should_drive(bool bridge_on, bool ours_content, uint64_t panel, uint64_t tabs_begin, uint64_t tabs_end, uint64_t driven_panel)
+inline bool garage_should_drive(bool bridge_on, bool ours_content, uint64_t panel, uint64_t tabs_begin, uint64_t tabs_end, uint64_t driven_panel, uint64_t driven_count = 0)
 {
-    if (!bridge_on || !ours_content || !panel || panel == driven_panel || !tabs_begin || tabs_end <= tabs_begin)
+    if (!bridge_on || !ours_content || !panel || !tabs_begin || tabs_end <= tabs_begin)
         return false;
     uint64_t span = tabs_end - tabs_begin;
-    return span % 8 == 0 && span / 8 <= 64;
+    return span % 8 == 0 && span / 8 <= 64 && (panel != driven_panel || span / 8 != driven_count);
+}
+
+// The garage monitor builds its leaderboard tabs (global and friends, class ctor 0x142fc7280) in a time trial garage only when the
+// leaderboard block byte ([[0x1460fddb8]+0x18]) is 0 and the feature flag bit 37 of Ne_Get_FeatureFlags() is set. Offline one of
+// them is not. For our content with the bridge on the build sees a 0 block byte and the flags with bit 37 set; nothing else changes.
+constexpr uint64_t GARAGE_LEADERBOARD_FEATURE = 0x2000000000ull;
+
+inline uint64_t garage_feature_flags(uint64_t flags, bool bridge_on, bool ours_content)
+{
+    return bridge_on && ours_content ? flags | GARAGE_LEADERBOARD_FEATURE : flags;
+}
+
+inline uint8_t garage_block_byte(uint8_t block, bool bridge_on, bool ours_content)
+{
+    return bridge_on && ours_content ? 0 : block;
 }
 
 inline bool ours(int descriptor, bool track_custom) { return descriptor >= FIRST_ADDON_DESCRIPTOR || track_custom; }

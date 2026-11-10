@@ -150,6 +150,9 @@ const runtime::Sig S_GARAGE_CMD{"site_Game_GarageCockpitViewModel_OnCommandRaise
         "4C 89 C3 48 89 D7 48 89 CE 48 8B 02 48 85 C0 74 27 8B 00 3D 7C DC 61 08", 0x1bc514a};
 const runtime::Sig S_GARAGE_UPDATE{"site_Game_GarageMonitorPanel_Update_141f76f09",
         "48 89 CE 0F B6 99 48 09 00 00 48 8B 81 70 02 00 00 4C 8B A0 88 00 00 00", 0x1f76f09};
+constexpr const char *GARAGE_TABS_PATTERN = "80 79 18 00 0F 85 ?? ?? ?? ?? 48 B9 00 00 00 00 20 00 00 00 48 23 08 0F 84 ?? ?? ?? ??";
+const runtime::Sig S_GARAGE_TAB_BLOCK{"site_Game_GarageMonitorPanel_BuildTabs_leaderboard_block_141f720ab", GARAGE_TABS_PATTERN, 0x1f720ab, runtime::Sig::addr, 0, 0};
+const runtime::Sig S_GARAGE_TAB_FLAGS{"site_Game_GarageMonitorPanel_BuildTabs_leaderboard_feature_141f720b5", GARAGE_TABS_PATTERN, 0x1f720b5, runtime::Sig::addr, 0, 10};
 const runtime::Sig S_GARAGE_PRIV_SUB{"Game_GarageMonitorPanel_OnTtLeaderboardPrivilege_thunk_141f79690", "E9 9B 42 6A 0A", 0x1f79690};
 const runtime::Sig S_PRIV_GATE{"site_Game_UIUIPrivilegeCheckControl_HandleSignal_Result",
         "41 80 BE AB 00 00 00 00 0F 84 8C 00 00 00 45 84 FF 0F 84 8D 00 00 00", 0x3822cdf, runtime::Sig::addr, 0, 8};
@@ -186,7 +189,7 @@ std::atomic<int> hits_upload{0}, hits_download{0}, hits_racenet{0};
 std::vector<std::string> seen_methods;
 
 bool diag_on = false;
-safetyhook::MidHook h_garage_done, h_garage_cmd, h_garage_update, h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
+safetyhook::MidHook h_garage_done, h_garage_cmd, h_garage_update, h_tab_block, h_tab_flags, h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
 
 struct GateHook {
     uintptr_t at = 0, resume = 0, session_global = 0;
@@ -935,7 +938,36 @@ void garage_cmd_mid(safetyhook::Context &c)
         swofty::log("[boards] garage view model command 0x%x raised%s", id, id == 0x3c3e50f5 ? " (tt_privilege_check_done: the leaderboard privilege result)" : "");
 }
 
-std::atomic<uint64_t> garage_driven_panel{0};
+// Ownership: both mid-hooks sit in the panel's tab builder on the game thread. The first runs just before `cmp byte [rcx+0x18],0` and points
+// rcx at a static zero byte; the second runs just before `movabs rcx,bit; and rcx,[rax]` and points rax at a static copy of the feature
+// flags with the leaderboard bit set. Nothing is written to the game and nothing is called; the copy is read once through readable().
+void garage_tab_block_mid(safetyhook::Context &c)
+{
+    static uint8_t zero[0x20] = {};
+    static std::atomic<int> logged{0};
+    if (!bridge_on || !content_ours())
+        return;
+    uint8_t was = runtime::readable(reinterpret_cast<void *>(c.rcx + 0x18), 1) ? *reinterpret_cast<uint8_t *>(c.rcx + 0x18) : 0xff;
+    c.rcx = reinterpret_cast<uint64_t>(zero) - 0x18;
+    if (++logged <= 4)
+        swofty::log("[boards] garage monitor tab build: leaderboard block byte was %u, read as 0 for our content", unsigned(was));
+}
+
+void garage_tab_flags_mid(safetyhook::Context &c)
+{
+    static thread_local uint64_t copy = 0;
+    static std::atomic<int> logged{0};
+    if (!bridge_on || !content_ours() || !runtime::readable(reinterpret_cast<void *>(c.rax), 8))
+        return;
+    uint64_t was = *reinterpret_cast<uint64_t *>(c.rax);
+    copy = tb::garage_feature_flags(was, bridge_on, true);
+    c.rax = reinterpret_cast<uint64_t>(&copy);
+    if (++logged <= 4)
+        swofty::log("[boards] garage monitor tab build: feature flags 0x%llx (leaderboard bit %s), read with the bit set for our content: the global and friends leaderboard tabs are built",
+                    (unsigned long long)was, was & tb::GARAGE_LEADERBOARD_FEATURE ? "already set" : "was clear");
+}
+
+std::atomic<uint64_t> garage_driven_panel{0}, garage_driven_count{0};
 uintptr_t garage_priv_sub = 0;
 
 // Ownership: rcx is the garage monitor panel, the object whose Update is running on the game thread right now. Reads are plain values
@@ -950,9 +982,10 @@ void garage_update_mid(safetyhook::Context &c)
     if (!runtime::readable(reinterpret_cast<void *>(panel + 0x408), 16))
         return;
     tb_ = peek64(panel + 0x408), te = peek64(panel + 0x410);
-    if (!tb::garage_should_drive(bridge_on, content_ours(), panel, tb_, te, garage_driven_panel.load()))
+    if (!tb::garage_should_drive(bridge_on, content_ours(), panel, tb_, te, garage_driven_panel.load(), garage_driven_count.load()))
         return;
     garage_driven_panel = panel;
+    garage_driven_count = (te - tb_) / 8;
     alignas(16) uint8_t msg[0x40] = {};
     msg[0x10] = 1;
     reinterpret_cast<uint64_t (*)(uint64_t, void *)>(garage_priv_sub)(panel, msg);
@@ -1318,6 +1351,12 @@ void setup()
                 if (hook_mid(h_garage_cmd, at, garage_cmd_mid, "garage view model commands"))
                     swofty::log("[boards] garage view model commands logged at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
         }
+        if (bridge_on)
+            for (auto [sig, hook, fn, label] : {std::tuple<const runtime::Sig *, safetyhook::MidHook *, safetyhook::MidHookFn, const char *>{&S_GARAGE_TAB_BLOCK, &h_tab_block, garage_tab_block_mid, "garage leaderboard block byte"},
+                                                {&S_GARAGE_TAB_FLAGS, &h_tab_flags, garage_tab_flags_mid, "garage leaderboard feature flag"}})
+                if (uintptr_t at = runtime::find(*sig, "boards", "boards"))
+                    if (hook_mid(*hook, at, fn, label))
+                        swofty::log("[boards] %s read as allowed for our content at base+0x%llx: the garage monitor builds its leaderboard tabs", label, (unsigned long long)(at - swofty::api->module_base()));
         if (bridge_on)
             if (uintptr_t sub = runtime::find(S_GARAGE_PRIV_SUB, "boards", "boards"))
                 if (uintptr_t at = runtime::find(S_GARAGE_UPDATE, "boards", "boards"))
