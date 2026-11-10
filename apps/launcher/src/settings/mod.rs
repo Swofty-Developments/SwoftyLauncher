@@ -15,7 +15,7 @@ use swofty_i18n::tr;
 
 use crate::pages::GUTTER;
 use crate::shell::{Page, Shell};
-use crate::theme::Palette;
+use crate::theme::{Palette, ScrollArea};
 use crate::ui::form::side_nav_item;
 
 pub use usage::{GameCopy, clear_logs_at_start, low_space_warning};
@@ -97,11 +97,10 @@ impl Shell {
                     .child(self.settings_nav(category, p, cx))
                     .child(
                         div()
-                            .id(SharedString::from(format!("settings-scroll-{category:?}")))
                             .flex_1()
                             .min_w_0()
                             .h_full()
-                            .overflow_y_scroll()
+                            .scroll_y(SharedString::from(format!("settings-scroll-{category:?}")))
                             .child(
                                 v_flex()
                                     .max_w(px(CONTENT_WIDTH))

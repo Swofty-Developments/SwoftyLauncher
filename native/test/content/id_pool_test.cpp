@@ -102,8 +102,11 @@ int main()
         check(p.ops.size() == 0 && p.refused == 1 && p.lines.back().find("left out") != std::string::npos,
               "a vehicle that can't get an id lowers to no row and is refused");
         content::Plan big;
-        content::lower_vehicle("a/big", car, lookup, source, big, [](const std::string &, const std::string &, int64_t) -> int64_t { return 1334; });
-        check(big.ops.size() == 0 && big.refused == 1, "a vehicle given an id above 1023 is left out");
+        content::lower_vehicle("a/big", car, lookup, source, big, [](const std::string &, const std::string &, int64_t) -> int64_t { return 16383; });
+        check(big.ops.size() == 0 && big.refused == 1, "a vehicle given an id above 16382 is left out");
+        content::Plan wide;
+        content::lower_vehicle("a/wide", car, lookup, source, wide, [](const std::string &, const std::string &, int64_t) -> int64_t { return 1334; });
+        check(wide.refused == 0 && wide.ops.size() > 0, "a vehicle given an id above 1023 gets its row");
 
         content::Dropped dropped = {content::drop_key("vehicle", "a/three")};
         Value list = Value::object({{"entrant_list", Value("f_1986")},

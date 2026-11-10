@@ -115,6 +115,8 @@ pub struct Config {
     pub discord_username: Option<String>,
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     pub news_seen: BTreeSet<String>,
+    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
+    pub dismissed_cards: BTreeSet<String>,
     /// The career vault's size cap in MB; 500 when unset.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub vault_cap_mb: Option<u64>,
@@ -1044,6 +1046,19 @@ mod tests {
         config.news_seen.insert("discord".into());
         let back: Config = serde_json::from_str(&serde_json::to_string(&config).unwrap()).unwrap();
         assert!(back.news_seen.contains("discord"));
+    }
+
+    #[test]
+    fn config_remembers_dismissed_cards() {
+        let mut config = Config::default();
+        assert!(
+            !serde_json::to_string(&config)
+                .unwrap()
+                .contains("dismissed_cards")
+        );
+        config.dismissed_cards.insert("install-browse".into());
+        let back: Config = serde_json::from_str(&serde_json::to_string(&config).unwrap()).unwrap();
+        assert!(back.dismissed_cards.contains("install-browse"));
     }
 
     fn strings(args: &[&str]) -> Vec<String> {
