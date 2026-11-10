@@ -73,6 +73,17 @@ impl Shell {
         cx.notify();
     }
 
+    pub(crate) fn set_time_trial_ingame(&mut self, on: bool, window: &mut Window, cx: &mut Context<Self>) {
+        let mut config = self.store.config();
+        config.time_trial_ingame = on;
+        if let Err(e) = self.store.save_config(&config) {
+            crate::app_log::action("save settings").failed(&e);
+            window.push_notification(Notification::error(e.to_string()), cx);
+        }
+        self.time_trial_ingame = config.time_trial_ingame;
+        cx.notify();
+    }
+
     pub(crate) fn set_launch_mode(&mut self, mode: LaunchMode, window: &mut Window, cx: &mut Context<Self>) {
         let mut config = self.store.config();
         config.set_launch_mode(&self.library.profile.name, mode);
