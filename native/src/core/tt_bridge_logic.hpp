@@ -418,6 +418,45 @@ inline uint64_t garage_feature_flags(uint64_t flags, bool bridge_on, bool ours_c
     return bridge_on && ours_content ? flags | GARAGE_LEADERBOARD_FEATURE : flags;
 }
 
+// Replay capture (SWOFTY_TT_REPLAY_CAPTURE=1). A personal best marks a capture pending; the game's own save (ReplayManager::SaveFullReplay) is
+// started once, a short delay later, from the replay system's own tick.
+constexpr uint32_t REPLAY_MAGIC = 0xe32fcaa8u;
+
+inline bool replay_capture_due(int64_t pending_ms, int64_t now_ms, int64_t delay_ms)
+{
+    return pending_ms > 0 && now_ms >= pending_ms + delay_ms;
+}
+
+// Byte offset of the replay header magic inside the first `n` bytes of a file (little endian dword at an aligned offset), or -1.
+inline int replay_magic_offset(const uint8_t *bytes, size_t n)
+{
+    if (!bytes)
+        return -1;
+    for (size_t i = 0; i + 4 <= n && i < 16; i += 4) {
+        uint32_t v = uint32_t(bytes[i]) | uint32_t(bytes[i + 1]) << 8 | uint32_t(bytes[i + 2]) << 16 | uint32_t(bytes[i + 3]) << 24;
+        if (v == REPLAY_MAGIC)
+            return int(i);
+    }
+    return -1;
+}
+
+inline std::string replay_capture_name(uint64_t unix_seconds, uint32_t lap_ms)
+{
+    return "pb_" + std::to_string(unix_seconds) + "_" + std::to_string(lap_ms) + ".replay";
+}
+
+// The save may be started only for our content with the bridge on, with a replay system whose vtable is the game's and a recording enabled.
+inline bool replay_capture_allowed(bool env_on, bool bridge_on, bool ours_content, bool vtable_ok, uint8_t recording_flag, uint64_t job_queue)
+{
+    return env_on && bridge_on && ours_content && vtable_ok && recording_flag != 0 && job_queue != 0;
+}
+
+// The game finished writing when the size is non-zero and unchanged across `stable_needed` polls.
+inline bool replay_file_settled(uint64_t size, uint64_t last_size, int stable_polls, int stable_needed)
+{
+    return size > 0 && size == last_size && stable_polls >= stable_needed;
+}
+
 // The garage monitor panel's tab builder may have run before our content was known, leaving the panel without the leaderboard tab. For our
 // content in a time trial garage (session type 0x12) the builder is run again once per panel object, unless it already ran for it with our content.
 constexpr int GARAGE_TT_SESSION = 0x12;

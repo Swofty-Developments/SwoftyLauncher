@@ -22,6 +22,7 @@
 #include <mutex>
 #include <set>
 #include <string>
+#include <thread>
 #include <tuple>
 #include <vector>
 
@@ -155,6 +156,9 @@ constexpr const char *GARAGE_TABS_PATTERN = "80 79 18 00 0F 85 ?? ?? ?? ?? 48 B9
 const runtime::Sig S_GARAGE_TAB_BLOCK{"site_Game_GarageMonitorPanel_BuildTabs_leaderboard_block_141f720ab", GARAGE_TABS_PATTERN, 0x1f720ab, runtime::Sig::addr, 0, 0};
 const runtime::Sig S_GARAGE_TAB_FLAGS{"site_Game_GarageMonitorPanel_BuildTabs_leaderboard_feature_141f720b5", "48 B9 00 00 00 00 20 00 00 00 48 23 08 0F 84 ?? ?? ?? ??", 0x1f720b5};
 const runtime::Sig S_GARAGE_TAB_GATE{"site_Game_GarageMonitorPanel_BuildTabs_gate_byte_141f7208e", "80 B9 80 00 00 00 00 0F 84 ?? ?? ?? ?? 83 FD 12 0F 85 ?? ?? ?? ??", 0x1f7208e};
+const runtime::Sig S_REPLAY_TICK{"Ne_ReplaySystem_ResetSlot24_1445d57e0", "56 48 83 EC 20 80 B9 89 00 00 00 00 0F 84 90 00 00 00 48 89 CE 80 3D", 0x45d57e0};
+const runtime::Sig S_REPLAY_SAVE{"Game_ReplayManager_SaveFullReplay_142c46880", "41 56 56 57 53 48 81 EC 38 02 00 00 80 B9 E1 06 00 00 00 74 46 48 89 CE 48 83 B9 50 01 00 00 00", 0x2c46880};
+const runtime::Sig S_REPLAY_PATH{"Game_ReplayManager_BuildSavePath_142c48860", "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 05 00 00 48 89 D6 48 89 CB 48 8D 79 20", 0x2c48860};
 const runtime::Sig S_GARAGE_BUILD{"Game_GarageMonitorPanel_BuildTabs_141f71fa0",
         "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 48 89 CE 80 B9 49 09 00 00 00", 0x1f71fa0};
 const runtime::Sig S_GARAGE_FRIENDS_TAB{"site_Game_GarageMonitorPanel_BuildTabs_friends_tab_141f725e9",
@@ -195,7 +199,10 @@ std::atomic<int> hits_upload{0}, hits_download{0}, hits_racenet{0};
 std::vector<std::string> seen_methods;
 
 bool diag_on = false;
-safetyhook::MidHook h_garage_done, h_garage_cmd, h_garage_update, h_tab_block, h_tab_flags, h_tab_friends, h_tab_build, h_tab_gate, h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
+bool replay_capture_on = false;
+std::atomic<int64_t> replay_pending_ms{0};
+std::atomic<uint32_t> replay_pending_lap{0};
+safetyhook::MidHook h_garage_done, h_garage_cmd, h_garage_update, h_tab_block, h_tab_flags, h_tab_friends, h_tab_build, h_tab_gate, h_replay_tick, h_replay_save, h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
 
 struct GateHook {
     uintptr_t at = 0, resume = 0, session_global = 0;
@@ -504,6 +511,10 @@ void pb_mid(safetyhook::Context &c)
         swofty::log("[boards] personal best committed (time word 0x%08x): player id block %s", ms, hex_dump(blk, sizeof blk).c_str());
     if (pb_armed.load(std::memory_order_relaxed))
         runtime::lap_rec_ghost(h);
+    if (replay_capture_on && bridge_on) {
+        replay_pending_lap = ms;
+        replay_pending_ms = now_ms();
+    }
 }
 
 bool hook_mid(safetyhook::MidHook &slot, uintptr_t at, safetyhook::MidHookFn fn, const char *what)
@@ -1043,6 +1054,118 @@ void garage_friends_tab_mid(safetyhook::Context &c)
         swofty::log("[boards] garage monitor tab build: the friends leaderboard tab is not built for our content (only the SWOFTY leaderboard tab)");
 }
 
+// Replay capture. Ownership: pb_mid (game thread, ghost handler) only stores a timestamp. The replay system's own tick (a mid-hook at the entry of
+// vslot 24 of GameReplaySystem, rcx = the replay system) starts the game's own ReplayManager::SaveFullReplay once, after a delay, when
+// tb::replay_capture_allowed holds: the vtable word is compared with the known GameReplaySystem vtable, [+0x6e1] (recording) and [+0x150] (job
+// queue) are read through readable(). The path builder 0x142c48860 fills a local 0x240-byte string object (vtable, capacity, pointer, inline
+// buffer) exactly as the results screen does; the save call copies the path into the replay system and queues the save job on the game's
+// replay thread. A watcher thread then only polls the file system.
+uintptr_t replay_build_path_fn = 0, replay_save_fn = 0;
+constexpr uint64_t GAME_REPLAY_SYSTEM_VTABLE_RVA = 0x1457cf220 - 0x140000000;
+constexpr int64_t REPLAY_SAVE_DELAY_MS = 1500;
+std::atomic<uint64_t> replay_system_seen{0};
+
+std::string narrow(const wchar_t *w)
+{
+    std::string out;
+    for (; w && *w; w++)
+        out += *w < 0x80 ? char(*w) : '?';
+    return out;
+}
+
+void replay_watch(std::wstring path, uint32_t lap_ms, uint64_t stamp)
+{
+    uint64_t last = 0;
+    int stable = 0;
+    DWORD attr = 0;
+    for (int i = 0; i < 180; i++) {
+        Sleep(1000);
+        attr = GetFileAttributesW(path.c_str());
+        if (attr == INVALID_FILE_ATTRIBUTES)
+            continue;
+        WIN32_FILE_ATTRIBUTE_DATA d{};
+        if (!GetFileAttributesExW(path.c_str(), GetFileExInfoStandard, &d))
+            continue;
+        uint64_t size = (uint64_t(d.nFileSizeHigh) << 32) | d.nFileSizeLow;
+        if (attr & FILE_ATTRIBUTE_DIRECTORY) {
+            swofty::log("[replay] capture: the game's save path %s is a directory (not a file); contents are not copied", narrow(path.c_str()).c_str());
+            return;
+        }
+        stable = size == last ? stable + 1 : 0;
+        if (!tb::replay_file_settled(size, last, stable, 3)) {
+            last = size;
+            continue;
+        }
+        std::wstring root = runtime::swofty_root();
+        CreateDirectoryW((root + L"tt").c_str(), nullptr);
+        std::wstring dir = root + L"tt\\replays\\";
+        CreateDirectoryW(dir.c_str(), nullptr);
+        std::string name = tb::replay_capture_name(stamp, lap_ms);
+        std::wstring dest = dir + std::wstring(name.begin(), name.end());
+        uint8_t head[16] = {};
+        DWORD got = 0;
+        HANDLE f = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
+        if (f != INVALID_HANDLE_VALUE) {
+            ReadFile(f, head, sizeof head, &got, nullptr);
+            CloseHandle(f);
+        }
+        int magic = tb::replay_magic_offset(head, got);
+        bool copied = CopyFileW(path.c_str(), dest.c_str(), FALSE) != 0;
+        swofty::log("[replay] capture: game save %s settled at %llu bytes; header %s; magic 0xe32fcaa8 %s; copy to tt/replays/%s %s", narrow(path.c_str()).c_str(), (unsigned long long)size,
+                    hex_dump(head, got).c_str(), magic >= 0 ? ("found at +" + std::to_string(magic)).c_str() : "NOT found", name.c_str(), copied ? "done" : "FAILED");
+        return;
+    }
+    swofty::log("[replay] capture: the game's save %s did not appear within 180 s", narrow(path.c_str()).c_str());
+}
+
+void replay_save_entry_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> logged{0};
+    replay_system_seen = c.rcx;
+    if (++logged <= 6)
+        swofty::log("[replay] the game started ReplayManager::SaveFullReplay on 0x%llx, path %s", (unsigned long long)c.rcx,
+                    runtime::readable(reinterpret_cast<void *>(c.rdx), 2) ? narrow(reinterpret_cast<const wchar_t *>(c.rdx)).c_str() : "?");
+}
+
+void replay_tick_mid(safetyhook::Context &c)
+{
+    uint64_t sys = c.rcx;
+    int64_t pending = replay_pending_ms.load();
+    if (!tb::replay_capture_due(pending, now_ms(), REPLAY_SAVE_DELAY_MS))
+        return;
+    uintptr_t base = swofty::api->module_base();
+    bool vt_ok = runtime::readable(reinterpret_cast<void *>(sys), 8) && peek64(sys) == base + GAME_REPLAY_SYSTEM_VTABLE_RVA;
+    uint8_t rec = runtime::readable(reinterpret_cast<void *>(sys + 0x6e1), 1) ? *reinterpret_cast<uint8_t *>(sys + 0x6e1) : 0;
+    uint64_t queue = peek64(sys + 0x150);
+    if (!vt_ok)
+        return;
+    if (!replay_pending_ms.compare_exchange_strong(pending, 0))
+        return;
+    static std::atomic<int> logged{0};
+    if (!tb::replay_capture_allowed(replay_capture_on, bridge_on, content_ours(), vt_ok, rec, queue)) {
+        if (++logged <= 4)
+            swofty::log("[replay] capture: not started (recording flag %u, job queue 0x%llx, our content %d)", unsigned(rec), (unsigned long long)queue, content_ours() ? 1 : 0);
+        return;
+    }
+    alignas(16) static uint8_t out[0x240];
+    memset(out, 0, sizeof out);
+    reinterpret_cast<void *(*)(uint64_t, void *)>(replay_build_path_fn)(sys, out);
+    uint64_t pptr = peek64(reinterpret_cast<uint64_t>(out) + 0x10), cap = peek64(reinterpret_cast<uint64_t>(out) + 8);
+    if (pptr < reinterpret_cast<uint64_t>(out) || pptr > reinterpret_cast<uint64_t>(out) + 0x40 || cap == 0 || cap > 0x100 || !runtime::readable(reinterpret_cast<void *>(pptr), 4)) {
+        swofty::log("[replay] capture: the game's path builder returned an unexpected string object (ptr 0x%llx, capacity %llu); not saving", (unsigned long long)pptr, (unsigned long long)cap);
+        return;
+    }
+    std::wstring path(reinterpret_cast<const wchar_t *>(pptr));
+    bool ok = (reinterpret_cast<uint64_t (*)(uint64_t, const void *)>(replay_save_fn)(sys, reinterpret_cast<const void *>(pptr)) & 0xff) != 0;
+    swofty::log("[replay] capture: ReplayManager::SaveFullReplay(%s) %s for the personal best of %u ms", narrow(path.c_str()).c_str(), ok ? "queued" : "refused (a save is already running or nothing is recording)",
+                replay_pending_lap.load());
+    if (ok) {
+        uint32_t lap = replay_pending_lap.load();
+        uint64_t stamp = unix_seconds();
+        std::thread(replay_watch, path, lap, stamp).detach();
+    }
+}
+
 std::atomic<uint64_t> garage_driven_panel{0}, garage_driven_count{0}, garage_built_ours{0};
 uintptr_t garage_build_fn = 0;
 
@@ -1366,6 +1489,11 @@ void setup()
     char dv[16] = {};
     DWORD dn = GetEnvironmentVariableA("SWOFTY_TT_DIAG", dv, sizeof dv);
     diag_on = dn && dn < sizeof dv && !strcmp(dv, "1");
+    {
+        char rv[8] = {};
+        DWORD rn = GetEnvironmentVariableA("SWOFTY_TT_REPLAY_CAPTURE", rv, sizeof rv);
+        replay_capture_on = rn && rn < sizeof rv && !strcmp(rv, "1");
+    }
     track_watch = bridge_on || guards_on || diag_on;
     table = tb::Table(unix_seconds() * 100);
     make_dirs();
@@ -1465,6 +1593,17 @@ void setup()
             if (uintptr_t at = runtime::find(S_GARAGE_FRIENDS_TAB, "boards", "boards"))
                 if (hook_mid(h_tab_friends, at, garage_friends_tab_mid, "garage friends tab"))
                     swofty::log("[boards] garage friends tab skipped for our content at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
+        if (bridge_on && replay_capture_on) {
+            uintptr_t path_fn = runtime::find(S_REPLAY_PATH, "boards", "boards"), save_fn = runtime::find(S_REPLAY_SAVE, "boards", "boards"), tick = runtime::find(S_REPLAY_TICK, "boards", "boards");
+            if (path_fn && save_fn && tick && hook_mid(h_replay_tick, tick, replay_tick_mid, "replay system tick")) {
+                replay_build_path_fn = path_fn;
+                replay_save_fn = save_fn;
+                hook_mid(h_replay_save, save_fn, replay_save_entry_mid, "replay save observer");
+                swofty::log("[replay] capture armed (SWOFTY_TT_REPLAY_CAPTURE=1): tick at base+0x%llx, save at base+0x%llx, path builder at base+0x%llx", (unsigned long long)(tick - swofty::api->module_base()),
+                            (unsigned long long)(save_fn - swofty::api->module_base()), (unsigned long long)(path_fn - swofty::api->module_base()));
+            } else
+                swofty::log("[replay] capture: off, a signature or the tick hook failed");
+        }
         if (bridge_on || diag_on)
             if (uintptr_t fn = runtime::find(S_GARAGE_BUILD, "boards", "boards"))
                 if (hook_mid(h_tab_build, fn + 0x1c, garage_build_mid, "garage tab builder")) {

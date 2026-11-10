@@ -124,6 +124,20 @@ int main()
     expect(tb::garage_gate_byte(0, false, true, 0x12) == 0 && tb::garage_gate_byte(0, true, false, 0x12) == 0 && tb::garage_gate_byte(0, true, true, 0x10) == 0 &&
                tb::garage_gate_byte(0, true, true, -1) == 0,
            "it is untouched with the bridge off, for stock content and in other session types");
+    expect(tb::replay_capture_due(1000, 2500, 1500) && !tb::replay_capture_due(1000, 2499, 1500) && !tb::replay_capture_due(0, 9999, 1500), "a capture is due after its delay and never without a pending mark");
+    {
+        uint8_t h[16] = {0, 0, 0, 0, 0xa8, 0xca, 0x2f, 0xe3};
+        expect(tb::replay_magic_offset(h, 16) == 4 && tb::replay_magic_offset(h, 7) == -1 && tb::replay_magic_offset(nullptr, 16) == -1, "the replay magic is found at its aligned offset");
+        uint8_t z[16] = {};
+        expect(tb::replay_magic_offset(z, 16) == -1 && tb::replay_magic_offset(z, 0) == -1, "a file without the magic is rejected");
+    }
+    expect(tb::replay_capture_name(1700000000, 87893) == "pb_1700000000_87893.replay", "the capture file name carries the time and the lap time");
+    expect(tb::replay_capture_allowed(true, true, true, true, 1, 0x10) && !tb::replay_capture_allowed(false, true, true, true, 1, 0x10) && !tb::replay_capture_allowed(true, false, true, true, 1, 0x10) &&
+               !tb::replay_capture_allowed(true, true, false, true, 1, 0x10) && !tb::replay_capture_allowed(true, true, true, false, 1, 0x10) &&
+               !tb::replay_capture_allowed(true, true, true, true, 0, 0x10) && !tb::replay_capture_allowed(true, true, true, true, 1, 0),
+           "the save starts only behind the switch, the bridge, our content, a genuine replay system, a recording and a job queue");
+    expect(tb::replay_file_settled(100, 100, 3, 3) && !tb::replay_file_settled(100, 99, 3, 3) && !tb::replay_file_settled(0, 0, 9, 3) && !tb::replay_file_settled(100, 100, 2, 3),
+           "a replay file is settled only when its size stopped changing");
     expect(tb::garage_result(0, true, true) == 1, "a denied garage privilege becomes granted for our content");
     expect(tb::garage_result(0, false, true) == 0 && tb::garage_result(0, true, false) == 0, "it stays denied with the bridge off or for stock content");
     expect(tb::garage_result(1, true, true) == 1 && tb::garage_result(0xff, true, true) == 0xff && tb::garage_result(2, true, true) == 2,
