@@ -145,8 +145,22 @@ const char *lookup_hook(void *cache, void *id)
     return result;
 }
 
+// Reads of game memory. Small reads (node fields) are guarded copies; anything bigger goes through ReadProcessMemory, which reports a
+// short read instead of faulting. A fault inside the big memcpy of the core's runtime cannot be dispatched under Wine (run67: "invalid
+// frame ... unable to dispatch exception"), so no large read may rely on the SEH guard.
+bool read_process(uint64_t at, void *out, size_t n, size_t *got = nullptr)
+{
+    SIZE_T done = 0;
+    bool ok = ReadProcessMemory(GetCurrentProcess(), reinterpret_cast<const void *>(at), out, n, &done) != 0 && done == n;
+    if (got)
+        *got = size_t(done);
+    return ok;
+}
+
 bool registry_read(uint64_t at, void *out, size_t n)
 {
+    if (n > 64)
+        return read_process(at, out, n);
     return swofty_core::hooks::guard::copy_memory(out, reinterpret_cast<const void *>(at), n);
 }
 
@@ -195,9 +209,8 @@ std::vector<Region> rw_regions()
     MEMORY_BASIC_INFORMATION m{};
     uint64_t at = 0x10000;
     while (at < 0x7fffffff0000ull && VirtualQuery(reinterpret_cast<void *>(at), &m, sizeof m)) {
-        bool ok = m.State == MEM_COMMIT && !(m.Protect & (PAGE_NOACCESS | PAGE_GUARD)) &&
-                  (m.Protect & (PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY));
-        if (ok && m.RegionSize <= (uint64_t(2) << 30))
+        bool ok = m.State == MEM_COMMIT && m.Type == MEM_PRIVATE && m.Protect == PAGE_READWRITE;
+        if (ok && m.RegionSize <= (uint64_t(1) << 30))
             out.push_back({uint64_t(m.BaseAddress), uint64_t(m.RegionSize), unsigned(m.Type)});
         uint64_t next = uint64_t(m.BaseAddress) + m.RegionSize;
         if (next <= at)
@@ -239,9 +252,11 @@ std::string hex_of(const uint8_t *b, size_t n)
 void scan_copies(std::string stock)
 {
     namespace ms = runtime::mem_scan;
-    constexpr size_t CHUNK = size_t(8) << 20;
+    constexpr size_t CHUNK = size_t(1) << 20, OVERLAP = 256;
+    const int64_t deadline = int64_t(GetTickCount64()) + 25000;
+    SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_LOWEST);
     auto regions = rw_regions();
-    std::vector<uint8_t> buf(CHUNK + 16);
+    std::vector<uint8_t> buf(CHUNK + OVERLAP);
     uint64_t base = swofty::api->module_base();
     std::string upper = stock;
     for (char &c : upper)
@@ -259,18 +274,27 @@ void scan_copies(std::string stock)
     };
     std::vector<Hit> hits;
     uint64_t scanned = 0;
-    for (auto &v : variants) {
-        size_t found = 0;
-        for (auto &r : regions) {
-            for (uint64_t off = 0; off < r.size && found < 48; off += CHUNK) {
-                size_t n = size_t(std::min<uint64_t>(CHUNK + 16, r.size - off));
-                if (!registry_read(r.base + off, buf.data(), n))
+    size_t per_variant[4] = {};
+    for (auto &r : regions) {
+        for (uint64_t off = 0; off < r.size; off += CHUNK) {
+            if (int64_t(GetTickCount64()) > deadline) {
+                swofty::log("[boards] name copies: the scan stopped at its 25 s limit");
+                goto scanned_all;
+            }
+            size_t n = size_t(std::min<uint64_t>(CHUNK + OVERLAP, r.size - off));
+            if (!read_process(r.base + off, buf.data(), n))
+                continue;
+            scanned += std::min<uint64_t>(CHUNK, n);
+            Sleep(0);
+            for (size_t vi = 0; vi < variants.size(); vi++) {
+                auto &v = variants[vi];
+                if (per_variant[vi] >= 48)
                     continue;
-                if (&v == &variants[0])
-                    scanned += n;
                 std::vector<size_t> at;
                 ms::find_all(buf.data(), n, v.needle, at, 48);
                 for (size_t o : at) {
+                    if (o >= CHUNK && off + CHUNK < r.size)
+                        continue;
                     uint64_t found_at = r.base + off + o;
                     if (found_at >= uint64_t(buf.data()) && found_at < uint64_t(buf.data()) + buf.size())
                         continue;
@@ -278,7 +302,7 @@ void scan_copies(std::string stock)
                     bool rec = false;
                     int rc = 0;
                     std::string before;
-                    if (registry_read(found_at - sizeof head, head, sizeof head)) {
+                    if (found_at >= 0x10000 + sizeof head && read_process(found_at - sizeof head, head, sizeof head)) {
                         before = hex_of(head, sizeof head);
                         if (!v.wide) {
                             auto c = ms::classify(head + sizeof head - 9, v.needle.size());
@@ -287,11 +311,12 @@ void scan_copies(std::string stock)
                         }
                     }
                     hits.push_back({found_at, rec, rc, r.type, v.label, r.base, r.size, before});
-                    found++;
+                    per_variant[vi]++;
                 }
             }
         }
     }
+scanned_all:
     swofty::log("[boards] name copies: \"%s\" variants found %zu time(s) in %.0f MB of writable memory (%zu regions)", stock.c_str(), hits.size(),
                 scanned / 1048576.0, regions.size());
     std::vector<uint64_t> targets;
@@ -310,9 +335,12 @@ void scan_copies(std::string stock)
     std::vector<std::pair<uint64_t, uint64_t>> refs;
     for (auto &r : regions) {
         for (uint64_t off = 0; off < r.size && refs.size() < 120; off += CHUNK) {
+            if (int64_t(GetTickCount64()) > deadline + 15000)
+                break;
             size_t n = size_t(std::min<uint64_t>(CHUNK, r.size - off));
-            if (!registry_read(r.base + off, buf.data(), n))
+            if (!read_process(r.base + off, buf.data(), n))
                 continue;
+            Sleep(0);
             ms::find_pointers(buf.data(), n, r.base + off, targets, refs, 120);
         }
     }
