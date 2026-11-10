@@ -88,6 +88,7 @@ t "Lap file format unit test" native/test/run_lap_file_test.sh
 t "Time Trial boards bridge unit test" native/test/run_tt_bridge_test.sh
 t "Lap recorder state machine, field plan and session gate unit test" native/test/run_lap_rec_test.sh
 t "Front-end tile list guard unit test" native/test/run_fe_tile_guard_test.sh
+t "Main menu logic unit test" native/test/run_main_menu_test.sh
 t "Session enter guard unit test" native/test/run_session_enter_test.sh
 t "AI line set guard unit test" native/test/run_ai_line_set_test.sh
 t "Audio job queue fix unit test" native/test/run_audio_queue_test.sh
