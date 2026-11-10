@@ -1737,7 +1737,7 @@ void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
                     desc.BufferDesc.Height, int(desc.BufferDesc.Format), desc.BufferCount, c.by.c_str());
     }
     bool addons = !subs.empty() && !killed("paint");
-    if (addons || cover)
+    if (addons || cover || menu)
         paint_frame(sc, c.queue, addons ? subs : std::vector<hud::Paintsub>(), desc, now, color_space);
     if (cap.on && !killed("capture"))
         capture_step(sc, c.queue, desc, now);

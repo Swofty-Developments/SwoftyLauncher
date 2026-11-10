@@ -222,8 +222,8 @@ const VIDEO_LABEL: &str = "swofty_video_label";
 const LABEL_SOURCE: &str = "description";
 const LABEL_SLOT_SOURCE: &str = "description_label";
 const LABELS: [(&str, &str, f64, f64, &str); 2] = [
-    (PANEL_LABEL, PANEL_TEXT_PATH, 3.2, 4.0, "7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c01"),
-    (VIDEO_LABEL, VIDEO_TEXT_PATH, 3.2, -3.4, "7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c02"),
+    (PANEL_LABEL, PANEL_TEXT_PATH, 3.4, 4.6, "7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c01"),
+    (VIDEO_LABEL, VIDEO_TEXT_PATH, 3.4, -3.9, "7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c02"),
 ];
 
 pub fn has_panel_labels_ui(data: &[u8]) -> Result<bool> {
@@ -251,7 +251,7 @@ pub fn panel_labels_ui(data: &[u8]) -> Result<Vec<u8>> {
             let t = label.props_mut()?.at_mut("text")?.o_mut()?;
             set_str(t, "value", "")?;
             set_str(t, "dbentry", path)?;
-            set_prop_value(&mut label, "localise", Val::bool(false))?;
+            set_prop(&mut label, "localise", prop(boolv(false), None))?;
             fix_ids(&mut label, Some(&owner));
             added.push(label);
         }
@@ -287,6 +287,10 @@ pub fn panel_scene(data: &[u8]) -> Result<Vec<u8>> {
         let mut slot = idf::detached(source);
         slot.o_mut()?.set("name", s(name));
         idf::set_param(&mut slot, "guid", Val::str(guid))?;
+        idf::set_param(&mut slot, "halign", Val::str("right"))?;
+        if let Some(Node::Arr(anims)) = slot.o_mut()?.get_mut("anims") {
+            anims.items.clear();
+        }
         set_position(&mut slot, x, y)?;
         idf::recompute_ids(&mut slot, &format!("{PATH}.{name}"))?;
         slots.push(slot);

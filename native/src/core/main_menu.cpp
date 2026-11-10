@@ -8,6 +8,7 @@
 #include <swofty/game.hpp>
 #include <swofty/mixin.hpp>
 
+#include <algorithm>
 #include <atomic>
 #include <map>
 #include <cstdlib>
@@ -77,7 +78,7 @@ std::atomic<uint64_t> swap_at{0}, home_opened_at{0};
 std::mutex swap_lock;
 std::string swap_screens;
 bool swap_reported = true;
-std::atomic<bool> state_loaded{false}, panel_disabled{false}, panel_prepared{false}, bind_pad{false};
+std::atomic<bool> state_loaded{false}, panel_disabled{false}, panel_prepared{false}, bind_pad{false}, overlay_drawn{false};
 
 struct Prepared {
     logic::State s;
@@ -803,8 +804,9 @@ void apply_texts()
     }
     if (!p)
         return;
-    std::string panel = p->version + "\n" + p->discord;
-    std::string video = p->s.video_url.empty() ? std::string() : logic::watch_line(logic::button_name(bind_pad.load())) + "\n" + p->s.video_title;
+    bool overlay = overlay_drawn.load();
+    std::string panel = overlay ? std::string() : p->version + "\n" + p->discord;
+    std::string video = overlay || p->s.video_url.empty() ? std::string() : logic::watch_line(logic::button_name(bind_pad.load())) + "\n" + p->s.video_title;
     if (done && panel == last_panel && video == last_video)
         return;
     bool a = ui_vm_set_path("ui_menu_data.swofty_panel_text", 0, panel.c_str());
@@ -875,30 +877,73 @@ void paint(hud::Frame &f, uint64_t now)
     if (!std::exchange(told_drawn, true))
         swofty::log("[main-menu] panel: first draw on a %.0fx%.0f frame; video card %s, avatar %s", double(W), double(H),
                     p->video_slot >= 0 ? "yes" : "no", p->avatar_slot >= 0 ? "yes" : "no");
-    float pad = 28 * u, bar = 64 * u, cw = 460 * u;
-    hud::TextStyle line;
-    line.px = 26 * u;
-    line.rgba = 0xe9ecf3ff;
-    float x = W - pad - cw, y = pad;
-    hud::rect_rounded(f, x - 14 * u, y - 10 * u, cw + 28 * u, bar + 14 * u, 8 * u, 0x0b0d12f2);
-    float tx = x;
+    const float edge = 20 * u;
+    hud::TextStyle name_style;
+    name_style.px = 26 * u;
+    name_style.rgba = 0xf3f5f9ff;
+    hud::TextStyle ver_style;
+    ver_style.px = 20 * u;
+    ver_style.rgba = 0xa9afbfff;
+    std::string who = p->s.signed_in ? (p->s.name.empty() ? std::string("Discord") : p->s.name) : std::string("Not signed in");
+    float who_w = 0, ver_w = 0, hh = 0;
+    hud::measure(name_style, who, &who_w, &hh);
+    hud::measure(ver_style, p->version, &ver_w, &hh);
+    float avatar = 56 * u, icon = 30 * u, gap = 12 * u, padx = 14 * u, pady = 10 * u;
+    float text_w = std::max(who_w, ver_w);
+    float pw = padx * 2 + avatar + gap + text_w + gap + icon;
+    float ph = pady * 2 + avatar;
+    float px = W - edge - pw, py = edge;
+    hud::rect_rounded(f, px, py, pw, ph, 12 * u, 0x0b0d12e6);
+    float ax = px + padx, ay = py + pady;
     if (p->avatar_slot >= 0) {
-        hud::image(f, p->avatar_slot, x, y, bar, bar, 0xffffffff);
-        tx = x + bar + 14 * u;
+        hud::image(f, p->avatar_slot, ax, ay, avatar, avatar, 0xffffffff);
+    } else {
+        hud::rect_rounded(f, ax, ay, avatar, avatar, avatar * 0.5f, p->s.signed_in ? 0x5865f2ff : 0x3a3f4bff);
+        hud::TextStyle initial;
+        initial.px = 30 * u;
+        initial.rgba = 0xffffffff;
+        std::string letter = p->s.signed_in && !p->s.name.empty() ? p->s.name.substr(0, 1) : "?";
+        float lw = 0, lh = 0;
+        hud::measure(initial, letter, &lw, &lh);
+        hud::text(f, ax + (avatar - lw) * 0.5f, ay + (avatar - initial.px) * 0.5f, initial, letter);
     }
-    hud::text(f, tx, y + 4 * u, line, p->version);
-    line.rgba = p->s.signed_in ? 0x8fd694ff : 0xa3a8b7ff;
-    line.px = 22 * u;
-    hud::text(f, tx, y + 4 * u + 30 * u, line, p->discord);
+    float tx = ax + avatar + gap;
+    hud::text(f, tx, ay + 4 * u, name_style, who);
+    hud::text(f, tx, ay + 4 * u + 30 * u, ver_style, p->version);
+    float ix = px + pw - padx - icon, iy = py + (ph - icon) * 0.5f;
+    hud::rect_rounded(f, ix, iy, icon, icon, 8 * u, p->s.signed_in ? 0x5865f2ff : 0x4a4f5cff);
+    hud::TextStyle d;
+    d.px = 20 * u;
+    d.rgba = 0xffffffff;
+    float dw = 0, dh = 0;
+    hud::measure(d, "D", &dw, &dh);
+    hud::text(f, ix + (icon - dw) * 0.5f, iy + (icon - d.px) * 0.5f, d, "D");
+
     if (p->video_slot >= 0) {
-        float vw = 400 * u, vh = vw * 9.0f / 16.0f;
-        float vx = W - pad - vw, vy = H - 190 * u - vh - 34 * u;
-        hud::image(f, p->video_slot, vx, vy, vw, vh, 0xffffffff);
+        float cw = 400 * u, tw = cw - 24 * u, thumb_h = tw * 9.0f / 16.0f;
+        hud::TextStyle title;
+        title.px = 22 * u;
+        title.rgba = 0xf3f5f9ff;
         hud::TextStyle cap;
-        cap.px = 22 * u;
-        cap.rgba = 0xe9ecf3ff;
-        hud::text(f, vx, vy + vh + 8 * u, cap, logic::watch_line(logic::button_name(bind_pad.load())));
+        cap.px = 20 * u;
+        cap.rgba = 0xa9afbfff;
+        std::string t = p->s.video_title;
+        float w = 0, h = 0;
+        hud::measure(title, t, &w, &h);
+        while (w > tw && t.size() > 4) {
+            t.resize(t.size() - 4);
+            t += "...";
+            hud::measure(title, t, &w, &h);
+        }
+        float ch = 12 * u + thumb_h + 8 * u + 28 * u + 26 * u + 10 * u;
+        float cx = W - edge - cw, cy = H - 120 * u - ch;
+        hud::rect_rounded(f, cx, cy, cw, ch, 12 * u, 0x0b0d12e6);
+        hud::image(f, p->video_slot, cx + 12 * u, cy + 12 * u, tw, thumb_h, 0xffffffff);
+        hud::text(f, cx + 12 * u, cy + 12 * u + thumb_h + 8 * u, title, t);
+        hud::text(f, cx + 12 * u, cy + 12 * u + thumb_h + 8 * u + 28 * u, cap,
+                  logic::watch_line(logic::button_name(bind_pad.load())));
     }
+    overlay_drawn = true;
     static bool told_verts = false;
     if (!std::exchange(told_verts, true))
         swofty::log("[main-menu] panel: first draw added %zu vertices and %zu batch(es) (frame total %zu / %zu)",

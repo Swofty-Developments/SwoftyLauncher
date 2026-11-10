@@ -1228,6 +1228,13 @@ mod tests {
         let dst2 = out.join("home2").join("flow_frontend.erp");
         let stock_scene = read_frag(&src, home_rows::SCENE, 0).unwrap();
         let panel_only = home_rows::panel_scene(&stock_scene).unwrap();
+        {
+            let doc = swofty_formats::pkg::Pkg::parse(&panel_only).unwrap();
+            let root = idf::scenes(&doc).unwrap()[0].o().unwrap().at("scene").unwrap();
+            let label = idf::find(root, "swofty_panel_label").expect("the panel slot");
+            let anims = label.o().unwrap().get("anims").and_then(|n| n.as_arr());
+            assert!(anims.is_none_or(|a| a.items.is_empty()), "the label slot keeps no animation");
+        }
         write_archive(
             &src,
             &dst2,
