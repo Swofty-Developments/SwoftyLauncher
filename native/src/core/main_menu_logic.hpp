@@ -70,9 +70,22 @@ constexpr const char *HOME_BACK_ROUTE = "swofty_home";
 
 constexpr uint32_t WATCH_KEY_VK = 0x56;
 constexpr double PANEL_BUDGET_MS = 4.0;
-constexpr double ACCOUNT_AT_X = 3.4, ACCOUNT_AT_Y = 4.0;
-constexpr double VIDEO_AT_X = 1.9, VIDEO_AT_Y = -3.9;
-constexpr double VIDEO_IMAGE_DX = 0.15 + 3.3, VIDEO_IMAGE_DY = 0.31 + 1.06, VIDEO_IMAGE_W = 6.6, VIDEO_IMAGE_H = 1.8;
+constexpr double ACCOUNT_AT_X = 3.06, ACCOUNT_AT_Y = 3.81;
+constexpr double VIDEO_AT_X = 2.29, VIDEO_AT_Y = -4.95;
+constexpr double VIDEO_IMAGE_DX = 3.3, VIDEO_IMAGE_DY = 1.06, VIDEO_IMAGE_W = 6.6, VIDEO_IMAGE_H = 1.8;
+constexpr double SCENE_UNITS_TALL = 11.0, SCENE_CENTRE_X_SHIFT = -0.0148, SCENE_CENTRE_Y = 0.4918;
+
+struct Point {
+    float x = 0, y = 0;
+};
+
+inline float scene_scale(float height) { return height / float(SCENE_UNITS_TALL); }
+
+inline Point scene_to_px(double x, double y, float width, float height)
+{
+    float s = scene_scale(height);
+    return {width * 0.5f + float(SCENE_CENTRE_X_SHIFT) * height + s * float(x), float(SCENE_CENTRE_Y) * height - s * float(y)};
+}
 
 constexpr uint32_t djb2(const char *s)
 {

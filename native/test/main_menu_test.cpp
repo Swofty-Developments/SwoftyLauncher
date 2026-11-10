@@ -78,6 +78,16 @@ int main()
            "the Launched with panel text gains the online line");
     expect(mm::parse_state(R"({"schema":1,"online":321,"discord":{}})").online == 321 && mm::parse_state(R"({"schema":1,"discord":{}})").online == 0,
            "the state file's online field");
+    {
+        auto list = mm::scene_to_px(-8.6, 3.4, 1914, 1079);
+        auto note = mm::scene_to_px(-8.6, -1.77, 1914, 1079);
+        auto logo = mm::scene_to_px(-8.65, 3.7, 1914, 1079);
+        expect(list.x > 92 && list.x < 104, "the list's left edge (x -8.6) lands at the screenshot's 98 px");
+        expect(note.y > 700 && note.y < 722, "the description (y -1.77) lands at the screenshot's 713 px");
+        expect(logo.y > 160 && logo.y < 176, "the logo's bottom edge (y 3.7) lands at the screenshot's 168 px");
+        auto small = mm::scene_to_px(-8.6, 3.4, 1366, 768);
+        expect(small.x / 1366.0f > 0.0481f && small.x / 1366.0f < 0.0661f, "the left edge keeps its place relative to the frame at 1366x768");
+    }
     expect(mm::panel_due(true, true, true, false, true), "the panel is due on the open home screen once prepared");
     expect(!mm::panel_due(false, true, true, false, true) && !mm::panel_due(true, false, true, false, true) &&
                !mm::panel_due(true, true, false, false, true) && !mm::panel_due(true, true, true, true, true) &&

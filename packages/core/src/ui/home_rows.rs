@@ -216,6 +216,7 @@ pub fn hide_strip(data: &[u8]) -> Result<Vec<u8>> {
 }
 
 pub const PANEL_TEXT_PATH: &str = "#ui_menu_data.swofty_panel_text";
+pub const PANEL_TITLE_PATH: &str = "#ui_menu_data.swofty_panel_title";
 pub const VIDEO_TITLE_PATH: &str = "#ui_menu_data.swofty_video_title";
 pub const VIDEO_PROMPT_PATH: &str = "#ui_menu_data.swofty_video_prompt";
 pub const ACCOUNT_PANEL: &str = "swofty_account_panel";
@@ -227,8 +228,12 @@ const ACCOUNT_SOURCE: &str = "offline_contextual_panel";
 const VIDEO_SOURCE: &str = "news_contextual_panel";
 const ACCOUNT_XREF: &str = "details_offline";
 const VIDEO_XREF: &str = "details_news";
-pub const ACCOUNT_AT: (f64, f64) = (3.4, 4.0);
-pub const VIDEO_AT: (f64, f64) = (1.9, -3.9);
+/// Where the two components sit on screen, in scene units from the scene's origin, fitted from the stock screenshot
+/// (the list's left edge x -8.6 at 98 px, the description y -1.77 at 713 px, the logo's bottom y 3.7 at 168 px of 1914x1079).
+pub const ACCOUNT_AT: (f64, f64) = (3.06, 3.81);
+pub const VIDEO_AT: (f64, f64) = (2.29, -4.95);
+/// transition_anim_details, their parent in the scene, sits here, so a slot's own position is its place minus this.
+const DETAILS_PARENT: (f64, f64) = (-8.6, -4.86);
 const XREF_GUIDS: [&str; 2] = ["7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c01", "7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c02"];
 
 fn bind_text(n: &mut Node, path: &str) -> Result<()> {
@@ -263,7 +268,7 @@ pub fn native_panels_ui(data: &[u8]) -> Result<Vec<u8>> {
         set_layout(&mut account, &[ACCOUNT_SLOT])?;
         hide_visibility_binding(&mut account)?;
         bind_text(account.child_mut("subtitle")?, PANEL_TEXT_PATH)?;
-        hide(account.child_mut("tooltip_label")?)?;
+        bind_text(account.child_mut("tooltip_label")?, PANEL_TITLE_PATH)?;
         hide(account.child_mut("tooltip_extra_2")?)?;
         let mut video = clone_node(&video_src, PANELS_PARENT, VIDEO_PANEL)?;
         set_layout(&mut video, &[VIDEO_SLOT])?;
@@ -316,7 +321,7 @@ pub fn native_panels_scene(data: &[u8]) -> Result<Vec<u8>> {
         let mut slot = idf::detached(from);
         slot.o_mut()?.set("name", s(name));
         idf::set_param(&mut slot, "guid", Val::str(guid))?;
-        set_position(&mut slot, at.0, at.1)?;
+        set_position(&mut slot, at.0 - DETAILS_PARENT.0, at.1 - DETAILS_PARENT.1)?;
         idf::recompute_ids(&mut slot, &format!("transition_fade_details.transition_anim_details.{name}"))?;
         slots.push(slot);
     }

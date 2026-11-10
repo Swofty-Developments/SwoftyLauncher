@@ -323,41 +323,22 @@ const runtime::Sig S_FIRE{"Vm_Fire_Route", "48 8B 4E 28 48 89 F2 49 89 F8 45 31 
                           0x42c0e20, runtime::Sig::rel32, 13, 14, 5};
 safetyhook::InlineHook h_fire;
 
+std::atomic<void *> hub_router{nullptr};
+std::atomic<uint64_t> hub_at{0};
+
 void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4)
 {
     const char *text = name && *name ? reinterpret_cast<const char *>(*name) + NESTR_CHARS : "";
     int mode = via.load();
     if (mode) {
-        swofty::log("[main-menu] route fired while back-to-menu is armed (%s): %s", mode == 1 ? "card" : "showroom", text);
-        const char *to = mode == 1 && (!std::strcmp(text, "f1_world") || !std::strcmp(text, "back") || !std::strcmp(text, "back_1")) ? "home"
-                         : mode == 2 && !std::strcmp(text, "back_1")    ? logic::HOME_BACK_ROUTE
-                                                                       : nullptr;
-        if (to) {
-            auto entry = reinterpret_cast<uint32_t *>(swofty::api->module_base() + 0x6066c74);
-            if (runtime::readable(entry, 4))
-                *entry = 0;
-            NeStr *replacement = nullptr;
-            Ne_Make_StrFromCStr(&replacement, to, 0, 0);
-            swofty::log("[main-menu] back: route %s replaced by %s so it returns to the main menu", text, to);
-            {
-                std::lock_guard<std::mutex> g(swap_lock);
-                swap_screens.clear();
-                swap_reported = false;
-            }
-            swap_at = GetTickCount64();
-            {
-                std::lock_guard<std::mutex> g(chain_lock);
-                chain = {};
-            }
-            container_vm = nullptr;
-            h_fire.call<void>(router, vm, &replacement, a4);
-            Ne_Make_StrFromCStr(&replacement, nullptr, 0, 0);
-            return;
-        }
+        uint32_t gid = runtime::readable(static_cast<uint8_t *>(vm) + 0x250, 4) ? *reinterpret_cast<uint32_t *>(static_cast<uint8_t *>(vm) + 0x250) : 0;
+        swofty::log("[main-menu] route fired while back-to-menu is armed (%s): %s (route group id of the firing view model 0x%08x; djb2 of f1_world_activity_container 0x%08x, of fe_f1_world 0x%08x)",
+                    mode == 1 ? "card" : "showroom", text, gid, logic::djb2("f1_world_activity_container"), logic::djb2("fe_f1_world"));
+        if (!hub_router.load())
+            hub_router = router;
+        if (uint64_t at = swap_at.load(); at && GetTickCount64() - at < 5000)
+            swofty::log("[main-menu] route %s fired %llu ms after the back step (vm %p)", text, (unsigned long long)(GetTickCount64() - at), vm);
     }
-    if (uint64_t at = swap_at.load(); at && GetTickCount64() - at < 5000)
-        swofty::log("[main-menu] route %s fired %llu ms after the back swap (vm %p, not replaced)", text,
-                    (unsigned long long)(GetTickCount64() - at), vm);
     h_fire.call<void>(router, vm, name, a4);
 }
 
@@ -646,6 +627,23 @@ void apply_texts();
 
 void tick()
 {
+    if (uint64_t at = hub_at.load(); at && GetTickCount64() - at > 350 && hub_router.load()) {
+        hub_at = 0;
+        static uint8_t fake_vm[0x400];
+        *reinterpret_cast<uint32_t *>(fake_vm + 0x250) = logic::djb2("fe_f1_world");
+        NeStr *route = nullptr;
+        Ne_Make_StrFromCStr(&route, "back_1", 0, 0);
+        swofty::log("[main-menu] back: firing the hub's own back route back_1 (group fe_f1_world)");
+        {
+            std::lock_guard<std::mutex> g(swap_lock);
+            swap_screens.clear();
+            swap_reported = false;
+        }
+        swap_at = GetTickCount64();
+        if (h_fire)
+            h_fire.call<void>(hub_router.load(), fake_vm, &route, 0);
+        Ne_Make_StrFromCStr(&route, nullptr, 0, 0);
+    }
     if (uint64_t at = swap_at.load(); at && GetTickCount64() - at > 1000) {
         std::lock_guard<std::mutex> g(swap_lock);
         if (!swap_reported) {
@@ -700,6 +698,10 @@ void screen(const char *name)
 {
     if (!name)
         return;
+    if (via.load() && !std::strcmp(name, "fe_f1_world")) {
+        hub_at = GetTickCount64();
+        swofty::log("[main-menu] back: the F1 World hub opened while back-to-menu is armed; its own back route follows in 350 ms");
+    }
     if (uint64_t at = swap_at.load(); at && GetTickCount64() - at < 5000)
     {
         swofty::log("[main-menu] back: screen %s opened %llu ms after the route swap", name,
@@ -722,6 +724,10 @@ void screen(const char *name)
         home_open = home;
         if (home)
             home_opened_at = GetTickCount64();
+        if (home) {
+            hub_router = nullptr;
+            hub_at = 0;
+        }
         if (home && via.exchange(0))
             swofty::log("[main-menu] fe_home screen opened; back-to-menu disarmed (a screen-open event, not proof it is the visible screen)");
         strip_wanted = home ? 0 : 1;
@@ -808,12 +814,15 @@ void apply_texts()
     }
     if (!p)
         return;
-    std::string panel = p->version + "  |  " + p->discord;
+    std::string panel = p->version;
+    std::string who = p->s.signed_in ? (p->s.name.empty() ? std::string("Signed in to Discord") : "Signed in as " + p->s.name)
+                                     : std::string("Not signed in to Discord");
     std::string title = p->s.video_url.empty() ? std::string() : p->s.video_title;
     std::string prompt = p->s.video_url.empty() ? std::string() : logic::watch_line(logic::button_name(bind_pad.load()));
     if (done && panel == last_panel && title == last_title && prompt == last_prompt)
         return;
-    bool a = ui_vm_set_path("ui_menu_data.swofty_panel_text", 0, panel.c_str());
+    bool a = ui_vm_set_path("ui_menu_data.swofty_panel_text", 0, panel.c_str()) &&
+             ui_vm_set_path("ui_menu_data.swofty_panel_title", 0, who.c_str());
     bool b = ui_vm_set_path("ui_menu_data.swofty_video_title", 0, title.c_str());
     bool c = ui_vm_set_path("ui_menu_data.swofty_video_prompt", 0, prompt.c_str());
     static int fails = 0;
@@ -883,17 +892,16 @@ void paint(hud::Frame &f, uint64_t now)
     if (!std::exchange(told_drawn, true))
         swofty::log("[main-menu] panel: first draw on a %.0fx%.0f frame; video card %s, avatar %s", double(W), double(H),
                     p->video_slot >= 0 ? "yes" : "no", p->avatar_slot >= 0 ? "yes" : "no");
-    const float cx = W * 0.5f, cy = H * 0.5f, unit = H / 10.0f;
-    auto px = [&](double x) { return cx + float(x) * unit; };
-    auto py = [&](double y) { return cy - float(y) * unit; };
+    const float unit = logic::scene_scale(H);
     if (p->avatar_slot >= 0) {
-        float size = 0.6f * unit;
-        hud::image(f, p->avatar_slot, px(logic::ACCOUNT_AT_X - 0.75), py(logic::ACCOUNT_AT_Y + 0.85), size, size, 0xffffffff);
+        auto at = logic::scene_to_px(logic::ACCOUNT_AT_X - 1.0, logic::ACCOUNT_AT_Y + 0.85, W, H);
+        float size = 0.7f * unit;
+        hud::image(f, p->avatar_slot, at.x, at.y, size, size, 0xffffffff);
     }
     if (p->video_slot >= 0 && p->video_w && p->video_h) {
-        float rw = float(logic::VIDEO_IMAGE_W * unit), rh = float(logic::VIDEO_IMAGE_H * unit);
-        float rx = px(logic::VIDEO_AT_X + logic::VIDEO_IMAGE_DX - logic::VIDEO_IMAGE_W * 0.5);
-        float ry = py(logic::VIDEO_AT_Y + logic::VIDEO_IMAGE_DY + logic::VIDEO_IMAGE_H * 0.5);
+        auto at = logic::scene_to_px(logic::VIDEO_AT_X + logic::VIDEO_IMAGE_DX - logic::VIDEO_IMAGE_W * 0.5,
+                                     logic::VIDEO_AT_Y + logic::VIDEO_IMAGE_DY + logic::VIDEO_IMAGE_H * 0.5, W, H);
+        float rw = float(logic::VIDEO_IMAGE_W) * unit, rh = float(logic::VIDEO_IMAGE_H) * unit;
         float want = rw / rh, have = float(p->video_w) / float(p->video_h);
         float v0 = 0, v1 = 1, u0 = 0, u1 = 1;
         if (have < want) {
@@ -905,7 +913,7 @@ void paint(hud::Frame &f, uint64_t now)
             u0 = (1 - keep) * 0.5f;
             u1 = 1 - u0;
         }
-        hud::image_uv(f, p->video_slot, rx, ry, rw, rh, u0, v0, u1, v1, 0xffffffff);
+        hud::image_uv(f, p->video_slot, at.x, at.y, rw, rh, u0, v0, u1, v1, 0xffffffff);
     }
     overlay_drawn = true;
     static bool told_verts = false;
