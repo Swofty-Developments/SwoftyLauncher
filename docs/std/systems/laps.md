@@ -116,6 +116,55 @@ json = { "v": 1, "module": "2026.11.10.1", "nonce": "...", "body_sha256": "...",
 
 `body_sha256` is the hash of the lap file before the section, `values` and `db` are the handling values and database rows read for the player's car, and `modules` lists the DLLs loaded from the game folder. The key of the MAC is held by the server.
 
+## In-game boards
+
+The core can show addon content on the game's own Time Trial leaderboard screen. It is off until the launcher writes `"tt_bridge": true` into `swofty/tt.json`, which it does when Time Trial boards in the game is on. It runs only on the game build the core's hook points were taken from. Each step logs one `[boards]` line, so one Time Trial session shows which steps worked.
+
+The game names a board `LBV` + the descriptor id (2 digits) + the track (2 digits) + `D` or `W`: `LBV0605D` is descriptor 6, track 5, dry. Descriptors 0 to 5 are the game's own. Descriptors 6 and up are the ids the core assigned to addon boards. The game knows a board only if `system/leaderboard.xml` defines it.
+
+Board definitions. When the game loads `leaderboard.xml` the core appends one copy of a stock `<leaderboard>` element per addon descriptor, per track the stock boards name, per weather. The copies get new `id` and `name` values, ids above every id in the file, and keep the template's other attributes and children. The file's line endings and quoting are kept. The core logs the template element once.
+
+```
+[boards] bridge on (tt.json tt_bridge); OnResult resolved for all five methods
+[boards] board definitions armed at base+0x30daa2a
+[boards] board definitions: 2918 bytes, template element LBV0001D: <leaderboard id="10" name="LBV0001D" ...
+[boards] board definitions: appended 96 board(s) for 2 addon descriptor(s) over 24 track(s) (ids 41..136, 0 already defined), buffer 2918 -> 41872 bytes
+```
+
+Requests. Five methods carry the screen's data: `GetTTLeaderboard`, `GetFriendsTTLeaderboard`, `GetBinaryDataForUser`, `AddLeaderboardEntry`, `UpdateLeaderboardEntryBinaryData`. When one names an addon board the core does not send it. It writes the request to `swofty/tt/outbox/<seq>.json`:
+
+```json
+{ "seq": 12, "method": "GetTTLeaderboard",
+  "args": { "LeaderboardID": "LBV0605D", "Version": 3, "RangeType": 0, "FromIndex": 0, "ToIndex": 9, "TopResultCount": 3, "CrossPlay": 1 },
+  "board": { "content": "swofty.swofty-2022/f1_2022", "track": "bahrain", "weather": "dry", "game_board": "LBV0605D" },
+  "player": { "ghost_id": "<base64 of the 0x30-byte id block, once a personal best was committed>" } }
+```
+
+`args` holds every key of the method's argument struct the core could read. Binary data is not copied into it. The answer is `swofty/tt/inbox/<seq>.json`, `{ "seq": 12, "status": 200, "body": "<JSON text>" }`. Both sides write a `.tmp` file and rename it, and both ignore files older than 60 seconds. The core deletes an answer it used. The flow tick finds the answer and gives the game's `OnResult` for that method a response with that status and body. A request with no answer after 8 seconds completes with status 504 and the body `{"Message":"The request timed out","Data":null}`. Every other request goes to the game's servers unchanged.
+
+```
+[boards] request GetTTLeaderboard LBV0605D redirected (seq 1789200100, to the mailbox, string form NeStr*@word0)
+[boards] request 1789200100 GetTTLeaderboard LBV0605D written to the mailbox (412 bytes)
+[boards] completion 1789200100 GetTTLeaderboard LBV0605D: status 200, 1880 body bytes, answered after 310 ms (OnResult returned)
+[boards] request GetTTLeaderboard LBV0105D passes (stock board, string form NeStr*@word0)
+[boards] request GetTTLeaderboard: LeaderboardID not readable as a board name (slot bytes: ...); passed through
+```
+
+Personal bests. When the game commits a personal best, the core keeps the 0x30-byte id block of the ghost's description. `ghost_id` carries it in later requests.
+
+```
+[boards] personal best committed (time word 0x3f3a1b2c): player id block 0700000000000000 ...
+```
+
+Guards. These run whenever the core runs, with or without `tt_bridge`. While the session's content is an addon's, the core returns at the entry of the game's remote storage upload, remote storage download and Racenet post, so a lap in addon content never reaches the publisher's boards. With the bridge off, `AddLeaderboardEntry` and `UpdateLeaderboardEntryBinaryData` for an addon board are answered locally with `{"Rank":0}` and `{}`.
+
+```
+[boards] guard: remote storage upload guard armed at base+0x2fa3de0: it returns for addon content
+[boards] guard: remote storage upload skipped for addon content swofty.swofty-2022/f1_2022
+```
+
+`SWOFTY_TT_UPLOAD_GUARD=0`, `SWOFTY_TT_DOWNLOAD_GUARD=0`, `SWOFTY_TT_RACENET_GUARD=0` and `SWOFTY_TT_REQUEST_GUARD=0` turn them off. A step whose hook point does not resolve logs `off, needs <name>` and the rest keep running. Each kind of line is logged a few times and then goes quiet.
+
 ## Events
 
 `laps.recorded` fires once the file is in place. `laps.sealing` fires just before, with the file as built so far.
