@@ -1,4 +1,5 @@
 #include "runtime.hpp"
+#include "view_state.hpp"
 
 #include <windows.h>
 
@@ -103,6 +104,8 @@ std::vector<lr::GameLap> game_in;
 std::vector<Blob> ghost_in;
 LARGE_INTEGER qpc_freq;
 uint64_t discarded = 0, written = 0;
+
+std::atomic<double> paused_total{0};
 
 double now_seconds()
 {
@@ -403,7 +406,7 @@ void drain(const live_car::LiveCar &c)
         lr::Outcome &o = p.outcome;
         if (o.kind == lr::Outcome::completed) {
             contexts[o.lap.index] = {board, started_utc, session_clock()};
-            double ended = o.lap.ended_s;
+            double ended = o.lap.ended_s + paused_total.load();
             sealer.lap(std::move(o.lap), ended);
             board = snapshot(c);
             started_utc = utc_now();
@@ -620,7 +623,7 @@ void lap_rec_newlap(int car)
     if (!active.load())
         return;
     int player = player_car.load();
-    lr::Outcome o = recorder.newlap(now, player >= 0 && car == player);
+    lr::Outcome o = recorder.newlap(now - paused_total.load(), player >= 0 && car == player);
     if (o.kind != lr::Outcome::none)
         queued.push_back({std::move(o)});
 }
@@ -646,8 +649,19 @@ void lap_rec_tick()
                         plan.missing.empty() ? "none" : plan.missing.c_str());
         }
     }
+    static double paused_since = -1;
+    double now = now_seconds();
+    if (view::pause_reasons()) {
+        if (paused_since < 0)
+            paused_since = now;
+        return;
+    }
+    if (paused_since >= 0) {
+        paused_total.store(paused_total.load() + now - paused_since);
+        paused_since = -1;
+    }
     lr::Frame f;
-    f.now_s = now_seconds();
+    f.now_s = now - paused_total.load();
     f.player = !d.ai && d.has_pos;
     if (d.has_pos)
         for (int i = 0; i < 3; i++)
