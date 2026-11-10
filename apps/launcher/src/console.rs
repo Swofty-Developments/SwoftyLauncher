@@ -5,11 +5,11 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use crate::notices::{Notification, Notify};
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::scroll::Scrollbar;
-use gpui_kit::component::{ActiveTheme, Disableable, Icon, Sizable, TitleBar, h_flex, v_flex};
+use gpui_kit::component::{ActiveTheme, Disableable, Icon, TitleBar, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::session::{LOADER_LOG, SessionRecord};
@@ -392,7 +392,7 @@ impl Console {
             .child(
                 Button::new("copy-all")
                     .ghost()
-                    .small()
+                    .tap_sm()
                     .icon(IconName::Copy)
                     .label(tr("Copy all"))
                     .disabled(empty)
@@ -401,7 +401,7 @@ impl Console {
             .child(
                 Button::new("clear")
                     .ghost()
-                    .small()
+                    .tap_sm()
                     .icon(IconName::Eraser)
                     .label(tr("Clear view"))
                     .disabled(empty)
@@ -413,7 +413,7 @@ impl Console {
             .child(
                 Button::new("open-file")
                     .ghost()
-                    .small()
+                    .tap_sm()
                     .icon(IconName::FolderOpen)
                     .label(tr("Open file"))
                     .tooltip(tr("Show the log in the file manager"))

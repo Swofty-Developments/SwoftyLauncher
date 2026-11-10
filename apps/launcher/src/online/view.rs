@@ -2,14 +2,14 @@ use super::api::{self, Board, BoardRow, Driver, DriverBest, Season, TrackEntry, 
 use super::{BoardKey, Lens, Load};
 use crate::format::{iso_date, lap_time, sector_time};
 use crate::pages::{GUTTER, avatar};
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::Shell;
 use crate::theme::{Palette, ScrollArea};
 use crate::ui::tokens::Tone;
 use crate::ui::{Callout, EmptyState, Pill, Segmented};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_i18n::{tr, trf, trn};
@@ -104,7 +104,7 @@ impl Shell {
                     h_flex().child(
                         Button::new("online-login")
                             .outline()
-                            .small()
+                            .tap_sm()
                             .label(tr("Log in with Discord"))
                             .on_click(cx.listener(|this, _, window, cx| this.mp_sign_in(window, cx))),
                     ),
@@ -386,7 +386,7 @@ impl Shell {
             .child(
                 Button::new(id)
                     .outline()
-                    .small()
+                    .tap_sm()
                     .icon(IconName::ChevronLeft)
                     .label(tr("Back"))
                     .on_click(cx.listener(move |this, _, _, cx| back(this, cx))),
@@ -604,7 +604,7 @@ impl Shell {
                 cell(76.).child(
                     Button::new(SharedString::from(format!("view-{}", row.lap_id)))
                         .outline()
-                        .xsmall()
+                        .tap_xs()
                         .label(tr("View"))
                         .when(open, |b| b.primary())
                         .on_click(cx.listener(move |this, _, _, cx| {
@@ -633,7 +633,7 @@ impl Shell {
             .child(
                 Button::new(SharedString::from(format!("web-{lap_id}")))
                     .outline()
-                    .small()
+                    .tap_sm()
                     .icon(IconName::ExternalLink)
                     .label(tr("Open on the web"))
                     .on_click(move |_, _, cx| cx.open_url(&url)),
@@ -642,7 +642,7 @@ impl Shell {
                 d.child(
                     Button::new(SharedString::from(format!("watch-{lap_id}")))
                         .outline()
-                        .small()
+                        .tap_sm()
                         .icon(IconName::Play)
                         .label(tr("Watch in game"))
                         .disabled(!ready)
@@ -758,7 +758,7 @@ impl Shell {
                 cell(76.).child(
                     Button::new(SharedString::from(format!("view-best-{}", best.lap_id)))
                         .outline()
-                        .xsmall()
+                        .tap_xs()
                         .label(tr("View"))
                         .when(open, |b| b.primary())
                         .on_click(cx.listener(move |this, _, _, cx| {

@@ -1,10 +1,10 @@
 //! The Documentation tab: every effect a config can use, from the core library and installed addons,
 //! with its options, ranges and defaults.
 
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::{ActiveTheme, Sizable, h_flex, v_flex};
+use gpui_kit::component::{ActiveTheme, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_i18n::{tr, trf, trn};
@@ -132,7 +132,7 @@ impl ShadersView {
                     )
                     .child(
                         Button::new("shaders-docs-web")
-                            .small()
+                            .tap_sm()
                             .icon(IconName::ExternalLink)
                             .label(tr("Full documentation"))
                             .on_click(|_, _, cx| cx.open_url(DOCS_URL)),
@@ -242,7 +242,7 @@ impl ShadersView {
                     )
                     .child(
                         Button::new(SharedString::from(format!("shaders-docs-copy-{}", e.id)))
-                            .xsmall()
+                            .tap_xs()
                             .ghost()
                             .icon(if copied { IconName::Check } else { IconName::Copy })
                             .label(if copied { tr("Copied") } else { tr("Copy") })

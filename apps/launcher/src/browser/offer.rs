@@ -1,8 +1,9 @@
+use crate::scale::Hit;
 use std::collections::BTreeSet;
 
 use gpui_kit::assets::IconName;
+use gpui_kit::component::Disableable;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::{Disableable, Sizable};
 use gpui_kit::*;
 use swofty_core::catalog::Addon;
 use swofty_core::catalog::requires::{self, Have, Plan};
@@ -104,7 +105,7 @@ impl Shell {
 
     pub(crate) fn offer_button(&self, a: &Addon, id: String, cx: &mut Context<Self>) -> Button {
         let target = a.id.clone();
-        let button = Button::new(SharedString::from(id)).small();
+        let button = Button::new(SharedString::from(id)).tap_sm();
         let button = match self.offer(a) {
             Offer::Install => button.primary().icon(IconName::Download).label(tr("Install")),
             Offer::Update(from, to) => {

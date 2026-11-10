@@ -1,7 +1,7 @@
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::tooltip::Tooltip;
-use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::vault::restore::Running;
@@ -13,7 +13,7 @@ use super::list::{list_box, placeholder};
 use super::state::{SavesView, Version};
 use crate::format::{ago_since as ago, size};
 use crate::pages::{GUTTER, label};
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::Shell;
 use crate::theme::Palette;
 
@@ -140,7 +140,7 @@ impl Shell {
                             .child(
                                 Button::new(SharedString::from(format!("pin-{id}")))
                                     .ghost()
-                                    .small()
+                                    .tap_sm()
                                     .icon(IconName::Star)
                                     .label(if own_pin { tr("Unpin") } else { tr("Pin") })
                                     .on_click(cx.listener(move |this, _, _, cx| {
@@ -150,7 +150,7 @@ impl Shell {
                             .child(
                                 Button::new(SharedString::from(format!("restore-{id}")))
                                     .outline()
-                                    .small()
+                                    .tap_sm()
                                     .icon(IconName::Undo2)
                                     .label(tr("Restore"))
                                     .disabled(why.is_some())
@@ -200,7 +200,7 @@ impl Shell {
             .child(
                 Button::new("saves-storage-change")
                     .ghost()
-                    .small()
+                    .tap_sm()
                     .label(tr("Change"))
                     .on_click(cx.listener(|this, _, window, cx| this.cap_prompt(window, cx))),
             )
@@ -208,7 +208,7 @@ impl Shell {
             .child(
                 Button::new("saves-storage-open")
                     .ghost()
-                    .small()
+                    .tap_sm()
                     .label(tr("Open folder"))
                     .on_click(cx.listener(move |_, _, _, cx| crate::reveal::show(&dir, cx))),
             )

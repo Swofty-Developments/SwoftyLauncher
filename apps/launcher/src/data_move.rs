@@ -8,9 +8,9 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use crate::notices::{Notification, Notify};
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::component::button::Button;
-use gpui_kit::component::{Sizable, WindowExt, h_flex, v_flex};
+use gpui_kit::component::{WindowExt, h_flex, v_flex};
 use gpui_kit::*;
 use swofty_core::busy::Busy;
 use swofty_core::data_move::{self, Location, Moved, Ops, Plan};
@@ -306,7 +306,7 @@ impl Shell {
                 .action(
                     Button::new("data-move-cancel")
                         .outline()
-                        .small()
+                        .tap_sm()
                         .label(tr("Cancel"))
                         .on_click(cx.listener(|this, _, _, cx| this.cancel_data_move(cx))),
                 ),

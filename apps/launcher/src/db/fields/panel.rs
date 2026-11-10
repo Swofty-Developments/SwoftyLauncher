@@ -1,9 +1,9 @@
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
 use gpui_kit::component::select::Select;
-use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::dbedit::{Backing, Kind};
@@ -104,7 +104,7 @@ impl Shell {
             .child(
                 Button::new(SharedString::from(format!("db-row-remove-{spec}")))
                     .ghost()
-                    .xsmall()
+                    .tap_xs()
                     .icon(IconName::Trash)
                     .label(tr("Remove own row"))
                     .disabled(locked)
@@ -120,7 +120,7 @@ impl Shell {
             .map(|s| {
                 Select::new(&s.state)
                     .id(SharedString::from(format!("db-row-copy-{spec}")))
-                    .small()
+                    .tap_sm()
                     .w_full()
                     .menu_max_h(px(320.))
                     .search_placeholder(tr("Search"))
@@ -192,7 +192,7 @@ impl Shell {
         Some(
             Button::new(SharedString::from(format!("all-{}", f.id)))
                 .ghost()
-                .xsmall()
+                .tap_xs()
                 .icon(IconName::ListChecks)
                 .label(tr("All rows"))
                 .dropdown_menu_with_anchor(Anchor::TopRight, move |mut menu, _, _| {
@@ -221,7 +221,7 @@ impl Shell {
         let revert = f.edited.then(|| {
             Button::new(SharedString::from(format!("revert-{}", f.id)))
                 .ghost()
-                .xsmall()
+                .tap_xs()
                 .icon(IconName::Undo2)
                 .label(tr("Revert"))
                 .disabled(self.db_locked())

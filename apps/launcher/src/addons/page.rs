@@ -1,13 +1,13 @@
 use super::SPLIT_AT;
 use crate::notices::{Notification, Notify};
 use crate::pages::{GUTTER, label};
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::{Page, Shell};
 use crate::theme::Palette;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
-use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::path::PathBuf;
@@ -341,7 +341,7 @@ impl Shell {
                 .child(
                     Button::new("open-tracks")
                         .ghost()
-                        .small()
+                        .tap_sm()
                         .label(tr("Open Tracks"))
                         .on_click(cx.listener(move |this, _, _, cx| this.open_page(Page::Section(i), cx))),
                 )

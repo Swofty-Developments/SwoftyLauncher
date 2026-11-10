@@ -1,4 +1,4 @@
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::menu::{ContextMenuExt, DropdownMenu, PopupMenuItem};
@@ -337,7 +337,7 @@ impl Shell {
                 let control = format!("{key}/move-{id}");
                 Button::new(SharedString::from(control.clone()))
                     .outline()
-                    .small()
+                    .tap_sm()
                     .icon(ic)
                     .label(label)
                     .disabled(!enabled || self.busy.contains(&control))
@@ -483,7 +483,7 @@ impl Shell {
                 let (addon, section, id) = (addon.to_owned(), section.to_owned(), id.clone());
                 let switch = Switch::new(SharedString::from(format!("switch-{control}")))
                     .checked(*on)
-                    .small()
+                    .tap_sm()
                     .disabled(!enabled || self.busy.contains(&control))
                     .on_change(cx.listener(move |this, on: &bool, window, cx| {
                         let event = Event::Toggle {
@@ -505,7 +505,7 @@ impl Shell {
                 let (addon, section, id) = (addon.to_owned(), section.to_owned(), id.clone());
                 Button::new(SharedString::from(format!("choice-{control}")))
                     .outline()
-                    .small()
+                    .tap_sm()
                     .min_w(px(140.))
                     .label(options.get(current).cloned().unwrap_or_default())
                     .dropdown_caret(true)
@@ -570,7 +570,7 @@ impl Shell {
         };
         button = match b.size {
             view::ButtonSize::Large => button.large().h(px(52.)).px(px(32.)).text_size(px(16.)),
-            view::ButtonSize::Normal if small => button.small(),
+            view::ButtonSize::Normal if small => button.tap_sm(),
             view::ButtonSize::Normal => button,
         };
         if let Some(i) = b.icon {

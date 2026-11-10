@@ -1,12 +1,12 @@
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::{Disableable, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::*;
 use swofty_core::vault::{self};
 use swofty_i18n::{tr, trf};
 
 use super::labels::list;
 use super::state::Version;
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::Shell;
 use crate::theme::Palette;
 
@@ -93,7 +93,7 @@ impl Shell {
                     .child(
                         Button::new("restore-confirm")
                             .primary()
-                            .small()
+                            .tap_sm()
                             .label(tr("Restore"))
                             .disabled(blocker.is_some())
                             .on_click(cx.listener(move |this, _, window, cx| {
@@ -103,7 +103,7 @@ impl Shell {
                     .child(
                         Button::new("restore-cancel")
                             .ghost()
-                            .small()
+                            .tap_sm()
                             .label(tr("Cancel"))
                             .on_click(cx.listener(|this, _, _, cx| {
                                 this.saves.confirm = None;

@@ -1,12 +1,12 @@
 use std::ops::Range;
 
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::{Input, InputState};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
 use gpui_kit::component::switch::Switch;
-use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::dbedit::{Cell, FieldSpec, Kind, Module, ModuleRow};
@@ -91,7 +91,7 @@ impl Shell {
             .child(
                 Button::new(SharedString::from(format!("db-up-{ri}")))
                     .ghost()
-                    .xsmall()
+                    .tap_xs()
                     .icon(IconName::ArrowUp)
                     .tooltip(tr("Move up"))
                     .disabled(ri == 0)
@@ -103,7 +103,7 @@ impl Shell {
             .child(
                 Button::new(SharedString::from(format!("db-down-{ri}")))
                     .ghost()
-                    .xsmall()
+                    .tap_xs()
                     .icon(IconName::ArrowDown)
                     .tooltip(tr("Move down"))
                     .disabled(ri + 1 == total)
@@ -170,7 +170,7 @@ impl Shell {
                     .child(
                         Switch::new(SharedString::from(format!("db-cell-switch-{key:x}")))
                             .checked(on)
-                            .small()
+                            .tap_sm()
                             .disabled(locked)
                             .on_change(cx.listener(move |this, on: &bool, _, cx| {
                                 this.db_set(key, &bool_text(tag, &stock, *on), cx);
@@ -226,7 +226,7 @@ impl Shell {
                     cx.notify();
                 }
             }))
-            .child(Input::new(&input).xsmall())
+            .child(Input::new(&input).tap_xs())
             .into_any_element()
     }
 
@@ -259,7 +259,7 @@ impl Shell {
         let shell = cx.entity().downgrade();
         let pick = Button::new(SharedString::from(format!("db-cell-pick-{key:x}")))
             .ghost()
-            .xsmall()
+            .tap_xs()
             .icon(IconName::ChevronDown)
             .dropdown_menu_with_anchor(Anchor::TopLeft, move |mut menu, _, _| {
                 menu = menu.max_h(px(320.)).scrollable(true).min_w(px(220.));
@@ -343,7 +343,7 @@ impl Shell {
                             d.child(
                                 Button::new("db-row-up")
                                     .outline()
-                                    .small()
+                                    .tap_sm()
                                     .icon(IconName::ArrowUp)
                                     .label(tr("Move up"))
                                     .on_click(
@@ -353,7 +353,7 @@ impl Shell {
                             .child(
                                 Button::new("db-row-down")
                                     .outline()
-                                    .small()
+                                    .tap_sm()
                                     .icon(IconName::ArrowDown)
                                     .label(tr("Move down"))
                                     .on_click(
@@ -365,7 +365,7 @@ impl Shell {
                         .child(
                             Button::new("db-row-raw")
                                 .ghost()
-                                .small()
+                                .tap_sm()
                                 .icon(IconName::FolderTree)
                                 .label(tr("Show in All tables"))
                                 .on_click(cx.listener(move |this, _, _, cx| this.db_go(Nav::Raw(raw), cx))),

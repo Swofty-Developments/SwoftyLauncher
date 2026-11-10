@@ -1,9 +1,9 @@
 use std::ops::Range;
 
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::input::Input;
-use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::*;
 use swofty_i18n::{tr, trn};
 
@@ -78,7 +78,7 @@ impl Shell {
                     .flex_shrink_0()
                     .children(self.db.unnamed.as_ref().map(|d| {
                         div().w(px(280.)).child(
-                            Input::new(&d.input).small().cleanable(true).prefix(
+                            Input::new(&d.input).tap_sm().cleanable(true).prefix(
                                 Icon::new(IconName::ListFilter)
                                     .size(px(14.))
                                     .text_color(p.text_placeholder),

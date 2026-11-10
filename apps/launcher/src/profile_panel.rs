@@ -1,12 +1,12 @@
 use crate::library::ProfileItem;
 use crate::pages::avatar;
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::{Page, PlayState, Shell};
 use crate::theme::{Palette, ScrollArea};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
-use gpui_kit::component::{Sizable, h_flex, v_flex};
+use gpui_kit::component::{h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_i18n::{tr, trf};
@@ -28,7 +28,7 @@ impl Shell {
     }
 
     pub(crate) fn profiles_shown(&self) -> bool {
-        self.profiles_open && self.layout_width >= SIDEBAR_MIN_LAYOUT
+        self.profiles_open && self.layout_width / crate::scale::current() >= SIDEBAR_MIN_LAYOUT
     }
 
     pub(crate) fn profiles_width(&self) -> f32 {
@@ -53,7 +53,7 @@ impl Shell {
             .child(
                 Button::new("profiles-expand")
                     .ghost()
-                    .small()
+                    .tap_sm()
                     .icon(IconName::ChevronRight)
                     .tooltip(tr("Show profiles"))
                     .on_click(cx.listener(|this, _, _, cx| {
@@ -111,7 +111,7 @@ impl Shell {
                     .child(
                         Button::new("profile-new")
                             .ghost()
-                            .small()
+                            .tap_sm()
                             .icon(IconName::Plus)
                             .tooltip(tr("New profile"))
                             .on_click(cx.listener(|this, _, window, cx| {
@@ -121,7 +121,7 @@ impl Shell {
                     .child(
                         Button::new("profiles-collapse")
                             .ghost()
-                            .small()
+                            .tap_sm()
                             .icon(IconName::ChevronLeft)
                             .tooltip(tr("Hide profiles"))
                             .on_click(cx.listener(|this, _, _, cx| {
@@ -215,7 +215,7 @@ impl Shell {
             .child(
                 Button::new(SharedString::from(format!("profile-menu-{name}")))
                     .ghost()
-                    .xsmall()
+                    .tap_xs()
                     .icon(IconName::Ellipsis)
                     .dropdown_menu_with_anchor(Anchor::TopRight, move |menu, _, _| {
                         let name = menu_name.clone();

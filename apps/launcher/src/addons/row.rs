@@ -1,13 +1,13 @@
 use super::drag::{Dragged, Dragging, NESTED};
 use crate::library::{AddonItem, Source, Type};
 use crate::pages::{addon_icon, badge, logo, track_badge};
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::Shell;
 use crate::theme::Palette;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::tooltip::Tooltip;
-use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::manifest::Category;
@@ -183,7 +183,7 @@ impl Shell {
                 .child(
                     Button::new(SharedString::from(format!("open-shaders-{id}")))
                         .ghost()
-                        .small()
+                        .tap_sm()
                         .icon(IconName::Palette)
                         .label(tr("Open in Shaders"))
                         .on_click(cx.listener(move |this, _, _, cx| {

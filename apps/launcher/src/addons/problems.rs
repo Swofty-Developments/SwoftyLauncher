@@ -1,6 +1,6 @@
 use crate::notices::{Notification, Notify};
 use crate::pages::GUTTER;
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::{Page, Shell};
 use crate::theme::Palette;
 use crate::ui::tokens::Tone;
@@ -179,7 +179,7 @@ impl Shell {
         let name = |id: &str| self.addon_name(id);
         let key = |what: &str| SharedString::from(format!("fix-{scope}-{what}-{}-{}", pr.addon, pr.other));
         let (addon, other) = (pr.addon.clone(), pr.other.clone());
-        let button = |id: SharedString, label: String| Button::new(id).small().outline().label(label);
+        let button = |id: SharedString, label: String| Button::new(id).tap_sm().outline().label(label);
         let mut out: Vec<AnyElement> = Vec::new();
         match &pr.kind {
             order::Kind::Missing => {

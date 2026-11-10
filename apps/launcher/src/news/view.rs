@@ -2,12 +2,12 @@ use super::feed::{Post, format_date};
 use super::markdown::{Block, SITE, Span, safe_url};
 use super::state::{NewsPane, NewsRow, STACK_BELOW, StackedRow};
 use crate::pages::GUTTER;
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::{Page, Shell};
 use crate::theme::{Palette, ScrollArea};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::{ActiveTheme, Disableable, Sizable, h_flex, v_flex};
+use gpui_kit::component::{ActiveTheme, Disableable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_i18n::{tr, trf};
@@ -300,7 +300,7 @@ impl Shell {
         }
         let refresh = Button::new("news-refresh")
             .ghost()
-            .small()
+            .tap_sm()
             .icon(IconName::RefreshCw)
             .label(tr("Refresh"))
             .disabled(self.news.fetching)
@@ -471,7 +471,7 @@ impl Shell {
                 .child(
                     Button::new(SharedString::from(format!("news-open-{}", post.id)))
                         .outline()
-                        .small()
+                        .tap_sm()
                         .icon(IconName::ExternalLink)
                         .label(if on_site {
                             tr("Read on f1.swofty.net")

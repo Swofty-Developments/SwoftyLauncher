@@ -9,7 +9,6 @@ use gpui_kit::{
     StatefulInteractiveElement, Styled, Window, div, relative,
 };
 
-use crate::scale::px;
 use crate::shell::{Page, Shell};
 use crate::theme::Palette;
 use swofty_i18n::{tr, trf};
@@ -215,31 +214,35 @@ impl Shell {
         let row = h_flex()
             .id("download-notch")
             .relative()
-            .w(px(WIDTH))
-            .h(px(NOTCH_HEIGHT))
-            .px(px(16.))
-            .gap(px(10.))
+            .w(crate::scale::fixed(WIDTH))
+            .h(crate::scale::fixed(NOTCH_HEIGHT))
+            .px(crate::scale::fixed(16.))
+            .gap(crate::scale::fixed(10.))
             .items_center()
             .overflow_hidden()
-            .rounded_b(px(16.))
+            .rounded_b(crate::scale::fixed(16.))
             .bg(p.chrome)
             .cursor_pointer()
             .on_click(cx.listener(|this, _, _, cx| this.open_page(Page::Downloads, cx)))
-            .child(Icon::new(IconName::Download).size(px(18.)).text_color(p.accent))
+            .child(
+                Icon::new(IconName::Download)
+                    .size(crate::scale::fixed(18.))
+                    .text_color(p.accent),
+            )
             .child(
                 v_flex()
                     .flex_1()
                     .min_w_0()
                     .child(
                         div()
-                            .text_size(px(13.))
+                            .text_size(crate::scale::fixed(13.))
                             .font_weight(FontWeight::SEMIBOLD)
                             .child(title),
                     )
                     .child(
                         div()
                             .truncate()
-                            .text_size(px(12.))
+                            .text_size(crate::scale::fixed(12.))
                             .text_color(p.text_muted)
                             .child(name),
                     ),
@@ -249,7 +252,7 @@ impl Shell {
                     .absolute()
                     .left_0()
                     .bottom_0()
-                    .h(px(3.))
+                    .h(crate::scale::fixed(3.))
                     .w(relative(f))
                     .bg(p.accent)
                     .into_any_element(),
@@ -257,7 +260,7 @@ impl Shell {
                     .absolute()
                     .left_0()
                     .bottom_0()
-                    .h(px(3.))
+                    .h(crate::scale::fixed(3.))
                     .w_full()
                     .child(div().h_full().w(relative(0.3)).bg(p.accent).with_animation(
                         "download-indeterminate",
@@ -267,11 +270,15 @@ impl Shell {
                     .into_any_element(),
             });
         let placed = if beside {
-            div().absolute().top(px(top)).right(px(24.)).child(row)
+            div()
+                .absolute()
+                .top(crate::scale::fixed(top))
+                .right(crate::scale::fixed(24.))
+                .child(row)
         } else {
             div()
                 .absolute()
-                .top(px(top))
+                .top(crate::scale::fixed(top))
                 .left_0()
                 .right_0()
                 .flex()

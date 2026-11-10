@@ -1,12 +1,12 @@
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::{Disableable, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_i18n::tr;
 
 use super::authors::View;
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::{Page, Shell};
 use crate::theme::Palette;
 
@@ -28,7 +28,7 @@ impl Shell {
                             b.ghost()
                         }
                     })
-                    .small()
+                    .tap_sm()
                     .icon(IconName::Activity)
                     .label(tr("Activity"))
                     .on_click(cx.listener(|this, _, _, cx| {
@@ -39,7 +39,7 @@ impl Shell {
             .child(
                 Button::new("browser-refresh")
                     .ghost()
-                    .small()
+                    .tap_sm()
                     .icon(IconName::RefreshCw)
                     .label(tr("Refresh"))
                     .loading(self.browser.fetching)

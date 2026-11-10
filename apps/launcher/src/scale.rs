@@ -28,6 +28,36 @@ fn scaled(value: f32, scale: f32) -> f32 {
     value * scale
 }
 
+pub const TV_CONTROL: f32 = 1.5;
+
+pub fn is_tv() -> bool {
+    current() > 1.
+}
+
+pub fn control() -> f32 {
+    if is_tv() { TV_CONTROL } else { 1. }
+}
+
+pub fn fixed(value: f32) -> Pixels {
+    gpui_kit::px(value)
+}
+
+pub fn ctl(value: f32) -> Pixels {
+    gpui_kit::px(scaled(value, current()) * control())
+}
+
+pub trait Hit: gpui_kit::component::Sizable + Sized {
+    fn tap_xs(self) -> Self {
+        if is_tv() { self.large() } else { self.xsmall() }
+    }
+
+    fn tap_sm(self) -> Self {
+        if is_tv() { self.large() } else { self.small() }
+    }
+}
+
+impl<T: gpui_kit::component::Sizable> Hit for T {}
+
 pub fn px(value: f32) -> Pixels {
     gpui_kit::px(scaled(value, current()))
 }
@@ -98,6 +128,15 @@ mod tests {
         assert!((tv - (1440. / TV_SCALE - 56.)).abs() < 0.01);
         assert!(tv < content_width(1440., 1.));
         assert_eq!(content_width(400., TV_SCALE), 320.);
+    }
+
+    #[test]
+    fn controls_grow_only_in_tv() {
+        assert_eq!(control(), 1.);
+        SCALE.store(TV_SCALE.to_bits(), Ordering::Relaxed);
+        assert_eq!(control(), TV_CONTROL);
+        assert!(f32::from(ctl(26.)) >= 44.);
+        SCALE.store(1.0_f32.to_bits(), Ordering::Relaxed);
     }
 
     #[test]

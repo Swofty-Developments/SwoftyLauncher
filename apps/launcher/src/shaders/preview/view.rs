@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
 use gpui_kit::component::slider::Slider;
-use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_i18n::{tr, trf};
@@ -305,7 +305,7 @@ impl ShadersView {
         let at = self.preview.clip;
         let picker = Button::new("shaders-clip")
             .outline()
-            .small()
+            .tap_sm()
             .icon(IconName::Flag)
             .label(current)
             .dropdown_caret(true)
@@ -328,7 +328,7 @@ impl ShadersView {
             .child(
                 Button::new("shaders-play")
                     .outline()
-                    .small()
+                    .tap_sm()
                     .icon(if playing { IconName::Pause } else { IconName::Play })
                     .disabled(!ready)
                     .on_click(cx.listener(|this, _, _, cx| this.toggle_play(cx))),
@@ -349,7 +349,7 @@ impl ShadersView {
             )
             .child(
                 Button::new("shaders-compare")
-                    .small()
+                    .tap_sm()
                     .map(|b| if compare { b } else { b.outline() })
                     .icon(IconName::ArrowRightLeft)
                     .label(tr("Compare"))

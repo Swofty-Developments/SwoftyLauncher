@@ -1,11 +1,11 @@
 use crate::pages::{avatar, logo, wordmark};
-use crate::scale::px;
+use crate::scale::{Hit, fixed, px};
 use crate::theme::Palette;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
 use gpui_kit::component::tooltip::Tooltip;
-use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::collections::HashMap;
@@ -264,14 +264,14 @@ impl Shell {
             .id("notch-left")
             .flex_shrink_0()
             .items_center()
-            .gap(px(10.))
+            .gap(fixed(10.))
             .child(logo(42.))
             .when(step.wordmark(), |d| d.child(wordmark(84.)));
         let tabs = if collapsed {
             self.tab_menu(current, focus, p, cx).into_any_element()
         } else {
             h_flex()
-                .gap(px(2.))
+                .gap(fixed(2.))
                 .children(Tab::ALL.iter().enumerate().map(|(i, tab)| {
                     self.tab_button(*tab, Some(*tab) == current, focus == Some(i), step.tight(), p, cx)
                 }))
@@ -280,8 +280,8 @@ impl Shell {
         let action_focus = |a: usize| focus == Some(Tab::ALL.len() + a);
         let notices = self.notices().len() + cx.global::<crate::notices::Notices>().unread();
         crate::ui::title_bar(p)
-            .h(px(BAR_HEIGHT))
-            .pl(px(0.))
+            .h(fixed(BAR_HEIGHT))
+            .pl(fixed(0.))
             .border_0()
             .child(
                 h_flex()
@@ -290,8 +290,8 @@ impl Shell {
                     .w_full()
                     .h_full()
                     .items_stretch()
-                    .pl(px(14.))
-                    .gap(px(10.))
+                    .pl(fixed(14.))
+                    .gap(fixed(10.))
                     .child(
                         h_flex()
                             .absolute()
@@ -308,8 +308,8 @@ impl Shell {
                     .child(
                         h_flex()
                             .items_center()
-                            .gap(px(4.))
-                            .mr(px(6.))
+                            .gap(fixed(4.))
+                            .mr(fixed(6.))
                             .child(self.bell(notices, action_focus(0), p, cx))
                             .child(
                                 self.icon_button(
@@ -343,10 +343,10 @@ impl Shell {
     ) -> Stateful<Div> {
         h_flex()
             .id(id)
-            .size(px(44.))
+            .size(fixed(44.))
             .items_center()
             .justify_center()
-            .rounded(px(8.))
+            .rounded(fixed(8.))
             .border_1()
             .cursor_pointer()
             .occlude()
@@ -354,7 +354,7 @@ impl Shell {
             .border_color(if focused { p.accent } else { transparent_black() })
             .hover(move |s| s.bg(p.hover).text_color(p.text))
             .tooltip(move |window, cx| Tooltip::new(tip).build(window, cx))
-            .child(Icon::new(icon).size(px(24.)))
+            .child(Icon::new(icon).size(fixed(24.)))
     }
 
     fn bell(&self, count: usize, focused: bool, p: Palette, cx: &mut Context<Self>) -> impl IntoElement {
@@ -373,18 +373,18 @@ impl Shell {
                 d.child(
                     div()
                         .absolute()
-                        .top(px(1.))
-                        .right(px(0.))
-                        .min_w(px(15.))
-                        .h(px(15.))
-                        .px(px(4.))
+                        .top(fixed(1.))
+                        .right(fixed(0.))
+                        .min_w(fixed(15.))
+                        .h(fixed(15.))
+                        .px(fixed(4.))
                         .flex()
                         .items_center()
                         .justify_center()
                         .rounded_full()
                         .bg(p.accent)
                         .text_color(p.on_accent)
-                        .text_size(px(10.))
+                        .text_size(fixed(10.))
                         .font_weight(FontWeight::SEMIBOLD)
                         .child(count.to_string()),
                 )
@@ -403,19 +403,19 @@ impl Shell {
             Some(name) => {
                 let face = match &self.avatar {
                     Some(image) => div()
-                        .size(px(BAR_HEIGHT))
+                        .size(fixed(BAR_HEIGHT))
                         .flex_shrink_0()
                         .overflow_hidden()
                         .child(img(image.clone()).size_full())
                         .into_any_element(),
                     None => div()
-                        .size(px(BAR_HEIGHT))
+                        .size(fixed(BAR_HEIGHT))
                         .flex_shrink_0()
                         .flex()
                         .items_center()
                         .justify_center()
                         .bg(p.elevated)
-                        .text_size(px(26.))
+                        .text_size(fixed(26.))
                         .font_weight(FontWeight::SEMIBOLD)
                         .child(
                             name.chars()
@@ -432,8 +432,8 @@ impl Shell {
                         .h_full()
                         .flex_shrink_0()
                         .items_center()
-                        .gap(px(16.))
-                        .pr(px(if account == Account::IconOnly { 8. } else { 24. }))
+                        .gap(fixed(16.))
+                        .pr(fixed(if account == Account::IconOnly { 8. } else { 24. }))
                         .bg(p.surface)
                         .cursor_pointer()
                         .hover(move |s| s.bg(p.hover)),
@@ -441,15 +441,15 @@ impl Shell {
                 .child(face)
                 .children((account != Account::IconOnly).then(|| {
                     div()
-                        .max_w(px(if account == Account::Small { 110. } else { 190. }))
+                        .max_w(fixed(if account == Account::Small { 110. } else { 190. }))
                         .truncate()
-                        .text_size(px(15.))
+                        .text_size(fixed(15.))
                         .font_weight(FontWeight::SEMIBOLD)
                         .child(name)
                 }))
                 .children((account != Account::IconOnly).then(|| {
                     Icon::new(IconName::ChevronDown)
-                        .size(px(18.))
+                        .size(fixed(18.))
                         .text_color(p.text_muted)
                 }))
                 .on_click(cx.listener(|this, _, _, cx| {
@@ -465,10 +465,10 @@ impl Shell {
                     .h_full()
                     .flex_shrink_0()
                     .items_center()
-                    .gap(px(10.))
-                    .px(px(20.))
+                    .gap(fixed(10.))
+                    .px(fixed(20.))
                     .cursor_pointer()
-                    .text_size(px(13.))
+                    .text_size(fixed(13.))
                     .font_weight(FontWeight::SEMIBOLD)
                     .text_color(rgb(0xffffff))
                     .bg(rgb(crate::discord::BLURPLE))
@@ -478,7 +478,7 @@ impl Shell {
             .child(
                 svg()
                     .data(crate::discord::LOGO)
-                    .size(px(18.))
+                    .size(fixed(18.))
                     .text_color(rgb(0xffffff)),
             )
             .children((account != Account::IconOnly).then(|| {
@@ -507,16 +507,16 @@ impl Shell {
         let mp = self.nav_mp();
         v_flex()
             .id(SharedString::from(format!("tab-{}", tab.label(mp))))
-            .h(px(BAR_HEIGHT - 8.))
-            .px(px(if tight { 10. } else { 22. }))
-            .gap(px(4.))
+            .h(fixed(BAR_HEIGHT - 8.))
+            .px(fixed(if tight { 10. } else { 22. }))
+            .gap(fixed(4.))
             .items_center()
             .justify_center()
-            .rounded(px(8.))
+            .rounded(fixed(8.))
             .border_1()
             .cursor_pointer()
             .occlude()
-            .text_size(px(13.))
+            .text_size(fixed(13.))
             .font_weight(FontWeight::MEDIUM)
             .map(|d| {
                 let d = if active {
@@ -529,10 +529,10 @@ impl Shell {
             .child(match filled_icon(tab.icon(mp), cx).filter(|_| active) {
                 Some(data) => svg()
                     .data(&data)
-                    .size(px(26.))
+                    .size(fixed(26.))
                     .text_color(p.accent_hover)
                     .into_any_element(),
-                None => Icon::new(tab.icon(mp)).size(px(26.)).into_any_element(),
+                None => Icon::new(tab.icon(mp)).size(fixed(26.)).into_any_element(),
             })
             .child(tab.label(mp))
             .on_click(cx.listener(move |this, _, _, cx| {
@@ -564,7 +564,7 @@ impl Shell {
         let shell = cx.entity().downgrade();
         Button::new("tab-menu")
             .outline()
-            .h(px(34.))
+            .h(fixed(34.))
             .label(shown)
             .dropdown_caret(true)
             .when(focus.is_some(), |b| b.border_color(p.accent))
@@ -614,7 +614,7 @@ impl Shell {
                 at,
                 div()
                     .id("sub-divider")
-                    .w(px(1.))
+                    .w(fixed(1.))
                     .h_full()
                     .flex_shrink_0()
                     .bg(p.border)
@@ -638,7 +638,7 @@ impl Shell {
                 .child(
                     Button::new("sub-more")
                         .ghost()
-                        .small()
+                        .tap_sm()
                         .label(tr("More"))
                         .dropdown_caret(true)
                         .dropdown_menu_with_anchor(Anchor::TopLeft, move |mut menu, _, _| {
@@ -660,18 +660,18 @@ impl Shell {
             h_flex()
                 .id("sub-row")
                 .absolute()
-                .top(px(BAR_HEIGHT))
+                .top(fixed(BAR_HEIGHT))
                 .left_0()
                 .right_0()
                 .justify_center()
                 .child(
                     h_flex()
                         .id("sub-notch")
-                        .h(px(SUB_HEIGHT))
+                        .h(fixed(SUB_HEIGHT))
                         .items_stretch()
-                        .gap(px(26.))
-                        .px(px(30.))
-                        .rounded_b(px(16.))
+                        .gap(fixed(26.))
+                        .px(fixed(30.))
+                        .rounded_b(fixed(16.))
                         .bg(p.chrome)
                         .children(links)
                         .children(more),
@@ -691,11 +691,11 @@ impl Shell {
             .h_full()
             .flex_shrink_0()
             .items_center()
-            .gap(px(7.))
-            .px(px(2.))
+            .gap(fixed(7.))
+            .px(fixed(2.))
             .cursor_pointer()
             .border_b_2()
-            .text_size(px(13.))
+            .text_size(fixed(13.))
             .font_weight(if active {
                 FontWeight::SEMIBOLD
             } else {
@@ -717,10 +717,10 @@ impl Shell {
             .child(div().whitespace_nowrap().child(link.label.clone()))
             .children(link.count.map(|n| {
                 div()
-                    .px(px(6.))
+                    .px(fixed(6.))
                     .rounded_full()
                     .bg(if active { p.selected } else { p.elevated })
-                    .text_size(px(11.))
+                    .text_size(fixed(11.))
                     .text_color(if active { p.accent_hover } else { p.text_muted })
                     .child(n.to_string())
             }))
@@ -747,7 +747,7 @@ impl Shell {
                     this.popover = None;
                     cx.notify();
                 }))
-                .child(div().absolute().top(px(BAR_HEIGHT)).right(px(8.)).child(panel))
+                .child(div().absolute().top(fixed(BAR_HEIGHT)).right(px(8.)).child(panel))
                 .into_any_element(),
         )
     }
@@ -877,7 +877,7 @@ impl Shell {
                         d.child(
                             Button::new("clear-notices")
                                 .ghost()
-                                .small()
+                                .tap_sm()
                                 .label(tr("Clear all"))
                                 .on_click(cx.listener(|this, _, _, cx| {
                                     cx.update_global(|n: &mut crate::notices::Notices, _| n.clear());
@@ -957,7 +957,7 @@ impl Shell {
                         h_flex().pt(px(6.)).child(
                             Button::new(SharedString::from(format!("history-action-{}", e.id)))
                                 .primary()
-                                .small()
+                                .tap_sm()
                                 .label(label)
                                 .on_click(move |_, window, cx| run(window, cx)),
                         )
@@ -998,13 +998,15 @@ impl Shell {
             v_flex()
                 .id("popups")
                 .absolute()
-                .top(px(BAR_HEIGHT
-                    + 6.
-                    + if self.notch_beside {
-                        crate::download_dock::NOTCH_HEIGHT + 6.
-                    } else {
-                        0.
-                    }))
+                .top(fixed(
+                    BAR_HEIGHT
+                        + 6.
+                        + if self.notch_beside {
+                            crate::download_dock::NOTCH_HEIGHT + 6.
+                        } else {
+                            0.
+                        },
+                ))
                 .right(px(8.))
                 .w(px(340.))
                 .gap(px(6.))

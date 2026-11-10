@@ -19,7 +19,7 @@ impl Render for Shell {
         let wide = window.viewport_size().width > px(1500.);
         let short = window.viewport_size().height < px(760.);
         self.short = short;
-        let layout_width = f32::from(window.viewport_size().width) / crate::scale::current();
+        let layout_width = f32::from(window.viewport_size().width);
         self.content_width =
             crate::scale::content_width(f32::from(window.viewport_size().width), crate::scale::current());
         self.layout_width = layout_width;
@@ -102,7 +102,7 @@ impl Render for Shell {
                                 .flex_1()
                                 .h_full()
                                 .min_w_0()
-                                .pt(px(if has_sub {
+                                .pt(crate::scale::fixed(if has_sub {
                                     super::topbar::SUB_HEIGHT - 20.
                                 } else {
                                     0.

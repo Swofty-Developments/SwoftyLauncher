@@ -2,12 +2,12 @@ use super::drag::{Dragged, drop_mark};
 use super::model::AddonListItem;
 use crate::library::AddonItem;
 use crate::pages::{badge, label};
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::Shell;
 use crate::theme::{Palette, palette};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::collections::HashMap;
@@ -114,7 +114,7 @@ impl Shell {
             .child(
                 Button::new(SharedString::from(format!("broken-remove-{id}")))
                     .ghost()
-                    .small()
+                    .tap_sm()
                     .icon(IconName::Trash)
                     .label(tr("Remove"))
                     .on_click(
@@ -271,7 +271,7 @@ impl Shell {
                 d.child(
                     Button::new("new-folder")
                         .ghost()
-                        .xsmall()
+                        .tap_xs()
                         .icon(IconName::FolderPlus)
                         .label(tr("New folder"))
                         .on_click(cx.listener(|this, _, window, cx| this.new_folder(window, cx))),
@@ -418,7 +418,7 @@ fn no_matches(p: Palette, cx: &mut Context<Shell>) -> AnyElement {
         .child(
             Button::new("empty-clear")
                 .ghost()
-                .small()
+                .tap_sm()
                 .label(tr("Clear filters"))
                 .on_click(cx.listener(|this, _, _, cx| {
                     this.addons.facets.clear();

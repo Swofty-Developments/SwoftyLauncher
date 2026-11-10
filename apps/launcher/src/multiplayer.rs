@@ -4,7 +4,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use crate::notices::{Notification, Notify};
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::{Input, InputEvent, InputState};
@@ -1087,14 +1087,14 @@ impl Shell {
             .child(
                 div().w(px(170.)).child(
                     Input::new(&self.mp_page.code)
-                        .small()
+                        .tap_sm()
                         .disabled(self.mp_page.busy()),
                 ),
             )
             .child(
                 Button::new("mp-join-code")
                     .outline()
-                    .small()
+                    .tap_sm()
                     .label("Join with code")
                     .loading(joining && typed)
                     .disabled(!typed || self.mp_page.busy())
@@ -1162,7 +1162,7 @@ impl Shell {
             )
             .child(
                 Button::new(SharedString::from(format!("mp-view-{}", room.code)))
-                    .small()
+                    .tap_sm()
                     .outline()
                     .label("View")
                     .disabled(self.mp_page.busy())
@@ -1177,7 +1177,7 @@ impl Shell {
         let shell = cx.entity().downgrade();
         let players = Button::new("mp-max")
             .outline()
-            .small()
+            .tap_sm()
             .w(px(160.))
             .label(trn(usize::from(m.max), "{count} player", "{count} players"))
             .dropdown_caret(true)
@@ -1203,7 +1203,7 @@ impl Shell {
             .child(
                 Switch::new("mp-public")
                     .checked(m.public)
-                    .small()
+                    .tap_sm()
                     .on_click(cx.listener(|this, on: &bool, _, cx| {
                         this.mp_page.public = *on;
                         cx.notify();
@@ -1264,7 +1264,7 @@ impl Shell {
                 "Name",
                 div()
                     .w(px(320.))
-                    .child(Input::new(&m.name).small())
+                    .child(Input::new(&m.name).tap_sm())
                     .into_any_element(),
                 true,
             ))
@@ -1282,7 +1282,7 @@ impl Shell {
                     .child(
                         Button::new("mp-create-cancel")
                             .ghost()
-                            .small()
+                            .tap_sm()
                             .label("Cancel")
                             .on_click(cx.listener(|this, _, _, cx| {
                                 this.mp_page.form = false;
@@ -1292,7 +1292,7 @@ impl Shell {
                     .child(
                         Button::new("mp-create")
                             .primary()
-                            .small()
+                            .tap_sm()
                             .label("Create room")
                             .loading(creating)
                             .disabled(m.busy())
@@ -1466,14 +1466,14 @@ impl Shell {
                 if problem.retry {
                     Button::new("mp-retry")
                         .primary()
-                        .small()
+                        .tap_sm()
                         .icon(IconName::RefreshCw)
                         .label("Retry")
                         .on_click(cx.listener(|this, _, _, cx| this.mp_retry(cx)))
                 } else {
                     Button::new("mp-problem-leave")
                         .primary()
-                        .small()
+                        .tap_sm()
                         .icon(IconName::LogOut)
                         .label("Leave")
                         .on_click(cx.listener(|this, _, _, cx| this.mp_leave(cx)))
@@ -1489,7 +1489,7 @@ impl Shell {
             .then(|| {
                 Button::new("mp-restart-game")
                     .primary()
-                    .small()
+                    .tap_sm()
                     .label("Restart F1 25")
                     .on_click(cx.listener(|this, _, window, cx| {
                         this.mp_close_game(window, cx);
@@ -1502,7 +1502,7 @@ impl Shell {
                     let started = state.room.as_ref().is_some_and(|r| r.started);
                     Button::new("mp-race")
                         .outline()
-                        .small()
+                        .tap_sm()
                         .icon(IconName::Flag)
                         .label(if started { "Race over" } else { "Race started" })
                         .tooltip(if started {

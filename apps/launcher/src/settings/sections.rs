@@ -1,10 +1,10 @@
 use std::time::Duration;
 
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::switch::Switch;
-use gpui_kit::component::{Disableable, Sizable, v_flex};
+use gpui_kit::component::{Disableable, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::data_usage::{self, KEEP_FOR, KEEP_SESSIONS};
@@ -24,7 +24,7 @@ const DOCS: &str = "https://f1.swofty.net";
 fn link_button(id: &'static str, url: &'static str) -> Button {
     Button::new(id)
         .outline()
-        .small()
+        .tap_sm()
         .icon(IconName::ExternalLink)
         .label(tr("Open"))
         .on_click(move |_, _, cx| cx.open_url(url))
@@ -103,19 +103,19 @@ impl Shell {
         let root = self.store.root.clone();
         let open = Button::new("settings-open-data")
             .outline()
-            .small()
+            .tap_sm()
             .icon(IconName::FolderOpen)
             .label(tr("Open"))
             .on_click(move |_, _, cx| cx.open_with_system(&crate::reveal::real_path(&root)));
         let moving = Button::new("settings-move-data")
             .outline()
-            .small()
+            .tap_sm()
             .icon(IconName::FolderInput)
             .label(tr("Move…"))
             .on_click(cx.listener(|this, _, window, cx| this.open_data_move(window, cx)));
         let find = Button::new("settings-find-data")
             .outline()
-            .small()
+            .tap_sm()
             .icon(IconName::Search)
             .label(tr("Find"))
             .on_click(cx.listener(|this, _, window, cx| this.scan_for_data(true, window, cx)));
@@ -138,7 +138,7 @@ impl Shell {
     fn storage_usage(&self, p: Palette, cx: &mut Context<Self>) -> SettingsSection {
         let refresh = Button::new("settings-refresh")
             .outline()
-            .small()
+            .tap_sm()
             .icon(IconName::RefreshCw)
             .label(tr("Refresh"))
             .disabled(self.settings.measuring)
@@ -193,7 +193,7 @@ impl Shell {
             let old = self.settings.prunable;
             let clear = Button::new("settings-clear-logs")
                 .outline()
-                .small()
+                .tap_sm()
                 .icon(IconName::Eraser)
                 .label(if old.sessions == 0 {
                     tr("Nothing to clear").to_owned()
@@ -221,7 +221,7 @@ impl Shell {
         if cache.apart || cache.bytes > 0 {
             let clear = Button::new("settings-clear-cache")
                 .outline()
-                .small()
+                .tap_sm()
                 .icon(IconName::Eraser)
                 .label(tr("Clear"))
                 .disabled(cache.bytes == 0 || self.settings.clearing)

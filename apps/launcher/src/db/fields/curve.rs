@@ -1,8 +1,8 @@
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::Input;
-use gpui_kit::component::{Disableable, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::*;
 use swofty_i18n::{tr, trf};
 
@@ -28,7 +28,7 @@ impl Shell {
                 .slots
                 .inputs
                 .get(&format!("{}/{axis}{i}", f.id))
-                .map(|s| Input::new(&s.input).xsmall().disabled(locked))
+                .map(|s| Input::new(&s.input).tap_xs().disabled(locked))
         };
         h_flex()
             .gap(px(6.))
@@ -44,7 +44,7 @@ impl Shell {
             .child(
                 Button::new(SharedString::from(format!("{}-pt-{i}", f.id)))
                     .ghost()
-                    .xsmall()
+                    .tap_xs()
                     .icon(IconName::X)
                     .disabled(locked || n <= 2)
                     .on_click(cx.listener(move |this, _, _, cx| {
@@ -69,7 +69,7 @@ impl Shell {
     ) -> AnyElement {
         let Some(c) = parse_curve(&f.value) else {
             return match self.db.slots.inputs.get(&f.id) {
-                Some(s) => Input::new(&s.input).small().disabled(locked).into_any_element(),
+                Some(s) => Input::new(&s.input).tap_sm().disabled(locked).into_any_element(),
                 None => plain(&f.value, p),
             };
         };
@@ -116,7 +116,7 @@ impl Shell {
                     .child(
                         Button::new(SharedString::from(format!("{}-add-pt", f.id)))
                             .ghost()
-                            .xsmall()
+                            .tap_xs()
                             .icon(IconName::Plus)
                             .label(tr("Add point"))
                             .disabled(locked)

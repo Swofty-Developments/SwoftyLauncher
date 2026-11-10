@@ -3,13 +3,13 @@ use std::path::PathBuf;
 use std::rc::Rc;
 
 use crate::notices::{Notification, Notify};
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariant, ButtonVariants};
 use gpui_kit::component::dialog::DialogFooter;
 use gpui_kit::component::input::{Input, InputState};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
-use gpui_kit::component::{Disableable, Icon, Sizable, WindowExt, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Icon, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::dbedit::draft::Details;
@@ -47,7 +47,7 @@ fn category_picker(chosen: Rc<Cell<Option<Category>>>) -> Div {
         tr("CATEGORY"),
         Button::new("db-save-category")
             .outline()
-            .small()
+            .tap_sm()
             .w_full()
             .label(category_label(current))
             .dropdown_caret(true)
@@ -171,20 +171,20 @@ impl Shell {
                                 .text_color(p.text_muted)
                                 .child(note.clone()),
                         )
-                        .child(Field::new(tr("NAME"), Input::new(&form.name).small()))
+                        .child(Field::new(tr("NAME"), Input::new(&form.name).tap_sm()))
                         .child(
                             h_flex()
                                 .gap(px(12.))
                                 .child(
                                     div()
                                         .flex_1()
-                                        .child(Field::new(tr("AUTHOR"), Input::new(&form.author).small())),
+                                        .child(Field::new(tr("AUTHOR"), Input::new(&form.author).tap_sm())),
                                 )
                                 .child(div().w(px(190.)).child(category_picker(form.category.clone()))),
                         )
                         .child(Field::new(
                             tr("DESCRIPTION"),
-                            Input::new(&form.description).small(),
+                            Input::new(&form.description).tap_sm(),
                         )),
                 )
                 .ok_text(tr("Save as Addon"))
@@ -417,7 +417,7 @@ impl Shell {
                 .child(
                     v_flex()
                         .gap(px(14.))
-                        .child(Field::new(tr("NAME"), Input::new(&form.name).small()))
+                        .child(Field::new(tr("NAME"), Input::new(&form.name).tap_sm()))
                         .child(
                             h_flex()
                                 .gap(px(12.))
@@ -425,19 +425,19 @@ impl Shell {
                                     div().w(px(110.)).children(
                                         form.version
                                             .as_ref()
-                                            .map(|v| Field::new(tr("VERSION"), Input::new(v).small())),
+                                            .map(|v| Field::new(tr("VERSION"), Input::new(v).tap_sm())),
                                     ),
                                 )
                                 .child(
                                     div()
                                         .flex_1()
-                                        .child(Field::new(tr("AUTHOR"), Input::new(&form.author).small())),
+                                        .child(Field::new(tr("AUTHOR"), Input::new(&form.author).tap_sm())),
                                 )
                                 .child(div().w(px(170.)).child(category_picker(form.category.clone()))),
                         )
                         .child(Field::new(
                             tr("DESCRIPTION"),
-                            Input::new(&form.description).small(),
+                            Input::new(&form.description).tap_sm(),
                         ))
                         .child(
                             div()
