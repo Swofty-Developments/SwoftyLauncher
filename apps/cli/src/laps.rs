@@ -31,6 +31,11 @@ pub enum LapsCommand {
         #[arg(help = "A request in the format the game writes to swofty/tt/outbox")]
         file: PathBuf,
     },
+    #[command(about = "Show a made-up lap position toast in the running Time Trial session")]
+    ToastTest {
+        #[arg(long, help = "Show the NEW RECORD form (position 1)")]
+        record: bool,
+    },
 }
 
 pub fn command(store: &Store, profile: &str, cmd: LapsCommand) -> Result<ExitCode> {
@@ -39,8 +44,20 @@ pub fn command(store: &Store, profile: &str, cmd: LapsCommand) -> Result<ExitCod
         LapsCommand::Upload { file } => send(store, profile, file)?,
         LapsCommand::Open => println!("{}", timetrial::boards_url()),
         LapsCommand::BridgeTest { file } => bridge_test(store, &file)?,
+        LapsCommand::ToastTest { record } => toast_test(store, record)?,
     }
     Ok(ExitCode::SUCCESS)
+}
+
+fn toast_test(store: &Store, record: bool) -> Result<()> {
+    let game = crate::build::game(store, None)?;
+    let doc = timetrial::toast::sample(unix_now(), record);
+    timetrial::toast::write(&game.dir, &doc)?;
+    println!(
+        "wrote {}; it shows within a second in a running Time Trial session",
+        timetrial::toast::dir(&game.dir).display()
+    );
+    Ok(())
 }
 
 fn bridge_test(store: &Store, file: &std::path::Path) -> Result<()> {

@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use super::api::{ApiError, Boards, Meta, Uploaded};
-use super::swlap::{self, Header};
+use super::swlap::{self, Board, Header};
 
 pub const EXT: &str = "swlap";
 pub const SENT_KEEP: usize = 200;
@@ -95,6 +95,7 @@ pub struct Entry {
 pub enum Event {
     Uploaded {
         name: String,
+        board: Box<Board>,
         time_ms: u64,
         answer: Uploaded,
     },
@@ -277,6 +278,7 @@ impl Queue {
                     self.settle(&entry.path, Folder::Sent, done);
                     on(Event::Uploaded {
                         name,
+                        board: Box::new(header.board.clone()),
                         time_ms: header.lap.time_ms,
                         answer,
                     });
@@ -484,6 +486,8 @@ mod tests {
             status: "ranked".into(),
             rank: Some(rank),
             best: Some(true),
+            total: None,
+            previous_best_ms: None,
             reasons: vec![],
             url: None,
         })

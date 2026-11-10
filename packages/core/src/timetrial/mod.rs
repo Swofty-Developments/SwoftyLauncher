@@ -10,12 +10,14 @@ pub mod fingerprint;
 pub mod integrity;
 pub mod queue;
 pub mod swlap;
+pub mod toast;
 pub mod upload;
 
 use std::path::{Path, PathBuf};
 
 use crate::session::Config;
 
+pub const MAILBOX_TOAST: &str = "toast";
 pub const LAPS_DIR: &str = "swofty/laps";
 /// Where the wrapper hands the core its Time Trial boards switches. Not `swofty/session.json`: the core
 /// treats that file's existence as a mixin manifest and refuses every mixin it does not declare.

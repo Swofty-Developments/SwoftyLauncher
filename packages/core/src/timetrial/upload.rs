@@ -12,6 +12,7 @@ use serde_json::Value;
 use super::api::{Api, Boards, Nonce};
 use super::bridge::Pump;
 use super::queue::{Event, Folder, Limits, Queue, Report, unix_now};
+use super::toast;
 use super::{laps_dir, token};
 use crate::session::Config;
 
@@ -27,6 +28,31 @@ pub fn line(event: &Event) -> String {
         }
         Event::Retry { error, .. } => format!("upload failed, will retry: {error}"),
         Event::Rejected { name, error } => format!("{name} not uploaded: {error}"),
+    }
+}
+
+/// Tell the core a lap is the player's new best. Only while the game runs: the final sweep after it
+/// exits has nobody to show it to.
+fn toast(game: &Path, queue: &Queue, event: &Event, say: &dyn Fn(&str)) {
+    let Event::Uploaded {
+        board,
+        time_ms,
+        answer,
+        ..
+    } = event
+    else {
+        return;
+    };
+    let previous = toast::previous_best(queue, board, &answer.id);
+    let Some(doc) = toast::message(board, *time_ms, answer, previous, unix_now()) else {
+        return;
+    };
+    match toast::write(game, &doc) {
+        Ok(()) => say(&format!(
+            "toast: P{} on {}/{}",
+            doc["position"], board.content, board.track
+        )),
+        Err(e) => say(&format!("toast: couldn't write the message: {e}")),
     }
 }
 
@@ -189,13 +215,19 @@ fn pass(
         Some(d) => Api::new(&t).within(d.saturating_duration_since(Instant::now())),
         None => Api::new(&t),
     });
+    let queue = Queue::new(data);
     sweep(
         data,
         Some(game),
         api.as_ref().map(|a| a as &dyn Boards),
         fingerprint,
         deadline,
-        &mut |e| say(&line(&e)),
+        &mut |e| {
+            say(&line(&e));
+            if deadline.is_none() {
+                toast(game, &queue, &e, say);
+            }
+        },
     );
 }
 
@@ -211,11 +243,14 @@ mod tests {
             status: "ranked".into(),
             rank: Some(12),
             best: Some(true),
+            total: None,
+            previous_best_ms: None,
             reasons: vec![],
             url: None,
         };
         let e = Event::Uploaded {
             name: "a".into(),
+            board: Box::default(),
             time_ms: 91234,
             answer,
         };

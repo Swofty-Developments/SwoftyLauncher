@@ -95,6 +95,10 @@ pub struct Uploaded {
     #[serde(default)]
     pub best: Option<bool>,
     #[serde(default)]
+    pub total: Option<u32>,
+    #[serde(default)]
+    pub previous_best_ms: Option<u64>,
+    #[serde(default)]
     pub reasons: Vec<String>,
     #[serde(default)]
     pub url: Option<String>,
