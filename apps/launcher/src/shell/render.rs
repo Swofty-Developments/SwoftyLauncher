@@ -102,7 +102,7 @@ impl Render for Shell {
                                 .h_full()
                                 .min_w_0()
                                 .pt(px(if has_sub {
-                                    super::topbar::SUB_HEIGHT + 4.
+                                    super::topbar::SUB_HEIGHT - 20.
                                 } else {
                                     0.
                                 }))
@@ -111,7 +111,6 @@ impl Render for Shell {
                 ),
             )
             .children(self.sub_row(p, layout_width, cx))
-            .children((self.page == Page::Careers).then(|| self.profile_pointer(p, cx)))
             .children(self.popover_layer(p, cx))
             .children(self.update_bar(p))
             .child(self.play_bar(p, wide, cx))

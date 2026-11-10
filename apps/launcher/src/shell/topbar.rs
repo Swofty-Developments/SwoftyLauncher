@@ -363,22 +363,32 @@ impl Shell {
     }
 
     fn account_block(&self, compact: bool, focused: bool, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        let ring = move |d: Stateful<Div>| {
-            d.border_2()
-                .border_color(if focused { p.accent } else { transparent_black() })
-        };
+        let ring = move |d: Stateful<Div>| d.when(focused, |d| d.border_2().border_color(p.accent));
         match self.account_name() {
             Some(name) => {
-                let size = BAR_HEIGHT * 0.6;
                 let face = match &self.avatar {
                     Some(image) => div()
-                        .size(px(size))
+                        .size(px(BAR_HEIGHT))
                         .flex_shrink_0()
-                        .rounded_full()
                         .overflow_hidden()
                         .child(img(image.clone()).size_full())
                         .into_any_element(),
-                    None => avatar(&name, size, p).rounded_full().into_any_element(),
+                    None => div()
+                        .size(px(BAR_HEIGHT))
+                        .flex_shrink_0()
+                        .flex()
+                        .items_center()
+                        .justify_center()
+                        .bg(p.elevated)
+                        .text_size(px(26.))
+                        .font_weight(FontWeight::SEMIBOLD)
+                        .child(
+                            name.chars()
+                                .next()
+                                .map(|c| c.to_uppercase().to_string())
+                                .unwrap_or_default(),
+                        )
+                        .into_any_element(),
                 };
                 ring(
                     h_flex()
@@ -387,8 +397,8 @@ impl Shell {
                         .h_full()
                         .flex_shrink_0()
                         .items_center()
-                        .gap(px(14.))
-                        .px(px(24.))
+                        .gap(px(16.))
+                        .pr(px(24.))
                         .bg(p.surface)
                         .cursor_pointer()
                         .hover(move |s| s.bg(p.hover)),

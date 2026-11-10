@@ -1,9 +1,4 @@
-use crate::scale::px;
-use crate::theme::Palette;
-use gpui_kit::assets::IconName;
-use gpui_kit::component::{Icon, h_flex};
 use gpui_kit::*;
-use swofty_i18n::tr;
 
 use super::{Page, Shell};
 
@@ -43,40 +38,5 @@ impl Shell {
             .sections
             .get(i)
             .is_some_and(|s| self.views.contains_key(&format!("{}/{}", s.addon, s.spec.id)))
-    }
-}
-
-impl Shell {
-    pub(super) fn profile_pointer(&self, p: Palette, cx: &mut Context<Self>) -> Stateful<Div> {
-        h_flex()
-            .id("profile-pointer")
-            .absolute()
-            .right(px(16.))
-            .bottom(px(crate::play_bar::HEIGHT + 52.))
-            .w(px(300.))
-            .gap(px(8.))
-            .items_center()
-            .px(px(10.))
-            .py(px(8.))
-            .rounded(px(8.))
-            .border_1()
-            .border_color(p.accent)
-            .bg(p.selected)
-            .cursor_pointer()
-            .text_size(px(12.))
-            .text_color(p.text)
-            .child(
-                Icon::new(IconName::ArrowUpRight)
-                    .size(px(14.))
-                    .flex_shrink_0()
-                    .text_color(p.accent),
-            )
-            .child(
-                div()
-                    .flex_1()
-                    .min_w_0()
-                    .child(tr("Switch profiles on the Addons page to see their saves")),
-            )
-            .on_click(cx.listener(|this, _, _, cx| this.open_page(Page::Addons, cx)))
     }
 }

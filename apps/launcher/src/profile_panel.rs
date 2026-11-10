@@ -17,7 +17,7 @@ const SIDEBAR_MIN_LAYOUT: f32 = 1000.;
 
 impl Shell {
     pub(crate) fn profiles_sidebar(&mut self, p: Palette, cx: &mut Context<Self>) -> Option<AnyElement> {
-        if self.page != Page::Addons {
+        if !matches!(self.page, Page::Addons | Page::Careers) {
             return None;
         }
         Some(if self.profiles_shown() {
@@ -33,8 +33,8 @@ impl Shell {
 
     pub(crate) fn profiles_width(&self) -> f32 {
         match (self.page, self.profiles_shown()) {
-            (Page::Addons, true) => WIDTH,
-            (Page::Addons, false) => RAIL,
+            (Page::Addons | Page::Careers, true) => WIDTH,
+            (Page::Addons | Page::Careers, false) => RAIL,
             _ => 0.,
         }
     }
