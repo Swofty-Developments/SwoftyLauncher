@@ -15,7 +15,7 @@ use super::{MOVE_W, NAME_W, notice};
 use crate::db::{ViewSlot, icon_named, swap_field};
 use crate::shell::Shell;
 use crate::theme::Palette;
-use crate::ui::SectionHead;
+use crate::ui::{SectionHead, chevron};
 
 impl Shell {
     pub(super) fn db_module(&mut self, id: &str, p: Palette, cx: &mut Context<Self>) -> AnyElement {
@@ -42,11 +42,33 @@ impl Shell {
                 module.summary.clone(),
             ))
             .children(links);
-        let notes = module.notes.iter().enumerate().map(|(i, n)| {
-            notice("db-note", IconName::Info, p.text_placeholder, n.clone(), p)
-                .id(SharedString::from(format!("db-note-{i}")))
-                .into_any_element()
+        let notes_open = self.db.notes_open || !self.short;
+        let about = (self.short && !module.notes.is_empty()).then(|| {
+            h_flex()
+                .id("db-notes-toggle")
+                .gap(px(6.))
+                .flex_shrink_0()
+                .cursor_pointer()
+                .text_size(px(12.))
+                .text_color(p.text_placeholder)
+                .hover(move |s| s.text_color(p.text_muted))
+                .child(chevron(notes_open, p))
+                .child(tr("About this page"))
+                .on_click(cx.listener(|this, _, _, cx| {
+                    this.db.notes_open = !this.db.notes_open;
+                    cx.notify();
+                }))
         });
+        let notes = module
+            .notes
+            .iter()
+            .enumerate()
+            .filter(|_| notes_open)
+            .map(|(i, n)| {
+                notice("db-note", IconName::Info, p.text_placeholder, n.clone(), p)
+                    .id(SharedString::from(format!("db-note-{i}")))
+                    .into_any_element()
+            });
         let warnings: Vec<AnyElement> = slot
             .map(|s| s.view.warnings.clone())
             .unwrap_or_default()
@@ -81,6 +103,7 @@ impl Shell {
             .size_full()
             .gap(px(14.))
             .child(head)
+            .children(about)
             .children(notes)
             .children(warnings)
             .children(toolbar)
