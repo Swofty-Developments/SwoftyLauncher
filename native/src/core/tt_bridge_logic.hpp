@@ -418,6 +418,21 @@ inline uint64_t garage_feature_flags(uint64_t flags, bool bridge_on, bool ours_c
     return bridge_on && ours_content ? flags | GARAGE_LEADERBOARD_FEATURE : flags;
 }
 
+// The garage monitor panel's tab builder may have run before our content was known, leaving the panel without the leaderboard tab. For our
+// content in a time trial garage (session type 0x12) the builder is run again once per panel object, unless it already ran for it with our content.
+constexpr int GARAGE_TT_SESSION = 0x12;
+
+inline bool garage_should_rebuild(bool bridge_on, bool ours_content, uint64_t panel, uint64_t built_ours_panel, int session_type, uint64_t tab_count)
+{
+    return bridge_on && ours_content && panel && panel != built_ours_panel && session_type == GARAGE_TT_SESSION && tab_count > 0 && tab_count <= 64;
+}
+
+// Which leaderboard tabs the garage builder appends: our content gets only the global one (index 0); everything else keeps both.
+inline bool garage_append_tab(int leaderboard_kind, bool bridge_on, bool ours_content)
+{
+    return leaderboard_kind == 0 || !(bridge_on && ours_content);
+}
+
 inline uint8_t garage_block_byte(uint8_t block, bool bridge_on, bool ours_content)
 {
     return bridge_on && ours_content ? 0 : block;

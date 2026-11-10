@@ -152,7 +152,11 @@ const runtime::Sig S_GARAGE_UPDATE{"site_Game_GarageMonitorPanel_Update_141f76f0
         "48 89 CE 0F B6 99 48 09 00 00 48 8B 81 70 02 00 00 4C 8B A0 88 00 00 00", 0x1f76f09};
 constexpr const char *GARAGE_TABS_PATTERN = "80 79 18 00 0F 85 ?? ?? ?? ?? 48 B9 00 00 00 00 20 00 00 00 48 23 08 0F 84 ?? ?? ?? ??";
 const runtime::Sig S_GARAGE_TAB_BLOCK{"site_Game_GarageMonitorPanel_BuildTabs_leaderboard_block_141f720ab", GARAGE_TABS_PATTERN, 0x1f720ab, runtime::Sig::addr, 0, 0};
-const runtime::Sig S_GARAGE_TAB_FLAGS{"site_Game_GarageMonitorPanel_BuildTabs_leaderboard_feature_141f720b5", GARAGE_TABS_PATTERN, 0x1f720b5, runtime::Sig::addr, 0, 10};
+const runtime::Sig S_GARAGE_TAB_FLAGS{"site_Game_GarageMonitorPanel_BuildTabs_leaderboard_feature_141f720b5", "48 B9 00 00 00 00 20 00 00 00 48 23 08 0F 84 ?? ?? ?? ??", 0x1f720b5};
+const runtime::Sig S_GARAGE_BUILD{"Game_GarageMonitorPanel_BuildTabs_141f71fa0",
+        "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 48 89 CE 80 B9 49 09 00 00 00", 0x1f71fa0};
+const runtime::Sig S_GARAGE_FRIENDS_TAB{"site_Game_GarageMonitorPanel_BuildTabs_friends_tab_141f725e9",
+        "48 8B 8E 80 02 00 00 48 8B 01 BA E0 11 00 00 41 B8 10 00 00 00 FF 50 18 48 89 C7 48 85 C0 74 1E 4C 8B 86 80 02 00 00 48 8B 56 28 C7 44 24 20 01 00 00 00", 0x1f725e9};
 const runtime::Sig S_GARAGE_PRIV_SUB{"Game_GarageMonitorPanel_OnTtLeaderboardPrivilege_thunk_141f79690", "E9 9B 42 6A 0A", 0x1f79690};
 const runtime::Sig S_PRIV_GATE{"site_Game_UIUIPrivilegeCheckControl_HandleSignal_Result",
         "41 80 BE AB 00 00 00 00 0F 84 8C 00 00 00 45 84 FF 0F 84 8D 00 00 00", 0x3822cdf, runtime::Sig::addr, 0, 8};
@@ -189,7 +193,7 @@ std::atomic<int> hits_upload{0}, hits_download{0}, hits_racenet{0};
 std::vector<std::string> seen_methods;
 
 bool diag_on = false;
-safetyhook::MidHook h_garage_done, h_garage_cmd, h_garage_update, h_tab_block, h_tab_flags, h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
+safetyhook::MidHook h_garage_done, h_garage_cmd, h_garage_update, h_tab_block, h_tab_flags, h_tab_friends, h_tab_build, h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
 
 struct GateHook {
     uintptr_t at = 0, resume = 0, session_global = 0;
@@ -1022,7 +1026,36 @@ void garage_tab_flags_mid(safetyhook::Context &c)
                     (unsigned long long)was, was & tb::GARAGE_LEADERBOARD_FEATURE ? "already set" : "was clear");
 }
 
-std::atomic<uint64_t> garage_driven_panel{0}, garage_driven_count{0};
+// Ownership: runs on the game thread at the start of the builder's friends tab block (alloc, ctor with kind 1, append). For our content the
+// block is skipped by moving the resume address to the code after its append (0x141f726ea, where the global-only path also continues).
+// Nothing is read or written and nothing is called.
+void garage_friends_tab_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> logged{0};
+    if (tb::garage_append_tab(1, bridge_on, content_ours()))
+        return;
+    c.rip = swofty::api->module_base() + 0x1f726ea;
+    if (++logged <= 4)
+        swofty::log("[boards] garage monitor tab build: the friends leaderboard tab is not built for our content (only the SWOFTY leaderboard tab)");
+}
+
+std::atomic<uint64_t> garage_driven_panel{0}, garage_driven_count{0}, garage_built_ours{0};
+uintptr_t garage_build_fn = 0;
+
+// Read-only: logs every run of the tab builder (panel, session type, tab count before, whether our content was active) and remembers the
+// panel when it ran for our content, so the Update hook does not rebuild it again.
+void garage_build_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> logged{0};
+    uint64_t panel = c.rcx, inner = peek64(panel + 0x268), mgr = inner ? peek64(inner + 0x1a8) : 0;
+    uint32_t session = mgr ? peek32(mgr + 4) : 0xffffffffu;
+    bool ours = bridge_on && content_ours();
+    if (ours)
+        garage_built_ours = panel;
+    if (++logged <= 12)
+        swofty::log("[boards] garage monitor tab builder runs for panel 0x%llx: session type 0x%x, %llu tab(s) before, our content %d", (unsigned long long)panel, session,
+                    (unsigned long long)((peek64(panel + 0x410) - peek64(panel + 0x408)) / 8), ours ? 1 : 0);
+}
 uintptr_t garage_priv_sub = 0;
 
 // Ownership: rcx is the garage monitor panel, the object whose Update is running on the game thread right now. Reads are plain values
@@ -1037,6 +1070,17 @@ void garage_update_mid(safetyhook::Context &c)
     if (!runtime::readable(reinterpret_cast<void *>(panel + 0x408), 16))
         return;
     tb_ = peek64(panel + 0x408), te = peek64(panel + 0x410);
+    if (garage_build_fn) {
+        uint64_t inner = peek64(panel + 0x268), mgr = inner ? peek64(inner + 0x1a8) : 0;
+        int session = mgr ? int(peek32(mgr + 4)) : -1;
+        if (tb::garage_should_rebuild(bridge_on, content_ours(), panel, garage_built_ours.load(), session, te > tb_ ? (te - tb_) / 8 : 0)) {
+            garage_built_ours = panel;
+            reinterpret_cast<void (*)(uint64_t)>(garage_build_fn)(panel);
+            tb_ = peek64(panel + 0x408), te = peek64(panel + 0x410);
+            swofty::log("[boards] garage monitor: the tab builder was run again for panel 0x%llx for our content (time trial garage): %llu tab(s) now", (unsigned long long)panel,
+                        (unsigned long long)(te > tb_ ? (te - tb_) / 8 : 0));
+        }
+    }
     if (!tb::garage_should_drive(bridge_on, content_ours(), panel, tb_, te, garage_driven_panel.load(), garage_driven_count.load()))
         return;
     garage_driven_panel = panel;
@@ -1412,6 +1456,16 @@ void setup()
                 if (uintptr_t at = runtime::find(*sig, "boards", "boards"))
                     if (hook_mid(*hook, at, fn, label))
                         swofty::log("[boards] %s read as allowed for our content at base+0x%llx: the garage monitor builds its leaderboard tabs", label, (unsigned long long)(at - swofty::api->module_base()));
+        if (bridge_on)
+            if (uintptr_t at = runtime::find(S_GARAGE_FRIENDS_TAB, "boards", "boards"))
+                if (hook_mid(h_tab_friends, at, garage_friends_tab_mid, "garage friends tab"))
+                    swofty::log("[boards] garage friends tab skipped for our content at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
+        if (bridge_on || diag_on)
+            if (uintptr_t fn = runtime::find(S_GARAGE_BUILD, "boards", "boards"))
+                if (hook_mid(h_tab_build, fn + 0x1c, garage_build_mid, "garage tab builder")) {
+                    garage_build_fn = bridge_on ? fn : 0;
+                    swofty::log("[boards] garage tab builder logged at base+0x%llx", (unsigned long long)(fn - swofty::api->module_base()));
+                }
         if (bridge_on)
             if (uintptr_t sub = runtime::find(S_GARAGE_PRIV_SUB, "boards", "boards"))
                 if (uintptr_t at = runtime::find(S_GARAGE_UPDATE, "boards", "boards"))

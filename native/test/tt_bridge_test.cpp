@@ -111,6 +111,15 @@ int main()
     expect(tb::garage_feature_flags(0x2000000000ull, true, true) == 0x2000000000ull && tb::garage_feature_flags(0, true, true) == 0x2000000000ull, "adding the bit is idempotent");
     expect(tb::garage_block_byte(1, true, true) == 0 && tb::garage_block_byte(1, false, true) == 1 && tb::garage_block_byte(1, true, false) == 1 && tb::garage_block_byte(0, true, true) == 0,
            "the leaderboard block byte reads 0 only for our content with the bridge on");
+    expect(tb::garage_append_tab(0, true, true) && !tb::garage_append_tab(1, true, true), "our content gets only the global garage leaderboard tab");
+    expect(tb::garage_append_tab(0, true, false) && tb::garage_append_tab(1, true, false) && tb::garage_append_tab(1, false, true) && tb::garage_append_tab(1, false, false),
+           "stock content and the bridge off keep both tabs");
+    expect(tb::garage_should_rebuild(true, true, 0x1000, 0, 0x12, 1), "a built time trial panel is rebuilt once for our content");
+    expect(!tb::garage_should_rebuild(true, true, 0x1000, 0x1000, 0x12, 1), "not when the builder already ran for it with our content");
+    expect(!tb::garage_should_rebuild(false, true, 0x1000, 0, 0x12, 1) && !tb::garage_should_rebuild(true, false, 0x1000, 0, 0x12, 1), "never with the bridge off or for stock content");
+    expect(!tb::garage_should_rebuild(true, true, 0x1000, 0, 0x10, 1) && !tb::garage_should_rebuild(true, true, 0, 0, 0x12, 1) && !tb::garage_should_rebuild(true, true, 0x1000, 0, 0x12, 0) &&
+               !tb::garage_should_rebuild(true, true, 0x1000, 0, 0x12, 65),
+           "never outside a time trial garage, for a null panel, an unbuilt panel or an absurd tab count");
     expect(tb::garage_result(0, true, true) == 1, "a denied garage privilege becomes granted for our content");
     expect(tb::garage_result(0, false, true) == 0 && tb::garage_result(0, true, false) == 0, "it stays denied with the bridge off or for stock content");
     expect(tb::garage_result(1, true, true) == 1 && tb::garage_result(0xff, true, true) == 0xff && tb::garage_result(2, true, true) == 2,
