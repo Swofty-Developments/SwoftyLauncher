@@ -139,6 +139,10 @@ const runtime::Sig S_GARAGE_MSG{"Game_GarageMonitor_OnMessage_141f76ac0",
 const runtime::Sig S_SAVE_PB{"Game_GhostLaps_SavePersonalBest", "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 49 89 D6", 0x2fa31e0};
 const runtime::Sig S_HANDLER_RESET{"Game_GhostLapHandler_Reset", "41 56 56 57 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 44", 0x2f91dd0};
 const runtime::Sig S_ENTRY_WRITE{"Game_GhostLapHandler_StartLeaderboardEntryWrite", "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 08 00 00 C5 F8 29", 0x2fa0a60};
+const runtime::Sig S_WATCHDOG_REARM{"site_Game_SessionTimer_Rearm_1409d2790",
+        "48 89 86 88 0B 00 00 48 83 BE 90 0B 00 00 00 74 07 48 89 86 90 0B 00 00 F6 86 C8 0B 00 00 01 0F 94 86 C0 0B 00 00", 0x9d2790};
+const runtime::Sig S_WATCHDOG_TRIP{"site_Game_SessionTimer_Trip_1409d2853",
+        "F6 86 A8 0B 00 00 01 0F 94 86 A0 0B 00 00 48 83 C4 30 5B 5D 5F 5E 41 5C 41 5E 41 5F C3", 0x9d284c};
 const runtime::Sig S_PRIV_GATE{"site_Game_UIUIPrivilegeCheckControl_HandleSignal_Result",
         "41 80 BE AB 00 00 00 00 0F 84 8C 00 00 00 45 84 FF 0F 84 8D 00 00 00", 0x3822cdf, runtime::Sig::addr, 0, 8};
 constexpr uintptr_t TS_FLAG_GLOBAL_A = 0, TS_FLAG_GLOBAL_B = 17;
@@ -174,7 +178,7 @@ std::atomic<int> hits_upload{0}, hits_download{0}, hits_racenet{0};
 std::vector<std::string> seen_methods;
 
 bool diag_on = false;
-safetyhook::MidHook h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
+safetyhook::MidHook h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
 
 struct GateHook {
     uintptr_t at = 0, resume = 0, session_global = 0;
@@ -847,6 +851,30 @@ void garage_msg_mid(safetyhook::Context &c)
         swofty::log("[boards] garage monitor message %s reached the panel handler (0x%x); backtrace %s", name, id, backtrace_text(1, 4).c_str());
 }
 
+std::atomic<int> rearm_count{0};
+
+void rearm_mid(safetyhook::Context &c)
+{
+    int n = ++rearm_count;
+    if (n <= 6 || n % 200 == 0)
+        swofty::log("[boards] session timer (system at handler+0x18): re-armed %d time(s) by a validator reporting activity; object 0x%llx, new limit follows at +0xbd0 = %u s", n,
+                    (unsigned long long)c.rsi, peek32(c.rsi + 0xbd0));
+}
+
+void trip_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> logged{0};
+    if (++logged <= 6) {
+        LARGE_INTEGER q;
+        QueryPerformanceCounter(&q);
+        uint64_t base = swofty::api->module_base(), offs = peek64(base + 0x1461089f8 - 0x140000000);
+        double freq = double(peek64(c.rsi + 0xb98) ? peek64(c.rsi + 0xb98) : 1), start = double(peek64(c.rsi + 0xb88));
+        swofty::log("[boards] session timer flag check: elapsed %.2f s since the timer was armed (start 0x%llx, scale %llu), limit %u s, re-armed %d time(s) so far; the flag is being set to TRIPPED",
+                    (double(int64_t(q.QuadPart + int64_t(offs)) - int64_t(start))) / freq, (unsigned long long)peek64(c.rsi + 0xb88), (unsigned long long)peek64(c.rsi + 0xb98),
+                    peek32(c.rsi + 0xbd0), rearm_count.load());
+    }
+}
+
 void commit_path_log(const char *what, safetyhook::Context &c, std::atomic<int> &logged)
 {
     if (++logged > 24)
@@ -1174,6 +1202,11 @@ void setup()
             if (uintptr_t at = runtime::find(*sig, "boards", "boards"))
                 if (hook_mid(*hook, at, fn, label))
                     swofty::log("[boards] commit path: %s logged at base+0x%llx", label, (unsigned long long)(at - swofty::api->module_base()));
+        for (auto [sig, hook, fn, label] : {std::tuple<const runtime::Sig *, safetyhook::MidHook *, safetyhook::MidHookFn, const char *>{&S_WATCHDOG_REARM, &h_rearm, rearm_mid, "session timer re-arm"},
+                                            {&S_WATCHDOG_TRIP, &h_trip, trip_mid, "session timer flag check"}})
+            if (uintptr_t at = runtime::find(*sig, "boards", "boards"))
+                if (hook_mid(*hook, at, fn, label))
+                    swofty::log("[boards] %s logged at base+0x%llx", label, (unsigned long long)(at - swofty::api->module_base()));
         if (uintptr_t at = runtime::find(S_READER_FAIL, "boards", "boards"))
             if (hook_mid(h_reader_fail, at, reader_fail_mid, "leaderboard reader failure"))
                 swofty::log("[boards] leaderboard reader failure logged at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
