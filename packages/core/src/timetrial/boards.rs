@@ -96,13 +96,15 @@ enum Rows<T> {
     Wrapped {
         #[serde(alias = "laps", alias = "entries")]
         rows: Vec<T>,
+        #[serde(default)]
+        next_offset: Option<u64>,
     },
 }
 
 impl<T> Rows<T> {
     fn into_vec(self) -> Vec<T> {
         match self {
-            Self::List(v) | Self::Wrapped { rows: v } => v,
+            Self::List(v) | Self::Wrapped { rows: v, .. } => v,
         }
     }
 }
@@ -153,10 +155,24 @@ impl Api {
         Ok(self.get_json::<Rows<Row>>(&path)?.into_vec())
     }
 
+    /// Every lap waiting for review, following the server's pages.
     pub fn pending_laps(&self) -> Result<Vec<PendingLap>, ApiError> {
-        Ok(self
-            .get_json::<Rows<PendingLap>>("/v1/tt/admin/laps?status=pending")?
-            .into_vec())
+        let mut all = Vec::new();
+        let mut offset = 0u64;
+        for _ in 0..40 {
+            let page: Rows<PendingLap> =
+                self.get_json(&format!("/v1/tt/admin/laps?status=pending&offset={offset}"))?;
+            let next = match &page {
+                Rows::Wrapped { next_offset, .. } => *next_offset,
+                Rows::List(_) => None,
+            };
+            all.extend(page.into_vec());
+            match next {
+                Some(n) if n > offset => offset = n,
+                _ => break,
+            }
+        }
+        Ok(all)
     }
 
     pub fn accept_lap(&self, id: &str) -> Result<(), ApiError> {

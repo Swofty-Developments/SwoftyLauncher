@@ -40,10 +40,15 @@ impl ApiError {
 
     pub fn from_body(status: u16, body: &str) -> Self {
         let doc: Value = serde_json::from_str(body).unwrap_or(Value::Null);
+        let banned = doc.get("error").and_then(Value::as_str) == Some("banned");
         let message = doc
             .get("error")
             .and_then(Value::as_str)
-            .map(str::to_owned)
+            .map(|e| match (banned, doc.get("reason").and_then(Value::as_str)) {
+                (true, Some(r)) if !r.is_empty() => format!("your account is banned from Time Trial: {r}"),
+                (true, _) => "your account is banned from Time Trial".to_owned(),
+                _ => e.to_owned(),
+            })
             .unwrap_or_else(|| match status {
                 401 => format!("your sign-in expired; sign in again (HTTP {status})"),
                 413 => format!("the lap is too big for the server (HTTP {status})"),
