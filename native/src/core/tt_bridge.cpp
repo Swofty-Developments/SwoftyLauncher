@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <cstring>
 #include <deque>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -151,6 +152,8 @@ std::atomic<bool> unknown_logged{false};
 std::atomic<int> pending_count{0};
 std::deque<std::unique_ptr<tb::Response>> responses;
 std::deque<std::string> xml_buffers;
+std::map<uint64_t, uint64_t> op_vtables;
+std::atomic<int> handle_logged{0};
 uint8_t ghost_block[tb::ID_BLOCK] = {};
 bool have_ghost_block = false;
 std::wstring outbox, inbox;
@@ -420,13 +423,14 @@ void push_mid(safetyhook::Context &c)
         std::lock_guard<std::mutex> g(lock);
         seq = table.add(op, m, a, now_ms(), route == tb::Route::local);
         pending_count = int(table.size());
+        op_vtables[seq] = peek64(op);
     }
     c.rax = 0;
     c.trampoline_rsp = c.rsp;
     if (++logged_requests <= 24)
-        swofty::log("[boards] request %s %s redirected (seq %llu, %s, string form %s, track %s%s)", name.c_str(), a.board_text.c_str(),
+        swofty::log("[boards] request %s %s redirected (seq %llu, %s, string form %s, track %s%s, args %s)", name.c_str(), a.board_text.c_str(),
                     (unsigned long long)seq, route == tb::Route::local ? "answered locally" : "to the mailbox", tb::form_name(a.form),
-                    track.key.empty() ? "unknown" : track.key.c_str(), track.custom ? ", custom track" : "");
+                    track.key.empty() ? "unknown" : track.key.c_str(), track.custom ? ", custom track" : "", swofty::json::dump(a.values).c_str());
 }
 
 void guard_entry(safetyhook::Context &c, const char *what, std::atomic<int> &hits)
@@ -1031,7 +1035,33 @@ void complete(const tb::Completion &done)
                     fn ? "the op is no longer readable" : "no OnResult");
         return;
     }
+    if (diag_on)
+        swofty::log("[boards] diag: reply of %llu %s %s (status %d): %s", (unsigned long long)c.seq, tb::method_name(c.method), c.board_text.c_str(), c.status,
+                    c.body.substr(0, 1800).c_str());
+    uint64_t saved = 0;
+    {
+        std::lock_guard<std::mutex> g(lock);
+        auto it = op_vtables.find(c.seq);
+        if (it != op_vtables.end()) {
+            saved = it->second;
+            op_vtables.erase(it);
+        }
+    }
+    if (saved && peek64(c.op) != saved) {
+        swofty::log("[boards] completion %llu %s %s: dropped, the op was released or reused while the request was out (vtable 0x%llx, was 0x%llx)",
+                    (unsigned long long)c.seq, tb::method_name(c.method), c.board_text.c_str(), (unsigned long long)peek64(c.op), (unsigned long long)saved);
+        return;
+    }
     reinterpret_cast<OnResult_t>(fn)(reinterpret_cast<void *>(c.op), resp->raw);
+    if (runtime::readable(reinterpret_cast<void *>(c.op + 0x1f8), 8)) {
+        uint64_t handle = peek64(c.op + 0x1f8);
+        if (handle) {
+            if (++handle_logged <= 8)
+                swofty::log("[boards] completion %llu: the op's OS operation handle (op+0x1f8) is 0x%llx; no HTTP request was made for it, so it is cleared before the game destroys the op",
+                            (unsigned long long)c.seq, (unsigned long long)handle);
+            *reinterpret_cast<uint64_t *>(c.op + 0x1f8) = 0;
+        }
+    }
     swofty::log("[boards] completion %llu %s %s: status %d, %zu body bytes, %s after %lld ms (OnResult returned)", (unsigned long long)c.seq,
                 tb::method_name(c.method), c.board_text.c_str(), c.status, c.body.size(), tb::why_name(c.why), (long long)c.waited_ms);
     responses.push_back(std::move(resp));
