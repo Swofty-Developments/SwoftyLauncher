@@ -1249,9 +1249,20 @@ mod tests {
         let src = std::path::PathBuf::from(std::env::var_os("SWOFTY_STOCK_PERSISTENT").expect("set"));
         let routes = read_frag(&src, F1_WORLD_ROUTES, 0).unwrap();
         let out = patch::f1_world_routes(&routes).unwrap();
+        let home_routes = read_frag(&src, ROUTES, 0).unwrap();
+        let home_out = patch::routes(&home_routes, Vec::new(), Vec::new()).unwrap();
         let dir = std::env::temp_dir().join(format!("swofty-f1routes-{}", std::process::id()));
         let dst = dir.join("persistent.erp");
-        write_archive(&src, &dst, vec![(F1_WORLD_ROUTES, 0, Box::new(move |_| Ok(out)))], Vec::new()).unwrap();
+        write_archive(
+            &src,
+            &dst,
+            vec![
+                (F1_WORLD_ROUTES, 0, Box::new(move |_| Ok(out))),
+                (ROUTES, 0, Box::new(move |_| Ok(home_out))),
+            ],
+            Vec::new(),
+        )
+        .unwrap();
         let name = ui_file("persistent.erp");
         let report = check::archive_files(&[(name.as_str(), src.as_path(), dst.as_path())]).unwrap();
         let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();

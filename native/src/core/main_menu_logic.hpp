@@ -67,7 +67,9 @@ inline const char *template_for(const std::string &id, bool rows = true)
 constexpr uint16_t WATCH_PAD_MASK = 0x0200;
 constexpr const char *SHOWROOM_ROUTE = "swofty_showroom";
 constexpr const char *HOME_BACK_ROUTE = "swofty_home";
-constexpr const char *BACK_HOME_FROM_CONTAINER = "home";
+constexpr const char *BACK_HOME_FROM_CONTAINER = "swofty_back_home";
+constexpr const char *TO_ACTIVITY_ROUTE = "swofty_to_activity";
+constexpr const char *FLOW_FIX_ROUTE = "swofty_flow_fix";
 
 constexpr uint32_t WATCH_KEY_VK = 0x56;
 constexpr double PANEL_BUDGET_MS = 4.0;

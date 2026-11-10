@@ -77,6 +77,13 @@ std::atomic<int> rows_flag{-1}, menu_flag{-1};
 std::atomic<int> via{0};
 std::atomic<uint64_t> swap_at{0}, home_opened_at{0};
 std::atomic<void *> last_router{nullptr};
+std::atomic<bool> f1_flow{false};
+
+const char *back_variant()
+{
+    const char *v = std::getenv("SWOFTY_MAIN_MENU_BACK");
+    return v && *v ? v : "close";
+}
 std::atomic<uint64_t> hub_at{0};
 std::mutex view_lock;
 logic::HomeView home_view;
@@ -340,6 +347,20 @@ void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4)
         home_open = false;
         swofty::log("[main-menu] panel hidden: route %s fired from the home screen", text);
     }
+    if (f1_flow.load() && home_open.load() && std::strcmp(env("SWOFTY_MAIN_MENU_FLOWFIX"), "0") != 0 &&
+        runtime::readable(static_cast<uint8_t *>(vm) + 0x250, 4) &&
+        *reinterpret_cast<uint32_t *>(static_cast<uint8_t *>(vm) + 0x250) == logic::djb2("fe_home") &&
+        std::strcmp(text, logic::TO_ACTIVITY_ROUTE) != 0 && std::strcmp(text, logic::SHOWROOM_ROUTE) != 0 &&
+        std::strcmp(text, logic::FLOW_FIX_ROUTE) != 0 && std::strcmp(text, "open") != 0 && std::strcmp(text, "open_no_input") != 0 &&
+        std::strcmp(text, "close") != 0) {
+        f1_flow = false;
+        NeStr *fix = nullptr;
+        Ne_Make_StrFromCStr(&fix, logic::FLOW_FIX_ROUTE, 0, 0);
+        swofty::log("[main-menu] flow: leaving the main menu through route %s while the f1_world flow is still active (we came back with swofty_back_home); migrating to frontend_flow first (route %s)",
+                    text, logic::FLOW_FIX_ROUTE);
+        h_fire.call<void>(router, vm, &fix, a4);
+        Ne_Make_StrFromCStr(&fix, nullptr, 0, 0);
+    }
     int mode = via.load();
     if (mode) {
         uint32_t gid = runtime::readable(static_cast<uint8_t *>(vm) + 0x250, 4) ? *reinterpret_cast<uint32_t *>(static_cast<uint8_t *>(vm) + 0x250) : 0;
@@ -347,8 +368,11 @@ void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4)
         last_router = router;
         const char *to = nullptr;
         if (mode == 1 && !std::strcmp(text, "f1_world") && gid == logic::djb2("f1_world_activity_container") &&
-            !std::strcmp(env("SWOFTY_MAIN_MENU_BACK"), "home"))
-            to = logic::BACK_HOME_FROM_CONTAINER;
+            std::strcmp(back_variant(), "twostep") != 0) {
+            to = !std::strcmp(back_variant(), "home") ? "home" : logic::BACK_HOME_FROM_CONTAINER;
+            if (std::strcmp(to, "home") != 0)
+                f1_flow = true;
+        }
         else if (mode == 2 && !std::strcmp(text, "back_1") && gid == logic::djb2("fe_showroom"))
             to = logic::HOME_BACK_ROUTE;
         if (to) {
@@ -363,8 +387,8 @@ void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4)
             swap_at = GetTickCount64();
             NeStr *replacement = nullptr;
             Ne_Make_StrFromCStr(&replacement, to, 0, 0);
-            swofty::log("[main-menu] back: the game's handler fired route %s from its own view model (group 0x%08x); it is replaced by %s in the same group, so the F1 World hub is never opened",
-                        text, gid, to);
+            swofty::log("[main-menu] back: the game's handler fired route %s from its own view model (group 0x%08x); it is replaced by %s in the same group, so the F1 World hub is never opened (f1_world flow stays active: %s)",
+                        text, gid, to, f1_flow.load() ? "yes, the next tile press uses swofty_to_activity" : "no");
             h_fire.call<void>(router, vm, &replacement, a4);
             Ne_Make_StrFromCStr(&replacement, nullptr, 0, 0);
             return;
@@ -738,6 +762,8 @@ void poll_bind();
 
 void tick()
 {
+    if (f1_flow.load() && runtime::in_session_now())
+        f1_flow = false;
     if (uint64_t at = hub_at.load(); at && GetTickCount64() - at >= 60) {
         hub_at = 0;
         void *router = last_router.load();
@@ -833,7 +859,7 @@ void screen(const char *name)
 {
     if (!name)
         return;
-    if (via.load() == 1 && !std::strcmp(name, "fe_f1_world") && std::strcmp(env("SWOFTY_MAIN_MENU_BACK"), "home") != 0) {
+    if (via.load() == 1 && !std::strcmp(name, "fe_f1_world") && std::strcmp(back_variant(), "twostep") == 0) {
         hub_at = GetTickCount64();
         swofty::log("[main-menu] back: the stock Back opened the F1 World hub; its own Back (route 'back') follows at once");
     }

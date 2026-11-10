@@ -692,9 +692,14 @@ fn mod_menu_route(groupings: &[Node]) -> Result<Node> {
 
 pub const SHOWROOM_ROUTE: &str = "swofty_showroom";
 pub const HOME_BACK_ROUTE: &str = "swofty_home";
+pub const BACK_HOME_FROM_CONTAINER: &str = "swofty_back_home";
+pub const TO_ACTIVITY_ROUTE: &str = "swofty_to_activity";
+pub const FLOW_FIX_ROUTE: &str = "swofty_flow_fix";
 
-/// routes_f1_world.uir with `swofty_home` in the fe_showroom group, a copy of the F1 World hub's own `back_1` (a wipe,
-/// then close the screen and open fe_home), which the core swaps in where the Showroom's Back fires its route.
+/// routes_f1_world.uir with two copies of the F1 World hub's own `back_1` (a wipe, then close the screen and open
+/// fe_home): `swofty_back_home` in the activity container's group and `swofty_home` in the fe_showroom group. The
+/// core swaps them in where the game's own handlers fire their Back route. The container's copy leaves the
+/// f1_world flow active (no flow migration), which the fe_home routes below account for.
 pub fn f1_world_routes(data: &[u8]) -> Result<Vec<u8>> {
     edit(data, |p| {
         let gs = root_obj(p)?.at_mut("RouteGroupings")?.a_mut()?;
@@ -709,7 +714,7 @@ pub fn f1_world_routes(data: &[u8]) -> Result<Vec<u8>> {
             .find(|r| id_of(r) == Some("back_1"))
             .cloned()
             .ok_or_else(|| err("fe_f1_world has no back_1 route"))?;
-        for (group, id) in [("fe_showroom", HOME_BACK_ROUTE)] {
+        for (group, id) in [("f1_world_activity_container", BACK_HOME_FROM_CONTAINER), ("fe_showroom", HOME_BACK_ROUTE)] {
             let mut r = back.clone();
             set_str(r.o_mut()?, "Id", id)?;
             replace_strings(&mut r, &|v| (v == "fe_f1_world").then(|| group.to_owned()));
@@ -746,6 +751,39 @@ fn showroom_route(groupings: &[Node]) -> Result<Node> {
     Ok(r)
 }
 
+fn to_activity_route(groupings: &[Node]) -> Result<Node> {
+    let home = groupings
+        .iter()
+        .find(|g| id_of(g) == Some("fe_home"))
+        .ok_or_else(|| err("the routes have no fe_home grouping"))?;
+    let mut r = home
+        .o()?
+        .at("Routes")?
+        .a()?
+        .iter()
+        .find(|r| id_of(r) == Some("theatre"))
+        .cloned()
+        .ok_or_else(|| err("fe_home has no theatre route"))?;
+    set_str(r.o_mut()?, "Id", TO_ACTIVITY_ROUTE)?;
+    replace_strings(&mut r, &|v| (v == "theatre_container").then(|| "f1_world_activity_container".to_owned()));
+    Ok(r)
+}
+
+fn flow_fix_route() -> Node {
+    route(
+        FLOW_FIX_ROUTE,
+        vec![route_cmd(
+            "Migrate",
+            1,
+            &[("Flow", "frontend_flow"), ("Activator", "enter_fe_home"), ("SkipActivator", "true")],
+            None,
+        )],
+        "",
+        0,
+        None,
+    )
+}
+
 /// Adds ADDON SETTINGS' route groups, which must be new, and each of `optional` whose group the
 /// routes don't have yet.
 pub fn routes(data: &[u8], groups: Vec<Node>, optional: Vec<Node>) -> Result<Vec<u8>> {
@@ -753,6 +791,7 @@ pub fn routes(data: &[u8], groups: Vec<Node>, optional: Vec<Node>) -> Result<Vec
         let gs = root_obj(p)?.at_mut("RouteGroupings")?.a_mut()?;
         let replace = mod_menu_route(gs)?;
         let showroom = showroom_route(gs).ok();
+        let to_activity = to_activity_route(gs).ok();
         for g in optional {
             if !gs.iter().any(|x| id_of(x) == id_of(&g)) {
                 gs.push(g);
@@ -778,6 +817,11 @@ pub fn routes(data: &[u8], groups: Vec<Node>, optional: Vec<Node>) -> Result<Vec
         if let Some(showroom) = showroom {
             routes.retain(|r| id_of(r) != Some(SHOWROOM_ROUTE));
             routes.push(showroom);
+        }
+        if let Some(to_activity) = to_activity {
+            routes.retain(|r| id_of(r) != Some(TO_ACTIVITY_ROUTE) && id_of(r) != Some(FLOW_FIX_ROUTE));
+            routes.push(to_activity);
+            routes.push(flow_fix_route());
         }
         Ok(())
     })
@@ -1537,7 +1581,7 @@ mod tests {
         let p = Pkg::parse(&out).unwrap();
         let home = group(&p, "fe_home").unwrap();
         let ids: Vec<&str> = home.o().unwrap().at("Routes").unwrap().a().unwrap().iter().filter_map(id_of).collect();
-        assert!(ids.contains(&SHOWROOM_ROUTE) && ids.contains(&"theatre"), "{ids:?}");
+        assert!(ids.contains(&SHOWROOM_ROUTE) && ids.contains(&"theatre") && ids.contains(&TO_ACTIVITY_ROUTE) && ids.contains(&FLOW_FIX_ROUTE), "{ids:?}");
     }
 
     #[test]
@@ -1573,7 +1617,7 @@ mod tests {
                 .collect()
         };
         assert_eq!(ids("fe_showroom"), ["back_1", HOME_BACK_ROUTE]);
-        assert_eq!(ids("f1_world_activity_container"), ["f1_world"]);
+        assert_eq!(ids("f1_world_activity_container"), ["f1_world", BACK_HOME_FROM_CONTAINER]);
         assert_eq!(ids("fe_f1_world"), ["back_1"]);
     }
 
