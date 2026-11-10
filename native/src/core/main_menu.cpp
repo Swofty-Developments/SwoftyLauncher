@@ -76,6 +76,7 @@ std::atomic<bool> tt_warned{false};
 std::atomic<int> rows_flag{-1}, menu_flag{-1};
 std::atomic<int> via{0};
 std::atomic<uint64_t> swap_at{0}, home_opened_at{0};
+std::atomic<void *> last_router{nullptr};
 std::mutex view_lock;
 logic::HomeView home_view;
 std::mutex swap_lock;
@@ -295,7 +296,7 @@ struct Chain {
     Step step = Step::idle;
     bool time_trial = false;
     uint64_t started = 0, container_at = 0, release_at = 0;
-    bool use_pad = false;
+    bool use_pad = false, resume = false;
 } chain;
 std::mutex chain_lock;
 
@@ -342,6 +343,7 @@ void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4)
     if (mode) {
         uint32_t gid = runtime::readable(static_cast<uint8_t *>(vm) + 0x250, 4) ? *reinterpret_cast<uint32_t *>(static_cast<uint8_t *>(vm) + 0x250) : 0;
         swofty::log("[main-menu] route fired while back-to-menu is armed (%s): %s (route group id 0x%08x)", mode == 1 ? "card" : "showroom", text, gid);
+        last_router = router;
         const char *to = nullptr;
         if (mode == 1 && !std::strcmp(text, "f1_world") && gid == logic::djb2("f1_world_activity_container"))
             to = logic::BACK_HOME_FROM_CONTAINER;
@@ -635,38 +637,6 @@ bool gp_saves_exist()
     return false;
 }
 
-// The game's open-screen table: (*g_Vm_ScreenSystem)->vt[0x48]() returns the screen table used by route commands, a
-// robin-hood map whose entries {u32 djb2(screen), screen *} (16 bytes) run from +0xa0 to the control bytes at +0xa8,
-// one control byte per entry, non-zero when it holds a screen (re/db/globals.tsv g_Vm_ScreenSystem).
-std::string open_screens_report()
-{
-    uintptr_t base = swofty::api->module_base();
-    auto sys_at = reinterpret_cast<void **>(base + 0x6ca1600);
-    if (!runtime::readable(sys_at, 8) || !*sys_at)
-        return "(screen system not readable)";
-    auto vt = *reinterpret_cast<void ***>(*sys_at);
-    if (!runtime::readable(vt + 9, 8))
-        return "(screen system vtable not readable)";
-    auto table = reinterpret_cast<uint8_t *>(reinterpret_cast<void *(*)(void *)>(vt[0x48 / 8])(*sys_at));
-    if (!table || !runtime::readable(table + 0xa0, 16))
-        return "(screen table not readable)";
-    auto entries = *reinterpret_cast<uint8_t **>(table + 0xa0);
-    auto ctrl = *reinterpret_cast<uint8_t **>(table + 0xa8);
-    if (!entries || ctrl <= entries || size_t(ctrl - entries) > 0x100000 || !runtime::readable(entries, size_t(ctrl - entries)))
-        return "(screen table layout not as expected)";
-    size_t cap = size_t(ctrl - entries) / 16;
-    std::string out;
-    for (const char *name : {"fe_home", "fe_f1_world", "f1_world_activity_container", "fe_showroom"}) {
-        uint32_t h = logic::djb2(name);
-        bool open = false;
-        for (size_t i = 0; i < cap && runtime::readable(ctrl + i, 1); i++)
-            if (ctrl[i] && *reinterpret_cast<uint32_t *>(entries + i * 16) == h && *reinterpret_cast<void **>(entries + i * 16 + 8))
-                open = true;
-        out += std::string(out.empty() ? "" : ", ") + name + (open ? "=OPEN" : "=closed");
-    }
-    return out;
-}
-
 void start_chain(bool time_trial)
 {
     if (!std::strcmp(env("SWOFTY_MAIN_MENU_CHAIN"), "0")) {
@@ -679,6 +649,10 @@ void start_chain(bool time_trial)
     chain.time_trial = time_trial;
     chain.started = GetTickCount64();
     container_vm = nullptr;
+    if (!time_trial) {
+        swofty::log("[main-menu] chain: checking for a saved Grand Prix season");
+        chain.resume = gp_saves_exist();
+    }
     swofty::log("[main-menu] chain: %s card pressed; route %s, then the activity container's %s command", time_trial ? "Time Trial" : "Grand Prix",
                 route_name(), time_trial ? "'time_trial'" : "'grand_prix_resume' when a Grand Prix season is saved, else 'grand_prix_new'");
 }
@@ -770,7 +744,6 @@ void tick()
                         swap_screens.empty() ? "(none)" : swap_screens.c_str(),
                         swap_screens.find("fe_f1_world") != std::string::npos ? "WAS OPENED" : "was never opened",
                         home_open.load() ? "is the last front-end screen opened" : "is NOT the last front-end screen opened");
-            swofty::log("[main-menu] back: screen table read-back: %s", open_screens_report().c_str());
         }
     }
     if (home_open.load()) {
@@ -796,13 +769,29 @@ void tick()
     if (chain.step == Step::idle || chain.step == Step::done)
         return;
     uint64_t now = GetTickCount64();
+    if (chain.step == Step::wait_container && !chain.container_at && now - chain.started > 3000) {
+        void *router = last_router.load();
+        chain.step = Step::done;
+        if (router && h_fire) {
+            static uint8_t scratch[0x400];
+            *reinterpret_cast<uint32_t *>(scratch + 0x250) = logic::djb2("fe_home");
+            NeStr *route = nullptr;
+            Ne_Make_StrFromCStr(&route, "open", 0, 0);
+            swofty::log("[main-menu] chain: the activity container did not open within 3 s; reopening the main menu (route 'open' in group fe_home) so the player is never left without a screen");
+            h_fire.call<void>(router, scratch, &route, 0);
+            Ne_Make_StrFromCStr(&route, nullptr, 0, 0);
+        } else {
+            swofty::log("[main-menu] chain: the activity container did not open within 3 s and no router was captured to reopen the main menu");
+        }
+        return;
+    }
     if (now - chain.started > 20000) {
         swofty::log("[main-menu] chain: gave up at step %d after 20 s; the player continues by hand", int(chain.step));
         chain.step = Step::done;
         return;
     }
     if (chain.step == Step::wait_container && chain.container_at && container_vm.load() && now - chain.container_at > 900) {
-        const char *command = chain.time_trial ? "time_trial" : (gp_saves_exist() ? "grand_prix_resume" : "grand_prix_new");
+        const char *command = chain.time_trial ? "time_trial" : (chain.resume ? "grand_prix_resume" : "grand_prix_new");
         NeStr *name = nullptr;
         Ne_Make_StrFromCStr(&name, command, 0, 0);
         swofty::log("[main-menu] chain: raising '%s' on the activity container %p", command, container_vm.load());

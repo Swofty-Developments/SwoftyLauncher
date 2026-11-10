@@ -692,12 +692,9 @@ fn mod_menu_route(groupings: &[Node]) -> Result<Node> {
 
 pub const SHOWROOM_ROUTE: &str = "swofty_showroom";
 pub const HOME_BACK_ROUTE: &str = "swofty_home";
-pub const BACK_HOME_FROM_CONTAINER: &str = "swofty_back_home";
 
-/// routes_f1_world.uir with two routes that leave a screen the way the F1 World hub's own Back does (a wipe,
-/// then close the screen and open fe_home): `swofty_back_home` in the activity container's group, and
-/// `swofty_home` in the fe_showroom group. The core swaps the route name at the call where the game's own
-/// handler fires the Back route, so the F1 World hub is never opened.
+/// routes_f1_world.uir with `swofty_home` in the fe_showroom group, a copy of the F1 World hub's own `back_1` (a wipe,
+/// then close the screen and open fe_home), which the core swaps in where the Showroom's Back fires its route.
 pub fn f1_world_routes(data: &[u8]) -> Result<Vec<u8>> {
     edit(data, |p| {
         let gs = root_obj(p)?.at_mut("RouteGroupings")?.a_mut()?;
@@ -712,7 +709,7 @@ pub fn f1_world_routes(data: &[u8]) -> Result<Vec<u8>> {
             .find(|r| id_of(r) == Some("back_1"))
             .cloned()
             .ok_or_else(|| err("fe_f1_world has no back_1 route"))?;
-        for (group, id) in [("f1_world_activity_container", BACK_HOME_FROM_CONTAINER), ("fe_showroom", HOME_BACK_ROUTE)] {
+        for (group, id) in [("fe_showroom", HOME_BACK_ROUTE)] {
             let mut r = back.clone();
             set_str(r.o_mut()?, "Id", id)?;
             replace_strings(&mut r, &|v| (v == "fe_f1_world").then(|| group.to_owned()));
@@ -1576,7 +1573,7 @@ mod tests {
                 .collect()
         };
         assert_eq!(ids("fe_showroom"), ["back_1", HOME_BACK_ROUTE]);
-        assert_eq!(ids("f1_world_activity_container"), ["f1_world", BACK_HOME_FROM_CONTAINER]);
+        assert_eq!(ids("f1_world_activity_container"), ["f1_world"]);
         assert_eq!(ids("fe_f1_world"), ["back_1"]);
     }
 
