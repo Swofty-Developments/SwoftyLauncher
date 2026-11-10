@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <mutex>
+#include <utility>
 #include <string>
 
 namespace runtime {
@@ -71,6 +72,8 @@ void *f1w_populate = nullptr, *f1w_action = nullptr;
 std::atomic<bool> tt_warned{false};
 std::atomic<int> rows_flag{-1}, menu_flag{-1};
 std::atomic<int> via{0};
+std::atomic<uint64_t> swap_at{0};
+std::atomic<bool> state_loaded{false};
 std::atomic<int> strip_wanted{-1}, strip_set{-1};
 void *theatre_populate = nullptr, *theatre_action = nullptr;
 std::mutex state_lock;
@@ -310,7 +313,7 @@ void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4)
     int mode = via.load();
     if (mode) {
         swofty::log("[main-menu] route fired while back-to-menu is armed (%s): %s", mode == 1 ? "card" : "showroom", text);
-        const char *to = mode == 1 && !std::strcmp(text, "f1_world") ? "home"
+        const char *to = mode == 1 && (!std::strcmp(text, "f1_world") || !std::strcmp(text, "back") || !std::strcmp(text, "back_1")) ? "home"
                          : mode == 2 && !std::strcmp(text, "back_1")    ? logic::HOME_BACK_ROUTE
                                                                        : nullptr;
         if (to) {
@@ -320,6 +323,7 @@ void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4)
             NeStr *replacement = nullptr;
             Ne_Make_StrFromCStr(&replacement, to, 0, 0);
             swofty::log("[main-menu] back: route %s replaced by %s so it returns to the main menu", text, to);
+            swap_at = GetTickCount64();
             h_fire.call<void>(router, vm, &replacement, a4);
             Ne_Make_StrFromCStr(&replacement, nullptr, 0, 0);
             return;
@@ -452,6 +456,7 @@ void read_state(bool force = false)
         swofty::log("[main-menu] state: %s, %s, video %s", next.loaded ? logic::version_line(next).c_str() : "no file",
                     logic::discord_line(next).c_str(), logic::has_video(next) ? "yes" : "none");
     state = next;
+    state_loaded = next.loaded;
     set_offline_text(next.online);
 }
 
@@ -500,6 +505,13 @@ std::string host_path(const std::string &p)
                 c = '\\';
         return w;
     }
+    if (!p.empty() && p.find(':') == std::string::npos) {
+        std::string rel = "swofty:" + p;
+        for (auto &c : rel)
+            if (c == '/')
+                c = '\\';
+        return rel;
+    }
     return p;
 }
 
@@ -524,6 +536,11 @@ void start_chain(bool time_trial)
 bool enabled()
 {
     return resolve();
+}
+
+bool drawing()
+{
+    return patched.load() && home_open.load() && state_loaded.load();
 }
 
 bool wants_overlay()
@@ -629,6 +646,9 @@ void screen(const char *name)
 {
     if (!name)
         return;
+    if (uint64_t at = swap_at.load(); at && GetTickCount64() - at < 5000)
+        swofty::log("[main-menu] back: screen %s opened %llu ms after the route swap", name,
+                    (unsigned long long)(GetTickCount64() - at));
     {
         std::lock_guard<std::mutex> g(chain_lock);
         uint64_t now = GetTickCount64();
@@ -683,18 +703,31 @@ void command(void *, uint32_t command_hash, uint32_t focused_hash)
 void paint(hud::Frame &f, uint64_t now)
 {
     (void)now;
-    if (!patched.load() || !home_open.load())
+    static bool told_blocked = false, told_drawn = false;
+    if (!patched.load() || !home_open.load()) {
+        if (!told_blocked && home_open.load()) {
+            told_blocked = true;
+            swofty::log("[main-menu] panel: not drawn, the tile patch is not armed");
+        }
         return;
+    }
     read_state();
     logic::State s;
     {
         std::lock_guard<std::mutex> g(state_lock);
         s = state;
     }
-    if (!s.loaded)
+    if (!s.loaded) {
+        static bool told = false;
+        if (!std::exchange(told, true))
+            swofty::log("[main-menu] panel: not drawn, swofty/home_menu.json did not load");
         return;
+    }
     hud::reset_state(f);
     float W = f.width, H = f.height, u = H / 1080.0f;
+    if (!std::exchange(told_drawn, true))
+        swofty::log("[main-menu] panel: first draw on a %.0fx%.0f frame; video card %s, avatar %s", double(W), double(H),
+                    logic::has_video(s) ? "yes" : "no", logic::has_avatar(s) ? "yes" : "no");
     float pad = 28 * u, bar = 64 * u, cw = 460 * u;
     hud::TextStyle line;
     line.px = 26 * u;

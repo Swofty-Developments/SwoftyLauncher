@@ -1622,7 +1622,14 @@ void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
         subs = reg.subs();
     }
     bool cover = runtime::room_cover::active();
-    if (subs.empty() && !cap.on && !cover) {
+    bool menu = runtime::main_menu::drawing();
+    if (menu) {
+        static bool told = false;
+        if (!std::exchange(told, true))
+            swofty::log("[main-menu] the present hook passed its first frame with the main menu panel due (%zu paint callback(s))",
+                        subs.size());
+    }
+    if (subs.empty() && !cap.on && !cover && !menu) {
         drop_pending();
         return;
     }
@@ -1679,7 +1686,7 @@ void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
         }
         fg_active.store(true);
         bool addons = !subs.empty() && !killed("paint");
-        if (addons || cover) {
+        if (addons || cover || menu) {
             hud::Frame &frame = build_frame(addons ? subs : std::vector<hud::Paintsub>(), desc.BufferDesc.Width,
                                             desc.BufferDesc.Height, now);
             keep_pending(sc, frame, desc, color_space, now);
@@ -2280,7 +2287,8 @@ int overlay_image(const std::string &id, const std::string &path, uint32_t *widt
         }
         std::string why;
         hud::img::Pixels px;
-        std::string data = runtime::read_file(runtime::wide(path), size_t(8) << 20);
+        std::wstring wpath = path.rfind("swofty:", 0) == 0 ? runtime::under_swofty(path.substr(7)) : runtime::wide(path);
+        std::string data = runtime::read_file(wpath, size_t(8) << 20);
         if (data.empty() || !hud::img::decode(data, px, why)) {
             swofty::log("[overlay] main menu image %s: %s", path.c_str(), data.empty() ? "unreadable" : why.c_str());
             std::lock_guard<std::mutex> f(failed_lock);

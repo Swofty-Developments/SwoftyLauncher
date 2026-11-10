@@ -211,8 +211,26 @@ pub fn state(data: &Path, version: &str, video: Option<VideoCard>, online: Optio
     }
 }
 
+const STAGED_DIR: &str = "swofty/home_menu";
+
+fn stage(game: &Path, from: &str, name: &str) -> Option<String> {
+    let src = Path::new(from);
+    let ext = src.extension().and_then(|e| e.to_str()).unwrap_or("img");
+    let file = format!("{name}.{ext}");
+    let dir = game.join(STAGED_DIR);
+    std::fs::create_dir_all(&dir).ok()?;
+    std::fs::copy(src, dir.join(&file)).ok()?;
+    Some(format!("home_menu/{file}"))
+}
+
 pub fn write(game: &Path, state: &State) -> crate::Result<()> {
-    crate::write_json(&game.join(STATE_FILE), state)
+    let mut staged = state.clone();
+    staged.discord.avatar = state.discord.avatar.as_deref().and_then(|a| stage(game, a, "avatar"));
+    staged.video = state.video.clone().and_then(|mut v| {
+        v.thumbnail = stage(game, &v.thumbnail, "thumbnail")?;
+        Some(v)
+    });
+    crate::write_json(&game.join(STATE_FILE), &staged)
 }
 
 pub struct Refresh(std::sync::Arc<std::sync::atomic::AtomicBool>);
@@ -456,9 +474,19 @@ mod tests {
             }),
             Some(1234),
         );
+        std::fs::write(data.join("thumb.jpg"), [0xff, 0xd8, 1]).unwrap();
+        let with = State {
+            video: with.video.clone().map(|mut v| {
+                v.thumbnail = data.join("thumb.jpg").to_string_lossy().into_owned();
+                v
+            }),
+            ..with
+        };
         write(&game, &with).unwrap();
+        assert!(game.join("swofty/home_menu/thumbnail.jpg").is_file());
         let back: serde_json::Value = serde_json::from_slice(&std::fs::read(game.join(STATE_FILE)).unwrap()).unwrap();
         assert_eq!(back["video"]["url"], "https://youtu.be/a");
+        assert_eq!(back["video"]["thumbnail"], "home_menu/thumbnail.jpg");
         assert_eq!(back["online"], 1234);
         assert!(json.get("online").is_none());
         std::fs::remove_dir_all(&data).ok();
