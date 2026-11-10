@@ -640,6 +640,31 @@ pub struct Compat {
     pub launcher: Option<VersionReq>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub seasons: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub platforms: Vec<String>,
+}
+
+/// A store a game copy comes from.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[serde(rename_all = "lowercase")]
+pub enum Platform {
+    Steam,
+    Ea,
+}
+
+impl Platform {
+    pub const ALL: [Platform; 2] = [Platform::Steam, Platform::Ea];
+
+    pub fn id(self) -> &'static str {
+        match self {
+            Platform::Steam => "steam",
+            Platform::Ea => "ea",
+        }
+    }
+
+    pub fn parse(id: &str) -> Option<Self> {
+        Self::ALL.into_iter().find(|p| p.id() == id)
+    }
 }
 
 impl Default for Compat {
@@ -649,11 +674,20 @@ impl Default for Compat {
             game_builds: Vec::new(),
             launcher: None,
             seasons: Vec::new(),
+            platforms: Vec::new(),
         }
     }
 }
 
 impl Compat {
+    /// The platforms the addon lists as tested, once each; empty means not tested.
+    pub fn tested_platforms(&self) -> Vec<Platform> {
+        let mut out: Vec<Platform> = self.platforms.iter().filter_map(|p| Platform::parse(p)).collect();
+        out.sort();
+        out.dedup();
+        out
+    }
+
     pub fn accepts_build(&self, build_id: u64) -> bool {
         let v = Version::new(build_id, 0, 0);
         self.game_builds.is_empty() || self.game_builds.iter().any(|r| r.matches(&v))
@@ -922,6 +956,11 @@ impl AddonManifest {
                 self.compat.game,
                 crate::GAME_ID
             ));
+        }
+        for p in &self.compat.platforms {
+            if Platform::parse(p).is_none() {
+                return fail(format!("compat.platforms {p:?} is not one of \"steam\", \"ea\""));
+            }
         }
         let mut seen = BTreeMap::new();
         for o in &self.options {
@@ -1319,6 +1358,25 @@ mod tests {
                     "values": ["titlesponsor", { "value": "tier01", "label": "Tier 1" }, "replica"], "binds": "db" }],
       "operations": { "database": ["db/grid24.json"] }
     }"#;
+
+    #[test]
+    fn compat_platforms_list_the_tested_stores() {
+        let with = |value: &str| {
+            let compat = format!(r#""compat": {{ "game": "f1_25", "platforms": {value} }},"#);
+            let (start, _) = GRID24.split_once(r#""compat":"#).unwrap();
+            let (_, rest) = GRID24.split_once(r#""requires":"#).unwrap();
+            AddonManifest::parse(&format!(r#"{start}{compat} "requires":{rest}"#))
+        };
+        let m = with(r#"["ea", "steam", "ea"]"#).unwrap();
+        assert_eq!(m.compat.tested_platforms(), vec![Platform::Steam, Platform::Ea]);
+        assert!(with("[]").unwrap().compat.tested_platforms().is_empty());
+        let err = with(r#"["steam", "gog"]"#).unwrap_err().to_string();
+        assert!(err.contains(r#"compat.platforms "gog" is not one of"#), "{err}");
+        assert!(with(r#""steam""#).is_err());
+        let none = AddonManifest::parse(GRID24).unwrap();
+        assert!(none.compat.tested_platforms().is_empty());
+        assert!(!serde_json::to_string(&none).unwrap().contains("platforms"));
+    }
 
     #[test]
     fn source_url_is_the_repository_when_it_is_https() {
