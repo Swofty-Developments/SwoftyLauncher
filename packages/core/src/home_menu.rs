@@ -88,7 +88,9 @@ pub fn https_host_in(url: &str, hosts: &[&str]) -> bool {
         return false;
     };
     let authority = rest.split(['/', '?', '#']).next().unwrap_or("");
-    !authority.contains('@') && !authority.contains(':') && hosts.contains(&authority.to_ascii_lowercase().as_str())
+    !authority.contains('@')
+        && !authority.contains(':')
+        && hosts.contains(&authority.to_ascii_lowercase().as_str())
 }
 
 pub fn parse_open_request(text: &str) -> Option<String> {
@@ -131,7 +133,8 @@ fn fetch_video(registry: &str) -> Option<Video> {
         .read_to_string()
         .ok()?;
     let video: Video = serde_json::from_str(&text).ok()?;
-    (video_url_allowed(&video.url) && !video.id.is_empty() && !video.thumbnail_url.is_empty()).then_some(video)
+    (video_url_allowed(&video.url) && !video.id.is_empty() && !video.thumbnail_url.is_empty())
+        .then_some(video)
 }
 
 fn fetch_image(url: &str, to: &Path, limit: u64) -> bool {
@@ -145,7 +148,8 @@ fn fetch_image(url: &str, to: &Path, limit: u64) -> bool {
     if !looks_like_image {
         return false;
     }
-    std::fs::create_dir_all(to.parent().unwrap_or(Path::new("."))).is_ok() && std::fs::write(to, bytes).is_ok()
+    std::fs::create_dir_all(to.parent().unwrap_or(Path::new("."))).is_ok()
+        && std::fs::write(to, bytes).is_ok()
 }
 
 fn cached_video(data: &Path) -> Option<Video> {
@@ -175,7 +179,9 @@ pub fn fetch_avatar(data: &Path) -> bool {
         session = fresh;
     }
     let Some(url) = session.avatar else {
-        return why("the account has no avatar (the server's /v1/auth/launcher/me returned no user.avatar, and the launcher keeps no avatar picture on disk)");
+        return why(
+            "the account has no avatar (the server's /v1/auth/launcher/me returned no user.avatar, and the launcher keeps no avatar picture on disk)",
+        );
     };
     if !https_host_in(&url, &AVATAR_HOSTS) {
         return why("the avatar link is not on Discord's CDN");
@@ -189,8 +195,9 @@ pub fn fetch_avatar(data: &Path) -> bool {
 
 fn latest_video_from(data: &Path, registry: &str, trusted: &dyn Fn(&str) -> bool) -> Option<VideoCard> {
     let dir = data.join(CACHE_DIR);
-    let fresh = fetch_video(registry)
-        .filter(|v| trusted(&v.thumbnail_url) && fetch_image(&v.thumbnail_url, &dir.join(THUMBNAIL), THUMBNAIL_LIMIT));
+    let fresh = fetch_video(registry).filter(|v| {
+        trusted(&v.thumbnail_url) && fetch_image(&v.thumbnail_url, &dir.join(THUMBNAIL), THUMBNAIL_LIMIT)
+    });
     if let Some(video) = &fresh {
         std::fs::write(dir.join(VIDEO_CACHE), serde_json::to_vec(video).ok()?).ok()?;
     }
@@ -244,7 +251,11 @@ fn stage(game: &Path, from: &str, name: &str) -> Option<String> {
 
 pub fn write(game: &Path, state: &State) -> crate::Result<()> {
     let mut staged = state.clone();
-    staged.discord.avatar = state.discord.avatar.as_deref().and_then(|a| stage(game, a, "avatar"));
+    staged.discord.avatar = state
+        .discord
+        .avatar
+        .as_deref()
+        .and_then(|a| stage(game, a, "avatar"));
     staged.video = state.video.clone().and_then(|mut v| {
         v.thumbnail = stage(game, &v.thumbnail, "thumbnail")?;
         Some(v)
@@ -268,12 +279,19 @@ fn card_of(data: &Path, video: Video) -> VideoCard {
     VideoCard {
         title: video.title,
         url: video.url,
-        thumbnail: data.join(CACHE_DIR).join(THUMBNAIL).to_string_lossy().into_owned(),
+        thumbnail: data
+            .join(CACHE_DIR)
+            .join(THUMBNAIL)
+            .to_string_lossy()
+            .into_owned(),
     }
 }
 
 fn publish_from(data: &Path, game: &Path, version: &str, registry: String, every: Duration) -> Refresh {
-    let _ = write(game, &state(data, version, cached_video(data).map(|v| card_of(data, v)), None));
+    let _ = write(
+        game,
+        &state(data, version, cached_video(data).map(|v| card_of(data, v)), None),
+    );
     let stop = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
     let flag = stop.clone();
     let (data, game, version) = (data.to_path_buf(), game.to_path_buf(), version.to_owned());
@@ -328,7 +346,9 @@ mod tests {
         assert!(video_url_allowed("https://YOUTUBE.com/watch?v=abc"));
         assert!(!video_url_allowed("http://www.youtube.com/watch?v=abc"));
         assert!(!video_url_allowed("https://www.youtube.com.evil.example/watch"));
-        assert!(!video_url_allowed("https://evil.example/https://www.youtube.com/"));
+        assert!(!video_url_allowed(
+            "https://evil.example/https://www.youtube.com/"
+        ));
         assert!(!video_url_allowed("https://www.youtube.com@evil.example/"));
         assert!(!video_url_allowed("https://www.youtube.com:8443/"));
         assert!(!video_url_allowed("file:///etc/passwd"));
@@ -409,14 +429,26 @@ mod tests {
 
     #[test]
     fn images_come_only_from_the_expected_cdns() {
-        assert!(https_host_in("https://i.ytimg.com/vi/abc/hqdefault.jpg", &IMAGE_HOSTS));
-        assert!(!https_host_in("https://i.ytimg.com.evil.example/x.jpg", &IMAGE_HOSTS));
+        assert!(https_host_in(
+            "https://i.ytimg.com/vi/abc/hqdefault.jpg",
+            &IMAGE_HOSTS
+        ));
+        assert!(!https_host_in(
+            "https://i.ytimg.com.evil.example/x.jpg",
+            &IMAGE_HOSTS
+        ));
         assert!(!https_host_in("http://i.ytimg.com/x.jpg", &IMAGE_HOSTS));
-        assert!(https_host_in("https://cdn.discordapp.com/avatars/1/a.png?size=128", &AVATAR_HOSTS));
+        assert!(https_host_in(
+            "https://cdn.discordapp.com/avatars/1/a.png?size=128",
+            &AVATAR_HOSTS
+        ));
         assert!(!https_host_in("https://i.ytimg.com/x.png", &AVATAR_HOSTS));
         let data = temp("untrusted");
         let registry = serve_at(free_port(), vec![0xff, 0xd8, 1], "https://youtu.be/abc");
-        assert!(latest_video(&data, &registry).is_none(), "a loopback thumbnail host is refused");
+        assert!(
+            latest_video(&data, &registry).is_none(),
+            "a loopback thumbnail host is refused"
+        );
         std::fs::remove_dir_all(&data).ok();
     }
 
@@ -503,7 +535,8 @@ mod tests {
         };
         write(&game, &with).unwrap();
         assert!(game.join("swofty/home_menu/thumbnail.jpg").is_file());
-        let back: serde_json::Value = serde_json::from_slice(&std::fs::read(game.join(STATE_FILE)).unwrap()).unwrap();
+        let back: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(game.join(STATE_FILE)).unwrap()).unwrap();
         assert_eq!(back["video"]["url"], "https://youtu.be/a");
         assert_eq!(back["video"]["thumbnail"], "home_menu/thumbnail.jpg");
         assert_eq!(back["online"], 1234);

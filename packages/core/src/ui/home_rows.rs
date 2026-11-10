@@ -43,13 +43,55 @@ const fn row(template: &'static str, slot: &'static str, x: f64, y: f64, guid: &
 }
 
 pub const ROWS: [Row; 9] = [
-    row("swofty_home_top_left", "swofty_home_slot_top_left", LEFT, 3.2, "a1c3e5f7-1b2d-4f60-8a91-b3c5d7e9f101"),
-    row("swofty_home_top_right", "swofty_home_slot_top_right", RIGHT, 3.2, "a2c3e5f7-1b2d-4f60-8a91-b3c5d7e9f102"),
-    row("swofty_home_top_third", "swofty_home_slot_top_third", THIRD, 3.2, "a3c3e5f7-1b2d-4f60-8a91-b3c5d7e9f103"),
-    row("swofty_home_modes_left", "swofty_home_slot_modes_left", LEFT, 2.45, "b1d4f6a8-2c3e-4a71-9ba2-c4d6e8f0a201"),
-    row("swofty_home_modes_right", "swofty_home_slot_modes_right", RIGHT, 2.45, "b2d4f6a8-2c3e-4a71-9ba2-c4d6e8f0a202"),
-    row("swofty_home_wide_a", "swofty_home_row_wide_a", LEFT, 1.7, "c3e5a7b9-3d4f-4b82-8cb3-d5e7f9a1b303"),
-    row("swofty_home_wide_b", "swofty_home_row_wide_b", LEFT, 0.95, "d4f6b8c0-4e5a-4c93-9dc4-e6f8a0b2c404"),
+    row(
+        "swofty_home_top_left",
+        "swofty_home_slot_top_left",
+        LEFT,
+        3.2,
+        "a1c3e5f7-1b2d-4f60-8a91-b3c5d7e9f101",
+    ),
+    row(
+        "swofty_home_top_right",
+        "swofty_home_slot_top_right",
+        RIGHT,
+        3.2,
+        "a2c3e5f7-1b2d-4f60-8a91-b3c5d7e9f102",
+    ),
+    row(
+        "swofty_home_top_third",
+        "swofty_home_slot_top_third",
+        THIRD,
+        3.2,
+        "a3c3e5f7-1b2d-4f60-8a91-b3c5d7e9f103",
+    ),
+    row(
+        "swofty_home_modes_left",
+        "swofty_home_slot_modes_left",
+        LEFT,
+        2.45,
+        "b1d4f6a8-2c3e-4a71-9ba2-c4d6e8f0a201",
+    ),
+    row(
+        "swofty_home_modes_right",
+        "swofty_home_slot_modes_right",
+        RIGHT,
+        2.45,
+        "b2d4f6a8-2c3e-4a71-9ba2-c4d6e8f0a202",
+    ),
+    row(
+        "swofty_home_wide_a",
+        "swofty_home_row_wide_a",
+        LEFT,
+        1.7,
+        "c3e5a7b9-3d4f-4b82-8cb3-d5e7f9a1b303",
+    ),
+    row(
+        "swofty_home_wide_b",
+        "swofty_home_row_wide_b",
+        LEFT,
+        0.95,
+        "d4f6b8c0-4e5a-4c93-9dc4-e6f8a0b2c404",
+    ),
     Row {
         stock: "fe_tile_button_divider",
         template: "swofty_home_divider",
@@ -58,7 +100,13 @@ pub const ROWS: [Row; 9] = [
         y: 0.5,
         guid: "f6b8d0e2-6a7c-4eb5-9fe6-a8b0c2d4e606",
     },
-    row("swofty_home_wide_c", "swofty_home_row_wide_c", LEFT, 0.0, "e5a7c9d1-5f6b-4da4-8ed5-f7a9b1c3d505"),
+    row(
+        "swofty_home_wide_c",
+        "swofty_home_row_wide_c",
+        LEFT,
+        0.0,
+        "e5a7c9d1-5f6b-4da4-8ed5-f7a9b1c3d505",
+    ),
 ];
 
 const DESCRIPTION_Y: f64 = -1.1;
@@ -77,7 +125,9 @@ pub fn has_templates(data: &[u8]) -> Result<bool> {
 pub fn build_templates(data: &[u8]) -> Result<Vec<u8>> {
     let mut doc = Pkg::parse(data)?;
     if doc.to_bytes()? != data {
-        return Err(err(format!("{TEMPLATES} fragment {TEMPLATES_FRAGMENT} does not round-trip")));
+        return Err(err(format!(
+            "{TEMPLATES} fragment {TEMPLATES_FRAGMENT} does not round-trip"
+        )));
     }
     let list = templates(&mut doc)?;
     if list
@@ -123,7 +173,11 @@ fn set_position(e: &mut Node, x: f64, y: f64) -> Result<()> {
 pub fn has_slots(data: &[u8]) -> Result<bool> {
     let doc = Pkg::parse(data)?;
     let scenes = idf::scenes(&doc)?;
-    let root = scenes.first().ok_or_else(|| err("a scene file without scenes"))?.o()?.at("scene")?;
+    let root = scenes
+        .first()
+        .ok_or_else(|| err("a scene file without scenes"))?
+        .o()?
+        .at("scene")?;
     Ok(ROWS.iter().any(|r| idf::find(root, r.slot).is_some()))
 }
 
@@ -139,7 +193,8 @@ pub fn build_scene(data: &[u8]) -> Result<Vec<u8>> {
     if ROWS.iter().any(|r| idf::find(root, r.slot).is_some()) {
         return Err(err(format!("{SCENE} already has the main menu rows")));
     }
-    let parent = find_mut(root, "transition_fade_items").ok_or_else(|| err(format!("{SCENE} has no transition_fade_items")))?;
+    let parent = find_mut(root, "transition_fade_items")
+        .ok_or_else(|| err(format!("{SCENE} has no transition_fade_items")))?;
     let kids = idf::children_mut(parent)?;
     let at = kids
         .iter()
@@ -190,7 +245,10 @@ pub fn has_strip_binding(data: &[u8]) -> Result<bool> {
         .iter()
         .find(|k| k.is_node() && k.name() == STRIP)
         .ok_or_else(|| err(format!("{PLAYERCARD} has no {STRIP}")))?;
-    Ok(panel.props()?.get("visible").is_some_and(|v| format!("{v:?}").contains("swofty_strip_visible")))
+    Ok(panel
+        .props()?
+        .get("visible")
+        .is_some_and(|v| format!("{v:?}").contains("swofty_strip_visible")))
 }
 
 /// playercard.ui with the top-right strip's group shown or hidden by `ui_menu_data.swofty_strip_visible`,

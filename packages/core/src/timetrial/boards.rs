@@ -19,10 +19,9 @@ pub struct Row {
     #[serde(default)]
     pub rank: Option<u32>,
     pub lap_id: String,
-    #[serde(alias = "user")]
     pub driver: Driver,
     pub time_ms: u64,
-    #[serde(default, alias = "set_at")]
+    #[serde(default)]
     pub date: String,
     #[serde(default)]
     pub status: String,
@@ -242,5 +241,17 @@ mod tests {
     #[test]
     fn path_segments_are_escaped() {
         assert_eq!(segment("a b/c"), "a%20b%2Fc");
+    }
+
+    /// The board reply as the server sends it: each row names the driver as both `driver` and `user` and
+    /// the time as both `date` and `set_at`.
+    #[test]
+    fn a_board_reply_with_both_names_for_the_driver_and_the_date_is_read() {
+        let reply = r#"{"content": "swofty.swofty-seasons-2019/sw_2019", "track": "monaco", "total": 1, "limit": 50, "offset": 0, "record": {"lap_id": "2949b7d7eaf78422", "time_ms": 71105, "user": {"id": "1", "name": "Driver", "avatar": null}}, "rows": [{"rank": 1, "lap_id": "2949b7d7eaf78422", "user": {"id": "1", "name": "Driver", "avatar": null}, "driver": {"id": "1", "name": "Driver", "avatar": null}, "status": "accepted", "date": "2026-11-10T23:41:25Z", "time_ms": 71105, "sectors_ms": [18844, 33714, 18546], "car": {"team": "sw19_mclaren"}, "assists": {"packed": 93, "any": true, "traction_control": "full", "abs": true, "braking_assist": false, "racing_line": "full", "gearbox": "automatic", "ers_assist": true, "other": false}, "input_device": "wheel", "set_at": "2026-11-10T23:41:25Z", "gap_ms": 0, "gap_pct": 0.0, "car_label": "sw19_mclaren", "input": "wheel", "verification": "unattested", "has_replay": true}], "history": []}"#;
+        let rows = serde_json::from_str::<Rows<Row>>(reply).unwrap().into_vec();
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].driver.name, "Driver");
+        assert_eq!(rows[0].date, "2026-11-10T23:41:25Z");
+        assert_eq!(rows[0].time_ms, 71105);
     }
 }

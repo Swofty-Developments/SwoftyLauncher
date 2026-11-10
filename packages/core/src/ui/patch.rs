@@ -813,7 +813,9 @@ fn container_home_route(stock: &Node) -> Result<Node> {
         }
     }
     if wiped != 2 {
-        return Err(err(format!("the container's home route has {wiped} wipe settings, not the stock 2")));
+        return Err(err(format!(
+            "the container's home route has {wiped} wipe settings, not the stock 2"
+        )));
     }
     Ok(r)
 }
@@ -860,7 +862,10 @@ fn home_route(groupings: &[Node], id: &str) -> Result<Node> {
 fn nav_routes(groupings: &[Node]) -> Result<Vec<Node>> {
     let activity = home_route(groupings, "home_to_activity")?;
     let mut out = Vec::new();
-    for (id, entry) in [(TIME_TRIAL_ROUTE, TIME_TRIAL_ENTRY), (GRAND_PRIX_ROUTE, GRAND_PRIX_ENTRY)] {
+    for (id, entry) in [
+        (TIME_TRIAL_ROUTE, TIME_TRIAL_ENTRY),
+        (GRAND_PRIX_ROUTE, GRAND_PRIX_ENTRY),
+    ] {
         let mut r = activity.clone();
         set_str(r.o_mut()?, "Id", id)?;
         let swapped = std::cell::Cell::new(0);
@@ -877,7 +882,9 @@ fn nav_routes(groupings: &[Node]) -> Result<Vec<Node>> {
     }
     let mut saves = home_route(groupings, "theatre")?;
     set_str(saves.o_mut()?, "Id", GRAND_PRIX_SAVES_ROUTE)?;
-    replace_strings(&mut saves, &|v| (v == "theatre_container").then(|| "grand_prix_continue".to_owned()));
+    replace_strings(&mut saves, &|v| {
+        (v == "theatre_container").then(|| "grand_prix_continue".to_owned())
+    });
     out.push(saves);
     Ok(out)
 }
@@ -990,7 +997,11 @@ pub fn f1_world_entries(data: &[u8]) -> Result<Vec<u8>> {
             if ents.iter().any(|e| e.name() == name) {
                 return Err(err(format!("{F1_WORLD_FLOW} has {name} already")));
             }
-            let mut e = if command.is_some() { with_command.clone() } else { plain.clone() };
+            let mut e = if command.is_some() {
+                with_command.clone()
+            } else {
+                plain.clone()
+            };
             let p0 = e.props_mut()?;
             set_str(p0, "name", name)?;
             if let Some(c) = command {
@@ -1024,7 +1035,9 @@ pub fn frontend_transition(data: &[u8]) -> Result<Vec<u8>> {
             .ok_or_else(|| err(format!("frontend_transition has no {TRANSITION_ENTRY_NODE} node")))?;
         let entry = n.props_mut()?.at_mut("migrate_entry")?.o_mut()?;
         if entry.str_at("value")? != "enter_f1_world_container" {
-            return Err(err(format!("{TRANSITION_ENTRY_NODE} does not enter enter_f1_world_container")));
+            return Err(err(format!(
+                "{TRANSITION_ENTRY_NODE} does not enter enter_f1_world_container"
+            )));
         }
         set_str(entry, "value", RETURN_ENTRY)
     })
@@ -1786,14 +1799,25 @@ mod tests {
         let data = pkg_of(vec![
             route_group(
                 "fe_home",
-                vec![route("options", vec![], "", 0, None), route("theatre", vec![], "theatre_container", 0, None), activity],
+                vec![
+                    route("options", vec![], "", 0, None),
+                    route("theatre", vec![], "theatre_container", 0, None),
+                    activity,
+                ],
             ),
             route_group("settings_container", vec![]),
         ]);
         let out = routes(&data, Vec::new(), Vec::new()).unwrap();
         let p = Pkg::parse(&out).unwrap();
         let ids = route_ids_of(&p, "fe_home");
-        for id in [SHOWROOM_ROUTE, TIME_TRIAL_ROUTE, GRAND_PRIX_ROUTE, GRAND_PRIX_SAVES_ROUTE, "theatre", "home_to_activity"] {
+        for id in [
+            SHOWROOM_ROUTE,
+            TIME_TRIAL_ROUTE,
+            GRAND_PRIX_ROUTE,
+            GRAND_PRIX_SAVES_ROUTE,
+            "theatre",
+            "home_to_activity",
+        ] {
             assert!(ids.iter().any(|i| i == id), "{id} in {ids:?}");
         }
         let entry_of = |id: &str| {
@@ -1805,17 +1829,30 @@ mod tests {
         assert_eq!(entry_of(TIME_TRIAL_ROUTE), TIME_TRIAL_ENTRY);
         assert_eq!(entry_of(GRAND_PRIX_ROUTE), GRAND_PRIX_ENTRY);
         let saves = route_in(&p, "fe_home", GRAND_PRIX_SAVES_ROUTE);
-        assert_eq!(saves.o().unwrap().str_at("Dependencies").unwrap(), "grand_prix_continue");
+        assert_eq!(
+            saves.o().unwrap().str_at("Dependencies").unwrap(),
+            "grand_prix_continue"
+        );
     }
 
     fn home_route_with(video: &str, curve: &str) -> Node {
         route(
             "home",
             vec![
-                route_cmd("Wait", 1, &[("Time", "0"), ("DilationCurve", "tran_pre_wipe_dly_gen")], None),
+                route_cmd(
+                    "Wait",
+                    1,
+                    &[("Time", "0"), ("DilationCurve", "tran_pre_wipe_dly_gen")],
+                    None,
+                ),
                 route_cmd("StartStandardWipe", 2, &[("Video", video)], Some("1")),
                 route_cmd("Wait", 3, &[("Time", "0"), ("DilationCurve", curve)], None),
-                route_cmd("TriggerSubRoute", 4, &[("SubRoute", "open"), ("Target", THEMING_OVERLAY)], None),
+                route_cmd(
+                    "TriggerSubRoute",
+                    4,
+                    &[("SubRoute", "open"), ("Target", THEMING_OVERLAY)],
+                    None,
+                ),
                 migrate_cmd(5, "frontend_flow", "enter_fe_home"),
             ],
             "2,4,5",
@@ -1841,7 +1878,10 @@ mod tests {
         let out = f1_world_routes(&data).unwrap();
         let p = Pkg::parse(&out).unwrap();
         assert_eq!(route_ids_of(&p, "fe_showroom"), ["back_1", HOME_BACK_ROUTE]);
-        assert_eq!(route_ids_of(&p, "grand_prix_continue"), ["back_1", HOME_BACK_ROUTE]);
+        assert_eq!(
+            route_ids_of(&p, "grand_prix_continue"),
+            ["back_1", HOME_BACK_ROUTE]
+        );
         assert_eq!(
             route_ids_of(&p, "f1_world_activity_container"),
             ["f1_world", "home", BACK_HOME_FROM_CONTAINER]
@@ -1849,13 +1889,30 @@ mod tests {
         assert_eq!(route_ids_of(&p, "fe_f1_world"), ["back_1"]);
         let home = route_in(&p, "f1_world_activity_container", BACK_HOME_FROM_CONTAINER);
         let cmds = home.o().unwrap().at("Commands").unwrap().a().unwrap();
-        assert_eq!(attr_value(&cmds[1], "Video").as_deref(), Some(TINY_WIPE), "the stock small wipe stays");
-        assert_eq!(attr_value(&cmds[2], "DilationCurve").as_deref(), Some(TINY_WIPE_CURVE));
-        assert_eq!(attr_value(&cmds[0], "DilationCurve").as_deref(), Some("tran_pre_wipe_dly_gen"));
-        assert_eq!(cmds[3].o().unwrap().str_at("Dependencies").unwrap(), "5", "the overlay opens after the migration");
+        assert_eq!(
+            attr_value(&cmds[1], "Video").as_deref(),
+            Some(TINY_WIPE),
+            "the stock small wipe stays"
+        );
+        assert_eq!(
+            attr_value(&cmds[2], "DilationCurve").as_deref(),
+            Some(TINY_WIPE_CURVE)
+        );
+        assert_eq!(
+            attr_value(&cmds[0], "DilationCurve").as_deref(),
+            Some("tran_pre_wipe_dly_gen")
+        );
+        assert_eq!(
+            cmds[3].o().unwrap().str_at("Dependencies").unwrap(),
+            "5",
+            "the overlay opens after the migration"
+        );
         let stock = route_in(&p, "f1_world_activity_container", "home");
         let stock_cmds = stock.o().unwrap().at("Commands").unwrap().a().unwrap();
-        assert_eq!(attr_value(&stock_cmds[1], "Video").as_deref(), Some("ui_wipes/ui_wipe_tiny_right.bk2"));
+        assert_eq!(
+            attr_value(&stock_cmds[1], "Video").as_deref(),
+            Some("ui_wipes/ui_wipe_tiny_right.bk2")
+        );
     }
 
     fn group<'a>(p: &'a Pkg, id: &str) -> Option<&'a Node> {

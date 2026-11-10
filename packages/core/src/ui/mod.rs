@@ -1,9 +1,9 @@
 pub mod car_category;
 pub mod career_select;
-pub mod home_rows;
 pub mod catalog;
 pub mod check;
 pub mod era;
+pub mod home_rows;
 pub mod hub;
 pub mod icons;
 pub mod idf;
@@ -602,7 +602,11 @@ pub fn build(
     write_archive(&src_h, &dst_h, frontend, Vec::new())?;
 
     let (src_l, dst_l) = erp(LEADERBOARD_ARCHIVE);
-    write_erp(&src_l, &dst_l, vec![(LEADERBOARD_UI, Box::new(patch::leaderboard_glyphs))])?;
+    write_erp(
+        &src_l,
+        &dst_l,
+        vec![(LEADERBOARD_UI, Box::new(patch::leaderboard_glyphs))],
+    )?;
 
     let (src_c, dst_c) = erp(home_rows::PLAYERCARD_ARCHIVE);
     write_archive(
@@ -620,7 +624,9 @@ pub fn build(
     )?;
 
     let mut build = MenuBuild::default();
-    build.lines.push("ui: the player card strip hides while the main menu is up".to_owned());
+    build
+        .lines
+        .push("ui: the player card strip hides while the main menu is up".to_owned());
     build.lines.extend(setup_lines);
     build.lines.extend(career_lines);
     build.warnings.extend(career_warnings);
@@ -702,7 +708,9 @@ pub fn build(
     )?;
     if lang {
         build.strings = popup.strings();
-        build.strings.push((patch::FRIENDS_TAB_LABEL.into(), patch::FRIENDS_TAB_TEXT.into()));
+        build
+            .strings
+            .push((patch::FRIENDS_TAB_LABEL.into(), patch::FRIENDS_TAB_TEXT.into()));
     }
     for rel in ERPS
         .iter()
@@ -1290,8 +1298,15 @@ mod tests {
         let text = format!("{:?}", p.root);
         assert!(text.contains(patch::BACK_HOME_FROM_CONTAINER) && text.contains(patch::HOME_BACK_ROUTE));
         let flows_written = read_frag(&dst, FLOWS, 0).unwrap();
-        let text = format!("{:?}", swofty_formats::pkg::Pkg::parse(&flows_written).unwrap().root);
-        for entry in [patch::TIME_TRIAL_ENTRY, patch::GRAND_PRIX_ENTRY, patch::RETURN_ENTRY] {
+        let text = format!(
+            "{:?}",
+            swofty_formats::pkg::Pkg::parse(&flows_written).unwrap().root
+        );
+        for entry in [
+            patch::TIME_TRIAL_ENTRY,
+            patch::GRAND_PRIX_ENTRY,
+            patch::RETURN_ENTRY,
+        ] {
             assert!(text.contains(entry), "{entry}");
         }
         assert!(text.contains("time_trial") && text.contains("grand_prix_new"));
@@ -1308,7 +1323,13 @@ mod tests {
         assert!(patch::frontend_transition(&out).is_err(), "patched once only");
         let dir = std::env::temp_dir().join(format!("swofty-transition-{}", std::process::id()));
         let dst = dir.join("flow_frontend.erp");
-        write_archive(&src, &dst, vec![(FRONTEND_TRANSITION, 0, Box::new(move |_| Ok(out)))], Vec::new()).unwrap();
+        write_archive(
+            &src,
+            &dst,
+            vec![(FRONTEND_TRANSITION, 0, Box::new(move |_| Ok(out)))],
+            Vec::new(),
+        )
+        .unwrap();
         let name = ui_file("flow_frontend.erp");
         let report = check::archive_files(&[(name.as_str(), src.as_path(), dst.as_path())]).unwrap();
         let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
