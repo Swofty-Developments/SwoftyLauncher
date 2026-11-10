@@ -48,6 +48,7 @@ const OVERRIDES: &str = "eaid://ui_package/databases/overrides.uidb";
 const MESSAGES: &str = "eaid://ui_package/message_data/onlineservices_messages.uimsg";
 const HUD_MESSAGES: &str = "eaid://ui_package/message_data/hud_messages.uimsg";
 const PERSISTENT_UI: &str = "eaid://ui_package/screens/persistent.ui";
+const FRONTEND_TRANSITION: &str = "eaid://ui_package/screens/frontend_transition.ui";
 
 pub const ERPS: &[&str] = &[
     "persistent.erp",
@@ -427,6 +428,7 @@ pub fn build(
             FLOWS,
             Box::new(|d| {
                 let b = patch::flow_entries(d, OPTIONS_FLOW, &listed)?;
+                let b = patch::f1_world_entries(&b)?;
                 *flows_out.borrow_mut() = b.clone();
                 Ok(b)
             }),
@@ -563,6 +565,7 @@ pub fn build(
             if show_panel { Ok(d) } else { patch::hide_panel(&d) }
         }),
     )];
+    frontend.push((FRONTEND_TRANSITION, 0, Box::new(patch::frontend_transition)));
     let mut home_lines = Vec::new();
     let mut home_warnings = Vec::new();
     let rows = match std::env::var_os("SWOFTY_HOME_ROWS") {
@@ -621,6 +624,10 @@ pub fn build(
     std::fs::create_dir_all(menu_path.parent().expect("has parent")).map_err(io_err(&menu_path))?;
     std::fs::write(&menu_path, b"1").map_err(io_err(&menu_path))?;
     build.screens.insert(menu_flag, menu_path);
+    let nav_flag = format!("{UI_DIR}/{}", home_rows::NAV_FLAG);
+    let nav_path = out.join(&nav_flag);
+    std::fs::write(&nav_path, b"1").map_err(io_err(&nav_path))?;
+    build.screens.insert(nav_flag, nav_path);
     if rows_built {
         let rel = format!("{UI_DIR}/{}", home_rows::FLAG);
         let path = out.join(&rel);
@@ -1245,12 +1252,14 @@ mod tests {
 
     #[test]
     #[ignore = "needs SWOFTY_STOCK_PERSISTENT, a stock persistent.erp"]
-    fn the_showroom_route_home_is_added_within_the_loader_rules() {
+    fn the_main_menu_navigation_routes_and_entries_are_added_within_the_loader_rules() {
         let src = std::path::PathBuf::from(std::env::var_os("SWOFTY_STOCK_PERSISTENT").expect("set"));
         let routes = read_frag(&src, F1_WORLD_ROUTES, 0).unwrap();
         let out = patch::f1_world_routes(&routes).unwrap();
         let home_routes = read_frag(&src, ROUTES, 0).unwrap();
         let home_out = patch::routes(&home_routes, Vec::new(), Vec::new()).unwrap();
+        let flows = read_frag(&src, FLOWS, 0).unwrap();
+        let flows_out = patch::f1_world_entries(&flows).unwrap();
         let dir = std::env::temp_dir().join(format!("swofty-f1routes-{}", std::process::id()));
         let dst = dir.join("persistent.erp");
         write_archive(
@@ -1259,6 +1268,7 @@ mod tests {
             vec![
                 (F1_WORLD_ROUTES, 0, Box::new(move |_| Ok(out))),
                 (ROUTES, 0, Box::new(move |_| Ok(home_out))),
+                (FLOWS, 0, Box::new(move |_| Ok(flows_out))),
             ],
             Vec::new(),
         )
@@ -1267,6 +1277,37 @@ mod tests {
         let report = check::archive_files(&[(name.as_str(), src.as_path(), dst.as_path())]).unwrap();
         let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
         assert!(hard.is_empty(), "{hard:?}");
+        let written = read_frag(&dst, F1_WORLD_ROUTES, 0).unwrap();
+        let p = swofty_formats::pkg::Pkg::parse(&written).unwrap();
+        let text = format!("{:?}", p.root);
+        assert!(text.contains(patch::BACK_HOME_FROM_CONTAINER) && text.contains(patch::HOME_BACK_ROUTE));
+        let flows_written = read_frag(&dst, FLOWS, 0).unwrap();
+        let text = format!("{:?}", swofty_formats::pkg::Pkg::parse(&flows_written).unwrap().root);
+        for entry in [patch::TIME_TRIAL_ENTRY, patch::GRAND_PRIX_ENTRY, patch::RETURN_ENTRY] {
+            assert!(text.contains(entry), "{entry}");
+        }
+        assert!(text.contains("time_trial") && text.contains("grand_prix_new"));
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    #[ignore = "needs SWOFTY_STOCK_FLOW_FRONTEND, a stock flow_frontend.erp"]
+    fn the_session_end_hand_over_lands_on_the_activity_container_within_the_loader_rules() {
+        let src = std::path::PathBuf::from(std::env::var_os("SWOFTY_STOCK_FLOW_FRONTEND").expect("set"));
+        let ui = read_frag(&src, FRONTEND_TRANSITION, 0).unwrap();
+        let out = patch::frontend_transition(&ui).unwrap();
+        assert_ne!(ui, out);
+        assert!(patch::frontend_transition(&out).is_err(), "patched once only");
+        let dir = std::env::temp_dir().join(format!("swofty-transition-{}", std::process::id()));
+        let dst = dir.join("flow_frontend.erp");
+        write_archive(&src, &dst, vec![(FRONTEND_TRANSITION, 0, Box::new(move |_| Ok(out)))], Vec::new()).unwrap();
+        let name = ui_file("flow_frontend.erp");
+        let report = check::archive_files(&[(name.as_str(), src.as_path(), dst.as_path())]).unwrap();
+        let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
+        assert!(hard.is_empty(), "{hard:?}");
+        let written = read_frag(&dst, FRONTEND_TRANSITION, 0).unwrap();
+        let text = format!("{:?}", swofty_formats::pkg::Pkg::parse(&written).unwrap().root);
+        assert!(text.contains(patch::RETURN_ENTRY));
         std::fs::remove_dir_all(&dir).ok();
     }
 
