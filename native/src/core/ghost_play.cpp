@@ -1,10 +1,13 @@
 #include "ghost_arm_logic.hpp"
 #include "ghost_request_logic.hpp"
 #include "ghost_swlap_logic.hpp"
+#include "hooks/guard.hpp"
 #include "lap_assists_logic.hpp"
 #include "runtime.hpp"
 
 #include <windows.h>
+
+#include "apply/moments.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/json.hpp>
@@ -543,6 +546,8 @@ void sample_input(uintptr_t comp)
         input_hist[code]++;
 }
 
+void pb_rearm_tick(uintptr_t comp);
+
 void tick_mid(safetyhook::Context &c)
 {
     static thread_local bool busy = false;
@@ -560,6 +565,8 @@ void tick_mid(safetyhook::Context &c)
         arming.component(comp);
     }
     runtime::player_name_pin_tick();
+    if (ghost_on)
+        pb_rearm_tick(comp);
     if (record_on)
         sample_input(comp);
     if (ghost_on)
@@ -599,13 +606,112 @@ int read_hook(void *tlap, void *stream)
     return rc;
 }
 
+struct PbKey {
+    uint32_t count = 0;
+    uint64_t bytes = 0;
+    float lap = 0;
+    bool operator==(const PbKey &o) const { return count == o.count && bytes == o.bytes && lap == o.lap; }
+};
+
+PbKey pb_key_of(uintptr_t tl)
+{
+    PbKey k;
+    if (!tl)
+        return k;
+    LapState s = state_of(tl);
+    k.count = s.count;
+    k.bytes = s.bytes;
+    k.lap = s.lap;
+    return k;
+}
+
+std::mutex pb_lock;
+bool pb_pending = false, pb_rearm_on = true;
+uintptr_t pb_comp = 0;
+PbKey pb_key, pb_done;
+std::vector<uint8_t> pb_blob;
+int64_t pb_rearmed_at = 0;
+int pb_watch = 0;
+
+void pb_rearm_tick(uintptr_t comp)
+{
+    int64_t now = now_ms();
+    if (pb_watch > 0 && pb_rearmed_at && now - pb_rearmed_at >= (pb_watch == 2 ? 1500 : 6000)) {
+        uintptr_t tl = tlap_at(comp, 3);
+        LapState s = tl ? state_of(tl) : LapState{};
+        swofty::log("[ghost] new PB watch: lap 3 %.1f s after the re-arm: mode %u/%u, time %.3f of %.3f, count %u, bound 0x%llx", (now - pb_rearmed_at) / 1000.0,
+                    s.mode, s.want, s.time, s.lap, s.count, (unsigned long long)s.bound);
+        pb_watch--;
+    }
+    std::vector<uint8_t> blob;
+    PbKey key;
+    {
+        std::lock_guard<std::mutex> g(pb_lock);
+        if (!pb_pending || pb_comp != comp)
+            return;
+        pb_pending = false;
+        if (pb_key == pb_done)
+            return;
+        blob = pb_blob;
+        key = pb_key;
+    }
+    if (!pb_rearm_on || !reset_fn || !read_fn)
+        return;
+    if (swofty_core::apply::moments::session_mode_track().first != "time_trial" || !runtime::tt_bridge_ours_session())
+        return;
+    uintptr_t tl3 = tlap_at(comp, 3), tl1 = tlap_at(comp, 1);
+    if (!tl3 || !tl1)
+        return;
+    LapState before = state_of(tl3);
+    if (before.bound == 0 || before.time > 2.0f) {
+        swofty::log("[ghost] new PB re-arm skipped: lap 3 is %s (mode %u/%u, time %.3f); the running ghost is not disturbed",
+                    before.bound ? "mid-lap" : "not bound to a car", before.mode, before.want, before.time);
+        return;
+    }
+    slot = 3;
+    if (!read_trace_into(tl3, blob)) {
+        swofty::log("[ghost] new PB re-arm failed: the reader refused the lap's own trace");
+        return;
+    }
+    uint32_t keep[5] = {};
+    if (!mem::readable(tl1 + TL_MODE, sizeof keep) || !mem::readable(tl3 + TL_MODE, sizeof keep)) {
+        swofty::log("[ghost] new PB re-arm: the play state fields are not readable");
+        return;
+    }
+    std::memcpy(keep, reinterpret_cast<const void *>(tl1 + TL_MODE), sizeof keep);
+    swofty_core::hooks::guard::copy_memory(reinterpret_cast<void *>(tl3 + TL_MODE), keep, sizeof keep);
+    LapState after = state_of(tl3);
+    {
+        std::lock_guard<std::mutex> g(pb_lock);
+        pb_done = key;
+    }
+    pb_rearmed_at = now;
+    pb_watch = 2;
+    swofty::log("[ghost] new PB armed in lap 3 for the running session: %.3f s, %u records, play state copied from lap 1 (mode %u/%u time %.3f); before: mode %u/%u "
+                "time %.3f; the ghost car stays bound to 0x%llx (a slot swap, no renderer reload)",
+                after.lap, after.count, after.mode, after.want, after.time, before.mode, before.want, before.time, (unsigned long long)after.bound);
+}
+
 uint64_t newlap_hook(void *comp, void *msg)
 {
     uintptr_t c = uintptr_t(comp);
+    PbKey before3 = pb_key_of(tlap_at(c, 3));
     uint64_t r = h_newlap.call<uint64_t>(comp, msg);
     if (!diag_on && !record_on)
         return r;
     mem::Trust trust(runtime::HEAP_TRUST_MS);
+    if (ghost_on && pb_rearm_on) {
+        PbKey a1 = pb_key_of(tlap_at(c, 1)), a3 = pb_key_of(tlap_at(c, 3));
+        std::vector<uint8_t> blob;
+        if (a3.count > 0 && a1 == a3 && !(a3 == before3) && trace_bytes_of(tlap_at(c, 1), blob)) {
+            std::lock_guard<std::mutex> g(pb_lock);
+            pb_pending = true;
+            pb_comp = c;
+            pb_key = a3;
+            pb_blob = std::move(blob);
+            swofty::log("[ghost] new PB recorded: %.3f s, %u records; re-arm queued for the game thread", a3.lap, a3.count);
+        }
+    }
     uint8_t car = 0xff, valid = 0;
     mem::read(uintptr_t(msg) + 0x10, car);
     mem::read(uintptr_t(msg) + 0x18, valid);
@@ -684,6 +790,7 @@ void setup()
         } else
             swofty::log("[ghost] lap trace hook off: needs %s (byte signature matched nothing unique)", S_NEWLAP.what);
     }
+    pb_rearm_on = !env_is("SWOFTY_TT_PB_REARM", "0");
     if (!ghost_on && !diag_on && !record_on)
         return;
     uintptr_t tick = runtime::find(S_TICK, "ghost", "ghost");
