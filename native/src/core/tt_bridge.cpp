@@ -362,7 +362,7 @@ void log_unreadable(uint64_t op, tb::Method m, const std::string &name)
     if (++logged_unreadable > 4)
         return;
     uint8_t raw[0x30] = {};
-    uint64_t base = op + tb::ARGS_AT_OP + tb::board_slot(m);
+    uint64_t base = peek64(op + tb::ARGS_AT_OP) + tb::board_slot(m);
     bool ok = runtime::readable(reinterpret_cast<void *>(base), sizeof raw);
     if (ok)
         memcpy(raw, reinterpret_cast<void *>(base), sizeof raw);
@@ -659,7 +659,7 @@ void finder_mid(safetyhook::Context &c)
             fresh = true;
         }
     }
-    if ((diag_on || bypass) && (fresh || (diag_on && ++finder_logged <= 12)))
+    if ((diag_on || bypass) && fresh)
         swofty::log("[boards] %srival finder gate of handler 0x%llx board %s: user online %u, S+0x60 ok %u, S+0x64 ok %u, finder state %u -> %s",
                     diag_on ? "diag: " : "", (unsigned long long)handler, board.empty() ? "?" : board.c_str(), user_online, s60, s64, peek32(finder + 0xa0),
                     open ? "online, the game's own search runs" : bypass ? "offline, this board is ours: treated as online" : "offline, left to the game (Offline state)");
@@ -978,8 +978,18 @@ void write_request(tb::Pending &p, const std::string &content, const std::string
         swofty::log("[boards] request %llu: writing the outbox file failed (error %lu); it will time out", (unsigned long long)p.seq, GetLastError());
 }
 
-void complete(const tb::Completion &c)
+void complete(const tb::Completion &done)
 {
+    tb::Completion c = done;
+    if ((c.status < 200 || c.status > 299) && c.method != tb::Method::get_binary) {
+        const char *soft = c.method == tb::Method::get_tt || c.method == tb::Method::get_friends_tt
+                               ? "{\"Results\":[],\"TotalEntries\":0,\"FromIndex\":0,\"ToIndex\":0}"
+                               : tb::local_body(c.method);
+        swofty::log("[boards] completion %llu %s %s: the bridge failed with %d (%s); the game gets an empty answer instead of its error popup",
+                    (unsigned long long)c.seq, tb::method_name(c.method), c.board_text.c_str(), c.status, tb::why_name(c.why));
+        c.status = 200;
+        c.body = soft;
+    }
     auto resp = std::make_unique<tb::Response>();
     resp->fill(c.status, c.body);
     uintptr_t fn = found.on_result[int(c.method)];

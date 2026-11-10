@@ -121,6 +121,7 @@ struct Field {
     Kind kind;
 };
 
+// op+0x128 holds a pointer to the request block (Game_F1os_Create_*: puVar7[0x25]); the fields are relative to the block.
 inline constexpr uint32_t ARGS_AT_OP = 0x128;
 inline constexpr uint32_t OP_SERVICE = 0x110, OP_METHOD = 0x118, OP_ARGS_TEXT = 0x168;
 
@@ -281,7 +282,9 @@ inline Args decode_args(const Mem &m, uint64_t op, Method method)
     uint32_t slot = board_slot(method);
     if (!slot)
         return a;
-    uint64_t base = op + ARGS_AT_OP;
+    uint64_t base = 0;
+    if (!m.get(op + ARGS_AT_OP, base) || !base)
+        return a;
     a.form = probe_form(m, base + slot, [](const std::string &s) { return parse_board(s).ok; }, &a.board_text);
     if (!a.form.ok())
         return a;

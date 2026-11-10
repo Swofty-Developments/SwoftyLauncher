@@ -100,7 +100,8 @@ int main()
 
     // memory and strings: GetTTLeaderboard args through a NeStr pointer
     Fake f;
-    uint64_t op = 0x10000, args = op + tb::ARGS_AT_OP;
+    uint64_t op = 0x10000, args = 0x20000;
+    f.put<uint64_t>(op + tb::ARGS_AT_OP, args);
     f.put<uint64_t>(args + 8, 0x50000);
     f.ne(0x50000, "LBV0605D");
     f.put<int32_t>(args + 0x30, 3);
@@ -117,6 +118,7 @@ int main()
 
     // char* slot, second word
     Fake g;
+    g.put<uint64_t>(op + tb::ARGS_AT_OP, args);
     g.put<uint64_t>(args + 8 + 8, 0x60000);
     g.cstr(0x60000, "LBV0701W");
     g.put<int32_t>(args + 0x30, 1);
@@ -125,6 +127,7 @@ int main()
 
     // inline
     Fake h;
+    h.put<uint64_t>(op + tb::ARGS_AT_OP, args);
     h.cstr(args + 8, "LBV0606D");
     auto a3 = tb::decode_args(h.mem(), op, tb::Method::get_tt);
     expect(a3.ok && a3.form.form == tb::Form::inline_c && a3.board.track == 6, "an inline C string decodes");
@@ -133,13 +136,16 @@ int main()
     Fake none;
     expect(!tb::decode_args(none.mem(), op, tb::Method::get_tt).ok, "unreadable args are not ok");
     Fake junk;
+    junk.put<uint64_t>(op + tb::ARGS_AT_OP, args);
     junk.put<uint64_t>(args + 8, 0x70000);
     junk.cstr(0x70000, "not a board");
     expect(!tb::decode_args(junk.mem(), op, tb::Method::get_tt).ok, "a string that is no board name is not ok");
     Fake nullp;
+    nullp.put<uint64_t>(op + tb::ARGS_AT_OP, args);
     nullp.put<uint64_t>(args + 8, 0);
     expect(!tb::decode_args(nullp.mem(), op, tb::Method::get_tt).ok, "a null string pointer is not ok");
     Fake binstr;
+    binstr.put<uint64_t>(op + tb::ARGS_AT_OP, args);
     binstr.put<uint64_t>(args + 8, 0x80000);
     uint8_t bad[] = {1, 2, 3, 4, 0, 0, 8, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8};
     binstr.put(0x80000, bad, sizeof bad);
@@ -147,6 +153,7 @@ int main()
 
     // other methods' tables
     Fake m;
+    m.put<uint64_t>(op + tb::ARGS_AT_OP, args);
     m.put<uint64_t>(args + 0x48, 0x51000);
     m.ne(0x51000, "LBV0605D");
     m.put<uint64_t>(args + 8, 0x52000);
@@ -158,12 +165,14 @@ int main()
                gb.values["Version"].as_int() == 5,
            "GetBinaryDataForUser reads LeaderboardID at +0x48 and PlatformID at +8");
     Fake u;
+    u.put<uint64_t>(op + tb::ARGS_AT_OP, args);
     u.put<uint64_t>(args + 0x10, 0x53000);
     u.ne(0x53000, "LBV0605D");
     u.put<int32_t>(args + 8, 4);
     auto up = tb::decode_args(u.mem(), op, tb::Method::update_binary);
     expect(up.ok && up.values["Version"].as_int() == 4 && !up.values["BinaryDataBase64"].is_string(), "UpdateLeaderboardEntryBinaryData has no binary key");
     Fake ad;
+    ad.put<uint64_t>(op + tb::ARGS_AT_OP, args);
     ad.put<uint64_t>(args + 8, 0x54000);
     ad.ne(0x54000, "LBV0605W");
     ad.put<int64_t>(args + 0x38, 91234);
@@ -171,6 +180,7 @@ int main()
     auto ae = tb::decode_args(ad.mem(), op, tb::Method::add_entry);
     expect(ae.ok && ae.values["Score"].as_int() == 91234 && ae.values["CrossPlay"].as_int() == 1 && ae.board.weather == 'W', "AddLeaderboardEntry reads Score and CrossPlay");
     Fake fr;
+    fr.put<uint64_t>(op + tb::ARGS_AT_OP, args);
     fr.put<uint64_t>(args + 8, 0x55000);
     fr.ne(0x55000, "LBV0605D");
     fr.put<uint64_t>(args + 0x38, 0x56000);
