@@ -34,6 +34,7 @@
 
 namespace runtime {
 std::vector<era::Box> era_boxes();
+tt_bridge::BoardTrack tt_bridge_board_track(const std::string &code, int stat_hint);
 }
 
 namespace {
@@ -49,7 +50,7 @@ namespace lf = runtime::lap_file;
 constexpr size_t MAX_SEALED_SECTIONS = 4, MAX_SEALED_BYTES = size_t(1) << 20;
 
 struct Board {
-    std::string content, track, weather;
+    std::string content, track, weather, track_addon, track_name, track_kind;
 };
 
 struct Pending {
@@ -238,7 +239,12 @@ Board snapshot(const live_car::LiveCar &c)
     Board b;
     auto facts = swofty_core::hooks::core().current();
     b.content = facts && !facts->content.empty() ? facts->content : "game/f1_2025";
-    b.track = runtime::lower(runtime::direct_start::tt::current_track());
+    runtime::tt_bridge::BoardTrack t = runtime::tt_bridge_board_track(runtime::lower(runtime::direct_start::tt::current_track()),
+                                                                      runtime::tt_bridge::parse_board(runtime::tt_bridge_last_board()).track);
+    b.track = t.key;
+    b.track_name = t.name;
+    b.track_addon = t.addon;
+    b.track_kind = t.kind;
     b.weather = lr::weather_of(c.has_wetness, c.wetness);
     return b;
 }
@@ -277,6 +283,9 @@ void finish(lr::Sealed &sealed, const LapContext &ctx)
     h.nonce = gate.nonce;
     h.content = b.content;
     h.track = b.track;
+    h.track_name = b.track_name;
+    h.track_addon = b.track_addon;
+    h.track_kind = b.track_kind;
     h.weather = b.weather;
     h.content_name = content_title(b.content);
     std::string game_board = runtime::tt_bridge_last_board();
@@ -347,9 +356,10 @@ void finish(lr::Sealed &sealed, const LapContext &ctx)
     QueryPerformanceCounter(&t1);
     QueryPerformanceFrequency(&f);
     written++;
-    swofty::log("[laps] wrote %s lap %lld ms (%s), %u samples, ghost %zu bytes, board %s|%s|%s", name.c_str(),
+    swofty::log("[laps] wrote %s lap %lld ms (%s), %u samples, ghost %zu bytes, board %s|%s|%s%s", name.c_str(),
                 (long long)r.time_ms, r.source, lap.count, sealed.ghost.size(), b.content.c_str(),
-                b.track.empty() ? "unknown" : b.track.c_str(), b.weather.empty() ? "unknown" : b.weather.c_str());
+                b.track.empty() ? "unknown" : b.track.c_str(), b.weather.empty() ? "unknown" : b.weather.c_str(),
+                b.track_kind.empty() ? "" : (", custom track (" + b.track_kind + " from " + b.track_addon + ")").c_str());
     swofty::log("[laps] lap %u: %zu bytes, built and written in %.1f ms", lap.index, body.size(),
                 1000.0 * double(t1.QuadPart - t0.QuadPart) / double(f.QuadPart));
     swofty_core::hooks::events::laps_recorded(narrow_path.c_str(), int32_t(r.time_ms),
@@ -397,9 +407,10 @@ void drain(const live_car::LiveCar &c)
         } else if (o.kind == lr::Outcome::started) {
             board = snapshot(c);
             started_utc = utc_now();
-            swofty::log("[laps] timing started, board %s|%s|%s", board.content.c_str(),
+            swofty::log("[laps] timing started, board %s|%s|%s%s", board.content.c_str(),
                         board.track.empty() ? "unknown" : board.track.c_str(),
-                        board.weather.empty() ? "unknown" : board.weather.c_str());
+                        board.weather.empty() ? "unknown" : board.weather.c_str(),
+                        board.track_kind.empty() ? "" : (", custom track (" + board.track_kind + " from " + board.track_addon + ")").c_str());
         } else if (o.kind == lr::Outcome::discarded) {
             discarded++;
             swofty::log("[laps] lap discarded: %s", lr::discard_name(o.why));

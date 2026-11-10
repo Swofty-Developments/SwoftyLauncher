@@ -139,7 +139,7 @@ struct Header {
     std::string core, game_build, nonce;
     std::string content, track, weather, game_board, ghost_id;
     std::string team, vehicle, driver;
-    std::string content_name, track_name, performance;
+    std::string content_name, track_name, track_addon, track_kind, performance;
     std::optional<int64_t> team_stat, vehicle_stat, livery_stat;
     int64_t time_ms = 0;
     std::vector<int64_t> sectors_ms;
@@ -169,6 +169,8 @@ inline swofty::json::Value header_json(const Header &h, const Layout &layout)
     text(board, "game_board", h.game_board);
     text(board, "content_name", h.content_name);
     text(board, "track_name", h.track_name);
+    text(board, "track_addon", h.track_addon);
+    text(board, "track_kind", h.track_kind);
     v["board"] = std::move(board);
     Value car = Value::object();
     text(car, "team", h.team);

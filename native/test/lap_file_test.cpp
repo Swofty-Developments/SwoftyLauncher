@@ -162,6 +162,17 @@ int main()
         expect(v["performance"].as_string() == "equal" && v["assists"]["gbx"].as_int(-1) == 3 &&
                    v["assists"]["input"].as_int(-1) == 2 && v["lap"]["session_time_s"].as_double(0) == 412.5,
                "the header carries performance, assists and the session time");
+        lf::Header custom;
+        custom.track = "swofty.tracks:ring";
+        custom.track_addon = "swofty.tracks";
+        custom.track_name = "The Ring";
+        custom.track_kind = "record";
+        auto cv = lf::header_json(custom, l);
+        expect(cv["board"]["track"].as_string() == "swofty.tracks:ring" && cv["board"]["track_addon"].as_string() == "swofty.tracks" &&
+                   cv["board"]["track_name"].as_string() == "The Ring" && cv["board"]["track_kind"].as_string() == "record",
+               "the header carries the custom track key, addon, name and kind");
+        expect(v["board"]["track_addon"].type() == swofty::json::Type::null && v["board"]["track_kind"].type() == swofty::json::Type::null,
+               "a stock track writes no track addon or kind");
         lf::Header bare;
         bare.time_ms = 1;
         auto b = lf::header_json(bare, l);
