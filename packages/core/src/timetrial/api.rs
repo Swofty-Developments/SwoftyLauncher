@@ -41,9 +41,14 @@ impl ApiError {
     pub fn from_body(status: u16, body: &str) -> Self {
         let doc: Value = serde_json::from_str(body).unwrap_or(Value::Null);
         let banned = doc.get("error").and_then(Value::as_str) == Some("banned");
+        let said = doc
+            .get("message")
+            .and_then(Value::as_str)
+            .filter(|m| !banned && !m.is_empty());
         let message = doc
             .get("error")
             .and_then(Value::as_str)
+            .map(|e| said.unwrap_or(e))
             .map(|e| match (banned, doc.get("reason").and_then(Value::as_str)) {
                 (true, Some(r)) if !r.is_empty() => format!("your account is banned from Time Trial: {r}"),
                 (true, _) => "your account is banned from Time Trial".to_owned(),
@@ -198,6 +203,12 @@ impl Api {
             message: format!("the server's answer to GET {path} is not valid: {e}"),
             retry_after: None,
         })
+    }
+
+    /// A POST with a JSON body whose answer is read as JSON.
+    pub fn post_value(&self, path: &str, body: &Value) -> Result<Value, ApiError> {
+        let body = ("application/json".to_owned(), body.to_string().into_bytes());
+        self.send("POST", path, Some(body), BOARD_TIMEOUT)
     }
 
     /// A moderation call: a POST with a JSON body whose answer is ignored.

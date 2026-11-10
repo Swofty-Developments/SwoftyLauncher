@@ -75,6 +75,7 @@ pub mod stock;
 pub mod store;
 pub mod testsuite;
 pub mod texcheck;
+pub mod support;
 pub mod timetrial;
 pub mod tracks;
 pub mod transfer;

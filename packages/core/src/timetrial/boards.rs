@@ -91,10 +91,10 @@ pub struct Group {
 
 #[derive(Deserialize)]
 #[serde(untagged)]
-enum Rows<T> {
+pub(crate) enum Rows<T> {
     List(Vec<T>),
     Wrapped {
-        #[serde(alias = "laps", alias = "entries", alias = "boards")]
+        #[serde(alias = "laps", alias = "entries", alias = "boards", alias = "supporters")]
         rows: Vec<T>,
         #[serde(default)]
         next_offset: Option<u64>,
@@ -102,7 +102,7 @@ enum Rows<T> {
 }
 
 impl<T> Rows<T> {
-    fn into_vec(self) -> Vec<T> {
+    pub(crate) fn into_vec(self) -> Vec<T> {
         match self {
             Self::List(v) | Self::Wrapped { rows: v, .. } => v,
         }
