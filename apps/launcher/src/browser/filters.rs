@@ -1,7 +1,7 @@
 use gpui_kit::*;
 use swofty_core::catalog::Addon;
 use swofty_core::catalog::search::Query;
-use swofty_core::manifest::Category;
+use swofty_core::manifest::{Category, Platform};
 use swofty_core::update::current_version;
 use swofty_i18n::tr;
 
@@ -72,11 +72,46 @@ impl Want {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub(super) enum Where {
+    Steam,
+    Ea,
+    NotTested,
+}
+
+impl Where {
+    pub(super) const ALL: [Where; 3] = [Self::Steam, Self::Ea, Self::NotTested];
+
+    pub(super) fn label(self) -> &'static str {
+        match self {
+            Self::Steam => tr("Steam"),
+            Self::Ea => tr("EA"),
+            Self::NotTested => tr("Not tested"),
+        }
+    }
+
+    pub(super) fn of(platform: Platform) -> Self {
+        match platform {
+            Platform::Steam => Self::Steam,
+            Platform::Ea => Self::Ea,
+        }
+    }
+
+    pub(super) fn tags(platforms: &[Platform]) -> Vec<Where> {
+        if platforms.is_empty() {
+            vec![Self::NotTested]
+        } else {
+            platforms.iter().copied().map(Self::of).collect()
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Group {
     Category,
     Type,
     State,
+    Platform,
     Author,
     Code,
 }
@@ -85,6 +120,7 @@ pub(super) enum Group {
 pub(super) enum Facet {
     Type(Type),
     State(Want),
+    Platform(Where),
     Author { id: String, name: String },
 }
 
@@ -93,6 +129,7 @@ impl Facet {
         match self {
             Self::Type(_) => Group::Type,
             Self::State(_) => Group::State,
+            Self::Platform(_) => Group::Platform,
             Self::Author { .. } => Group::Author,
         }
     }
@@ -101,6 +138,7 @@ impl Facet {
         match self {
             Self::Type(t) => t.label().to_owned(),
             Self::State(w) => w.label().to_owned(),
+            Self::Platform(w) => w.label().to_owned(),
             Self::Author { name, .. } => name.clone(),
         }
     }
@@ -134,6 +172,7 @@ impl Shell {
             Facet::State(Want::Update) => self.catalog_update(&a.id).is_some(),
             Facet::State(Want::Starred) => self.browser.stars.has(&a.id),
             Facet::State(Want::Works) => a.offered(&current_version()).is_some(),
+            Facet::Platform(w) => Where::tags(a.platforms()).contains(w),
             Facet::Author { id, .. } => a.owner().is_some_and(|o| o.id == *id),
         }
     }
@@ -143,7 +182,7 @@ impl Shell {
         matched
             && (except == Some(Group::Category) || b.tab.is_none_or(|t| a.category() == t))
             && (except == Some(Group::Code) || !(b.hide_code && a.native(&current_version())))
-            && [Group::Type, Group::State, Group::Author]
+            && [Group::Type, Group::State, Group::Platform, Group::Author]
                 .into_iter()
                 .filter(|g| Some(*g) != except)
                 .all(|g| {
