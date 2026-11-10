@@ -5,6 +5,7 @@
 //! and the launcher run for it.
 
 pub mod api;
+pub mod fingerprint;
 pub mod queue;
 pub mod swlap;
 pub mod upload;

@@ -71,6 +71,7 @@ impl Shell {
         let ui_mode = config.ui_mode;
         let developer_mode = config.developer;
         let clear_old_session_logs = config.clear_old_session_logs;
+        let time_trial_boards = config.time_trial_boards;
         let update_check = config.updates.check;
         Self::guard_close(window, cx);
         Self::recover_in_background(&store, clear_old_session_logs, cx);
@@ -141,6 +142,7 @@ impl Shell {
             onboarding: None,
             developer_mode,
             clear_old_session_logs,
+            time_trial_boards,
             reload_generation: 0,
             slow_logged: false,
             update_check,
@@ -311,6 +313,14 @@ impl Shell {
                     cx.notify();
                 })
                 .ok();
+                let data = this.update(cx, |s, _| s.store.clone()).ok();
+                if let Some(store) = data {
+                    cx.background_executor()
+                        .spawn(async move {
+                            swofty_core::timetrial::upload::flush(&store.root, &store.config());
+                        })
+                        .await;
+                }
             })
             .detach();
         }

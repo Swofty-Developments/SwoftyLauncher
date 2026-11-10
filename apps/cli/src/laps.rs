@@ -103,7 +103,7 @@ fn list(store: &Store) {
 fn fingerprint(store: &Store, profile: &str, identity: &Identity) -> Option<Value> {
     let p = store.profile(profile).ok()?;
     let fp = swofty_core::multiplayer::fingerprint::fingerprint(store, &p, identity).ok()?;
-    serde_json::to_value(fp).ok()
+    Some(swofty_core::timetrial::fingerprint::wire(&fp))
 }
 
 fn send(store: &Store, profile: &str, file: Option<PathBuf>) -> Result<()> {

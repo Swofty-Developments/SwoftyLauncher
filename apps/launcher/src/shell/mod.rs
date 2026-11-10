@@ -94,6 +94,8 @@ pub struct Shell {
     pub(crate) developer_mode: bool,
     /// `clear_old_session_logs` from config.json: opt-in, old session logs are cleared at start.
     pub(crate) clear_old_session_logs: bool,
+    /// `time_trial_boards` from config.json: on unless turned off, uploads completed Time Trial laps.
+    pub(crate) time_trial_boards: bool,
     reload_generation: u64,
     slow_logged: bool,
     /// `updates.check` from config.json, read when the library loads.

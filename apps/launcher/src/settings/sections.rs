@@ -54,6 +54,9 @@ impl Shell {
         let start = Switch::new("settings-start-store")
             .checked(self.start_store)
             .on_click(cx.listener(|this, on: &bool, window, cx| this.set_start_store(*on, window, cx)));
+        let time_trial = Switch::new("settings-time-trial-boards")
+            .checked(self.time_trial_boards)
+            .on_click(cx.listener(|this, on: &bool, window, cx| this.set_time_trial_boards(*on, window, cx)));
         SettingsSection::new(tr("General"))
             .row(
                 SettingRow::new(tr("Language"))
@@ -64,6 +67,11 @@ impl Shell {
                 SettingRow::new(start_label)
                     .description(tr("When you press Play"))
                     .control(start),
+            )
+            .row(
+                SettingRow::new(tr("Time Trial boards"))
+                    .description(tr("Upload your Time Trial laps to the Swofty leaderboards."))
+                    .control(time_trial),
             )
             .into_any_element()
     }
