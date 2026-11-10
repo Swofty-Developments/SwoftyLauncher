@@ -11,6 +11,7 @@
 #include "lap_rec_logic.hpp"
 #include "live_car.hpp"
 #include "perf.hpp"
+#include "tt_bridge_logic.hpp"
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
@@ -278,6 +279,13 @@ void finish(lr::Sealed &sealed, const LapContext &ctx)
     h.track = b.track;
     h.weather = b.weather;
     h.content_name = content_title(b.content);
+    std::string game_board = runtime::tt_bridge_last_board();
+    runtime::tt_bridge::BoardName gb = runtime::tt_bridge::parse_board(game_board);
+    if (gb.ok && (b.weather.empty() || b.weather == runtime::tt_bridge::weather_word(gb.weather)))
+        h.game_board = game_board;
+    uint8_t id_block[runtime::tt_bridge::ID_BLOCK];
+    if (!sealed.ghost.empty() && runtime::tt_bridge_ghost_id(id_block))
+        h.ghost_id = runtime::tt_bridge::base64(id_block, sizeof id_block);
     if (auto facts = swofty_core::hooks::core().current(); facts && facts->player) {
         h.team = facts->player->team;
         h.vehicle = facts->player->vehicle;
@@ -561,6 +569,7 @@ void lap_rec_session_enter()
     recorder.begin_session();
     ghost_armed = tt_bridge_pb_armed();
     sealer.expect(game_armed, ghost_armed);
+    tt_bridge_session_enter();
     discarded = written = 0;
     player_car = -1;
     active = true;

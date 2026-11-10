@@ -137,7 +137,7 @@ struct Layout {
 
 struct Header {
     std::string core, game_build, nonce;
-    std::string content, track, weather, game_board;
+    std::string content, track, weather, game_board, ghost_id;
     std::string team, vehicle, driver;
     std::string content_name, track_name, performance;
     std::optional<int64_t> team_stat, vehicle_stat, livery_stat;
@@ -206,6 +206,7 @@ inline swofty::json::Value header_json(const Header &h, const Layout &layout)
         v["rate_hz"] = int64_t(*h.rate_hz);
     v["fields"] = layout.json();
     text(v, "nonce", h.nonce);
+    text(v, "ghost_id", h.ghost_id);
     return v;
 }
 

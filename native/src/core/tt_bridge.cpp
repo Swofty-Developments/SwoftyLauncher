@@ -113,6 +113,7 @@ tb::Table table(1);
 Resolved found;
 bool bridge_on = false, boards_on = false, request_guard = true, push_hooked = false;
 std::atomic<bool> pb_armed{false};
+std::string last_board;
 std::atomic<int> pending_count{0};
 std::deque<std::unique_ptr<tb::Response>> responses;
 std::deque<std::string> xml_buffers;
@@ -268,6 +269,10 @@ void push_mid(safetyhook::Context &c)
     if (!a.ok) {
         log_unreadable(op, m, name);
         return;
+    }
+    {
+        std::lock_guard<std::mutex> g(lock);
+        last_board = a.board_text;
     }
     tb::Route route = tb::route_of(m, a.board, bridge_on);
     if (route == tb::Route::local && !request_guard)
@@ -517,6 +522,18 @@ void tt_bridge_tick()
 }
 
 bool tt_bridge_pb_armed() { return pb_armed.load(); }
+
+std::string tt_bridge_last_board()
+{
+    std::lock_guard<std::mutex> g(lock);
+    return last_board;
+}
+
+void tt_bridge_session_enter()
+{
+    std::lock_guard<std::mutex> g(lock);
+    last_board.clear();
+}
 
 bool tt_bridge_ghost_id(uint8_t out[48])
 {

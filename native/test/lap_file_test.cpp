@@ -144,6 +144,7 @@ int main()
         h.team_stat = 4;
         h.vehicle_stat = 17;
         h.livery_stat = 0;
+        h.ghost_id = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4v";
         h.performance = "equal";
         h.session_time_s = 412.5;
         h.assists = swofty::json::Value::object({{"brk", int64_t(1)}, {"abs", int64_t(1)}, {"trc", int64_t(2)},
@@ -154,6 +155,7 @@ int main()
         expect(v["board"]["game_board"].as_string() == "LBV060012D" && v["board"]["content_name"].as_string() == "Formula 1 2022" &&
                    v["board"]["track_name"].as_string() == "Bahrain",
                "the header carries the game board and the display names");
+        expect(v["ghost_id"].as_string() == h.ghost_id, "the header carries the ghost id when it is known");
         expect(v["car"]["team_stat"].as_int(-1) == 4 && v["car"]["vehicle_stat"].as_int(-1) == 17 &&
                    v["car"]["livery_stat"].as_int(-1) == 0,
                "the header carries the participant stat ids, zero included");
@@ -163,7 +165,7 @@ int main()
         lf::Header bare;
         bare.time_ms = 1;
         auto b = lf::header_json(bare, l);
-        expect(b["board"]["game_board"].type() == swofty::json::Type::null && b["car"]["team_stat"].type() == swofty::json::Type::null &&
+        expect(b["board"]["game_board"].type() == swofty::json::Type::null && b["ghost_id"].type() == swofty::json::Type::null && b["car"]["team_stat"].type() == swofty::json::Type::null &&
                    b["performance"].type() == swofty::json::Type::null && b["assists"].type() == swofty::json::Type::null &&
                    b["lap"]["session_time_s"].type() == swofty::json::Type::null,
                "a key that could not be read is omitted, never guessed");
