@@ -3,6 +3,7 @@
 #include "hud_drawlist.hpp"
 #include "hud_font_atlas.hpp"
 #include "hud_image.hpp"
+#include "main_menu.hpp"
 #include "hud_input.hpp"
 #include "text_entry.hpp"
 #include "hud_guard.hpp"
@@ -1560,6 +1561,7 @@ hud::Frame &build_frame(const std::vector<hud::Paintsub> &subs, UINT width, UINT
         hud::build(subs, frame, float(width), float(height), overlay_off());
         draw_cursor(frame);
         runtime::room_cover::paint(frame, now);
+        runtime::main_menu::paint(frame, now);
     }
     flush_stats(now);
     if (frame.dropped && !dropped_told) {
@@ -2253,6 +2255,47 @@ int frame_capture_poll(std::string *why)
     if (cap.request_state < 0 && why)
         *why = cap.request_why;
     return cap.request_state;
+}
+
+}
+
+namespace runtime {
+
+int overlay_image(const std::string &id, const std::string &path, uint32_t *width, uint32_t *height)
+{
+    static std::mutex failed_lock;
+    static std::vector<std::string> failed;
+    std::lock_guard<std::mutex> g(reg_lock);
+    int slot = reg.find_image(id);
+    const hud::Image *im = slot >= 0 ? reg.image(slot) : nullptr;
+    std::string key = id + "|" + path;
+    if (!im || im->generation == 0) {
+        {
+            std::lock_guard<std::mutex> f(failed_lock);
+            if (std::find(failed.begin(), failed.end(), key) != failed.end())
+                return -1;
+        }
+        std::string why;
+        hud::img::Pixels px;
+        std::string data = runtime::read_file(runtime::wide(path), size_t(8) << 20);
+        if (data.empty() || !hud::img::decode(data, px, why)) {
+            swofty::log("[overlay] main menu image %s: %s", path.c_str(), data.empty() ? "unreadable" : why.c_str());
+            std::lock_guard<std::mutex> f(failed_lock);
+            failed.push_back(key);
+            return -1;
+        }
+        slot = reg.set_image(id, px.width, px.height, std::move(px.rgba));
+        if (slot + 1 >= int(TEX_MAX))
+            return -1;
+        swofty::log("[overlay] main menu image %s (%ux%u) loaded (slot %d)", path.c_str(), px.width, px.height, slot);
+    }
+    if (const hud::Image *shown = reg.image(slot)) {
+        if (width)
+            *width = shown->width;
+        if (height)
+            *height = shown->height;
+    }
+    return slot;
 }
 
 }

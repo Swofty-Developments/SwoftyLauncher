@@ -33,7 +33,7 @@ static std::string at(const mm::Plan &p, int row, int col)
 int main()
 {
     auto p = mm::layout(retail(), true);
-    expect(at(p, 0, 0) == "career" && at(p, 0, 1) == "story", "Career and Braking Point lead the first row");
+    expect(at(p, 0, 0) == "story" && at(p, 0, 1) == "career", "Braking Point and Career lead the first row");
     expect(at(p, 1, 0) == mm::ID_GRAND_PRIX && at(p, 1, 1) == mm::ID_TIME_TRIAL, "Grand Prix and Time Trial share row 2");
     expect(at(p, 2, 0) == "theatre" && p.cards[4].wide, "Theatre is a full-width row under them");
     expect(at(p, 3, 0) == mm::ID_SHOWROOM, "Showroom follows Theatre");
@@ -69,6 +69,9 @@ int main()
     expect(!mm::time_trial_warning_due(out, false, false), "Grand Prix does not warn");
     expect(!mm::time_trial_warning_due(s, true, false), "signed in does not warn");
     expect(!mm::time_trial_warning_due(mm::State{}, true, false), "no state file, no warning");
+    expect(mm::djb2("") == 5381 && mm::djb2("a") == 5381 * 33 + 'a', "djb2 matches the game's string hash");
+    expect(mm::open_request_json("https://youtu.be/a") == R"({"url":"https://youtu.be/a"})", "open request json");
+    expect(mm::open_request_json("a\"b") == R"({"url":"a\"b"})", "open request json escapes quotes");
     printf("%s\n", fails ? "FAILED" : "all passed");
     return fails ? 1 : 0;
 }
