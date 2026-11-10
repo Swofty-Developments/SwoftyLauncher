@@ -20,6 +20,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace runtime {
@@ -135,6 +136,9 @@ const runtime::Sig S_HANDLER_READY{"Game_GhostLapHandler_PbReady_142f91900",
         "56 57 55 53 48 83 EC 28 48 89 CE 48 8B 41 78 48 85 C0 75 17 48 8D 4C 24", 0x2f91900};
 const runtime::Sig S_GARAGE_MSG{"Game_GarageMonitor_OnMessage_141f76ac0",
         "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 48 8B 02 48 85", 0x1f76ac0};
+const runtime::Sig S_SAVE_PB{"Game_GhostLaps_SavePersonalBest", "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 49 89 D6", 0x2fa31e0};
+const runtime::Sig S_HANDLER_RESET{"Game_GhostLapHandler_Reset", "41 56 56 57 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 44", 0x2f91dd0};
+const runtime::Sig S_ENTRY_WRITE{"Game_GhostLapHandler_StartLeaderboardEntryWrite", "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 08 00 00 C5 F8 29", 0x2fa0a60};
 const runtime::Sig S_PRIV_GATE{"site_Game_UIUIPrivilegeCheckControl_HandleSignal_Result",
         "41 80 BE AB 00 00 00 00 0F 84 8C 00 00 00 45 84 FF 0F 84 8D 00 00 00", 0x3822cdf, runtime::Sig::addr, 0, 8};
 constexpr uintptr_t TS_FLAG_GLOBAL_A = 0, TS_FLAG_GLOBAL_B = 17;
@@ -170,7 +174,7 @@ std::atomic<int> hits_upload{0}, hits_download{0}, hits_racenet{0};
 std::vector<std::string> seen_methods;
 
 bool diag_on = false;
-safetyhook::MidHook h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
+safetyhook::MidHook h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
 
 struct GateHook {
     uintptr_t at = 0, resume = 0, session_global = 0;
@@ -825,6 +829,34 @@ void garage_msg_mid(safetyhook::Context &c)
         swofty::log("[boards] garage monitor message %s reached the panel handler (0x%x); backtrace %s", name, id, backtrace_text(1, 4).c_str());
 }
 
+void commit_path_log(const char *what, safetyhook::Context &c, std::atomic<int> &logged)
+{
+    if (++logged > 24)
+        return;
+    uint64_t handler = c.rcx, ctx = peek64(handler + 0x58), np = ctx ? peek64(ctx + 0x68) : 0;
+    swofty::log("[boards] commit path: %s called for handler 0x%llx board %s (args 0x%llx 0x%llx; entry state %u, download %u, +0x288 %u, +0x9c %u); backtrace %s", what,
+                (unsigned long long)handler, np ? tb::read_c(game_mem(), np).c_str() : "?", (unsigned long long)c.rdx, (unsigned long long)c.r8, peek32(handler + 0x1d8),
+                peek32(handler + 0x138), peek32(handler + 0x288), peek32(handler + 0x9c), backtrace_text(1, 4).c_str());
+}
+
+void save_pb_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> n{0};
+    commit_path_log("SavePersonalBest (stores the lap's ghost blob in memory and sets +0x288)", c, n);
+}
+
+void handler_reset_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> n{0};
+    commit_path_log("Game_GhostLapHandler_Reset (clears the handler's entry and download state)", c, n);
+}
+
+void entry_write_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> n{0};
+    commit_path_log("StartLeaderboardEntryWrite (builds the AddLeaderboardEntry request)", c, n);
+}
+
 void reader_fail_mid(safetyhook::Context &c)
 {
     static std::atomic<int> logged{0};
@@ -1080,6 +1112,12 @@ void setup()
         if (uintptr_t at = runtime::find(S_GARAGE_MSG, "boards", "boards"))
             if (hook_mid(h_garage, at, garage_msg_mid, "garage monitor messages"))
                 swofty::log("[boards] garage monitor messages logged at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
+        for (auto [sig, hook, fn, label] : {std::tuple<const runtime::Sig *, safetyhook::MidHook *, safetyhook::MidHookFn, const char *>{&S_SAVE_PB, &h_save_pb, save_pb_mid, "SavePersonalBest"},
+                                            {&S_HANDLER_RESET, &h_reset, handler_reset_mid, "handler reset"},
+                                            {&S_ENTRY_WRITE, &h_entry_write, entry_write_mid, "leaderboard entry write"}})
+            if (uintptr_t at = runtime::find(*sig, "boards", "boards"))
+                if (hook_mid(*hook, at, fn, label))
+                    swofty::log("[boards] commit path: %s logged at base+0x%llx", label, (unsigned long long)(at - swofty::api->module_base()));
         if (uintptr_t at = runtime::find(S_READER_FAIL, "boards", "boards"))
             if (hook_mid(h_reader_fail, at, reader_fail_mid, "leaderboard reader failure"))
                 swofty::log("[boards] leaderboard reader failure logged at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
