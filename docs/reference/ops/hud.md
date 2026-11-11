@@ -228,6 +228,10 @@ A scene target takes `text` and `group` elements with `value`, `literal`, `visib
 
 The scene a scene target grows is read after every other addon's whole replacement of it has been merged ([two addons replacing one UI resource](/reference/ops/erp#two-addons-replacing-one-ui-resource)), so a scene target and an addon that ships its own copy of the scene stay together. The archives are `hud_target_scene.erp` (the grown scene, overlaid on the archives that carry both the template and the scene) and `hud_template.erp`.
 
+## Screens, textures and units
+
+A record is not bound to the dials. With `screen` in place of `dial` its elements go on the standings board, the replay screen's drivers list or the spectator tower, with `show` and `also` naming the leaf that shows them on each screen, `stock_nodes` hiding the game's own parts while they show and `restyle` reshaping the Race Control banner: [HUD screens](/reference/ops/hud-screens). Team logos, the series logo and colour bars come from the game's own textures through the `unit` kind, `texture` bindings and stock-texture sprites: [HUD textures and units](/reference/ops/hud-textures). The rows of a timing tower are the `repeat`, `stack` and `centre` fields above.
+
 ## Bridge addons
 
 Two addons that each replace `hud_dynamic_templates.ui` whole used to leave the later one the winner, and a third addon spliced their copies together by hand (Project Halo + Planked + Brake Check Panel does that). The build now merges whole replacements of the template and of the scenes node by node, and a `hud.element` composition starts from the merged result, so that bridge is no longer needed. See [two addons replacing one UI resource](/reference/ops/erp#two-addons-replacing-one-ui-resource) for the rules and the build lines and warnings.

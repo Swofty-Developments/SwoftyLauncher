@@ -62,13 +62,19 @@ DLL), the stock board is the game's own.
 Sprites are quads of the cap's own `pill_base` mesh with one material binding per sprite, so they
 draw in every instance. Coordinates are HUD units from the cap's origin (the board's top-left), `y`
 down, as in a dial record; `visible`, `value`, `tint`, `levels`, `slats` and the rest work as they
-do in a dial. A screen record takes no `decisions`, `variants`, `stock` or `stock_parts`.
+do in a dial, and so do `unit` elements, `texture` bindings and stock-texture sprites
+([HUD textures and units](/reference/ops/hud-textures)): a `{ "screen": "series_logo" }` texture reads
+the standings' lap counter leaf on the HUD, `#replay_flow.replays_and_highlights.logo_texture` on the
+replay screen and the spectator view model's `logo_texture` there. A text that reads
+`#session.time_remaining_str` gets the stock session timer's formatter cloned into the control group.
+A screen record takes no `decisions`, `variants`, `stock` or `stock_parts`; a record with `decisions`
+is refused with that message.
 
 What one record composes:
 
 | archive | into | holds |
 |---|---|---|
-| `hud_screen_scene.erp` | flow_race, flow_options, persistent | the grown cap, the standings table with the `<prefix>_host` instance, the table's `.uipre` (stock board hidden in the HUD editor), the sprites, the restyled scenes |
+| `hud_screen_scene.erp` | flow_race, flow_options, persistent | the grown cap with the live root `<prefix>` and the editor copy `<prefix>_pv`, the standings table with the `<prefix>_host` instance, the table's `.uipre` (stock board hidden in the HUD editor, the cap's graphics and the live root hidden inside the host, the copy shown and its texts filled), the sprites, the restyled scenes |
 | `hud_template.erp` | flow_race, flow_options | `hud_dynamic_templates.ui` with `<prefix>_ctl` under `hud_track_position.osd_visibility_option.track_position`, the `stock_nodes` groups and the restyle's static hides |
 | `hud_spectator.erp` | flow_race, screens/hud_spectator_2 | `hud_spectator_2.ui` with `<prefix>_ctl` under `hud_spectator_2.content`, and the spectator table scene with its `<prefix>_host` |
 | `hud_replay.erp` | flow_replay, screens/replays_and_highlights | `replays_and_highlights.ui` with `<prefix>_ctl` under the screen root, and the replay scene with its `<prefix>_host` |
@@ -218,8 +224,34 @@ bools, the board references at scale 0.9 and (-9.2, 5.0); the spectator `content
 `show_left_side`, the table scene's `transition` and `bottom_cap`, the screen scene's two references
 at scale 1; the twelve toast scenes' fill slots, offset layers, decorations and both toast groups.
 
+## The HUD editor
+
+The HUD customisation menu draws the standings table with no template running, so the record's live
+root never shows there. The composer builds a second copy of the elements, `<prefix>_pv`, from
+`editor.preview` (keyed by the substituted leaf names, as for a dial) with a top-level `repeat` cut to
+`editor.rows` copies, and writes the table's `.uipre` with nested setters under the host instance:
+`mask` hidden at the top level; inside `<prefix>_host` the cap's `pill_rotation_anim` and `<prefix>`
+hidden, `<prefix>_pv` shown and each copy's text filled. In game `host_n` holds a static `v_pv` node
+and the stock cap instance's `bottom_cap` template node gets static hides of both roots, so the copy
+never draws outside the editor. `unit` elements and `tint` bindings are left out of the copy.
+
+```jsonc
+"editor": {
+  "rows": 5,
+  "preview": {
+    "view_model_data.hud_tt_hdr": true, "view_model_data.hud_tt_lap": "10", "view_model_data.hud_tt_laps": "71",
+    "view_model_data.hud_tt_r00_on": true, "view_model_data.hud_tt_r00_pos": "10", "view_model_data.hud_tt_r00_c00": true,
+    "view_model_data.hud_tt_r01_on": true, "view_model_data.hud_tt_r01_pos": "11", "view_model_data.hud_tt_r01_c01": true,
+    "view_model_data.hud_tt_r02_on": true, "view_model_data.hud_tt_r02_pos": "12", "view_model_data.hud_tt_r02_me": true, "view_model_data.hud_tt_r02_c02": true,
+    "view_model_data.hud_tt_r03_on": true, "view_model_data.hud_tt_r03_pos": "13", "view_model_data.hud_tt_r03_c03": true,
+    "view_model_data.hud_tt_r04_on": true, "view_model_data.hud_tt_r04_pos": "14", "view_model_data.hud_tt_r04_c04": true
+  }
+}
+```
+
 ## Not yet
 
-The HUD editor's 5-row preview copy inside the instanced host (nested `.uipre` setters), decisions on
-a screen target, `stock_nodes` on the replay template and the series logo `texture` binding per
-screen land with the rows, units and textures work.
+Decisions on a screen target (the Time Trial board's switches on the game's own pill values),
+`stock_nodes` on the replay template and the Race Control label's own colour clip (Halo rewrites its
+`DiffuseColour` keys to white; the restyle leaves the clip as it is, so that label keeps the stock
+navy on the navy fill) are not in the composer; each is refused or left stock with a line that says so.

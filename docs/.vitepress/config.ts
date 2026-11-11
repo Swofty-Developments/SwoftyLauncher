@@ -553,6 +553,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
                   { text: "UI patches", link: "/reference/ops/ui-patches", icon: "file" },
                   { text: "HUD elements", link: "/reference/ops/hud", icon: "file" },
                   { text: "HUD screens", link: "/reference/ops/hud-screens", icon: "file" },
+                  { text: "HUD textures and units", link: "/reference/ops/hud-textures", icon: "file" },
                   { text: "Asset op files", link: "/reference/addons/asset-api", icon: "file" },
                 ],
               },
