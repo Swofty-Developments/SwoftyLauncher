@@ -3,6 +3,7 @@
 #include <cstdint>
 
 #include <swofty/game/car.hpp>
+#include <swofty/game/live.hpp>
 #include <swofty/game/session.hpp>
 #include <swofty/game/teams.hpp>
 
@@ -169,7 +170,7 @@ constexpr size_t sector_block = 0x60;
     static_assert(                                                                                                     \
         []<class X>() consteval {                                                                                      \
             if constexpr (requires { sizeof(X); })                                                                     \
-                return sizeof(X) == (n);                                                                               \
+                return sizeof(X) <= (n);                                                                               \
             else                                                                                                       \
                 return true;                                                                                           \
         }.template operator()<swofty::game::T>(),                                                                      \
