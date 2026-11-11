@@ -92,6 +92,9 @@ void frame_probe_name(const char *what);
 const SwoftyOverlay *overlay_table();
 const SwoftyTelemetry *telemetry_table();
 const SwoftyDb *db_table();
+// True once a db_table() call has resolved the database reader's signatures; the core's own readers check it so
+// they never initialise the reader (and log its resolve) in a run where no addon reads the game database.
+bool db_initialised();
 const SwoftyStorage *storage_table();
 std::wstring storage_write_path(const std::string &id, const std::string &path);
 const SwoftyCareer *career_table();
