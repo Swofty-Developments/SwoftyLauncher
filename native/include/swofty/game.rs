@@ -33,6 +33,21 @@ pub struct CarAssists {
 }
 
 #[repr(C)]
+pub struct CarBodyActor {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct CarBodyState {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct CarChassisLive {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
 pub struct CarComponentBase {
     _opaque: [u8; 0],
 }
@@ -73,6 +88,11 @@ pub struct CarF1Plank {
 }
 
 #[repr(C)]
+pub struct CarLiveInputs {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
 pub struct CarPerfVehicle {
     _opaque: [u8; 0],
 }
@@ -89,6 +109,11 @@ pub struct CarSetupValues {
 
 #[repr(C)]
 pub struct CarSpline {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct CarSteeringLive {
     _opaque: [u8; 0],
 }
 
@@ -153,12 +178,32 @@ pub struct CarWheelProxies {
 }
 
 #[repr(C)]
+pub struct ControllerSystem {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
 pub struct DepartmentData {
     _opaque: [u8; 0],
 }
 
 #[repr(C)]
+pub struct DriveThroughObject {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
 pub struct FEHomeViewModel {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct GameManagerLive {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct GameVehicleProgressSystem {
     _opaque: [u8; 0],
 }
 
@@ -178,7 +223,57 @@ pub struct InputRecord {
 }
 
 #[repr(C)]
+pub struct MarshalZone {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct MarshalZoneDef {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct MarshalZoneMonitor {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct MarshalZoneSlot {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct NeRobinHoodMapU64 {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
 pub struct NeStr {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct PenaltyLog {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct PenaltyRecord {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct PitLaneCarSlot {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct PitLaneCarState {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct PitLaneSystem {
     _opaque: [u8; 0],
 }
 
@@ -188,12 +283,47 @@ pub struct RedFlagSystem {
 }
 
 #[repr(C)]
+pub struct RelativeGapEntry {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct RelativeGapHelper {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
 pub struct RnDDepartmentConfig {
     _opaque: [u8; 0],
 }
 
 #[repr(C)]
+pub struct SafetyCarLogicSystem {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct SessionSystem {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct SessionVehicleEntry {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct StopGoObject {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
 pub struct TodCurveBinding {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct TyreSlot {
     _opaque: [u8; 0],
 }
 
@@ -223,12 +353,27 @@ pub struct UpgradeRecord {
 }
 
 #[repr(C)]
+pub struct VehicleHelperSystem {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
 pub struct VehicleIdentity {
     _opaque: [u8; 0],
 }
 
 #[repr(C)]
 pub struct VehiclePackageRow {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct VehicleProgressEntry {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct VehicleTyreComponent {
     _opaque: [u8; 0],
 }
 
