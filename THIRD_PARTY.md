@@ -191,3 +191,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 Swofty UI uses the system's fonts and ships none. Its icon is a raster image and contains no font data.
 
 The site loads Open Sans, Poppins, Quicksand, Source Code Pro and Varela Round from Google Fonts. They use the SIL Open Font License 1.1.
+
+## Project Halo
+
+The generic HUD runtime helpers in `packages/sdk/include/swofty/` (`hud_leaves.hpp`, `hud_format.hpp`, `ease.hpp`, `hud_frame.hpp`, `timing.hpp`, `log_csv.hpp`) port the reusable parts of Project Halo's HUD code (leaf publishing, easing, gap text, the timing tower model and leaf contract, the validation log) with the permission of its author.
+
+Uses work from Project Halo by nyannoying, <https://github.com/nyannoying1337/f1-25-project-halo>.
