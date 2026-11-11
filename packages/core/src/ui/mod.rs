@@ -6,6 +6,7 @@ pub mod era;
 pub mod hub;
 pub mod icons;
 pub mod idf;
+pub mod merge;
 pub mod mfd;
 pub mod node;
 pub mod pages;

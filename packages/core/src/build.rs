@@ -1993,6 +1993,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 store,
                 stock: &stock,
                 base: &base,
+                baseline: &resolve,
                 puts: &put_names,
                 name: &name,
             },
@@ -2051,10 +2052,12 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 ));
             }
         }
-        let mut erps = ErpBuild::new(&base);
+        let mut erps = ErpBuild::new(&base).with_baseline(&resolve);
         for rel in puts.keys() {
             erps.load(rel)?;
         }
+        let contested =
+            crate::erpbuild::contested_ui(&erp_ops, &|op, s| source_dir(store, &op.origin.addon, s.root));
         for (erp, resource) in menu_kept.keys() {
             erps.keep(erp, resource);
         }
@@ -2098,6 +2101,9 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                             "it carries car handling files, which the game reads from the game file"
                                 .to_owned(),
                         ),
+                        None if let Some(uri) = contested_in(&contested, &path, targets)? => Err(format!(
+                            "another addon replaces {uri} whole too, and the two are merged node by node"
+                        )),
                         None => overlay_fits(&path, targets, &base)?,
                     };
                     match fits {
@@ -2120,10 +2126,12 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                                 &resolve,
                             )
                             .map_err(|e| Error::Other(format!("applying {}: {e}", op.origin)))?;
+                            ui_merge_notes(&mut built, &mut planner, erps.take_ui_merges(), &name);
                         }
                     }
                 }
                 AssetOp::Erp(erp) => {
+                    erps.set_merge_ui(op.origin.item.as_deref() != Some(crate::hud::integrate::ORIGIN));
                     match erps.apply_for(erp, &op.origin.to_string(), &resolve) {
                         Ok(()) => {}
                         Err(Error::ResourceMissing { erp, resource }) if puts.contains_key(&erp) => {
@@ -2142,6 +2150,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                     for m in erps.take_merges() {
                         record_merge(&mut built, &mut planner, &op.origin, m);
                     }
+                    ui_merge_notes(&mut built, &mut planner, erps.take_ui_merges(), &name);
                 }
                 AssetOp::Warn { message } => built.warnings.push(format!("{}: {message}", op.origin)),
                 _ => {}
@@ -2747,6 +2756,61 @@ fn left_over(store: &Store, game: &Game, rel: &str) -> bool {
     };
     let stock = Baseline::load_or_new(&store.root, &game.identity).is_ok_and(|b| b.files.contains_key(rel));
     !stock && sha256_opt(&game.dir.join(rel)).ok().flatten().as_deref() == Some(p.sha256.as_str())
+}
+
+fn contested_in(
+    contested: &BTreeSet<(String, String)>,
+    path: &Path,
+    targets: &[String],
+) -> Result<Option<String>> {
+    if contested.is_empty() {
+        return Ok(None);
+    }
+    let names = crate::erpbuild::overlay_names(path)?;
+    Ok(names.into_iter().find(|n| {
+        targets
+            .iter()
+            .any(|t| contested.contains(&(t.clone(), n.clone())))
+    }))
+}
+
+fn ui_merge_notes(
+    built: &mut Built,
+    planner: &mut Planner,
+    merges: Vec<crate::erpbuild::UiMerge>,
+    name: &dyn Fn(&str) -> String,
+) {
+    for m in merges {
+        if m.conflicts.is_empty() {
+            planner.merged(&Target::Resource {
+                erp: m.erp.clone(),
+                uri: m.resource.clone(),
+            });
+        }
+        let who = |ids: &[String]| ids.iter().map(|i| name(i)).collect::<Vec<_>>().join(", ");
+        built.lines.push(format!(
+            "ui: {}: {} merged node by node against the game's own copy: {} then {} ({} added, {} changed, {} removed by {}; {} conflict(s))",
+            m.erp,
+            m.resource,
+            who(&m.earlier),
+            name(&m.later),
+            m.stats.added,
+            m.stats.changed,
+            m.stats.removed,
+            name(&m.later),
+            m.conflicts.len()
+        ));
+        for c in m.conflicts {
+            built.warnings.push(format!(
+                "ui: {} and {} both change {} in {}; {}'s version is kept there because it loads later",
+                who(&c.earlier),
+                name(&m.later),
+                c.path,
+                m.resource,
+                name(&m.later)
+            ));
+        }
+    }
 }
 
 fn slice_merges(ops: &[Op]) -> Vec<(usize, &str, &str)> {

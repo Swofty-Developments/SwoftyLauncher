@@ -20,6 +20,7 @@ pub struct Context<'a> {
     pub store: &'a Store,
     pub stock: &'a dyn Stock,
     pub base: &'a dyn Fn(&str) -> PathBuf,
+    pub baseline: &'a dyn Fn(&str) -> PathBuf,
     pub puts: &'a [String],
     pub name: &'a dyn Fn(&str) -> String,
 }
@@ -71,7 +72,7 @@ pub fn compose_in_build(
     template: Option<TemplateBase>,
 ) -> Result<Composed> {
     let written: BTreeSet<&str> = dials::written().into_iter().collect();
-    let mut scratch = ErpBuild::new(cx.base);
+    let mut scratch = ErpBuild::new(cx.base).with_baseline(cx.baseline);
     let mut lines = Vec::new();
     let mut warnings = Vec::new();
     let huds: Vec<String> = {
